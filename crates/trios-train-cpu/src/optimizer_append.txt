@@ -1,0 +1,37 @@
+/// LAMB step telemetry
+///
+/// From GAMMA #67: Per-layer trust ratio and effective LR logging.
+#[derive(Debug, Clone)]
+pub struct LambStepTelemetry {
+    pub per_layer_trust_ratio: Vec<f32>,
+    pub per_layer_effective_lr: Vec<f32>,
+    pub per_layer_grad_norm: Vec<f32>,
+    pub per_layer_weight_norm: Vec<f32>,
+    pub total_update_norm: f32,
+}
+
+impl LambStepTelemetry {
+    pub fn new(n_layers: usize) -> Self {
+        Self {
+            per_layer_trust_ratio: vec![0.0_f32; n_layers],
+            per_layer_effective_lr: vec![0.0_f32; n_layers],
+            per_layer_grad_norm: vec![0.0_f32; n_layers],
+            per_layer_weight_norm: vec![0.0_f32; n_layers],
+            total_update_norm: 0.0,
+        }
+    }
+
+    /// Compute trust ratio for a layer
+    pub fn compute_trust_ratio(w_norm: f32, g_norm: f32, stable_ratio: f32) -> f32 {
+        if g_norm < stable_ratio {
+            w_norm / g_norm
+        } else {
+            1.0
+        }
+    }
+
+    /// Compute effective LR for a layer
+    pub fn compute_effective_lr(base_lr: f32, trust_ratio: f32) -> f32 {
+        base_lr * trust_ratio
+    }
+}

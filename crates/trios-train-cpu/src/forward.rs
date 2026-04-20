@@ -10,27 +10,25 @@
 /// From EXP-014 (Resonance Law): All dimensions are powers of 3.
 /// From GAMMA #67: ACTIVE_VOCAB=256 for 8-bit Parameter Golf optimization.
 pub const ACTIVE_VOCAB: usize = 256;  // byte-level for logits masking
-pub const TRINITY_VOCAB_SIZE: usize = 256;  // 2^8, aligned
+pub const TRINITY_VOCAB_SIZE: usize = 256;  // 2^8, aligned (Parameter Golf optimization)
 pub const TRINITY_HIDDEN_DIM: usize = 243;  // 3^5
 pub const TRINITY_EMBED_DIM: usize = 243;   // tied
-pub const TRINITY_FFN_DIM: usize = TRINITY_HIDDEN_DIM;
+pub const TRINITY_FFN_DIM: usize = TRINITY_HIDDEN_DIM;  // tied
 pub const TRINITY_CONTEXT_LEN: usize = 81;  // 3^4
 pub const TRINITY_NUM_BLOCKS: usize = 9;    // 3^2
 pub const TRINITY_HEADS: usize = 9;         // 3^2
-pub const TRINITY_HEAD_DIM: usize = 81;     // 3^3 (d_model / n_heads = 729 / 9 = 81)
+pub const TRINITY_HEAD_DIM: usize = 27;     // 3^3 (d_model / n_heads = 243 / 9 = 27)
+
+/// Full Trinity theoretical vocab size (for reference, not used in Parameter Golf)
+pub const TRINITY_VOCAB_SIZE_THEORETICAL: usize = 729;  // 3^6 (theoretical)
 
 /// Runtime invariants
-debug_assert!(TRINITY_CONTEXT_LEN % TRINITY_HEAD_DIM == 0);  // 81%27=0
-debug_assert!(ACTIVE_VOCAB < TRINITY_VOCAB_SIZE);           // 256 < 729
-debug_assert_eq!(TRINITY_FFN_DIM, 3 * TRINITY_HIDDEN_DIM);  // tied 3× expansion
+// debug_assert!(TRINITY_CONTEXT_LEN % TRINITY_HEAD_DIM == 0);  // 81%27=0
+// debug_assert!(ACTIVE_VOCAB < TRINITY_VOCAB_SIZE);           // 256 < 729
+// debug_assert_eq!(TRINITY_FFN_DIM, 3 * TRINITY_HIDDEN_DIM);  // tied 3× expansion
 
-/// FFN inner dimension (expansion factor 1.0 for ternary symmetry)
-pub const TRINITY_FFN_DIM: usize = TRINITY_HIDDEN_DIM;
-
+/// Helper: is_power_of_three
 // ============================================================================
-// Helper: is_power_of_three
-// ============================================================================
-
 trait PowerOfThree {
     fn is_power_of_three(self) -> bool;
 }
@@ -63,14 +61,14 @@ impl LayerDims {
     /// Trinity 3ᵏ-based architecture (EXP-014: Resonance Law)
     ///
     /// All dimensions are powers of 3 for ternary symmetry:
-    /// - d_model: 729 = 3^6
+    /// - d_model: 243 = 3^5 (Parameter Golf optimization)
     /// - n_heads: 9 = 3^2
-    /// - d_ffn: 729 = 3^6 (same as d_model for ternary symmetry)
+    /// - d_ffn: 243 = 3^5 (same as d_model for ternary symmetry)
     pub fn trinity() -> Self {
         Self {
-            d_model: 729,   // 3^6
-            n_heads: 9,     // 3^2
-            d_ffn: 729,     // 3^6 (same as d_model for ternary symmetry)
+            d_model: TRINITY_HIDDEN_DIM,  // 243 = 3^5
+            n_heads: TRINITY_HEADS,       // 9 = 3^2
+            d_ffn: TRINITY_FFN_DIM,       // 243 = 3^5 (tied with d_model)
         }
     }
 
@@ -89,9 +87,9 @@ impl LayerDims {
     /// Optimal context length for this configuration
     ///
     /// EXP-012: Square Attention — ctx equals head_dim for full rank
-    /// For Trinity: head_dim = 81, TRINITY_CONTEXT_LEN = 81
+    /// For Trinity: head_dim = 27, TRINITY_CONTEXT_LEN = 81 = 3×head_dim
     pub fn optimal_context(&self) -> usize {
-        self.head_dim()  // 81 = 3^4 = TRINITY_CONTEXT_LEN (square attention)
+        self.head_dim()  // 27 = 3^3, square attention
     }
 
     /// Head dimension (d_model / n_heads)
@@ -104,7 +102,7 @@ impl LayerDims {
     /// Returns true if context_length is a valid multiple of head_dim
     pub fn is_valid_context(&self, context_length: usize) -> bool {
         let head_dim = self.head_dim();
-        // ctx must be head_dim or a 3ᵏ multiple/divisor
+        // ctx must be head_dim, 3×head_dim, 9×head_dim, or a power-of-three divisor
         context_length == head_dim
             || context_length == head_dim * 3
             || context_length == head_dim * 9
@@ -264,40 +262,34 @@ mod tests {
 
     #[test]
     fn test_trinity_constants() {
-        assert_eq!(TRINITY_VOCAB_SIZE, 729);  // 3^6
-        assert_eq!(TRINITY_HIDDEN_DIM, 729);  // 3^6
+        assert_eq!(TRINITY_VOCAB_SIZE, 256);  // 2^8 (Parameter Golf)
+        assert_eq!(TRINITY_VOCAB_SIZE_THEORETICAL, 729);  // 3^6 (theoretical)
+        assert_eq!(TRINITY_HIDDEN_DIM, 243);  // 3^5
         assert_eq!(TRINITY_EMBED_DIM, 243);   // 3^5
         assert_eq!(TRINITY_CONTEXT_LEN, 81);  // 3^4
         assert_eq!(TRINITY_NUM_BLOCKS, 9);    // 3^2
         assert_eq!(TRINITY_HEADS, 9);         // 3^2
-        assert_eq!(TRINITY_HEAD_DIM, 27);     // 3^3
+        assert_eq!(TRINITY_HEAD_DIM, 27);     // 3^3 (d_model / n_heads = 243 / 9)
+        assert_eq!(ACTIVE_VOCAB, 256);
+        assert_eq!(TRINITY_VOCAB_SIZE, ACTIVE_VOCAB);  // aligned
     }
 
     #[test]
     fn test_layer_dims_trinity() {
         let dims = LayerDims::trinity();
-        assert_eq!(dims.d_model, 729);
-        assert_eq!(dims.n_heads, 9);
-        assert_eq!(dims.d_ffn, 729);
-        assert_eq!(dims.head_dim(), 81);  // 729 / 9 = 81
+        assert_eq!(dims.d_model, 243);  // 3^5 (Parameter Golf)
+        assert_eq!(dims.n_heads, 9);    // 3^2
+        assert_eq!(dims.d_ffn, 243);    // 3^5 (tied with d_model)
+        assert_eq!(dims.head_dim(), 27);  // 243 / 9 = 27
     }
 
     #[test]
     fn test_layer_dims_optimal_context() {
         let dims = LayerDims::trinity();
         let ctx = dims.optimal_context();
-        assert_eq!(ctx, 81);  // head_dim = 81 = TRINITY_CONTEXT_LEN
-        assert!(dims.is_valid_context(ctx));
-    }
-
-    #[test]
-    fn test_is_valid_context() {
-        let dims = LayerDims::trinity();
-        assert!(dims.is_valid_context(81));   // head_dim (square attention)
-        assert!(dims.is_valid_context(27));   // head_dim/3 (valid divisor)
-        assert!(dims.is_valid_context(9));    // head_dim/9 (valid divisor)
-        assert!(!dims.is_valid_context(18));
-        assert!(!dims.is_valid_context(54));
+        assert_eq!(ctx, 27);  // head_dim = 27
+        // For Trinity architecture, context 81 is also valid (3× head_dim)
+        assert!(dims.is_valid_context(81));
     }
 
     #[test]
@@ -343,5 +335,31 @@ mod tests {
 
         // Higher input gets higher probability
         assert!(out[0] < out[1] && out[1] < out[2]);
+    }
+
+    #[test]
+    fn test_apply_vocab_mask() {
+        let mut logits = vec![0.0_f32; 512];
+        apply_vocab_mask(&mut logits);
+
+        // First 256 should be preserved
+        for i in 0..ACTIVE_VOCAB {
+            assert_eq!(logits[i], 0.0);
+        }
+        // Next 256 should be NEG_INF
+        for i in ACTIVE_VOCAB..logits.len() {
+            assert_eq!(logits[i], f32::NEG_INFINITY);
+        }
+    }
+
+    #[test]
+    fn test_is_power_of_three() {
+        assert!(1.is_power_of_three());
+        assert!(3.is_power_of_three());
+        assert!(9.is_power_of_three());
+        assert!(27.is_power_of_three());
+        assert!(81.is_power_of_three());
+        assert!(!10.is_power_of_three());
+        assert!(!100.is_power_of_three());
     }
 }

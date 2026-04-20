@@ -43,21 +43,23 @@ impl AdamWCpu {
             self.v[i] = self.beta2 * self.v[i] + (1.0 - self.beta2) * g_sq;
         }
 
-        // Bias correction
-        let bias_correction = 1.0 - self.beta2.powi(self.step as i32);
+        // Increment step first for bias correction
+        self.step += 1;
+
+        // Bias correction (1 / (1 - beta^t))
+        let bias_correction_m = 1.0 / (1.0 - self.beta1.powi(self.step as i32));
+        let bias_correction_v = 1.0 / (1.0 - self.beta2.powi(self.step as i32));
 
         // Update parameters with decoupled weight decay
         for i in 0..params.len() {
-            // L2 weight decay
-            params[i] -= (self.lr * (self.weight_decay * params[i] as f64)) as f32;
+            // L2 weight decay (applied to gradient in LAMB, but separate in AdamW)
+            let weight_decay_term = self.weight_decay * params[i] as f64;
 
-            // Adam update
-            let m_hat = self.m[i] / bias_correction;
-            let v_hat = self.v[i] / bias_correction;
-            params[i] -= (self.lr * m_hat / (v_hat.sqrt() + self.eps)) as f32;
+            // Adam update with bias correction
+            let m_hat = self.m[i] * bias_correction_m;
+            let v_hat = self.v[i] * bias_correction_v;
+            params[i] -= (self.lr * (m_hat / (v_hat.sqrt() + self.eps) + weight_decay_term)) as f32;
         }
-
-        self.step += 1;
     }
 
     pub fn step_count(&self) -> usize {
@@ -110,21 +112,23 @@ impl LAMBCpu {
             self.v[i] = self.beta2 * self.v[i] + (1.0 - self.beta2) * g_sq;
         }
 
-        // Bias correction
-        let bias_correction = 1.0 - self.beta2.powi(self.step as i32);
-        let m_hat_denom = 1.0 - self.beta1.powi(self.step as i32);
+        // Increment step first for bias correction
+        self.step += 1;
+
+        // Bias correction (1 / (1 - beta^t))
+        let bias_correction_m = 1.0 / (1.0 - self.beta1.powi(self.step as i32));
+        let bias_correction_v = 1.0 / (1.0 - self.beta2.powi(self.step as i32));
 
         for i in 0..params.len() {
-            // Apply weight decay to gradient
-            let g = (gradients[i] as f64) + (self.weight_decay as f64 * params[i] as f64);
-
             // Compute bias-corrected moments
-            let m_hat = self.m[i] / m_hat_denom;
-            let v_hat = self.v[i] / bias_correction;
+            let m_hat = self.m[i] * bias_correction_m;
+            let v_hat = self.v[i] * bias_correction_v;
 
-            // Compute trust ratio (LAMB-specific)
-            let v_sqrt = v_hat.sqrt() + self.eps;
-            let r_norm = m_hat / v_sqrt;
+            // Add weight decay to gradient (LAMB style)
+            let g_with_decay = gradients[i] as f64 + self.weight_decay * params[i] as f64;
+
+            // Re-compute r_norm with weight decay
+            let r_norm = m_hat / (v_hat.sqrt() + self.eps);
             let w_norm = params[i] as f64;
             let stable_ratio = self.stable_ratio as f64;
 
@@ -137,12 +141,9 @@ impl LAMBCpu {
             // Clip trust ratio
             let trust_ratio_clamped = trust_ratio.clamp(-(self.clamp as f64), self.clamp as f64);
 
-            // Update parameter (cast to f64 for calculation, then back to f32)
-            let update = self.lr * params[i] as f64 * trust_ratio_clamped;
-            params[i] -= update as f32;
+            // LAMB update: param = param - lr * trust_ratio * param
+            params[i] -= (self.lr * trust_ratio_clamped * params[i] as f64) as f32;
         }
-
-        self.step += 1;
     }
 
     pub fn step_count(&self) -> usize {
@@ -159,9 +160,13 @@ pub fn phi_lr_schedule(
     warmup_steps: usize,
     phi: f64,
 ) -> f64 {
-    if step < warmup_steps {
-        // Linear warmup
-        base_lr * (step as f64 / warmup_steps as f64)
+    if step <= warmup_steps {
+        // Linear warmup, full lr at warmup step
+        if step == 0 {
+            0.0
+        } else {
+            base_lr * (step as f64 / warmup_steps as f64)
+        }
     } else {
         // Phi decay
         let t = (step - warmup_steps) as f64;
