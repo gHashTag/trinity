@@ -102,6 +102,15 @@ Each micro-repo is a standalone Zig package. To use any module independently:
 zig fetch --save https://github.com/gHashTag/zig-golden-float/archive/refs/heads/main.tar.gz
 ```
 
-## 📜 License
+## 📦 Model Documentation (Consolidated)
 
-MIT © gHashTag
+**Complete catalog of all model-related documentation:**
+
+**[docs/research/COMPLETE_MODEL_CATALOG.md](docs/research/COMPLETE_MODEL_CATALOG.md)**
+- JEPA-T (Ternary Joint Embedding Predictive Architecture)
+- Neural Cellular Automata (NCA)
+- VSA (Vector Symbolic Architecture)
+- Ternary Models
+- Hybrid Models
+
+## 📜 License
