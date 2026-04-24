@@ -1,24 +1,19 @@
 .{
-    .name = .trinity,
-    .version = "0.15.2",
+    .name = "trinity",
+    .version = "0.1.0",
+
     .dependencies = .{
-        .emsdk = .{
-            .url = "git+https://github.com/emscripten-core/emsdk?ref=4.0.9#3bcf1dcd01f040f370e10fe673a092d9ed79ebb5",
-            .hash = "N-V-__8AAJl1DwBezhYo_VE6f53mPVm00R-Fk28NPW7P14EQ",
+        .vsa = .{
+            .url = "https://github.com/gHashTag/zig-vsa/archive/main.tar.gz",
+            .hash = "12200000000000000000000000000000000000000000000000000000000000",
         },
-        .raylib = .{
-            .url = "git+https://github.com/raylib-zig/raylib-zig#cd71c85d571027ac8033357f83b124ee051825b3",
-            .hash = "raylib_zig-5.6.0-dev-KE8REENOBQC-m5nK7M2b5aKSIubJPbPLUYcRhT7aT3RN",
+        .hybrid = .{
+            .url = "https://github.com/gHashTag/zig-hybrid/archive/main.tar.gz",
+            .hash = "12200000000000000000000000000000000000000000000000000000000000",
         },
-        .zodd = .{
-            .url = "git+https://github.com/CogitatorTech/zodd#main",
-            .hash = "zodd-0.1.0-alpha.3-TJEk3Y7uAQDOkBXaPV_lynH1rF-eDwf9PnVc13MpPFym",
-        },
-        .zig_hdc = .{
-            .url = "git+https://github.com/gHashTag/zig-hdc#main",
-            .hash = "zig-hdc-0.1.0-????????????????????????????????????????",
+        .vm = .{
+            .url = "https://github.com/gHashTag/zig-vm/archive/main.tar.gz",
+            .hash = "12200000000000000000000000000000000000000000000000000000000000",
         },
     },
-    .paths = .{""},
-    .fingerprint = 0xa9f69745ba7ed82d,
 }

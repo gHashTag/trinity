@@ -4,7 +4,7 @@ This directory consolidates all documentation about model architectures and trai
 
 ## Structure
 
-- **[JEPAT/](./JEPAT/)** - Ternary Joint Embedding Predictive Architecture
+- **[JEPA-T/](./JEPA-T/)** - Ternary Joint Embedding Predictive Architecture
 - **[NCA/](./NCA/)** - Neural Cellular Automata
 - **[VSA/](./VSA/)** - Vector Symbolic Architecture
 - **[Ternary/](./Ternary/)** - Ternary computing and representation
@@ -13,9 +13,10 @@ This directory consolidates all documentation about model architectures and trai
 ## Quick Links
 
 ### JEPA-T
-- [Architecture](./JEPAT/architecture.md) - TrinityBlock, masks, EMA, MSE loss
-- [Parameters](./JEPAT/parameters.md) - Training configuration and multipliers
-- [Experiments](./JEPAT/experiments.md) - Experimental results (J-000, J-001)
+- [Architecture](./JEPA-T/architecture.md) - TrinityBlock, masks, EMA, MSE loss
+- [Parameters](./JEPA-T/parameters.md) - Training configuration and multipliers
+- [Experiments](./JEPA-T/experiments.md) - Experimental results (J-000, bugs fixed, implementation files)
+- [Next Experiments](./JEPA-T/next-experiments.md) - Planned work (J-001, H-001, ctx=81)
 
 ### Neural Cellular Automata (NCA)
 - [Architecture](./NCA/architecture.md) - Grid configuration, states, entropy
@@ -23,18 +24,13 @@ This directory consolidates all documentation about model architectures and trai
 - [Integration](./NCA/integration.md) - Multi-objective with JEPA/NTP
 
 ### VSA
-- [Overview](./VSA/overview.md) - Core VSA concepts and FPGA implementation
-- [Operations](./VSA/operations.md) - Quick reference for bind/unbind/bundle
-- [API Reference](./VSA/api.md) - Links to complete API docs
+- [Overview & Navigation](./VSA/README.md) - Links to API docs, tutorials, and cheat sheets
 
 ### Ternary Models
-- [Balanced Ternary](./Ternary/balanced-ternary.md) - Complete ternary guide (link)
-- [Representation ADR](./Ternary/representation.md) - Packed trit encoding (link)
+- [Overview & Navigation](./Ternary/README.md) - Links to complete ternary guide and ADR
 
 ### Hybrid Models
-- [API Reference](./Hybrid/api.md) - HybridBigInt API (link)
-- [v2.0 Report](./Hybrid/v2.0-report.md) - Implementation report from gh-pages
-- [v2.1 Report](./Hybrid/v2.1-report.md) - Latest improvements report
+- [Overview & Navigation](./Hybrid/README.md) - Links to HybridBigInt API and reports
 
 ## Related Documentation
 
@@ -45,4 +41,4 @@ This directory consolidates all documentation about model architectures and trai
 
 ---
 
-**Last updated:** 2026-04-24
+**Last updated:** 2026-04-24 (consolidated JEPA-T, simplified VSA/Ternary/Hybrid)

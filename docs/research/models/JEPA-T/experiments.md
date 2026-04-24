@@ -32,13 +32,28 @@
 - **Time:** 179s
 - **Conclusion:** JEPA backward/optimizer work, encoder learns real representations
 
-## J-001: Planned (50K steps)
+### Bugs Fixed
 
-**Status:** Not yet executed
+The following bugs were discovered and fixed during J-000 development:
 
-**Goal:** Same configuration as J-000, longer run (50K steps)
+| Bug | Symptom | Fix |
+|-----|---------|-----|
+| No backward pass in JEPA | MSE flat at 1.95 for 5K steps | Added backward() + optimizer step to trainStep() |
+| Hybrid resume crash | EndOfStream on checkpoint load | Graceful EOF catch in loadCheckpointOpt() |
+| Hybrid runs 0 NTP steps | resume_step == total_steps | Pass jepa_steps + ntp_steps as total |
+| W7 all killed (EXP-025) | 72 runs killed by aggressive thresholds | Relaxed defaults + configurable `--kill-ppl-*` flags |
 
-See [parameters.md](./parameters.md) for full configuration details.
+### Implementation Files
+
+The JEPA-T implementation consists of the following source files:
+
+- **`src/hslm/ema.zig`** - Exponential Moving Average (EMA) synchronization
+- **`src/hslm/mask.zig`** - Mask configuration and generation
+- **`src/hslm/mse_loss.zig`** - MSE loss computation (anti-collapse)
+- **`src/hslm/tjepa.zig`** - Core T-JEPA architecture
+- **`src/hslm/tjepa_trainer.zig`** - Training loop and backward pass
+
+See [Daily Report](../../../lab/papers/2026-03-15-hslm-tjepa.md) for implementation details.
 
 ## References
 

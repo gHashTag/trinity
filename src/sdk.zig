@@ -4,11 +4,18 @@
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 
 const std = @import("std");
-const trinity = @import("trinity.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa/root.zig"); // Use wrapper to resolve vsa.zig
+const hybrid = @import("vsa_hybrid/hybrid.zig");
 
-pub const HybridBigInt = trinity.HybridBigInt;
-pub const Trit = trinity.Trit;
+// Import types directly to avoid circular dependency with trinity.zig
+pub const HybridBigInt = hybrid.HybridBigInt;
+
+/// Trit type {-1, 0, +1}
+pub const Trit = enum(i8) {
+    neg = -1,
+    zero = 0,
+    pos = 1,
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HYPERVECTOR - Main abstraction for developers
@@ -57,21 +64,22 @@ pub const Hypervector = struct {
     pub fn get(self: *Self, index: usize) Trit {
         self.data.ensureUnpacked();
         if (index >= self.data.trit_len) return 0;
-        return self.data.unpacked_cache[index];
+        // Convert i8 to Trit enum
+        return @enumFromInt(self.data.unpacked_cache[index]);
     }
 
     /// Set trit at position
     pub fn set(self: *Self, index: usize, value: Trit) void {
         self.data.ensureUnpacked();
         if (index < self.data.trit_len) {
-            self.data.unpacked_cache[index] = value;
+            self.data.unpacked_cache[index] = @intFromEnum(value);
             self.data.dirty = true;
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
     // VSA OPERATIONS
-    // ═══════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
 
     /// Bind two hypervectors (creates association)
     /// bind(A, B) represents "A associated with B"
@@ -108,9 +116,9 @@ pub const Hypervector = struct {
         return Self{ .data = vsa.inversePermute(&self.data, k) };
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
     // SIMILARITY MEASURES
-    // ═══════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
 
     /// Cosine similarity [-1, 1]
     pub fn similarity(self: *Self, other: *Self) f64 {
@@ -132,9 +140,9 @@ pub const Hypervector = struct {
         return vsa.dotSimilarity(&self.data, &other.data);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
     // UTILITY
-    // ═══════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
 
     /// Count non-zero trits (sparsity measure)
     pub fn countNonZero(self: *Self) usize {
@@ -541,13 +549,10 @@ test "Hypervector bind/unbind" {
     var b = Hypervector.random(256, 22222);
 
     // bind then unbind should recover original
-    // Note: For random vectors with zeros, recovery is approximate
-    // because trit * 0 * 0 = 0, not original trit
     var bound = a.bind(&b);
     var recovered = bound.unbind(&b);
 
     const sim = a.similarity(&recovered);
-    // With ~1/3 zeros in random vectors, expect ~2/3 recovery
     try std.testing.expect(sim > 0.5);
 }
 
@@ -578,13 +583,8 @@ test "SequenceEncoder" {
     // Probe should find elements at correct positions
     const sim_a_0 = encoder.probe(&sequence, &a, 0);
     const sim_a_1 = encoder.probe(&sequence, &a, 1);
-    // Use b and c to avoid unused variable warnings
-    const sim_b_1 = encoder.probe(&sequence, &b, 1);
-    const sim_c_2 = encoder.probe(&sequence, &c, 2);
 
     try std.testing.expect(sim_a_0 > sim_a_1);
-    try std.testing.expect(sim_b_1 > 0.0 or sim_b_1 <= 0.0); // Just use the value
-    try std.testing.expect(sim_c_2 > 0.0 or sim_c_2 <= 0.0);
 }
 
 test "AssociativeMemory" {
@@ -598,6 +598,5 @@ test "AssociativeMemory" {
     var retrieved = memory.retrieve(&key);
     const sim = retrieved.similarity(&value);
 
-    // Retrieved should be similar to stored value
     try std.testing.expect(sim > 0.2);
 }

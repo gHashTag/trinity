@@ -13,12 +13,21 @@
 [submodule "vendor/trinity-brain"]
 	path = vendor/trinity-brain
 	url = https://github.com/gHashTag/zig-brain
-[submodule "vendor/zig-crypto-mining"]
-	path = vendor/zig-crypto-mining
-	url = https://github.com/gHashTag/zig-crypto-mining
+# [submodule "vendor/zig-crypto-mining"]
+# 	path = vendor/zig-crypto-mining
+# 	url = https://github.com/gHashTag/zig-crypto-mining
 [submodule "crates/trios-hdc/vendor/zig-hdc"]
 	path = crates/trios-hdc/vendor/zig-hdc
 	url = https://github.com/gHashTag/zig-hdc
 [submodule "crates/trios-physics/vendor/zig-physics"]
 	path = crates/trios-physics/vendor/zig-physics
 	url = https://github.com/gHashTag/zig-physics
+[submodule "vendor/zig-vsa"]
+	path = vendor/zig-vsa
+	url = https://github.com/gHashTag/zig-vsa
+[submodule "vendor/zig-hybrid"]
+	path = vendor/zig-hybrid
+	url = https://github.com/gHashTag/zig-hybrid
+[submodule "vendor/zig-vm"]
+	path = vendor/zig-vm
+	url = https://github.com/gHashTag/zig-vm

@@ -180,28 +180,6 @@ impl TrainConfig {
         }
     }
 
-    /// Get minimal configuration (small model for fast testing)
-    pub fn minimal() -> Self {
-        Self {
-            max_steps: 1000,
-            batch_size: 4,
-            seq_len: 27,
-            learning_rate: 1e-3,
-            warmup_steps: 50,
-            grad_clip: 1.0,
-            log_every: 100,
-            checkpoint_path: "minimal.bin".to_string(),
-            dims: LayerDims {
-                d_model: 243,
-                n_heads: 9,
-                d_ffn: 243,
-            },
-            lr_schedule: LrSchedule::default(),
-            kill_thresholds: KillThresholds::default(),
-            weight_decay: 0.01,
-            dropout: 0.1,
-        }
-    }
 }
 
 impl Default for TrainConfig {
