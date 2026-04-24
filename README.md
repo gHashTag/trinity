@@ -168,6 +168,7 @@ zig build bench-mnist && ./.zig-cache/o/*/bench-mnist --weights=mnist_mlp_784x12
 ls results/quant_*.csv results/arith_*.csv results/nn_*.csv results/mnist_*.csv
 ```
 
+<<<<<<< HEAD
 ### Documentation
 
 - **[Phase 1 Methodology](docs/research/phase1_methodology.md)** — Full experimental protocol
@@ -1248,3 +1249,16 @@ MIT -- see [LICENSE](LICENSE)
   <code>φ² + 1/φ² = 3 = TRINITY</code><br>
   <code>v5.1.0 HEARTBEAT — 28 March 2026</code>
 </p>
+
+---
+
+## 📦 Model Documentation (Consolidated)
+
+**Complete catalog of all model-related documentation:**
+
+**[docs/research/COMPLETE_MODEL_CATALOG.md](docs/research/COMPLETE_MODEL_CATALOG.md)**
+- JEPA-T (Ternary Joint Embedding Predictive Architecture)
+- Neural Cellular Automata (NCA)
+- VSA (Vector Symbolic Architecture)
+- Ternary Models
+- Hybrid Models
