@@ -159,15 +159,22 @@ fxload -t fx2 -I ./fpga/openxc7-synth/xc7a-xc7s-ftdi.hex -d 0x0013
 
 ## Training & Models
 
+### Model Documentation (Consolidated)
+
+| Category | Location | Description |
+|----------|----------|-------------|
+| **[Complete Models Documentation](research/models/)** | **NEW**: Consolidated reference for all model types |
+| ├── JEPAT | Ternary Joint Embedding Predictive Architecture |
+| ├── NCA | Neural Cellular Automata |
+| ├── VSA | Vector Symbolic Architecture |
+| ├── Ternary | Ternary computing and representation |
+| └── Hybrid | Hybrid BigInt and arithmetic |
+
 ### HSLM Training
 
 | File | Description |
 |------|-------------|
-| [`lab/papers/hslm/draft.md`](lab/papers/hslm/draft.md) | HSLM paper draft |
-| [`lab/papers/hslm/training-review-mar10-14.md`](lab/papers/hslm/training-review-mar10-14.md) | Training review |
-| [`lab/papers/hslm/golden-config.md`](lab/papers/hslm/golden-config.md) | Best configuration |
-| [`lab/papers/hslm/seed-variance-study.md`](lab/papers/hslm/seed-variance-study.md) | Seed variance analysis |
-| [`lab/papers/hslm/ouroboros-recovery.md`](lab/papers/hslm/ouroboros-recovery.md) | Recovery mechanisms |
+| [`experiments/FOUND_EXPERIMENTS_SUMMARY.md`](experiments/FOUND_EXPERIMENTS_SUMMARY.md) | Experimental results (NTP, JEPA, NCA parameters) |
 
 ### JEPA & T-JEPA
 
@@ -175,7 +182,9 @@ fxload -t fx2 -I ./fpga/openxc7-synth/xc7a-xc7s-ftdi.hex -d 0x0013
 |--------|--------|
 | `src/hslm/tjepa.zig` | ✅ Implemented |
 | `src/hslm/tjepa_trainer.zig` | ✅ Implemented |
-| Documentation | ⚠️ Needs update (marked as pending in some docs, but actually implemented) |
+| `crates/trios-train-cpu/src/tjepa.rs` | ✅ Implemented (Rust backend) |
+| `crates/trios-train-cpu/src/objective.rs` | ✅ Implemented (multi-objective) |
+| Documentation | ✅ Consolidated in research/models/JEPAT/ |
 
 ### Farm Management
 
