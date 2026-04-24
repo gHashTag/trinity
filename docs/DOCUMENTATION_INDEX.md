@@ -164,7 +164,7 @@ fxload -t fx2 -I ./fpga/openxc7-synth/xc7a-xc7s-ftdi.hex -d 0x0013
 | Category | Location | Description |
 |----------|----------|-------------|
 | **[Complete Models Documentation](research/models/)** | **NEW**: Consolidated reference for all model types |
-| ├── JEPAT | Ternary Joint Embedding Predictive Architecture |
+| ├── JEPA-T | Ternary Joint Embedding Predictive Architecture |
 | ├── NCA | Neural Cellular Automata |
 | ├── VSA | Vector Symbolic Architecture |
 | ├── Ternary | Ternary computing and representation |
@@ -184,7 +184,7 @@ fxload -t fx2 -I ./fpga/openxc7-synth/xc7a-xc7s-ftdi.hex -d 0x0013
 | `src/hslm/tjepa_trainer.zig` | ✅ Implemented |
 | `crates/trios-train-cpu/src/tjepa.rs` | ✅ Implemented (Rust backend) |
 | `crates/trios-train-cpu/src/objective.rs` | ✅ Implemented (multi-objective) |
-| Documentation | ✅ Consolidated in research/models/JEPAT/ |
+| Documentation | ✅ Consolidated in research/models/JEPA-T/ |
 
 ### Farm Management
 
