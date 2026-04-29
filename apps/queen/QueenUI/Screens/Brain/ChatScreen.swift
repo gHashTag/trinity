@@ -1967,20 +1967,13 @@ struct ChatScreen: View {
 
     private var inputBarView: some View {
         HStack(spacing: ParietalSpacing.md) {
-            MultilineInput(
+            SimpleMultilineInput(
                 text: $input,
                 placeholder: placeholder,
                 isFocused: $focused,
-                onSubmit: { send() },
-                onImagePaste: { name, path in
-                    attachedFiles.append((name: name, content: "[Image: \(name)]"))
-                },
-                onMentionTrigger: { query in
-                    mentionQuery = query ?? ""
-                    showMentionPopup = query != nil
-                }
+                onSubmit: { send() }
             )
-            .frame(maxWidth: 600)  // FIXED: prevent oversized input width
+            .frame(maxWidth: 600)
             .layoutPriority(1)
 
             Button {
@@ -7713,5 +7706,40 @@ struct ThreadLoadingSkeleton: View {
             value: shimmer
         )
         .onAppear { shimmer = true }
+    }
+}
+
+struct SimpleMultilineInput: View {
+    @Binding var text: String
+    var placeholder: String
+    @FocusState.Binding var isFocused: Bool
+    var onSubmit: () -> Void
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundColor(.white.opacity(0.3))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 10)
+                    .allowsHitTesting(false)
+            }
+
+            TextEditor(text: $text)
+                .scrollContentBackground(.hidden)
+                .foregroundColor(.white)
+                .font(.system(size: 15))
+                .padding(.horizontal, 4)
+                .padding(.vertical, 4)
+                .focused($isFocused)
+                .onKeyPress(.return, modifiers: .shift) {
+                    return .ignored
+                }
+                .onKeyPress(.return) {
+                    onSubmit()
+                    return .handled
+                }
+        }
+        .frame(minHeight: 40, maxHeight: 150)
     }
 }
