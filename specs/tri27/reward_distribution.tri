@@ -1,0 +1,121 @@
+# TRI-27 Reward Distribution — Source of Truth
+# Issue: #444
+# phi^2 + 1/phi^2 = 3 | TRINITY
+
+name: reward_distribution
+version: "1.0.0"
+module: tri27.reward
+description: "Reward distribution system for TRI-27 stakers"
+
+types:
+  RewardConfig:
+    description: "Reward distribution parameters"
+    fields:
+      - name: emission_rate
+        type: u128
+        description: "Tokens emitted per second"
+      - name: treasury_share_bps
+        type: u16
+        description: "Treasury share in basis points"
+      - name: staker_share_bps
+        type: u16
+        description: "Staker share in basis points"
+      - name: team_share_bps
+        type: u16
+        description: "Team share in basis points"
+
+  RewardEpoch:
+    description: "A reward distribution epoch"
+    fields:
+      - name: epoch_id
+        type: u64
+        description: "Sequential epoch number"
+      - name: start_time
+        type: i64
+        description: "Epoch start timestamp"
+      - name: end_time
+        type: i64
+        description: "Epoch end timestamp"
+      - name: total_rewards
+        type: u128
+        description: "Total rewards distributed"
+      - name: staker_count
+        type: u32
+        description: "Number of stakers receiving rewards"
+
+constants:
+  DISTRIBUTION_INTERVAL:
+    type: i64
+    value: 86400
+    description: "Daily reward distribution"
+
+  TREASURY_BPS:
+    type: u16
+    value: 3000
+    description: "30% to treasury"
+
+  STAKER_BPS:
+    type: u16
+    value: 6000
+    description: "60% to stakers"
+
+  TEAM_BPS:
+    type: u16
+    value: 1000
+    description: "10% to team"
+
+  TOTAL_BPS:
+    type: u16
+    value: 10000
+    description: "Must sum to 100%"
+
+functions:
+  distribute_epoch:
+    description: "Distribute rewards for an epoch"
+    params:
+      - name: epoch_id
+        type: u64
+    returns: RewardEpoch
+
+  calculate_staker_reward:
+    description: "Calculate individual staker reward"
+    params:
+      - name: staker
+        type: "[32]u8"
+      - name: epoch_id
+        type: u64
+    returns: u128
+
+  get_reward_history:
+    description: "Get reward history for staker"
+    params:
+      - name: staker
+        type: "[32]u8"
+      - name: limit
+        type: u32
+    returns: "[]RewardEpoch"
+
+tests:
+  test_shares_sum_to_100:
+    description: "Distribution shares sum to 100%"
+    assertions:
+      - "TREASURY_BPS + STAKER_BPS + TEAM_BPS == TOTAL_BPS"
+
+  test_staker_reward_proportional:
+    description: "Staker reward proportional to stake"
+    assertions:
+      - "stake(A) > stake(B) implies reward(A) > reward(B)"
+
+  test_epoch_distributes_total:
+    description: "Epoch distributes full allocation"
+    assertions:
+      - "sum(epoch rewards) == total_rewards"
+
+invariants:
+  shares_sum_to_10000:
+    description: "Distribution shares always sum to 100%"
+    expression: "TREASURY_BPS + STAKER_BPS + TEAM_BPS == 10000"
+
+  no_negative_rewards:
+    description: "Rewards are never negative"
+    expression: "forall e: RewardEpoch :: e.total_rewards >= 0"
