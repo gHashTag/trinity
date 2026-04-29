@@ -52,10 +52,10 @@ types:
       type_param_extractor: string
 
   GenericTypeCache:
-    description: "Кэш для разобранных generic типов"
+    description: "Cache for resolved generic types"
     fields:
-      resolved: map<string, ZigType>
-      pending: list<string>
+      resolved: std.StringHashMap(ZigType)
+      pending: std.ArrayList([]const u8)
 
   ZigType:
     description: "Представление Zig типа"
@@ -69,7 +69,7 @@ types:
 
   # Emitter — генерирует Zig код
   CodeEmitter:
-    description: "Эмиттер Zig кода с полной поддержкой всех фич"
+    description: "Emits Zig code with full feature support"
     fields:
       allocator: Allocator
       type_resolver: TypeResolver
@@ -77,14 +77,14 @@ types:
       naming_convention: NamingConvention
 
   ImportTracker:
-    description: "Отслеживает необходимые импорты"
+    description: "Tracks required imports"
     fields:
-      stdlib_imports: set<string>
-      local_imports: set<string>
-      module_aliases: map<string, string>
+      stdlib_imports: std.StringHashMap(void)
+      local_imports: std.StringHashMap(void)
+      module_aliases: std.StringHashMap([]const u8)
 
   NamingConvention:
-    description: "Правила именования"
+    description: "Naming rules"
     fields:
       function_style: string  # camelCase | snake_case
       struct_style: string    # PascalCase | camelCase
@@ -127,12 +127,10 @@ behaviors:
     when: "resolve_type_full вызывается"
     implementation: |
       pub fn resolveTypeFull(vibee_type: []const u8, allocator: Allocator, resolver: *TypeResolver) ![]const u8 {
-          // Проверяем кэш
           if (resolver.generic_cache.resolved.get(vibee_type)) |cached| {
               return allocator.dupe(u8, cached.zig_code);
           }
 
-          // Обрабатываем примитивные типы
           if (std.mem.eql(u8, vibee_type, "string")) return allocator.dupe(u8, "[]const u8");
           if (std.mem.eql(u8, vibee_type, "float")) return allocator.dupe(u8, "f32");
           if (std.mem.eql(u8, vibee_type, "int")) return allocator.dupe(u8, "i32");
