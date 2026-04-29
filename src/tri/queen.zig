@@ -861,6 +861,13 @@ const SupervisorConfig = struct {
 // PID FILE MANAGEMENT
 // ═══════════════════════════════════════════════════════════════════════════════
 
+const SupervisorPidState = struct {
+    pid: i32,
+    started_at: i64,
+    heartbeat: i64,
+    restart_count: u32,
+};
+
 fn writePidFile() !void {
     const pid = std.posix.getpid();
     const dir = std.fs.cwd().makeOpenPath(".trinity/queen", .{}) catch |err| {
@@ -869,11 +876,75 @@ fn writePidFile() !void {
     };
     defer dir.close();
 
+    const now = std.time.timestamp();
     var file = try dir.createFile("supervisor.pid", .{ .truncate = true });
     defer file.close();
-    var buf: [32]u8 = undefined;
-    const pid_str = std.fmt.bufPrint(&buf, "{d}", .{pid}) catch return error.InvalidPid;
-    try file.writeAll(pid_str);
+    var buf: [256]u8 = undefined;
+    const json = std.fmt.bufPrint(&buf,
+        \\{{"pid":{d},"started_at":{d},"heartbeat":{d},"restart_count":0}}
+    , .{ pid, now, now }) catch return error.InvalidPid;
+    try file.writeAll(json);
+}
+
+fn updateHeartbeat() void {
+    const dir = std.fs.cwd().openDir(".trinity/queen", .{}) catch return;
+    defer dir.close();
+    var file = dir.openFile("supervisor.pid", .{ .mode = .read_write }) catch return;
+    defer file.close();
+
+    var read_buf: [256]u8 = undefined;
+    const n = file.readAll(&read_buf) catch return;
+    const content = read_buf[0..n];
+
+    var pid: i32 = 0;
+    var started_at: i64 = 0;
+    var restart_count: u32 = 0;
+    var parser = std.mem.splitSequence(u8, content[1 .. content.len - 1], ",");
+    while (parser.next()) |pair| {
+        var kv = std.mem.splitSequence(u8, pair, ":");
+        const key = std.mem.trim(u8, kv.first(), " \"");
+        const val = kv.next() orelse continue;
+        if (std.mem.eql(u8, key, "pid")) pid = std.fmt.parseInt(i32, val, 10) catch 0;
+        if (std.mem.eql(u8, key, "started_at")) started_at = std.fmt.parseInt(i64, val, 10) catch 0;
+        if (std.mem.eql(u8, key, "restart_count")) restart_count = std.fmt.parseInt(u32, val, 10) catch 0;
+    }
+
+    const now = std.time.timestamp();
+    var buf: [256]u8 = undefined;
+    const json = std.fmt.bufPrint(&buf,
+        \\{{"pid":{d},"started_at":{d},"heartbeat":{d},"restart_count":{d}}}
+    , .{ pid, started_at, now, restart_count }) catch return;
+    file.seekTo(0) catch return;
+    file.setEndPos(0) catch return;
+    file.writeAll(json) catch return;
+}
+
+fn readPidState() ?SupervisorPidState {
+    const file = std.fs.cwd().openFile(qt.SUPERVISOR_PID_PATH, .{}) catch return null;
+    defer file.close();
+
+    var buf: [256]u8 = undefined;
+    const n = file.readAll(&buf) catch return null;
+    const content = buf[0..n];
+
+    if (content.len > 0 and content[0] == '{') {
+        var state = SupervisorPidState{ .pid = 0, .started_at = 0, .heartbeat = 0, .restart_count = 0 };
+        var parser = std.mem.splitSequence(u8, content[1 .. content.len - 1], ",");
+        while (parser.next()) |pair| {
+            var kv = std.mem.splitSequence(u8, pair, ":");
+            const key = std.mem.trim(u8, kv.first(), " \"");
+            const val = kv.next() orelse continue;
+            if (std.mem.eql(u8, key, "pid")) state.pid = std.fmt.parseInt(i32, val, 10) catch 0;
+            if (std.mem.eql(u8, key, "started_at")) state.started_at = std.fmt.parseInt(i64, val, 10) catch 0;
+            if (std.mem.eql(u8, key, "heartbeat")) state.heartbeat = std.fmt.parseInt(i64, val, 10) catch 0;
+            if (std.mem.eql(u8, key, "restart_count")) state.restart_count = std.fmt.parseInt(u32, val, 10) catch 0;
+        }
+        return state;
+    }
+
+    // Legacy: plain PID number
+    const pid = std.fmt.parseInt(i32, content, 10) catch return null;
+    return SupervisorPidState{ .pid = pid, .started_at = 0, .heartbeat = 0, .restart_count = 0 };
 }
 
 fn removePidFile() void {
@@ -881,19 +952,9 @@ fn removePidFile() void {
 }
 
 fn isSupervisorRunning() bool {
-    const file = std.fs.cwd().openFile(qt.SUPERVISOR_PID_PATH, .{}) catch return false;
-    defer file.close();
-
-    var buf: [32]u8 = undefined;
-    const n = file.read(&buf) catch return false;
-    if (n == 0) return false;
-
-    const pid_str = buf[0..n];
-    const pid = std.fmt.parseInt(i32, pid_str, 10) catch return false;
-
-    // Check if process is running by sending signal 0
-    // Returns void on success (process exists), error on failure
-    std.posix.kill(pid, 0) catch return false;
+    const state = readPidState() orelse return false;
+    if (state.pid == 0) return false;
+    std.posix.kill(state.pid, 0) catch return false;
     return true;
 }
 
@@ -1667,9 +1728,19 @@ fn showStatus(allocator: Allocator) !void {
     const hours = @divTrunc(uptime, 3600);
     const minutes = @divTrunc(@mod(uptime, 3600), 60);
 
+    var heartbeat_str: []const u8 = "N/A";
+    var hb_buf: [64]u8 = undefined;
+    if (readPidState()) |pid_state| {
+        if (pid_state.heartbeat > 0) {
+            const hb_age = std.time.timestamp() - pid_state.heartbeat;
+            heartbeat_str = std.fmt.bufPrint(&hb_buf, "{d}s ago", .{hb_age}) catch "N/A";
+        }
+    }
+
     print("\n{s}" ++ qt.E_CROWN ++ " Queen v2 Status{s}\n\n" ++
         "  Cycle:     {d}\n" ++
         "  Uptime:    {d}h {d}m\n" ++
+        "  Heartbeat: {s}\n" ++
         "  Build:     {s}{s}{s}\n" ++
         "  Dirty:     {d}\n" ++
         "  Issues:    {d}\n" ++
@@ -1686,6 +1757,7 @@ fn showStatus(allocator: Allocator) !void {
         state.cycle,
         hours,
         minutes,
+        heartbeat_str,
         if (snap.build_ok) GREEN else RED,
         if (snap.build_ok) "OK" else "FAIL",
         RESET,
