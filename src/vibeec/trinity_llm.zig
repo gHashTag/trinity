@@ -528,14 +528,14 @@ test "trinity block init" {
 test "trinity llm init" {
     var model = try TrinityLLM.init(
         std.testing.allocator,
-        256, // vocab_size
-        64, // hidden_size
-        2, // num_layers
-        4, // num_heads
-        128, // intermediate_size
+        729, // vocab_size = 3^6 (Trinity padded)
+        243, // hidden_size = 3^5
+        9, // num_layers = 3^2
+        9, // num_heads = 3^2
+        729, // intermediate_size = 3 x hidden
     );
     defer model.deinit();
 
-    try std.testing.expectEqual(@as(usize, 256), model.vocab_size);
-    try std.testing.expectEqual(@as(usize, 2), model.num_layers);
+    try std.testing.expectEqual(@as(usize, 729), model.vocab_size);
+    try std.testing.expectEqual(@as(usize, 9), model.num_layers);
 }
