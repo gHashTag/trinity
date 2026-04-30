@@ -7,7 +7,7 @@ pub fn finiteDiffGradient(
     input: []const f32,
     epsilon: f32,
 ) !FiniteDiffResult {
-    var network = tnn.TrainableTNN.init(allocator, layer_sizes);
+    var network = try tnn.TrainableTNN.initWithLayers(allocator, layer_sizes);
     defer network.deinit();
 
     const output = try network.forward(allocator, input);
@@ -101,7 +101,7 @@ test "finite-diff gradient check passes for small TNN" {
     const allocator = std.testing.allocator;
 
     const layer_sizes = [_]usize{ 3, 4, 2 };
-    var network = tnn.TrainableTNN.init(allocator, &layer_sizes);
+    var network = try tnn.TrainableTNN.initWithLayers(allocator, &layer_sizes);
     defer network.deinit();
 
     const input = [_]f32{ 0.5, -0.3, 0.8 };
@@ -148,7 +148,7 @@ test "finiteDiffSingleParam returns correct gradient direction" {
     const allocator = std.testing.allocator;
 
     const layer_sizes = [_]usize{ 2, 3, 1 };
-    var network = tnn.TrainableTNN.init(allocator, &layer_sizes);
+    var network = try tnn.TrainableTNN.initWithLayers(allocator, &layer_sizes);
     defer network.deinit();
 
     const input = [_]f32{ 1.0, 0.0 };
