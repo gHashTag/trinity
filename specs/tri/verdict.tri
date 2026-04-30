@@ -1,0 +1,82 @@
+name: tri_verdict
+version: "1.0.0"
+language: zig
+module: tri.verdict
+
+description: |
+  Verdict system for TRI pipeline. Evaluates test results, build status,
+  and code quality to produce a PASS/FAIL/WARN verdict with confidence score.
+
+  phi^2 + 1/phi^2 = 3 | TRINITY
+
+types:
+  VerdictInput:
+    fields:
+      - name: tests_passed
+        type: usize
+      - name: tests_failed
+        type: usize
+      - name: tests_skipped
+        type: usize
+      - name: build_ok
+        type: bool
+      - name: lint_warnings
+        type: usize
+      - name: coverage_percent
+        type: f64
+
+  VerdictReport:
+    fields:
+      - name: verdict
+        type: "[]const u8"
+        description: "PASS / FAIL / WARN / TOXIC_FAIL"
+      - name: confidence
+        type: f64
+        description: "0.0 to 1.0"
+      - name: score
+        type: usize
+        description: "0-100"
+      - name: reasons
+        type: "[][]const u8"
+        description: "List of reason strings"
+      - name: timestamp
+        type: "[]const u8"
+
+behaviors:
+  - name: evaluate
+    given: "A VerdictInput with test/build/lint results"
+    when: "User runs `tri verdict [--toxic]`"
+    then: |
+      Applies verdict rules:
+      1. build_ok=false → FAIL (confidence 1.0)
+      2. tests_failed > 0 → FAIL
+      3. coverage < 80% → WARN
+      4. lint_warnings > 10 → WARN
+      5. All green → PASS (confidence 1.0)
+      With --toxic: FAIL becomes TOXIC_FAIL with full stacktrace.
+
+  - name: saveHistory
+    given: "A VerdictReport"
+    when: "Verdict is finalized"
+    then: "Appends to .trinity/verdict_history.json with timestamp and hash."
+
+tests:
+  - name: "verdict_pass_when_all_green"
+    given: "All tests pass, build OK, no lint warnings, 95% coverage"
+    expect: "verdict == 'PASS' and confidence == 1.0"
+
+  - name: "verdict_fail_on_build_failure"
+    given: "build_ok == false"
+    expect: "verdict == 'FAIL'"
+
+  - name: "verdict_warn_on_low_coverage"
+    given: "All tests pass but coverage < 80%"
+    expect: "verdict == 'WARN'"
+
+  - name: "verdict_toxic_mode"
+    given: "Any failure with --toxic flag"
+    expect: "verdict == 'TOXIC_FAIL' and reasons.len > 0"
+
+invariants:
+  - "forall v: VerdictReport :: 0.0 <= v.confidence <= 1.0"
+  - "forall v: VerdictReport :: v.score <= 100"

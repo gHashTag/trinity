@@ -1,0 +1,129 @@
+name: tri_bot_phase3
+version: "1.0.0"
+language: zig
+module: tri.bot
+
+description: |
+  tri-bot Phase 3 commands: /worktree, /pr, /board.
+  Telegram bot integration for Trinity agent management.
+
+  phi^2 + 1/phi^2 = 3 | TRINITY
+
+types:
+  BotCommand:
+    fields:
+      - name: name
+        type: "[]const u8"
+      - name: args
+        type: "[][]const u8"
+      - name: chat_id
+        type: i64
+
+  WorktreeInfo:
+    fields:
+      - name: name
+        type: "[]const u8"
+      - name: path
+        type: "[]const u8"
+      - name: branch
+        type: "[]const u8"
+      - name: created
+        type: bool
+
+  PRInfo:
+    fields:
+      - name: number
+        type: usize
+      - name: title
+        type: "[]const u8"
+      - name: url
+        type: "[]const u8"
+      - name: state
+        type: "[]const u8"
+      - name: additions
+        type: usize
+      - name: deletions
+        type: usize
+
+  BoardItem:
+    fields:
+      - name: issue_number
+        type: usize
+      - name: title
+        type: "[]const u8"
+      - name: status
+        type: "[]const u8"
+      - name: labels
+        type: "[][]const u8"
+
+commands:
+  worktree:
+    description: "Create a git worktree for parallel tasks"
+    usage: "/worktree <name>"
+    params:
+      - name: name
+        type: "[]const u8"
+    returns: WorktreeInfo
+    behavior: |
+      1. Run `git worktree add ../<name> -b <name>`
+      2. Return WorktreeInfo with path and branch
+      3. Send confirmation to Telegram chat
+
+  pr_create:
+    description: "Create PR from current branch"
+    usage: "/pr [number]"
+    params:
+      - name: number
+        type: "?usize"
+    returns: PRInfo
+    behavior: |
+      Without number:
+        1. Detect current branch
+        2. Run `gh pr create --fill`
+        3. Return PRInfo with URL
+      With number:
+        1. Run `gh pr view <number>`
+        2. Return PRInfo with details
+
+  board:
+    description: "Show GitHub project board status"
+    usage: "/board"
+    params: []
+    returns: "[]BoardItem"
+    behavior: |
+      1. Run `gh issue list --limit 20 --json number,title,labels,state`
+      2. Format as task list
+      3. Send to Telegram chat
+
+behaviors:
+  - name: handleWorktree
+    given: "BotCommand with /worktree <name>"
+    when: "User requests worktree creation via Telegram"
+    then: "Creates git worktree, returns WorktreeInfo, sends confirmation."
+
+  - name: handlePR
+    given: "BotCommand with /pr [number]"
+    when: "User requests PR creation or review"
+    then: "Creates or views PR, returns PRInfo, sends summary to Telegram."
+
+  - name: handleBoard
+    given: "BotCommand with /board"
+    when: "User requests project board view"
+    then: "Lists open issues with labels, formats as task list, sends to Telegram."
+
+tests:
+  - name: "worktree_creates_branch"
+    given: "/worktree feature-x command"
+    expect: "worktree.branch == 'feature-x' and worktree.created == true"
+
+  - name: "pr_creates_from_current"
+    given: "/pr command without number on branch feat/test"
+    expect: "pr_info.url contains 'pull' and pr_info.state == 'open'"
+
+  - name: "pr_views_existing"
+    given: "/pr 54 command"
+    expect: "pr_info.number == 54"
+
+  - name: "board_lists_issues"
+    given: "/board command"
+    expect: "result.len > 0 and result[0].issue_number > 0"

@@ -1,0 +1,79 @@
+name: tri_decompose
+version: "1.0.0"
+language: zig
+module: tri.decompose
+
+description: |
+  Decompose a high-level task into atomic sub-tasks with dependencies.
+  Reads issue body and creates a DAG of sub-tasks for parallel agent execution.
+
+  phi^2 + 1/phi^2 = 3 | TRINITY
+
+types:
+  SubTask:
+    fields:
+      - name: id
+        type: usize
+        description: "Unique sub-task identifier"
+      - name: description
+        type: "[]const u8"
+        description: "What needs to be done"
+      - name: depends_on
+        type: "[]usize"
+        description: "IDs of prerequisite sub-tasks"
+      - name: agent_domain
+        type: "[]const u8"
+        description: "Agent domain (arch, numeric, physics, compiler, etc.)"
+      - name: estimated_effort
+        type: "[]const u8"
+        description: "trivial / small / medium / large"
+      - name: status
+        type: "[]const u8"
+        description: "pending / in_progress / done / blocked"
+
+  DecompositionResult:
+    fields:
+      - name: tasks
+        type: "[]SubTask"
+        description: "Ordered list of sub-tasks"
+      - name: critical_path
+        type: "[]usize"
+        description: "IDs on the longest dependency chain"
+      - name: max_parallelism
+        type: usize
+        description: "Maximum tasks that can run concurrently"
+      - name: total_count
+        type: usize
+
+behaviors:
+  - name: parseIssue
+    given: "A GitHub issue number and body text"
+    when: "User runs `tri decompose --issue N`"
+    then: "Extracts task descriptions, acceptance criteria, and implicit dependencies from the issue body. Returns raw task list."
+
+  - name: buildDAG
+    given: "A raw task list with dependency hints"
+    when: "Dependencies need to be resolved"
+    then: "Topologically sorts tasks, detects cycles, identifies max parallelism. Returns DecompositionResult."
+
+  - name: assignAgents
+    given: "A DecompositionResult with unassigned tasks"
+    when: "Agent domain assignment is needed"
+    then: "Maps each task to an agent domain based on file paths, keywords, and OWNERS.md. Updates SubTask.agent_domain."
+
+tests:
+  - name: "decompose_single_task"
+    given: "Issue with one clear task"
+    expect: "result.total_count == 1 and result.tasks[0].depends_on.len == 0"
+
+  - name: "decompose_detects_dependencies"
+    given: "Issue with 'first do X, then Y' phrasing"
+    expect: "Y.depends_on contains X.id"
+
+  - name: "decompose_no_cycles"
+    given: "Any valid issue"
+    expect: "buildDAG never produces circular dependencies"
+
+  - name: "decompose_parallelism"
+    given: "3 independent tasks"
+    expect: "result.max_parallelism == 3"
