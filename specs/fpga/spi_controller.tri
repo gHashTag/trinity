@@ -1,0 +1,67 @@
+name: spi_controller
+version: "1.0.0"
+language: verilog
+module: fpga.spi
+
+description: |
+  SPI controller (master) for FPGA peripheral communication.
+  Supports Mode 0-3, configurable clock divider, and chip select.
+
+  Issue: #507 FPGA-001 Phase 1
+  phi^2 + 1/phi^2 = 3 | TRINITY
+
+types:
+  SPIConfig:
+    fields:
+      - name: clock_divider
+        type: u16
+        description: "SCK = sysclk / (2 * divider)"
+      - name: cpol
+        type: u1
+        description: "Clock polarity: 0 or 1"
+      - name: cpha
+        type: u1
+        description: "Clock phase: 0 or 1"
+      - name: bit_order
+        type: "[]const u8"
+        description: "msb_first or lsb_first"
+      - name: data_width
+        type: u8
+        description: "Bits per transfer (8 default)"
+
+constants:
+  DEFAULT_DIVIDER:
+    type: u16
+    value: 50
+    description: "1 MHz SCK at 100 MHz sysclk"
+
+  MODE_0:
+    type: "[]const u8"
+    value: "CPOL=0, CPHA=0"
+
+behaviors:
+  - name: transfer
+    given: "TX data byte and chip select index"
+    when: "SPI bus is idle"
+    then: "Asserts CS, clocks out TX data on MOSI while sampling MISO. Returns RX data. Deasserts CS."
+
+  - name: set_mode
+    given: "CPOL and CPHA values"
+    when: "Configuration change needed"
+    then: "Updates clock polarity and phase. Takes effect on next transfer."
+
+tests:
+  - name: "mode0_transfer"
+    given: "Mode 0 (CPOL=0, CPHA=0), TX=0xAB"
+    expect: "SCK idles low, data sampled on rising edge, RX captured correctly"
+
+  - name: "cs_assertion"
+    given: "Transfer to device 2"
+    expect: "CS[2] goes low during transfer, others stay high"
+
+  - name: "clock_divider"
+    given: "divider=50, sysclk=100MHz"
+    expect: "SCK frequency == 1MHz"
+
+invariants:
+  - "divider > 0 implies SCK < sysclk / 2"

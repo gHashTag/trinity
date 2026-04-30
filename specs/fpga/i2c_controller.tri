@@ -1,0 +1,88 @@
+name: i2c_controller
+version: "1.0.0"
+language: verilog
+module: fpga.i2c
+
+description: |
+  I2C controller (master) for FPGA sensor/peripheral communication.
+  Supports 7-bit addressing, standard (100kHz) and fast (400kHz) modes.
+
+  Issue: #507 FPGA-001 Phase 1
+  phi^2 + 1/phi^2 = 3 | TRINITY
+
+types:
+  I2CConfig:
+    fields:
+      - name: clock_freq_hz
+        type: u32
+      - name: i2c_speed_hz
+        type: u32
+      - name: address_width
+        type: u8
+        description: "7 or 10 bit addressing"
+
+  I2CTransaction:
+    fields:
+      - name: address
+        type: u8
+      - name: read
+        type: bool
+      - name: data
+        type: "[]u8"
+      - name: ack
+        type: "[]bool"
+
+constants:
+  STANDARD_MODE_HZ:
+    type: u32
+    value: 100000
+
+  FAST_MODE_HZ:
+    type: u32
+    value: 400000
+
+  START_BYTE:
+    type: u8
+    value: 0x00
+
+behaviors:
+  - name: start_condition
+    given: "I2C bus is idle (SCL=1, SDA=1)"
+    when: "Master initiates transaction"
+    then: "SDA goes low while SCL stays high. Bus is now busy."
+
+  - name: stop_condition
+    given: "Active I2C transaction"
+    when: "Master ends transaction"
+    then: "SDA goes high while SCL stays high. Bus released."
+
+  - name: write_byte
+    given: "7-bit address + data byte"
+    when: "Start condition sent"
+    then: "Sends address+W, checks ACK, sends data byte, checks ACK, sends stop."
+
+  - name: read_byte
+    given: "7-bit address"
+    when: "Start condition sent"
+    then: "Sends address+R, checks ACK, reads data byte, sends NACK, sends stop."
+
+tests:
+  - name: "start_stop_sequence"
+    given: "Idle bus"
+    expect: "start_condition sets SDA low while SCL high, stop_condition sets SDA high"
+
+  - name: "write_7bit_address"
+    given: "Address 0x50, write mode"
+    expect: "Sent byte = 0xA0 (0x50 << 1 | 0)"
+
+  - name: "read_7bit_address"
+    given: "Address 0x50, read mode"
+    expect: "Sent byte = 0xA1 (0x50 << 1 | 1)"
+
+  - name: "ack_nack"
+    given: "Byte transfer with ACK from slave"
+    expect: "SDA held low by slave during ACK clock"
+
+invariants:
+  - "i2c_speed_hz <= clock_freq_hz / 4"
+  - "forall t: I2CTransaction :: t.address < 128 (7-bit mode)"
