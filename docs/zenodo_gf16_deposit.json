@@ -1,0 +1,46 @@
+{
+  "title": "GF16: Golden Float Format for Ternary Neural Network Inference",
+  "description": "GF16 is a 16-bit floating-point format (1/6/9 allocation, bias=31) optimized for ternary neural network inference. Integer-backed u16 implementation bypasses FPU dependency, achieving 4x model compression over FP32 with <5% quality degradation on language modeling tasks. Deployed on TRI-27 ternary RISC-V soft processor (XC7A100T, zero DSP). Part of the Trinity S3AI framework.",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "Trinity Research"
+    }
+  ],
+  "upload_type": "publication",
+  "publication_type": "article",
+  "keywords": [
+    "GF16",
+    "Golden Float",
+    "ternary neural networks",
+    "quantization",
+    "FPGA",
+    "low-precision arithmetic",
+    "DLFloat",
+    "language model",
+    "Trinity S3AI"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.19227875",
+      "relation": "isPartOf"
+    },
+    {
+      "identifier": "10.5281/zenodo.19227865",
+      "relation": "references"
+    },
+    {
+      "identifier": "10.5281/zenodo.19227879",
+      "relation": "isPartOf"
+    }
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "communities": [
+    {"identifier": "ecfunded"}
+  ],
+  "prereserve_doi": {
+    "doi": "10.5281/zenodo.parameter-golf-gf16"
+  },
+  "notes": "Submitted to Parameter Golf competition (DeepMind AGI Hackathon). Model: HSLM-1.95M with Trinity 3^k architecture (hidden=243, vocab=729, context=81). Format: 1 sign + 6 exp + 9 mant = 16 bits. phi-distance from 1/phi = 0.049 (95.1% golden)."
+}
