@@ -3,7 +3,7 @@
 # φ² + 1/φ² = 3 = TRINITY
 
 # Stage 1: Build
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:26.04 AS builder
 
 RUN apt-get update && apt-get install -y \
     wget xz-utils git \
@@ -26,7 +26,7 @@ COPY . .
 RUN zig build background-agent-api
 
 # Stage 2: Runtime - Use Ubuntu minimal
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 # Create user first
 RUN useradd -m -u 1001 trinity
