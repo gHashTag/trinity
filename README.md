@@ -42,6 +42,8 @@
   <a href="https://doi.org/10.5281/zenodo.19227877"><img src="https://img.shields.io/badge/B007-VSA-blue?style=flat-square" alt="B007 VSA stub"></a>
 </p>
 
+> **Canonical Zenodo SOT:** [zenodo.org/communities/trinity-s3ai](https://zenodo.org/communities/trinity-s3ai/) — the single source of truth for all Vasilev / Trinity-S³AI Zenodo records. Any DOI badge above outside this community (e.g. the v2.0.x FPGA-software series 18939351-18950696) is legitimate authorship but not part of the curated S³AI v5.0 record set (B001-B008 = 19227865-79).
+
 ---
 
 ## Trinity S³AI DNA

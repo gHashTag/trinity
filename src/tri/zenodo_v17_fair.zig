@@ -414,8 +414,14 @@ test "FAIR score: full metadata" {
         .publication_year = 2025,
         .keywords = &[_][]const u8{ "machine learning", "ternary computing" },
         .formats = &[_][]const u8{ "application/zig", "application/json" },
-        .references = &[_][]const u8{"10.5281/zenodo.19227863"},
-        .communities = &[_][]const u8{ "zenodo", "machine-learning" },
+        // R5-honest audit (PASS-6, 2026-05-12): previous test fixture used
+        // `10.5281/zenodo.19227863` which resolves to an unrelated paper
+        // ("Restoration Axiom: Biological or Synthetic CNN State Retention"
+        // by other authors). Replaced with the canonical Trinity S³AI
+        // Framework parent collection (B008, 10.5281/zenodo.19227879), a
+        // confirmed member of community trinity-s3ai.
+        .references = &[_][]const u8{"10.5281/zenodo.19227879"},
+        .communities = &[_][]const u8{ "trinity-s3ai", "machine-learning" },
         .license = "MIT",
         .doi = "10.5281/zenodo.19227865",
     };
