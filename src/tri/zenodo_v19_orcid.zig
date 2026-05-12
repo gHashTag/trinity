@@ -21,7 +21,7 @@ const Allocator = std.mem.Allocator;
 pub const Author = struct {
     /// Full name (e.g., "Vasilev, Dmitrii")
     name: []const u8,
-    /// ORCID iD (e.g., "0000-0002-1825-0097")
+    /// ORCID iD (e.g., "0009-0008-4294-6159")
     orcid: ?[]const u8 = null,
     /// Institution affiliations
     affiliations: []const []const u8 = &.{},
@@ -183,7 +183,7 @@ pub const KnownContributor = enum {
     /// Add more contributors as needed
     pub fn orcid(self: KnownContributor) []const u8 {
         return switch (self) {
-            .dmitrii_vasilev => "0000-0002-1825-0097",
+            .dmitrii_vasilev => "0009-0008-4294-6159",
         };
     }
 
@@ -344,7 +344,7 @@ pub const AuthorList = struct {
 // ============================================================================
 
 test "ORCID: validateOrcidFormat valid" {
-    const result = validateOrcidFormat("0000-0002-1825-0097");
+    const result = validateOrcidFormat("0009-0008-4294-6159");
     try std.testing.expect(result.valid);
 }
 
@@ -359,7 +359,7 @@ test "ORCID: validateOrcidFormat missing hyphens" {
 }
 
 test "ORCID: verifyOrcidChecksum valid" {
-    const result = verifyOrcidChecksum("0000-0002-1825-0097");
+    const result = verifyOrcidChecksum("0009-0008-4294-6159");
     try std.testing.expect(result.valid);
 }
 
@@ -371,13 +371,13 @@ test "ORCID: verifyOrcidChecksum invalid" {
 test "ORCID: known contributor ORCID" {
     const contributor = getKnownContributor(.dmitrii_vasilev);
     try std.testing.expectEqualStrings("Vasilev, Dmitrii", contributor.name);
-    try std.testing.expectEqualStrings("0000-0002-1825-0097", contributor.orcid.?);
+    try std.testing.expectEqualStrings("0009-0008-4294-6159", contributor.orcid.?);
 }
 
 test "ORCID: Author formatCitation" {
     const author = Author{
         .name = "Vasilev, Dmitrii",
-        .orcid = "0000-0002-1825-0097",
+        .orcid = "0009-0008-4294-6159",
     };
 
     const citation = try author.formatCitation(std.testing.allocator);
@@ -410,7 +410,7 @@ test "ORCID: AuthorList validateAllOrcids" {
 
     try list.add(allocator, .{
         .name = "Vasilev, Dmitrii",
-        .orcid = "0000-0002-1825-0097",
+        .orcid = "0009-0008-4294-6159",
     });
 
     try list.add(allocator, .{

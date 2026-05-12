@@ -208,7 +208,7 @@ pub fn createTrinityCff(allocator: Allocator, version: []const u8, doi: ?[]const
         .{
             .family_names = "Vasilev",
             .given_names = "Dmitrii",
-            .orcid = "https://orcid.org/0000-0002-1825-0097",
+            .orcid = "https://orcid.org/0009-0008-4294-6159",
         },
     };
 
@@ -343,7 +343,7 @@ test "CFF: generate with ORCID" {
     const authors = [_]CffAuthor{.{
         .family_names = "Vasilev",
         .given_names = "Dmitrii",
-        .orcid = "https://orcid.org/0000-0002-1825-0097",
+        .orcid = "https://orcid.org/0009-0008-4294-6159",
     }};
 
     var cff = CffFile{
@@ -362,7 +362,7 @@ test "CFF: generate with ORCID" {
     const yaml = try cff.generate(allocator);
     defer allocator.free(yaml);
 
-    try std.testing.expect(std.mem.indexOf(u8, yaml, "https://orcid.org/0000-0002-1825-0097") != null);
+    try std.testing.expect(std.mem.indexOf(u8, yaml, "https://orcid.org/0009-0008-4294-6159") != null);
 }
 
 test "CFF: generate with keywords" {

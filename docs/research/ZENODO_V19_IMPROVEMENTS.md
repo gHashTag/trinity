@@ -29,7 +29,7 @@ authors: []const []const u8
 ```zig
 pub const Author = struct {
     name: []const u8,
-    orcid: ?[]const u8, // "0000-0002-1825-0097"
+    orcid: ?[]const u8, // "0009-0008-4294-6159"
     affiliation: []const []const u8,
     corresponding: bool = false,
 };
@@ -82,7 +82,7 @@ pub const Author = struct {
 ```zig
 pub const OrcidAuthor = struct {
     name: []const u8,
-    orcid: ?[]const u8, // "https://orcid.org/0000-0002-1825-0097"
+    orcid: ?[]const u8, // "https://orcid.org/0009-0008-4294-6159"
     affiliation: []const []const u8,
     email: ?[]const u8, // For corresponding author
     role: AuthorRole, // author, contributor, supervisor
@@ -114,7 +114,7 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: "Vasilev"
     given-names: "Dmitrii"
-    orcid: "https://orcid.org/0000-0002-1825-0097"
+    orcid: "https://orcid.org/0009-0008-4294-6159"
 title: "Trinity S³AI: Ternary Neural Networks v0.11.0"
 version: 0.11.0
 doi: 10.5281/zenodo.19227879

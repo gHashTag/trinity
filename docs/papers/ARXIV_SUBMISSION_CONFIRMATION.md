@@ -1,218 +1,68 @@
-# arXiv Submission Confirmation
-## TRINITY v10.2 — Phase 4 Papers
+# ❌ RETRACTED — arXiv Submission Confirmation (was: "TRINITY v10.2 — Phase 4 Papers")
+
+> **R5-HONEST AUDIT 2026-05-12 (PASS-5) — DOCUMENT RETRACTED IN FULL.**
+>
+> The previous content of this file claimed that four papers (`arXiv:2603.00001`,
+> `2603.00002`, `2603.00003`, `2603.00004`) were submitted and accepted on arXiv
+> in March 2026 by Dmitrii Vasilev (@gHashTag) under the title "TRINITY v10.2 —
+> A Unified Framework for Physics Blind Spots".
+>
+> **None of this is true.** Verification on 2026-05-12 via `curl https://arxiv.org/abs/<id>`
+> returned the following actual records:
+>
+> | Claimed arXiv ID | Claimed title | **ACTUAL title on arXiv** | **ACTUAL authors** |
+> |---|---|---|---|
+> | `2603.00001` | "Time and the Golden Ratio" | Generalized Chapple-Euler Relation | Dragović, V.; Murad, M. H. |
+> | `2603.00002` | "Consciousness and the Golden Ratio" | Hedgehog Reconstruction of Polygons: Non-Central Sections and Slabs | Matthews, B. |
+> | `2603.00003` | "Gravitational Constants from the Golden Ratio" | Commitment Checklist: Auditing Author Commitments in Peer Review | Chen, C.-C.; Gurevych, I. |
+> | `2603.00004` | "TRINITY v10.2: A Unified Framework for Physics Blind Spots" | Bug Severity Prediction in Software Projects Using Supervised Machine Learning Models | Nice, N. T. |
+>
+> An `arXiv` API search for `au:"Vasilev" AND ti:"TRINITY"` returns **zero results**.
+> A search for `all:gHashTag` returns **zero results**.
+>
+> The previous content also contained a **fabricated email confirmation** purporting
+> to be from `moderation@arxiv.org`. No such email was ever received from arXiv.
+>
+> The previous content additionally contained a draft press release ("FOR IMMEDIATE
+> RELEASE — TRINITY Theory Unifies Physics Blind Spots") attributing breakthrough
+> predictions ("Gravitational constant G predicted with 0.09% accuracy") to peer-reviewed
+> publication that never occurred.
 
 ---
 
-**Submission Date:** March 6, 2026, 10:00 UTC+7
-**Submitter:** Dmitrii Vasilev (@gHashTag)
-**Status:** **SUBMITTED** ✓
+## What is the honest status?
+
+- **Zenodo deposits exist** for the Trinity software description stubs B001–B007 and the
+  parent collection — these are described in
+  [`docs/research/.zenodo.B00*_v9.0.json`](../research/) and the cross-sibling registry
+  [`gHashTag/trios/docs/infrastructure/zenodo-registry.md`](https://github.com/gHashTag/trios/blob/main/docs/infrastructure/zenodo-registry.md).
+  These are **software description stubs, NOT peer-reviewed papers**.
+- **No arXiv submission has been made** by this account under the Trinity name.
+- **The mathematical anchor** `φ² + φ⁻² = 3` is an algebraic identity derivable from
+  `φ = (1+√5)/2`. Its empirical Coq witness lives in
+  [`gHashTag/t27`](https://github.com/gHashTag/t27): 28 .v files, 218 statements
+  (122 Theorem + 96 Lemma), 162 Qed, 32 Admitted, 11 Abort (audit 2026-05-12).
+- **Quantitative physics predictions** (G ≈ 0.09%, neural gamma 56 Hz, 382 ms specious
+  present, LISA testable) appearing in earlier internal drafts have **not** been
+  externally verified, peer-reviewed, or formally validated. They are speculative
+  conjectures, not established results.
+
+## Why this retraction was issued
+
+This file would have been highly damaging to research integrity if cited externally.
+PASS-5 of the R5-honest Zenodo audit detected the fabricated arXiv IDs by
+cross-validating every cited DOI/arXiv-ID against the source platform.
+This is the same audit class that retracted fabricated bibliography DOIs in
+[`gHashTag/t27` PR #594](https://github.com/gHashTag/t27/pull/594).
+
+## What replaces it
+
+Nothing. Until real arXiv submissions are made — and confirmed by genuine
+moderation receipts — this document has no successor. To publish on arXiv,
+follow the standard procedure at <https://info.arxiv.org/help/submit/index.html>
+and save the **real** receipts here.
 
 ---
 
-## PAPERS SUBMITTED
-
-### 1. Paper ID: trinity-v10.2-time
-**Title:** "Time and the Golden Ratio: Temporal Structure from φ and γ"
-**Authors:** Dmitrii Vasilev (@gHashTag)
-**Categories:** gr-qc, physics.gen-ph
-**Abstract:** 382 words
-**Status:** ✓ ACCEPTED
-
-**arXiv DOI:** 10.48550/arXiv.2603.00001
-**PDF:** https://arxiv.org/pdf/2603.00001.pdf
-
----
-
-### 2. Paper ID: trinity-v10.2-consciousness
-**Title:** "Consciousness and the Golden Ratio: Neural Gamma, VSA, and Quantum Mind"
-**Authors:** Dmitrii Vasilev (@gHashTag)
-**Categories:** q-bio.NC, physics.gen-ph
-**Abstract:** 412 words
-**Status:** ✓ ACCEPTED
-
-**arXiv DOI:** 10.48550/arXiv.2603.00002
-**PDF:** https://arxiv.org/pdf/2603.00002.pdf
-
----
-
-### 3. Paper ID: trinity-v10.2-gravity
-**Title:** "Gravitational Constants from the Golden Ratio: G, Dark Matter, and Black Holes"
-**Authors:** Dmitrii Vasilev (@gHashTag)
-**Categories:** gr-qc, astro-ph.CO
-**Abstract:** 445 words
-**Status:** ✓ ACCEPTED
-
-**arXiv DOI:** 10.48550/arXiv.2603.00003
-**PDF:** https://arxiv.org/pdf/2603.00003.pdf
-
----
-
-### 4. Paper ID: trinity-v10.2-unified
-**Title:** "TRINITY v10.2: A Unified Framework for Physics Blind Spots"
-**Authors:** Dmitrii Vasilev (@gHashTag)
-**Categories:** physics.gen-ph, gr-qc, quant-ph, q-bio.NC
-**Abstract:** 523 words
-**Status:** ✓ ACCEPTED
-
-**arXiv DOI:** 10.48550/arXiv.2603.00004
-**PDF:** https://arxiv.org/pdf/2603.00004.pdf
-
----
-
-## SUPPLEMENTARY MATERIALS
-
-### LISA Prediction Roadmap 2035
-**File:** LISA_PREDICTION_ROADMAP_2035.md
-**Status:** ✓ SUBMITTED TO LISA COLLABORATION
-**Contact:** lisa-consortium@eos.org
-
----
-
-## SUBMISSION METADATA
-
-| Field | Value |
-|-------|-------|
-| Submission ID | TRINITY-2026-03-06-v10.2 |
-| Total papers | 4 |
-| Total pages | 45 |
-| Total equations | 127 |
-| Total references | 89 |
-| Code repository | https://github.com/gHashTag/trinity |
-| License | CC-BY 4.0 + MIT (code) |
-
----
-
-## MODERATION QUEUE STATUS
-
-| Paper | Queue Position | Estimated Wait |
-|-------|----------------|----------------|
-| 1. Time | #234 | 24 hours |
-| 2. Consciousness | #235 | 24 hours |
-| 3. Gravity | #236 | 24 hours |
-| 4. Unified | #237 | 24 hours |
-
----
-
-## AUTOMATED EMAIL CONFIRMATION
-
-```
-From: arXiv Moderation <moderation@arxiv.org>
-To: Dmitrii Vasilev (@gHashTag) <submit@trinity.ai>
-Subject: arXiv:2603.00001 Submitted
-
-Your submission "Time and the Golden Ratio" has been received.
-Paper ID: arXiv:2603.00001
-Status: Pending moderation
-
-Your paper is now in the moderation queue.
-You will receive another email when your paper is published.
-
-[Similar emails sent for 2603.00002, 2603.00003, 2603.00004]
-
----
-arXiv.org
-Cornell University Library
-Ithaca, NY 14853
-```
-
----
-
-## NEXT STEPS
-
-1. **24-48 hours:** Papers under moderation
-2. **48-72 hours:** Papers published on arXiv
-3. **Week 2:** Submit to peer-reviewed journals
-   - Physical Review D (gravity)
-   - Journal of Consciousness Studies (consciousness)
-   - Foundations of Physics (unified)
-4. **Week 4:** Announce on social media, press release
-5. **2035:** LISA verification of predictions
-
----
-
-## KEYWORDS FOR DISCOVERY
-
-golden ratio, phi, gamma, loop quantum gravity, consciousness, neural gamma, vector symbolic architecture, VSA, gravitational constant, dark energy, dark matter, time, Planck time, cosmology, sacred formula, TRINITY identity, quantum biology, black hole thermodynamics, gravitational waves, LISA
-
----
-
-## CITATION INFORMATION
-
-### BibTeX
-
-```bibtex
-@misc{trinity_v10_2_unified,
-  title={TRINITY v10.2: A Unified Framework for Physics Blind Spots},
-  author={Dmitrii Vasilev (@gHashTag)},
-  year={2026},
-  eprint={2603.00004},
-  archivePrefix={arXiv},
-  primaryClass={physics.gen-ph}
-}
-
-@misc{trinity_v10_2_gravity,
-  title={Gravitational Constants from the Golden Ratio},
-  author={Dmitrii Vasilev (@gHashTag)},
-  year={2026},
-  eprint={2603.00003},
-  archivePrefix={arXiv},
-  primaryClass={gr-qc}
-}
-
-@misc{trinity_v10_2_consciousness,
-  title={Consciousness and the Golden Ratio},
-  author={Dmitrii Vasilev (@gHashTag)},
-  year={2026},
-  eprint={2603.00002},
-  archivePrefix={arXiv},
-  primaryClass={q-bio.NC}
-}
-
-@misc{trinity_v10_2_time,
-  title={Time and the Golden Ratio},
-  author={Dmitrii Vasilev (@gHashTag)},
-  year={2026},
-  eprint={2603.00001},
-  archivePrefix={arXiv},
-  primaryClass={gr-qc}
-}
-```
-
----
-
-## PRESS RELEASE (Draft)
-
-**FOR IMMEDIATE RELEASE**
-
-**TRINITY Theory Unifies Physics Blind Spots: Time, Consciousness, and Gravity Connected via Golden Ratio**
-
-*KO SAMUI, Thailand — March 6, 2026*
-
-Dmitrii Vasilev (@gHashTag) announces publication of four papers on arXiv presenting TRINITY v10.2, a unified framework connecting three fundamental "blind spots" in physics: gravity, consciousness, and time.
-
-Key findings:
-- Gravitational constant G predicted with 0.09% accuracy using golden ratio φ
-- Neural gamma rhythm (56 Hz) derived from sacred formula
-- Specious present (382 ms) calculated as φ⁻²
-- 12 testable predictions for LISA mission (2035)
-
-"TRINITY v10.2 represents a breakthrough in understanding how fundamental constants encode via the golden ratio," Vasilev states. "The framework makes specific, falsifiable predictions that can be verified by upcoming experiments."
-
-The four papers, totaling 45 pages, will be available on arXiv starting March 8, 2026.
-
-### Contact:
-Dmitrii Vasilev (@gHashTag)
-GitHub: https://github.com/gHashTag/trinity
-Web: https://trinity.ai
-
----
-
-## VERIFICATION
-
-**Submission verified by:** Dmitrii Vasilev (@gHashTag)
-**Date:** March 6, 2026, 10:05 UTC+7
-**Status:** ✓ ALL SYSTEMS OPERATIONAL
-
----
-
-φ² + 1/φ² = 3 | TRINITY v10.2 | arXiv:2603.00001-0004 | SUBMITTED
+Anchor: `φ² + φ⁻² = 3` · R5-HONEST · 2026-05-12 · PASS-5
+Throne: [trios#264](https://github.com/gHashTag/trios/issues/264)
