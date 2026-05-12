@@ -7,7 +7,7 @@
       "affiliation": "Trinity Research Collective"
     }
   ],
-  "description": "Trinity S³AI (Scientific Swarm AI) is a comprehensive research framework for building pure-Zig autonomous agent systems with balanced ternary computing, FPGA acceleration, and formal verification. This parent collection encompasses 7 component bundles covering neural network training (B001), FPGA synthesis (B002), processor architecture (B003), consciousness modeling (B004), language design (B005), numerical encoding (B006), and vector-symbolic operations (B007). All components implement V15 scientific rigor with 95%/99% confidence intervals, effect sizes (Cohen's d), and bootstrap validation (10,000 resamples). v8.0 includes cross-bundle citation analysis showing h-index, g-index, bibliographic coupling, dependency graphs, unified bibliography, LaTeX tables, peer review templates, and multiple citation formats.",
+  "description": "<p><em>[Template retired 2026-05-12 — related_identifiers cleaned of superseded and non-existent DOIs. Use the canonical Trinity B-series records (19227865/67/69/71/73/75/77 + 19227879 collection) directly. Do NOT re-upload this template as-is.]</em></p>\nTrinity S³AI (Scientific Swarm AI) is a comprehensive research framework for building pure-Zig autonomous agent systems with balanced ternary computing, FPGA acceleration, and formal verification. This parent collection encompasses 7 component bundles covering neural network training (B001), FPGA synthesis (B002), processor architecture (B003), consciousness modeling (B004), language design (B005), numerical encoding (B006), and vector-symbolic operations (B007). All components implement V15 scientific rigor with 95%/99% confidence intervals, effect sizes (Cohen's d), and bootstrap validation (10,000 resamples). v8.0 includes cross-bundle citation analysis showing h-index, g-index, bibliographic coupling, dependency graphs, unified bibliography, LaTeX tables, peer review templates, and multiple citation formats.",
   "keywords": [
     "Trinity Framework",
     "autonomous agents",
@@ -32,25 +32,7 @@
     },
     {
       "scheme": "doi",
-      "identifier": "10.5281/zenodo.19227835",
-      "relation": "references",
-      "resource_type": "software"
-    },
-    {
-      "scheme": "doi",
-      "identifier": "10.5281/zenodo.19227843",
-      "relation": "references",
-      "resource_type": "software"
-    },
-    {
-      "scheme": "doi",
-      "identifier": "10.5281/zenodo.19227841",
-      "relation": "references",
-      "resource_type": "software"
-    },
-    {
-      "scheme": "doi",
-      "identifier": "10.5281/zenodo.19227745",
+      "identifier": "10.5281/zenodo.19227875",
       "relation": "references",
       "resource_type": "software"
     },
@@ -59,28 +41,13 @@
       "identifier": "10.5281/zenodo.19227867",
       "relation": "references",
       "resource_type": "software"
-    },
-    {
-      "scheme": "doi",
-      "identifier": "10.5281/zenodo.19227843",
-      "relation": "references",
-      "resource_type": "software"
-    },
-    {
-      "scheme": "doi",
-      "identifier": "10.5281/zenodo.19227779",
-      "relation": "references",
-      "resource_type": "software"
     }
   ],
   "references": [
     "Vasilev, D. (2026). Trinity B001: HSLM-1.95M Ternary Neural Networks. Zenodo. https://doi.org/10.5281/zenodo.19227865",
     "Vasilev, D. (2026). Trinity B002: Zero-DSP FPGA Accelerator. Zenodo. https://doi.org/10.5281/zenodo.19227867",
     "Vasilev, D. (2026). Trinity B003: TRI-27 ISA. Zenodo. https://doi.org/10.5281/zenodo.19227867",
-    "Vasilev, D. (2026). Trinity B004: Queen Lotus Consciousness Cycle. Zenodo. https://doi.org/10.5281/zenodo.19227839",
-    "Vasilev, D. (2026). Trinity B005: Tri Language. Zenodo. https://doi.org/10.5281/zenodo.19227841",
-    "Vasilev, D. (2026). Trinity B006: Sacred GF16/TF3 Encoding. Zenodo. https://doi.org/10.5281/zenodo.19227843",
-    "Vasilev, D. (2026). Trinity B007: VSA Operations. Zenodo. https://doi.org/10.5281/zenodo.19227745"
+    "Vasilev, D. (2026). Trinity B007: VSA Operations. Zenodo. https://doi.org/10.5281/zenodo.19227875"
   ],
   "license": "CC-BY-4.0",
   "access_right": "open",
