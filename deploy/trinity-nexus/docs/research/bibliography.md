@@ -1,3 +1,5 @@
+> ⚠️ **R5-HONEST AUDIT 2026-05-12 (PASS-4)** — this document is a frozen mirror that contains pre-audit phrasings ("statistical rigor", "Full FAIR compliance", "12 peer-reviewed papers", "35+ peer-reviewed papers"). These claims do NOT reflect the current Trinity stance. The canonical R5-honest registry is in [`docs/research/.zenodo.*_v9.0.json`](../../docs/research/) and the cross-sibling registry [`gHashTag/trios/docs/infrastructure/zenodo-registry.md`](https://github.com/gHashTag/trios/blob/main/docs/infrastructure/zenodo-registry.md). Trinity DOIs are software description stubs, NOT peer-reviewed papers. Coq witness in [`gHashTag/t27`](https://github.com/gHashTag/t27): 28 .v files, 218 statements, 162 Qed, 32 Admitted, 11 Abort (2026-05-12 audit).
+
 ---
 sidebar_position: 4
 ---
