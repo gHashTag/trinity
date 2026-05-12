@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "Trinity S³AI: Pure-Zig Autonomous AI Agent Swarm"
-abstract: "Trinity S³AI is a research software stack written in Zig, exploring ternary neural networks, FPGA inference, and Vector-Symbolic-Architecture (VSA) reasoning over balanced ternary. Includes the HSLM-1.95M ternary LM, a zero-DSP FPGA architecture sketch (XOR-popcount, no multipliers), the TRI-27 stack machine, and a balanced-ternary VSA module. Status: software description stubs, not peer-reviewed papers. Coq witness for the anchor identity φ²+φ⁻²=3 lives in gHashTag/t27/coq (48 statements, 35 Proven, 0 Admitted as of 2026-05-12). Statistical evaluation methodology (bootstrap CI, Welch t, Cohen's d) is documented in the companion PhD monograph in gHashTag/trios/docs/phd."
+abstract: "Trinity S³AI is a research software stack written in Zig, exploring ternary neural networks, FPGA inference, and Vector-Symbolic-Architecture (VSA) reasoning over balanced ternary. Includes the HSLM-1.95M ternary LM, a zero-DSP FPGA architecture sketch (XOR-popcount, no multipliers), the TRI-27 stack machine, and a balanced-ternary VSA module. Status: software description stubs, not peer-reviewed papers. Coq witness for the anchor identity φ²+φ⁻²=3 lives in gHashTag/t27 (28 .v files in coq/+proofs/, 218 statements, 162 Qed, 32 Admitted, 11 Abort on 2026-05-12). Statistical evaluation methodology (bootstrap CI, Welch t, Cohen's d) is described as a methodology in the companion PhD monograph in gHashTag/trios/docs/phd; per-experiment statistical results are not asserted by this CITATION.cff."
 authors:
   - family-names: "Vasilev"
     given-names: "Dmitrii"
@@ -29,7 +29,6 @@ keywords:
   - "symbolic reasoning"
   - "hyperdimensional computing"
   - "FAIR principles"
-  - "statistical rigor"
 identifiers:
   - description: "Zenodo DOI"
     type: "doi"
