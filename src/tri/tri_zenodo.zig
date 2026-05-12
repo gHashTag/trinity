@@ -591,7 +591,7 @@ fn generateCFF(allocator: std.mem.Allocator, args: []const []const u8) !void {
 }
 
 fn validateORCID(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const input = if (args.len > 0) args[0] else "0000-0002-1825-0097";
+    const input = if (args.len > 0) args[0] else "0009-0008-4294-6159";
 
     // Extract ID from URL if full URL is provided
     const orcid_id = if (std.mem.startsWith(u8, input, "https://orcid.org/"))

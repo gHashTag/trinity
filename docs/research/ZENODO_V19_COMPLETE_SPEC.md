@@ -18,7 +18,7 @@ pub const OrcidAuthor = struct {
     /// Full name: "Family, Given" or "Given Family"
     name: []const u8,
 
-    /// ORCID iD: "https://orcid.org/0000-0002-1825-0097"
+    /// ORCID iD: "https://orcid.org/0009-0008-4294-6159"
     orcid: ?[]const u8 = null,
 
     /// Institution(s)
@@ -53,7 +53,7 @@ pub const AuthorRole = enum(u8) {
 
 ```zig
 /// Validate ORCID iD format and checksum
-/// Format: 0000-0002-1825-0097 (16 digits, ISO 7064:1983.MOD 11-2)
+/// Format: 0009-0008-4294-6159 (16 digits, ISO 7064:1983.MOD 11-2)
 pub fn validateORCID(orcid: []const u8) !bool {
     // Check format: https://orcid.org/XXXX-XXXX-XXXX-XXXX
     const expected_len = 22; // "https://orcid.org/" (19) + 16 digits + 4 dashes = 22
@@ -124,7 +124,7 @@ fn computeChecksum(digits: [16]u8) u8 {
 
 /// Test ORCID validation
 test "ORCID validation: valid ORCID" {
-    const valid = "https://orcid.org/0000-0002-1825-0097";
+    const valid = "https://orcid.org/0009-0008-4294-6159";
     try std.testing.expect(try validateORCID(valid));
 }
 
@@ -986,7 +986,7 @@ test "CFF validation: complete metadata" {
         .authors = &[_]CFFAuthor{
             .family_names = "Vasilev",
             .given_names = "Dmitrii",
-            .orcid = "https://orcid.org/0000-0002-1825-0097",
+            .orcid = "https://orcid.org/0009-0008-4294-6159",
             .affiliation = &[_][]const u8{"Trinity Research Foundation"},
         },
         .title = "Trinity S³AI: Ternary Neural Networks v0.11.0",

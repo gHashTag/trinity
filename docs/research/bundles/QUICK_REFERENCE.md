@@ -7,6 +7,13 @@
 
 ---
 
+> ⚠️ **R5-PASS-5 HONESTY DISCLAIMER (2026-05-12)**
+>
+> Перечисленные ниже Zenodo-депозиты B001–B007 и PARENT — это **software / description stubs**, а не peer-reviewed публикации. DOI'ы 19227865–19227879 валидны и закреплены за этими депозитами, но они не подтверждают рецензирование, не означают arXiv-публикацию и не дают права цитировать их как «papers». Любые более ранние формулировки в этом репозитории, утверждающие иное (например `ARXIV_SUBMISSION_CONFIRMATION.md`), отозваны как fabricated — см. `docs/papers/ARXIV_SUBMISSION_CONFIRMATION.md` (RETRACTION).
+>
+> Canonical author: Dmitrii Vasilev, ORCID [`0009-0008-4294-6159`](https://orcid.org/0009-0008-4294-6159). Анкер `φ² + φ⁻² = 3` — алгебраическое тождество, а не paper claim.
+
+
 ## Bundle Summary Table
 
 | Bundle | Title | LOC | DOI | Status |

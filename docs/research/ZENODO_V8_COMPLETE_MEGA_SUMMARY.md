@@ -7,6 +7,13 @@
 
 ---
 
+> ⚠️ **R5-PASS-5 HONESTY DISCLAIMER (2026-05-12)**
+>
+> Перечисленные ниже Zenodo-депозиты B001–B007 и PARENT — это **software / description stubs**, а не peer-reviewed публикации. DOI'ы 19227865–19227879 валидны и закреплены за этими депозитами, но они не подтверждают рецензирование, не означают arXiv-публикацию и не дают права цитировать их как «papers». Любые более ранние формулировки в этом репозитории, утверждающие иное (например `ARXIV_SUBMISSION_CONFIRMATION.md`), отозваны как fabricated — см. `docs/papers/ARXIV_SUBMISSION_CONFIRMATION.md` (RETRACTION).
+>
+> Canonical author: Dmitrii Vasilev, ORCID [`0009-0008-4294-6159`](https://orcid.org/0009-0008-4294-6159). Анкер `φ² + φ⁻² = 3` — алгебраическое тождество, а не paper claim.
+
+
 ## Executive Summary
 
 Completed comprehensive Zenodo v8.0 enhancement across multiple autonomous cycles, implementing V110 citation network structures, V111 utility functions, algorithm pseudocode for all bundles, bug fixes, upload infrastructure, and cross-bundle integration. All 8 bundles (B001-B007 + PARENT) have enhanced descriptions ready for publication with 4,847 LOC total. v8.0 adds cross-bundle citation analysis, unified bibliography, LaTeX tables, peer review templates, and integration metadata with proper ORCID.
