@@ -36,9 +36,10 @@
   <!-- NEW: Zenodo v9.0 Badges -->
   <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19227879.svg" alt="DOI"></a>
   <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://img.shields.io/badge/Zenodo-v9.0-blue?logo=zenodo" alt="Zenodo v9.0"></a>
-  <a href="https://doi.org/10.5281/zenodo.19227865"><img src="https://img.shields.io/badge/PPL-125.3-brightgreen?style=flat-square" alt="HSLM"></a>
-  <a href="https://doi.org/10.5281/zenodo.19227869"><img src="https://img.shields.io/badge/tests-98.7%25-brightgreen?style=flat-square" alt="Tests"></a>
-  <a href="https://doi.org/10.5281/zenodo.19227877"><img src="https://img.shields.io/badge/SIMD-11.5%25C3%97-orange?style=flat-square" alt="SIMD"></a>
+  <!-- Per-record DOI badges (each links to a Trinity S³AI software description stub on Zenodo, not a peer-reviewed paper) -->
+  <a href="https://doi.org/10.5281/zenodo.19227865"><img src="https://img.shields.io/badge/B001-HSLM-blue?style=flat-square" alt="B001 HSLM stub"></a>
+  <a href="https://doi.org/10.5281/zenodo.19227869"><img src="https://img.shields.io/badge/B003-TRI--27%20ISA-blue?style=flat-square" alt="B003 TRI-27 ISA stub"></a>
+  <a href="https://doi.org/10.5281/zenodo.19227877"><img src="https://img.shields.io/badge/B007-VSA-blue?style=flat-square" alt="B007 VSA stub"></a>
 </p>
 
 ---
