@@ -166,7 +166,7 @@ The Trinity Identity φ² + φ⁻² = 3 (where φ = (1 + √5)/2 is the golden r
 |-----------|--------|--------|--------------|
 | GF16 | B006 | ✅ Published | Bayesian (ML-side)* |
 
-*> **GF16 Clarification**: GF16 provides ML-side probabilistic inference via sacred ternary arithmetic (16-element field), distinct from AR-side Bayesian Logic Programs per CLARA Amendment 1. |
+*> **GF16 Clarification**: "GF16" here is the **GoldenFloat 16-bit φ-float** (layout 1:6:9, bundle B006) used for ML-side probabilistic inference — distinct both from the GF(2⁴) 16-element Galois *field* (the Euler crown's algebraic substrate) and from AR-side Bayesian Logic Programs per CLARA Amendment 1. |
 | Queen Lotus | B004 | ✅ Published | Reinforcement Learning |
 | Tri Language | B005 | ✅ Published | Formal Specification |
 
@@ -333,7 +333,7 @@ const defaultMetaRules = [_]MetaRule{
 - **BLP**: Logic-only, no learning component
 - **ProbLog/DeepProbLog**: Adds neural weights to Prolog but lacks polynomial guarantees
 - **MLN**: Probabilistic logic but no closed-form inference complexity bounds
-- **Trinity**: Only system with proven O(n) VSA, O(1) MAC, O(1) dispatch, and hardware verification
+- **Trinity**: among the compared systems, the only one combining proven O(n) VSA, O(1) MAC, O(1) dispatch, *and* silicon verification (claim scoped to this comparison)
 
 ### 3.4.1 Detailed Performance Comparison (from `src/clara/baselines.zig`)
 
@@ -351,26 +351,23 @@ const defaultMetaRules = [_]MetaRule{
 - **Bounded rationality**: max_depth=10 enforced (others have no depth limits)
 - **Full proof traces** vs partial/no traces in baselines
 
-### 3.5 Format Efficiency: BENCH-001 Results
+### 3.5 Format Efficiency: IGLA RACE v2 Format Sweep
 
-**Experiment**: Ternary vs FP16/BF16/GF16 on MNIST (1000 samples, untrained random weights)
+**Experiment**: each numeric format trains the *same* byte-level language model; we report validation bits-per-byte (`val_bpb`, lower is better). Frozen 30-log snapshot (2026-05-25; 2–3 seeds/format; `trios-trainer-igla`).
 
-| Format | Accuracy | Loss | Bytes/weight | Gap vs FP32 |
-|--------|----------|------|--------------|-------------|
-| **FP32** | 9.10% | 0.1471 | 4.0 | baseline |
-| **GF16** | 9.10% | 0.1464 | 2.0 | **0.00%** ✅ |
-| **BF16** | 9.10% | 0.1464 | 2.0 | **0.00%** ✅ |
-| **FP16** | 8.50% | 0.1000 | 2.0 | -0.60% |
-| **Ternary** | 8.50% | 0.1000 | 0.125 | -0.60% |
+| Format | Mean val_bpb | Bytes/weight | Reading |
+|--------|--------------|--------------|---------|
+| f32 | 2.5414 | 4.0 | full-precision baseline |
+| fp16 | 2.5501 | 2.0 | best 16-bit in sweep |
+| **GF16** | **2.5725** | 2.0 | within 0.031 bpb of f32; **beats bf16** |
+| bf16 | 2.6135 | 2.0 | worst of the 16-bit group |
+| posit8 | 2.9322 | 1.0 | best 8-bit in sweep |
+| **GF8** | **2.9322** | 1.0 | matches posit8 exactly |
+| int8 | 3.4189 | 1.0 | linear 8-bit, well behind |
 
-**Key Finding**: GF16 (9-bit mantissa) achieves **perfect accuracy parity with FP32** while using **50% less memory**.
+**Key Finding**: on a *real training run*, GF16 lands within **0.031 bpb of full f32 and beats bf16** at half the memory; GF8 matches the best evaluated 8-bit format (posit8). A separate trained MNIST-MLP check (`zig-golden-float`) independently shows GF16 at **97.67% accuracy, 0.00% gap vs f32**.
 
-**Scientific Significance**:
-- **Validates Trinity's memory efficiency claims** with experimental data
-- **GF16 outperforms standard FP16** (7-bit mantissa) on MNIST
-- **Ternary shows 32× compression potential** (0.125 bytes vs 4 bytes)
-
-**Full Results**: See `proposals/BENCH_001_SCIENTIFIC_RESULTS.md` for detailed analysis.
+**Honest bound (claim discipline)**: only **GF16** is measured at production scale; this is a training-regime result, not a universal optimum. The precision-oriented FP8 variant (E4M3) did not survive to first evaluation, so **no GF-vs-E4M3 comparison is asserted**. (This supersedes the earlier BENCH-001 figure, which used *untrained random weights* — accuracy there sat at ~chance for all formats and is not a meaningful signal.)
 
 ---
 
