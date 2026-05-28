@@ -333,7 +333,7 @@ const defaultMetaRules = [_]MetaRule{
 - **BLP**: Logic-only, no learning component
 - **ProbLog/DeepProbLog**: Adds neural weights to Prolog but lacks polynomial guarantees
 - **MLN**: Probabilistic logic but no closed-form inference complexity bounds
-- **Trinity**: Only system with proven O(n) VSA, O(1) MAC, O(1) dispatch, and hardware verification
+- **Trinity**: among the compared systems, the only one combining proven O(n) VSA, O(1) MAC, O(1) dispatch, *and* silicon verification (claim scoped to this comparison)
 
 ### 3.4.1 Detailed Performance Comparison (from `src/clara/baselines.zig`)
 
