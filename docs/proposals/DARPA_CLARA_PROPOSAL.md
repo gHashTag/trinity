@@ -176,7 +176,7 @@ The Trinity Identity φ² + φ⁻² = 3 (where φ = (1 + √5)/2 is the golden r
 - AR-assisted training algorithms
 - Sample complexity analysis
 - Multi-condition medical guidance demo
-- Kill web planning demo
+- Resilient network allocation demo
 
 ### 1.4 Explainability Architecture
 
@@ -661,7 +661,7 @@ tri clara test --suite integration
 |-------|-----------|-------------|-------------|
 | 1-3 | CLARA integration tests | `test/clara_integration.zig` | $120K (team onboarding, setup) |
 | 4-6 | Complexity verification | Polynomial-time proofs | $160K (heavy research) |
-| 7-9 | Kill web demo | Scenario implementation | $140K (FPGA dev) |
+| 7-9 | Network allocation demo | Scenario implementation | $140K (FPGA dev) |
 | 10-12 | Medical guidance demo | Scenario implementation | $100K (algorithm work) |
 | 13-15 | TA1 package v1.0 | OSS release | $78,250 (documentation, publication) |
 
