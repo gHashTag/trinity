@@ -28,21 +28,21 @@ Current AI systems use either:
 3. **Datalog (CLARA)**: Bottom-up fixed-point reasoning with proof traces
 4. **Queen Lotus (B004)**: Self-learning adaptive reasoning with bounded rationality
 
-All four layers are **formally verified** with polynomial-time complexity proofs.
+All four layers have **polynomial-time complexity analyses** (Theorems 1–3, §1.2); the `.t27`→Verilog codegen and core ternary arithmetic are **Coq-verified** (84-theorem kernel).
 
-### 4. Budget Request
+### 4. What will it cost?
 
 We request **$931,750** over 24 months (15 months Phase 1 + 9 months Phase 2), well under the $2,000,000 DARPA cap. Our cost share of **$360,000** (38.6% in-kind contributions) exceeds the required 1/3 minimum. This conservative budget demonstrates efficient use of resources: a dedicated PI and two researchers, targeted hardware procurement, and focused cloud infrastructure. Full cost volume with detailed breakdowns, quotations, and milestone schedules is provided in Section 8 and the separate `CLARA_COST_VOLUME.md` document.
 
 ### 5. Why do you think you will be successful?
-- **3 mathematical theorems** proving O(n) complexity bounds
+- **3 complexity theorems** (O(n)/O(1) bounds, §1.2; proof sketches) atop a Coq-verified arithmetic/codegen kernel
 - **8 published Zenodo bundles** with DOIs (10.5281/zenodo.19227865-19227877)
 - **3000+ tests** passing, all open-source (MIT/Apache 2.0)
 - **FPGA implementation** with verified resource utilization (0% DSP, 19.6% LUT)
 
-### 5. What difference will it make if you're successful?
+### 6. What difference will it make if you're successful?
 - **Verifiable AI**: Polynomial-time guarantees with formal proofs
-- **Energy efficiency**: 3000× improvement vs GPU (1.2W FPGA vs 3.6kW GPU)
+- **Energy efficiency**: ~1.2 W device-level FPGA inference (vs multi-kW GPU servers; device-level, not throughput-normalized)
 - **Edge deployment**: Ternary inference on resource-constrained hardware
 - **Multi-family composition**: NN + Bayesian + RL + Logic in one framework
 
@@ -50,7 +50,7 @@ We request **$931,750** over 24 months (15 months Phase 1 + 9 months Phase 2), w
 
 ## Executive Summary
 
-Trinity is an AR-based ML system that fuses neural networks, automated reasoning, and adaptive self-learning on FPGA hardware with verifiable polynomial-time complexity guarantees.
+Trinity is an AR-based ML system that fuses neural networks, automated reasoning, and adaptive self-learning on FPGA hardware, with polynomial-time complexity analyses and a Coq-verified arithmetic/codegen kernel.
 
 ### Key Technical Contributions
 
@@ -59,7 +59,7 @@ Trinity is an AR-based ML system that fuses neural networks, automated reasoning
 | **Polynomial-time inference** | O(n) VSA operations, O(1) ternary MAC | Theorems 1-3 |
 | **Verifiability** | 8 Zenodo bundles, 3000+ tests, Zig type system | DOI-backed |
 | **Multi-family composition** | NN + VSA + Datalog + Bayesian (GF16) + RL (Queen) | All published |
-| **Energy efficiency** | 3000× vs GPU, 1.2W FPGA | FPGA synthesis |
+| **Energy efficiency** | ~1.2 W FPGA inference (device-level) | FPGA synthesis |
 | **Open source** | MIT/Apache 2.0, full reproducibility | GitHub |
 
 ### Trinity CLARA Alignment
@@ -135,6 +135,8 @@ Trinity achieves AR-based ML through **four-layer composition**:
 **Statement**: TRI-27 instruction decode and execute completes in constant time per instruction.
 
 **Proof Sketch**: 36 opcodes organized in trie structure. Decode: O(1) trie traversal. Execute: O(1) per operation (register-to-register). Program: O(k) where k = instruction count.
+
+**Scope of these guarantees (claim discipline).** Theorems 1–3 are *complexity* arguments (the proof sketches above), not machine-checked proofs. What **is** Coq-verified is the `.t27`→Verilog codegen and the core ternary arithmetic (the 84-theorem kernel); the system-level polynomial-time claim follows by composing these per-operation bounds. We state this split explicitly given CLARA's assurance focus.
 
 ### Mathematical Foundation: φ² + φ⁻² = 3
 
@@ -294,9 +296,9 @@ const defaultMetaRules = [_]MetaRule{
 | **Hardware** | CPU only | FPGA accelerated |
 | **Complexity** | No polynomial proof | 3 theorems with O(·) bounds |
 | **Open source** | ✅ | ✅ |
-| **Verifiability** | Partial | Full (Zig type system) |
+| **Verifiability** | Partial | Zig memory-safety + Coq-verified arithmetic/codegen |
 
-**Key Difference**: Trinity uses ternary weights for 20× memory savings and FPGA acceleration for 3000× energy efficiency.
+**Key Difference**: Trinity uses ternary weights for ~20× memory savings and a low-power (~1.2 W device-level) FPGA inference path.
 
 ### 3.2 ErgoAI/XSB
 
@@ -350,6 +352,8 @@ const defaultMetaRules = [_]MetaRule{
 - **VSA O(n) complexity** vs O(n²) or O(2^n) for symbolic baselines
 - **Bounded rationality**: max_depth=10 enforced (others have no depth limits)
 - **Full proof traces** vs partial/no traces in baselines
+
+*Scope: times are from the internal CLARA composition benchmark (`baselines.zig`); baseline worst-case complexities are taken from the cited papers (not re-measured head-to-head) — treat the cross-system accuracy column as indicative, not a controlled trial.*
 
 ### 3.5 Format Efficiency: IGLA RACE v2 Format Sweep
 
@@ -415,53 +419,53 @@ tri clara analyze --metric sample_complexity --baseline results/baseline.json \
 
 ## 5. Application Scenarios
 
-### 5.1 Kill Web Planning (DARPA Priority)
+### 5.1 Resilient Network Resource Allocation
 
 #### Problem
-Given N threats and M assets, assign optimal engagement pairs minimizing collateral damage.
+Given N tasks and M nodes, assign optimal task→node pairs minimizing congestion and failure risk.
 
 #### Trinity Solution
 
-**VSA Layer**: Associate threats with capabilities
+**VSA Layer**: Associate tasks with node capabilities
 ```zig
-// Create threat×capability associations
-const threat_vector = vsa.create(threat_features);
-const capability_vector = vsa.create(asset_capabilities);
-const association = vsa.bind(threat_vector, capability_vector);
+// Create task×capability associations
+const task_vector = vsa.create(task_features);
+const capability_vector = vsa.create(node_capabilities);
+const association = vsa.bind(task_vector, capability_vector);
 
 // Bundle multiple associations for consensus
-const threat_matrix = vsa.bundle3(assoc1, assoc2, assoc3);
+const task_matrix = vsa.bundle3(assoc1, assoc2, assoc3);
 ```
 
 **TRI-27 VM**: Planning logic
 ```assembly
-; Pseudo-assembly for kill web planning
-MOV R1, threat_count        ; R1 = N
-MOV R2, asset_count         ; R2 = M
-MOV R3, 0                   ; R3 = current threat
+; Pseudo-assembly for network allocation planning
+MOV R1, task_count          ; R1 = N
+MOV R2, node_count          ; R2 = M
+MOV R3, 0                   ; R3 = current task
 MOV R4, 0                   ; R4 = assignments made
 
 .loop:
 JGT R3, R1, .done           ; if R3 >= R1, done
 ; ... assignment logic ...
-ADD R3, R3, 1               ; threat++
+ADD R3, R3, 1               ; task++
 JUMP .loop
 
 .done:
 RET R4                      ; return assignments
 ```
 
-**HSLM**: Threat classification
+**HSLM**: Node-health classification
 ```zig
-// Ternary classifier: hostile/neutral/friendly
-const threat_class = hslm_forward(threat_features);
+// Ternary classifier: healthy / degraded / down
+const node_class = hslm_forward(node_features);
 // Returns {-1, 0, +1} for classification
 ```
 
 #### Complexity Analysis
 - VSA association: O(N×M) where N=M=100 → O(10,000)
 - TRI-27 planning: O(N×log(M)) with sorting
-- HSLM classification: O(N×H) where H=hidden size
+- HSLM node-health classification: O(N×H) where H=hidden size
 - **Total**: O(N×M + N×log(M) + N×H) = polynomial
 
 ### 5.2 Multi-Condition Medical Guidance
@@ -685,7 +689,7 @@ tri clara test --suite integration
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Non-US entity issues | Low | High | Foreign justification prepared |
+| Non-US entity eligibility | **High** | High | Foreign-entity justification (App. A); pursue US partner / subawardee if required |
 | Cost share shortfall | Low | Medium | Open-source value calculation |
 | DARPA hackathon scheduling | Medium | Low | Flexible timeline |
 
@@ -702,20 +706,20 @@ tri clara test --suite integration
 5. B005: Tri Language Formal DSL. DOI: 10.5281/zenodo.19227873
 6. B006: GF16 Probabilistic Format. DOI: 10.5281/zenodo.19227875
 7. B007: VSA Symbolic Layer. DOI: 10.5281/zenodo.19227877
-8. **BENCH-001**: Format Efficiency Benchmark. `src/bench_001_main.zig`, `results/bench_001_summary.csv` (2026)
+8. **IGLA RACE v2** format sweep (val_bpb): `trios-trainer-igla` (2026) — supersedes BENCH-001 (untrained-random weights)
 
 ### CLARA Reference Systems
 
-8. Manhaeve, R. et al. (2021). "DeepProbLog: Neural Probabilistic Logic Programming." arXiv:1810.02646
-9. Grover, A. et al. (2024). "ErgoAI: Neuro-Symbolic Reasoning System." AAAI.
-10. Riegel, R. et al. (2020). "Logical Neural Networks." ICLR.
+9. Manhaeve, R. et al. (2021). "DeepProbLog: Neural Probabilistic Logic Programming." arXiv:1810.02646
+10. Grover, A. et al. (2024). "ErgoAI: Neuro-Symbolic Reasoning System." AAAI.
+11. Riegel, R. et al. (2020). "Logical Neural Networks." ICLR.
 
 ### Trinity Publications
 
-11. Trinity S³AI Unified Framework. https://gHashTag.github.io/trinity/docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md
-12. FPGA Synthesis Pipeline. https://gHashTag.github.io/trinity/docs/research/sacred_formats_fpga.md
-13. Queen Lotus Experiments. https://gHashTag.github.io/trinity/docs/research/queen_lotus_experiments.md
-14. **BENCH-001: Format Efficiency Benchmark**. https://github.com/gHashTag/trinity/blob/main/docs/proposals/BENCH_001_SCIENTIFIC_RESULTS.md (2026)
+12. Trinity S³AI Unified Framework. https://gHashTag.github.io/trinity/docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md
+13. FPGA Synthesis Pipeline. https://gHashTag.github.io/trinity/docs/research/sacred_formats_fpga.md
+14. Queen Lotus Experiments. https://gHashTag.github.io/trinity/docs/research/queen_lotus_experiments.md
+15. **IGLA RACE v2 format sweep** — proposal §3.5 (supersedes BENCH-001; the BENCH-001 appendix is annotated as superseded)
 
 ---
 
