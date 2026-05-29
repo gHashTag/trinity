@@ -402,8 +402,8 @@ tri clara verify-complexity --expected O(n) --tolerance 1.2
 
 ```bash
 # Compare AR-assisted vs baseline training
-tri clara train --dataset killweb --mode baseline --epochs 100
-tri clara train --dataset killweb --mode ar-assisted --epochs 100
+tri clara train --dataset netalloc --mode baseline --epochs 100
+tri clara train --dataset netalloc --mode ar-assisted --epochs 100
 
 # Measure sample efficiency
 tri clara analyze --metric sample_complexity --baseline results/baseline.json \
