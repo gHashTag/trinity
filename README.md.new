@@ -1,0 +1,128 @@
+# trinity
+
+[![Zig](https://img.shields.io/badge/Zig-0.15+-F7A41D?logo=zig&logoColor=white)](https://ziglang.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Golden Ratio](https://img.shields.io/badge/\(\(\))-1.618033988-gold)](https://en.wikipedia.org/wiki/golden_ratio)
+[![Ecosystem](https://img.shields.io/badge/Trinity-Main-blue)](https://github.com/gHashTag/trinity)
+
+> **Trinity Orchestrator** — Golden Ratio mathematics meets computational physics and AI. Links all Trinity micro-repositories via `build.zig.zon`.
+
+## \(\(\) What is Trinity?
+
+Trinity is the main orchestrator connecting a family of focused micro-repositories. Each repo has a single responsibility and can be used independently.
+
+### Dependency Graph
+
+\`
+	t27                    \(\(\leftarrow\) SSOT: Ternary specs + Rust bootstrap compiler
+	         \(\(\uparrow\)
+	zig-golden-float      \(\(\leftarrow\) Numerical core: GF16, TF3, JIT, VM
+	         \(\(\uparrow\)
+	zig-sacred-geometry     \(\(\leftarrow\) Sacred geometry: \(\(\phi\)-attention, Beal
+	zig-physics             \(\(\leftarrow\) Quantum: QCD, gravity, dark matter, baryogenesis
+	zig-hdc                 \(\(\leftarrow\) Hyperdimensional: VSA, Sequence HDC
+	zig-knowledge-graph     \(\(\leftarrow\) Knowledge Graph: server + CLI
+	trinity-training        \(\(\leftarrow\) HSLM ML: benchmarks, datasets (208MB)
+	         \(\(\uparrow\)
+	zig-agents              \(\(\leftarrow\) Agents: MCP, autonomous (~519KB)
+	zig-crypto-mining       \(\(\leftarrow\) BTC mining + DePIN (~60KB)
+	         \(\(\uparrow\)
+	trinity                 \(\(\leftarrow\) Orchestrator (links all via build.zig.zon)
+	\`
+
+## \(\(\) Trinity Ecosystem
+
+> Golden Ratio mathematics meets computational physics and AI.
+
+| Repository | Purpose | Status |
+|---|---|---|
+| [trinity](https://github.com/gHashTag/trinity) | \(\(\(\) Orchestrator, agents, API, MCP server | \(\(\) \(\(\check\(\))\(\) Here |
+| [zig-golden-float](https://github.com/gHashTag/zig-golden-float) | \(\(\(\) \(\(\) Numeric core: GF16, TF3, VSA, JIT | \(\(\) \(\(\check\(\))\(\) Core |
+| [trinity-training](https://github.com/gHashTag/trinity-training) | \(\(\) \(\(\) ML: HSLM, benchmarks, datasets | [!\[CI\](https://img.shields.io/github/actions/workflow/status/gHashTag/trinity-training/ci.yml?branch=main)\](https://github.com/gHashTag/trinity-training/actions) |
+| [t27](https://github.com/gHashTag/t27) | \(\(\) \(\(\) Ternary SSOT + Rust bootstrap | \(\(\) \(\(\) Language |
+| [vibee-lang](https://github.com/gHashTag/vibee-lang) | \(\(\) \(\(\) VIBEE language spec (.tri/.vibee) | \(\(\) \(\(\) Language |
+| [zig-hdc](https://github.com/gHashTag/zig-hdc) | \(\(\) \(\(\) Hyperdimensional: VSA, HRR | \(\(\check\(\))\(\) |
+| [zig-sacred-geometry](https://github.com/gHashTag/zig-sacred-geometry) | \(\(\) \(\(\) Sacred \(\(\phi\)-geometry, Beal | \(\(\check\(\))\(\) |
+| [zig-physics](https://github.com/gHashTag/zig-physics) | \(\(\) \(\(\) Quantum: QCD, gravity, dark matter | \(\(\check\(\))\(\) |
+| [zig-knowledge-graph](https://github.com/gHashTag/zig-knowledge-graph) | \(\(\) \(\(\) KG server + CLI | \(\(\check\(\))\(\) |
+| [zig-agents](https://github.com/gHashTag/zig-agents) | \(\(\) \(\(\) Agents: MCP, autonomous | \(\(\check\(\))\(\) |
+| [zig-crypto-mining](https://github.com/gHashTag/zig-crypto-mining) | \(\(\) \(\(\) BTC mining + DePIN | \(\(\check\(\))\(\) |
+| [trinity-fpga](https://github.com/gHashTag/trinity-fpga) | \(\(\) \(\(\) FPGA: Verilog synthesis | \(\(\) \(\(\) WIP |
+
+## \(\(\) Repository Overview
+
+| # | Repository | Status | Size | Description |
+|---|---|---|---|---|
+| 1 | [t27](https://github.com/gHashTag/t27) | \(\(\) \(\(\) LIVE | 577+ specs | Ternary SSOT + Rust bootstrap |
+| 2 | [zig-golden-float](https://github.com/gHashTag/zig-golden-float) | \(\(\) \(\(\) LIVE | ~1MB | Numerical core: GF16, TF3, JIT, VM |
+| 3 | [zig-hdc](https://github.com/gHashTag/zig-hdc) | \(\(\) \(\(\) LIVE | 352KB | VSA, HRR, hyperdimensional computing |
+| 4 | [zig-sacred-geometry](https://github.com/gHashTag/zig-sacred-geometry) | \(\(\) \(\(\) LIVE | 58KB | Sacred \(\(\phi\)-geometry, Beal, sacred constants |
+| 5 | [zig-physics](https://github.com/gHashTag/zig-physics) | \(\(\) \(\(\) LIVE | 36KB (src) | Quantum: QCD, gravity, dark matter |
+| 6 | [zig-knowledge-graph](https://github.com/gHashTag/zig-knowledge-graph) | \(\(\) \(\(\) LIVE | ~100KB | KG server + CLI |
+| 7 | [zig-agents](https://github.com/gHashTag/zig-agents) | \(\(\) \(\(\) LIVE | ~519KB (src!) | Agents, MCP, autonomous |
+| 8 | [zig-crypto-mining](https://github.com/gHashTag/zig-crypto-mining) | \(\(\) \(\(\) LIVE | ~60KB | BTC mining + DePIN |
+| 9 | [trinity-training](https://github.com/gHashTag/trinity-training) | \(\(\) \(\(\) LIVE | 208MB data | HSLM, benchmarks, datasets |
+| 10 | [trinity](https://github.com/gHashTag/trinity) | \(\(\) \(\(\) LIVE | ~500MB | Orchestrator, API, CLI, VIBEE, FPGA |
+
+## \(\(\) Migration Status
+
+**Phase 1 — HIGH Priority:** \(\(\check\(\)) Complete
+- [zig-golden-float](https://github.com/gHashTag/zig-golden-float) — Cloned as submodule in trinity-training
+- [zig-knowledge-graph](https://github.com/gHashTag/zig-knowledge-graph) — Extracted from trinity
+- [zig-crypto-mining](https://github.com/gHashTag/zig-crypto-mining) — Extracted from trinity
+- [zig-physics](https://github.com/gHashTag/zig-physics) — Extracted from trinity
+- [zig-agents](https://github.com/gHashTag/zig-agents) — Extracted from trinity
+- [zig-sacred-geometry](https://github.com/gHashTag/zig-sacred-geometry) — Extracted from trinity
+
+**Phase 2 — MEDIUM Priority:** \(\(\) \(\(\) In Progress
+- Firebird/BitNet \(\(\) \(\(\) \(\(\rightarrow\) trinity-training
+- DePIN/\$\(\)TRI \(\(\) \(\(\) \(\(\rightarrow\) zig-crypto-mining
+- VIBEE compiler \(\(\) \(\(\) \(\(\rightarrow\) t27
+
+**Phase 3 — LOW Priority:** \(\(\) \(\(\) Pending
+- trinity-fpga — Create new repo
+- trinity-cli — Unify TRI CLI
+- trinity-www — Docsite
+
+## \(\(\) Using a Module Independently
+
+Each micro-repo is a standalone Zig package. To use any module independently:
+
+\`\(\)zig
+// build.zig.zon
+.dependencies = .\{
+    .zig_golden_float = .\{
+        .url = "https://github.com/gHashTag/zig-golden-float/archive/refs/heads/main.tar.gz",
+    \},
+\`,
+\`\`
+
+\`\`\`bash
+zig fetch --save https://github.com/gHashTag/zig-golden-float/archive/refs/heads/main.tar.gz
+\`\`
+
+## \(\(\) Model Documentation
+
+**[docs/research/COMPLETE_MODEL_CATALOG.md](docs/research/COMPLETE_MODEL_CATALOG.md)**
+
+### JEPA-T
+- [Research: docs/lab/papers/2026-03-15-hslm-tjepa.md](docs/lab/papers/2026-03-15-hslm-tjepa.md)
+- [Results: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md)
+
+### Neural Cellular Automata
+- [Results: docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md](docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md)
+
+### VSA
+- [API: docs/docs/api/vsa.md](docs/docs/api/vsa.md)
+- [Tutorial: docs/docs/tutorials/vsa-operations.md](docs/docs/tutorials/vsa-operations.md)
+
+### Ternary
+- [Guide: docs/docs/concepts/balanced-ternary.md](docs/docs/concepts/balanced-ternary.md)
+- [ADR: docs/docs/adr/002-ternary-representation.md](docs/docs/adr/002-ternary-representation.md)
+
+### Hybrid
+- [API: docs/docs/api/hybrid.md](docs/docs/api/hybrid.md)
+
+## \(\(\) License
+
+MIT \(\(\) \(\) gHashTag
