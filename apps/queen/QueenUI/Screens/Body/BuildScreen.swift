@@ -130,7 +130,7 @@ struct BuildScreen: View {
     }
 
     private func binaryMtime(_ relativePath: String) -> String? {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let fullPath = "\(cwd)/\(relativePath)"
         guard let attrs = try? FileManager.default.attributesOfItem(atPath: fullPath),
               let date = attrs[.modificationDate] as? Date else { return nil }

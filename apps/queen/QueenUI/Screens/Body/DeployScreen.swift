@@ -97,7 +97,7 @@ struct DeployScreen: View {
     }
 
     private func loadDeploy() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity/railway_farm.json"
+        let path = "\(TrinityRuntimePaths.projectRoot)/.trinity/railway_farm.json"
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let acctArray = json["accounts"] as? [[String: Any]] else { return }

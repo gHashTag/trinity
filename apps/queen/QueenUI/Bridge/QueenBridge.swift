@@ -10,7 +10,7 @@ final class QueenBridge: ObservableObject {
     private let decoder = JSONDecoder()
 
     init(trinityPath: String? = nil) {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         self.trinityPath = trinityPath ?? "\(cwd)/.trinity"
     }
 

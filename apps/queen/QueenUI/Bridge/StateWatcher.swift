@@ -56,7 +56,7 @@ public final class StateWatcher: ObservableObject {
     }
 
     private static func findTrinityPath() -> String {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         return "\(cwd)/.trinity"
     }
 

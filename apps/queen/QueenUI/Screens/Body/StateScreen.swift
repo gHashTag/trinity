@@ -71,7 +71,7 @@ struct StateScreen: View {
     }
 
     private func scanState() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity"
+        let path = TrinityRuntimePaths.stateRoot
         let fm = FileManager.default
         guard let items = try? fm.contentsOfDirectory(atPath: path) else { return }
 

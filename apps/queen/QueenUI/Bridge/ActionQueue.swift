@@ -1,55 +1,257 @@
 import Foundation
 import SwiftUI
 
-/// Central action dispatcher — writes actions to .trinity/queen/actions_queue.json
-/// Queen Zig daemon reads and executes them on next cycle
+enum QueenActionRisk: Equatable {
+    case safe
+    case requiresConfirmation
+}
+
+enum QueenActionHandling: Equatable {
+    case refresh
+    case clearQueue
+    case queenRuntime
+}
+
+struct QueenActionDefinition: Equatable {
+    let id: String
+    let title: String
+    let risk: QueenActionRisk
+    let handling: QueenActionHandling
+}
+
+enum QueenActionCatalog {
+    static let all: [QueenActionDefinition] = [
+        action("build", "Rebuild", .safe),
+        action("cell_create", "Create cell", .requiresConfirmation),
+        action("farm_evolve", "Evolve farm", .requiresConfirmation),
+        action("farm_kill_idle", "Kill idle services", .requiresConfirmation),
+        action("git_commit", "Commit state", .requiresConfirmation),
+        action("git_push", "Push changes", .requiresConfirmation),
+        refresh("issues_refresh", "Refresh issues"),
+        refresh("keys_test", "Test keys"),
+        action("pipeline_run", "Run pipeline", .requiresConfirmation),
+        action("queen_approve", "Approve action", .requiresConfirmation),
+        action("queen_deny", "Deny action", .requiresConfirmation),
+        QueenActionDefinition(
+            id: "queue_clear",
+            title: "Clear action queue",
+            risk: .requiresConfirmation,
+            handling: .clearQueue
+        ),
+        action("redeploy", "Redeploy", .requiresConfirmation),
+        action("scholar_research", "Start research", .safe),
+        action("swarm_decompose", "Decompose task", .requiresConfirmation),
+        refresh("telegram_check", "Check Telegram"),
+        action("telegram_test", "Send Telegram test", .requiresConfirmation),
+    ]
+
+    static func definition(for id: String) -> QueenActionDefinition? {
+        all.first { $0.id == id }
+    }
+
+    private static func action(
+        _ id: String,
+        _ title: String,
+        _ risk: QueenActionRisk
+    ) -> QueenActionDefinition {
+        QueenActionDefinition(
+            id: id,
+            title: title,
+            risk: risk,
+            handling: .queenRuntime
+        )
+    }
+
+    private static func refresh(
+        _ id: String,
+        _ title: String
+    ) -> QueenActionDefinition {
+        QueenActionDefinition(
+            id: id,
+            title: title,
+            risk: .safe,
+            handling: .refresh
+        )
+    }
+}
+
+struct QueenActionEnvelope: Codable, Equatable {
+    let timestamp: Int
+    let action: String
+    let params: [String: String]
+
+    enum CodingKeys: String, CodingKey {
+        case timestamp = "ts"
+        case action
+        case params
+    }
+}
+
+enum QueenActionCodec {
+    static func encode(_ actions: [QueenActionEnvelope]) throws -> Data {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        return try encoder.encode(actions)
+    }
+
+    static func decode(_ data: Data) throws -> [QueenActionEnvelope] {
+        try JSONDecoder().decode([QueenActionEnvelope].self, from: data)
+    }
+}
+
+enum QueenActionPhase: Equatable {
+    case queued
+    case running
+    case succeeded
+    case failed
+}
+
+struct QueenActionFeedback: Identifiable, Equatable {
+    let id = UUID()
+    let actionID: String
+    let title: String
+    let detail: String
+    let phase: QueenActionPhase
+}
+
+extension Notification.Name {
+    static let queenWorkspaceRefresh = Notification.Name(
+        "com.trinity.queen.workspace-refresh"
+    )
+}
+
+/// Central action dispatcher. Runtime actions are written to a durable compact
+/// JSON queue; local refresh and clear operations complete immediately.
 @MainActor
 class ActionQueue: ObservableObject {
     static let shared = ActionQueue()
 
     @Published var lastEnqueued: String?
     @Published var isProcessing = false
+    @Published var feedback: QueenActionFeedback?
 
     private var queuePath: String {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         return "\(cwd)/.trinity/queen/actions_queue.json"
     }
 
     func enqueue(_ action: String, params: [String: String] = [:]) {
-        let entry: [String: Any] = [
-            "ts": Int(Date().timeIntervalSince1970),
-            "action": action,
-            "params": params,
-        ]
-
-        // Read existing queue or create new
-        var queue: [[String: Any]] = []
-        if let data = try? Data(contentsOf: URL(fileURLWithPath: queuePath)),
-           let existing = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
-            queue = existing
+        guard let definition = QueenActionCatalog.definition(for: action) else {
+            showFeedback(
+                actionID: action,
+                title: "Unknown action",
+                detail: "\(action) is not declared in the Queen action catalog.",
+                phase: .failed
+            )
+            return
         }
 
-        queue.append(entry)
+        switch definition.handling {
+        case .refresh:
+            lastEnqueued = action
+            NotificationCenter.default.post(
+                name: .queenWorkspaceRefresh,
+                object: action
+            )
+            showFeedback(
+                actionID: action,
+                title: definition.title,
+                detail: "Live workspace data refreshed.",
+                phase: .succeeded
+            )
+        case .clearQueue:
+            clearDurableQueue(definition: definition)
+        case .queenRuntime:
+            enqueueForRuntime(definition: definition, params: params)
+        }
+    }
 
-        // Ensure directory exists
-        let dir = (queuePath as NSString).deletingLastPathComponent
-        try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+    func dismissFeedback() {
+        feedback = nil
+    }
 
-        // Write
-        if let data = try? JSONSerialization.data(withJSONObject: queue, options: [.prettyPrinted]) {
-            try? data.write(to: URL(fileURLWithPath: queuePath))
+    private func enqueueForRuntime(
+        definition: QueenActionDefinition,
+        params: [String: String]
+    ) {
+        let url = URL(fileURLWithPath: queuePath)
+        var queue: [QueenActionEnvelope] = []
+
+        if let data = try? Data(contentsOf: url) {
+            queue = (try? QueenActionCodec.decode(data)) ?? []
         }
 
-        lastEnqueued = action
-        isProcessing = true
+        queue.append(
+            QueenActionEnvelope(
+                timestamp: Int(Date().timeIntervalSince1970),
+                action: definition.id,
+                params: params
+            )
+        )
 
-        // Reset processing indicator after 3s
-        Task {
-            try? await Task.sleep(for: .seconds(3))
-            await MainActor.run {
-                isProcessing = false
+        do {
+            let directory = url.deletingLastPathComponent()
+            try FileManager.default.createDirectory(
+                at: directory,
+                withIntermediateDirectories: true
+            )
+            let data = try QueenActionCodec.encode(queue)
+            try data.write(to: url, options: .atomic)
+
+            lastEnqueued = definition.id
+            isProcessing = false
+            showFeedback(
+                actionID: definition.id,
+                title: definition.title,
+                detail: "Queued durably for the Queen runtime.",
+                phase: .queued
+            )
+        } catch {
+            isProcessing = false
+            showFeedback(
+                actionID: definition.id,
+                title: "\(definition.title) failed",
+                detail: error.localizedDescription,
+                phase: .failed
+            )
+        }
+    }
+
+    private func clearDurableQueue(definition: QueenActionDefinition) {
+        let url = URL(fileURLWithPath: queuePath)
+        do {
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.removeItem(at: url)
             }
+            lastEnqueued = definition.id
+            showFeedback(
+                actionID: definition.id,
+                title: definition.title,
+                detail: "The durable Queen action queue is empty.",
+                phase: .succeeded
+            )
+        } catch {
+            showFeedback(
+                actionID: definition.id,
+                title: "\(definition.title) failed",
+                detail: error.localizedDescription,
+                phase: .failed
+            )
         }
+    }
+
+    private func showFeedback(
+        actionID: String,
+        title: String,
+        detail: String,
+        phase: QueenActionPhase
+    ) {
+        feedback = QueenActionFeedback(
+            actionID: actionID,
+            title: title,
+            detail: detail,
+            phase: phase
+        )
     }
 }
 
@@ -61,24 +263,65 @@ struct ActionButton: View {
     var action: String
     var params: [String: String] = [:]
 
-    @StateObject private var queue = ActionQueue.shared
+    @ObservedObject private var queue = ActionQueue.shared
+    @State private var showsConfirmation = false
 
     var body: some View {
         Button {
-            ActionQueue.shared.enqueue(action, params: params)
+            if definition?.risk == .requiresConfirmation {
+                showsConfirmation = true
+            } else {
+                submit()
+            }
         } label: {
             HStack(spacing: ParietalSpacing.xxs) {
-                Text(icon)
-                    .font(WernickeTypography.caption)
+                if queue.isProcessing && queue.lastEnqueued == action {
+                    ProgressView()
+                        .controlSize(.mini)
+                } else {
+                    Text(icon)
+                        .font(WernickeTypography.caption)
+                }
                 Text(label)
                     .font(WernickeTypography.captionBold)
             }
-            .foregroundStyle(.black)
+            .foregroundStyle(V4Color.textPrimary)
             .padding(.horizontal, ParietalSpacing.sm)
             .padding(.vertical, ParietalSpacing.xxs)
-            .background(color)
+            .background(V4Color.surface)
             .clipShape(SwiftUI.Capsule())
+            .overlay {
+                SwiftUI.Capsule()
+                    .stroke(color.opacity(0.64), lineWidth: 1)
+            }
         }
         .buttonStyle(.plain)
+        .confirmationDialog(
+            definition?.title ?? label,
+            isPresented: $showsConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Confirm", role: confirmationRole) {
+                submit()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This action can change project or external state.")
+        }
+        .help(definition?.title ?? label)
+    }
+
+    private var definition: QueenActionDefinition? {
+        QueenActionCatalog.definition(for: action)
+    }
+
+    private var confirmationRole: ButtonRole? {
+        action == "farm_kill_idle" || action == "queue_clear"
+            ? .destructive
+            : nil
+    }
+
+    private func submit() {
+        queue.enqueue(action, params: params)
     }
 }

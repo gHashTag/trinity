@@ -172,7 +172,7 @@ struct TechTreeScreen: View {
     }
 
     private func loadTree() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity/tech_tree.json"
+        let path = "\(TrinityRuntimePaths.stateRoot)/tech_tree.json"
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return }
         techTree = try? JSONDecoder().decode(TechTree.self, from: data)
     }

@@ -58,4 +58,37 @@ struct ModelProviderTests {
         #expect(ChatMode.search.systemSuffix.contains("search"))
         #expect(ChatMode.reason.systemSuffix.contains("step"))
     }
+
+    @Test func localSelection_preservesAvailableQueenModel() {
+        let selected = OllamaSelectionPolicy.preferredModelID(
+            currentModelID: "claude-sonnet-4-20250514",
+            availableModelIDs: ["claude-sonnet-4-20250514", "ollama:qwen3.5:cloud"],
+            discoveredModelNames: ["qwen3.5:cloud"],
+            queenSavedModelID: nil,
+            triosSelectedModel: "qwen3.5:cloud"
+        )
+        #expect(selected == nil)
+    }
+
+    @Test func localSelection_prefersTriosModel() {
+        let selected = OllamaSelectionPolicy.preferredModelID(
+            currentModelID: "claude-sonnet-4-20250514",
+            availableModelIDs: ["ollama:kimi-k2.5:cloud", "ollama:qwen3.5:cloud"],
+            discoveredModelNames: ["kimi-k2.5:cloud", "qwen3.5:cloud"],
+            queenSavedModelID: nil,
+            triosSelectedModel: "qwen3.5:cloud"
+        )
+        #expect(selected == "ollama:qwen3.5:cloud")
+    }
+
+    @Test func localSelection_fallsBackToFirstDiscoveredModel() {
+        let selected = OllamaSelectionPolicy.preferredModelID(
+            currentModelID: "claude-sonnet-4-20250514",
+            availableModelIDs: ["ollama:kimi-k2.5:cloud"],
+            discoveredModelNames: ["kimi-k2.5:cloud"],
+            queenSavedModelID: "ollama:missing",
+            triosSelectedModel: "missing"
+        )
+        #expect(selected == "ollama:kimi-k2.5:cloud")
+    }
 }

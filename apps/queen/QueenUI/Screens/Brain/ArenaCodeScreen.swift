@@ -133,7 +133,7 @@ struct ArenaCodeScreen: View {
     }
 
     private func loadResult() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity/arena_results.json"
+        let path = "\(TrinityRuntimePaths.stateRoot)/arena_results.json"
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return }
         arenaResult = try? JSONDecoder().decode(ArenaCodeResult.self, from: data)
     }
