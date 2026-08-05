@@ -258,7 +258,7 @@ $ fpga/tools/jtag_program /tmp/blink.bit
 
 Detecting JTAG chain...
   ✓ Found 1 device(s)
-  ✓ Device 0: XC7A100T (IDCODE: 0372e093)
+  ✓ Device 0: XC7A100T (IDCODE: 13631093)
 
 Loading bitstream: /tmp/blink.bit
   ✓ Size: 324 KB (2654208 bits)
