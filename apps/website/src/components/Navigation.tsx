@@ -92,20 +92,6 @@ export default memo(function Navigation() {
           Verification
         </a>
         <a
-          href="#/ip"
-          style={{ color: 'var(--accent)', fontWeight: 600 }}
-          aria-label="License an arithmetic core"
-        >
-          Licensing
-        </a>
-        <a
-          href="#/proof"
-          style={{ color: 'var(--accent)', fontWeight: 600 }}
-          aria-label="Measured results and how they were verified"
-        >
-          Proof
-        </a>
-        <a
           href="#/about"
           style={{ color: 'var(--accent)', fontWeight: 600 }}
           aria-label="About the author"
