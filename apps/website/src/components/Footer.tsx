@@ -3,6 +3,23 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 
+// Under HashRouter a bare `#section` is read as a route, so these links used to
+// dump the reader on the homepage without scrolling to what they clicked. This
+// sends them home when needed and then finds the section once it exists.
+function goToSection(e: React.MouseEvent, id: string) {
+  e.preventDefault()
+  const hash = window.location.hash
+  const onHome = hash === '' || hash === '#' || hash === '#/'
+  if (!onHome) window.location.hash = '#/'
+  let tries = 0
+  const findIt = () => {
+    const el = document.getElementById(id)
+    if (el) { el.scrollIntoView({ behavior: 'smooth' }); return }
+    if (++tries < 40) requestAnimationFrame(findIt)
+  }
+  requestAnimationFrame(findIt)
+}
+
 export default function Footer() {
   const { t } = useI18n()
 
@@ -59,10 +76,10 @@ export default function Footer() {
             </h4>
             <nav aria-label="Footer navigation">
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <li><a href="#theorems" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Theorems section">{t.nav?.[1] || 'Theorems'}</a></li>
-                <li><a href="#solution" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Solution section">{t.nav?.[2] || 'Solution'}</a></li>
-                <li><a href="#benchmarks" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Benchmarks section">{t.nav?.[3] || 'Benchmarks'}</a></li>
-                <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Invest section">{t.nav?.[9] || 'Invest'}</a></li>
+                <li><a href="#theorems" onClick={(e) => goToSection(e, 'theorems')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Theorems section">{t.nav?.[1] || 'Theorems'}</a></li>
+                <li><a href="#solution" onClick={(e) => goToSection(e, 'solution')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Solution section">{t.nav?.[2] || 'Solution'}</a></li>
+                <li><a href="#benchmarks" onClick={(e) => goToSection(e, 'benchmarks')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Benchmarks section">{t.nav?.[3] || 'Benchmarks'}</a></li>
+                <li><a href="#invest" onClick={(e) => goToSection(e, 'invest')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Invest section">{t.nav?.[9] || 'Invest'}</a></li>
                 <li>
                   <a href="https://t27.ai/docs/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open documentation in new tab">
                     {t.footer?.docs || 'Documentation'}

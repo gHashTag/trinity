@@ -61,8 +61,30 @@ export default memo(function Navigation() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
+  // These nine links point at sections of the one-page scroll, which do not
+  // exist on any routed page. Until now the handler called preventDefault and
+  // then scrollIntoView on null, so every one of them was silently dead on
+  // /verification, /proof, /ip, /course, /cases and /about — the whole header,
+  // on six pages. From a routed page it now goes home first and scrolls after
+  // the homepage has mounted.
   const scrollTo = useCallback((id: string) => {
     setMenuOpen(false)
+    setPagesOpen(false)
+    const hash = window.location.hash
+    const onHome = hash === '' || hash === '#' || hash === '#/'
+    if (!onHome) {
+      window.location.hash = '#/'
+      // One frame is not enough: the homepage has to mount before the target
+      // element exists. Poll briefly instead of guessing a delay.
+      let tries = 0
+      const findIt = () => {
+        const el = document.getElementById(id)
+        if (el) { el.scrollIntoView({ behavior: 'smooth' }); return }
+        if (++tries < 40) requestAnimationFrame(findIt)
+      }
+      requestAnimationFrame(findIt)
+      return
+    }
     setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
     }, 100)

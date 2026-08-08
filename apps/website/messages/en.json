@@ -14,57 +14,57 @@
     "Invest"
   ],
   "hero": {
-    "tag": "GPU-Verified Green AI Economy",
-    "badge_publications": "7 PUBLICATIONS",
+    "tag": "Hardware-verified RTL · measured on real silicon",
+    "badge_publications": "2 arXiv PAPERS",
     "badge_doi": "DOI-VERIFIED",
     "headline": "φ² + 1/φ² = 3",
-    "subheadline": "298K tokens/s on RTX 3090 | 274K on A100 | VERIFIED",
-    "quote": "\"Not a claim — a theorem. Not a promise — a proof. Not simulated — GPU verified.\"",
-    "desc": "First AI platform with <strong>4 mathematical theorems</strong> + <strong>GPU-verified benchmarks</strong>: <strong>298K tokens/s</strong> (RTX 3090), <strong>70% noise robustness</strong> at 30% corruption",
+    "subheadline": "Bit-exact against an independent model · measured on a live Artix-7 · no vendor licence anywhere in the flow",
+    "quote": "\"Not simulated — measured. Not asserted — reproducible by anyone, for free.\"",
+    "desc": "Send RTL and get it <strong>measured on real silicon</strong>: bit-exact conformance against a reference model written from the specification rather than from your code, achieved timing, resources and the bitstream — on a <strong>fully open toolchain</strong>, so every number can be re-run without buying anything.",
     "metrics": [
       {
-        "value": "298K",
-        "label": "Tokens/s (RTX 3090)",
-        "proof": "RunPod GPU verified"
+        "value": "170,068",
+        "label": "cycles checked, 0 mismatches",
+        "proof": "On a third-party design, 8 Aug 2026"
       },
       {
-        "value": "274K",
-        "label": "Tokens/s (A100)",
-        "proof": "RunPod GPU verified"
+        "value": "SKY130",
+        "label": "Tape-out completed",
+        "proof": "Tiny Tapeout — GDS, gate-level, precheck"
       },
       {
-        "value": "70%",
-        "label": "Noise @30%",
-        "proof": "Theorem 1 + GPU test"
+        "value": "0",
+        "label": "Vendor licences needed",
+        "proof": "Yosys · nextpnr-xilinx · iverilog"
       }
     ],
     "newResults": {
-      "title": "GPU-Verified Results (RunPod)",
+      "title": "Measured, not estimated",
       "items": [
         {
-          "value": "298K",
-          "label": "RTX 3090 tokens/s",
-          "source": "runpod_full_tests_report.md"
+          "value": "170,068",
+          "label": "Cycles bit-exact on a client design",
+          "source": "0 mismatches, ACC_W = 32 / 24 / 16"
         },
         {
-          "value": "274K",
-          "label": "A100 80GB tokens/s",
-          "source": "e2e_repeat_report.md"
+          "value": "112 MHz",
+          "label": "Post-route on XC7A200T",
+          "source": "nextpnr-xilinx, sequential MAC"
         },
         {
-          "value": "70.2%",
-          "label": "Noise Robustness @30%",
-          "source": "Both GPUs identical"
+          "value": "100%",
+          "label": "Held-out accuracy, training on-chip",
+          "source": "Backward pass in RTL, no host"
         },
         {
-          "value": "293W",
-          "label": "A100 Power (vs 348W RTX)",
-          "source": "nvidia-smi verified"
+          "value": "0",
+          "label": "DSP48 blocks in the GF16 matmul",
+          "source": "32,252 LUTs, fabric-only mapping"
         }
       ]
     },
-    "cta": "See the Proofs",
-    "ctaSecondary": "Run a Node"
+    "cta": "Verify my RTL",
+    "ctaSecondary": "See the evidence"
   },
   "navExtra": {
     "dashboard": "Dashboard",
