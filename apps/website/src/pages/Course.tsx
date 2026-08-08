@@ -57,7 +57,7 @@ const RU = {
   seatNote: 'Следующий поток стартует, когда наберётся группа — напишите, и я придержу место.',
   whyTitle: 'Зачем этот курс',
   why1: 'Вендорские курсы учат вендорским инструментам. Курсы по ASIC заканчиваются на тейпауте. Никто не учит тому, что мне пришлось доказать на железе: нейросеть, делающая обратный проход прямо на FPGA, проверенная побитово — на тулчейне, который студент ставит бесплатно на свой ноутбук.',
-  why2: 'Я учу этому, потому что сам это построил: собственный формат чисел от статьи на arXiv через RTL на 323 МГц без единого DSP-блока до тейпаута SKY130 — и до этого обучил больше тысячи разработчиков.',
+  why2: 'Я учу этому, потому что сам это построил: собственный формат чисел от статьи на arXiv через RTL, умещающийся в логику без единого аппаратного умножителя, до тейпаута на SKY130 — и до этого обучил больше тысячи разработчиков.',
   modulesTitle: 'Восемь модулей',
   modules: [
     { n: '01', title: 'Открытый флоу с нуля', body: 'Yosys, nextpnr-xilinx, prjxray, openFPGALoader и iverilog, установленные и проверенные на macOS arm64 или Linux. Первый битстрим мигает светодиодом на реальной плате — и ни одной вендор-лицензии в цепочке.' },
@@ -173,7 +173,7 @@ export default function Course() {
           </p>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, marginBottom: 0 }}>
             I teach it because I built it: a number format of my own from an arXiv paper, through RTL
-            at 323 MHz with zero DSP blocks, to a SKY130 tape-out — and I have taught over a thousand
+            at RTL that needs no hard multipliers at all, to a SKY130 tape-out — and I have taught over a thousand
             developers before that.
           </p>
         </motion.div>
