@@ -10,7 +10,7 @@
 **Design under test:** GF16 4×4 matrix multiplier (`gf16_matmul`)
 **Client:** — (sample / own design)
 **Report ID:** SAMPLE-001
-**Engineer:** Dmitrii Vasilev · admin@t27.dev · github.com/gHashTag
+**Engineer:** Dmitrii Vasilev · admin@t27.ai · github.com/gHashTag
 **Target device:** Xilinx Artix-7 `XC7A200T` (ALINX AX7203 board)
 **Date:** 2026-08-08
 
