@@ -89,7 +89,7 @@ const TIERS = [
 ]
 
 const PROOF = [
-  ['323 MHz · 41.2 GOPS', 'GF16 4×4 matmul on Xilinx Artix-7 — 0 DSP48, 0 latches.'],
+  ['32,252 LUT · 0 DSP48', 'A GF16 4×4 matmul that maps into Artix-7 fabric with no hard multipliers at all — 21,223 LUTs if the 64 DSP blocks are allowed. Combinational, 0 latches.'],
   ['100% held-out', 'A neural network that trains itself on the FPGA — bit-exact from spec to silicon.'],
   ['SKY130 silicon', 'Taped out through Tiny Tapeout: GDS, gate-level test and precheck passed.'],
   ['83 formats', 'Published bit-exact conformance vectors for FP8, BF16, MXFP4 and microscaling.'],
@@ -144,7 +144,7 @@ const RU = {
   proofTitle: 'Почему числам можно верить',
   proofLede: 'Этот пайплайн я построил для собственной работы — тернарный формат чисел прошёл путь от статьи на arXiv до работающего кремния, с побитовой проверкой на каждом шаге.',
   proof: [
-    ['323 МГц · 41.2 GOPS', 'GF16 4×4 matmul на Artix-7 — 0 DSP48, 0 защёлок.'],
+    ['32 252 LUT · 0 DSP48', 'Матричный умножитель GF16 4×4 умещается в логику Artix-7 вообще без аппаратных умножителей — 21 223 LUT, если разрешить 64 DSP-блока. Комбинационный, 0 защёлок.'],
     ['100% held-out', 'Нейросеть, обучающаяся прямо на FPGA — путь спека→кремний побитово точен.'],
     ['Кремний SKY130', 'ASIC через TinyTapeout: GDS ✅ · gate-level тест ✅ · precheck ✅.'],
     ['83 формата', 'Опубликованные побитовые векторы соответствия для FP8, BF16, MXFP4 и microscaling.'],

@@ -159,7 +159,7 @@ const DEFAULT_BIO = [
 
 const DEFAULT_ACHIEVEMENTS = [
   'On-FPGA neural training — verified primitives that train themselves on-chip: 100% held-out accuracy, with the whole spec → silicon path bit-exact.',
-  'GF16 4×4 matmul — 323 MHz, 41.2 GOPS, 0 DSP48, 0 latches on a Xilinx Artix-7, with clean timing sign-off.',
+  'GF16 4×4 matmul — maps into Xilinx Artix-7 fabric with 0 DSP48 and 0 latches: 32,252 LUTs, or 21,223 with the hard multipliers allowed.',
   'Silicon confirmed — TinyTapeout SKY130 ASIC: GDS, gate-level test, and precheck all passing.',
   'Per-node bit-exact verification — every RTL node checked against an independent Python golden model (iverilog + KAT vectors), catching spec/RTL divergence before synthesis.',
   'tri-net — a full ternary network stack (133 .t27 specs): GF16 PHY, a BPSK modem over AD9361, mesh routing, and AEAD crypto — proven device-to-device over the air.',
