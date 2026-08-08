@@ -259,25 +259,88 @@ section {
   display: none;
 }
 
-/* The dock carries 15 items. At full letter-spacing it is wider than a 13"
-   laptop, so tighten the pills before the row has to scroll. */
-@media (max-width: 1400px) {
-  .nav-dock a,
-  .lang-toggle {
-    padding: 0 9px;
-    letter-spacing: 0.05em;
+.nav-pages-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-pages-toggle:hover,
+.nav-pages-toggle.open {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-pages-caret {
+  font-size: 8px;
+  transition: transform 0.2s;
+}
+
+.nav-pages-toggle.open .nav-pages-caret {
+  transform: rotate(180deg);
+}
+
+.nav-pages-panel {
+  position: fixed;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  width: min(560px, 92vw);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 8px;
+  background: rgba(6, 10, 9, 0.94);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 768px) {
+  .nav-pages-panel {
+    display: none;
   }
 }
 
-/* 13" laptops and half-screen windows: one more notch down so the row still
-   fits whole rather than scrolling. */
-@media (max-width: 1100px) {
-  .nav-dock a,
-  .lang-toggle {
-    padding: 0 7px;
-    font-size: 9px;
-    letter-spacing: 0.03em;
-  }
+.nav-pages-panel a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.nav-pages-panel a:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.nav-pages-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.nav-pages-note {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
 }
 
 .nav-dock a:hover,

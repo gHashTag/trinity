@@ -12,6 +12,8 @@ const LINKS = {
   github: 'https://github.com/gHashTag',
   arxiv1: 'https://arxiv.org/abs/2606.05017',
   arxiv2: 'https://arxiv.org/abs/2606.09686',
+  // Served from the apex repository, so it survives a rebuild of the SPA
+  cv: 'https://t27.ai/cv.pdf',
 }
 
 const PHOTO = 'https://avatars.githubusercontent.com/u/6774813?v=4'
@@ -26,7 +28,7 @@ export default function AboutAuthor() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="about" style={{ maxWidth: '900px', textAlign: 'left', alignItems: 'stretch' }}>
+      <section id="about" style={{ maxWidth: '900px' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Header: photo + name + headline */}
@@ -58,6 +60,9 @@ export default function AboutAuthor() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem' }}>
               <motion.a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
                 {a.links?.linkedin || 'LinkedIn'}
+              </motion.a>
+              <motion.a href={LINKS.cv} target="_blank" rel="noopener noreferrer" className="btn secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
+                {a.links?.cv || 'Download CV (PDF)'}
               </motion.a>
               <motion.a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="btn secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
                 {a.links?.github || 'GitHub'}
