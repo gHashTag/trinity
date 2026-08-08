@@ -30,6 +30,36 @@ const PAGES: PageLink[] = [
   { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'Full documentation', noteRu: 'Полная документация', external: true },
 ]
 
+// Smooth scrolling is animation-driven, so it silently does nothing when
+// animations are not running — a hidden or backgrounded tab, or a reader who has
+// asked their system for reduced motion. Getting there instantly is always better
+// than not getting there at all.
+function scrollBehaviour(): ScrollBehavior {
+  const reduced = typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return reduced || document.hidden ? 'auto' : 'smooth'
+}
+
+// Find a section that may not have mounted yet, then scroll to it.
+//
+// Uses a timer rather than requestAnimationFrame on purpose: rAF is throttled to
+// zero in a background or hidden tab, so a correctness path built on it simply
+// never runs there. Sections further down the homepage are also lazily rendered,
+// so the window has to be generous — 4 seconds of 80ms polls, which stops as soon
+// as the element appears.
+function scrollToSectionWhenReady(id: string) {
+  let tries = 0
+  const tick = () => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: scrollBehaviour() })
+      return
+    }
+    if (++tries < 50) setTimeout(tick, 80)
+  }
+  tick()
+}
+
 export default memo(function Navigation() {
   const { t, lang } = useI18n()
   const [active, setActive] = useState('hero')
@@ -74,20 +104,10 @@ export default memo(function Navigation() {
     const onHome = hash === '' || hash === '#' || hash === '#/'
     if (!onHome) {
       window.location.hash = '#/'
-      // One frame is not enough: the homepage has to mount before the target
-      // element exists. Poll briefly instead of guessing a delay.
-      let tries = 0
-      const findIt = () => {
-        const el = document.getElementById(id)
-        if (el) { el.scrollIntoView({ behavior: 'smooth' }); return }
-        if (++tries < 40) requestAnimationFrame(findIt)
-      }
-      requestAnimationFrame(findIt)
+      scrollToSectionWhenReady(id)
       return
     }
-    setTimeout(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
+    scrollToSectionWhenReady(id)
   }, [])
 
   // Handle escape key to close menu
