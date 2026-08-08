@@ -197,9 +197,13 @@ export default function HardwareVerification() {
             {c ? c.h1 : 'Not simulated. Measured on live silicon.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
-            Send your RTL. It runs on a real Xilinx Artix-7 and comes back with a signed report:
-            bit-exact conformance against an independent model, achieved timing, resource usage,
-            and the bitstream — on a fully open-source toolchain, so every number can be reproduced.
+            {c ? c.lede : (
+              <>
+                Send your RTL. It runs on a real Xilinx Artix-7 and comes back with a signed report:
+                bit-exact conformance against an independent model, achieved timing, resource usage,
+                and the bitstream — on a fully open-source toolchain, so every number can be reproduced.
+              </>
+            )}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.75rem' }}>
             <motion.a

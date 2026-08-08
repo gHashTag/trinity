@@ -7,8 +7,14 @@ const BASE = import.meta.env.BASE_URL
 // Docs points to t27.ai/docs/ (custom domain)
 const DOCS_URL = 'https://t27.ai/docs/'
 
+// The locale files have no keys for the commercial pages yet, so the label
+// lives next to the link. Missing locales fall back to English.
+const VERIFICATION_LABEL: Record<string, string> = {
+  ru: 'Верификация', de: 'Verifikation', es: 'Verificación', zh: '硬件验证',
+}
+
 export default memo(function Navigation() {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const [active, setActive] = useState('hero')
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -89,7 +95,7 @@ export default memo(function Navigation() {
           style={{ color: 'var(--accent)', fontWeight: 600 }}
           aria-label="Hardware verification service"
         >
-          Verification
+          {VERIFICATION_LABEL[lang] || 'Verification'}
         </a>
         <a
           href="#/about"
@@ -175,7 +181,7 @@ export default memo(function Navigation() {
                 onClick={() => setIsOpen(false)}
                 style={{ color: 'var(--accent)', fontWeight: 600 }}
               >
-                Verification
+                {VERIFICATION_LABEL[lang] || 'Verification'}
               </a>
               <a
                 href="#/ip"
