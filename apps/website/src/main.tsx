@@ -13,6 +13,7 @@ import TechTreePage from './pages/TechTreePage.tsx'
 import HardwareVerification from './pages/HardwareVerification.tsx'
 import Course from './pages/Course.tsx'
 import CaseStudies from './pages/CaseStudies.tsx'
+import GFT from './pages/GFT.tsx'
 import Licensing from './pages/Licensing.tsx'
 import Proof from './pages/Proof.tsx'
 import AboutAuthor from './pages/AboutAuthor.tsx'
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/verification" element={<HardwareVerification />} />
           <Route path="/course" element={<Course />} />
           <Route path="/cases" element={<CaseStudies />} />
+          <Route path="/gft" element={<GFT />} />
           <Route path="/ip" element={<Licensing />} />
           <Route path="/proof" element={<Proof />} />
           <Route path="/about" element={<AboutAuthor />} />

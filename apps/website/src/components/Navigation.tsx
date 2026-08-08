@@ -19,6 +19,7 @@ type PageLink = { href: string; en: string; ru: string; note: string; noteRu: st
 // fixed-height row with no room left — so they live behind one disclosure
 // instead of pushing each other off the right edge.
 const PAGES: PageLink[] = [
+  { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: '2.84× and 5.53× more accurate than tekum16', noteRu: 'В 2.84 и 5.53 раза точнее tekum16' },
   { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on live silicon', noteRu: 'Присылаете RTL — измеряю на живом кремнии' },
   { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores that have been to silicon', noteRu: 'Ядра, уже прошедшие кремний' },
   { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
