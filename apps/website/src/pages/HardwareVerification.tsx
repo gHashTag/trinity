@@ -1,6 +1,7 @@
 "use client";
 import { motion } from 'framer-motion'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -100,7 +101,66 @@ const STEPS = [
   'You get a signed report — measured numbers, vectors, bitstream, and every command needed to reproduce it.',
 ]
 
+// Russian copy. Other locales fall back to English rather than showing gaps.
+const RU = {
+  eyebrow: 'Верификация на живом железе',
+  h1: 'Не симуляция. Измерено на живом кремнии.',
+  lede: 'Присылаете RTL — я прогоняю его на настоящем Xilinx Artix-7 и возвращаю подписанный отчёт: побитовое соответствие независимой эталонной модели, достигнутая частота, ресурсы и битстрим. Всё на полностью открытом флоу, поэтому любую цифру вы можете перепроверить сами.',
+  ctaRun: 'Запросить прогон',
+  ctaSample: 'Посмотреть образец отчёта',
+  freeNote: 'Первый модуль — бесплатно, чтобы вы оценили отчёт до того, как за что-то платить.',
+  deliverablesTitle: 'Что в отчёте',
+  deliverables: [
+    { title: 'Побитовое соответствие', body: 'Каждый узел тракта сверяется с независимой моделью по KAT-векторам — расхождение спецификации и RTL всплывает до синтеза, а не после тейпаута.' },
+    { title: 'Тайминг и ресурсы', body: 'Достигнутая частота, slack, использование LUT/FF/BRAM/DSP и проверка на защёлки — измерено на живом Artix-7, а не оценено.' },
+    { title: 'Воспроизводимые артефакты', body: 'Битстрим, векторы, логи и точные версии инструментов, чтобы весь маршрут можно было повторить у себя.' },
+    { title: 'Без вендор-локина', body: 'Yosys, nextpnr-xilinx, prjxray, openFPGALoader, iverilog. Ни одна цифра в отчёте не требует платной лицензии для перепроверки.' },
+  ],
+  howTitle: 'Как это работает',
+  steps: [
+    'Вы присылаете RTL или спецификацию и говорите, что для неё значит «правильно».',
+    'Я строю независимую эталонную модель и прогоняю ваш дизайн на живом Artix-7.',
+    'Вы получаете подписанный отчёт: измеренные числа, векторы, битстрим и все команды для воспроизведения.',
+  ],
+  pricingTitle: 'Стоимость',
+  tiers: [
+    { name: 'Одно ядро', price: '$300', body: 'Один модуль или IP-ядро: побитовая проверка, тайминг, ресурсы, отчёт.' },
+    { name: 'Блок', price: '$800', body: 'Блок из нескольких ядер, проверка интеграции и письменный разбор.' },
+    { name: 'Готовность к тейпауту', price: '$2 000', body: 'Полный проход верификации, latch-free и закрытие тайминга, ревью под ваш процесс.' },
+    { name: 'Абонемент', price: '$1–3k / мес', body: 'Постоянные регрессии на реальном железе для вашего репозитория, на каждый релиз.' },
+  ],
+  proofTitle: 'Почему числам можно верить',
+  proofLede: 'Этот пайплайн я построил для собственной работы — тернарный формат чисел прошёл путь от статьи на arXiv до работающего кремния, с побитовой проверкой на каждом шаге.',
+  proof: [
+    ['323 МГц · 41.2 GOPS', 'GF16 4×4 matmul на Artix-7 — 0 DSP48, 0 защёлок.'],
+    ['100% held-out', 'Нейросеть, обучающаяся прямо на FPGA — путь спека→кремний побитово точен.'],
+    ['Кремний SKY130', 'ASIC через TinyTapeout: GDS ✅ · gate-level тест ✅ · precheck ✅.'],
+    ['83 формата', 'Опубликованные побитовые векторы соответствия для FP8, BF16, MXFP4 и microscaling.'],
+  ],
+  practicalsTitle: 'Как мы работаем',
+  practicals: [
+    { title: 'Сроки', body: 'Одно ядро — обычно 3–5 рабочих дней. По крупным блокам дата называется до начала работ. Если дедлайн горит — скажите сразу.' },
+    { title: 'Ваш RTL остаётся вашим', body: 'Исходники используются только для вашего отчёта, никогда не публикуются и не переиспользуются, удаляются по запросу. NDA — пожалуйста, до отправки чего-либо.' },
+    { title: 'Оплата', body: 'Инвойс в USD или EUR либо стейблкоин — как вам удобнее. Оплата по факту отчёта; первый модуль бесплатный, так что до результата вы ничего не должны.' },
+    { title: 'Что прислать', body: 'RTL или спецификацию, определение правильного поведения (эталонные выходы, алгоритм или статью), целевую частоту и ограничения. Этого обычно достаточно для старта.' },
+  ],
+  limitsTitle: 'Чем это не является',
+  limitsLede: 'Отчёт о верификации чего-то стоит только тогда, когда его границы названы так же ясно, как результаты.',
+  limits: [
+    'Устройство — Xilinx Artix-7 XC7A200T. Дизайны, которые в него не помещаются или требуют трансиверов и hard-IP, недоступных на плате, измерить здесь нельзя.',
+    'Зашифрованные нетлисты и вендор-защищённое IP через открытый флоу не проходят.',
+    'Это функциональная и тайминговая верификация на одном устройстве — не замена полного sign-off, DFT или многоугловой характеризации.',
+    'Всё, что оценено, а не измерено, помечается как оценка. Ничего не выдаётся за измеренное, если оно не измерено.',
+  ],
+  finalTitle: 'Есть дизайн для проверки?',
+  finalLede: 'Расскажите, что он делает и что для него значит «правильно». Если помещается в Artix-7 — можно измерить.',
+  finalNote: 'В письме уже будут четыре коротких вопроса. Ответьте на них — и первым ответом будет оценка и дата, а не новые вопросы. Отвечаю в течение суток.',
+}
+
 export default function HardwareVerification() {
+  const { lang } = useI18n()
+  const ru = lang === 'ru'
+  const c = ru ? RU : null
   usePageMeta("Hardware-verified RTL", "Send your RTL and get it measured on a live Xilinx Artix-7: bit-exact conformance against an independent model, timing, resources and the bitstream. From $300, first module free.")
   return (
     <main>
@@ -119,10 +179,10 @@ export default function HardwareVerification() {
           style={{ marginBottom: '2rem' }}
         >
           <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.75rem', margin: '0 0 0.75rem' }}>
-            Hardware-verified RTL
+            {c ? c.eyebrow : 'Hardware-verified RTL'}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
-            Not simulated. Measured on live silicon.
+            {c ? c.h1 : 'Not simulated. Measured on live silicon.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch' }}>
             Send your RTL. It runs on a real Xilinx Artix-7 and comes back with a signed report:
@@ -137,7 +197,7 @@ export default function HardwareVerification() {
               whileTap={{ scale: 0.95 }}
               style={{ padding: '12px 28px', fontSize: '0.9rem' }}
             >
-              Request a run
+              {c ? c.ctaRun : 'Request a run'}
             </motion.a>
             <motion.a
               href={CONTACT.sampleReport}
@@ -148,11 +208,11 @@ export default function HardwareVerification() {
               whileTap={{ scale: 0.95 }}
               style={{ padding: '12px 28px', fontSize: '0.9rem' }}
             >
-              Read a sample report
+              {c ? c.ctaSample : 'Read a sample report'}
             </motion.a>
           </div>
           <p style={{ fontSize: '0.85rem', opacity: 0.75, marginTop: '1.25rem', marginBottom: 0 }}>
-            First module verified free — so you can judge the report before paying for anything.
+            {c ? c.freeNote : 'First module verified free — so you can judge the report before paying for anything.'}
           </p>
         </motion.div>
 
@@ -164,9 +224,9 @@ export default function HardwareVerification() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>What the report contains</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.deliverablesTitle : 'What the report contains'}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
-            {DELIVERABLES.map((d) => (
+            {(c ? c.deliverables : DELIVERABLES).map((d) => (
               <div key={d.title} className="premium-card" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.05rem', margin: '0 0 0.6rem', color: 'var(--accent)' }}>{d.title}</h3>
                 <p style={{ fontSize: '0.92rem', lineHeight: 1.6, margin: 0, opacity: 0.9 }}>{d.body}</p>
@@ -184,9 +244,9 @@ export default function HardwareVerification() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '1.25rem' }}>How it works</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '1.25rem' }}>{c ? c.howTitle : 'How it works'}</h2>
           <ol style={{ margin: 0, paddingLeft: '1.25rem', display: 'grid', gap: '0.85rem' }}>
-            {STEPS.map((s) => (
+            {(c ? c.steps : STEPS).map((s) => (
               <li key={s} style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.92 }}>{s}</li>
             ))}
           </ol>
@@ -200,9 +260,9 @@ export default function HardwareVerification() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>Pricing</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.pricingTitle : 'Pricing'}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-            {TIERS.map((t) => (
+            {(c ? c.tiers : TIERS).map((t) => (
               <div key={t.name} className="premium-card" style={{ padding: '1.5rem' }}>
                 <p style={{ fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
                 <p style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--accent)', margin: '0 0 0.6rem' }}>{t.price}</p>
@@ -221,13 +281,13 @@ export default function HardwareVerification() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>Why trust the numbers</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>{c ? c.proofTitle : 'Why trust the numbers'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, marginTop: 0 }}>
             This pipeline was built for my own research — a ternary floating-point format taken from
             an arXiv paper all the way to working silicon, verified bit-exact at every step.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
-            {PROOF.map(([metric, note]) => (
+            {(c ? c.proof : PROOF).map(([metric, note]) => (
               <div key={metric}>
                 <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent)', margin: '0 0 0.35rem' }}>{metric}</p>
                 <p style={{ fontSize: '0.88rem', lineHeight: 1.55, margin: 0, opacity: 0.85 }}>{note}</p>
@@ -252,9 +312,9 @@ export default function HardwareVerification() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>Working together</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.practicalsTitle : 'Working together'}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
-            {PRACTICALS.map((p) => (
+            {(c ? c.practicals : PRACTICALS).map((p) => (
               <div key={p.title} className="premium-card" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.05rem', margin: '0 0 0.6rem', color: 'var(--accent)' }}>{p.title}</h3>
                 <p style={{ fontSize: '0.92rem', lineHeight: 1.6, margin: 0, opacity: 0.9 }}>{p.body}</p>
@@ -272,12 +332,12 @@ export default function HardwareVerification() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>What this is not</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>{c ? c.limitsTitle : 'What this is not'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, marginTop: 0 }}>
             A verification report is only worth something if its limits are stated as clearly as its results.
           </p>
           <ul style={{ margin: '1rem 0 0', paddingLeft: '1.25rem', display: 'grid', gap: '0.7rem' }}>
-            {LIMITS.map((l) => (
+            {(c ? c.limits : LIMITS).map((l) => (
               <li key={l} style={{ fontSize: '0.92rem', lineHeight: 1.6, opacity: 0.88 }}>{l}</li>
             ))}
           </ul>
@@ -292,7 +352,7 @@ export default function HardwareVerification() {
           transition={{ duration: 0.6 }}
           style={{ textAlign: 'center' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>Have a design to verify?</h2>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>{c ? c.finalTitle : 'Have a design to verify?'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '52ch', margin: '0 auto 1.5rem' }}>
             Tell me what it does and what correct looks like. If it fits on an Artix-7, it can be measured.
           </p>

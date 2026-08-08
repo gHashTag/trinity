@@ -1,6 +1,7 @@
 "use client";
 import { motion } from 'framer-motion'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -35,7 +36,50 @@ const AUDIENCE = [
   ['Tiny Tapeout participants', 'You want the path from specification to verified RTL to a shuttle, without guessing.'],
 ]
 
+// Russian copy. Other locales fall back to English rather than showing gaps.
+const RU = {
+  eyebrow: 'Курс',
+  h1: 'Обучите нейросеть прямо на FPGA.',
+  lede: 'Не инференс — именно обучение, на самом кристалле. Восемь модулей: от пустого тулчейна до сети, которая учится на живом кремнии. Полностью на открытых инструментах: без Vivado, без лицензий, без единого шага, который вы не сможете повторить сами.',
+  ctaSeat: 'Забронировать место',
+  ctaVerif: 'Посмотреть работы по верификации',
+  seatNote: 'Следующий поток стартует, когда наберётся группа — напишите, и я придержу место.',
+  whyTitle: 'Зачем этот курс',
+  why1: 'Вендорские курсы учат вендорским инструментам. Курсы по ASIC заканчиваются на тейпауте. Никто не учит тому, что мне пришлось доказать на железе: нейросеть, делающая обратный проход прямо на FPGA, проверенная побитово — на тулчейне, который студент ставит бесплатно на свой ноутбук.',
+  why2: 'Я учу этому, потому что сам это построил: собственный формат чисел от статьи на arXiv через RTL на 323 МГц без единого DSP-блока до тейпаута SKY130 — и до этого обучил больше тысячи разработчиков.',
+  modulesTitle: 'Восемь модулей',
+  modules: [
+    { n: '01', title: 'Открытый флоу с нуля', body: 'Yosys, nextpnr-xilinx, prjxray, openFPGALoader и iverilog, установленные и проверенные на macOS arm64 или Linux. Первый битстрим мигает светодиодом на реальной плате — и ни одной вендор-лицензии в цепочке.' },
+    { n: '02', title: 'Verilog ровно столько, сколько нужно', body: 'Синхронный дизайн, регистры против защёлок и почему случайная защёлка — классический баг, который вылезает только на кремнии. Первый модуль и тестбенч.' },
+    { n: '03', title: 'Арифметика — фундамент ML в железе', body: 'Почему float дорог, чего на самом деле стоит квантизация и откуда берутся тернарные и низкоразрядные форматы. GF-T и волна BitNet — изнутри.' },
+    { n: '04', title: 'Побитовая верификация (сердце курса)', body: 'Независимая эталонная модель на Python, KAT-векторы по ступеням, сверка через iverilog. Почему тестбенч, написанный из тех же предпосылок, что и дизайн, радостно соглашается с багом.' },
+    { n: '05', title: 'Матричный умножитель, который закрывает тайминг', body: 'MAC → массив → конвейер. Чтение отчётов и борьба за частоту на реальном примере: 323 МГц, 41.2 GOPS, ноль DSP-блоков.' },
+    { n: '06', title: 'Инференс нейросети на FPGA', body: 'Слои, активации, потоки данных и память на кристалле — работающие на плате, а не в симуляторе.' },
+    { n: '07', title: 'Обучение на кристалле (капстоун)', body: 'Обратный проход и SGD в RTL. Сеть учит XOR прямо на FPGA — 4 из 4, побитово против эталона. Руками это почти никто не делал.' },
+    { n: '08', title: 'Дальше — на кремний', body: 'Путь Tiny Tapeout: подготовка дизайна, что меняется между FPGA и ASIC, и где сейчас открытая кремниевая экосистема после перехода на IHP.' },
+  ],
+  audienceTitle: 'Кому это',
+  audience: [
+    ['ML-инженеры', 'Вы знаете модели. Учебники обрываются на симуляции, и железо остаётся чужой территорией.'],
+    ['Студенты и исследователи', 'Ни лицензий, ни дорогих плат, ни привратников — весь флоу здесь бесплатный и открытый.'],
+    ['Embedded-разработчики', 'Микроконтроллеры знакомы, идёте в edge-AI, нужен RTL, который несёт ML.'],
+    ['Участники Tiny Tapeout', 'Нужен путь от спецификации к проверенному RTL и шаттлу — без угадывания.'],
+  ],
+  formatsTitle: 'Форматы',
+  tiers: [
+    { name: 'Самостоятельно', price: '$149', body: 'Видео, код, наборы KAT-векторов, доступ к сообществу.' },
+    { name: 'Самостоятельно + железо', price: '$249', body: 'То же плюс удалённые прогоны на моих Artix-7 — своя плата не нужна.' },
+    { name: 'Поток · 4 недели', price: '$599', body: 'Живые сессии, разбор кода и вашего дизайна вместе с вами.' },
+    { name: 'Воркшоп для команды', price: 'от $2 000', body: 'Два дня с вашими инженерами вокруг задачи, которая у вас реально есть.' },
+  ],
+  prereq: 'Требуется: базовый Python и представление о цифровой логике. Verilog учим с нуля. Плата не обязательна — в двух форматах прогоны на моём железе включены.',
+  finalTitle: 'Хотите место в ближайшем потоке?',
+  finalLede: 'Напишите, с чего начинаете и что хотите построить. Честно скажу, подходит вам этот курс или нет.',
+}
+
 export default function Course() {
+  const { lang } = useI18n()
+  const c = lang === 'ru' ? RU : null
   usePageMeta("FPGA training course", "Eight modules from an empty toolchain to a neural network that trains itself on an FPGA — fully open-source, no Vivado, no vendor licence.")
   return (
     <main>
@@ -54,10 +98,10 @@ export default function Course() {
           style={{ marginBottom: '2rem' }}
         >
           <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.75rem', margin: '0 0 0.75rem' }}>
-            Course
+            {c ? c.eyebrow : 'Course'}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
-            Train a neural network on an FPGA.
+            {c ? c.h1 : 'Train a neural network on an FPGA.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch' }}>
             Not inference — <strong>training</strong>, on the chip itself. Eight modules from an empty
@@ -72,7 +116,7 @@ export default function Course() {
               whileTap={{ scale: 0.95 }}
               style={{ padding: '12px 28px', fontSize: '0.9rem' }}
             >
-              Reserve a seat
+              {c ? c.ctaSeat : 'Reserve a seat'}
             </motion.a>
             <motion.a
               href="#/verification"
@@ -81,7 +125,7 @@ export default function Course() {
               whileTap={{ scale: 0.95 }}
               style={{ padding: '12px 28px', fontSize: '0.9rem' }}
             >
-              See the verification work
+              {c ? c.ctaVerif : 'See the verification work'}
             </motion.a>
           </div>
           <p style={{ fontSize: '0.85rem', opacity: 0.75, marginTop: '1.25rem', marginBottom: 0 }}>
@@ -98,7 +142,7 @@ export default function Course() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>Why this course exists</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>{c ? c.whyTitle : 'Why this course exists'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, margin: 0 }}>
             Vendor courses teach you vendor tools. ASIC courses stop at the tape-out. Nobody teaches
             the thing I actually had to prove on hardware: a neural network performing its own
@@ -120,9 +164,9 @@ export default function Course() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>Eight modules</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.modulesTitle : 'Eight modules'}</h2>
           <div style={{ display: 'grid', gap: '0.85rem' }}>
-            {MODULES.map((m) => (
+            {(c ? c.modules : MODULES).map((m) => (
               <div key={m.n} className="premium-card" style={{ padding: '1.35rem 1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
                 <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.95rem', fontVariantNumeric: 'tabular-nums', opacity: 0.8, paddingTop: '0.15rem' }}>{m.n}</span>
                 <div>
@@ -142,9 +186,9 @@ export default function Course() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>Who it is for</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.audienceTitle : 'Who it is for'}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
-            {AUDIENCE.map(([who, why]) => (
+            {(c ? c.audience : AUDIENCE).map(([who, why]) => (
               <div key={who} className="premium-card" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.02rem', margin: '0 0 0.55rem', color: 'var(--accent)' }}>{who}</h3>
                 <p style={{ fontSize: '0.9rem', lineHeight: 1.6, margin: 0, opacity: 0.88 }}>{why}</p>
@@ -165,9 +209,9 @@ export default function Course() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>Formats</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.formatsTitle : 'Formats'}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-            {TIERS.map((t) => (
+            {(c ? c.tiers : TIERS).map((t) => (
               <div key={t.name} className="premium-card" style={{ padding: '1.5rem' }}>
                 <p style={{ fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
                 <p style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--accent)', margin: '0 0 0.6rem' }}>{t.price}</p>
@@ -186,7 +230,7 @@ export default function Course() {
           transition={{ duration: 0.6 }}
           style={{ textAlign: 'center' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>Want a seat in the next cohort?</h2>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>{c ? c.finalTitle : 'Want a seat in the next cohort?'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '52ch', margin: '0 auto 1.5rem' }}>
             Tell me where you are starting from and what you want to build. I will tell you honestly
             whether this course is the right thing for you.
