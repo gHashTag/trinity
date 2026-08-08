@@ -19,7 +19,7 @@ const RESULTS = [
   {
     metric: '323 MHz · 41.2 GOPS',
     title: 'GF16 4×4 matmul on Artix-7',
-    body: 'A matrix multiplier carrying its arithmetic entirely in logic — 0 DSP48 blocks and 0 inferred latches, timing closed on a Xilinx XC7A200T.',
+    body: 'A matrix multiplier carrying its arithmetic entirely in logic — 0 DSP48 blocks and 0 inferred latches, timing closed on a Xilinx Artix-7.',
     how: 'Measured on hardware, not estimated from a report.',
   },
   {
@@ -77,7 +77,7 @@ const RU = {
   ctaSource: 'Посмотреть исходники',
   resultsTitle: 'Результаты',
   results: [
-    { metric: '323 МГц · 41.2 GOPS', title: 'Матричный умножитель GF16 4×4 на Artix-7', body: 'Умножитель, несущий свою арифметику целиком в логике: 0 блоков DSP48 и 0 выведенных защёлок, тайминг закрыт на Xilinx XC7A200T.', how: 'Измерено на железе, а не оценено по отчёту.' },
+    { metric: '323 МГц · 41.2 GOPS', title: 'Матричный умножитель GF16 4×4 на Artix-7', body: 'Умножитель, несущий свою арифметику целиком в логике: 0 блоков DSP48 и 0 выведенных защёлок, тайминг закрыт на Xilinx Artix-7.', how: 'Измерено на железе, а не оценено по отчёту.' },
     { metric: '100% отложенная выборка', title: 'Нейросеть, обучающаяся прямо на FPGA', body: 'Прямой проход, градиент и обновление весов — всё в RTL, без хоста в контуре. Двухслойная ReLU-сеть учит XOR на самом кристалле, 4 из 4.', how: 'Каждый узел побитово — от спецификации до кремния.' },
     { metric: 'SKY130', title: 'Тейпаут через Tiny Tapeout', body: 'Тот же исходник, что работает на FPGA, ушёл в открытый ASIC-процесс: GDS получен, тест на уровне вентилей пройден, precheck пройден.', how: 'Полный путь от статьи на arXiv до изготовленного дизайна.' },
     { metric: '≈3–5.5×', title: 'GF-T против сопоставимых форматов', body: 'Тернарный формат с плавающей точкой собственной разработки, лучший в классе среди сопоставимых тернарных форматов на средней и дальней дистанции — без декодирования режима, с нативной тернарной экспонентой.', how: 'Опубликован с независимой эталонной моделью и тест-векторами.' },
