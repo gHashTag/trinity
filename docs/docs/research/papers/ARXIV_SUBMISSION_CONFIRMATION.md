@@ -59,7 +59,7 @@ This is the same audit class that retracted fabricated bibliography DOIs in
 
 Nothing. Until real arXiv submissions are made — and confirmed by genuine
 moderation receipts — this document has no successor. To publish on arXiv,
-follow the standard procedure at <https://info.arxiv.org/help/submit/index.html>
+follow the standard procedure at [info.arxiv.org/help/submit](https://info.arxiv.org/help/submit/index.html)
 and save the **real** receipts here.
 
 ---
