@@ -14,57 +14,57 @@
     "Invest"
   ],
   "hero": {
-    "tag": "Hardware-verified RTL · measured on real silicon",
+    "tag": "GF-T · a ternary-native float that beats the published state of the art",
     "badge_publications": "2 arXiv PAPERS",
     "badge_doi": "DOI-VERIFIED",
     "headline": "φ² + 1/φ² = 3",
-    "subheadline": "Bit-exact against an independent model · measured on a live Artix-7 · no vendor licence anywhere in the flow",
-    "quote": "\"Not simulated — measured. Not asserted — reproducible by anyone, for free.\"",
-    "desc": "Send RTL and get it <strong>measured on real silicon</strong>: bit-exact conformance against a reference model written from the specification rather than from your code, achieved timing, resources and the bitstream — on a <strong>fully open toolchain</strong>, so every number can be re-run without buying anything.",
+    "subheadline": "2.84× and 5.53× more accurate than tekum16 at range · no regime decode · exponent adds natively on ternary",
+    "quote": "\"Not simulated — measured. Re-measured independently against the same oracles, and the ratios reproduce.\"",
+    "desc": "<strong>GF-T</strong> puts the exponent of a float in <strong>balanced ternary</strong> and keeps the fields fixed. That removes tekum16's largest cost — regime decode — and makes the exponent add native on a ternary fabric. Measured against tekum16 on its own ground: a tie near unity, <strong>2.84× lower error</strong> at mid range and <strong>5.53× at far range</strong>, with a uniform 9-bit mantissa where tekum16 tapers to four.",
     "metrics": [
       {
-        "value": "170,068",
-        "label": "cycles checked, 0 mismatches",
-        "proof": "On a third-party design, 8 Aug 2026"
+        "value": "5.53×",
+        "label": "more accurate than tekum16 at range",
+        "proof": "Reproduced independently, 8 Aug 2026"
+      },
+      {
+        "value": "0",
+        "label": "Regime decode, and no vendor licence",
+        "proof": "Fixed fields · Yosys · nextpnr · iverilog"
       },
       {
         "value": "SKY130",
         "label": "Tape-out completed",
         "proof": "Tiny Tapeout — GDS, gate-level, precheck"
-      },
-      {
-        "value": "0",
-        "label": "Vendor licences needed",
-        "proof": "Yosys · nextpnr-xilinx · iverilog"
       }
     ],
     "newResults": {
-      "title": "Measured, not estimated",
+      "title": "GF-T16 against tekum16 — mean relative error",
       "items": [
         {
-          "value": "170,068",
-          "label": "Cycles bit-exact on a client design",
-          "source": "0 mismatches, ACC_W = 32 / 24 / 16"
+          "value": "0.92×",
+          "label": "near unity (|e| < 8)",
+          "source": "3.56e-4 vs 3.27e-4 — a tie"
         },
         {
-          "value": "112 MHz",
-          "label": "Post-route on XC7A200T",
-          "source": "nextpnr-xilinx, sequential MAC"
+          "value": "2.84×",
+          "label": "mid range (|e| 8–20)",
+          "source": "3.52e-4 vs 1.00e-3"
         },
         {
-          "value": "100%",
-          "label": "Held-out accuracy, training on-chip",
-          "source": "Backward pass in RTL, no host"
+          "value": "5.53×",
+          "label": "far range (|e| 20–38)",
+          "source": "3.53e-4 vs 1.95e-3"
         },
         {
-          "value": "0",
-          "label": "DSP48 blocks in the GF16 matmul",
-          "source": "32,252 LUTs, fabric-only mapping"
+          "value": "±40",
+          "label": "exponent range, in powers of two",
+          "source": "Bounded — tekum16's regime is not"
         }
       ]
     },
-    "cta": "Verify my RTL",
-    "ctaSecondary": "See the evidence"
+    "cta": "License GF-T",
+    "ctaSecondary": "See the measurement"
   },
   "navExtra": {
     "dashboard": "Dashboard",

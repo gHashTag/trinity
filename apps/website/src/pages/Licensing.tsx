@@ -34,8 +34,8 @@ const CORES = [
   {
     name: 'GF-T multiplier',
     tag: 'Ternary arithmetic',
-    body: 'The multiplier for GF-T, a ternary floating-point format that benchmarks best-in-class (≈3–5.5× against comparable formats). No regime decode, native ternary exponent.',
-    proof: 'Published format (arXiv:2606.05017) with an independent reference model and bit-exact test vectors.',
+    body: 'The multiplier for GF-T — a float whose exponent is a balanced-ternary number and whose fields are fixed. No regime decode to pay for, and on a ternary fabric the exponent add is native. Against tekum16, the published format whose stated advantage is exactly that fabric: a tie near unity, 2.84× lower error at |e| 8–20 and 5.53× lower at |e| 20–38, with a uniform 9-bit mantissa where tekum16 tapers to four.',
+    proof: 'Published as arXiv:2606.05017 with an independent reference model and bit-exact vectors. Ratios re-measured independently on 8 August 2026 and they reproduce.',
   },
   {
     name: 'GF16 4×4 matmul',
@@ -75,13 +75,13 @@ const INCLUDED = [
 // Russian copy. Other locales fall back to English rather than showing gaps.
 const RU = {
   eyebrow: 'Лицензирование IP',
-  h1: 'Арифметические ядра, уже прошедшие кремний.',
+  h1: 'Формат, который обходит опубликованный уровень. И ядра к нему.',
   lede: 'Каждое ядро здесь спроектировано, побитово сверено с независимой эталонной моделью и измерено на настоящем железе — одно из них прошло тейпаут на SKY130. Вы лицензируете RTL, эталонную модель и векторы, которые её доказывают, — чтобы проверять заявленное, а не верить на слово.',
   ctaEnquire: 'Спросить про ядро',
   ctaVerify: 'Как я верифицирую',
   coresTitle: 'Доступные ядра',
   cores: [
-    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — тернарного формата с плавающей точкой, который в бенчмарках лучший в классе (≈3–5.5× против сопоставимых форматов). Без декодирования режима, с нативной тернарной экспонентой.', proof: 'Опубликованный формат (arXiv:2606.05017) с независимой эталонной моделью и побитовыми тест-векторами.' },
+    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — float, у которого экспонента является сбалансированным тернарным числом, а поля фиксированы. Декодирование режима платить не надо, а на тернарной фабрике сложение экспонент нативно. Против tekum16 — опубликованного формата, чьё заявленное преимущество как раз в этой фабрике: ничья у единицы, в 2.84 раза меньше ошибки при |e| 8–20 и в 5.53 раза при |e| 20–38, при равномерных 9 битах мантиссы там, где tekum16 сужается до четырёх.', proof: 'Опубликован как arXiv:2606.05017 с независимой эталонной моделью и побитовыми векторами. Отношения перемерены независимо 8 августа 2026 — воспроизводятся.' },
     { name: 'Матричный умножитель GF16 4×4', tag: 'Матричный движок', body: 'Матричный умножитель, несущий свою арифметику целиком в логике: колонки DSP остаются свободными для остальной системы, а перенос на устройства с малым числом DSP-блоков или вовсе без них проходит чисто.', proof: '36.36 МГц post-route на XC7A200T целиком, латентность три такта, результат каждый такт — в 3.6 раза выше 9.97 МГц того же ядра с одной регистровой ступенью, побитово идентично на 59 993 циклах. Только логика: 32 252 LUT без единого DSP48 либо 21 223 LUT с 64 DSP.' },
     { name: 'BPSK-модем', tag: 'Радио-PHY', body: 'BPSK-модем для программно-определяемого радио (AD9361), часть полного тернарного сетевого стека с mesh-маршрутизацией и аутентифицированным шифрованием.', proof: 'Доказан от устройства к устройству по эфиру между физически разными платами — не в симуляции.' },
     { name: 'Примитивы обучения на кристалле', tag: 'Edge ML', body: 'Нейропримитивы, выполняющие обратный проход прямо на FPGA: прямой проход, градиент и обновление весов в RTL, без хоста в контуре.', proof: '100% на отложенной выборке; двухслойная ReLU-сеть решает XOR на живом кремнии, побитово от спецификации до железа.' },
@@ -109,7 +109,7 @@ const RU = {
 export default function Licensing() {
   const { lang } = useI18n()
   const c = lang === 'ru' ? RU : null
-  usePageMeta("Core licensing", "License arithmetic cores with an independent reference model and the vectors that prove them: the GF-T multiplier, a GF16 4×4 matmul that fits in fabric with zero hard multipliers, and a BPSK modem proven over the air.")
+  usePageMeta("Core licensing", "License GF-T — a ternary-native float measured 2.84× and 5.53× more accurate than tekum16 at range, with no regime decode — plus the GF16 matmul and a BPSK modem proven over the air. Reference model and bit-exact vectors included.")
   return (
     <main>
       <QuantumBackground />

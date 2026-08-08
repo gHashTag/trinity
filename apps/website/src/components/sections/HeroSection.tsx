@@ -278,12 +278,12 @@ export default function HeroSection() {
             bought. The primary action is now the service; the secondary is the
             evidence behind it, which is what a sceptical reader wants next. */}
         <motion.a
-          href="#/verification"
+          href="#/ip"
           className="btn"
           style={{ minWidth: 'clamp(140px, 40vw, 200px)' }}
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0,255,136,0.3)' }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Hardware verification service"
+          aria-label="License the GF-T format"
         >
           {t.cta}
         </motion.a>
