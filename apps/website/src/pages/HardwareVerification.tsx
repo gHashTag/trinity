@@ -12,6 +12,28 @@ const CONTACT = {
   sampleReport: 'https://github.com/gHashTag/trinity/blob/main/docs/verification/SAMPLE-REPORT.md',
 }
 
+// A prefilled body turns a blank email into a form: the client answers four
+// questions, and the first reply can already be a quote instead of a round of
+// "could you also tell me...".
+const INTAKE_BODY = [
+  'Hi Dmitrii,',
+  '',
+  '1) What the design does (one or two lines):',
+  '',
+  '2) What "correct" means for it — reference outputs, an algorithm, a paper, or a spec:',
+  '',
+  '3) Target frequency, and any constraints that matter:',
+  '',
+  '4) Where the sources are (repo link, or say if you need an NDA first):',
+  '',
+  'Deadline, if there is one:',
+  '',
+  'Thanks,',
+].join('\n')
+
+const mailto = (subject: string) =>
+  `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(INTAKE_BODY)}`
+
 const PRACTICALS = [
   {
     title: 'Turnaround',
@@ -107,7 +129,7 @@ export default function HardwareVerification() {
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.75rem' }}>
             <motion.a
-              href={`mailto:${CONTACT.email}?subject=Hardware%20verification%20request`}
+              href={mailto('Hardware verification request')}
               className="btn"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -272,8 +294,12 @@ export default function HardwareVerification() {
           <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '52ch', margin: '0 auto 1.5rem' }}>
             Tell me what it does and what correct looks like. If it fits on an Artix-7, it can be measured.
           </p>
+          <p style={{ fontSize: '0.85rem', lineHeight: 1.6, opacity: 0.72, maxWidth: '52ch', margin: '0 auto 1.5rem' }}>
+            The email opens with four short questions already in it. Answer them and my first
+            reply can be a quote and a date rather than more questions. I answer within a day.
+          </p>
           <motion.a
-            href={`mailto:${CONTACT.email}?subject=Hardware%20verification%20request`}
+            href={mailto('Hardware verification request')}
             className="btn"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
