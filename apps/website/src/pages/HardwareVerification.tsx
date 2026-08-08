@@ -9,7 +9,34 @@ const CONTACT = {
   github: 'https://github.com/gHashTag',
   arxiv1: 'https://arxiv.org/abs/2606.05017',
   arxiv2: 'https://arxiv.org/abs/2606.09686',
+  sampleReport: 'https://github.com/gHashTag/trinity/blob/main/docs/verification/SAMPLE-REPORT.md',
 }
+
+const PRACTICALS = [
+  {
+    title: 'Turnaround',
+    body: 'A single core is typically back within 3–5 working days. Larger blocks are quoted with a date before any work starts — if a deadline is tight, say so in the first message.',
+  },
+  {
+    title: 'Your RTL stays yours',
+    body: 'Sources are used only to produce your report, are never published or reused, and are deleted on request once delivered. Happy to sign your NDA before you send anything.',
+  },
+  {
+    title: 'Payment',
+    body: 'Invoice in USD or EUR, or stablecoin — whichever is simpler for you. Payment on delivery of the report; the first module is free, so nothing is owed until you have seen the work.',
+  },
+  {
+    title: 'What I need from you',
+    body: 'The RTL or specification, a definition of correct behaviour (reference outputs, an algorithm, or a paper), the target frequency, and any constraints. That is usually enough to start.',
+  },
+]
+
+const LIMITS = [
+  'Device is a Xilinx Artix-7 XC7A200T — designs that exceed it, or need transceivers and hard IP the board does not expose, cannot be measured here.',
+  'Encrypted netlists and vendor-encrypted IP cannot go through an open-source flow.',
+  'This is functional and timing verification on one device — not full sign-off, DFT, or multi-corner characterisation.',
+  'Anything estimated rather than measured is labelled as such. Nothing is reported as measured unless it was measured.',
+]
 
 const DELIVERABLES = [
   {
@@ -89,7 +116,7 @@ export default function HardwareVerification() {
               Request a run
             </motion.a>
             <motion.a
-              href={CONTACT.github}
+              href={CONTACT.sampleReport}
               target="_blank"
               rel="noopener noreferrer"
               className="btn secondary"
@@ -97,7 +124,7 @@ export default function HardwareVerification() {
               whileTap={{ scale: 0.95 }}
               style={{ padding: '12px 28px', fontSize: '0.9rem' }}
             >
-              See the code
+              Read a sample report
             </motion.a>
           </div>
           <p style={{ fontSize: '0.85rem', opacity: 0.75, marginTop: '1.25rem', marginBottom: 0 }}>
@@ -191,6 +218,45 @@ export default function HardwareVerification() {
               arXiv:2606.09686
             </a>
           </div>
+        </motion.div>
+
+        {/* Practicals */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ marginBottom: '2rem' }}
+        >
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>Working together</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+            {PRACTICALS.map((p) => (
+              <div key={p.title} className="premium-card" style={{ padding: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.05rem', margin: '0 0 0.6rem', color: 'var(--accent)' }}>{p.title}</h3>
+                <p style={{ fontSize: '0.92rem', lineHeight: 1.6, margin: 0, opacity: 0.9 }}>{p.body}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Scope & limits */}
+        <motion.div
+          className="premium-card"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ marginBottom: '2rem' }}
+        >
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>What this is not</h2>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, marginTop: 0 }}>
+            A verification report is only worth something if its limits are stated as clearly as its results.
+          </p>
+          <ul style={{ margin: '1rem 0 0', paddingLeft: '1.25rem', display: 'grid', gap: '0.7rem' }}>
+            {LIMITS.map((l) => (
+              <li key={l} style={{ fontSize: '0.92rem', lineHeight: 1.6, opacity: 0.88 }}>{l}</li>
+            ))}
+          </ul>
         </motion.div>
 
         {/* Contact */}
