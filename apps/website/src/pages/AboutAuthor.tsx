@@ -28,7 +28,7 @@ export default function AboutAuthor() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="about" style={{ maxWidth: '900px' }}>
+      <section id="about" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Header: photo + name + headline */}

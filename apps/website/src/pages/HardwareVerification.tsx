@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { useI18n } from '../i18n/context'
+import VerificationDiagram from '../components/VerificationDiagram'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -101,6 +102,14 @@ const STEPS = [
   'You get a signed report — measured numbers, vectors, bitstream, and every command needed to reproduce it.',
 ]
 
+// Measured facts, not badges. Nothing here is a claim I cannot show the working for.
+const SIGNALS: [string, string][] = [
+  ['170,068', 'cycles in the last run'],
+  ['0', 'mismatches found'],
+  ['48h', 'typical turnaround'],
+  ['$0', 'for the first module'],
+]
+
 const RELATED = [
   { href: '#/proof', title: 'The evidence', body: 'Every measured number on this site, how it was obtained, and what it is not.' },
   { href: '#/ip', title: 'License a core', body: 'The arithmetic that has already been through silicon — GF-T, the GF16 matmul, the BPSK modem.' },
@@ -115,6 +124,13 @@ const RELATED_RU = [
 
 // Russian copy. Other locales fall back to English rather than showing gaps.
 const RU = {
+  diagramTitle: 'Почему внешняя проверка может с вами не согласиться',
+  signals: [
+    ['170 068', 'циклов в последнем прогоне'],
+    ['0', 'найдено расхождений'],
+    ['48 ч', 'обычный срок'],
+    ['$0', 'за первый модуль'],
+  ] as [string, string][],
   eyebrow: 'Верификация на живом железе',
   h1: 'Не симуляция. Измерено на живом кремнии.',
   lede: 'Присылаете RTL — я прогоняю его на настоящем Xilinx Artix-7 и возвращаю подписанный отчёт: побитовое соответствие независимой эталонной модели, достигнутая частота, ресурсы и битстрим. Всё на полностью открытом флоу, поэтому любую цифру вы можете перепроверить сами.',
@@ -179,7 +195,7 @@ export default function HardwareVerification() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="verification" style={{ maxWidth: '900px' }}>
+      <section id="verification" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -227,9 +243,38 @@ export default function HardwareVerification() {
               {c ? c.ctaSample : 'Read a sample report'}
             </motion.a>
           </div>
+          {/* Trust signals belong beside the CTA, not 1500px below it. These are
+              measured facts rather than badges — the only kind this page has earned. */}
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1.5rem', justifyContent: 'center',
+            marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)',
+          }}>
+            {(c ? c.signals : SIGNALS).map(([value, label]) => (
+              <div key={label} style={{ textAlign: 'center', minWidth: '110px' }}>
+                <p style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+                <p style={{ margin: 0, fontSize: '0.76rem', opacity: 0.72, lineHeight: 1.35 }}>{label}</p>
+              </div>
+            ))}
+          </div>
           <p style={{ fontSize: '0.85rem', opacity: 0.75, marginTop: '1.25rem', marginBottom: 0 }}>
             {c ? c.freeNote : 'First module verified free — so you can judge the report before paying for anything.'}
           </p>
+        </motion.div>
+
+        {/* The method, drawn. Placed before the deliverables because every item in
+            that list depends on the reader believing this one idea. */}
+        <motion.div
+          className="premium-card"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ marginBottom: '2rem' }}
+        >
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '1.25rem' }}>
+            {c ? c.diagramTitle : 'Why an outside check can disagree with you'}
+          </h2>
+          <VerificationDiagram />
         </motion.div>
 
         {/* What you get */}
