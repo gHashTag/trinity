@@ -4,7 +4,11 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig(() => ({
-  base: '/', // Custom domain t27.ai (no subpath)
+  // Relative base so the built SPA works wherever it is served from: the apex
+  // (t27.ai/) and the project-pages subpath (t27.ai/trinity/) alike. With '/'
+  // the subpath deploy asked for /assets/... at the apex root, got 404s, and
+  // the page rendered blank. Safe here because routing is HashRouter.
+  base: './',
   plugins: [react()],
   resolve: {
     alias: {
