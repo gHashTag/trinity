@@ -1,5 +1,6 @@
 "use client";
 import { motion } from 'framer-motion'
+import { usePageMeta } from '../hooks/usePageMeta'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -100,6 +101,7 @@ const STEPS = [
 ]
 
 export default function HardwareVerification() {
+  usePageMeta("Hardware-verified RTL", "Send your RTL and get it measured on a live Xilinx Artix-7: bit-exact conformance against an independent model, timing, resources and the bitstream. From $300, first module free.")
   return (
     <main>
       <QuantumBackground />

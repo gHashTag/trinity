@@ -1,5 +1,6 @@
 "use client";
 import { motion } from 'framer-motion'
+import { usePageMeta } from '../hooks/usePageMeta'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -35,6 +36,7 @@ const AUDIENCE = [
 ]
 
 export default function Course() {
+  usePageMeta("FPGA training course", "Eight modules from an empty toolchain to a neural network that trains itself on an FPGA — fully open-source, no Vivado, no vendor licence.")
   return (
     <main>
       <QuantumBackground />
