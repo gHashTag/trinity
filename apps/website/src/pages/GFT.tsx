@@ -35,6 +35,12 @@ const ACCURACY: [string, string, string, string][] = [
   ['|e| 20–38', '3.53e-4', '1.95e-3', '5.53× better'],
 ]
 
+const LADDER: [string, string, string][] = [
+  ['GF-T8', '50', '153.23 MHz'],
+  ['GF-T16', '212', '131.73 MHz'],
+  ['GF-T32', '1,477', '83.27 MHz'],
+]
+
 const COST: [string, string, string, string][] = [
   ['gft_mul, 32-bit ports', '1,179', '3 with DSP allowed', '81 MHz'],
   ['Width-corrected', '219', '0', '81.35 MHz'],
@@ -51,7 +57,8 @@ const LIMITS = [
   ['The range is bounded, and that is the trade', 'GF-T16 reaches ±40 in powers of two — roughly ±12 decades. tekum16’s regime is unbounded, so beyond that GF-T16 overflows and tekum16 keeps working. Fixed fields buy the cheap datapath and the uniform precision; the price is range, and most ML and DSP workloads never reach it.'],
   ['The accuracy bins are powers of two', 'Not decades. An earlier note labelled them "dec", which would send a reviewer to check the one reading under which the far result looks invented. Corrected upstream.'],
   ['Measured on one device family', 'Artix-7, on the open flow. Not multi-corner characterisation, and the ASIC numbers will differ.'],
-  ['No tekum16 RTL exists here', 'The accuracy comparison is against the published format’s own oracle. The cost figures are GF-T’s own — writing a competitor’s implementation and then reporting it as more expensive would prove nothing.'],
+  ['The comparison is against a model of tekum, not tekum itself', 'tekum (arXiv:2512.10964) is a descendant of takum adapted for balanced ternary. The oracle it is measured against here is a reverse-engineered structural model built from takum’s field scheme — the full per-trit specification needs the paper. The ratios are as good as that model.'],
+  ['No head-to-head in hardware yet', 'takum’s RTL is public and is VHDL (takum-arithmetic/Takum-Codec-RTL). Synthesising it alongside GF-T needs a VHDL front end this bench does not have, so the cost figures here are GF-T’s own. What can be said from their source: their 16-bit codec pulls in a 725-line FloPoCo leading-zero-counter and barrel shifter, generated for a Kintex-7. That is the regime decode GF-T’s fixed fields do not have — a structural difference, not a measured one.'],
 ]
 
 const RU = {
@@ -81,6 +88,14 @@ const RU = {
     ['С правильными разрядностями', '219', '0', '81.35 МГц'],
     ['С разрядностями и конвейером', '219', '0', '147.32 МГц'],
   ] as [string, string, string, string][],
+  ladderTitle: 'Вся лестница',
+  ladderNote: 'Один модуль покрывает все ступени: разрядности выводятся из параметров. С конвейером, латентность один такт, измерено на одном и том же стенде — поэтому три строки сравнимы между собой. Эквивалентность доказана на каждой ступени против эталона этой ступени.',
+  ladderCols: ['Ступень', 'LUT', 'Fmax'],
+  ladder: [
+    ['GF-T8', '50', '153.23 МГц'],
+    ['GF-T16', '212', '131.73 МГц'],
+    ['GF-T32', '1 477', '83.27 МГц'],
+  ] as [string, string, string][],
   widthTitle: 'Находка: интерфейс стоил в пять раз дороже арифметики',
   widthBody: 'В исходном модуле все порты объявлены 32-битными, хотя в GF-T16 нет ничего 32-битного: поле мантиссы 9 бит, значит (1+M) — 10, их произведение — 20, а смещение экспоненты не превышает 80, то есть 7 бит. Синтезатор честно строил умножитель 32×32 и 32-битное дерево сравнений и платил за это полную цену: 1179 LUT либо три блока DSP48. С правильными разрядностями — 219 LUT и ни одного DSP, при побитовой идентичности на 321 156 комбинациях.',
   limitsTitle: 'Где он проигрывает',
@@ -88,7 +103,8 @@ const RU = {
     ['Диапазон ограничен — и это плата', 'GF-T16 доходит до ±40 в степенях двойки, примерно ±12 декад. Режим tekum16 не ограничен, поэтому дальше GF-T16 переполняется, а tekum16 продолжает работать. Фиксированные поля покупают дешёвый тракт и равномерную точность; цена — диапазон, до которого большинство ML- и DSP-нагрузок не доходят.'],
     ['Бины точности — в степенях двойки', 'Не в декадах. В более ранней записке они были подписаны «dec», а это отправляет рецензента проверять ровно тем способом, при котором дальний результат выглядит выдуманным. Исправлено в исходной записке.'],
     ['Измерено на одном семействе устройств', 'Artix-7, на открытом флоу. Не многоугловая характеризация, и цифры под ASIC будут другими.'],
-    ['RTL для tekum16 здесь нет', 'Сравнение точности — против оракула самого опубликованного формата. Цифры стоимости — только GF-T. Написать реализацию конкурента и объявить её дороже не доказывало бы ничего.'],
+    ['Сравнение против модели tekum, а не самого tekum', 'tekum (arXiv:2512.10964) — потомок takum, адаптированный под сбалансированную троичную логику. Оракул, против которого здесь измерено, — реконструированная структурная модель по полевой схеме takum; полная потритовая спецификация требует сверки со статьёй. Отношения ровно настолько хороши, насколько хороша эта модель.'],
+    ['Прямого сравнения в железе пока нет', 'RTL для takum открыт и написан на VHDL (takum-arithmetic/Takum-Codec-RTL). Чтобы синтезировать его рядом с GF-T, нужен VHDL-фронтенд, которого на этом стенде нет, поэтому цифры стоимости — только GF-T. Что видно из их исходника: их 16-битный кодек тянет 725-строчный FloPoCo-шифтер со счётчиком ведущих нулей, сгенерированный под Kintex-7. Это и есть то декодирование режима, которого у GF-T нет по построению — различие структурное, а не измеренное.'],
   ],
   ctaTitle: 'Взять GF-T в свой дизайн',
   ctaBody: 'Лицензия включает RTL, независимую эталонную модель и векторы, которые её доказывают, — чтобы вы проверяли заявленное, а не верили на слово.',
@@ -214,6 +230,26 @@ value = (-1)^sign · (1 + M/2^9) · 2^e,   e = Σ tᵢ·3ⁱ  ∈ [−40, +40]`}
                       <td key={i} style={{ ...td, color: ri === 2 && i > 0 ? 'var(--accent)' : undefined, fontWeight: ri === 2 && i > 0 ? 700 : 400 }}>{cell}</td>
                     ))}
                   </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* The ladder */}
+        <motion.div className="premium-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
+            {c ? c.ladderTitle : 'The whole ladder'}
+          </h2>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.6, opacity: 0.85, maxWidth: '64ch', margin: '0 auto 1.2rem' }}>
+            {c ? c.ladderNote : 'One module covers every rung, with the widths derived from the parameters. Pipelined, one cycle of latency, measured on the same harness so the three rows compare. Equivalence proven at each rung against the reference for that rung.'}
+          </p>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '360px' }}>
+              <thead><tr>{(c ? c.ladderCols : ['Rung', 'LUTs', 'Fmax']).map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
+              <tbody>
+                {(c ? c.ladder : LADDER).map((row) => (
+                  <tr key={row[0]}>{row.map((cell, i) => <td key={i} style={td}>{cell}</td>)}</tr>
                 ))}
               </tbody>
             </table>
