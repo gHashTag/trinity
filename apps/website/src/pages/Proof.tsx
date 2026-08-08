@@ -17,10 +17,10 @@ const LINKS = {
 
 const RESULTS = [
   {
-    metric: '21k LUT · 0 hard multipliers',
+    metric: '36.4 MHz · 3.6× pipelined',
     title: 'GF16 4×4 matmul on Artix-7',
-    body: 'A 4×4 matrix multiplier over my own GF16 format, synthesised for Artix-7. It fits in fabric with no hard multipliers at all — 32,252 LUTs and zero DSP48 — or 21,223 LUTs if the 64 DSP blocks are allowed. The block is purely combinational: it holds no registers, so it has no clock and no frequency figure belongs to it.',
-    how: 'Yosys synthesis for xc7, re-run 8 August 2026. Cell counts, not a timing result.',
+    body: 'A 4×4 matrix multiplier over my own GF16 format. As written it is purely combinational — no registers, so no clock and no frequency belongs to it. Pipelined into three stages it closes at 36.36 MHz post-route on an XC7A200T for the whole 4×4, against 9.97 MHz for the same core with a single register stage: 3.6× for a latency of three cycles and one result per cycle. A single four-term dot product reaches 58.49 MHz, up from 18.83, and bit-identical to the original over 59,993 cycles of random and special-case operands. Fabric-only mapping needs no hard multipliers at all.',
+    how: 'Post-route on XC7A200T, nextpnr-xilinx, 8 August 2026. Equivalence proven, not assumed.',
   },
   {
     metric: '100% held-out',
@@ -78,7 +78,7 @@ const RU = {
   ctaSource: 'Посмотреть исходники',
   resultsTitle: 'Результаты',
   results: [
-    { metric: '21k LUT · 0 аппаратных умножителей', title: 'Матричный умножитель GF16 4×4 на Artix-7', body: 'Матричный умножитель 4×4 над собственным форматом GF16, синтезированный под Artix-7. Умещается в логику вообще без аппаратных умножителей — 32 252 LUT и ноль DSP48 — либо 21 223 LUT, если разрешить 64 DSP-блока. Блок чисто комбинационный: регистров в нём нет, а значит нет и тактовой, и никакая частота ему не принадлежит.', how: 'Синтез Yosys под xc7, перепроверено 8 августа 2026. Счёт ячеек, а не результат тайминга.' },
+    { metric: '36.4 МГц · 3.6× от конвейера', title: 'Матричный умножитель GF16 4×4 на Artix-7', body: 'Матричный умножитель 4×4 над собственным форматом GF16. Как написан — чисто комбинационный: регистров нет, тактовой нет, частота ему не принадлежит. Разрезанный на три ступени конвейера, он закрывается на 36.36 МГц post-route на XC7A200T целиком, против 9.97 МГц у того же ядра с одной регистровой ступенью: рост 3.6× за латентность три такта и результат каждый такт. Отдельное четырёхчленное скалярное произведение доходит до 58.49 МГц против 18.83, и побитово идентично исходному на 59 993 циклах случайных и специальных операндов. В логику укладывается вообще без аппаратных умножителей.', how: 'Post-route на XC7A200T, nextpnr-xilinx, 8 августа 2026. Эквивалентность доказана, а не предположена.' },
     { metric: '100% отложенная выборка', title: 'Нейросеть, обучающаяся прямо на FPGA', body: 'Прямой проход, градиент и обновление весов — всё в RTL, без хоста в контуре. Двухслойная ReLU-сеть учит XOR на самом кристалле, 4 из 4.', how: 'Каждый узел побитово — от спецификации до кремния.' },
     { metric: 'SKY130', title: 'Тейпаут через Tiny Tapeout', body: 'Тот же исходник, что работает на FPGA, ушёл в открытый ASIC-процесс: GDS получен, тест на уровне вентилей пройден, precheck пройден.', how: 'Полный путь от статьи на arXiv до изготовленного дизайна.' },
     { metric: '≈3–5.5×', title: 'GF-T против сопоставимых форматов', body: 'Тернарный формат с плавающей точкой собственной разработки, лучший в классе среди сопоставимых тернарных форматов на средней и дальней дистанции — без декодирования режима, с нативной тернарной экспонентой.', how: 'Опубликован с независимой эталонной моделью и тест-векторами.' },
