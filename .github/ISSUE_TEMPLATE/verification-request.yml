@@ -1,0 +1,76 @@
+name: Verification request
+description: Have your RTL checked on real hardware. The first module is free.
+title: "[verify] "
+labels: ["verification-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Opening this issue starts the run. Nothing else is needed from you — no
+        email thread, no scheduling. A bot picks it up, checks your design and
+        posts the report back into this issue, usually within the hour for the
+        automated part.
+
+        Everything the bot does is public and reproducible. If the automated
+        stage finds something, you will see exactly which check failed and how to
+        re-run it yourself.
+
+  - type: input
+    id: repo
+    attributes:
+      label: Where is the RTL?
+      description: A public repository, or a branch and path inside one. Private work needs an NDA first — say so below and skip this.
+      placeholder: https://github.com/you/your-design
+    validations:
+      required: false
+
+  - type: input
+    id: top
+    attributes:
+      label: Top module name
+      placeholder: my_mac_unit
+    validations:
+      required: true
+
+  - type: textarea
+    id: spec
+    attributes:
+      label: What does it do, and what does "correct" mean for it?
+      description: |
+        This is the important field. The reference model is written from *this*
+        description rather than from your code — that is the whole point, since a
+        model derived from your RTL would agree with your RTL's bugs.
+        An algorithm, a paper, a table of expected outputs, or plain prose all work.
+      placeholder: |
+        8x8 signed multiply-accumulate. acc <= acc + A*B, two's complement,
+        32-bit accumulator, overflow wraps. Opcodes on uio_in[2:0]: ...
+    validations:
+      required: true
+
+  - type: input
+    id: target
+    attributes:
+      label: Target device and frequency, if any
+      placeholder: SKY130 via Tiny Tapeout / 50 MHz
+    validations:
+      required: false
+
+  - type: input
+    id: deadline
+    attributes:
+      label: Deadline
+      description: Shuttle dates are real deadlines. Say if you have one.
+      placeholder: TTSKY26c freeze
+    validations:
+      required: false
+
+  - type: dropdown
+    id: publish
+    attributes:
+      label: May the report be published as a public example?
+      description: Either answer is fine. The report is yours regardless.
+      options:
+        - "Yes — publish it"
+        - "No — keep it in this issue only"
+    validations:
+      required: true

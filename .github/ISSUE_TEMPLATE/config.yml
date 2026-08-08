@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Documentation
-    url: https://ghashtag.github.io/trinity/docs/
-    about: Read the documentation before opening an issue
-  - name: Cloud Dev Workflow
-    url: https://github.com/gHashTag/trinity/blob/main/CLAUDE.md#default-development-workflow
-    about: Every issue spawns an agent container automatically
+  - name: License an arithmetic core
+    url: https://t27.ai/ip
+    about: Cores that have already been through silicon — GF-T, GF16 matmul, BPSK modem.
+  - name: The course
+    url: https://t27.ai/course
+    about: Train a neural network on an FPGA, on a fully open toolchain.
