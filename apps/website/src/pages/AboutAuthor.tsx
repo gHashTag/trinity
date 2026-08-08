@@ -1,5 +1,6 @@
 "use client";
 import { motion } from 'framer-motion'
+import { usePageMeta } from '../hooks/usePageMeta'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -16,6 +17,7 @@ const LINKS = {
 const PHOTO = 'https://avatars.githubusercontent.com/u/6774813?v=4'
 
 export default function AboutAuthor() {
+  usePageMeta("About the author", "Dmitrii Vasilev — hardware-AI and FPGA/RTL engineer, creator of the GF-T ternary number format, from specification through RTL to silicon.")
   const { t } = useI18n()
   const a = t.about || {}
 

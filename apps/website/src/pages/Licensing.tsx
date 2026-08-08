@@ -1,5 +1,6 @@
 "use client";
 import { motion } from 'framer-motion'
+import { usePageMeta } from '../hooks/usePageMeta'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -71,6 +72,7 @@ const INCLUDED = [
 ]
 
 export default function Licensing() {
+  usePageMeta("Core licensing", "License arithmetic cores that have already been measured on hardware: GF-T multiplier, GF16 matmul at 323 MHz with zero DSP blocks, BPSK modem proven over the air.")
   return (
     <main>
       <QuantumBackground />

@@ -1,5 +1,6 @@
 "use client";
 import { motion } from 'framer-motion'
+import { usePageMeta } from '../hooks/usePageMeta'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -60,6 +61,7 @@ const METHOD = [
 ]
 
 export default function Proof() {
+  usePageMeta("Measured evidence", "Every hardware claim on this site with the measurement behind it — and a plain statement of what these results are not.")
   return (
     <main>
       <QuantumBackground />
