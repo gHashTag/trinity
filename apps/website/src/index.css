@@ -260,6 +260,29 @@ section {
 }
 
 /* The hint is only true while the diagram is actually wider than its container. */
+/* Content on these pages starts at opacity 0 and is revealed by a scroll-triggered
+   animation. That is fine when the animation runs — and invisible when it does not.
+   Anyone who has asked their system for less motion gets the content immediately
+   instead, at full opacity. The !important is needed because the animation library
+   writes opacity and transform as inline styles. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  section > div,
+  .premium-card,
+  section > div > figure {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 .diagram-scroll-hint {
   display: none;
 }
