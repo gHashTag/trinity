@@ -3,6 +3,16 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 
+// Smooth scrolling is animation-driven, so it silently does nothing when
+// animations are not running — a hidden or backgrounded tab, or a reader who has
+// asked their system for reduced motion. Getting there instantly is always better
+// than not getting there at all.
+function scrollBehaviour(): ScrollBehavior {
+  const reduced = typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return reduced || document.hidden ? 'auto' : 'smooth'
+}
+
 // Under HashRouter a bare `#section` is read as a route, so these links used to
 // dump the reader on the homepage without scrolling to what they clicked. This
 // sends them home when needed and then finds the section once it exists.
@@ -11,13 +21,15 @@ function goToSection(e: React.MouseEvent, id: string) {
   const hash = window.location.hash
   const onHome = hash === '' || hash === '#' || hash === '#/'
   if (!onHome) window.location.hash = '#/'
+  // Timer, not requestAnimationFrame: rAF does not fire in a hidden tab, and
+  // sections further down the homepage mount lazily.
   let tries = 0
-  const findIt = () => {
+  const tick = () => {
     const el = document.getElementById(id)
-    if (el) { el.scrollIntoView({ behavior: 'smooth' }); return }
-    if (++tries < 40) requestAnimationFrame(findIt)
+    if (el) { el.scrollIntoView({ behavior: scrollBehaviour() }); return }
+    if (++tries < 50) setTimeout(tick, 80)
   }
-  requestAnimationFrame(findIt)
+  tick()
 }
 
 export default function Footer() {
