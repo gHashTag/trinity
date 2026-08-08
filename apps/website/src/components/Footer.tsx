@@ -157,17 +157,12 @@ export default function Footer() {
                     X (Twitter)
                   </a>
                 </li>
-                {/* The business address first: the footer sits under the service
-                    pages too, and someone scrolling past a CTA should land on the
-                    address those pages quote. The personal one stays. */}
+                {/* One contact address, and the only one that can actually receive
+                    mail: t27.dev has no MX records at all, so every admin@t27.dev
+                    link on this site was undeliverable. */}
                 <li>
-                  <a href="mailto:admin@t27.dev" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.85 }} aria-label="Send email to admin@t27.dev">
-                    admin@t27.dev
-                  </a>
-                </li>
-                <li>
-                  <a href="mailto:raoffonom@icloud.com" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Send email to raoffonom@icloud.com">
-                    raoffonom@icloud.com
+                  <a href="mailto:admin@t27.ai" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.85 }} aria-label="Send email to admin@t27.ai">
+                    admin@t27.ai
                   </a>
                 </li>
               </ul>

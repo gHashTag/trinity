@@ -8,7 +8,7 @@ import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 
 const CONTACT = {
-  email: 'admin@t27.dev',
+  email: 'admin@t27.ai',
   github: 'https://github.com/gHashTag',
   arxiv1: 'https://arxiv.org/abs/2606.05017',
   arxiv2: 'https://arxiv.org/abs/2606.09686',
