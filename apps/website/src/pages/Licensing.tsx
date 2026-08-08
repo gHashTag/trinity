@@ -78,7 +78,7 @@ export default function Licensing() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="licensing" style={{ maxWidth: '900px', textAlign: 'left', alignItems: 'stretch' }}>
+      <section id="licensing" style={{ maxWidth: '900px' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -95,7 +95,7 @@ export default function Licensing() {
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
             Arithmetic cores that have already been to silicon.
           </h1>
-          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
             Every core here was designed, verified bit-exact against an independent model, and
             measured on real hardware — one of them through a SKY130 tape-out. You license the
             RTL, the reference model and the vectors that prove it, so you can check the claims

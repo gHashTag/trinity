@@ -221,6 +221,10 @@ section {
   align-items: center;
   max-width: 95vw;
   height: 38px;
+  /* The dock is a single row of pills; if a future link makes it wider than the
+     viewport it must scroll rather than silently clip its last item. */
+  overflow-x: auto;
+  scrollbar-width: none;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -249,6 +253,31 @@ section {
   display: flex;
   align-items: center;
   font-weight: 500;
+}
+
+.nav-dock::-webkit-scrollbar {
+  display: none;
+}
+
+/* The dock carries 15 items. At full letter-spacing it is wider than a 13"
+   laptop, so tighten the pills before the row has to scroll. */
+@media (max-width: 1400px) {
+  .nav-dock a,
+  .lang-toggle {
+    padding: 0 9px;
+    letter-spacing: 0.05em;
+  }
+}
+
+/* 13" laptops and half-screen windows: one more notch down so the row still
+   fits whole rather than scrolling. */
+@media (max-width: 1100px) {
+  .nav-dock a,
+  .lang-toggle {
+    padding: 0 7px;
+    font-size: 9px;
+    letter-spacing: 0.03em;
+  }
 }
 
 .nav-dock a:hover,

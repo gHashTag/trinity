@@ -67,7 +67,7 @@ export default function Proof() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="proof" style={{ maxWidth: '900px', textAlign: 'left', alignItems: 'stretch' }}>
+      <section id="proof" style={{ maxWidth: '900px' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -84,7 +84,7 @@ export default function Proof() {
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
             Every number here was measured.
           </h1>
-          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
             Hardware claims are cheap to make and hard to check, so this page collects the results
             behind everything else on this site — what was built, what it measured, and how it was
             verified. Where something is a submission rather than a win, or a prototype rather than

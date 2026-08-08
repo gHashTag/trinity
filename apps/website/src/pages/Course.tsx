@@ -86,7 +86,7 @@ export default function Course() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="course" style={{ maxWidth: '900px', textAlign: 'left', alignItems: 'stretch' }}>
+      <section id="course" style={{ maxWidth: '900px' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -103,7 +103,7 @@ export default function Course() {
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
             {c ? c.h1 : 'Train a neural network on an FPGA.'}
           </h1>
-          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
             Not inference — <strong>training</strong>, on the chip itself. Eight modules from an empty
             toolchain to a network that learns on real silicon, built entirely on open-source tools.
             No Vivado, no licence, nothing you cannot reproduce yourself.

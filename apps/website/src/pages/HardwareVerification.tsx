@@ -101,6 +101,18 @@ const STEPS = [
   'You get a signed report — measured numbers, vectors, bitstream, and every command needed to reproduce it.',
 ]
 
+const RELATED = [
+  { href: '#/proof', title: 'The evidence', body: 'Every measured number on this site, how it was obtained, and what it is not.' },
+  { href: '#/ip', title: 'License a core', body: 'The arithmetic that has already been through silicon — GF-T, the GF16 matmul, the BPSK modem.' },
+  { href: '#/course', title: 'Learn the method', body: 'Eight modules from an empty toolchain to a network training on the chip itself.' },
+]
+
+const RELATED_RU = [
+  { href: '#/proof', title: 'Доказательства', body: 'Все измеренные цифры этого сайта, как они получены и чем они не являются.' },
+  { href: '#/ip', title: 'Лицензировать ядро', body: 'Арифметика, уже прошедшая кремний: GF-T, матричный умножитель GF16, BPSK-модем.' },
+  { href: '#/course', title: 'Научиться самому', body: 'Восемь модулей от пустого тулчейна до сети, которая учится на самом кристалле.' },
+]
+
 // Russian copy. Other locales fall back to English rather than showing gaps.
 const RU = {
   eyebrow: 'Верификация на живом железе',
@@ -167,7 +179,7 @@ export default function HardwareVerification() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="verification" style={{ maxWidth: '900px', textAlign: 'left', alignItems: 'stretch' }}>
+      <section id="verification" style={{ maxWidth: '900px' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -184,7 +196,7 @@ export default function HardwareVerification() {
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
             {c ? c.h1 : 'Not simulated. Measured on live silicon.'}
           </h1>
-          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
             Send your RTL. It runs on a real Xilinx Artix-7 and comes back with a signed report:
             bit-exact conformance against an independent model, achieved timing, resource usage,
             and the bitstream — on a fully open-source toolchain, so every number can be reproduced.
@@ -245,7 +257,7 @@ export default function HardwareVerification() {
           style={{ marginBottom: '2rem' }}
         >
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '1.25rem' }}>{c ? c.howTitle : 'How it works'}</h2>
-          <ol style={{ margin: 0, paddingLeft: '1.25rem', display: 'grid', gap: '0.85rem' }}>
+          <ol style={{ margin: 0, paddingLeft: '1.25rem', textAlign: 'left', maxWidth: '58ch', marginLeft: 'auto', marginRight: 'auto', display: 'grid', gap: '0.85rem' }}>
             {(c ? c.steps : STEPS).map((s) => (
               <li key={s} style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.92 }}>{s}</li>
             ))}
@@ -301,6 +313,28 @@ export default function HardwareVerification() {
             <a href={CONTACT.arxiv2} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>
               arXiv:2606.09686
             </a>
+          </div>
+        </motion.div>
+
+        {/* Related pages. The header dock only carries one link to this service,
+            so licensing, evidence and the course are reached from here. */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ marginBottom: '2rem' }}
+        >
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>
+            {c ? 'Смежные страницы' : 'Related'}
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+            {(c ? RELATED_RU : RELATED).map((r) => (
+              <a key={r.href} href={r.href} className="premium-card" style={{ padding: '1.4rem', textDecoration: 'none', display: 'block' }}>
+                <h3 style={{ fontSize: '1.02rem', margin: '0 0 0.5rem', color: 'var(--accent)' }}>{r.title}</h3>
+                <p style={{ fontSize: '0.9rem', lineHeight: 1.55, margin: 0, opacity: 0.88 }}>{r.body}</p>
+              </a>
+            ))}
           </div>
         </motion.div>
 
