@@ -7,16 +7,34 @@ const BASE = import.meta.env.BASE_URL
 // Docs points to t27.ai/docs/ (custom domain)
 const DOCS_URL = 'https://t27.ai/docs/'
 
-// The locale files have no keys for the commercial pages yet, so the label
-// lives next to the link. Missing locales fall back to English.
-const VERIFICATION_LABEL: Record<string, string> = {
-  ru: 'Верификация', de: 'Verifikation', es: 'Verificación', zh: '硬件验证',
+// The locale files have no keys for the commercial pages yet, so the labels
+// live next to the links. Missing locales fall back to English.
+const PAGES_LABEL: Record<string, string> = {
+  ru: 'Страницы', de: 'Seiten', es: 'Páginas', zh: '页面',
 }
+
+type PageLink = { href: string; en: string; ru: string; note: string; noteRu: string; external?: boolean; color?: string }
+
+// Every link that leaves the one-page scroll. These outgrew the dock — a single
+// fixed-height row with no room left — so they live behind one disclosure
+// instead of pushing each other off the right edge.
+const PAGES: PageLink[] = [
+  { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on live silicon', noteRu: 'Присылаете RTL — измеряю на живом кремнии' },
+  { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores that have been to silicon', noteRu: 'Ядра, уже прошедшие кремний' },
+  { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
+  { href: '#/course', en: 'Course', ru: 'Курс', note: 'Train a neural network on an FPGA', noteRu: 'Обучите нейросеть прямо на FPGA' },
+  { href: '#/about', en: 'About', ru: 'Об авторе', note: 'Background, papers, contact', noteRu: 'Биография, статьи, контакты' },
+  { href: '#/dashboard', en: 'Dashboard', ru: 'Панель', note: 'Project metrics', noteRu: 'Метрики проекта', color: '#00ccff' },
+  { href: '#/tree', en: 'Research Lab', ru: 'Исслед. лаб', note: 'Interactive visualisations', noteRu: 'Интерактивные визуализации', color: '#ffd700' },
+  { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'Full documentation', noteRu: 'Полная документация', external: true },
+]
 
 export default memo(function Navigation() {
   const { t, lang } = useI18n()
   const [active, setActive] = useState('hero')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [pagesOpen, setPagesOpen] = useState(false)
+  const ru = lang === 'ru'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,13 +70,31 @@ export default memo(function Navigation() {
   // Handle escape key to close menu
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && menuOpen) {
-        setMenuOpen(false)
+      if (e.key === 'Escape') {
+        if (menuOpen) setMenuOpen(false)
+        if (pagesOpen) setPagesOpen(false)
       }
     }
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
-  }, [menuOpen])
+  }, [menuOpen, pagesOpen])
+
+  // A disclosure that stays open after you click past it is a trap; close it on
+  // any click outside and on scroll, since the dock is fixed and the page is not.
+  useEffect(() => {
+    if (!pagesOpen) return
+    const close = (e: Event) => {
+      const target = e.target as HTMLElement | null
+      if (target?.closest('.nav-pages-panel') || target?.closest('.nav-pages-toggle')) return
+      setPagesOpen(false)
+    }
+    window.addEventListener('click', close)
+    window.addEventListener('scroll', close, { passive: true })
+    return () => {
+      window.removeEventListener('click', close)
+      window.removeEventListener('scroll', close)
+    }
+  }, [pagesOpen])
 
   return (
     <>
@@ -76,45 +112,41 @@ export default memo(function Navigation() {
             {item}
           </a>
         ))}
-        <a
-          href="#/dashboard"
-          style={{ color: '#00ccff', fontWeight: 600 }}
-          aria-label="Go to Dashboard"
+        <button
+          type="button"
+          className={`nav-pages-toggle ${pagesOpen ? 'open' : ''}`}
+          onClick={() => setPagesOpen((v) => !v)}
+          aria-expanded={pagesOpen}
+          aria-haspopup="true"
+          aria-controls="nav-pages-panel"
         >
-          {t.navExtra?.dashboard || 'Dashboard'}
-        </a>
-        <a
-          href="#/tree"
-          style={{ color: '#ffd700', fontWeight: 600 }}
-          aria-label="Go to Research Lab"
-        >
-          {t.navExtra?.tree || 'Research Lab'}
-        </a>
-        <a
-          href="#/verification"
-          style={{ color: 'var(--accent)', fontWeight: 600 }}
-          aria-label="Hardware verification service"
-        >
-          {VERIFICATION_LABEL[lang] || 'Verification'}
-        </a>
-        <a
-          href="#/about"
-          style={{ color: 'var(--accent)', fontWeight: 600 }}
-          aria-label="About the author"
-        >
-          {t.navExtra?.about || 'About'}
-        </a>
-        <a
-          href={DOCS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--accent)', fontWeight: 600 }}
-          aria-label="Open documentation in new tab"
-        >
-          {t.navExtra?.docs || 'Docs'}
-        </a>
+          {PAGES_LABEL[lang] || 'Pages'}
+          <span className="nav-pages-caret" aria-hidden="true">▾</span>
+        </button>
         <LanguageSwitcher />
       </nav>
+
+      {/* Fixed rather than absolute: the dock scrolls horizontally, and a panel
+          positioned inside it would be clipped by that overflow. */}
+      {pagesOpen && (
+        <div className="nav-pages-panel" id="nav-pages-panel" role="menu" aria-label={PAGES_LABEL[lang] || 'Pages'}>
+          {PAGES.map((p) => (
+            <a
+              key={p.href}
+              href={p.href}
+              role="menuitem"
+              target={p.external ? '_blank' : undefined}
+              rel={p.external ? 'noopener noreferrer' : undefined}
+              onClick={() => setPagesOpen(false)}
+            >
+              <span className="nav-pages-name" style={p.color ? { color: p.color } : undefined}>
+                {ru ? p.ru : p.en}
+              </span>
+              <span className="nav-pages-note">{ru ? p.noteRu : p.note}</span>
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* Mobile hamburger button */}
       <button
@@ -160,61 +192,19 @@ export default memo(function Navigation() {
                   {item}
                 </a>
               ))}
-              <a
-                href={`${BASE}dashboard`}
-                style={{ color: '#00ccff' }}
-                onClick={() => setMenuOpen(false)}
-                aria-label="Go to Dashboard"
-              >
-                {t.navExtra?.dashboard || 'Dashboard'}
-              </a>
-              <a
-                href={`${BASE}tree`}
-                style={{ color: '#ffd700' }}
-                onClick={() => setMenuOpen(false)}
-                aria-label="Go to Research Lab"
-              >
-                {t.navExtra?.tree || 'Research Lab'}
-              </a>
-              <a
-                href="#/verification"
-                onClick={() => setIsOpen(false)}
-                style={{ color: 'var(--accent)', fontWeight: 600 }}
-              >
-                {VERIFICATION_LABEL[lang] || 'Verification'}
-              </a>
-              <a
-                href="#/ip"
-                onClick={() => setIsOpen(false)}
-                style={{ color: 'var(--accent)', fontWeight: 600 }}
-              >
-                Licensing
-              </a>
-              <a
-                href="#/proof"
-                onClick={() => setIsOpen(false)}
-                style={{ color: 'var(--accent)', fontWeight: 600 }}
-              >
-                Proof
-              </a>
-              <a
-                href="#/about"
-                style={{ color: 'var(--accent)' }}
-                onClick={() => setMenuOpen(false)}
-                aria-label="About the author"
-              >
-                {t.navExtra?.about || 'About'}
-              </a>
-              <a
-                href={DOCS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: 'var(--accent)' }}
-                onClick={() => setMenuOpen(false)}
-                aria-label="Open documentation in new tab"
-              >
-                {t.navExtra?.docs || 'Docs'}
-              </a>
+              {/* Same source as the desktop disclosure, so the two can't drift apart */}
+              {PAGES.map((p) => (
+                <a
+                  key={p.href}
+                  href={p.href}
+                  target={p.external ? '_blank' : undefined}
+                  rel={p.external ? 'noopener noreferrer' : undefined}
+                  style={{ color: p.color || 'var(--accent)' }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {ru ? p.ru : p.en}
+                </a>
+              ))}
             </div>
             <div className="mobile-menu-footer">
               <LanguageSwitcher />

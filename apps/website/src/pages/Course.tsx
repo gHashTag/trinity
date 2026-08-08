@@ -36,6 +36,17 @@ const AUDIENCE = [
   ['Tiny Tapeout participants', 'You want the path from specification to verified RTL to a shuttle, without guessing.'],
 ]
 
+// Named plainly, because a buyer who knows this field will ask anyway, and a
+// page that pretends the free alternatives do not exist reads as dishonest.
+const ALTERNATIVES = [
+  { name: 'hls4ml (CERN)', free: 'Free', gap: 'Inference only, generated through HLS, and the flow underneath it is a vendor toolchain. Excellent at what it does — it does not train on the chip, and it does not leave you able to read the RTL it produced.' },
+  { name: 'Vendor courses (Intel, AMD)', free: 'Free', gap: 'Built to teach you their tools on their silicon. Nothing you learn transfers to a flow you can run without a licence.' },
+  { name: 'University FPGA courses', free: 'Free or credit-bearing', gap: 'Usually stop at simulation, and where they reach a board it is through Vivado or Quartus.' },
+]
+
+const DIFFERENCE = 'Two things here exist nowhere on that list: a backward pass running on the chip itself, and a flow with no vendor licence anywhere in it. If inference through HLS is what you need, use hls4ml — it is good, it is free, and I would tell you the same in an email.'
+
+
 // Russian copy. Other locales fall back to English rather than showing gaps.
 const RU = {
   eyebrow: 'Курс',
@@ -65,6 +76,13 @@ const RU = {
     ['Embedded-разработчики', 'Микроконтроллеры знакомы, идёте в edge-AI, нужен RTL, который несёт ML.'],
     ['Участники Tiny Tapeout', 'Нужен путь от спецификации к проверенному RTL и шаттлу — без угадывания.'],
   ],
+  altTitle: 'Чем это отличается от бесплатных курсов',
+  alternatives: [
+    { name: 'hls4ml (CERN)', free: 'Бесплатно', gap: 'Только инференс, через HLS, а под ним всё равно вендорский тулчейн. Своё дело делает отлично — но не учит на кристалле и не оставляет вас способным прочитать сгенерированный RTL.' },
+    { name: 'Вендорские курсы (Intel, AMD)', free: 'Бесплатно', gap: 'Написаны, чтобы научить вас их инструментам на их кремнии. Ничто из выученного не переносится на флоу, который вы запустите без лицензии.' },
+    { name: 'Университетские курсы по FPGA', free: 'Бесплатно или за зачёт', gap: 'Обычно заканчиваются на симуляции, а где доходят до платы — там Vivado или Quartus.' },
+  ],
+  difference: 'Двух вещей в этом списке нет нигде: обратного прохода, исполняемого прямо на кристалле, и флоу, в котором нет ни одной вендорской лицензии. Если вам нужен инференс через HLS — берите hls4ml: он хорош, он бесплатен, и я напишу вам то же самое в письме.',
   formatsTitle: 'Форматы',
   tiers: [
     { name: 'Самостоятельно', price: '$149', body: 'Видео, код, наборы KAT-векторов, доступ к сообществу.' },
@@ -202,6 +220,33 @@ export default function Course() {
           <p style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '1.25rem' }}>
             Prerequisites: basic Python and the idea of digital logic. Verilog is taught from zero.
             A board is optional — runs on my hardware are included in two of the tiers.
+          </p>
+        </motion.div>
+
+        {/* How this differs from the free alternatives */}
+        <motion.div
+          className="premium-card"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ marginBottom: '2rem' }}
+        >
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '1rem' }}>
+            {c ? c.altTitle : 'How this differs from the free alternatives'}
+          </h2>
+          <div style={{ display: 'grid', gap: '0.9rem', textAlign: 'left', maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
+            {(c ? c.alternatives : ALTERNATIVES).map((a) => (
+              <div key={a.name} style={{ borderLeft: '2px solid var(--border)', paddingLeft: '0.9rem' }}>
+                <p style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.15rem' }}>
+                  {a.name} <span style={{ fontWeight: 400, opacity: 0.6, fontSize: '0.85rem' }}>· {a.free}</span>
+                </p>
+                <p style={{ fontSize: '0.9rem', lineHeight: 1.55, margin: 0, opacity: 0.85 }}>{a.gap}</p>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, marginTop: '1.25rem', marginBottom: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
+            {c ? c.difference : DIFFERENCE}
           </p>
         </motion.div>
 
