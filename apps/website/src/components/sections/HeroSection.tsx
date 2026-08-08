@@ -273,25 +273,29 @@ export default function HeroSection() {
         role="group"
         aria-label="Call to action buttons"
       >
+        {/* These were "Install CLI" and "Read Papers", both scrolling to a section
+            — the first mislabelled, and neither leading to anything that can be
+            bought. The primary action is now the service; the secondary is the
+            evidence behind it, which is what a sceptical reader wants next. */}
         <motion.a
-          href="#theorems"
+          href="#/verification"
           className="btn"
           style={{ minWidth: 'clamp(140px, 40vw, 200px)' }}
-          whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(218,165,32,0.3)' }}
+          whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(0,255,136,0.3)' }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Install Trinity CLI"
+          aria-label="Hardware verification service"
         >
-          Install CLI
+          {t.cta}
         </motion.a>
         <motion.a
-          href="#publications"
+          href="#/proof"
           className="btn secondary"
           style={{ minWidth: 'clamp(140px, 40vw, 200px)' }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Read our publications"
+          aria-label="Measured evidence behind every claim"
         >
-          Read Papers
+          {t.ctaSecondary}
         </motion.a>
       </motion.div>
 
