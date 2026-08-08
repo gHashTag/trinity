@@ -22,6 +22,7 @@ const PAGES: PageLink[] = [
   { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on live silicon', noteRu: 'Присылаете RTL — измеряю на живом кремнии' },
   { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores that have been to silicon', noteRu: 'Ядра, уже прошедшие кремний' },
   { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
+  { href: '#/cases', en: 'Case studies', ru: 'Работы', note: 'Verification runs on other people’s RTL', noteRu: 'Прогоны чужого RTL' },
   { href: '#/course', en: 'Course', ru: 'Курс', note: 'Train a neural network on an FPGA', noteRu: 'Обучите нейросеть прямо на FPGA' },
   { href: '#/about', en: 'About', ru: 'Об авторе', note: 'Background, papers, contact', noteRu: 'Биография, статьи, контакты' },
   { href: '#/dashboard', en: 'Dashboard', ru: 'Панель', note: 'Project metrics', noteRu: 'Метрики проекта', color: '#00ccff' },

@@ -1,6 +1,7 @@
 "use client";
 import { motion } from 'framer-motion'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -71,7 +72,43 @@ const INCLUDED = [
   'Integration help, because a core that does not land in your system is worth nothing.',
 ]
 
+// Russian copy. Other locales fall back to English rather than showing gaps.
+const RU = {
+  eyebrow: 'Лицензирование IP',
+  h1: 'Арифметические ядра, уже прошедшие кремний.',
+  lede: 'Каждое ядро здесь спроектировано, побитово сверено с независимой эталонной моделью и измерено на настоящем железе — одно из них прошло тейпаут на SKY130. Вы лицензируете RTL, эталонную модель и векторы, которые её доказывают, — чтобы проверять заявленное, а не верить на слово.',
+  ctaEnquire: 'Спросить про ядро',
+  ctaVerify: 'Как я верифицирую',
+  coresTitle: 'Доступные ядра',
+  cores: [
+    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — тернарного формата с плавающей точкой, который в бенчмарках лучший в классе (≈3–5.5× против сопоставимых форматов). Без декодирования режима, с нативной тернарной экспонентой.', proof: 'Опубликованный формат (arXiv:2606.05017) с независимой эталонной моделью и побитовыми тест-векторами.' },
+    { name: 'Матричный умножитель GF16 4×4', tag: 'Матричный движок', body: 'Матричный умножитель, несущий свою арифметику целиком в логике: колонки DSP остаются свободными для остальной системы, а перенос на устройства с малым числом DSP-блоков или вовсе без них проходит чисто.', proof: '323 МГц · 41.2 GOPS · 0 DSP48 · 0 защёлок, измерено на Xilinx Artix-7.' },
+    { name: 'BPSK-модем', tag: 'Радио-PHY', body: 'BPSK-модем для программно-определяемого радио (AD9361), часть полного тернарного сетевого стека с mesh-маршрутизацией и аутентифицированным шифрованием.', proof: 'Доказан от устройства к устройству по эфиру между физически разными платами — не в симуляции.' },
+    { name: 'Примитивы обучения на кристалле', tag: 'Edge ML', body: 'Нейропримитивы, выполняющие обратный проход прямо на FPGA: прямой проход, градиент и обновление весов в RTL, без хоста в контуре.', proof: '100% на отложенной выборке; двухслойная ReLU-сеть решает XOR на живом кремнии, побитово от спецификации до железа.' },
+  ],
+  includedTitle: 'Что входит в лицензию',
+  included: [
+    'Синтезируемый RTL — читаемый, а не обфусцированный.',
+    'Независимая эталонная модель — то, что позволяет доказать корректность ядра, а не поверить в неё.',
+    'Побитовые тест-векторы по ступеням конвейера: регрессия сразу говорит, какая ступень сломалась.',
+    'Отчёт с измерениями на настоящем железе: частота, ресурсы, проверка на защёлки.',
+    'Помощь с интеграцией — ядро, которое не встало в вашу систему, не стоит ничего.',
+  ],
+  termsTitle: 'Условия',
+  terms: [
+    { name: 'Оценочная', price: 'от $500', body: 'Исходники и тест-векторы под один проект — измерить в своём флоу, прежде чем брать на себя обязательства.' },
+    { name: 'Один проект', price: 'от $2 500', body: 'Использование в одном продукте, с поддержкой интеграции и верификационной обвязкой, которая доказывает работоспособность.' },
+    { name: 'Продакшн / несколько проектов', price: 'по запросу', body: 'Более широкие права, обсуждаются под случай — включая роялти, если так удобнее.' },
+    { name: 'Своя арифметика', price: 'от $150/ч', body: 'Формат или тракт данных под ваши ограничения, с той же побитовой верификацией.' },
+  ],
+  termsNote: 'Цены — точка отсчёта, а не тариф: честная цифра зависит от устройства, нужных прав и объёма интеграционной работы. Спросите — получите настоящую цифру, а не буклет.',
+  finalTitle: 'Какое ядро подходит вашему дизайну?',
+  finalLede: 'Назовите устройство и бюджет, в который укладываетесь. Если ни одно из этих ядер не подходит — так и скажу, и назову цену за сделанное под вас.',
+}
+
 export default function Licensing() {
+  const { lang } = useI18n()
+  const c = lang === 'ru' ? RU : null
   usePageMeta("Core licensing", "License arithmetic cores that have already been measured on hardware: GF-T multiplier, GF16 matmul at 323 MHz with zero DSP blocks, BPSK modem proven over the air.")
   return (
     <main>
@@ -90,23 +127,27 @@ export default function Licensing() {
           style={{ marginBottom: '2rem' }}
         >
           <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.75rem', margin: '0 0 0.75rem' }}>
-            IP licensing
+            {c ? c.eyebrow : 'IP licensing'}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
-            Arithmetic cores that have already been to silicon.
+            {c ? c.h1 : 'Arithmetic cores that have already been to silicon.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
-            Every core here was designed, verified bit-exact against an independent model, and
-            measured on real hardware — one of them through a SKY130 tape-out. You license the
-            RTL, the reference model and the vectors that prove it, so you can check the claims
-            instead of trusting them.
+            {c ? c.lede : (
+              <>
+                Every core here was designed, verified bit-exact against an independent model, and
+                measured on real hardware — one of them through a SKY130 tape-out. You license the
+                RTL, the reference model and the vectors that prove it, so you can check the claims
+                instead of trusting them.
+              </>
+            )}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.75rem' }}>
             <motion.a href={mailto('IP licensing enquiry')} className="btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '12px 28px', fontSize: '0.9rem' }}>
-              Enquire about a core
+              {c ? c.ctaEnquire : 'Enquire about a core'}
             </motion.a>
             <motion.a href="#/verification" className="btn secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '12px 28px', fontSize: '0.9rem' }}>
-              How I verify
+              {c ? c.ctaVerify : 'How I verify'}
             </motion.a>
           </div>
         </motion.div>
@@ -119,9 +160,9 @@ export default function Licensing() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>Available cores</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.coresTitle : 'Available cores'}</h2>
           <div style={{ display: 'grid', gap: '1rem' }}>
-            {CORES.map((c) => (
+            {(c ? c.cores : CORES).map((c) => (
               <div key={c.name} className="premium-card" style={{ padding: '1.6rem' }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.6rem' }}>
                   <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{c.name}</h3>
@@ -145,9 +186,9 @@ export default function Licensing() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '1rem' }}>What a licence includes</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '1rem' }}>{c ? c.includedTitle : 'What a licence includes'}</h2>
           <ul style={{ margin: 0, paddingLeft: '1.25rem', display: 'grid', gap: '0.7rem' }}>
-            {INCLUDED.map((i) => (
+            {(c ? c.included : INCLUDED).map((i) => (
               <li key={i} style={{ fontSize: '0.93rem', lineHeight: 1.6, opacity: 0.9 }}>{i}</li>
             ))}
           </ul>
@@ -161,9 +202,9 @@ export default function Licensing() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>Terms</h2>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.termsTitle : 'Terms'}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-            {TERMS.map((t) => (
+            {(c ? c.terms : TERMS).map((t) => (
               <div key={t.name} className="premium-card" style={{ padding: '1.5rem' }}>
                 <p style={{ fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
                 <p style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--accent)', margin: '0 0 0.6rem' }}>{t.price}</p>
@@ -172,9 +213,13 @@ export default function Licensing() {
             ))}
           </div>
           <p style={{ fontSize: '0.86rem', opacity: 0.75, marginTop: '1.25rem', lineHeight: 1.6 }}>
-            Prices are starting points, not a tariff — the honest number depends on the device, the
-            rights you need and how much integration work comes with it. Ask and you get a real
-            figure, not a brochure.
+            {c ? c.termsNote : (
+              <>
+                Prices are starting points, not a tariff — the honest number depends on the device, the
+                rights you need and how much integration work comes with it. Ask and you get a real
+                figure, not a brochure.
+              </>
+            )}
           </p>
         </motion.div>
 
@@ -187,10 +232,14 @@ export default function Licensing() {
           transition={{ duration: 0.6 }}
           style={{ textAlign: 'center' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>Which core fits your design?</h2>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>{c ? c.finalTitle : 'Which core fits your design?'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '52ch', margin: '0 auto 1rem' }}>
-            Tell me the device and the budget you are working against. If none of these cores is
-            right, I will say so — and quote for one built to fit.
+            {c ? c.finalLede : (
+              <>
+                Tell me the device and the budget you are working against. If none of these cores is
+                right, I will say so — and quote for one built to fit.
+              </>
+            )}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center', marginBottom: '1.25rem' }}>
             <a href={CONTACT.arxiv1} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>arXiv:2606.05017</a>
