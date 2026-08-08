@@ -259,6 +259,17 @@ section {
   display: none;
 }
 
+/* The hint is only true while the diagram is actually wider than its container. */
+.diagram-scroll-hint {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .diagram-scroll-hint {
+    display: block;
+  }
+}
+
 .nav-pages-toggle {
   display: flex;
   align-items: center;
