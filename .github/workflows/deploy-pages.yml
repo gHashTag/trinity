@@ -1,12 +1,11 @@
 name: Deploy to GitHub Pages
 
+# Manual only. `deploy-docs.yml` is the publisher for this repository: it builds
+# apps/website AND docs and pushes the combined site to the gh-pages branch that
+# GitHub Pages serves. Leaving this workflow on `push` made two workflows race for
+# the same Pages target. Kept (not deleted) so it can still be run by hand.
 on:
-  push:
-    branches: [main, gh-pages]
-    paths:
-      - '.github/workflows/deploy-pages.yml'
-      - 'docs/**'
-      - 'apps/website/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,8 +13,15 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # actions/deploy-pages@v4 authenticates via OIDC: without id-token/pages it
+    # fails with "Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env variable".
     permissions:
-      contents: write
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
