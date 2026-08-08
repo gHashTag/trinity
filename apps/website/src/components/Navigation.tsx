@@ -85,6 +85,13 @@ export default memo(function Navigation() {
           {t.navExtra?.tree || 'Research Lab'}
         </a>
         <a
+          href="#/about"
+          style={{ color: 'var(--accent)', fontWeight: 600 }}
+          aria-label="About the author"
+        >
+          {t.navExtra?.about || 'About'}
+        </a>
+        <a
           href={DOCS_URL}
           target="_blank"
           rel="noopener noreferrer"
@@ -155,6 +162,14 @@ export default memo(function Navigation() {
                 aria-label="Go to Research Lab"
               >
                 {t.navExtra?.tree || 'Research Lab'}
+              </a>
+              <a
+                href="#/about"
+                style={{ color: 'var(--accent)' }}
+                onClick={() => setMenuOpen(false)}
+                aria-label="About the author"
+              >
+                {t.navExtra?.about || 'About'}
               </a>
               <a
                 href={DOCS_URL}
