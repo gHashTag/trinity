@@ -7,6 +7,8 @@ import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 
+const REQUEST_URL = 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml'
+
 const CONTACT = {
   email: 'admin@t27.ai',
   github: 'https://github.com/gHashTag',
@@ -102,6 +104,13 @@ const STEPS = [
   'You get a signed report — measured numbers, vectors, bitstream, and every command needed to reproduce it.',
 ]
 
+const AUTO_STEPS: [string, string, string][] = [
+  ['minute 0', 'You open one issue', 'Where the RTL is, the top module, and what "correct" means for it. Nothing else.'],
+  ['minute 1', 'A bot acknowledges', 'So nobody is left wondering whether it arrived.'],
+  ['minute 5', 'Automated checks post back', 'Elaboration, latch check, synthesis, cell counts — publicly, with every command shown.'],
+  ['then', 'The part a bot cannot do', 'An independent reference model, per-stage vectors, and a replay on the board.'],
+]
+
 // Measured facts, not badges. Nothing here is a claim I cannot show the working for.
 const SIGNALS: [string, string][] = [
   ['170,068', 'cycles in the last run'],
@@ -124,6 +133,15 @@ const RELATED_RU = [
 
 // Russian copy. Other locales fall back to English rather than showing gaps.
 const RU = {
+  autoTitle: 'Начать — без переписки',
+  autoLede: 'Открываете одну заявку. Робот подхватывает её, прогоняет проверки, которым человек не нужен, и в считаные минуты публикует результат — со всеми командами, чтобы вы могли перепроверить сами.',
+  autoSteps: [
+    ['минута 0', 'Вы открываете заявку', 'Где RTL, какой топ-модуль и что для него значит «правильно». Больше ничего.'],
+    ['минута 1', 'Робот подтверждает', 'Чтобы не оставалось сомнений, дошло ли.'],
+    ['минута 5', 'Автопроверки публикуются', 'Элаборация, защёлки, синтез, счёт ячеек — открыто, со всеми командами.'],
+    ['дальше', 'То, что робот не может', 'Независимая эталонная модель, векторы по ступеням и повтор на плате.'],
+  ] as [string, string, string][],
+  autoCta: 'Открыть заявку',
   diagramTitle: 'Почему внешняя проверка может с вами не согласиться',
   signals: [
     ['170 068', 'циклов в последнем прогоне'],
@@ -223,7 +241,9 @@ export default function HardwareVerification() {
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.75rem' }}>
             <motion.a
-              href={mailto('Hardware verification request')}
+              href={REQUEST_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -275,6 +295,38 @@ export default function HardwareVerification() {
             {c ? c.diagramTitle : 'Why an outside check can disagree with you'}
           </h2>
           <VerificationDiagram />
+        </motion.div>
+
+        {/* How a request actually starts. Named plainly because "get in touch"
+            is the step most people never take. */}
+        <motion.div
+          className="premium-card"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ marginBottom: '2rem' }}
+        >
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
+            {c ? c.autoTitle : 'No email thread to start it'}
+          </h2>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, maxWidth: '62ch', margin: '0 auto 1.5rem' }}>
+            {c ? c.autoLede : 'Open one request. A bot picks it up, runs the checks that do not need a human, and posts the result back within minutes — publicly, with every command shown, so you can re-run it yourself.'}
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.9rem', marginBottom: '1.5rem' }}>
+            {(c ? c.autoSteps : AUTO_STEPS).map(([when, what, note], i) => (
+              <div key={what} style={{ borderTop: '2px solid var(--accent)', paddingTop: '0.8rem' }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.6 }}>
+                  {String(i + 1).padStart(2, '0')} · {when}
+                </p>
+                <p style={{ margin: '0.3rem 0 0.2rem', fontSize: '0.98rem', fontWeight: 700, color: 'var(--accent)' }}>{what}</p>
+                <p style={{ margin: 0, fontSize: '0.86rem', lineHeight: 1.5, opacity: 0.85 }}>{note}</p>
+              </div>
+            ))}
+          </div>
+          <a href={REQUEST_URL} target="_blank" rel="noopener noreferrer" className="btn" style={{ padding: '12px 28px', fontSize: '0.9rem' }}>
+            {c ? c.autoCta : 'Open a request'}
+          </a>
         </motion.div>
 
         {/* What you get */}
