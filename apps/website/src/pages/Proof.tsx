@@ -17,6 +17,12 @@ const LINKS = {
 
 const RESULTS = [
   {
+    metric: '2.84× / 5.53×',
+    title: 'GF-T beats tekum16 on tekum16\u2019s own ground',
+    body: 'A float whose exponent is a balanced-ternary number and whose fields are fixed. That removes tekum16\u2019s largest cost \u2014 regime decode \u2014 and makes the exponent add native on a ternary fabric, while a uniform 9-bit mantissa holds precision where tekum16 tapers to four. Mean relative error against tekum16: a tie near unity (0.92\u00d7), 2.84\u00d7 lower at |e| 8\u201320, 5.53\u00d7 lower at |e| 20\u201338. Range is bounded at \u00b140 in powers of two, where tekum16\u2019s regime is not \u2014 that is the trade.',
+    how: 'Re-measured independently against the same oracles on 8 August 2026; the ratios reproduce exactly.',
+  },
+  {
     metric: '36.4 MHz · 3.6× pipelined',
     title: 'GF16 4×4 matmul on Artix-7',
     body: 'A 4×4 matrix multiplier over my own GF16 format. As written it is purely combinational — no registers, so no clock and no frequency belongs to it. Pipelined into three stages it closes at 36.36 MHz post-route on an XC7A200T for the whole 4×4, against 9.97 MHz for the same core with a single register stage: 3.6× for a latency of three cycles and one result per cycle. A single four-term dot product reaches 58.49 MHz, up from 18.83, and bit-identical to the original over 59,993 cycles of random and special-case operands. Fabric-only mapping needs no hard multipliers at all.',
@@ -34,12 +40,7 @@ const RESULTS = [
     body: 'The same source that runs on the FPGA went to an open ASIC process: GDS produced, gate-level test passed, precheck passed.',
     how: 'The full path from an arXiv paper to a fabricated design.',
   },
-  {
-    metric: '≈3–5.5×',
-    title: 'GF-T against comparable formats',
-    body: 'A ternary floating-point format of my own design, benchmarked best-in-class against comparable ternary formats at mid and far range — no regime decode, native ternary exponent.',
-    how: 'Published with an independent reference model and test vectors.',
-  },
+
   {
     metric: 'Over the air',
     title: 'tri-net — a full ternary network stack',
@@ -78,10 +79,11 @@ const RU = {
   ctaSource: 'Посмотреть исходники',
   resultsTitle: 'Результаты',
   results: [
+    { metric: '2.84× / 5.53×', title: 'GF-T обходит tekum16 на его же территории', body: 'Float, у которого экспонента — сбалансированное тернарное число, а поля фиксированы. Это убирает главную статью расхода tekum16 — декодирование режима — и делает сложение экспонент нативным на тернарной фабрике, а равномерные 9 бит мантиссы держат точность там, где tekum16 сужается до четырёх. Средняя относительная ошибка против tekum16: ничья у единицы (0.92×), в 2.84 раза меньше при |e| 8–20, в 5.53 раза меньше при |e| 20–38. Диапазон ограничен ±40 в степенях двойки, а у режима tekum16 предела нет — это и есть плата.', how: 'Перемерено независимо по тем же оракулам 8 августа 2026 — отношения воспроизводятся точно.' },
     { metric: '36.4 МГц · 3.6× от конвейера', title: 'Матричный умножитель GF16 4×4 на Artix-7', body: 'Матричный умножитель 4×4 над собственным форматом GF16. Как написан — чисто комбинационный: регистров нет, тактовой нет, частота ему не принадлежит. Разрезанный на три ступени конвейера, он закрывается на 36.36 МГц post-route на XC7A200T целиком, против 9.97 МГц у того же ядра с одной регистровой ступенью: рост 3.6× за латентность три такта и результат каждый такт. Отдельное четырёхчленное скалярное произведение доходит до 58.49 МГц против 18.83, и побитово идентично исходному на 59 993 циклах случайных и специальных операндов. В логику укладывается вообще без аппаратных умножителей.', how: 'Post-route на XC7A200T, nextpnr-xilinx, 8 августа 2026. Эквивалентность доказана, а не предположена.' },
     { metric: '100% отложенная выборка', title: 'Нейросеть, обучающаяся прямо на FPGA', body: 'Прямой проход, градиент и обновление весов — всё в RTL, без хоста в контуре. Двухслойная ReLU-сеть учит XOR на самом кристалле, 4 из 4.', how: 'Каждый узел побитово — от спецификации до кремния.' },
     { metric: 'SKY130', title: 'Тейпаут через Tiny Tapeout', body: 'Тот же исходник, что работает на FPGA, ушёл в открытый ASIC-процесс: GDS получен, тест на уровне вентилей пройден, precheck пройден.', how: 'Полный путь от статьи на arXiv до изготовленного дизайна.' },
-    { metric: '≈3–5.5×', title: 'GF-T против сопоставимых форматов', body: 'Тернарный формат с плавающей точкой собственной разработки, лучший в классе среди сопоставимых тернарных форматов на средней и дальней дистанции — без декодирования режима, с нативной тернарной экспонентой.', how: 'Опубликован с независимой эталонной моделью и тест-векторами.' },
+    
     { metric: 'По эфиру', title: 'tri-net — полный тернарный сетевой стек', body: '133 формальные спецификации: физический уровень GF16, BPSK-модем на AD9361, mesh-маршрутизация ETX, AEAD-криптография (ChaCha20-Poly1305 / X25519). Текст и изображения передаются между физически разными платами.', how: 'От устройства к устройству на настоящих радио, без инфраструктуры между ними.' },
     { metric: '83 формата', title: 'Каталог соответствия, с которым может свериться любой', body: 'Побитовые тест-векторы для FP8, BF16, MXFP4 и microscaling-форматов — вендоронезависимый эталон для проверки арифметики низкой разрядности.', how: 'Опубликованы открыто, чтобы векторы можно было применить к любой реализации.' },
   ],
