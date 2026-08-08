@@ -85,6 +85,27 @@ export default memo(function Navigation() {
           {t.navExtra?.tree || 'Research Lab'}
         </a>
         <a
+          href="#/verification"
+          style={{ color: 'var(--accent)', fontWeight: 600 }}
+          aria-label="Hardware verification service"
+        >
+          Verification
+        </a>
+        <a
+          href="#/ip"
+          style={{ color: 'var(--accent)', fontWeight: 600 }}
+          aria-label="License an arithmetic core"
+        >
+          Licensing
+        </a>
+        <a
+          href="#/proof"
+          style={{ color: 'var(--accent)', fontWeight: 600 }}
+          aria-label="Measured results and how they were verified"
+        >
+          Proof
+        </a>
+        <a
           href="#/about"
           style={{ color: 'var(--accent)', fontWeight: 600 }}
           aria-label="About the author"
@@ -162,6 +183,27 @@ export default memo(function Navigation() {
                 aria-label="Go to Research Lab"
               >
                 {t.navExtra?.tree || 'Research Lab'}
+              </a>
+              <a
+                href="#/verification"
+                onClick={() => setIsOpen(false)}
+                style={{ color: 'var(--accent)', fontWeight: 600 }}
+              >
+                Verification
+              </a>
+              <a
+                href="#/ip"
+                onClick={() => setIsOpen(false)}
+                style={{ color: 'var(--accent)', fontWeight: 600 }}
+              >
+                Licensing
+              </a>
+              <a
+                href="#/proof"
+                onClick={() => setIsOpen(false)}
+                style={{ color: 'var(--accent)', fontWeight: 600 }}
+              >
+                Proof
               </a>
               <a
                 href="#/about"
