@@ -104,9 +104,13 @@ export default function Course() {
             {c ? c.h1 : 'Train a neural network on an FPGA.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
-            Not inference — <strong>training</strong>, on the chip itself. Eight modules from an empty
-            toolchain to a network that learns on real silicon, built entirely on open-source tools.
-            No Vivado, no licence, nothing you cannot reproduce yourself.
+            {c ? c.lede : (
+              <>
+              Not inference — <strong>training</strong>, on the chip itself. Eight modules from an empty
+              toolchain to a network that learns on real silicon, built entirely on open-source tools.
+              No Vivado, no licence, nothing you cannot reproduce yourself.
+              </>
+            )}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.75rem' }}>
             <motion.a
