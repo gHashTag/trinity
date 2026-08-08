@@ -17,10 +17,10 @@ const LINKS = {
 
 const RESULTS = [
   {
-    metric: '323 MHz · 41.2 GOPS',
+    metric: '21k LUT · 0 hard multipliers',
     title: 'GF16 4×4 matmul on Artix-7',
-    body: 'A matrix multiplier carrying its arithmetic entirely in logic — 0 DSP48 blocks and 0 inferred latches, timing closed on a Xilinx Artix-7.',
-    how: 'Measured on hardware, not estimated from a report.',
+    body: 'A 4×4 matrix multiplier over my own GF16 format, synthesised for Artix-7. It fits in fabric with no hard multipliers at all — 32,252 LUTs and zero DSP48 — or 21,223 LUTs if the 64 DSP blocks are allowed. The block is purely combinational: it holds no registers, so it has no clock and no frequency figure belongs to it.',
+    how: 'Yosys synthesis for xc7, re-run 8 August 2026. Cell counts, not a timing result.',
   },
   {
     metric: '100% held-out',
@@ -66,6 +66,7 @@ const NOT_CLAIMS = [
   'Measurements come from one device family, a Xilinx Artix-7. They are not multi-corner characterisation and do not claim to be.',
   'The on-chip training result is a proven primitive at small scale — a real network learning on real silicon, not a production training accelerator.',
   'Anything estimated rather than measured is labelled as estimated, here and in every report I send.',
+  'This page previously reported 323 MHz and 41.2 GOPS for the GF16 matmul. Re-checking the RTL on 8 August 2026 showed the block holds no registers in any of its nine copies in my repositories, so it has no clock and no frequency can belong to it. The figure is withdrawn rather than explained away, and the synthesis numbers above replace it.',
 ]
 
 // Russian copy. Other locales fall back to English rather than showing gaps.
@@ -77,7 +78,7 @@ const RU = {
   ctaSource: 'Посмотреть исходники',
   resultsTitle: 'Результаты',
   results: [
-    { metric: '323 МГц · 41.2 GOPS', title: 'Матричный умножитель GF16 4×4 на Artix-7', body: 'Умножитель, несущий свою арифметику целиком в логике: 0 блоков DSP48 и 0 выведенных защёлок, тайминг закрыт на Xilinx Artix-7.', how: 'Измерено на железе, а не оценено по отчёту.' },
+    { metric: '21k LUT · 0 аппаратных умножителей', title: 'Матричный умножитель GF16 4×4 на Artix-7', body: 'Матричный умножитель 4×4 над собственным форматом GF16, синтезированный под Artix-7. Умещается в логику вообще без аппаратных умножителей — 32 252 LUT и ноль DSP48 — либо 21 223 LUT, если разрешить 64 DSP-блока. Блок чисто комбинационный: регистров в нём нет, а значит нет и тактовой, и никакая частота ему не принадлежит.', how: 'Синтез Yosys под xc7, перепроверено 8 августа 2026. Счёт ячеек, а не результат тайминга.' },
     { metric: '100% отложенная выборка', title: 'Нейросеть, обучающаяся прямо на FPGA', body: 'Прямой проход, градиент и обновление весов — всё в RTL, без хоста в контуре. Двухслойная ReLU-сеть учит XOR на самом кристалле, 4 из 4.', how: 'Каждый узел побитово — от спецификации до кремния.' },
     { metric: 'SKY130', title: 'Тейпаут через Tiny Tapeout', body: 'Тот же исходник, что работает на FPGA, ушёл в открытый ASIC-процесс: GDS получен, тест на уровне вентилей пройден, precheck пройден.', how: 'Полный путь от статьи на arXiv до изготовленного дизайна.' },
     { metric: '≈3–5.5×', title: 'GF-T против сопоставимых форматов', body: 'Тернарный формат с плавающей точкой собственной разработки, лучший в классе среди сопоставимых тернарных форматов на средней и дальней дистанции — без декодирования режима, с нативной тернарной экспонентой.', how: 'Опубликован с независимой эталонной моделью и тест-векторами.' },
@@ -97,6 +98,7 @@ const RU = {
     'Измерения сняты на одном семействе устройств, Xilinx Artix-7. Это не многоугловая характеризация и не претендует ею быть.',
     'Обучение на кристалле — доказанный примитив малого масштаба: настоящая сеть, обучающаяся на настоящем кремнии, а не продакшн-ускоритель обучения.',
     'Всё, что оценено, а не измерено, помечено как оценка — и здесь, и в каждом отчёте, который я отправляю.',
+    'На этой странице раньше стояли 323 МГц и 41.2 GOPS для матмула GF16. Перепроверка RTL 8 августа 2026 показала, что во всех девяти копиях в моих репозиториях в этом блоке нет регистров — а значит нет тактовой, и никакая частота ему принадлежать не может. Цифра снята, а не объяснена, и заменена приведёнными выше числами синтеза.',
   ],
   finalTitle: 'Проверьте сами',
   finalLede: 'Статьи, исходники и полный пример отчёта — всё открыто. В этом и смысл: заявление, которое нельзя проверить, — просто предложение.',

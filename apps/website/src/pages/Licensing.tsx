@@ -41,7 +41,7 @@ const CORES = [
     name: 'GF16 4×4 matmul',
     tag: 'Matrix engine',
     body: 'A matrix multiplier that carries its arithmetic entirely in logic — leaving the DSP columns free for the rest of your system, and porting cleanly to devices with few or no DSP blocks.',
-    proof: '323 MHz · 41.2 GOPS · 0 DSP48 · 0 latches, measured on a Xilinx Artix-7.',
+    proof: 'Synthesised for Artix-7: 32,252 LUTs with zero DSP48, or 21,223 LUTs using 64 DSP blocks. Combinational — no registers, so no frequency figure belongs to it.',
   },
   {
     name: 'BPSK modem',
@@ -82,7 +82,7 @@ const RU = {
   coresTitle: 'Доступные ядра',
   cores: [
     { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — тернарного формата с плавающей точкой, который в бенчмарках лучший в классе (≈3–5.5× против сопоставимых форматов). Без декодирования режима, с нативной тернарной экспонентой.', proof: 'Опубликованный формат (arXiv:2606.05017) с независимой эталонной моделью и побитовыми тест-векторами.' },
-    { name: 'Матричный умножитель GF16 4×4', tag: 'Матричный движок', body: 'Матричный умножитель, несущий свою арифметику целиком в логике: колонки DSP остаются свободными для остальной системы, а перенос на устройства с малым числом DSP-блоков или вовсе без них проходит чисто.', proof: '323 МГц · 41.2 GOPS · 0 DSP48 · 0 защёлок, измерено на Xilinx Artix-7.' },
+    { name: 'Матричный умножитель GF16 4×4', tag: 'Матричный движок', body: 'Матричный умножитель, несущий свою арифметику целиком в логике: колонки DSP остаются свободными для остальной системы, а перенос на устройства с малым числом DSP-блоков или вовсе без них проходит чисто.', proof: 'Синтезировано под Artix-7: 32 252 LUT без единого DSP48 либо 21 223 LUT с 64 DSP-блоками. Комбинационный — регистров нет, поэтому частота ему не принадлежит.' },
     { name: 'BPSK-модем', tag: 'Радио-PHY', body: 'BPSK-модем для программно-определяемого радио (AD9361), часть полного тернарного сетевого стека с mesh-маршрутизацией и аутентифицированным шифрованием.', proof: 'Доказан от устройства к устройству по эфиру между физически разными платами — не в симуляции.' },
     { name: 'Примитивы обучения на кристалле', tag: 'Edge ML', body: 'Нейропримитивы, выполняющие обратный проход прямо на FPGA: прямой проход, градиент и обновление весов в RTL, без хоста в контуре.', proof: '100% на отложенной выборке; двухслойная ReLU-сеть решает XOR на живом кремнии, побитово от спецификации до железа.' },
   ],
@@ -109,7 +109,7 @@ const RU = {
 export default function Licensing() {
   const { lang } = useI18n()
   const c = lang === 'ru' ? RU : null
-  usePageMeta("Core licensing", "License arithmetic cores that have already been measured on hardware: GF-T multiplier, GF16 matmul at 323 MHz with zero DSP blocks, BPSK modem proven over the air.")
+  usePageMeta("Core licensing", "License arithmetic cores with an independent reference model and the vectors that prove them: the GF-T multiplier, a GF16 4×4 matmul that fits in fabric with zero hard multipliers, and a BPSK modem proven over the air.")
   return (
     <main>
       <QuantumBackground />

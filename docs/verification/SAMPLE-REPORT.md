@@ -21,14 +21,18 @@
 | Check | Result |
 |---|---|
 | Functional conformance (bit-exact vs independent model) | **PASS** — all KAT vectors match |
-| Timing closure at target frequency | **PASS** — 323 MHz achieved |
 | Latch-free (no inferred latches) | **PASS** — 0 latches |
-| DSP-block independence | **PASS** — 0 DSP48 used |
-| Bitstream generated and loaded on hardware | **PASS** |
-| Hardware execution matches simulation | **PASS** — bit-identical outputs |
+| Hard-multiplier independence | **PASS** — 0 DSP48, by fabric mapping |
+| Place and route on the target device | **PASS** |
+| Timing | **not applicable** — this block is combinational |
 
-**Verdict:** the design meets its specification bit-exactly and closes timing at the target
-frequency on real silicon.
+**Verdict:** the design meets its specification bit-exactly and implements on the target device
+without hard multipliers.
+
+> **On the missing frequency.** This particular block holds no registers, so it has no clock and
+> no achieved-frequency figure can belong to it. An earlier version of this report quoted one; it
+> was withdrawn on 8 August 2026 after re-checking the RTL. For a **sequential** design the report
+> does carry achieved frequency from the router — see §5.2.
 
 ---
 
@@ -98,16 +102,28 @@ every step can be re-run by the client on their own machine.
 
 | Metric | Value |
 |---|---|
-| Achieved frequency | **323 MHz** |
-| Timing closure | met |
+| Achieved frequency | **not applicable** — combinational block, no clock domain |
 | Inferred latches | **0** |
+
+For a design that does contain registers, this section reports the router's achieved frequency
+for each clock domain, with the critical path listed. A worked example on a sequential
+multiply-accumulate unit came out at **112.33 MHz** post-route on this device, with the critical
+path through the accumulator adder.
+
+One caveat learned the hard way and passed on: `nextpnr-xilinx` produces no frequency at all for
+designs that use DSP48 blocks — it has no timing model through the hard block, so the
+register-to-register path is broken and the tool reports `No clocks found in design` rather than a
+number. Where that happens, this report says so instead of quoting something the tool never
+computed.
 
 ### 5.3 Resources
 
 | Resource | Used |
 |---|---|
-| DSP48 blocks | **0** |
-| Logic | fits comfortably within XC7A200T |
+| DSP48 blocks | **0** — with hard multipliers disabled |
+| LUTs | **32,252** in that configuration; **21,223** if the 64 DSP blocks are allowed |
+| Registers | **0** — the block is combinational |
+| Device | fits comfortably within XC7A200T |
 
 Zero DSP usage is a design property worth calling out: the arithmetic is carried entirely in
 logic, which leaves the DSP columns free for the rest of the system and makes the core
