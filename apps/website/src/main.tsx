@@ -10,6 +10,8 @@ import TrinityCanvas from './pages/TrinityCanvas.tsx'
 import TrinityCanvasWasm from './components/TrinityCanvasWasm.tsx'
 import ProductionDashboard from './components/ProductionDashboard.tsx'
 import TechTreePage from './pages/TechTreePage.tsx'
+import { BlogIndex, BlogPost } from './pages/Blog.tsx'
+import Resources from './pages/Resources.tsx'
 import { I18nProvider } from './i18n/context.tsx'
 
 createRoot(document.getElementById('root')!).render(
@@ -20,6 +22,9 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/" element={<App />} />
           <Route path="/dashboard" element={<ProductionDashboard />} />
           <Route path="/tree" element={<TechTreePage />} />
+          <Route path="/blog" element={<BlogIndex />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/resources" element={<Resources />} />
           <Route path="/canvas" element={<TrinityCanvas />} />
           <Route path="/quantum" element={<QuantumLab />} />
           <Route path="/lab" element={<QuantumLab />} />

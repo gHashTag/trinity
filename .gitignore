@@ -358,7 +358,10 @@ runtime/
 translator-app/
 tree-sitter-vibee/
 trinity-nexus/
-website/
+# website/  <- REMOVED 2026-08-09: this bare pattern matched apps/website/,
+#            the live t27.ai source. 122 of its src files were already tracked,
+#            so edits worked but every NEW file was silently excluded.
+#            Build output is handled by apps/website/.gitignore (node_modules, dist).
 
 # SOUL bindings (tracked for orchestration)
 !.trinity/issue_bindings.json
