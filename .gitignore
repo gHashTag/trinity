@@ -358,7 +358,9 @@ runtime/
 translator-app/
 tree-sitter-vibee/
 trinity-nexus/
-website/
+# website/ removed 2026-08-10: it matched apps/website at any depth and silently
+# excluded every NEW file in the site source, while already-tracked files kept working.
+# Build output is handled by apps/website/.gitignore (node_modules, dist).
 
 # SOUL bindings (tracked for orchestration)
 !.trinity/issue_bindings.json
