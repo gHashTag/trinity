@@ -7,7 +7,15 @@ let package = Package(
         .macOS(.v14),
         .iOS(.v17)
     ],
-    products: [],
+    products: [
+        .library(
+            name: "QueenUILib",
+            type: .dynamic,
+            targets: ["QueenUILib"]),
+        .executable(
+            name: "trinity",
+            targets: ["trinity"]),
+    ],
     targets: [
         .target(
             name: "QueenUILib",

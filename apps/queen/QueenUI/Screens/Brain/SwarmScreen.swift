@@ -322,7 +322,7 @@ struct SwarmScreen: View {
 
     /// Scan src/*/cell.tri files to discover honeycomb cells
     private func scanCellTriFiles() -> [CellInfo] {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let srcDir = "\(cwd)/src"
         let fm = FileManager.default
 

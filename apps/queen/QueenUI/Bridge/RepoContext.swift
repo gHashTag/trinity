@@ -159,7 +159,7 @@ class RepoContext: ObservableObject {
         process.waitUntilExit()
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        return path ?? FileManager.default.currentDirectoryPath
+        return path ?? TrinityRuntimePaths.projectRoot
     }
 
     private func buildFileTree(depth: Int) -> String {

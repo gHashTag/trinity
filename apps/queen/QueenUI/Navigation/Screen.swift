@@ -29,7 +29,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
     case swarm = "Swarm"
     case brainHealth = "Brain Health"
 
-    // Body (9)
+    // Body (10)
     case build = "Build"
     case triTools = "Tri Tools"
     case issues = "Issues"
@@ -40,6 +40,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
     case keys = "Keys"
     case state = "State"
     case files = "Files"
+    case todo = "To-Do List"
 
     // Spirit (9)
     case rainbowBridge = "Rainbow Bridge"
@@ -58,7 +59,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .chat, .sevoFarm, .arenaLLM, .arenaCode, .faculty, .oracle, .muMemory, .scholar, .swarm, .brainHealth:
             return .brain
-        case .build, .triTools, .issues, .git, .deploy, .bridge, .telegram, .keys, .state, .files:
+        case .build, .triTools, .issues, .git, .deploy, .bridge, .telegram, .keys, .state, .files, .todo:
             return .body
         case .rainbowBridge, .sacredMath, .techTree, .fpga, .vsa, .pipeline, .benchmarks, .experience, .settings:
             return .spirit
@@ -87,6 +88,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
         case .keys: return "🔑"
         case .state: return "📊"
         case .files: return "📁"
+        case .todo: return "✅"
         case .rainbowBridge: return "🌈"
         case .sacredMath: return "🔢"
         case .techTree: return "🌳"
@@ -114,8 +116,8 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
             .build, .triTools, .issues, .git, .deploy,
             .bridge, .telegram, .keys, .state,
             // DUKH (18-26)
-            .files, .rainbowBridge, .sacredMath, .techTree, .fpga,
-            .vsa, .pipeline, .benchmarks, .settings,
+            .files, .todo, .rainbowBridge, .sacredMath, .techTree,
+            .fpga, .vsa, .pipeline, .benchmarks, .settings,
         ]
         guard idx >= 0, idx < mapping.count else { return .chat }
         return mapping[idx]

@@ -1781,7 +1781,7 @@ struct ChatScreen: View {
 
         // Task tracker
         if !taskItems.isEmpty {
-            TaskTrackerView(tasks: $taskItems)
+            TaskTrackerPanelView(tasks: $taskItems)
                 .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
                 .padding(.bottom, 4)
         }
@@ -3179,6 +3179,9 @@ struct ConnectionStatusBar: View {
             .padding(.vertical, 2)
         }
         .onAppear { checkConnection() }
+        .onChange(of: modelManager.selectedModel.id) {
+            checkConnection()
+        }
         .onChange(of: client.failoverEvent) {
             withAnimation(.easeInOut(duration: 0.3)) { showFailover = true }
             // Auto-dismiss after 4s (8s for cloud-to-local fallback)
@@ -7127,7 +7130,7 @@ struct MCPStatusView: View {
 
     /// Probe .mcp.json to determine which MCP servers are configured
     static func loadServers() -> [(name: String, connected: Bool)] {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let mcpPath = "\(cwd)/.mcp.json"
         let names = ["trinity", "needle", "zig-docs", "railway"]
 
@@ -7732,10 +7735,10 @@ struct SimpleMultilineInput: View {
                 .padding(.horizontal, 4)
                 .padding(.vertical, 4)
                 .focused($isFocused)
-                .onKeyPress(.return, modifiers: .shift) {
-                    return .ignored
-                }
                 .onKeyPress(.return) {
+                    if NSEvent.modifierFlags.contains(.shift) {
+                        return .ignored
+                    }
                     onSubmit()
                     return .handled
                 }

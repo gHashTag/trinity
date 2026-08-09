@@ -2,8 +2,22 @@ import SwiftUI
 
 struct ScreenRouter: View {
     let screen: Screen
+    @State private var refreshID = UUID()
 
     var body: some View {
+        QueenOperationalWorkspace(screen: screen) {
+            routedContent
+                .id(refreshID)
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: .queenWorkspaceRefresh)
+        ) { _ in
+            refreshID = UUID()
+        }
+    }
+
+    @ViewBuilder
+    private var routedContent: some View {
         switch screen {
         case .chat:
             ChatScreen()
@@ -49,6 +63,8 @@ struct ScreenRouter: View {
             StateScreen()
         case .files:
             FilesScreen()
+        case .todo:
+            TodoPanelView()
         case .rainbowBridge:
             RainbowBridgeScreen()
         case .fpga:
@@ -64,27 +80,5 @@ struct ScreenRouter: View {
         case .settings:
             SettingsScreen()
         }
-    }
-}
-
-struct ComingSoonScreen: View {
-    let screen: Screen
-
-    var body: some View {
-        VStack(spacing: ParietalSpacing.xl) {
-            Text(screen.icon)
-                .font(WernickeTypography.display48)
-            Text(screen.rawValue)
-                .font(.title.weight(.bold))
-                .foregroundStyle(V4Color.textPrimary)
-            Text("Coming Soon")
-                .font(.title3)
-                .foregroundStyle(V4Color.textSecondary)
-            Text("Kingdom: \(screen.kingdom.rawValue)")
-                .font(.caption)
-                .foregroundStyle(V4Color.accent)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(V4Color.background)
     }
 }

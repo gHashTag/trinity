@@ -197,7 +197,7 @@ struct MUMemoryScreen: View {
     }
 
     private func loadLearningDB() {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         if let data = try? Data(contentsOf: URL(fileURLWithPath: "\(cwd)/.trinity/mu/learning_db.json")) {
             learningDB = try? JSONDecoder().decode(LearningDB.self, from: data)
         }

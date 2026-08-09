@@ -10,7 +10,7 @@ public class TriBridge {
     /// Execute tri command and return output
     public func execute(_ command: String) async throws -> String {
         let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/usr/local/bin/tri")
+        task.executableURL = URL(fileURLWithPath: TrinityRuntimePaths.triExecutable)
         task.arguments = command.components(separatedBy: " ")
 
         let pipe = Pipe()

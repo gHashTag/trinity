@@ -101,6 +101,7 @@ struct AgentStreamView: View {
 
             // Todos section (editable)
             MemoryTodoView()
+                .id(watcher.todos.count)
 
             Divider().background(V4Color.border)
 

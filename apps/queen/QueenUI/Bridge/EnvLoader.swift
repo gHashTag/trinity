@@ -38,9 +38,9 @@ struct EnvLoader {
             if parent == dir { break }
             dir = parent
         }
-        // Fallback to known project root
-        let fallback = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("trinity-w1/.env")
+        // Fallback to the configured project root.
+        let fallback = URL(fileURLWithPath: TrinityRuntimePaths.projectRoot)
+            .appendingPathComponent(".env")
         if FileManager.default.fileExists(atPath: fallback.path) {
             return fallback
         }

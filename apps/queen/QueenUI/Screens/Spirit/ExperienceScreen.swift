@@ -122,7 +122,7 @@ struct ExperienceScreen: View {
     }
 
     private func loadEpisodes() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity/experience/episodes"
+        let path = "\(TrinityRuntimePaths.stateRoot)/experience/episodes"
         let fm = FileManager.default
         guard let items = try? fm.contentsOfDirectory(atPath: path) else { return }
 
