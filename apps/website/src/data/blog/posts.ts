@@ -52,6 +52,15 @@ const openGigabitEthernet: Post = {
     { label: '#115 — IDDR IFF flop initialisation', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/115' },
     {
       label:
+        'openXC7/nextpnr-xilinx issue #114 — IDDR captures nothing on silicon (A/B/A/B bitstream measurement, ALINX AX7203)',
+      href: 'https://github.com/openXC7/nextpnr-xilinx/issues/114',
+    },
+    {
+      label: 'openXC7/nextpnr-xilinx issue #65 — SAME_EDGE_PIPELINED unsupported (janrinze, Mar 2025)',
+      href: 'https://github.com/openXC7/nextpnr-xilinx/issues/65',
+    },
+    {
+      label:
         'Shah, Hung, Wolf, Bazanski, Gisselquist, Milanović — Yosys+nextpnr: an Open Source Framework from Verilog to Bitstream for Commercial FPGAs (FCCM 2019), arXiv:1903.10407',
       href: 'https://arxiv.org/abs/1903.10407',
     },
@@ -59,7 +68,7 @@ const openGigabitEthernet: Post = {
   openQuestions: [
     'The link comes up intermittently at power-on. The cause is not yet known.',
     'All six patches are OPEN on openXC7/nextpnr-xilinx — submitted upstream, none merged as of 2026-08-09.',
-    'Hardware IDDR capture on Artix-7 is still broken in the toolchain; the receive path uses fabric DDR capture as a workaround.',
+    'Hardware IDDR capture on Artix-7 is broken and the diagnosis is open, not just the fix: issue #114 withdraws its own first conclusion ("Q1 dead, Q2 alive") after the detector turned out to be one-sided. Both outputs are inert in every edge mode tried. The receive path uses fabric DDR capture as a workaround.',
     'Is the 470 ps figure an RMS or a peak-to-peak total, and at what BER? Theorem 2 shows the answer decides whether the link is comfortably feasible (88% eye open) or marginal. Not yet re-measured.',
     'Frame-error rate was never measured directly, only inferred from whether the link came up. The three skew data points are right-censored at tap 31 and cannot discriminate between the candidate models.',
   ],
@@ -88,7 +97,11 @@ const openGigabitEthernet: Post = {
       text:
         'openXC7 has funded work on gigabit transceivers, but that targets GTP/GTX — high-speed serial lanes, aimed at 10G. Different problem. RGMII is source-synchronous DDR over ordinary user I/O on general-purpose registers. Cheaper, closer to a typical dev board with a gigabit PHY, and therefore it stresses primitives rather than transceivers: ODDR/IDDR, clock buffers, clock management.',
     },
-    { kind: 'p', text: 'Board: [FILL IN: board model, xc7aNNNt part, PHY].' },
+    {
+      kind: 'p',
+      text:
+        'Board: ALINX AX7203, part xc7a200tfbg484-2. The 125 MHz RGMII receive clock arrives on an SRCC pin (B17) and reaches a BUFG. Toolchain: nextpnr-xilinx at stable-backports (f8e7643) plus the open patches below, Yosys 0.63, prjxray via the regymm/openxc7 image, on a macOS arm64 host.',
+    },
 
     { kind: 'h', text: 'Blocker 1 — the router gave up before trying half the options' },
     {
@@ -117,7 +130,43 @@ const openGigabitEthernet: Post = {
     {
       kind: 'p',
       text:
-        'The hardware IDDR block did not capture data. This remains open in the toolchain. #115 initialises all four IFF flops rather than only Q1/Q2, which closes part of the initialisation problem, but the receive path still had to move: RGMII receive is done with fabric DDR capture instead of the hardware IDDR.',
+        'The hardware IDDR block does not capture at all. Place-and-route succeeds, timing is met, the FASM is well-formed and the bitstream configures — the data simply never appears. Reported upstream as issue #114 with an A/B/A/B bitstream flip on one board: a raw-pin build reads in-band status 0xD (1000 Mb/s, full duplex) and counts frames, while the IDDR build sees none. #115 initialises all four IFF flops rather than only Q1/Q2, which closes part of the configuration problem but not this. The receive path therefore uses fabric DDR capture instead.',
+    },
+    {
+      kind: 'p',
+      text:
+        'The diagnosis itself is still open. A pre-existing report, issue #65 from janrinze in March 2025, records that SAME_EDGE_PIPELINED is rejected outright — prjxray only encodes SAME and OPPOSITE for IFF.DDR_CLK_EDGE — so the input DDR path has been thin here for a while.',
+    },
+
+    { kind: 'h', text: 'The instrument was wrong before the conclusion was' },
+    {
+      kind: 'p',
+      text:
+        'The first version of this report said "Q1 is dead, Q2 works". That was wrong, and the reason is worth more than the finding.',
+    },
+    {
+      kind: 'p',
+      text:
+        'Liveness was detected with a sticky OR: seen <= seen | q. That cannot distinguish a toggling output from one stuck at 1 — both end up 0xF. Adding the complementary sticky zero, zero <= zero | ~q, changes the picture entirely: an output is only really capturing if it has been observed both high and low.',
+    },
+    {
+      kind: 'table',
+      head: ['Emitted IFF.DDR_CLK_EDGE', 'Q1', 'Q2'],
+      rows: [
+        ['SAME_EDGE', 'ever-1 0x0, ever-0 0xF -> stuck LOW', 'ever-1 0xF, ever-0 0x0 -> stuck HIGH'],
+        ['neither bit emitted', 'stuck HIGH', 'stuck HIGH'],
+        ['OPPOSITE_EDGE', 'never high', 'never high'],
+      ],
+    },
+    {
+      kind: 'p',
+      text:
+        'Byte assembly confirms it: sampling early in a frame, where the Ethernet preamble 0x55 must appear, yields F0 under SAME_EDGE and FF with no edge bits — constant levels, never 0x55. So the corrected finding is simpler and worse than the first one: both outputs are inert in every edge mode tried, while the pin demonstrably carries gigabit traffic.',
+    },
+    {
+      kind: 'quote',
+      text:
+        'A one-sided detector cannot tell alive from stuck. If an instrument can only ever report one of its two possible answers, it is not measuring — and it will agree with you every time.',
     },
 
     { kind: 'h', text: 'What the workaround costs: jitter, and a dependence on frame size' },
@@ -306,7 +355,7 @@ const openGigabitEthernet: Post = {
     {
       kind: 'p',
       text:
-        '[FILL IN: exact <part>, <board>, <constraints>, and how the skew step is set. Without them this section is useless; with invented values it is harmful.]',
+        'Part is xc7a200tfbg484-2 and the board flag for openFPGALoader is the ALINX AX7203. [FILL IN: the constraints file, and how the skew step is set — that mechanism is not described in the public issue, so it is not reproduced here rather than guessed.]',
     },
 
     { kind: 'h', text: 'What this means' },
