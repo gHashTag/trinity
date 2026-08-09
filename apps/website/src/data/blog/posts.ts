@@ -355,7 +355,7 @@ const openGigabitEthernet: Post = {
     {
       kind: 'p',
       text:
-        'Part is xc7a200tfbg484-2 and the board flag for openFPGALoader is the ALINX AX7203. [FILL IN: the constraints file, and how the skew step is set — that mechanism is not described in the public issue, so it is not reproduced here rather than guessed.]',
+        'Part is xc7a200tfbg484-2 and the board flag for openFPGALoader is the ALINX AX7203. [FILL IN: the constraints file, and how the skew step is set. Searched for on 2026-08-10 and not found — openXC7 issues #109-#115, the local trees for trinity / t27 / tri-net / Downloads / Desktop, GitHub code search across all repositories, and the branches of the gHashTag/nextpnr-xilinx fork. The mechanism is not in the public record, so it is left blank rather than reconstructed.]',
     },
 
     { kind: 'h', text: 'What this means' },
