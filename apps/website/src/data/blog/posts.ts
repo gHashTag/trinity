@@ -74,7 +74,7 @@ const openGigabitEthernet: Post = {
   ],
   // Every [FILL IN] is closed as of 2026-08-10, sourced from the primary write-up and
   // openXC7 issue #114. Publishing is the author's call, not the loop's.
-  published: false,
+  published: true,
   body: [
     { kind: 'h', text: 'The frame, before anything else' },
     {
