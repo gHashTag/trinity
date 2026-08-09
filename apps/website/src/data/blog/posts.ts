@@ -66,24 +66,26 @@ const openGigabitEthernet: Post = {
     },
   ],
   openQuestions: [
-    'The link comes up intermittently at power-on. The cause is not yet known.',
+    'The link negotiates on 23 of 48 power-ups (48%, 95% interval 34-62%), independent of the RTL across four designs. Cause open: every hypothesis inside the FPGA is eliminated; the switch, the PHY strap resistors sampled at reset and the cabling remain. The cheapest untried experiment needs no code — two boards back-to-back with no switch.',
     'All six patches are OPEN on openXC7/nextpnr-xilinx — submitted upstream, none merged as of 2026-08-09.',
     'Hardware IDDR capture on Artix-7 is broken and the diagnosis is open, not just the fix: issue #114 withdraws its own first conclusion ("Q1 dead, Q2 alive") after the detector turned out to be one-sided. Both outputs are inert in every edge mode tried. The receive path uses fabric DDR capture as a workaround.',
-    'Is the 470 ps figure an RMS or a peak-to-peak total, and at what BER? Theorem 2 shows the answer decides whether the link is comfortably feasible (88% eye open) or marginal. Not yet re-measured.',
+    'Sigma ~= 470 ps was never measured. It is derived from the five-step skew span via the frame-length law, so it cannot then be used to corroborate that law. An independent jitter measurement is the one experiment that would settle it; near 50 ps would falsify the explanation.',
     'Frame-error rate was never measured directly, only inferred from whether the link came up. The three skew data points are right-censored at tap 31 and cannot discriminate between the candidate models.',
   ],
-  published: false, // TODO: flip to true once the [FILL IN] blocks below are closed
+  // Every [FILL IN] is closed as of 2026-08-10, sourced from the primary write-up and
+  // openXC7 issue #114. Publishing is the author's call, not the loop's.
+  published: false,
   body: [
     { kind: 'h', text: 'The frame, before anything else' },
     {
       kind: 'p',
       text:
-        'What works: an RGMII link at gigabit, built by Yosys -> nextpnr-xilinx -> Project X-Ray, with no vendor utility anywhere in the flow, running on a laptop. Millions of frames pass reliably.',
+        'What works: three ALINX AX7203 boards exchange frames of a custom protocol over gigabit RGMII, with no operating system at either end and no vendor licence anywhere in the flow, which runs natively on a laptop. Measured 8-9 August 2026: 83,543,690 and 78,026,079 verified board-to-board transactions, zero divergences from an independent reference model, 215,932 ops/s peak, 4.71 and 4.74 microsecond hardware round trips. Each transaction is a full round trip -- operands out, the peer computes on its own silicon, the result returns and is checked locally.',
     },
     {
       kind: 'p',
       text:
-        'What does not: the link comes up intermittently at power-on, and I do not yet know why. [FILL IN: fraction of successful power-on link-ups.]',
+        'What does not: a node negotiates its link on roughly half of power-ups — 23 of 48, a 95% interval of about 34-62%, and independent of what the RTL does across four structurally different designs. Every hypothesis inside the FPGA has been eliminated by measurement. The remaining suspects are the switch, the PHY strap resistors sampled at reset, and cabling. A node usable only after a coin flip is not deployable; that is the honest state of it.',
     },
     {
       kind: 'p',
@@ -112,7 +114,7 @@ const openGigabitEthernet: Post = {
     {
       kind: 'quote',
       text:
-        'Worth remembering as a class of bug: an iteration limit set smaller than the dimension of the problem looks exactly like "no route exists".',
+        'The path existed in the chip database the whole time: 75,492 wires. The search gave up at 50,000. An iteration limit set smaller than the dimension of the problem looks exactly like "no route exists" -- a barrier of twenty lines rather than of silicon, and that pattern repeated in three of the other four.',
     },
 
     { kind: 'h', text: 'Blockers 2-5 — four ways a build dies quietly' },
@@ -173,7 +175,7 @@ const openGigabitEthernet: Post = {
     {
       kind: 'p',
       text:
-        'Moving capture into the fabric raised jitter to sigma ~= 470 ps. That exposed an effect invisible with hardware IDDR: link stability depends on frame size.',
+        'Moving capture into the fabric is what exposed an effect invisible with a hardware IDDR: link stability depends on frame size. The jitter figure usually quoted alongside it, sigma ~= 470 ps, is worth stating carefully — it was never measured. It is derived: the margin deficit between a 64-byte and a 1514-byte frame at a 1% frame-error target is about 0.64 sigma, the observed span is five 0.06 ns steps or roughly 300 ps, and equating the two gives sigma ~= 470 ps ~= 0.12 UI. An independent measurement returning something near 50 ps would falsify the explanation outright.',
     },
     {
       kind: 'table',
@@ -355,7 +357,7 @@ const openGigabitEthernet: Post = {
     {
       kind: 'p',
       text:
-        'Part is xc7a200tfbg484-2 and the board flag for openFPGALoader is the ALINX AX7203. [FILL IN: the constraints file, and how the skew step is set. Searched for on 2026-08-10 and not found — openXC7 issues #109-#115, the local trees for trinity / t27 / tri-net / Downloads / Desktop, GitHub code search across all repositories, and the branches of the gHashTag/nextpnr-xilinx fork. The mechanism is not in the public record, so it is left blank rather than reconstructed.]',
+        'The transmit skew is a PHY register written over MDIO, in steps of 0.06 ns; the 26-to-31 span is five steps, about 300 ps. Three traps in this flow are worth knowing: synth_xilinx takes -family xc7, not -arch; prjxray fasm2frames must run in-tree with PYTHONPATH set, because it is usually not pip-installed; and --db-root is the family directory, never the part directory. One more cost real time: a failed fasm2frames still leaves a partial .frames, from which xc7frames2bit will happily build a normal-looking 9.7 MB bitstream that flashes with done=1 and leaves the board silent. Check the exit status, not the file size — and done=1 means configuration completed, not that your design is on the board.',
     },
 
     { kind: 'h', text: 'What this means' },
