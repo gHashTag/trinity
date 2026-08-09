@@ -81,7 +81,7 @@ struct TriangleLogo: View {
         // RAZUM (0-8)
         ("CHAT", "phi = 1.618"),
         ("CODE", "pi*phi*e = 13.82"),
-        ("LOGS", "L(10) = 123"),
+        ("LOGS", "H(X) = -Σp·log₂p"),
         ("DEBUG", "1/a = 137.036"),
         ("REVIEW", "phi2 = phi+1 = 2.618"),
         ("TRANSLATE", "Feigenbaum d = 4.669"),

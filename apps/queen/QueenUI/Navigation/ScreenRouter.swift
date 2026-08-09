@@ -25,6 +25,8 @@ struct ScreenRouter: View {
             FacultyScreen()
         case .sevoFarm:
             SEVOFarmScreen()
+        case .logs:
+            LogsScreen()
         case .swarm:
             SwarmScreen()
         case .brainHealth:

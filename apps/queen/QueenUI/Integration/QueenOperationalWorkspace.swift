@@ -44,6 +44,8 @@ enum QueenWorkspaceCatalog {
             details = ("Agent conversation and tool timeline", "Trios runtime")
         case .sevoFarm:
             details = ("Evolution state, population, and farm actions", ".trinity")
+        case .logs:
+            details = ("Unified runtime logs with noise-profile filtering", "runtime")
         case .arenaLLM:
             details = ("Model battles and ELO leaderboard", "data/arena")
         case .arenaCode:

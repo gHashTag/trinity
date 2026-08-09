@@ -20,6 +20,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
     // Brain (10)
     case chat = "Queen Chat"
     case sevoFarm = "SEVO Farm"
+    case logs = "Logs"
     case arenaLLM = "Arena LLM"
     case arenaCode = "Arena Code"
     case faculty = "Faculty Board"
@@ -57,7 +58,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
 
     var kingdom: Kingdom {
         switch self {
-        case .chat, .sevoFarm, .arenaLLM, .arenaCode, .faculty, .oracle, .muMemory, .scholar, .swarm, .brainHealth:
+        case .chat, .sevoFarm, .logs, .arenaLLM, .arenaCode, .faculty, .oracle, .muMemory, .scholar, .swarm, .brainHealth:
             return .brain
         case .build, .triTools, .issues, .git, .deploy, .bridge, .telegram, .keys, .state, .files, .todo:
             return .body
@@ -70,6 +71,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .chat: return "👑"
         case .sevoFarm: return "🧬"
+        case .logs: return "📜"
         case .arenaLLM: return "⚔️"
         case .arenaCode: return "💻"
         case .faculty: return "🎓"
@@ -110,7 +112,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
     static func screenForBlock(_ idx: Int) -> Screen {
         let mapping: [Screen] = [
             // RAZUM (0-8)
-            .chat, .sevoFarm, .arenaLLM, .arenaCode, .faculty,
+            .chat, .sevoFarm, .logs, .arenaCode, .faculty,
             .oracle, .muMemory, .scholar, .swarm,
             // MATERIYA (9-17)
             .build, .triTools, .issues, .git, .deploy,

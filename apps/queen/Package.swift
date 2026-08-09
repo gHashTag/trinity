@@ -20,7 +20,13 @@ let package = Package(
         .target(
             name: "QueenUILib",
             path: "QueenUI",
-            exclude: ["Entry"]),
+            // cerebellum_tests.swift imports XCTest. Compiling it into the
+            // product library made libQueenUILib.dylib link
+            // libXCTestSwiftSupport.dylib, which is absent at runtime outside a
+            // test host - every app embedding this library died at launch with
+            // "Library not loaded: @rpath/libXCTestSwiftSupport.dylib".
+            // Unit tests belong in the QueenUITests target, not in the library.
+            exclude: ["Entry", "Cortex/Calibration/cerebellum_tests.swift"]),
         .executableTarget(
             name: "trinity",
             dependencies: ["QueenUILib"],
