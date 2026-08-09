@@ -282,9 +282,9 @@ export const channels: Resource[] = [
     title: 'Reddit — r/t27ai',
     href: 'https://www.reddit.com/r/t27ai/',
     verified: '2026-08-09',
-    status: 'broken',
+    status: 'live',
     note:
-      'RESTRICTED ACCESS. Created 27 Mar 2026, two posts (both by the owner), silent four months. A restricted subreddit cannot be discovered or joined, so the footer link leads nowhere. Make it public or drop the link.',
+      'PUBLIC as of 2026-08-09 (verified: subreddit_type "public", 1 subscriber). Was restricted from creation on 27 Mar 2026 until a review request was approved. Two posts, both by the owner, silent four months — it now needs content, not permissions.',
   },
   {
     kind: 'channel',
