@@ -1,5 +1,22 @@
 # CLAUDE.md
 
+## Pinned Zig version — 0.15.2
+
+**Every workflow uses `0.15.2`.** Before 2026-08-10 they did not: 22 places said 0.15.2,
+five said 0.15.0, and three that actually run `zig build` — `build-compiler-release.yml`,
+`extension-tests.yml`, `extension-release.yml` — said 0.13.0, two majors behind.
+
+This document previously carried migration rules for 0.14 and 0.15 at once, which is how a
+reader ends up applying the wrong one.
+
+**A locally installed Zig is not the CI toolchain.** On 0.16 a clean checkout of `main`
+fails at `build.zig:67` with `no field or member function named 'linkLibC'` — an error CI
+never sees, because `linkLibC` still exists in 0.15. A green local build proves nothing
+about CI, and a red one says nothing about your change. Match 0.15.2 locally before drawing
+any conclusion from a build.
+
+---
+
 ## Zig 0.15 API Compatibility and Migration Rules
 
 **Reference**: docs/zig-migration-rules.md — https://ziglang.org/download/0.15.1/
