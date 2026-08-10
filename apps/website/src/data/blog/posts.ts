@@ -33,6 +33,25 @@ export interface Post {
   body: Block[]
   /** Set false while the text still has gaps; the index will not list it. */
   published: boolean
+  /**
+   * Russian version of the post, applied wholesale when the reader has chosen ru.
+   *
+   * All-or-nothing on purpose. A Russian title over an English body is worse than
+   * an English title: the reader commits to reading and then finds they cannot.
+   * So a post is bilingual only once every field here is filled, and until then
+   * it stays English for everyone, which is at least honest about what it is.
+   *
+   * The honesty rules at the top of this file bind the translation too. A hedge
+   * that softens in Russian -- "submitted upstream" becoming "accepted", "inferred"
+   * becoming "measured" -- is a false claim in a second language, and harder to
+   * catch because fewer readers check it.
+   */
+  ru?: {
+    title: string
+    summary: string
+    openQuestions: string[]
+    body: Block[]
+  }
 }
 
 const openGigabitEthernet: Post = {
