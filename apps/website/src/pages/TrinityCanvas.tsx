@@ -2190,11 +2190,11 @@ export default function TrinityCanvas() {
                               {consciousnessMetrics.gwt_ignition ? '●' : '○'} GWT:{consciousnessMetrics.gwt_broadcast_strength.toFixed(2)}
                             </span>
                             <span style={{
-                              color: consciousnessMetrics.consciousness_level === 'enhanced' ? '#00e599' :
-                                     consciousnessMetrics.consciousness_level === 'conscious' ? '#ffd700' :
-                                     consciousnessMetrics.consciousness_level === 'minimal' ? '#ff8800' : 'rgba(255,215,0,0.3)'
+                              color: consciousnessMetrics.state === 'enhanced' ? '#00e599' :
+                                     consciousnessMetrics.state === 'conscious' ? '#ffd700' :
+                                     consciousnessMetrics.state === 'minimal' ? '#ff8800' : 'rgba(255,215,0,0.3)'
                             }}>
-                              {consciousnessMetrics.consciousness_level.toUpperCase()}
+                              {consciousnessMetrics.state.toUpperCase()}
                             </span>
                           </div>
 
@@ -2550,7 +2550,7 @@ export default function TrinityCanvas() {
                   <div onClick={() => setRoadmapExpanded(!roadmapExpanded)}
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span style={{ color: '#aa66ff', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
-                      CONSCIOUS AI {roadmapMetrics && <span style={{ color: roadmapMetrics.consciousness_level === 'conscious' || roadmapMetrics.consciousness_level === 'enhanced' ? '#00e599' : 'rgba(170,100,255,0.3)' }}>●</span>}
+                      CONSCIOUS AI {roadmapMetrics && <span style={{ color: roadmapMetrics.milestone === 'conscious' || roadmapMetrics.milestone === 'enhanced' ? '#00e599' : 'rgba(170,100,255,0.3)' }}>●</span>}
                     </span>
                     <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{roadmapExpanded ? '-' : '+'}</span>
                   </div>
@@ -2560,9 +2560,9 @@ export default function TrinityCanvas() {
                         <span style={{ color: '#aa66ff' }}>Phase:{roadmapMetrics.phase}</span>
                         <span style={{ color: '#aa66ff' }}>Modules:{roadmapMetrics.modules_complete}/{roadmapMetrics.modules_total}</span>
                         <span style={{
-                          color: roadmapMetrics.consciousness_level === 'enhanced' ? '#00e599' :
-                                 roadmapMetrics.consciousness_level === 'conscious' ? '#aa66ff' : '#ff8800'
-                        }}>{roadmapMetrics.consciousness_level.toUpperCase()}</span>
+                          color: roadmapMetrics.milestone === 'enhanced' ? '#00e599' :
+                                 roadmapMetrics.milestone === 'conscious' ? '#aa66ff' : '#ff8800'
+                        }}>{roadmapMetrics.milestone.toUpperCase()}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(170,100,255,0.4)' }}>IIT φ:</span>

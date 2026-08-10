@@ -11,7 +11,7 @@
 // would be a rewrite. A ratchet keeps the signal and bounds the work: the
 // count may fall, never rise. Lower it whenever it falls.
 import { execSync } from 'node:child_process';
-const BASELINE = 221;  // 2026-08-10, after the FormulaDiscoverySection Mode fix
+const BASELINE = 184;  // 2026-08-10, after all four Mode fixes and the canvas field fix
 let out = '';
 try { out = execSync('npx tsc -b --pretty false', { encoding: 'utf8' }); }
 catch (e) { out = (e.stdout || '') + (e.stderr || ''); }
