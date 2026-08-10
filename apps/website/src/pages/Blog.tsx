@@ -281,7 +281,7 @@ export function BlogPost() {
       <Navigation />
       <article style={wrap}>
         <div style={meta}>
-          {post.date} · {post.readingMinutes} min · {post.tags.join(' · ')}
+          {post.date} · {post.readingMinutes} {t.min} · {post.tags.join(' · ')}
         </div>
         <h1 style={{ margin: '12px 0 16px', lineHeight: 1.25 }}>{post.title}</h1>
         <p style={{ fontSize: '1.05rem', lineHeight: 1.75, color: 'var(--text-dim, #8a8a8a)' }}>
