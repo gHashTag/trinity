@@ -477,18 +477,17 @@
         {
           "name": "RTX 4090 / L40S",
           "tokens": "141K-608K",
-          "noise": "70,2%",
           "power": "348W",
           "cost": "$0,10"
         },
         {
           "name": "A100 80GB",
           "tokens": "—",
-          "noise": "70,2%",
           "power": "293W",
           "cost": "$0,20"
         }
-      ]
+      ],
+      "noiseNote": "Rauschrobustheit 70,2 % ist eine Eigenschaft des Modells — bei 30 % Trit-Korruption erhaltene Genauigkeit — nicht der Karte."
     },
     "metrics": [
       {

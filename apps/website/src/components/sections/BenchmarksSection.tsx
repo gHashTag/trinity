@@ -132,10 +132,15 @@ export default function BenchmarksSection() {
                 <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>{gpu.tokens}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{b.tokensUnit || 'tokens/s'}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
-                  {b.noiseLabel || 'Noise:'} {gpu.noise} | {gpu.power}
+                  {gpu.power}
                 </div>
               </div>
             ))}
+            {b.gpuVerified?.noiseNote && (
+              <p style={{ fontSize: '0.75rem', opacity: 0.55, marginTop: '0.75rem', maxWidth: '68ch' }}>
+                {b.gpuVerified.noiseNote}
+              </p>
+            )}
           </div>
         </motion.div>
       )}
