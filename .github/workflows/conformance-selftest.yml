@@ -16,12 +16,16 @@ on:
       - '.github/workflows/conformance-check.yml'
       - '.github/workflows/conformance-selftest.yml'
       - 'tools/conformance_check.py'
+      - 'tools/signal_health.py'
+      - 'tests/test_signal_health.py'
       - 'tests/conformance-fixtures/**'
   pull_request:
     paths:
       - '.github/workflows/conformance-check.yml'
       - '.github/workflows/conformance-selftest.yml'
       - 'tools/conformance_check.py'
+      - 'tools/signal_health.py'
+      - 'tests/test_signal_health.py'
       - 'tests/conformance-fixtures/**'
   workflow_dispatch:
 
@@ -55,3 +59,11 @@ jobs:
       # checker that flagged all 256 would also be "catching" the defect.
       expect_mismatches: '6'
       tool_ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  # The arithmetic behind the signal-health check, asserted against sequences
+  # whose answers are known rather than merely exercised.
+  signal-health-numbers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_signal_health.py
