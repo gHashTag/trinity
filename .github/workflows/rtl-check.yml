@@ -202,9 +202,26 @@ jobs:
           [ -z "$CELLS" ] && CELLS=$(printf '%s' "$TAIL" | grep -Eo 'Number of cells: *[0-9]+' | tail -1 | tr -dc '0-9')
           WIRES=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ wires$' | tail -1 | tr -dc '0-9')
           [ -z "$WIRES" ] && WIRES=$(printf '%s' "$TAIL" | grep -Eo 'Number of wires: *[0-9]+' | tail -1 | tr -dc '0-9')
-          # Flop count from the cell-type histogram, which both formats print as
-          # "<count> $_DFF..._" with varying leading whitespace.
-          FLOPS=$(printf '%s' "$TAIL" | grep -Eo '[0-9]+ +\$_[A-Z]*(DFF|SDFF|ADFF)[A-Z_]*_' | awk '{s+=$1} END{print s+0}')
+          # Flops appear in the histogram in two shapes, and matching only one
+          # of them reported "purely combinational" for MINI and HOLO in a real
+          # cross-repo run -- designs with 17 and 66 flip-flops. Bit-level
+          # ($_DFF_P_, $_DFFE_PN0P_) is what a recent yosys leaves after techmap;
+          # an older one leaves the word-level cells ($dff, $adff, $sdff, $dffe)
+          # because techmap alone does not lower them.
+          # Case-insensitive and digit-tolerant on purpose: the first attempt at
+          # this used [A-Z_]* after DFF, which cannot match $_DFFE_PN0P_ because
+          # of the 0 in it, so it counted zero flops on the very names it was
+          # written for. Anything whose cell type contains "dff" is a flop.
+          FLOPS=$(printf '%s' "$TAIL" \
+            | grep -Eoi '[0-9]+ +\$_?[a-z0-9_]*dff[a-z0-9_]*' \
+            | awk '{s+=$1} END{print s+0}')
+          # When a parse yields nothing, show the text it failed on. Otherwise a
+          # wrong verdict looks exactly like a right one: yosys output goes to a
+          # file, so nothing about it reaches the log.
+          if [ -z "$CELLS" ] || [ "${FLOPS:-0}" = "0" ]; then
+            echo "stat tail, for diagnosis:"
+            printf '%s\n' "$TAIL" | head -30
+          fi
           if [ -n "$CELLS" ]; then
             say "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened"
           else
