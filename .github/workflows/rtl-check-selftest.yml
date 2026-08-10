@@ -50,3 +50,15 @@ jobs:
       top: fixture_latch
       path: tests/rtl-check-fixtures/latch
       expect: fail
+
+  # The assertion itself needs a red before it can be trusted, for exactly the
+  # reason it was added: the old self-test passed because nothing it checked
+  # could fail. Same clean fixture, a flop count that is deliberately wrong by
+  # one. This job going GREEN means the wrong number was caught.
+  wrong-flop-count-must-be-caught:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_good
+      path: tests/rtl-check-fixtures/good
+      expect_flops: '5'
+      expect: fail
