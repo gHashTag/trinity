@@ -379,7 +379,7 @@
     "metrics": [
       {
         "value": "298K",
-        "label": "Токенов/сек (RTX 3090)",
+        "label": "Ops/сек (RTX 3090)",
         "desc": "Проверено на RunPod GPU",
         "theorem": "GPU"
       },
@@ -1198,7 +1198,8 @@
         "power": "293W",
         "cost": "$0.20"
       }
-    }
+    },
+    "unitNote": "Сырые ops/sec ядра, а не сквозная генерация токенов — оговорка из собственного бенчмарка проекта. Строки в tokens/sec с этими несравнимы."
   },
   "hlsCompetition": {
     "title": "Универсальный <span class=\"grad\">FPGA Компилятор</span>",

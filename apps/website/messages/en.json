@@ -494,7 +494,7 @@
     "metrics": [
       {
         "value": "298K",
-        "label": "Tokens/sec (RTX 3090)",
+        "label": "Ops/sec (RTX 3090)",
         "desc": "Verified on RunPod GPU",
         "theorem": "GPU"
       },
@@ -1238,7 +1238,8 @@
         "power": "293W",
         "cost": "$0.20"
       }
-    }
+    },
+    "unitNote": "Raw kernel ops/sec, not end-to-end token generation — the project's own benchmark note. Rows measured in tokens/sec are not comparable to these."
   },
   "hlsCompetition": {
     "title": "Universal <span class=\"grad\">FPGA Compiler</span>",

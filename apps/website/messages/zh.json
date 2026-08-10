@@ -1202,7 +1202,8 @@
         "power": "293W",
         "cost": "$0.20"
       }
-    }
+    },
+    "unitNote": "Raw kernel ops/sec, not end-to-end token generation — the project's own benchmark note. Rows measured in tokens/sec are not comparable to these."
   },
   "hlsCompetition": {
     "title": "通用<span class=\"grad\">FPGA编译器</span>",
