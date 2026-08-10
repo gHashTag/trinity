@@ -1,0 +1,60 @@
+name: Signal health (self)
+
+# The check applied to the repository that sells it, and to my own chip.
+#
+# It writes the numbers into the website data so the page carries them rather
+# than my terminal. A verification service that publishes T12 -- a build red on
+# every run carries zero bits -- while keeping its own streak private would not
+# survive the first question.
+#
+# The measure job is expected to be RED here for now: ci.yml in this repository
+# has failed on every run in the window. Leaving it red is the honest state, and
+# it is a separate workflow from the one being measured, so its own verdict
+# stays readable.
+
+on:
+  schedule:
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish-the-numbers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Measure and write
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 tools/signal_health_report.py apps/website/src/data/signalHealth.json
+
+      - name: Commit if the numbers changed
+        run: |
+          set -uo pipefail
+          git config user.name  'signal health'
+          git config user.email 'admin@t27.ai'
+          git add apps/website/src/data/signalHealth.json
+          if git diff --cached --quiet; then
+            echo "- no change" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git commit -q -m "Signal health: refresh the numbers"
+          git push -q
+          echo "- committed" >> "$GITHUB_STEP_SUMMARY"
+
+  # Deliberately separate, and deliberately allowed to be red: this is the
+  # verdict on ci.yml, and burying it in the job above would hide it behind a
+  # successful commit step.
+  verdict-on-ci:
+    uses: ./.github/workflows/signal-health.yml
+    with:
+      workflow: ci.yml
+      window: 200
+      max_streak: 3
