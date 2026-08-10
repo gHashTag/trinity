@@ -105,6 +105,15 @@ jobs:
           EXPECT: ${{ inputs.expect }}
         working-directory: ${{ inputs.path }}
         run: |
+          # set +e deliberately. GitHub invokes a run step as `bash -e {0}`, and
+          # `set -uo pipefail` does not clear an inherited -e. This script is
+          # built out of checks that are SUPPOSED to return non-zero -- a grep
+          # that finds nothing, an iverilog that rejects a design -- and under -e
+          # the first of them killed the step before any check reported.
+          # It failed in Actions with the sources line printed and nothing after
+          # it, which local testing could never reproduce because `bash script`
+          # does not set -e.
+          set +e
           set -uo pipefail
           # Prefer what info.yaml declares, because that is the list a Tiny
           # Tapeout shuttle builds from — and because a declared file can sit in
