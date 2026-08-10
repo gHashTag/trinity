@@ -42,6 +42,16 @@ on:
         required: false
         default: 'src'
         type: string
+      expect:
+        description: >-
+          'pass' (default) or 'fail'. Only the self-test sets this: a job that
+          calls a reusable workflow cannot carry continue-on-error, so the
+          negative case cannot be a job that is allowed to fail. Instead the
+          check inverts its own verdict here, and the self-test asserts a
+          planted defect is caught by requiring a green job.
+        required: false
+        default: 'pass'
+        type: string
       path:
         description: >-
           Directory holding info.yaml and src/, relative to the repository root.
@@ -92,6 +102,7 @@ jobs:
           TOP: ${{ inputs.top }}
           SRC_GLOB: ${{ inputs.sources }}
           INC: ${{ inputs.include_dir }}
+          EXPECT: ${{ inputs.expect }}
         working-directory: ${{ inputs.path }}
         run: |
           set -uo pipefail
@@ -186,4 +197,13 @@ jobs:
             echo "named part — are at <https://t27.ai/verification/>."
           } >> "$GITHUB_STEP_SUMMARY"
 
+          if [ "${EXPECT:-pass}" = "fail" ]; then
+            if [ "$fails" -gt 0 ]; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "Expected to fail, and did ($fails check(s) red). Reported green so the self-test can assert it." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "::error::expected this design to fail a check and every check passed — the check is not catching what it is meant to"
+            exit 1
+          fi
           exit $([ "$fails" -gt 0 ] && echo 1 || echo 0)

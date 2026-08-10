@@ -33,29 +33,14 @@ jobs:
       top: fixture_good
       path: tests/rtl-check-fixtures/good
 
-  planted-latch:
+  # A job that calls a reusable workflow may not carry continue-on-error --
+  # Actions rejects the whole file for it, which is how the first version of
+  # this self-test failed: valid YAML, invalid workflow. So the expectation is
+  # passed into the check, which inverts its own verdict. This job going GREEN
+  # means the planted latch was caught; it going red means it was not.
+  planted-latch-must-be-caught:
     uses: ./.github/workflows/rtl-check.yml
     with:
       top: fixture_latch
       path: tests/rtl-check-fixtures/latch
-    # Expected to fail. The next job turns that expectation into an assertion,
-    # because a workflow that merely tolerates a failure proves nothing.
-    continue-on-error: true
-
-  assert-planted-latch-failed:
-    needs: planted-latch
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: The latch fixture must have failed
-        env:
-          RESULT: ${{ needs.planted-latch.result }}
-        run: |
-          set -euo pipefail
-          echo "planted-latch result: $RESULT"
-          if [ "$RESULT" = "failure" ]; then
-            echo "- rtl-check went red on the planted latch, as required" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          echo "::error::rtl-check did NOT fail on a design with an inferred latch (result: $RESULT). The check cannot be trusted until it does."
-          exit 1
+      expect: fail
