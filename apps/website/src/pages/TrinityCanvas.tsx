@@ -2173,7 +2173,7 @@ export default function TrinityCanvas() {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7, fontFamily: MONO }}>
                               <span style={{ color: 'rgba(255,215,0,0.5)' }}>IIT PHI</span>
-                              <span style={{ color: '#ffd700' }}>{consciousnessMetrics.iit_phi.toFixed(3)}</span>
+                              <span style={{ color: '#ffd700' }}>{(consciousnessMetrics.iit_phi?.toFixed(3) ?? '—')}</span>
                             </div>
                             <div style={{ position: 'relative', height: 3, borderRadius: 2, background: 'rgba(255,215,0,0.1)', overflow: 'hidden' }}>
                               <motion.div
@@ -2187,7 +2187,7 @@ export default function TrinityCanvas() {
                           {/* GWT ignition + Consciousness level */}
                           <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
                             <span style={{ color: consciousnessMetrics.gwt_ignition ? '#00e599' : 'rgba(255,215,0,0.3)' }}>
-                              {consciousnessMetrics.gwt_ignition ? '●' : '○'} GWT:{consciousnessMetrics.gwt_broadcast_strength.toFixed(2)}
+                              {consciousnessMetrics.gwt_ignition ? '●' : '○'} GWT:{(consciousnessMetrics.gwt_broadcast_strength?.toFixed(2) ?? '—')}
                             </span>
                             <span style={{
                               color: consciousnessMetrics.state === 'enhanced' ? '#00e599' :
@@ -2203,7 +2203,7 @@ export default function TrinityCanvas() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7, fontFamily: MONO }}>
                               <span style={{ color: 'rgba(255,215,0,0.5)' }}>QUTRIT ENTANGLE</span>
                               <span style={{ color: consciousnessMetrics.qutrit_cglmp_violation ? '#00e599' : '#ffd700' }}>
-                                {consciousnessMetrics.qutrit_entanglement.toFixed(3)} {consciousnessMetrics.qutrit_cglmp_violation ? 'CGLMP' : ''}
+                                {(consciousnessMetrics.qutrit_entanglement?.toFixed(3) ?? '—')} {consciousnessMetrics.qutrit_cglmp_violation ? 'CGLMP' : ''}
                               </span>
                             </div>
                             <div style={{ position: 'relative', height: 3, borderRadius: 2, background: 'rgba(255,215,0,0.1)', overflow: 'hidden' }}>
@@ -2217,14 +2217,14 @@ export default function TrinityCanvas() {
 
                           {/* Active inference + Orch-OR */}
                           <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
-                            <span style={{ color: '#ffd700' }}>FreeE:{consciousnessMetrics.active_inference_free_energy.toFixed(3)}</span>
-                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>Orch-OR:{consciousnessMetrics.orch_or_coherence_time.toFixed(3)}s</span>
+                            <span style={{ color: '#ffd700' }}>FreeE:{(consciousnessMetrics.active_inference_free_energy?.toFixed(3) ?? '—')}</span>
+                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>Orch-OR:{(consciousnessMetrics.orch_or_coherence_time?.toFixed(3) ?? '—')}s</span>
                           </div>
 
                           {/* Gamma frequency + spike rate */}
                           <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
-                            <span style={{ color: '#ffd700' }}>Gamma:{consciousnessMetrics.gamma_frequency_hz.toFixed(1)}Hz</span>
-                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>Spikes:{consciousnessMetrics.neuromorphic_spike_rate.toFixed(1)}/s</span>
+                            <span style={{ color: '#ffd700' }}>Gamma:{(consciousnessMetrics.gamma_frequency_hz?.toFixed(1) ?? '—')}Hz</span>
+                            <span style={{ color: 'rgba(255,215,0,0.5)' }}>Spikes:{(consciousnessMetrics.neuromorphic_spike_rate?.toFixed(1) ?? '—')}/s</span>
                           </div>
 
                           {/* Test status */}
@@ -2269,8 +2269,8 @@ export default function TrinityCanvas() {
                         <span style={{ color: lisaMetrics.high_confidence >= 6 ? '#00e599' : '#ff8800' }}>High:{lisaMetrics.high_confidence}</span>
                       </div>
                       <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
-                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>ISCO:f/φ={lisaMetrics.isco_freq_shift.toFixed(3)}</span>
-                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>Phase:Ψ×{lisaMetrics.gw_phase_correction.toFixed(3)}</span>
+                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>ISCO:f/φ={(lisaMetrics.isco_freq_shift?.toFixed(3) ?? '—')}</span>
+                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>Phase:Ψ×{(lisaMetrics.gw_phase_correction?.toFixed(3) ?? '—')}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.4)' }}>P(detect):</span>
@@ -2279,7 +2279,7 @@ export default function TrinityCanvas() {
                         </div>
                         <span style={{ fontSize: 8, fontFamily: MONO, color: '#ffd700' }}>{(lisaMetrics.detection_probability * 100).toFixed(0)}%</span>
                       </div>
-                      <div style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.3)', textAlign: 'center' }}>γ={lisaMetrics.gamma_factor} | (1+γ)={lisaMetrics.gw_phase_correction.toFixed(3)}</div>
+                      <div style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.3)', textAlign: 'center' }}>γ={lisaMetrics.gamma_factor} | (1+γ)={(lisaMetrics.gw_phase_correction?.toFixed(3) ?? '—')}</div>
                     </div>
                   )}
                 </div>
@@ -2297,15 +2297,15 @@ export default function TrinityCanvas() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
                         <span style={{ color: '#ffd700' }}>Trits:{(neuromorphicMetrics.total_trits / 1000).toFixed(0)}K</span>
-                        <span style={{ color: '#ffd700' }}>Spikes:{neuromorphicMetrics.spike_rate_hz.toFixed(1)}Hz</span>
-                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>{neuromorphicMetrics.energy_per_op_pj.toFixed(1)}pJ/op</span>
+                        <span style={{ color: '#ffd700' }}>Spikes:{(neuromorphicMetrics.spike_rate_hz?.toFixed(1) ?? '—')}Hz</span>
+                        <span style={{ color: 'rgba(255,215,0,0.5)' }}>{(neuromorphicMetrics.energy_per_op_pj?.toFixed(1) ?? '—')}pJ/op</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.4)' }}>φ-res:</span>
                         <div style={{ flex: 1, height: 3, background: 'rgba(255,215,0,0.1)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{ width: `${Math.min(100, neuromorphicMetrics.phi_resonance_coherence * 100)}%`, height: '100%', background: neuromorphicMetrics.phi_resonance_coherence > 0.618 ? 'linear-gradient(90deg, #ffd700, #00e599)' : '#ffd700', borderRadius: 2 }} />
                         </div>
-                        <span style={{ fontSize: 8, fontFamily: MONO, color: neuromorphicMetrics.phi_resonance_coherence > 0.618 ? '#00e599' : '#ffd700' }}>{neuromorphicMetrics.phi_resonance_coherence.toFixed(3)}</span>
+                        <span style={{ fontSize: 8, fontFamily: MONO, color: neuromorphicMetrics.phi_resonance_coherence > 0.618 ? '#00e599' : '#ffd700' }}>{(neuromorphicMetrics.phi_resonance_coherence?.toFixed(3) ?? '—')}</span>
                       </div>
                       <div style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(255,215,0,0.3)', textAlign: 'center' }}>{(neuromorphicMetrics.throughput_trits_sec / 1e6).toFixed(0)}M trits/s | φ⁻¹ threshold</div>
                     </div>
@@ -2516,12 +2516,12 @@ export default function TrinityCanvas() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
                         <span style={{ color: '#00ccff' }}>Qutrits:{quantumGravityMetrics.qutrits_active}</span>
-                        <span style={{ color: '#00ccff' }}>τ:{quantumGravityMetrics.coherence_time_us.toFixed(1)}μs</span>
-                        <span style={{ color: 'rgba(0,200,255,0.5)' }}>F:{quantumGravityMetrics.gate_fidelity.toFixed(4)}</span>
+                        <span style={{ color: '#00ccff' }}>τ:{(quantumGravityMetrics.coherence_time_us?.toFixed(1) ?? '—')}μs</span>
+                        <span style={{ color: 'rgba(0,200,255,0.5)' }}>F:{(quantumGravityMetrics.gate_fidelity?.toFixed(4) ?? '—')}</span>
                       </div>
                       <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
                         <span style={{ color: quantumGravityMetrics.bell_parameter > 2.0 ? '#00e599' : '#ff8800' }}>
-                          Bell:{quantumGravityMetrics.bell_parameter.toFixed(4)} {quantumGravityMetrics.bell_parameter > 2.0 ? '>2.0' : '≤2.0'}
+                          Bell:{(quantumGravityMetrics.bell_parameter?.toFixed(4) ?? '—')} {quantumGravityMetrics.bell_parameter > 2.0 ? '>2.0' : '≤2.0'}
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -2531,7 +2531,7 @@ export default function TrinityCanvas() {
                         </div>
                         <span style={{ fontSize: 8, fontFamily: MONO, color: '#00ccff' }}>{(quantumGravityMetrics.phi_efficiency * 100).toFixed(1)}%</span>
                       </div>
-                      <div style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(0,200,255,0.3)', textAlign: 'center' }}>γ-deformation: {quantumGravityMetrics.gamma_deformation.toExponential(2)}</div>
+                      <div style={{ fontSize: 7, fontFamily: MONO, color: 'rgba(0,200,255,0.3)', textAlign: 'center' }}>γ-deformation: {(quantumGravityMetrics.gamma_deformation?.toExponential(2) ?? '—')}</div>
                     </div>
                   )}
                 </div>
@@ -2569,7 +2569,7 @@ export default function TrinityCanvas() {
                         <div style={{ flex: 1, height: 3, background: 'rgba(170,100,255,0.1)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{ width: `${Math.min(100, (roadmapMetrics.phi_value / 3.0) * 100)}%`, height: '100%', background: 'linear-gradient(90deg, #aa66ff, #00e599)', borderRadius: 2 }} />
                         </div>
-                        <span style={{ fontSize: 8, fontFamily: MONO, color: '#aa66ff' }}>{roadmapMetrics.phi_value.toFixed(3)}</span>
+                        <span style={{ fontSize: 8, fontFamily: MONO, color: '#aa66ff' }}>{(roadmapMetrics.phi_value?.toFixed(3) ?? '—')}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <span style={{
