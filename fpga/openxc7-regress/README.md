@@ -63,41 +63,37 @@ nextpnr-BASE --chipdb xc7a200t.bin --xdc fabric_bufg.xdc --json fab.json \
 **It placed.** On a binary that provably lacks the patch. So as written this case guards
 nothing, and calling it a regression test would be wrong.
 
-### What is and is not explained
+### Why — measured with a patched and an unpatched binary side by side
 
-- The premise still holds: synthesis yields exactly two `BUFG` cells, one of them
-  `$auto$clkbufmap.cc:261:execute$2539` — the cell the original error named.
-- `pack_clocking_xc7.cc` is **byte-identical** between `f8e7643` (the base the PR measured
-  against) and the build used here. The xc7 clocking path did not change, so an intervening
-  merge is not the explanation.
-- `#110` raised a clock-buffer preplace cap, but in `pack_clocking_xcup.cc` — UltraScale+,
-  not xc7. It cannot be the cause.
-- **The prjxray-db bump is ruled out — tested, not argued.** `f8e7643` pins `d429061`, the
-  tree used here pins `399a099`. A second chipdb was generated from `d429061` and compared:
-  **byte-identical**. The change in that bump is
-  `kintex7, virtex7: add RIOB18.IOB_Y1.LVCMOS12_LVCMOS15.IN` — kintex7 and virtex7, so it
-  cannot touch an artix7 database. Two chipdb exports, ~20 minutes, to disprove one sentence
-  of reasoning that had looked convincing.
+The #111 fallback was applied to the built tree by hand (ten lines, one file), rebuilt, and
+both binaries run on the same netlist and chipdb.
 
-### What is left, in order of cheapness
+| | unpatched | patched |
+|---|---|---|
+| `try_preplace` constrains the **pin-driven** buffer `$2541` | yes, "based on dedicated routing" | yes, identically |
+| `try_preplace` constrains the **fabric-driven** buffer `$2539` | **no** — absent from the log entirely | no message either; `preplace_unique` is silent |
+| place-and-route | **succeeds** | succeeds |
+| FASM | 34788 B | 35318 B |
+| `CLK_BUFG*` FASM lines | 129, same sites | 129, **same sites** |
 
-1. **Yosys version.** The repro's netlist is not pinned anywhere. Yosys here is
-   `0.67+post (b8e7da6)`; whatever produced the original `$auto$clkbufmap.cc:261:execute$2539`
-   is unrecorded. A different `clkbufmap` could emit `BUFGCTRL` where this one emits `BUFG`,
-   or attach a `BEL` attribute — and the #111 fallback fires only on
-   `BUFGCTRL`/`BUFG_BUFG`/`BUFHCE_BUFHCE` cells **without** one.
-2. `xdc.cc`, +52 lines from #109 — this case's XDC uses `create_clock`, which that patch
-   touches.
-3. `pack.cc`/`pack.h`, +3 lines adding `relocate_carry_o_fabric()` — a carry-chain concern,
-   unlikely but in the diff.
+**The mechanism reproduces; the symptom does not.** The fabric-driven buffer really is left
+unplaced by `try_preplace`, exactly as the PR describes. But the main placer then finds it a
+legal `BUFGCTRL` site unaided — 2 of 32 used — so nothing aborts. The patch's
+`preplace_unique` pre-assigns the site the placer would have chosen anyway; the only
+difference in the output is a couple of CLBs shuffling, and the buffer lands in the same
+place either way.
 
-### Before this is offered to anyone
+So the abort in the PR needed something this design does not create: **contention for
+`BUFGCTRL` sites**. With 32 free and two in use, "unable to find legal placement" cannot
+happen. A minimal reproduction was the wrong instinct here — the bug needs pressure, and
+minimality removes exactly the pressure it needs.
 
-Reproduce the failure once, on a pre-patch build, before calling this a regression case.
-Until then it is a design that builds.
+### What a working case would have to do
 
-**A regression test nobody has seen fail is not a regression test.** This one has now been
-seen *not* to fail, which is worse — it would have gone green forever while guarding nothing.
+Occupy or constrain enough `BUFGCTRL` sites that the unplaced fabric-driven buffer has
+nowhere obvious to go, so that leaving it unplaced actually aborts. Until such a design
+exists, this directory holds a design that builds, not a regression case — and the
+distinction is the whole reason the suite is worth building carefully.
 
 ## Running it costs more than the test does — measured 2026-08-10
 
