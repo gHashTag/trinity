@@ -112,7 +112,7 @@
         "proof": "Веса {-1, 0, +1} требуют только 1.58 бит против 32 бит для float32",
         "result": "20× сжатие памяти, сеть убирает умножение из инференса",
         "source": "BitNet b1.58 (arXiv:2402.17764, Microsoft Research)",
-        "advantage": "AI инференс без GPU, до 3000× энергоэффективность на FPGA",
+        "advantage": "AI инференс без GPU, до До 3000× энергоэффективность на FPGA (прогноз, FPGA)",
         "verified": {
           "metric": "15.7× сжатие",
           "value": "98KB → 6KB с 43% бонусом разреженности",
@@ -278,13 +278,13 @@
   "solution": {
     "title": "Почему <span class=\"grad\">Абсолютная Триада</span>?",
     "legend": [
-      "578.8x энергоэффективность",
+      "До 578.8x энергоэффективность (прогноз, FPGA)",
       "SU(3) Унитарное ядро",
       "Нативный коптский опкод (CIS)"
     ],
     "cards": [
       {
-        "value": "578.8×",
+        "value": "578.8× *",
         "label": "Энергоэффективность",
         "color": "blue"
       },
@@ -313,7 +313,8 @@
         "label": "Singularity",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* Прогноз для заказной FPGA. Проверено на CPU: сжатие памяти в 20×."
   },
   "whynow": {
     "title": "Почему <span class=\"grad\">Сингулярность</span> сейчас?",
@@ -359,8 +360,8 @@
       "note": "Реальные бенчмарки RunPod - Pod ID: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). Без симуляции.",
       "gpus": [
         {
-          "name": "RTX 3090",
-          "tokens": "298K",
+          "name": "RTX 4090 / L40S",
+          "tokens": "141K-608K",
           "noise": "70.2%",
           "power": "348W",
           "cost": "$0.10",
@@ -378,9 +379,9 @@
     },
     "metrics": [
       {
-        "value": "298K",
-        "label": "Токенов/сек (RTX 3090)",
-        "desc": "Проверено на RunPod GPU",
+        "value": "141K-608K",
+        "label": "Ops/сек (RTX 4090 / L40S)",
+        "desc": "Сырой бенчмарк ядра, RunPod",
         "theorem": "GPU"
       },
       {
@@ -396,7 +397,7 @@
         "theorem": "1"
       },
       {
-        "value": "3000×",
+        "value": "3000× *",
         "label": "Энергоэффективность",
         "desc": "Проекция на FPGA",
         "theorem": "2"
@@ -478,7 +479,8 @@
       ]
     },
     "verifyLink": "Проверить Бенчмарки на GitHub ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md",
+    "projectedNote": "* Прогноз для заказной FPGA. Проверено на CPU: сжатие памяти в 20×."
   },
   "traction": {
     "title": "Достигнутая <span class=\"grad\">Сингулярность</span>",
@@ -494,7 +496,7 @@
       },
       {
         "title": "PAS V5.0",
-        "desc": "Информационный насос Максвелла: 578.8x КПД",
+        "desc": "Информационный насос Максвелла: До 578.8x КПД (прогноз, FPGA)",
         "tests": "Термодинамика ✓"
       },
       {
@@ -529,7 +531,7 @@
         "color": "green"
       },
       {
-        "value": "578x",
+        "value": "578x *",
         "label": "Энерго-рывок",
         "color": "blue"
       },
@@ -553,7 +555,8 @@
         "label": "Энтропия",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* Прогноз для заказной FPGA. Проверено на CPU: сжатие памяти в 20×."
   },
   "mining": {
     "title": "Индустрия <span class=\"grad\">Майнинга</span> 2026",
@@ -567,7 +570,7 @@
       {
         "barrier": "Электроэнергия",
         "impact": "60–80% затрат ($0.12+/kWh)",
-        "solution": "578.8x Эффективность: порог рентабельности падает до $0.0002",
+        "solution": "До 578.8x Эффективность: порог рентабельности падает до $0.0002 (прогноз, FPGA)",
         "source": "Sber / TASS"
       },
       {
@@ -1140,44 +1143,37 @@
     "rows": [
       {
         "company": "TRINITY",
-        "arch": "RTX 3090 (проверено)",
-        "val": "298K",
-        "ternary": true,
-        "open": true
-      },
-      {
-        "company": "TRINITY",
-        "arch": "A100 80GB (проверено)",
-        "val": "274K",
+        "arch": "CPU (RunPod)",
+        "val": "35-52",
         "ternary": true,
         "open": true
       },
       {
         "company": "Groq",
-        "arch": "LPU (бинарный)",
-        "val": "276-840",
+        "arch": "Llama-70B, LPU cloud",
+        "val": "227-276",
         "ternary": false,
         "open": false
       },
       {
-        "company": "NVIDIA",
-        "arch": "H100 TensorRT",
-        "val": "1000-2000",
-        "ternary": false,
-        "open": false
-      },
-      {
-        "company": "Локальный GPU",
-        "arch": "RTX 4090 (бинарный)",
-        "val": "100-300",
-        "ternary": false,
-        "open": false
-      },
-      {
-        "company": "OpenAI",
+        "company": "GPT-4o-mini",
         "arch": "Cloud API",
-        "val": "50-100",
+        "val": "~100",
         "ternary": false,
+        "open": false
+      },
+      {
+        "company": "Claude Opus",
+        "arch": "Cloud API",
+        "val": "~80",
+        "ternary": false,
+        "open": false
+      },
+      {
+        "company": "B200 BitNet I2_S",
+        "arch": "B200 GPU",
+        "val": "52 (CPU)",
+        "ternary": true,
         "open": false
       }
     ],
@@ -1198,7 +1194,8 @@
         "power": "293W",
         "cost": "$0.20"
       }
-    }
+    },
+    "unitNote": "Сквозные tokens/sec, из собственной таблицы бенчмарков проекта. Облачные провайдеры быстрее; преимущество Trinity — стоимость ($0.01–0.35 против API) и работа вовсе без GPU. Прежняя версия таблицы ставила сырые ops/sec ядра рядом с чужими tokens/sec."
   },
   "hlsCompetition": {
     "title": "Универсальный <span class=\"grad\">FPGA Компилятор</span>",
@@ -1555,7 +1552,7 @@
     "whyNow": [
       "Троичный AI доказан и нативно реализован",
       "Мы единственные с нативным аппаратным стеком",
-      "578x преимущество — это конец конкуренции",
+      "До 578x преимущество — это конец конкуренции (прогноз, FPGA)",
       "Рабочая экосистема из 20,645 спецификаций",
       "Чёткий путь к доминированию на рынке AI"
     ],
@@ -1639,7 +1636,7 @@
         "label": "доля основателя"
       },
       {
-        "value": "578×",
+        "value": "578× *",
         "label": "энергоэффективность"
       },
       {
@@ -1658,7 +1655,7 @@
     "why": [
       "Абсолютная Триада достигнута",
       "Бинарная эра официально окончена",
-      "578x преимущество в энергии",
+      "До 578x преимущество в энергии (прогноз, FPGA)",
       "20,645 нативных TRI файлов",
       "99% у основателя = alignment"
     ],
@@ -1754,7 +1751,8 @@
       "email": "admin@t27.ai",
       "website": "https://trinity-site-one.vercel.app",
       "github": "https://github.com/gHashTag/trinity"
-    }
+    },
+    "projectedNote": "* Прогноз для заказной FPGA. Проверено на CPU: сжатие памяти в 20×."
   },
   "bitnetProof": {
     "badge": "МАТЕМАТИЧЕСКИЕ ДОКАЗАТЕЛЬСТВА",

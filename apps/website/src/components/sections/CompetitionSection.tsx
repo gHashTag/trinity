@@ -52,6 +52,11 @@ export default function CompetitionSection() {
               ))}
             </tbody>
           </table>
+          {c.unitNote && (
+            <p style={{ marginTop: '0.75rem', fontSize: '0.78rem', opacity: 0.6, maxWidth: '70ch' }}>
+              {c.unitNote}
+            </p>
+          )}
         </div>
         <p style={{ marginTop: '2rem', fontSize: '0.85rem', textAlign: 'center', color: 'var(--muted)' }} dangerouslySetInnerHTML={{ __html: c.note }} />
       </div>

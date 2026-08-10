@@ -111,7 +111,7 @@
         "proof": "Gewichte {-1, 0, +1} benötigen nur 1,58 Bits vs. 32 Bits für float32",
         "result": "20× Speicherkompression, multiplikationsfreie Inferenz",
         "source": "BitNet b1.58 (arXiv:2402.17764, Microsoft Research)",
-        "advantage": "KI-Inferenz ohne GPU, bis zu 3000× Energieeffizienz auf FPGA",
+        "advantage": "KI-Inferenz ohne GPU, bis zu Bis zu 3000× Energieeffizienz auf FPGA (projiziert, FPGA)",
         "verified": {
           "metric": "15,7× Kompression",
           "value": "98KB → 6KB mit 43% Sparsity-Bonus",
@@ -304,7 +304,7 @@
       },
       {
         "title": "Exponentieller ROI",
-        "desc": "578x Energieeffizienz-Sprung ist der einzige Weg zum Mining-Überleben nach 2026."
+        "desc": "Bis zu 578x Energieeffizienz-Sprung ist der einzige Weg zum Mining-Überleben nach 2026 (projiziert, FPGA)."
       }
     ]
   },
@@ -346,7 +346,8 @@
         "label": "Singularität",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* Projiziert auf kundenspezifischer FPGA-Hardware. Auf CPU verifiziert: 20× Speicherkompression."
   },
   "whynow": {
     "title": "Warum <span class=\"grad\">Singularität</span> Jetzt?",
@@ -431,7 +432,7 @@
         "color": "green"
       },
       {
-        "value": "578x",
+        "value": "578x *",
         "label": "Energie-Sprung",
         "color": "blue"
       },
@@ -455,7 +456,8 @@
         "label": "Entropie",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* Projiziert auf kundenspezifischer FPGA-Hardware. Auf CPU verifiziert: 20× Speicherkompression."
   },
   "publications": {
     "badge": "WISSENSCHAFTLICHE PUBLIKATIONEN",
@@ -473,8 +475,8 @@
       "note": "Echte RunPod-Benchmarks - Pod IDs: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). Keine Simulation.",
       "gpus": [
         {
-          "name": "RTX 3090",
-          "tokens": "298K",
+          "name": "RTX 4090 / L40S",
+          "tokens": "141K-608K",
           "noise": "70,2%",
           "power": "348W",
           "cost": "$0,10",
@@ -492,9 +494,9 @@
     },
     "metrics": [
       {
-        "value": "298K",
-        "label": "Tokens/s (RTX 3090)",
-        "desc": "Auf RunPod GPU verifiziert",
+        "value": "141K-608K",
+        "label": "Ops/sek (RTX 4090 / L40S)",
+        "desc": "Roher Kernel-Benchmark, RunPod",
         "theorem": "GPU"
       },
       {
@@ -510,7 +512,7 @@
         "theorem": "1"
       },
       {
-        "value": "3000×",
+        "value": "3000× *",
         "label": "Energieeffizienz",
         "desc": "Projektion auf Custom-FPGA",
         "theorem": "2"
@@ -592,7 +594,8 @@
       ]
     },
     "verifyLink": "Benchmarks auf GitHub Verifizieren ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md",
+    "projectedNote": "* Projiziert auf kundenspezifischer FPGA-Hardware. Auf CPU verifiziert: 20× Speicherkompression."
   },
   "mining": {
     "title": "Mining <span class=\"grad\">Industrie</span> 2026",
@@ -1144,44 +1147,37 @@
     "rows": [
       {
         "company": "TRINITY",
-        "arch": "RTX 3090 (verifiziert)",
-        "val": "298K",
-        "ternary": true,
-        "open": true
-      },
-      {
-        "company": "TRINITY",
-        "arch": "A100 80GB (verifiziert)",
-        "val": "274K",
+        "arch": "CPU (RunPod)",
+        "val": "35-52",
         "ternary": true,
         "open": true
       },
       {
         "company": "Groq",
-        "arch": "LPU (binär)",
-        "val": "276-840",
+        "arch": "Llama-70B, LPU cloud",
+        "val": "227-276",
         "ternary": false,
         "open": false
       },
       {
-        "company": "NVIDIA",
-        "arch": "H100 TensorRT",
-        "val": "1000-2000",
-        "ternary": false,
-        "open": false
-      },
-      {
-        "company": "Lokale GPU",
-        "arch": "RTX 4090 (binär)",
-        "val": "100-300",
-        "ternary": false,
-        "open": false
-      },
-      {
-        "company": "OpenAI",
+        "company": "GPT-4o-mini",
         "arch": "Cloud API",
-        "val": "50-100",
+        "val": "~100",
         "ternary": false,
+        "open": false
+      },
+      {
+        "company": "Claude Opus",
+        "arch": "Cloud API",
+        "val": "~80",
+        "ternary": false,
+        "open": false
+      },
+      {
+        "company": "B200 BitNet I2_S",
+        "arch": "B200 GPU",
+        "val": "52 (CPU)",
+        "ternary": true,
         "open": false
       }
     ],
@@ -1202,7 +1198,8 @@
         "power": "293W",
         "cost": "$0.20"
       }
-    }
+    },
+    "unitNote": "End-to-end tokens/sec, from this project's own benchmark table. Cloud providers are faster; Trinity's advantage is cost — $0.01-0.35 against API pricing — and running without a GPU at all. The earlier version of this table put Trinity's raw kernel ops/sec beside everyone else's tokens/sec."
   },
   "hlsCompetition": {
     "title": "Universeller <span class=\"grad\">FPGA-Compiler</span>",
@@ -1559,7 +1556,7 @@
     "whyNow": [
       "Ternäre KI ist bewiesen und nativ realisiert",
       "Wir sind die einzigen mit nativem Hardware-Stack",
-      "578x Vorteil — kompetitives Endspiel",
+      "Bis zu 578x Vorteil — kompetitives Endspiel (projiziert, FPGA)",
       "Funktionierendes Ökosystem von 20.645 Spezifikationen",
       "Klarer Weg zur KI-Marktdominanz"
     ],
@@ -1603,7 +1600,7 @@
         "label": "Gründeranteil"
       },
       {
-        "value": "578×",
+        "value": "578× *",
         "label": "Energieeffizienz"
       },
       {
@@ -1622,7 +1619,7 @@
     "why": [
       "Absolute Triade erreicht",
       "Binäre Ära offiziell beendet",
-      "578x Energievorteil",
+      "Bis zu 578x Energievorteil (projiziert, FPGA)",
       "20.645 native TRI-Dateien",
       "99% Gründeranteil = Alignment"
     ],
@@ -1718,7 +1715,8 @@
       "email": "admin@t27.ai",
       "website": "https://trinity-site-one.vercel.app",
       "github": "https://github.com/gHashTag/trinity"
-    }
+    },
+    "projectedNote": "* Projiziert auf kundenspezifischer FPGA-Hardware. Auf CPU verifiziert: 20× Speicherkompression."
   },
   "bitnetProof": {
     "badge": "MATHEMATISCHE BEWEISE",
