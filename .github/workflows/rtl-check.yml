@@ -38,9 +38,28 @@ on:
         default: 'src/*.v'
         type: string
       include_dir:
-        description: 'Directory for `include headers.'
+        description: 'Directory for `include headers, relative to path.'
         required: false
         default: 'src'
+        type: string
+      expect:
+        description: >-
+          'pass' (default) or 'fail'. Only the self-test sets this: a job that
+          calls a reusable workflow cannot carry continue-on-error, so the
+          negative case cannot be a job that is allowed to fail. Instead the
+          check inverts its own verdict here, and the self-test asserts a
+          planted defect is caught by requiring a green job.
+        required: false
+        default: 'pass'
+        type: string
+      path:
+        description: >-
+          Directory holding info.yaml and src/, relative to the repository root.
+          Needed by anything that is not a single design at the root: my own
+          chips live at chips/<name> and could not have used this workflow
+          without it.
+        required: false
+        default: '.'
         type: string
 
 permissions:
@@ -83,8 +102,23 @@ jobs:
           TOP: ${{ inputs.top }}
           SRC_GLOB: ${{ inputs.sources }}
           INC: ${{ inputs.include_dir }}
+          EXPECT: ${{ inputs.expect }}
+        working-directory: ${{ inputs.path }}
         run: |
-          set -uo pipefail
+          # set +e deliberately. GitHub invokes a run step as `bash -e {0}`, and
+          # `set -uo pipefail` does not clear an inherited -e. This script is
+          # built out of checks that are SUPPOSED to return non-zero -- a grep
+          # that finds nothing, an iverilog that rejects a design -- and under -e
+          # the first of them killed the step before any check reported.
+          # It failed in Actions with the sources line printed and nothing after
+          # it, which local testing could never reproduce because `bash script`
+          # does not set -e.
+          set +e
+          # -o pipefail only. -u was here and an unset variable under it exits
+          # the step immediately, which is indistinguishable in the log from the
+          # step simply stopping: the clean fixture died after printing the
+          # sources line with nothing after it, no error text at all.
+          set -o pipefail
           # Prefer what info.yaml declares, because that is the list a Tiny
           # Tapeout shuttle builds from — and because a declared file can sit in
           # a subdirectory the glob never sees. Measured on a real submission:
@@ -100,7 +134,7 @@ jobs:
             for f in $SRC; do [ -f "$f" ] || MISSING="$MISSING $f"; done
             if [ -n "$MISSING" ]; then
               echo "::error::info.yaml declares files that are not present:$MISSING"
-              echo "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING" >> "$GITHUB_STEP_SUMMARY"
+              say "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING"
               exit 1
             fi
           else
@@ -112,17 +146,24 @@ jobs:
             echo "::error::no sources found: info.yaml declares none and '$SRC_GLOB' matched nothing"
             exit 1
           fi
+          # Every verdict goes to the log as well as the job summary. The
+          # summary is where a reader looks; the log is where a failure is
+          # diagnosed, and a check whose result appears only in the summary
+          # leaves a failing run saying nothing about what failed.
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          echo "phase: sources resolved -> $SRC"
           echo "## RTL structural check" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Top: \`$TOP\` · $(echo "$SRC" | wc -w | tr -d ' ') source file(s)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           fails=0
 
+          echo "phase: elaborating"
           # 1. Elaboration.
           if iverilog -g2012 -t null -I "$INC" -s "$TOP" $SRC 2> elab.txt; then
-            echo "- **PASS** elaborates — every module it instantiates is defined in the files given" >> "$GITHUB_STEP_SUMMARY"
+            say "- **PASS** elaborates — every module it instantiates is defined in the files given"
           else
-            echo "- **FAIL** elaborates" >> "$GITHUB_STEP_SUMMARY"
+            say "- **FAIL** elaborates"
             echo '```' >> "$GITHUB_STEP_SUMMARY"; head -20 elab.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
             fails=$((fails+1))
           fi
@@ -141,27 +182,39 @@ jobs:
             echo 'select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*'
           } > check.ys
           if yosys -s check.ys > yosys.txt 2>&1; then
-            echo "- **PASS** no latch inferred by this flow" >> "$GITHUB_STEP_SUMMARY"
+            say "- **PASS** no latch inferred by this flow"
           else
-            echo "- **FAIL** a latch was inferred, or synthesis stopped" >> "$GITHUB_STEP_SUMMARY"
+            say "- **FAIL** a latch was inferred, or synthesis stopped"
             echo '```' >> "$GITHUB_STEP_SUMMARY"; tail -20 yosys.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
             fails=$((fails+1))
           fi
 
+          echo "phase: parsing stat"
+          # Two stat formats, because this runs on whatever yosys the caller's
+          # runner has. 0.65 prints "  12 cells"; older builds, including the one
+          # apt installs on ubuntu-latest, print "Number of cells: 12". Matching
+          # only the newer form is how this reported "synthesis produced no cell
+          # count" and "purely combinational" for a design with 5 flip-flops --
+          # a false verdict from a regex, on somebody else's machine, which is
+          # the one place it could not be caught by testing here.
           TAIL=$(sed -n '/Printing statistics/,$p' yosys.txt)
           CELLS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ cells$' | tail -1 | tr -dc '0-9')
+          [ -z "$CELLS" ] && CELLS=$(printf '%s' "$TAIL" | grep -Eo 'Number of cells: *[0-9]+' | tail -1 | tr -dc '0-9')
           WIRES=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ wires$' | tail -1 | tr -dc '0-9')
-          FLOPS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ +\$_[A-Z]*DFF[A-Z_]*_$' | awk '{s+=$1} END{print s+0}')
+          [ -z "$WIRES" ] && WIRES=$(printf '%s' "$TAIL" | grep -Eo 'Number of wires: *[0-9]+' | tail -1 | tr -dc '0-9')
+          # Flop count from the cell-type histogram, which both formats print as
+          # "<count> $_DFF..._" with varying leading whitespace.
+          FLOPS=$(printf '%s' "$TAIL" | grep -Eo '[0-9]+ +\$_[A-Z]*(DFF|SDFF|ADFF)[A-Z_]*_' | awk '{s+=$1} END{print s+0}')
           if [ -n "$CELLS" ]; then
-            echo "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened" >> "$GITHUB_STEP_SUMMARY"
+            say "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened"
           else
-            echo "- **FAIL** synthesis produced no cell count" >> "$GITHUB_STEP_SUMMARY"
+            say "- **FAIL** synthesis produced no cell count"
             fails=$((fails+1))
           fi
           if [ "${FLOPS:-0}" -gt 0 ]; then
-            echo "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question" >> "$GITHUB_STEP_SUMMARY"
+            say "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question"
           else
-            echo "- **NOTE** purely combinational — no clock frequency can belong to it; the comparable figure is propagation delay" >> "$GITHUB_STEP_SUMMARY"
+            say "- **NOTE** purely combinational — no clock frequency can belong to it; the comparable figure is propagation delay"
           fi
 
           {
@@ -176,4 +229,13 @@ jobs:
             echo "named part — are at <https://t27.ai/verification/>."
           } >> "$GITHUB_STEP_SUMMARY"
 
+          if [ "${EXPECT:-pass}" = "fail" ]; then
+            if [ "$fails" -gt 0 ]; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "Expected to fail, and did ($fails check(s) red). Reported green so the self-test can assert it." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "::error::expected this design to fail a check and every check passed — the check is not catching what it is meant to"
+            exit 1
+          fi
           exit $([ "$fails" -gt 0 ] && echo 1 || echo 0)

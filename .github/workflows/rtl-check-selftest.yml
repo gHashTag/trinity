@@ -1,0 +1,46 @@
+name: rtl-check self-test
+
+# The reusable workflow is offered to other people to run in their own
+# repositories. Before that is a reasonable thing to offer, it has to be shown
+# failing on a design that deserves to fail — a check nobody has watched go red
+# is not a check.
+#
+# Two fixtures, one clean and one carrying exactly one planted latch. The clean
+# one must pass. The planted one must fail, and the assert job says so if it
+# does not, which is the case that would otherwise pass silently and ship a
+# green tick to everybody.
+
+on:
+  push:
+    paths:
+      - '.github/workflows/rtl-check.yml'
+      - '.github/workflows/rtl-check-selftest.yml'
+      - 'tests/rtl-check-fixtures/**'
+  pull_request:
+    paths:
+      - '.github/workflows/rtl-check.yml'
+      - '.github/workflows/rtl-check-selftest.yml'
+      - 'tests/rtl-check-fixtures/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-must-pass:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_good
+      path: tests/rtl-check-fixtures/good
+
+  # A job that calls a reusable workflow may not carry continue-on-error --
+  # Actions rejects the whole file for it, which is how the first version of
+  # this self-test failed: valid YAML, invalid workflow. So the expectation is
+  # passed into the check, which inverts its own verdict. This job going GREEN
+  # means the planted latch was caught; it going red means it was not.
+  planted-latch-must-be-caught:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_latch
+      path: tests/rtl-check-fixtures/latch
+      expect: fail
