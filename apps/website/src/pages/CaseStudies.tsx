@@ -61,7 +61,7 @@ const RU = {
   thirdTitle: 'Прогоны на чужих дизайнах',
   thirdLede: 'Те же проверки, тот же день, публичные заявки Tiny Tapeout под открытой лицензией.',
   scoreTitle: 'Счёт, который я искал против себя',
-  scoreBody: 'Я специально искал среди чужих дизайнов провал — чтобы витрина не читалась как подбор удачных случаев. Не нашёл: все пять объявляют source_files и собираются из объявленного. Неудобный результат оказался на моей стороне: из пяти моих чипов у двух список неполон (phi, gamma), а ещё двое не объявляют его вовсе (mini, holo) — и шаттл собирается именно по нему. Счёт 5:1 не в мою пользу.',
+  scoreBody: 'Я специально искал среди чужих дизайнов провал — чтобы витрина не читалась как подбор удачных случаев. Не нашёл: все пять объявляют source_files и собираются из объявленного. Неудобный результат оказался на моей стороне: из пяти моих чипов у двух список неполон (phi, gamma), а ещё двое не объявляют его вовсе (mini, holo) — и шаттл собирается именно по нему. Счёт был 5:1 не в мою пользу; все четыре починены 11 августа, и это видно в истории коммитов, а не только здесь.',
   runsLede: 'Прежде чем предлагать это другим, я прогнал через ту же машину пять своих чипов. Это доказывает, что харнесс работает, а не что мне кто-то доверяет, — клиентские работы ниже и они пока пусты.',
   limitsTitle: 'Чего эти прогоны НЕ устанавливают',
   svcTitle: 'Как прогнать свой репозиторий',
@@ -89,7 +89,7 @@ const EN = {
   thirdTitle: "Runs on other people's designs",
   thirdLede: 'The same checks, the same day, on public Tiny Tapeout submissions under an open licence.',
   scoreTitle: 'The count I went looking for against myself',
-  scoreBody: 'I went looking for a failure among other people\u2019s designs, so the gallery would not read as a selection of happy cases. I did not find one: all five declare source_files and elaborate from what they declare. The uncomfortable result is on my side — of my five chips, two declare an incomplete list (phi, gamma) and two declare none at all (mini, holo), and a shuttle builds from exactly that list. The count is 5 to 1 against me.',
+  scoreBody: 'I went looking for a failure among other people\u2019s designs, so the gallery would not read as a selection of happy cases. I did not find one: all five declare source_files and elaborate from what they declare. The uncomfortable result is on my side — of my five chips, two declare an incomplete list (phi, gamma) and two declare none at all (mini, holo), and a shuttle builds from exactly that list. The count was 5 to 1 against me; all four were fixed on 11 August, and that is visible in the commit history rather than only here.',
   runsLede: 'Before offering this to anyone else I put five of my own chips through the same machine. That proves the harness runs, not that anyone trusts it — client work is below, and it is still empty.',
   limitsTitle: 'What these runs do NOT establish',
   svcTitle: 'Run your own repository',
@@ -132,6 +132,11 @@ function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang
         ))}
       </div>
 
+      {run.note && (
+        <p style={{ fontSize: '0.82rem', lineHeight: 1.6, margin: '0.8rem 0 0', opacity: 0.8, borderLeft: '2px solid var(--muted)', paddingLeft: '0.7rem' }}>
+          {run.note}
+        </p>
+      )}
       {/* The result page is the thing worth sending to a reviewer, so the card
           has to lead there. It existed and nothing linked to it. */}
       <p style={{ fontSize: '0.82rem', margin: '0.9rem 0 0' }}>
