@@ -44,6 +44,7 @@ import { sendMessage, clearContext, checkHealth, fetchMirrorStatus, fetchStorage
 import { connectPasWebSocket, disconnectPasWebSocket, type PasWsMessage, type PasWsCallbacks } from '../services/pasWebSocket';
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
 import KoscheiStatusWidget from '../components/KoscheiStatusWidget';
+import { SampleBadge } from '../components/SampleBadge';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1833,6 +1834,7 @@ export default function TrinityCanvas() {
                     | {storageMetrics.nodes_alive} nodes | {storageMetrics.total_shards} shards
                   </span>
                 )}
+                <SampleBadge of={storageMetrics} />
                 <button onClick={() => setDebugLogs(d => !d)}
                   style={{ padding: '2px 6px', borderRadius: 4, background: debugLogs ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${debugLogs ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)'}`, color: debugLogs ? '#ffd700' : 'rgba(255,255,255,0.25)', cursor: 'pointer', fontSize: 8, fontFamily: MONO, letterSpacing: 1 }}>
                   {debugLogs ? 'LOGS ON' : 'LOGS'}
@@ -2082,6 +2084,7 @@ export default function TrinityCanvas() {
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
                       ORCHESTRATOR
+                      <SampleBadge of={orchestratorStatus} />
                     </span>
                     <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>
                       {orchestratorExpanded ? '-' : '+'}
@@ -2160,6 +2163,7 @@ export default function TrinityCanvas() {
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
                       CONSCIOUSNESS {consciousnessMetrics?.gwt_ignition && <span style={{ color: '#00e599' }}>●</span>}
+                      <SampleBadge of={consciousnessMetrics} />
                     </span>
                     <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>
                       {consciousnessExpanded ? '-' : '+'}
@@ -2259,6 +2263,7 @@ export default function TrinityCanvas() {
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
                       LISA 2035 {lisaMetrics && lisaMetrics.high_confidence >= 6 && <span style={{ color: '#00e599' }}>●</span>}
+                      <SampleBadge of={lisaMetrics} />
                     </span>
                     <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{lisaExpanded ? '-' : '+'}</span>
                   </div>
@@ -2290,6 +2295,7 @@ export default function TrinityCanvas() {
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span style={{ color: '#ffd700', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
                       NEUROMORPHIC {neuromorphicMetrics?.is_conscious && <span style={{ color: '#00e599' }}>●</span>}
+                      <SampleBadge of={neuromorphicMetrics} />
                     </span>
                     <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{neuromorphicExpanded ? '-' : '+'}</span>
                   </div>
@@ -2509,6 +2515,7 @@ export default function TrinityCanvas() {
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span style={{ color: '#00ccff', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
                       QG CHIP {quantumGravityMetrics && quantumGravityMetrics.bell_parameter > 2.0 && <span style={{ color: '#00e599' }}>●</span>}
+                      <SampleBadge of={quantumGravityMetrics} />
                     </span>
                     <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{quantumGravityExpanded ? '-' : '+'}</span>
                   </div>
@@ -2551,6 +2558,7 @@ export default function TrinityCanvas() {
                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span style={{ color: '#aa66ff', fontSize: 8, fontFamily: MONO, fontWeight: 600, letterSpacing: 1 }}>
                       CONSCIOUS AI {roadmapMetrics && <span style={{ color: roadmapMetrics.milestone === 'conscious' || roadmapMetrics.milestone === 'enhanced' ? '#00e599' : 'rgba(170,100,255,0.3)' }}>●</span>}
+                      <SampleBadge of={roadmapMetrics} />
                     </span>
                     <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: MONO }}>{roadmapExpanded ? '-' : '+'}</span>
                   </div>

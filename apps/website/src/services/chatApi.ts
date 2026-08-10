@@ -111,7 +111,7 @@ export async function fetchSacredMetrics(): Promise<SacredMetrics> {
     return res.json();
   } catch (error) {
     console.warn('[Sacred Intelligence] Using mock metrics');
-    return generateMockSacredMetrics();
+    return sample(generateMockSacredMetrics());
   }
 }
 
@@ -127,7 +127,7 @@ export async function fetchPatchHistory(): Promise<PatchHistory[]> {
     return res.json();
   } catch (error) {
     console.warn('[Sacred Intelligence] Using mock patch history');
-    return generateMockPatchHistory();
+    return sample(generateMockPatchHistory());
   }
 }
 
@@ -143,7 +143,7 @@ export async function fetchGematriaAPI(text: string): Promise<GematriaValues> {
     return res.json();
   } catch (error) {
     console.warn('[Sacred Intelligence] Using mock gematria calculation');
-    return generateMockGematria(text);
+    return sample(generateMockGematria(text));
   }
 }
 
@@ -160,7 +160,7 @@ export async function fetchSacredConstants(search?: string): Promise<SacredConst
     return res.json();
   } catch (error) {
     console.warn('[Sacred Intelligence] Using mock constants');
-    return generateMockSacredConstants(search);
+    return sample(generateMockSacredConstants(search));
   }
 }
 
@@ -478,10 +478,10 @@ function generateMockModelStatus(): ModelStatusResponse {
 export async function fetchModelStatus(): Promise<ModelStatusResponse> {
   try {
     const res = await fetch(`${BASE_URL}/api/model-status`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return generateMockModelStatus();
+    if (!res.ok) return sample(generateMockModelStatus());
     return await res.json();
   } catch {
-    return generateMockModelStatus();
+    return sample(generateMockModelStatus());
   }
 }
 
@@ -664,10 +664,10 @@ export async function fetchStorageMetrics(): Promise<StorageMetrics> {
     const res = await fetch(`${BASE_URL}/api/storage-metrics`, {
       signal: AbortSignal.timeout(3000),
     });
-    if (!res.ok) return generateMockStorageMetrics();
+    if (!res.ok) return sample(generateMockStorageMetrics());
     return await res.json();
   } catch {
-    return generateMockStorageMetrics();
+    return sample(generateMockStorageMetrics());
   }
 }
 
@@ -859,10 +859,10 @@ export interface KoscheiStatus {
 export async function fetchKoscheiStatus(): Promise<KoscheiStatus> {
   try {
     const res = await fetch(`${BASE_URL}/api/koschei/status`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return generateMockKoscheiStatus();
+    if (!res.ok) return sample(generateMockKoscheiStatus());
     return await res.json();
   } catch {
-    return generateMockKoscheiStatus();
+    return sample(generateMockKoscheiStatus());
   }
 }
 
@@ -1081,40 +1081,40 @@ function generateMockSacredMath(): SacredMathData {
 export async function fetchAgentMuStatus(): Promise<AgentMuStatus> {
   try {
     const res = await fetch(`${BASE_URL}/api/agent-mu/status`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return generateMockAgentMuStatus();
+    if (!res.ok) return sample(generateMockAgentMuStatus());
     return await res.json();
   } catch {
-    return generateMockAgentMuStatus();
+    return sample(generateMockAgentMuStatus());
   }
 }
 
 export async function fetchAgentMuHistory(count: number = 50): Promise<IntelligenceHistoryPoint[]> {
   try {
     const res = await fetch(`${BASE_URL}/api/agent-mu/history?count=${count}`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return generateMockIntelligenceHistory(count);
+    if (!res.ok) return sample(generateMockIntelligenceHistory(count));
     return await res.json();
   } catch {
-    return generateMockIntelligenceHistory(count);
+    return sample(generateMockIntelligenceHistory(count));
   }
 }
 
 export async function fetchAgentMuForecast(horizons: number[] = [10, 50, 100]): Promise<IntelligenceForecast[]> {
   try {
     const res = await fetch(`${BASE_URL}/api/agent-mu/forecast?horizon=${horizons.join(',')}`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return generateMockForecast(horizons);
+    if (!res.ok) return sample(generateMockForecast(horizons));
     return await res.json();
   } catch {
-    return generateMockForecast(horizons);
+    return sample(generateMockForecast(horizons));
   }
 }
 
 export async function fetchAgentMuEvolutionTree(): Promise<EvolutionTreeNode[]> {
   try {
     const res = await fetch(`${BASE_URL}/api/agent-mu/evolution-tree`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return generateMockEvolutionTree();
+    if (!res.ok) return sample(generateMockEvolutionTree());
     return await res.json();
   } catch {
-    return generateMockEvolutionTree();
+    return sample(generateMockEvolutionTree());
   }
 }
 
@@ -1163,20 +1163,20 @@ function generateMockMultiAgentEvolutionTree(): EvolutionTreeNode[] {
 export async function fetchMultiAgentEvolutionTree(): Promise<EvolutionTreeNode[]> {
   try {
     const res = await fetch(`${BASE_URL}/api/agent-mu/multi-agent-tree`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return generateMockMultiAgentEvolutionTree();
+    if (!res.ok) return sample(generateMockMultiAgentEvolutionTree());
     return await res.json();
   } catch {
-    return generateMockMultiAgentEvolutionTree();
+    return sample(generateMockMultiAgentEvolutionTree());
   }
 }
 
 export async function fetchAgentMuSacredMath(): Promise<SacredMathData> {
   try {
     const res = await fetch(`${BASE_URL}/api/agent-mu/sacred-math`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return generateMockSacredMath();
+    if (!res.ok) return sample(generateMockSacredMath());
     return await res.json();
   } catch {
-    return generateMockSacredMath();
+    return sample(generateMockSacredMath());
   }
 }
 

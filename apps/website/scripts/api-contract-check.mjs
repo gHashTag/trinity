@@ -89,12 +89,17 @@ console.log(`  ${missing.size} read-but-never-emitted — at baseline ${BASELINE
 // renders as a measurement. claim-guard cannot see this: no sentence
 // overstates -- a number does, by sitting in a slot that implies measurement.
 //
-// Every `return mockX()` must be wrapped in sample(), which tags the object so
+// The first version of this rule matched `return mockX(` only. The codebase
+// names most of them `generateMockX`, so it reported 'all fallbacks tagged'
+// while 22 were untagged -- a false all-clear from the checker built to prevent
+// exactly this class. Fifth instance of absent-is-not-zero; see A38.
+//
+// Every `return mockX()` / `return generateMockX()` must be wrapped in sample(),
 // SampleBadge can mark it on screen.
 const svc = 'src/services/chatApi.ts';
 if (existsSync(svc)) {
   const src = readFileSync(svc, 'utf8');
-  const bare = [...src.matchAll(/return\s+(mock[A-Za-z]\w*)\s*\(/g)].map(m => m[1]);
+  const bare = [...src.matchAll(/return\s+((?:generate)?[Mm]ock[A-Za-z]\w*)\s*\(/g)].map(m => m[1]);
   if (bare.length) {
     console.error(`\n  ${bare.length} fallback return(s) not wrapped in sample():`);
     for (const n of [...new Set(bare)]) console.error(`    return ${n}(...)`);
