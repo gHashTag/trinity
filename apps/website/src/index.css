@@ -81,6 +81,18 @@ section {
   min-height: 60vh;
 }
 
+/* A list is read down a common left edge; centring destroys that edge. The rule
+   above centres everything in a section, so any list that did not happen to sit
+   inside a left-aligned wrapper came out ragged — the marker pinned at the flex
+   start or the padding edge while each wrapped line found its own centre.
+   Most lists were saved by an ancestor setting text-align individually; this
+   makes it the default instead of a thing each new list has to remember. An
+   inline style on a specific list still wins. */
+section ul,
+section ol {
+  text-align: left;
+}
+
 .tight {
   max-width: var(--narrow-w);
   margin-left: auto;

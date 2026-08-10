@@ -33,8 +33,7 @@ export default function TeamSection() {
         <div style={{ textAlign: 'left', flex: '1 1 250px' }}>
           <h3 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.8rem)', marginBottom: '0.2rem' }}>{team.name}</h3>
           <p style={{ color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 500, marginBottom: '1.5rem' }}>{team.role}</p>
-          {/* See ScientificFoundationSection: centred text + flex rows misaligns. */}
-          <ul style={{ listStyle: 'none', textAlign: 'left' }}>
+          <ul style={{ listStyle: 'none' }}>
             {team.exp?.map((line: string, i: number) => (
               <motion.li 
                 key={i} 
