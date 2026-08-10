@@ -134,7 +134,7 @@ jobs:
             for f in $SRC; do [ -f "$f" ] || MISSING="$MISSING $f"; done
             if [ -n "$MISSING" ]; then
               echo "::error::info.yaml declares files that are not present:$MISSING"
-              echo "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING" >> "$GITHUB_STEP_SUMMARY"
+              say "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING"
               exit 1
             fi
           else
@@ -146,6 +146,11 @@ jobs:
             echo "::error::no sources found: info.yaml declares none and '$SRC_GLOB' matched nothing"
             exit 1
           fi
+          # Every verdict goes to the log as well as the job summary. The
+          # summary is where a reader looks; the log is where a failure is
+          # diagnosed, and a check whose result appears only in the summary
+          # leaves a failing run saying nothing about what failed.
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
           echo "phase: sources resolved -> $SRC"
           echo "## RTL structural check" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -156,9 +161,9 @@ jobs:
           echo "phase: elaborating"
           # 1. Elaboration.
           if iverilog -g2012 -t null -I "$INC" -s "$TOP" $SRC 2> elab.txt; then
-            echo "- **PASS** elaborates — every module it instantiates is defined in the files given" >> "$GITHUB_STEP_SUMMARY"
+            say "- **PASS** elaborates — every module it instantiates is defined in the files given"
           else
-            echo "- **FAIL** elaborates" >> "$GITHUB_STEP_SUMMARY"
+            say "- **FAIL** elaborates"
             echo '```' >> "$GITHUB_STEP_SUMMARY"; head -20 elab.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
             fails=$((fails+1))
           fi
@@ -177,9 +182,9 @@ jobs:
             echo 'select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*'
           } > check.ys
           if yosys -s check.ys > yosys.txt 2>&1; then
-            echo "- **PASS** no latch inferred by this flow" >> "$GITHUB_STEP_SUMMARY"
+            say "- **PASS** no latch inferred by this flow"
           else
-            echo "- **FAIL** a latch was inferred, or synthesis stopped" >> "$GITHUB_STEP_SUMMARY"
+            say "- **FAIL** a latch was inferred, or synthesis stopped"
             echo '```' >> "$GITHUB_STEP_SUMMARY"; tail -20 yosys.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
             fails=$((fails+1))
           fi
@@ -190,15 +195,15 @@ jobs:
           WIRES=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ wires$' | tail -1 | tr -dc '0-9')
           FLOPS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ +\$_[A-Z]*DFF[A-Z_]*_$' | awk '{s+=$1} END{print s+0}')
           if [ -n "$CELLS" ]; then
-            echo "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened" >> "$GITHUB_STEP_SUMMARY"
+            say "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened"
           else
-            echo "- **FAIL** synthesis produced no cell count" >> "$GITHUB_STEP_SUMMARY"
+            say "- **FAIL** synthesis produced no cell count"
             fails=$((fails+1))
           fi
           if [ "${FLOPS:-0}" -gt 0 ]; then
-            echo "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question" >> "$GITHUB_STEP_SUMMARY"
+            say "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question"
           else
-            echo "- **NOTE** purely combinational — no clock frequency can belong to it; the comparable figure is propagation delay" >> "$GITHUB_STEP_SUMMARY"
+            say "- **NOTE** purely combinational — no clock frequency can belong to it; the comparable figure is propagation delay"
           fi
 
           {
