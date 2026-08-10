@@ -97,12 +97,32 @@ class ModelManager: ObservableObject {
 
         self.availableModels = models
 
-        // Restore saved selection or pick first available
+        // Restore saved selection or pick first available.
         let savedID = UserDefaults.standard.string(forKey: "selectedModelID")
+        let triosSelectedModel = UserDefaults.standard.string(forKey: "trios.model.ollama.selection")
+        var initialSelection: AIModel
         if let saved = savedID, let match = models.first(where: { $0.id == saved }) {
-            self.selectedModel = match
+            initialSelection = match
         } else {
-            self.selectedModel = models.first ?? AIModel.allModels[0]
+            initialSelection = AIModel.allModels[0]
+        }
+        if let preferredID = OllamaSelectionPolicy.preferredModelID(
+            currentModelID: initialSelection.id,
+            availableModelIDs: models.map(\.id),
+            discoveredModelNames: models
+                .filter { $0.provider == .ollama }
+                .map { String($0.id.dropFirst("ollama:".count)) },
+            queenSavedModelID: savedID,
+            triosSelectedModel: triosSelectedModel
+        ), let preferred = models.first(where: { $0.id == preferredID }) {
+            initialSelection = preferred
+        } else if !models.contains(where: { $0.id == initialSelection.id }),
+                  let fallback = models.first {
+            initialSelection = fallback
+        }
+        self.selectedModel = initialSelection
+        if initialSelection.provider == .ollama {
+            UserDefaults.standard.set(initialSelection.id, forKey: "selectedModelID")
         }
 
         // Start periodic Ollama detection
@@ -123,14 +143,10 @@ class ModelManager: ObservableObject {
             let names = models.compactMap { $0["name"] as? String }
             guard !names.isEmpty else { return false }
 
-            // Update available Ollama models on main actor
+            // Update available Ollama models on main actor.
             UserDefaults.standard.set(true, forKey: "ollamaEnabled")
             UserDefaults.standard.set(names, forKey: "ollamaModels")
-            self.availableModels.removeAll { $0.provider == .ollama }
-            for name in names {
-                self.availableModels.append(AIModel(id: "ollama:\(name)", displayName: name, provider: .ollama))
-            }
-            self.ollamaAvailable = true
+            installOllamaModels(names)
             return true
         } catch {
             self.availableModels.removeAll { $0.provider == .ollama }
@@ -255,20 +271,15 @@ class ModelManager: ObservableObject {
         var request = URLRequest(url: url)
         request.timeoutInterval = 5
         URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
-            let hasModels: Bool
             if let data,
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let models = json["models"] as? [[String: Any]] {
                 let names = models.compactMap { $0["name"] as? String }
                 UserDefaults.standard.set(names, forKey: "ollamaModels")
                 UserDefaults.standard.set(true, forKey: "ollamaEnabled")
-                hasModels = !names.isEmpty
-                DispatchQueue.main.async {
-                    self?.availableModels.removeAll { $0.provider == .ollama }
-                    for name in names {
-                        self?.availableModels.append(AIModel(id: "ollama:\(name)", displayName: name, provider: .ollama))
-                    }
-                    self?.ollamaAvailable = hasModels
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    self.installOllamaModels(names)
                 }
             } else {
                 DispatchQueue.main.async {
@@ -276,6 +287,34 @@ class ModelManager: ObservableObject {
                 }
             }
         }.resume()
+    }
+
+    private func installOllamaModels(_ names: [String]) {
+        let uniqueNames = names.reduce(into: [String]()) { result, name in
+            if !result.contains(name) {
+                result.append(name)
+            }
+        }
+        availableModels.removeAll { $0.provider == .ollama }
+        for name in uniqueNames {
+            availableModels.append(
+                AIModel(id: "ollama:\(name)", displayName: name, provider: .ollama)
+            )
+        }
+        ollamaAvailable = !uniqueNames.isEmpty
+
+        guard let preferredID = OllamaSelectionPolicy.preferredModelID(
+            currentModelID: selectedModel.id,
+            availableModelIDs: availableModels.map(\.id),
+            discoveredModelNames: uniqueNames,
+            queenSavedModelID: UserDefaults.standard.string(forKey: "selectedModelID"),
+            triosSelectedModel: UserDefaults.standard.string(forKey: "trios.model.ollama.selection")
+        ), let preferred = availableModels.first(where: { $0.id == preferredID }) else {
+            return
+        }
+
+        selectedModel = preferred
+        persistSelection()
     }
 
     var hasAnyKey: Bool { !availableModels.isEmpty }
@@ -371,5 +410,29 @@ class ModelManager: ObservableObject {
         if let remaining {
             NetworkLog.shared.updateRateLimit(provider: provider.rawValue, remaining: remaining)
         }
+    }
+}
+
+enum OllamaSelectionPolicy {
+    static func preferredModelID(
+        currentModelID: String,
+        availableModelIDs: [String],
+        discoveredModelNames: [String],
+        queenSavedModelID: String?,
+        triosSelectedModel: String?
+    ) -> String? {
+        guard !availableModelIDs.contains(currentModelID) else { return nil }
+
+        let discoveredIDs = discoveredModelNames.map { "ollama:\($0)" }
+        let available = Set(availableModelIDs)
+        let candidates = [queenSavedModelID, triosSelectedModel].compactMap { value -> String? in
+            guard let value, !value.isEmpty else { return nil }
+            return value.hasPrefix("ollama:") ? value : "ollama:\(value)"
+        }
+
+        for candidate in candidates where discoveredIDs.contains(candidate) && available.contains(candidate) {
+            return candidate
+        }
+        return discoveredIDs.first(where: available.contains)
     }
 }

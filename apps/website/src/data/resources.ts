@@ -176,51 +176,67 @@ export const datasets: Resource[] = [
 export const upstream: Resource[] = [
   {
     kind: 'repo',
+    title: 'trabucayre/openFPGALoader #663 — QMTech XC7A100T (FGG676) board support',
+    href: 'https://github.com/trabucayre/openFPGALoader/pull/663',
+    verified: '2026-08-10',
+    status: 'live',
+    note: 'MERGED. The maintainer took the board integration, declined the CI workflow with a reason, and asked for the bitstream work to be split out — which became #682.',
+  },
+  {
+    kind: 'repo',
+    title: 'trabucayre/openFPGALoader #682 — package-specific FGG676 spiOverJtag bitstream',
+    href: 'https://github.com/trabucayre/openFPGALoader/pull/682',
+    verified: '2026-08-10',
+    status: 'live',
+    note: 'MERGED — "Applied. Thanks!" The split the maintainer asked for in #663.',
+  },
+  {
+    kind: 'repo',
     title: 'openXC7/nextpnr-xilinx #109 — set_multicycle_path -setup (XDC parser + timing)',
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/109',
-    verified: '2026-08-09',
+    verified: '2026-08-10',
     status: 'live',
-    note: 'OPEN, not merged.',
+    note: 'MERGED 2026-08-09 — "LGTM, thanks for the contribution!"',
   },
   {
     kind: 'repo',
     title: '#110 — raise clock-buffer preplace BFS cap so SRCC clock pins can route',
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/110',
-    verified: '2026-08-09',
+    verified: '2026-08-10',
     status: 'live',
-    note: 'OPEN, not merged.',
+    note: 'MERGED 2026-08-09 — "LGTM, thanks for the contribution!"',
   },
   {
     kind: 'repo',
     title: '#111 — preplace fabric-driven global buffers instead of aborting placement',
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/111',
-    verified: '2026-08-09',
+    verified: '2026-08-10',
     status: 'live',
-    note: 'OPEN, not merged.',
+    note: 'MERGED 2026-08-10 — "I merged this. I am actually thinking about making a regression test suite for nextpnr-xilinx and your example above would be a nice start."',
   },
   {
     kind: 'repo',
     title: "#112 — don't emit a conflicting width bit for the unused port of an SDP BRAM",
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/112',
-    verified: '2026-08-09',
+    verified: '2026-08-10',
     status: 'live',
-    note: 'OPEN, not merged.',
+    note: 'MERGED 2026-08-10.',
   },
   {
     kind: 'repo',
     title: '#113 — preplace the single-site configuration primitives (STARTUPE2, ICAPE2, ...)',
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/113',
-    verified: '2026-08-09',
+    verified: '2026-08-10',
     status: 'live',
-    note: 'OPEN, not merged.',
+    note: 'MERGED 2026-08-10.',
   },
   {
     kind: 'repo',
     title: '#115 — initialise all four IFF flops for an IDDR, not just Q1/Q2',
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/115',
-    verified: '2026-08-09',
+    verified: '2026-08-10',
     status: 'live',
-    note: 'OPEN, not merged. The underlying IDDR capture issue stays open in the toolchain.',
+    note: 'MERGED 2026-08-09 — "LGTM, this is merged. Thanks for the contribution!" The underlying IDDR capture issue stays open in the toolchain.',
   },
 ]
 
@@ -376,8 +392,32 @@ export const identities: Resource[] = [
   },
 ]
 
+/**
+ * Claims this programme has withdrawn.
+ *
+ * Kept as a first-class list, not folded into `discrepancies`. A discrepancy is a row a
+ * reader should treat with suspicion; a retraction is one the authors have already settled
+ * against themselves. Conflating them would understate both.
+ *
+ * Source: gHashTag/claim-audit-lab, CASE-00 — the maintainers' self-audit, which is the
+ * first case in a lab whose other cases examine other people's phi claims.
+ */
+export const retractions: Resource[] = [
+  {
+    kind: 'paper',
+    title: 'delta_CP = 3/phi^2 as a phi-structured value of the CP-violating phase in neutrino oscillation',
+    href: 'https://github.com/gHashTag/claim-audit-lab/blob/main/cases/CASE-00-self-audit.md',
+    id: 'CASE-00 [Retracted]',
+    verified: '2026-08-10',
+    status: 'live',
+    note:
+      'WITHDRAWN by the authors. An independent arithmetic check showed the algebraic identity does not deliver the claimed numerical match at the precision required. Marked never to be restated. Listed here because a programme that retracts its own physics claim on arithmetic should say so where it can be found, not only in a repository.',
+  },
+]
+
 export const allResources = (): Resource[] => [
   ...papers,
+  ...retractions,
   ...datasets,
   ...upstream,
   ...channels,

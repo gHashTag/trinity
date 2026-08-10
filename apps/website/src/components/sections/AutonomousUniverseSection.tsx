@@ -194,7 +194,9 @@ export default function AutonomousUniverseSection() {
                     {t('autonomousUniverse.muAdjusted')}
                   </div>
                   <div style={{ fontSize: 20, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
-                    {(parseFloat(data.data.auto_tuned_params.match(/mu: ([\d.]+)/)?.[1] || '0') * 1000).toFixed(2)}
+                    {data.data.auto_tuned_params.match(/mu: ([\d.]+)/)?.[1]
+                      ? (parseFloat(data.data.auto_tuned_params.match(/mu: ([\d.]+)/)![1]) * 1000).toFixed(2)
+                      : '—'}
                   </div>
                 </div>
               </>
@@ -219,7 +221,9 @@ export default function AutonomousUniverseSection() {
                       {t('autonomousUniverse.fitness')}
                     </div>
                     <div style={{ fontSize: 20, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
-                      {parseFloat(data.data.auto_tuned_params.match(/fitness: ([\d.]+)/)?.[1] || '0').toFixed(4)}
+                      {data.data.auto_tuned_params.match(/fitness: ([\d.]+)/)?.[1]
+                      ? parseFloat(data.data.auto_tuned_params.match(/fitness: ([\d.]+)/)![1]).toFixed(4)
+                      : '—'}
                     </div>
                   </div>
                 </div>
@@ -307,9 +311,9 @@ export default function AutonomousUniverseSection() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: 10, color: 'rgba(255, 255, 255, 0.5)' }}>
           <span>φ² + 1/φ² = 3</span>
           <span>•</span>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.phi_alignment?.toFixed(3) || '0.618'} φ</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.phi_alignment?.toFixed(3) ?? '—'} φ</span>
           <span>•</span>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.phi_alignment ? (1.0 / data.data.phi_alignment).toFixed(2) : '1.62'}</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.phi_alignment ? (1.0 / data.data.phi_alignment).toFixed(2) : '—'}</span>
         </div>
       </div>
     </Section>

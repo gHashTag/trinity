@@ -792,7 +792,7 @@
       "core-001": {
         "name": "Parser v2",
         "description": "Advanced VIBEE specification parser with multi-language support",
-        "metrics": "42 languages"
+        "metrics": "spec-first codegen"
       },
       "core-002": {
         "name": "Multi-Lang Codegen",
@@ -1106,7 +1106,7 @@
     "role": "Hardware-AI & FPGA/RTL Engineer · Creator of GF-T ternary float format · spec → RTL → silicon · ML systems & Edge AI",
     "bioTitle": "About",
     "bio": [
-      "I build the full stack of efficient AI compute — from the number format and the RTL that runs it, to bit-exact verification and silicon. I am the creator of GF-T, a ternary floating-point format that benchmarks best-in-class (≈3–5.5× vs comparable formats), and of the wider GoldenFloat family (GF-T8/16/32; φ-derived GF4→GF1024).",
+      "I build the full stack of efficient AI compute — from the number format and the RTL that runs it, to bit-exact verification and silicon. I am the creator of GF-T, a ternary floating-point format that is measured at 2.4–6.4× against tapered formats on a ternary network (18 formats, one path, XC7A200T), and of the wider GoldenFloat family (GF-T8/16/32; φ-derived GF4→GF1024).",
       "I took a novel numeric format from an arXiv paper to a live Xilinx Artix-7 and a SKY130 ASIC — on a fully open-source flow (Yosys, nextpnr, prjxray), with no vendor tools. My work centres on the chain spec → RTL → verification → silicon, where every RTL node is checked bit-for-bit against an independent Python golden model, catching spec/RTL divergence before synthesis.",
       "Before hardware, I spent 10+ years building and teaching software — AI agents and multi-agent systems, React Native, and Web3. I am open to remote / contract work worldwide (UTC+7) across hardware-AI, FPGA / RTL / verification, ML systems, and edge AI."
     ],
@@ -1221,7 +1221,7 @@
         "open": false
       }
     ],
-    "note": "TRINITY verified on <strong>real RunPod GPUs</strong> (Pod IDs: bhhnrrdothqm54, ydk41ymp8uoeyp). Ternary = no multiply ops, 20x compression, 70% noise robustness at 30% corruption.",
+    "note": "TRINITY verified on <strong>real RunPod GPUs</strong> (Pod IDs: bhhnrrdothqm54, ydk41ymp8uoeyp). Ternary networks remove the multiply, 20x compression, 70% noise robustness at 30% corruption.",
     "gpuProof": {
       "title": "Real GPU Verification",
       "rtx3090": {
@@ -1800,7 +1800,7 @@
         "desc": "Ternary encoding: log₂(3) = 1.585 bits. Memory for 7B model: 14 GB → 1.4 GB"
       },
       {
-        "title": "No Multiplications",
+        "title": "The Network Removes the Multiply",
         "formula": "MAC = MUX + ADD",
         "desc": "BitNet replaces multiplication with addition. Energy: 1 pJ → 0.05 pJ (20× savings)"
       },

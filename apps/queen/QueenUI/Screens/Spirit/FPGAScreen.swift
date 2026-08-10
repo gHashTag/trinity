@@ -235,7 +235,7 @@ struct FPGAScreen: View {
     // MARK: - Data Loaders
 
     private func loadHardwareState() -> [String: Any]? {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let path = "\(cwd)/.trinity/fpga/hardware_state.json"
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
@@ -249,7 +249,7 @@ struct FPGAScreen: View {
     }
 
     private func loadExperience() -> [ExperienceEntry] {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let path = "\(cwd)/.trinity/fpga/experience.json"
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
               let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return [] }
@@ -261,7 +261,7 @@ struct FPGAScreen: View {
     }
 
     private func synthReportFiles() -> [String] {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let dir = "\(cwd)/fpga/openxc7-synth/synth_reports"
         guard let entries = try? FileManager.default.contentsOfDirectory(atPath: dir) else { return [] }
         return entries.sorted()

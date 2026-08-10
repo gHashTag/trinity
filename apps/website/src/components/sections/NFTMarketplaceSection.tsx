@@ -12,7 +12,9 @@ const MODES = [
   { key: 'accept', label: 'Accept' },
   { key: 'cancel', label: 'Cancel' },
   { key: 'trade', label: 'Trade' },
-];
+] as const;
+
+type Mode = (typeof MODES)[number]['key'];
 
 const DUKH_COLOR = '#aa66ff';
 
@@ -25,12 +27,12 @@ const glass = {
 
 export default function NFTMarketplaceSection() {
   const { t } = useI18n();
-  const [mode, setMode] = useState<keyof typeof MODES[number] | ''>('browse');
+  const [mode, setMode] = useState<Mode | ''>('browse');
   const [data, setData] = useState<NFTMarketplaceMode | null>(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(true);
 
-  const loadData = async (m: keyof typeof MODES[number]) => {
+  const loadData = async (m: Mode) => {
     setLoading(true);
     try {
       const result = await fetchNFTMarketplace(m);
@@ -42,7 +44,7 @@ export default function NFTMarketplaceSection() {
     }
   };
 
-  useEffect(() => { loadData(mode); }, [mode]);
+  useEffect(() => { if (mode) loadData(mode); }, [mode]);
 
   return (
     <Section
@@ -302,9 +304,9 @@ export default function NFTMarketplaceSection() {
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: 10, color: 'rgba(255, 255, 255, 0.5)' }}>
             <span>$TRI</span>
             <span>•</span>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.avg_price.toFixed(2) || '0.00'}</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.avg_price?.toFixed(2) ?? '—'}</span>
             <span>•</span>
-            <span>{(data?.data.marketplace_fee || 0.025) * 100}% fee</span>
+            <span>{data?.data.marketplace_fee !== undefined ? data.data.marketplace_fee * 100 + '% fee' : 'fee unknown'}</span>
           </div>
         </div>
       </div>

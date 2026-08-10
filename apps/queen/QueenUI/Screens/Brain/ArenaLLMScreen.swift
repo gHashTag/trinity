@@ -169,7 +169,7 @@ struct ArenaLLMScreen: View {
     }
 
     private func loadBattles() {
-        let path = "\(FileManager.default.currentDirectoryPath)/data/arena/arena_results.jsonl"
+        let path = "\(TrinityRuntimePaths.projectRoot)/data/arena/arena_results.jsonl"
         guard let content = try? String(contentsOfFile: path, encoding: .utf8) else { return }
 
         let decoder = JSONDecoder()

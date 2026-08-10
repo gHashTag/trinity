@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SettingsScreen: View {
+public struct SettingsScreen: View {
     @AppStorage("appearanceMode") private var appearanceModeRaw: String = AppearanceMode.dark.rawValue
     @AppStorage("selectedTheme") private var selectedThemeRaw: String = ThemeVariant.deepSpace.rawValue
     @AppStorage("arenaHost") private var arenaHost = "localhost"
@@ -34,7 +34,9 @@ struct SettingsScreen: View {
     @State private var intervalSec = 600
     @State private var showClearConfirmation = false
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         ScrollView {
             VStack(spacing: ParietalSpacing.standard) {
                 HStack {
@@ -507,7 +509,7 @@ struct SettingsScreen: View {
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
                             .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
-                        Text(trinityPath.isEmpty ? FileManager.default.currentDirectoryPath : trinityPath)
+                        Text(trinityPath.isEmpty ? TrinityRuntimePaths.projectRoot : trinityPath)
                             .font(.caption.monospaced())
                             .foregroundStyle(V4Color.textPrimary)
                     }
@@ -653,6 +655,7 @@ struct SettingsScreen: View {
                     Text("This will reset all settings to defaults and remove saved threads. This action cannot be undone.")
                 }
             }
+            .containerRelativeFrame(.horizontal)
             .padding(.bottom)
         }
         .background(V4Color.bgWindow)
@@ -685,18 +688,20 @@ struct SettingsScreen: View {
                 saveQueenConfig()
             }
 
-            HStack {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text("Max Auto Level")
                     .font(.caption)
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: ParietalSpacing.xxxLargeFrame, alignment: .leading)
                 Picker("", selection: $maxAutoLevel) {
-                    Text("L0 (read-only)").tag(0)
-                    Text("L1 (soft-write)").tag(1)
-                    Text("L2 (dangerous)").tag(2)
+                    Text("L0").tag(0)
+                    Text("L1").tag(1)
+                    Text("L2").tag(2)
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: maxAutoLevel) { saveQueenConfig() }
+                Text("L0 read-only | L1 soft-write | L2 dangerous")
+                    .font(.caption2)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Toggle(isOn: $requireApproval) {
@@ -706,11 +711,10 @@ struct SettingsScreen: View {
             }
             .onChange(of: requireApproval) { saveQueenConfig() }
 
-            HStack {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text("Interval")
                     .font(.caption)
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: ParietalSpacing.xxxLargeFrame, alignment: .leading)
                 Stepper(value: $intervalSec, in: 60...3600, step: 60) {
                     Text("\(intervalSec)s (\(intervalSec / 60)m)")
                         .font(.caption.monospacedDigit())
@@ -732,7 +736,7 @@ struct SettingsScreen: View {
     // MARK: - Config Persistence
 
     private func loadQueenConfig() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity/queen/config.json"
+        let path = "\(TrinityRuntimePaths.stateRoot)/queen/config.json"
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
 
@@ -823,7 +827,7 @@ struct SettingsScreen: View {
             "interval_sec": intervalSec,
         ]
 
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let dir = "\(cwd)/.trinity/queen"
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
 

@@ -13,7 +13,9 @@ const MODES = [
   { key: 'trajectory', label: 'Trajectory' },
   { key: 'clip', label: 'Clip' },
   { key: 'consolidate', label: 'Consolidate' },
-];
+] as const;
+
+type Mode = (typeof MODES)[number]['key'];
 
 const RAZUM_COLOR = '#ffd700';
 
@@ -26,12 +28,12 @@ const glass = {
 
 export default function SelfImproverSection() {
   const { t } = useI18n();
-  const [mode, setMode] = useState<keyof typeof MODES[number] | ''>('adam');
+  const [mode, setMode] = useState<Mode | ''>('adam');
   const [data, setData] = useState<SelfImproverAdamMode | null>(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(true);
 
-  const loadData = async (m: keyof typeof MODES[number]) => {
+  const loadData = async (m: Mode) => {
     setLoading(true);
     try {
       const result = await fetchSelfImproverAdam(m);
@@ -43,7 +45,7 @@ export default function SelfImproverSection() {
     }
   };
 
-  useEffect(() => { loadData(mode); }, [mode]);
+  useEffect(() => { if (mode) loadData(mode); }, [mode]);
 
   return (
     <Section

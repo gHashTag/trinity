@@ -166,8 +166,13 @@ function DePINSection() {
     return () => clearInterval(t);
   }, []);
 
-  const nodes = 12 + (tick % 3);
-  const tps = (42 + Math.sin(tick) * 5).toFixed(1);
+  // These were `12 + (tick % 3)` and `42 + Math.sin(tick) * 5` -- invented in
+  // this component, animated on a 3s timer so they read as polled telemetry.
+  // There is not one fetch() in this file. The landing page says the truth
+  // about the same subject: DePINSection renders "Testnet Nodes / Launching
+  // Soon". The dashboard contradicted its own home page. See A38.
+  const nodes = null;
+  const tps = null;
 
   const tiers = [
     { name: 'Free', staked: '0', limit: '10 req/min', mult: '1.0x', color: '#666' },
@@ -216,11 +221,11 @@ function DePINSection() {
           </div>
           <div>
             <div style={{ color: '#555', fontSize: 10 }}>Active Nodes</div>
-            <div style={{ color: GREEN, fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{nodes}</div>
+            <div style={{ color: '#666', fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{nodes ?? 'not yet live'}</div>
           </div>
           <div>
             <div style={{ color: '#555', fontSize: 10 }}>TPS</div>
-            <div style={{ color: CYAN, fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{tps}</div>
+            <div style={{ color: '#666', fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{tps ?? 'not yet live'}</div>
           </div>
         </div>
       </div>
@@ -277,16 +282,25 @@ function DePINSection() {
 }
 
 function GitHubSection() {
+  // Measured against the GitHub API and `git rev-list --count HEAD` on
+  // 2026-08-10. The previous literals claimed 47 stars (real: 7), 8 forks
+  // (real: 2), 12 open issues (real: 21) and 120 commits (real: 5681) --
+  // numbers a reader can check in one click, overstating stars 6.7x. See A38.
+  //
+  // Dated rather than fetched: a stale number that says when it was taken is
+  // honest; an invented one that moves is not. If this is ever wired to the
+  // API, route the failure through sample()/SampleBadge like chatApi does.
+  const AS_OF = '2026-08-10';
   const repoData = {
-    stars: 47,
-    forks: 8,
-    issues: 12,
-    commits: 120,
+    stars: 7,
+    forks: 2,
+    issues: 21,
+    commits: 5681,
     language: 'Zig',
     license: 'MIT',
     lastCommit: 'feat(forge): Fix routing PIPs for prjxray segbits',
     branch: 'main',
-    cycles: 110,
+    cycles: null,
   };
 
   const recentCommits = [
@@ -311,12 +325,15 @@ function GitHubSection() {
     >
       <h2 style={{ color: CYAN, fontSize: 18, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>
         GITHUB REPOSITORY
+        <span style={{ color: '#555', fontSize: 9, fontWeight: 400, marginLeft: 8 }}>
+          as of {AS_OF}
+        </span>
       </h2>
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Cycles', value: repoData.cycles, color: GOLD },
+          { label: 'Cycles', value: repoData.cycles ?? '—', color: GOLD },
           { label: 'Commits', value: repoData.commits, color: CYAN },
           { label: 'Language', value: repoData.language, color: GREEN },
           { label: 'License', value: repoData.license, color: PURPLE },

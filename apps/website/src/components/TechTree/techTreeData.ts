@@ -40,7 +40,7 @@ export const techBranches: TechBranch[] = [
         branch: 'core',
         prerequisites: [],
         unlocks: ['core-002', 'inf-001'],
-        metrics: '42 languages',
+        metrics: 'spec-first codegen',
         x: 0,
         y: 0
       },

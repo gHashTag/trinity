@@ -39,7 +39,7 @@ struct IssuesScreen: View {
                     ActionButton(icon: "🔄", label: "Refresh", color: V4Color.accent,
                                  action: "issues_refresh")
                     StatCard(label: "Open", value: "\(issues.count)")
-                        .frame(width: ParietalSpacing.xxLargeFrame)
+                        .frame(width: 84)
                 }
                 .padding()
 
@@ -109,7 +109,7 @@ struct IssuesScreen: View {
     }
 
     private func loadIssues() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity/issues_snapshot.json"
+        let path = "\(TrinityRuntimePaths.projectRoot)/.trinity/issues_snapshot.json"
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return }
         issues = (try? JSONDecoder().decode([Issue].self, from: data)) ?? []
     }
