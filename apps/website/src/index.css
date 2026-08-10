@@ -38,12 +38,23 @@ body {
 }
 
 /* Typography Fluid Design */
+/* The page-title size, not a display size.
+   This was clamp(3rem, 15vw, 8rem) with -0.07em tracking — proportions meant for
+   the one-line identity in the hero. Applied to every h1 on the site it made a
+   sixty-character blog title 210px tall at a 1400px viewport: one word per line,
+   four lines before any prose.
+   The values below are not new. Six pages — Proof, Course, Licensing, GFT,
+   About, Verification — already wrote exactly this inline, so it was the house
+   standard everywhere except the pages that forgot to repeat it. Making it the
+   default means Blog, Resources and the dashboards match without restating it,
+   and the six that do restate it are unchanged.
+   The hero sets its own size inline and is unaffected. */
 h1 {
-  font-size: clamp(3rem, 15vw, 8rem);
+  font-size: clamp(1.9rem, 5.5vw, 2.8rem);
   font-weight: 600;
-  margin-bottom: 2rem;
-  letter-spacing: -0.07em;
-  line-height: 1;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 h2 {
