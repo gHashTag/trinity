@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
+import SelfServeRun from '../components/SelfServeRun'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { RUNS, THIRD_PARTY_RUNS, LIMITS_EN, LIMITS_RU, PROVENANCE } from '../data/verificationRuns'
@@ -193,6 +194,12 @@ export default function CaseStudies() {
             {c.lede}
           </p>
         </motion.div>
+
+        {/* This page is where somebody who has read the runs asks "so where is
+            the service?" -- and until now the answer was a link to an issue
+            form. The runs below are what it produced; this is the thing that
+            produced them, in a form they can paste. */}
+        <SelfServeRun />
 
         <div style={{ width: '100%', marginBottom: '2.5rem' }}>
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>{c.runsTitle}</h2>
