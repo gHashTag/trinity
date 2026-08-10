@@ -1,0 +1,19 @@
+{
+  "discoveredBy": "tools/discover_rtl_check_callers.py",
+  "method": "GitHub code search for repositories whose .github/workflows/ names the reusable workflow, then that workflow's own latest completed run. Conclusions are read from the API, never inferred.",
+  "excludes": "gHashTag/trinity, which defines the workflow — its hits are the definition, the self-test and the snippet on this site, not users of it.",
+  "entries": [
+    {
+      "repo": "gHashTag/trinity-fpga",
+      "workflow": ".github/workflows/rtl-check.yml",
+      "tops": [
+        "tt_um_qbrain_mini",
+        "tt_um_qbrain_holo"
+      ],
+      "conclusion": "success",
+      "runUrl": "https://github.com/gHashTag/trinity-fpga/actions/runs/31438751456",
+      "sha": "c8754de8",
+      "at": "2026-08-10T22:33:42Z"
+    }
+  ]
+}
