@@ -102,7 +102,7 @@ function mailto(subject: string) {
 }
 
 
-function RunCard({ run, foundLabel }: { run: Run; foundLabel: string }) {
+function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang: string }) {
   const failed = run.checks.filter((k) => k.status !== 'PASS').length
   return (
     <div className="premium-card" style={{ textAlign: 'left', marginBottom: '1rem' }}>
@@ -128,6 +128,11 @@ function RunCard({ run, foundLabel }: { run: Run; foundLabel: string }) {
         ))}
       </div>
 
+      {/* The result page is the thing worth sending to a reviewer, so the card
+          has to lead there. It existed and nothing linked to it. */}
+      <p style={{ fontSize: '0.82rem', margin: '0.9rem 0 0' }}>
+        <a href={`/r/${run.slug}/`}>{lang === 'ru' ? 'Открыть страницу результата' : 'Open the result page'} →</a>
+      </p>
       {run.found && (
         <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: '0.9rem', marginTop: '1rem' }}>
           <div style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.7, marginBottom: '0.35rem' }}>{foundLabel}</div>
@@ -184,7 +189,7 @@ export default function CaseStudies() {
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>{c.runsTitle}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, maxWidth: '62ch', margin: '0 auto 1.4rem' }}>{c.runsLede}</p>
           {RUNS.map((r) => (
-            <RunCard key={r.id} run={r} foundLabel={c.found} />
+            <RunCard key={r.id} run={r} foundLabel={c.found} lang={lang} />
           ))}
 
           <div className="premium-card" style={{ textAlign: 'left' }}>
@@ -201,7 +206,7 @@ export default function CaseStudies() {
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>{c.thirdTitle}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, maxWidth: '64ch', margin: '0 auto 1.4rem' }}>{c.thirdLede}</p>
           {THIRD_PARTY_RUNS.map((r) => (
-            <RunCard key={r.id} run={r} foundLabel={c.found} />
+            <RunCard key={r.id} run={r} foundLabel={c.found} lang={lang} />
           ))}
         </div>
 
