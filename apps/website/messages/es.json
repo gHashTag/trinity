@@ -289,7 +289,7 @@
       ]
     },
     "verifyLink": "Verificar Benchmarks en GitHub ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
   },
   "mining": {
     "title": "<span class=\"grad\">Industria</span> Minera 2026",
@@ -886,7 +886,7 @@
     },
     "quote": "\"Las matematicas del universo favorecen a Trinity.\"",
     "cta": "Ver Tokenomics Completo",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/business/TOKENOMICS.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/TOKENOMICS.md"
   },
   "mysticism": {
     "title": "Fundamentos Matematicos",
