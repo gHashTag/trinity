@@ -83,9 +83,9 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
+            <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.linksTitle || 'Links'}
-            </h4>
+            </h3>
             <nav aria-label="Footer navigation">
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <li><a href="#theorems" onClick={(e) => goToSection(e, 'theorems')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Theorems section">{t.nav?.[1] || 'Theorems'}</a></li>
@@ -103,9 +103,9 @@ export default function Footer() {
 
           {/* Quantum Lab */}
           <div>
-            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
+            <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.vizTitle || 'Quantum Lab'}
-            </h4>
+            </h3>
             <motion.div whileHover={{ scale: 1.02 }}>
               <Link
                 to="/quantum"
@@ -156,9 +156,9 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
+            <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.contactTitle || 'Contact'}
-            </h4>
+            </h3>
             <nav aria-label="Contact links">
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <li>
