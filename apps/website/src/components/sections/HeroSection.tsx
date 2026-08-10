@@ -194,7 +194,11 @@ export default function HeroSection() {
         v5.1.0 — 7 DOI-verified publications on Zenodo
       </motion.div>
 
-      <h2 style={{ color: 'var(--accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: 'clamp(0.1em, 2vw, 0.3em)', marginBottom: '0', margin: 0 }}>
+      {/* h1, not h2: this line is the page's primary heading and the homepage had
+          no h1 at all -- 40 headings and none of them first. Every static landing
+          has exactly one; only the route everyone actually lands on was missing it,
+          which costs both screen-reader orientation and the main heading signal. */}
+      <h1 style={{ color: 'var(--accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: 'clamp(0.1em, 2vw, 0.3em)', marginBottom: '0', margin: 0 }}>
         <motion.div
           className="fade"
           initial={{ opacity: 0, y: -20 }}
@@ -203,7 +207,7 @@ export default function HeroSection() {
         >
           {t.tag}
         </motion.div>
-      </h2>
+      </h1>
       
       <motion.div
         className="fade"

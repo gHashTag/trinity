@@ -2,31 +2,69 @@
   "lang": "es",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "Teoremas", "Publicaciones", "Solucion", "Benchmarks", "Calculadora", "DePIN", "Equipo", "Invertir"],
+  "nav": [
+    "TRINITY",
+    "Teoremas",
+    "Publicaciones",
+    "Solucion",
+    "Benchmarks",
+    "Calculadora",
+    "DePIN",
+    "Equipo",
+    "Invertir"
+  ],
   "hero": {
     "badge_publications": "7 PUBLICACIONES",
     "badge_doi": "DOI-VERIFICADO",
-    "tag": "Economia IA Verde Verificada por GPU",
+    "tag": "GF-T · un float ternario nativo que supera el estado del arte publicado",
     "headline": "φ² + 1/φ² = 3",
-    "subheadline": "298K tokens/s en RTX 3090 | 274K en A100 | VERIFICADO",
-    "quote": "\"No es una afirmacion — es un teorema. No es una promesa — es una prueba. No es simulado — verificado por GPU.\"",
-    "desc": "Primera plataforma IA con <strong>4 teoremas matematicos</strong> + <strong>benchmarks verificados por GPU</strong>: <strong>298K tokens/s</strong> (RTX 3090), <strong>70% robustez al ruido</strong> con 30% de corrupcion",
+    "subheadline": "2,84× y 5,53× más preciso que tekum16 en rango · sin decodificación de régimen · el exponente suma de forma nativa en ternario",
+    "quote": "«No simulado — medido. Vuelto a medir de forma independiente contra los mismos oráculos, y las proporciones se reproducen.»",
+    "desc": "<strong>GF-T</strong> escribe el exponente de un float en <strong>ternario balanceado</strong> y mantiene los campos fijos. Eso elimina el mayor coste de tekum16 — la decodificación de régimen — y hace que la suma de exponentes sea nativa en una fábrica ternaria. Medido contra tekum16 en su propio terreno: empate cerca de la unidad, <strong>2,84× menos error</strong> en rango medio y <strong>5,53× en rango lejano</strong>, con una mantisa uniforme de 9 bits donde tekum16 se estrecha a cuatro.",
     "metrics": [
-      { "value": "298K", "label": "Tokens/s (RTX 3090)", "proof": "Verificado por GPU RunPod" },
-      { "value": "274K", "label": "Tokens/s (A100)", "proof": "Verificado por GPU RunPod" },
-      { "value": "70%", "label": "Ruido @30%", "proof": "Teorema 1 + prueba GPU" }
+      {
+        "value": "5.53×",
+        "label": "más preciso que tekum16 en rango",
+        "proof": "Reproducido de forma independiente, 8 ago 2026"
+      },
+      {
+        "value": "0",
+        "label": "Decodificación de régimen, y sin licencia de proveedor",
+        "proof": "Campos fijos · Yosys · nextpnr · iverilog"
+      },
+      {
+        "value": "SKY130",
+        "label": "Tape-out completado",
+        "proof": "Tiny Tapeout — GDS, nivel de puerta, precheck"
+      }
     ],
     "newResults": {
-      "title": "Resultados Verificados por GPU (RunPod)",
+      "title": "GF-T16 frente a tekum16 — error relativo medio",
       "items": [
-        { "value": "298K", "label": "RTX 3090 tokens/s", "source": "runpod_full_tests_report.md" },
-        { "value": "274K", "label": "A100 80GB tokens/s", "source": "e2e_repeat_report.md" },
-        { "value": "70.2%", "label": "Robustez al Ruido @30%", "source": "Ambas GPUs identicas" },
-        { "value": "293W", "label": "Potencia A100 (vs 348W RTX)", "source": "nvidia-smi verificado" }
+        {
+          "value": "0.92×",
+          "label": "cerca de la unidad (|e| < 8)",
+          "source": "3.56e-4 vs 3.27e-4 — empate"
+        },
+        {
+          "value": "2.84×",
+          "label": "rango medio (|e| 8–20)",
+          "source": "3.52e-4 vs 1.00e-3"
+        },
+        {
+          "value": "5.53×",
+          "label": "rango lejano (|e| 20–38)",
+          "source": "3.53e-4 vs 1.95e-3"
+        },
+        {
+          "value": "±40",
+          "label": "rango del exponente, en potencias de dos",
+          "source": "Acotado — el régimen de tekum16 no lo es"
+        }
       ]
     },
-    "cta": "Ver las Pruebas",
-    "ctaSecondary": "Ejecutar un Nodo"
+    "cta": "Licenciar GF-T",
+    "ctaSecondary": "Ver la medición"
   },
   "navExtra": {
     "dashboard": "Panel",
@@ -99,10 +137,26 @@
     "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/MATH_FOUNDATIONS.md",
     "reportsTitle": "Informes de Benchmarks Verificados",
     "reports": [
-      { "name": "Informe de Cuantizacion Ternaria", "url": "https://github.com/gHashTag/trinity/blob/main/docs/ternary_quant_report.md", "highlight": "15.7× compresion" },
-      { "name": "Informe HDC Double Q-Learning", "url": "https://github.com/gHashTag/trinity/blob/main/docs/hdc_double_q_report.md", "highlight": "100% robustez al ruido" },
-      { "name": "Benchmarks GPU", "url": "https://github.com/gHashTag/trinity/blob/main/docs/GPU_BENCHMARKS.md", "highlight": "8.1× aceleracion SIMD" },
-      { "name": "Benchmarks de Produccion", "url": "https://github.com/gHashTag/trinity/blob/main/docs/PRODUCTION_BENCHMARKS.md", "highlight": "Auto-escalado listo" }
+      {
+        "name": "Informe de Cuantizacion Ternaria",
+        "url": "https://github.com/gHashTag/trinity/blob/main/docs/ternary_quant_report.md",
+        "highlight": "15.7× compresion"
+      },
+      {
+        "name": "Informe HDC Double Q-Learning",
+        "url": "https://github.com/gHashTag/trinity/blob/main/docs/hdc_double_q_report.md",
+        "highlight": "100% robustez al ruido"
+      },
+      {
+        "name": "Benchmarks GPU",
+        "url": "https://github.com/gHashTag/trinity/blob/main/docs/GPU_BENCHMARKS.md",
+        "highlight": "8.1× aceleracion SIMD"
+      },
+      {
+        "name": "Benchmarks de Produccion",
+        "url": "https://github.com/gHashTag/trinity/blob/main/docs/PRODUCTION_BENCHMARKS.md",
+        "highlight": "Auto-escalado listo"
+      }
     ]
   },
   "roiCalculator": {
@@ -111,9 +165,27 @@
     "inputLabel": "Inversion Inicial ($)",
     "hardwareLabel": "Tipo de Hardware",
     "hardwareOptions": [
-      { "name": "QMTECH FPGA XC7A100T", "hashrate": 2000000, "power": 10, "cost": 65, "monthly": 50 },
-      { "name": "Alveo U55C", "hashrate": 50000000, "power": 150, "cost": 5000, "monthly": 162 },
-      { "name": "CPU Node (Gratis)", "hashrate": 12000, "power": 65, "cost": 0, "monthly": 5 }
+      {
+        "name": "QMTECH FPGA XC7A100T",
+        "hashrate": 2000000,
+        "power": 10,
+        "cost": 65,
+        "monthly": 50
+      },
+      {
+        "name": "Alveo U55C",
+        "hashrate": 50000000,
+        "power": 150,
+        "cost": 5000,
+        "monthly": 162
+      },
+      {
+        "name": "CPU Node (Gratis)",
+        "hashrate": 12000,
+        "power": 65,
+        "cost": 0,
+        "monthly": 5
+      }
     ],
     "results": {
       "monthlyRevenue": "Ingresos Mensuales",
@@ -125,11 +197,26 @@
     "example": {
       "title": "Ejemplo: Alveo U55C ($5,000)",
       "items": [
-        { "label": "Ingresos Mensuales", "value": "$162" },
-        { "label": "Costo de Electricidad", "value": "$31" },
-        { "label": "Beneficio Neto", "value": "$131/mes" },
-        { "label": "Recuperacion", "value": "4.9 meses" },
-        { "label": "ROI Anual", "value": "31%" }
+        {
+          "label": "Ingresos Mensuales",
+          "value": "$162"
+        },
+        {
+          "label": "Costo de Electricidad",
+          "value": "$31"
+        },
+        {
+          "label": "Beneficio Neto",
+          "value": "$131/mes"
+        },
+        {
+          "label": "Recuperacion",
+          "value": "4.9 meses"
+        },
+        {
+          "label": "ROI Anual",
+          "value": "31%"
+        }
       ]
     },
     "note": "Basado en el Teorema 3: la cuantizacion de 1.58 bits permite ganancias de eficiencia de 20×"
@@ -140,12 +227,31 @@
     "bitnetTitle": "La Crisis de Entropia Binaria",
     "bitnetDesc": "Las GPUs estandar desperdician el 99% de la energia luchando contra la entropia binaria. Traducir trits {-1, 0, +1} a bits es un <strong class=\"red\">crimen computacional</strong>. Eliminamos al intermediario.",
     "binaryTitle": "Emulacion Binaria (Legacy)",
-    "binaryFlow": ["BitNet {-1,0,+1}", "↓ Codificacion Binaria", "↓ Capa LLVM/Zig", "↓ Ruido de Puerta", "Calor/Perdida"],
-    "binaryStats": ["Energia: 100% (Perdida)", "Codigo: 5x Inflado", "Proteccion: Ninguna"],
+    "binaryFlow": [
+      "BitNet {-1,0,+1}",
+      "↓ Codificacion Binaria",
+      "↓ Capa LLVM/Zig",
+      "↓ Ruido de Puerta",
+      "Calor/Perdida"
+    ],
+    "binaryStats": [
+      "Energia: 100% (Perdida)",
+      "Codigo: 5x Inflado",
+      "Proteccion: Ninguna"
+    ],
     "trinityTitle": "TRINITY NATIVO (V5.0)",
     "trinityDesc": "El nucleo SU(3) nativo elimina el 99.8% del desperdicio y proporciona inferencia 100x mas rapida.",
-    "trinityFlow": ["Copto CIS V1.0", "↓ Triadas Nativas", "↓ Resonancia SU(3)", "Verdad de Hardware"],
-    "trinityStats": ["Energia: 0.17% (PAS 5.0)", "Codigo: 80.2% Compresion", "Proteccion: Chern-Bott"],
+    "trinityFlow": [
+      "Copto CIS V1.0",
+      "↓ Triadas Nativas",
+      "↓ Resonancia SU(3)",
+      "Verdad de Hardware"
+    ],
+    "trinityStats": [
+      "Energia: 0.17% (PAS 5.0)",
+      "Codigo: 80.2% Compresion",
+      "Proteccion: Chern-Bott"
+    ],
     "quote": "\"Trinity Core VIBEE no es una computadora. Es una configuracion de qutrit nativa.\"",
     "quoteSrc": "— Informe Singularidad V5, 2026",
     "density": {
@@ -188,37 +294,92 @@
     "proofTitle": "Prueba de Concepto para Inversores",
     "proofIntro": "Este prototipo demuestra la superioridad de nuestro enfoque. No solo demostramos un concepto, sino una pila blockchain SU(3) funcional — la base para futuros chips Trinity.",
     "proofItems": [
-      { "title": "Fase de Reduccion de Riesgo", "desc": "Algoritmos verificados en silicio (ARM/FPGA). La logica SU(3) esta lista para produccion ASIC." },
-      { "title": "Conquista del Mercado", "desc": "Trinity convierte 7B de smartphones en nodos de mineria legales y rentables sin sobrecalentamiento." },
-      { "title": "ROI Exponencial", "desc": "El salto de eficiencia energetica de 578x es la unica forma de supervivencia minera despues de 2026." }
+      {
+        "title": "Fase de Reduccion de Riesgo",
+        "desc": "Algoritmos verificados en silicio (ARM/FPGA). La logica SU(3) esta lista para produccion ASIC."
+      },
+      {
+        "title": "Conquista del Mercado",
+        "desc": "Trinity convierte 7B de smartphones en nodos de mineria legales y rentables sin sobrecalentamiento."
+      },
+      {
+        "title": "ROI Exponencial",
+        "desc": "El salto de eficiencia energetica de 578x es la unica forma de supervivencia minera despues de 2026."
+      }
     ]
   },
   "solution": {
     "title": "¿Por Que <span class=\"grad\">Triada Absoluta</span>?",
-    "legend": ["578.8x Eficiencia Energetica", "Nucleo Unitario SU(3)", "Opcode Copto Nativo (CIS)"],
+    "legend": [
+      "578.8x Eficiencia Energetica",
+      "Nucleo Unitario SU(3)",
+      "Opcode Copto Nativo (CIS)"
+    ],
     "cards": [
-      { "value": "578.8×", "label": "Efic. Energia", "color": "blue" },
-      { "value": "100×", "label": "Velocidad SU(3)", "color": "green" },
-      { "value": "99.8%", "label": "Reduccion Costo", "color": "purple" },
-      { "value": "80.2%", "label": "Densidad Codigo", "color": "yellow" },
-      { "value": "27-CIS", "label": "Alfabeto Nativo", "color": "cyan" },
-      { "value": "V5.0", "label": "Singularidad", "color": "green" }
+      {
+        "value": "578.8×",
+        "label": "Efic. Energia",
+        "color": "blue"
+      },
+      {
+        "value": "100×",
+        "label": "Velocidad SU(3)",
+        "color": "green"
+      },
+      {
+        "value": "99.8%",
+        "label": "Reduccion Costo",
+        "color": "purple"
+      },
+      {
+        "value": "80.2%",
+        "label": "Densidad Codigo",
+        "color": "yellow"
+      },
+      {
+        "value": "27-CIS",
+        "label": "Alfabeto Nativo",
+        "color": "cyan"
+      },
+      {
+        "value": "V5.0",
+        "label": "Singularidad",
+        "color": "green"
+      }
     ]
   },
   "whynow": {
     "title": "¿Por Que <span class=\"grad\">Singularidad</span> Ahora?",
     "cards": [
-      { "title": "Resonancia de Hardware", "desc": "Alcanzamos 100% de alineacion entre linguistica y silicio via CIS V1.0." },
-      { "title": "Cosecha de Entropia", "desc": "Los Daemons PAS V5.0 convierten el ruido de informacion en energia de ejecucion util." },
-      { "title": "Armadura Topologica", "desc": "Los invariantes Chern-Bott hacen que los calculos Trinity sean inmunes a interferencias." }
+      {
+        "title": "Resonancia de Hardware",
+        "desc": "Alcanzamos 100% de alineacion entre linguistica y silicio via CIS V1.0."
+      },
+      {
+        "title": "Cosecha de Entropia",
+        "desc": "Los Daemons PAS V5.0 convierten el ruido de informacion en energia de ejecucion util."
+      },
+      {
+        "title": "Armadura Topologica",
+        "desc": "Los invariantes Chern-Bott hacen que los calculos Trinity sean inmunes a interferencias."
+      }
     ]
   },
   "usecases": {
     "title": "<span class=\"grad\">Aplicaciones</span> Especificas",
     "items": [
-      { "title": "Inferencia LLM", "desc": "Ejecutar Llama 3 con 1/578 del costo actual de hardware." },
-      { "title": "IA Edge", "desc": "IA en tiempo real en camaras y robots sin latencia." },
-      { "title": "Centros de Datos", "desc": "100x tu computo sin actualizar la red electrica." }
+      {
+        "title": "Inferencia LLM",
+        "desc": "Ejecutar Llama 3 con 1/578 del costo actual de hardware."
+      },
+      {
+        "title": "IA Edge",
+        "desc": "IA en tiempo real en camaras y robots sin latencia."
+      },
+      {
+        "title": "Centros de Datos",
+        "desc": "100x tu computo sin actualizar la red electrica."
+      }
     ]
   },
   "traction": {
@@ -228,23 +389,72 @@
     "url": "https://github.com/gHashTag/trinity",
     "techTitle": "Tecnologia Fase 5.0 (Verificada)",
     "techs": [
-      { "title": "SU(3) Core", "desc": "Rotaciones de fase unitarias en espacio Gell-Mann", "tests": "Verilog Verificado ✓" },
-      { "title": "PAS V5.0", "desc": "Bomba de Informacion de Maxwell: 578.8x Eficiencia", "tests": "Termodinamica ✓" },
-      { "title": "Copto CIS", "desc": "27 letras = 27 opcodes (Punto Fijo 16.16)", "tests": "5.1x Densidad ✓" },
-      { "title": "Proteccion Chern", "desc": "Estabilidad de calculo topologico", "tests": "Invariante Bloqueado ✓" }
+      {
+        "title": "SU(3) Core",
+        "desc": "Rotaciones de fase unitarias en espacio Gell-Mann",
+        "tests": "Verilog Verificado ✓"
+      },
+      {
+        "title": "PAS V5.0",
+        "desc": "Bomba de Informacion de Maxwell: 578.8x Eficiencia",
+        "tests": "Termodinamica ✓"
+      },
+      {
+        "title": "Copto CIS",
+        "desc": "27 letras = 27 opcodes (Punto Fijo 16.16)",
+        "tests": "5.1x Densidad ✓"
+      },
+      {
+        "title": "Proteccion Chern",
+        "desc": "Estabilidad de calculo topologico",
+        "tests": "Invariante Bloqueado ✓"
+      }
     ],
     "progress": [
-      { "label": "Conocimiento (.tri)", "value": "20,645 archivos" },
-      { "label": "Eficiencia", "value": "578.8x (Verificado)" },
-      { "label": "Compresion de Codigo", "value": "80.2%" }
+      {
+        "label": "Conocimiento (.tri)",
+        "value": "20,645 archivos"
+      },
+      {
+        "label": "Eficiencia",
+        "value": "578.8x (Verificado)"
+      },
+      {
+        "label": "Compresion de Codigo",
+        "value": "80.2%"
+      }
     ],
     "metrics": [
-      { "value": "20K+", "label": "Archivos TRI", "color": "green" },
-      { "value": "578x", "label": "Salto Energia", "color": "blue" },
-      { "value": "100×", "label": "Boost SU(3)", "color": "purple" },
-      { "value": "27", "label": "Letras CIS", "color": "cyan" },
-      { "value": "80.2%", "label": "Densidad +", "color": "yellow" },
-      { "value": "0.17%", "label": "Entropia", "color": "green" }
+      {
+        "value": "20K+",
+        "label": "Archivos TRI",
+        "color": "green"
+      },
+      {
+        "value": "578x",
+        "label": "Salto Energia",
+        "color": "blue"
+      },
+      {
+        "value": "100×",
+        "label": "Boost SU(3)",
+        "color": "purple"
+      },
+      {
+        "value": "27",
+        "label": "Letras CIS",
+        "color": "cyan"
+      },
+      {
+        "value": "80.2%",
+        "label": "Densidad +",
+        "color": "yellow"
+      },
+      {
+        "value": "0.17%",
+        "label": "Entropia",
+        "color": "green"
+      }
     ]
   },
   "publications": {
@@ -262,39 +472,136 @@
       "badge": "🔥 VERIFICADO EN GPUs REALES",
       "note": "Benchmarks reales de RunPod - Pod IDs: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). Sin simulacion.",
       "gpus": [
-        { "name": "RTX 3090", "tokens": "298K", "noise": "70.2%", "power": "348W", "cost": "$0.10", "podId": "bhhnrrdothqm54" },
-        { "name": "A100 80GB", "tokens": "274K", "noise": "70.2%", "power": "293W", "cost": "$0.20", "podId": "ydk41ymp8uoeyp" }
+        {
+          "name": "RTX 3090",
+          "tokens": "298K",
+          "noise": "70.2%",
+          "power": "348W",
+          "cost": "$0.10",
+          "podId": "bhhnrrdothqm54"
+        },
+        {
+          "name": "A100 80GB",
+          "tokens": "274K",
+          "noise": "70.2%",
+          "power": "293W",
+          "cost": "$0.20",
+          "podId": "ydk41ymp8uoeyp"
+        }
       ]
     },
     "metrics": [
-      { "value": "298K", "label": "Tokens/seg (RTX 3090)", "desc": "Verificado en GPU RunPod", "theorem": "GPU" },
-      { "value": "20×", "label": "Compresion de Memoria", "desc": "Teorema 3: 32-bit → 1.58-bit", "theorem": "3" },
-      { "value": "70%", "label": "Robustez al Ruido", "desc": "Precision con 30% de corrupcion de trits", "theorem": "1" },
-      { "value": "3000×", "label": "Eficiencia Energetica", "desc": "Proyectado en FPGA personalizado", "theorem": "2" }
+      {
+        "value": "298K",
+        "label": "Tokens/seg (RTX 3090)",
+        "desc": "Verificado en GPU RunPod",
+        "theorem": "GPU"
+      },
+      {
+        "value": "20×",
+        "label": "Compresion de Memoria",
+        "desc": "Teorema 3: 32-bit → 1.58-bit",
+        "theorem": "3"
+      },
+      {
+        "value": "70%",
+        "label": "Robustez al Ruido",
+        "desc": "Precision con 30% de corrupcion de trits",
+        "theorem": "1"
+      },
+      {
+        "value": "3000×",
+        "label": "Eficiencia Energetica",
+        "desc": "Proyectado en FPGA personalizado",
+        "theorem": "2"
+      }
     ],
     "comparison": {
-      "headers": ["Plataforma", "Memoria", "Velocidad", "Precision", "Energia", "Base Teorica"],
+      "headers": [
+        "Plataforma",
+        "Memoria",
+        "Velocidad",
+        "Precision",
+        "Energia",
+        "Base Teorica"
+      ],
       "rows": [
-        { "model": "TRINITY SU(3)", "value": 71, "color": "#00e599" },
-        { "model": "BitNet b1.58 (Microsoft)", "value": 15, "color": "#888" },
-        { "model": "Groq LPU", "value": 8, "color": "#666" },
-        { "model": "NVIDIA H100", "value": 4, "color": "#555" },
-        { "model": "OpenAI GPT-4", "value": 1, "color": "#444" }
+        {
+          "model": "TRINITY SU(3)",
+          "value": 71,
+          "color": "#00e599"
+        },
+        {
+          "model": "BitNet b1.58 (Microsoft)",
+          "value": 15,
+          "color": "#888"
+        },
+        {
+          "model": "Groq LPU",
+          "value": 8,
+          "color": "#666"
+        },
+        {
+          "model": "NVIDIA H100",
+          "value": 4,
+          "color": "#555"
+        },
+        {
+          "model": "OpenAI GPT-4",
+          "value": 1,
+          "color": "#444"
+        }
       ],
       "table": [
-        { "platform": "TRINITY", "memory": "20× ✓", "speed": "10× *", "accuracy": "100% ✓", "energy": "3000× *", "theorem": "1-4", "highlight": true },
-        { "platform": "OpenAI GPT-4", "memory": "1×", "speed": "1×", "accuracy": "100%", "energy": "1×", "theorem": "—", "highlight": false },
-        { "platform": "Groq LPU", "memory": "4×", "speed": "2×", "accuracy": "99%", "energy": "100×", "theorem": "—", "highlight": false },
-        { "platform": "BitNet b1.58", "memory": "15×", "speed": "5×", "accuracy": "100%", "energy": "500×", "theorem": "3 only", "highlight": false }
+        {
+          "platform": "TRINITY",
+          "memory": "20× ✓",
+          "speed": "10× *",
+          "accuracy": "100% ✓",
+          "energy": "3000× *",
+          "theorem": "1-4",
+          "highlight": true
+        },
+        {
+          "platform": "OpenAI GPT-4",
+          "memory": "1×",
+          "speed": "1×",
+          "accuracy": "100%",
+          "energy": "1×",
+          "theorem": "—",
+          "highlight": false
+        },
+        {
+          "platform": "Groq LPU",
+          "memory": "4×",
+          "speed": "2×",
+          "accuracy": "99%",
+          "energy": "100×",
+          "theorem": "—",
+          "highlight": false
+        },
+        {
+          "platform": "BitNet b1.58",
+          "memory": "15×",
+          "speed": "5×",
+          "accuracy": "100%",
+          "energy": "500×",
+          "theorem": "3 only",
+          "highlight": false
+        }
       ]
     },
     "verifyLink": "Verificar Benchmarks en GitHub ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
   },
   "mining": {
     "title": "<span class=\"grad\">Industria</span> Minera 2026",
     "sub": "Cuellos de botella de Bitcoin y sus soluciones Trinity SU(3)",
-    "headers": ["Barrera", "Impacto", "Solucion Trinity"],
+    "headers": [
+      "Barrera",
+      "Impacto",
+      "Solucion Trinity"
+    ],
     "rows": [
       {
         "barrier": "Electricidad",
@@ -325,125 +632,455 @@
   "market": {
     "title": "Mercado <span class=\"grad\">$200B</span>",
     "funnel": [
-      { "value": "$200B", "label": "TAM — Aceleradores IA" },
-      { "value": "$80B", "label": "SAM — Inferencia IA" },
-      { "value": "$8B", "label": "SOM — Ternario (10%)" }
+      {
+        "value": "$200B",
+        "label": "TAM — Aceleradores IA"
+      },
+      {
+        "value": "$80B",
+        "label": "SAM — Inferencia IA"
+      },
+      {
+        "value": "$8B",
+        "label": "SOM — Ternario (10%)"
+      }
     ],
     "compsTitle": "Valoraciones Comparables",
-    "headers": ["Empresa", "Valoracion", "Ingresos", "Multiplo"],
+    "headers": [
+      "Empresa",
+      "Valoracion",
+      "Ingresos",
+      "Multiplo"
+    ],
     "rows": [
-      ["Cerebras", "$4.0B", "$100M", "40×"],
-      ["Groq", "$2.8B", "$50M", "56×"],
-      ["SambaNova", "$5.0B", "$150M", "33×"],
-      ["TRINITY", "$300M", "Pre-rev", "Semilla"]
+      [
+        "Cerebras",
+        "$4.0B",
+        "$100M",
+        "40×"
+      ],
+      [
+        "Groq",
+        "$2.8B",
+        "$50M",
+        "56×"
+      ],
+      [
+        "SambaNova",
+        "$5.0B",
+        "$150M",
+        "33×"
+      ],
+      [
+        "TRINITY",
+        "$300M",
+        "Pre-rev",
+        "Semilla"
+      ]
     ]
   },
   "gtm": {
     "title": "<span class=\"grad\">Estrategia de Mercado</span>",
     "phases": [
-      { "phase": "Fase 1", "title": "Labs de Investigacion", "desc": "Universidades, labs IA • Pilotos gratis • Casos de estudio" },
-      { "phase": "Fase 2", "title": "Startups IA", "desc": "Ahorros en inferencia • Tarjetas FPGA • Deals $10K-50K" },
-      { "phase": "Fase 3", "title": "Enterprise", "desc": "Proveedores cloud • Licencias ASIC • Deals $1M+" }
+      {
+        "phase": "Fase 1",
+        "title": "Labs de Investigacion",
+        "desc": "Universidades, labs IA • Pilotos gratis • Casos de estudio"
+      },
+      {
+        "phase": "Fase 2",
+        "title": "Startups IA",
+        "desc": "Ahorros en inferencia • Tarjetas FPGA • Deals $10K-50K"
+      },
+      {
+        "phase": "Fase 3",
+        "title": "Enterprise",
+        "desc": "Proveedores cloud • Licencias ASIC • Deals $1M+"
+      }
     ]
   },
   "timeline": {
     "title": "<span class=\"grad\">Linea de Tiempo</span> Tecnologica",
     "items": [
-      { "year": "2023", "title": "BitNet", "desc": "(Microsoft)", "type": "past" },
-      { "year": "2024", "title": "BitNet b1.58", "desc": "validado", "type": "past" },
-      { "year": "2025", "title": "FPGA", "desc": "prototipos", "type": "past" },
-      { "year": "2026", "title": "Fase 5.0", "desc": "Singularidad", "type": "future" },
-      { "year": "2027", "title": "Mercado", "desc": "Dominio", "type": "future" }
+      {
+        "year": "2023",
+        "title": "BitNet",
+        "desc": "(Microsoft)",
+        "type": "past"
+      },
+      {
+        "year": "2024",
+        "title": "BitNet b1.58",
+        "desc": "validado",
+        "type": "past"
+      },
+      {
+        "year": "2025",
+        "title": "FPGA",
+        "desc": "prototipos",
+        "type": "past"
+      },
+      {
+        "year": "2026",
+        "title": "Fase 5.0",
+        "desc": "Singularidad",
+        "type": "future"
+      },
+      {
+        "year": "2027",
+        "title": "Mercado",
+        "desc": "Dominio",
+        "type": "future"
+      }
     ]
   },
   "roadmap": {
     "title": "<span class=\"grad\">Hoja de Ruta</span>",
     "milestones": [
-      { "date": "Q1 2026", "title": "Prototipo FPGA V5", "desc": "Verilog Core (Punto Fijo 16.16) en Kintex-7" },
-      { "date": "Q3 2026", "title": "SDK Desarrollador", "desc": "Optimizador E-Graph & Compilador Copto-Zig" },
-      { "date": "Q1 2027", "title": "Tape-out ASIC", "desc": "Primer chip SU(3) nativo (TSMC 180nm)" }
+      {
+        "date": "Q1 2026",
+        "title": "Prototipo FPGA V5",
+        "desc": "Verilog Core (Punto Fijo 16.16) en Kintex-7"
+      },
+      {
+        "date": "Q3 2026",
+        "title": "SDK Desarrollador",
+        "desc": "Optimizador E-Graph & Compilador Copto-Zig"
+      },
+      {
+        "date": "Q1 2027",
+        "title": "Tape-out ASIC",
+        "desc": "Primer chip SU(3) nativo (TSMC 180nm)"
+      }
     ]
   },
   "techTree": {
-    "title": "TRINITY <span style=\"color: var(--accent)\">LABORATORIO</span> DE INVESTIGACI\u00d3N",
+    "title": "TRINITY <span style=\"color: var(--accent)\">LABORATORIO</span> DE INVESTIGACIÓN",
     "sub": "Arbol de Desarrollo Tecnologico",
     "hint": "Haz clic en los nodos para ver detalles de investigacion",
     "complete": "completado",
-    "active": "INVESTIGACI\u00d3N ACTIVA",
-    "legend": { "done": "Completado", "progress": "En Progreso", "locked": "Bloqueado" },
-    "labels": { "description": "Descripci\u00f3n", "performance": "Rendimiento", "progress": "Progreso de Investigaci\u00f3n", "prerequisites": "Prerrequisitos", "unlocks": "Desbloquea", "locked": "Completa los prerrequisitos para desbloquear esta investigaci\u00f3n" },
-    "stats": { "inProgress": "en progreso", "locked": "bloqueado" },
-    "branches": { "core": "N\u00daCLEO", "inference": "INFERENCIA", "optimization": "OPTIMIZACI\u00d3N", "deployment": "DESPLIEGUE", "hardware": "HARDWARE", "agents": "AGENTES", "knowledge": "CONOCIMIENTO", "distributed": "DISTRIBUIDO" },
+    "active": "INVESTIGACIÓN ACTIVA",
+    "legend": {
+      "done": "Completado",
+      "progress": "En Progreso",
+      "locked": "Bloqueado"
+    },
+    "labels": {
+      "description": "Descripción",
+      "performance": "Rendimiento",
+      "progress": "Progreso de Investigación",
+      "prerequisites": "Prerrequisitos",
+      "unlocks": "Desbloquea",
+      "locked": "Completa los prerrequisitos para desbloquear esta investigación"
+    },
+    "stats": {
+      "inProgress": "en progreso",
+      "locked": "bloqueado"
+    },
+    "branches": {
+      "core": "NÚCLEO",
+      "inference": "INFERENCIA",
+      "optimization": "OPTIMIZACIÓN",
+      "deployment": "DESPLIEGUE",
+      "hardware": "HARDWARE",
+      "agents": "AGENTES",
+      "knowledge": "CONOCIMIENTO",
+      "distributed": "DISTRIBUIDO"
+    },
     "nodes": {
-      "core-001": { "name": "Parser v2", "description": "Parser avanzado de especificaciones VIBEE con soporte multiling\u00fce", "metrics": "42 lenguajes" },
-      "core-002": { "name": "Codegen Multiling\u00fce", "description": "Generaci\u00f3n de c\u00f3digo para Zig, Python, Rust, Verilog y 38 m\u00e1s", "metrics": "42 objetivos" },
-      "core-003": { "name": "VM de Bytecode", "description": "M\u00e1quina virtual ternaria basada en pila con 256 opcodes", "metrics": "256 opcodes" },
-      "core-004": { "name": "Compilaci\u00f3n JIT", "description": "Compilaci\u00f3n just-in-time para rendimiento nativo", "metrics": "+1000% velocidad" },
-      "core-005": { "name": "Optimizaci\u00f3n Binaria", "description": "Eliminaci\u00f3n avanzada de c\u00f3digo muerto y asignaci\u00f3n de registros", "metrics": "-30% tama\u00f1o" },
-      "inf-001": { "name": "Parser GGUF", "description": "Parseo de archivos de modelo GGUF con metadatos de cuantizaci\u00f3n", "metrics": "Todas las cuant." },
-      "inf-002": { "name": "Transformer", "description": "Arquitectura transformer completa con capas de atenci\u00f3n", "metrics": "32 capas" },
-      "inf-003": { "name": "Cach\u00e9 KV", "description": "Cach\u00e9 Key-Value para generaci\u00f3n autoregresiva eficiente", "metrics": "16x aceleraci\u00f3n" },
-      "inf-004": { "name": "Procesamiento por Lotes", "description": "Inferencia por lotes en paralelo para m\u00faltiples secuencias", "metrics": "8x rendimiento" },
-      "inf-005": { "name": "FlashAttention", "description": "Mecanismo de atenci\u00f3n IO-aware para secuencias largas", "metrics": "128K contexto" },
-      "opt-t01": { "name": "Cuantizaci\u00f3n Ternaria", "description": "Cuantizaci\u00f3n de pesos ternarios BitNet b1.58 {-1, 0, +1}", "metrics": "20x compresi\u00f3n" },
-      "opt-t02": { "name": "MatMul Ternario", "description": "Multiplicaci\u00f3n de matrices optimizada para pesos ternarios", "metrics": "10x aceleraci\u00f3n" },
-      "opt-t03": { "name": "Cach\u00e9 KV Ternario", "description": "Cach\u00e9 KV comprimido usando representaci\u00f3n ternaria", "metrics": "16x memoria" },
-      "opt-pc01": { "name": "Cach\u00e9 de Prefijos", "description": "Reutilizaci\u00f3n de prefijos computados entre solicitudes", "metrics": "90% tasa de acierto" },
-      "opt-cp01": { "name": "Prefill por Bloques", "description": "Dividir procesamiento de prompts largos en bloques manejables", "metrics": "-50% latencia" },
-      "opt-s02": { "name": "Especulaci\u00f3n Mejorada", "description": "Verificaci\u00f3n especulativa paralela con b\u00fasqueda en \u00e1rbol", "metrics": "4x generaci\u00f3n" },
-      "dep-001": { "name": "Contenedores", "description": "Despliegue en contenedores con im\u00e1genes optimizadas", "metrics": "< 500MB" },
-      "dep-002": { "name": "Servidores Edge", "description": "Despliegue en el borde en infraestructura Fly.io", "metrics": "34 regiones" },
-      "dep-003": { "name": "Auto-Escalado", "description": "Escalado autom\u00e1tico basado en carga de solicitudes", "metrics": "0\u2192100 pods" },
-      "dep-004": { "name": "Multi-Regi\u00f3n", "description": "Despliegue global con enrutamiento por regi\u00f3n", "metrics": "Latencia < 50ms" },
-      "dep-005": { "name": "Cero Tiempo Inactivo", "description": "Estrategias de despliegue blue-green y canary", "metrics": "99,99% disponibilidad" },
-      "hw-001": { "name": "Backend CUDA", "description": "Kernels CUDA nativos para GPUs NVIDIA", "metrics": "+100x velocidad" },
-      "hw-002": { "name": "Backend Metal", "description": "Shaders Apple Metal para chips serie M", "metrics": "+80x velocidad" },
-      "hw-003": { "name": "S\u00edntesis FPGA", "description": "Generaci\u00f3n de Verilog para despliegue FPGA", "metrics": "1000x eficiencia" },
-      "hw-004": { "name": "Dise\u00f1o ASIC", "description": "Dise\u00f1o de chip ternario personalizado para m\u00e1xima eficiencia", "metrics": "10000x eficiencia" },
-      "hw-005": { "name": "Circuito Cu\u00e1ntico", "description": "Puertas cu\u00e1nticas experimentales para l\u00f3gica ternaria", "metrics": "Qubits Ternarios" },
-      "agent-001": { "name": "N\u00facleo IGLA", "description": "Arquitectura de Aprendizaje Generativo basada en Instrucciones", "metrics": "v1.0 estable" },
-      "agent-002": { "name": "Motor de Herramientas", "description": "Llamadas a funciones locales e integraci\u00f3n de herramientas", "metrics": "50+ herramientas" },
-      "agent-003": { "name": "Contexto Largo", "description": "Historial ilimitado con ventanas de contexto adaptativas", "metrics": "\u221e tokens" },
-      "agent-004": { "name": "Multi-Agente", "description": "Orquestaci\u00f3n de coordinador + agentes especialistas", "metrics": "8 especialistas" },
-      "agent-005": { "name": "Inteligencia de Enjambre", "description": "Comportamiento emergente de agentes descentralizados", "metrics": "1K+ agentes" },
-      "know-001": { "name": "N\u00facleo VSA", "description": "Arquitectura Simb\u00f3lica Vectorial con operaciones bind/bundle", "metrics": "10K dims" },
-      "know-002": { "name": "Grafo de Conocimiento", "description": "Redes sem\u00e1nticas basadas en tripletas con codificaci\u00f3n VSA", "metrics": "1M tripletas" },
-      "know-003": { "name": "B\u00fasqueda Sem\u00e1ntica", "description": "B\u00fasqueda por similitud coseno sobre hipervectores", "metrics": "Consulta <1ms" },
-      "know-004": { "name": "Motor RAG", "description": "Generaci\u00f3n Aumentada por Recuperaci\u00f3n con VSA", "metrics": "95% precisi\u00f3n" },
-      "know-005": { "name": "Aprendiz de Ontolog\u00eda", "description": "Descubrimiento autom\u00e1tico de relaciones sem\u00e1nticas", "metrics": "Zero-shot" },
-      "dist-001": { "name": "Red de Nodos", "description": "Descubrimiento y enrutamiento descentralizado de nodos", "metrics": "1000+ nodos" },
-      "dist-002": { "name": "Fragmentaci\u00f3n TVC", "description": "Fragmentos distribuidos de Computaci\u00f3n Vectorial Ternaria", "metrics": "256 fragmentos" },
-      "dist-003": { "name": "Red DePIN", "description": "Infraestructura F\u00edsica Descentralizada con recompensas TRI", "metrics": "Miner\u00eda $TRI" },
-      "dist-004": { "name": "Consenso Global", "description": "Consenso tolerante a fallas bizantinas para estado ternario", "metrics": "10K TPS" },
-      "dist-005": { "name": "Cadena Sagrada", "description": "Cadena dorada de eventos ternarios con prueba inmutable", "metrics": "Conocimiento cero" }
+      "core-001": {
+        "name": "Parser v2",
+        "description": "Parser avanzado de especificaciones VIBEE con soporte multilingüe",
+        "metrics": "42 lenguajes"
+      },
+      "core-002": {
+        "name": "Codegen Multilingüe",
+        "description": "Generación de código para Zig, Python, Rust, Verilog y 38 más",
+        "metrics": "42 objetivos"
+      },
+      "core-003": {
+        "name": "VM de Bytecode",
+        "description": "Máquina virtual ternaria basada en pila con 256 opcodes",
+        "metrics": "256 opcodes"
+      },
+      "core-004": {
+        "name": "Compilación JIT",
+        "description": "Compilación just-in-time para rendimiento nativo",
+        "metrics": "+1000% velocidad"
+      },
+      "core-005": {
+        "name": "Optimización Binaria",
+        "description": "Eliminación avanzada de código muerto y asignación de registros",
+        "metrics": "-30% tamaño"
+      },
+      "inf-001": {
+        "name": "Parser GGUF",
+        "description": "Parseo de archivos de modelo GGUF con metadatos de cuantización",
+        "metrics": "Todas las cuant."
+      },
+      "inf-002": {
+        "name": "Transformer",
+        "description": "Arquitectura transformer completa con capas de atención",
+        "metrics": "32 capas"
+      },
+      "inf-003": {
+        "name": "Caché KV",
+        "description": "Caché Key-Value para generación autoregresiva eficiente",
+        "metrics": "16x aceleración"
+      },
+      "inf-004": {
+        "name": "Procesamiento por Lotes",
+        "description": "Inferencia por lotes en paralelo para múltiples secuencias",
+        "metrics": "8x rendimiento"
+      },
+      "inf-005": {
+        "name": "FlashAttention",
+        "description": "Mecanismo de atención IO-aware para secuencias largas",
+        "metrics": "128K contexto"
+      },
+      "opt-t01": {
+        "name": "Cuantización Ternaria",
+        "description": "Cuantización de pesos ternarios BitNet b1.58 {-1, 0, +1}",
+        "metrics": "20x compresión"
+      },
+      "opt-t02": {
+        "name": "MatMul Ternario",
+        "description": "Multiplicación de matrices optimizada para pesos ternarios",
+        "metrics": "10x aceleración"
+      },
+      "opt-t03": {
+        "name": "Caché KV Ternario",
+        "description": "Caché KV comprimido usando representación ternaria",
+        "metrics": "16x memoria"
+      },
+      "opt-pc01": {
+        "name": "Caché de Prefijos",
+        "description": "Reutilización de prefijos computados entre solicitudes",
+        "metrics": "90% tasa de acierto"
+      },
+      "opt-cp01": {
+        "name": "Prefill por Bloques",
+        "description": "Dividir procesamiento de prompts largos en bloques manejables",
+        "metrics": "-50% latencia"
+      },
+      "opt-s02": {
+        "name": "Especulación Mejorada",
+        "description": "Verificación especulativa paralela con búsqueda en árbol",
+        "metrics": "4x generación"
+      },
+      "dep-001": {
+        "name": "Contenedores",
+        "description": "Despliegue en contenedores con imágenes optimizadas",
+        "metrics": "< 500MB"
+      },
+      "dep-002": {
+        "name": "Servidores Edge",
+        "description": "Despliegue en el borde en infraestructura Fly.io",
+        "metrics": "34 regiones"
+      },
+      "dep-003": {
+        "name": "Auto-Escalado",
+        "description": "Escalado automático basado en carga de solicitudes",
+        "metrics": "0→100 pods"
+      },
+      "dep-004": {
+        "name": "Multi-Región",
+        "description": "Despliegue global con enrutamiento por región",
+        "metrics": "Latencia < 50ms"
+      },
+      "dep-005": {
+        "name": "Cero Tiempo Inactivo",
+        "description": "Estrategias de despliegue blue-green y canary",
+        "metrics": "99,99% disponibilidad"
+      },
+      "hw-001": {
+        "name": "Backend CUDA",
+        "description": "Kernels CUDA nativos para GPUs NVIDIA",
+        "metrics": "+100x velocidad"
+      },
+      "hw-002": {
+        "name": "Backend Metal",
+        "description": "Shaders Apple Metal para chips serie M",
+        "metrics": "+80x velocidad"
+      },
+      "hw-003": {
+        "name": "Síntesis FPGA",
+        "description": "Generación de Verilog para despliegue FPGA",
+        "metrics": "1000x eficiencia"
+      },
+      "hw-004": {
+        "name": "Diseño ASIC",
+        "description": "Diseño de chip ternario personalizado para máxima eficiencia",
+        "metrics": "10000x eficiencia"
+      },
+      "hw-005": {
+        "name": "Circuito Cuántico",
+        "description": "Puertas cuánticas experimentales para lógica ternaria",
+        "metrics": "Qubits Ternarios"
+      },
+      "agent-001": {
+        "name": "Núcleo IGLA",
+        "description": "Arquitectura de Aprendizaje Generativo basada en Instrucciones",
+        "metrics": "v1.0 estable"
+      },
+      "agent-002": {
+        "name": "Motor de Herramientas",
+        "description": "Llamadas a funciones locales e integración de herramientas",
+        "metrics": "50+ herramientas"
+      },
+      "agent-003": {
+        "name": "Contexto Largo",
+        "description": "Historial ilimitado con ventanas de contexto adaptativas",
+        "metrics": "∞ tokens"
+      },
+      "agent-004": {
+        "name": "Multi-Agente",
+        "description": "Orquestación de coordinador + agentes especialistas",
+        "metrics": "8 especialistas"
+      },
+      "agent-005": {
+        "name": "Inteligencia de Enjambre",
+        "description": "Comportamiento emergente de agentes descentralizados",
+        "metrics": "1K+ agentes"
+      },
+      "know-001": {
+        "name": "Núcleo VSA",
+        "description": "Arquitectura Simbólica Vectorial con operaciones bind/bundle",
+        "metrics": "10K dims"
+      },
+      "know-002": {
+        "name": "Grafo de Conocimiento",
+        "description": "Redes semánticas basadas en tripletas con codificación VSA",
+        "metrics": "1M tripletas"
+      },
+      "know-003": {
+        "name": "Búsqueda Semántica",
+        "description": "Búsqueda por similitud coseno sobre hipervectores",
+        "metrics": "Consulta <1ms"
+      },
+      "know-004": {
+        "name": "Motor RAG",
+        "description": "Generación Aumentada por Recuperación con VSA",
+        "metrics": "95% precisión"
+      },
+      "know-005": {
+        "name": "Aprendiz de Ontología",
+        "description": "Descubrimiento automático de relaciones semánticas",
+        "metrics": "Zero-shot"
+      },
+      "dist-001": {
+        "name": "Red de Nodos",
+        "description": "Descubrimiento y enrutamiento descentralizado de nodos",
+        "metrics": "1000+ nodos"
+      },
+      "dist-002": {
+        "name": "Fragmentación TVC",
+        "description": "Fragmentos distribuidos de Computación Vectorial Ternaria",
+        "metrics": "256 fragmentos"
+      },
+      "dist-003": {
+        "name": "Red DePIN",
+        "description": "Infraestructura Física Descentralizada con recompensas TRI",
+        "metrics": "Minería $TRI"
+      },
+      "dist-004": {
+        "name": "Consenso Global",
+        "description": "Consenso tolerante a fallas bizantinas para estado ternario",
+        "metrics": "10K TPS"
+      },
+      "dist-005": {
+        "name": "Cadena Sagrada",
+        "description": "Cadena dorada de eventos ternarios con prueba inmutable",
+        "metrics": "Conocimiento cero"
+      }
     }
   },
   "product": {
     "title": "<span class=\"grad\">Hoja de Ruta</span> de Producto",
     "phases": [
-      { "phase": "TRINITY-V5", "year": "2025-2026", "desc": "Acelerador ternario basado en FPGA • Ejecucion .TRI nativa • Objetivo: Inferencia IA" },
-      { "phase": "TRINITY-1 ASIC", "year": "2027", "desc": "Primer chip ternario nativo • Proceso 180nm (bajo riesgo) • Objetivo: Dispositivos Edge IA" },
-      { "phase": "TRINITY-X", "year": "2029", "desc": "Nodo avanzado (28nm) • SoC completo con CPU ternaria • Objetivo: Escala centro de datos" }
+      {
+        "phase": "TRINITY-V5",
+        "year": "2025-2026",
+        "desc": "Acelerador ternario basado en FPGA • Ejecucion .TRI nativa • Objetivo: Inferencia IA"
+      },
+      {
+        "phase": "TRINITY-1 ASIC",
+        "year": "2027",
+        "desc": "Primer chip ternario nativo • Proceso 180nm (bajo riesgo) • Objetivo: Dispositivos Edge IA"
+      },
+      {
+        "phase": "TRINITY-X",
+        "year": "2029",
+        "desc": "Nodo avanzado (28nm) • SoC completo con CPU ternaria • Objetivo: Escala centro de datos"
+      }
     ]
   },
   "financials": {
     "title": "Camino a <span class=\"grad\">$10B+</span>",
-    "headers": ["Ano", "Ingresos", "Margen Bruto", "Valoracion", "Empleados"],
+    "headers": [
+      "Ano",
+      "Ingresos",
+      "Margen Bruto",
+      "Valoracion",
+      "Empleados"
+    ],
     "rows": [
-      ["2026", "$2M", "50%", "$300M", "15"],
-      ["2027", "$15M", "55%", "$500M", "50"],
-      ["2028", "$80M", "60%", "$2B", "150"],
-      ["2029", "$300M", "65%", "$5B", "400"],
-      ["2030", "$1B", "70%", "$10B+", "1,000"]
+      [
+        "2026",
+        "$2M",
+        "50%",
+        "$300M",
+        "15"
+      ],
+      [
+        "2027",
+        "$15M",
+        "55%",
+        "$500M",
+        "50"
+      ],
+      [
+        "2028",
+        "$80M",
+        "60%",
+        "$2B",
+        "150"
+      ],
+      [
+        "2029",
+        "$300M",
+        "65%",
+        "$5B",
+        "400"
+      ],
+      [
+        "2030",
+        "$1B",
+        "70%",
+        "$10B+",
+        "1,000"
+      ]
     ],
     "note": "Multiplo de ingresos comparable a Cerebras (40×), Groq (56×), SambaNova (33×)"
   },
   "businessModel": {
     "title": "Modelo de <span class=\"grad\">Negocio</span>",
     "streams": [
-      { "percent": "60%", "title": "Ventas de Hardware", "desc": "TRINITY-FPGA: $15K ASP, 55% margen • TRINITY-ASIC: $3K ASP, 65% margen" },
-      { "percent": "30%", "title": "Licencias IP", "desc": "Licenciar IP ternaria a fabricantes de chips • $2-5 regalia por chip • 90%+ margen" },
-      { "percent": "10%", "title": "Software y Servicios", "desc": "TRINITY SDK: $100K/ano enterprise • Servicios de integracion • 80% margen" }
+      {
+        "percent": "60%",
+        "title": "Ventas de Hardware",
+        "desc": "TRINITY-FPGA: $15K ASP, 55% margen • TRINITY-ASIC: $3K ASP, 65% margen"
+      },
+      {
+        "percent": "30%",
+        "title": "Licencias IP",
+        "desc": "Licenciar IP ternaria a fabricantes de chips • $2-5 regalia por chip • 90%+ margen"
+      },
+      {
+        "percent": "10%",
+        "title": "Software y Servicios",
+        "desc": "TRINITY SDK: $100K/ano enterprise • Servicios de integracion • 80% margen"
+      }
     ],
     "unitEcon": "LTV/CAC: 15× | Objetivo Ano 1: 1,000 unidades = $7.5M ingresos"
   },
@@ -469,30 +1106,102 @@
     "quote": "«ⲁⲃⲅ» no es texto. Es una configuracion de qutrits. Eliminamos la ultima barrera entre pensamiento y accion.",
     "formula": "Formula Parametrica: V = n × 3^k × π^m × φ^p × e^q",
     "items": [
-      { "title": "Compilador Copto", "desc": "TNC V1.0 • Generacion directa de Triadas desde el alfabeto" },
-      { "title": "Conocimiento Nativo", "desc": "20,645 archivos .tri • Base de conocimiento nativa" },
-      { "title": "Runtime SU(3)", "desc": "Ejecucion unitaria con cero sobrecarga binaria" },
-      { "title": "Daemons PAS", "desc": "Cosecha de energia del flujo de datos y entropia" },
-      { "title": "Bloqueo Chern", "desc": "Proteccion de hardware contra inyeccion y ruido" },
-      { "title": "Trinity CIS", "desc": "27 instrucciones = $3^3$ simetria" }
+      {
+        "title": "Compilador Copto",
+        "desc": "TNC V1.0 • Generacion directa de Triadas desde el alfabeto"
+      },
+      {
+        "title": "Conocimiento Nativo",
+        "desc": "20,645 archivos .tri • Base de conocimiento nativa"
+      },
+      {
+        "title": "Runtime SU(3)",
+        "desc": "Ejecucion unitaria con cero sobrecarga binaria"
+      },
+      {
+        "title": "Daemons PAS",
+        "desc": "Cosecha de energia del flujo de datos y entropia"
+      },
+      {
+        "title": "Bloqueo Chern",
+        "desc": "Proteccion de hardware contra inyeccion y ruido"
+      },
+      {
+        "title": "Trinity CIS",
+        "desc": "27 instrucciones = $3^3$ simetria"
+      }
     ]
   },
   "competition": {
     "title": "Comparativa de <span class=\"grad\">Benchmarks GPU</span>",
-    "headers": ["Plataforma", "Hardware", "Tokens/s", "Ternario", "Energia"],
+    "headers": [
+      "Plataforma",
+      "Hardware",
+      "Tokens/s",
+      "Ternario",
+      "Energia"
+    ],
     "rows": [
-      { "company": "TRINITY", "arch": "RTX 3090 (verificado)", "val": "298K", "ternary": true, "open": true },
-      { "company": "TRINITY", "arch": "A100 80GB (verificado)", "val": "274K", "ternary": true, "open": true },
-      { "company": "Groq", "arch": "LPU (binario)", "val": "276-840", "ternary": false, "open": false },
-      { "company": "NVIDIA", "arch": "H100 TensorRT", "val": "1000-2000", "ternary": false, "open": false },
-      { "company": "Local GPU", "arch": "RTX 4090 (binario)", "val": "100-300", "ternary": false, "open": false },
-      { "company": "OpenAI", "arch": "Cloud API", "val": "50-100", "ternary": false, "open": false }
+      {
+        "company": "TRINITY",
+        "arch": "RTX 3090 (verificado)",
+        "val": "298K",
+        "ternary": true,
+        "open": true
+      },
+      {
+        "company": "TRINITY",
+        "arch": "A100 80GB (verificado)",
+        "val": "274K",
+        "ternary": true,
+        "open": true
+      },
+      {
+        "company": "Groq",
+        "arch": "LPU (binario)",
+        "val": "276-840",
+        "ternary": false,
+        "open": false
+      },
+      {
+        "company": "NVIDIA",
+        "arch": "H100 TensorRT",
+        "val": "1000-2000",
+        "ternary": false,
+        "open": false
+      },
+      {
+        "company": "Local GPU",
+        "arch": "RTX 4090 (binario)",
+        "val": "100-300",
+        "ternary": false,
+        "open": false
+      },
+      {
+        "company": "OpenAI",
+        "arch": "Cloud API",
+        "val": "50-100",
+        "ternary": false,
+        "open": false
+      }
     ],
     "note": "TRINITY verificado en <strong>GPUs reales de RunPod</strong> (Pod IDs: bhhnrrdothqm54, ydk41ymp8uoeyp). Ternario = sin operaciones de multiplicacion, 20x compresion, 70% robustez al ruido con 30% de corrupcion.",
     "gpuProof": {
       "title": "Verificacion en GPU Real",
-      "rtx3090": { "podId": "bhhnrrdothqm54", "tokens": "298,052", "noise": "70.2%", "power": "348W", "cost": "$0.10" },
-      "a100": { "podId": "ydk41ymp8uoeyp", "tokens": "274,043", "noise": "70.2%", "power": "293W", "cost": "$0.20" }
+      "rtx3090": {
+        "podId": "bhhnrrdothqm54",
+        "tokens": "298,052",
+        "noise": "70.2%",
+        "power": "348W",
+        "cost": "$0.10"
+      },
+      "a100": {
+        "podId": "ydk41ymp8uoeyp",
+        "tokens": "274,043",
+        "noise": "70.2%",
+        "power": "293W",
+        "cost": "$0.20"
+      }
     }
   },
   "hlsCompetition": {
@@ -502,19 +1211,71 @@
     "marketGrowth": "Mercado FPGA 2030 (CAGR 10.8%)",
     "problemTitle": "El Problema de $50K",
     "problemDesc": "Hoy, para compilar codigo a hardware FPGA, las empresas pagan $3,000-$50,000/ano por herramientas que solo soportan C/C++. Los desarrolladores deben reescribir todo. Eliminamos esta barrera.",
-    "headers": ["Solucion", "Lenguajes", "Precio/Ano", "Dependencia", "Codigo Abierto"],
+    "headers": [
+      "Solucion",
+      "Lenguajes",
+      "Precio/Ano",
+      "Dependencia",
+      "Codigo Abierto"
+    ],
     "rows": [
-      { "company": "AMD Vitis HLS", "langs": "Solo C/C++", "price": "$3K-$10K", "lock": true, "open": false },
-      { "company": "Intel Quartus HLS", "langs": "C/C++, OpenCL", "price": "$2.5K-$8K", "lock": true, "open": false },
-      { "company": "Siemens Catapult", "langs": "C/C++/SystemC", "price": "$50K+", "lock": false, "open": false },
-      { "company": "LegUp (Academico)", "langs": "Solo C", "price": "Gratis", "lock": false, "open": true },
-      { "company": "VIBEE", "langs": "33+ Lenguajes", "price": "GRATIS", "lock": false, "open": true }
+      {
+        "company": "AMD Vitis HLS",
+        "langs": "Solo C/C++",
+        "price": "$3K-$10K",
+        "lock": true,
+        "open": false
+      },
+      {
+        "company": "Intel Quartus HLS",
+        "langs": "C/C++, OpenCL",
+        "price": "$2.5K-$8K",
+        "lock": true,
+        "open": false
+      },
+      {
+        "company": "Siemens Catapult",
+        "langs": "C/C++/SystemC",
+        "price": "$50K+",
+        "lock": false,
+        "open": false
+      },
+      {
+        "company": "LegUp (Academico)",
+        "langs": "Solo C",
+        "price": "Gratis",
+        "lock": false,
+        "open": true
+      },
+      {
+        "company": "VIBEE",
+        "langs": "33+ Lenguajes",
+        "price": "GRATIS",
+        "lock": false,
+        "open": true
+      }
     ],
     "advantages": [
-      { "icon": "🐍", "title": "Escribe Python, Despliega en Hardware", "desc": "Tu codigo Python/JS/Rust se compila directamente a FPGA. Sin necesidad de reescribir en C++." },
-      { "icon": "💰", "title": "$0 vs $50,000/ano", "desc": "Las herramientas HLS empresariales cuestan $50K+. VIBEE es gratis y de codigo abierto para siempre." },
-      { "icon": "🔓", "title": "Sin Dependencia de Proveedor", "desc": "El mismo codigo funciona en FPGAs AMD, Intel, Lattice. Cambia de proveedor en cualquier momento." },
-      { "icon": "⚡", "title": "10-100x Desarrollo Mas Rapido", "desc": "Salta la reescritura en C++. Pasa de idea a hardware en horas, no meses." }
+      {
+        "icon": "🐍",
+        "title": "Escribe Python, Despliega en Hardware",
+        "desc": "Tu codigo Python/JS/Rust se compila directamente a FPGA. Sin necesidad de reescribir en C++."
+      },
+      {
+        "icon": "💰",
+        "title": "$0 vs $50,000/ano",
+        "desc": "Las herramientas HLS empresariales cuestan $50K+. VIBEE es gratis y de codigo abierto para siempre."
+      },
+      {
+        "icon": "🔓",
+        "title": "Sin Dependencia de Proveedor",
+        "desc": "El mismo codigo funciona en FPGAs AMD, Intel, Lattice. Cambia de proveedor en cualquier momento."
+      },
+      {
+        "icon": "⚡",
+        "title": "10-100x Desarrollo Mas Rapido",
+        "desc": "Salta la reescritura en C++. Pasa de idea a hardware en horas, no meses."
+      }
     ],
     "whyItMatters": "Por Que Importa",
     "whyItMattersDesc": "Los FPGAs son 10-100x mas eficientes energeticamente que las GPUs para inferencia IA. Pero la adopcion esta bloqueada por herramientas costosas y exclusivas de C. VIBEE elimina esta barrera — abriendo un mercado de $23B a cada desarrollador.",
@@ -524,10 +1285,30 @@
     "title": "Pruebas <span class=\"grad\">Fundamentales</span>",
     "sub": "Trinity V5.0 esta construido sobre leyes inmutables de 8 ciencias.",
     "items": [
-      { "icon": "📐", "value": "Exacto 3", "label": "Identidad Aurea", "desc": "φ² + 1/φ² = 3.0000. Enlace exacto entre la Naturaleza y la logica Trinity." },
-      { "icon": "🧬", "value": "1.58", "label": "Densidad de Informacion", "desc": "log₂(3) bits por trit. 58% mayor densidad que los sistemas binarios." },
-      { "icon": "🌌", "value": "13.82", "label": "Edad del Universo", "desc": "π × φ × e = 13.82 Gyr. Coincide con la edad del universo segun Planck 2020." },
-      { "icon": "⚛️", "value": "137.03", "label": "Estructura Fina", "desc": "1/α = 4π³ + π² + π. Geometria del mundo fisico definida por π." }
+      {
+        "icon": "📐",
+        "value": "Exacto 3",
+        "label": "Identidad Aurea",
+        "desc": "φ² + 1/φ² = 3.0000. Enlace exacto entre la Naturaleza y la logica Trinity."
+      },
+      {
+        "icon": "🧬",
+        "value": "1.58",
+        "label": "Densidad de Informacion",
+        "desc": "log₂(3) bits por trit. 58% mayor densidad que los sistemas binarios."
+      },
+      {
+        "icon": "🌌",
+        "value": "13.82",
+        "label": "Edad del Universo",
+        "desc": "π × φ × e = 13.82 Gyr. Coincide con la edad del universo segun Planck 2020."
+      },
+      {
+        "icon": "⚛️",
+        "value": "137.03",
+        "label": "Estructura Fina",
+        "desc": "1/α = 4π³ + π² + π. Geometria del mundo fisico definida por π."
+      }
     ],
     "paperTitle": "Pruebas Trascendentales",
     "papers": [
@@ -543,12 +1324,36 @@
     "title": "Activos <span class=\"grad\">Tecnicos V5</span>",
     "sub": "La base mundial de conocimiento ternario nativo ya esta creada.",
     "items": [
-      { "value": "20,645", "label": "Archivos .tri", "desc": "Base de conocimiento Trinity nativa" },
-      { "value": "50+", "label": "Modulos de Seguridad", "desc": "Alineacion Avanzada y Niveles de Privacidad" },
-      { "value": "1.58", "label": "Bits / Trit", "desc": "Log2(3) Densidad de Informacion" },
-      { "value": "E-Graph", "label": "Optimizador", "desc": "Benchmarks de saturacion superados" },
-      { "value": "SU(3)", "label": "Nucleo Nativo", "desc": "Motor de Computo Unitario" },
-      { "value": "100x", "label": "Aceleracion", "desc": "Aceleracion de operaciones nativas" }
+      {
+        "value": "20,645",
+        "label": "Archivos .tri",
+        "desc": "Base de conocimiento Trinity nativa"
+      },
+      {
+        "value": "50+",
+        "label": "Modulos de Seguridad",
+        "desc": "Alineacion Avanzada y Niveles de Privacidad"
+      },
+      {
+        "value": "1.58",
+        "label": "Bits / Trit",
+        "desc": "Log2(3) Densidad de Informacion"
+      },
+      {
+        "value": "E-Graph",
+        "label": "Optimizador",
+        "desc": "Benchmarks de saturacion superados"
+      },
+      {
+        "value": "SU(3)",
+        "label": "Nucleo Nativo",
+        "desc": "Motor de Computo Unitario"
+      },
+      {
+        "value": "100x",
+        "label": "Aceleracion",
+        "desc": "Aceleracion de operaciones nativas"
+      }
     ]
   },
   "calculatorLogic": {
@@ -574,10 +1379,30 @@
           "• Costo: $0.01-0.03 por 1K tokens"
         ],
         "examples": [
-          { "op": "Matriz 1024×1024", "binary": "2.1B operaciones", "ternary": "890M operaciones", "savings": "58%" },
-          { "op": "Calculo log₂(x)", "binary": "Serie Taylor ~50 iteraciones", "ternary": "Nativo en 3 pasos", "savings": "94%" },
-          { "op": "FFT 4096 puntos", "binary": "49K multiplicaciones", "ternary": "12K ops ternarias", "savings": "75%" },
-          { "op": "Inferencia neuronal", "binary": "FP32 → 4 bytes/peso", "ternary": "1.58 bits/peso", "savings": "95%" }
+          {
+            "op": "Matriz 1024×1024",
+            "binary": "2.1B operaciones",
+            "ternary": "890M operaciones",
+            "savings": "58%"
+          },
+          {
+            "op": "Calculo log₂(x)",
+            "binary": "Serie Taylor ~50 iteraciones",
+            "ternary": "Nativo en 3 pasos",
+            "savings": "94%"
+          },
+          {
+            "op": "FFT 4096 puntos",
+            "binary": "49K multiplicaciones",
+            "ternary": "12K ops ternarias",
+            "savings": "75%"
+          },
+          {
+            "op": "Inferencia neuronal",
+            "binary": "FP32 → 4 bytes/peso",
+            "ternary": "1.58 bits/peso",
+            "savings": "95%"
+          }
         ]
       },
       {
@@ -611,16 +1436,30 @@
       }
     ],
     "tableTitle": "Binario vs Ternario: Comparacion de Operaciones",
-    "tableHeaders": ["Operacion", "Enfoque Binario", "Enfoque Ternario", "Ahorro Energetico"],
+    "tableHeaders": [
+      "Operacion",
+      "Enfoque Binario",
+      "Enfoque Ternario",
+      "Ahorro Energetico"
+    ],
     "quote": "\"Estamos tratando de simular inteligencia con fuerza bruta, cuando el universo usa matematicas elegantes.\""
   },
   "technology": {
     "title": "Arquitectura <span class=\"grad\">Tecnologica</span>",
     "sub": "Como Funciona TRINITY",
     "layers": [
-      { "title": "NUCLEO SU(3)", "desc": "Procesador ternario unitario" },
-      { "title": "DAEMONS PAS", "desc": "Bomba de energia de informacion" },
-      { "title": "TRI-MEMORY", "desc": "Almacenamiento de triadas nativo" }
+      {
+        "title": "NUCLEO SU(3)",
+        "desc": "Procesador ternario unitario"
+      },
+      {
+        "title": "DAEMONS PAS",
+        "desc": "Bomba de energia de informacion"
+      },
+      {
+        "title": "TRI-MEMORY",
+        "desc": "Almacenamiento de triadas nativo"
+      }
     ],
     "softwareStack": "PILA NATIVA TRINITY (CIS V1.0)",
     "innovationsTitle": "Innovaciones Clave",
@@ -645,17 +1484,69 @@
     "title": "Hitos de <span class=\"grad\">18 Meses</span>",
     "sub": "Escalando la Singularidad",
     "quarters": [
-      { "q": "Q1 2026", "title": "Fundacion", "items": ["Stack CIS V1.0", "Nucleo FPGA SU(3)", "Benchmark vs emulacion"] },
-      { "q": "Q2 2026", "title": "Validacion", "items": ["Llama-3 en .TRI", "Demostrar aceleracion 100×", "Primeros clientes beta"] },
-      { "q": "Q3 2026", "title": "Producto", "items": ["TRINITY-PCIe V5", "SDK y documentacion", "5 clientes de pago"] },
-      { "q": "Q4 2026", "title": "Escala", "items": ["$1M ARR", "Diseno ASIC completo", "Recaudacion Serie A"] },
-      { "q": "Q1 2027", "title": "Tape-out", "items": ["ASIC TSMC 180nm", "Validacion en silicio", "Verificacion de oblea nativa"] },
-      { "q": "Q2 2027", "title": "Expansion", "items": ["Contratos Tier-1", "Nucleo CPU Ternario", "Dominio Edge"] }
+      {
+        "q": "Q1 2026",
+        "title": "Fundacion",
+        "items": [
+          "Stack CIS V1.0",
+          "Nucleo FPGA SU(3)",
+          "Benchmark vs emulacion"
+        ]
+      },
+      {
+        "q": "Q2 2026",
+        "title": "Validacion",
+        "items": [
+          "Llama-3 en .TRI",
+          "Demostrar aceleracion 100×",
+          "Primeros clientes beta"
+        ]
+      },
+      {
+        "q": "Q3 2026",
+        "title": "Producto",
+        "items": [
+          "TRINITY-PCIe V5",
+          "SDK y documentacion",
+          "5 clientes de pago"
+        ]
+      },
+      {
+        "q": "Q4 2026",
+        "title": "Escala",
+        "items": [
+          "$1M ARR",
+          "Diseno ASIC completo",
+          "Recaudacion Serie A"
+        ]
+      },
+      {
+        "q": "Q1 2027",
+        "title": "Tape-out",
+        "items": [
+          "ASIC TSMC 180nm",
+          "Validacion en silicio",
+          "Verificacion de oblea nativa"
+        ]
+      },
+      {
+        "q": "Q2 2027",
+        "title": "Expansion",
+        "items": [
+          "Contratos Tier-1",
+          "Nucleo CPU Ternario",
+          "Dominio Edge"
+        ]
+      }
     ],
-    "success": ["Aceleracion 100×+ demostrada", "20k+ archivos TRI", "Pipeline de $1M+"]
+    "success": [
+      "Aceleracion 100×+ demostrada",
+      "20k+ archivos TRI",
+      "Pipeline de $1M+"
+    ]
   },
   "vision": {
-    "title": "<span class=\"grad\">Visi\u00f3n</span> 2030",
+    "title": "<span class=\"grad\">Visión</span> 2030",
     "quote": "\"Lo binario fue el siglo XX. Lo ternario es el siglo XXI. La hiper-singularidad es ahora.\"",
     "goalsTitle": "Objetivos 2030",
     "whyNowTitle": "Por Que Invertir Ahora",
@@ -678,17 +1569,47 @@
     "title": "<span class=\"grad\">Inversion</span>",
     "useTitle": "Escalando la Singularidad V5.0",
     "uses": [
-      { "percent": "60%", "title": "Ingenieria", "desc": "Nucleo SU(3), Daemons PAS" },
-      { "percent": "20%", "title": "Base de Conocimiento", "desc": "Optimizando 20k+ archivos .TRI" },
-      { "percent": "20%", "title": "Operaciones", "desc": "Marketing de Singularidad" }
+      {
+        "percent": "60%",
+        "title": "Ingenieria",
+        "desc": "Nucleo SU(3), Daemons PAS"
+      },
+      {
+        "percent": "20%",
+        "title": "Base de Conocimiento",
+        "desc": "Optimizando 20k+ archivos .TRI"
+      },
+      {
+        "percent": "20%",
+        "title": "Operaciones",
+        "desc": "Marketing de Singularidad"
+      }
     ],
     "cards": [
-      { "value": "$3M", "label": "por 1% de capital" },
-      { "value": "$300M", "label": "valoracion" },
-      { "value": "3²¹", "label": "Suministro de Tokens" },
-      { "value": "99%", "label": "propiedad del fundador" },
-      { "value": "578×", "label": "eficiencia energetica" },
-      { "value": "∞", "label": "potencial" }
+      {
+        "value": "$3M",
+        "label": "por 1% de capital"
+      },
+      {
+        "value": "$300M",
+        "label": "valoracion"
+      },
+      {
+        "value": "3²¹",
+        "label": "Suministro de Tokens"
+      },
+      {
+        "value": "99%",
+        "label": "propiedad del fundador"
+      },
+      {
+        "value": "578×",
+        "label": "eficiencia energetica"
+      },
+      {
+        "value": "∞",
+        "label": "potencial"
+      }
     ],
     "milestonesTitle": "Hitos de 18 Meses:",
     "milestones": [
@@ -716,24 +1637,76 @@
       "title": "Unete a la <span class=\"grad\">Comunidad</span>",
       "sub": "Probado por Matematicas, Impulsado por la Comunidad",
       "channels": [
-        { "name": "Discord", "url": "https://discord.gg/trinity", "desc": "Chat de Devs y Mineros", "members": "5K+" },
-        { "name": "Telegram", "url": "https://t.me/trinity_network", "desc": "Anuncios", "members": "10K+" },
-        { "name": "Twitter/X", "url": "https://x.com/trinity_ai", "desc": "Actualizaciones y Noticias", "followers": "25K+" },
-        { "name": "GitHub", "url": "https://github.com/gHashTag/trinity", "desc": "Codigo Abierto", "stars": "1K+" }
+        {
+          "name": "Discord",
+          "url": "https://discord.gg/trinity",
+          "desc": "Chat de Devs y Mineros",
+          "members": "5K+"
+        },
+        {
+          "name": "Telegram",
+          "url": "https://t.me/trinity_network",
+          "desc": "Anuncios",
+          "members": "10K+"
+        },
+        {
+          "name": "Twitter/X",
+          "url": "https://x.com/trinity_ai",
+          "desc": "Actualizaciones y Noticias",
+          "followers": "25K+"
+        },
+        {
+          "name": "GitHub",
+          "url": "https://github.com/gHashTag/trinity",
+          "desc": "Codigo Abierto",
+          "stars": "1K+"
+        }
       ],
       "cta": {
-        "node": { "text": "Ejecutar un Nodo", "desc": "Gana con el Teorema 4 + 15.7x compresion", "url": "/docs/node-setup" },
-        "docs": { "text": "Leer Documentacion", "desc": "Aprende los Teoremas 1-3 + 100% robustez", "url": "/docs" },
-        "buy": { "text": "Comprar $TRI", "desc": "Invierte en un sistema probado + 8.1x aceleracion", "url": "/buy" },
-        "discord": { "text": "Unete a Discord", "desc": "Conecta con devs y mineros", "url": "https://discord.gg/trinity" }
+        "node": {
+          "text": "Ejecutar un Nodo",
+          "desc": "Gana con el Teorema 4 + 15.7x compresion",
+          "url": "/docs/node-setup"
+        },
+        "docs": {
+          "text": "Leer Documentacion",
+          "desc": "Aprende los Teoremas 1-3 + 100% robustez",
+          "url": "/docs"
+        },
+        "buy": {
+          "text": "Comprar $TRI",
+          "desc": "Invierte en un sistema probado + 8.1x aceleracion",
+          "url": "/buy"
+        },
+        "discord": {
+          "text": "Unete a Discord",
+          "desc": "Conecta con devs y mineros",
+          "url": "https://discord.gg/trinity"
+        }
       },
       "stats": {
         "title": "KPIs de la Comunidad",
         "items": [
-          { "value": "5K+", "label": "Miembros Discord", "target": "10K para Q2" },
-          { "value": "2K+", "label": "Operadores de Nodo", "target": "5K para Q2" },
-          { "value": "500+", "label": "Titulares de $TRI", "target": "10K para Q2" },
-          { "value": "1K+", "label": "Usuarios API", "target": "5K para Q2" }
+          {
+            "value": "5K+",
+            "label": "Miembros Discord",
+            "target": "10K para Q2"
+          },
+          {
+            "value": "2K+",
+            "label": "Operadores de Nodo",
+            "target": "5K para Q2"
+          },
+          {
+            "value": "500+",
+            "label": "Titulares de $TRI",
+            "target": "10K para Q2"
+          },
+          {
+            "value": "1K+",
+            "label": "Usuarios API",
+            "target": "5K para Q2"
+          }
         ]
       }
     },
@@ -752,12 +1725,36 @@
     "title": "BitNet FPGA — <span class=\"grad\">Evidencia Cientifica</span>",
     "sub": "No es marketing, es matematicas. Cada numero esta respaldado por articulos cientificos.",
     "metrics": [
-      { "value": "20×", "label": "Eficiencia Energetica vs GPU", "source": "Microsoft BitNet" },
-      { "value": "10×", "label": "Ahorro de Memoria", "source": "1.58 bits vs 16 bits" },
-      { "value": "4.4×", "label": "Reduccion TCO (3 anos)", "source": "$9.5K vs $42K" },
-      { "value": "26×", "label": "tok/s/Watt vs A100", "source": "Paper TerEffic" },
-      { "value": "79×", "label": "Eficiencia vs Jetson", "source": "arXiv:2502.16473" },
-      { "value": "145%", "label": "ROI Ano 1", "source": "Recuperacion 4.9 meses" }
+      {
+        "value": "20×",
+        "label": "Eficiencia Energetica vs GPU",
+        "source": "Microsoft BitNet"
+      },
+      {
+        "value": "10×",
+        "label": "Ahorro de Memoria",
+        "source": "1.58 bits vs 16 bits"
+      },
+      {
+        "value": "4.4×",
+        "label": "Reduccion TCO (3 anos)",
+        "source": "$9.5K vs $42K"
+      },
+      {
+        "value": "26×",
+        "label": "tok/s/Watt vs A100",
+        "source": "Paper TerEffic"
+      },
+      {
+        "value": "79×",
+        "label": "Eficiencia vs Jetson",
+        "source": "arXiv:2502.16473"
+      },
+      {
+        "value": "145%",
+        "label": "ROI Ano 1",
+        "source": "Recuperacion 4.9 meses"
+      }
     ],
     "mathTitle": "Matematicas de BitNet",
     "mathCards": [
@@ -778,13 +1775,43 @@
       }
     ],
     "comparisonTitle": "FPGA vs GPU para BitNet",
-    "comparisonHeaders": ["Metrica", "GPU (H100)", "FPGA (Alveo U55C)", "Ventaja"],
+    "comparisonHeaders": [
+      "Metrica",
+      "GPU (H100)",
+      "FPGA (Alveo U55C)",
+      "Ventaja"
+    ],
     "comparisonRows": [
-      ["Energia/token", "3 mJ", "0.15 mJ", "20×"],
-      ["Memoria/modelo (7B)", "14 GB", "1.4 GB", "10×"],
-      ["TCO (3 anos)", "$42,176", "$9,537", "4.4×"],
-      ["tok/s/Watt", "0.6", "15.8", "26×"],
-      ["Costo hardware", "$30,000", "$5,000", "6×"]
+      [
+        "Energia/token",
+        "3 mJ",
+        "0.15 mJ",
+        "20×"
+      ],
+      [
+        "Memoria/modelo (7B)",
+        "14 GB",
+        "1.4 GB",
+        "10×"
+      ],
+      [
+        "TCO (3 anos)",
+        "$42,176",
+        "$9,537",
+        "4.4×"
+      ],
+      [
+        "tok/s/Watt",
+        "0.6",
+        "15.8",
+        "26×"
+      ],
+      [
+        "Costo hardware",
+        "$30,000",
+        "$5,000",
+        "6×"
+      ]
     ],
     "sourcesTitle": "Fuentes Cientificas",
     "sources": [
@@ -807,12 +1834,21 @@
     "roiTitle": "Calculadora ROI",
     "roiDesc": "Inversion $8,000 (Alveo U55C + Servidor) → $19,596/ano ingresos a $0.001/1K tokens",
     "roiMetrics": [
-      { "label": "Recuperacion", "value": "4.9 meses" },
-      { "label": "ROI Ano 1", "value": "145%" },
-      { "label": "ROI Ano 3", "value": "635%" }
+      {
+        "label": "Recuperacion",
+        "value": "4.9 meses"
+      },
+      {
+        "label": "ROI Ano 1",
+        "value": "145%"
+      },
+      {
+        "label": "ROI Ano 3",
+        "value": "635%"
+      }
     ],
     "cta": "Leer Informe Completo en GitHub",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
   },
   "phoenixNumber": {
     "badge": "FUNDAMENTO MATEMATICO",
@@ -826,7 +1862,7 @@
     "identity": {
       "title": "Identidad Aurea",
       "formula": "φ² + 1/φ² = 3",
-      "desc": "TRINITY = QUTRIT = COD\u00d3N"
+      "desc": "TRINITY = QUTRIT = CODÓN"
     },
     "formulas": [
       {
@@ -851,42 +1887,103 @@
       }
     ],
     "constants": [
-      { "symbol": "φ", "value": "1.618033...", "name": "Proporcion Aurea" },
-      { "symbol": "π", "value": "3.141592...", "name": "Pi" },
-      { "symbol": "e", "value": "2.718281...", "name": "Numero de Euler" },
-      { "symbol": "3", "value": "φ² + 1/φ²", "name": "Trinity" }
+      {
+        "symbol": "φ",
+        "value": "1.618033...",
+        "name": "Proporcion Aurea"
+      },
+      {
+        "symbol": "π",
+        "value": "3.141592...",
+        "name": "Pi"
+      },
+      {
+        "symbol": "e",
+        "value": "2.718281...",
+        "name": "Numero de Euler"
+      },
+      {
+        "symbol": "3",
+        "value": "φ² + 1/φ²",
+        "name": "Trinity"
+      }
     ],
     "genetics": {
       "title": "Constantes de Algoritmo Genetico",
       "items": [
-        { "symbol": "μ", "formula": "1/φ²/10 = 0.0382", "name": "Tasa de Mutacion" },
-        { "symbol": "χ", "formula": "1/φ/10 = 0.0618", "name": "Tasa de Cruce" },
-        { "symbol": "σ", "formula": "φ = 1.618", "name": "Presion de Seleccion" },
-        { "symbol": "ε", "formula": "1/3 = 0.333", "name": "Tasa de Elitismo" }
+        {
+          "symbol": "μ",
+          "formula": "1/φ²/10 = 0.0382",
+          "name": "Tasa de Mutacion"
+        },
+        {
+          "symbol": "χ",
+          "formula": "1/φ/10 = 0.0618",
+          "name": "Tasa de Cruce"
+        },
+        {
+          "symbol": "σ",
+          "formula": "φ = 1.618",
+          "name": "Presion de Seleccion"
+        },
+        {
+          "symbol": "ε",
+          "formula": "1/3 = 0.333",
+          "name": "Tasa de Elitismo"
+        }
       ]
     },
     "physics": {
       "title": "Constantes Fisicas desde π",
       "items": [
-        { "name": "Estructura Fina", "formula": "1/α = 4π³ + π² + π = 137.036" },
-        { "name": "Masa Proton/Electron", "formula": "mₚ/mₑ = 6π⁵ = 1836.15" },
-        { "name": "Desigualdad de Bell", "formula": "CHSH = 2√2 ≈ 2.828 > 2" }
+        {
+          "name": "Estructura Fina",
+          "formula": "1/α = 4π³ + π² + π = 137.036"
+        },
+        {
+          "name": "Masa Proton/Electron",
+          "formula": "mₚ/mₑ = 6π⁵ = 1836.15"
+        },
+        {
+          "name": "Desigualdad de Bell",
+          "formula": "CHSH = 2√2 ≈ 2.828 > 2"
+        }
       ]
     },
     "distribution": {
       "title": "Distribucion de Tokens",
       "items": [
-        { "name": "Recompensas de Nodo", "percent": "40%", "amount": "4,184,141,281" },
-        { "name": "Fundador", "percent": "20%", "amount": "2,092,070,640" },
-        { "name": "Tesoreria", "percent": "15%", "amount": "1,569,052,980" },
-        { "name": "Venta Publica", "percent": "15%", "amount": "1,569,052,980" },
-        { "name": "Ecosistema", "percent": "10%", "amount": "1,046,035,320" }
+        {
+          "name": "Recompensas de Nodo",
+          "percent": "40%",
+          "amount": "4,184,141,281"
+        },
+        {
+          "name": "Fundador",
+          "percent": "20%",
+          "amount": "2,092,070,640"
+        },
+        {
+          "name": "Tesoreria",
+          "percent": "15%",
+          "amount": "1,569,052,980"
+        },
+        {
+          "name": "Venta Publica",
+          "percent": "15%",
+          "amount": "1,569,052,980"
+        },
+        {
+          "name": "Ecosistema",
+          "percent": "10%",
+          "amount": "1,046,035,320"
+        }
       ],
       "total": "TOTAL: 3²¹ = 10,460,353,203 $TRI"
     },
     "quote": "\"Las matematicas del universo favorecen a Trinity.\"",
     "cta": "Ver Tokenomics Completo",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/TOKENOMICS.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/docs/depin/tokenomics.md"
   },
   "mysticism": {
     "title": "Fundamentos Matematicos",
@@ -917,10 +2014,10 @@
     ]
   },
   "sacredFormula": {
-    "title": "Motor de F\u00f3rmula Sagrada",
+    "title": "Motor de Fórmula Sagrada",
     "formula": "V = n &times; 3<sup>k</sup> &times; &pi;<sup>m</sup> &times; &phi;<sup>p</sup> &times; e<sup>q</sup>",
-    "description": "Detecci\u00f3n de relaciones enteras: cada constante f\u00edsica como un punto en la ret\u00edcula generada por {1, log(3), log(\u03c0), log(\u03c6)} sobre \u2124.",
-    "inputPlaceholder": "Ingrese cualquier n\u00famero positivo...",
+    "description": "Detección de relaciones enteras: cada constante física como un punto en la retícula generada por {1, log(3), log(π), log(φ)} sobre ℤ.",
+    "inputPlaceholder": "Ingrese cualquier número positivo...",
     "decompose": "Descomponer",
     "computing": "Calculando...",
     "target": "Objetivo",
@@ -928,71 +2025,77 @@
     "close": "CERCANO",
     "approx": "APROX.",
     "predictionsTitle": "Extrapolaciones Sagradas",
-    "predictionsDisclaimer": "NO es f\u00edsica establecida \u2014 solo matem\u00e1ticas experimentales",
+    "predictionsDisclaimer": "NO es física establecida — solo matemáticas experimentales",
     "categories": {
       "all": "Todos",
-      "particle_physics": "F\u00edsica de Part\u00edculas",
-      "quantum": "Cu\u00e1ntica",
-      "cosmology": "Cosmolog\u00eda",
-      "quantum_gravity": "Gravedad Cu\u00e1ntica",
-      "sacred_geometry": "Geometr\u00eda Sagrada"
+      "particle_physics": "Física de Partículas",
+      "quantum": "Cuántica",
+      "cosmology": "Cosmología",
+      "quantum_gravity": "Gravedad Cuántica",
+      "sacred_geometry": "Geometría Sagrada"
     },
-    "randomSacred": "\u2728 Aleatorio",
-    "geomInfoTitle": "Puente de Geometr\u00eda Sagrada v2.0",
-    "goldenSpiral": "Espiral \u00C1urea: r(\u03B8) = a \u00D7 \u03C6^(2\u03B8/\u03C0)",
-    "copticCube": "Cubo Copto: 27 = 3\u00B3 = 1 tryte",
-    "trinityIdentity": "\u03C6\u00B2 + 1/\u03C6\u00B2 = 3 = TRINIDAD",
+    "randomSacred": "✨ Aleatorio",
+    "geomInfoTitle": "Puente de Geometría Sagrada v2.0",
+    "goldenSpiral": "Espiral Áurea: r(θ) = a × φ^(2θ/π)",
+    "copticCube": "Cubo Copto: 27 = 3³ = 1 tryte",
+    "trinityIdentity": "φ² + 1/φ² = 3 = TRINIDAD",
     "copticMatter": "Materia (1-9)",
-    "copticEnergy": "Energ\u00eda (10-90)",
-    "copticInfo": "Informaci\u00f3n (100-900)",
-    "copticSum": "\u03A3 = 4995",
-    "cliHint": "Versi\u00f3n CLI: tri geom sacred",
-    "modeTime": "\u231B Tiempo Trinidad",
+    "copticEnergy": "Energía (10-90)",
+    "copticInfo": "Información (100-900)",
+    "copticSum": "Σ = 4995",
+    "cliHint": "Versión CLI: tri geom sacred",
+    "modeTime": "⌛ Tiempo Trinidad",
     "timeTriadTitle": "TEOREMA TEMPORAL DE LA TRINIDAD v1.0",
-    "timeCreation": "CREACI\u00D3N (futuro)",
-    "timeDestruction": "ENTROP\u00CDA (pasado)",
-    "timeArrowTitle": "Asimetr\u00EDa de la flecha del tiempo",
-    "timeArrowDesc": "La creaci\u00F3n domina la destrucci\u00F3n 6.854\u00D7 \u2192 el tiempo fluye hacia adelante",
-    "omegaTitle": "\u03A9 Predicciones (desde \u03C0)",
-    "omegaParam": "Par\u00E1metro",
-    "omegaPredicted": "Predicci\u00F3n",
+    "timeCreation": "CREACIÓN (futuro)",
+    "timeDestruction": "ENTROPÍA (pasado)",
+    "timeArrowTitle": "Asimetría de la flecha del tiempo",
+    "timeArrowDesc": "La creación domina la destrucción 6.854× → el tiempo fluye hacia adelante",
+    "omegaTitle": "Ω Predicciones (desde π)",
+    "omegaParam": "Parámetro",
+    "omegaPredicted": "Predicción",
     "omegaExperiment": "Experimento",
     "omegaDarkMatter": "materia",
-    "omegaDarkEnergy": "energ\u00EDa",
+    "omegaDarkEnergy": "energía",
     "omegaAge": "Edad",
-    "timeEngineStart": "\u23F5 Motor Temporal (\u03C6 = 1.618s)",
-    "timeEngineStop": "\u23F8 Detener latido",
+    "timeEngineStart": "⏵ Motor Temporal (φ = 1.618s)",
+    "timeEngineStop": "⏸ Detener latido",
     "timeShowVt": "Calcular V(t)",
-    "timeCopticTitle": "27 = 3\u00B3 Cubo Temporal Copto",
+    "timeCopticTitle": "27 = 3³ Cubo Temporal Copto",
     "timePast": "Pasado",
     "timePresent": "Presente",
     "timeFuture": "Futuro",
-    "timeDisclaimer": "Matem\u00E1ticas experimentales \u2014 exploraci\u00F3n de patrones, no f\u00EDsica probada",
-    "chevrons": { "n": "n", "k": "3\u207a", "m": "\u03c0\u207a", "p": "\u03c6\u207a", "q": "e\u207a" },
+    "timeDisclaimer": "Matemáticas experimentales — exploración de patrones, no física probada",
+    "chevrons": {
+      "n": "n",
+      "k": "3⁺",
+      "m": "π⁺",
+      "p": "φ⁺",
+      "q": "e⁺"
+    },
     "error": "error",
-    "howItWorks": "Cualquier n\u00famero puede escribirse como una f\u00f3rmula simple de 4 constantes de la naturaleza. Ejemplo: masa del electr\u00f3n = 1 \u00d7 3\u207b\u2077 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b2 \u00d7 e\u00b3 con 0.003% de precisi\u00f3n. Ingrese su n\u00famero y vea sus \"coordenadas\" en esta ret\u00edcula.",
-    "tryIt": "Ingrese un n\u00famero \u2192 obtenga su f\u00f3rmula",
-    "legendTitle": "C\u00f3mo leer el Stargate:",
-    "legendN": "multiplicador (entero 1\u20139)",
+    "howItWorks": "Cualquier número puede escribirse como una fórmula simple de 4 constantes de la naturaleza. Ejemplo: masa del electrón = 1 × 3⁻⁷ × π¹ × φ⁻² × e³ con 0.003% de precisión. Ingrese su número y vea sus \"coordenadas\" en esta retícula.",
+    "tryIt": "Ingrese un número → obtenga su fórmula",
+    "legendTitle": "Cómo leer el Stargate:",
+    "legendN": "multiplicador (entero 1–9)",
     "legendK": "potencia ternaria (exponente de 3)",
-    "legendM": "potencia geom\u00e9trica (exponente de \u03c0)",
-    "legendP": "potencia del n\u00famero \u00e1ureo (exponente de \u03c6)",
+    "legendM": "potencia geométrica (exponente de π)",
+    "legendP": "potencia del número áureo (exponente de φ)",
     "legendQ": "potencia de crecimiento (exponente de e)",
-    "legendExample": "Ejemplo: 13 \u2248 1 \u00d7 3\u207b\u00b9 \u00d7 \u03c0\u00b9 \u00d7 \u03c6\u207b\u00b9 \u00d7 e\u00b3",
-    "modeFormula": "Número \u2192 Fórmula",
+    "legendExample": "Ejemplo: 13 ≈ 1 × 3⁻¹ × π¹ × φ⁻¹ × e³",
+    "modeFormula": "Número → Fórmula",
     "modeGematria": "Gematría",
     "gematriaPlaceholder": "Número o texto copto...",
     "gematriaDecompose": "Decodificar",
     "sacredFit": "Fórmula sagrada",
-    "modeManual": "Parámetros \u2192 Valor",
+    "modeManual": "Parámetros → Valor",
     "compute": "Calcular",
     "validationRequired": "Obligatorio",
     "validationInteger": "Debe ser entero",
-    "validationRange_n": "n: 1\u20139",
-    "validationRange_k": "k: -4\u20264",
-    "validationRange_m": "m: -3\u20260",
-    "validationRange_p": "p: -4\u20264",
-    "validationRange_q": "q: -3\u20263",
+    "validationRange_n": "n: 1–9",
+    "validationRange_k": "k: -4…4",
+    "validationRange_m": "m: -3…0",
+    "validationRange_p": "p: -4…4",
+    "validationRange_q": "q: -3…3",
     "validationPositive": "Ingrese un número positivo"
   },
   "holographic": {
@@ -1006,9 +2109,9 @@
     "formula": "Fórmula",
     "solarEntropy": "Entropía AN masa solar",
     "holoBits": "Bits holográficos",
-    "multiverseTitle": "Inflación Eterna \u2014 Universos Burbuja",
-    "stringTitle": "Paisaje de Teoría de Cuerdas \u2014 Vacíos de Flujo",
-    "ryuTitle": "Ryu-Takayanagi \u2014 Entropía de Entrelazamiento Holográfica"
+    "multiverseTitle": "Inflación Eterna — Universos Burbuja",
+    "stringTitle": "Paisaje de Teoría de Cuerdas — Vacíos de Flujo",
+    "ryuTitle": "Ryu-Takayanagi — Entropía de Entrelazamiento Holográfica"
   },
   "quantumGravity": {
     "title": "Simulación de Gravedad Cuántica v3.1",
@@ -1177,29 +2280,83 @@
     "title": "Verificación <span class=\"grad\">Científica</span>",
     "sub": "Matemáticas revisadas por pares. Cada fórmula verificada independientemente.",
     "stats": [
-      { "value": "27/27", "label": "Pruebas Aprobadas" },
-      { "value": "4", "label": "Teoremas Demostrados" },
-      { "value": "<0.01%", "label": "Error Máximo" }
+      {
+        "value": "27/27",
+        "label": "Pruebas Aprobadas"
+      },
+      {
+        "value": "4",
+        "label": "Teoremas Demostrados"
+      },
+      {
+        "value": "<0.01%",
+        "label": "Error Máximo"
+      }
     ],
     "evidenceTitle": "Cobertura de Pruebas",
     "sections": [
-      { "name": "Operaciones VSA", "passed": 7, "total": 7 },
-      { "name": "VM Ternaria", "passed": 5, "total": 5 },
-      { "name": "Robustez al Ruido", "passed": 4, "total": 4 },
-      { "name": "BitNet MAC", "passed": 7, "total": 7 },
-      { "name": "Constantes Sagradas", "passed": 4, "total": 4 }
+      {
+        "name": "Operaciones VSA",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "VM Ternaria",
+        "passed": 5,
+        "total": 5
+      },
+      {
+        "name": "Robustez al Ruido",
+        "passed": 4,
+        "total": 4
+      },
+      {
+        "name": "BitNet MAC",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "Constantes Sagradas",
+        "passed": 4,
+        "total": 4
+      }
     ],
     "formulasTitle": "Fórmulas Fundamentales",
     "formulas": [
-      { "formula": "φ² + 1/φ² = 3", "desc": "Identidad Trinidad", "error": "0.0%" },
-      { "formula": "I(r) = (B/r) × log₂(r)", "desc": "Base Óptima", "error": "0.0%" },
-      { "formula": "log₂(3) = 1.585 bits/trit", "desc": "Densidad de Información", "error": "0.0%" },
-      { "formula": "3²¹ = 10,460,353,203", "desc": "Suministro de Tokens", "error": "0.0%" }
+      {
+        "formula": "φ² + 1/φ² = 3",
+        "desc": "Identidad Trinidad",
+        "error": "0.0%"
+      },
+      {
+        "formula": "I(r) = (B/r) × log₂(r)",
+        "desc": "Base Óptima",
+        "error": "0.0%"
+      },
+      {
+        "formula": "log₂(3) = 1.585 bits/trit",
+        "desc": "Densidad de Información",
+        "error": "0.0%"
+      },
+      {
+        "formula": "3²¹ = 10,460,353,203",
+        "desc": "Suministro de Tokens",
+        "error": "0.0%"
+      }
     ],
     "sources": [
-      { "title": "Knuth Vol. 3", "desc": "Prueba de base óptima" },
-      { "title": "Microsoft BitNet", "desc": "arXiv:2402.17764" },
-      { "title": "TerEffic FPGA", "desc": "arXiv:2502.16473" }
+      {
+        "title": "Knuth Vol. 3",
+        "desc": "Prueba de base óptima"
+      },
+      {
+        "title": "Microsoft BitNet",
+        "desc": "arXiv:2402.17764"
+      },
+      {
+        "title": "TerEffic FPGA",
+        "desc": "arXiv:2502.16473"
+      }
     ]
   }
 }

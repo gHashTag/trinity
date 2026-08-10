@@ -38,12 +38,23 @@ body {
 }
 
 /* Typography Fluid Design */
+/* The page-title size, not a display size.
+   This was clamp(3rem, 15vw, 8rem) with -0.07em tracking — proportions meant for
+   the one-line identity in the hero. Applied to every h1 on the site it made a
+   sixty-character blog title 210px tall at a 1400px viewport: one word per line,
+   four lines before any prose.
+   The values below are not new. Six pages — Proof, Course, Licensing, GFT,
+   About, Verification — already wrote exactly this inline, so it was the house
+   standard everywhere except the pages that forgot to repeat it. Making it the
+   default means Blog, Resources and the dashboards match without restating it,
+   and the six that do restate it are unchanged.
+   The hero sets its own size inline and is unaffected. */
 h1 {
-  font-size: clamp(3rem, 15vw, 8rem);
+  font-size: clamp(1.9rem, 5.5vw, 2.8rem);
   font-weight: 600;
-  margin-bottom: 2rem;
-  letter-spacing: -0.07em;
-  line-height: 1;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 h2 {
@@ -79,6 +90,18 @@ section {
   max-width: var(--max-w);
   margin: 0 auto;
   min-height: 60vh;
+}
+
+/* A list is read down a common left edge; centring destroys that edge. The rule
+   above centres everything in a section, so any list that did not happen to sit
+   inside a left-aligned wrapper came out ragged — the marker pinned at the flex
+   start or the padding edge while each wrapped line found its own centre.
+   Most lists were saved by an ancestor setting text-align individually; this
+   makes it the default instead of a thing each new list has to remember. An
+   inline style on a specific list still wins. */
+section ul,
+section ol {
+  text-align: left;
 }
 
 .tight {
@@ -229,7 +252,17 @@ section {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (max-width: 768px) {
+/* 1100px, not 768px: the dock is one non-wrapping row, and below the width its
+   content needs, `max-width: 95vw` + `overflow-x: auto` quietly scrolled the last
+   two items -- the Pages button and the language switcher -- out of sight, with
+   `scrollbar-width: none` hiding any hint that they existed and the hamburger
+   still 300px away from appearing. Measured content width per locale:
+   en 919, de 923, es 965, ru 1023 -> ru needs a 1077px viewport to fit at 95vw.
+   So Russian was broken from 769px all the way to 1077px: half-screen windows,
+   1024x768 laptops, iPad landscape. Everything the dock holds is in the mobile
+   menu, language switcher included, so handing those widths to the hamburger
+   loses nothing. Re-measure this number if a nav label is added or retranslated. */
+@media (max-width: 1100px) {
   .nav-dock {
     display: none;
   }
@@ -433,7 +466,9 @@ section {
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-@media (max-width: 768px) {
+/* Must stay in lockstep with the .nav-dock breakpoint above — between the two
+   values there would be no navigation on screen at all. */
+@media (max-width: 1100px) {
   .hamburger-btn {
     display: flex;
   }
@@ -487,10 +522,24 @@ section {
   background: rgba(255, 255, 255, 0.06);
 }
 
+/* Sticky, because this footer holds the only language control on narrow widths
+   and it was the last thing in a column taller than the screen: measured at
+   768px tall the button sat at y 1069 inside a 1121px menu, so a visitor opened
+   the menu, saw links, and never learned the language could be changed.
+   Pinning it to the bottom of the scroll container keeps it on screen while the
+   links scroll under it. The background is the menu's own, otherwise links
+   would show through as they pass beneath. */
 .mobile-menu-footer {
   padding-top: 16px;
   border-top: 1px solid var(--border);
-  margin-top: 16px;
+  margin-top: auto;
+  position: sticky;
+  /* -24px, not 0: sticky resolves against the scrollport's padding edge, so at
+     0 the footer stopped 24px short of the bottom and links scrolled visibly
+     through the strip underneath it. */
+  bottom: -24px;
+  background: rgb(10, 10, 15);
+  padding-bottom: 24px;
 }
 
 /* Language Switcher */
@@ -535,6 +584,20 @@ section {
   overflow: hidden;
   z-index: 1200;
   min-width: 100%;
+}
+
+/* In the mobile menu the switcher is the last thing in a scrolled column, so it
+   sits at the bottom edge — opening downward put the options past the fold
+   (measured: button at y 730, first option at y 1102 in a 768px viewport) and
+   the language looked unchangeable. Open upward there instead. */
+.mobile-menu .lang-dropdown {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 4px;
+  /* Opaque: at 0.95 the bright accent-coloured links underneath read straight
+     through the options. */
+  background: rgb(10, 10, 15);
 }
 
 .lang-option {
