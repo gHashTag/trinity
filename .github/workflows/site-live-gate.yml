@@ -1,0 +1,99 @@
+name: Site live gate
+
+# Does t27.ai actually serve what main builds?
+#
+# Today this repository merged a website change, the deploy workflow went green,
+# and the change was not on the site. Both facts were true: `deploy-docs.yml`
+# publishes this repo's Pages, and this repo's Pages is https://t27.ai/trinity/.
+# The apex — the URL every visitor and every link uses — is served from a
+# different repository entirely, and only changes when a build is copied into
+# it. So the green tick was reporting on a URL nobody visits, and "deployed"
+# was a claim no instrument in this repo could check.
+#
+# That is the same failure as every other one this month: an instrument inside
+# the failure domain. The deploy job can only see its own upload. The only
+# signal that means "the reader can see it" comes from outside — fetching the
+# apex over the network and comparing it against a build of main.
+#
+# It compares the entry-bundle filename, which is content-hashed by Vite: same
+# hash means the same bytes reached the reader, a different hash means they did
+# not, and an empty hash fails rather than counting as a match. That last part
+# is not paranoia — an asset-hash pattern that missed the underscore in Vite
+# hashes once compared an empty string against an empty string and reported a
+# confident green.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/website/**'
+      - '.github/workflows/site-live-gate.yml'
+  schedule:
+    # Catches the other direction: the apex drifting behind without a push here.
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-matches-main:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build the site from main
+        working-directory: apps/website
+        run: |
+          set -euo pipefail
+          npm ci --silent 2>/dev/null || npm install --silent
+          npm run build
+
+      - name: Compare what main builds against what t27.ai serves
+        run: |
+          set -uo pipefail
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          echo "## Site live gate" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          BUILT=$(grep -o 'assets/index-[A-Za-z0-9_-]*\.js' apps/website/dist/index.html | head -1)
+          # Cache-bust: a stale edge copy would otherwise read as a real mismatch
+          # long after the deploy landed, and the gate would cry wolf every time.
+          LIVE=$(curl -fsS -H 'Cache-Control: no-cache' "https://t27.ai/?gate=${GITHUB_RUN_ID}" \
+                 | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | head -1)
+
+          # An empty value is a failure, never a match. Both of these have
+          # returned empty from a pattern bug before and been read as agreement.
+          if [ -z "$BUILT" ]; then
+            say "- **FAIL** the build produced no entry bundle to compare"
+            exit 1
+          fi
+          if [ -z "$LIVE" ]; then
+            say "- **FAIL** t27.ai served no entry bundle — the site may be down"
+            exit 1
+          fi
+
+          say "- built from \`${GITHUB_SHA:0:8}\`: \`$BUILT\`"
+          say "- served by t27.ai: \`$LIVE\`"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$BUILT" = "$LIVE" ]; then
+            say "- **PASS** the apex serves what main builds"
+            exit 0
+          fi
+
+          say "- **FAIL** t27.ai is not serving this build"
+          {
+            echo ""
+            echo "The apex is served from \`gHashTag/gHashTag.github.io\`, not from this"
+            echo "repository — this repo's Pages is <https://t27.ai/trinity/>. A green deploy"
+            echo "here does not put anything in front of a reader. Publish by copying"
+            echo "\`apps/website/dist/\` into that repository, running its \`verify-site.sh\`,"
+            echo "and pushing."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
