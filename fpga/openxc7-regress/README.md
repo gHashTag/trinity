@@ -48,75 +48,49 @@ The design is two global buffers whose only difference is how they are driven: o
 routing"; one from a flip-flop, which had no dedicated path and used to abort instead of
 falling back.
 
-## STATUS: this case does not currently reproduce the failure — 2026-08-10
+## STATUS: the case is valid, but only against `f8e7643` — #109 masks the bug
 
-**Measured, not assumed.** `nextpnr-xilinx` was built here from `e86f351` (the #115 merge,
-which predates #111 — `git diff` confirms `pack_clocking_xc7.cc` carries none of the #111
-fallback), a 318 MB `xc7a200t` chipdb was generated, and the case was run:
+**Reproduced, then bisected.** Four builds, same netlist, same 318 MB `xc7a200t` chipdb,
+same `--freq 100 --seed 1`:
 
-```
-nextpnr-BASE --chipdb xc7a200t.bin --xdc fabric_bufg.xdc --json fab.json \
-             --fasm fab-base.fasm --freq 100 --seed 1
-→ exit 0, FASM written, 34788 bytes
-```
+| Build | Result |
+|---|---|
+| `f8e7643` — the base the PR measured against | **`ERROR: Unable to find legal placement for cell '$auto$clkbufmap.cc:261:execute$2539'`**, no FASM |
+| `c8c4064` — the **#109** merge | **places**, 34,788 B |
+| `e86f351` — the #115 merge (still no #111) | places, 34,788 B |
+| `e86f351` + #111 applied by hand | places, 35,318 B |
 
-**It placed.** On a binary that provably lacks the patch. So as written this case guards
-nothing, and calling it a regression test would be wrong.
+The error text and the cell name match the PR exactly. **So the case is real** — and it stops
+being real one commit later.
 
-### Why — measured with a patched and an unpatched binary side by side
+### #109 masks the bug that #111 fixes
 
-The #111 fallback was applied to the built tree by hand (ten lines, one file), rebuilt, and
-both binaries run on the same netlist and chipdb.
+`#109` is *"support `set_multicycle_path -setup` (XDC parser + timing)"* and it touches
+`xilinx/xdc.cc` (+52). `pack_clocking_xc7.cc` is byte-identical across all of these, so the
+packing path never changed: `try_preplace` leaves the fabric-driven buffer unplaced at every
+one of these commits. What changed is that after #109 the main placer **finds it a legal
+`BUFGCTRL` site unaided**, and the abort never happens.
 
-| | unpatched | patched |
-|---|---|---|
-| `try_preplace` constrains the **pin-driven** buffer `$2541` | yes, "based on dedicated routing" | yes, identically |
-| `try_preplace` constrains the **fabric-driven** buffer `$2539` | **no** — absent from the log entirely | no message either; `preplace_unique` is silent |
-| place-and-route | **succeeds** | succeeds |
-| FASM | 34788 B | 35318 B |
-| `CLK_BUFG*` FASM lines | 129, same sites | 129, **same sites** |
+Two consequences, and the second is the one that matters for a suite:
 
-**The mechanism reproduces; the symptom does not.** The fabric-driven buffer really is left
-unplaced by `try_preplace`, exactly as the PR describes. But the main placer then finds it a
-legal `BUFGCTRL` site unaided — 2 of 32 used — so nothing aborts. The patch's
-`preplace_unique` pre-assigns the site the placer would have chosen anyway; the only
-difference in the output is a couple of CLBs shuffling, and the buffer lands in the same
-place either way.
+1. On current `main` this reproduction cannot fail. A regression case built on it would go
+   green on the day it was added and stay green forever, guarding nothing.
+2. The `#111` fallback is still doing something — the FASM differs, 35,318 B against 34,788 —
+   but on this design it only pre-assigns the site the placer would have chosen anyway.
 
-So the abort in the PR needed something this design does not create: **contention for
-`BUFGCTRL` sites**. With 32 free and two in use, "unable to find legal placement" cannot
-happen. A minimal reproduction was the wrong instinct here — the bug needs pressure, and
-minimality removes exactly the pressure it needs.
+**A regression case must be validated against the commit where the bug was observed, not
+against `main`.** Had this been added to a suite without the bisect, it would have been a
+permanent false pass — the worst kind, because a green test is never re-examined.
 
-### The contention hypothesis does not hold either, at the scales tested
+### Two hypotheses that were tested and failed first
 
-"The abort needs `BUFGCTRL` pressure" was the obvious next move, so it was tested rather
-than assumed. Designs with 8, 20 and 34 fabric-driven clock dividers were generated,
-synthesised (yielding 9, 21 and 35 `BUFG` cells against 32 sites) and run on the **unpatched**
-binary:
+Both looked strongest at the moment they were written, and both were cheap to check:
 
-| Design | `BUFG` cells | Unpatched result |
-|---|---|---|
-| 8 dividers | 9 | **placed**, 82,723 B of FASM |
-| 20 dividers | 21 | **placed** — reached routing, no abort |
-| 34 dividers | 35 | run pending; 35 > 32 sites, so a failure here would be capacity, not this bug |
-
-So raising the buffer count from 2 to 21 does not produce
-`Unable to find legal placement`. Whatever the original reproduction depended on, it is not
-simply the number of fabric-driven buffers.
-
-**Two hypotheses have now been tested and both failed** — the prjxray-db bump (disproved by
-byte-identical chipdbs) and buffer contention (disproved at 9 and 21 buffers). Neither was
-wrong-headed; both were checkable, and checking cost less than being wrong in a letter to a
-maintainer would have.
-
-### What a working case would still have to do
-
-Reproduce `ERROR: Unable to find legal placement` on a build without the #111 fallback. Every
-route to that tried here has failed, so the honest state of this directory is: **a design that
-exercises the mechanism (the fabric-driven buffer is genuinely left unplaced) but not the
-symptom.** That is worth reporting to the maintainer as a finding; it is not worth shipping
-as a test.
+- **prjxray-db bump.** `f8e7643` pins `d429061`, later trees pin `399a099`. A second chipdb
+  was generated from `d429061` and compared: **byte-identical**. The bump adds RIOB18 entries
+  for kintex7 and virtex7 and cannot touch artix7.
+- **`BUFGCTRL` contention.** Designs with 9 and 21 fabric-driven buffers (against 32 sites)
+  both **placed** on a build without #111. The buffer count is not the condition.
 
 ## Running it costs more than the test does — measured 2026-08-10
 
