@@ -24,7 +24,7 @@
   <meta property="og:url" content="https://t27.ai/" />
   <meta property="og:title" content="TRINITY | Native Ternary Hardware for AI" />
   <meta property="og:description" content="100x Faster AI Inference at 99.8% Less Power. First chip with native SU(3) Unitary Core. The Binary Era is Over." />
-  <meta property="og:image" content="https://t27.ai/og-image.svg" />
+  <meta property="og:image" content="https://t27.ai/og-image.png" />
   <meta property="og:site_name" content="TRINITY" />
   <meta property="og:locale" content="en_US" />
 
@@ -33,7 +33,7 @@
   <meta name="twitter:url" content="https://t27.ai/" />
   <meta name="twitter:title" content="TRINITY | Native Ternary Hardware for AI" />
   <meta name="twitter:description" content="100x Faster AI Inference at 99.8% Less Power. First chip with native SU(3) Unitary Core." />
-  <meta name="twitter:image" content="https://t27.ai/og-image.svg" />
+  <meta name="twitter:image" content="https://t27.ai/og-image.png" />
 
   <!-- Canonical URL -->
   <link rel="canonical" href="https://t27.ai/" />
@@ -77,21 +77,64 @@
   </script>
   
   <!-- Preconnect to critical origins -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="dns-prefetch" href="https://media.licdn.com" />
   <link rel="dns-prefetch" href="https://blockchain.info" />
-  
-  <!-- Preload critical font (Outfit - main body font) -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" />
-  
-  <!-- Load fonts -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet" />
+
+  <!-- Fonts, self-hosted. These used to come from fonts.googleapis.com: a
+       render-blocking stylesheet on a third-party origin, which then pulled the
+       actual .woff2 files from a second origin — two DNS+TLS handshakes before
+       any text could paint. The request also asked for Inter, which nothing in
+       the app references, and for three families across 13 weights: 59
+       @font-face declarations, 15 files, 324 kB.
+       These are the variable versions, so one file covers every weight, and
+       only the subsets that are actually used: Outfit has no Cyrillic on Google
+       Fonts at all (Russian already fell back to system-ui), JetBrains Mono
+       does, so its Cyrillic subset is kept and loads only when Cyrillic is
+       rendered. 72 kB total, same origin, no blocking stylesheet. -->
+  <link rel="preload" as="font" type="font/woff2" href="fonts/outfit-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="fonts/jetbrains-mono-latin.woff2" crossorigin />
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      font-style: normal;
+      font-weight: 400 800;
+      font-display: swap;
+      src: url(fonts/outfit-latin.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-weight: 400 500;
+      font-display: swap;
+      src: url(fonts/jetbrains-mono-latin.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-weight: 400 500;
+      font-display: swap;
+      src: url(fonts/jetbrains-mono-cyrillic.woff2) format('woff2');
+      unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+    }
+
+    /* First-paint shell. #root was empty, so nothing at all was on screen until
+       the JS had downloaded, parsed and mounted. React clears these children on
+       its first render. */
+    html { background: #000; }
+    #boot { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; padding: 2rem; }
+    #boot img { width: min(46vw, 260px); height: auto; }
+    #boot p { font-family: 'Outfit', system-ui, sans-serif; font-weight: 600; font-size: clamp(0.7rem, 2.2vw, 0.85rem); letter-spacing: 0.14em; text-transform: uppercase; color: #00FF88; text-align: center; max-width: 30ch; }
+  </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div id="boot">
+      <img src="trinity-logo-with-label.svg" alt="TRINITY" width="1080" height="1080" />
+      <p>Native ternary hardware for AI</p>
+    </div>
+  </div>
   <!-- GitHub Pages SPA redirect handler -->
   <script>
     (function(l) {

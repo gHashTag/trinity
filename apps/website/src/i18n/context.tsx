@@ -2,14 +2,20 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import en from '../../messages/en.json';
-import ru from '../../messages/ru.json';
-import de from '../../messages/de.json';
-import zh from '../../messages/zh.json';
-import es from '../../messages/es.json';
 
-const translations: Record<string, any> = { en, ru, de, zh, es };
 const LANGS = ['en', 'ru', 'de', 'zh', 'es'] as const;
 type Lang = typeof LANGS[number];
+
+// English stays static: it is the default and the fallback base for deepMerge,
+// so it has to be there on the first render. The other four were static imports
+// too, which put all five catalogues — 356 kB of JSON — in the entry chunk and
+// made every visitor download four languages they had not asked for.
+const loaders: Record<Exclude<Lang, 'en'>, () => Promise<{ default: any }>> = {
+  ru: () => import('../../messages/ru.json'),
+  de: () => import('../../messages/de.json'),
+  zh: () => import('../../messages/zh.json'),
+  es: () => import('../../messages/es.json'),
+};
 
 interface I18nContextType {
   t: any;
@@ -50,11 +56,24 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     return 'en';
   });
   const [mounted, setMounted] = useState(false);
+  const [catalogues, setCatalogues] = useState<Record<string, any>>({ en });
 
   // Set mounted flag on client
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Pull in the selected catalogue on demand. Until it arrives the page renders
+  // in English rather than blocking — deepMerge below already treats a missing
+  // override as "use the base".
+  useEffect(() => {
+    if (lang === 'en' || catalogues[lang]) return;
+    let cancelled = false;
+    loaders[lang as Exclude<Lang, 'en'>]().then((mod) => {
+      if (!cancelled) setCatalogues((prev) => ({ ...prev, [lang]: mod.default }));
+    });
+    return () => { cancelled = true; };
+  }, [lang, catalogues]);
 
   // Save to localStorage when lang changes
   useEffect(() => {
@@ -81,8 +100,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     return merged;
   };
 
-  const currentLangT = translations[lang] || translations['en'];
-  const t = lang === 'en' ? currentLangT : deepMerge(translations['en'], currentLangT);
+  const t = lang === 'en' ? en : deepMerge(en, catalogues[lang]);
 
   const setLang = (newLang: string) => {
     console.log('Setting language:', newLang, 'current:', lang);
@@ -109,7 +127,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 export const useI18n = (): I18nContextType => {
   const context = useContext(I18nContext);
   if (!context) {
-    return { t: translations['en'], lang: 'en', setLang: () => {}, switchLang: () => {}, availableLangs: LANGS };
+    return { t: en, lang: 'en', setLang: () => {}, switchLang: () => {}, availableLangs: LANGS };
   }
   return context;
 };
