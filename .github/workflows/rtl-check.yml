@@ -38,9 +38,18 @@ on:
         default: 'src/*.v'
         type: string
       include_dir:
-        description: 'Directory for `include headers.'
+        description: 'Directory for `include headers, relative to path.'
         required: false
         default: 'src'
+        type: string
+      path:
+        description: >-
+          Directory holding info.yaml and src/, relative to the repository root.
+          Needed by anything that is not a single design at the root: my own
+          chips live at chips/<name> and could not have used this workflow
+          without it.
+        required: false
+        default: '.'
         type: string
 
 permissions:
@@ -83,6 +92,7 @@ jobs:
           TOP: ${{ inputs.top }}
           SRC_GLOB: ${{ inputs.sources }}
           INC: ${{ inputs.include_dir }}
+        working-directory: ${{ inputs.path }}
         run: |
           set -uo pipefail
           # Prefer what info.yaml declares, because that is the list a Tiny

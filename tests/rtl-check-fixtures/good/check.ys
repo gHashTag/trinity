@@ -1,0 +1,7 @@
+read_verilog -sv src/fixture_good.v
+hierarchy -top fixture_good
+proc; opt; fsm; opt; memory; opt
+techmap; opt
+flatten; opt
+stat
+select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*

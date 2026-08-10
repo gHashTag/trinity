@@ -1,0 +1,61 @@
+name: rtl-check self-test
+
+# The reusable workflow is offered to other people to run in their own
+# repositories. Before that is a reasonable thing to offer, it has to be shown
+# failing on a design that deserves to fail — a check nobody has watched go red
+# is not a check.
+#
+# Two fixtures, one clean and one carrying exactly one planted latch. The clean
+# one must pass. The planted one must fail, and the assert job says so if it
+# does not, which is the case that would otherwise pass silently and ship a
+# green tick to everybody.
+
+on:
+  push:
+    paths:
+      - '.github/workflows/rtl-check.yml'
+      - '.github/workflows/rtl-check-selftest.yml'
+      - 'tests/rtl-check-fixtures/**'
+  pull_request:
+    paths:
+      - '.github/workflows/rtl-check.yml'
+      - '.github/workflows/rtl-check-selftest.yml'
+      - 'tests/rtl-check-fixtures/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-must-pass:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_good
+      path: tests/rtl-check-fixtures/good
+
+  planted-latch:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_latch
+      path: tests/rtl-check-fixtures/latch
+    # Expected to fail. The next job turns that expectation into an assertion,
+    # because a workflow that merely tolerates a failure proves nothing.
+    continue-on-error: true
+
+  assert-planted-latch-failed:
+    needs: planted-latch
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: The latch fixture must have failed
+        env:
+          RESULT: ${{ needs.planted-latch.result }}
+        run: |
+          set -euo pipefail
+          echo "planted-latch result: $RESULT"
+          if [ "$RESULT" = "failure" ]; then
+            echo "- rtl-check went red on the planted latch, as required" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "::error::rtl-check did NOT fail on a design with an inferred latch (result: $RESULT). The check cannot be trusted until it does."
+          exit 1

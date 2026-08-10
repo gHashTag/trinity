@@ -1,0 +1,4 @@
+project:
+  top_module: "fixture_latch"
+  source_files:
+    - "fixture_latch.v"
