@@ -471,7 +471,87 @@ const openGigabitEthernet: Post = {
   },
 }
 
-export const posts: Post[] = [openGigabitEthernet]
+const scaleFieldWidth: Post = {
+  slug: 'scale-field-width-already-published',
+  title: 'The scale field does not need eight bits, and we were not the first to say so',
+  summary:
+    'Four bits cover the shared scale on every checkpoint measured -- bit-identical to E8M0, zero blocks truncated out of 20,462,464. The observation was published first by someone else; what is ours is the proof around it, and the constant does not survive contact with activations.',
+  date: '2026-08-11',
+  readingMinutes: 9,
+  tags: ['Number formats', 'MXFP4', 'Quantisation', 'Prior art'],
+  receipts: [
+    { label: 'Chhugani et al., Unveiling the Potential of Quantization with MXFP4 (arXiv:2603.08713), section 3.3 -- the prior publication of the 4-bit-suffices observation', href: 'https://arxiv.org/abs/2603.08713' },
+    { label: 'Dettmers et al., QLoRA: Efficient Finetuning of Quantized LLMs (NeurIPS 2023) -- double quantisation, 0.5 to 0.127 bits per parameter', href: 'https://arxiv.org/abs/2305.14314' },
+    { label: 'Rouhani et al., With Shared Microexponents, A Little Shifting Goes a Long Way (ISCA 2023) -- multi-level exponent splitting', href: 'https://arxiv.org/abs/2302.08007' },
+    { label: 'OCP Microscaling Formats (MX) Specification v1.0 -- the E8M0 shared scale this measures against', href: 'https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf' },
+  ],
+  openQuestions: [
+    'The observation that four bits suffice for the scale exponent is not ours: Chhugani et al. (arXiv:2603.08713, section 3.3) published it on larger models. What is presented here as new is the theory around it -- the sufficiency proof, the R < S < R+2 bound, and the separation of sufficiency from necessity.',
+    'Necessity was NOT established per tensor, only in the worst case. A counterexample exists in which a truncated scale field returns the same dequantised weights, so \'b_min bits are required\' is false as a per-tensor statement.',
+    'Activation spans are sample-dependent and were still growing between measurement windows. The five-bit figure for activations is a lower bound on what a longer run would report, not a converged number.',
+    'The binade-grid phase ambiguity is worth one code either way and has not been eliminated: Pythia\'s R = 7.33 gives S = 8 at one phase and S = 9 at another.',
+    'The five checkpoints are small (SmolLM2, Qwen, Pythia, OPT, GPT-2). The prior work reports the same conclusion on Llama-3.1-8B and Qwen3-8B, so the direction agrees at scale, but nothing here was measured at that size.',
+  ],
+  published: true,
+  body: [
+    { kind: 'h', text: 'The claim, and who published it first' },
+    { kind: 'p', text: 'The result this line of work was built around is that the shared scale in a block format does not need an eight-bit exponent. Measured on five checkpoints at block size 32, the minimum sufficient width is b_min = 3, 4, 3, 4, 4. A four-bit field truncates zero blocks out of 20,462,464 and is bit-identical to E8M0 in every tensor of every model. Not approximately sufficient -- identical.' },
+    { kind: 'p', text: 'The observation is already published. Chhugani et al., "Unveiling the Potential of Quantization with MXFP4" (arXiv:2603.08713, submitted 30 January 2026), section 3.3: "for nearly all weight tensors and over 98% of activation tensors, a 4-bit exponent suffices to capture the scaling factor\'s dynamic range". They evaluate Llama-3.1-8B-Instruct and Qwen3-8B, among others. That is the same finding, on larger models, published first.' },
+    { kind: 'p', text: 'So the measurement here is a replication on five smaller checkpoints, and it is written up as one. Reporting it as a discovery would have been the easy mistake, and the expensive one: the reviewer who knows the field finds the prior work in one search and stops reading.' },
+    { kind: 'h', text: 'One thing the prior work does not do' },
+    { kind: 'p', text: 'The paper observes the redundancy and then goes the other way. It keeps E8M0 for fine-grained 1x16 block scaling and adds a separate macro-block scale with an eight-bit mantissa at 1x128 granularity, explicitly to avoid the hardware cost of implementing E4M3 natively. It does not propose narrowing the scale field. The observation is theirs; the prescription that follows from it is not in that paper.' },
+    { kind: 'h', text: 'The idea is older than either of us, and it is already in silicon' },
+    { kind: 'ul', items: ['QLoRA double quantisation (NeurIPS 2023) makes the same observation one level down, quantising the quantisation constants and taking 0.5 bits per parameter to 0.127.', 'NVFP4 on Blackwell already implements the architecture the theorem prescribes: a per-tensor FP32 anchor plus a narrow per-block E4M3. The anchor is the bias that makes a narrow field possible. That is a shipped design, not a proposal.', 'Shared Microexponents / MSFP (ISCA 2023) is an entire paper about splitting exponents across levels.'] },
+    { kind: 'h', text: 'What survives as ours: the theory, not the observation' },
+    { kind: 'p', text: 'b_min = ceil(log2 S(W,K)), with a sufficiency proof and bit-identity to E8M0 rather than an empirical threshold. The bound R < S < R+2 relating the real span to the integer code count, checked on all 3,780 tensor-K pairs without a single exception. And, stated separately because it is the part that is easy to overclaim: necessity holds only in the worst case, not per tensor. A counterexample is constructed -- a truncated scale can give back the same dequantised weights.' },
+    { kind: 'p', text: 'There is also a phase ambiguity in the binade grid worth one code either way. Pythia is the live example: R = 7.33 gives S = 8, and at a different phase the same span gives S = 9. A rule that reads the span and rounds will disagree with itself depending on where the grid happens to sit.' },
+    { kind: 'h', text: 'The limits are part of the claim' },
+    { kind: 'p', text: 'Block size moves the answer. b_min against K = 1..256:' },
+    { kind: 'table', head: ['model', 'K = 1, 2, 4, 8, 16, 32, 64, 128, 256'], rows: [['SmolLM2', '5, 5, 4, 4, 3, 3, 3, 3, 3'], ['Qwen', '5, 5, 4, 4, 4, 4, 3, 3, 3'], ['Pythia', '5, 5, 4, 4, 4, 3, 3, 3, 3'], ['OPT', '5, 5, 4, 4, 4, 4, 4, 4, 4'], ['GPT-2', '5, 5, 5, 4, 4, 4, 4, 4, 4']] },
+    { kind: 'p', text: 'Four bits suffice for all five at K >= 8, and do not at K <= 2 -- and for GPT-2 not at K = 4 either. A constant quoted without its block size is not a constant.' },
+    { kind: 'h', text: 'Activations break the constant' },
+    { kind: 'p', text: 'MX shares one encoding between weights and activations, so the weight figure is not the whole answer. At layer inputs OPT needs five bits: twelve of seventy-two layers exceed four, the worst being decoder.layers.7.fc2 with a span of 30. The mechanism is not outliers. The input is post-ReLU, and blocks of near-zeros drag the lower bound down by about 28 binades -- it is the bottom tail that widens the span, not the top.' },
+    { kind: 'p', text: 'Spans also depend on the sample and keep growing between windows, so any activation figure is a lower bound on what a longer run would report.' },
+    { kind: 'h', text: 'What is left standing' },
+    { kind: 'p', text: '"E8M0 is over-provisioned" survives: five is less than eight on every model measured. The constant does not survive as a single number. It is four bits for weights, and five once activations share the encoding.' },
+  ],
+  ru: {
+    title: 'Полю масштаба не нужны восемь бит, и сказали это не мы первыми',
+    summary:
+      'Четырёх бит хватает на общий масштаб во всех измеренных чекпоинтах — побитово идентично E8M0, ноль обрезанных блоков из 20 462 464. Наблюдение опубликовано раньше и не нами; нашим остаётся доказательство вокруг него, а константа не переживает встречи с активациями.',
+    openQuestions: [
+      'Наблюдение, что четырёх бит достаточно для экспоненты масштаба, — не наше: Chhugani et al. (arXiv:2603.08713, раздел 3.3) опубликовали его на моделях крупнее. Новым здесь подаётся теория вокруг него — доказательство достаточности, граница R < S < R+2 и разделение достаточности и необходимости.',
+      'Необходимость НЕ установлена по тензорам, только в худшем случае. Существует контрпример, где обрезанное поле масштаба возвращает те же деквантованные веса, поэтому «требуется b_min бит» ложно как утверждение о каждом тензоре.',
+      'Спаны активаций зависят от выборки и продолжали расти между окнами измерения. Пятибитная цифра по активациям — нижняя оценка, а не сошедшееся значение.',
+      'Фазовая неоднозначность бинадной сетки стоит одного кода в любую сторону и не устранена: у Pythia R = 7.33 даёт S = 8 при одной фазе и S = 9 при другой.',
+      'Пять чекпоинтов невелики (SmolLM2, Qwen, Pythia, OPT, GPT-2). Предшествующая работа сообщает тот же вывод на Llama-3.1-8B и Qwen3-8B, то есть направление совпадает и на масштабе, но здесь на таком размере ничего не измерялось.',
+    ],
+    body: [
+      { kind: 'h', text: 'Заявление и кто опубликовал его первым' },
+      { kind: 'p', text: 'Результат, вокруг которого строилась эта линия работы: общий масштаб в блочном формате не нуждается в восьмибитной экспоненте. Замерено на пяти чекпоинтах при размере блока 32, минимальная достаточная ширина b_min = 3, 4, 3, 4, 4. Четырёхбитное поле обрезает ноль блоков из 20 462 464 и побитово идентично E8M0 в каждом тензоре каждой модели. Не приблизительно достаточно — идентично.' },
+      { kind: 'p', text: 'Наблюдение уже опубликовано. Chhugani et al., «Unveiling the Potential of Quantization with MXFP4» (arXiv:2603.08713, подана 30 января 2026), раздел 3.3: «for nearly all weight tensors and over 98% of activation tensors, a 4-bit exponent suffices to capture the scaling factor\'s dynamic range». Они оценивают в том числе Llama-3.1-8B-Instruct и Qwen3-8B. Это то же самое наблюдение, на моделях крупнее, опубликованное раньше.' },
+      { kind: 'p', text: 'Поэтому здешний замер — репликация на пяти меньших чекпоинтах, и он так и подан. Выдать его за открытие было бы лёгкой ошибкой и дорогой: рецензент, знающий область, находит предшествующую работу одним поиском и перестаёт читать.' },
+      { kind: 'h', text: 'Чего предшествующая работа не делает' },
+      { kind: 'p', text: 'Статья замечает избыточность и идёт в другую сторону. Она оставляет E8M0 на мелком блоке 1×16 и добавляет отдельный макроблочный масштаб с восьмибитной мантиссой на 1×128 — прямо ради того, чтобы не платить за аппаратный E4M3. Сузить поле масштаба она не предлагает. Наблюдение — их; предписание, которое из него следует, в той статье не сформулировано.' },
+      { kind: 'h', text: 'Идея старше нас обоих и уже в кремнии' },
+      { kind: 'ul', items: ['QLoRA double quantisation (NeurIPS 2023) делает то же наблюдение уровнем ниже, квантуя сами константы квантования: 0.5 бита на параметр превращаются в 0.127.', 'NVFP4 на Blackwell уже реализует архитектуру, которую предписывает теорема: пер-тензорный якорь FP32 плюс узкий пер-блочный E4M3. Якорь и есть тот сдвиг, который делает узкое поле возможным. Это внедрённая конструкция, а не предложение.', 'Shared Microexponents / MSFP (ISCA 2023) — целая статья о разделении экспонент по уровням.'] },
+      { kind: 'h', text: 'Что остаётся нашим: теория, а не наблюдение' },
+      { kind: 'p', text: 'b_min = ⌈log₂ S(W,K)⌉ — с доказательством достаточности и побитовой идентичностью E8M0, а не эмпирическим порогом. Граница R < S < R+2, связывающая вещественный спан с целым числом кодов, проверена на всех 3780 парах тензор-K без единого исключения. И отдельно, потому что именно здесь легко переусердствовать: необходимость выполняется только в худшем случае, не по тензорам. Построен контрпример — обрезанное поле масштаба может вернуть те же деквантованные веса.' },
+      { kind: 'p', text: 'Есть также фазовая неоднозначность бинадной сетки ценой в один код в любую сторону. Pythia — живой пример: R = 7.33 даёт S = 8, а при другой фазе тот же спан даёт S = 9. Правило, которое читает спан и округляет, будет расходиться само с собой в зависимости от того, где стоит сетка.' },
+      { kind: 'h', text: 'Границы — часть заявления' },
+      { kind: 'p', text: 'Размер блока меняет ответ. b_min при K = 1…256:' },
+      { kind: 'table', head: ['модель', 'K = 1, 2, 4, 8, 16, 32, 64, 128, 256'], rows: [['SmolLM2', '5, 5, 4, 4, 3, 3, 3, 3, 3'], ['Qwen', '5, 5, 4, 4, 4, 4, 3, 3, 3'], ['Pythia', '5, 5, 4, 4, 4, 3, 3, 3, 3'], ['OPT', '5, 5, 4, 4, 4, 4, 4, 4, 4'], ['GPT-2', '5, 5, 5, 4, 4, 4, 4, 4, 4']] },
+      { kind: 'p', text: 'Четырёх бит хватает всем пяти при K ≥ 8 и не хватает при K ≤ 2, а у GPT-2 — и при K = 4. Константа, названная без размера блока, не константа.' },
+      { kind: 'h', text: 'Активации ломают константу' },
+      { kind: 'p', text: 'MX делит одну кодировку между весами и активациями, поэтому цифра по весам — не весь ответ. На входах слоёв OPT требует пяти бит: двенадцать слоёв из семидесяти двух выше четырёх, худший — decoder.layers.7.fc2 со спаном 30. Механизм — не выбросы. Вход постReLU, и блоки почти-нулей утягивают нижнюю границу вниз примерно на 28 бинад: спан расширяет нижний хвост, а не верхний.' },
+      { kind: 'p', text: 'Спаны к тому же зависят от выборки и продолжали расти между окнами измерения, поэтому любая цифра по активациям — нижняя оценка того, что показал бы более длинный прогон.' },
+      { kind: 'h', text: 'Что остаётся в силе' },
+      { kind: 'p', text: '«E8M0 переобеспечено» выживает: пять меньше восьми на каждой измеренной модели. Константа как одно число не выживает. Это четыре бита для весов и пять, как только кодировку делят активации.' },
+    ],
+  },
+}
+
+export const posts: Post[] = [scaleFieldWidth, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
