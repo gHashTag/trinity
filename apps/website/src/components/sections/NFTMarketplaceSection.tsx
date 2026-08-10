@@ -304,9 +304,9 @@ export default function NFTMarketplaceSection() {
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: 10, color: 'rgba(255, 255, 255, 0.5)' }}>
             <span>$TRI</span>
             <span>•</span>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.avg_price.toFixed(2) || '0.00'}</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.avg_price?.toFixed(2) ?? '—'}</span>
             <span>•</span>
-            <span>{(data?.data.marketplace_fee || 0.025) * 100}% fee</span>
+            <span>{data?.data.marketplace_fee !== undefined ? data.data.marketplace_fee * 100 + '% fee' : 'fee unknown'}</span>
           </div>
         </div>
       </div>

@@ -307,7 +307,7 @@ export default function SacredEconomySection() {
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: 10, color: 'rgba(255, 255, 255, 0.5)' }}>
             <span>$TRI Token</span>
             <span>•</span>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{(data?.data.tri_balance || 0).toFixed(4)}</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.tri_balance?.toFixed(4) ?? '—'}</span>
             <span>•</span>
             <span>Web3 Bridge</span>
           </div>
