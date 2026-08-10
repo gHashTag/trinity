@@ -77,15 +77,21 @@ const SETTLE_MS = 250;      // per click: React commit + a frame, not a data fet
 // Chrome, wherever this Mac keeps it. No download, no bundled browser: if the
 // developer has no Chrome, that is a fact to state, not to fix with 100 MB.
 const CHROMES = [
+  // First, so it can override rather than only fill a gap -- CI sets it, and
+  // "set CHROME_PATH to force it" has to mean force.
+  process.env.CHROME_PATH,
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
   '/Applications/Chromium.app/Contents/MacOS/Chromium',
-  process.env.CHROME_PATH,
+  '/usr/bin/google-chrome', '/usr/bin/chromium-browser', '/usr/bin/chromium',
 ].filter(Boolean);
 const CHROME = CHROMES.find(p => existsSync(p));
 if (!CHROME) {
-  console.error('  no Chrome found. Set CHROME_PATH, or install Chrome — this check drives the one you already have.');
-  process.exit(1);
+  // Skip, do not fail. A missing browser is a fact about the environment, not
+  // a defect in the change being made -- and a check that fails for a reason
+  // it already knows about gets muted within a week.
+  console.log('  no Chrome found — skipping the render check. Set CHROME_PATH to force it.');
+  process.exit(0);
 }
 
 if (!process.argv.includes('--no-build')) {
