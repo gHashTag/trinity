@@ -135,6 +135,12 @@ const chrome = spawn(CHROME, [
   '--no-first-run', '--no-default-browser-check', '--disable-extensions',
   '--disable-background-networking', '--disable-sync', '--mute-audio',
   '--window-size=1440,900',
+  // CI runs Chrome as root in a container with no user namespaces, where the
+  // sandbox cannot start and Chrome dies before it prints a debugging port --
+  // "Chrome exited (null) before listening", which reads like a broken check
+  // rather than a missing kernel feature. Only on Linux: dropping the sandbox
+  // on a developer's own machine is a real cost for no benefit.
+  ...(process.platform === 'linux' ? ['--no-sandbox', '--disable-dev-shm-usage'] : []),
   // three.js is on this page. Without a software GL fallback every WebGL
   // context fails to create and the check reports the headless environment as
   // a rendering bug.
