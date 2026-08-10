@@ -48,22 +48,43 @@ The design is two global buffers whose only difference is how they are driven: o
 routing"; one from a flip-flop, which had no dedicated path and used to abort instead of
 falling back.
 
-## What is verified here, and what is not
+## STATUS: this case does not currently reproduce the failure — 2026-08-10
 
-**Verified on this machine, 2026-08-10.** Synthesis runs and yields exactly two `BUFG`
-cells, one of them `$auto$clkbufmap.cc:261:execute$2539` — the same cell named in the
-pre-patch error. `check.py` was exercised in three directions: the real netlist passes, a
-missing FASM fails with the placement message, and a doctored one-BUFG netlist fails on the
-premise.
+**Measured, not assumed.** `nextpnr-xilinx` was built here from `e86f351` (the #115 merge,
+which predates #111 — `git diff` confirms `pack_clocking_xc7.cc` carries none of the #111
+fallback), a 318 MB `xc7a200t` chipdb was generated, and the case was run:
 
-**Not verified: placement.** `nextpnr-xilinx` is now built here (`ARCH=xilinx`), but chipdb
-generation for `xc7a200t` has not finished, so the `--fasm` half of the check has still never
-run against a real place-and-route. The outcomes in the table come from the PR's own
-measurements, not from a run here.
+```
+nextpnr-BASE --chipdb xc7a200t.bin --xdc fabric_bufg.xdc --json fab.json \
+             --fasm fab-base.fasm --freq 100 --seed 1
+→ exit 0, FASM written, 34788 bytes
+```
 
-Anyone adopting this should run it once on base and once on the merged tree and confirm it
-**fails then passes**. A regression test nobody has seen fail is not yet a regression test —
-it is a build that happens to succeed.
+**It placed.** On a binary that provably lacks the patch. So as written this case guards
+nothing, and calling it a regression test would be wrong.
+
+### What is and is not explained
+
+- The premise still holds: synthesis yields exactly two `BUFG` cells, one of them
+  `$auto$clkbufmap.cc:261:execute$2539` — the cell the original error named.
+- `pack_clocking_xc7.cc` is **byte-identical** between `f8e7643` (the base the PR measured
+  against) and the build used here. The xc7 clocking path did not change, so an intervening
+  merge is not the explanation.
+- `#110` raised a clock-buffer preplace cap, but in `pack_clocking_xcup.cc` — UltraScale+,
+  not xc7. It cannot be the cause.
+- What *did* change between `f8e7643` and here: `xilinx/external/prjxray-db` was bumped, and
+  `xdc.cc` gained 52 lines from #109. **A different prjxray-db yields a different chipdb and
+  a different set of legal BELs**, which is the leading candidate and is untested.
+
+### Before this is offered to anyone
+
+Build at `f8e7643` with the prjxray-db submodule *that commit pins*, regenerate the chipdb
+from it, and confirm the case fails there. If it does, the case is valid and needs its
+prjxray-db version pinned alongside the part. If it does not, the reproduction in the PR
+depended on something not captured here and the case must be rebuilt from whatever that was.
+
+**A regression test nobody has seen fail is not a regression test.** This one has now been
+seen *not* to fail, which is worse — it would have gone green forever while guarding nothing.
 
 ## Running it costs more than the test does — measured 2026-08-10
 
