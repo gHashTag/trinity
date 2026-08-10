@@ -592,7 +592,7 @@
       ]
     },
     "verifyLink": "在GitHub上验证基准测试 ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
   },
   "mining": {
     "title": "挖矿<span class=\"grad\">行业</span> 2026",
@@ -1848,7 +1848,7 @@
       }
     ],
     "cta": "在GitHub阅读完整报告",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
   },
   "phoenixNumber": {
     "badge": "数学基础",
@@ -1983,7 +1983,7 @@
     },
     "quote": "\"宇宙的数学偏爱Trinity。\"",
     "cta": "查看完整代币经济学",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/business/TOKENOMICS.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/docs/depin/tokenomics.md"
   },
   "mysticism": {
     "title": "数学基础",
