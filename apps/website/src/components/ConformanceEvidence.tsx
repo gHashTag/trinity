@@ -31,7 +31,9 @@ const T = {
     independent: 'The oracle is not mine',
     independentBody: 'ml_dtypes was written by other people, years apart from this RTL, from the same OCP MX and IEEE 754 specifications. A reference model derived from the design agrees with the design including where it is wrong — which is not a worry, it is a theorem, and it is T9 below.',
     found: 'What it found',
-    foundBody: 'fp6_e3m2_decode collapses its entire top binade to one value: 16, 20, 24 and 28 all decode as 14, and so do their negatives. Eight of sixty-four code points, including the format maximum. The comment names the right rule and applies it backwards — OCP MX saturates when converting INTO the format, which is a property of the encoder; a code point with the top exponent is just a number, and FP6 reserves no encodings at all. The convention borrowed here belongs to FP8, which does.',
+    foundBody: 'fp6_e3m2_decode collapses its entire top binade to one value: 16, 20, 24 and 28 all decode as 14, and so do their negatives. Eight of sixty-four code points, including the format maximum. The comment names the right rule and applies it backwards — OCP MX saturates when converting INTO the format, which is a property of the encoder; a code point with the top exponent is just a number, and FP6 reserves no encodings at all. The convention borrowed here belongs to FP8, which does. Fixed, with the repository’s own 21 gates green afterwards.',
+    reader: 'What was actually missing was a reader',
+    readerBody: 'It would be a better advertisement to say an outside oracle saw what the inside one could not. That is false. Three tests in that repository already reported this defect — two exhaustive, one against a reference not derived from the RTL — printing the same eight code points every time, and CI ran all three. CI had been red for six weeks: four runs, four failures. A fifth red carried no information anyone could act on, which is T12 below and the reason this section leads with it rather than with the find.',
     against: 'And the part that went against me',
     againstBody: 'The same tool first reported fourteen mismatches in mxfp8_e4m3_decode. That was my error: I compared against the IEEE-style float8_e4m3, which has infinities, where OCP MX E4M3 is float8_e4m3fn. Against the right reference it passes all 256 codes. The adjudication going against the reference model rather than the RTL is the normal case, and a page that only showed the other kind would be advertising, not evidence.',
     tableFormat: 'Format',
@@ -51,6 +53,8 @@ const T = {
     independentBody: 'ml_dtypes написан другими людьми, на годы раньше этого RTL, по тем же спецификациям OCP MX и IEEE 754. Эталонная модель, выведенная из дизайна, соглашается с дизайном — включая места, где он неверен. Это не опасение, а теорема: T9 ниже.',
     found: 'Что нашлось',
     foundBody: 'fp6_e3m2_decode схлопывает всю старшую бинаду в одно значение: 16, 20, 24 и 28 декодируются как 14, и так же — отрицательные. Восемь кодов из шестидесяти четырёх, включая максимум формата. Комментарий называет верное правило и применяет его наоборот: OCP MX насыщает при конвертации В формат — это свойство кодировщика; кодовая точка со старшей экспонентой это просто число, а FP6 вообще не резервирует кодировок. Заимствованное соглашение принадлежит FP8, который резервирует.',
+    reader: 'На самом деле не хватало читателя',
+    readerBody: 'Красивее было бы сказать, что внешний оракул увидел то, чего не видел внутренний. Это неправда. Три теста того же репозитория уже сообщали об этом дефекте — два исчерпывающих, один против эталона, не выведенного из RTL, — и каждый раз печатали те же восемь кодов, и CI запускал все три. CI был красным шесть недель: четыре прогона, четыре падения. Пятое красное не несло информации, на которую можно опереться, — это T12 ниже и причина, по которой раздел начинается с неё, а не с находки.',
     against: 'И часть, которая оказалась против меня',
     againstBody: 'Тот же инструмент сначала сообщил о четырнадцати расхождениях в mxfp8_e4m3_decode. Это была моя ошибка: я сверял с IEEE-подобным float8_e4m3, у которого есть бесконечности, тогда как OCP MX E4M3 — это float8_e4m3fn. С верным эталоном модуль проходит все 256 кодов. Разбор, оказавшийся против эталонной модели, а не против RTL, — обычный случай, и страница, показывающая только другой род, была бы рекламой, а не свидетельством.',
     tableFormat: 'Формат',
@@ -104,7 +108,7 @@ export default function ConformanceEvidence() {
         </table>
       </div>
 
-      {[[t.exhaustive, t.exhaustiveBody], [t.independent, t.independentBody], [t.found, t.foundBody], [t.against, t.againstBody]].map(([head, body]) => (
+      {[[t.exhaustive, t.exhaustiveBody], [t.independent, t.independentBody], [t.found, t.foundBody], [t.reader, t.readerBody], [t.against, t.againstBody]].map(([head, body]) => (
         <div key={head as string} style={{ marginBottom: '0.9rem' }}>
           <strong style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.92rem' }}>{head}</strong>
           <span style={{ fontSize: '0.88rem', lineHeight: 1.6, opacity: 0.85 }}>{body}</span>

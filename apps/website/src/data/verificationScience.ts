@@ -142,6 +142,18 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'Anything outside that space. Exhausting a decoder’s 256 inputs says nothing about the design that instantiates it, about sequences of inputs, about synthesis preserving the behaviour, or about the formats the reference implementation does not cover. It also does not scale: one more bit doubles the work, so this argument is available for a decoder and never for a datapath.',
   },
+  {
+    id: 'T12',
+    name: 'A failure that always happens carries no information',
+    statement:
+      'The self-information of an observed event is −log₂ P. A build that is red on every run has P(red) = 1, so each new red carries −log₂(1) = 0 bits: it cannot distinguish the state of the world before it from the state after. Detection and information are different quantities, and a verification programme measures only the first.',
+    worked:
+      'Measured on my own chip. A decoder disagreed with the specification on 8 of 64 code points, and three separate tests in that repository reported it — two exhaustive, one against a reference not derived from the RTL — printing the same eight code points every time. Continuous integration ran all three. Continuous integration had been red for six weeks: four runs, four failures, so P(red) = 1 over the whole window and the fifth red was worth nothing. An outside tool found the defect in five minutes, and what it contributed was not a better oracle but a reader.',
+    citation: 'Shannon, “A Mathematical Theory of Communication”, Bell System Technical Journal 27, 1948, §1',
+    url: 'https://doi.org/10.1002/j.1538-7305.1948.tb01338.x',
+    doesNotClaim:
+      'That a red build should be silenced or that the tests were at fault — they were correct, exhaustive and independent, which is precisely what makes the case worth stating. Nor does it give a threshold: Shannon’s quantity goes to zero continuously, so there is no run count at which a signal officially stops meaning anything.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
