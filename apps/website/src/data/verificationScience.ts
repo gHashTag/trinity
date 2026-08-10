@@ -106,6 +106,30 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That the check catches every member of its class. Passing its own planted defect shows the check can go red, nothing more.',
   },
+  {
+    id: 'T9',
+    name: 'An oracle that shares the implementation’s assumption cannot detect a fault in that assumption',
+    statement:
+      'Detection requires the oracle and the implementation to disagree. If both are derived from the same premise, then on every input where that premise is false they are wrong together and therefore agree — so the probability of detecting a fault in the shared premise is exactly zero, whatever the number of test cases. Independence of a checker is not a property of who wrote it; it is a property of what it was derived from.',
+    worked:
+      'Measured here, twice in one hour. A parser counted flip-flops in the yosys cell histogram assuming the field order is count-then-name. Both fixtures it was checked against were typed out by hand in that same order, so pattern and fixture agreed and the suite was green — while on ubuntu-latest, where the histogram prints name-then-count, it returned 0 for every design in existence. Two real chips holding 17 and 66 flip-flops were reported “purely combinational” by a green pipeline. The fix was not a better pattern: it was throwing away the invented fixtures and capturing real output from both yosys versions.',
+    citation: 'Knight & Leveson, “An Experimental Evaluation of the Assumption of Independence in Multiversion Programming”, IEEE TSE SE-12(1), 1986',
+    url: 'https://doi.org/10.1109/TSE.1986.6312924',
+    doesNotClaim:
+      'That independently sourced oracles fail independently. Knight and Leveson’s result is the opposite: 27 separately written versions failed together far more often than independence predicts, because difficulty is a property of the input rather than of the author. Capturing real output removes one shared premise; it does not make an oracle independent in general.',
+  },
+  {
+    id: 'T10',
+    name: 'Asserting a value detects faults that asserting a verdict cannot',
+    statement:
+      'Under the PIE model a fault is observed only if it is Executed, Infects the program state, and Propagates to an observed output. A test that observes only pass-or-fail has collapsed its output alphabet to a single bit, so every infection mapping to the same bit is absorbed and the propagation term falls with it. Asserting the value keeps the alphabet wide enough for the infection to reach the observer.',
+    worked:
+      'The self-test for this service ran a clean design and a design with a planted latch, and asserted the verdict of each. A flip-flop counter returning 0 for every design on earth satisfied both assertions for weeks: zero flops is not a failure, it prints as “purely combinational”, and the job stayed green. The counter now asserts the number — the clean fixture is one 4-bit register, so the assertion is 4 — and a third job asserts a count deliberately wrong by one, so the assertion itself has been watched failing.',
+    citation: 'Voas & Miller, “Software Testability: The New Verification”, IEEE Software 12(3), 1995',
+    url: 'https://doi.org/10.1109/52.382180',
+    doesNotClaim:
+      'That a value assertion makes a test adequate. It widens the observed output; it says nothing about whether the inputs ever execute the faulty path, which is the first of the three conditions and the one no assertion can supply.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
