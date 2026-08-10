@@ -46,8 +46,15 @@
 // is silent to this check by construction -- which is what A33's fix does on
 // purpose. It catches the crash, not the emptiness the crash was hiding.
 //
-// Only what a click reveals. Panels behind the WASM toggle, behind a chat
-// round-trip, or behind a route this file does not list are never opened.
+// Only what a click reveals. Panels behind a chat round-trip, or behind a route
+// this file does not list, are never opened.
+//
+// The first run of this check found 0 panels and refused to call that a clean
+// page -- which is the guard at the bottom working. /canvas defaults to the
+// 'petals' layer, seven DOM nodes of constants ticker; every panel A31-A38 was
+// about lives on 'tools', one of NINE layers reachable only by pressing 1-9.
+// Six loops of fixes had gone into panels that the default view does not
+// render. So this presses every layer key and expands what each one mounts.
 //
 // Localhost:8080 is expected to fail. A33: the deployed bundle fetches metrics
 // from the visitor's own machine, so the fetch fails here too, and the mock
@@ -180,7 +187,16 @@ listeners.push(msg => {
     const text = d.exception?.description || d.text || 'uncaught exception';
     errors.push({ kind: 'uncaught', text });
   } else if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') {
-    errors.push({ kind: 'console.error', text: msg.params.args.map(describe).join(' ') });
+    const text = msg.params.args.map(describe).join(' ');
+    // The app logging its own failure to reach localhost:8080 is the expected
+    // condition here, not a finding -- pasWebSocket.ts opens
+    // ws://localhost:8080/ws/pas, which cannot connect in this harness and, on
+    // an HTTPS page, is blocked as mixed content before it is even tried. This
+    // list stays SHORT and each entry names the endpoint it excuses; a broad
+    // pattern here would mute the class of error this check exists to find.
+    const ABSENT_BACKEND = [/^\[PAS WS\] Error/];
+    if (ABSENT_BACKEND.some(re => re.test(text))) network.push(text);
+    else errors.push({ kind: 'console.error', text });
   } else if (msg.method === 'Log.entryAdded' && msg.params.entry.level === 'error') {
     network.push(msg.params.entry.text);
   }
@@ -224,6 +240,25 @@ function cleanup() {
 const onLoad = drain();
 if (onLoad.length) report('on load, before any click', onLoad);
 
+// ── Every layer, not just the default one ──
+//
+// LAYER_KEYS is nine entries and keys 1-9 switch between them (TrinityCanvas
+// line 681). switchLayer animates for ~200ms and sets a transition lock, so
+// pressing faster than that silently drops layers -- which would look exactly
+// like a layer with no panels.
+const LAYERS = 9;
+//
+// And blur first. Layer 2 is the chat layer and it focuses its textarea on
+// mount, so every digit after that gets TYPED INTO THE BOX instead of reaching
+// the window handler. The symptom is indistinguishable from nine empty layers,
+// which is exactly what the first run of this loop reported.
+const key = async (text) => {
+  await evaluate('document.activeElement && document.activeElement.blur(), 1');
+  for (const type of ['keyDown', 'keyUp'])
+    await call('Input.dispatchKeyEvent', { type, text, key: text, code: `Digit${text}`,
+      windowsVirtualKeyCode: text.charCodeAt(0), nativeVirtualKeyCode: text.charCodeAt(0) });
+};
+
 // ── Expand every collapsed panel, one at a time ──
 //
 // One at a time on purpose. Clicking them all and reading a stack trace off a
@@ -247,13 +282,22 @@ const PROBE = `(() => {
 })()`;
 
 const expanded = [];
-for (let i = 0; i < MAX_PANELS; i++) {
-  const label = await evaluate(PROBE);
-  if (label === null) break;
-  expanded.push(label);
-  await wait(SETTLE_MS);
-  const found = drain();
-  if (found.length) report(`after expanding "${label}"`, found);
+for (let layer = 1; layer <= LAYERS; layer++) {
+  await key(String(layer));
+  await wait(900);  // the 200ms fade plus the first data tick of whatever mounted
+  const arriving = drain();
+  if (arriving.length) report(`on switching to layer ${layer}`, arriving);
+
+  const before = expanded.length;
+  for (let i = 0; i < MAX_PANELS; i++) {
+    const label = await evaluate(PROBE);
+    if (label === null) break;
+    expanded.push(`${layer}:${label}`);
+    await wait(SETTLE_MS);
+    const found = drain();
+    if (found.length) report(`after expanding "${label}" on layer ${layer}`, found);
+  }
+  console.log(`  layer ${layer}: ${expanded.length - before} panel(s)`);
 }
 
 await wait(1000);  // whatever the newly-mounted panels do on their next tick
@@ -268,7 +312,8 @@ if (late.length) report('after everything was expanded', late);
 // the selector broke — say so, and fail.
 console.log(`  expanded ${expanded.length} panel(s): ${expanded.join(' · ')}`);
 if (expanded.length === 0) {
-  console.error('\n  0 panels expanded. /canvas has collapsed panels, so this is a broken selector, not a clean page.');
+  console.error('\n  0 panels expanded across all nine layers. /canvas has collapsed panels,');
+  console.error('  so this is a broken selector or a broken layer switch, not a clean page.');
   cleanup();
   process.exit(1);
 }
