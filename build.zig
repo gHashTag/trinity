@@ -207,7 +207,7 @@ pub fn build(b: *std.Build) void {
     // Benchmark tests
     const bench_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("benchmarks/benchmark_test.zig"),
+            .root_source_file = b.path("tests/benchmarks/benchmarks/benchmark_test.zig"),
             .target = target,
             .optimize = .ReleaseFast,
             .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
@@ -364,7 +364,7 @@ pub fn build(b: *std.Build) void {
     const bench_compress = b.addExecutable(.{
         .name = "bench-compress",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("benchmarks/bench_compression.zig"),
+            .root_source_file = b.path("tests/benchmarks/benchmarks/bench_compression.zig"),
             .target = target,
             .optimize = .ReleaseFast,
         }),
@@ -2146,7 +2146,7 @@ pub fn build(b: *std.Build) void {
         const photon_demo = b.addExecutable(.{
             .name = "photon-demo",
             .root_module = b.createModule(.{
-                .root_source_file = b.path("src/vsa/photon_demo.zig"),
+                .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_demo.zig"),
                 .target = target,
                 .optimize = optimize,
             }),
@@ -2171,7 +2171,7 @@ pub fn build(b: *std.Build) void {
         const photon_immersive = b.addExecutable(.{
             .name = "photon-immersive",
             .root_module = b.createModule(.{
-                .root_source_file = b.path("src/vsa/photon_immersive.zig"),
+                .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_immersive.zig"),
                 .target = target,
                 .optimize = optimize,
             }),
@@ -2196,7 +2196,7 @@ pub fn build(b: *std.Build) void {
     const trinity_canvas = b.addExecutable(.{
         .name = "trinity-canvas",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa/photon_trinity_canvas.zig"),
+            .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_trinity_canvas.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -2281,7 +2281,7 @@ pub fn build(b: *std.Build) void {
 
         const wasm_root = b.createModule(.{
             // ONE SOURCE OF TRUTH: same file as native build, with is_emscripten gates
-            .root_source_file = b.path("src/vsa/photon_trinity_canvas.zig"),
+            .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_trinity_canvas.zig"),
             .target = target,
             .optimize = optimize,
             .link_libc = true,
@@ -2360,7 +2360,7 @@ pub fn build(b: *std.Build) void {
     const photon_terminal = b.addExecutable(.{
         .name = "photon-terminal",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa/photon_terminal.zig"),
+            .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_terminal.zig"),
             .target = target,
             .optimize = optimize,
         }),
