@@ -112,7 +112,7 @@
         "proof": "Weights {-1, 0, +1} require only 1.58 bits vs 32 bits for float32",
         "result": "20× memory compression, multiplication-free inference",
         "source": "BitNet b1.58 (arXiv:2402.17764, Microsoft Research)",
-        "advantage": "AI inference without GPU, up to 3000× energy efficiency on FPGA",
+        "advantage": "AI inference without GPU, Up to 3000× energy efficiency on FPGA (projected, FPGA)",
         "verified": {
           "metric": "15.7× Compression",
           "value": "98KB → 6KB with 43% sparsity bonus",
@@ -311,20 +311,20 @@
       },
       {
         "title": "Exponential ROI",
-        "desc": "578x energy efficiency leap is the only way for mining survival after 2026."
+        "desc": "Up to 578x energy efficiency leap is the only way for mining survival after 2026 (projected, FPGA)."
       }
     ]
   },
   "solution": {
     "title": "Why <span class=\"grad\">Absolute Triad</span>?",
     "legend": [
-      "578.8x Energy Efficiency",
+      "Up to 578.8x Energy Efficiency (projected, FPGA)",
       "SU(3) Unitary Core",
       "Native Coptic Opcode (CIS)"
     ],
     "cards": [
       {
-        "value": "578.8×",
+        "value": "578.8× *",
         "label": "Energy Eff",
         "color": "blue"
       },
@@ -353,7 +353,8 @@
         "label": "Singularity",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* Projected on custom FPGA hardware. Verified on CPU: 20× memory compression."
   },
   "whynow": {
     "title": "Why <span class=\"grad\">Singularity</span> Now?",
@@ -403,7 +404,7 @@
       },
       {
         "title": "PAS V5.0",
-        "desc": "Maxwell’s Information Pump: 578.8x Efficiency",
+        "desc": "Maxwell’s Information Pump: Up to 578.8x Efficiency (projected, FPGA)",
         "tests": "Thermodynamics ✓"
       },
       {
@@ -424,7 +425,7 @@
       },
       {
         "label": "Efficiency",
-        "value": "578.8x (projected, FPGA)"
+        "value": "578.8x *"
       },
       {
         "label": "Code Compression",
@@ -438,7 +439,7 @@
         "color": "green"
       },
       {
-        "value": "578x",
+        "value": "578x *",
         "label": "Energy Leap",
         "color": "blue"
       },
@@ -462,7 +463,8 @@
         "label": "Entropy",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* Projected on custom FPGA hardware. Verified on CPU: 20× memory compression."
   },
   "benchmarks": {
     "title": "GPU-Verified <span class=\"grad\">Benchmarks</span>",
@@ -511,7 +513,7 @@
         "theorem": "1"
       },
       {
-        "value": "3000×",
+        "value": "3000× *",
         "label": "Energy Efficiency",
         "desc": "Projected on custom FPGA",
         "theorem": "2"
@@ -593,7 +595,8 @@
       ]
     },
     "verifyLink": "Verify Benchmarks on GitHub ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md",
+    "projectedNote": "* Projected on custom FPGA hardware. Verified on CPU: 20× memory compression."
   },
   "mining": {
     "title": "Mining <span class=\"grad\">Industry</span> 2026",
@@ -607,7 +610,7 @@
       {
         "barrier": "Electricity",
         "impact": "60–80% cost ($0.12+/kWh)",
-        "solution": "578.8x Efficiency: threshold drops to $0.0002/kWh",
+        "solution": "Up to 578.8x Efficiency: threshold drops to $0.0002/kWh (projected, FPGA)",
         "source": "Sber / TASS"
       },
       {
@@ -1589,7 +1592,7 @@
     "whyNow": [
       "Ternary AI is proven and natively realized",
       "We are the only ones with a native hardware stack",
-      "578x advantage — competitive end-game",
+      "Up to 578x advantage — competitive end-game (projected, FPGA)",
       "Working ecosystem of 20,645 specifications",
       "Clear path to AI market dominance"
     ],
@@ -1633,7 +1636,7 @@
         "label": "founder ownership"
       },
       {
-        "value": "578×",
+        "value": "578× *",
         "label": "energy efficiency"
       },
       {
@@ -1652,7 +1655,7 @@
     "why": [
       "Absolute Triad Achieved",
       "Binary era officially ended",
-      "578x energy advantage",
+      "Up to 578x energy advantage (projected, FPGA)",
       "20,645 native TRI files",
       "99% founder ownership = aligned"
     ],
@@ -1748,7 +1751,8 @@
       "email": "admin@t27.ai",
       "website": "https://trinity-site-one.vercel.app",
       "github": "https://github.com/gHashTag/trinity"
-    }
+    },
+    "projectedNote": "* Projected on custom FPGA hardware. Verified on CPU: 20× memory compression."
   },
   "bitnetProof": {
     "badge": "MATHEMATICAL PROOFS",

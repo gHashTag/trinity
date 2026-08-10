@@ -111,7 +111,7 @@
         "proof": "Gewichte {-1, 0, +1} benötigen nur 1,58 Bits vs. 32 Bits für float32",
         "result": "20× Speicherkompression, multiplikationsfreie Inferenz",
         "source": "BitNet b1.58 (arXiv:2402.17764, Microsoft Research)",
-        "advantage": "KI-Inferenz ohne GPU, bis zu 3000× Energieeffizienz auf FPGA",
+        "advantage": "KI-Inferenz ohne GPU, bis zu Bis zu 3000× Energieeffizienz auf FPGA (projiziert, FPGA)",
         "verified": {
           "metric": "15,7× Kompression",
           "value": "98KB → 6KB mit 43% Sparsity-Bonus",
@@ -304,7 +304,7 @@
       },
       {
         "title": "Exponentieller ROI",
-        "desc": "578x Energieeffizienz-Sprung ist der einzige Weg zum Mining-Überleben nach 2026."
+        "desc": "Bis zu 578x Energieeffizienz-Sprung ist der einzige Weg zum Mining-Überleben nach 2026 (projiziert, FPGA)."
       }
     ]
   },
@@ -346,7 +346,8 @@
         "label": "Singularität",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* Projiziert auf kundenspezifischer FPGA-Hardware. Auf CPU verifiziert: 20× Speicherkompression."
   },
   "whynow": {
     "title": "Warum <span class=\"grad\">Singularität</span> Jetzt?",
@@ -431,7 +432,7 @@
         "color": "green"
       },
       {
-        "value": "578x",
+        "value": "578x *",
         "label": "Energie-Sprung",
         "color": "blue"
       },
@@ -455,7 +456,8 @@
         "label": "Entropie",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* Projiziert auf kundenspezifischer FPGA-Hardware. Auf CPU verifiziert: 20× Speicherkompression."
   },
   "publications": {
     "badge": "WISSENSCHAFTLICHE PUBLIKATIONEN",
@@ -510,7 +512,7 @@
         "theorem": "1"
       },
       {
-        "value": "3000×",
+        "value": "3000× *",
         "label": "Energieeffizienz",
         "desc": "Projektion auf Custom-FPGA",
         "theorem": "2"
@@ -592,7 +594,8 @@
       ]
     },
     "verifyLink": "Benchmarks auf GitHub Verifizieren ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md",
+    "projectedNote": "* Projiziert auf kundenspezifischer FPGA-Hardware. Auf CPU verifiziert: 20× Speicherkompression."
   },
   "mining": {
     "title": "Mining <span class=\"grad\">Industrie</span> 2026",
@@ -1553,7 +1556,7 @@
     "whyNow": [
       "Ternäre KI ist bewiesen und nativ realisiert",
       "Wir sind die einzigen mit nativem Hardware-Stack",
-      "578x Vorteil — kompetitives Endspiel",
+      "Bis zu 578x Vorteil — kompetitives Endspiel (projiziert, FPGA)",
       "Funktionierendes Ökosystem von 20.645 Spezifikationen",
       "Klarer Weg zur KI-Marktdominanz"
     ],
@@ -1597,7 +1600,7 @@
         "label": "Gründeranteil"
       },
       {
-        "value": "578×",
+        "value": "578× *",
         "label": "Energieeffizienz"
       },
       {
@@ -1616,7 +1619,7 @@
     "why": [
       "Absolute Triade erreicht",
       "Binäre Ära offiziell beendet",
-      "578x Energievorteil",
+      "Bis zu 578x Energievorteil (projiziert, FPGA)",
       "20.645 native TRI-Dateien",
       "99% Gründeranteil = Alignment"
     ],
@@ -1712,7 +1715,8 @@
       "email": "admin@t27.ai",
       "website": "https://trinity-site-one.vercel.app",
       "github": "https://github.com/gHashTag/trinity"
-    }
+    },
+    "projectedNote": "* Projiziert auf kundenspezifischer FPGA-Hardware. Auf CPU verifiziert: 20× Speicherkompression."
   },
   "bitnetProof": {
     "badge": "MATHEMATISCHE BEWEISE",

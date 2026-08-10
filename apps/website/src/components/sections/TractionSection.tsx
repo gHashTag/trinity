@@ -48,6 +48,11 @@ export default function TractionSection() {
           </div>
         ))}
       </div>
+      {tr.projectedNote && (
+        <p style={{ marginTop: '1.5rem', fontSize: '0.75rem', opacity: 0.5, textAlign: 'center' }}>
+          {tr.projectedNote}
+        </p>
+      )}
     </Section>
   )
 }

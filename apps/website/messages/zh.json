@@ -317,7 +317,7 @@
     ],
     "cards": [
       {
-        "value": "578.8×",
+        "value": "578.8× *",
         "label": "能效",
         "color": "blue"
       },
@@ -346,7 +346,8 @@
         "label": "奇点",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* 基于定制 FPGA 硬件的预计值。CPU 上已验证：20× 内存压缩。"
   },
   "whynow": {
     "title": "为何<span class=\"grad\">奇点</span>是现在？",
@@ -431,7 +432,7 @@
         "color": "green"
       },
       {
-        "value": "578x",
+        "value": "578x *",
         "label": "能量飞跃",
         "color": "blue"
       },
@@ -455,7 +456,8 @@
         "label": "熵",
         "color": "green"
       }
-    ]
+    ],
+    "projectedNote": "* 基于定制 FPGA 硬件的预计值。CPU 上已验证：20× 内存压缩。"
   },
   "publications": {
     "badge": "科学出版物",
@@ -510,7 +512,7 @@
         "theorem": "1"
       },
       {
-        "value": "3000×",
+        "value": "3000× *",
         "label": "能效",
         "desc": "自定义FPGA上的预计值",
         "theorem": "2"
@@ -592,7 +594,8 @@
       ]
     },
     "verifyLink": "在GitHub上验证基准测试 ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md",
+    "projectedNote": "* 基于定制 FPGA 硬件的预计值。CPU 上已验证：20× 内存压缩。"
   },
   "mining": {
     "title": "挖矿<span class=\"grad\">行业</span> 2026",
@@ -1597,7 +1600,7 @@
         "label": "创始人持股"
       },
       {
-        "value": "578×",
+        "value": "578× *",
         "label": "能效"
       },
       {
@@ -1712,7 +1715,8 @@
       "email": "admin@t27.ai",
       "website": "https://trinity-site-one.vercel.app",
       "github": "https://github.com/gHashTag/trinity"
-    }
+    },
+    "projectedNote": "* 基于定制 FPGA 硬件的预计值。CPU 上已验证：20× 内存压缩。"
   },
   "bitnetProof": {
     "badge": "数学证明",

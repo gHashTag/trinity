@@ -191,6 +191,11 @@ export default function BenchmarksSection() {
           {b.verifyLink || "Verify on GitHub"}
         </a>
       </div>
+      {b.projectedNote && (
+        <p style={{ marginTop: '1.5rem', fontSize: '0.75rem', opacity: 0.5, textAlign: 'center' }}>
+          {b.projectedNote}
+        </p>
+      )}
     </Section>
   )
 }
