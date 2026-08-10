@@ -68,6 +68,11 @@ for (const f of files) {
 
 console.log(`  ${SERVERS.length} zig sources emit ${emitted.size} distinct fields; ${files.length} components read from metrics`);
 const BASELINE = 110;  // 2026-08-10 — measured against all 2216 zig sources; see A33/A34/A35
+const LIST = process.argv.includes('--list');
+if (LIST) {
+  for (const [field, where] of [...missing].sort())
+    console.log(`    ${field.padEnd(32)} ${[...where].join(', ')}`);
+}
 if (missing.size > BASELINE) {
   console.error(`\n  ${missing.size} fields read but never emitted, baseline ${BASELINE}:`);
   for (const [field, where] of [...missing].sort())
