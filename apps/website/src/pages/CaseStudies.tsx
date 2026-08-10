@@ -5,7 +5,7 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
-import { RUNS, LIMITS_EN, LIMITS_RU, PROVENANCE } from '../data/verificationRuns'
+import { RUNS, THIRD_PARTY_RUNS, LIMITS_EN, LIMITS_RU, PROVENANCE } from '../data/verificationRuns'
 import type { Run } from '../data/verificationRuns'
 
 const CONTACT = {
@@ -58,6 +58,8 @@ const RU = {
   turnaround: 'Срок',
   design: 'Что проверялось',
   runsTitle: 'Прогоны на моих собственных дизайнах',
+  thirdTitle: 'Прогоны на чужих дизайнах',
+  thirdLede: 'Те же проверки, тот же день, публичные заявки Tiny Tapeout под открытой лицензией. Они важнее моих собственных, и по неудобной причине: два моих чипа не собирались из списка, который объявляет их же info.yaml, а все три чужих собрались. Витрина, которая всегда льстит автору, — это не прибор.',
   runsLede: 'Прежде чем предлагать это другим, я прогнал через ту же машину пять своих чипов. Это доказывает, что харнесс работает, а не что мне кто-то доверяет, — клиентские работы ниже и они пока пусты.',
   limitsTitle: 'Чего эти прогоны НЕ устанавливают',
   svcTitle: 'Как прогнать свой репозиторий',
@@ -82,6 +84,8 @@ const EN = {
   turnaround: 'Turnaround',
   design: 'What was checked',
   runsTitle: 'Runs on my own designs',
+  thirdTitle: "Runs on other people's designs",
+  thirdLede: 'The same checks, the same day, on public Tiny Tapeout submissions under an open licence. These matter more than mine, for an uncomfortable reason: two of my own chips did not elaborate from the file list their own info.yaml declares, and all three of these did. A gallery that only flatters its author is a showroom.',
   runsLede: 'Before offering this to anyone else I put five of my own chips through the same machine. That proves the harness runs, not that anyone trusts it — client work is below, and it is still empty.',
   limitsTitle: 'What these runs do NOT establish',
   svcTitle: 'Run your own repository',
@@ -136,7 +140,7 @@ function RunCard({ run, foundLabel }: { run: Run; foundLabel: string }) {
       {/* The stamp, not a footnote: which commit, which tool build, which day.
           Without it a card is a claim; with it a reader can go and repeat it. */}
       <p style={{ fontSize: '0.72rem', opacity: 0.55, margin: '0.9rem 0 0', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: '0.6rem' }}>
-        {run.repo.split(' · ')[0]} @ {PROVENANCE.commits[run.origin]} · {PROVENANCE.ranAt} ·{' '}
+        {run.repo.split(' · ')[0]}{PROVENANCE.commits[run.origin] ? ` @ ${PROVENANCE.commits[run.origin]}` : ''} · {PROVENANCE.ranAt} ·{' '}
         {PROVENANCE.yosys} · {PROVENANCE.iverilog}
       </p>
     </div>
@@ -191,6 +195,14 @@ export default function CaseStudies() {
               ))}
             </ul>
           </div>
+        </div>
+
+        <div style={{ width: '100%', marginBottom: '2.5rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>{c.thirdTitle}</h2>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, maxWidth: '64ch', margin: '0 auto 1.4rem' }}>{c.thirdLede}</p>
+          {THIRD_PARTY_RUNS.map((r) => (
+            <RunCard key={r.id} run={r} foundLabel={c.found} />
+          ))}
         </div>
 
         <div className="premium-card" style={{ textAlign: 'left', width: '100%', marginBottom: '2.5rem' }}>

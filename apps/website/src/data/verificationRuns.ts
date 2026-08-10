@@ -29,7 +29,9 @@ export type Run = {
   what: string
   checks: Check[]
   /** Which checkout the sources came from, for the commit stamp. */
-  origin: 't27' | 'trinity-fpga'
+  origin: 't27' | 'trinity-fpga' | 'third-party'
+  /** Somebody else's design, not mine. The distinction is the whole point. */
+  thirdParty?: boolean
   /** Anything the run surfaced that the author had to act on. */
   found?: string
   date: string
@@ -160,4 +162,76 @@ export const LIMITS_RU = [
   'Родовые ячейки yosys — не площадь на кремнии. Phi и MINI оба 1×1, а различаются по числу ячеек на три порядка; влезает ли каждый из них, решает только настоящий ASIC-поток.',
   'Частота не заявляется. Счёт триггеров говорит, что вопрос о частоте осмыслен, а не каков ответ. Для ответа нужна разводка на конкретном кристалле.',
   'Ничего из этого не выполнялось на железе. Это результаты симуляции и синтеза на одной машине.',
+]
+
+/** Designs by other people, checked with the same harness on the same day.
+ *
+ * These matter more than the five above, and the reason is uncomfortable: two of
+ * my own chips did not elaborate from the file list their own info.yaml declared,
+ * and all three of these did. A gallery that only ever flatters its author is a
+ * showroom. The instrument is only credible because it was pointed the other way
+ * first and something was found.
+ *
+ * All three are public Tiny Tapeout submissions under an open licence. Nothing
+ * here is a judgement about the designs — these are structural facts anyone can
+ * reproduce with the commands printed on each card.
+ */
+export const THIRD_PARTY_RUNS: Run[] = [
+  {
+    id: 'tinygpu',
+    design: 'TinyGPU v2',
+    repo: 'pongsagon/tt_um_pongsagon_tinygpu_v2',
+    repoUrl: 'https://github.com/pongsagon/tt_um_pongsagon_tinygpu_v2',
+    top: 'tt_um_pongsagon_tinygpu_v2',
+    tiles: 'see info.yaml',
+    what: "Somebody else's GPU, the largest of the three.",
+    date: '2026-08-11',
+    origin: 'third-party',
+    thirdParty: true,
+    checks: [
+      { name: 'sources resolve', status: 'PASS', detail: '10 of 10 declared files found', command: 'info.yaml source_files -> src/' },
+      { name: 'elaborates', status: 'PASS', detail: 'clean from the declared list alone', command: 'iverilog -g2012 -t null -I src -s <top> <declared sources>' },
+      { name: 'no inferred latches', status: 'PASS', detail: 'no $_DLATCH_ cells after techmap', command: LATCH_CMD },
+      { name: 'synthesises', status: 'PASS', detail: '34,223 cells including submodules, 15,846 wires. 11,251x $_AND_, 9,213x $_OR_, 5,942x $_MUX_, 3,065x $_XOR_', command: STAT_CMD },
+      { name: 'has clocked logic', status: 'PASS', detail: '3,383 flip-flops', command: FLOP_CMD },
+    ],
+  },
+  {
+    id: 'float-synth',
+    design: 'Float synth',
+    repo: 'NikLeberg/tt_um_float_synth',
+    repoUrl: 'https://github.com/NikLeberg/tt_um_float_synth',
+    top: 'tt_um_float_synth_nikleberg',
+    tiles: 'see info.yaml',
+    what: 'A floating-point synthesiser — the closest of the three to my own subject.',
+    date: '2026-08-11',
+    origin: 'third-party',
+    thirdParty: true,
+    checks: [
+      { name: 'sources resolve', status: 'PASS', detail: '2 of 2 declared files found', command: 'info.yaml source_files -> src/' },
+      { name: 'elaborates', status: 'PASS', detail: 'clean from the declared list alone', command: 'iverilog -g2012 -t null -I src -s <top> <declared sources>' },
+      { name: 'no inferred latches', status: 'PASS', detail: 'no $_DLATCH_ cells after techmap', command: LATCH_CMD },
+      { name: 'synthesises', status: 'PASS', detail: '900 cells including submodules, 904 wires. 210x $_NOT_, 197x $_OR_, 180x $_AND_, 180x $_DFF_P_', command: STAT_CMD },
+      { name: 'has clocked logic', status: 'PASS', detail: '183 flip-flops', command: FLOP_CMD },
+    ],
+  },
+  {
+    id: 'serv-soc',
+    design: 'SERV RISC-V SoC on Wishbone',
+    repo: 'divadnauj-GB/tt_um_divadnauj-GB_serv_soc_wb',
+    repoUrl: 'https://github.com/divadnauj-GB/tt_um_divadnauj-GB_serv_soc_wb',
+    top: 'tt_um_divadnauj_GB_serv_soc_wb',
+    tiles: 'see info.yaml',
+    what: 'A bit-serial RISC-V core with a Wishbone SoC around it, across 40 declared files.',
+    date: '2026-08-11',
+    origin: 'third-party',
+    thirdParty: true,
+    checks: [
+      { name: 'sources resolve', status: 'PASS', detail: '40 of 40 declared files found', command: 'info.yaml source_files -> src/' },
+      { name: 'elaborates', status: 'PASS', detail: 'clean from the declared list alone', command: 'iverilog -g2012 -t null -I src -s <top> <declared sources>' },
+      { name: 'no inferred latches', status: 'PASS', detail: 'no $_DLATCH_ cells after techmap', command: LATCH_CMD },
+      { name: 'synthesises', status: 'PASS', detail: '8,301 cells including submodules, 4,903 wires. 2,081x $_AND_, 1,957x $_OR_, 1,605x $_MUX_, 689x $_DFFE_PP0P_', command: STAT_CMD },
+      { name: 'has clocked logic', status: 'PASS', detail: '1,751 flip-flops', command: FLOP_CMD },
+    ],
+  },
 ]
