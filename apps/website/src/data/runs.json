@@ -5,7 +5,7 @@
     "iverilog": "Icarus Verilog 13.0 (stable, v13_0)",
     "commits": {
       "t27": "592ba4c2d",
-      "trinity-fpga": "be4c5d1a"
+      "trinity-fpga": "ffcf8fb5"
     }
   },
   "runs": [
@@ -159,7 +159,7 @@
         {
           "name": "sources resolve",
           "status": "PASS",
-          "detail": "info.yaml declares no source_files, so src/*.v was globbed: 1 file",
+          "detail": "1 of 1 declared file found (info.yaml declared none until 11 Aug 2026)",
           "command": "glob src/*.v"
         },
         {
@@ -187,7 +187,8 @@
           "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
         }
       ],
-      "slug": "gHashTag/trinity-fpga/ttsky26c/mini"
+      "slug": "gHashTag/trinity-fpga/ttsky26c/mini",
+      "note": "src/config.json marks this SKELETON - full RTL is a future wave, and the cell count agrees. Declaring the sources makes the build deterministic; it does not make a skeleton a finished design."
     },
     {
       "id": "holo",
@@ -204,7 +205,7 @@
         {
           "name": "sources resolve",
           "status": "PASS",
-          "detail": "info.yaml declares no source_files, so src/*.v was globbed: 1 file",
+          "detail": "1 of 1 declared file found (info.yaml declared none until 11 Aug 2026)",
           "command": "glob src/*.v"
         },
         {
@@ -232,7 +233,8 @@
           "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
         }
       ],
-      "slug": "gHashTag/trinity-fpga/ttsky26c/holo"
+      "slug": "gHashTag/trinity-fpga/ttsky26c/holo",
+      "note": "src/config.json marks this SKELETON - full RTL is a future wave, and the cell count agrees. Declaring the sources makes the build deterministic; it does not make a skeleton a finished design."
     },
     {
       "id": "tinygpu",

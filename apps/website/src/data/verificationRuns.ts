@@ -31,6 +31,8 @@ export type Run = {
   date: string
   origin: string
   thirdParty?: boolean
+  /** A caveat the card must show, e.g. that the design is a declared skeleton. */
+  note?: string
   /** Path under /r/. Identifies the design, not the repository. */
   slug: string
 }
