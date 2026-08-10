@@ -114,7 +114,11 @@ jobs:
           # it, which local testing could never reproduce because `bash script`
           # does not set -e.
           set +e
-          set -uo pipefail
+          # -o pipefail only. -u was here and an unset variable under it exits
+          # the step immediately, which is indistinguishable in the log from the
+          # step simply stopping: the clean fixture died after printing the
+          # sources line with nothing after it, no error text at all.
+          set -o pipefail
           # Prefer what info.yaml declares, because that is the list a Tiny
           # Tapeout shuttle builds from — and because a declared file can sit in
           # a subdirectory the glob never sees. Measured on a real submission:
@@ -142,12 +146,14 @@ jobs:
             echo "::error::no sources found: info.yaml declares none and '$SRC_GLOB' matched nothing"
             exit 1
           fi
+          echo "phase: sources resolved -> $SRC"
           echo "## RTL structural check" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Top: \`$TOP\` · $(echo "$SRC" | wc -w | tr -d ' ') source file(s)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           fails=0
 
+          echo "phase: elaborating"
           # 1. Elaboration.
           if iverilog -g2012 -t null -I "$INC" -s "$TOP" $SRC 2> elab.txt; then
             echo "- **PASS** elaborates — every module it instantiates is defined in the files given" >> "$GITHUB_STEP_SUMMARY"
@@ -178,6 +184,7 @@ jobs:
             fails=$((fails+1))
           fi
 
+          echo "phase: parsing stat"
           TAIL=$(sed -n '/Printing statistics/,$p' yosys.txt)
           CELLS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ cells$' | tail -1 | tr -dc '0-9')
           WIRES=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ wires$' | tail -1 | tr -dc '0-9')
