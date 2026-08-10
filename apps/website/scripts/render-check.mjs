@@ -69,7 +69,7 @@ import { tmpdir } from 'node:os';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const DIST = join(ROOT, 'dist');
-const ROUTE = '#/canvas';
+const ROUTE = "#/canvas";
 const HEADED = process.argv.includes('--head');
 const MAX_PANELS = 80;      // a click that never expands anything must not loop forever
 const SETTLE_MS = 250;      // per click: React commit + a frame, not a data fetch
@@ -258,6 +258,22 @@ const LAYERS = 9;
 // mount, so every digit after that gets TYPED INTO THE BOX instead of reaching
 // the window handler. The symptom is indistinguishable from nine empty layers,
 // which is exactly what the first run of this loop reported.
+// Escape returns to 'petals' (TrinityCanvas line 684). Going home before each
+// layer makes every switch a single hop from a known state.
+//
+// Walking 1..9 in sequence chains them, and one missed press shifts everything
+// after it: a run reported the tools panels on layer 8 instead of 7, and the
+// next run found nothing at all. A check whose results depend on nine
+// consecutive successes is a check that reports the transition lock, not the
+// page.
+const escape = async () => {
+  await evaluate('document.activeElement && document.activeElement.blur(), 1');
+  for (const type of ['keyDown', 'keyUp'])
+    await call('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape',
+      windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 });
+  await wait(700);
+};
+
 const key = async (text) => {
   await evaluate('document.activeElement && document.activeElement.blur(), 1');
   for (const type of ['keyDown', 'keyUp'])
@@ -296,28 +312,58 @@ for (let layer = 1; layer <= LAYERS; layer++) {
   // panels on one run and 0 on the next. A timing-flaky check is muted within
   // a week, so this presses, watches the DOM for a change, and presses again
   // if nothing moved -- and says so if it never does.
+  await escape();
   const before = await evaluate('document.body.innerText.length');
+  await key(String(layer));
   let changed = false;
-  for (let attempt = 0; attempt < 4 && !changed; attempt++) {
-    await key(String(layer));
-    for (let t = 0; t < 12 && !changed; t++) {
-      await wait(150);
-      changed = (await evaluate('document.body.innerText.length')) !== before;
-    }
+  for (let t = 0; t < 14 && !changed; t++) {
+    await wait(150);
+    changed = (await evaluate('document.body.innerText.length')) !== before;
   }
-  if (!changed) console.log(`  layer ${layer}: no DOM change after 4 presses`);
+  // ONE retry, and only after the transition lock has had time to clear.
+  //
+  // The first version pressed up to four times. Layer 1 is 'petals', which is
+  // where /canvas already starts, so the press is a no-op and it pressed
+  // again three more times -- each call re-entering switchLayer, which holds a
+  // `transitioning` flag across a 200ms fade and returns early while it is
+  // set. Hammering it left the flag stuck and every LATER layer silently
+  // refused to switch: nine empty layers, reported twice in a row, from a
+  // page that was fine.
+  //
+  // No change is also what "already on this layer" looks like, and that is not
+  // a failure. Say so and move on rather than retrying into the lock.
+  if (!changed) {
+    await wait(700);
+    await key(String(layer));
+    await wait(900);
+    changed = (await evaluate('document.body.innerText.length')) !== before;
+    if (!changed) console.log(`  layer ${layer}: no DOM change (already there, or the switch is broken)`);
+  }
   await wait(600);  // the first data tick of whatever mounted
   const arriving = drain();
   if (arriving.length) report(`on switching to layer ${layer}`, arriving);
 
+  // Probe, and if a layer yields nothing, do the whole hop again before
+  // believing it. Zero panels is the answer for most layers and a symptom on
+  // the one that has them, and the check cannot tell those apart from a single
+  // attempt -- runs alternated between 4 panels and 0 on an unchanged build.
   const countBefore = expanded.length;
-  for (let i = 0; i < MAX_PANELS; i++) {
-    const label = await evaluate(PROBE);
-    if (label === null) break;
-    expanded.push(`${layer}:${label}`);
-    await wait(SETTLE_MS);
-    const found = drain();
-    if (found.length) report(`after expanding "${label}" on layer ${layer}`, found);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt) {
+      await escape();
+      await key(String(layer));
+      await wait(1400);
+      drain();
+    }
+    for (let i = 0; i < MAX_PANELS; i++) {
+      const label = await evaluate(PROBE);
+      if (label === null) break;
+      expanded.push(`${layer}:${label}`);
+      await wait(SETTLE_MS);
+      const found = drain();
+      if (found.length) report(`after expanding "${label}" on layer ${layer}`, found);
+    }
+    if (expanded.length > countBefore) break;
   }
   console.log(`  layer ${layer}: ${expanded.length - countBefore} panel(s)`);
 }
