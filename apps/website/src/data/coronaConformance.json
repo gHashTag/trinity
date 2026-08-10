@@ -3,7 +3,7 @@
   "method": "every code point of each format, compared as float32 bit patterns; NaN payloads are not compared because no specification fixes them",
   "exhaustive": true,
   "totalCodePoints": 66448,
-  "totalMismatches": 8,
+  "totalMismatches": 0,
   "results": [
     {
       "module": "fp4_decode",
@@ -23,39 +23,8 @@
       "module": "fp6_e3m2_decode",
       "codes": 64,
       "oracle": "ml_dtypes.float6_e3m2fn",
-      "mismatches": 8,
-      "examples": [
-        {
-          "code": 28,
-          "rtl": "41600000",
-          "oracle": "41800000"
-        },
-        {
-          "code": 29,
-          "rtl": "41600000",
-          "oracle": "41a00000"
-        },
-        {
-          "code": 30,
-          "rtl": "41600000",
-          "oracle": "41c00000"
-        },
-        {
-          "code": 31,
-          "rtl": "41600000",
-          "oracle": "41e00000"
-        },
-        {
-          "code": 60,
-          "rtl": "c1600000",
-          "oracle": "c1800000"
-        },
-        {
-          "code": 61,
-          "rtl": "c1600000",
-          "oracle": "c1a00000"
-        }
-      ]
+      "mismatches": 0,
+      "examples": []
     },
     {
       "module": "fp8_e4m3_fnuz_decode",
