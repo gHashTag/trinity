@@ -9,6 +9,7 @@ import QuantumBackground from '../components/QuantumBackground'
 import { THEOREMS, SCIENCE_INTRO_EN, SCIENCE_INTRO_RU } from '../data/verificationScience'
 import { DELIVERY_TIERS, TIERS_LEDE } from '../data/verificationTiers'
 import SelfServeRun from '../components/SelfServeRun'
+import ConformanceEvidence from '../components/ConformanceEvidence'
 
 const REQUEST_URL = 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml'
 
@@ -360,6 +361,10 @@ export default function HardwareVerification() {
             me for. Everything below this is either a deeper tier or an
             explanation of what this one does not establish. */}
         <SelfServeRun />
+
+        {/* The tier above the free one, shown rather than described -- including
+            the run where the adjudication went against my own reference model. */}
+        <ConformanceEvidence />
 
         {/* The method, drawn. Placed before the deliverables because every item in
             that list depends on the reader believing this one idea. */}

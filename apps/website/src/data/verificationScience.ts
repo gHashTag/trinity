@@ -130,6 +130,18 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That a value assertion makes a test adequate. It widens the observed output; it says nothing about whether the inputs ever execute the faulty path, which is the first of the three conditions and the one no assertion can supply.',
   },
+  {
+    id: 'T11',
+    name: 'When the input space is small enough to enumerate, the bound disappears',
+    statement:
+      'T1 bounds a failure rate because a sample leaves the untested part of the space unaccounted for. If every element of the space is tested, there is no untested part: the failure rate over that space is measured at zero rather than bounded below some θ, and no confidence level applies. Goodenough and Gerhart call such a criterion reliable and valid — exhaustive enumeration is the one case where both hold trivially.',
+    worked:
+      'Seven number formats decoded from every code point they have: 16 for a 4-bit format, 64 for a 6-bit one, 256 for an 8-bit one, 65,536 for bfloat16 — 66,448 in total, against an implementation from the JAX project that was written by other people from the same specifications. Six formats agreed on every code point. The seventh disagreed on eight of sixty-four, and “eight of sixty-four” is a count of the whole format, not of a sample of it.',
+    citation: 'Goodenough & Gerhart, “Toward a Theory of Test Data Selection”, IEEE TSE SE-1(2), 1975',
+    url: 'https://doi.org/10.1109/TSE.1975.6312836',
+    doesNotClaim:
+      'Anything outside that space. Exhausting a decoder’s 256 inputs says nothing about the design that instantiates it, about sequences of inputs, about synthesis preserving the behaviour, or about the formats the reference implementation does not cover. It also does not scale: one more bit doubles the work, so this argument is available for a decoder and never for a datapath.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
