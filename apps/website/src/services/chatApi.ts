@@ -9,6 +9,22 @@
 
 const BASE_URL = 'http://localhost:8080';
 
+/**
+ * Mark a value as placeholder data, not a measurement.
+ *
+ * Fourteen call sites in this file silently substitute a mock object when a
+ * fetch fails, and the deployed site's BASE_URL is localhost, so on t27.ai
+ * they always fire. Unlabelled, a literal like `novelty: 0.342` renders as a
+ * measurement -- see anomaly-register A36. A fallback indistinguishable from
+ * real data is a claim.
+ *
+ * Consumers read `__sample` and show a provenance marker. It is a plain field
+ * rather than a Symbol so it survives structuredClone and JSON round-trips.
+ */
+export function sample<T extends object>(value: T): T & { __sample: true } {
+  return Object.assign(value as T & { __sample: true }, { __sample: true as const });
+}
+
 // ============================================================================
 // SACRED INTELLIGENCE API TYPES
 // ============================================================================
@@ -897,7 +913,7 @@ export async function fetchOrchestratorStatus(): Promise<OrchestratorStatus | nu
     if (!res.ok) return null;
     return await res.json();
   } catch {
-    return mockOrchestratorStatus();
+    return sample(mockOrchestratorStatus());
   }
 }
 
@@ -1762,7 +1778,7 @@ export async function fetchNeuroWaves(): Promise<NeuroBrainWavesResponse | null>
     if (!res.ok) return null;
     return await res.json();
   } catch {
-    return mockNeuroWaves();
+    return sample(mockNeuroWaves());
   }
 }
 
@@ -1782,7 +1798,7 @@ export async function fetchNeuroConsciousness(
     if (!res.ok) return null;
     return await res.json();
   } catch {
-    return mockNeuroConsciousness(complexity, time_integration, energy_barrier);
+    return sample(mockNeuroConsciousness(complexity, time_integration, energy_barrier));
   }
 }
 
@@ -1798,7 +1814,7 @@ export async function fetchNeuroRegions(): Promise<NeuroRegionsResponse | null> 
     if (!res.ok) return null;
     return await res.json();
   } catch {
-    return mockNeuroRegions();
+    return sample(mockNeuroRegions());
   }
 }
 
@@ -1814,7 +1830,7 @@ export async function fetchNeuroNetwork(layers: number[]): Promise<NeuroNetworkR
     if (!res.ok) return null;
     return await res.json();
   } catch {
-    return mockNeuroNetwork(layers);
+    return sample(mockNeuroNetwork(layers));
   }
 }
 
@@ -1830,7 +1846,7 @@ export async function fetchNeuroSynapse(): Promise<NeuroSynapseResponse | null> 
     if (!res.ok) return null;
     return await res.json();
   } catch {
-    return mockNeuroSynapse();
+    return sample(mockNeuroSynapse());
   }
 }
 
@@ -1846,7 +1862,7 @@ export async function fetchNeuroFiring(intervals: number[]): Promise<NeuroFiring
     if (!res.ok) return null;
     return await res.json();
   } catch {
-    return mockNeuroFiring(intervals);
+    return sample(mockNeuroFiring(intervals));
   }
 }
 
@@ -2171,10 +2187,10 @@ export async function fetchConsciousnessMetrics(): Promise<ConsciousnessMetricsR
     const res = await fetch(`${BASE_URL}/api/consciousness/metrics`, {
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return mockConsciousnessMetrics();
+    if (!res.ok) return sample(mockConsciousnessMetrics());
     return await res.json();
   } catch {
-    return mockConsciousnessMetrics();
+    return sample(mockConsciousnessMetrics());
   }
 }
 
@@ -2258,10 +2274,10 @@ export async function fetchLisaPredictions(): Promise<LisaPredictionsMetrics> {
     const res = await fetch(`${BASE_URL}/api/metrics/lisa-predictions`, {
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return mockLisaPredictions();
+    if (!res.ok) return sample(mockLisaPredictions());
     return await res.json();
   } catch {
-    return mockLisaPredictions();
+    return sample(mockLisaPredictions());
   }
 }
 
@@ -2271,10 +2287,10 @@ export async function fetchNeuromorphicMetrics(): Promise<NeuromorphicMetrics> {
     const res = await fetch(`${BASE_URL}/api/metrics/neuromorphic`, {
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return mockNeuromorphicMetrics();
+    if (!res.ok) return sample(mockNeuromorphicMetrics());
     return await res.json();
   } catch {
-    return mockNeuromorphicMetrics();
+    return sample(mockNeuromorphicMetrics());
   }
 }
 
@@ -2284,10 +2300,10 @@ export async function fetchQuantumGravityMetrics(): Promise<QuantumGravityMetric
     const res = await fetch(`${BASE_URL}/api/metrics/quantum-gravity`, {
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return mockQuantumGravityMetrics();
+    if (!res.ok) return sample(mockQuantumGravityMetrics());
     return await res.json();
   } catch {
-    return mockQuantumGravityMetrics();
+    return sample(mockQuantumGravityMetrics());
   }
 }
 
@@ -2297,10 +2313,10 @@ export async function fetchConsciousAIRoadmap(): Promise<ConsciousAIRoadmapMetri
     const res = await fetch(`${BASE_URL}/api/metrics/consciousness-roadmap`, {
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return mockConsciousnessRoadmap();
+    if (!res.ok) return sample(mockConsciousnessRoadmap());
     return await res.json();
   } catch {
-    return mockConsciousnessRoadmap();
+    return sample(mockConsciousnessRoadmap());
   }
 }
 
