@@ -92,6 +92,30 @@ Both looked strongest at the moment they were written, and both were cheap to ch
 - **`BUFGCTRL` contention.** Designs with 9 and 21 fabric-driven buffers (against 32 sites)
   both **placed** on a build without #111. The buffer count is not the condition.
 
+## What this directory is, after all that
+
+**A historical verification, not a guard on `main`.** `check.py --nextpnr <dir>` now refuses
+to report a pass from any tree at or after `c8c4064`:
+
+```
+FAIL  nextpnr is at e86f351, which is AFTER f8e7643.
+      #109 (set_multicycle_path, xdc.cc) lets the placer find the unplaced
+      fabric-driven buffer a site unaided, so this case places and cannot
+      fail. A pass here would mean nothing. Build at f8e7643.
+```
+
+At `f8e7643` it passes its premise and can be run to the failure. Anywhere newer it refuses
+rather than going green — because the green would be the lie.
+
+**A guard on `main` would need something this does not have.** The patch's effect there is
+not directly observable: the post-place JSON `nextpnr --write` emits carries no `BEL`
+attribute for either buffer, patched or not, so there is nothing to assert beyond a FASM byte
+count that differs for incidental reasons. Building a real guard means finding a design where
+`#111` still changes the outcome after `#109` — and that design has not been found.
+
+**Said plainly because the alternative is worse.** A case that quietly passes is
+indistinguishable from a case that works, and nobody re-reads a green test.
+
 ## Running it costs more than the test does — measured 2026-08-10
 
 Anyone adopting this needs to know that the expensive part is not the case, it is getting a

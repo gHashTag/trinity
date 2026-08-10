@@ -13,6 +13,7 @@ Exit 0 pass, 1 fail. No output on success beyond one line per check.
 """
 import json
 import os
+import subprocess
 import sys
 
 
@@ -21,9 +22,36 @@ def fail(msg):
     sys.exit(1)
 
 
+# The commit this case was observed to fail at. Not decoration: at c8c4064 (#109) and
+# everything after, the design places and this case cannot fail. Running it against a
+# newer tree produces a pass that means nothing.
+OBSERVED_AT = "f8e7643"
+
+
+def check_base(nextpnr_dir):
+    """Refuse to report a pass from a tree where the bug is unreachable."""
+    try:
+        r = subprocess.run(["git", "-C", nextpnr_dir, "merge-base", "--is-ancestor",
+                            OBSERVED_AT, "HEAD"], capture_output=True)
+    except Exception as exc:
+        print(f"warn  could not check the base commit: {exc}")
+        return
+    head = subprocess.run(["git", "-C", nextpnr_dir, "rev-parse", "--short", "HEAD"],
+                          capture_output=True, text=True).stdout.strip()
+    if head.startswith(OBSERVED_AT):
+        print(f"ok    nextpnr at {OBSERVED_AT} — the commit this case was observed to fail at")
+    elif r.returncode == 0:
+        fail(f"nextpnr is at {head}, which is AFTER {OBSERVED_AT}.\n"
+             f"      #109 (set_multicycle_path, xdc.cc) lets the placer find the unplaced\n"
+             f"      fabric-driven buffer a site unaided, so this case places and cannot\n"
+             f"      fail. A pass here would mean nothing. Build at {OBSERVED_AT}.")
+
+
 def main():
     if len(sys.argv) < 2:
-        fail("usage: check.py <netlist.json> [--fasm <file.fasm>]")
+        fail("usage: check.py <netlist.json> [--fasm <file.fasm>] [--nextpnr <dir>]")
+    if "--nextpnr" in sys.argv:
+        check_base(sys.argv[sys.argv.index("--nextpnr") + 1])
     netlist = sys.argv[1]
     if not os.path.exists(netlist):
         fail(f"{netlist} missing — run `make {os.path.basename(netlist)}` first")
