@@ -5,7 +5,7 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
-import { RUNS, LIMITS_EN, LIMITS_RU } from '../data/verificationRuns'
+import { RUNS, LIMITS_EN, LIMITS_RU, PROVENANCE } from '../data/verificationRuns'
 import type { Run } from '../data/verificationRuns'
 
 const CONTACT = {
@@ -133,6 +133,12 @@ function RunCard({ run, foundLabel }: { run: Run; foundLabel: string }) {
       {failed === 0 && !run.found && (
         <p style={{ fontSize: '0.82rem', opacity: 0.6, margin: '0.8rem 0 0' }}>Nothing surfaced. That is a result too.</p>
       )}
+      {/* The stamp, not a footnote: which commit, which tool build, which day.
+          Without it a card is a claim; with it a reader can go and repeat it. */}
+      <p style={{ fontSize: '0.72rem', opacity: 0.55, margin: '0.9rem 0 0', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: '0.6rem' }}>
+        {run.repo.split(' · ')[0]} @ {PROVENANCE.commits[run.origin]} · {PROVENANCE.ranAt} ·{' '}
+        {PROVENANCE.yosys} · {PROVENANCE.iverilog}
+      </p>
     </div>
   )
 }
