@@ -8,6 +8,7 @@ import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { THEOREMS, SCIENCE_INTRO_EN, SCIENCE_INTRO_RU } from '../data/verificationScience'
 import { DELIVERY_TIERS, TIERS_LEDE } from '../data/verificationTiers'
+import SelfServeRun from '../components/SelfServeRun'
 
 const REQUEST_URL = 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml'
 
@@ -317,15 +318,13 @@ export default function HardwareVerification() {
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.75rem' }}>
             <motion.a
-              href={REQUEST_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#self-serve"
               className="btn"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               style={{ padding: '12px 28px', fontSize: '0.9rem' }}
             >
-              {c ? c.ctaRun : 'Request a run'}
+              {c ? 'Запустить бесплатно' : 'Run it free'}
             </motion.a>
             <motion.a
               href={CONTACT.sampleReport}
@@ -356,6 +355,11 @@ export default function HardwareVerification() {
             {c ? c.freeNote : 'First module verified free — so you can judge the report before paying for anything.'}
           </p>
         </motion.div>
+
+        {/* The thing that actually runs, before anything the reader has to ask
+            me for. Everything below this is either a deeper tier or an
+            explanation of what this one does not establish. */}
+        <SelfServeRun />
 
         {/* The method, drawn. Placed before the deliverables because every item in
             that list depends on the reader believing this one idea. */}
