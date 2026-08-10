@@ -190,10 +190,21 @@ jobs:
           fi
 
           echo "phase: parsing stat"
+          # Two stat formats, because this runs on whatever yosys the caller's
+          # runner has. 0.65 prints "  12 cells"; older builds, including the one
+          # apt installs on ubuntu-latest, print "Number of cells: 12". Matching
+          # only the newer form is how this reported "synthesis produced no cell
+          # count" and "purely combinational" for a design with 5 flip-flops --
+          # a false verdict from a regex, on somebody else's machine, which is
+          # the one place it could not be caught by testing here.
           TAIL=$(sed -n '/Printing statistics/,$p' yosys.txt)
           CELLS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ cells$' | tail -1 | tr -dc '0-9')
+          [ -z "$CELLS" ] && CELLS=$(printf '%s' "$TAIL" | grep -Eo 'Number of cells: *[0-9]+' | tail -1 | tr -dc '0-9')
           WIRES=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ wires$' | tail -1 | tr -dc '0-9')
-          FLOPS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ +\$_[A-Z]*DFF[A-Z_]*_$' | awk '{s+=$1} END{print s+0}')
+          [ -z "$WIRES" ] && WIRES=$(printf '%s' "$TAIL" | grep -Eo 'Number of wires: *[0-9]+' | tail -1 | tr -dc '0-9')
+          # Flop count from the cell-type histogram, which both formats print as
+          # "<count> $_DFF..._" with varying leading whitespace.
+          FLOPS=$(printf '%s' "$TAIL" | grep -Eo '[0-9]+ +\$_[A-Z]*(DFF|SDFF|ADFF)[A-Z_]*_' | awk '{s+=$1} END{print s+0}')
           if [ -n "$CELLS" ]; then
             say "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened"
           else
