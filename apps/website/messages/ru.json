@@ -359,8 +359,8 @@
       "note": "Реальные бенчмарки RunPod - Pod ID: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). Без симуляции.",
       "gpus": [
         {
-          "name": "RTX 3090",
-          "tokens": "298K",
+          "name": "RTX 4090 / L40S",
+          "tokens": "141K-608K",
           "noise": "70.2%",
           "power": "348W",
           "cost": "$0.10",
@@ -378,9 +378,9 @@
     },
     "metrics": [
       {
-        "value": "298K",
-        "label": "Ops/сек (RTX 3090)",
-        "desc": "Проверено на RunPod GPU",
+        "value": "141K-608K",
+        "label": "Ops/сек (RTX 4090 / L40S)",
+        "desc": "Сырой бенчмарк ядра, RunPod",
         "theorem": "GPU"
       },
       {
@@ -1140,44 +1140,37 @@
     "rows": [
       {
         "company": "TRINITY",
-        "arch": "RTX 3090 (проверено)",
-        "val": "298K",
-        "ternary": true,
-        "open": true
-      },
-      {
-        "company": "TRINITY",
-        "arch": "A100 80GB (проверено)",
-        "val": "274K",
+        "arch": "CPU (RunPod)",
+        "val": "35-52",
         "ternary": true,
         "open": true
       },
       {
         "company": "Groq",
-        "arch": "LPU (бинарный)",
-        "val": "276-840",
+        "arch": "Llama-70B, LPU cloud",
+        "val": "227-276",
         "ternary": false,
         "open": false
       },
       {
-        "company": "NVIDIA",
-        "arch": "H100 TensorRT",
-        "val": "1000-2000",
-        "ternary": false,
-        "open": false
-      },
-      {
-        "company": "Локальный GPU",
-        "arch": "RTX 4090 (бинарный)",
-        "val": "100-300",
-        "ternary": false,
-        "open": false
-      },
-      {
-        "company": "OpenAI",
+        "company": "GPT-4o-mini",
         "arch": "Cloud API",
-        "val": "50-100",
+        "val": "~100",
         "ternary": false,
+        "open": false
+      },
+      {
+        "company": "Claude Opus",
+        "arch": "Cloud API",
+        "val": "~80",
+        "ternary": false,
+        "open": false
+      },
+      {
+        "company": "B200 BitNet I2_S",
+        "arch": "B200 GPU",
+        "val": "52 (CPU)",
+        "ternary": true,
         "open": false
       }
     ],
@@ -1199,7 +1192,7 @@
         "cost": "$0.20"
       }
     },
-    "unitNote": "Сырые ops/sec ядра, а не сквозная генерация токенов — оговорка из собственного бенчмарка проекта. Строки в tokens/sec с этими несравнимы."
+    "unitNote": "Сквозные tokens/sec, из собственной таблицы бенчмарков проекта. Облачные провайдеры быстрее; преимущество Trinity — стоимость ($0.01–0.35 против API) и работа вовсе без GPU. Прежняя версия таблицы ставила сырые ops/sec ядра рядом с чужими tokens/sec."
   },
   "hlsCompetition": {
     "title": "Универсальный <span class=\"grad\">FPGA Компилятор</span>",
