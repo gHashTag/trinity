@@ -28,17 +28,22 @@ import QuantumBackground from '../components/QuantumBackground'
 // which IS live -- names gf_ref.py and tekum_ref.py as the two models it
 // compared. That is sourced, not guessed.
 //
-// The RTL link is removed rather than repointed. There is multiplier RTL in
-// that repo -- fpga/openxc7-synth/gf16_mul.v -- but GF-T16 is NOT GF16: the
-// layouts differ (sign:offset:mant in a u32 versus S1E6M9 bias 31) and the
-// skill library keeps them apart precisely because substituting one for the
-// other is the easiest error in this corpus. A link to a different format's
-// multiplier would be worse than no link.
+// The RTL is published after all -- in gHashTag/trinity, not trinity-fpga.
+// I searched one repo's tree (18,617 paths), found no gft_mul.v, and wrote
+// that it existed nowhere. It is at fpga/gft/gft_mul_w.v, and fpga/gft/
+// README.md carries the exact synthesis table this page shows. Searching one
+// repository does not license a claim about all of them.
+//
+// gf16_mul.v in trinity-fpga was NOT the answer and is still not: GF-T16 is
+// sign:offset:mant in a u32, GF16 is S1E6M9 bias 31, and substituting one
+// format's multiplier for another's is the easiest error in this corpus.
 const LINKS = {
   paper: 'https://arxiv.org/abs/2606.05017',
   catalogue: 'https://arxiv.org/abs/2606.09686',
   oracle: 'https://github.com/gHashTag/trinity-fpga/blob/main/conformance/gf_ref.py',
   tekum: 'https://github.com/gHashTag/trinity-fpga/blob/main/conformance/tekum_ref.py',
+  rtl: 'https://github.com/gHashTag/trinity/blob/main/fpga/gft/gft_mul_w.v',
+  synth: 'https://github.com/gHashTag/trinity/blob/main/fpga/gft/README.md',
   research: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/GFT16_BEATS_TEKUM16_2026-08-05.md',
 }
 
@@ -56,12 +61,9 @@ const LADDER: [string, string, string][] = [
   ['GF-T32', '1,477', '83.27 MHz'],
 ]
 
-// These are synthesis results for a module whose source is not in any public
-// repo: a full recursive tree of trinity-fpga (18,617 paths) contains no
-// gft_mul.v. The numbers stay -- they were measured -- but a reader cannot
-// regenerate them, and the page should say so rather than let the link that
-// used to sit here imply otherwise. The nearest published multiplier,
-// fpga/openxc7-synth/gf16_mul.v, is a DIFFERENT format.
+// Both rows are reproduced from fpga/gft/README.md in gHashTag/trinity, which
+// carries this table verbatim next to the sources it describes:
+// gft_mul_w.v (widths the values need) and gft_mul_wp.v (the same, pipelined).
 const COST: [string, string, string, string][] = [
   ['gft_mul, 32-bit ports', '1,179', '3 with DSP allowed', '81 MHz'],
   ['Width-corrected', '219', '0', '81.35 MHz'],
@@ -255,9 +257,9 @@ value = (-1)^sign · (1 + M/2^9) · 2^e,   e = Σ tᵢ·3ⁱ  ∈ [−40, +40]`}
               </tbody>
             </table>
             <p style={{ fontSize: '0.78rem', opacity: 0.55, marginTop: '0.6rem', maxWidth: '64ch' }}>
-              The gft_mul source is not published. These figures were measured, but a reader
-              cannot regenerate them from any public repository — said here rather than left to
-              be discovered by clicking a link that is not there.
+              The synthesis table above is reproduced from
+              <a href={LINKS.synth} target="_blank" rel="noopener noreferrer"> fpga/gft/README.md</a>,
+              which sits beside the Verilog it describes.
             </p>
           </div>
         </motion.div>
