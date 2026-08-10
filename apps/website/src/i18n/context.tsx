@@ -45,14 +45,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
         return saved as Lang;
       }
       
-      // 3. Detect from browser - AUTO-DETECTION ENABLED
-      const browserLang = navigator.language.slice(0, 2);
-      if (LANGS.includes(browserLang as Lang)) {
-        localStorage.setItem('trinity-lang', browserLang);
-        return browserLang as Lang;
-      }
+      // No browser auto-detection. It used to read navigator.language and pick
+      // the language itself, so a visitor never chose one and could not tell that
+      // choosing was possible: the page simply arrived in Russian, and the
+      // switcher looked inert because it already agreed with the browser.
+      // English is the default; another language is the reader's decision and is
+      // remembered from then on. ?lang=ru still works, and the static landings
+      // link to it.
     }
-    // Default fallback - ENGLISH
     return 'en';
   });
   const [mounted, setMounted] = useState(false);
