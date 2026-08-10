@@ -67,3 +67,16 @@ jobs:
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run check:render -- --no-build
+
+      # A51: four PRs merged, every check green, and the live site changed
+      # nothing -- this app deploys from a second repository that holds build
+      # output only, copied there by hand. Every check above runs against the
+      # source, so all of them pass on a tree whose output nobody published.
+      #
+      # This one fetches t27.ai and compares the entry bundle. It never fails
+      # the job: a merge is not a deploy, and blocking one on the other
+      # inverts the order. It is here so the gap is visible in the log rather
+      # than discovered a week later in the site's <head>.
+      - name: Is the live site this build?
+        continue-on-error: true
+        run: npm run check:deployed

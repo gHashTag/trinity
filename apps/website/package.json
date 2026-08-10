@@ -12,7 +12,8 @@
     "typecheck": "tsc -b --pretty false",
     "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
     "check:api": "node scripts/api-contract-check.mjs",
-    "check:render": "node scripts/render-check.mjs"
+    "check:render": "node scripts/render-check.mjs",
+    "check:deployed": "node scripts/deployed-check.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
