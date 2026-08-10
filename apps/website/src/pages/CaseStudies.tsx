@@ -5,9 +5,16 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import { RUNS, LIMITS_EN, LIMITS_RU } from '../data/verificationRuns'
+import type { Run } from '../data/verificationRuns'
 
 const CONTACT = {
   email: 'admin@t27.ai',
+  // The intake needs no backend: the visitor opens a pre-filled issue, and the
+  // workflow in that repo clones, elaborates, checks latches and synthesises,
+  // then posts the report back into the issue. A static site cannot hold a
+  // secret, so anything requiring one (private repositories) is handled by hand.
+  requestUrl: 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml',
   sampleReport: 'https://github.com/gHashTag/trinity/blob/main/docs/verification/SAMPLE-REPORT.md',
 }
 
@@ -50,6 +57,16 @@ const RU = {
   found: 'Что нашлось',
   turnaround: 'Срок',
   design: 'Что проверялось',
+  runsTitle: 'Прогоны на моих собственных дизайнах',
+  runsLede: 'Прежде чем предлагать это другим, я прогнал через ту же машину пять своих чипов. Это доказывает, что харнесс работает, а не что мне кто-то доверяет, — клиентские работы ниже и они пока пусты.',
+  limitsTitle: 'Чего эти прогоны НЕ устанавливают',
+  svcTitle: 'Как прогнать свой репозиторий',
+  svcOpen: 'Открытый код — бесплатно',
+  svcOpenBody: 'Публичный репозиторий проверяется бесплатно, а отчёт публикуется здесь целиком: и то, что прошло, и то, что нет. Это цена бесплатного — результат виден всем.',
+  svcPrivate: 'Закрытый репозиторий — платно',
+  svcPrivateBody: 'Приватный код требует доступа, который статический сайт держать не может, поэтому такие прогоны заводятся вручную и оплачиваются. Отчёт остаётся у вас; публикуется только с вашего разрешения.',
+  svcHow: 'Что нужно от вас: ссылка на репозиторий, имя верхнего модуля и одна фраза о том, что значит «правильно» для этого дизайна.',
+  svcCta: 'Открыть заявку на GitHub',
 }
 
 const EN = {
@@ -64,10 +81,60 @@ const EN = {
   found: 'What it surfaced',
   turnaround: 'Turnaround',
   design: 'What was checked',
+  runsTitle: 'Runs on my own designs',
+  runsLede: 'Before offering this to anyone else I put five of my own chips through the same machine. That proves the harness runs, not that anyone trusts it — client work is below, and it is still empty.',
+  limitsTitle: 'What these runs do NOT establish',
+  svcTitle: 'Run your own repository',
+  svcOpen: 'Open source — free',
+  svcOpenBody: 'A public repository is checked for free and the report is published here in full, whether it passed or not. That is the price of free: the result is visible to everyone.',
+  svcPrivate: 'Private repository — paid',
+  svcPrivateBody: 'Private code needs access a static site cannot hold, so those runs are set up by hand and invoiced. The report stays yours; it is published only with your permission.',
+  svcHow: 'What I need from you: the repository URL, the top module name, and one sentence on what "correct" means for this design.',
+  svcCta: 'Open a request on GitHub',
 }
 
 function mailto(subject: string) {
   return `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}`
+}
+
+
+function RunCard({ run, foundLabel }: { run: Run; foundLabel: string }) {
+  const failed = run.checks.filter((k) => k.status !== 'PASS').length
+  return (
+    <div className="premium-card" style={{ textAlign: 'left', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'baseline', justifyContent: 'space-between' }}>
+        <h3 style={{ margin: 0, fontSize: 'clamp(1.05rem, 3vw, 1.3rem)' }}>{run.design}</h3>
+        <code style={{ fontSize: '0.75rem', opacity: 0.75 }}>{run.top} · {run.tiles} · {run.date}</code>
+      </div>
+      <p style={{ fontSize: '0.9rem', opacity: 0.85, margin: '0.5rem 0 0.4rem', lineHeight: 1.6 }}>{run.what}</p>
+      <a href={run.repoUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem' }}>{run.repo}</a>
+
+      <div style={{ margin: '1rem 0 0' }}>
+        {run.checks.map((k) => (
+          <div key={k.name} style={{ borderTop: '1px solid var(--border)', padding: '0.6rem 0' }}>
+            <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'baseline' }}>
+              <span style={{ color: k.status === 'PASS' ? 'var(--accent)' : '#ff6b6b', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', minWidth: '3.2em' }}>
+                {k.status}
+              </span>
+              <strong style={{ fontSize: '0.88rem' }}>{k.name}</strong>
+            </div>
+            <p style={{ fontSize: '0.85rem', opacity: 0.85, margin: '0.3rem 0 0.35rem', lineHeight: 1.55 }}>{k.detail}</p>
+            <code style={{ fontSize: '0.72rem', opacity: 0.6, display: 'block', overflowX: 'auto', whiteSpace: 'pre' }}>{k.command}</code>
+          </div>
+        ))}
+      </div>
+
+      {run.found && (
+        <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: '0.9rem', marginTop: '1rem' }}>
+          <div style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.7, marginBottom: '0.35rem' }}>{foundLabel}</div>
+          <p style={{ fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>{run.found}</p>
+        </div>
+      )}
+      {failed === 0 && !run.found && (
+        <p style={{ fontSize: '0.82rem', opacity: 0.6, margin: '0.8rem 0 0' }}>Nothing surfaced. That is a result too.</p>
+      )}
+    </div>
+  )
 }
 
 export default function CaseStudies() {
@@ -102,6 +169,46 @@ export default function CaseStudies() {
             {c.lede}
           </p>
         </motion.div>
+
+        <div style={{ width: '100%', marginBottom: '2.5rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>{c.runsTitle}</h2>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, maxWidth: '62ch', margin: '0 auto 1.4rem' }}>{c.runsLede}</p>
+          {RUNS.map((r) => (
+            <RunCard key={r.id} run={r} foundLabel={c.found} />
+          ))}
+
+          <div className="premium-card" style={{ textAlign: 'left' }}>
+            <h3 style={{ marginTop: 0, fontSize: 'clamp(1rem, 3vw, 1.25rem)' }}>{c.limitsTitle}</h3>
+            <ul style={{ textAlign: 'left', paddingLeft: '1.1rem', margin: 0 }}>
+              {(lang === 'ru' ? LIMITS_RU : LIMITS_EN).map((l) => (
+                <li key={l} style={{ fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '0.5rem', opacity: 0.9 }}>{l}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="premium-card" style={{ textAlign: 'left', width: '100%', marginBottom: '2.5rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.9rem' }}>{c.svcTitle}</h2>
+          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+            <div>
+              <h3 style={{ fontSize: '0.95rem', margin: '0 0 0.4rem', color: 'var(--accent)' }}>{c.svcOpen}</h3>
+              <p style={{ fontSize: '0.87rem', lineHeight: 1.6, margin: 0, opacity: 0.9 }}>{c.svcOpenBody}</p>
+            </div>
+            <div>
+              <h3 style={{ fontSize: '0.95rem', margin: '0 0 0.4rem' }}>{c.svcPrivate}</h3>
+              <p style={{ fontSize: '0.87rem', lineHeight: 1.6, margin: 0, opacity: 0.9 }}>{c.svcPrivateBody}</p>
+            </div>
+          </div>
+          <p style={{ fontSize: '0.87rem', lineHeight: 1.6, opacity: 0.85, margin: '1rem 0 1.2rem' }}>{c.svcHow}</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.7rem' }}>
+            <a href={CONTACT.requestUrl} target="_blank" rel="noopener noreferrer" className="btn" style={{ padding: '12px 26px', fontSize: '0.88rem' }}>
+              {c.svcCta}
+            </a>
+            <a href={CONTACT.sampleReport} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '12px 26px', fontSize: '0.88rem' }}>
+              {c.ctaSample}
+            </a>
+          </div>
+        </div>
 
         {CASES.length === 0 ? (
           <motion.div
