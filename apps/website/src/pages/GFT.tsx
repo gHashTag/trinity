@@ -19,12 +19,27 @@ import QuantumBackground from '../components/QuantumBackground'
  * names the tool that produced it.
  */
 
+// Both the oracle and the RTL link were 404. Measured against a full
+// recursive tree of trinity-fpga (18,617 paths): conformance/gft16_ref.py
+// does not exist, and build/ does not exist at all.
+//
+// The oracle is repointed to conformance/gf_ref.py because the research file
+// behind this whole claim -- research/GFT16_BEATS_TEKUM16_2026-08-05.md,
+// which IS live -- names gf_ref.py and tekum_ref.py as the two models it
+// compared. That is sourced, not guessed.
+//
+// The RTL link is removed rather than repointed. There is multiplier RTL in
+// that repo -- fpga/openxc7-synth/gf16_mul.v -- but GF-T16 is NOT GF16: the
+// layouts differ (sign:offset:mant in a u32 versus S1E6M9 bias 31) and the
+// skill library keeps them apart precisely because substituting one for the
+// other is the easiest error in this corpus. A link to a different format's
+// multiplier would be worse than no link.
 const LINKS = {
   paper: 'https://arxiv.org/abs/2606.05017',
   catalogue: 'https://arxiv.org/abs/2606.09686',
-  oracle: 'https://github.com/gHashTag/trinity-fpga/blob/main/conformance/gft16_ref.py',
+  oracle: 'https://github.com/gHashTag/trinity-fpga/blob/main/conformance/gf_ref.py',
+  tekum: 'https://github.com/gHashTag/trinity-fpga/blob/main/conformance/tekum_ref.py',
   research: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/GFT16_BEATS_TEKUM16_2026-08-05.md',
-  rtl: 'https://github.com/gHashTag/trinity-fpga/blob/main/build/gft_mul8/gft_mul.v',
 }
 
 const EMAIL = 'admin@t27.ai'
@@ -41,6 +56,12 @@ const LADDER: [string, string, string][] = [
   ['GF-T32', '1,477', '83.27 MHz'],
 ]
 
+// These are synthesis results for a module whose source is not in any public
+// repo: a full recursive tree of trinity-fpga (18,617 paths) contains no
+// gft_mul.v. The numbers stay -- they were measured -- but a reader cannot
+// regenerate them, and the page should say so rather than let the link that
+// used to sit here imply otherwise. The nearest published multiplier,
+// fpga/openxc7-synth/gf16_mul.v, is a DIFFERENT format.
 const COST: [string, string, string, string][] = [
   ['gft_mul, 32-bit ports', '1,179', '3 with DSP allowed', '81 MHz'],
   ['Width-corrected', '219', '0', '81.35 MHz'],
@@ -233,6 +254,11 @@ value = (-1)^sign · (1 + M/2^9) · 2^e,   e = Σ tᵢ·3ⁱ  ∈ [−40, +40]`}
                 ))}
               </tbody>
             </table>
+            <p style={{ fontSize: '0.78rem', opacity: 0.55, marginTop: '0.6rem', maxWidth: '64ch' }}>
+              The gft_mul source is not published. These figures were measured, but a reader
+              cannot regenerate them from any public repository — said here rather than left to
+              be discovered by clicking a link that is not there.
+            </p>
           </div>
         </motion.div>
 
@@ -293,7 +319,7 @@ value = (-1)^sign · (1 + M/2^9) · 2^e,   e = Σ tᵢ·3ⁱ  ∈ [−40, +40]`}
             <a href={LINKS.paper} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>arXiv:2606.05017</a>
             <a href={LINKS.catalogue} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>arXiv:2606.09686</a>
             <a href={LINKS.oracle} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>Reference model</a>
-            <a href={LINKS.rtl} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>RTL</a>
+            <a href={LINKS.tekum} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>tekum16 reference</a>
           </div>
           <a href={`mailto:${EMAIL}?subject=${encodeURIComponent('GF-T licensing')}`} className="btn" style={{ padding: '12px 30px', fontSize: '0.9rem' }}>
             {EMAIL}
