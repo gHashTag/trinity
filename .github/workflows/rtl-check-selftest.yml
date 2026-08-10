@@ -32,6 +32,12 @@ jobs:
     with:
       top: fixture_good
       path: tests/rtl-check-fixtures/good
+      # The fixture is one 4-bit register, so the netlist holds exactly four
+      # flip-flops. Asserting the number and not just the verdict is the check
+      # that was missing: a counter returning 0 for every design in the world
+      # passed this self-test for weeks, because "it ran and did not fail" was
+      # all that was ever asked of it.
+      expect_flops: '4'
 
   # A job that calls a reusable workflow may not carry continue-on-error --
   # Actions rejects the whole file for it, which is how the first version of
