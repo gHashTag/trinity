@@ -368,6 +368,96 @@
         }
       ],
       "slug": "divadnauj-GB/tt_um_divadnauj-GB_serv_soc_wb"
+    },
+    {
+      "id": "stoch-neuron",
+      "design": "Stochastic neuron",
+      "repo": "santhoshs93/tt_um_santhosh_stoch_neuron",
+      "repoUrl": "https://github.com/santhoshs93/tt_um_santhosh_stoch_neuron",
+      "top": "tt_um_santhosh_stoch_neuron",
+      "tiles": "see info.yaml",
+      "what": "A stochastic-computing neuron.",
+      "date": "2026-08-11",
+      "origin": "third-party",
+      "thirdParty": true,
+      "slug": "santhoshs93/tt_um_santhosh_stoch_neuron",
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "2 of 2 declared files found",
+          "command": "info.yaml source_files -> src/"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean from the declared list alone",
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "1,575 cells including submodules, 810 wires. 445x $_AND_, 439x $_OR_, 249x $_MUX_, 173x $_DFFE_PN0P_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "208 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ]
+    },
+    {
+      "id": "serdes",
+      "design": "SERDES",
+      "repo": "Santeep/TT_UM_SERDES",
+      "repoUrl": "https://github.com/Santeep/TT_UM_SERDES",
+      "top": "tt_um_serdes",
+      "tiles": "see info.yaml",
+      "what": "A serialiser/deserialiser, the smallest of the five.",
+      "date": "2026-08-11",
+      "origin": "third-party",
+      "thirdParty": true,
+      "slug": "Santeep/TT_UM_SERDES",
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "2 of 2 declared files found",
+          "command": "info.yaml source_files -> src/"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean from the declared list alone",
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "244 cells including submodules, 115 wires. 123x $_MUX_, 36x $_DFFE_PN0P_, 29x $_DFFE_PP_, 18x $_DFFE_PN0N_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "103 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ]
     }
   ]
 }
