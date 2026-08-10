@@ -72,16 +72,29 @@ nothing, and calling it a regression test would be wrong.
   merge is not the explanation.
 - `#110` raised a clock-buffer preplace cap, but in `pack_clocking_xcup.cc` — UltraScale+,
   not xc7. It cannot be the cause.
-- What *did* change between `f8e7643` and here: `xilinx/external/prjxray-db` was bumped, and
-  `xdc.cc` gained 52 lines from #109. **A different prjxray-db yields a different chipdb and
-  a different set of legal BELs**, which is the leading candidate and is untested.
+- **The prjxray-db bump is ruled out — tested, not argued.** `f8e7643` pins `d429061`, the
+  tree used here pins `399a099`. A second chipdb was generated from `d429061` and compared:
+  **byte-identical**. The change in that bump is
+  `kintex7, virtex7: add RIOB18.IOB_Y1.LVCMOS12_LVCMOS15.IN` — kintex7 and virtex7, so it
+  cannot touch an artix7 database. Two chipdb exports, ~20 minutes, to disprove one sentence
+  of reasoning that had looked convincing.
+
+### What is left, in order of cheapness
+
+1. **Yosys version.** The repro's netlist is not pinned anywhere. Yosys here is
+   `0.67+post (b8e7da6)`; whatever produced the original `$auto$clkbufmap.cc:261:execute$2539`
+   is unrecorded. A different `clkbufmap` could emit `BUFGCTRL` where this one emits `BUFG`,
+   or attach a `BEL` attribute — and the #111 fallback fires only on
+   `BUFGCTRL`/`BUFG_BUFG`/`BUFHCE_BUFHCE` cells **without** one.
+2. `xdc.cc`, +52 lines from #109 — this case's XDC uses `create_clock`, which that patch
+   touches.
+3. `pack.cc`/`pack.h`, +3 lines adding `relocate_carry_o_fabric()` — a carry-chain concern,
+   unlikely but in the diff.
 
 ### Before this is offered to anyone
 
-Build at `f8e7643` with the prjxray-db submodule *that commit pins*, regenerate the chipdb
-from it, and confirm the case fails there. If it does, the case is valid and needs its
-prjxray-db version pinned alongside the part. If it does not, the reproduction in the PR
-depended on something not captured here and the case must be rebuilt from whatever that was.
+Reproduce the failure once, on a pre-patch build, before calling this a regression case.
+Until then it is a design that builds.
 
 **A regression test nobody has seen fail is not a regression test.** This one has now been
 seen *not* to fail, which is worse — it would have gone green forever while guarding nothing.
