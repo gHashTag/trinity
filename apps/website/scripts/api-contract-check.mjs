@@ -81,3 +81,26 @@ if (missing.size > BASELINE) {
   process.exit(1);
 }
 console.log(`  ${missing.size} read-but-never-emitted — at baseline ${BASELINE}, not worse.`);
+
+// ── Second check: no fallback may be indistinguishable from a measurement ──
+//
+// A36. getMockMetrics() runs whenever a fetch fails, and the deployed BASE_URL
+// is localhost, so on t27.ai it always runs. Unlabelled, `novelty: 0.342`
+// renders as a measurement. claim-guard cannot see this: no sentence
+// overstates -- a number does, by sitting in a slot that implies measurement.
+//
+// Every `return mockX()` must be wrapped in sample(), which tags the object so
+// SampleBadge can mark it on screen.
+const svc = 'src/services/chatApi.ts';
+if (existsSync(svc)) {
+  const src = readFileSync(svc, 'utf8');
+  const bare = [...src.matchAll(/return\s+(mock[A-Za-z]\w*)\s*\(/g)].map(m => m[1]);
+  if (bare.length) {
+    console.error(`\n  ${bare.length} fallback return(s) not wrapped in sample():`);
+    for (const n of [...new Set(bare)]) console.error(`    return ${n}(...)`);
+    console.error('\n  A fallback indistinguishable from real data is a claim. Wrap it.');
+    process.exit(1);
+  }
+  console.log('  all service fallbacks tagged as sample data');
+}
+
