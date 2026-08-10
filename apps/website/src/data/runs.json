@@ -1,0 +1,373 @@
+{
+  "provenance": {
+    "ranAt": "2026-08-11",
+    "yosys": "Yosys 0.65 (git sha1 aec814bdf3071f7e0fd0fbe43f7f711e99d01e24)",
+    "iverilog": "Icarus Verilog 13.0 (stable, v13_0)",
+    "commits": {
+      "t27": "592ba4c2d",
+      "trinity-fpga": "be4c5d1a"
+    }
+  },
+  "runs": [
+    {
+      "id": "phi",
+      "design": "TRI-1 Phi",
+      "repo": "gHashTag/t27 · chips/phi",
+      "repoUrl": "https://github.com/gHashTag/t27/tree/master/chips/phi",
+      "top": "tt_um_trinity_nano",
+      "tiles": "1x1",
+      "what": "Single-tile GF16 ternary dot4 MAC with a Lucas power-on self test.",
+      "date": "2026-08-11",
+      "origin": "t27",
+      "thirdParty": false,
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "16 of 16 declared files found in src/ (13 before the fix)",
+          "command": "info.yaml source_files -> src/"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean, after the three missing files were declared",
+          "command": "iverilog -g2012 -t null -I src -s tt_um_trinity_nano src/*.v"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "10,534 cells including submodules, 4,050 wires. 4,663x $_MUX_, 2,252x $_AND_, 1,660x $_OR_, 1,316x $_XOR_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "210 flip-flops, so a clock frequency is a meaningful thing to ask about",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ],
+      "slug": "gHashTag/t27/chips/phi"
+    },
+    {
+      "id": "euler",
+      "design": "TRI-1 Euler",
+      "repo": "gHashTag/t27 · chips/euler",
+      "repoUrl": "https://github.com/gHashTag/t27/tree/master/chips/euler",
+      "top": "tt_um_ghtag_trinity_gf16",
+      "tiles": "8x2",
+      "what": "GF16 e-engine, 8x2 tiles.",
+      "date": "2026-08-11",
+      "origin": "t27",
+      "thirdParty": false,
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "34 of 34 declared files found in src/",
+          "command": "info.yaml source_files -> src/"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean from the declared list alone",
+          "command": "iverilog -g2012 -t null -I src -s tt_um_ghtag_trinity_gf16 src/*.v"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "39,991 cells including submodules, 37,170 wires. 18,083x $_MUX_, 8,073x $_AND_, 5,823x $_OR_, 5,469x $_XOR_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "473 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ],
+      "slug": "gHashTag/t27/chips/euler"
+    },
+    {
+      "id": "gamma",
+      "design": "TRI-1 Gamma",
+      "repo": "gHashTag/t27 · chips/gamma",
+      "repoUrl": "https://github.com/gHashTag/t27/tree/master/chips/gamma",
+      "top": "tt_um_trinity_max_true",
+      "tiles": "8x4",
+      "what": "32-tile, 8-column neuromorphic array.",
+      "date": "2026-08-11",
+      "origin": "t27",
+      "thirdParty": false,
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "44 of 44 declared files found in src/ (43 before the fix)",
+          "command": "info.yaml source_files -> src/"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean, after the missing file was declared",
+          "command": "iverilog -g2012 -t null -I src -s tt_um_trinity_max_true src/*.v"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "205,992 cells including submodules, 102,588 wires. 90,628x $_MUX_, 45,141x $_AND_, 32,355x $_OR_, 27,239x $_XOR_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "1,929 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ],
+      "slug": "gHashTag/t27/chips/gamma"
+    },
+    {
+      "id": "mini",
+      "design": "Quantum Brain MINI",
+      "repo": "gHashTag/trinity-fpga · ttsky26c/mini",
+      "repoUrl": "https://github.com/gHashTag/trinity-fpga/tree/main/ttsky26c/mini",
+      "top": "tt_um_qbrain_mini",
+      "tiles": "1x1",
+      "what": "Single-column cortex: 4 GF16 cells, 75-word ROM, 16-opcode ISA.",
+      "date": "2026-08-11",
+      "origin": "trinity-fpga",
+      "thirdParty": false,
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "info.yaml declares no source_files, so src/*.v was globbed: 1 file",
+          "command": "glob src/*.v"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean",
+          "command": "iverilog -g2012 -t null -I src -s tt_um_qbrain_mini src/tt_um_qbrain_mini.v"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "49 cells including submodules, 57 wires. 28x $_XOR_, 16x $_DFFE_PN0P_, 1x $_DFF_PN0_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "17 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ],
+      "slug": "gHashTag/trinity-fpga/ttsky26c/mini"
+    },
+    {
+      "id": "holo",
+      "design": "Quantum Brain HOLOGRAPHIC",
+      "repo": "gHashTag/trinity-fpga · ttsky26c/holo",
+      "repoUrl": "https://github.com/gHashTag/trinity-fpga/tree/main/ttsky26c/holo",
+      "top": "tt_um_qbrain_holo",
+      "tiles": "1x2",
+      "what": "Holographic variant of the Quantum Brain column.",
+      "date": "2026-08-11",
+      "origin": "trinity-fpga",
+      "thirdParty": false,
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "info.yaml declares no source_files, so src/*.v was globbed: 1 file",
+          "command": "glob src/*.v"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean",
+          "command": "iverilog -g2012 -t null -I src -s tt_um_qbrain_holo src/tt_um_qbrain_holo.v"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "128 cells including submodules, 193 wires. 63x $_DFFE_PN0P_, 42x $_XOR_, 3x $_DFF_PN0_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "66 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ],
+      "slug": "gHashTag/trinity-fpga/ttsky26c/holo"
+    },
+    {
+      "id": "tinygpu",
+      "design": "TinyGPU v2",
+      "repo": "pongsagon/tt_um_pongsagon_tinygpu_v2",
+      "repoUrl": "https://github.com/pongsagon/tt_um_pongsagon_tinygpu_v2",
+      "top": "tt_um_pongsagon_tinygpu_v2",
+      "tiles": "see info.yaml",
+      "date": "2026-08-11",
+      "origin": "third-party",
+      "thirdParty": true,
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "10 of 10 declared files found",
+          "command": "info.yaml source_files -> src/"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean from the declared list alone",
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "34,223 cells including submodules, 15,846 wires. 11,251x $_AND_, 9,213x $_OR_, 5,942x $_MUX_, 3,065x $_XOR_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "3,383 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ],
+      "what": "Somebody else's GPU, the largest of the three.",
+      "slug": "pongsagon/tt_um_pongsagon_tinygpu_v2"
+    },
+    {
+      "id": "float-synth",
+      "design": "Float synth",
+      "repo": "NikLeberg/tt_um_float_synth",
+      "repoUrl": "https://github.com/NikLeberg/tt_um_float_synth",
+      "top": "tt_um_float_synth_nikleberg",
+      "tiles": "see info.yaml",
+      "what": "A floating-point synthesiser — the closest of the three to my own subject.",
+      "date": "2026-08-11",
+      "origin": "third-party",
+      "thirdParty": true,
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "2 of 2 declared files found",
+          "command": "info.yaml source_files -> src/"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean from the declared list alone",
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "900 cells including submodules, 904 wires. 210x $_NOT_, 197x $_OR_, 180x $_AND_, 180x $_DFF_P_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "183 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ],
+      "slug": "NikLeberg/tt_um_float_synth"
+    },
+    {
+      "id": "serv-soc",
+      "design": "SERV RISC-V SoC on Wishbone",
+      "repo": "divadnauj-GB/tt_um_divadnauj-GB_serv_soc_wb",
+      "repoUrl": "https://github.com/divadnauj-GB/tt_um_divadnauj-GB_serv_soc_wb",
+      "top": "tt_um_divadnauj_GB_serv_soc_wb",
+      "tiles": "see info.yaml",
+      "what": "A bit-serial RISC-V core with a Wishbone SoC around it, across 40 declared files.",
+      "date": "2026-08-11",
+      "origin": "third-party",
+      "thirdParty": true,
+      "checks": [
+        {
+          "name": "sources resolve",
+          "status": "PASS",
+          "detail": "40 of 40 declared files found",
+          "command": "info.yaml source_files -> src/"
+        },
+        {
+          "name": "elaborates",
+          "status": "PASS",
+          "detail": "clean from the declared list alone",
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+        },
+        {
+          "name": "no inferred latches",
+          "status": "PASS",
+          "detail": "no $_DLATCH_ cells after techmap",
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+        },
+        {
+          "name": "synthesises",
+          "status": "PASS",
+          "detail": "8,301 cells including submodules, 4,903 wires. 2,081x $_AND_, 1,957x $_OR_, 1,605x $_MUX_, 689x $_DFFE_PP0P_",
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+        },
+        {
+          "name": "has clocked logic",
+          "status": "PASS",
+          "detail": "1,751 flip-flops",
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+        }
+      ],
+      "slug": "divadnauj-GB/tt_um_divadnauj-GB_serv_soc_wb"
+    }
+  ]
+}
