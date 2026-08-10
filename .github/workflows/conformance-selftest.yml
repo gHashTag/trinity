@@ -1,0 +1,69 @@
+name: conformance self-test
+
+# The conformance check is offered to other people to run on their own designs.
+# Before that is a reasonable thing to offer it has to be shown failing on a
+# design that deserves to fail, and shown reporting the right NUMBER — not
+# merely the right verdict.
+#
+# That second part is not pedantry. The structural check's flop counter returned
+# zero for every design on earth and stayed green for weeks, because the only
+# thing its self-test ever asserted was pass-or-fail and zero flops is not a
+# failure. Here every job asserts the count.
+
+on:
+  push:
+    paths:
+      - '.github/workflows/conformance-check.yml'
+      - '.github/workflows/conformance-selftest.yml'
+      - 'tools/conformance_check.py'
+      - 'tools/signal_health.py'
+      - 'tests/test_signal_health.py'
+      - 'tests/conformance-fixtures/**'
+  pull_request:
+    paths:
+      - '.github/workflows/conformance-check.yml'
+      - '.github/workflows/conformance-selftest.yml'
+      - 'tools/conformance_check.py'
+      - 'tools/signal_health.py'
+      - 'tests/test_signal_health.py'
+      - 'tests/conformance-fixtures/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-must-agree-on-every-code-point:
+    uses: ./.github/workflows/conformance-check.yml
+    with:
+      module: fixture_e5m2
+      sources: tests/conformance-fixtures/good/fixture_e5m2.v
+      input_port: e5m2_in
+      width: 8
+      reference: float8_e5m2
+      expect_mismatches: '0'
+      # The PR's own checker, not main's. Without this the self-test would be
+      # verifying a version of the tool the pull request does not contain.
+      tool_ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  planted-defect-must-be-caught-with-the-right-count:
+    uses: ./.github/workflows/conformance-check.yml
+    with:
+      module: fixture_e5m2_wrong
+      sources: tests/conformance-fixtures/wrong/fixture_e5m2_wrong.v
+      input_port: e5m2_in
+      width: 8
+      reference: float8_e5m2
+      # Subnormals flushed to zero: three mantissas, two signs, six code points.
+      # Asserting six rather than "some" is what makes this a measurement — a
+      # checker that flagged all 256 would also be "catching" the defect.
+      expect_mismatches: '6'
+      tool_ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  # The arithmetic behind the signal-health check, asserted against sequences
+  # whose answers are known rather than merely exercised.
+  signal-health-numbers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_signal_health.py

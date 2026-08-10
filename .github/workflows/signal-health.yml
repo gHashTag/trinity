@@ -1,0 +1,85 @@
+name: Signal health
+
+# Is your build still carrying information?
+#
+# T12 at <https://t27.ai/#/verification>: the self-information of an observed
+# event is -log2 P, so a build red on every run has P(red) = 1 and each new red
+# is worth zero bits. It cannot distinguish the world before it from the world
+# after.
+#
+# Written after a decoder in my own chip disagreed with its specification on 8
+# of 64 code points while three tests in that repository reported it -- two
+# exhaustive, one against a reference not derived from the RTL -- into a build
+# that had been red for six weeks. One line of RTL then turned every job green,
+# so the entire standing red had a single cause, named in the log every run.
+#
+# The first thing it did when pointed at this repository was find 379
+# consecutive failures going back to March. It is not a check I wrote for other
+# people.
+#
+# Add to your repo:
+#
+#   jobs:
+#     signal:
+#       uses: gHashTag/trinity/.github/workflows/signal-health.yml@main
+#       with:
+#         workflow: ci.yml
+
+on:
+  workflow_call:
+    inputs:
+      workflow:
+        description: 'Workflow file to measure, e.g. ci.yml. Empty measures every workflow together.'
+        required: false
+        default: ''
+        type: string
+      window:
+        description: 'How many completed runs to look at.'
+        required: false
+        default: 100
+        type: number
+      max_streak:
+        description: 'Fail above this many consecutive failures.'
+        required: false
+        default: 3
+        type: number
+      tool_ref:
+        required: false
+        default: 'main'
+        type: string
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the checker
+        uses: actions/checkout@v4
+        with:
+          repository: gHashTag/trinity
+          ref: ${{ inputs.tool_ref || 'main' }}
+
+      - name: Measure
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WF: ${{ inputs.workflow }}
+          WINDOW: ${{ inputs.window }}
+          MAXSTREAK: ${{ inputs.max_streak }}
+        run: |
+          set -uo pipefail
+          echo "## Signal health" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          ARGS="--repo ${{ github.repository }} --window ${WINDOW:-100} --max-streak ${MAXSTREAK:-3}"
+          if [ -n "${WF:-}" ]; then ARGS="$ARGS --workflow $WF"; fi
+          # shellcheck disable=SC2086
+          python3 tools/signal_health.py $ARGS 2>&1 | tee out.txt
+          rc=${PIPESTATUS[0]}
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat out.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit $rc

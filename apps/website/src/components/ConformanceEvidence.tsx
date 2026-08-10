@@ -1,4 +1,5 @@
 "use client";
+import { useState } from 'react'
 import { useI18n } from '../i18n/context'
 import data from '../data/coronaConformance.json'
 
@@ -16,6 +17,17 @@ import data from '../data/coronaConformance.json'
 //     "exhaustive" here means what it says, which it almost never does.
 
 type Result = { module: string; codes?: number; oracle?: string; mismatches?: number; error?: string }
+
+const SNIPPET = `# .github/workflows/conformance.yml
+jobs:
+  e5m2:
+    uses: gHashTag/trinity/.github/workflows/conformance-check.yml@main
+    with:
+      module: fp8_e5m2_decode
+      sources: src/rtl/fp8_e5m2_decode.v
+      input_port: e5m2_in
+      width: 8
+      reference: float8_e5m2`
 
 const RESULTS = (data.results ?? []) as Result[]
 const TOTAL = data.totalCodePoints ?? 0
@@ -42,6 +54,10 @@ const T = {
     pass: 'exhaustive pass',
     fail: (n: number) => `${n} disagreements`,
     repro: 'Reproduce it',
+    runIt: 'Run this tier on your own design',
+    runItBody: 'The same shape as the free check — your runner, your checkout, nothing uploaded. Name the module, its input port, the width, and an ml_dtypes reference. Every code point is applied, so what comes back is a count over the whole format rather than a bound over a sample.',
+    copy: 'Copy',
+    copied: 'Copied',
   },
   ru: {
     h2: 'Что дала платная ступень — включая часть, которая оказалась против меня',
@@ -63,12 +79,17 @@ const T = {
     pass: 'исчерпывающе сошлось',
     fail: (n: number) => `${n} расхождений`,
     repro: 'Воспроизвести',
+    runIt: 'Запустите эту ступень на своём дизайне',
+    runItBody: 'Та же форма, что у бесплатной проверки: ваш раннер, ваш checkout, ничего никуда не загружается. Укажите модуль, входной порт, ширину и эталон из ml_dtypes. Применяются все кодовые точки, поэтому в ответе — счёт по всему формату, а не граница по выборке.',
+    copy: 'Скопировать',
+    copied: 'Скопировано',
   },
 }
 
 export default function ConformanceEvidence() {
   const { lang } = useI18n()
   const t = lang === 'ru' ? T.ru : T.en
+  const [copied, setCopied] = useState(false)
 
   return (
     <div className="premium-card" style={{ textAlign: 'left', marginBottom: '2rem' }}>
@@ -113,6 +134,25 @@ export default function ConformanceEvidence() {
           <span style={{ fontSize: '0.88rem', lineHeight: 1.6, opacity: 0.85 }}>{body}</span>
         </div>
       ))}
+
+      <div style={{ marginTop: '1.4rem', marginBottom: '1.2rem' }}>
+        <strong style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.92rem' }}>{t.runIt}</strong>
+        <p style={{ margin: '0 0 0.7rem', fontSize: '0.88rem', lineHeight: 1.6, opacity: 0.85, maxWidth: '68ch' }}>{t.runItBody}</p>
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => { navigator.clipboard?.writeText(SNIPPET).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }) }}
+            className="btn secondary"
+            style={{ position: 'absolute', top: '8px', right: '8px', padding: '6px 14px', fontSize: '0.75rem', zIndex: 2 }}
+          >
+            {copied ? t.copied : t.copy}
+          </button>
+          <pre style={{
+            margin: 0, padding: '1rem 1rem 1rem 1.1rem', overflowX: 'auto',
+            background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.09)',
+            borderRadius: '10px', fontSize: '0.8rem', lineHeight: 1.6,
+          }}><code>{SNIPPET}</code></pre>
+        </div>
+      </div>
 
       <div style={{ marginTop: '1.1rem', display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
         <a href="https://github.com/gHashTag/trinity/blob/main/tools/corona_conformance.py" target="_blank" rel="noopener noreferrer"
