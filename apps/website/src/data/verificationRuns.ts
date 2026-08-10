@@ -28,18 +28,32 @@ export type Run = {
   /** What the design is, in one line. */
   what: string
   checks: Check[]
+  /** Which checkout the sources came from, for the commit stamp. */
+  origin: 't27' | 'trinity-fpga'
   /** Anything the run surfaced that the author had to act on. */
   found?: string
   date: string
 }
 
-const LATCH_CMD = 'yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*'
+/** Stamped on every card. A rounded number reads as a claim; an exact tool
+ *  build and a commit SHA read as the output of something that actually ran —
+ *  and they answer the question a visitor never asks aloud, which is whether
+ *  this thing is still running at all. */
+export const PROVENANCE = {
+  ranAt: '2026-08-11',
+  yosys: 'Yosys 0.65 (git sha1 aec814bdf3071f7e0fd0fbe43f7f711e99d01e24)',
+  iverilog: 'Icarus Verilog 13.0 (stable, v13_0)',
+  commits: { t27: '592ba4c2d', 'trinity-fpga': 'be4c5d1a' } as Record<string, string>,
+}
+
+const LATCH_CMD = 'yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*' 
 const STAT_CMD = 'yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat'
 const FLOP_CMD = 'yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist'
 
 export const RUNS: Run[] = [
   {
     id: 'phi',
+    origin: 't27',
     design: 'TRI-1 Phi',
     repo: 'gHashTag/t27 · chips/phi',
     repoUrl: 'https://github.com/gHashTag/t27/tree/master/chips/phi',
@@ -59,6 +73,7 @@ export const RUNS: Run[] = [
   },
   {
     id: 'euler',
+    origin: 't27',
     design: 'TRI-1 Euler',
     repo: 'gHashTag/t27 · chips/euler',
     repoUrl: 'https://github.com/gHashTag/t27/tree/master/chips/euler',
@@ -76,6 +91,7 @@ export const RUNS: Run[] = [
   },
   {
     id: 'gamma',
+    origin: 't27',
     design: 'TRI-1 Gamma',
     repo: 'gHashTag/t27 · chips/gamma',
     repoUrl: 'https://github.com/gHashTag/t27/tree/master/chips/gamma',
@@ -95,6 +111,7 @@ export const RUNS: Run[] = [
   },
   {
     id: 'mini',
+    origin: 'trinity-fpga',
     design: 'Quantum Brain MINI',
     repo: 'gHashTag/trinity-fpga · ttsky26c/mini',
     repoUrl: 'https://github.com/gHashTag/trinity-fpga/tree/main/ttsky26c/mini',
@@ -112,6 +129,7 @@ export const RUNS: Run[] = [
   },
   {
     id: 'holo',
+    origin: 'trinity-fpga',
     design: 'Quantum Brain HOLOGRAPHIC',
     repo: 'gHashTag/trinity-fpga · ttsky26c/holo',
     repoUrl: 'https://github.com/gHashTag/trinity-fpga/tree/main/ttsky26c/holo',
