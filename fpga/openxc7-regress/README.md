@@ -88,12 +88,35 @@ So the abort in the PR needed something this design does not create: **contentio
 happen. A minimal reproduction was the wrong instinct here — the bug needs pressure, and
 minimality removes exactly the pressure it needs.
 
-### What a working case would have to do
+### The contention hypothesis does not hold either, at the scales tested
 
-Occupy or constrain enough `BUFGCTRL` sites that the unplaced fabric-driven buffer has
-nowhere obvious to go, so that leaving it unplaced actually aborts. Until such a design
-exists, this directory holds a design that builds, not a regression case — and the
-distinction is the whole reason the suite is worth building carefully.
+"The abort needs `BUFGCTRL` pressure" was the obvious next move, so it was tested rather
+than assumed. Designs with 8, 20 and 34 fabric-driven clock dividers were generated,
+synthesised (yielding 9, 21 and 35 `BUFG` cells against 32 sites) and run on the **unpatched**
+binary:
+
+| Design | `BUFG` cells | Unpatched result |
+|---|---|---|
+| 8 dividers | 9 | **placed**, 82,723 B of FASM |
+| 20 dividers | 21 | **placed** — reached routing, no abort |
+| 34 dividers | 35 | run pending; 35 > 32 sites, so a failure here would be capacity, not this bug |
+
+So raising the buffer count from 2 to 21 does not produce
+`Unable to find legal placement`. Whatever the original reproduction depended on, it is not
+simply the number of fabric-driven buffers.
+
+**Two hypotheses have now been tested and both failed** — the prjxray-db bump (disproved by
+byte-identical chipdbs) and buffer contention (disproved at 9 and 21 buffers). Neither was
+wrong-headed; both were checkable, and checking cost less than being wrong in a letter to a
+maintainer would have.
+
+### What a working case would still have to do
+
+Reproduce `ERROR: Unable to find legal placement` on a build without the #111 fallback. Every
+route to that tried here has failed, so the honest state of this directory is: **a design that
+exercises the mechanism (the fabric-driven buffer is genuinely left unplaced) but not the
+symptom.** That is worth reporting to the maintainer as a finding; it is not worth shipping
+as a test.
 
 ## Running it costs more than the test does — measured 2026-08-10
 
