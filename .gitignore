@@ -311,7 +311,7 @@ fpga/tools/weight_pack_wide
 *.md
 !CLAUDE.md
 !.github/
-!docs/
+!docs/**
 
 # Docker files in root (use deploy/ subdirectory instead)
 Dockerfile*
