@@ -19,7 +19,6 @@ type Result = { module: string; codes?: number; oracle?: string; mismatches?: nu
 
 const RESULTS = (data.results ?? []) as Result[]
 const TOTAL = data.totalCodePoints ?? 0
-const BAD = data.totalMismatches ?? 0
 const PASSED = RESULTS.filter((r) => !r.error && (r.mismatches ?? 0) === 0).length
 
 const T = {
@@ -122,7 +121,7 @@ export default function ConformanceEvidence() {
         </a>
         <a href="https://github.com/gHashTag/tt-trinity-corona/issues/8" target="_blank" rel="noopener noreferrer"
            className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.82rem' }}>
-          fp6_e3m2 · {BAD} / {TOTAL.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US')}
+          {lang === 'ru' ? 'Дефект и починка' : 'The defect and its fix'}
         </a>
       </div>
     </div>
