@@ -107,7 +107,10 @@ export default function AboutAuthor() {
           <h2 style={{ fontSize: 'clamp(1.3rem, 4vw, 1.6rem)', marginBottom: '1.2rem', textAlign: 'left' }}>
             {a.achievementsTitle || 'Key achievements (on hardware, 2026)'}
           </h2>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          {/* textAlign left like the h2 and the paragraphs above: the section
+              centres its text, and a centred flex row leaves the ◆ pinned left
+              while every wrapped line floats, which reads as broken alignment. */}
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, textAlign: 'left' }}>
             {(a.achievements || DEFAULT_ACHIEVEMENTS).map((line: string, i: number) => (
               <motion.li
                 key={i}

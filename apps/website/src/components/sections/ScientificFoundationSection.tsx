@@ -43,7 +43,9 @@ export default function ScientificFoundationSection() {
         <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', color: 'var(--text)', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
           {sf.paperTitle}
         </h3>
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        {/* Sections centre their text; a centred flex row pins the bullet left
+            and floats every wrapped line, which reads as broken alignment. */}
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, textAlign: 'left' }}>
           {sf.papers?.map((paper: string, i: number) => (
             <li key={i} style={{ marginBottom: '1rem', display: 'flex', alignItems: 'flex-start', gap: '0.8rem' }}>
               <span style={{ color: 'var(--accent)', fontSize: '1.2rem', lineHeight: '1' }}>•</span>
