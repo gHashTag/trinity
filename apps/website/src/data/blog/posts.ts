@@ -4,7 +4,11 @@
 // r/t27ai) links back to this page — the owned surface is the canonical one.
 //
 // Honesty rules that apply to every post in this file:
-//   - an unmerged pull request is "submitted upstream", never "merged"
+//   - a pull request's state is named exactly: merged ones say merged, open ones say
+//     "submitted upstream". Never a blanket claim over a mixed set. Re-check before
+//     publishing — states move, and a stale one here is worse than in a draft:
+//       gh api "repos/openXC7/nextpnr-xilinx/pulls?state=all&per_page=20" \
+//         --jq '.[]|select(.user.login=="gHashTag")|"#\(.number) merged=\(.merged_at != null)"'
 //   - a design is not a fabricated chip
 //   - unsolved defects stay in the text
 //   - no scale claims in titles
@@ -44,12 +48,12 @@ const openGigabitEthernet: Post = {
   readingMinutes: 12,
   tags: ['FPGA', 'Open source', 'Ethernet', 'Artix-7', 'openXC7'],
   receipts: [
-    { label: 'openXC7/nextpnr-xilinx #109 — set_multicycle_path', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/109' },
-    { label: '#110 — clock-buffer preplace BFS cap', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/110' },
-    { label: '#111 — fabric-driven global buffers', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/111' },
-    { label: '#112 — SDP BRAM unused-port width bit', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/112' },
-    { label: '#113 — single-site configuration primitives', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/113' },
-    { label: '#115 — IDDR IFF flop initialisation', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/115' },
+    { label: 'openXC7/nextpnr-xilinx #109 — set_multicycle_path · MERGED 2026-08-09', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/109' },
+    { label: '#110 — clock-buffer preplace BFS cap · MERGED 2026-08-09', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/110' },
+    { label: '#111 — fabric-driven global buffers · open', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/111' },
+    { label: '#112 — SDP BRAM unused-port width bit · open', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/112' },
+    { label: '#113 — single-site configuration primitives · open', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/113' },
+    { label: '#115 — IDDR IFF flop initialisation · MERGED 2026-08-09', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/115' },
     {
       label:
         'openXC7/nextpnr-xilinx issue #114 — IDDR captures nothing on silicon (A/B/A/B bitstream measurement, ALINX AX7203)',
