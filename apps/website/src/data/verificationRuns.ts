@@ -31,6 +31,8 @@ export type Run = {
   date: string
   origin: string
   thirdParty?: boolean
+  /** Path under /r/. Identifies the design, not the repository. */
+  slug: string
 }
 
 // runs.json is the single source of truth. The static generator in the publish
