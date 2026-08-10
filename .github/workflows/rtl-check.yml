@@ -1,0 +1,179 @@
+name: RTL structural check
+
+# Runs in YOUR repository, on YOUR runner. Your sources are never uploaded
+# anywhere and this workflow has no access to anything of mine.
+#
+# That is not a courtesy, it is the only shape that works. The closest
+# comparable service started as hosted CI and moved to on-premise because
+# chip designers will not upload RTL, and an intake that asks them to is
+# turning away the people it exists for. Running inside the customer's CI
+# also settles two problems that have no good answer otherwise: who pays for
+# the compute, and how you prove a requester is entitled to the repository —
+# only somebody with write access can add a workflow to it.
+#
+# Add to .github/workflows/rtl-check.yml in your repo:
+#
+#   name: RTL check
+#   on: [push, pull_request]
+#   jobs:
+#     check:
+#       uses: gHashTag/trinity/.github/workflows/rtl-check.yml@main
+#       with:
+#         top: my_top_module
+#
+# What it establishes is written at the end of the job summary, along with
+# what it does not. A pass here is not a proof of correctness: nothing in this
+# workflow compares your design against a specification.
+
+on:
+  workflow_call:
+    inputs:
+      top:
+        description: 'Top module name. A Verilog identifier, nothing else.'
+        required: true
+        type: string
+      sources:
+        description: 'Shell glob for the sources. Defaults to the Tiny Tapeout layout.'
+        required: false
+        default: 'src/*.v'
+        type: string
+      include_dir:
+        description: 'Directory for `include headers.'
+        required: false
+        default: 'src'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # The top module is pasted into a yosys script, and yosys scripts have
+      # `exec`, which runs arbitrary programs. Without this a top of
+      # `dut; exec -- sh -c ...` executes on the runner. Demonstrated before
+      # the check existed: yosys printed
+      #   3. Executing command "echo INJECTED_COMMAND_RAN".
+      # A Verilog identifier is the only thing this input may ever be.
+      - name: Check the top module name is an identifier
+        env:
+          TOP: ${{ inputs.top }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$TOP" | grep -Eq '^[A-Za-z_][A-Za-z0-9_$]{0,127}$'; then
+            echo "::error::top must match ^[A-Za-z_][A-Za-z0-9_\$]*\$ — got '$TOP'"
+            exit 1
+          fi
+
+      - name: Install the open toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq yosys iverilog
+          yosys -V
+          iverilog -V | head -1
+
+      - name: Check
+        id: check
+        env:
+          TOP: ${{ inputs.top }}
+          SRC_GLOB: ${{ inputs.sources }}
+          INC: ${{ inputs.include_dir }}
+        run: |
+          set -uo pipefail
+          # Prefer what info.yaml declares, because that is the list a Tiny
+          # Tapeout shuttle builds from — and because a declared file can sit in
+          # a subdirectory the glob never sees. Measured on a real submission:
+          # info.yaml named project.v and gen/fmul8.v, `src/*.v` found only the
+          # first, and elaboration failed on a design that is in fact fine.
+          SRC=""
+          if [ -f info.yaml ]; then
+            SRC=$(awk '/^[[:space:]]*source_files:/{f=1;next} f&&/^[[:space:]]*-/{gsub(/^[[:space:]]*-[[:space:]]*"?|"?[[:space:]]*$/,"");print "'"$INC"'/" $0;next} f{exit}' info.yaml | tr '\n' ' ')
+          fi
+          if [ -n "$SRC" ]; then
+            echo "sources: from info.yaml source_files"
+            MISSING=""
+            for f in $SRC; do [ -f "$f" ] || MISSING="$MISSING $f"; done
+            if [ -n "$MISSING" ]; then
+              echo "::error::info.yaml declares files that are not present:$MISSING"
+              echo "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+          else
+            echo "sources: no source_files in info.yaml, falling back to the glob"
+            # shellcheck disable=SC2086
+            SRC=$(ls $SRC_GLOB 2>/dev/null | grep -v '_tb\.v$' | tr '\n' ' ')
+          fi
+          if [ -z "$SRC" ]; then
+            echo "::error::no sources found: info.yaml declares none and '$SRC_GLOB' matched nothing"
+            exit 1
+          fi
+          echo "## RTL structural check" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Top: \`$TOP\` · $(echo "$SRC" | wc -w | tr -d ' ') source file(s)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          fails=0
+
+          # 1. Elaboration.
+          if iverilog -g2012 -t null -I "$INC" -s "$TOP" $SRC 2> elab.txt; then
+            echo "- **PASS** elaborates — every module it instantiates is defined in the files given" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- **FAIL** elaborates" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"; head -20 elab.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+            fails=$((fails+1))
+          fi
+
+          # 2/3/4. One yosys pass: latch check, cell count, flop count.
+          # flatten before stat, because `stat -top` aborts with an uncaught
+          # std::out_of_range on some hierarchies in yosys 0.65, and per-module
+          # counts under-report anything hierarchical.
+          {
+            for f in $SRC; do echo "read_verilog -sv $f"; done
+            echo "hierarchy -top $TOP"
+            echo "proc; opt; fsm; opt; memory; opt"
+            echo "techmap; opt"
+            echo "flatten; opt"
+            echo "stat"
+            echo 'select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*'
+          } > check.ys
+          if yosys -s check.ys > yosys.txt 2>&1; then
+            echo "- **PASS** no latch inferred by this flow" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- **FAIL** a latch was inferred, or synthesis stopped" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"; tail -20 yosys.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+            fails=$((fails+1))
+          fi
+
+          TAIL=$(sed -n '/Printing statistics/,$p' yosys.txt)
+          CELLS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ cells$' | tail -1 | tr -dc '0-9')
+          WIRES=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ wires$' | tail -1 | tr -dc '0-9')
+          FLOPS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ +\$_[A-Z]*DFF[A-Z_]*_$' | awk '{s+=$1} END{print s+0}')
+          if [ -n "$CELLS" ]; then
+            echo "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- **FAIL** synthesis produced no cell count" >> "$GITHUB_STEP_SUMMARY"
+            fails=$((fails+1))
+          fi
+          if [ "${FLOPS:-0}" -gt 0 ]; then
+            echo "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- **NOTE** purely combinational — no clock frequency can belong to it; the comparable figure is propagation delay" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          {
+            echo ""
+            echo "### What this does not establish"
+            echo "- A pass is not a proof of correctness. Nothing above compares the design against a specification."
+            echo "- Generic yosys cells are not silicon area, and not an ASIC estimate."
+            echo "- No frequency is claimed. The flip-flop count says the question is meaningful, not what the answer is."
+            echo "- Nothing ran on hardware."
+            echo ""
+            echo "Deeper tiers — conformance against an independent reference model, and place-and-route on a"
+            echo "named part — are at <https://t27.ai/verification/>."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit $([ "$fails" -gt 0 ] && echo 1 || echo 0)
