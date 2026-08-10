@@ -16,7 +16,7 @@
   "hero": {
     "badge_publications": "7 PUBLICACIONES",
     "badge_doi": "DOI-VERIFICADO",
-    "tag": "GF-T · un float ternario nativo que supera el estado del arte publicado",
+    "tag": "GF-T · un float ternario nativo que supera el estado del arte publicado en los extremos del rango",
     "headline": "φ² + 1/φ² = 3",
     "subheadline": "2,84× y 5,53× más preciso que tekum16 en rango · sin decodificación de régimen · el exponente suma de forma nativa en ternario",
     "quote": "«No simulado — medido. Vuelto a medir de forma independiente contra los mismos oráculos, y las proporciones se reproducen.»",
