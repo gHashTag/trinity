@@ -50,9 +50,9 @@ const openGigabitEthernet: Post = {
   receipts: [
     { label: 'openXC7/nextpnr-xilinx #109 — set_multicycle_path · MERGED 2026-08-09', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/109' },
     { label: '#110 — clock-buffer preplace BFS cap · MERGED 2026-08-09', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/110' },
-    { label: '#111 — fabric-driven global buffers · open', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/111' },
-    { label: '#112 — SDP BRAM unused-port width bit · open', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/112' },
-    { label: '#113 — single-site configuration primitives · open', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/113' },
+    { label: '#111 — fabric-driven global buffers · MERGED 2026-08-10', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/111' },
+    { label: '#112 — SDP BRAM unused-port width bit · MERGED 2026-08-10', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/112' },
+    { label: '#113 — single-site configuration primitives · MERGED 2026-08-10', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/113' },
     { label: '#115 — IDDR IFF flop initialisation · MERGED 2026-08-09', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/115' },
     {
       label:

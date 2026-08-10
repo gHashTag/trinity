@@ -212,7 +212,7 @@ export const upstream: Resource[] = [
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/111',
     verified: '2026-08-10',
     status: 'live',
-    note: 'Submitted upstream, open. No maintainer comment.',
+    note: 'MERGED 2026-08-10 — "I merged this. I am actually thinking about making a regression test suite for nextpnr-xilinx and your example above would be a nice start."',
   },
   {
     kind: 'repo',
@@ -220,7 +220,7 @@ export const upstream: Resource[] = [
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/112',
     verified: '2026-08-10',
     status: 'live',
-    note: 'Submitted upstream, open. No maintainer comment.',
+    note: 'MERGED 2026-08-10.',
   },
   {
     kind: 'repo',
@@ -228,7 +228,7 @@ export const upstream: Resource[] = [
     href: 'https://github.com/openXC7/nextpnr-xilinx/pull/113',
     verified: '2026-08-10',
     status: 'live',
-    note: 'Submitted upstream, open. No maintainer comment.',
+    note: 'MERGED 2026-08-10.',
   },
   {
     kind: 'repo',
