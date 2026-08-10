@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
-    "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs"
+    "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
+    "check:api": "node scripts/api-contract-check.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
