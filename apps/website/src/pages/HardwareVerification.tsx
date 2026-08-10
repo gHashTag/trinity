@@ -7,6 +7,7 @@ import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { THEOREMS, SCIENCE_INTRO_EN, SCIENCE_INTRO_RU } from '../data/verificationScience'
+import { DELIVERY_TIERS, TIERS_LEDE } from '../data/verificationTiers'
 
 const REQUEST_URL = 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml'
 
@@ -204,6 +205,45 @@ const RU = {
   finalNote: 'В письме уже будут четыре коротких вопроса. Ответьте на них — и первым ответом будет оценка и дата, а не новые вопросы. Отвечаю в течение суток.',
 }
 
+
+
+function TierSection({ lang }: { lang: string }) {
+  const ru = lang === 'ru'
+  const L = (x: { en: string; ru: string }) => (ru ? x.ru : x.en)
+  return (
+    <div style={{ width: '100%', maxWidth: '900px', margin: '2.5rem auto 0', textAlign: 'left' }}>
+      <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
+        {ru ? 'Что именно вы получите' : 'What you actually get'}
+      </h2>
+      <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, margin: '0 0 1.4rem', maxWidth: '64ch' }}>
+        {L(TIERS_LEDE)}
+      </p>
+      {DELIVERY_TIERS.map((t) => (
+        <div key={t.id} className="premium-card" style={{ textAlign: 'left', marginBottom: '0.9rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <h3 style={{ margin: 0, fontSize: 'clamp(1rem, 2.7vw, 1.18rem)' }}>
+              {L(t.name)}
+              {t.automated && (
+                <span style={{ marginLeft: '0.6rem', fontSize: '0.68rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', border: '1px solid var(--accent)', borderRadius: '999px', padding: '2px 8px' }}>
+                  {ru ? 'кнопкой выше' : 'the button above'}
+                </span>
+              )}
+            </h3>
+            <code style={{ fontSize: '0.76rem', opacity: 0.8 }}>{L(t.price)} · {L(t.turnaround)}</code>
+          </div>
+          <ul style={{ paddingLeft: '1.1rem', margin: '0.8rem 0 0' }}>
+            {(ru ? t.delivers.ru : t.delivers.en).map((d) => (
+              <li key={d} style={{ fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '0.45rem' }}>{d}</li>
+            ))}
+          </ul>
+          <p style={{ fontSize: '0.83rem', lineHeight: 1.6, margin: '0.9rem 0 0', opacity: 0.75, borderTop: '1px solid var(--border)', paddingTop: '0.6rem' }}>
+            <strong>{ru ? 'Что уже сделано: ' : 'Track record: '}</strong>{L(t.track)}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 function ScienceSection({ lang }: { lang: string }) {
   const ru = lang === 'ru'
@@ -543,7 +583,8 @@ export default function HardwareVerification() {
         </motion.div>
       </section>
 
-      <ScienceSection lang={lang} />
+      <TierSection lang={lang} />
+        <ScienceSection lang={lang} />
 
       <Footer />
     </main>
