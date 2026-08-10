@@ -52,6 +52,15 @@ on:
         required: false
         default: 'pass'
         type: string
+      expect_flops:
+        description: >
+          Assert the netlist holds exactly this many flip-flops. Optional, and
+          used by the self-test: the flop count was wrong in production for
+          weeks because the self-test only ever asserted pass-or-fail, never a
+          value, so a regex that returned 0 for everything still went green.
+        required: false
+        default: ''
+        type: string
       path:
         description: >-
           Directory holding info.yaml and src/, relative to the repository root.
@@ -103,6 +112,7 @@ jobs:
           SRC_GLOB: ${{ inputs.sources }}
           INC: ${{ inputs.include_dir }}
           EXPECT: ${{ inputs.expect }}
+          EXPECT_FLOPS: ${{ inputs.expect_flops }}
         working-directory: ${{ inputs.path }}
         run: |
           # set +e deliberately. GitHub invokes a run step as `bash -e {0}`, and
@@ -202,19 +212,23 @@ jobs:
           [ -z "$CELLS" ] && CELLS=$(printf '%s' "$TAIL" | grep -Eo 'Number of cells: *[0-9]+' | tail -1 | tr -dc '0-9')
           WIRES=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ wires$' | tail -1 | tr -dc '0-9')
           [ -z "$WIRES" ] && WIRES=$(printf '%s' "$TAIL" | grep -Eo 'Number of wires: *[0-9]+' | tail -1 | tr -dc '0-9')
-          # Flops appear in the histogram in two shapes, and matching only one
-          # of them reported "purely combinational" for MINI and HOLO in a real
-          # cross-repo run -- designs with 17 and 66 flip-flops. Bit-level
-          # ($_DFF_P_, $_DFFE_PN0P_) is what a recent yosys leaves after techmap;
-          # an older one leaves the word-level cells ($dff, $adff, $sdff, $dffe)
-          # because techmap alone does not lower them.
-          # Case-insensitive and digit-tolerant on purpose: the first attempt at
-          # this used [A-Z_]* after DFF, which cannot match $_DFFE_PN0P_ because
-          # of the 0 in it, so it counted zero flops on the very names it was
-          # written for. Anything whose cell type contains "dff" is a flop.
-          FLOPS=$(printf '%s' "$TAIL" \
-            | grep -Eoi '[0-9]+ +\$_?[a-z0-9_]*dff[a-z0-9_]*' \
-            | awk '{s+=$1} END{print s+0}')
+          # yosys prints the cell histogram in BOTH field orders depending on
+          # version: count-then-name ("4  $_DFFE_PN0P_") on the one installed
+          # here, name-then-count ("$_DFFE_PN0P_  16") on the one apt gives
+          # ubuntu-latest. Every pattern written for this before assumed
+          # count-then-name, so it was green on my machine and blind on the
+          # runner: a real cross-repo run called MINI and HOLO "purely
+          # combinational" when they hold 17 and 66 flip-flops.
+          #
+          # Two earlier attempts were checked against fixtures I typed out
+          # myself, in the order I assumed -- so the pattern and the fixture
+          # shared the same wrong assumption and agreed with each other. This
+          # one is checked against real yosys output in both orders, which is
+          # the only reason it can be trusted. Take whichever field is a number;
+          # any cell type containing "dff" is a flop.
+          FLOPS=$(printf '%s' "$TAIL" | awk 'tolower($0) ~ /\$_?[a-z0-9_]*dff/ {
+              if ($1 ~ /^[0-9]+$/) s += $1; else if ($2 ~ /^[0-9]+$/) s += $2
+            } END { print s+0 }')
           # When a parse yields nothing, show the text it failed on. Otherwise a
           # wrong verdict looks exactly like a right one: yosys output goes to a
           # file, so nothing about it reaches the log.
@@ -227,6 +241,14 @@ jobs:
           else
             say "- **FAIL** synthesis produced no cell count"
             fails=$((fails+1))
+          fi
+          if [ -n "$EXPECT_FLOPS" ]; then
+            if [ "${FLOPS:-0}" = "$EXPECT_FLOPS" ]; then
+              say "- **PASS** flip-flop count is $FLOPS, as asserted"
+            else
+              say "- **FAIL** flip-flop count is ${FLOPS:-0}, asserted $EXPECT_FLOPS"
+              fails=$((fails+1))
+            fi
           fi
           if [ "${FLOPS:-0}" -gt 0 ]; then
             say "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question"
