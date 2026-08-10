@@ -283,12 +283,28 @@ const PROBE = `(() => {
 
 const expanded = [];
 for (let layer = 1; layer <= LAYERS; layer++) {
-  await key(String(layer));
-  await wait(900);  // the 200ms fade plus the first data tick of whatever mounted
+  // Wait for the layer to have actually changed, not for a duration.
+  //
+  // switchLayer holds a `transitioning` lock across a 200ms fade and returns
+  // early while it is set, so a fixed sleep races it: the same build gave 4
+  // panels on one run and 0 on the next. A timing-flaky check is muted within
+  // a week, so this presses, watches the DOM for a change, and presses again
+  // if nothing moved -- and says so if it never does.
+  const before = await evaluate('document.body.innerText.length');
+  let changed = false;
+  for (let attempt = 0; attempt < 4 && !changed; attempt++) {
+    await key(String(layer));
+    for (let t = 0; t < 12 && !changed; t++) {
+      await wait(150);
+      changed = (await evaluate('document.body.innerText.length')) !== before;
+    }
+  }
+  if (!changed) console.log(`  layer ${layer}: no DOM change after 4 presses`);
+  await wait(600);  // the first data tick of whatever mounted
   const arriving = drain();
   if (arriving.length) report(`on switching to layer ${layer}`, arriving);
 
-  const before = expanded.length;
+  const countBefore = expanded.length;
   for (let i = 0; i < MAX_PANELS; i++) {
     const label = await evaluate(PROBE);
     if (label === null) break;
@@ -297,7 +313,7 @@ for (let layer = 1; layer <= LAYERS; layer++) {
     const found = drain();
     if (found.length) report(`after expanding "${label}" on layer ${layer}`, found);
   }
-  console.log(`  layer ${layer}: ${expanded.length - before} panel(s)`);
+  console.log(`  layer ${layer}: ${expanded.length - countBefore} panel(s)`);
 }
 
 await wait(1000);  // whatever the newly-mounted panels do on their next tick
