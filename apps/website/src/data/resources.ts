@@ -392,8 +392,32 @@ export const identities: Resource[] = [
   },
 ]
 
+/**
+ * Claims this programme has withdrawn.
+ *
+ * Kept as a first-class list, not folded into `discrepancies`. A discrepancy is a row a
+ * reader should treat with suspicion; a retraction is one the authors have already settled
+ * against themselves. Conflating them would understate both.
+ *
+ * Source: gHashTag/claim-audit-lab, CASE-00 — the maintainers' self-audit, which is the
+ * first case in a lab whose other cases examine other people's phi claims.
+ */
+export const retractions: Resource[] = [
+  {
+    kind: 'paper',
+    title: 'delta_CP = 3/phi^2 as a phi-structured value of the CP-violating phase in neutrino oscillation',
+    href: 'https://github.com/gHashTag/claim-audit-lab/blob/main/cases/CASE-00-self-audit.md',
+    id: 'CASE-00 [Retracted]',
+    verified: '2026-08-10',
+    status: 'live',
+    note:
+      'WITHDRAWN by the authors. An independent arithmetic check showed the algebraic identity does not deliver the claimed numerical match at the precision required. Marked never to be restated. Listed here because a programme that retracts its own physics claim on arithmetic should say so where it can be found, not only in a repository.',
+  },
+]
+
 export const allResources = (): Resource[] => [
   ...papers,
+  ...retractions,
   ...datasets,
   ...upstream,
   ...channels,
