@@ -1,0 +1,52 @@
+name: Discover RTL check callers
+
+# Who is actually using the check, read from GitHub rather than from memory.
+#
+# The gallery on t27.ai was hand-written, which makes it a portfolio: it shows
+# what I chose to show. This discovers callers instead, so the page can say how
+# many repositories use the check without me being the one who counts.
+#
+# It can only work because the check runs in the customer's repository: their
+# workflow file and their run conclusions are public, and nothing has to be
+# uploaded to me. The property that makes the service acceptable to a chip
+# designer is the same one that makes its gallery self-maintaining.
+
+on:
+  schedule:
+    - cron: '41 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Discover
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 tools/discover_rtl_check_callers.py \
+            --out apps/website/src/data/communityRuns.json
+
+      - name: Commit if the answer changed
+        run: |
+          set -uo pipefail
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          N=$(python3 -c "import json;print(len(json.load(open('apps/website/src/data/communityRuns.json'))['entries']))")
+          say "## Callers discovered: $N"
+          git config user.name  'caller discovery'
+          git config user.email 'admin@t27.ai'
+          git add apps/website/src/data/communityRuns.json
+          if git diff --cached --quiet; then
+            say "- no change"
+            exit 0
+          fi
+          git commit -q -m "Discovered callers: $N"
+          git push -q
+          say "- committed"

@@ -4,6 +4,7 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import SelfServeRun from '../components/SelfServeRun'
+import CommunityRuns from '../components/CommunityRuns'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { RUNS, THIRD_PARTY_RUNS, LIMITS_EN, LIMITS_RU, PROVENANCE } from '../data/verificationRuns'
@@ -200,6 +201,10 @@ export default function CaseStudies() {
             form. The runs below are what it produced; this is the thing that
             produced them, in a form they can paste. */}
         <SelfServeRun />
+
+        {/* Discovered, not curated. Everything below this point is a run I
+            chose to publish; this one is whatever GitHub says is true. */}
+        <CommunityRuns />
 
         <div style={{ width: '100%', marginBottom: '2.5rem' }}>
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>{c.runsTitle}</h2>
