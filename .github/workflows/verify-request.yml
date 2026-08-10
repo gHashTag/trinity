@@ -68,9 +68,18 @@ jobs:
             // left for a human rather than guessed at.
             const ok = /^https:\/\/github\.com\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+\/?$/.test(repo)
             core.setOutput('clonable', ok ? 'yes' : 'no')
+            // The top module name is interpolated into a yosys -p script, and
+            // yosys scripts have `exec`, which runs arbitrary programs. Without
+            // this test a top of `dut; exec -- sh -c ...` from any issue body
+            // executes in the runner, where GITHUB_TOKEN has write scope.
+            // Demonstrated locally before this was added: yosys printed
+            // `3. Executing command "echo INJECTED_COMMAND_RAN".`
+            // A Verilog identifier is the only thing this field may ever be.
+            const topOk = /^[A-Za-z_][A-Za-z0-9_$]*$/.test(top) && top.length <= 128
+            core.setOutput('topok', topOk ? 'yes' : 'no')
 
       - name: Install the open toolchain
-        if: steps.parse.outputs.clonable == 'yes'
+        if: steps.parse.outputs.clonable == 'yes' && steps.parse.outputs.topok == 'yes'
         run: |
           set -euo pipefail
           sudo apt-get update -qq
@@ -79,7 +88,7 @@ jobs:
           iverilog -V | head -1
 
       - name: Fetch the design
-        if: steps.parse.outputs.clonable == 'yes'
+        if: steps.parse.outputs.clonable == 'yes' && steps.parse.outputs.topok == 'yes'
         env:
           DESIGN_REPO: ${{ steps.parse.outputs.repo }}
         run: |
@@ -90,7 +99,7 @@ jobs:
           find design -name '*.v' -o -name '*.sv' | head -40
 
       - name: Check it
-        if: steps.parse.outputs.clonable == 'yes'
+        if: steps.parse.outputs.clonable == 'yes' && steps.parse.outputs.topok == 'yes'
         id: check
         continue-on-error: true
         env:
@@ -150,11 +159,21 @@ jobs:
         uses: actions/github-script@v7
         env:
           CLONABLE: ${{ steps.parse.outputs.clonable }}
+          TOPOK: ${{ steps.parse.outputs.topok }}
         with:
           script: |
             const fs = require('fs')
             let body
-            if (process.env.CLONABLE !== 'yes') {
+            if (process.env.TOPOK !== 'yes') {
+              body = [
+                '**The top module name was not a plain Verilog identifier, so nothing was run.**',
+                '',
+                'That field is pasted straight into a synthesis script, so it is restricted',
+                'to `[A-Za-z_][A-Za-z0-9_$]*` and nothing else. Edit the issue with just the',
+                'module name — `my_core`, not a path, a file name or a command — and the',
+                'checks will run on their own.',
+              ].join('\n')
+            } else if (process.env.CLONABLE !== 'yes') {
               body = [
                 '**No public repository given, so the automated stage was skipped.**',
                 '',
