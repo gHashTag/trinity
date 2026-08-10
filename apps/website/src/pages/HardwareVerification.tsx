@@ -10,6 +10,7 @@ import { THEOREMS, SCIENCE_INTRO_EN, SCIENCE_INTRO_RU } from '../data/verificati
 import { DELIVERY_TIERS, TIERS_LEDE } from '../data/verificationTiers'
 import SelfServeRun from '../components/SelfServeRun'
 import ConformanceEvidence from '../components/ConformanceEvidence'
+import SignalHealth from '../components/SignalHealth'
 
 const REQUEST_URL = 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml'
 
@@ -365,6 +366,10 @@ export default function HardwareVerification() {
         {/* The tier above the free one, shown rather than described -- including
             the run where the adjudication went against my own reference model. */}
         <ConformanceEvidence />
+
+        {/* The same check, pointed at me. It is the worst number on this page
+            and it is mine, which is the only reason the rest is worth reading. */}
+        <SignalHealth />
 
         {/* The method, drawn. Placed before the deliverables because every item in
             that list depends on the reader believing this one idea. */}
