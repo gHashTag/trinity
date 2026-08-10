@@ -478,7 +478,7 @@
       ]
     },
     "verifyLink": "Проверить Бенчмарки на GitHub ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/docs/research/BITNET_MATHEMATICAL_PROOF.md"
+    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
   },
   "traction": {
     "title": "Достигнутая <span class=\"grad\">Сингулярность</span>",
@@ -1884,7 +1884,7 @@
       }
     ],
     "cta": "Читать полный отчёт на GitHub",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/BITNET_MATHEMATICAL_PROOF.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md"
   },
   "phoenixNumber": {
     "badge": "МАТЕМАТИЧЕСКИЕ ОСНОВЫ",
@@ -2019,7 +2019,7 @@
     },
     "quote": "«Математика вселенной благоволит Троице.»",
     "cta": "Полная Токеномика",
-    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/business/TOKENOMICS.md"
+    "ctaUrl": "https://github.com/gHashTag/trinity/blob/main/docs/docs/depin/tokenomics.md"
   },
   "mysticism": {
     "title": "Математические Основы",
