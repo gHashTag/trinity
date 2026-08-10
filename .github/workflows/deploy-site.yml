@@ -1,0 +1,99 @@
+# Build apps/website and publish it to the repo that serves t27.ai.
+#
+# anomaly-register A51: four PRs merged, every check green, and the live site
+# changed nothing for a week. This app deploys from gHashTag/ghashtag.github.io,
+# which holds build output only, and a human copied dist/ into it. Nothing in
+# the pipeline noticed, because every other check reads the source.
+#
+# The deploy needs write access to a second repository, which a workflow token
+# does not have. It requires a secret named GHIO_TOKEN -- a fine-grained PAT
+# with Contents: write on gHashTag/ghashtag.github.io and nothing else. Until
+# that secret exists this workflow does not run, and check:deployed keeps
+# reporting the gap on every PR.
+#
+# Manual only, on purpose. Publishing to the live domain on every push to main
+# would mean any merge broadcasts, and this project's rule is that content is
+# approved before it goes out.
+name: Deploy site to t27.ai
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'What is being published (goes in the commit message)'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/website/package-lock.json
+
+      - name: Build
+        working-directory: apps/website
+        run: |
+          npm ci
+          npx vite build
+
+      # The same three checks the PR runs, against the tree being published.
+      # A deploy that skips them is how a broken build reaches the domain.
+      - name: Checks
+        working-directory: apps/website
+        run: |
+          npm run typecheck:ratchet
+          npm run check:api
+
+      - name: Checkout the deploy repo
+        uses: actions/checkout@v4
+        with:
+          repository: gHashTag/ghashtag.github.io
+          token: ${{ secrets.GHIO_TOKEN }}
+          path: ghio
+
+      # Copy the build, then delete bundles the new index.html cannot reach.
+      # Skipping that step is how 74 orphans accumulated once, keeping
+      # withdrawn claims greppable for weeks after the components were fixed.
+      - name: Copy the build and drop unreachable bundles
+        run: |
+          cp -R apps/website/dist/assets/. ghio/assets/
+          cp apps/website/dist/index.html ghio/index.html
+          cp apps/website/dist/manifest.json ghio/manifest.json
+          node - <<'EOF'
+          const {readFileSync, readdirSync, unlinkSync} = require('node:fs');
+          const {join} = require('node:path');
+          const A = 'ghio/assets';
+          const entry = [...readFileSync('ghio/index.html','utf8')
+            .matchAll(/assets\/([\w.-]+\.(?:js|css))/g)].map(m => m[1]);
+          const seen = new Set(); const stack = [...entry];
+          while (stack.length) {
+            const f = stack.pop();
+            if (seen.has(f)) continue;
+            seen.add(f);
+            try {
+              for (const m of readFileSync(join(A,f),'utf8').matchAll(/["']\.\/([\w.-]+\.(?:js|css))["']/g))
+                if (!seen.has(m[1])) stack.push(m[1]);
+            } catch {}
+          }
+          let n = 0;
+          for (const f of readdirSync(A))
+            if (/\.(js|css)$/.test(f) && !seen.has(f)) { unlinkSync(join(A,f)); n++; }
+          console.log(`  ${seen.size} reachable, ${n} orphan(s) removed`);
+          EOF
+
+      - name: Commit and push
+        working-directory: ghio
+        run: |
+          git config user.name gHashTag
+          git config user.email admin@t27.ai
+          git add -A
+          git diff --cached --quiet && { echo "  nothing changed — the live site is already this build"; exit 0; }
+          git commit -m "Deploy: ${{ inputs.reason }}
+
+          Built from gHashTag/trinity@${{ github.sha }} by the deploy workflow.
+          See anomaly-register A51 for why this exists."
+          git push
