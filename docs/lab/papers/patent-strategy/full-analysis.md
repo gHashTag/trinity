@@ -143,7 +143,7 @@ Each weight w in {-1, 0, +1} encoded as 2 bits. MAC operation:
 - w = -1 (11): negate and add input (two's complement)
 - w = 0 (00): skip (zero output)
 
-Cost: ~3 LUT per weight. No multiplications.
+Cost: ~3 LUT per weight. The ternary network is multiplier-free.
 
 #### 3b. Shift-Based RMSNorm (no division)
 
