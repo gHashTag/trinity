@@ -6,6 +6,7 @@ import VerificationDiagram from '../components/VerificationDiagram'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import { THEOREMS, SCIENCE_INTRO_EN, SCIENCE_INTRO_RU } from '../data/verificationScience'
 
 const REQUEST_URL = 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml'
 
@@ -201,6 +202,41 @@ const RU = {
   finalTitle: 'Есть дизайн для проверки?',
   finalLede: 'Расскажите, что он делает и что для него значит «правильно». Если помещается в Artix-7 — можно измерить.',
   finalNote: 'В письме уже будут четыре коротких вопроса. Ответьте на них — и первым ответом будет оценка и дата, а не новые вопросы. Отвечаю в течение суток.',
+}
+
+
+function ScienceSection({ lang }: { lang: string }) {
+  const ru = lang === 'ru'
+  return (
+    <div style={{ width: '100%', maxWidth: '900px', margin: '3rem auto 0', textAlign: 'left' }}>
+      <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
+        {ru ? 'На чём это стоит' : 'What this rests on'}
+      </h2>
+      <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, margin: '0 0 1.5rem', maxWidth: '64ch' }}>
+        {ru ? SCIENCE_INTRO_RU : SCIENCE_INTRO_EN}
+      </p>
+      {THEOREMS.map((t) => (
+        <div key={t.id} className="premium-card" style={{ textAlign: 'left', marginBottom: '0.9rem' }}>
+          <div style={{ display: 'flex', gap: '0.7rem', alignItems: 'baseline' }}>
+            <code style={{ color: 'var(--accent)', fontSize: '0.78rem', fontWeight: 700 }}>{t.id}</code>
+            <h3 style={{ margin: 0, fontSize: 'clamp(0.98rem, 2.6vw, 1.12rem)', lineHeight: 1.35 }}>{t.name}</h3>
+          </div>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.62, margin: '0.6rem 0 0' }}>{t.statement}</p>
+          {t.worked && (
+            <p style={{ fontSize: '0.88rem', lineHeight: 1.6, margin: '0.6rem 0 0', color: 'var(--accent)' }}>
+              {t.worked}
+            </p>
+          )}
+          <p style={{ fontSize: '0.85rem', lineHeight: 1.55, margin: '0.7rem 0 0', opacity: 0.8 }}>
+            <strong>{ru ? 'Не заявляет: ' : 'Does not claim: '}</strong>{t.doesNotClaim}
+          </p>
+          <p style={{ fontSize: '0.78rem', margin: '0.6rem 0 0', opacity: 0.6 }}>
+            {t.url ? <a href={t.url} target="_blank" rel="noopener noreferrer">{t.citation}</a> : t.citation}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export default function HardwareVerification() {
@@ -506,6 +542,8 @@ export default function HardwareVerification() {
           </motion.a>
         </motion.div>
       </section>
+
+      <ScienceSection lang={lang} />
 
       <Footer />
     </main>
