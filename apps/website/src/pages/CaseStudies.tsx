@@ -59,7 +59,9 @@ const RU = {
   design: 'Что проверялось',
   runsTitle: 'Прогоны на моих собственных дизайнах',
   thirdTitle: 'Прогоны на чужих дизайнах',
-  thirdLede: 'Те же проверки, тот же день, публичные заявки Tiny Tapeout под открытой лицензией. Они важнее моих собственных, и по неудобной причине: два моих чипа не собирались из списка, который объявляет их же info.yaml, а все три чужих собрались. Витрина, которая всегда льстит автору, — это не прибор.',
+  thirdLede: 'Те же проверки, тот же день, публичные заявки Tiny Tapeout под открытой лицензией.',
+  scoreTitle: 'Счёт, который я искал против себя',
+  scoreBody: 'Я специально искал среди чужих дизайнов провал — чтобы витрина не читалась как подбор удачных случаев. Не нашёл: все пять объявляют source_files и собираются из объявленного. Неудобный результат оказался на моей стороне: из пяти моих чипов у двух список неполон (phi, gamma), а ещё двое не объявляют его вовсе (mini, holo) — и шаттл собирается именно по нему. Счёт 5:1 не в мою пользу.',
   runsLede: 'Прежде чем предлагать это другим, я прогнал через ту же машину пять своих чипов. Это доказывает, что харнесс работает, а не что мне кто-то доверяет, — клиентские работы ниже и они пока пусты.',
   limitsTitle: 'Чего эти прогоны НЕ устанавливают',
   svcTitle: 'Как прогнать свой репозиторий',
@@ -85,7 +87,9 @@ const EN = {
   design: 'What was checked',
   runsTitle: 'Runs on my own designs',
   thirdTitle: "Runs on other people's designs",
-  thirdLede: 'The same checks, the same day, on public Tiny Tapeout submissions under an open licence. These matter more than mine, for an uncomfortable reason: two of my own chips did not elaborate from the file list their own info.yaml declares, and all three of these did. A gallery that only flatters its author is a showroom.',
+  thirdLede: 'The same checks, the same day, on public Tiny Tapeout submissions under an open licence.',
+  scoreTitle: 'The count I went looking for against myself',
+  scoreBody: 'I went looking for a failure among other people\u2019s designs, so the gallery would not read as a selection of happy cases. I did not find one: all five declare source_files and elaborate from what they declare. The uncomfortable result is on my side — of my five chips, two declare an incomplete list (phi, gamma) and two declare none at all (mini, holo), and a shuttle builds from exactly that list. The count is 5 to 1 against me.',
   runsLede: 'Before offering this to anyone else I put five of my own chips through the same machine. That proves the harness runs, not that anyone trusts it — client work is below, and it is still empty.',
   limitsTitle: 'What these runs do NOT establish',
   svcTitle: 'Run your own repository',
@@ -205,6 +209,10 @@ export default function CaseStudies() {
         <div style={{ width: '100%', marginBottom: '2.5rem' }}>
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>{c.thirdTitle}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, maxWidth: '64ch', margin: '0 auto 1.4rem' }}>{c.thirdLede}</p>
+          <div className="premium-card" style={{ textAlign: 'left', marginBottom: '1.2rem', borderLeft: '2px solid var(--accent)' }}>
+            <h3 style={{ marginTop: 0, fontSize: 'clamp(1rem, 2.8vw, 1.2rem)' }}>{c.scoreTitle}</h3>
+            <p style={{ fontSize: '0.9rem', lineHeight: 1.62, margin: 0 }}>{c.scoreBody}</p>
+          </div>
           {THIRD_PARTY_RUNS.map((r) => (
             <RunCard key={r.id} run={r} foundLabel={c.found} lang={lang} />
           ))}
