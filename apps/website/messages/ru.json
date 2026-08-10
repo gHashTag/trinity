@@ -515,7 +515,7 @@
       },
       {
         "label": "Эффективность",
-        "value": "578.8x (Verified)"
+        "value": "578.8x (projected, FPGA)"
       },
       {
         "label": "Сжатие кода",
