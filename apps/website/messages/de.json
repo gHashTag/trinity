@@ -472,23 +472,21 @@
     "noiseLabel": "Rauschen:",
     "gpuVerified": {
       "badge": "🔥 AUF ECHTEN GPUs VERIFIZIERT",
-      "note": "Echte RunPod-Benchmarks - Pod IDs: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). Keine Simulation.",
+      "note": "Echte Run",
       "gpus": [
         {
           "name": "RTX 4090 / L40S",
           "tokens": "141K-608K",
           "noise": "70,2%",
           "power": "348W",
-          "cost": "$0,10",
-          "podId": "bhhnrrdothqm54"
+          "cost": "$0,10"
         },
         {
           "name": "A100 80GB",
-          "tokens": "274K",
+          "tokens": "—",
           "noise": "70,2%",
           "power": "293W",
-          "cost": "$0,20",
-          "podId": "ydk41ymp8uoeyp"
+          "cost": "$0,20"
         }
       ]
     },
@@ -1181,24 +1179,7 @@
         "open": false
       }
     ],
-    "note": "TRINITY verifiziert auf <strong>echten RunPod GPUs</strong> (Pod IDs: bhhnrrdothqm54, ydk41ymp8uoeyp). Ternär = keine Multiplikationen, 20x Kompression, 70% Rauschrobustheit bei 30% Korruption.",
-    "gpuProof": {
-      "title": "Echte GPU-Verifizierung",
-      "rtx3090": {
-        "podId": "bhhnrrdothqm54",
-        "tokens": "298,052",
-        "noise": "70.2%",
-        "power": "348W",
-        "cost": "$0.10"
-      },
-      "a100": {
-        "podId": "ydk41ymp8uoeyp",
-        "tokens": "274,043",
-        "noise": "70.2%",
-        "power": "293W",
-        "cost": "$0.20"
-      }
-    },
+    "note": "TRINITY verifiziert auf <strong>echten RunPod GPUs</strong>. Ternär = keine Multiplikationen, 20x Kompression, 70% Rauschrobustheit bei 30% Korruption.",
     "unitNote": "End-to-end tokens/sec, from this project's own benchmark table. Cloud providers are faster; Trinity's advantage is cost — $0.01-0.35 against API pricing — and running without a GPU at all. The earlier version of this table put Trinity's raw kernel ops/sec beside everyone else's tokens/sec."
   },
   "hlsCompetition": {
