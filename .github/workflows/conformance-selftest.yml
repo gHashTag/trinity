@@ -67,3 +67,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 tests/test_signal_health.py
+
+  # The build-path check offered to other people, on fixtures whose answers are
+  # known. The broken one carries three planted faults of three different kinds
+  # and the counts are asserted, not the verdict.
+  build-paths-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # `set +e` on purpose. The runner hands every step `bash -e`, so an
+      # assignment from a command that is SUPPOSED to fail kills the step before
+      # anything can be asserted about why -- which is how this job failed the
+      # first time it ran, on the fixture whose whole job is to fail.
+      - name: The clean fixture must report nothing
+        run: |
+          set +e
+          out=$(python3 tools/check_build_paths.py --root tests/build-path-fixtures/clean \
+                  --import-roots src --min-files 1 --baseline /dev/null)
+          rc=$?
+          echo "$out"
+          if [ "$rc" -ne 0 ]; then echo "::error::clean fixture failed the check"; exit 1; fi
+          if ! echo "$out" | grep -q "PASS no new dangling build paths (0 known"; then
+            echo "::error::clean fixture did not report a clean tree"; exit 1
+          fi
+          if echo "$out" | grep -qE "LIKELY|EXPORTED|LATENT"; then
+            echo "::error::clean fixture produced a classification"; exit 1
+          fi
+          echo "clean: nothing reported, as asserted"
+
+      - name: The broken fixture must report exactly one dangling path and one LIKELY
+        run: |
+          set +e
+          out=$(python3 tools/check_build_paths.py --root tests/build-path-fixtures/broken \
+                  --import-roots src --min-files 1 --baseline /dev/null)
+          rc=$?
+          echo "$out"
+          if [ "$rc" -eq 0 ]; then echo "::error::broken fixture passed"; exit 1; fi
+          if ! echo "$out" | grep -q "LIKELY    (1)"; then
+            echo "::error::expected exactly one LIKELY"; exit 1
+          fi
+          if ! echo "$out" | grep -q "src/gone.zig"; then
+            echo "::error::expected src/gone.zig to be named"; exit 1
+          fi
+          echo "broken: one dangling path and one LIKELY, as asserted"
