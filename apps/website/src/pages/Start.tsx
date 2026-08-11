@@ -6,6 +6,45 @@ import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { CHECKS, START_INTRO, START_DEBT } from '../data/checks'
+import status from '../data/checkStatus.json'
+
+type Status = { id: string; job: string; conclusion: string | null; at: string; url: string }
+const STATUS = new Map(((status.entries ?? []) as Status[]).map((e) => [e.id, e]))
+
+// The verdict of the job that attests each check, not of the workflow holding
+// it: a green workflow can contain the one red job that matters, and a badge
+// for the wrapper would say the opposite of the truth.
+//
+// It is here because the page makes a present-tense claim -- each check has been
+// watched failing on a design that deserves to fail -- and a claim the reader
+// cannot check is one they have to take on trust, which is what this service
+// exists to stop asking for.
+function Badge({ id, ru }: { id: string; ru: boolean }) {
+  const st = STATUS.get(id)
+  if (!st) return null
+  const ok = st.conclusion === 'success'
+  return (
+    <a
+      href={st.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={st.job}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+        padding: '3px 10px', borderRadius: '999px', textDecoration: 'none',
+        fontSize: '0.72rem', lineHeight: 1.6,
+        color: ok ? 'var(--accent)' : '#ff8a6b',
+        background: ok ? 'rgba(0,255,136,0.08)' : 'rgba(255,138,107,0.10)',
+        border: `1px solid ${ok ? 'rgba(0,255,136,0.28)' : 'rgba(255,138,107,0.32)'}`,
+      }}
+    >
+      <span style={{ fontWeight: 700 }}>
+        {ok ? (ru ? 'селф-тест зелёный' : 'self-test green') : (ru ? 'СЕЛФ-ТЕСТ КРАСНЫЙ' : 'SELF-TEST RED')}
+      </span>
+      <span style={{ opacity: 0.7 }}>{(st.at ?? '').slice(0, 10)}</span>
+    </a>
+  )
+}
 
 // One page for all four checks, in the order worth adopting them.
 //
@@ -88,6 +127,7 @@ export default function Start() {
                 display: 'grid', placeItems: 'center', fontSize: '0.78rem',
               }}>{c.order}</span>
               <h2 style={{ fontSize: 'clamp(1.05rem, 2.8vw, 1.35rem)', margin: 0, lineHeight: 1.3 }}>{L(c.name)}</h2>
+              <Badge id={c.id} ru={ru} />
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 1.4rem', margin: '0 0 0.9rem', fontSize: '0.8rem', opacity: 0.75 }}>
