@@ -200,6 +200,18 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That an over-approximation is always the right choice. A checker meant to gate a merge can be intolerable at any false-positive rate, and the honest answer there is to narrow the question rather than the labelling. Nor does it make the bound tight: knowing the direction of the error says nothing about its size.',
   },
+  {
+    id: 'T17',
+    name: 'A proxy is a measurement only if nothing but the thing itself can move it',
+    statement:
+      'Prentice’s condition for replacing an endpoint with a surrogate is that the effect on the real endpoint is captured entirely by the surrogate — anything else that moves the surrogate breaks the substitution, and no amount of correlation repairs it. The same applies to any check written against a symptom rather than the property: it is sound only while the confounds stay still, and it fails in the worst direction, by reporting a fault where the property holds.',
+    worked:
+      'The publication gate here refused to let this site go out, on the grounds that every URL in the sitemap carried the same date, therefore the field was not being derived from anything. The field was being derived correctly. This site was published fifteen times in one day, so every file’s last commit genuinely was that day and every date genuinely was identical — a confound moved the proxy without touching the property, and the gate sent me to argue with a correct number. It now asks the repository when each sampled file last changed and requires the sitemap to agree, which is the property it was always about; a fabricated date fails it immediately, and a genuine same-day spread passes because it is genuine.',
+    citation: 'Prentice, “Surrogate Endpoints in Clinical Trials: Definition and Operational Criteria”, Statistics in Medicine 8(4), 1989',
+    url: 'https://doi.org/10.1002/sim.4780080407',
+    doesNotClaim:
+      'That proxies are never worth using. The direct test costs a subprocess per sampled page and the proxy cost one comparison, which is why the proxy was written first and why it survived until a confound arrived. What the theorem forbids is treating the two as interchangeable once the confound is known — and the moment to look for confounds is when the check disagrees with something you can verify by hand.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
