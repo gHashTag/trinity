@@ -177,6 +177,17 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That the chronic level is acceptable. A baseline is a record of debt, not a discharge of it, and this one is published with a paragraph per entry saying what decision each is waiting on. Nor does it apply to a check that has never been green: there is no history to depart from, and the first thing to establish is the level.',
   },
+  {
+    id: 'T15',
+    name: 'A search that filters before it records can only measure survivors',
+    statement:
+      'Wald was asked where to armour bombers, given the damage on the aircraft that came back. The answer is the places with no holes, because the planes hit there did not return to be examined — the sample had been filtered by the very event under study. Any detector has the same shape: if the step that discards unusable cases runs before the step that records a hit, the discarded class is unobservable, and the detector will report its absence with perfect confidence.',
+    worked:
+      'Committed here, in a tool written to find files that are missing. It walked imports from every build root and skipped any file it could not open before recording that the file had been reached — so a missing file could never enter the visited set. It answered that nothing reached the module this repository lost, and the eleven files importing that module were written off as dead code. Continuous integration disagreed within the hour: six build roots reach it, one of them the library root. Moving the record above the filter is the entire fix, and five trees with known answers now assert it, including that exact shape.',
+    citation: 'Wald, “A Method of Estimating Plane Vulnerability Based on Damage of Survivors”, Statistical Research Group memoranda, Columbia University, 1943',
+    doesNotClaim:
+      'That every absence is an artefact. Sometimes the thing really is not there — the same corrected walk reports 58 missing files no build root reaches, and that number is as real as the six. What it forbids is reading an absence out of a pipeline that could not have represented the thing in the first place, which is a property of the pipeline and knowable before any data is collected.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
