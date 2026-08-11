@@ -1112,7 +1112,97 @@ const theoremAudit: Post = {
   published: true,
 }
 
-export const posts: Post[] = [theoremAudit, resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
+const conformanceCorpus: Post = {
+  slug: 'twenty-three-reference-models',
+  title: 'Twenty-three reference models, because implementing a competitor from memory always flatters you',
+  summary:
+    'Every format we compare against has its own reference implementation, written from its ' +
+    'specification \u2014 after five bugs that all weakened the competitor and all pointed the ' +
+    'same way.',
+  date: '2026-08-11',
+  readingMinutes: 6,
+  tags: ['Numeric formats', 'Benchmarking', 'Methodology', 'Open source'],
+  receipts: [
+    { label: 'The reference models \u2014 all twenty-three',
+      href: 'https://github.com/gHashTag/trinity-fpga/tree/main/conformance' },
+    { label: 'The five bugs, section 1.1',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/block/FINDINGS.md' },
+  ],
+  openQuestions: [
+    'Twenty-three models is not twenty-three formats: several cover multiple widths (posit8/16/32, ' +
+    'fp8 as both E4M3 and E5M2), so the format count is higher and is not stated here because it ' +
+    'has not been counted.',
+    'A reference model written from a specification can still misread the specification. These ' +
+    'are checked against published test vectors where those exist, and where they do not the ' +
+    'model is only as good as the reading.',
+    'Nothing here measures how the models perform \u2014 only that they exist and where they came ' +
+    'from. A correct competitor implementation is a precondition for a fair comparison, not a ' +
+    'result.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'If you compare your numeric format against others, you have to implement the others. That ' +
+      'sounds like a chore and it is where the result is decided.' },
+    { kind: 'h', text: 'Five bugs, all in the same direction' },
+    { kind: 'p', text:
+      'I implemented five competitor formats from memory. Every one had a bug, and every bug ' +
+      'weakened the competitor:' },
+    { kind: 'table',
+      head: ['#', 'format', 'the error'],
+      rows: [
+        ['1', 'MX shared scale', 'ceiling instead of floor(log2 max) \u2212 emax'],
+        ['2', 'E2M1', 'missing its subnormal \u2014 7 magnitudes, not 8'],
+        ['3', 'NF4', 'a symmetric reconstruction instead of the real 16-value table'],
+        ['4', 'E4M3', 'reserved NaN encoding ignored \u2014 max 480 instead of 448'],
+        ['5', 'E5M2', 'reserved exponent ignored \u2014 max 114688 instead of 57344'],
+      ] },
+    { kind: 'p', text:
+      'Five for five, one direction. That is not luck and it is not dishonesty \u2014 it is ' +
+      'structural.' },
+    { kind: 'h', text: 'Why the direction is not random' },
+    { kind: 'p', text:
+      'Every one of those five is a simplification. A subnormal, a reserved encoding, an ' +
+      'asymmetric table \u2014 these are exactly the details a format adds to work better at the ' +
+      'edges of its range.' },
+    { kind: 'quote', text:
+      'Implementing from memory implements the IDEA of the format, and the idea is always ' +
+      'simpler than the specification.' },
+    { kind: 'p', text:
+      'So implementing from memory hands your competitor a worse version of itself, every time, ' +
+      'in the direction that favours you. You do not choose the bugs. You choose not to open the ' +
+      'spec.' },
+    { kind: 'h', text: 'What we do instead' },
+    { kind: 'p', text:
+      'Twenty-three reference models, one per format family we compare against, each written ' +
+      'from the format\u2019s own specification or its published reference implementation:' },
+    { kind: 'ul', items: [
+      'IEEE and friends \u2014 ieee, bf16, fp8, extended, decimal',
+      'MX \u2014 mxfp, e8m0, gf_mx',
+      'posit and takum \u2014 posit, takum, takum_log, tekum',
+      'others \u2014 lns, nf4, int, legacy',
+      'ours \u2014 gf, gf16_plus, gfternary, tnf, tnf16, tnf_spec, bnf',
+    ] },
+    { kind: 'h', text: 'The check you can run on someone else\u2019s paper' },
+    { kind: 'p', text:
+      'When a paper reports beating E4M3 or NF4, the question is not what the numbers are. It is ' +
+      'where the competitor\u2019s implementation came from. Three answers:' },
+    { kind: 'ul', items: [
+      'from the specification \u2014 the numbers are worth discussing',
+      'from a published reference implementation \u2014 the same',
+      'from the paper describing the format \u2014 this is where my table starts',
+    ] },
+    { kind: 'p', text:
+      'The third looks conscientious and is not. A paper describing a format gives you the idea, ' +
+      'not the specification, and the gap between them is where all five of my bugs lived.' },
+    { kind: 'p', text:
+      'One concrete check costs nothing: E4M3 maxes at 448 and E5M2 at 57344. If a comparison ' +
+      'implies 480 or 114688, the reserved encodings were skipped and the competitor was handed ' +
+      'extra range it does not have.' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [conformanceCorpus, theoremAudit, resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
