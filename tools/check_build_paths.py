@@ -56,6 +56,35 @@ ZIMPORT = re.compile(r'@import\(\s*"([^"]*\.zig)"\s*\)')
 
 SKIP_DIRS = {".git", ".zig-cache", "zig-out", "node_modules", "zig-pkg", "dist", ".venv"}
 
+# Zig has no block comments, so a line comment runs from // to end of line --
+# except inside a string, where // is just two characters. Stripping naively
+# would break `@import("https://…")`; not stripping at all counts imports that
+# somebody has commented out, which is how this checker reported eight blocking
+# files in a repository whose CI is green. A false positive is the fastest way
+# to turn a gate into furniture, so comments come out, carefully.
+def strip_comments(text: str) -> str:
+    out = []
+    for line in text.splitlines():
+        in_str = False
+        esc = False
+        cut = len(line)
+        i = 0
+        while i < len(line) - 1:
+            c = line[i]
+            if esc:
+                esc = False
+            elif c == "\\" and in_str:
+                esc = True
+            elif c == '"':
+                in_str = not in_str
+            elif c == "/" and line[i + 1] == "/" and not in_str:
+                cut = i
+                break
+            i += 1
+        out.append(line[:cut])
+    return "\n".join(out)
+
+
 # Which trees to check imports in. Scanning everything found 242 unresolvable
 # imports, nearly all of them in archive/ and in vendored deploy/ copies that no
 # build target roots -- code nobody is going to repair, in a gate that would
@@ -100,7 +129,7 @@ def reaches(root: str, start: str, wanted: set[str]) -> set[str]:
             text = open(abs_f, encoding="utf-8", errors="replace").read()
         except OSError:
             continue
-        for target in ZIMPORT.findall(text):
+        for target in ZIMPORT.findall(strip_comments(text)):
             stack.append(os.path.join(os.path.dirname(f), target))
     return hits
 
@@ -138,7 +167,7 @@ def scan_imports(root: str, subdirs: list[str]) -> tuple[list[tuple[str, str, st
                 text = open(src, encoding="utf-8", errors="replace").read()
             except OSError:
                 continue
-            for target in sorted(set(ZIMPORT.findall(text))):
+            for target in sorted(set(ZIMPORT.findall(strip_comments(text)))):
                 resolved = os.path.normpath(os.path.join(dirpath, target))
                 if not os.path.isfile(resolved):
                     bad.append((os.path.relpath(src, root), target,
@@ -206,7 +235,7 @@ def main() -> int:
             blockers.setdefault(hit, []).append(br)
     if blockers:
         print()
-        print(f"  {len(blockers)} missing file(s) a build root actually reaches — these stop the build:")
+        print(f"  {len(blockers)} missing file(s) reachable from a build root — an UPPER BOUND:")
         for f, rs in sorted(blockers.items()):
             print(f"    {f}  — reached from {len(rs)} root(s): "
                   f"{', '.join(sorted(rs)[:3])}{' …' if len(rs) > 3 else ''}")
@@ -214,6 +243,14 @@ def main() -> int:
         if unreached:
             print(f"  {len(unreached)} more are referenced only by code no build root reaches, "
                   f"so the compiler never visits them.")
+        print()
+        print("  The bound errs high, and it says so on purpose. Zig analyses top-level")
+        print("  declarations lazily: `const x = @import(\"absent.zig\")` is not an error")
+        print("  until something references x. This walk cannot see references, only")
+        print("  imports, so every file it lists is a candidate and some are not faults.")
+        print("  Measured against a repository whose CI is green it reported two, and both")
+        print("  were unreferenced. An analysis that does not say which way it is wrong")
+        print("  gets read as a count.")
 
     baseline: set[str] = set()
     if os.path.isfile(args.baseline):

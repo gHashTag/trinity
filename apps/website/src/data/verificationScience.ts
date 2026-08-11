@@ -188,6 +188,18 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That every absence is an artefact. Sometimes the thing really is not there — the same corrected walk reports 58 missing files no build root reaches, and that number is as real as the six. What it forbids is reading an absence out of a pipeline that could not have represented the thing in the first place, which is a property of the pipeline and knowable before any data is collected.',
   },
+  {
+    id: 'T16',
+    name: 'An analysis must publish which way it is wrong',
+    statement:
+      'A static analysis that decides a non-trivial property of a program is either unsound or imprecise; abstract interpretation makes the choice deliberate by over-approximating, so that every real fault is reported and some reported faults are not real. The choice is respectable and the silence about it is not: a number printed without its direction is read as a count. Sound over-approximation obliges the tool to say “at most this many”, and an under-approximation to say “at least”.',
+    worked:
+      'The build-path checker here walks imports and reports which missing files a build root can reach. Pointed at a repository whose continuous integration is green, it reported two — and both were real imports of files that really are absent. Neither is a fault, because Zig analyses top-level declarations lazily: an import bound to a name nothing references is never loaded. The walk sees imports and cannot see references, so its figure is an upper bound and now prints as one. The same tool reports fourteen for the repository whose build is red, where six were confirmed by the compiler within the hour — the bound is useful precisely because it is labelled.',
+    citation: 'Cousot & Cousot, “Abstract Interpretation: A Unified Lattice Model…”, POPL 1977; Rice, Transactions of the AMS 74, 1953',
+    url: 'https://doi.org/10.1145/512950.512973',
+    doesNotClaim:
+      'That an over-approximation is always the right choice. A checker meant to gate a merge can be intolerable at any false-positive rate, and the honest answer there is to narrow the question rather than the labelling. Nor does it make the bound tight: knowing the direction of the error says nothing about its size.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
