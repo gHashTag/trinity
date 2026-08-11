@@ -576,6 +576,7 @@ const goldenIdentity: Post = {
       href: 'https://mathcs.clarku.edu/~djoyce/java/elements/bookVI/defVI3.html' },
   ],
   openQuestions: [
+    '\u0421hecked 2026-08-11 with sympy, mpmath at 60/210/1000 digits, and a 1,476,000-candidate numerical net. The identity itself is Euclid\u2019s; only the verification is dated here.',
     'This is the n=1 case of the standard Lucas identity phi^(2n) + phi^(-2n) = L(2n). It is ' +
     'textbook mathematics, cited here rather than claimed \u2014 Euclid defined the ratio and ' +
     'the identity follows from its quadratic.',
@@ -648,6 +649,7 @@ const benchReadout: Post = {
       href: 'https://t27.ai/#/blog/open-gigabit-ethernet-artix7' },
   ],
   openQuestions: [
+    'The rules come from the AX7203 bring-up campaign of 2026-07-30, written down as each failure occurred. Published 2026-08-11.',
     'These come from one board (AX7203, Artix-7) and one week. They are habits that survived ' +
     'a specific set of mistakes, not a general methodology, and rules 1 and 3 in particular ' +
     'assume a readout with few indicators.',
@@ -728,6 +730,7 @@ const frameMargin: Post = {
       href: 'https://t27.ai/#/blog/open-gigabit-ethernet-artix7' },
   ],
   openQuestions: [
+    'The law was derived during the same 2026-07-30 bring-up campaign; the frame figures are from that campaign\u2019s measurements. Published 2026-08-11.',
     'The law assumes per-edge phase errors are i.i.d. with a symmetric distribution. Real jitter ' +
     'has correlated components \u2014 supply noise, thermal drift \u2014 and the i.i.d. assumption ' +
     'is what makes the extreme-value argument work. Where correlation is strong the law is ' +
@@ -934,6 +937,7 @@ const resonanceLaw: Post = {
       href: 'https://github.com/gHashTag/trinity/blob/main/docs/research/COMPLETE_MODEL_CATALOG.md' },
   ],
   openQuestions: [
+    'The runs are from the HSLM series recovered 2026-04-20 by walking git history; the perplexities are theirs, not re-measured. Published 2026-08-11.',
     'These are HSLM runs at small scale. Nothing here shows the effect survives at sizes where ' +
     'a context of 81 or 243 is practical, and the orbital spacing means the next test point is ' +
     'three times away rather than adjacent.',
@@ -1042,6 +1046,7 @@ const theoremAudit: Post = {
       href: 'https://t27.ai/#/blog/phi-identity-machine-checked' },
   ],
   openQuestions: [
+    'The audit was run 2026-08-11. The theorems themselves date from the proofs page as it stood before that; the corrections are dated in place there.',
     'The audit checked arithmetic, derivation and prior art. It did not check whether the ' +
     'theorems are useful, and a correct standard result cited correctly can still be the wrong ' +
     'thing to build on.',
@@ -1129,6 +1134,7 @@ const conformanceCorpus: Post = {
       href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/block/FINDINGS.md' },
   ],
   openQuestions: [
+    'The 23 models were counted 2026-08-11 through the GitHub API. The five bugs are from the block-quantisation campaign recorded in FINDINGS.md, earlier.',
     'Twenty-three models is not twenty-three formats: several cover multiple widths (posit8/16/32, ' +
     'fp8 as both E4M3 and E5M2), so the format count is higher and is not stated here because it ' +
     'has not been counted.',
@@ -1267,6 +1273,7 @@ const detectabilityFloor: Post = {
       href: 'https://t27.ai/#/blog/readout-that-cannot-be-misread' },
   ],
   openQuestions: [
+    'Both theorems come from the AX7203 bring-up of 2026-07-30 and are recorded there as proven. Published 2026-08-11.',
     'The 3.92 constant is for two proportions at alpha = 0.05 and power 0.8. Different tests and ' +
     'different power give a different constant, and the shape \u2014 n scaling as 1/\u0394\u00b2 \u2014 is the ' +
     'part that transfers, not the number.',
