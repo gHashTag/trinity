@@ -18,7 +18,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
-from check_build_paths import reaches  # noqa: E402
+from check_build_paths import reaches, strip_comments  # noqa: E402
 
 
 def tree(files: dict[str, str]) -> str:
@@ -72,7 +72,39 @@ CASES.append((
     "src/a/one.zig", {"src/gone.zig"}, {"src/gone.zig"},
 ))
 
+# 6. A commented-out import is not an import. Counting them reported eight
+#    blocking files in a repository whose CI is green -- a false positive, and
+#    the fastest way to turn a gate into furniture.
+CASES.append((
+    "commented-out import is not followed",
+    {"src/root.zig": '// const g = @import("gone.zig");\nconst k = @import("kept.zig");\n',
+     "src/kept.zig": "// end\n"},
+    "src/root.zig", {"src/gone.zig"}, set(),
+))
+
+# 7. // inside a string is not a comment.
+CASES.append((
+    "url in a string does not eat the rest of the line",
+    {"src/root.zig": 'const u = "http://a//b"; const g = @import("gone.zig");\n'},
+    "src/root.zig", {"src/gone.zig"}, {"src/gone.zig"},
+))
+
+STRIP_CASES = [
+    ('const a = @import("x.zig");', 'const a = @import("x.zig");'),
+    ('// const a = @import("x.zig");', ''),
+    ('code(); // trailing', 'code(); '),
+    ('const u = "http://a//b";', 'const u = "http://a//b";'),
+]
+
 bad = 0
+for src, expect in STRIP_CASES:
+    got = strip_comments(src)
+    ok = got == expect
+    print(f"  {'PASS' if ok else 'FAIL'} strip_comments {src!r}")
+    if not ok:
+        print(f"       expected {expect!r}, got {got!r}")
+        bad += 1
+
 for name, files, start, wanted, expected in CASES:
     root = tree(files)
     got = reaches(root, start, wanted)
@@ -83,5 +115,5 @@ for name, files, start, wanted, expected in CASES:
         bad += 1
 
 print()
-print(f"  {len(CASES) - bad}/{len(CASES)} trees match their known answers")
+print(f"  {len(CASES) + len(STRIP_CASES) - bad}/{len(CASES) + len(STRIP_CASES)} cases match their known answers")
 raise SystemExit(1 if bad else 0)
