@@ -84,9 +84,13 @@
   }
   </script>
   
-  <!-- Preconnect to critical origins -->
-  <link rel="dns-prefetch" href="https://media.licdn.com" />
-  <link rel="dns-prefetch" href="https://blockchain.info" />
+  <!-- No preconnect hints. media.licdn.com and blockchain.info were prefetched
+       here and neither is contacted by anything the site ships — a grep for
+       either host across every bundle returns nothing. Each hint cost a DNS
+       lookup on every page load for a host never used, and the LinkedIn one
+       announced to the network that this page was about to talk to LinkedIn,
+       which it never does. Fonts are self-hosted and the assets are same-origin,
+       so there is no third-party origin left worth warming. -->
 
   <!-- Fonts, self-hosted. These used to come from fonts.googleapis.com: a
        render-blocking stylesheet on a third-party origin, which then pulled the
