@@ -218,6 +218,10 @@ export default memo(function Navigation() {
         >
           <div
             className="mobile-menu"
+            // The hamburger declares aria-controls="mobile-menu"; without this id
+            // that reference resolved to nothing, so a screen reader following it
+            // found no menu. Caught by an ARIA-driven sweep in render-check.
+            id="mobile-menu"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
