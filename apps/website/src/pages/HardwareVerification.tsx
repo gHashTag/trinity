@@ -9,6 +9,7 @@ import QuantumBackground from '../components/QuantumBackground'
 import { THEOREMS, SCIENCE_INTRO_EN, SCIENCE_INTRO_RU } from '../data/verificationScience'
 import { DELIVERY_TIERS, TIERS_LEDE } from '../data/verificationTiers'
 import SelfServeRun from '../components/SelfServeRun'
+import ExampleReport from '../components/ExampleReport'
 import ConformanceEvidence from '../components/ConformanceEvidence'
 import SignalHealth from '../components/SignalHealth'
 
@@ -362,6 +363,10 @@ export default function HardwareVerification() {
             me for. Everything below this is either a deeper tier or an
             explanation of what this one does not establish. */}
         <SelfServeRun />
+
+        {/* Paste that, get this. Extracted from a real run rather than written,
+            so it cannot drift from what the tool actually says. */}
+        <ExampleReport />
 
         {/* The tier above the free one, shown rather than described -- including
             the run where the adjudication went against my own reference model. */}

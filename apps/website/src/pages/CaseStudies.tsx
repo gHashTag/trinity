@@ -4,6 +4,7 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import SelfServeRun from '../components/SelfServeRun'
+import ExampleReport from '../components/ExampleReport'
 import CommunityRuns from '../components/CommunityRuns'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
@@ -201,6 +202,10 @@ export default function CaseStudies() {
             form. The runs below are what it produced; this is the thing that
             produced them, in a form they can paste. */}
         <SelfServeRun />
+
+        {/* Paste that, get this. Extracted from a real run rather than written,
+            so it cannot drift from what the tool actually says. */}
+        <ExampleReport />
 
         {/* Discovered, not curated. Everything below this point is a run I
             chose to publish; this one is whatever GitHub says is true. */}
