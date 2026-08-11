@@ -111,7 +111,7 @@
         "proof": "权重{-1, 0, +1}仅需1.58位，而float32需要32位",
         "result": "20倍内存压缩，无乘法推理",
         "source": "BitNet b1.58 (arXiv:2402.17764, Microsoft Research)",
-        "advantage": "无需GPU的AI推理，FPGA上最高3000倍能效",
+        "advantage": "无需GPU的AI推理，FPGA上最高3000倍能效（预计，FPGA）",
         "verified": {
           "metric": "15.7倍压缩",
           "value": "98KB → 6KB，43%稀疏性加成",
@@ -304,7 +304,7 @@
       },
       {
         "title": "指数级ROI",
-        "desc": "578倍能效飞跃是2026年后挖矿生存的唯一途径。"
+        "desc": "578倍能效飞跃是2026年后挖矿生存的唯一途径（预计，FPGA）"
       }
     ]
   },
