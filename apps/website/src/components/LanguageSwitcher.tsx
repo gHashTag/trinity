@@ -32,6 +32,37 @@ export default memo(function LanguageSwitcher() {
   const [open, setOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  // Coordinates used only when an ancestor would clip the dropdown.
+  const [fixedPos, setFixedPos] = useState<{ top: number; right: number } | null>(null)
+
+  // The dock this switcher normally sits in is `overflow-x: auto`, and CSS turns
+  // the other axis into `auto` too whenever one axis is not `visible`. The dock
+  // is 38px tall and the dropdown opens at `top: 100%`, so the browser clipped
+  // it away completely: measured on the live site, 121px of it below the dock's
+  // edge, scrollHeight 158 against clientHeight 36, and elementFromPoint at its
+  // centre returning the page behind it. It rendered at full opacity and could
+  // be neither seen nor clicked — reported as "the language modal does not open"
+  // when in fact it opened every time.
+  //
+  // Escaping a clipping ancestor needs `position: fixed`, which needs real
+  // coordinates, so they are measured off the button. Applied ONLY when an
+  // ancestor actually clips: the mobile menu does not clip, and its
+  // upward-opening variant must keep working.
+  useEffect(() => {
+    if (!open) { setFixedPos(null); return }
+    const btn = buttonRef.current
+    if (!btn) return
+    let el: HTMLElement | null = btn.parentElement
+    let clipped = false
+    while (el && el !== document.body) {
+      const s = getComputedStyle(el)
+      if (s.overflowX !== 'visible' || s.overflowY !== 'visible') { clipped = true; break }
+      el = el.parentElement
+    }
+    if (!clipped) return
+    const r = btn.getBoundingClientRect()
+    setFixedPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+  }, [open])
 
   // Handle click outside to close
   useEffect(() => {
@@ -98,6 +129,7 @@ export default memo(function LanguageSwitcher() {
         <div
           ref={listRef}
           className="lang-dropdown"
+          style={fixedPos ? { position: 'fixed', top: fixedPos.top, right: fixedPos.right } : undefined}
           role="listbox"
           id="lang-dropdown"
           aria-labelledby="lang-button"
