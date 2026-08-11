@@ -407,50 +407,106 @@ await evaluate(`(async () => {
   return document.querySelectorAll('.lang-switcher').length;
 })()`);
 
-const POPUPS = [
-  ['.lang-switcher', '.lang-dropdown'],
-  ['.nav-pages-toggle', '.nav-pages-panel'],
-];
-const popupFails = [];
-let popupsChecked = 0;
-for (const [trigger, panel] of POPUPS) {
-  const verdict = await evaluate(`(async () => {
-    const t = document.querySelector(${JSON.stringify(trigger)});
-    if (!t) return 'absent';
+// Enumerated from ARIA, not from a list. An element that declares
+// `aria-haspopup` together with `aria-controls` is telling us it opens something
+// and naming what — so a popup added later is covered without editing this file,
+// and a trigger whose `aria-controls` points at nothing is itself a defect the
+// sweep reports. That is not hypothetical: the hamburger declared
+// aria-controls="mobile-menu" while the menu carried only a className, so a
+// screen reader following the reference found nothing.
+const SWEEP = `(async () => {
+  const out = [];
+  const trigs = [...document.querySelectorAll('[aria-haspopup][aria-controls]')]
+    .filter(t => {
+      const s = getComputedStyle(t);
+      return s.display !== 'none' && s.visibility !== 'hidden' && t.getBoundingClientRect().width > 0;
+    });
+  for (const t of trigs) {
+    const id = t.getAttribute('aria-controls');
+    const label = (t.getAttribute('aria-label') || t.className || id).toString().slice(0, 40);
+    if (t.getAttribute('aria-expanded') === 'true') t.click();
+    await new Promise(r => setTimeout(r, 250));
     t.click();
-    await new Promise(r => setTimeout(r, 400));
-    const p = document.querySelector(${JSON.stringify(panel)});
-    if (!p) return 'panel never appeared after click';
-    const child = p.querySelector('a,button');
-    if (!child) return 'panel has no interactive child';
+    await new Promise(r => setTimeout(r, 450));
+    const panel = document.getElementById(id);
+    if (!panel) { out.push([label, 'aria-controls="' + id + '" matches no element']); t.click(); continue; }
+    const child = panel.querySelector('a,button');
+    if (!child) { out.push([label, 'the panel has no interactive child']); t.click(); continue; }
     const c = child.getBoundingClientRect();
-    if (c.width === 0 || c.height === 0) return 'first option has zero size';
+    if (c.width === 0 || c.height === 0) { out.push([label, 'its first option has zero size']); t.click(); continue; }
+    if (c.top < 0 || c.bottom > innerHeight || c.left < 0 || c.right > innerWidth) {
+      out.push([label, 'its first option is outside the viewport: top ' + Math.round(c.top) +
+                       ', bottom ' + Math.round(c.bottom) + ', viewport ' + innerWidth + 'x' + innerHeight]);
+      t.click(); continue;
+    }
     const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2);
-    const reachable = !!hit && (hit === child || child.contains(hit) || p.contains(hit));
+    if (!(hit && (hit === child || child.contains(hit) || panel.contains(hit)))) {
+      const owner = hit ? (hit.className || hit.tagName).toString().slice(0, 40) : 'nothing';
+      out.push([label, 'its first option is not the element at its own centre — ' + owner + ' is']);
+      t.click(); continue;
+    }
+    out.push([label, 'ok']);
+
+    // One level of recursion, because the case that broke was nested: the mobile
+    // language switcher only enters the DOM once the hamburger has opened the
+    // menu, so a sweep that snapshots triggers up front never sees it. Checking
+    // only the outer popups would have LOST the coverage the targeted check had.
+    for (const nt of panel.querySelectorAll('[aria-haspopup][aria-controls]')) {
+      const ns = getComputedStyle(nt);
+      if (ns.display === 'none' || ns.visibility === 'hidden') continue;
+      const nid = nt.getAttribute('aria-controls');
+      const nlabel = label + ' > ' + (nt.getAttribute('aria-label') || nt.className || nid).toString().slice(0, 32);
+      nt.click();
+      await new Promise(r => setTimeout(r, 400));
+      const np = document.getElementById(nid);
+      if (!np) { out.push([nlabel, 'aria-controls="' + nid + '" matches no element']); continue; }
+      const nc = np.querySelector('a,button');
+      if (!nc) { out.push([nlabel, 'the panel has no interactive child']); nt.click(); continue; }
+      const q = nc.getBoundingClientRect();
+      if (q.width === 0 || q.height === 0) { out.push([nlabel, 'its first option has zero size']); nt.click(); continue; }
+      if (q.top < 0 || q.bottom > innerHeight || q.left < 0 || q.right > innerWidth) {
+        out.push([nlabel, 'its first option is outside the viewport: top ' + Math.round(q.top) +
+                          ', bottom ' + Math.round(q.bottom) + ', viewport ' + innerWidth + 'x' + innerHeight]);
+        nt.click(); continue;
+      }
+      const nhit = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2);
+      if (!(nhit && (nhit === nc || nc.contains(nhit) || np.contains(nhit)))) {
+        const owner = nhit ? (nhit.className || nhit.tagName).toString().slice(0, 40) : 'nothing';
+        out.push([nlabel, 'its first option is not the element at its own centre — ' + owner + ' is']);
+        nt.click(); continue;
+      }
+      out.push([nlabel, 'ok']);
+      nt.click();
+      await new Promise(r => setTimeout(r, 150));
+    }
+
     t.click();
-    if (reachable) return 'ok';
-    const owner = hit ? (hit.className || hit.tagName).toString().slice(0, 40) : 'nothing';
-    return 'the first option is not the element at its own centre — ' + owner + ' is';
-  })()`);
-  if (verdict === 'absent') continue;
-  popupsChecked++;
-  if (verdict !== 'ok') popupFails.push(`${trigger} -> ${panel}: ${verdict}`);
-}
-if (popupFails.length) {
-  console.error('\n  A popup rendered but could not be clicked:');
-  for (const f of popupFails) console.error(`    ${f}`);
-  cleanup();
-  process.exit(1);
-}
-// Same discipline as the panel count below: a probe that matched nothing is a
-// broken selector reporting a clean page, not a clean page.
-if (popupsChecked === 0) {
-  console.error('\n  0 popups found. The dock has a language switcher and a pages button,');
-  console.error('  so this is a broken selector, not an absence of popups.');
-  cleanup();
-  process.exit(1);
-}
-console.log(`  ${popupsChecked} popup(s) open and their first option is reachable.`);
+    await new Promise(r => setTimeout(r, 150));
+  }
+  return JSON.stringify(out);
+})()`;
+
+const sweep = async (where) => {
+  const raw = await evaluate(SWEEP);
+  const rows = JSON.parse(raw || '[]');
+  const bad = rows.filter(([, v]) => v !== 'ok');
+  if (!rows.length) {
+    console.error(`\n  0 popup triggers found ${where}. The nav declares aria-haspopup on the`);
+    console.error('  language switcher, the pages button and the hamburger, so this is a');
+    console.error('  broken sweep, not an absence of popups.');
+    cleanup();
+    process.exit(1);
+  }
+  if (bad.length) {
+    console.error(`\n  A popup rendered but could not be used ${where}:`);
+    for (const [label, why] of bad) console.error(`    ${label}: ${why}`);
+    cleanup();
+    process.exit(1);
+  }
+  console.log(`  ${rows.length} popup(s) ${where}: ${rows.map(r => r[0]).join(', ')} — all reachable.`);
+};
+
+await sweep('at desktop width');
 
 // ── The same question at a mobile width ──
 //
@@ -470,43 +526,8 @@ await evaluate(`(async () => {
   await new Promise(r => setTimeout(r, 1200));
 })()`);
 
-const mobileVerdict = await evaluate(`(async () => {
-  const burger = document.querySelector('.hamburger-btn');
-  if (!burger) return 'no hamburger at 390px — the breakpoint or the selector moved';
-  if (getComputedStyle(burger).display === 'none') return 'hamburger is display:none at 390px';
-  burger.click();
-  await new Promise(r => setTimeout(r, 500));
-  const menu = document.querySelector('.mobile-menu');
-  if (!menu) return 'the mobile menu did not open';
-  const sw = menu.querySelector('.lang-switcher');
-  if (!sw) return 'no language switcher inside the mobile menu';
-  sw.click();
-  await new Promise(r => setTimeout(r, 400));
-  const dd = document.querySelector('.lang-dropdown');
-  if (!dd) return 'the dropdown did not appear';
-  const opt = dd.querySelector('button');
-  if (!opt) return 'the dropdown has no options';
-  const c = opt.getBoundingClientRect();
-  if (c.width === 0 || c.height === 0) return 'the first option has zero size';
-  const offscreen = c.top < 0 || c.bottom > innerHeight || c.left < 0 || c.right > innerWidth;
-  const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2);
-  const reachable = !!hit && (opt === hit || opt.contains(hit) || dd.contains(hit));
-  if (offscreen) return 'the first option is outside the viewport: top ' + Math.round(c.top) +
-                        ', bottom ' + Math.round(c.bottom) + ', viewport height ' + innerHeight;
-  if (!reachable) {
-    const owner = hit ? (hit.className || hit.tagName).toString().slice(0, 40) : 'nothing';
-    return 'the first option is not the element at its own centre — ' + owner + ' is';
-  }
-  return 'ok';
-})()`);
+await sweep('at 390px');
 await call('Emulation.clearDeviceMetricsOverride');
-if (mobileVerdict !== 'ok') {
-  console.error('\n  The mobile language switcher is broken at 390px:');
-  console.error(`    ${mobileVerdict}`);
-  cleanup();
-  process.exit(1);
-}
-console.log('  the mobile switcher opens and its first option is reachable at 390px.');
 
 
 // ── The check that this check ran ──
