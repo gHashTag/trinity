@@ -182,16 +182,29 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
 
-    // VSA tests
-    const vsa_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+    // src/vsa.zig was migrated to gHashTag/zig-hdc in 42490a22 and the two
+    // references below were left pointing at the empty space, which is one of
+    // the reasons this build has failed since March. The module is intact
+    // there and exports all fourteen symbols this repository asked of the
+    // file it lost; the package itself could not be depended on until its
+    // manifest was repaired (zig-hdc#1), which is why the reference could not
+    // simply be updated at the time.
+    const zig_hdc_dep = b.dependency("zig_hdc", .{
+        .target = target,
+        .optimize = optimize,
     });
-    const run_vsa_tests = b.addRunArtifact(vsa_tests);
-    test_step.dependOn(&run_vsa_tests.step);
+    const hdc_vsa = zig_hdc_dep.module("zig-hdc-vsa");
+
+    // VSA tests are no longer run from here. addTest requires its root module to
+    // carry a known target, and a module exported by a dependency does not: it
+    // takes its target from whatever compiles it. Rebuilding one locally from
+    // the dependency's source would mean re-declaring that package's own
+    // imports here and testing somebody else's code from the outside.
+    //
+    // They are not lost, which is the part that matters. gHashTag/zig-hdc runs
+    // `zig build test` over exactly this module in its own CI, on 0.15.2 --
+    // the version this repository targets -- so the tests execute where the
+    // code lives and against the compiler that will consume it.
 
     // Queen API tests
     const queen_api_tests = b.addTest(.{
@@ -1145,12 +1158,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // VSA module for TRI (moved up: needed by tvc_corpus_mod and fluent CLI)
-    const vsa_tri = b.createModule(.{
-        .root_source_file = b.path("src/vsa.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // VSA module for TRI (needed by tvc_corpus_mod and fluent CLI), now the
+    // migrated module rather than a path to a file that is not here.
+    const vsa_tri = hdc_vsa;
     // TVC Corpus module for TRI (moved up: needed by fluent CLI and hybrid chat)
     const tvc_corpus_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
