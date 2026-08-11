@@ -164,7 +164,18 @@ This is the theoretical maximum information content per ternary symbol. QED
 <div class="theorem-card">
 <h4>Theorem 4 (VSA Binding Self-Inverse)</h4>
 
-Ternary binding is its own inverse: **unbind(bind(a, b), b) = a**
+Ternary binding is its own inverse **on non-zero components**:
+**unbind(bind(a, b), b) = a whenever bᵢ ≠ 0 for every i**
+
+> **Corrected 2026-08-11.** The unrestricted form is false, and the table in Step 1 shows
+> why: zero is an annihilator, so `0 × a = 0` for every `a` and nothing recovers `a` from
+> it. Checked numerically under exactly the definitions below, the unrestricted claim fails
+> in 2 of 9 per-position cases and in every vector trial at every dimension tested.
+>
+> The restriction is not a weakening of the useful content. Binary spatter codes use
+> `{-1,+1}` with no zero and the property holds there unrestricted; sparse ternary codes
+> carry zeros deliberately, and for those the correct statement is that binding is
+> invertible on the support of `b` and destroys everything outside it.
 </div>
 
 ### Proof
