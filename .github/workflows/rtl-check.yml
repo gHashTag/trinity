@@ -136,7 +136,23 @@ jobs:
           # first, and elaboration failed on a design that is in fact fine.
           SRC=""
           if [ -f info.yaml ]; then
-            SRC=$(awk '/^[[:space:]]*source_files:/{f=1;next} f&&/^[[:space:]]*-/{gsub(/^[[:space:]]*-[[:space:]]*"?|"?[[:space:]]*$/,"");print "'"$INC"'/" $0;next} f{exit}' info.yaml | tr '\n' ' ')
+            # Tiny Tapeout's own template says source files live in ./src and are
+            # listed by bare filename, and most submissions do that. Some list
+            # them with the src/ prefix already on, and prefixing again turned
+            # a real repository's one source file into src/src/... -- a failure
+            # about a path convention, wearing the clothes of a failure about
+            # their design. Found by reading somebody else's repository before
+            # offering them the check, which is the only way that class of
+            # defect ever gets found.
+            SRC=$(awk -v inc="$INC" '
+              /^[[:space:]]*source_files:/ {f=1; next}
+              f && /^[[:space:]]*-/ {
+                gsub(/^[[:space:]]*-[[:space:]]*"?|"?[[:space:]]*$/, "")
+                if ($0 ~ "^" inc "/") print $0; else print inc "/" $0
+                next
+              }
+              f {exit}
+            ' info.yaml | tr '\n' ' ')
           fi
           if [ -n "$SRC" ]; then
             echo "sources: from info.yaml source_files"
