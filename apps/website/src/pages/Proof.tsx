@@ -66,6 +66,7 @@ const METHOD = [
   ['Per-stage vectors', 'Known-answer vectors at every pipeline stage, so a regression points at the stage that broke instead of at the top level.'],
   ['Hardware replay', 'The same vectors run again on the physical board. Simulation agreement does not prove silicon agreement — synthesis, place-and-route and timing all get a vote.'],
   ['Open toolchain', 'Yosys, nextpnr-xilinx, prjxray, openFPGALoader, iverilog. No proprietary licence stands between a claim here and someone reproducing it.'],
+  ['The cheap proxy can point the wrong way', 'Squared error is the usual stand-in for quantisation quality because it is cheap to compute. On 11 August 2026 a rotation applied before quantising reduced total weight error by 3.31% and made the model 8.24% worse — the two moved in opposite directions on the same weights in the same run, across 3.3 million blocks. Anyone reading the proxy would have concluded the opposite of the truth. It is the reason results here are reported on the axis that matters rather than the one that is easy.'],
 ]
 
 const NOT_CLAIMS = [
@@ -102,6 +103,7 @@ const RU = {
     ['Векторы по ступеням', 'Векторы с известным ответом на каждой ступени конвейера — регрессия указывает на сломавшуюся ступень, а не на верхний уровень.'],
     ['Повтор на железе', 'Те же векторы снова прогоняются на физической плате. Согласие в симуляции не доказывает согласия на кремнии: синтез, разводка и тайминг тоже имеют голос.'],
     ['Открытый тулчейн', 'Yosys, nextpnr-xilinx, prjxray, openFPGALoader, iverilog. Между заявлением здесь и его воспроизведением никто не ставит проприетарную лицензию.'],
+    ['Дешёвая замена метрики может указывать не туда', 'Квадратичная ошибка — обычный суррогат качества квантования, потому что её дёшево считать. 11 августа 2026 поворот, применённый перед квантованием, снизил суммарную ошибку по весам на 3.31% и ухудшил модель на 8.24%: две метрики разошлись по знаку на одних и тех же весах в одном прогоне, на 3.3 миллионах блоков. Кто читал бы суррогат, пришёл бы к выводу, обратному истине. Поэтому результаты здесь приводятся по той оси, которая важна, а не по той, которую легко посчитать.'],
   ],
   notTitle: 'Чем эти результаты не являются',
   not: [
