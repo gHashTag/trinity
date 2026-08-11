@@ -22,7 +22,7 @@ pub fn build(b: *std.Build) void {
 
     // VIBEEC compiler module — single source of truth from trinity-nexus/lang
     const trinity_lang_mod = b.createModule(.{
-        .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
+        .root_source_file = b.path("deploy/trinity-nexus/lang/src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -348,7 +348,7 @@ pub fn build(b: *std.Build) void {
     const bench_core = b.addExecutable(.{
         .name = "bench-core",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("benchmarks/bench_core.zig"),
+            .root_source_file = b.path("tests/benchmarks/benchmarks/bench_core.zig"),
             .target = target,
             .optimize = .ReleaseFast,
             .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
@@ -1810,7 +1810,7 @@ pub fn build(b: *std.Build) void {
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/hslm/root.zig"),
+            .root_source_file = b.path("external/zig-hslm/src/root.zig"),
             .target = target,
             .optimize = optimize,
         }),
