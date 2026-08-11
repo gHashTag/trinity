@@ -12,7 +12,7 @@
         },
         .zig_hdc = .{
             .url = "https://github.com/gHashTag/zig-hdc/archive/main.tar.gz",
-            .hash = "zig_hdc-0.1.0-6NS2Eoy7FgAFWrBY3anapf1nXxhm6TvPApY3NHoSW8MG",
+            .hash = "zig_hdc-0.1.0-6NS2Eut8FQBT_V91nPpHjOw-2sQJl8bgzOdpss9lVnPy",
         },
         .zig_golden_float = .{
             .url = "https://github.com/gHashTag/zig-golden-float/archive/main.tar.gz",
