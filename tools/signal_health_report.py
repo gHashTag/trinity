@@ -45,6 +45,23 @@ for repo, wf, note in REPOS:
     print(f"  {repo} {wf}: streak {'>=' if saturated else ''}{streak}, "
           f"{failures}/{len(rs)} failed", file=sys.stderr)
 
+# T13: a pass carries evidence only alongside a floor on how much was checked.
+# Without this, one repository failing to answer shortens the published table and
+# the page shows fewer instruments without saying that it does -- a smaller
+# measurement wearing the same green. The floor is the whole list, and an entry
+# that errored still counts as measured because it is written out as an error.
+if len(out) != len(REPOS):
+    print(f"FAIL: {len(out)} entries for {len(REPOS)} instruments; something was "
+          f"dropped silently and the page would have shown a shorter table",
+          file=sys.stderr)
+    raise SystemExit(1)
+
+errored = [e for e in out if e.get("error")]
+if errored:
+    for e in errored:
+        print(f"FAIL: could not measure {e['repo']} {e['workflow']}: {e['error']}", file=sys.stderr)
+    raise SystemExit(1)
+
 dest = sys.argv[1] if len(sys.argv) > 1 else "apps/website/src/data/signalHealth.json"
 with open(dest, "w", encoding="utf-8") as f:
     json.dump({
