@@ -378,6 +378,80 @@ await wait(1000);  // whatever the newly-mounted panels do on their next tick
 const late = drain();
 if (late.length) report('after everything was expanded', late);
 
+// ── Popups: rendered is not the same as reachable ──
+//
+// On 2026-08-11 the language dropdown was reported as "the modal does not open".
+// It opened every time: aria-expanded flipped, all four options entered the DOM
+// at opacity 1, visibility visible. `.nav-dock` is `overflow-x: auto`, and CSS
+// turns the other axis into `auto` too whenever one axis is not `visible`, so a
+// 38px-tall dock clipped a dropdown that opens at `top: 100%` out of existence:
+// 121px of it below the dock's edge, scrollHeight 158 against clientHeight 36,
+// elementFromPoint at its centre returning the page behind it.
+//
+// Every check that existed would have passed. The element was present, had the
+// right class, had children, was not display:none. The only thing separating
+// this from a working popup is whether the pixel a user aims at belongs to the
+// popup — so that is what this asks.
+//
+// Two further traps, both found by measuring rather than reasoning: `position:
+// fixed` did not escape, because the dock also carries `transform:
+// translateX(-50%)` and a transformed ancestor becomes the containing block for
+// fixed descendants; and `min-width: 100%` then resolved against the viewport
+// instead of the button. The fix is a portal.
+// /canvas deliberately renders no Navigation, so the popups do not exist there —
+// the first run of this check found zero and said so rather than passing. They
+// live on every ordinary route, so move to one before asking.
+await evaluate(`(async () => {
+  location.hash = '#/proof';
+  await new Promise(r => setTimeout(r, 1200));
+  return document.querySelectorAll('.lang-switcher').length;
+})()`);
+
+const POPUPS = [
+  ['.lang-switcher', '.lang-dropdown'],
+  ['.nav-pages-toggle', '.nav-pages-panel'],
+];
+const popupFails = [];
+let popupsChecked = 0;
+for (const [trigger, panel] of POPUPS) {
+  const verdict = await evaluate(`(async () => {
+    const t = document.querySelector(${JSON.stringify(trigger)});
+    if (!t) return 'absent';
+    t.click();
+    await new Promise(r => setTimeout(r, 400));
+    const p = document.querySelector(${JSON.stringify(panel)});
+    if (!p) return 'panel never appeared after click';
+    const child = p.querySelector('a,button');
+    if (!child) return 'panel has no interactive child';
+    const c = child.getBoundingClientRect();
+    if (c.width === 0 || c.height === 0) return 'first option has zero size';
+    const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2);
+    const reachable = !!hit && (hit === child || child.contains(hit) || p.contains(hit));
+    t.click();
+    if (reachable) return 'ok';
+    const owner = hit ? (hit.className || hit.tagName).toString().slice(0, 40) : 'nothing';
+    return 'the first option is not the element at its own centre — ' + owner + ' is';
+  })()`);
+  if (verdict === 'absent') continue;
+  popupsChecked++;
+  if (verdict !== 'ok') popupFails.push(`${trigger} -> ${panel}: ${verdict}`);
+}
+if (popupFails.length) {
+  console.error('\n  A popup rendered but could not be clicked:');
+  for (const f of popupFails) console.error(`    ${f}`);
+  cleanup();
+  process.exit(1);
+}
+// Same discipline as the panel count below: a probe that matched nothing is a
+// broken selector reporting a clean page, not a clean page.
+if (popupsChecked === 0) {
+  console.error('\n  0 popups found. The dock has a language switcher and a pages button,');
+  console.error('  so this is a broken selector, not an absence of popups.');
+  cleanup();
+  process.exit(1);
+}
+console.log(`  ${popupsChecked} popup(s) open and their first option is reachable.`);
+
 // ── The check that this check ran ──
 //
 // A probe that silently matches nothing reports a clean page, which is the
