@@ -62,3 +62,14 @@ jobs:
       path: tests/rtl-check-fixtures/good
       expect_flops: '5'
       expect: fail
+
+  # A submission that lists its sources with the src/ prefix already on must
+  # resolve to the same file as one that does not. Both spellings occur in real
+  # repositories, and prefixing twice fails about a path convention while
+  # looking like a failure about the design.
+  src-prefixed-info-yaml-must-resolve:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_prefixed
+      path: tests/rtl-check-fixtures/prefixed
+      expect_flops: '4'
