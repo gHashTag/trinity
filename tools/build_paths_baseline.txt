@@ -1,0 +1,35 @@
+# Paths named by build.zig that do not exist, known as of 2026-08-11.
+#
+# The build has been failing on these since 42490a22 ("remove 4425 lines of
+# migrated duplicates"), which moved sources out from under build.zig without
+# moving the references. Fourteen were dangling; eight of them were plain
+# relocations and are fixed. These five are not, and each needs a decision
+# rather than a guess:
+#
+#   src/vsa.zig
+#     Migrated to gHashTag/zig-hdc, which still has it and exports all fourteen
+#     symbols the eleven consumers in src/ need. Blocked on that repository's
+#     build.zig.zon, which predates the .fingerprint and dependency-.hash
+#     requirements and so cannot be depended on by zig 0.15.2 as it stands.
+#
+#   src/cli/entrypoint_train.zig
+#   src/hslm/bpe_train.zig
+#   src/hslm/hslm_benchmark.zig
+#     Executables whose sources exist nowhere in the tree. Deleting the targets
+#     would make the build start -- and their own comments say they are built
+#     "for Railway Dockerfile" and "for Railway dev agent deploy", with
+#     train_deploy_step depending on hslm_entrypoint. Fixing CI by removing a
+#     deployment path is not fixing anything, so they stay named until somebody
+#     decides whether those binaries should still exist.
+#
+#   trinity-nexus/output/lang/zig/full-serve-v1.zig
+#     Under output/ -- generated material that was never regenerated.
+#
+# This file only shrinks. A path repaired must be removed from here, and the
+# check fails if it is not: otherwise the baseline turns into a list of things
+# that used to be wrong and stops meaning anything.
+src/cli/entrypoint_train.zig
+src/hslm/bpe_train.zig
+src/hslm/hslm_benchmark.zig
+src/vsa.zig
+trinity-nexus/output/lang/zig/full-serve-v1.zig

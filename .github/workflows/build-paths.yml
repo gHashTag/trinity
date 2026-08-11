@@ -1,0 +1,47 @@
+name: Build paths
+
+# Every path build.zig names, checked without a compiler.
+#
+# The build here was broken for four months by a refactor that moved sources out
+# from under build.zig without moving the references. Detecting that needed no
+# cleverness -- the files were simply not there -- and it went unnoticed anyway,
+# because the only instrument reporting it was a build whose red had stopped
+# carrying information.
+#
+# So this is deliberately not a build. It is text, it needs no toolchain, and it
+# runs in seconds. That matters concretely: the zig version this project targets
+# cannot link its own build runner on the machine the check was written on, and
+# a check you cannot run is a check you do not have.
+#
+# It is a ratchet, not a gate on the current state. Five paths are dangling
+# today and repairing them needs decisions about a deployment that are somebody
+# else's to make; failing on those five every run would make this furniture too.
+# Only paths outside the baseline fail, and the baseline can only shrink.
+
+on:
+  push:
+    branches: [main]
+    paths: ['build.zig', 'src/**', 'tools/check_build_paths.py', 'tools/build_paths_baseline.txt']
+  pull_request:
+    paths: ['build.zig', 'src/**', 'tools/check_build_paths.py', 'tools/build_paths_baseline.txt']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  no-new-dangling-paths:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check
+        run: |
+          set -uo pipefail
+          echo "## Build paths" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          python3 tools/check_build_paths.py --root . 2>&1 | tee out.txt
+          rc=${PIPESTATUS[0]}
+          cat out.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
