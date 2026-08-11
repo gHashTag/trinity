@@ -47,8 +47,13 @@ export const DELIVERY_TIERS: Tier[] = [
       ],
     },
     track: {
-      en: 'Delivered: eight designs, three of them other people’s, published with their commands. It found a shuttle-blocking defect in two of my own chips and none in the three that were not mine.',
-      ru: 'Сделано: восемь дизайнов, три из них чужие, опубликованы вместе с командами. Нашла блокирующий шаттл дефект в двух моих чипах и ни одного в трёх чужих.',
+      // Ten and five, from runs.json, which is the file the gallery renders. It
+      // said eight and three, which was true when it was written and stopped
+      // being true the day two more runs were published — a hand-counted number
+      // beside a generated list drifts the moment the list grows, and nothing
+      // announces it.
+      en: 'Delivered: ten designs, five of them other people’s, published with their commands. It found a shuttle-blocking defect in two of my own chips and none in the five that were not mine.',
+      ru: 'Сделано: десять дизайнов, пять из них чужие, опубликованы вместе с командами. Нашла блокирующий шаттл дефект в двух моих чипах и ни одного в пяти чужих.',
     },
   },
   {
