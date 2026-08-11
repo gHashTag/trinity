@@ -212,6 +212,18 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That proxies are never worth using. The direct test costs a subprocess per sampled page and the proxy cost one comparison, which is why the proxy was written first and why it survived until a confound arrived. What the theorem forbids is treating the two as interchangeable once the confound is known — and the moment to look for confounds is when the check disagrees with something you can verify by hand.',
   },
+  {
+    id: 'T18',
+    name: 'A repair reaches only the copy it lands in',
+    statement:
+      'Parnas’s criterion for decomposing a system is that each design decision should have exactly one home, because changeability is what the decomposition is for. The corollary is arithmetic rather than stylistic: a decision living in n places must be repaired n times, the repairs do not propagate, and no instrument inside either copy reports the omission — each one compiles, or fails, entirely on its own. Divergence is therefore not a risk that duplication carries; it is what duplication is.',
+    worked:
+      'Sixteen defects were repaired in one package and the consumer that depends on it did not improve by a single error. Not a caching artefact — pinning the exact merge commit produced the same hash the CDN had already served. Both repositories carried their own src/vsa/core.zig, common.zig, concurrency.zig, 10k_vsa.zig, hrr.zig and fpga_bind.zig, edited independently since the migration that separated them, so the fixes went into different files with the same names. Comparing the two public surfaces symbol by symbol showed them identical, one constant apart, which is what made the choice arithmetic instead of a matter of taste: nothing was lost by keeping one. Replacing the duplicates with re-exports of the repaired implementation took the consumer from five errors to green.',
+    citation: 'Parnas, “On the Criteria To Be Used in Decomposing Systems into Modules”, CACM 15(12), 1972',
+    url: 'https://doi.org/10.1145/361598.361623',
+    doesNotClaim:
+      'That vendoring is always wrong. A pinned copy is a deliberate trade — insulation from an upstream you do not control, paid for in repairs you now owe twice — and it is defensible when it is chosen and written down. What has no defence is duplication nobody decided on, which is the state a migration leaves behind when it copies rather than moves. Nor does a re-export make the boundary free: names must now be listed one by one, and a symbol added upstream does not appear downstream until somebody adds it.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
