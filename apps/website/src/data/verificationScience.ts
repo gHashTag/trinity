@@ -166,6 +166,17 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That deleting a target is always wrong — dead code should go. It claims only that the build verdict cannot tell you which happened, so the justification has to be carried outside the metric. Nor does it supply the floor: choosing what must not decrease is a judgement about the project, and no theorem provides it.',
   },
+  {
+    id: 'T14',
+    name: 'A check must gate on the change, not on the level',
+    statement:
+      'Shewhart’s separation of assignable from chance causes is what makes an alarm worth reacting to: a chart signals when a process departs from its own history, not when it is simply far from ideal. A check that fails on chronic pre-existing breakage cannot make that distinction — it reports the same red on the day somebody breaks something as on the thousand days before — so it is ignored, and by T12 it is right to ignore it. The gate belongs on the derivative: what is dangling that was not dangling yesterday.',
+    worked:
+      'Written for this service’s own repository, whose build names five files that do not exist. Repairing them needs decisions about a deployment that are not mine to make, so a check failing on all five would have been furniture within a week. It fails instead only on paths outside a baseline that records those five with the reason each one is still there — and the baseline can only shrink: a path that has been repaired and left in the file fails too, or the record turns into a list of things that used to be wrong. Both directions were watched going red before it was turned on.',
+    citation: 'Shewhart, Economic Control of Quality of Manufactured Product, Van Nostrand 1931; Deming’s common- and special-cause distinction',
+    doesNotClaim:
+      'That the chronic level is acceptable. A baseline is a record of debt, not a discharge of it, and this one is published with a paragraph per entry saying what decision each is waiting on. Nor does it apply to a check that has never been green: there is no history to depart from, and the first thing to establish is the level.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
