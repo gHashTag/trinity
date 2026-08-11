@@ -561,7 +561,7 @@ const greenCiUnusable: Post = {
   summary:
     'A Zig package with passing CI could not be compiled by any consumer. Lazy analysis means a test run proves only what the tests happen to touch — one line exposed five hidden errors in one package, and sixteen in the package under it.',
   date: '2026-08-11',
-  readingMinutes: 9,
+  readingMinutes: 11,
   tags: ['Zig', 'CI', 'Verification', 'Static analysis'],
   receipts: [
     { label: 'zig-golden-float #97 — 16 defects, CI green on 0.15.2 · MERGED 2026-08-11', href: 'https://github.com/gHashTag/zig-golden-float/pull/97' },
@@ -622,6 +622,17 @@ const greenCiUnusable: Post = {
     { kind: 'h', text: 'What to take from it' },
     { kind: 'p', text: 'The general shape is not about Zig. A test suite measures the code it reaches. In a language with lazy analysis the unreached part is not merely untested — it is uncompiled, and the difference matters because a consumer reaching it gets a compile error rather than a wrong answer. A green badge on such a package is a statement about the tests, and a reader takes it as a statement about the library.' },
     { kind: 'p', text: 'The cheap countermeasure is one line per package. The expensive part is being willing to look at what it says.' },
+    { kind: 'h', text: 'Addendum, 12 August: the third package' },
+    { kind: 'p', text: 'The claim above was drawn from two repositories. A third was swept afterwards and it is the clearest case yet, because there was nothing subtle about it at all: zig-half had no workflow that built anything, and six separate things were wrong, each of which alone makes the package unusable.' },
+    { kind: 'ul', items: [
+      'Its manifest gave the name as a string where 0.15 requires an enum literal, and carried no fingerprint — so nothing could depend on it.',
+      'Its build script declared `pub fn test(b: *std.Build)`. In Zig, `test` is a keyword. That file has never compiled, and it also never called standardTargetOptions, passed two arguments to installArtifact, and read b.step as a field.',
+      'Its module root — the surface every consumer imports — re-exported everything as `pub use module.{ A, B as C };`. That is Rust. Zig has no `use` statement and no `as` aliasing, so the root has never been valid Zig either.',
+      'Four files inside src/ imported "src/x.zig", which resolves to src/src/x.zig.',
+      'Six of those re-exports named symbols their module does not export.',
+      'One file still used std.io.getStdOut, removed in 0.15.',
+    ] },
+    { kind: 'p', text: 'Five Rust-shaped blocks became sixty-seven ordinary Zig re-exports with the aliases preserved, and the package now builds and tests green on 0.15.2 for the first time in its life. What makes it worth adding here is not the repair but the arithmetic: three packages swept, three that could not be used by anybody, and in every case the reason nobody knew was the same — no workflow ever asked.' },
   ],
   published: true,
   ru: {
@@ -682,6 +693,17 @@ const greenCiUnusable: Post = {
       { kind: 'h', text: 'Что отсюда забрать' },
       { kind: 'p', text: 'Общая форма не про Zig. Набор тестов измеряет тот код, до которого он дотягивается. В языке с ленивым анализом недостигнутая часть не просто не протестирована — она не скомпилирована, и разница существенна: потребитель, дотянувшийся до неё, получает ошибку компиляции, а не неверный ответ. Зелёный значок на таком пакете — утверждение о тестах, а читатель принимает его за утверждение о библиотеке.' },
       { kind: 'p', text: 'Дешёвая мера противодействия — одна строка на пакет. Дорогая часть — готовность прочитать то, что она скажет.' },
+      { kind: 'h', text: 'Дополнение от 12 августа: третий пакет' },
+      { kind: 'p', text: 'Утверждение выше было сделано по двум репозиториям. Третий обследован позже, и он самый ясный из всех — потому что в нём не было ничего тонкого: у zig-half не было ни одного воркфлоу, который бы что-то собирал, и шесть отдельных вещей были не так, каждой из которых поодиночке хватает, чтобы пакетом нельзя было пользоваться.' },
+      { kind: 'ul', items: [
+        'Манифест давал имя строкой там, где 0.15 требует enum-литерал, и не имел fingerprint — то есть зависеть от пакета не мог никто.',
+        'Скрипт сборки объявлял `pub fn test(b: *std.Build)`. В Zig `test` — ключевое слово. Этот файл никогда не компилировался; он к тому же не вызывал standardTargetOptions, передавал два аргумента в installArtifact и читал b.step как поле.',
+        'Корень модуля — поверхность, которую импортирует каждый потребитель, — переэкспортировал всё через `pub use module.{ A, B as C };`. Это Rust. В Zig нет ни `use`, ни `as`, так что корень тоже никогда не был правильным Zig.',
+        'Четыре файла внутри src/ импортировали "src/x.zig", что разрешается в src/src/x.zig.',
+        'Шесть из этих реэкспортов называли символы, которых их модуль не экспортирует.',
+        'Один файл всё ещё использовал std.io.getStdOut, убранный в 0.15.',
+      ] },
+      { kind: 'p', text: 'Пять блоков в форме Rust стали шестьюдесятью семью обычными реэкспортами Zig с сохранёнными псевдонимами, и пакет впервые в своей жизни собирается и проходит тесты на 0.15.2. Ценность этого дополнения не в починке, а в арифметике: обследованы три пакета, три оказались непригодны к использованию, и в каждом случае причина, по которой этого не знали, была одна — ни один воркфлоу ни разу не спросил.' },
     ],
   },
 }
