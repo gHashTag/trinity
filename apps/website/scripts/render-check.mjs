@@ -246,7 +246,19 @@ function cleanup() {
   try { ws.close(); } catch { /* already gone */ }
   chrome.kill();
   server.close();
-  rmSync(profile, { recursive: true, force: true });
+  // chrome.kill() only sends the signal; the browser is frequently still
+  // writing into its profile when this line runs, and rmSync then throws
+  // ENOTEMPTY despite recursive+force, because files reappear underneath it.
+  //
+  // That failure has nothing to do with what this script measures. One run
+  // printed "no uncaught errors and no console.error across 4 panels" and
+  // then exited 1 on the rmdir - a green measurement reported as a red gate.
+  // Retry, and if it still will not go, say so and leave the verdict alone.
+  try {
+    rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  } catch (e) {
+    console.error(`  (temporary profile could not be removed: ${e.code}; ignored - it is not part of the check)`);
+  }
 }
 
 const onLoad = drain();
