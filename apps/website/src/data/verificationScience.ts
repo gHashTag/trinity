@@ -154,6 +154,18 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That a red build should be silenced or that the tests were at fault — they were correct, exhaustive and independent, which is precisely what makes the case worth stating. Nor does it give a threshold: Shannon’s quantity goes to zero continuously, so there is no run count at which a signal officially stops meaning anything.',
   },
+  {
+    id: 'T13',
+    name: 'A green earned by deleting the check is indistinguishable from a green earned by fixing the defect',
+    statement:
+      'Make “the build is green” the target and it stops measuring what it measured, because two different actions satisfy it: repairing the code, or removing whatever was failing. The verdict is identical in both cases, so a pass carries evidence only when it is paired with an invariant on how much was checked — a floor on the number of gates that ran, a count of the code points enumerated, a list of the targets built. Without that floor, the cheapest way to a green is always deletion.',
+    worked:
+      'Faced tonight, on the repository this service is built in. Its build has failed for hundreds of consecutive runs, and three of the remaining causes are executables whose source files exist nowhere. Deleting those three targets would have let the build start — and their own comments say they are built for a Railway deployment, with another step depending on one of them. Fixing the measure would have removed the thing it measured, so they were left failing and named instead. The counter-example is in my own chip’s tooling, where the gate runner asserts a minimum discovered-gate count precisely so that a glob bug cannot quietly run fewer checks and report the same green.',
+    citation: 'Campbell, “Assessing the Impact of Planned Social Change”, Evaluation and Program Planning 2(1), 1979; Goodhart 1975',
+    url: 'https://doi.org/10.1016/0149-7189(79)90048-X',
+    doesNotClaim:
+      'That deleting a target is always wrong — dead code should go. It claims only that the build verdict cannot tell you which happened, so the justification has to be carried outside the metric. Nor does it supply the floor: choosing what must not decrease is a judgement about the project, and no theorem provides it.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =

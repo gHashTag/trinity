@@ -6,10 +6,10 @@
       "repo": "gHashTag/trinity",
       "workflow": "ci.yml",
       "note": "the repository this service is built in",
-      "window": 199,
-      "failures": 199,
+      "window": 200,
+      "failures": 200,
       "pRed": 1.0,
-      "streak": 199,
+      "streak": 200,
       "streakIsLowerBound": true,
       "bitsPerRed": null,
       "lastGreen": null
