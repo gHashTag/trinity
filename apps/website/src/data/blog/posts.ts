@@ -633,7 +633,7 @@ const blockAxisLost: Post = {
     { kind: 'p', text:
       'Each of those is something I once got wrong here.' },
   ],
-  published: true,
+  published: false,
 }
 
 export const posts: Post[] = [blockAxisLost, energyAsymmetry, openGigabitEthernet]
