@@ -795,7 +795,87 @@ const frameMargin: Post = {
   published: true,
 }
 
-export const posts: Post[] = [frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
+const upstreamCredit: Post = {
+  slug: 'fifteen-merged-nine-credited',
+  title: 'Fifteen merged, nine credited: what upstream contribution actually looks like',
+  summary:
+    'I had written down five merged PRs and zero attributed commits. Re-measured through the ' +
+    'API: fifteen merged, eight open, nine commits carrying my name \u2014 and the gap is worth ' +
+    'naming precisely rather than as an absence.',
+  date: '2026-08-11',
+  readingMinutes: 5,
+  tags: ['Open source', 'FPGA', 'openXC7', 'Attribution'],
+  receipts: [
+    { label: 'The merged PRs \u2014 run the query yourself',
+      href: 'https://github.com/openXC7/nextpnr-xilinx/pulls?q=is%3Apr+author%3AgHashTag+is%3Amerged' },
+    { label: 'PR #133 \u2014 say which pin is wrong when a diff pair is const',
+      href: 'https://github.com/openXC7/nextpnr-xilinx/pull/133' },
+    { label: 'PR #130 \u2014 emit OLOGIC IS_CLKDIV_INVERTED for OSERDESE2',
+      href: 'https://github.com/openXC7/nextpnr-xilinx/pull/130' },
+  ],
+  openQuestions: [
+    'These counts are for openXC7/nextpnr-xilinx alone, measured 2026-08-11. Other repositories ' +
+    'were not counted and the ratio there may differ.',
+    'Commit attribution is measured by GitHub\u2019s author field, which follows the email in ' +
+    'the commit. A merged PR whose commits were squashed under a maintainer\u2019s name will not ' +
+    'appear, and that is one of the mechanisms this post is about \u2014 so the nine is a floor, ' +
+    'not a ceiling.',
+    'Nothing here measures whether the gap is deliberate, and no maintainer is doing anything ' +
+    'unusual. Squash-merge is the default on most projects.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'I had a note in my own files that said five merged pull requests and zero attributed ' +
+      'commits. It was the kind of number you write once and then quote. Today I ran the query.' },
+    { kind: 'table',
+      head: ['', 'what I had written', 'measured 2026-08-11'],
+      rows: [
+        ['merged PRs', '5', '15'],
+        ['open PRs', '\u2014', '8'],
+        ['commits carrying my name', '0', '9'],
+      ] },
+    { kind: 'p', text:
+      'Both numbers were stale and both moved the same way. The story I was about to write \u2014 ' +
+      '"the credit does not reach me" \u2014 was not true, and would have been refutable by one ' +
+      'API call from any reader who cared enough to check.' },
+    { kind: 'h', text: 'What the remaining gap actually is' },
+    { kind: 'p', text:
+      'Fifteen merged against nine attributed is not a conspiracy. It is squash-merge, which is ' +
+      'the default on most projects and collapses a branch into one commit under whoever pressed ' +
+      'the button. Nobody is doing anything unusual.' },
+    { kind: 'p', text:
+      'That makes the nine a floor rather than a ceiling: work that landed under a maintainer\u2019s ' +
+      'name is invisible to the same query that found these. If you want your contribution ' +
+      'attributed, the merge strategy of the project you are contributing to decides it, and you ' +
+      'find out afterwards.' },
+    { kind: 'h', text: 'What is actually in them' },
+    { kind: 'p', text:
+      'Recent merged work, named so you can open it rather than take my word:' },
+    { kind: 'ul', items: [
+      '#133 \u2014 xilinx: say which pin is wrong when a diff pair is const. An error message that names the pin instead of failing generically.',
+      '#130 \u2014 xilinx: emit OLOGIC IS_CLKDIV_INVERTED for OSERDESE2.',
+      '#127 \u2014 xilinx: emit ZINV_REGCLKARDRCLK / ZINV_REGCLKB for registered paths.',
+    ] },
+    { kind: 'p', text:
+      'None of these is a headline feature. They are the class of fix that makes an open ' +
+      'toolchain usable by someone who did not write it \u2014 a wrong pin named, an attribute ' +
+      'emitted that the bitstream needed and nobody had emitted.' },
+    { kind: 'h', text: 'The part worth keeping' },
+    { kind: 'p', text:
+      'A number written into prose stops being connected to the thing that produced it. Mine ' +
+      'drifted in the pessimistic direction, which felt like modesty and was simply wrong.' },
+    { kind: 'p', text:
+      'The fix costs one command, and it is in my notes now so the next person re-runs it ' +
+      'instead of quoting me:' },
+    { kind: 'code', text:
+      'gh api "search/issues?q=repo:openXC7/nextpnr-xilinx+author:USER+type:pr+is:merged" \\\n' +
+      '  --jq .total_count\n\n' +
+      'gh api "repos/openXC7/nextpnr-xilinx/commits?author=USER&per_page=100" --jq length' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
