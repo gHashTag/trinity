@@ -18,25 +18,25 @@
       "repo": "gHashTag/trinity",
       "workflow": "conformance-selftest.yml",
       "note": "the conformance check's own self-test",
-      "window": 5,
-      "failures": 0,
-      "pRed": 0.0,
+      "window": 16,
+      "failures": 2,
+      "pRed": 0.125,
       "streak": 0,
       "streakIsLowerBound": false,
-      "bitsPerRed": null,
-      "lastGreen": "2026-08-10T23:29:06Z"
+      "bitsPerRed": 3.0,
+      "lastGreen": "2026-08-11T04:26:07Z"
     },
     {
       "repo": "gHashTag/trinity",
       "workflow": "rtl-check-selftest.yml",
       "note": "the structural check's own self-test",
-      "window": 16,
+      "window": 19,
       "failures": 5,
-      "pRed": 0.3125,
+      "pRed": 0.2632,
       "streak": 0,
       "streakIsLowerBound": false,
-      "bitsPerRed": 1.678,
-      "lastGreen": "2026-08-10T22:10:16Z"
+      "bitsPerRed": 1.926,
+      "lastGreen": "2026-08-11T05:27:45Z"
     },
     {
       "repo": "gHashTag/tt-trinity-corona",
