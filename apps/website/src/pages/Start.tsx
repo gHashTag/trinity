@@ -12,8 +12,15 @@ type Status = { id: string; job: string; conclusion: string | null; at: string; 
 const STATUS = new Map(((status.entries ?? []) as Status[]).map((e) => [e.id, e]))
 
 // The verdict of the job that attests each check, not of the workflow holding
-// it: a green workflow can contain the one red job that matters, and a badge
-// for the wrapper would say the opposite of the truth.
+// it.
+//
+// The first version of this comment justified that by claiming a green workflow
+// can contain a red job. That is only true where continue-on-error is set, and
+// it is not set here -- a run fails if any job fails. The real reasons are
+// narrower and survive better: three of the four attesting jobs share one
+// workflow, so a workflow-level badge would give all three the same verdict and
+// none of them an address; and the badge links to the job a reader should open,
+// which a wrapper cannot name.
 //
 // It is here because the page makes a present-tense claim -- each check has been
 // watched failing on a design that deserves to fail -- and a claim the reader
