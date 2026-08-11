@@ -95,6 +95,49 @@ def strip_comments(text: str) -> str:
 DEFAULT_IMPORT_ROOTS = ["src"]
 
 
+# `const name = @import("x.zig")` in its several spellings. The name is what
+# decides whether the import is a fault: Zig analyses top-level declarations
+# lazily, so an import bound to a name nothing uses is never loaded.
+BINDING = re.compile(
+    r'^\s*(pub\s+)?(?:const|var)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*@import\(\s*"([^"]*\.zig)"\s*\)',
+    re.M)
+
+
+def classify(root: str, importer: str, target_rel: str) -> str:
+    """CONFIRMED, EXPORTED or LATENT for one missing import.
+
+    The three are genuinely different and collapsing them is what made the
+    earlier figure an upper bound:
+
+      LIKELY     the name appears elsewhere in the same file, so the compiler
+                 would load the missing file and fail. "Appears" is the honest
+                 word: matching is textual, and it cannot tell an import alias
+                 from an enum field of the same name. Measured in zig-hdc, where
+                 `arm64` is both -- four occurrences that are field declarations,
+                 not uses of the import.
+      EXPORTED   `pub`, and unused locally. Whether it is loaded depends on
+                 whoever imports this module, which is outside this file.
+      LATENT     private and unused. Never loaded, never an error, and still
+                 worth knowing about because the next reference makes it one.
+    """
+    path = os.path.join(root, importer)
+    try:
+        text = strip_comments(open(path, encoding="utf-8", errors="replace").read())
+    except OSError:
+        return "LIKELY"  # cannot read it: assume the worse of the two
+    want = os.path.normpath(target_rel)
+    for is_pub, name, target in BINDING.findall(text):
+        if os.path.normpath(os.path.join(os.path.dirname(importer), target)) != want:
+            continue
+        # Uses of the name that are not its own declaration.
+        uses = [m for m in re.finditer(r'\b' + re.escape(name) + r'\b', text)]
+        decls = len(re.findall(r'(?:const|var)\s+' + re.escape(name) + r'\s*=\s*@import', text))
+        if len(uses) - decls > 0:
+            return "LIKELY"
+        return "EXPORTED" if is_pub else "LATENT"
+    return "LATENT"
+
+
 def build_roots(root: str) -> list[str]:
     """Every file build.zig roots a module or target at, that exists."""
     text = open(os.path.join(root, "build.zig"), encoding="utf-8", errors="replace").read()
@@ -102,7 +145,42 @@ def build_roots(root: str) -> list[str]:
                    if os.path.isfile(os.path.join(root, r))})
 
 
-def reaches(root: str, start: str, wanted: set[str]) -> set[str]:
+def live_imports(root: str, f: str) -> list[str]:
+    """The imports of `f` the compiler will actually follow, as paths.
+
+    Zig analyses a top-level declaration only when something references it, and
+    that is transitive: a file reached through a binding nobody uses is not
+    analysed, and neither is anything it imports. Treating every import as
+    followed is what made an earlier figure read worse than the build was --
+    two "faults" in a repository whose CI is green, both of them bound to names
+    nothing mentions.
+
+    An import that is not bound to a name at all -- @import("x.zig").Foo used
+    inline -- is always followed, so it counts.
+    """
+    path = os.path.join(root, f)
+    try:
+        text = strip_comments(open(path, encoding="utf-8", errors="replace").read())
+    except OSError:
+        return []
+    out: list[str] = []
+    bound: set[str] = set()
+    for is_pub, name, target in BINDING.findall(text):
+        bound.add(target)
+        uses = len(re.findall(r'\b' + re.escape(name) + r'\b', text))
+        decls = len(re.findall(r'(?:const|var)\s+' + re.escape(name) + r'\s*=\s*@import', text))
+        if uses - decls > 0 or is_pub:
+            # `pub` counts: it is part of this module's surface, and whether a
+            # consumer touches it is not decidable from here. Erring towards
+            # following it keeps a real fault from being filed as harmless.
+            out.append(os.path.join(os.path.dirname(f), target))
+    for target in ZIMPORT.findall(text):
+        if target not in bound:
+            out.append(os.path.join(os.path.dirname(f), target))
+    return out
+
+
+def reaches(root: str, start: str, wanted: set[str], live_only: bool = False) -> set[str]:
     """Which of `wanted` is reachable from `start` by following relative imports.
 
     The subtle part, and it cost a wrong conclusion once: a node must be RECORDED
@@ -129,8 +207,11 @@ def reaches(root: str, start: str, wanted: set[str]) -> set[str]:
             text = open(abs_f, encoding="utf-8", errors="replace").read()
         except OSError:
             continue
-        for target in ZIMPORT.findall(strip_comments(text)):
-            stack.append(os.path.join(os.path.dirname(f), target))
+        if live_only:
+            stack.extend(live_imports(root, f))
+        else:
+            for target in ZIMPORT.findall(strip_comments(text)):
+                stack.append(os.path.join(os.path.dirname(f), target))
     return hits
 
 
@@ -231,26 +312,52 @@ def main() -> int:
     blockers: dict[str, list[str]] = {}
     all_missing = set(missing_names) | {os.path.normpath(r) for _, _, r in missing}
     for br in build_roots(root):
-        for hit in reaches(root, br, all_missing):
+        for hit in reaches(root, br, all_missing, live_only=True):
             blockers.setdefault(hit, []).append(br)
+    # Who imports each missing file, so the binding can be classified.
+    importers: dict[str, list[str]] = {}
+    for imp, tgt, res in missing:
+        importers.setdefault(os.path.normpath(res), []).append(imp)
+
     if blockers:
+        verdicts: dict[str, str] = {}
+        for f in blockers:
+            vs = {classify(root, i, f) for i in importers.get(f, [])}
+            verdicts[f] = ("LIKELY" if "LIKELY" in vs
+                           else "EXPORTED" if "EXPORTED" in vs
+                           else "LATENT")
+        confirmed = sorted(f for f, v in verdicts.items() if v == "LIKELY")
+        exported = sorted(f for f, v in verdicts.items() if v == "EXPORTED")
+        latent = sorted(f for f, v in verdicts.items() if v == "LATENT")
+
         print()
-        print(f"  {len(blockers)} missing file(s) reachable from a build root — an UPPER BOUND:")
-        for f, rs in sorted(blockers.items()):
-            print(f"    {f}  — reached from {len(rs)} root(s): "
-                  f"{', '.join(sorted(rs)[:3])}{' …' if len(rs) > 3 else ''}")
+        print(f"  {len(blockers)} missing file(s) reachable from a build root:")
+        for label, group, note in (
+            ("LIKELY   ", confirmed, "the name appears to be used, so the compiler would load the file"),
+            ("EXPORTED ", exported, "pub and unused here; depends on whoever imports this module"),
+            ("LATENT   ", latent, "private and unused, so never loaded -- until the next reference"),
+        ):
+            if not group:
+                continue
+            print(f"    {label} ({len(group)}) — {note}")
+            for f in group:
+                rs = blockers[f]
+                print(f"      {f}  — reached from {len(rs)} root(s): "
+                      f"{', '.join(sorted(rs)[:3])}{' …' if len(rs) > 3 else ''}")
         unreached = sorted(all_missing - set(blockers))
         if unreached:
             print(f"  {len(unreached)} more are referenced only by code no build root reaches, "
                   f"so the compiler never visits them.")
         print()
-        print("  The bound errs high, and it says so on purpose. Zig analyses top-level")
-        print("  declarations lazily: `const x = @import(\"absent.zig\")` is not an error")
-        print("  until something references x. This walk cannot see references, only")
-        print("  imports, so every file it lists is a candidate and some are not faults.")
-        print("  Measured against a repository whose CI is green it reported two, and both")
-        print("  were unreferenced. An analysis that does not say which way it is wrong")
-        print("  gets read as a count.")
+        print("  Only LIKELY can be a fault today. Zig analyses top-level declarations")
+        print("  lazily, so an import bound to a name nothing uses is never loaded --")
+        print("  which is why a plain count of reachable missing files reads as worse")
+        print("  than the build is. That count was two for a repository whose CI is")
+        print("  green, and both were unused. LIKELY narrows that and does not close it:")
+        print("  the match is on a name, and a name can belong to something else. Both")
+        print("  remaining entries in that green repository are enum fields that happen")
+        print("  to share a spelling with an import. Refining a textual analysis moves")
+        print("  the boundary; it never removes it.")
 
     baseline: set[str] = set()
     if os.path.isfile(args.baseline):
