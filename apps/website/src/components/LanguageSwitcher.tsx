@@ -1,4 +1,5 @@
 import { memo, useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useI18n } from '../i18n/context'
 
 const flags: Record<string, string> = {
@@ -33,7 +34,7 @@ export default memo(function LanguageSwitcher() {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   // Coordinates used only when an ancestor would clip the dropdown.
-  const [fixedPos, setFixedPos] = useState<{ top: number; right: number } | null>(null)
+  const [fixedPos, setFixedPos] = useState<{ top: number; right: number; minWidth: number } | null>(null)
 
   // The dock this switcher normally sits in is `overflow-x: auto`, and CSS turns
   // the other axis into `auto` too whenever one axis is not `visible`. The dock
@@ -44,10 +45,14 @@ export default memo(function LanguageSwitcher() {
   // be neither seen nor clicked — reported as "the language modal does not open"
   // when in fact it opened every time.
   //
-  // Escaping a clipping ancestor needs `position: fixed`, which needs real
-  // coordinates, so they are measured off the button. Applied ONLY when an
-  // ancestor actually clips: the mobile menu does not clip, and its
-  // upward-opening variant must keep working.
+  // `position: fixed` alone does NOT escape it. `.nav-dock` also carries
+  // `transform: translateX(-50%)`, and a transformed ancestor becomes the
+  // containing block for fixed descendants — measured on the live page, the
+  // element asked for `top: 57px` and landed at 82, still inside the clip. The
+  // only reliable escape is a portal to <body>, so that is what happens when an
+  // ancestor clips. The mobile menu does not clip, keeps its in-place render and
+  // its upward-opening `.mobile-menu .lang-dropdown` rule, which a portal would
+  // have broken since that selector is a descendant selector.
   useEffect(() => {
     if (!open) { setFixedPos(null); return }
     const btn = buttonRef.current
@@ -61,7 +66,11 @@ export default memo(function LanguageSwitcher() {
     }
     if (!clipped) return
     const r = btn.getBoundingClientRect()
-    setFixedPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+    // `min-width: 100%` on the dropdown resolves against its containing block.
+    // Under `position: absolute` that was the button's wrapper; under `fixed` it
+    // becomes the viewport, which stretched the list to 1031px on the first cut
+    // of this fix. Carry the button's own width across explicitly.
+    setFixedPos({ top: r.bottom + 4, right: window.innerWidth - r.right, minWidth: r.width })
   }, [open])
 
   // Handle click outside to close
@@ -101,6 +110,47 @@ export default memo(function LanguageSwitcher() {
 
   const currentLangName = langNames[lang] || lang
 
+  const dropdown = (
+    <div
+      ref={listRef}
+      className="lang-dropdown"
+      style={fixedPos ? {
+        position: 'fixed', top: fixedPos.top, right: fixedPos.right,
+        minWidth: fixedPos.minWidth, width: 'max-content',
+      } : undefined}
+      role="listbox"
+      id="lang-dropdown"
+      aria-labelledby="lang-button"
+      aria-activedescendant={`lang-option-${lang}`}
+    >
+      {LANGS.filter(l => l !== lang).map((l, index, arr) => (
+        <button
+          key={l}
+          className="lang-option"
+          onClick={() => handleLangChange(l)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              handleLangChange(l)
+            }
+            if (e.key === 'Tab' && !e.shiftKey && index === arr.length - 1) {
+              e.preventDefault()
+              buttonRef.current?.focus()
+            }
+          }}
+          role="option"
+          aria-selected={l === lang}
+          id={`lang-option-${l}`}
+          type="button"
+        >
+          <span className="lang-flag" aria-hidden="true">{flags[l]}</span>
+          <span className="lang-code">{labels[l]}</span>
+          <span className="visually-hidden">{langNames[l]}</span>
+        </button>
+      ))}
+    </div>
+  )
+
   return (
     <div className="lang-switcher-wrap">
       <button
@@ -125,49 +175,7 @@ export default memo(function LanguageSwitcher() {
         <span className="lang-arrow" aria-hidden="true">{open ? '▲' : '▼'}</span>
       </button>
 
-      {open && (
-        <div
-          ref={listRef}
-          className="lang-dropdown"
-          style={fixedPos ? { position: 'fixed', top: fixedPos.top, right: fixedPos.right } : undefined}
-          role="listbox"
-          id="lang-dropdown"
-          aria-labelledby="lang-button"
-          aria-activedescendant={`lang-option-${lang}`}
-        >
-          {LANGS.filter(l => l !== lang).map((l, index, arr) => (
-            <button
-              key={l}
-              ref={index === arr.length - 1 ? (el: HTMLButtonElement) => {
-                // Store ref for focus management
-                if (el) {
-                  (el as any).__lastOption = true
-                }
-              } : null}
-              className="lang-option"
-              onClick={() => handleLangChange(l)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  handleLangChange(l)
-                }
-                if (e.key === 'Tab' && !e.shiftKey && index === arr.length - 1) {
-                  e.preventDefault()
-                  buttonRef.current?.focus()
-                }
-              }}
-              role="option"
-              aria-selected={l === lang}
-              id={`lang-option-${l}`}
-              type="button"
-            >
-              <span className="lang-flag" aria-hidden="true">{flags[l]}</span>
-              <span className="lang-code">{labels[l]}</span>
-              <span className="visually-hidden">{langNames[l]}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {open && (fixedPos ? createPortal(dropdown, document.body) : dropdown)}
     </div>
   )
 })
