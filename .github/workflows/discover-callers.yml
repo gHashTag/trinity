@@ -34,6 +34,18 @@ jobs:
           python3 tools/discover_rtl_check_callers.py \
             --out apps/website/src/data/communityRuns.json
 
+      # The report shown on the page comes from a real run, so it has to be
+      # refreshed with the same cadence as everything else it sits beside.
+      - name: Refresh the example report
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 tools/fetch_run_report.py \
+            --repo gHashTag/trinity-fpga --workflow rtl-check.yml \
+            --min-jobs 2 --min-lines 4 \
+            --out apps/website/src/data/exampleReport.json
+
       - name: Commit if the answer changed
         run: |
           set -uo pipefail
@@ -42,7 +54,7 @@ jobs:
           say "## Callers discovered: $N"
           git config user.name  'caller discovery'
           git config user.email 'admin@t27.ai'
-          git add apps/website/src/data/communityRuns.json
+          git add apps/website/src/data/communityRuns.json apps/website/src/data/exampleReport.json
           if git diff --cached --quiet; then
             say "- no change"
             exit 0
