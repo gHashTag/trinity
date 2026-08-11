@@ -66,6 +66,45 @@ SKIP_DIRS = {".git", ".zig-cache", "zig-out", "node_modules", "zig-pkg", "dist",
 DEFAULT_IMPORT_ROOTS = ["src"]
 
 
+def build_roots(root: str) -> list[str]:
+    """Every file build.zig roots a module or target at, that exists."""
+    text = open(os.path.join(root, "build.zig"), encoding="utf-8", errors="replace").read()
+    return sorted({r for r in re.findall(r'root_source_file = b\.path\("([^"]+)"\)', text)
+                   if os.path.isfile(os.path.join(root, r))})
+
+
+def reaches(root: str, start: str, wanted: set[str]) -> set[str]:
+    """Which of `wanted` is reachable from `start` by following relative imports.
+
+    The subtle part, and it cost a wrong conclusion once: a node must be RECORDED
+    before it is tested for readability. An earlier version skipped unreadable
+    files first, so a missing file could never enter the visited set -- and a
+    walker looking for missing files reported none, every time. The instrument
+    and the assumption agreed with each other, which is T9 wearing a different
+    hat.
+    """
+    seen: set[str] = set()
+    hits: set[str] = set()
+    stack = [start]
+    while stack:
+        f = os.path.normpath(stack.pop())
+        if f in seen:
+            continue
+        seen.add(f)
+        if f in wanted:
+            hits.add(f)
+        abs_f = os.path.join(root, f)
+        if not os.path.isfile(abs_f):
+            continue  # reached and counted; simply cannot be read further
+        try:
+            text = open(abs_f, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        for target in ZIMPORT.findall(text):
+            stack.append(os.path.join(os.path.dirname(f), target))
+    return hits
+
+
 def scan_build_zig(root: str) -> list[tuple[str, str]]:
     """(path, why) for every b.path() reference that does not exist."""
     bad = []
@@ -122,6 +161,14 @@ def main() -> int:
     root = os.path.abspath(args.root)
 
     dangling = scan_build_zig(root)
+
+    # Which missing files actually block a build, and which are only referenced
+    # by code no target roots. Both are worth fixing; only the first stops the
+    # build, and telling them apart is the difference between an afternoon and a
+    # fortnight. Computed by walking imports from every build root.
+    missing_names = {os.path.normpath(rel) for rel, _ in dangling}
+    for imp, tgt, res in []:
+        pass
     roots = [d for d in args.import_roots.split(",") if d]
     missing, seen = scan_imports(root, roots)
 
@@ -149,6 +196,24 @@ def main() -> int:
             print(f"    {resolved}  — wanted by {len(importers)} file(s): "
                   f"{', '.join(sorted(importers)[:3])}"
                   f"{' …' if len(importers) > 3 else ''}")
+
+    # Everything the compiler would actually try to load: the missing files
+    # build.zig names, plus every missing file reachable from a build root.
+    blockers: dict[str, list[str]] = {}
+    all_missing = set(missing_names) | {os.path.normpath(r) for _, _, r in missing}
+    for br in build_roots(root):
+        for hit in reaches(root, br, all_missing):
+            blockers.setdefault(hit, []).append(br)
+    if blockers:
+        print()
+        print(f"  {len(blockers)} missing file(s) a build root actually reaches — these stop the build:")
+        for f, rs in sorted(blockers.items()):
+            print(f"    {f}  — reached from {len(rs)} root(s): "
+                  f"{', '.join(sorted(rs)[:3])}{' …' if len(rs) > 3 else ''}")
+        unreached = sorted(all_missing - set(blockers))
+        if unreached:
+            print(f"  {len(unreached)} more are referenced only by code no build root reaches, "
+                  f"so the compiler never visits them.")
 
     baseline: set[str] = set()
     if os.path.isfile(args.baseline):

@@ -21,9 +21,9 @@ name: Build paths
 on:
   push:
     branches: [main]
-    paths: ['build.zig', 'src/**', 'tools/check_build_paths.py', 'tools/build_paths_baseline.txt']
+    paths: ['build.zig', 'src/**', 'tools/check_build_paths.py', 'tools/build_paths_baseline.txt', 'tests/test_check_build_paths.py']
   pull_request:
-    paths: ['build.zig', 'src/**', 'tools/check_build_paths.py', 'tools/build_paths_baseline.txt']
+    paths: ['build.zig', 'src/**', 'tools/check_build_paths.py', 'tools/build_paths_baseline.txt', 'tests/test_check_build_paths.py']
   workflow_dispatch:
 
 permissions:
@@ -35,6 +35,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      # The walk that answers "which missing files does a build root actually
+      # reach" was wrong once, in the direction that made the work look smaller.
+      # Its answers are asserted before it is used.
+      - name: The reachability walk must match its known answers
+        run: python3 tests/test_check_build_paths.py
+
       - name: Check
         run: |
           set -uo pipefail
