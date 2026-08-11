@@ -278,6 +278,11 @@ def main() -> int:
     ap.add_argument("--baseline", default="tools/build_paths_baseline.txt",
                     help="known-dangling paths, one per line. Only paths outside it fail, "
                          "and a path that has been repaired must leave the file.")
+    ap.add_argument("--write-baseline", default="",
+                    help="write the current dangling set to this file and exit 0. For adopting "
+                         "the check on a repository that is already broken: without it the first "
+                         "run is a wall of red about breakage nobody caused today, and the check "
+                         "gets switched off before it has caught anything.")
     ap.add_argument("--min-files", type=int, default=200,
                     help="floor on how many .zig files were examined (T13): a scanner "
                          "that walked nothing would report nothing and look clean")
@@ -372,6 +377,27 @@ def main() -> int:
         print("  remaining entries in that green repository are enum fields that happen")
         print("  to share a spelling with an import. Refining a textual analysis moves")
         print("  the boundary; it never removes it.")
+
+    if args.write_baseline:
+        # Deliberately not merged with any existing file: a baseline is a
+        # snapshot of a decision to postpone, and silently absorbing whatever
+        # appeared since would postpone things nobody looked at.
+        with open(args.write_baseline, "w", encoding="utf-8") as f:
+            f.write("# Paths named by build.zig that do not exist, recorded as the state to\n")
+            f.write("# ratchet against. The check fails on paths OUTSIDE this file, so new\n")
+            f.write("# breakage is caught from the day it lands while the existing debt stays\n")
+            f.write("# visible instead of stopping the check from being used at all.\n")
+            f.write("#\n")
+            f.write("# This file only shrinks. A path repaired and left here fails the check,\n")
+            f.write("# or the record turns into a list of things that used to be wrong.\n")
+            f.write("#\n")
+            f.write("# Write a line per entry saying what decision it is waiting on. An\n")
+            f.write("# unexplained baseline is indistinguishable from a suppression.\n")
+            for rel, _ in dangling:
+                f.write(f"{rel}\n")
+        print(f"  wrote {args.write_baseline} with {len(dangling)} path(s)")
+        print(f"  Commit it, then point the check at it. From now on only new breakage fails.")
+        return 0
 
     baseline: set[str] = set()
     if os.path.isfile(args.baseline):
