@@ -224,6 +224,71 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That vendoring is always wrong. A pinned copy is a deliberate trade — insulation from an upstream you do not control, paid for in repairs you now owe twice — and it is defensible when it is chosen and written down. What has no defence is duplication nobody decided on, which is the state a migration leaves behind when it copies rather than moves. Nor does a re-export make the boundary free: names must now be listed one by one, and a symbol added upstream does not appear downstream until somebody adds it.',
   },
+  {
+    id: 'T19',
+    name: 'A check that never executes reports success',
+    statement:
+      'A verification result is vacuous when the property holds for a reason unrelated to what it was written to establish — classically, when no witness to the antecedent is ever produced. A vacuous pass and a real pass are identical in the verdict and differ only in an observable the verdict does not carry. Detecting one therefore requires a second measurement: how much was actually exercised.',
+    worked:
+      'A package here declared 640 test blocks across 87 files. `zig build test` exited 0. The suite ran zero of them, because every `pub const x = @import("x.zig")` was unreferenced and so never analysed. The exit code was correct and meant nothing. The count — “All 0 tests passed” — is the independent observable; after one reference per import, 254 tests ran and one failed.',
+    citation:
+      'Beer, Ben-David, Eisner & Rodeh, “Efficient Detection of Vacuity in ACTL Formulas”, Formal Methods in System Design 18(2), 2001; Kupferman & Vardi, “Vacuity detection in temporal model checking”, STTT 4(2), 2003',
+    url: 'https://doi.org/10.1023/A:1008779610539',
+    doesNotClaim:
+      'That a non-zero test count is sufficient. A suite that runs 254 tests can still be vacuous in the same sense if the assertions never discriminate. The count rules out one specific failure mode — the emptiest one — and no others.',
+  },
+  {
+    id: 'T20',
+    name: 'What a build checks is what it can reach, not what is present',
+    statement:
+      'Under lazy (on-demand) semantic analysis, a top-level declaration is analysed only when something references it. So for any build: checked ⊆ reachable ⊆ present. Code that nothing imports is not weakly checked — it is not checked at all, and errors inside it are indistinguishable from its absence. A consequence that runs against intuition: adding an export is itself an act of verification, because it moves code from “present” to “reachable”.',
+    worked:
+      'An unresolvable import — `@import("../../jit_arm64.zig")`, a path that escapes the module root and could not resolve on any machine — sat in a repository whose CI was green for weeks. Nothing exported the file that contained it. Adding one `pub const` made the compiler look, and it failed immediately. The file it wanted was in the same directory.',
+    citation:
+      'Zig Language Reference (0.15.2), lazy analysis of unreferenced declarations; cf. Horwitz, Reps & Sagiv, “Demand interprocedural dataflow analysis”, FSE 1995',
+    url: 'https://doi.org/10.1145/222124.222146',
+    doesNotClaim:
+      'That reachability implies correctness, or that this is a defect in lazy analysis — it is what makes conditional compilation work. It bounds what a green build entitles you to say, nothing more.',
+  },
+  {
+    id: 'T21',
+    name: 'Among divergent copies, the one that compiles is not thereby the authoritative one',
+    statement:
+      'When a file exists in k copies and each is edited against its own dependencies, “it builds” selects for agreement with the dependency version sitting beside it — not for recency, not for correctness. A stale copy beside an equally stale dependency compiles cleanly; the current copy beside a dependency it has outgrown does not. Authority must be established by provenance, not by exit code.',
+    worked:
+      'One file existed five times across three repositories. The copy that compiled called a two-argument `dotProduct`; the copy that failed called the three-argument form and unwrapped an optional field. The failing copy was the newer one. Deciding by “which builds” would have propagated the older API in the direction of the newer code.',
+    citation:
+      'Juergens, Deissenboeck, Hummel & Wagner, “Do code clones matter?”, ICSE 2009',
+    url: 'https://doi.org/10.1109/ICSE.2009.5070547',
+    doesNotClaim:
+      'That the newer copy is right either. Recency is a second bad proxy. The point is only that the build result carries no information about which copy should win, and it is routinely read as if it did.',
+  },
+  {
+    id: 'T22',
+    name: 'If the reachable range misses the admissible one, no test is needed to refute it',
+    statement:
+      'For a function whose image over all admissible inputs can be computed, comparing that image with the specified range is a refutation stronger than any finite test suite: if the two are disjoint, no input passes, and the failure is proved rather than sampled. Where the input domain is a finite structured set the image is often a small finite set, and the check costs no execution at all.',
+    worked:
+      'A Barbero–Immirzi parameter was computed as |c₄| + |c₅| times φ⁻¹ over the E8 root system. Every E8 root is a permutation of (±1, ±1, 0⁶) or (±½)⁸, so that sum is 0, 1 or 2 and the image is exactly {0.436992, 0.618034, 1.236068}. The physical target is 0.2375. The only value inside the asserted range is the fallback taken when the projection has no input — so the answer is admissible precisely when nothing was projected.',
+    citation:
+      'Moore, Kearfott & Cloud, “Introduction to Interval Analysis”, SIAM, 2009',
+    url: 'https://doi.org/10.1137/1.9780898717716',
+    doesNotClaim:
+      'That an intersecting range is evidence of anything. Non-emptiness is necessary and nowhere near sufficient: it says a passing input could exist, not that the formula is right.',
+  },
+  {
+    id: 'T23',
+    name: 'An instrument of the wrong version reports both false alarms and false assurance',
+    statement:
+      'A measurement is only interpretable against a stated instrument. When the toolchain used to check differs from the toolchain the artefact targets, the disagreement is not noise around the truth: it is bidirectional. Removed interfaces produce failures that do not exist for the target, and platform defaults produce passes that will not hold for it. Neither direction announces itself.',
+    worked:
+      'Three times in one session, on the same tree. A local 0.16 toolchain reported failures on `testing.refAllDeclsRecursive` and `std.time.timestamp` — both present in the 0.15.2 the packages target, both removed later. In the other direction, a local macOS run passed code that reaches for the C allocator, which the Linux target rejects with “C allocator is only available when linking against libc”. Two false alarms and one false assurance, from one ruler.',
+    citation:
+      'JCGM 100:2008, “Evaluation of measurement data — Guide to the expression of uncertainty in measurement” (GUM), §3.3 on metrological traceability',
+    url: 'https://www.bipm.org/documents/20126/2071204/JCGM_100_2008_E.pdf',
+    doesNotClaim:
+      'That the target toolchain is the truth. It is the stated reference, which is a different and weaker thing: it makes results comparable, not correct.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
