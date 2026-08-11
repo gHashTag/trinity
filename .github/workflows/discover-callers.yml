@@ -46,6 +46,14 @@ jobs:
             --min-jobs 2 --min-lines 4 \
             --out apps/website/src/data/exampleReport.json
 
+      # The badges on /start claim each check's self-test is currently green.
+      # A claim in the present tense has to be refreshed or it becomes a claim
+      # about the past wearing present-tense words.
+      - name: Refresh the self-test verdicts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/check_status_report.py apps/website/src/data/checkStatus.json
+
       - name: Commit if the answer changed
         run: |
           set -uo pipefail
@@ -54,7 +62,7 @@ jobs:
           say "## Callers discovered: $N"
           git config user.name  'caller discovery'
           git config user.email 'admin@t27.ai'
-          git add apps/website/src/data/communityRuns.json apps/website/src/data/exampleReport.json
+          git add apps/website/src/data/communityRuns.json apps/website/src/data/exampleReport.json apps/website/src/data/checkStatus.json
           if git diff --cached --quiet; then
             say "- no change"
             exit 0
