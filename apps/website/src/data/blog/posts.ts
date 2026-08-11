@@ -1024,7 +1024,95 @@ const resonanceLaw: Post = {
   published: true,
 }
 
-export const posts: Post[] = [resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
+const theoremAudit: Post = {
+  slug: 'eight-theorems-audited',
+  title: 'I checked my own eight theorems by machine. Four held, three headings were wrong',
+  summary:
+    'Every proof verified step by step, every verdict attacked by a second pass, none disputed ' +
+    '\u2014 and the defects were never in a measurement, always in what a heading claimed about it.',
+  date: '2026-08-11',
+  readingMinutes: 8,
+  tags: ['Mathematics', 'Verification', 'Ternary', 'Golden ratio'],
+  receipts: [
+    { label: 'The proofs page, with the corrections dated in place',
+      href: 'https://github.com/gHashTag/trinity/blob/main/docs/docs/math-foundations/proofs.md' },
+    { label: 'Lucas numbers L(2n) \u2014 OEIS A000032',
+      href: 'https://oeis.org/A000032' },
+    { label: 'The phi identity in full, checked four ways',
+      href: 'https://t27.ai/#/blog/phi-identity-machine-checked' },
+  ],
+  openQuestions: [
+    'The audit checked arithmetic, derivation and prior art. It did not check whether the ' +
+    'theorems are useful, and a correct standard result cited correctly can still be the wrong ' +
+    'thing to build on.',
+    'Theorem 6\u2019s isolation search covered b <= 16, e in 2..8, k <= 20. A wider net might find ' +
+    'a second decomposition and would weaken the [Empirical fit] label to [Risk].',
+    'Observation 7 still has no stated domain. Naming it an observation removes the false ' +
+    'uniqueness claim but does not supply the thing that would make it a theorem.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'The proofs page carried eight theorems. I had written them and never checked them ' +
+      'mechanically. So: each one verified by computation, and each verdict then attacked by a ' +
+      'second independent pass trying to show the label was too generous or too harsh.' },
+    { kind: 'p', text: 'Zero verdicts were disputed. Here is what came back.' },
+    { kind: 'h', text: 'Four held' },
+    { kind: 'table',
+      head: ['', 'statement', 'label'],
+      rows: [
+        ['1', 'phi\u00b2 + 1/phi\u00b2 = 3', '[Verified]'],
+        ['2', 'optimal integer radix is 3', '[Verified]'],
+        ['3', 'log\u2082(3) bits per trit', '[Verified]'],
+        ['5', 'F(n+1)/F(n) \u2192 phi', '[Verified]'],
+      ] },
+    { kind: 'p', text:
+      'And all four are textbook. Euclid defined the ratio; radix economy is decades old; ' +
+      'Kepler had the Fibonacci limit. Citing them correctly is not a loss \u2014 a paper that ' +
+      'sources its results is stronger than one that appears to have derived everything.' },
+    { kind: 'h', text: 'One was false as stated' },
+    { kind: 'p', text:
+      'Theorem 4 said ternary binding is its own inverse: unbind(bind(a,b),b) = a. Its own Step 1 ' +
+      'defines binding as integer multiplication on {-1,0,+1}, and under exactly that definition ' +
+      'zero is an annihilator \u2014 0 \u00d7 a = 0 for every a, and nothing recovers a from it.' },
+    { kind: 'p', text:
+      'It fails in 2 of 9 per-position cases and in every vector trial at every dimension tested. ' +
+      'Narrowed rather than deleted: binding is invertible on the support of b and destroys ' +
+      'everything outside it. That is more useful than the false general form, because it says ' +
+      'where the information goes.' },
+    { kind: 'h', text: 'Two headings claimed more than the work' },
+    { kind: 'p', text:
+      'Theorem 7 claimed uniqueness of an ansatz. Uniqueness is the strongest word available and ' +
+      'the claim never states the domain it is unique over \u2014 "all forms with at most five free ' +
+      'parameters" is uncountable if the parameters are real, so no search establishes it there. ' +
+      'Renamed to Observation 7: the fit resolves the ansatz within the family actually searched, ' +
+      'which is true and is not uniqueness.' },
+    { kind: 'p', text:
+      'Theorem 8 proves what Theorem 2 proves. Two headings for one result overstate how much is ' +
+      'established. Marked as a duplicate rather than deleted, so the numbering holds and a ' +
+      'reader looking for it finds the note.' },
+    { kind: 'h', text: 'And one is a coincidence worth stating as one' },
+    { kind: 'p', text:
+      'Theorem 6: dim(E8) = 3\u2075 + 5 = 248. The arithmetic holds and 248 is standard, but the real ' +
+      'derivation is rank 8 + 240 roots, and base 3 carries no group-theoretic content.' },
+    { kind: 'p', text:
+      'What makes it worth keeping is the search: 248 = b\u1d49 + k has exactly one solution for ' +
+      'b \u2264 16, e in 2..8, k \u2264 20. Widening the net fourfold produced no second. That is a real, ' +
+      'cheap, falsifiable statement \u2014 and a rare coincidence is still not a mechanism. Labelled ' +
+      '[Empirical fit] with the search space stated.' },
+    { kind: 'h', text: 'The pattern' },
+    { kind: 'p', text:
+      'Not one defect was in a measurement. Every arithmetic claim that could be computed came ' +
+      'back exact, including the ones I expected to wobble. What was wrong, three times, was ' +
+      'what a heading claimed about a result that was itself fine.' },
+    { kind: 'p', text:
+      'A theorem needs a derivation connecting its terms. A true equation is not a theorem, ' +
+      '"unique" needs a domain, and two headings for one result is a claim about quantity. All ' +
+      'three are free to fix and none of them costs a number.' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [theoremAudit, resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
