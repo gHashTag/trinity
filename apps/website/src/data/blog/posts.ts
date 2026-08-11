@@ -557,86 +557,82 @@ const energyAsymmetry: Post = {
   published: true,
 }
 
-const blockAxisLost: Post = {
-  slug: 'block-axis-decided-against-us',
-  title: 'I attacked one axis three times and lost three times. Here is the table',
+
+const goldenIdentity: Post = {
+  slug: 'phi-identity-machine-checked',
+  title: 'phi^2 + 1/phi^2 = 3, checked every way I could think of',
   summary:
-    'Block-scaled 4-bit quantisation: MXFP4 at 1.514x fp32, plain int4 at 2.132x, and our own ' +
-    'TNF4 last at 2.535x \u2014 with the reason in the row and the axis closed on a measurement.',
+    'An exact identity, six proof steps machine-verified, and a search over 1,476,000 candidates ' +
+    'that found no other root \u2014 plus what the identity does not license.',
   date: '2026-08-11',
-  readingMinutes: 7,
-  tags: ['Quantisation', '4-bit', 'MXFP4', 'Numeric formats', 'Negative result'],
+  readingMinutes: 5,
+  tags: ['Mathematics', 'Golden ratio', 'Verification', 'Ternary'],
   receipts: [
-    { label: 'The verdict, with the full table',
-      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/block/BLOCK_AXIS_VERDICT_2026-08-10.md' },
-    { label: 'Why a fourth attempt is not warranted',
-      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/frontier/BLOCK_AXIS_CLOSED_2026-08-10.md' },
-    { label: 'The five bugs that made earlier comparisons flatter us',
-      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/block/FINDINGS.md' },
+    { label: 'The proof, all six steps',
+      href: 'https://github.com/gHashTag/trinity/blob/main/docs/docs/math-foundations/proofs.md' },
+    { label: 'Lucas numbers L(2n) \u2014 the family this belongs to (OEIS A000032)',
+      href: 'https://oeis.org/A000032' },
+    { label: 'Euclid, Elements VI, Definition 3 \u2014 where the ratio is first defined',
+      href: 'https://mathcs.clarku.edu/~djoyce/java/elements/bookVI/defVI3.html' },
   ],
   openQuestions: [
-    'Measured on SmolLM2-135M, wikitext-2, 40 windows of 2048 tokens, block 32. One model. ' +
-    'Nothing here shows the ordering holds at larger scale, and it may not.',
-    'The comparison is weights-only quantisation of linear layers. Activation quantisation was ' +
-    'not part of this axis and is measured separately.',
-    'MXFP4 wins here; that says nothing about axes where the exponent is not hoisted out of ' +
-    'the block. The claim is about this axis, not about the format overall.',
+    'This is the n=1 case of the standard Lucas identity phi^(2n) + phi^(-2n) = L(2n). It is ' +
+    'textbook mathematics, cited here rather than claimed \u2014 Euclid defined the ratio and ' +
+    'the identity follows from its quadratic.',
+    'Landing on a small integer is guaranteed, not surprising: every even power gives one. ' +
+    'phi^2+phi^-2 through phi^16+phi^-16 are 3, 7, 18, 47, 123, 322, 843, 2207.',
+    'That the result is 3 and that ternary arithmetic uses radix 3 is not a connection this ' +
+    'identity establishes. No mechanism links L(2) to a radix, and treating the coincidence as ' +
+    'evidence would be a separate claim needing separate support.',
   ],
   body: [
     { kind: 'p', text:
-      'Block-scaled 4-bit quantisation. I built a ternary format and checked whether it beats ' +
-      'MXFP4 on the block axis. It does not \u2014 in any of three attempts.' },
-    { kind: 'h', text: 'The measurement' },
+      'The identity is two lines from the definition. What follows is what happened when I ' +
+      'stopped trusting that and checked it mechanically instead.' },
+    { kind: 'h', text: 'The identity' },
+    { kind: 'code', text:
+      'phi = (1 + sqrt(5)) / 2\nphi^2 = phi + 1        (the defining quadratic)\n' +
+      '1/phi = phi - 1\n1/phi^2 = (phi-1)^2 = 2 - phi\n\n' +
+      'phi^2 + 1/phi^2 = (phi + 1) + (2 - phi) = 3' },
     { kind: 'p', text:
-      'SmolLM2-135M, wikitext-2, 40 windows of 2048 tokens, block of 32 along the contraction ' +
-      'axis, E8M0 shared scale \u2014 the one the MX specification itself defines. Baseline ' +
-      'perplexity 14.4874, verified in band before any comparison ran.' },
-    { kind: 'table',
-      head: ['candidate', 'magnitudes', 'ppl', 'vs fp32'],
-      rows: [
-        ['MXFP4 (E2M1 + E8M0)', '8 / 8', '21.9397', '1.514×'],
-        ['int4 uniform + E8M0', '8 / 8', '30.8859', '2.132×'],
-        ['TNF4 (ours)', '7 / 8', '36.7214', '2.535×'],
-      ] },
-    { kind: 'p', text:
-      'Our format is last. Plain int4 is ahead of it too.' },
-    { kind: 'h', text: 'Seven magnitudes against eight' },
-    { kind: 'p', text:
-      'TNF4 is a ternary-exponent float and it pays a packing remainder: at four bits it gets ' +
-      'seven representable magnitudes where E2M1 gets eight. One magnitude is not a rounding ' +
-      'detail at four bits \u2014 it is 12.5% of the alphabet.' },
-    { kind: 'p', text:
-      'E2M1 gets its eighth from a subnormal. That is the same subnormal I once omitted from my ' +
-      'own implementation of E2M1, when I built it from memory instead of from the spec \u2014 ' +
-      'which meant I was comparing my format against a weakened version of the competitor.' },
-    { kind: 'h', text: 'Three attacks' },
-    { kind: 'ol', items: [
-      'TNF4, a ternary exponent. Lost.',
-      'Constant-ratio ladders from the multiply-free hierarchy. Lost.',
-      'Two-segment ladders built to imitate E2M1\u2019s non-constant spacing. Lost.',
-    ] },
-    { kind: 'p', text:
-      'There will not be a fourth, and the reason is a measurement rather than fatigue: E2M1\u2019s ' +
-      'non-constant spacing does on this task exactly what it is there for, and constant-ratio ' +
-      'constructions do not reproduce it.' },
-    { kind: 'h', text: 'What this means for the format' },
-    { kind: 'p', text:
-      'The block axis is closed. Not "we have not managed it yet" \u2014 closed, with numbers and ' +
-      'with the reason stated. The format lives on other axes, and claims about it no longer ' +
-      'include this one.' },
-    { kind: 'h', text: 'If you are measuring against MX' },
+      'phi cancels identically. This is exact algebra in Q(sqrt 5), not a numerical near-hit.' },
+    { kind: 'h', text: 'Checked four ways' },
     { kind: 'ul', items: [
-      'Take the shared scale from their specification, not from a description of it.',
-      'Verify your baseline perplexity in band before you run the comparison, not after.',
-      'Count representable magnitudes on both sides. Seven against eight is a result, not a detail.',
+      'Decimal at 80 digits: the sum differs from 3 by 1e-79, which is the rounding of an irrational division and nothing else.',
+      'mpmath at 60, 210 and 1000 digits: the difference is exactly 0.0 at every precision.',
+      'sympy symbolically: simplify(phi**2 + 1/phi**2) returns the integer 3. There is no residual to hide at any precision.',
+      'Every one of the six written steps verified independently \u2014 so the proof is not a correct conclusion reached by a broken argument.',
     ] },
+    { kind: 'h', text: 'And the converse, which is the part worth having' },
     { kind: 'p', text:
-      'Each of those is something I once got wrong here.' },
+      'Solving x^2 + 1/x^2 = 3 gives exactly four roots: phi, 1/phi, -phi, -1/phi. Clearing ' +
+      'denominators gives x^4 - 3x^2 + 1, which factors as (x^2-x-1)(x^2+x-1).' },
+    { kind: 'p', text:
+      'Since the expression is invariant under x -> -x and under x -> 1/x, phi is the unique ' +
+      'solution up to the expression\u2019s own symmetry group. The identity pins down phi ' +
+      'rather than merely holding for it.' },
+    { kind: 'p', text:
+      'A numerical net was run as well \u2014 1,476,000 candidates of the form (p + q*sqrt(d))/r ' +
+      'across p, q, d, r ranges \u2014 and produced no non-golden solution, as the degree-4 ' +
+      'factorisation requires.' },
+    { kind: 'h', text: 'What it does not license' },
+    { kind: 'p', text:
+      'The identity is logically equivalent to the definition, not additional to it: x^4-3x^2+1 ' +
+      'factors into the two quadratics, so "x^2+1/x^2=3" and "x^2=x+1" are the same statement. ' +
+      'It carries no information beyond how phi is defined.' },
+    { kind: 'p', text:
+      'And landing on a small integer is guaranteed. Every even power does: 3, 7, 18, 47, 123, ' +
+      '322, 843, 2207 \u2014 the Lucas numbers. The 3 is L(2), the trace of phi^2 over the ' +
+      'rationals. It is not a number phi happens to reach.' },
+    { kind: 'p', text:
+      'So the identity is exact, the proof is sound, phi is pinned down, and none of that is ' +
+      'evidence for anything about radix 3. Those are four separate statements and only the ' +
+      'first three are established here.' },
   ],
-  published: false,
+  published: true,
 }
 
-export const posts: Post[] = [blockAxisLost, energyAsymmetry, openGigabitEthernet]
+export const posts: Post[] = [goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
