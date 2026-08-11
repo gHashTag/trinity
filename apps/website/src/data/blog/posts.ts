@@ -1251,7 +1251,89 @@ const conformanceCorpus: Post = {
   published: true,
 }
 
-export const posts: Post[] = [conformanceCorpus, theoremAudit, resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
+const detectabilityFloor: Post = {
+  slug: 'the-experiment-that-could-not-answer',
+  title: 'Two theorems that tell you an experiment is worthless before you run it',
+  summary:
+    'A detectability floor of n \u2248 3.92/\u0394\u00b2 said the sweep could not resolve the effect at any ' +
+    'outcome, and a sticky-OR readout carried literally zero bits. Both knowable in advance.',
+  date: '2026-08-11',
+  readingMinutes: 6,
+  tags: ['Statistics', 'Measurement', 'FPGA', 'Methodology'],
+  receipts: [
+    { label: 'The bring-up campaign these came out of',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/docs/HW_CAMPAIGN_AX7203_2026_07_30.md' },
+    { label: 'The four bench rules that follow from them',
+      href: 'https://t27.ai/#/blog/readout-that-cannot-be-misread' },
+  ],
+  openQuestions: [
+    'The 3.92 constant is for two proportions at alpha = 0.05 and power 0.8. Different tests and ' +
+    'different power give a different constant, and the shape \u2014 n scaling as 1/\u0394\u00b2 \u2014 is the ' +
+    'part that transfers, not the number.',
+    'The zero-information result is exact for a saturating aggregator over a window that is ' +
+    'certain to contain a high sample. Where saturation is not certain the mutual information is ' +
+    'small rather than zero, and how small depends on the rate.',
+    'Both theorems say an experiment cannot answer. Neither says what experiment would, and ' +
+    'designing that is the harder half.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'Two results from a hardware bring-up, both provable on paper, both of which would have ' +
+      'saved a week if applied before the runs instead of after.' },
+    { kind: 'h', text: '1. The detectability floor' },
+    { kind: 'p', text:
+      'For a difference between two proportions at alpha = 0.05 and power 0.8, the sample size ' +
+      'needed is roughly:' },
+    { kind: 'code', text: 'n \u2248 3.92 / \u0394\u00b2        so        \u0394_min \u2248 \u221a( 3.92 / n )' },
+    { kind: 'p', text:
+      'The sweeps used 4 to 6 samples per arm. At n = 6 that puts the smallest resolvable ' +
+      'difference at 81 points \u2014 while the entire plausible effect being looked for was under ' +
+      '30.' },
+    { kind: 'quote', text:
+      'The experiment could not have produced a valid answer regardless of outcome, and that was ' +
+      'knowable before any data was taken.' },
+    { kind: 'p', text:
+      'This is the useful shape of the result. It does not say the answer was wrong \u2014 it says ' +
+      'no answer was available, so whatever came out was noise wearing a conclusion. Two numbers, ' +
+      'a square root, and it costs nothing to check while the rig is still on the bench.' },
+    { kind: 'h', text: '2. A saturating aggregator carries zero bits' },
+    { kind: 'p', text:
+      'A sticky-OR over a window \u2014 set a bit if any sample was high, read it at the end \u2014 is ' +
+      'the natural way to catch a transient. If the window is long enough to contain at least ' +
+      'one high sample under either hypothesis:' },
+    { kind: 'code', text:
+      'P(T=1 | H\u2081) = P(T=1 | H\u2082) = 1\n' +
+      '\u039b \u2261 1        I(T;H) = 0' },
+    { kind: 'p', text:
+      'The likelihood ratio is identically one, so the mutual information between the readout ' +
+      'and the hypothesis is exactly zero. Not small. Zero. And repetition does not help: ' +
+      'averaging N independent readings of a variable that carries no information gives no ' +
+      'information.' },
+    { kind: 'h', text: 'The remedy costs one register' },
+    { kind: 'p', text: 'Report AND as well as OR over the same window:' },
+    { kind: 'table',
+      head: ['OR', 'AND', 'state'],
+      rows: [
+        ['0', '0', 'stuck low'],
+        ['1', '0', 'toggling'],
+        ['1', '1', 'stuck high'],
+        ['0', '1', 'impossible \u2014 a check on the rig itself'],
+      ] },
+    { kind: 'p', text:
+      'Initialise AND to 1 and OR to 0. The AND leaving 1 also proves the clock ran, which the ' +
+      'OR cannot show. And the fourth row can never occur, so if it does the instrument is ' +
+      'broken rather than the design.' },
+    { kind: 'h', text: 'Why these two belong together' },
+    { kind: 'p', text:
+      'One says the experiment cannot resolve the effect. The other says the readout cannot ' +
+      'carry the answer even if it could. Both are properties of the setup rather than of the ' +
+      'result, both are provable before any run, and both were discovered afterwards \u2014 which is ' +
+      'the expensive way to learn either of them.' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [detectabilityFloor, conformanceCorpus, theoremAudit, resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
