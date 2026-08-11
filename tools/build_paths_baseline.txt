@@ -6,11 +6,10 @@
 # relocations and are fixed. These five are not, and each needs a decision
 # rather than a guess:
 #
-#   src/vsa.zig
-#     Migrated to gHashTag/zig-hdc, which still has it and exports all fourteen
-#     symbols the eleven consumers in src/ need. Blocked on that repository's
-#     build.zig.zon, which predates the .fingerprint and dependency-.hash
-#     requirements and so cannot be depended on by zig 0.15.2 as it stands.
+# src/vsa.zig was here and is gone from the list: zig-hdc#1 repaired that
+# package's manifest so it can be depended on, and build.zig now takes the
+# module from the dependency instead of a path to a file this repository no
+# longer contains.
 #
 #   src/cli/entrypoint_train.zig
 #   src/hslm/bpe_train.zig
@@ -31,5 +30,4 @@
 src/cli/entrypoint_train.zig
 src/hslm/bpe_train.zig
 src/hslm/hslm_benchmark.zig
-src/vsa.zig
 trinity-nexus/output/lang/zig/full-serve-v1.zig
