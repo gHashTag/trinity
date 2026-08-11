@@ -132,3 +132,12 @@ jobs:
             echo "::error::expected exactly one known path"; exit 1
           fi
           echo "adoption: baseline written and honoured, as asserted"
+
+  # The front page must keep describing every check, and every check must keep
+  # showing a verdict. Both failure modes are absences, and an absence is what
+  # nobody notices.
+  start-page-invariants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_start_page.py
