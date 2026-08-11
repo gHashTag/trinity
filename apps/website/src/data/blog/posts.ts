@@ -557,7 +557,86 @@ const energyAsymmetry: Post = {
   published: true,
 }
 
-export const posts: Post[] = [energyAsymmetry, openGigabitEthernet]
+const blockAxisLost: Post = {
+  slug: 'block-axis-decided-against-us',
+  title: 'I attacked one axis three times and lost three times. Here is the table',
+  summary:
+    'Block-scaled 4-bit quantisation: MXFP4 at 1.514x fp32, plain int4 at 2.132x, and our own ' +
+    'TNF4 last at 2.535x \u2014 with the reason in the row and the axis closed on a measurement.',
+  date: '2026-08-11',
+  readingMinutes: 7,
+  tags: ['Quantisation', '4-bit', 'MXFP4', 'Numeric formats', 'Negative result'],
+  receipts: [
+    { label: 'The verdict, with the full table',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/block/BLOCK_AXIS_VERDICT_2026-08-10.md' },
+    { label: 'Why a fourth attempt is not warranted',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/frontier/BLOCK_AXIS_CLOSED_2026-08-10.md' },
+    { label: 'The five bugs that made earlier comparisons flatter us',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/block/FINDINGS.md' },
+  ],
+  openQuestions: [
+    'Measured on SmolLM2-135M, wikitext-2, 40 windows of 2048 tokens, block 32. One model. ' +
+    'Nothing here shows the ordering holds at larger scale, and it may not.',
+    'The comparison is weights-only quantisation of linear layers. Activation quantisation was ' +
+    'not part of this axis and is measured separately.',
+    'MXFP4 wins here; that says nothing about axes where the exponent is not hoisted out of ' +
+    'the block. The claim is about this axis, not about the format overall.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'Block-scaled 4-bit quantisation. I built a ternary format and checked whether it beats ' +
+      'MXFP4 on the block axis. It does not \u2014 in any of three attempts.' },
+    { kind: 'h', text: 'The measurement' },
+    { kind: 'p', text:
+      'SmolLM2-135M, wikitext-2, 40 windows of 2048 tokens, block of 32 along the contraction ' +
+      'axis, E8M0 shared scale \u2014 the one the MX specification itself defines. Baseline ' +
+      'perplexity 14.4874, verified in band before any comparison ran.' },
+    { kind: 'table',
+      head: ['candidate', 'magnitudes', 'ppl', 'vs fp32'],
+      rows: [
+        ['MXFP4 (E2M1 + E8M0)', '8 / 8', '21.9397', '1.514×'],
+        ['int4 uniform + E8M0', '8 / 8', '30.8859', '2.132×'],
+        ['TNF4 (ours)', '7 / 8', '36.7214', '2.535×'],
+      ] },
+    { kind: 'p', text:
+      'Our format is last. Plain int4 is ahead of it too.' },
+    { kind: 'h', text: 'Seven magnitudes against eight' },
+    { kind: 'p', text:
+      'TNF4 is a ternary-exponent float and it pays a packing remainder: at four bits it gets ' +
+      'seven representable magnitudes where E2M1 gets eight. One magnitude is not a rounding ' +
+      'detail at four bits \u2014 it is 12.5% of the alphabet.' },
+    { kind: 'p', text:
+      'E2M1 gets its eighth from a subnormal. That is the same subnormal I once omitted from my ' +
+      'own implementation of E2M1, when I built it from memory instead of from the spec \u2014 ' +
+      'which meant I was comparing my format against a weakened version of the competitor.' },
+    { kind: 'h', text: 'Three attacks' },
+    { kind: 'ol', items: [
+      'TNF4, a ternary exponent. Lost.',
+      'Constant-ratio ladders from the multiply-free hierarchy. Lost.',
+      'Two-segment ladders built to imitate E2M1\u2019s non-constant spacing. Lost.',
+    ] },
+    { kind: 'p', text:
+      'There will not be a fourth, and the reason is a measurement rather than fatigue: E2M1\u2019s ' +
+      'non-constant spacing does on this task exactly what it is there for, and constant-ratio ' +
+      'constructions do not reproduce it.' },
+    { kind: 'h', text: 'What this means for the format' },
+    { kind: 'p', text:
+      'The block axis is closed. Not "we have not managed it yet" \u2014 closed, with numbers and ' +
+      'with the reason stated. The format lives on other axes, and claims about it no longer ' +
+      'include this one.' },
+    { kind: 'h', text: 'If you are measuring against MX' },
+    { kind: 'ul', items: [
+      'Take the shared scale from their specification, not from a description of it.',
+      'Verify your baseline perplexity in band before you run the comparison, not after.',
+      'Count representable magnitudes on both sides. Seven against eight is a result, not a detail.',
+    ] },
+    { kind: 'p', text:
+      'Each of those is something I once got wrong here.' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [blockAxisLost, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
