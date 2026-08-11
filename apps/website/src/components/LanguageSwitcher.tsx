@@ -34,7 +34,8 @@ export default memo(function LanguageSwitcher() {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   // Coordinates used only when an ancestor would clip the dropdown.
-  const [fixedPos, setFixedPos] = useState<{ top: number; right: number; minWidth: number } | null>(null)
+  const [fixedPos, setFixedPos] = useState<
+    { top?: number; bottom?: number; right: number; minWidth: number } | null>(null)
 
   // The dock this switcher normally sits in is `overflow-x: auto`, and CSS turns
   // the other axis into `auto` too whenever one axis is not `visible`. The dock
@@ -50,9 +51,11 @@ export default memo(function LanguageSwitcher() {
   // containing block for fixed descendants — measured on the live page, the
   // element asked for `top: 57px` and landed at 82, still inside the clip. The
   // only reliable escape is a portal to <body>, so that is what happens when an
-  // ancestor clips. The mobile menu does not clip, keeps its in-place render and
-  // its upward-opening `.mobile-menu .lang-dropdown` rule, which a portal would
-  // have broken since that selector is a descendant selector.
+  // ancestor clips — which, contrary to what this comment claimed for one day,
+  // includes the mobile menu: `.mobile-menu` is `overflow-y: auto`. So the
+  // portal fires there too and cancels the upward-opening
+  // `.mobile-menu .lang-dropdown` rule, because a portalled node is no longer a
+  // descendant. The direction is therefore chosen from available space below.
   useEffect(() => {
     if (!open) { setFixedPos(null); return }
     const btn = buttonRef.current
@@ -70,7 +73,21 @@ export default memo(function LanguageSwitcher() {
     // Under `position: absolute` that was the button's wrapper; under `fixed` it
     // becomes the viewport, which stretched the list to 1031px on the first cut
     // of this fix. Carry the button's own width across explicitly.
-    setFixedPos({ top: r.bottom + 4, right: window.innerWidth - r.right, minWidth: r.width })
+    //
+    // Direction is chosen, not assumed. The comment above used to claim the
+    // mobile menu does not clip; it does — `.mobile-menu` is `overflow-y: auto`
+    // — so the portal fires there too, and there the button sits in a sticky
+    // footer at the bottom of the screen. Anchoring the list below it put the
+    // first option at 829-857px in an 844px viewport: off the bottom edge,
+    // measured, in the check added the same hour. Anchor to whichever side has
+    // more room, which is what the in-place CSS was already doing with its
+    // upward-opening `.mobile-menu .lang-dropdown` rule that a portal cancels.
+    const below = window.innerHeight - r.bottom
+    const above = r.top
+    const common = { right: window.innerWidth - r.right, minWidth: r.width }
+    setFixedPos(below >= above
+      ? { ...common, top: r.bottom + 4 }
+      : { ...common, bottom: window.innerHeight - r.top + 4 })
   }, [open])
 
   // Handle click outside to close
@@ -115,7 +132,16 @@ export default memo(function LanguageSwitcher() {
       ref={listRef}
       className="lang-dropdown"
       style={fixedPos ? {
-        position: 'fixed', top: fixedPos.top, right: fixedPos.right,
+        position: 'fixed', right: fixedPos.right,
+        // Both offsets are always written, one of them to `auto`. The stylesheet
+        // sets `top: 100%` on this class; an inline `bottom` alone leaves that in
+        // force, and a fixed box with BOTH offsets set resolves its height from
+        // them — 844 - 844 - 50 is negative, clamped to zero. Measured: the list
+        // collapsed to 2px of border at y=848 while its options laid out at
+        // 849-877, outside their own parent. Setting the unused side to `auto`
+        // is what makes the chosen side mean what it says.
+        top: fixedPos.top !== undefined ? fixedPos.top : 'auto',
+        bottom: fixedPos.bottom !== undefined ? fixedPos.bottom : 'auto',
         minWidth: fixedPos.minWidth, width: 'max-content',
       } : undefined}
       role="listbox"

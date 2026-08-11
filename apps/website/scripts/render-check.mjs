@@ -452,6 +452,63 @@ if (popupsChecked === 0) {
 }
 console.log(`  ${popupsChecked} popup(s) open and their first option is reachable.`);
 
+// ── The same question at a mobile width ──
+//
+// Below 1100px the dock is hidden and a hamburger takes over, and the language
+// switcher is rendered a SECOND time inside `.mobile-menu-footer`. That path has
+// its own CSS — `.mobile-menu .lang-dropdown` opens the list upward — and the
+// portal fix above can break it, because a portalled element is no longer a
+// descendant and the selector stops applying. `.mobile-menu` is `overflow-y:
+// auto`, so the clip detection fires there too.
+//
+// The desktop pass says nothing about any of that. This one resizes, opens the
+// hamburger, and asks the same question of the switcher inside it.
+await call('Emulation.setDeviceMetricsOverride',
+           { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await evaluate(`(async () => {
+  location.hash = '#/proof';
+  await new Promise(r => setTimeout(r, 1200));
+})()`);
+
+const mobileVerdict = await evaluate(`(async () => {
+  const burger = document.querySelector('.hamburger-btn');
+  if (!burger) return 'no hamburger at 390px — the breakpoint or the selector moved';
+  if (getComputedStyle(burger).display === 'none') return 'hamburger is display:none at 390px';
+  burger.click();
+  await new Promise(r => setTimeout(r, 500));
+  const menu = document.querySelector('.mobile-menu');
+  if (!menu) return 'the mobile menu did not open';
+  const sw = menu.querySelector('.lang-switcher');
+  if (!sw) return 'no language switcher inside the mobile menu';
+  sw.click();
+  await new Promise(r => setTimeout(r, 400));
+  const dd = document.querySelector('.lang-dropdown');
+  if (!dd) return 'the dropdown did not appear';
+  const opt = dd.querySelector('button');
+  if (!opt) return 'the dropdown has no options';
+  const c = opt.getBoundingClientRect();
+  if (c.width === 0 || c.height === 0) return 'the first option has zero size';
+  const offscreen = c.top < 0 || c.bottom > innerHeight || c.left < 0 || c.right > innerWidth;
+  const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2);
+  const reachable = !!hit && (opt === hit || opt.contains(hit) || dd.contains(hit));
+  if (offscreen) return 'the first option is outside the viewport: top ' + Math.round(c.top) +
+                        ', bottom ' + Math.round(c.bottom) + ', viewport height ' + innerHeight;
+  if (!reachable) {
+    const owner = hit ? (hit.className || hit.tagName).toString().slice(0, 40) : 'nothing';
+    return 'the first option is not the element at its own centre — ' + owner + ' is';
+  }
+  return 'ok';
+})()`);
+await call('Emulation.clearDeviceMetricsOverride');
+if (mobileVerdict !== 'ok') {
+  console.error('\n  The mobile language switcher is broken at 390px:');
+  console.error(`    ${mobileVerdict}`);
+  cleanup();
+  process.exit(1);
+}
+console.log('  the mobile switcher opens and its first option is reachable at 390px.');
+
+
 // ── The check that this check ran ──
 //
 // A probe that silently matches nothing reports a clean page, which is the
