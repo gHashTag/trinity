@@ -317,7 +317,7 @@
     ],
     "cards": [
       {
-        "value": "578.8× *",
+        "value": "Hasta 578.8× * (proyectado, FPGA)",
         "label": "Efic. Energia",
         "color": "blue"
       },
@@ -418,7 +418,7 @@
       },
       {
         "label": "Eficiencia",
-        "value": "578.8x (Verificado) *"
+        "value": "Hasta 578.8x (Verificado) * (proyectado, FPGA)"
       },
       {
         "label": "Compresion de Codigo",
@@ -509,7 +509,7 @@
         "theorem": "1"
       },
       {
-        "value": "3000× *",
+        "value": "Hasta 3000× * (proyectado, FPGA)",
         "label": "Eficiencia Energetica",
         "desc": "Proyectado en FPGA personalizado",
         "theorem": "2"
@@ -557,7 +557,7 @@
           "memory": "20× ✓",
           "speed": "10× *",
           "accuracy": "100% ✓",
-          "energy": "3000× *",
+          "energy": "Hasta 3000× * (proyectado, FPGA)",
           "theorem": "1-4",
           "highlight": true
         },

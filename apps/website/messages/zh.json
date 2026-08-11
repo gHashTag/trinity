@@ -317,7 +317,7 @@
     ],
     "cards": [
       {
-        "value": "578.8× *",
+        "value": "最高 578.8× *（预计，FPGA）",
         "label": "能效",
         "color": "blue"
       },
@@ -397,7 +397,7 @@
       },
       {
         "title": "PAS V5.0",
-        "desc": "麦克斯韦信息泵：578.8倍效率",
+        "desc": "最高 麦克斯韦信息泵：578.8倍效率（预计，FPGA）",
         "tests": "热力学 ✓"
       },
       {
@@ -509,7 +509,7 @@
         "theorem": "1"
       },
       {
-        "value": "3000× *",
+        "value": "最高 3000× *（预计，FPGA）",
         "label": "能效",
         "desc": "自定义FPGA上的预计值",
         "theorem": "2"
@@ -557,7 +557,7 @@
           "memory": "20× ✓",
           "speed": "10× *",
           "accuracy": "100% ✓",
-          "energy": "3000× *",
+          "energy": "最高 3000× *（预计，FPGA）",
           "theorem": "1-4",
           "highlight": true
         },
@@ -606,7 +606,7 @@
       {
         "barrier": "电力",
         "impact": "60-80%成本（$0.12+/kWh）",
-        "solution": "578.8倍效率：阈值降至$0.0002/kWh",
+        "solution": "最高 578.8倍效率：阈值降至$0.0002/kWh（预计，FPGA）",
         "source": "Sber / TASS"
       },
       {
