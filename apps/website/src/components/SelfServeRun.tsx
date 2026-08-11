@@ -22,6 +22,11 @@ jobs:
     with:
       top: my_top_module`
 
+const SNIPPET2 = `# .github/workflows/paths.yml
+jobs:
+  paths:
+    uses: gHashTag/trinity/.github/workflows/build-paths-check.yml@main`
+
 const T = {
   en: {
     eyebrow: 'Run it yourself, now',
@@ -38,6 +43,8 @@ const T = {
     proofBody: 'Called from gHashTag/trinity-fpga on two chips awaiting a Tiny Tapeout shuttle. It reported 17 and 66 flip-flops — the counts those netlists hold. The first cross-repo run called both "purely combinational"; the parser assumed yosys prints the cell histogram count-first, and on ubuntu-latest it prints name-first. That is now asserted by value in the self-test, and the self-test has a job that deliberately asserts a wrong count to prove the assertion can fail.',
     not: 'A pass is not a proof of correctness. Nothing in this run compares your design against a specification — that is the paid tier below, and it is worth what it costs only because this one says plainly that it is not it.',
     src: 'Read the workflow',
+    second: 'A second free check, and it needs no toolchain at all',
+    secondBody: 'Does every path your build names actually exist? A file that moved out from under a build script breaks it without any cleverness being required to detect that — the file is either there or it is not. One of my own repositories spent four months red on exactly that, and the only instrument reporting it was a build whose red had stopped meaning anything. Run across nine of my public repositories this found one confirmed fault, in a library whose CI had been failing since April, and nothing in five others. That ratio is what to expect: it is a narrow check and it says so.',
   },
   ru: {
     eyebrow: 'Запустите сами, прямо сейчас',
@@ -54,6 +61,8 @@ const T = {
     proofBody: 'Вызвано из gHashTag/trinity-fpga на двух чипах, ждущих шаттл Tiny Tapeout. Ответ — 17 и 66 триггеров, ровно столько в этих нетлистах. Первый кросс-репо прогон назвал оба «чисто комбинационными»: разбор предполагал, что yosys печатает гистограмму числом вперёд, а на ubuntu-latest она печатается именем вперёд. Теперь число проверяется в селф-тесте по значению, и там есть работа, которая заведомо заявляет неверный счёт — чтобы доказать, что проверка умеет падать.',
     not: 'Пройденная проверка не есть доказательство корректности. Ничто в этом прогоне не сверяет ваш дизайн со спецификацией — это платная ступень ниже, и она стоит своих денег только потому, что здесь прямо сказано, что это не она.',
     src: 'Посмотреть воркфлоу',
+    second: 'Вторая бесплатная проверка, и ей вообще не нужен тулчейн',
+    secondBody: 'Существуют ли все пути, которые называет ваша сборка? Файл, уехавший из-под скрипта сборки, ломает её, и чтобы это заметить, не нужно никакой изощрённости — файл либо есть, либо нет. Один мой репозиторий провёл на этом четыре месяца в красном, и единственным прибором, который об этом сообщал, была сборка, чьё красное давно перестало что-либо значить. На девяти моих открытых репозиториях проверка нашла один подтверждённый дефект — в библиотеке, чей CI падал с апреля, — и ничего в пяти других. Такое соотношение и следует ожидать: проверка узкая, и она об этом говорит.',
   },
 }
 
@@ -117,6 +126,16 @@ export default function SelfServeRun() {
       }}>
         <strong style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.9rem' }}>{t.proof}</strong>
         <span style={{ fontSize: '0.88rem', lineHeight: 1.6, opacity: 0.85 }}>{t.proofBody}</span>
+      </div>
+
+      <div style={{ marginBottom: '1.2rem' }}>
+        <strong style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.92rem' }}>{t.second}</strong>
+        <p style={{ margin: '0 0 0.7rem', fontSize: '0.88rem', lineHeight: 1.6, opacity: 0.85, maxWidth: '68ch' }}>{t.secondBody}</p>
+        <pre style={{
+          margin: 0, padding: '0.9rem 1rem', overflowX: 'auto',
+          background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.09)',
+          borderRadius: '10px', fontSize: '0.8rem', lineHeight: 1.6,
+        }}><code>{SNIPPET2}</code></pre>
       </div>
 
       <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', lineHeight: 1.6, opacity: 0.75 }}>{t.not}</p>

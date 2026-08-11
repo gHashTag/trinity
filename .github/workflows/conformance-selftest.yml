@@ -67,3 +67,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 tests/test_signal_health.py
+
+  # The build-path check offered to other people, on fixtures whose answers are
+  # known. The broken one carries three planted faults of three different kinds
+  # and the counts are asserted, not the verdict.
+  build-paths-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The clean fixture must report nothing
+        run: |
+          set -euo pipefail
+          out=$(python3 tools/check_build_paths.py --root tests/build-path-fixtures/clean \
+                  --import-roots src --min-files 1 --baseline /dev/null)
+          echo "$out"
+          echo "$out" | grep -q "PASS no new dangling build paths (0 known" \
+            || { echo "::error::clean fixture reported something"; exit 1; }
+          echo "$out" | grep -qE "LIKELY|EXPORTED|LATENT" \
+            && { echo "::error::clean fixture produced a classification"; exit 1; }
+          echo "clean: nothing reported, as asserted"
+      - name: The broken fixture must report exactly one dangling path and one LIKELY
+        run: |
+          set -uo pipefail
+          out=$(python3 tools/check_build_paths.py --root tests/build-path-fixtures/broken \
+                  --import-roots src --min-files 1 --baseline /dev/null)
+          rc=$?
+          echo "$out"
+          [ "$rc" -eq 0 ] && { echo "::error::broken fixture passed"; exit 1; }
+          echo "$out" | grep -q "LIKELY    (1)" \
+            || { echo "::error::expected exactly one LIKELY"; exit 1; }
+          echo "$out" | grep -q "src/gone.zig" \
+            || { echo "::error::expected src/gone.zig to be named"; exit 1; }
+          echo "broken: one dangling path and one LIKELY, as asserted"

@@ -103,6 +103,18 @@ BINDING = re.compile(
     re.M)
 
 
+def blank_import_paths(text: str) -> str:
+    """Blank the string inside every @import(...), keeping the line structure.
+
+    Counting a name's uses must not count the name inside the path it imports:
+    `const unused = @import("unused.zig")` has the word `unused` twice, once as
+    the binding and once inside the string, and a word-boundary match sees a use
+    where there is none -- `.` ends a word. A planted fixture caught this within
+    a minute of existing, which is the argument for fixtures.
+    """
+    return re.sub(r'@import\(\s*"[^"]*"\s*\)', '@import("")', text)
+
+
 def classify(root: str, importer: str, target_rel: str) -> str:
     """CONFIRMED, EXPORTED or LATENT for one missing import.
 
@@ -130,9 +142,10 @@ def classify(root: str, importer: str, target_rel: str) -> str:
         if os.path.normpath(os.path.join(os.path.dirname(importer), target)) != want:
             continue
         # Uses of the name that are not its own declaration.
-        uses = [m for m in re.finditer(r'\b' + re.escape(name) + r'\b', text)]
-        decls = len(re.findall(r'(?:const|var)\s+' + re.escape(name) + r'\s*=\s*@import', text))
-        if len(uses) - decls > 0:
+        counted = blank_import_paths(text)
+        uses = len(re.findall(r'\b' + re.escape(name) + r'\b', counted))
+        decls = len(re.findall(r'(?:const|var)\s+' + re.escape(name) + r'\s*=\s*@import', counted))
+        if uses - decls > 0:
             return "LIKELY"
         return "EXPORTED" if is_pub else "LATENT"
     return "LATENT"
@@ -167,8 +180,9 @@ def live_imports(root: str, f: str) -> list[str]:
     bound: set[str] = set()
     for is_pub, name, target in BINDING.findall(text):
         bound.add(target)
-        uses = len(re.findall(r'\b' + re.escape(name) + r'\b', text))
-        decls = len(re.findall(r'(?:const|var)\s+' + re.escape(name) + r'\s*=\s*@import', text))
+        counted = blank_import_paths(text)
+        uses = len(re.findall(r'\b' + re.escape(name) + r'\b', counted))
+        decls = len(re.findall(r'(?:const|var)\s+' + re.escape(name) + r'\s*=\s*@import', counted))
         if uses - decls > 0 or is_pub:
             # `pub` counts: it is part of this module's surface, and whether a
             # consumer touches it is not decidable from here. Erring towards
