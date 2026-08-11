@@ -20,6 +20,7 @@ type PageLink = { href: string; en: string; ru: string; note: string; noteRu: st
 // instead of pushing each other off the right edge.
 const PAGES: PageLink[] = [
   { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: '2.84× and 5.53× more accurate than tekum16', noteRu: 'В 2.84 и 5.53 раза точнее tekum16' },
+  { href: '#/start', en: 'Start here', ru: 'С чего начать', note: 'Four checks you can run yourself, in order', noteRu: 'Четыре проверки, которые запускаете сами, по порядку' },
   { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on live silicon', noteRu: 'Присылаете RTL — измеряю на живом кремнии' },
   { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores that have been to silicon', noteRu: 'Ядра, уже прошедшие кремний' },
   { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },

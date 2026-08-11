@@ -16,6 +16,7 @@ const TrinityCanvasWasm = lazy(() => import('./components/TrinityCanvasWasm.tsx'
 const ProductionDashboard = lazy(() => import('./components/ProductionDashboard.tsx'))
 const TechTreePage = lazy(() => import('./pages/TechTreePage.tsx'))
 const HardwareVerification = lazy(() => import('./pages/HardwareVerification.tsx'))
+const Start = lazy(() => import('./pages/Start.tsx'))
 const Course = lazy(() => import('./pages/Course.tsx'))
 const CaseStudies = lazy(() => import('./pages/CaseStudies.tsx'))
 const GFT = lazy(() => import('./pages/GFT.tsx'))
@@ -44,6 +45,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/" element={<App />} />
             <Route path="/dashboard" element={<ProductionDashboard />} />
             <Route path="/tree" element={<TechTreePage />} />
+            <Route path="/start" element={<Start />} />
             <Route path="/verification" element={<HardwareVerification />} />
             <Route path="/course" element={<Course />} />
             <Route path="/cases" element={<CaseStudies />} />
