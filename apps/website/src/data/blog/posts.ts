@@ -632,7 +632,87 @@ const goldenIdentity: Post = {
   published: true,
 }
 
-export const posts: Post[] = [goldenIdentity, energyAsymmetry, openGigabitEthernet]
+const benchReadout: Post = {
+  slug: 'readout-that-cannot-be-misread',
+  title: 'Four rules for a measurement rig whose readout cannot be misread',
+  summary:
+    'A readout whose mapping to state is unestablished is not an instrument \u2014 four rules ' +
+    'written after a week of hardware debugging where the rig lied and the design was fine.',
+  date: '2026-08-11',
+  readingMinutes: 6,
+  tags: ['FPGA', 'Hardware', 'Debugging', 'Measurement'],
+  receipts: [
+    { label: 'The rules, with the failures that produced each',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/docs/HW_CAMPAIGN_AX7203_2026_07_30.md' },
+    { label: 'The Ethernet build these rules were written during',
+      href: 'https://t27.ai/#/blog/open-gigabit-ethernet-artix7' },
+  ],
+  openQuestions: [
+    'These come from one board (AX7203, Artix-7) and one week. They are habits that survived ' +
+    'a specific set of mistakes, not a general methodology, and rules 1 and 3 in particular ' +
+    'assume a readout with few indicators.',
+    'Rule 4 (A/B/A) costs a third run every time. Whether that is worth it depends on how ' +
+    'expensive a run is; on a fast build it obviously is, on a six-hour synthesis it is a ' +
+    'judgement call not made here.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'Every rule below exists because I got a reading, believed it, and it was the rig talking ' +
+      'rather than the design. None of them is about a particular chip.' },
+    { kind: 'h', text: '1. Calibrate the readout before the experiment, never after' },
+    { kind: 'p', text:
+      'Drive a fixed asymmetric pattern and look at it. 4\u2019b0011 is the minimum useful one: ' +
+      'it fixes both the polarity and the index mapping in a single observation.' },
+    { kind: 'code', text:
+      'active-HIGH : led0,led1 lit    led2,led3 dark\n' +
+      'active-LOW  : led0,led1 dark   led2,led3 lit' },
+    { kind: 'p', text:
+      'What happened without it: a design drove led = {2\u2019b00, s2, s1} and the two hardwired ' +
+      'zeros came back lit. The board is active-low, so "all four lit" meant all four bits zero ' +
+      '\u2014 the opposite of the reading I first took. I concluded "both edges capture" when the ' +
+      'data said neither does.' },
+    { kind: 'quote', text:
+      'A readout whose mapping to state is not established is not an instrument.' },
+    { kind: 'h', text: '2. A sticky-OR cannot tell "never captured" from "captured zero"' },
+    { kind: 'p', text: 'Both leave it at 0. Report AND as well as OR over the same window.' },
+    { kind: 'table',
+      head: ['OR', 'AND', 'state'],
+      rows: [
+        ['0', '0', 'stuck low'],
+        ['1', '1', 'stuck high'],
+        ['1', '0', 'toggling'],
+        ['0', '1', 'impossible \u2014 a consistency check on the rig itself'],
+      ] },
+    { kind: 'p', text:
+      'Initialise the AND register to 1 and the OR to 0. Then the AND leaving 1 also proves the ' +
+      'clock ran, which is a second thing the OR cannot show. The fourth row is the useful one: ' +
+      'it can never occur, so if it does, the rig is broken and not the design.' },
+    { kind: 'h', text: '3. Numbering ambiguity silently inverts conclusions' },
+    { kind: 'p', text:
+      'Readings arrived as "LED 0 / 1 / 3 / 4", then "LED 1 / 2 / 3 / 4" \u2014 mixed 0-based and ' +
+      '1-based with one index skipped. I mapped both to led[0..3] without noticing, and the two ' +
+      'mappings give opposite answers to the question being asked.' },
+    { kind: 'p', text: 'Design the readout so the answer does not depend on which indicator is which:' },
+    { kind: 'ul', items: [
+      'one indicator, distinguishable rates \u2014 dark, slow, fast \u2014 rather than positions',
+      'or a serial pattern on one pin, read once and decoded unambiguously',
+      'or ask for the reading explicitly: "which of the four leftmost, counting from the left, are lit"',
+    ] },
+    { kind: 'h', text: '4. A/B/A, always' },
+    { kind: 'p', text:
+      'Run the baseline, run the change, run the baseline again. If the two baselines disagree, ' +
+      'the rig moved and the middle run means nothing. It costs a third run and it is the only ' +
+      'thing that separates "the change did something" from "something changed".' },
+    { kind: 'h', text: 'The one that stings' },
+    { kind: 'p', text:
+      'The sticky-OR remedy in rule 2 is the same one our own theorem prescribes for saturating ' +
+      'indicators. I had been applying that rule to other people\u2019s code all day and not to ' +
+      'my own bench.' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
