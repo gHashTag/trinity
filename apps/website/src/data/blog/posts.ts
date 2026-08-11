@@ -918,7 +918,76 @@ const upstreamCredit: Post = {
   published: true,
 }
 
-export const posts: Post[] = [upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
+const resonanceLaw: Post = {
+  slug: 'context-length-resonance-not-power-law',
+  title: 'Doubling the context made it worse: ternary scaling follows a resonance, not a power law',
+  summary:
+    'ctx=18 gives PPL 5.58, ctx=27 gives 2.96, ctx=54 gives 6.05 \u2014 worse than the baseline. ' +
+    'Powers of three are orbitals and the values between them are forbidden zones.',
+  date: '2026-08-11',
+  readingMinutes: 6,
+  tags: ['Training', 'Ternary', 'Scaling', 'Transformers', 'Negative result'],
+  receipts: [
+    { label: 'The experiment ledger \u2014 twenty runs with their parameters',
+      href: 'https://github.com/gHashTag/trinity/blob/main/docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md' },
+    { label: 'The model catalogue, by family and branch',
+      href: 'https://github.com/gHashTag/trinity/blob/main/docs/research/COMPLETE_MODEL_CATALOG.md' },
+  ],
+  openQuestions: [
+    'These are HSLM runs at small scale. Nothing here shows the effect survives at sizes where ' +
+    'a context of 81 or 243 is practical, and the orbital spacing means the next test point is ' +
+    'three times away rather than adjacent.',
+    'The mechanism is asserted from the ratio structure, not derived. Why powers of three ' +
+    'specifically \u2014 rather than powers of any base matching the weight alphabet \u2014 is not ' +
+    'established here, and a binary-weight control at ctx=16/32/64 would test it directly.',
+    'Perplexity ranges are reported per configuration (ctx=27 gives 2.96\u20135.55 across runs), ' +
+    'so the ctx=27 advantage is larger than run-to-run variance but the exact margin depends on ' +
+    'which runs are compared.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'The usual intuition about context length is monotone: more context, better or equal ' +
+      'perplexity, with diminishing returns. Ternary training does not do that.' },
+    { kind: 'h', text: 'The measurement' },
+    { kind: 'table',
+      head: ['ctx', 'perplexity'],
+      rows: [
+        ['18', '5.58'],
+        ['27 = 3\u00b3', '2.96'],
+        ['54 = 2\u00d727', '6.05'],
+      ] },
+    { kind: 'p', text:
+      'Going from 18 to 27 nearly halves perplexity. Doubling from 27 to 54 does not merely ' +
+      'lose that gain \u2014 it lands worse than the ctx=18 baseline it started from.' },
+    { kind: 'quote', text:
+      'Ternary scaling follows a resonance curve, not a power law. The optimal contexts are ' +
+      '3\u1d4f orbitals \u2014 9, 27, 81 \u2014 and the values between them are forbidden zones.' },
+    { kind: 'h', text: 'Why this is a claim and not an anomaly' },
+    { kind: 'p', text:
+      'A scaling law does not do this. Under any monotone law, ctx=54 sits between ctx=27 and ' +
+      'the asymptote, so it can be worse than 27 by diminishing returns but not worse than 18. ' +
+      'One measurement that goes backwards past its own baseline is not noise around a curve; ' +
+      'it is the wrong shape of curve.' },
+    { kind: 'h', text: 'The companion constraint' },
+    { kind: 'p', text:
+      'A second result from the same series: the context must equal the head dimension, or a ' +
+      'power-of-three divisor of it. Square attention \u2014 ctx = head_dim \u2014 gives full rank; ' +
+      'anything else gives up rank silently.' },
+    { kind: 'p', text:
+      'Taken together the two are a recipe with no free parameters: pick a power of three, then ' +
+      'set head_dim to it. Any other pair either lands in a forbidden zone or gives up rank, and ' +
+      'both failures are quiet \u2014 the run trains, it just trains worse.' },
+    { kind: 'h', text: 'What would falsify it' },
+    { kind: 'p', text:
+      'A binary-weight control at ctx = 16, 32, 64. If the same non-monotonicity appears with ' +
+      'powers of two, the effect is about context alignment in general and has nothing to do ' +
+      'with the ternary alphabet. That control has not been run here, and it is the first thing ' +
+      'I would ask for if someone showed me this table.' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
