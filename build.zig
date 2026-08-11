@@ -13,11 +13,28 @@ pub fn build(b: *std.Build) void {
     // Cycle 78: Optional tree-sitter integration for VIBEE AST analysis
     const enable_treesitter = b.option(bool, "treesitter", "Enable tree-sitter AST analysis for VIBEE (requires libtree-sitter)") orelse false;
 
+    // The modules src/trinity.zig lost when 42490a22 moved them out. Declared
+    // here, before the first use, because three separate targets root that file.
+    //
+    // The naming in golden-float is confusing enough to be worth writing down:
+    // its root exports `bigint`, and that name points at ternary/hybrid.zig,
+    // while the actual bigint is exported as `ternary_primitives`. The aliases
+    // below are chosen by what each module CONTAINS -- checked symbol by symbol
+    // against what src/trinity.zig re-exports -- not by what it is called.
+    const zig_hdc_dep2 = b.dependency("zig_hdc", .{ .target = target, .optimize = optimize });
+    const gf_dep = b.dependency("zig_golden_float", .{ .target = target, .optimize = optimize });
+    const hdc_vsa_mod = zig_hdc_dep2.module("zig-hdc-vsa");
+    const gf_mod = gf_dep.module("golden-float");
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
+            .{ .name = "golden_float", .module = gf_mod },
+        },
     });
 
     // VIBEEC compiler module — single source of truth from trinity-nexus/lang
@@ -44,6 +61,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
+                .{ .name = "golden_float", .module = gf_mod },
+            },
         }),
     });
     b.installArtifact(lib);
@@ -175,6 +196,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
+                .{ .name = "golden_float", .module = gf_mod },
+            },
         }),
     });
 
