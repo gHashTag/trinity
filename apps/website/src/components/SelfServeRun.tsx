@@ -141,6 +141,13 @@ export default function SelfServeRun() {
       <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', lineHeight: 1.6, opacity: 0.75 }}>{t.not}</p>
 
       <a
+        href="#/start"
+        className="btn secondary"
+        style={{ padding: '10px 22px', fontSize: '0.85rem', marginRight: '0.6rem' }}
+      >
+        {lang === 'ru' ? 'Все четыре проверки по порядку' : 'All four checks, in order'}
+      </a>
+      <a
         href="https://github.com/gHashTag/trinity/blob/main/.github/workflows/rtl-check.yml"
         target="_blank"
         rel="noopener noreferrer"
