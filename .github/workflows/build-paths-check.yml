@@ -79,6 +79,37 @@ jobs:
           echo "## Build path check" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           ARGS="--root . --import-roots $ROOTS --min-files $MINF"
+
+          # Adoption on a repository that is already broken. Without this the
+          # first run is a wall of red about breakage nobody caused today, and
+          # the check gets switched off before it has caught anything -- which
+          # is the failure mode it exists to prevent, arriving one step earlier.
+          #
+          # So: generate the baseline, print exactly what to commit, and fail
+          # with that one instruction rather than with fifty findings. It fails
+          # rather than passes because a check that silently starts in a
+          # permissive mode is a check nobody knows the state of.
+          if [ -n "${BASE:-}" ] && [ ! -f "$BASE" ]; then
+            python3 .paths-tool/tools/check_build_paths.py --root . \
+              --import-roots "$ROOTS" --min-files "$MINF" --write-baseline "$BASE" >/dev/null 2>&1
+            {
+              echo "### First run: nothing to ratchet against yet"
+              echo ""
+              echo "\`$BASE\` does not exist, so there is no record of what was already"
+              echo "broken before this check arrived. Commit the file below and the check"
+              echo "will pass on everything in it and fail only on breakage that is new."
+              echo ""
+              echo "Add a line per entry saying what decision it is waiting on — an"
+              echo "unexplained baseline is indistinguishable from a suppression."
+              echo ""
+              echo '```'
+              cat "$BASE"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::$BASE does not exist. Its contents are in the job summary — commit it to start the ratchet."
+            exit 1
+          fi
+
           if [ -n "${BASE:-}" ]; then ARGS="$ARGS --baseline $BASE"; else ARGS="$ARGS --baseline /dev/null"; fi
           # shellcheck disable=SC2086
           python3 .paths-tool/tools/check_build_paths.py $ARGS 2>&1 | tee out.txt

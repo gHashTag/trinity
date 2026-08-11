@@ -111,3 +111,24 @@ jobs:
             echo "::error::expected src/gone.zig to be named"; exit 1
           fi
           echo "broken: one dangling path and one LIKELY, as asserted"
+
+      - name: Adopting on a broken tree writes a baseline that then passes
+        run: |
+          set +e
+          rm -f /tmp/adopt.txt
+          python3 tools/check_build_paths.py --root tests/build-path-fixtures/broken \
+            --import-roots src --min-files 1 --write-baseline /tmp/adopt.txt
+          rc=$?
+          if [ "$rc" -ne 0 ]; then echo "::error::writing a baseline should succeed"; exit 1; fi
+          if ! grep -q "^src/gone.zig$" /tmp/adopt.txt; then
+            echo "::error::baseline did not record the dangling path"; exit 1
+          fi
+          out=$(python3 tools/check_build_paths.py --root tests/build-path-fixtures/broken \
+                  --import-roots src --min-files 1 --baseline /tmp/adopt.txt)
+          rc=$?
+          echo "$out"
+          if [ "$rc" -ne 0 ]; then echo "::error::the tree should pass against its own baseline"; exit 1; fi
+          if ! echo "$out" | grep -q "1 known, all in the baseline"; then
+            echo "::error::expected exactly one known path"; exit 1
+          fi
+          echo "adoption: baseline written and honoured, as asserted"
