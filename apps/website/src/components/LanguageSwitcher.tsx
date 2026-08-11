@@ -33,7 +33,7 @@ export default memo(function LanguageSwitcher() {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   // Coordinates used only when an ancestor would clip the dropdown.
-  const [fixedPos, setFixedPos] = useState<{ top: number; right: number } | null>(null)
+  const [fixedPos, setFixedPos] = useState<{ top: number; right: number; minWidth: number } | null>(null)
 
   // The dock this switcher normally sits in is `overflow-x: auto`, and CSS turns
   // the other axis into `auto` too whenever one axis is not `visible`. The dock
@@ -61,7 +61,11 @@ export default memo(function LanguageSwitcher() {
     }
     if (!clipped) return
     const r = btn.getBoundingClientRect()
-    setFixedPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+    // `min-width: 100%` on the dropdown resolves against its containing block.
+    // Under `position: absolute` that was the button's wrapper; under `fixed` it
+    // becomes the viewport, which stretched the list to 1031px on the first cut
+    // of this fix. Carry the button's own width across explicitly.
+    setFixedPos({ top: r.bottom + 4, right: window.innerWidth - r.right, minWidth: r.width })
   }, [open])
 
   // Handle click outside to close
@@ -129,7 +133,10 @@ export default memo(function LanguageSwitcher() {
         <div
           ref={listRef}
           className="lang-dropdown"
-          style={fixedPos ? { position: 'fixed', top: fixedPos.top, right: fixedPos.right } : undefined}
+          style={fixedPos ? {
+            position: 'fixed', top: fixedPos.top, right: fixedPos.right,
+            minWidth: fixedPos.minWidth, width: 'max-content',
+          } : undefined}
           role="listbox"
           id="lang-dropdown"
           aria-labelledby="lang-button"
