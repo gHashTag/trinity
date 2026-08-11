@@ -8,9 +8,16 @@ a reader cannot check is a claim they have to take on trust, which is the thing
 this whole service exists to avoid asking for.
 
 So the page carries the verdicts, pulled from the jobs themselves. Each entry
-names the job that attests it -- not the workflow, the job -- because a workflow
-that is green overall can contain the one job that matters going red, and a
-badge for the wrapper would say the opposite of the truth.
+names the job that attests it rather than the workflow around it, for two
+reasons that are duller than the one first written here: three of the four
+attesting jobs share a single workflow, so a workflow-level verdict would give
+all three the same answer and none of them an address, and the badge links to
+the job a reader should open, which a wrapper cannot name.
+
+(The reason first written was that a green workflow can hold a red job. That is
+true only where continue-on-error is set, and it is not set here. Correcting it
+rather than leaving it is the cheaper half of the same discipline the page is
+selling.)
 
 T13 supplies the floor: nothing is written unless every check on the list
 resolved. A shorter table is a smaller measurement wearing the same green.
