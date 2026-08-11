@@ -141,3 +141,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 tests/test_start_page.py
+
+  # A number written in prose beside a generated list drifts the moment the list
+  # grows, and nothing announces it. Twice the site told a reader something the
+  # same page disproved further down.
+  copy-matches-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_copy_matches_data.py
