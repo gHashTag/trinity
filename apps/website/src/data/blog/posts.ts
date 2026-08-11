@@ -712,7 +712,90 @@ const benchReadout: Post = {
   published: true,
 }
 
-export const posts: Post[] = [benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
+const frameMargin: Post = {
+  slug: 'frame-length-margin-law',
+  title: 'Timing margin grows as the square root of a logarithm, and nothing accumulates',
+  summary:
+    'A frame-length margin law derived from extreme-value statistics, and the accumulation ' +
+    'story it refutes \u2014 which would predict a 12.9x eye violation on frames that pass.',
+  date: '2026-08-11',
+  readingMinutes: 7,
+  tags: ['FPGA', 'Ethernet', 'RGMII', 'Timing', 'Statistics'],
+  receipts: [
+    { label: 'The derivation, with the source theorems it leans on',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/docs/HW_CAMPAIGN_AX7203_2026_07_30.md' },
+    { label: 'The build this was derived during',
+      href: 'https://t27.ai/#/blog/open-gigabit-ethernet-artix7' },
+  ],
+  openQuestions: [
+    'The law assumes per-edge phase errors are i.i.d. with a symmetric distribution. Real jitter ' +
+    'has correlated components \u2014 supply noise, thermal drift \u2014 and the i.i.d. assumption ' +
+    'is what makes the extreme-value argument work. Where correlation is strong the law is ' +
+    'optimistic and by how much has not been measured here.',
+    'The Gaussian form is an asymptotic approximation to the inverse CDF. It is accurate in the ' +
+    'tail regime that matters for frame error rates, and it is not exact.',
+    'This explains why long frames pass. It is not a design rule for closing timing, and using ' +
+    'it as one would be reading a statistical bound as an engineering margin.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'A gigabit link carries frames of very different lengths. A common intuition says the long ' +
+      'ones are harder because sampling error accumulates across the frame. That intuition ' +
+      'predicts something measurable, and what it predicts does not happen.' },
+    { kind: 'h', text: 'The law' },
+    { kind: 'p', text:
+      'Let each sampling edge carry phase error X_i, i.i.d. with symmetric CDF F and standard ' +
+      'deviation sigma. A frame is received correctly exactly when |X_i| < m for all N edges \u2014 ' +
+      'every edge, not on average.' },
+    { kind: 'code', text:
+      'P(frame OK) = ( 1 - 2(1 - F(m)) )^N\n\n' +
+      'For a target frame-error rate eps:\n' +
+      '  m(N) = F^-1( 1 - eps/(2N) )\n\n' +
+      'Gaussian:\n' +
+      '  m(N) = sigma * Phi^-1( 1 - eps/(2N) )  ~  sigma * sqrt( 2 ln(2N/eps) )' },
+    { kind: 'quote', text:
+      'The margin grows as the square root of a logarithm. This is an extreme-value effect over ' +
+      'N independent draws. Nothing integrates.' },
+    { kind: 'p', text:
+      'The requirement is not that the average error stays small. It is that the worst of N ' +
+      'draws stays inside the eye \u2014 and the worst of N draws grows very slowly.' },
+    { kind: 'h', text: 'What the accumulation story predicts' },
+    { kind: 'p', text:
+      'If the receive clock were independent, phase error would integrate as sigma_N = sigma*sqrt(N). ' +
+      'Applied to real frames on a working link:' },
+    { kind: 'table',
+      head: ['frame', 'sigma*sqrt(N)', 'vs half-eye'],
+      rows: [
+        ['ARP', '5.32 ns', '2.7× over'],
+        ['ICMP', '6.58 ns', '3.3× over'],
+        ['MTU', '25.86 ns', '12.9× over'],
+      ] },
+    { kind: 'p', text:
+      'A full-MTU frame would exceed half the eye by nearly thirteen times. Those frames pass. ' +
+      'The accumulation model is not conservative here \u2014 it is wrong, and wrong by an order ' +
+      'of magnitude on the case that matters most.' },
+    { kind: 'h', text: 'Why the difference is structural' },
+    { kind: 'p', text:
+      'Accumulation assumes the errors add along the frame, so the requirement is on a sum and a ' +
+      'sum of N terms grows as sqrt(N). The correct requirement is on a maximum, and the maximum ' +
+      'of N draws from a fixed distribution grows as sqrt(log N). Those two functions diverge ' +
+      'fast: at N = 12,000 edges, sqrt(N) is about 110 and sqrt(2 ln N) is about 4.3.' },
+    { kind: 'p', text:
+      'The recovered clock is not independent of the data \u2014 that is what a source-synchronous ' +
+      'interface means \u2014 so there is no random walk to accumulate. Each edge gets a fresh ' +
+      'draw, and the question is only whether the unluckiest one clears the eye.' },
+    { kind: 'h', text: 'What to do with it' },
+    { kind: 'p', text:
+      'If a long frame fails and a short one passes, the length is not the cause and looking for ' +
+      'an accumulation mechanism will not find one. Look for something that changes with frame ' +
+      'content or duration instead \u2014 a FIFO depth, a thermal effect, a pattern-dependent ' +
+      'supply droop. The margin needed for the longest frame you carry is a few percent more ' +
+      'than for the shortest, not an order of magnitude more.' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
