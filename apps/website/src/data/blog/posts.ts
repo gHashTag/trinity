@@ -471,7 +471,93 @@ const openGigabitEthernet: Post = {
   },
 }
 
-export const posts: Post[] = [openGigabitEthernet]
+
+const energyAsymmetry: Post = {
+  slug: 'energy-asymmetry-activations',
+  title: 'Half of your activations are negative. They carry 1.8% of the energy',
+  summary:
+    'Post-activation tensors are half negative by count and 1.8–6.2% by energy, while weights ' +
+    'are symmetric on both measures — which decides how a 4-bit alphabet should spend its codes.',
+  date: '2026-08-11',
+  readingMinutes: 6,
+  tags: ['Quantisation', 'Transformers', 'Numeric formats', '4-bit'],
+  receipts: [
+    { label: 'The measurement, with the table',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/block/ENERGY_ASYMMETRY_2026-08-09.md' },
+    { label: 'The comparison it predicts (BlockDialect, DialectFP4)',
+      href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/block/ASYM_VS_BLOCKDIALECT_2026-08-09.md' },
+    { label: 'DialectFP4, the competitor — arXiv:2501.01144',
+      href: 'https://arxiv.org/abs/2501.01144' },
+  ],
+  openQuestions: [
+    'Measured on SmolLM2-135M and Qwen2.5-0.5B only. Two small models is not a general result, ' +
+    'and nothing here shows the ratio holds at 7B or beyond.',
+    'The energy share is reported for GELU and SiLU/SwiGLU. Other activations were not measured, ' +
+    'and ReLU is trivially 0% because it has no negative outputs at all.',
+    'The advantage on activations (1.17×–1.46×) comes with a loss on weights (0.94×). Whether a ' +
+    'mixed alphabet — asymmetric for activations, symmetric for weights — is worth its control ' +
+    'cost in hardware has not been measured.',
+  ],
+  body: [
+    { kind: 'p', text:
+      'This is an observation about transformers, not about any particular numeric format. It ' +
+      'takes two lines to check on a model you already have.' },
+    { kind: 'h', text: 'The table' },
+    { kind: 'table',
+      head: ['source', 'fraction < 0', 'energy < 0'],
+      rows: [
+        ['ReLU', '0.0%', '0.0%'],
+        ['GELU', '49.9%', '1.8%'],
+        ['SiLU / SwiGLU', '50.1%', '6.2%'],
+        ['after LayerNorm', '49.8%', '50.3%'],
+        ['weights', '50.0%', '50.4%'],
+      ] },
+    { kind: 'p', text:
+      'Two columns describing the same tensor. For weights they agree. For GELU outputs they ' +
+      'differ by a factor of twenty-seven.' },
+    { kind: 'h', text: 'What it means' },
+    { kind: 'p', text:
+      'One-sidedness is a property of a tensor\u2019s energy, not of its count. GELU passes ' +
+      'almost half its values into the negative region, but they sit near zero: nearly ' +
+      'everything carrying magnitude is positive.' },
+    { kind: 'p', text:
+      'The count view says the distribution is symmetric, so spend the sign bit evenly. The ' +
+      'energy view says the negative half is nearly empty. A quantiser that allocates on the ' +
+      'count spends half its code space on 2% of the signal.' },
+    { kind: 'p', text:
+      'Note where the disagreement stops. Weights and post-LayerNorm tensors are symmetric on ' +
+      'both measures, so the rule is not \u201ctransformers are one-sided\u201d but the sharper ' +
+      'one: post-activation tensors are, and only by energy. The same network needs different ' +
+      'treatment for weights and activations at the same layer.' },
+    { kind: 'h', text: 'It predicts a result, in both directions' },
+    { kind: 'p', text:
+      'An asymmetric 4-bit alphabet, compared against DialectFP4 using the codebook from that ' +
+      'paper\u2019s own Figure 4 and its scale rule, wins on every activation class and loses ' +
+      'on weights:' },
+    { kind: 'table',
+      head: ['source', 'BlockDialect', 'asymmetric k=4', 'advantage'],
+      rows: [
+        ['GELU', '1.80×', '2.11×', '1.17×'],
+        ['SiLU / SwiGLU', '2.51×', '3.02×', '1.20×'],
+        ['ReLU', '1.64×', '2.39×', '1.46×'],
+        ['weights', '1.59×', '1.49×', '0.94×'],
+      ] },
+    { kind: 'p', text:
+      'The loss is in the table on purpose. It wins exactly where the asymmetry exists and pays ' +
+      'about 6% where it does not — which is a prediction landing, not a lucky sweep.' },
+    { kind: 'h', text: 'Check it on your own model' },
+    { kind: 'code', text:
+      '(x < 0).float().mean()              # fraction negative\n' +
+      '(x[x<0]**2).sum() / (x**2).sum()    # energy share of the negative half' },
+    { kind: 'p', text:
+      'If the second number is much smaller than the first, you have the same asymmetry and ' +
+      'your quantiser does not know about it. If they are equal — as they will be for weights — ' +
+      'an asymmetric alphabet has nothing to offer you, and that is visible before you build one.' },
+  ],
+  published: true,
+}
+
+export const posts: Post[] = [energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
