@@ -328,15 +328,22 @@ dim(E8) = rank + |roots|
 
 ---
 
-## Theorem 7 (Uniqueness of TRINITY Ansatz)
+## Observation 7 (Fit resolution of the TRINITY ansatz)
 
 <div class="theorem-card">
-<h4>Theorem 7 (Uniqueness of TRINITY Ansatz)</h4>
+<h4>Observation 7 (Fit resolution of the TRINITY ansatz)</h4>
 
 The ansatz <b>V = n · 3^k · `pi`^m · `phi`^p · `e`^q</b> is the unique minimal form (among all forms with ≤ 5 free parameters) that achieves median error < 0.05% across 34 fundamental constants with |(k,m,p,q)| ≤ 8.
 </div>
 
 ### Proof
+
+> **Renamed 2026-08-11.** It was *Theorem 7 (Uniqueness…)*. **Uniqueness is the strongest
+> word in this file and the least supported here:** the claim never states the domain it is
+> unique over. "All forms with ≤ 5 free parameters" is uncountable if the parameters are
+> real, so no search establishes uniqueness in it. What the work does show is that the fit
+> resolves the ansatz within the family actually searched — which is an observation, and a
+> real one. The heading now says that.
 
 **Step 1**: Define the search space.
 
@@ -391,6 +398,14 @@ Therefore, the TRINITY ansatz is the **unique minimal form** for this class of p
 ---
 
 ## Theorem 8 (Ternary Radix Optimality)
+
+> **Marked 2026-08-11 as a duplicate of Theorem 2 (Optimal Integer Radix), which proves
+> the same statement.** Radix economy gives *e* as the optimal real base and 3 as the nearest
+> integer; that is Theorem 2's content and it is standard, predating this project by decades.
+> Two headings for one result overstate how much is proved here. Kept rather than deleted so
+> the numbering of everything after it does not shift, and so this note is where a reader
+> looking for Theorem 8 will find it.
+
 
 <div class="theorem-card">
 <h4>Theorem 8 (Ternary Radix Optimality)</h4>
