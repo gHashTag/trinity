@@ -764,17 +764,65 @@ export function TnfAuthor() {
 export function TnfInvest() {
   const { L } = useL()
   const v = invest
+  const muted: React.CSSProperties = { color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.7, display: 'block' }
+  const Src = ({ s }: { s?: { u: string; n: string } }) =>
+    s ? (
+      <a className="tnf-link" href={s.u} target="_blank" rel="noopener noreferrer" style={{ fontSize: 'var(--f-2)' }}>
+        {s.n} ↗
+      </a>
+    ) : null
   return (
     <section id="invest" className="tnf-section">
       <div className="tnf-wrap">
         <Head badge={v.badge} title={v.title} lede={v.sub} wide />
 
+        <motion.h3 {...fade} className="tnf-h3">{L(v.factsTitle)}</motion.h3>
         <motion.div {...fade} className="tnf-grid tnf-grid-4" style={{ marginBottom: 'var(--sp3)' }}>
-          {v.terms.map((t) => (
+          {v.facts.map((t) => (
             <div className="tnf-cell" key={t.v + L(t.l)}>
               <strong style={{ display: 'block', fontSize: 'var(--f2)', fontWeight: 600, marginBottom: '0.3rem' }}>{t.v}</strong>
-              <span style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.55, display: 'block', marginBottom: '0.5rem' }}>{L(t.l)}</span>
+              <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(t.l)}</span>
               <TagChip tag={t.tag as Tag} />
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.whyTitle)}</motion.h3>
+        <motion.div {...fade} className="tnf-grid tnf-grid-2" style={{ marginBottom: 'var(--sp3)' }}>
+          {v.why.map((w) => (
+            <div className="tnf-cell" key={L(w.t)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f0)', fontWeight: 600, marginBottom: '0.4rem' }}>{L(w.t)}</strong>
+              <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(w.d)}</span>
+              <span style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <TagChip tag={w.tag as Tag} />
+                <Src s={w.src} />
+              </span>
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.marketTitle)}</motion.h3>
+        <motion.p {...fade} style={{ ...muted, maxWidth: '78ch', textAlign: 'left', marginLeft: 0, marginBottom: 'var(--sp1)' }}>{L(v.marketSub)}</motion.p>
+        <motion.div {...fade} className="tnf-grid tnf-grid-4" style={{ marginBottom: 'var(--sp3)' }}>
+          {v.market.map((m) => (
+            <div className="tnf-cell" key={m.v + L(m.l)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f1)', fontWeight: 600, marginBottom: '0.3rem' }}>{m.v}</strong>
+              <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(m.l)}</span>
+              <span style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <TagChip tag={m.tag as Tag} />
+                <Src s={m.src} />
+              </span>
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.modelTitle)}</motion.h3>
+        <motion.div {...fade} className="tnf-grid tnf-grid-3" style={{ marginBottom: 'var(--sp3)' }}>
+          {v.model.map((m) => (
+            <div className="tnf-cell" key={L(m.t)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f0)', fontWeight: 600, marginBottom: '0.4rem' }}>{L(m.t)}</strong>
+              <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(m.d)}</span>
+              <TagChip tag={m.tag as Tag} />
             </div>
           ))}
         </motion.div>
@@ -784,8 +832,19 @@ export function TnfInvest() {
           {v.done.map((d) => (
             <div className="tnf-cell" key={d.v + L(d.l)}>
               <strong style={{ display: 'block', fontSize: 'var(--f1)', fontWeight: 600, marginBottom: '0.3rem' }}>{d.v}</strong>
-              <span style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.55, display: 'block', marginBottom: '0.5rem' }}>{L(d.l)}</span>
+              <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(d.l)}</span>
               <TagChip tag={d.tag as Tag} />
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.moatTitle)}</motion.h3>
+        <motion.div {...fade} className="tnf-grid tnf-grid-3" style={{ marginBottom: 'var(--sp3)' }}>
+          {v.moat.map((m) => (
+            <div className="tnf-cell" key={L(m.t)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f0)', fontWeight: 600, marginBottom: '0.4rem' }}>{L(m.t)}</strong>
+              <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(m.d)}</span>
+              <TagChip tag={m.tag as Tag} />
             </div>
           ))}
         </motion.div>
@@ -796,21 +855,23 @@ export function TnfInvest() {
             <div className="tnf-cell" key={u.p}>
               <strong style={{ display: 'block', fontSize: 'var(--f2)', fontWeight: 600, marginBottom: '0.2rem' }}>{u.p}</strong>
               <span style={{ display: 'block', fontSize: 'var(--f0)', fontWeight: 500, marginBottom: '0.4rem' }}>{L(u.t)}</span>
-              <span style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.6, display: 'block', marginBottom: '0.5rem' }}>{L(u.d)}</span>
+              <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(u.d)}</span>
               <TagChip tag="plan" />
             </div>
           ))}
         </motion.div>
 
         <motion.h3 {...fade} className="tnf-h3">{L(v.milestonesTitle)}</motion.h3>
-        <motion.ul {...fade} style={{ listStyle: 'none', padding: 0, margin: '0 0 var(--sp3)', maxWidth: '78ch', textAlign: 'left' }}>
+        <motion.p {...fade} style={{ ...muted, maxWidth: '78ch', textAlign: 'left', marginLeft: 0, marginBottom: 'var(--sp1)' }}>{L(v.milestonesSub)}</motion.p>
+        <motion.div {...fade} className="tnf-grid tnf-grid-3" style={{ marginBottom: 'var(--sp3)' }}>
           {v.milestones.map((m) => (
-            <li key={L(m)} style={{ display: 'flex', gap: '0.6rem', color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.7, marginBottom: '0.5rem' }}>
-              <span style={{ color: 'var(--golden)', flex: '0 0 auto' }}>·</span>
-              <span>{L(m)}</span>
-            </li>
+            <div className="tnf-cell" key={L(m.n)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f0)', fontWeight: 600, marginBottom: '0.4rem' }}>{L(m.n)}</strong>
+              <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(m.g)}</span>
+              <TagChip tag="plan" />
+            </div>
           ))}
-        </motion.ul>
+        </motion.div>
 
         <motion.h3 {...fade} className="tnf-h3">{L(v.riskTitle)}</motion.h3>
         <motion.div {...fade} className="tnf-grid tnf-grid-2" style={{ marginBottom: 'var(--sp3)' }}>
@@ -820,6 +881,18 @@ export function TnfInvest() {
             </div>
           ))}
         </motion.div>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.takeawayTitle)}</motion.h3>
+        <motion.ul {...fade} style={{ listStyle: 'none', padding: 0, margin: '0 0 var(--sp2)', maxWidth: '78ch', textAlign: 'left' }}>
+          {v.takeaways.map((t) => (
+            <li key={L(t)} style={{ display: 'flex', gap: '0.6rem', color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.7, marginBottom: '0.5rem' }}>
+              <span style={{ color: 'var(--golden)', flex: '0 0 auto' }}>·</span>
+              <span>{L(t)}</span>
+            </li>
+          ))}
+        </motion.ul>
+
+        <motion.p {...fade} style={{ color: 'var(--muted)', fontSize: 'var(--f-2)', lineHeight: 1.7, maxWidth: '78ch', textAlign: 'left', marginLeft: 0, marginBottom: 'var(--sp2)' }}>{L(v.note)}</motion.p>
 
         <motion.div {...fade} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.7rem', justifyContent: 'center' }}>
           {v.ctas.map((c, i) => (
