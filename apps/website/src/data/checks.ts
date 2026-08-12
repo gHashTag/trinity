@@ -144,7 +144,7 @@ export const CHECKS: Check[] = [
     name: { en: 'Every code point, against an implementation neither of us wrote', ru: 'Каждая кодовая точка против реализации, которую не писал ни один из нас' },
     needs: { en: 'iverilog and ml_dtypes, installed by the job', ru: 'iverilog и ml_dtypes, ставит само задание' },
     time: { en: 'Minutes', ru: 'Минуты' },
-    price: { en: 'From $300 per core, first module free', ru: 'От $300 за ядро, первый модуль бесплатно' },
+    price: { en: 'From $2 500 per core, first module free', ru: 'От $2 500 за ядро, первый модуль бесплатно' },
     why: {
       en: 'Last because it is the only one that says anything about whether your design is correct, and it is worth its price only because the three above say plainly that they do not.',
       ru: 'Последней — потому что только она говорит хоть что-то о том, верен ли ваш дизайн, и стоит своих денег лишь потому, что три предыдущие прямо говорят, что они этого не делают.',

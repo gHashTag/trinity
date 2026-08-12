@@ -60,7 +60,7 @@ export const DELIVERY_TIERS: Tier[] = [
     id: 'conformance',
     automated: false,
     name: { en: 'Conformance against an independent model', ru: 'Соответствие независимой модели' },
-    price: { en: 'From $300 per core, first module free', ru: 'От $300 за ядро, первый модуль бесплатно' },
+    price: { en: 'From $2 500 per core, first module free', ru: 'От $2 500 за ядро, первый модуль бесплатно' },
     turnaround: { en: '3–5 working days', ru: '3–5 рабочих дней' },
     delivers: {
       en: [

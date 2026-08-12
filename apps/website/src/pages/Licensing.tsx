@@ -58,10 +58,10 @@ const CORES = [
 ]
 
 const TERMS = [
-  { name: 'Evaluation', price: 'from $500', body: 'Source and test vectors for a single project, so you can measure it in your own flow before committing.' },
-  { name: 'Single project', price: 'from $2 500', body: 'Use in one product, with integration support and the verification harness that proves it works.' },
+  { name: 'Evaluation', price: 'from $2 500', body: 'Source and test vectors for a single project, so you can measure it in your own flow before committing.' },
+  { name: 'Single project', price: 'from $25 000', body: 'Use in one product, with integration support and the verification harness that proves it works.' },
   { name: 'Production / multi-project', price: 'quoted', body: 'Broader rights, negotiated per case — including royalty-based terms where that suits you better.' },
-  { name: 'Custom arithmetic', price: 'from $150/h', body: 'A format or datapath designed for your constraints, delivered with the same bit-exact verification.' },
+  { name: 'Custom arithmetic', price: 'from $280/h', body: 'A format or datapath designed for your constraints, delivered with the same bit-exact verification.' },
 ]
 
 const INCLUDED = [
@@ -96,10 +96,10 @@ const RU = {
   ],
   termsTitle: 'Условия',
   terms: [
-    { name: 'Оценочная', price: 'от $500', body: 'Исходники и тест-векторы под один проект — измерить в своём флоу, прежде чем брать на себя обязательства.' },
-    { name: 'Один проект', price: 'от $2 500', body: 'Использование в одном продукте, с поддержкой интеграции и верификационной обвязкой, которая доказывает работоспособность.' },
+    { name: 'Оценочная', price: 'от $2 500', body: 'Исходники и тест-векторы под один проект — измерить в своём флоу, прежде чем брать на себя обязательства.' },
+    { name: 'Один проект', price: 'от $25 000', body: 'Использование в одном продукте, с поддержкой интеграции и верификационной обвязкой, которая доказывает работоспособность.' },
     { name: 'Продакшн / несколько проектов', price: 'по запросу', body: 'Более широкие права, обсуждаются под случай — включая роялти, если так удобнее.' },
-    { name: 'Своя арифметика', price: 'от $150/ч', body: 'Формат или тракт данных под ваши ограничения, с той же побитовой верификацией.' },
+    { name: 'Своя арифметика', price: 'от $280/ч', body: 'Формат или тракт данных под ваши ограничения, с той же побитовой верификацией.' },
   ],
   termsNote: 'Цены — точка отсчёта, а не тариф: честная цифра зависит от устройства, нужных прав и объёма интеграционной работы. Спросите — получите настоящую цифру, а не буклет.',
   finalTitle: 'Какое ядро подходит вашему дизайну?',
