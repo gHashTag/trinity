@@ -1,9 +1,5 @@
 <p align="center">
-  <img src="docs/static/img/logo.svg" alt="Trinity" width="180" height="180">
-</p>
-
-<p align="center">
-  <a href="https://github.com/gHashTag/trinity/releases"><img src="https://img.shields.io/github/v/release/gHashTag/trinity?label=Download&style=for-the-badge" alt="GitHub Release"></a>
+  <img src="docs/static/img/trinity-mark.svg" alt="Trinity" width="112">
 </p>
 
 <h1 align="center">Trinity CLI</h1>
@@ -11,6 +7,10 @@
 <p align="center">
   <strong>Ternary Computing Framework — VSA, BitNet LLM Inference, Mathematical Research</strong><br>
   <code>φ² + 1/φ² = 3</code> — The Trinity Identity
+</p>
+
+<p align="center">
+  <a href="https://github.com/gHashTag/trinity/releases/latest"><img src="https://img.shields.io/github/v/release/gHashTag/trinity?style=for-the-badge&logo=github&label=Download" alt="Download latest release"></a>
 </p>
 
 <p align="center">
@@ -22,27 +22,33 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/gHashTag/trinity/releases"><img src="https://img.shields.io/github/v/release/gHashTag/trinity?style=flat-square" alt="Release"></a>
-  <a href="https://www.npmjs.com/package/@playra/tri"><img src="https://img.shields.io/npm/v/@playra/tri?style=flat-square&logo=npm" alt="npm"></a>
-  <a href="https://github.com/gHashTag/homebrew-trinity"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FgHashTag%2Fhomebrew-trinity%2Fmain%2FFormula%2Ftrinity.rb&query=$.version&label=homebrew&style=flat-square" alt="Homebrew"></a>
-  <a href="https://aur.archlinux.org/packages/trinity-cli"><img src="https://img.shields.io/aur/version/trinity-cli?style=flat-square&logo=arch-linux" alt="AUR"></a>
-  <a href="https://github.com/gHashTag/trinity/pkgs/container/trinity"><img src="https://img.shields.io/github/actions/workflow/status/gHashTag/trinity/docker-cli.yml?label=Docker&style=flat-square&logo=docker" alt="Docker"></a>
+  <a href="https://www.npmjs.com/package/@playra/tri"><img src="https://img.shields.io/npm/v/@playra/tri?style=flat-square&logo=npm&label=npm" alt="npm"></a>
+  <a href="https://github.com/gHashTag/homebrew-trinity"><img src="https://img.shields.io/badge/homebrew-gHashTag%2Ftrinity-FBB040?style=flat-square&logo=homebrew" alt="Homebrew tap"></a>
+  <a href="https://aur.archlinux.org/packages/trinity-cli"><img src="https://img.shields.io/aur/version/trinity-cli?style=flat-square&logo=archlinux&label=AUR" alt="AUR"></a>
+  <a href="https://github.com/gHashTag/trinity/pkgs/container/trinity"><img src="https://img.shields.io/badge/ghcr.io-trinity-2496ED?style=flat-square&logo=docker" alt="Container image"></a>
   <img src="https://img.shields.io/badge/Zig-0.15.x-F7A41D?style=flat-square&logo=zig" alt="Zig 0.15.x">
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="MIT License">
-  <a href="https://github.com/gHashTag/trinity/stargazers"><img src="https://img.shields.io/github/stars/gHashTag/trinity?style=flat-square" alt="Stars"></a>
-  <a href="https://github.com/gHashTag/trinity/graphs/contributors"><img src="https://img.shields.io/github/contributors/gHashTag/trinity?style=flat-square" alt="Contributors"></a>
-  <a href="https://github.com/gHashTag/trinity/commits/main"><img src="https://img.shields.io/github/last-commit/gHashTag/trinity?style=flat-square" alt="Last Commit"></a>
-      <a href="https://doi.org/10.5281/zenodo.18947017"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18947017.svg" alt="DOI"></a>
-  <!-- NEW: Zenodo v9.0 Badges -->
-  <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19227879.svg" alt="DOI"></a>
-  <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://img.shields.io/badge/Zenodo-v9.0-blue?logo=zenodo" alt="Zenodo v9.0"></a>
-  <!-- Per-record DOI badges (each links to a Trinity S³AI software description stub on Zenodo, not a peer-reviewed paper) -->
-  <a href="https://doi.org/10.5281/zenodo.19227865"><img src="https://img.shields.io/badge/B001-HSLM-blue?style=flat-square" alt="B001 HSLM stub"></a>
-  <a href="https://doi.org/10.5281/zenodo.19227869"><img src="https://img.shields.io/badge/B003-TRI--27%20ISA-blue?style=flat-square" alt="B003 TRI-27 ISA stub"></a>
-  <a href="https://doi.org/10.5281/zenodo.19227877"><img src="https://img.shields.io/badge/B007-VSA-blue?style=flat-square" alt="B007 VSA stub"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="MIT License"></a>
 </p>
 
-> **Canonical Zenodo SOT:** [zenodo.org/communities/trinity-s3ai](https://zenodo.org/communities/trinity-s3ai/) — the single source of truth for all Vasilev / Trinity-S³AI Zenodo records. Any DOI badge above outside this community (e.g. the v2.0.x FPGA-software series 18939351-18950696) is legitimate authorship but not part of the curated S³AI v5.0 record set (B001-B008 = 19227865-79).
+<p align="center">
+  <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19227879-1682D4?style=flat-square&logo=zenodo" alt="DOI 10.5281/zenodo.19227879"></a>
+  <a href="https://zenodo.org/communities/trinity-s3ai/"><img src="https://img.shields.io/badge/Zenodo_community-trinity--s3ai-1682D4?style=flat-square&logo=zenodo" alt="Zenodo community trinity-s3ai"></a>
+  <a href="https://github.com/gHashTag/trinity/stargazers"><img src="https://img.shields.io/github/stars/gHashTag/trinity?style=flat-square" alt="Stars"></a>
+  <a href="https://github.com/gHashTag/trinity/graphs/contributors"><img src="https://img.shields.io/github/contributors/gHashTag/trinity?style=flat-square" alt="Contributors"></a>
+  <a href="https://github.com/gHashTag/trinity/commits/main"><img src="https://img.shields.io/github/last-commit/gHashTag/trinity?style=flat-square" alt="Last commit"></a>
+</p>
+
+### Citation & Zenodo records
+
+**Canonical source of truth:** the [trinity-s3ai Zenodo community](https://zenodo.org/communities/trinity-s3ai/) holds all Vasilev / Trinity-S³AI records. Concept DOI: [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879).
+
+| Record | Topic | DOI |
+|--------|-------|-----|
+| B001 | HSLM | [10.5281/zenodo.19227865](https://doi.org/10.5281/zenodo.19227865) |
+| B003 | TRI-27 ISA | [10.5281/zenodo.19227869](https://doi.org/10.5281/zenodo.19227869) |
+| B007 | VSA | [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877) |
+
+Each B00x record is a Trinity S³AI **software description stub**, not a peer-reviewed paper. DOIs outside this community — e.g. the v2.0.x FPGA-software series `18939351`–`18950696` and [10.5281/zenodo.18947017](https://doi.org/10.5281/zenodo.18947017) — are legitimate authorship but not part of the curated S³AI v5.0 record set (B001–B008 = `19227865`–`79`).
 
 ---
 
