@@ -57,12 +57,18 @@ function Head({ badge, title, lede, wide }: { badge: Bi; title: Bi; lede?: Bi; w
 
 /* ───────────────────────────── LOCKUP ───────────────────────────── */
 
-// The mark, the house name above it, the format name below it. The lower line
-// is set letter by letter because it is the one thing on this page a visitor is
-// asked to remember, and a word that assembles itself is read once more than a
-// word that is simply there. The name is Ternary Network Floats, singular
-// Network: the initials are the format's name in the paper and in every
-// conformance vector, so the plural would quietly unname it.
+// The mark, the house name above it, the format name below it — all three sized
+// by one ratio rather than by eye. The symbol's height is the upper line times
+// φ², the lower line is the upper line divided by φ, and the two gaps stand in
+// the same relation to each other, so nothing in the group is an arbitrary
+// number: the group is proportioned by the constant the formats are named for.
+//
+// Both lines are white and set in the page's own face. They were golden mono,
+// which read as a third voice in a lockup that should have one.
+//
+// The lower line assembles letter by letter because it is the one name a visitor
+// is asked to remember. Singular Network: the initials are the format's name in
+// the paper and in every conformance vector, so a plural would unname it.
 const TNF_WORDMARK = 'TERNARY NETWORK FLOATS'
 
 function Lockup() {
@@ -73,31 +79,38 @@ function Lockup() {
       transition={{ duration: 0.5 }}
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        gap: '0.4rem', margin: '0 auto 2.5rem', textAlign: 'center',
+        margin: '0 auto var(--sp4)', textAlign: 'center',
       }}
     >
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="tnf-mono"
         style={{
-          fontSize: 'clamp(1.05rem, 3vw, 1.7rem)', fontWeight: 500,
-          letterSpacing: '0.14em', color: 'var(--golden)',
+          fontSize: 'clamp(var(--f1), 2.618vw, var(--f3))',
+          fontWeight: 300,
+          letterSpacing: '0.146em', // 0.236 / φ
+          color: 'var(--text)',
+          lineHeight: 1,
+          marginBottom: 'var(--sp1)',
         }}
       >
-        Trinity S<sup style={{ fontSize: '0.62em', top: '-0.5em' }}>3</sup>AI
+        Trinity S<sup style={{ fontSize: '0.618em', top: '-0.5em' }}>3</sup>AI
       </motion.div>
 
-      <TrinityLogo withLabel={false} height="clamp(88px, 17vw, 190px)" />
+      <TrinityLogo withLabel={false} height="clamp(89px, 16.18vw, 178px)" />
 
       <motion.div
-        className="tnf-mono"
         aria-label={TNF_WORDMARK}
         style={{
           display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
-          fontSize: 'clamp(0.72rem, 2.5vw, 1.25rem)', fontWeight: 400,
-          letterSpacing: 'clamp(0.12em, 0.5vw, 0.3em)', color: 'var(--accent)',
+          // φ⁻¹ of the line above it
+          fontSize: 'clamp(var(--f-1), 1.618vw, var(--f2))',
+          fontWeight: 300,
+          letterSpacing: 'clamp(0.146em, 0.618vw, 0.236em)',
+          color: 'var(--text)',
+          lineHeight: 1,
+          marginTop: 'var(--sp0)', // the gap above the mark, divided by φ
         }}
       >
         {TNF_WORDMARK.split('').map((ch, i) => (
@@ -122,7 +135,7 @@ function Lockup() {
 export function TnfHero() {
   const { L, key } = useL()
   return (
-    <section id="hero" className="tnf-section" style={{ borderTop: 'none', paddingTop: 'clamp(6rem, 12vh, 9rem)' }}>
+    <section id="hero" className="tnf-section" style={{ borderTop: 'none', paddingTop: 'clamp(var(--sp4), 12vh, var(--sp5))' }}>
       <div className="tnf-wrap">
         <Lockup />
 
@@ -132,30 +145,31 @@ export function TnfHero() {
           <div
             className="tnf-mono"
             style={{
-              fontSize: 'clamp(2.4rem, 8vw, 5rem)',
+              fontSize: 'clamp(var(--f4), 8vw, var(--f6))',
               fontWeight: 300,
               letterSpacing: '-0.03em',
               lineHeight: 1,
-              margin: '0.75rem 0 1.5rem',
+              margin: 'var(--sp0) 0 var(--sp2)',
               color: 'var(--golden)',
             }}
           >
             {hero.identity}
           </div>
 
-          <h1 style={{ fontSize: 'clamp(1.6rem, 4.2vw, 2.9rem)', fontWeight: 500, maxWidth: '30ch', letterSpacing: '-0.025em', lineHeight: 1.15 }}>
+          <h1 style={{ fontSize: 'clamp(var(--f2), 4.2vw, var(--f4))', fontWeight: 500, maxWidth: '30ch', letterSpacing: '-0.025em', lineHeight: 1.236 }}>
             {L(hero.headline)}
           </h1>
-          <p className="tnf-lede" style={{ marginBottom: '2rem' }}>{L(hero.sub)}</p>
+          <p className="tnf-lede" style={{ marginBottom: 'var(--sp3)' }}>{L(hero.sub)}</p>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '3rem' }}>
+          {/* Ступени 0.618 / 1.618 rem — то же отношение, что и во всей шкале. */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp0)', marginBottom: 'var(--sp3)' }}>
             <a href="#claim" style={{
-              background: 'var(--accent)', color: '#000', padding: '0.8rem 1.5rem', borderRadius: '6px',
-              fontWeight: 600, textDecoration: 'none', fontSize: '0.9rem',
+              background: 'var(--accent)', color: '#000', padding: 'var(--sp0) var(--sp2)', borderRadius: '6px',
+              fontWeight: 600, textDecoration: 'none', fontSize: 'var(--f-1)',
             }}>{L(hero.ctaPrimary)}</a>
             <a href="#limits" style={{
-              border: '1px solid var(--border)', color: 'var(--text)', padding: '0.8rem 1.5rem',
-              borderRadius: '6px', fontWeight: 600, textDecoration: 'none', fontSize: '0.9rem',
+              border: '1px solid var(--border)', color: 'var(--text)', padding: 'var(--sp0) var(--sp2)',
+              borderRadius: '6px', fontWeight: 600, textDecoration: 'none', fontSize: 'var(--f-1)',
             }}>{L(hero.ctaSecondary)}</a>
           </div>
         </motion.div>
@@ -176,9 +190,29 @@ export function TnfHero() {
           ))}
         </motion.div>
 
-        <motion.div {...fade} style={{ marginTop: '1.5rem', color: 'var(--muted)', fontSize: '0.78rem' }}>
+        <motion.div {...fade} style={{ marginTop: 'var(--sp2)', color: 'var(--muted)', fontSize: 'var(--f-1)' }}>
           {L(PAPER.title)} · {PAPER.author} · ORCID {PAPER.orcid} · {L(PAPER.date)} · {PAPER.theorems}{' '}
           {key === 'ru' ? 'теорем' : 'theorems'} · {PAPER.retractions} {key === 'ru' ? 'ретракций' : 'retractions'}
+        </motion.div>
+
+        {/* Две работы, на которых стоит эта: они были упомянуты в разделах ниже,
+            но на первом экране их не было, а именно они дают читателю право
+            проверять всё остальное. */}
+        <motion.div {...fade} style={{ marginTop: 'var(--sp1)', display: 'flex', flexWrap: 'wrap', gap: 'var(--sp0) var(--sp2)', fontSize: 'var(--f-1)' }}>
+          <span style={{ color: 'var(--muted)' }}>
+            {key === 'ru' ? 'Работы, на которых это стоит:' : 'The work this stands on:'}
+          </span>
+          <a href="https://arxiv.org/abs/2606.05017" target="_blank" rel="noopener noreferrer"
+             style={{ color: 'var(--text)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}>
+            arXiv:2606.05017 — GoldenFloat{key === 'ru' ? ', правило полей' : ', the field rule'}
+          </a>
+          <a href="https://arxiv.org/abs/2606.09686" target="_blank" rel="noopener noreferrer"
+             style={{ color: 'var(--text)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}>
+            arXiv:2606.09686 — {key === 'ru' ? 'каталог 83 форматов' : 'the 83-format catalogue'}
+          </a>
+          <a href="#visuals" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+            {key === 'ru' ? 'два чертежа по ним ↓' : 'two drawings from them ↓'}
+          </a>
         </motion.div>
       </div>
     </section>

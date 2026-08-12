@@ -18,9 +18,21 @@
   box-sizing: border-box;
 }
 
+/* The page colour belongs to the root element, not to body.
+   The star layer sits at a negative z-index, which puts it behind its parent's
+   background box — and body's background was opaque black, so the field was
+   painted into its canvas and then covered by the very colour it was meant to
+   sit on. Measured before the fix: maximum luminance 0 across an empty 390x340
+   region. The root element's background is the page canvas and paints below
+   everything, including negative layers, so the colour moves here and body
+   stops being a lid. */
+html {
+  background-color: var(--bg);
+}
+
 body {
   font-family: var(--font);
-  background-color: var(--bg);
+  background-color: transparent;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -35,6 +47,19 @@ body {
   z-index: -10;
   pointer-events: none;
   opacity: 0.35;
+}
+
+.phi-starfield {
+  position: fixed;
+  inset: 0;
+  z-index: -5;
+  pointer-events: none;
+}
+
+.phi-starfield canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* Typography Fluid Design */

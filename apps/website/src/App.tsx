@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import Navigation from './components/Navigation'
-import QuantumBackground from './components/QuantumBackground'
+import PhiStarfield from './components/PhiStarfield'
 import Footer from './components/Footer'
 import { TnfHero } from './components/sections/tnf'
 
@@ -23,6 +23,7 @@ const TnfTheorems = lazy(() => import('./components/sections/tnf').then((m) => (
 const TnfLimits = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLimits })))
 const TnfLandscape = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLandscape })))
 const TnfCalculators = lazy(() => import('./components/sections/tnf/Calculators'))
+const TnfVisuals = lazy(() => import('./components/sections/tnf/PhiViz'))
 const TnfFindings = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFindings })))
 const TnfLineage = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLineage })))
 const TnfReproduce = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfReproduce })))
@@ -37,7 +38,7 @@ const SectionFallback = () => (
 export default function App() {
   return (
     <main>
-      <QuantumBackground />
+      <PhiStarfield />
       <Navigation />
 
       <TnfHero />
@@ -46,6 +47,7 @@ export default function App() {
         <TnfClaim />
         <TnfFormats />
         <TnfFrontier />
+        <TnfVisuals />
         <TnfLadder />
         <TnfTheorems />
         <TnfCalculators />
