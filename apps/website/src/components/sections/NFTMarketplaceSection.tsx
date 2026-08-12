@@ -294,7 +294,7 @@ export default function NFTMarketplaceSection() {
               {data?.data.marketplace_active ? 'LIVE' : 'OFFLINE'}
             </span>
             <span style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
-              {data?.data.listings.length || 0} {t('nftMarketplace.listings')}
+              {data?.data.listings.length ?? '\u2014'} {t('nftMarketplace.listings')}
             </span>
           </div>
         </motion.h2>

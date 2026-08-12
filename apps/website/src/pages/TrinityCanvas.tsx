@@ -873,7 +873,7 @@ export default function TrinityCanvas() {
       const res = await sendMessage({ message: `analyze image: ${visionUrl}`, image_path: visionUrl || undefined });
       setVisionAnalysis(
         `Vision Analysis Complete\n${'━'.repeat(40)}\n` +
-        `Source:      ${res.source}\nConfidence:  ${((res.confidence || 0) * 100).toFixed(0)}%\n` +
+        `Source:      ${res.source}\nConfidence:  ${res.confidence == null ? '\u2014' : (res.confidence * 100).toFixed(0) + '%'}\n` +
         `Latency:     ${res.latency_us ? (res.latency_us < 1000 ? `${res.latency_us}us` : `${(res.latency_us / 1000).toFixed(1)}ms`) : 'N/A'}\n` +
         `${'━'.repeat(40)}\n${res.response}`
       );
@@ -1905,7 +1905,7 @@ export default function TrinityCanvas() {
                   <div style={{ display: 'flex', gap: 6, fontSize: 8, fontFamily: MONO, flexWrap: 'wrap' }}>
                     <span style={{ color: mirrorStatus.razum.symbolic_hits > 0 ? '#ffd700' : 'rgba(255,215,0,0.3)' }}>Hits:{mirrorStatus.razum.symbolic_hits}</span>
                     <span style={{ color: mirrorStatus.razum.symbolic_hit_rate > 0 ? '#ffd700' : 'rgba(255,215,0,0.3)' }}>Rate:{(mirrorStatus.razum.symbolic_hit_rate * 100).toFixed(0)}%</span>
-                    <span style={{ color: (mirrorStatus.razum.kg_hits || 0) > 0 ? '#ff8800' : 'rgba(255,136,0,0.3)' }}>KG:{mirrorStatus.razum.kg_hits || 0}/{mirrorStatus.razum.kg_facts_loaded || 0}</span>
+                    <span style={{ color: (mirrorStatus.razum.kg_hits || 0) > 0 ? '#ff8800' : 'rgba(255,136,0,0.3)' }}>KG:{mirrorStatus.razum.kg_hits ?? '\u2014'}/{mirrorStatus.razum.kg_facts_loaded || 0}</span>
                     <span style={{ color: mirrorStatus.razum.memory_entries > 0 ? '#ffd700' : 'rgba(255,215,0,0.3)' }}>Mem:{mirrorStatus.razum.memory_entries}/256</span>
                     <span style={{ color: mirrorStatus.razum.llm_loaded ? '#00e599' : 'rgba(255,215,0,0.3)' }}>LLM:{mirrorStatus.razum.llm_loaded ? 'ON' : 'OFF'}</span>
                   </div>
@@ -2040,7 +2040,7 @@ export default function TrinityCanvas() {
                                 <div key={`prog-${prog.task}-${i}`} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 7, fontFamily: MONO }}>
                                     <span style={{ color: '#ffd700' }}>{prog.task}</span>
-                                    <span style={{ color: '#00e599' }}>{prog.pas ?? 0}/{prog.baseline ?? 0}</span>
+                                    <span style={{ color: '#00e599' }}>{prog.pas ?? '\u2014'}/{prog.baseline ?? '\u2014'}</span>
                                   </div>
                                   <div style={{ position: 'relative', height: 3, borderRadius: 2, background: 'rgba(255,215,0,0.1)', overflow: 'hidden' }}>
                                     <motion.div
