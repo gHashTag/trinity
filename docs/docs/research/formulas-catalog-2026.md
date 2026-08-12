@@ -130,6 +130,8 @@ M_W, M_Z from electroweak symmetry breaking
 | Q5 | Ω_a = γ⁴π²/φ | 0.26 | ✅ SMOKING GUN — matches DM! |
 | Q6 | g_aγγ = α/2π × φ⁻² | Axion-photon coupling | ✅ Candidate |
 
+**Note (2026-08-12) — Q5 carries a fitted scale factor.** γ⁴π²/φ = **0.018944**, not 0.26; the printed value applies an implied scale of ≈13.7 fitted to the measured dark-matter density. Q5 is also the identical expression to G6 (Ω_DM) in Domain 4, so "SMOKING GUN — matches DM!" is one fitted number agreeing with itself under two different names. See the Disclosure under Domain 4 for the full accounting.
+
 ---
 
 ## Domain 3.5: PMNS / Neutrino Mixing (Sprint 1C Complete)

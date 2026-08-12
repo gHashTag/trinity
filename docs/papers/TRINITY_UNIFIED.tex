@@ -30,6 +30,7 @@ We present a unified framework connecting three fundamental blind spots in physi
 Modern physics faces three fundamental blind spots: (1) the origin of gravitational constants, (2) the nature of consciousness, and (3) the structure of time. Despite extensive research, no unified framework exists connecting these domains.
 
 Recent work in TRINITY theory discovered $\gamma = \phi^{-3}$ as a fundamental parameter in Loop Quantum Gravity and the fine structure constant $\alpha^{-1} = 4\pi^3 + \pi^2 + \pi$. We extend this to show that $\phi$ and $\gamma$ provide a unified framework for gravity, consciousness, and time.
+(\textbf{Withdrawn 2026-08-12:} the loop-quantum-gravity identification asserted in the preceding sentence was tested and rejected in \texttt{trinity/docs/DELTA-001.md} on 2026-03-28, status FALSIFIED --- $0.236068$ against the canonical Barbero--Immirzi value $0.237533$, $+0.617\%$. The sentence is annotated rather than deleted; $\phi^{-3}$ is retained below as notation only. See the Disclosure following the abstract.)
 
 \section{Mathematical Foundation}
 
@@ -93,6 +94,8 @@ Out of 12 cross-domain predictions tested:
 \item Average error: $0.8\%$
 \end{itemize}
 
+\paragraph{Note, 2026-08-12.} These three statistics are left standing but do not measure what they appear to measure. The entries for $G$, $\Omega_\Lambda$ and $\Omega_{\mathrm{DM}}$ are dimensionless numbers rescaled by a multiplicative factor fitted separately to each target (see the Disclosure after the abstract and the notes in Section~\emph{Gravity Domain}); with one free parameter fitted to one datum the residual is zero by construction, so those residuals enter this average as calibration error, not predictive error. The $f_\gamma$ entry is worse than a calibration: $\phi^3\pi/\gamma = 56.3736$, not the $40.2$~Hz printed, so its contribution to the average is computed against a value the formula does not produce.
+
 \section{Gravity Domain}
 
 \subsection{Gravitational Constant}
@@ -103,6 +106,8 @@ G = \frac{\pi^3 \gamma^2}{\phi} \approx 6.68 \times 10^{-11}~\text{m}^3\text{kg}
 
 Error vs CODATA: $0.09\%$.
 
+\paragraph{Note on that $0.09\%$, 2026-08-12.} The claim is annotated, not removed. $\pi^3\gamma^2/\phi = 1.067914$ is a pure number and does not carry the units m$^3$kg$^{-1}$s$^{-2}$ printed beside it. The quoted $6.68\times10^{-11}$ is that number multiplied by a scale factor of $6.2552\times10^{-11}$ fitted to CODATA $G$ --- \texttt{G\_SCALE} in \texttt{t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md}, where it is described there as ``empirical calibration to match measurements''. With one free multiplicative parameter fitted to one target the residual vanishes by construction, so $0.09\%$ reports how well the calibration was performed, not how well the formula predicts $G$.
+
 \subsection{Dark Energy and Matter}
 
 \begin{align}
@@ -112,6 +117,8 @@ Error vs CODATA: $0.09\%$.
 \end{align}
 
 Total: $\Omega_{\text{total}} \approx 1.0$ (flat universe).
+
+\paragraph{Note on the density scales, 2026-08-12.} The three lines above and the $G$ line before them are not one calibration applied four times; each needs its own factor, and the four factors are four different numbers. Against the measured targets, $\Omega_\Lambda$ requires $0.688/0.000359 \approx 1917$, $\Omega_{\mathrm{DM}}$ requires $0.257/0.018944 \approx 13.57$, $\Omega_b$ as printed requires $0.05/0.318310 \approx 0.157$, and $G$ requires $6.2552\times10^{-11}$. The unscaled expressions sum to $0.000359 + 0.018944 + 0.318310 = 0.337612$, so the flatness statement $\Omega_{\text{total}} \approx 1.0$ holds only for the separately rescaled figures and is not a consequence of the $\phi$-algebra.
 
 \subsection{Black Hole Thermodynamics}
 
@@ -205,6 +212,8 @@ D_{st} &= 4 - \gamma \approx 3.764 \quad \text{(spacetime)}
 \item Can $\phi$-based corrections be detected in cosmology?
 \end{itemize}
 
+\paragraph{Note, 2026-08-12.} The first question is kept on the record but no longer has the two sides it presupposes. It does not appear in LQG: the identification of $\phi^{-3}$ with the Barbero--Immirzi parameter was rejected in \texttt{trinity/docs/DELTA-001.md} on 2026-03-28 ($0.236068$ vs canonical $0.237533$, $+0.617\%$; Rovelli \& Vidotto, \emph{Covariant Loop Quantum Gravity}, 2014), and $\gamma$ is retained above as notation for the number $\phi^{-3}$ only. Nor does it appear in the consciousness column as printed: $\phi^3\pi/\gamma = 56.3736$, not the $40.2$~Hz quoted for $f_\gamma$.
+
 \section{Theoretical Implications}
 
 \subsection{Three-Fold Structure}
@@ -253,6 +262,8 @@ $t_{\text{present}}$ & $300\text{-}500$ ms & $< 1$ \\
 \caption{Prediction accuracy}
 \end{table}
 
+\paragraph{Note on this table, 2026-08-12.} Every row is retained; the Error column is not what its heading says. $G$, $\Omega_\Lambda$ and $\Omega_{\mathrm{DM}}$ are dimensionless expressions ($\pi^3\gamma^2/\phi = 1.067914$, $\gamma^8\pi^4/\phi^2 = 0.000359$, $\gamma^4\pi^2/\phi = 0.018944$) multiplied by scale factors fitted separately to each target ($6.2552\times10^{-11}$, $\approx 1917$, $\approx 13.57$ respectively --- three different numbers, not one calibration). With one free multiplicative parameter fitted to one datum the residual vanishes by construction, so $0.09$, $0.16$ and $3.0$ are calibration residuals and belong in a column headed ``calibration'', not ``prediction''. The $f_\gamma$ row is not even that: $\phi^3\pi/\gamma = 56.3736$, so its $0.5\%$ is measured against the $40.2$~Hz printed in this paper rather than against anything the formula produces. Of the rows listed, only $\alpha^{-1}$ is a residual against an unfitted expression --- and $4\pi^3 + \pi^2 + \pi$ contains neither $\phi$ nor $\gamma$.
+
 \subsection{Parameter Uncertainty Propagation}
 
 For $\phi$ uncertainty $\delta\phi = 10^{-10}$ and $\delta\gamma = 10^{-10}$:
@@ -275,6 +286,8 @@ We have presented a unified framework connecting gravity, consciousness, and tim
 \end{enumerate}
 
 The framework suggests that $\gamma = \phi^{-3}$ is a fundamental parameter of physical law, connecting quantum gravity (LQG) to consciousness (neural gamma) and temporal structure (Planck time). This provides a foundation for a complete theory unifying all aspects of physical reality.
+
+\paragraph{Note, 2026-08-12.} The five numbered conclusions and the closing paragraph are left in place and annotated, so that the record shows a correction rather than a deletion. Item~2 (``cross-domain verification with $<1\%$ average error'') inherits the status set out in the Disclosure after the abstract: the $G$ and $\Omega$ figures are dimensionless expressions multiplied by scale factors fitted one per target, so those residuals are calibration, not prediction. The closing paragraph's link to quantum gravity does not stand: the identification of $\phi^{-3}$ with the Barbero--Immirzi parameter was rejected in \texttt{trinity/docs/DELTA-001.md} on 2026-03-28 ($0.236068$ vs $0.237533$, $+0.617\%$; Rovelli \& Vidotto, \emph{Covariant Loop Quantum Gravity}, 2014). And the ``consciousness (neural gamma)'' link rests on $f_\gamma$, which the formula $\phi^3\pi/\gamma$ evaluates to $56.3736$, not the $40.2$~Hz printed. What survives is the algebra of the $\phi$-expressions themselves.
 
 \begin{thebibliography}{9}
 

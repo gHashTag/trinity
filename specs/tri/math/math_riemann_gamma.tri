@@ -50,7 +50,15 @@ constants:
   - name: GAMMA
     type: f64
     value: 0.23606797749978969641
-    description: "Barbero-Immirzi parameter γ = φ⁻³"
+    # Note, 2026-08-12: the identification of φ⁻³ with the Barbero-Immirzi parameter was
+    # rejected in docs/DELTA-001.md on 2026-03-28 (0.236068 vs the canonical 0.237533,
+    # +0.617%; source: Rovelli & Vidotto, "Covariant Loop Quantum Gravity", 2014).
+    # The original wording is kept in the description below, marked rather than deleted,
+    # so the correction stays on the record. φ⁻³ is retained here as notation only; the
+    # physical identification is withdrawn. The numeric value is unaffected — this
+    # constant is φ⁻³, and nothing in this spec depends on the loop-quantum-gravity
+    # reading of the symbol γ.
+    description: "[identification WITHDRAWN 2026-08-12, see note above] Barbero-Immirzi parameter γ = φ⁻³ — read as: the number φ⁻³"
 
   - name: TRINITY
     type: f64

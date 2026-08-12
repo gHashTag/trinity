@@ -115,6 +115,38 @@ V = n \times 3^k \times \pi^m \times \phi^p \times e^q \times \gamma^r
 \end{equation}
 where $n \in \mathbb{Z}$, $k,m,p,q,r \in \{-6,-5,\dots,6\}$.
 
+\textbf{Disclosure on scale factors (added 2026-08-12).} $V$ as defined above is a
+\emph{dimensionless number}: $3$, $\pi$, $\phi$, $e$ and $\gamma$ carry no units, so no
+choice of exponents can produce an \si{\angstrom}, a \si{\hertz}, a \si{\eV} or a
+\si{\kelvin}. Every physical value printed in the tables and boxed equations below is that
+dimensionless number multiplied by a further factor, supplied per target, which carries the
+units --- explicitly so in Formula~52 ($\times\,1$, read as \si{\micro\eV}), Formula~53
+($\times\,5$, read as \si{\angstrom}), Formula~61 ($\times\,10^{-12}$\,s), Formula~64
+($\times\,2.2$, read as \si{\eV}), Formula~65 ($\times\,77$, read as \si{\kelvin}),
+Formula~70 ($\times\,50$, read as \si{\micro\tesla}), Formula~72 ($\times\,100$, read as
+\si{\nano\meter}), Formulas~71, 74 and 75 ($\times\,10^{6}$, $10^{9}$, $10^{12}$), and
+Section~7.4 ($\times\,10^{-52}\,\mathrm{m}^{-2}$). Where such a factor is chosen so that the
+product lands on the measured value, the accompanying Error~(\%) is a \emph{calibration
+residual}: with one free multiplicative parameter fitted to one target the residual is zero
+by construction, and no prediction has been tested. The same practice is documented for the
+companion v10.2 paper in
+\texttt{t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md}, which names
+the factors \texttt{G\_SCALE} $\approx 6.2552\times10^{-11}$ and
+\texttt{OMEGA\_COARSE\_SCALE} $\approx 1908.84$ and describes them as ``empirical
+calibration to match measurements''; there the implied scales for $G$, $\Omega_\Lambda$ and
+$\Omega_{\text{DM}}$ are three different numbers ($6.2552\times10^{-11}$, ${\approx}1917$,
+${\approx}13.57$), so they are not one shared unit conversion. Two further points are
+recorded rather than acted on. First, the fitted factor does not always land where the text
+says: $\phi^4 \times 5 = 34.270510$, not the \SI{34.005}{\angstrom} printed in Formula~53,
+and against the experimental \SI{34.0}{\angstrom} the residual is $0.80\%$, not the
+$0.015\%$ quoted --- so that error figure is measured against a number the formula does not
+produce. Second, the master formula as specified admits $13^5 = 371{,}293$ exponent
+combinations for each integer $n$, with $n$ itself unconstrained; selecting the member
+nearest a known constant is a search over that family, and the resulting closeness is
+evidence about the size of the family, not about a derivation. Nothing above is deleted:
+the formulas, the values and the error columns are left exactly as published so that the
+correction is visible beside them.
+
 \section{Mathematical Foundation}
 
 \subsection{Sacred Constants}
@@ -534,6 +566,12 @@ The same $\phi$-field appears in:
 
 This consistency provides strong evidence for a unified φ-field underlying
 all physical phenomena.
+
+\textbf{Note (added 2026-08-12).} The first bullet is the withdrawn identification, not an
+independent domain: ``quantum geometry ($\gamma = \phi^{-3}$)'' is the Barbero-Immirzi claim
+rejected in DELTA-001 (2026-03-28, status FALSIFIED, $0.236068$ vs $0.237533$, $+0.617\%$;
+see the Disclosure in Section~1.1). With it withdrawn, the list no longer spans quantum
+geometry, and the ``strong evidence'' sentence is left standing only as the original text.
 
 \section{Predictions and Falsifiability}
 

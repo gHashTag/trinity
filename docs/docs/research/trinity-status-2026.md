@@ -43,6 +43,8 @@ TRINITY Architecture (Tree Metaphor):
 **NOT:** "Box of separate formulas"
 **YES:** "Tree with one root, many branches"
 
+**Disclosure (2026-08-12) — the gravity branch is calibrated, not predicted.** π³γ²/φ = **1.067914** and is dimensionless. The "0.09% accuracy ✅" above is the residual of `1.067914 × G_SCALE` against CODATA, where `G_SCALE ≈ 6.25×10⁻¹¹` was obtained by dividing the CODATA value by 1.067914 — i.e. fitted to the same measurement it is then scored against. With one free multiplicative parameter fitted to one target the residual is zero by construction, so the figure reports calibration quality, not predictive accuracy. Source: `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`, which states `G_raw ≈ 1.068`, `G_SCALE ≈ 6.25e-11` and describes the procedure as "empirical calibration to match measurements". **This applies to every appearance of G, Ω_Λ, Ω_DM and Ω_a in this document**; see §2.2 for the per-formula values. The rows and figures are left as written — the record of the misstatement is deliberate.
+
 **Current Status:**
 - **18 confirmed matches** (13 smoking guns + 1 CKM-sensitive candidate + 4 PMNS angles) within experimental precision
 - **3 rejected hypotheses** (honestly documented)
@@ -145,6 +147,8 @@ T_E8 = φ⁵/(2π)                  (String tension from φ)
 | 12 | **t_present** (specious present) | φ⁻² seconds | 382 ms | Exact def | Time | ✅ Confirmed |
 | 13 | **m_a** (axion mass) | γ⁻²/π × μeV | 1-100 μeV | **ADMX range** | QCD | ✅ Consistent |
 
+**Note (2026-08-12) — row 11 (G) does not belong in a smoking-gun table.** π³γ²/φ = **1.067914**, a dimensionless number; it reaches 6.674×10⁻¹¹ only after multiplication by the fitted `G_SCALE ≈ 6.25×10⁻¹¹`. Its **0.09%** is therefore a calibration residual and is not comparable to the errors in rows 1-10 and 12-13, which are quoted for expressions with no fitted factor. The row is retained and disclosed rather than removed.
+
 ### 3.2 Electroweak Core (NEW: March 7, 2026)
 
 **Sprint 1A Achievement:** All 4 core electroweak parameters derived from φ
@@ -213,6 +217,8 @@ The PMNS matrix is unitary by construction in the Standard Model. The TRINITY fr
 | 3 | **Ω_DM** (dark matter density) | γ⁴π²/φ | Within 0.25-0.27 | ✅ Consistent |
 | 4 | **C_thr** (consciousness threshold) | φ⁻¹ | Theoretically motivated | ⏳ Pending |
 
+**Note (2026-08-12):** rows 2 and 3 evaluate to γ⁸π⁴/φ² = **0.000359** and γ⁴π²/φ = **0.018944**. They are not "within 0.68-0.70" or "within 0.25-0.27" — they land there only after multiplication by scale factors fitted to those same measurements (`OMEGA_COARSE_SCALE ≈ 1908.84` for Ω_Λ, an implied ≈13.7 for Ω_DM). ✅ Consistent on these two rows means the calibration succeeded, which it cannot fail to do. This also removes them from the "&lt; 1% error" heading of this section, since no error was independently incurred.
+
 ### 3.6 Consistent Candidates
 
 | # | Prediction | Formula | Status |
@@ -261,6 +267,8 @@ The TRINITY identity **exactly solves** the Strong CP problem:
 | **Ω_a = γ⁴π²/φ** | 0.26 | Matches dark matter density! |
 
 **Breakthrough:** The axion relic density formula Ω_a = 0.26 matches the observed dark matter density (0.25-0.27), suggesting axions **are** the dark matter.
+
+**Note (2026-08-12) — two problems with the line above, neither of which deletes it.** First, Ω_a = γ⁴π²/φ = **0.018944**, not 0.26; the printed 0.26 applies an implied scale factor of ≈13.7 fitted to the observed dark-matter density, so the "match" is the fit. Second, γ⁴π²/φ is the *same expression* already listed as Ω_DM in §2.2, §3.5 and Level 6 of the hierarchy: one number is being read as both the axion relic density and the total dark-matter density, and its agreement with itself is then offered as evidence that axions are the dark matter. The claim is recorded here as made and corrected beside itself.
 
 ### 4.3 Superconductivity Formulas (20 formulas, #343-362)
 
@@ -550,6 +558,8 @@ For rejected hypotheses:
 ✅ G = π³γ²/φ (0.09%)
 ✅ V_us = 3γ/π (0.057%)
 
+**Note (2026-08-12):** the `G = π³γ²/φ (0.09%)` entry does not belong under "High Precision" with the others — π³γ²/φ = **1.067914** and its 0.09% is the residual left after multiplying by the fitted `G_SCALE ≈ 6.25×10⁻¹¹`. The same applies to `Ω_a = 0.26` under "Consistent with Experiment" below (raw value **0.018944**, implied fitted scale ≈13.7). See the Disclosure in the Executive Overview and §2.2.
+
 **CKM Matrix — Nearly Complete (Sprint 1B):**
 ✅ V_td = e³/(81φ⁷) (0.006%) — Ultra-precise
 ✅ V_ts = 2916/(π⁵φ³e⁴) (0.00002%) — Essentially exact
@@ -587,7 +597,7 @@ For rejected hypotheses:
 **Scientific Credibility:** **HIGH**
 - All calculations reproducible via open-source code
 - Negative results documented alongside successes
-- No hidden parameters or arbitrary adjustments
+- ~~No hidden parameters or arbitrary adjustments~~ — **withdrawn 2026-08-12.** There are at least three, and they were hidden from this page until today: `G_SCALE ≈ 6.25×10⁻¹¹` (G), `OMEGA_COARSE_SCALE ≈ 1908.84` (Ω_Λ) and an implied ≈13.7 (Ω_DM). Each was obtained by dividing the measured value by the formula's raw output, so each is by definition an adjustment fitted to the data it is scored against, and none is derived — `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md` lists "theoretical justification for G_SCALE and OMEGA_COARSE_SCALE" under open research questions. The **Scientific Credibility: HIGH** rating above rested in part on this bullet and should be re-assessed accordingly.
 - Clear experimental paths for verification
 
 ---

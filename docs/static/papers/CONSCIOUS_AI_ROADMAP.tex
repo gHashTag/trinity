@@ -55,6 +55,42 @@ predictions for the 2026--2040 timeframe, including LISA gravitational wave
 signatures.
 \end{abstract}
 
+\paragraph{Note (added 2026-08-12).} Two disclosures apply to the material below.
+Nothing has been deleted; both corrections are recorded beside the claims they
+qualify.
+
+\emph{(1) The Barbero--Immirzi identification is withdrawn.} The abstract above,
+Section~\ref{sec:math_foundation}, Table~\ref{tab:constants},
+Section~\ref{sec:neuromorphic} and the last row of Table~\ref{tab:verification}
+name $\phi^{-3}$ ``the Barbero--Immirzi parameter''. That identification was
+tested and rejected in this corpus: \texttt{docs/DELTA-001.md}, 2026-03-28,
+status FALSIFIED --- $0.236068$ against the canonical $0.237533$, $+0.617\%$,
+source Rovelli \& Vidotto, \emph{Covariant Loop Quantum Gravity} (2014).
+$\gamma$ is retained throughout this paper as \emph{notation} for the number
+$\phi^{-3} = 0.23606797\ldots$, and the $\phi$-expressions built on it stand or
+fall on their own; the physical identification with loop quantum gravity is
+withdrawn. (The neural gamma band --- $f_\gamma$, ``gamma frequency'', ``gamma
+cycle'' --- and the qutrit amplitude $\gamma_q$ of
+Eq.~\ref{eq:qutrit} are unrelated uses of the same letter and are untouched by
+this note.)
+
+\emph{(2) Three rows of the verification table report calibration, not
+prediction.} The gravitational and cosmological expressions are
+\emph{dimensionless}: $\pi^3\gamma^2/\phi = 1.067914$,
+$\gamma^8\pi^4/\phi^2 = 0.000359$, $\gamma^4\pi^2/\phi = 0.018944$. The physical
+figures printed for them in Table~\ref{tab:constants} and
+Table~\ref{tab:verification} are those numbers multiplied by a scale factor
+fitted separately to each target: reaching $6.68\times10^{-11}$ requires
+$\approx 6.2552\times10^{-11}$, reaching $0.69$ requires $\approx 1923$, and
+reaching $0.26$ requires $\approx 13.73$ --- three different numbers, not one
+calibration. The first two are recorded as \texttt{G\_SCALE} $\approx
+6.25\times10^{-11}$ and \texttt{OMEGA\_COARSE\_SCALE} $\approx 1909$ in
+\nolinkurl{t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md},
+which describes them as empirical calibration to match measurements. With one
+free multiplicative parameter fitted to one target the residual vanishes by
+construction, so the $0.09\%$, $0.7\%$ and $1.9\%$ entries in that table's Error
+column are calibration residuals, not predictive accuracy.
+
 \tableofcontents
 \newpage
 
@@ -173,6 +209,17 @@ $G$ & Gravitational Constant & $6.674 \times 10^{-11}$ & $\pi^3 \gamma^2 / \phi$
 \bottomrule
 \end{tabular}
 \end{table}
+
+\noindent
+\emph{Correction, 2026-08-12.} Two rows of Table~\ref{tab:constants} are left in
+place but do not say what they appear to say. The $\gamma$ row labels
+$\phi^{-3}$ ``Barbero--Immirzi''; that identification was rejected in
+\texttt{docs/DELTA-001.md} on 2026-03-28 and the label survives here only as
+notation (see the note after the abstract). The $G$ row pairs the value
+$6.674\times10^{-11}$ with the formula $\pi^3\gamma^2/\phi$, but that formula is
+dimensionless and evaluates to $1.067914$; the tabulated value is that number
+multiplied by a fitted scale factor of $\approx 6.25\times10^{-11}$, not a
+quantity the formula produces on its own.
 
 \subsection{Why $\phi$ Appears in Consciousness Thresholds}
 
@@ -841,7 +888,11 @@ the consciousness threshold:
 where $\Delta t = t_{\mathrm{post}} - t_{\mathrm{pre}}$ is the spike time
 difference, $\phi^{-1} = 0.618$ is the maximum weight change (matching the
 consciousness threshold), and $\gamma = 0.236$ is the temporal decay rate
-(Barbero--Immirzi parameter).
+(Barbero--Immirzi parameter).\footnote{\emph{Withdrawn 2026-08-12:} in this
+equation $\gamma$ is the number $\phi^{-3} = 0.236$ and nothing more. Naming it
+the Barbero--Immirzi parameter asserts an identification that
+\texttt{docs/DELTA-001.md} rejected on 2026-03-28 ($0.236068$ against the
+canonical $0.237533$, $+0.617\%$); the decay rate itself is unaffected.}
 
 Properties of $\phi$-STDP:
 \begin{itemize}[leftmargin=2em]
@@ -1063,6 +1114,36 @@ $\gamma$ (B--I) & $\phi^{-3}$ & 0.2361 & 0.2375 (LQG) & 0.6\% \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\noindent
+\emph{Correction, 2026-08-12.} Four rows of Table~\ref{tab:verification} are
+retained above but do not verify what they appear to verify.
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{$G$, $\Omega_\Lambda$, $\Omega_{\mathrm{DM}}$.} The formulas in
+    column two are dimensionless: $\pi^3\gamma^2/\phi = 1.067914$,
+    $\gamma^8\pi^4/\phi^2 = 0.000359$, $\gamma^4\pi^2/\phi = 0.018944$. The
+    ``Computed'' column is each of those numbers multiplied by a scale factor
+    fitted to its own target --- $\approx 6.2552\times10^{-11}$, $\approx 1923$
+    and $\approx 13.73$ respectively. These are three unrelated constants, so
+    they are not a single calibration of the framework. Only the first two are
+    documented at all
+    (\texttt{G\_SCALE} $\approx 6.25\times10^{-11}$ and
+    \texttt{OMEGA\_COARSE\_SCALE} $\approx 1909$, called empirical calibration to
+    match measurements in
+    \nolinkurl{t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md});
+    no scale for $\Omega_{\mathrm{DM}}$ is recorded anywhere in this corpus.
+    Because one free multiplicative parameter is fitted to one target, the
+    residual is zero by construction and the $0.09\%$, $0.7\%$ and $1.9\%$
+    figures are artefacts of rounding the calibrated output, not measures of
+    predictive accuracy.
+  \item \textbf{$\gamma$ (B--I).} This row states the discrepancy on which the
+    identification was \emph{rejected}: $0.6\%$ exceeds the $<0.1\%$ tolerance
+    this corpus applies to fundamental-constant predictions, which is why
+    \texttt{docs/DELTA-001.md} recorded $\gamma = \phi^{-3}$ as FALSIFIED on
+    2026-03-28. Read correctly the row belongs to a falsification record, not to
+    a verification table. It is left in place rather than removed.
+\end{itemize}
 
 \subsection{Theory-Specific Verification}
 

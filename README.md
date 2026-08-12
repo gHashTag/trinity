@@ -102,6 +102,8 @@ Evidence Level:
   ⚫ Rejected (3): γ=φ⁻³, α family, √(8/3)
 ```
 
+**Disclosure, 2026-08-12 — the ladder above overstates three of its rungs.** ~~Smoking Gun (4): G~~ — G, Ω_Λ and Ω_DM are **calibrations, not predictions**. The expressions are dimensionless: π³γ²/φ = 1.067914, γ⁸π⁴/φ² = 0.000359, γ⁴π²/φ = 0.018944. The physical figures are each of those multiplied by a *separately fitted* scale — ≈6.2552×10⁻¹¹ for G, ≈1917 for Ω_Λ = 0.688, ≈13.57 for Ω_DM = 0.257 — three different numbers, not one shared calibration. With one free multiplicative parameter fitted to one target the residual is zero by construction, so G belongs on this ladder as a *fitted* result, not a smoking gun. The phrase "empirical calibration to match measurements" is the corpus's own, from `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`. Full statement in the [For Scientific Collaborators](#for-scientific-collaborators) section below. (Scales reproduced with `python3 -c "import math; phi=(1+5**0.5)/2; g=phi**-3; print(6.68e-11/(math.pi**3*g**2/phi), 0.688/(g**8*math.pi**4/phi**2), 0.257/(g**4*math.pi**2/phi))"`.)
+
 [DELTA-001 Full Report](docs/docs/research/delta_001_final_report.md) |
 [Experience Log](.trinity/experience/)
 
@@ -239,7 +241,7 @@ tri clara demo
 **NOT:** "Box of separate formulas"
 **YES:** "Tree with one root, many branches"
 
-Each branch produces testable predictions; some confirmed (G: 0.09%), some rejected (γ = φ⁻³), all reproducible via open-source code.
+Each branch produces testable predictions; ~~some confirmed (G: 0.09%)~~ **some calibrated (G: the 0.09% is a calibration residual, per the disclosure directly above — not a confirmation)**, some rejected (γ = φ⁻³), all reproducible via open-source code.
 
 | Resource | Description |
 |----------|-------------|
@@ -297,9 +299,11 @@ This demonstrates:
 
 ---
 
-- ✅ **Smoking Guns (4):** G (0.09%), N_gen = 3, t_present (382 ms), T_cycles (~97 min)
+- ✅ **Smoking Guns (4):** ~~G (0.09%)~~ **G (0.09% — calibration residual, see disclosure below)**, N_gen = 3, t_present (382 ms), T_cycles (~97 min)
 - ✅ **Consistent (3):** C, Ω_Λ, Ω_DM
 - ❌ **Rejected (3):** γ = φ⁻³, α family fit, √(8/3) ≈ φ
+
+**Disclosure, 2026-08-12:** G, Ω_Λ and Ω_DM above are the dimensionless quantities π³γ²/φ = 1.067914, γ⁸π⁴/φ² = 0.000359 and γ⁴π²/φ = 0.018944, each multiplied by its own fitted scale (≈6.2552×10⁻¹¹, ≈1917, ≈13.57 — three different numbers). One free multiplicative parameter fitted to one target makes the residual zero by construction, so these are calibrations, not predictions. See the [For Scientific Collaborators](#for-scientific-collaborators) disclosure above.
 
 **Reproducibility:** `zig build tri && tri constants`
 
@@ -340,7 +344,8 @@ The core identity φ² + φ⁻² = 3 generates numerical values for 30+ fundamen
 
 where γ = φ⁻³ ≈ 0.23607 is derived from φ.
 
-**CORRECTED 2026-08-12:** three rows above are wrong as printed.
+**CORRECTED 2026-08-12:** ~~three rows~~ **four rows** above are wrong as printed.
+- m_p / m_e: the formula 6π⁵ evaluates to **1836.1181**, not the ~~1836.15~~ in the Value column — 1836.15 is the *measured* PDG figure, so the table's Value column restates the measurement instead of the formula. The printed 0.002% is nonetheless the correct residual between 6π⁵ = 1836.1181 and 1836.15267343, so the error figure stands even though the value does not.
 - Jarlskog J: the formula 21γ⁵/(π²φ⁴e²) evaluates to ~~3.04×10⁻⁵~~ **3.0801×10⁻⁵**. The corrected value does match PDG ≈3.08×10⁻⁵, but the printed error 0.003% was computed between two copies of the same wrong number, so it measured nothing.
 - α_s(M_Z): 4φ²/(9π²) = 0.117894, which is **0.17%** from 0.1181, not ~~0.005%~~.
 - γ (LQG): this row is **notation only**. The identification of φ⁻³ with the Barbero-Immirzi parameter was REJECTED in this repo on 2026-03-28 — see the DELTA-001 table above and [docs/DELTA-001.md](docs/DELTA-001.md) (status FALSIFIED, 0.236068 vs canonical 0.237533, +0.617%, Rovelli & Vidotto 2014). φ⁻³ is retained as a constant; the physical identification is withdrawn.

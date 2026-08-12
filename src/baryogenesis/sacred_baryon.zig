@@ -82,9 +82,25 @@ pub const SQRT5: f64 = 2.23606797749978969640917366873127623544;
 /// the Barbero-Immirzi parameter γ = φ⁻³ from loop quantum gravity
 /// to the observed matter dominance of our universe.
 ///
+/// **Note, 2026-08-12:** "the Barbero-Immirzi parameter γ = φ⁻³ from loop
+/// quantum gravity" is NOTATION, not an established identification.
+/// DELTA-001 (trinity/docs/DELTA-001.md, 2026-03-28) records the hypothesis
+/// as FALSIFIED: φ⁻³ = 0.236068 vs canonical Barbero-Immirzi 0.237533
+/// (Rovelli & Vidotto, Covariant Loop Quantum Gravity, 2014), +0.617% error.
+/// The baryogenesis result above therefore does not inherit an LQG pedigree;
+/// γ here is simply φ⁻³. The physical identification is withdrawn; the
+/// constant is retained.
+///
 /// Alternative form using Jarlskog invariant:
 ///     η = J_CKM × γ⁸ × π/φ
 /// where J_CKM = 21γ⁵/(π²φ⁴e²)
+///
+/// **Note, 2026-08-12:** neither stated "alternative form" reproduces the
+/// implemented formula. The code below computes 7γ¹³/(φ⁵e²) = 6.040e-10 (the
+/// value quoted above); J_CKM × γ⁸ × π/φ = 5.768e-10; and the module header
+/// near line 11 writes a third form, J_CKM × γ⁸ × π²/φ³ = 6.921e-10. The
+/// three are not equal, so only the implemented one supports the 0.8% error
+/// claimed above.
 pub fn baryonAsymmetry() f64 {
     const gamma_13 = std.math.pow(f64, GAMMA, 13);
     const phi_5 = std.math.pow(f64, PHI, 5);

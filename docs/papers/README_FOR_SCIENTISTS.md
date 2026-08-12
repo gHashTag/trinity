@@ -17,8 +17,8 @@ The core identity is φ² + φ⁻² = 3.
 Derived expressions achieve relative errors typically < 0.1% (average ~0.012–0.017%) compared to experimental/PDG values.
 
 Key original proposals include:
-- Barbero-Immirzi parameter in Loop Quantum Gravity: γ = φ⁻³ ≈ 0.236068 (error 0.617% wrt canonical 0.237533)
-- Jarlskog invariant of CP violation: J ≈ 21 γ⁵ / (π² φ⁴ e²) ≈ 3.04×10⁻⁵ (error 0.003%)
+- ~~Barbero-Immirzi parameter in Loop Quantum Gravity: γ = φ⁻³ ≈ 0.236068 (error 0.617% wrt canonical 0.237533)~~ — **REJECTED 2026-03-28**, see the note below and `docs/DELTA-001.md`
+- Jarlskog invariant of CP violation: J ≈ 21 γ⁵ / (π² φ⁴ e²) ≈ ~~3.04×10⁻⁵ (error 0.003%)~~ **3.0801×10⁻⁵ (corrected 2026-08-12; PDG ≈ 3.08×10⁻⁵)**
 - CKM hierarchy via powers of γ: |V_us| ≈ 3γ/π, |V_cb| ≈ γ³ π
 - 22 high-precision relations for SM parameters (see code references under [Availability](#availability))
 
@@ -44,7 +44,7 @@ See **`src/sacred/proof_types.zig`** (`particle_physics_constants`) and **`src/t
 | Jarlskog J | 21 γ⁵ / (π² φ⁴ e²) | 3.04×10⁻⁵ | 0.003% | 3.04×10⁻⁵ ± 0.06×10⁻⁵ |
 | sin² θ₁₃ | 3 γ φ² / (π³ e) | 0.02236 | 0.008% | 0.02236 ± 0.00065 |
 
-> **Correction, 2026-08-12 — the Jarlskog row.** 21 γ⁵ / (π² φ⁴ e²) = 3.0801×10⁻⁵, ~~3.04×10⁻⁵~~. The row above prints 3.04×10⁻⁵ in both the Value column and the PDG column, so the quoted 0.003% was computed between two copies of the same wrong number. The correct value 3.08×10⁻⁵ does agree with PDG ≈ 3.08×10⁻⁵ — as already printed in `docs/static/papers/TRINITY_UNIFIED_v12.tex`. The agreement is real; the arithmetic reported here was not. The same wrong figure appears in the Abstract above and in row 2 of the Prediction Status table below.
+> **Correction, 2026-08-12 — the Jarlskog row.** 21 γ⁵ / (π² φ⁴ e²) = 3.0801×10⁻⁵, not the ~~3.04×10⁻⁵~~ printed above. The row prints 3.04×10⁻⁵ in both the Value column and the PDG column, so the quoted 0.003% was computed between two copies of the same wrong number. The correct value 3.08×10⁻⁵ does agree with PDG ≈ 3.08×10⁻⁵ — as already printed in `docs/static/papers/TRINITY_UNIFIED_v12.tex`. The agreement is real; the arithmetic reported here was not. The same wrong figure appears in the Abstract above and in row 2 of the Prediction Status table below.
 
 **CKM Matrix (γ-hierarchy):**
 - |V_ud| ≈ 1 - γ/2
@@ -64,7 +64,9 @@ See **`src/sacred/proof_types.zig`** (`particle_physics_constants`) and **`src/t
 - Canonical value from black-hole entropy: 0.237533 ± 0.00009
 - Relative error: **0.617%**
 
-This relation is the central proposal linking the golden ratio to Loop Quantum Gravity.
+~~This relation is the central proposal linking the golden ratio to Loop Quantum Gravity.~~
+
+> **Note, 2026-08-12:** the identification of φ⁻³ with the Barbero-Immirzi parameter was REJECTED in `docs/DELTA-001.md` on 2026-03-28 (0.236068 vs 0.237533, 0.617% error, exceeding the <0.1% tolerance the corpus applies to fundamental-constant predictions). φ⁻³ is retained here as a constant and as notation; the physical identification is withdrawn. This section is kept as the record of a falsified proposal, not as a result.
 
 ### 3. Cosmology & Gravitation
 
@@ -74,6 +76,18 @@ This relation is the central proposal linking the golden ratio to Loop Quantum G
 | H₀ (Hubble) | via E₈ root mapping | 70.1 km/s/Mpc | ~1% | 67.4–73.0 (tension) |
 | Ω_Λ (dark energy) | γ⁸ π⁴ / φ² | 0.688 | ~0.3% | 0.688 ± 0.017 |
 | Ω_DM (dark matter) | γ⁴ π² / φ | 0.257 | ~1% | 0.260 ± 0.017 |
+
+> **Disclosure, 2026-08-12 — the G, Ω_Λ and Ω_DM rows are calibrations, not predictions.** π³γ²/φ = 1.067914, γ⁸π⁴/φ² = 0.000359 and γ⁴π²/φ = 0.018944 are dimensionless numbers. The values printed above (6.68×10⁻¹¹, 0.688, 0.257) are those numbers multiplied by fitted scale factors, described as "empirical calibration to match measurements" in `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`. With one free multiplicative parameter fitted to one target the residual is zero by construction, so the Error column for these rows reports calibration residuals, not predictive accuracy. The limitation noted under "Post-hoc fits" below admits fitting in general but does not disclose these multiplicative scale factors.
+>
+> **And the three scales are three different numbers, not one calibration** (checked 2026-08-12): G needs **6.2552×10⁻¹¹**, Ω_Λ needs **1917**, Ω_DM needs **13.57**. `KEPLER-NEWTON-VERIFICATION.md` names only the first two, and naming `OMEGA_COARSE_SCALE ≈ 1909` alongside Ω_DM implies a shared constant that does not exist. **Each row carries its own free parameter**, which is the difference between one unit convention and three independent fits.
+
+> **Correction, 2026-08-12 — two more rows do not reproduce from their own formulas.**
+> `3γφ²/(π³e) = 0.0219983`, not the **0.02236** printed for sin²θ₁₃ (a 1.6% gap, against a
+> quoted error of 0.008%); and `4φ²/(9π²) = 0.1178944`, not the **0.1181** printed for α_s(M_Z).
+> `6π⁵ = 1836.118`, printed as 1836.15, which is the PDG value rather than the formula's.
+> In each case the *measured* quantity was written into the *predicted* column. The formulas
+> are close to the data — that part is real — but the errors quoted here were computed
+> against the wrong side and understate the gap.
 
 ### 4. Neuroscience & Consciousness
 
@@ -91,7 +105,7 @@ All predictions are timestamped **March 6, 2026**.
 
 | # | Prediction | Formula | Value | Status |
 |---|------------|---------|-------|--------|
-| 1 | Barbero-Immirzi γ | γ = φ⁻³ | 0.236068 | PENDING (LQG verification) |
+| 1 | ~~Barbero-Immirzi γ~~ φ⁻³ (identification withdrawn 2026-08-12) | γ = φ⁻³ | 0.236068 | ~~PENDING (LQG verification)~~ **FALSIFIED 2026-03-28** — see `docs/DELTA-001.md` |
 | 2 | Jarlskog J | 21 γ⁵ / (π² φ⁴ e²) | 3.04×10⁻⁵ | CONSISTENT |
 | 3 | m_p/m_e ratio | 6 π⁵ | 1836.15 | CONSISTENT |
 | 4 | α_s(M_Z) | 4 φ² / (9 π²) | 0.1181 | CONSISTENT |
@@ -110,7 +124,7 @@ All predictions are timestamped **March 6, 2026**.
 - **CONSISTENT**: Within experimental uncertainty
 - **TENSION**: Outside 1σ but close; may refine with new data
 - **PENDING**: Awaiting precise experimental verification
-- **FALSIFIED**: Outside 3σ (none as of March 2026)
+- **FALSIFIED**: Outside 3σ (~~none as of March 2026~~ — **corrected 2026-08-12:** row 1, γ = φ⁻³ as the Barbero-Immirzi parameter, was rejected on 2026-03-28; see `docs/DELTA-001.md`)
 
 ---
 
@@ -149,7 +163,7 @@ Where γ can optionally appear for additional degrees of freedom.
 3. **Selectivity**: The framework does not predict which exponents apply to which constants
 
 ### Open Questions
-1. Why does φ⁻³ appear as the Barbero-Immirzi parameter?
+1. ~~Why does φ⁻³ appear as the Barbero-Immirzi parameter?~~ **Superseded 2026-08-12:** it does not — the identification was rejected on 2026-03-28 (`docs/DELTA-001.md`). The open question is whether φ⁻³ has any physical referent at all.
 2. Is there a deeper algebraic structure connecting E₈, VSA, and the Standard Model?
 3. Can new predictions be made before experimental measurement?
 

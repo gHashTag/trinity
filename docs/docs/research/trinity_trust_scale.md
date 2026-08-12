@@ -30,7 +30,7 @@ Our scale does the same for scientific predictions.
 **What it means**: The prediction is so accurate that it's unlikely to be coincidence.
 
 **Examples**:
-- Gravitational constant G: predicted with 0.09% accuracy
+- Gravitational constant G: predicted with 0.09% accuracy — **disclosed 2026-08-12: this is a calibration residual, not predictive accuracy; see the Disclosure under "Why G is Stronger Than α" below**
 - Duration of "now" (specious present): predicted 382 ms, experiments show 300-500 ms
 - Memory consolidation time: predicted 1.618 hours, sleep cycle ~90 minutes
 
@@ -46,6 +46,8 @@ Our scale does the same for scientific predictions.
 - Dark energy (Ω_Λ): predicted 0.69, observations confirm
 - Dark matter (Ω_DM): predicted 0.26, observations confirm
 - Temporal resolution (461): predicted order of magnitude, experiment confirms
+
+> **Disclosed 2026-08-12:** the first two entries are calibrated, not predicted. γ⁸π⁴/φ² = 0.000359 and γ⁴π²/φ = 0.018944 are dimensionless; 0.69 and 0.26 are those numbers multiplied by scale factors fitted to the observations they are then said to confirm. See the Disclosure under "Why G is Stronger Than α" below.
 
 **Why we believe**: The direction is correct, numbers are close. Like a metal detector pointing to the right square.
 

@@ -111,6 +111,16 @@ pub const RHO_CRITICAL: f64 = 3 * H0_SI * H0_SI / (8 * PI * 6.67430e-11);
 pub const OMEGA_LAMBDA: f64 = std.math.pow(f64, GAMMA, 8) * std.math.pow(f64, PI, 4) / PHI_SQ;
 
 /// Dark matter density from sacred formula
+///
+/// **Disclosure, 2026-08-12:** this evaluates to 0.018944 and is DIMENSIONLESS.
+/// It is the raw γ⁴π²/φ expression with no scale factor applied. Where this
+/// corpus quotes Ω_DM ≈ 0.26 it is quoting 0.018944 multiplied by ≈13.7
+/// (0.26 / 0.018944 = 13.725), a factor fitted to the measurement it is then
+/// compared against. That is a different number from the ≈1908.84 used for Ω_Λ
+/// and the ≈6.25e-11 used for G, so those are three separate fits, not one
+/// shared calibration; with one free multiplicative parameter fitted to one
+/// target the residual is zero by construction. Nothing in this file applies
+/// the factor — observerProbabilityPhi (Formula 105) consumes the raw 0.018944.
 pub const OMEGA_DM: f64 = std.math.pow(f64, GAMMA, 4) * PI * PI / PHI;
 
 // ============================================================
@@ -1297,6 +1307,39 @@ pub fn errorPercent(computed: f64, experimental: f64) f64 {
 /// Total number of formulas
 pub const FORMULA_COUNT = 142;
 
+/// **Disclosure, 2026-08-12 — 20 of the 142 rows below do not report a measured
+/// error.** `error_pct` is the column that feeds `verifyAll`, `maxError` and
+/// `avgError`, and for these rows it is not a residual against an independent
+/// measurement:
+///
+///   - 17 rows hardcode `.error_pct = 0.0` instead of calling `errorPercent`:
+///     axion_mass, gc_content, fmo_efficiency, crypto_singlet_yield,
+///     conscious_threshold, phi_gamma_wave, conscious_gamma_exact,
+///     conscious_threshold_iit, consciousness_density, de_resonance,
+///     anthropic_window, phi_tuning, qbc_link, observer_evolution,
+///     universal_phi_field, dark_energy_derivative, final_anthropic. At least
+///     one of those zeros is false: conscious_gamma_exact computes
+///     φ³π/γ = 56.3736 against its own experimental 56.0 — a real error of
+///     0.667%, printed as 0.0%.
+///   - 3 rows hardcode `.error_pct = 50.0` (universal_info, coherence_scale,
+///     consciousness_horizon). That is a placeholder, not a residual.
+///   - axion_mass sets `.experimental = axionMassMicroEV()` — the formula is
+///     compared with itself, so its 0% is zero by construction. There is no
+///     ADMX measurement behind that row.
+///   - 9 rows declare `.experimental = 0.0`, i.e. no measurement to compare
+///     against; 8 of them are in the hardcoded-zero list above (e.g.
+///     de_resonance computes 1.09e-45 and is still recorded as 0% error). The
+///     ninth, theta_QCD, routes through `errorPercent`, whose guard
+///     `if (experimental == 0) return 0.0;` returns a perfect score for ANY
+///     computed value — harmless there only because thetaQCD() is exactly 0.
+///
+/// None of the 20 fall inside `results[0..52]`, the range the "< 25% error"
+/// master tests check. Three (fmo_efficiency, crypto_singlet_yield,
+/// conscious_threshold) fall inside `results[60..80]`, checked by the "< 50%
+/// error" quantum-biology test, which they pass on a hardcoded 0.0 rather than
+/// on a computed residual. `avgError()` divides by all 142 and is affected.
+/// Nothing is removed here: the rows stand as written and are disclosed.
+///
 /// Get all 121 formula results
 pub fn allFormulas() [FORMULA_COUNT]FormulaResult {
     return .{

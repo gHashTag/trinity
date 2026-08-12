@@ -8,6 +8,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{enumitem}
+\usepackage[normalem]{ulem} % for \sout: struck-through claims retained, not deleted (2026-08-12)
 
 \geometry{margin=1in}
 
@@ -20,14 +21,17 @@
 \maketitle
 
 \begin{abstract}
-We propose that the critical line $\text{Re}(s) = 1/2$ of the Riemann zeta function emerges from $\phi^3$-scaling, where $\phi = (1+\sqrt{5})/2$ is the golden ratio. The Barbero-Immirzi parameter $\gamma = \phi^{-3} \approx 0.23607$ appears naturally in prime number distribution corrections, connecting number theory to quantum gravity. We derive a $\gamma$-corrected prime number theorem and show how $\phi$-based scaling affects the spacing of zeta zeros.
+We propose that the critical line $\text{Re}(s) = 1/2$ of the Riemann zeta function emerges from $\phi^3$-scaling, where $\phi = (1+\sqrt{5})/2$ is the golden ratio. [Struck 2026-08-12:] \sout{The Barbero-Immirzi parameter $\gamma = \phi^{-3} \approx 0.23607$ appears naturally in prime number distribution corrections, connecting number theory to quantum gravity.} The quantity $\gamma = \phi^{-3} \approx 0.23607$ appears in prime number distribution corrections; it is used here as notation for $\phi^{-3}$, not as the Barbero-Immirzi parameter, and the inference to quantum gravity is withdrawn (see the note below). We derive a $\gamma$-corrected prime number theorem and show how $\phi$-based scaling affects the spacing of zeta zeros.
 \end{abstract}
+
+\bigskip
+\noindent\textbf{Note, 2026-08-12.} The identification of $\phi^{-3}$ with the Barbero-Immirzi parameter was rejected in \texttt{docs/DELTA-001.md} on 2026-03-28 (predicted $0.236068$ against the canonical $0.237533$, $+0.617\%$; source: Rovelli \& Vidotto, \emph{Covariant Loop Quantum Gravity}, 2014). $\phi^{-3}$ is retained throughout this paper as notation; the physical identification is withdrawn. Struck-through text below is preserved rather than deleted so the correction remains visible.
 
 \section{Introduction}
 
 The Riemann Hypothesis states that all non-trivial zeros of the zeta function $\zeta(s)$ lie on the critical line $\text{Re}(s) = 1/2$. Despite overwhelming numerical evidence, no proof exists.
 
-Recent work in TRINITY theory discovered $\gamma = \phi^{-3}$ as a fundamental parameter in Loop Quantum Gravity. We show how this $\phi$-based scaling appears in the distribution of prime numbers and the structure of $\zeta(s)$.
+\sout{Recent work in TRINITY theory discovered $\gamma = \phi^{-3}$ as a fundamental parameter in Loop Quantum Gravity.} Recent work in TRINITY theory proposed $\gamma = \phi^{-3}$ as a fundamental parameter in Loop Quantum Gravity; that proposal was tested and rejected on 2026-03-28 (see the note after the abstract), so $\gamma$ below denotes $\phi^{-3}$ and carries no loop-quantum-gravity content. We show how this $\phi$-based scaling appears in the distribution of prime numbers and the structure of $\zeta(s)$.
 
 \section{Mathematical Foundation}
 
@@ -174,7 +178,7 @@ We have demonstrated that $\gamma = \phi^{-3}$ appears naturally in:
 \begin{enumerate}
 \item Prime number distribution corrections
 \item Spacing of $\zeta(s)$ zeros
-\item Connection between number theory and quantum gravity
+\item \sout{Connection between number theory and quantum gravity} --- withdrawn 2026-08-12: this item rested entirely on reading $\gamma$ as the Barbero-Immirzi parameter, which was rejected on 2026-03-28 (see the note after the abstract).
 \end{enumerate}
 
 The TRINITY identity $\phi^2 + \phi^{-2} = 3$ may provide a fundamental explanation for the three-fold structure observed in both particle physics (three generations) and number theory (critical line at $1/2$).

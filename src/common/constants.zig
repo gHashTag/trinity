@@ -122,6 +122,14 @@ pub const H_PHI: f64 = 70.0 * PHI_INV; // km/s/Mpc scaled
 /// constant as ~0.69 are wrong by ~1909x — see lambdaPhiCoupling /
 /// anthropicPhiMeasure / observerProbabilityPhi in
 /// src/particle_physics/formulas.zig.
+///
+/// **Precision addendum, 2026-08-12:** ~1908.84 is the factor recorded in
+/// KEPLER-NEWTON-VERIFICATION.md, and it is fitted to Ω_Λ = 0.685, not to the
+/// "≈ 0.69" struck above: 0.000359 × 1908.84 = 0.685. Reaching 0.69 needs
+/// ≈1923; reaching 0.688 needs ≈1917. The factor is simply whatever the chosen
+/// target requires, which is the objection — it is a fit, not a unit
+/// conversion. Same for G (≈6.25e-11) and Ω_DM (≈13.7): three separate fitted
+/// numbers, not one shared calibration.
 pub const OMEGA_LAMBDA: f64 = std.math.pow(f64, GAMMA, 8) * std.math.pow(f64, PI, 4) / PHI_SQ;
 
 /// Dark matter density parameter: Ω_DM = γ⁴π²/φ ~~≈ 0.26~~

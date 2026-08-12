@@ -8,6 +8,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{enumitem}
+\usepackage[normalem]{ulem} % for \sout: struck-through claims retained, not deleted (2026-08-12)
 
 \geometry{margin=1in}
 
@@ -20,8 +21,11 @@
 \maketitle
 
 \begin{abstract}
-We prove that ternary computing is fundamentally more efficient than binary computing, with the Barbero-Immirzi parameter $\gamma = \phi^{-3} \approx 0.23607$ emerging as the optimal efficiency threshold. Information-theoretic analysis shows $\log_2(3) \approx 1.585$ bits per trit, representing a $58.5\%$ improvement over binary. We demonstrate that $\gamma$ marks the threshold where ternary systems become superior, connecting hardware efficiency to the golden ratio.
+We prove that ternary computing is fundamentally more efficient than binary computing, with \sout{the Barbero-Immirzi parameter} [struck 2026-08-12] the quantity $\gamma = \phi^{-3} \approx 0.23607$ emerging as the optimal efficiency threshold. Information-theoretic analysis shows $\log_2(3) \approx 1.585$ bits per trit, representing a $58.5\%$ improvement over binary. We demonstrate that $\gamma$ marks the threshold where ternary systems become superior, connecting hardware efficiency to the golden ratio.
 \end{abstract}
+
+\bigskip
+\noindent\textbf{Note, 2026-08-12.} The identification of $\phi^{-3}$ with the Barbero-Immirzi parameter was rejected in \texttt{docs/DELTA-001.md} on 2026-03-28 (predicted $0.236068$ against the canonical $0.237533$, $+0.617\%$; source: Rovelli \& Vidotto, \emph{Covariant Loop Quantum Gravity}, 2014). $\phi^{-3}$ is retained throughout this paper as notation; the physical identification is withdrawn. Nothing in the information-theoretic argument depends on it: the efficiency results follow from $\log_2 3$ and from $1 + \phi^{-3}$ as a numerical threshold. Struck-through text is preserved rather than deleted so the correction remains visible.
 
 \section{Introduction}
 

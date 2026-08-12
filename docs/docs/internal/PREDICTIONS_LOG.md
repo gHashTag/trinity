@@ -38,6 +38,8 @@ This log maintains a permanent record of **pre-registered scientific predictions
 
 **2026-03-08 UPDATE**: `omega_dm` and `omega_lambda` elevated to CANONICAL via `tri math search-canonical`. Both are now γ-free (r=0) with 0.002% accuracy. P-COSM-E001 and P-COSM-E002 retired and replaced with new canonical predictions.
 
+**2026-08-12 CORRECTION**: the Gravity row above counts 5 canonical predictions, but P-GRV-001 (`G_from_phi`) is γ-dependent and scale-fitted, and has been reclassified **POSTDICTION** below. The counts are left as originally written rather than silently re-tallied; read the Gravity row as 4 canonical + 1 postdiction, and the Total as 9 (+2) canonical + 2 exploratory.
+
 **Note**: "Exploratory Fits" are predictions derived from `fit_origin = search_fit` or `postdiction` formulas. These are post-hoc parameter optimizations, not first-principles predictions. They are tracked here for research purposes but do not have pre-registered status.
 
 ---

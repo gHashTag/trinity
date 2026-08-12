@@ -108,6 +108,8 @@ Constants that work well (G, t_present, τ_memory) share characteristics:
 - **Emergent properties**: Not fundamental parameters but effective constants
 - **Classical/semi-classical**: Connected to gravity or consciousness
 
+**Note (2026-08-12):** G's membership in this "works well" set is precisely what the Disclosure two sections above withdraws — its agreement with CODATA comes from the fitted `G_SCALE`, not from φ. The conjecture below may still be correct, but G can no longer be counted as evidence for it, which leaves the working set thinner than this section assumes.
+
 ### Non-Working Domain: Pure Quantum Parameters
 
 Constants that don't work (α, μ, θ_W) share characteristics:

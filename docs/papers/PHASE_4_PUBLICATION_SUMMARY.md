@@ -155,10 +155,12 @@ G_rel = γ/φ ≈ 0.146 (gravity)
 |--------|----------|---------|-------|
 | Quantum | α⁻¹ | 4π³ + π² + π | <0.01% |
 | Quantum | Fermion gen | φ² + φ⁻² | 0% |
-| Gravity | G | π³γ²/φ | 0.09% |
+| Gravity | G | π³γ²/φ | ~~0.09%~~ calibration residual, see below |
 | Consciousness | f_γ | φ³π/γ | Matches |
 | Consciousness | C_thr | φ⁻¹ | Matches |
 | Time | t_present | φ⁻² | Matches |
+
+> **Disclosure (2026-08-12):** the G row above repeats the figure disclosed in §3. π³γ²/φ = **1.067914** and is dimensionless; the 6.68×10⁻¹¹ m³/kg·s² it is compared against comes from multiplying that number by a scale factor ≈6.25×10⁻¹¹ fitted to CODATA G. One free multiplicative parameter fitted to one target drives the residual to zero by construction, so 0.09% measures the calibration, not a cross-domain prediction.
 
 ---
 
@@ -291,7 +293,7 @@ t_P        = γ⁴π²/φ                = 5.39×10⁻⁴⁴ s
 ### Scientific Contributions
 
 1. **First unified framework** connecting gravity, consciousness, and time
-2. **G constant prediction** with 0.09% accuracy
+2. ~~**G constant prediction** with 0.09% accuracy~~ → **G constant calibration** with a 0.09% residual (disclosure 2026-08-12: π³γ²/φ = 1.067914, dimensionless; the printed 6.68×10⁻¹¹ uses a scale factor ≈6.25×10⁻¹¹ fitted to CODATA G, so the residual is zero by construction and is not predictive accuracy — see §3)
 3. **Neural gamma explanation** via φ-scaling
 4. **Specious present derivation** from φ⁻²
 5. **12 testable LISA predictions** for 2035

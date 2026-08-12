@@ -125,6 +125,14 @@ pub fn G_planck_ratio() f64 {
 
 /// Dark energy density parameter
 /// Ω_Λ ≈ γ⁸ × π⁴ / φ²
+///
+/// **Disclosure, 2026-08-12:** this returns 0.000359, not ~0.69. The published
+/// 0.69 multiplies it by OMEGA_COARSE_SCALE ~ 1908.84, a factor fitted to the
+/// Planck measurement (see
+/// t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md,
+/// "empirical calibration to match measurements"). One free multiplicative
+/// parameter fitted to one target gives zero residual by construction, so the
+/// published agreement is a calibration, not a prediction.
 pub fn darkEnergyDensity() f64 {
     const gamma_8 = math.pow(f64, GAMMA, 8);
     const pi_4 = PI * PI * PI * PI;
@@ -275,6 +283,11 @@ test "Gravity: dark energy density" {
     const omega_lambda = darkEnergyDensity();
 
     // Formula gives very small value, just check positive
+    //
+    // NOTE 2026-08-12: this test asserts only positivity because the raw
+    // formula returns 0.000359 while the docs claim ~0.69. The gap is a
+    // fitted scale factor (~1908.84), not a tolerance. Do not "fix" this
+    // test by multiplying in the scale factor — fix the claim instead.
     try std.testing.expect(omega_lambda > 0);
 }
 

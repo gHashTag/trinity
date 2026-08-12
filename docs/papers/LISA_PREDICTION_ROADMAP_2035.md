@@ -22,8 +22,10 @@ This document presents **testable predictions** for the Laser Interferometer Spa
 | Constant | Symbol | Value | φ-Formula |
 |----------|--------|-------|-----------|
 | Golden Ratio | φ | 1.6180339887... | (1+√5)/2 |
-| Barbero-Immirzi | γ | 0.2360679775... | φ⁻³ |
+| ~~Barbero-Immirzi~~ (notation only — see note) | γ | 0.2360679775... | φ⁻³ |
 | TRINITY | 3 | 3.0 | φ² + φ⁻² |
+
+> **Note, 2026-08-12:** the identification of φ⁻³ with the Barbero-Immirzi parameter was rejected in [DELTA-001.md](../DELTA-001.md) on 2026-03-28 (0.236068 vs the canonical 0.237533, +0.617%; source Rovelli & Vidotto, *Covariant Loop Quantum Gravity*, 2014). φ⁻³ is retained here as notation — every γ below denotes φ⁻³ and nothing more; the physical identification is withdrawn. The 12 predictions are therefore predictions of φ-scaling, not of loop quantum gravity.
 
 ---
 
@@ -223,7 +225,7 @@ TRINITY predictions are **falsified** if:
 
 ### If Verified:
 
-1. **Loop Quantum Gravity** gains experimental support
+1. ~~**Loop Quantum Gravity** gains experimental support~~ — **withdrawn 2026-08-12:** this consequence required γ = φ⁻³ to *be* the Barbero-Immirzi parameter, and that identification was rejected in [DELTA-001.md](../DELTA-001.md) on 2026-03-28. Confirmation of the predictions above would support φ-scaling in strong-field gravity; it would say nothing about loop quantum gravity.
 2. **φ-based unification** extends to strong-field gravity
 3. **Consciousness-gravity connection** becomes testable
 4. **Sacred formula** gains predictive power
