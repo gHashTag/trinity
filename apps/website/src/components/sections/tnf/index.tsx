@@ -8,6 +8,7 @@
 
 import { motion } from 'framer-motion'
 import { useI18n } from '../../../i18n/context'
+import { TrinityLogo } from '../../TrinityLogo'
 import {
   TAG_LABEL, PAPER, hero, claim, formats, frontier, ladder,
   theorems, limits, landscape, findings, lineage, reproduce, type Tag,
@@ -54,6 +55,68 @@ function Head({ badge, title, lede, wide }: { badge: Bi; title: Bi; lede?: Bi; w
   )
 }
 
+/* ───────────────────────────── LOCKUP ───────────────────────────── */
+
+// The mark, the house name above it, the format name below it. The lower line
+// is set letter by letter because it is the one thing on this page a visitor is
+// asked to remember, and a word that assembles itself is read once more than a
+// word that is simply there. The name is Ternary Network Floats, singular
+// Network: the initials are the format's name in the paper and in every
+// conformance vector, so the plural would quietly unname it.
+const TNF_WORDMARK = 'TERNARY NETWORK FLOATS'
+
+function Lockup() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        gap: '0.4rem', margin: '0 auto 2.5rem', textAlign: 'center',
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="tnf-mono"
+        style={{
+          fontSize: 'clamp(1.05rem, 3vw, 1.7rem)', fontWeight: 500,
+          letterSpacing: '0.14em', color: 'var(--golden)',
+        }}
+      >
+        Trinity S<sup style={{ fontSize: '0.62em', top: '-0.5em' }}>3</sup>AI
+      </motion.div>
+
+      <TrinityLogo withLabel={false} height="clamp(88px, 17vw, 190px)" />
+
+      <motion.div
+        className="tnf-mono"
+        aria-label={TNF_WORDMARK}
+        style={{
+          display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
+          fontSize: 'clamp(0.72rem, 2.5vw, 1.25rem)', fontWeight: 400,
+          letterSpacing: 'clamp(0.12em, 0.5vw, 0.3em)', color: 'var(--accent)',
+        }}
+      >
+        {TNF_WORDMARK.split('').map((ch, i) => (
+          <motion.span
+            key={i}
+            aria-hidden="true"
+            initial={{ opacity: 0, y: 10, filter: 'blur(6px)' }}
+            animate={{ opacity: ch === ' ' ? 1 : 0.92, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.45, delay: 0.5 + i * 0.035, ease: [0.22, 1, 0.36, 1] }}
+            style={{ whiteSpace: 'pre' }}
+          >
+            {ch}
+          </motion.span>
+        ))}
+      </motion.div>
+    </motion.div>
+  )
+}
+
 /* ───────────────────────────── HERO ───────────────────────────── */
 
 export function TnfHero() {
@@ -61,6 +124,8 @@ export function TnfHero() {
   return (
     <section id="hero" className="tnf-section" style={{ borderTop: 'none', paddingTop: 'clamp(6rem, 12vh, 9rem)' }}>
       <div className="tnf-wrap">
+        <Lockup />
+
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
           <span className="tnf-badge" style={{ color: 'var(--accent)' }}>{L(hero.eyebrow)}</span>
 
