@@ -2764,7 +2764,7 @@ export default function TrinityCanvas() {
                     <span style={{ color: mirrorStatus.dukh.total_queries > 0 ? '#aa66ff' : 'rgba(170,100,255,0.3)' }}>Q:{mirrorStatus.dukh.total_queries}</span>
                     <span style={{ color: mirrorStatus.dukh.energy_saved_wh > 0 ? '#00e599' : 'rgba(170,100,255,0.3)' }}>{mirrorStatus.dukh.energy_saved_wh.toFixed(3)}Wh</span>
                     <span style={{ color: mirrorStatus.dukh.tool_hits > 0 ? '#00ff88' : 'rgba(170,100,255,0.3)' }}>Tools:{mirrorStatus.dukh.tool_hits}</span>
-                    <span style={{ color: mirrorStatus.dukh.context_enabled ? '#aa66ff' : 'rgba(170,100,255,0.3)' }}>Ctx:{mirrorStatus.dukh.context_messages || 0}</span>
+                    <span style={{ color: mirrorStatus.dukh.context_enabled ? '#aa66ff' : 'rgba(170,100,255,0.3)' }}>Ctx:{mirrorStatus.dukh.context_messages ?? '\u2014'}</span>
                   </div>
                 )}
 

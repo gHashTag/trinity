@@ -213,7 +213,7 @@ export default function AutonomousUniverseSection() {
                       {t('autonomousUniverse.generation')}
                     </div>
                     <div style={{ fontSize: 20, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
-                      {data.data.auto_tuned_params.match(/generation: (\d+)/)?.[1] || 0}
+                      {data.data.auto_tuned_params.match(/generation: (\d+)/)?.[1] ?? '\u2014'}
                     </div>
                   </div>
                   <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 12 }}>
@@ -253,7 +253,7 @@ export default function AutonomousUniverseSection() {
                     {t('autonomousUniverse.snapshotTs')}
                   </div>
                   <div style={{ fontSize: 16, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
-                    {new Date(parseInt(data.data.auto_tuned_params.match(/snapshot_ts: '(\d+)'/)?.[1] || '0')).toLocaleString()}
+                    {(() => { const m = data.data.auto_tuned_params.match(/snapshot_ts: '(\d+)'/); return m ? new Date(parseInt(m[1])).toLocaleString() : '\u2014'; })()}
                   </div>
                 </div>
                 <div style={{ background: glass.background, border: glass.border, borderRadius: glass.borderRadius, padding: 16 }}>
