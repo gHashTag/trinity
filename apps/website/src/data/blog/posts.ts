@@ -58,6 +58,121 @@ export interface Post {
   }
 }
 
+const twentyMerged: Post = {
+  slug: 'twenty-merged-in-three-days',
+  date: '2026-08-12',
+  title: 'Twenty patches merged upstream in three days',
+  summary:
+    'On 2026-08-09 my own notes said six patches were open and none had been merged. ' +
+    'By 2026-08-11 openXC7 had merged twenty. The interesting part is not the number \u2014 ' +
+    'it is that I did not know it until I ran the query.',
+  tags: ['openXC7', 'upstream', 'measurement'],
+  receipts: [
+    { label: 'openXC7/nextpnr-xilinx \u2014 merged PRs by gHashTag',
+      href: 'https://github.com/openXC7/nextpnr-xilinx/pulls?q=is%3Apr+author%3AgHashTag+is%3Amerged' },
+    { label: 'the three still open',
+      href: 'https://github.com/openXC7/nextpnr-xilinx/pulls?q=is%3Apr+author%3AgHashTag+is%3Aopen' },
+  ],
+  openQuestions: [
+    'Counted by API on 2026-08-12 with is:merged over openXC7/nextpnr-xilinx. Merge dates are the repository\u2019s, not mine.',
+    'Twenty merges is a count of accepted patches, not of impact. Several are one-line diagnostics; the number does not weight them.',
+    'Why the burst happened over exactly those three days is upstream\u2019s business and not visible from the outside. I am reporting the dates, not explaining them.',
+    'Three PRs remain open (#119, #120, #129). Whether they land is not predicted here.',
+  ],
+  published: true,
+  ru: {
+    title: '\u0414\u0432\u0430\u0434\u0446\u0430\u0442\u044c \u043f\u0430\u0442\u0447\u0435\u0439 \u0441\u043b\u0438\u0442\u043e \u0430\u043f\u0441\u0442\u0440\u0438\u043c\u043e\u043c \u0437\u0430 \u0442\u0440\u0438 \u0434\u043d\u044f',
+    summary:
+      '2026-08-09 \u0432 \u043c\u043e\u0438\u0445 \u0437\u0430\u043c\u0435\u0442\u043a\u0430\u0445 \u0441\u0442\u043e\u044f\u043b\u043e: \u0448\u0435\u0441\u0442\u044c \u043f\u0430\u0442\u0447\u0435\u0439 \u043e\u0442\u043a\u0440\u044b\u0442\u044b, \u043d\u0438 \u043e\u0434\u0438\u043d \u043d\u0435 \u0441\u043b\u0438\u0442. \u041a 2026-08-11 openXC7 \u0441\u043b\u0438\u043b \u0434\u0432\u0430\u0434\u0446\u0430\u0442\u044c. \u0417\u0430\u043d\u044f\u0442\u043d\u043e \u043d\u0435 \u0447\u0438\u0441\u043b\u043e, \u0430 \u0442\u043e, \u0447\u0442\u043e \u044f \u043d\u0435 \u0437\u043d\u0430\u043b \u0435\u0433\u043e, \u043f\u043e\u043a\u0430 \u043d\u0435 \u0437\u0430\u043f\u0443\u0441\u0442\u0438\u043b \u0437\u0430\u043f\u0440\u043e\u0441.',
+    openQuestions: [
+      '\u041f\u043e\u0441\u0447\u0438\u0442\u0430\u043d\u043e \u043f\u043e API 2026-08-12 \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u043c is:merged \u043f\u043e openXC7/nextpnr-xilinx. \u0414\u0430\u0442\u044b \u0441\u043b\u0438\u044f\u043d\u0438\u0439 \u2014 \u0440\u0435\u043f\u043e\u0437\u0438\u0442\u043e\u0440\u0438\u044f, \u043d\u0435 \u043c\u043e\u0438.',
+      '\u0414\u0432\u0430\u0434\u0446\u0430\u0442\u044c \u0441\u043b\u0438\u044f\u043d\u0438\u0439 \u2014 \u0441\u0447\u0451\u0442 \u043f\u0440\u0438\u043d\u044f\u0442\u044b\u0445 \u043f\u0430\u0442\u0447\u0435\u0439, \u0430 \u043d\u0435 \u0432\u043b\u0438\u044f\u043d\u0438\u044f. \u041d\u0435\u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u0438\u0437 \u043d\u0438\u0445 \u043e\u0434\u043d\u043e\u0441\u0442\u0440\u043e\u0447\u043d\u044b\u0435 \u0434\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u043a\u0438; \u0447\u0438\u0441\u043b\u043e \u0438\u0445 \u043d\u0435 \u0432\u0437\u0432\u0435\u0448\u0438\u0432\u0430\u0435\u0442.',
+      '\u041f\u043e\u0447\u0435\u043c\u0443 \u0432\u0441\u043f\u043b\u0435\u0441\u043a \u043f\u0440\u0438\u0448\u0451\u043b\u0441\u044f \u0440\u043e\u0432\u043d\u043e \u043d\u0430 \u044d\u0442\u0438 \u0442\u0440\u0438 \u0434\u043d\u044f \u2014 \u0434\u0435\u043b\u043e \u0430\u043f\u0441\u0442\u0440\u0438\u043c\u0430 \u0438 \u0441\u043d\u0430\u0440\u0443\u0436\u0438 \u043d\u0435 \u0432\u0438\u0434\u043d\u043e. \u042f \u0441\u043e\u043e\u0431\u0449\u0430\u044e \u0434\u0430\u0442\u044b, \u0430 \u043d\u0435 \u043e\u0431\u044a\u044f\u0441\u043d\u044f\u044e \u0438\u0445.',
+      '\u0422\u0440\u0438 PR \u043e\u0441\u0442\u0430\u044e\u0442\u0441\u044f \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u043c\u0438 (#119, #120, #129). \u0421\u044f\u0434\u0443\u0442 \u043b\u0438 \u043e\u043d\u0438, \u0437\u0434\u0435\u0441\u044c \u043d\u0435 \u043f\u0440\u0435\u0434\u0441\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442\u0441\u044f.',
+    ],
+    body: [
+      { kind: 'p', text:
+        '2026-08-09 \u044f \u0437\u0430\u043f\u0438\u0441\u0430\u043b \u0443 \u0441\u0435\u0431\u044f \u0444\u0440\u0430\u0437\u0443: \u0448\u0435\u0441\u0442\u044c \u043f\u0430\u0442\u0447\u0435\u0439 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u044b \u0432 openXC7/nextpnr-xilinx, \u0432\u0441\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u044b, \u043d\u0438 \u043e\u0434\u0438\u043d \u043d\u0435 \u0441\u043b\u0438\u0442. \u0412 \u0434\u0435\u043d\u044c \u043d\u0430\u043f\u0438\u0441\u0430\u043d\u0438\u044f \u043e\u043d\u0430 \u0431\u044b\u043b\u0430 \u0432\u0435\u0440\u043d\u0430.' },
+      { kind: 'p', text:
+        '2026-08-12 \u044f \u0437\u0430\u043f\u0443\u0441\u0442\u0438\u043b \u0437\u0430\u043f\u0440\u043e\u0441. \u0414\u0432\u0430\u0434\u0446\u0430\u0442\u044c \u043c\u043e\u0438\u0445 pull request \u0432 \u044d\u0442\u043e\u0442 \u0440\u0435\u043f\u043e\u0437\u0438\u0442\u043e\u0440\u0438\u0439 \u0441\u043b\u0438\u0442\u044b. \u041d\u0435 \u0448\u0435\u0441\u0442\u044c \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043d\u044b\u0445 \u0438 \u0436\u0434\u0443\u0449\u0438\u0445 \u2014 \u0434\u0432\u0430\u0434\u0446\u0430\u0442\u044c \u0441\u0435\u0432\u0448\u0438\u0445.' },
+      { kind: 'h', text:
+        '\u0414\u0430\u0442\u044b \u0441\u0431\u0438\u0432\u0430\u044e\u0442\u0441\u044f \u0432 \u043a\u0443\u0447\u0443' },
+      { kind: 'table',
+        head: ['\u0434\u0430\u0442\u0430', '\u0441\u043b\u0438\u0442\u043e'],
+        rows: [
+          ['2026-08-09', '3'],
+          ['2026-08-10', '10'],
+          ['2026-08-11', '7'],
+          ['\u0432\u0441\u0435\u0433\u043e', '20'],
+        ] },
+      { kind: 'p', text:
+        '\u0412\u0441\u0435 \u0441\u043b\u0438\u044f\u043d\u0438\u044f \u0443\u043b\u043e\u0436\u0438\u043b\u0438\u0441\u044c \u0432 \u0441\u0435\u043c\u044c\u0434\u0435\u0441\u044f\u0442 \u0434\u0432\u0430 \u0447\u0430\u0441\u0430. \u0414\u043e 2026-08-09 \u043d\u0435 \u0441\u043b\u0438\u0442\u043e \u043d\u0438\u0447\u0435\u0433\u043e \u0438 \u043f\u043e\u0441\u043b\u0435 2026-08-11 \u0442\u043e\u0436\u0435. \u0427\u0442\u043e \u043f\u0440\u043e\u0438\u0437\u0432\u0435\u043b\u043e \u0432\u0441\u043f\u043b\u0435\u0441\u043a \u2014 \u0434\u0435\u043b\u043e \u0430\u043f\u0441\u0442\u0440\u0438\u043c\u0430; \u0441\u043d\u0430\u0440\u0443\u0436\u0438 \u043c\u043d\u0435 \u0432\u0438\u0434\u043d\u0430 \u0444\u043e\u0440\u043c\u0430, \u0430 \u043d\u0435 \u043f\u0440\u0438\u0447\u0438\u043d\u0430.' },
+      { kind: 'h', text:
+        '\u0427\u0442\u043e \u044d\u0442\u043e \u0437\u0430 \u043f\u0430\u0442\u0447\u0438' },
+      { kind: 'p', text:
+        '\u041e\u043d\u0438 \u043c\u0430\u043b\u0435\u043d\u044c\u043a\u0438\u0435 \u0438 \u0434\u0438\u0430\u0433\u043d\u043e\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435. IDELAYCTRL \u0431\u0435\u0437 \u0435\u0434\u0438\u043d\u043e\u0433\u043e I/ODELAY \u2014 \u044d\u0442\u043e \u043f\u0440\u0435\u0434\u0443\u043f\u0440\u0435\u0436\u0434\u0435\u043d\u0438\u0435, \u0430 \u043d\u0435 \u0430\u0432\u0430\u0440\u0438\u0439\u043d\u044b\u0439 \u0432\u044b\u0445\u043e\u0434. \u0410\u0442\u0440\u0438\u0431\u0443\u0442 BEL \u0441 \u043d\u0435\u043e\u0436\u0438\u0434\u0430\u043d\u043d\u044b\u043c \u0438\u043c\u0435\u043d\u0435\u043c \u043d\u0435 \u0434\u043e\u043b\u0436\u0435\u043d \u0440\u043e\u043d\u044f\u0442\u044c \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442. \u0414\u0438\u0444\u0444\u0435\u0440\u0435\u043d\u0446\u0438\u0430\u043b\u044c\u043d\u0430\u044f \u043f\u0430\u0440\u0430 \u0441 \u043d\u0435\u0432\u0435\u0440\u043d\u044b\u043c \u0432\u044b\u0432\u043e\u0434\u043e\u043c \u043e\u0431\u044f\u0437\u0430\u043d\u0430 \u0441\u043a\u0430\u0437\u0430\u0442\u044c, \u0441 \u043a\u0430\u043a\u0438\u043c \u0438\u043c\u0435\u043d\u043d\u043e. CLKFBOUT_MULT_F \u0441\u043b\u0435\u0434\u0443\u0435\u0442 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0442\u044c \u043f\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0443, \u0430 \u043d\u0435 \u043f\u0430\u0434\u0430\u0442\u044c \u043d\u0430 \u0430\u0441\u0441\u0435\u0440\u0442\u0435.' },
+      { kind: 'quote', text:
+        '\u041a\u0430\u0436\u0434\u044b\u0439 \u043f\u0440\u0435\u0432\u0440\u0430\u0449\u0430\u0435\u0442 \u043f\u0430\u0434\u0435\u043d\u0438\u0435 \u0432 \u0444\u0440\u0430\u0437\u0443. \u0412 \u044d\u0442\u043e\u043c \u0432\u0441\u044f \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f \u2014 \u0438 \u0440\u043e\u0432\u043d\u043e \u043e\u043d\u0430 \u0441\u0442\u043e\u0438\u0442 \u043d\u043e\u0432\u0438\u0447\u043a\u0443 \u0432\u044b\u0445\u043e\u0434\u043d\u044b\u0445 \u043d\u0430 \u0441\u0430\u043c\u043e\u0441\u0442\u043e\u044f\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u0435.' },
+      { kind: 'p', text:
+        '\u041d\u0438 \u043e\u0434\u0438\u043d \u043d\u0435 \u043c\u0435\u043d\u044f\u0435\u0442 \u0442\u043e\u0433\u043e, \u0447\u0442\u043e \u0442\u0443\u043b\u0447\u0435\u0439\u043d \u0443\u043c\u0435\u0435\u0442 \u0441\u043e\u0431\u0440\u0430\u0442\u044c. \u0412\u0441\u0435 \u043c\u0435\u043d\u044f\u044e\u0442 \u0432\u0440\u0435\u043c\u044f, \u0437\u0430 \u043a\u043e\u0442\u043e\u0440\u043e\u0435 \u0432\u044b\u044f\u0441\u043d\u044f\u0435\u0442\u0441\u044f, \u043f\u043e\u0447\u0435\u043c\u0443 \u043d\u0435 \u0441\u043e\u0431\u0440\u0430\u043b\u043e\u0441\u044c.' },
+      { kind: 'h', text:
+        '\u0427\u0442\u043e \u0437\u0434\u0435\u0441\u044c \u0441\u0442\u043e\u0438\u0442 \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c' },
+      { kind: 'p', text:
+        '\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u2014 \u0445\u043e\u0440\u043e\u0448\u0430\u044f \u043d\u043e\u0432\u043e\u0441\u0442\u044c. \u041d\u0430\u0445\u043e\u0434\u043a\u0430 \u0436\u0435 \u0432 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435: \u0442\u0440\u0438 \u0434\u043d\u044f \u043b\u0443\u0447\u0448\u0438\u0439 \u0438\u0441\u0445\u043e\u0434 \u044d\u0442\u043e\u0433\u043e \u043a\u043e\u0440\u043f\u0443\u0441\u0430 \u043b\u0435\u0436\u0430\u043b \u0432 \u0440\u0435\u043f\u043e\u0437\u0438\u0442\u043e\u0440\u0438\u0438, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u044f \u043c\u043e\u0433 \u043e\u043f\u0440\u043e\u0441\u0438\u0442\u044c \u0432 \u043b\u044e\u0431\u0443\u044e \u043c\u0438\u043d\u0443\u0442\u0443, \u0430 \u043c\u043e\u0438 \u0437\u0430\u043c\u0435\u0442\u043a\u0438 \u043d\u0435\u0441\u043b\u0438 \u043e\u0431\u0440\u0430\u0442\u043d\u043e\u0435 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0435 \u2014 \u0434\u0430\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0435 \u0438 \u0443\u0432\u0435\u0440\u0435\u043d\u043d\u043e\u0435.' },
+      { kind: 'p', text:
+        '\u042f \u043e\u0431\u043d\u0430\u0440\u0443\u0436\u0438\u043b \u044d\u0442\u043e \u043d\u0435 \u043d\u0430\u0431\u043b\u044e\u0434\u0435\u043d\u0438\u0435\u043c. \u041f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043e\u0442\u043c\u0435\u0442\u0438\u043b\u0430 \u0441\u043c\u0435\u043d\u0443 \u0441\u043e\u0441\u0442\u043e\u044f\u043d\u0438\u044f \u0443 \u043f\u043e\u0441\u0442\u043e\u0440\u043e\u043d\u043d\u0435\u0433\u043e pull request, \u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u0440\u0438\u0442\u044c \u043e\u0434\u043d\u043e \u0447\u0438\u0441\u043b\u043e \u0437\u043d\u0430\u0447\u0438\u0442 \u043f\u0435\u0440\u0435\u043c\u0435\u0440\u0438\u0442\u044c \u043c\u043d\u043e\u0436\u0435\u0441\u0442\u0432\u043e, \u043a\u043e\u0442\u043e\u0440\u043e\u043c\u0443 \u043e\u043d\u043e \u043f\u0440\u0438\u043d\u0430\u0434\u043b\u0435\u0436\u0438\u0442.' },
+      { kind: 'quote', text:
+        '\u0423\u0441\u0442\u0430\u0440\u0435\u0432\u0448\u0435\u0435 \u043e\u0442\u0440\u0438\u0446\u0430\u043d\u0438\u0435 \u0445\u0443\u0436\u0435 \u0443\u0441\u0442\u0430\u0440\u0435\u0432\u0448\u0435\u0433\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u044f. \u0424\u0440\u0430\u0437\u0443 \u043e \u0442\u043e\u043c, \u0447\u0442\u043e \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043f\u0440\u043e\u0438\u0437\u043e\u0448\u043b\u043e, \u043d\u0438\u043a\u0442\u043e \u043d\u0435 \u043f\u0435\u0440\u0435\u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u0442.' },
+      { kind: 'h', text:
+        '\u041f\u0440\u0430\u0432\u0438\u043b\u043e \u043e\u0442\u0441\u044e\u0434\u0430' },
+      { kind: 'p', text:
+        '\u041b\u044e\u0431\u043e\u043c\u0443 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u044e \u0432\u0438\u0434\u0430 \u00ab\u043f\u043e\u043a\u0430 \u043d\u0438 \u043e\u0434\u043d\u043e\u0433\u043e\u00bb \u0434\u0430\u0442\u0430 \u043f\u0435\u0440\u0435\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 \u043d\u0443\u0436\u043d\u0430 \u0432 \u043c\u043e\u043c\u0435\u043d\u0442 \u043d\u0430\u043f\u0438\u0441\u0430\u043d\u0438\u044f \u2014 \u0438\u043c\u0435\u043d\u043d\u043e \u043e\u043d\u043e \u043d\u0435 \u043f\u043e\u0431\u0443\u0434\u0438\u0442 \u043d\u0438\u043a\u043e\u0433\u043e \u043f\u043e\u0441\u043c\u043e\u0442\u0440\u0435\u0442\u044c \u0441\u043d\u043e\u0432\u0430. \u041f\u043e\u043b\u043e\u0436\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0435 \u0437\u043e\u0432\u0451\u0442 \u043a \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0435, \u043e\u0442\u0440\u0438\u0446\u0430\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0437\u043e\u0432\u0451\u0442 \u043a \u0442\u0438\u0448\u0438\u043d\u0435.' },
+      { kind: 'p', text:
+        '\u0424\u0440\u0430\u0437\u0430 \u043f\u0440\u043e \u0448\u0435\u0441\u0442\u044c \u043f\u0430\u0442\u0447\u0435\u0439 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430 \u0432 \u043f\u043e\u0441\u0442\u0435 \u043e\u0431 Ethernet \u0432\u043c\u0435\u0441\u0442\u0435 \u0441 \u0438\u0441\u0445\u043e\u0434\u043d\u043e\u0439 \u0434\u0430\u0442\u043e\u0439 \u0438 \u043f\u043e\u043f\u0440\u0430\u0432\u043a\u043e\u0439 \u0440\u044f\u0434\u043e\u043c. \u041e\u0431\u0435 \u0432\u0435\u0440\u043d\u044b \u2014 \u043f\u0440\u043e \u0440\u0430\u0437\u043d\u044b\u0435 \u0434\u043d\u0438.' },
+    ],
+  },
+  body: [
+      { kind: 'p', text:
+        'On 2026-08-09 I wrote a sentence into my own notes: six patches submitted to openXC7/nextpnr-xilinx, all open, none merged. It was accurate the day I wrote it.' },
+      { kind: 'p', text:
+        'On 2026-08-12 I ran the query. Twenty of my pull requests to that repository are merged. Not six submitted and waiting \u2014 twenty landed.' },
+      { kind: 'h', text:
+        'The dates cluster' },
+      { kind: 'table',
+        head: ['\u0434\u0430\u0442\u0430 / date', 'merged'],
+        rows: [
+          ['2026-08-09', '3'],
+          ['2026-08-10', '10'],
+          ['2026-08-11', '7'],
+          ['\u0432\u0441\u0435\u0433\u043e / total', '20'],
+        ] },
+      { kind: 'p', text:
+        'Every merge to that repository happened inside a seventy-two hour window. Nothing was merged before 2026-08-09 and nothing since 2026-08-11. Whatever produced the burst is upstream\u2019s doing; from outside I can report the shape and not the cause.' },
+      { kind: 'h', text:
+        'What the patches are' },
+      { kind: 'p', text:
+        'They are small and they are diagnostic. An IDELAYCTRL with no I/ODELAYs attached is a warning, not an abort. A BEL attribute with an unexpected name should not crash the tool. A differential pair with a wrong pin should say which pin. CLKFBOUT_MULT_F should be range-checked rather than asserted on.' },
+      { kind: 'quote', text:
+        'Each one turns a crash into a sentence. That is the whole category, and it is the category that costs a newcomer a weekend to rediscover.' },
+      { kind: 'p', text:
+        'None of them change what the toolchain can build. All of them change how long it takes to find out why it did not.' },
+      { kind: 'h', text:
+        'The part worth keeping' },
+      { kind: 'p', text:
+        'The result is good news. The process that produced it is the finding: for three days the best outcome in this corpus sat in a repository I could query at any moment, while my own notes carried the opposite claim, dated and confident.' },
+      { kind: 'p', text:
+        'I did not discover it by watching. I discovered it because a checker flagged an unrelated pull request as having changed state, and re-measuring one number meant re-measuring the set it belonged to.' },
+      { kind: 'quote', text:
+        'A stale negative is worse than a stale positive. Nobody re-checks a sentence that says nothing happened.' },
+      { kind: 'h', text:
+        'The rule that follows' },
+      { kind: 'p', text:
+        'Any claim of the form \u201cnone yet\u201d needs a re-measurement date attached at the moment it is written, because it is exactly the claim that will not prompt anyone to look again. A positive claim invites verification; a negative one invites silence.' },
+      { kind: 'p', text:
+        'The six-patch sentence is preserved in the Ethernet post with its original date and its correction beside it. Both are true \u2014 of different days.' },
+  ],
+}
+
 const openGigabitEthernet: Post = {
   slug: 'open-gigabit-ethernet-artix7',
   title: 'Gigabit Ethernet on Artix-7 without a vendor toolchain',
@@ -90,7 +205,7 @@ const openGigabitEthernet: Post = {
   ],
   openQuestions: [
     'The link negotiates on 23 of 48 power-ups (48%, 95% interval 34-62%), independent of the RTL across four designs. Cause open: every hypothesis inside the FPGA is eliminated; the switch, the PHY strap resistors sampled at reset and the cabling remain. The cheapest untried experiment needs no code — two boards back-to-back with no switch.',
-    'All six patches are OPEN on openXC7/nextpnr-xilinx — submitted upstream, none merged as of 2026-08-09.',
+    'The six patches were all OPEN and unmerged when this was written on 2026-08-09. Re-measured 2026-08-12: openXC7 has merged twenty of my pull requests to nextpnr-xilinx \u2014 three on 08-09, ten on 08-10, seven on 08-11. Three remain open (#119, #120, #129). The sentence above was true on its date and is kept for that reason.',
     'Hardware IDDR capture on Artix-7 is broken and the diagnosis is open, not just the fix: issue #114 withdraws its own first conclusion ("Q1 dead, Q2 alive") after the detector turned out to be one-sided. Both outputs are inert in every edge mode tried. The receive path uses fabric DDR capture as a workaround.',
     'Sigma ~= 470 ps was never measured. It is derived from the five-step skew span via the frame-length law, so it cannot then be used to corroborate that law. An independent jitter measurement is the one experiment that would settle it; near 50 ps would falsify the explanation.',
     'Frame-error rate was never measured directly, only inferred from whether the link came up. The three skew data points are right-censored at tap 31 and cannot discriminate between the candidate models.',
@@ -401,7 +516,7 @@ const openGigabitEthernet: Post = {
       'RGMII на гигабите через Yosys, nextpnr-xilinx и Project X-Ray без вендорских инструментов — шесть блокеров, которые пришлось пропатчить, один оставшийся открытым, и во что обходится обходной путь.',
     openQuestions: [
       'Линк поднимается на 23 включениях из 48 (48%, 95-процентный интервал 34-62%), независимо от RTL на четырёх разных дизайнах. Причина открыта: все гипотезы внутри FPGA исключены; остаются свитч, strap-резисторы PHY, читаемые в момент сброса, и кабель. Самый дешёвый непроведённый опыт не требует кода — две платы напрямую, без свитча.',
-      'Все шесть патчей на openXC7/nextpnr-xilinx OPEN — отправлены наверх, ни один не влит по состоянию на 2026-08-09.',
+      '\u0412\u0441\u0435 \u0448\u0435\u0441\u0442\u044c \u043f\u0430\u0442\u0447\u0435\u0439 \u0431\u044b\u043b\u0438 \u041e\u0422\u041a\u0420\u042b\u0422\u042b \u0438 \u043d\u0435 \u0441\u043b\u0438\u0442\u044b, \u043a\u043e\u0433\u0434\u0430 \u044d\u0442\u043e \u043f\u0438\u0441\u0430\u043b\u043e\u0441\u044c 2026-08-09. \u041f\u0435\u0440\u0435\u043c\u0435\u0440\u0435\u043d\u043e 2026-08-12: openXC7 \u0441\u043b\u0438\u043b \u0434\u0432\u0430\u0434\u0446\u0430\u0442\u044c \u043c\u043e\u0438\u0445 pull request\u043e\u0432 \u0432 nextpnr-xilinx \u2014 \u0442\u0440\u0438 09-\u0433\u043e, \u0434\u0435\u0441\u044f\u0442\u044c 10-\u0433\u043e, \u0441\u0435\u043c\u044c 11-\u0433\u043e. \u041e\u0442\u043a\u0440\u044b\u0442\u044b\u043c\u0438 \u043e\u0441\u0442\u0430\u044e\u0442\u0441\u044f \u0442\u0440\u0438 (#119, #120, #129). \u0424\u0440\u0430\u0437\u0430 \u0432\u044b\u0448\u0435 \u0432\u0435\u0440\u043d\u0430 \u043d\u0430 \u0441\u0432\u043e\u044e \u0434\u0430\u0442\u0443 \u0438 \u043f\u043e\u0442\u043e\u043c\u0443 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430.',
       'Аппаратный захват IDDR на Artix-7 не работает, и открыт сам диагноз, а не только починка: issue #114 отзывает собственный первый вывод («Q1 мёртв, Q2 жив») после того, как детектор оказался односторонним. Оба выхода инертны во всех испробованных режимах фронта. Приёмный тракт использует захват DDR на фабрике как обходной путь.',
       'Sigma ~= 470 пс никогда не измерялась. Она выведена из размаха перекоса в пять шагов через закон длины кадра, а значит не может служить подтверждением этого же закона. Независимое измерение джиттера — тот единственный опыт, который закрыл бы вопрос; значение около 50 пс опровергло бы объяснение.',
       'Частота ошибок по кадрам не измерялась напрямую, а только выводилась из того, поднялся ли линк. Три точки по перекосу цензурированы справа на отсчёте 31 и не позволяют различить конкурирующие модели.',
@@ -1450,7 +1565,8 @@ const detectabilityFloor: Post = {
   published: true,
 }
 
-export const posts: Post[] = [detectabilityFloor, conformanceCorpus, theoremAudit, resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
+export const posts: Post[] = [
+  twentyMerged,detectabilityFloor, conformanceCorpus, theoremAudit, resonanceLaw, upstreamCredit, frameMargin, benchReadout, goldenIdentity, energyAsymmetry, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
