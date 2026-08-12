@@ -664,7 +664,7 @@ Requires **Zig 0.15.x**.
 
 ## FPGA — Autoregressive Ternary LLM
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18947017.svg)](https://doi.org/10.5281/zenodo.18947017)
+[![DOI 10.5281/zenodo.18947017](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18947017-1682D4?style=flat-square&logo=zenodo)](https://doi.org/10.5281/zenodo.18947017)
 
 First autoregressive ternary language model on FPGA with fully open-source toolchain.
 
