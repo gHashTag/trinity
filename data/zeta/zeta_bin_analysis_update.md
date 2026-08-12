@@ -52,10 +52,22 @@ Per-bin p95 recomputed with equal counts is 1.7186 ± 0.0045 — flat in height.
 - Trend: No clear convergence with height
 - Deviation from expected: **-2.4%** (systematic)
 
-**Interpretation**: This suggests either:
-1. Sample size effect (500 CF expansions per bin may be insufficient)
-2. Arithmetic structure in zeta spacings affecting CF statistics
-3. Need for larger sample or higher zeros
+**Interpretation**: not established — the estimator is unspecified, and the two
+plausible estimators bracket the observed value. Monte-Carlo control over
+uniform random reals (Khinchin-generic a.s.), 500 expansions per synthetic bin,
+`scripts/khinchin_finite_sample.py`:
+
+| estimator | m = 20 terms | m = 50 | m = 100 | K |
+|---|---|---|---|---|
+| mean of per-expansion geometric means | 2.755 ± 0.031 | 2.713 ± 0.018 | 2.697 ± 0.013 | 2.6854520 |
+| pooled geometric mean over all terms | 2.668 ± 0.029 | 2.677 ± 0.017 | 2.684 ± 0.013 | 2.6854520 |
+
+The first estimator is biased **above** K, the second **below**. The observed
+2.6201 ± 0.0293 sits 1.6σ from the pooled control at m = 20 — i.e. consistent
+with finite-sample bias — and 4σ from the per-expansion control. Which applies
+depends on the estimator and on the number of partial quotients per expansion,
+neither of which this document records. Status: OPEN, not a finding. To close
+it, record the estimator and m, then compare against the matching control row.
 
 ### 2. Spacing Distribution: agrees with GUE to ~2%
 
