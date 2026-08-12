@@ -314,7 +314,7 @@ export const techBranches: TechBranch[] = [
         branch: 'hardware',
         prerequisites: ['opt-pc01'],
         unlocks: ['hw-002', 'core-004'],
-        metrics: '+100x speed',
+        metrics: 'in progress — no measured figure',
         x: 0,
         y: 4
       },

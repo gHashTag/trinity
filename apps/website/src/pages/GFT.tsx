@@ -41,7 +41,9 @@ const LINKS = {
   paper: 'https://arxiv.org/abs/2606.05017',
   catalogue: 'https://arxiv.org/abs/2606.09686',
   oracle: 'https://github.com/gHashTag/trinity-fpga/blob/main/conformance/gf_ref.py',
-  tekum: 'https://github.com/gHashTag/trinity-fpga/blob/main/conformance/tekum_ref.py',
+  takumRtl: 'https://github.com/takum-arithmetic/Takum-Codec-RTL',
+  takumPaper: 'https://arxiv.org/abs/2404.18603',
+  tekumPaper: 'https://arxiv.org/abs/2512.10964',
   rtl: 'https://github.com/gHashTag/trinity/blob/main/fpga/gft/gft_mul_w.v',
   synth: 'https://github.com/gHashTag/trinity/blob/main/fpga/gft/README.md',
   research: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/GFT16_BEATS_TEKUM16_2026-08-05.md',
@@ -49,11 +51,24 @@ const LINKS = {
 
 const EMAIL = 'admin@t27.ai'
 
+// The accuracy table this page used to carry — 2.84× and 5.53× against
+// tekum16 — is withdrawn. The oracle labelled tekum decoded all 65,536
+// sixteen-bit codes identically to the takum oracle, so the comparison was
+// never against tekum. What replaces it is the taper diagnostic (Theorem 2),
+// which is a measurement of the incumbent's own published behaviour and does
+// not depend on any oracle of ours being distinct from anyone else's.
 const ACCURACY: [string, string, string, string][] = [
-  ['|e| < 8', '3.56e-4', '3.27e-4', 'a tie'],
-  ['|e| 8–20', '3.52e-4', '1.00e-3', '2.84× better'],
-  ['|e| 20–38', '3.53e-4', '1.95e-3', '5.53× better'],
+  ['TNF16 (fixed fields)', '9', '8.99 / 9.01', '0 — flat'],
+  ['GF16 (fixed fields)', '9', '8.99', '0 — flat'],
+  ['bfloat16 (fixed fields)', '7', '7.04', '0 — flat'],
+  ['takum16 (tapered)', 'variable', '—', '−0.113 bit / binade'],
+  ['posit16 (tapered)', 'variable', '—', '−0.254 bit / binade'],
 ]
+
+const RETRACTED = {
+  h: 'What this page used to claim, and why it is gone',
+  b: 'Until August 2026 this page reported GF-T as 2.84× and 5.53× more accurate than tekum16 at range. That is withdrawn. The oracle labelled tekum decoded all 65,536 sixteen-bit codes identically to the takum oracle, so the numbers were a comparison with takum wearing the wrong name. Against takum the honest figures are 2.1× at sixteen bits and an exact 2.6× at thirty-two. A real comparison against tekum (arXiv:2512.10964) has not been made, and nothing here should be read as one.',
+}
 
 const LADDER: [string, string, string][] = [
   ['GF-T8', '50', '153.23 MHz'],
@@ -71,37 +86,42 @@ const COST: [string, string, string, string][] = [
 ]
 
 const WHY = [
-  ['No regime decode', 'tekum16 pays for a variable-length regime field — barrel-shift alignment and variable extraction — on any fabric. GF-T has fixed fields, so that cost is simply absent.'],
-  ['The exponent is balanced ternary', 'Four trits, so 3⁴ = 81 exponent values. On a ternary fabric the exponent add is native: no binary carry, no base conversion.'],
-  ['Precision does not taper', 'Nine mantissa bits at every magnitude. tekum16 narrows to about four at the extremes, which is where the 5.53× comes from.'],
+  ['No regime decode', 'Any tapered format — posit, takum, tekum — pays for a variable-length regime field on every fabric: find it, compute its length, barrel-shift the significand into place. GF-T has fixed fields, so that cost is a bit slice. Measured consequence: all fourteen fixed-field decoders in the bench sit above all three tapered ones in frequency, and the worst fixed-field format leads the best tapered one by 1.43×.'],
+  ['The exponent is balanced ternary', 'Four trits, so 3⁴ = 81 exponent values. On a ternary fabric the exponent add is native: no binary carry, no base conversion. On the binary FPGA everything here was measured on, that property neither wins nor loses — the ternary claim is architectural and is labelled as such.'],
+  ['Precision does not taper', 'Nine mantissa bits at every magnitude. The diagnostic above recovers the declared width to 0.01 of a bit for every fixed-field format and separates the tapered ones cleanly by their slope. Flatness on a 76-binade workload: 1.05–1.07, so at most 7% spread.'],
 ]
 
 const LIMITS = [
-  ['The range is bounded, and that is the trade', 'GF-T16 reaches ±40 in powers of two — roughly ±12 decades. tekum16’s regime is unbounded, so beyond that GF-T16 overflows and tekum16 keeps working. Fixed fields buy the cheap datapath and the uniform precision; the price is range, and most ML and DSP workloads never reach it.'],
-  ['The accuracy bins are powers of two', 'Not decades. An earlier note labelled them "dec", which would send a reviewer to check the one reading under which the far result looks invented. Corrected upstream.'],
+  ['The range is bounded, and that is the trade', 'GF-T16 reaches ±40 in powers of two — roughly ±12 decades. A tapered regime field is unbounded, so beyond that point GF-T16 overflows and takum keeps working. Fixed fields buy the cheap datapath and the uniform precision; the price is range, and most ML and DSP workloads never reach it. Theorem 6 makes this a dichotomy rather than a preference: constant precision and unbounded range cannot both hold.'],
+  ['It is not the most accurate format at this width', 'posit16 and binary16 are ahead near unity, and binary formats are ahead outright at 32 bits. A reference format does not have to win those comparisons — it has to be the thing they are measured against.'],
   ['Measured on one device family', 'Artix-7, on the open flow. Not multi-corner characterisation, and the ASIC numbers will differ.'],
-  ['The comparison is against a model of tekum, not tekum itself', 'tekum (arXiv:2512.10964) is a descendant of takum adapted for balanced ternary. The oracle it is measured against here is a reverse-engineered structural model built from takum’s field scheme — the full per-trit specification needs the paper. The ratios are as good as that model.'],
+  ['The comparison is against takum, not tekum', 'The oracle this site once labelled tekum decoded all 65,536 sixteen-bit codes identically to the takum oracle, so every ratio built on it was a takum comparison under the wrong name. Withdrawn rather than rescaled. tekum (arXiv:2512.10964) remains the nearest published work and the nearest open question.'],
+  ['The fabric where the ternary exponent pays is not for sale', 'A field of E trits covers 3^E values, and 3^E never divides a power of two, so packing it into a binary machine loses the remainder — 25.0% at four bits, 15.6% at six and eight, 5.1% at sixteen. Ternary lost to binary three separate times in our own measurements. What is contributed is the condition under which the 68-year-old radix argument applies, not the argument itself.'],
   ['No head-to-head in hardware yet', 'takum’s RTL is public and is VHDL (takum-arithmetic/Takum-Codec-RTL). Synthesising it alongside GF-T needs a VHDL front end this bench does not have, so the cost figures here are GF-T’s own. What can be said from their source: their 16-bit codec pulls in a 725-line FloPoCo leading-zero-counter and barrel shifter, generated for a Kintex-7. That is the regime decode GF-T’s fixed fields do not have — a structural difference, not a measured one.'],
 ]
 
 const RU = {
   eyebrow: 'Формат',
   h1: 'GF-T — float, у которого экспонента тернарная.',
-  lede: 'Экспонента — сбалансированное тернарное число, поля фиксированы. Это убирает главную статью расхода конкурента и делает сложение экспонент нативным на тернарной фабрике. Против tekum16 — ничья у единицы, в 2.84 раза точнее на средней дальности и в 5.53 раза на дальней.',
+  lede: 'Экспонента — сбалансированное тернарное число, поля фиксированы. Декодирования режима нет — извлечение полей есть битовый срез, а на тернарной фабрике сложение экспонент нативно. Против takum16 — в 2.1 раза меньше средней относительной ошибки, против takum32 — точно в 2.6 раза.',
   layoutTitle: 'Как устроен',
-  accuracyTitle: 'Точность против tekum16',
-  accuracyNote: 'Средняя относительная ошибка на цикле кодирование→декодирование, 6000 значений, случайный знак. Перемерено независимо 8 августа 2026 по тем же оракулам: отношения воспроизводятся точно. Бины — в степенях двойки.',
-  cols: ['Величина', 'GF-T16', 'tekum16', 'Итог'],
+  retractedH: 'Что здесь стояло раньше и почему снято',
+  retractedB: 'До августа 2026 на этой странице стояло, что GF-T в 2.84 и 5.53 раза точнее tekum16 на дальности. Заявление отозвано. Оракул, помеченный tekum, декодировал все 65 536 шестнадцатибитных кодов идентично takum-оракулу, то есть цифры были сравнением с takum под чужим именем. Честные числа против takum — 2.1× на шестнадцати битах и точно 2.6× на тридцати двух. Настоящего сравнения с tekum (arXiv:2512.10964) не сделано, и ничто здесь не следует читать как такое сравнение.',
+  accuracyTitle: 'Диагностика сужения: восстановленная ширина значащей',
+  accuracyNote: 'Теорема 2: эффективная ширина мантиссы M_eff постоянна по бинадам тогда и только тогда, когда формат держит постоянную значащую и не исчерпал диапазон. Инструмент восстанавливает объявленную ширину с точностью 0.01 бита для каждого фиксированно-полевого формата и разделяет tapered-форматы по наклону. Здесь измеряется опубликованное поведение самих конкурентов, а не наш оракул против их оракула.',
+  cols: ['Формат', 'Объявлено M', 'Восстановлено M_eff', 'Наклон'],
   accuracy: [
-    ['|e| < 8', '3.56e-4', '3.27e-4', 'ничья'],
-    ['|e| 8–20', '3.52e-4', '1.00e-3', 'в 2.84 раза точнее'],
-    ['|e| 20–38', '3.53e-4', '1.95e-3', 'в 5.53 раза точнее'],
+    ['TNF16 (фиксированные поля)', '9', '8.99 / 9.01', '0 — плоско'],
+    ['GF16 (фиксированные поля)', '9', '8.99', '0 — плоско'],
+    ['bfloat16 (фиксированные поля)', '7', '7.04', '0 — плоско'],
+    ['takum16 (tapered)', 'переменная', '—', '−0.113 бита / бинада'],
+    ['posit16 (tapered)', 'переменная', '—', '−0.254 бита / бинада'],
   ] as [string, string, string, string][],
-  whyTitle: 'Почему он дешевле на тернарной фабрике',
+  whyTitle: 'Почему фиксированные поля дешевле',
   why: [
-    ['Нет декодирования режима', 'tekum16 платит за поле режима переменной длины — выравнивание барабанным сдвигом и переменное извлечение — на любой фабрике. У GF-T поля фиксированы, и этой статьи расхода просто нет.'],
-    ['Экспонента — сбалансированная тернарная', 'Четыре трита, то есть 3⁴ = 81 значение экспоненты. На тернарной фабрике сложение экспонент нативно: без бинарного переноса и конверсии основания.'],
-    ['Точность не сужается', 'Девять бит мантиссы на любой величине. tekum16 сужается примерно до четырёх на краях — отсюда и 5.53×.'],
+    ['Нет декодирования режима', 'Любой tapered-формат — posit, takum, tekum — платит за поле режима переменной длины на любой фабрике: найти его, посчитать длину, выровнять значащую барабанным сдвигом. У GF-T это битовый срез. Измеренное следствие: все четырнадцать фиксированно-полевых декодеров на стенде выше всех трёх tapered по частоте, а худший фиксированный ведёт лучший tapered в 1.43 раза.'],
+    ['Экспонента — сбалансированная тернарная', 'Четыре трита, то есть 3⁴ = 81 значение экспоненты. На тернарной фабрике сложение экспонент нативно. На бинарной FPGA, где всё здесь измерено, это свойство ни выигрывает, ни проигрывает — тернарное заявление архитектурное и так и помечено.'],
+    ['Точность не сужается', 'Девять бит мантиссы на любой величине. Ровность на нагрузке в 76 бинад: 1.05–1.07, то есть разброс не больше 7%.'],
   ],
   costTitle: 'Что стоит в железе',
   costNote: 'Умножитель GF-T16, синтез под xc7 и разводка на XC7A200T, nextpnr-xilinx, аппаратные умножители отключены. Все три варианта побитово эквивалентны — доказано на 321 156 комбинациях входов и 199 994 циклах конвейера.',
@@ -123,10 +143,11 @@ const RU = {
   widthBody: 'В исходном модуле все порты объявлены 32-битными, хотя в GF-T16 нет ничего 32-битного: поле мантиссы 9 бит, значит (1+M) — 10, их произведение — 20, а смещение экспоненты не превышает 80, то есть 7 бит. Синтезатор честно строил умножитель 32×32 и 32-битное дерево сравнений и платил за это полную цену: 1179 LUT либо три блока DSP48. С правильными разрядностями — 219 LUT и ни одного DSP, при побитовой идентичности на 321 156 комбинациях.',
   limitsTitle: 'Где он проигрывает',
   limits: [
-    ['Диапазон ограничен — и это плата', 'GF-T16 доходит до ±40 в степенях двойки, примерно ±12 декад. Режим tekum16 не ограничен, поэтому дальше GF-T16 переполняется, а tekum16 продолжает работать. Фиксированные поля покупают дешёвый тракт и равномерную точность; цена — диапазон, до которого большинство ML- и DSP-нагрузок не доходят.'],
-    ['Бины точности — в степенях двойки', 'Не в декадах. В более ранней записке они были подписаны «dec», а это отправляет рецензента проверять ровно тем способом, при котором дальний результат выглядит выдуманным. Исправлено в исходной записке.'],
+    ['Диапазон ограничен — и это плата', 'GF-T16 доходит до ±40 в степенях двойки, примерно ±12 декад. У tapered-формата поле режима не ограничено, поэтому дальше GF-T16 переполняется, а takum продолжает работать. Теорема 6 делает это дихотомией, а не предпочтением: постоянная точность и неограниченный диапазон несовместны.'],
+    ['Это не самый точный формат на данной ширине', 'posit16 и binary16 впереди около единицы, а на 32 битах бинарные форматы впереди прямо. Референсный формат не обязан выигрывать эти сравнения — он обязан быть тем, относительно чего их меряют.'],
     ['Измерено на одном семействе устройств', 'Artix-7, на открытом флоу. Не многоугловая характеризация, и цифры под ASIC будут другими.'],
-    ['Сравнение против модели tekum, а не самого tekum', 'tekum (arXiv:2512.10964) — потомок takum, адаптированный под сбалансированную троичную логику. Оракул, против которого здесь измерено, — реконструированная структурная модель по полевой схеме takum; полная потритовая спецификация требует сверки со статьёй. Отношения ровно настолько хороши, насколько хороша эта модель.'],
+    ['Сравнение идёт против takum, а не tekum', 'Оракул, который на этом сайте был помечен tekum, декодировал все 65 536 шестнадцатибитных кодов идентично takum-оракулу, то есть любое отношение на его основе было сравнением с takum под чужим именем. Отозвано, а не пересчитано. tekum (arXiv:2512.10964) остаётся ближайшей опубликованной работой и ближайшим открытым вопросом.'],
+    ['Фабрика, на которой тернарная экспонента окупается, не продаётся', 'Поле из E тритов покрывает 3^E значений, а 3^E никогда не делит степень двойки, поэтому укладка в бинарную машину теряет остаток: 25.0% на четырёх битах, 15.6% на шести и восьми, 5.1% на шестнадцати. Троичное проиграло бинарному три раза независимо в наших же измерениях. Вклад — условие, при котором 68-летний аргумент применим, а не сам аргумент.'],
     ['Прямого сравнения в железе пока нет', 'RTL для takum открыт и написан на VHDL (takum-arithmetic/Takum-Codec-RTL). Чтобы синтезировать его рядом с GF-T, нужен VHDL-фронтенд, которого на этом стенде нет, поэтому цифры стоимости — только GF-T. Что видно из их исходника: их 16-битный кодек тянет 725-строчный FloPoCo-шифтер со счётчиком ведущих нулей, сгенерированный под Kintex-7. Это и есть то декодирование режима, которого у GF-T нет по построению — различие структурное, а не измеренное.'],
   ],
   ctaTitle: 'Взять GF-T в свой дизайн',
@@ -138,7 +159,7 @@ export default function GFT() {
   const c = lang === 'ru' ? RU : null
   usePageMeta(
     lang === 'ru' ? 'GF-T — тернарно-нативный float' : 'GF-T — a ternary-native float',
-    'GF-T puts the exponent of a float in balanced ternary and keeps the fields fixed: 2.84× and 5.53× more accurate than tekum16 at range, 219 LUTs and zero DSP blocks, 147 MHz pipelined on Artix-7.',
+    'GF-T puts the exponent of a float in balanced ternary and keeps the fields fixed: no regime decode, a mantissa that does not taper, 219 LUTs and zero DSP blocks, 147 MHz pipelined on Artix-7. Measured against takum, not tekum — the earlier tekum figures are withdrawn.',
   )
 
   const th: React.CSSProperties = {
@@ -166,16 +187,26 @@ export default function GFT() {
             {c ? c.h1 : 'GF-T — a float whose exponent is ternary.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: '0 auto', maxWidth: '64ch' }}>
-            {c ? c.lede : 'The exponent is a balanced-ternary number and the fields are fixed. That removes the incumbent’s largest cost and makes the exponent add native on a ternary fabric. Against tekum16: a tie near unity, 2.84× more accurate at mid range and 5.53× at far range.'}
+            {c ? c.lede : 'The exponent is a balanced-ternary number and the fields are fixed. There is no regime to decode — extraction is a bit slice — and on a ternary fabric the exponent add is native. Against takum16: 2.1× lower mean relative error; against takum32, an exact 2.6×.'}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center', marginTop: '1.75rem' }}>
             <a href="#/ip" className="btn" style={{ padding: '12px 28px', fontSize: '0.9rem' }}>
               {c ? c.ctaTitle : 'License GF-T'}
             </a>
-            <a href={LINKS.research} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '12px 28px', fontSize: '0.9rem' }}>
-              {c ? 'Полное измерение' : 'The full measurement'}
+            <a href={LINKS.paper} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '12px 28px', fontSize: '0.9rem' }}>
+              {c ? 'Статья и эталонная модель' : 'The paper and the reference model'}
             </a>
           </div>
+        </motion.div>
+
+        {/* The retraction, stated before anything it used to support */}
+        <motion.div className="premium-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ marginBottom: '2rem', borderLeft: '3px solid var(--accent)' }}>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.4rem)', marginTop: 0, marginBottom: '0.7rem' }}>
+            {c ? c.retractedH : RETRACTED.h}
+          </h2>
+          <p style={{ fontSize: '0.92rem', lineHeight: 1.65, opacity: 0.9, maxWidth: '64ch', margin: 0 }}>
+            {c ? c.retractedB : RETRACTED.b}
+          </p>
         </motion.div>
 
         {/* Field layout — the first thing an adopter looks for */}
@@ -321,7 +352,8 @@ value = (-1)^sign · (1 + M/2^9) · 2^e,   e = Σ tᵢ·3ⁱ  ∈ [−40, +40]`}
             <a href={LINKS.paper} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>arXiv:2606.05017</a>
             <a href={LINKS.catalogue} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>arXiv:2606.09686</a>
             <a href={LINKS.oracle} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>Reference model</a>
-            <a href={LINKS.tekum} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>tekum16 reference</a>
+            <a href={LINKS.takumRtl} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>takum codec RTL</a>
+            <a href={LINKS.tekumPaper} target="_blank" rel="noopener noreferrer" className="btn secondary" style={{ padding: '9px 20px', fontSize: '0.8rem' }}>tekum — arXiv:2512.10964</a>
           </div>
           <a href={`mailto:${EMAIL}?subject=${encodeURIComponent('GF-T licensing')}`} className="btn" style={{ padding: '12px 30px', fontSize: '0.9rem' }}>
             {EMAIL}

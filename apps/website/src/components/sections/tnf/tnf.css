@@ -1,6 +1,42 @@
 /* Главная страница под «Ternary Network Floats». Одна сетка, один ритм.
    Никаких новых цветов кроме тега происхождения — он единственный носитель
-   смысла, которому позволено красить. */
+   смысла, которому позволено красить.
+
+   Ритм страницы — один множитель, φ = 1.618. Каждый шаг кегля и каждый шаг
+   отступа берётся из одной геометрической прогрессии, поэтому расстояния между
+   вещами не выбраны на глаз: они наследуют то же отношение, которым формат
+   выбирает ширины полей. Дробные rem'ы ниже — не подгонка, а φ^n, округлённые
+   до тысячных. */
+:root {
+  --phi: 1.618;
+
+  /* Кегли: φ⁻² … φ⁴ от базы 1rem.
+     Два нижних шага не чистые φ^n, и это сознательно: 0.618rem = 9.9 px,
+     0.786rem = 12.6 px, а замером по странице такой текст читался хуже
+     основного вдвое — 68 подписей происхождения, самая важная вещь на сайте,
+     оказались самым мелким кеглем. Пол читаемости 13 px важнее чистоты
+     отношения, поэтому прогрессия действует ВЫШЕ пола, а два нижних шага
+     прижаты к нему. Ритм отступов остался чистым φ^n. */
+  --f-3: 0.75rem;    /* 12 px — только для капса с трекингом */
+  --f-2: 0.8125rem;  /* 13 px — пол читаемости */
+  --f-1: 0.875rem;   /* 14 px */
+  --f0:  1rem;
+  --f1:  1.272rem;
+  --f2:  1.618rem;
+  --f3:  2.058rem;
+  --f4:  2.618rem;
+  --f5:  4.236rem;
+  --f6:  6.854rem;
+
+  /* Отступы — та же прогрессия, чтобы вертикальный ритм и кегли совпадали */
+  --sp-1: 0.382rem;
+  --sp0:  0.618rem;
+  --sp1:  1rem;
+  --sp2:  1.618rem;
+  --sp3:  2.618rem;
+  --sp4:  4.236rem;
+  --sp5:  6.854rem;
+}
 
 .tnf-wrap {
   width: 100%;
@@ -10,7 +46,7 @@
 }
 
 .tnf-section {
-  padding: clamp(3rem, 7vw, 6.5rem) 20px;
+  padding: clamp(var(--sp3), 6.854vw, var(--sp5)) var(--sp2);
   /* Док-навигация зафиксирована сверху и без этого отступа ложится
      на заголовок раздела при переходе по якорю. */
   scroll-margin-top: 92px;
@@ -22,21 +58,22 @@
 }
 
 .tnf-badge {
-  font-size: 0.7rem;
+  font-size: var(--f-1);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: var(--sp1);
   display: block;
 }
 
 .tnf-h2 {
-  font-size: clamp(1.55rem, 3.6vw, 2.5rem);
+  font-size: clamp(var(--f2), 3.6vw, var(--f4));
   font-weight: 500;
   letter-spacing: -0.025em;
-  line-height: 1.15;
-  margin: 0 0 1rem;
+  /* 1.236 = 2 − φ⁻¹: плотный интерлиньяж для крупного кегля */
+  line-height: 1.236;
+  margin: 0 0 var(--sp1);
   max-width: 22ch;
 }
 
@@ -45,9 +82,10 @@
 .tnf-lede {
   color: var(--muted);
   max-width: 68ch;
-  margin: 0 0 2.5rem;
+  margin: 0 0 var(--sp3);
   font-size: clamp(0.95rem, 1.15vw, 1.05rem);
-  line-height: 1.65;
+  /* 1.618 — тот же множитель, что и в шкале: строка стоит на φ */
+  line-height: var(--phi);
 }
 
 .tnf-grid { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
@@ -56,14 +94,23 @@
 /* min-width: 0 открывает горизонтальную прокрутку таблиц внутри ячейки: у grid-
    элемента min-width по умолчанию = auto, и широкая таблица распирала
    ячейку до 468px на экране 375px — вся страница ездила вбок. */
-.tnf-cell { background: var(--bg); padding: clamp(1.25rem, 2.2vw, 2rem); min-width: 0; }
+/* Карточки полупрозрачны, чтобы звёздное поле просвечивало и страница читалась
+   как один слой, а не как чёрные плашки поверх фона. */
+.tnf-cell {
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(2px);
+  padding: clamp(var(--sp2), 2.2vw, var(--f2));
+  min-width: 0;
+}
 .tnf-grid, .tnf-grid > * { min-width: 0; }
 
+/* Теги происхождения — несущая конструкция честности на странице, а были
+   кеглем 10.6 px, мельче всего остального. */
 .tnf-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.66rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   font-weight: 600;
@@ -78,11 +125,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-.tnf-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.tnf-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .tnf-table th {
   text-align: right;
   font-weight: 600;
-  font-size: 0.68rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -152,7 +199,7 @@
 @media (max-width: 560px) {
   /* Таблицы сжимаются, но не переносят числа: строка чисел, разорванная
      на две строки, читается как два разных числа. */
-  .tnf-table { font-size: 0.78rem; }
+  .tnf-table { font-size: 0.8125rem; }
   .tnf-table th, .tnf-table td { padding: 0.5rem 0.5rem; }
   .tnf-bar { display: none; }
 }

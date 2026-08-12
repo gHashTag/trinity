@@ -72,10 +72,12 @@ export default function SelfServeRun() {
   const [copied, setCopied] = useState(false)
 
   const copy = () => {
+    // A sandboxed frame has the API and refuses the write, which used to leave
+    // an unhandled rejection and a button that reported nothing either way.
     navigator.clipboard?.writeText(SNIPPET).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    })
+    }).catch(() => { /* no clipboard here; the snippet is selectable below */ })
   }
 
   return (
