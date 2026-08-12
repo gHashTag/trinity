@@ -26,7 +26,7 @@ const TIERS = [
   { name: 'Self-paced', price: '$149', body: 'Video, code, KAT vector sets, community access.' },
   { name: 'Self-paced + hardware', price: '$249', body: 'Everything above, plus remote runs on my Artix-7 boards — no need to own one.' },
   { name: 'Cohort · 4 weeks', price: '$599', body: 'Live sessions, code review, and your own design taken apart with you.' },
-  { name: 'Team workshop', price: 'from $2 000', body: 'Two days with your engineers, built around a problem you actually have.' },
+  { name: 'Team workshop', price: 'from $9 000', body: 'Two days with your engineers, built around a problem you actually have.' },
 ]
 
 const AUDIENCE = [
@@ -88,7 +88,7 @@ const RU = {
     { name: 'Самостоятельно', price: '$149', body: 'Видео, код, наборы KAT-векторов, доступ к сообществу.' },
     { name: 'Самостоятельно + железо', price: '$249', body: 'То же плюс удалённые прогоны на моих Artix-7 — своя плата не нужна.' },
     { name: 'Поток · 4 недели', price: '$599', body: 'Живые сессии, разбор кода и вашего дизайна вместе с вами.' },
-    { name: 'Воркшоп для команды', price: 'от $2 000', body: 'Два дня с вашими инженерами вокруг задачи, которая у вас реально есть.' },
+    { name: 'Воркшоп для команды', price: 'от $9 000', body: 'Два дня с вашими инженерами вокруг задачи, которая у вас реально есть.' },
   ],
   prereq: 'Требуется: базовый Python и представление о цифровой логике. Verilog учим с нуля. Плата не обязательна — в двух форматах прогоны на моём железе включены.',
   finalTitle: 'Хотите место в ближайшем потоке?',

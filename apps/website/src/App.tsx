@@ -22,6 +22,9 @@ const TnfLadder = lazy(() => import('./components/sections/tnf').then((m) => ({ 
 const TnfTheorems = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfTheorems })))
 const TnfLimits = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLimits })))
 const TnfLandscape = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLandscape })))
+const TnfDecision = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfDecision })))
+const TnfFaq = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFaq })))
+const TnfStart = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfStart })))
 const TnfCalculators = lazy(() => import('./components/sections/tnf/Calculators'))
 const TnfVisuals = lazy(() => import('./components/sections/tnf/PhiViz'))
 const TnfFindings = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFindings })))
@@ -54,11 +57,14 @@ export default function App() {
         <TnfTheorems />
         <TnfCalculators />
         <TnfLimits />
+        <TnfDecision />
         <TnfLandscape />
         <TnfFindings />
         <TnfLineage />
         <PublicationsSection />
         <TnfAuthor />
+        <TnfFaq />
+        <TnfStart />
         <TnfInvest />
         <TnfReproduce />
       </Suspense>

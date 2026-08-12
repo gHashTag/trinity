@@ -11,7 +11,8 @@ import { useI18n } from '../../../i18n/context'
 import { TrinityLogo } from '../../TrinityLogo'
 import {
   TAG_LABEL, PAPER, hero, claim, formats, frontier, ladder,
-  theorems, limits, landscape, findings, lineage, reproduce, author, invest, type Tag,
+  theorems, limits, landscape, findings, lineage, reproduce, author, invest,
+  decision, faq, start, type Tag,
 } from '../../../content/tnf'
 import './tnf.css'
 
@@ -587,6 +588,85 @@ export function TnfLimits() {
                 <TagChip tag={(it as any).tag} />
               </div>
               <p style={{ fontSize: '0.85rem', lineHeight: 1.65, margin: 0, maxWidth: 'none' }}>{L(it.b)}</p>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────── РЕШЕНИЕ ОТНОСИТЕЛЬНО MXFP4 / NVFP4 ───────────────────
+   Четыре оси выбора, на каждой назван тот, кто на ней уместен — включая
+   случаи, где это не мы. Секция отвечает на возражение покупателя раньше,
+   чем он его сформулирует. */
+export function TnfDecision() {
+  const { L } = useL()
+  return (
+    <section id="decision" className="tnf-section">
+      <div className="tnf-wrap">
+        <Head badge={decision.badge} title={decision.title} lede={decision.sub} wide />
+        <motion.div {...fade} className="tnf-grid tnf-grid-2">
+          {decision.axes.map((ax) => (
+            <div className="tnf-cell" key={L(ax.axis)}>
+              <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                <strong style={{ fontSize: '0.95rem', fontWeight: 600 }}>{L(ax.axis)}</strong>
+                <TagChip tag={ax.tag as Tag} />
+              </div>
+              <div style={{ color: 'var(--accent)', fontSize: '0.82rem', marginBottom: '0.6rem' }}>{L(ax.pick)}</div>
+              <p style={{ fontSize: '0.85rem', lineHeight: 1.65, margin: 0, maxWidth: 'none' }}>{L(ax.body)}</p>
+            </div>
+          ))}
+        </motion.div>
+        <motion.div {...fade} className="tnf-grid" style={{ marginTop: '1.5rem', gridTemplateColumns: '1fr' }}>
+          <div className="tnf-cell">
+            <p style={{ fontSize: '0.88rem', lineHeight: 1.7, margin: 0, maxWidth: 'none' }}>{L(decision.note)}</p>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ───────────────────────── ВОПРОСЫ И ВОЗРАЖЕНИЯ ─────────────────────────
+   Одна колонка: вопрос читается как вопрос, а не как ячейка таблицы. */
+export function TnfFaq() {
+  const { L } = useL()
+  return (
+    <section id="faq" className="tnf-section">
+      <div className="tnf-wrap">
+        <Head badge={faq.badge} title={faq.title} lede={faq.sub} wide />
+        <motion.div {...fade} className="tnf-grid" style={{ gridTemplateColumns: '1fr' }}>
+          {faq.items.map((it) => (
+            <div className="tnf-cell" key={L(it.q)}>
+              <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                <strong style={{ fontSize: '0.95rem', fontWeight: 600 }}>{L(it.q)}</strong>
+                <TagChip tag={it.tag as Tag} />
+              </div>
+              <p style={{ fontSize: '0.86rem', lineHeight: 1.7, margin: 0, maxWidth: 'none' }}>{L(it.a)}</p>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ──────────────────────────── КАК НАЧАТЬ ────────────────────────────
+   Три шага, номер шага крупной цифрой — единственный элемент секции,
+   которому позволено кричать. */
+export function TnfStart() {
+  const { L } = useL()
+  return (
+    <section id="start" className="tnf-section">
+      <div className="tnf-wrap">
+        <Head badge={start.badge} title={start.title} lede={start.sub} wide />
+        <motion.div {...fade} className="tnf-grid tnf-grid-3">
+          {start.steps.map((st) => (
+            <div className="tnf-cell" key={st.n}>
+              <div style={{ color: 'var(--accent)', fontSize: '1.5rem', fontWeight: 700, lineHeight: 1, marginBottom: '0.7rem' }}>{st.n}</div>
+              <strong style={{ fontSize: '0.95rem', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{L(st.h)}</strong>
+              <p style={{ fontSize: '0.85rem', lineHeight: 1.65, margin: 0, maxWidth: 'none' }}>{L(st.b)}</p>
             </div>
           ))}
         </motion.div>

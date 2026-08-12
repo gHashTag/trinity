@@ -513,6 +513,174 @@ export const theorems = {
 
 /* ───────────────────── LIMITS AND RETRACTIONS ───────────────────── */
 
+/* ─────────────────── ВЫБОР ОТНОСИТЕЛЬНО MXFP4 / NVFP4 ───────────────────
+   Самое частое возражение покупателя — «зачем это, если есть MXFP4/NVFP4».
+   Ответ построен не как спор о превосходстве, а как разведение объектов
+   выбора: элемент блока, основание общего масштаба, аккумулятор и алфавит
+   веса — четыре разных инженерных вопроса. Числа взяты из уже измеренной
+   таблицы масштабов (см. frontier) и не вводятся здесь заново. */
+export const decision = {
+  badge: { en: 'THE DECISION, NOT THE RANKING', ru: 'ВЫБОР, А НЕ РЕЙТИНГ' },
+  title: { en: 'Not the same decision object as MXFP4 or NVFP4', ru: 'Это не тот же объект выбора, что MXFP4 или NVFP4' },
+  sub: {
+    en: 'MXFP4 and NVFP4 select the block element and the shared scale together. These axes are separated here because they pose different engineering questions, and a format only wins or loses on one axis at a time.',
+    ru: 'MXFP4 и NVFP4 выбирают элемент блока и общий масштаб вместе. Здесь эти оси разведены, потому что они задают разные инженерные вопросы, а формат выигрывает или проигрывает всегда на одной оси за раз.',
+  },
+  axes: [
+    {
+      axis: { en: 'The block element', ru: 'Элемент блока' },
+      pick: { en: 'MXFP4 / NVFP4', ru: 'MXFP4 / NVFP4' },
+      body: {
+        en: 'For a four-bit element inside an existing MX or NV pipeline, MXFP4 stays the material control and no replacement is claimed. If this is your question, start there.',
+        ru: 'Для четырёхбитного элемента внутри существующего MX- или NV-конвейера MXFP4 остаётся значимым контролем, и его замена не заявляется. Если ваш вопрос в этом — начинать надо оттуда.',
+      },
+      tag: 'external',
+    },
+    {
+      axis: { en: 'The radix of the shared scale', ru: 'Основание общего масштаба' },
+      pick: { en: 'φ-grid, measured', ru: 'φ-сетка, измерено' },
+      body: {
+        en: 'With E2M1 elements held fixed, a four-bit geometric grid costs 4.1250 bits per weight against 4.2500 for E8M0, at equal or better perplexity on both named checkpoints. That is a comparison on one axis, not an overall ranking.',
+        ru: 'При неизменных элементах E2M1 четырёхбитная геометрическая сетка стоит 4.1250 бита на вес против 4.2500 у E8M0, при равной или лучшей перплексии на обоих названных чекпойнтах. Это сравнение по одной оси, а не общий рейтинг.',
+      },
+      tag: 'measured',
+    },
+    {
+      axis: { en: 'The accumulator', ru: 'Аккумулятор' },
+      pick: { en: 'TNF', ru: 'TNF' },
+      body: {
+        en: 'TNF addresses a fixed accumulator with bounded range and fixed fields — an object the block formats do not describe at all. Five of nine rungs are measured on the FPGA; TNF128 is not claimed.',
+        ru: 'TNF отвечает за фиксированный аккумулятор с ограниченным диапазоном и фиксированными полями — объект, который блочные форматы вообще не описывают. Пять из девяти ступеней измерены на FPGA; TNF128 не заявляется.',
+      },
+      tag: 'spec',
+    },
+    {
+      axis: { en: 'The weight alphabet', ru: 'Алфавит веса' },
+      pick: { en: 'GFTernary', ru: 'GFTernary' },
+      body: {
+        en: 'GFTernary addresses applying a weight without a multiplier, on the path in Z[φ]. Ternary lost to binary in three independent measurements, and that boundary stays part of the result.',
+        ru: 'GFTernary отвечает за применение веса без умножителя, на пути в Z[φ]. Троичное трижды независимо проиграло бинарному, и эта граница остаётся частью результата.',
+      },
+      tag: 'proved',
+    },
+  ],
+  note: {
+    en: 'If you need a block element for a pipeline that already exists, MXFP4 or NVFP4 is the right starting point. If the question is the scale, the accumulator or multiply-free weight application, the comparison has to be run on that axis — which is what the catalogue of 83 formats and the conformance vectors are for.',
+    ru: 'Если нужен элемент блока для уже существующего конвейера — правильная отправная точка это MXFP4 или NVFP4. Если вопрос в масштабе, аккумуляторе или применении веса без умножения, сравнение надо проводить на соответствующей оси — именно для этого существуют каталог из 83 форматов и векторы соответствия.',
+  },
+}
+
+/* ─────────────────────── ВОПРОСЫ И ВОЗРАЖЕНИЯ ───────────────────────
+   Семь вопросов, которые всё равно будут заданы: про ASIC, про троичность,
+   про MXFP4, про базу сравнения, про предмет покупки, про то, что сюда не
+   подходит, и про то, что может проверить рецензент. Отвечать первым
+   дешевле, чем быть поправленным. */
+export const faq = {
+  badge: { en: 'QUESTIONS THAT GET ASKED', ru: 'ВОПРОСЫ, КОТОРЫЕ ЗАДАЮТ' },
+  title: { en: 'Seven questions, answered before they are put to us', ru: 'Семь вопросов с ответом до того, как их задали' },
+  sub: {
+    en: 'Each answer names its status: what was measured on hardware, what is proved on paper, what comes from an outside source, and what is only specified.',
+    ru: 'Каждый ответ называет свой статус: что измерено на железе, что доказано на бумаге, что взято из внешнего источника, а что пока только специфицировано.',
+  },
+  items: [
+    {
+      q: { en: 'Is this an ASIC result?', ru: 'Это результат на ASIC?' },
+      a: {
+        en: 'No. Every hardware number here was measured on a binary FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC mapping and multi-corner characterisation are not claimed. A SKY130 design was submitted through Tiny Tapeout; the die is at the fab and no measurement on silicon is claimed.',
+        ru: 'Нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC-маппинг и многоугловая характеризация не заявляются. Дизайн на SKY130 отправлен через Tiny Tapeout; кристалл на фабрике, измерений на кремнии нет.',
+      },
+      tag: 'measured',
+    },
+    {
+      q: { en: 'Does this show that ternary beats binary?', ru: 'Это доказывает, что троичное обходит бинарное?' },
+      a: {
+        en: 'No, and the page says so in three places. BNF16 against TNF16 within 1%; GF8 against GF-T8; MXFP4 against TNF4 on the block axis. The contribution is the condition under which the 68-year-old argument applies, not a general win.',
+        ru: 'Нет, и на странице это сказано трижды. BNF16 против TNF16 в пределах 1%; GF8 против GF-T8; MXFP4 против TNF4 на блочной оси. Вклад — условие, при котором применим 68-летний аргумент, а не общая победа.',
+      },
+      tag: 'measured',
+    },
+    {
+      q: { en: 'What exactly is the accuracy comparison against?', ru: 'С чем именно идёт сравнение по точности?' },
+      a: {
+        en: 'Against takum: 2.1× at sixteen bits and 2.6× at thirty-two. The oracle labelled tekum decodes all 65 536 sixteen-bit codes identically to the takum oracle, so a direct comparison against tekum has not been made and is not claimed.',
+        ru: 'С takum: 2.1× на шестнадцати битах и 2.6× на тридцати двух. Оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных кодов идентично takum-оракулу, поэтому прямое сравнение с tekum не сделано и не заявляется.',
+      },
+      tag: 'measured',
+    },
+    {
+      q: { en: 'What can be bought today?', ru: 'Что можно купить сегодня?' },
+      a: {
+        en: 'Three things, and none of them require you to adopt the format. Independent verification of your RTL on the live board; a licence to the arithmetic with RTL, reference model and vectors; and training for your team. The research is what makes the first two credible, not what you are asked to buy.',
+        ru: 'Три вещи, и ни одна не требует переходить на наш формат. Независимая верификация вашего RTL на живой плате; лицензия на арифметику с RTL, эталонной моделью и векторами; обучение вашей команды. Исследование делает первые два предложения достоверными, а не является тем, что вам предлагают купить.',
+      },
+      tag: 'spec',
+    },
+    {
+      q: { en: 'What is outside the scope?', ru: 'Что сюда не входит?' },
+      a: {
+        en: 'Encrypted netlists, vendor-protected IP you cannot share, designs larger than XC7A200T, analogue and mixed-signal, and full ASIC sign-off across process corners. Saying this first is cheaper for both sides than discovering it mid-engagement.',
+        ru: 'Зашифрованные нетлисты, вендор-защищённое IP, которое нельзя передать, дизайны крупнее XC7A200T, аналог и смешанный сигнал, полный ASIC sign-off по углам процесса. Сказать это сразу дешевле для обеих сторон, чем обнаружить посреди работы.',
+      },
+      tag: 'spec',
+    },
+    {
+      q: { en: 'Why should a price this specific be trusted?', ru: 'Почему цене можно верить?' },
+      a: {
+        en: 'Because it is anchored to public figures rather than to a feeling: independent audit work bills at $3 500 per engineer-day, a contract senior verification engineer at $75–90 an hour, and one SKY130 MPW slot alone costs $14 950. The rate card is the arithmetic of those numbers against the work each tier actually takes.',
+        ru: 'Потому что она привязана к публичным числам, а не к ощущению: независимый аудит стоит $3 500 за инженеро-день, контрактный senior-верификатор — $75–90 в час, а один MPW-слот на SKY130 сам по себе — $14 950. Прайс — это арифметика этих чисел на реальный объём работы каждого уровня.',
+      },
+      tag: 'external',
+    },
+    {
+      q: { en: 'What can a reviewer check without asking us?', ru: 'Что рецензент может проверить, не спрашивая нас?' },
+      a: {
+        en: 'The paper, the 52 theorems, the conformance vectors for the catalogue of 83 formats, the open toolchain versions, and the exact commands. Where a claim is machine-checked but the artefact is not yet published, it is labelled as awaiting that publication rather than counted as proved.',
+        ru: 'Статью, 52 теоремы, векторы соответствия для каталога из 83 форматов, версии открытого тулчейна и точные команды. Там, где утверждение проверено машинно, но артефакт ещё не опубликован, оно помечено как ожидающее публикации, а не зачтено как доказанное.',
+      },
+      tag: 'proved',
+    },
+  ],
+}
+
+/* ───────────────────────────── КАК НАЧАТЬ ─────────────────────────────
+   Лендинг долго не имел одного очевидного первого шага. Три шага ниже
+   обещают ровно то, что можно выполнить: разбор входных данных и срок за
+   сутки, а не результат до чтения дизайна. */
+export const start = {
+  badge: { en: 'THE FIRST STEP', ru: 'ПЕРВЫЙ ШАГ' },
+  title: { en: 'How to start, in three steps and one day', ru: 'Как начать: три шага и одни сутки' },
+  sub: {
+    en: 'Nothing here asks you to adopt a number format. The first module is free, so the first result costs you an issue and a top module name.',
+    ru: 'Ничто здесь не требует переходить на наш числовой формат. Первый модуль бесплатный, так что первый результат стоит вам одного issue и имени верхнего модуля.',
+  },
+  steps: [
+    {
+      n: '01',
+      h: { en: 'Describe the object', ru: 'Опишите объект' },
+      b: {
+        en: 'The RTL or the specification, the top module, the target device, and a short definition of what correct means for it. If an NDA is needed, it is signed before any source is sent.',
+        ru: 'RTL или спецификация, верхний модуль, целевое устройство и короткое определение того, что для него значит «правильно». Если нужен NDA — он подписывается до передачи исходников.',
+      },
+    },
+    {
+      n: '02',
+      h: { en: 'Choose the route', ru: 'Выберите маршрут' },
+      b: {
+        en: 'For a public repository, the structural check is enough to start: it establishes elaboration, latches and synthesis — not design correctness. For conformance, board measurement or private RTL, the verification request is the route.',
+        ru: 'Для публичного репозитория для старта достаточно структурной проверки: она устанавливает элаборацию, защёлки и синтез, но не корректность дизайна. Для конформанса, замеров на плате или закрытого RTL маршрут — заявка на верификацию.',
+      },
+    },
+    {
+      n: '03',
+      h: { en: 'Get the next step within 24 hours', ru: 'Получите следующий шаг за 24 часа' },
+      b: {
+        en: 'What comes back is the applicable tier, the inputs still missing, and a date — not a promise about the outcome before the design has been read. A single core is usually 4–6 engineer-days from that point.',
+        ru: 'В ответ приходит применимый уровень работы, недостающие входные данные и дата — а не обещание результата до того, как дизайн прочитан. Одно ядро с этой точки — обычно 4–6 инженеро-дней.',
+      },
+    },
+  ],
+}
+
 export const limits = {
   badge: { en: 'WHAT THIS DOES NOT CLAIM', ru: 'ЧТО ЭТО НЕ ЗАЯВЛЯЕТ' },
   title: { en: 'The boundary of the claim, drawn by us', ru: 'Граница заявления, проведённая нами' },
