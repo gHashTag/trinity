@@ -15,7 +15,10 @@
 // + Icarus Verilog 13.0, XC7A200T (ALINX AX7203), медиана 5 seed'ов,
 // DSP-инференс выключен.
 
-export type Tag = 'measured' | 'proved' | 'coq' | 'spec' | 'derived' | 'competitor' | 'retracted'
+/* 'terms' и 'plan' добавлены под блок инвестиций: условия предложения и план
+   расходования — это не измерения и не теоремы, и метка обязана это говорить,
+   иначе они читаются как остальные числа страницы. */
+export type Tag = 'measured' | 'proved' | 'coq' | 'spec' | 'derived' | 'competitor' | 'retracted' | 'terms' | 'plan'
 
 export const TAG_LABEL: Record<Tag, { en: string; ru: string; color: string }> = {
   measured: { en: 'measured', ru: 'измерено', color: '#00FF88' },
@@ -25,6 +28,8 @@ export const TAG_LABEL: Record<Tag, { en: string; ru: string; color: string }> =
   derived: { en: 'derived', ru: 'выведено', color: '#FFA45C' },
   competitor: { en: 'competitor result', ru: 'результат конкурента', color: '#9BA3AF' },
   retracted: { en: 'retracted', ru: 'отозвано', color: '#FF6B6B' },
+  terms: { en: 'offer terms', ru: 'условия предложения', color: '#E0C878' },
+  plan: { en: 'plan, not a result', ru: 'план, не результат', color: '#B0B8C4' },
 }
 
 export const PAPER = {
@@ -850,6 +855,72 @@ export const author = {
     { label: { en: 'Send RTL, get it measured', ru: 'Присылайте RTL — измерю' }, href: '#/verification', note: { en: 'Same board, same flow, same seeds', ru: 'Та же плата, тот же поток, те же seed’ы' } },
     { label: { en: 'Joint work, review, funding', ru: 'Совместная работа, рецензия, финансирование' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20collaboration', note: { en: 'No public valuation and no open round: the earlier figures were withdrawn. Terms are discussed directly.', ru: 'Публичной оценки и открытого раунда нет: прежние цифры отозваны. Условия обсуждаются напрямую.' } },
   ],
+}
+
+/* Блок инвестиций. На прежнем лендинге он существовал и был снят целиком
+   вместе с секцией «Инвестиции»: там стояли 578× по энергии, «бинарная эра
+   окончена», «Абсолютная Триада достигнута», эмиссия 3²¹ токенов и счётчики
+   сообщества (5K Discord, 10K Telegram, 25K Twitter, 2K операторов нод) — то
+   есть числа, которые этот сайт публично отозвал, и часть из них стоит в
+   списке красных флагов ежедневной проверки.
+
+   Блок возвращён и приведён в соответствие с остальной страницей по одному
+   правилу: у каждой цифры указано, чем она является. Условия раунда — это
+   предложение основателя, а не измерение, и помечены `terms`. План расходования
+   и майлстоуны — план, а не результат, и помечены `plan`. Числа в «что уже
+   сделано» — те же, что стоят выше на странице, со своим происхождением. */
+export const invest = {
+  badge: { en: 'INVESTMENT', ru: 'ИНВЕСТИЦИИ' },
+  title: {
+    en: 'What is on offer, on the same terms as the rest of this page: every figure says what kind of figure it is',
+    ru: 'Что предлагается — на тех же условиях, что и вся страница: у каждой цифры сказано, чем она является',
+  },
+  sub: {
+    en: 'The round terms are an asking price, not a measurement. The allocation and the milestones are a plan, not a result. The engineering figures are the same ones measured above, with the same origins.',
+    ru: 'Условия раунда — запрашиваемая цена, а не измерение. Распределение и майлстоуны — план, а не результат. Инженерные цифры — те же, что измерены выше, с тем же происхождением.',
+  },
+  terms: [
+    { v: '$3M', l: { en: 'for 1% equity', ru: 'за 1% equity' }, tag: 'terms' },
+    { v: '$300M', l: { en: 'valuation asked', ru: 'запрашиваемая оценка' }, tag: 'terms' },
+    { v: '18', l: { en: 'months of runway planned', ru: 'месяцев планируемой дистанции' }, tag: 'plan' },
+    { v: '100%', l: { en: 'founder-held today, no prior round', ru: 'у основателя сегодня, прежних раундов нет' }, tag: 'terms' },
+  ],
+  useTitle: { en: 'Where the money goes', ru: 'На что идут деньги' },
+  uses: [
+    { p: '60%', t: { en: 'Engineering', ru: 'Инженерия' }, d: { en: 'ASIC track for the arithmetic cores, and the compute axis of the catalog that the FPGA cannot close', ru: 'ASIC-трек для арифметических ядер и вычислительная ось каталога, которую FPGA закрыть не может' } },
+    { p: '25%', t: { en: 'Verification', ru: 'Верификация' }, d: { en: 'Conformance vectors for the remaining formats, second-oracle checks, and machine-checked proofs beyond the current set', ru: 'Conformance-векторы для оставшихся форматов, проверки вторым оракулом и машинно проверенные доказательства за пределами текущего набора' } },
+    { p: '15%', t: { en: 'Operations', ru: 'Операции' }, d: { en: 'Boards, tooling, publication costs, and the time to answer a reviewer properly', ru: 'Платы, инструменты, публикационные расходы и время на нормальный ответ рецензенту' } },
+  ],
+  doneTitle: { en: 'What exists before the money', ru: 'Что существует до денег' },
+  done: [
+    { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
+    { v: '52 / 16', l: { en: 'theorems / retractions in the paper', ru: 'теорем / ретракций в статье' }, tag: 'proved' },
+    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
+    { v: '5 / 9', l: { en: 'ladder rungs standing in hardware', ru: 'ступеней лестницы стоят в железе' }, tag: 'measured' },
+    { v: '66 LUT', l: { en: 'GFTernary decoder at 974.66 MHz on XC7A200T', ru: 'декодер GFTernary на 974.66 МГц на XC7A200T' }, tag: 'measured' },
+    { v: '2.1× / 2.6×', l: { en: 'mean relative error against takum16 / takum32', ru: 'средней относительной ошибки против takum16 / takum32' }, tag: 'measured' },
+  ],
+  milestonesTitle: { en: 'Eighteen months, stated as checks anyone can run', ru: 'Восемнадцать месяцев — как проверки, которые может прогнать любой' },
+  milestones: [
+    { en: 'The arithmetic cores taped out, so the numbers stop being FPGA numbers', ru: 'Арифметические ядра отправлены в кремний, чтобы числа перестали быть FPGA-числами' },
+    { en: 'The compute axis of the catalog closed as far as an ASIC flow allows, with the vectors published alongside', ru: 'Вычислительная ось каталога закрыта настолько, насколько позволяет ASIC-поток, с публикацией векторов' },
+    { en: 'A head-to-head against takum RTL on one flow, which needs a VHDL front end this bench does not have', ru: 'Прямое сравнение с RTL takum на одном потоке — для него нужен VHDL-фронтенд, которого у этого стенда нет' },
+    { en: 'The paper through peer review, retractions included rather than removed', ru: 'Статья прошла рецензирование — вместе с ретракциями, а не без них' },
+    { en: 'First licensee of a core that has been through the flow', ru: 'Первый лицензиат ядра, прошедшего поток' },
+  ],
+  riskTitle: { en: 'What an investor is buying, and what they are not', ru: 'Что инвестор покупает, а что — нет' },
+  risks: [
+    { en: 'There is no silicon. Every hardware number here was measured on a binary FPGA — an ALINX AX7203, XC7A200T — on an open flow, and an ASIC will differ.', ru: 'Кремния нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, XC7A200T — открытым потоком, и на ASIC оно будет другим.' },
+    { en: 'There is no ternary fabric to buy. The ternary exponent is an architectural property; on binary hardware it neither wins nor loses, and ternary lost to binary three separate times in our own measurements.', ru: 'Тернарной фабрики не купить. Тернарная экспонента — архитектурное свойство; на бинарном железе она не выигрывает и не проигрывает, а тернарность трижды независимо проиграла бинарности в наших же измерениях.' },
+    { en: 'The energy claim that used to stand here — 578× — is withdrawn, along with the community counters and the token emission. Nothing replaced them because nothing measured has.', ru: 'Заявление об энергии, которое здесь стояло, — 578× — отозвано, вместе со счётчиками сообщества и эмиссией токена. На их место ничего не встало, потому что измеренного на их место нет.' },
+    { en: 'This is one engineer with one board. The plan above is what money changes; the record above is what exists without it.', ru: 'Это один инженер с одной платой. План выше — то, что меняют деньги; запись выше — то, что существует без них.' },
+  ],
+  ctas: [
+    { label: { en: 'Investor — request the deck and the terms', ru: 'Инвестор — запросить деку и условия' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20investment' },
+    { label: { en: 'Licence a core', ru: 'Лицензировать ядро' }, href: '#/ip' },
+    { label: { en: 'Every measured number, and its limits', ru: 'Все измеренные числа и их границы' }, href: '#/proof' },
+  ],
+  contact: 'admin@t27.ai',
 }
 
 export const reproduce = {

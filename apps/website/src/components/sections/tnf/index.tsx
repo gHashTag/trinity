@@ -11,7 +11,7 @@ import { useI18n } from '../../../i18n/context'
 import { TrinityLogo } from '../../TrinityLogo'
 import {
   TAG_LABEL, PAPER, hero, claim, formats, frontier, ladder,
-  theorems, limits, landscape, findings, lineage, reproduce, author, type Tag,
+  theorems, limits, landscape, findings, lineage, reproduce, author, invest, type Tag,
 } from '../../../content/tnf'
 import './tnf.css'
 
@@ -750,6 +750,99 @@ export function TnfAuthor() {
               <span style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.55 }}>{L(l.note)}</span>
             </a>
           ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* Инвестиции. Блок стоял на прежнем лендинге, был снят вместе с ним и возвращён
+   приведённым к остальной странице: условия раунда помечены как предложение,
+   план — как план, а инженерные числа взяты те же, что измерены выше. Секция
+   «что покупают, а что нет» стоит внутри блока, а не в сноске под ним, потому
+   что в сноске её не читают. */
+export function TnfInvest() {
+  const { L } = useL()
+  const v = invest
+  return (
+    <section id="invest" className="tnf-section">
+      <div className="tnf-wrap">
+        <Head badge={v.badge} title={v.title} lede={v.sub} wide />
+
+        <motion.div {...fade} className="tnf-grid tnf-grid-4" style={{ marginBottom: 'var(--sp3)' }}>
+          {v.terms.map((t) => (
+            <div className="tnf-cell" key={t.v + L(t.l)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f2)', fontWeight: 600, marginBottom: '0.3rem' }}>{t.v}</strong>
+              <span style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.55, display: 'block', marginBottom: '0.5rem' }}>{L(t.l)}</span>
+              <TagChip tag={t.tag as Tag} />
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.doneTitle)}</motion.h3>
+        <motion.div {...fade} className="tnf-grid tnf-grid-3" style={{ marginBottom: 'var(--sp3)' }}>
+          {v.done.map((d) => (
+            <div className="tnf-cell" key={d.v + L(d.l)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f1)', fontWeight: 600, marginBottom: '0.3rem' }}>{d.v}</strong>
+              <span style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.55, display: 'block', marginBottom: '0.5rem' }}>{L(d.l)}</span>
+              <TagChip tag={d.tag as Tag} />
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.useTitle)}</motion.h3>
+        <motion.div {...fade} className="tnf-grid tnf-grid-3" style={{ marginBottom: 'var(--sp3)' }}>
+          {v.uses.map((u) => (
+            <div className="tnf-cell" key={u.p}>
+              <strong style={{ display: 'block', fontSize: 'var(--f2)', fontWeight: 600, marginBottom: '0.2rem' }}>{u.p}</strong>
+              <span style={{ display: 'block', fontSize: 'var(--f0)', fontWeight: 500, marginBottom: '0.4rem' }}>{L(u.t)}</span>
+              <span style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.6, display: 'block', marginBottom: '0.5rem' }}>{L(u.d)}</span>
+              <TagChip tag="plan" />
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.milestonesTitle)}</motion.h3>
+        <motion.ul {...fade} style={{ listStyle: 'none', padding: 0, margin: '0 0 var(--sp3)', maxWidth: '78ch', textAlign: 'left' }}>
+          {v.milestones.map((m) => (
+            <li key={L(m)} style={{ display: 'flex', gap: '0.6rem', color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.7, marginBottom: '0.5rem' }}>
+              <span style={{ color: 'var(--golden)', flex: '0 0 auto' }}>·</span>
+              <span>{L(m)}</span>
+            </li>
+          ))}
+        </motion.ul>
+
+        <motion.h3 {...fade} className="tnf-h3">{L(v.riskTitle)}</motion.h3>
+        <motion.div {...fade} className="tnf-grid tnf-grid-2" style={{ marginBottom: 'var(--sp3)' }}>
+          {v.risks.map((r) => (
+            <div className="tnf-cell" key={L(r)}>
+              <span style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.7 }}>{L(r)}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.div {...fade} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.7rem', justifyContent: 'center' }}>
+          {v.ctas.map((c, i) => (
+            <a
+              key={L(c.label)}
+              href={c.href}
+              className="tnf-kbd"
+              style={{
+                textDecoration: 'none',
+                padding: '11px 20px',
+                fontSize: 'var(--f-1)',
+                color: i === 0 ? '#000' : 'var(--text)',
+                background: i === 0 ? 'var(--accent)' : 'transparent',
+                borderColor: i === 0 ? 'var(--accent)' : 'var(--border)',
+              }}
+            >
+              {L(c.label)} →
+            </a>
+          ))}
+        </motion.div>
+
+        <motion.div {...fade} style={{ marginTop: 'var(--sp2)', color: 'var(--muted)', fontSize: 'var(--f-2)', textAlign: 'center' }}>
+          <a className="tnf-link" href={`mailto:${v.contact}`}>{v.contact}</a>
         </motion.div>
       </div>
     </section>
