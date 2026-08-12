@@ -11,7 +11,7 @@ import { useI18n } from '../../../i18n/context'
 import { TrinityLogo } from '../../TrinityLogo'
 import {
   TAG_LABEL, PAPER, hero, claim, formats, frontier, ladder,
-  theorems, limits, landscape, findings, lineage, reproduce, type Tag,
+  theorems, limits, landscape, findings, lineage, reproduce, author, type Tag,
 } from '../../../content/tnf'
 import './tnf.css'
 
@@ -310,12 +310,12 @@ export function TnfFrontier() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>{key === 'ru' ? 'формат' : 'format'}</th>
-                    <th>{key === 'ru' ? 'вид' : 'kind'}</th>
-                    <th>LUT</th>
-                    <th>{key === 'ru' ? 'МГц' : 'MHz'}</th>
-                    <th style={{ width: '90px' }} />
+                    <th scope="col">#</th>
+                    <th scope="col">{key === 'ru' ? 'формат' : 'format'}</th>
+                    <th scope="col">{key === 'ru' ? 'вид' : 'kind'}</th>
+                    <th scope="col">LUT</th>
+                    <th scope="col">{key === 'ru' ? 'МГц' : 'MHz'}</th>
+                    <th scope="col" style={{ width: '90px' }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -348,11 +348,11 @@ export function TnfFrontier() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>{key === 'ru' ? 'формат' : 'format'}</th>
-                    <th>LUT</th>
-                    <th>{key === 'ru' ? 'МГц/LUT' : 'MHz/LUT'}</th>
-                    <th style={{ width: '90px' }} />
+                    <th scope="col">#</th>
+                    <th scope="col">{key === 'ru' ? 'формат' : 'format'}</th>
+                    <th scope="col">LUT</th>
+                    <th scope="col">{key === 'ru' ? 'МГц/LUT' : 'MHz/LUT'}</th>
+                    <th scope="col" style={{ width: '90px' }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -386,9 +386,9 @@ export function TnfFrontier() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>{key === 'ru' ? 'семейство' : 'family'}</th>
-                    <th style={{ textAlign: 'left' }}>{key === 'ru' ? 'умножение' : 'multiply'}</th>
-                    <th style={{ textAlign: 'left' }}>{key === 'ru' ? 'сложение' : 'add'}</th>
+                    <th scope="col">{key === 'ru' ? 'семейство' : 'family'}</th>
+                    <th scope="col" style={{ textAlign: 'left' }}>{key === 'ru' ? 'умножение' : 'multiply'}</th>
+                    <th scope="col" style={{ textAlign: 'left' }}>{key === 'ru' ? 'сложение' : 'add'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -427,7 +427,7 @@ export function TnfLadder() {
             <div className="tnf-scroll">
               <table className="tnf-table">
                 <thead>
-                  <tr>{ladder.header[key].map((h) => <th key={h}>{h}</th>)}</tr>
+                  <tr>{ladder.header[key].map((h) => <th scope="col" key={h}>{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {ladder.rows.map((r) => (
@@ -457,11 +457,11 @@ export function TnfLadder() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>{key === 'ru' ? 'ступень' : 'rung'}</th>
-                    <th>LUT</th>
-                    <th>Fmax</th>
-                    <th>ppl</th>
-                    <th style={{ textAlign: 'left' }}>vs fp32</th>
+                    <th scope="col">{key === 'ru' ? 'ступень' : 'rung'}</th>
+                    <th scope="col">LUT</th>
+                    <th scope="col">Fmax</th>
+                    <th scope="col">ppl</th>
+                    <th scope="col" style={{ textAlign: 'left' }}>vs fp32</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -497,11 +497,11 @@ export function TnfLadder() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>{key === 'ru' ? 'схема' : 'scheme'}</th>
-                    <th>{key === 'ru' ? 'бит масштаба/вес' : 'scale bits/weight'}</th>
-                    <th>{key === 'ru' ? 'всего бит/вес' : 'total bits/weight'}</th>
-                    <th>ppl A</th>
-                    <th>ppl B</th>
+                    <th scope="col">{key === 'ru' ? 'схема' : 'scheme'}</th>
+                    <th scope="col">{key === 'ru' ? 'бит масштаба/вес' : 'scale bits/weight'}</th>
+                    <th scope="col">{key === 'ru' ? 'всего бит/вес' : 'total bits/weight'}</th>
+                    <th scope="col">ppl A</th>
+                    <th scope="col">ppl B</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -683,6 +683,78 @@ export function TnfLineage() {
 }
 
 /* ──────────────────────────── REPRODUCE ──────────────────────────── */
+
+/* Автор и сотрудничество. Место прежних секций «Команда» и «Инвестиции»:
+   фотография, имя, ORCID и способ связи возвращаются, а числа берутся только
+   те, что уже стоят на этой странице со своим происхождением. Оценка раунда и
+   578× по энергии не возвращаются — они отозваны. */
+export function TnfAuthor() {
+  const { L, key } = useL()
+  const a = author
+  return (
+    <section id="author" className="tnf-section">
+      <div className="tnf-wrap">
+        <Head badge={a.badge} title={a.title} lede={a.sub} wide />
+
+        <motion.div
+          {...fade}
+          className="tnf-cell"
+          style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp2)', alignItems: 'center', marginBottom: 'var(--sp2)' }}
+        >
+          <img
+            src={a.photo}
+            alt={key === 'ru' ? a.nameRu : a.name}
+            loading="lazy"
+            width={112}
+            height={112}
+            style={{ width: 112, height: 112, borderRadius: '50%', border: '1px solid var(--border)', flex: '0 0 auto' }}
+          />
+          <div style={{ flex: '1 1 300px' }}>
+            <h3 style={{ fontSize: 'var(--f2)', fontWeight: 600, margin: '0 0 0.3rem' }}>
+              {key === 'ru' ? a.nameRu : a.name}
+            </h3>
+            <p style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.6, margin: '0 0 0.7rem', maxWidth: '52ch' }}>
+              {L(a.role)}
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: 'var(--f-2)', margin: 0 }}>
+              ORCID {a.orcid} · <a className="tnf-link" href={`mailto:${a.email}`}>{a.email}</a>
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.div {...fade} className="tnf-grid tnf-grid-4" style={{ marginBottom: 'var(--sp2)' }}>
+          {a.facts.map((f) => (
+            <div className="tnf-cell" key={f.v}>
+              <strong style={{ display: 'block', fontSize: 'var(--f2)', fontWeight: 600, marginBottom: '0.3rem' }}>{f.v}</strong>
+              <span style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.55, display: 'block', marginBottom: '0.5rem' }}>{L(f.l)}</span>
+              <TagChip tag={f.tag as Tag} />
+            </div>
+          ))}
+        </motion.div>
+
+        {/* textAlign задан явно: секция центрирует свои прямые <p>, и абзац
+            «здесь не заявляется» вставал по центру, ломая единую левую кромку. */}
+        <motion.p {...fade} style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.7, maxWidth: '72ch', marginBottom: 'var(--sp3)', textAlign: 'left', marginLeft: 0 }}>
+          {L(a.notClaimed)}
+        </motion.p>
+
+        <motion.div {...fade} className="tnf-grid tnf-grid-2">
+          {a.links.map((l) => (
+            <a
+              className="tnf-cell"
+              key={L(l.label)}
+              href={l.href}
+              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+            >
+              <strong style={{ fontSize: '0.93rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>{L(l.label)} →</strong>
+              <span style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.55 }}>{L(l.note)}</span>
+            </a>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
 
 export function TnfReproduce() {
   const { L } = useL()

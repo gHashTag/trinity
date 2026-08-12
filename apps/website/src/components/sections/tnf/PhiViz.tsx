@@ -107,6 +107,9 @@ function FieldRule() {
         type="range" min={4} max={64} step={1} value={n}
         onChange={(ev) => setN(Number(ev.target.value))}
         aria-label={t.width}
+        /* Без valuetext диктор читает «16» — без раскладки, ради которой
+           ползунок и существует. */
+        aria-valuetext={`${n} ${t.width} · e = ${e} · m = ${m}`}
         style={{ width: '100%', maxWidth: 420, accentColor: 'var(--accent)', marginBottom: 'var(--sp2)' }}
       />
 
