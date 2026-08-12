@@ -176,8 +176,8 @@ pub fn normalizeSpacing(gamma_n: f64, gamma_np1: f64, T: f64) f64 {
 /// Compare spacing distribution to GUE (Gaussian Unitary Ensemble) prediction
 /// GUE predicts Wigner surmise for spacing distribution: P(s) = (32/π²) * s² * exp(-4s²/π)
 pub const GUEComparison = struct {
-    ks_statistic: f64, // Kolmogorov-Smirnov statistic
-    ks_p_value: f64, // p-value (approximate)
+    ks_statistic: f64, // Kolmogorov-Smirnov statistic D (effect size)
+    ks_critical_95: f64, // two-sided 95% critical value, 1.36/sqrt(n)
     verdict: []const u8,
 };
 
@@ -202,35 +202,80 @@ pub fn compareVsGUE(spacings: *const Spacings, allocator: std.mem.Allocator) !GU
     }
 
     const ks_stat = max_diff;
-    const p_value = ksPValue(ks_stat, spacings.count);
+    const d_crit = ksCriticalValue95(spacings.count);
 
-    const verdict = if (p_value > 0.05)
-        "CONSISTENT with GUE (p > 0.05)"
-    else if (p_value > 0.01)
-        "MARGINAL (0.01 < p < 0.05)"
+    // Reported as an effect size against the surmise, not as a hypothesis test:
+    // the surmise is an approximation to the exact GUE gap law, so at large n
+    // D exceeds D_crit for reasons that have nothing to do with the data.
+    const verdict = if (ks_stat <= d_crit)
+        "D <= D_crit(95%) vs Wigner surmise"
+    else if (ks_stat <= 2.0 * d_crit)
+        "D within 2x D_crit(95%) vs Wigner surmise (surmise is approximate; not a rejection of GUE)"
     else
-        "INCONSISTENT with GUE (p < 0.01)";
+        "D > 2x D_crit(95%) vs Wigner surmise (compare against the exact GUE gap law before concluding)";
 
     return GUEComparison{
         .ks_statistic = ks_stat,
-        .ks_p_value = p_value,
+        .ks_critical_95 = d_crit,
         .verdict = verdict,
     };
 }
 
-/// Wigner surmise CDF for GUE spacing distribution
-fn wignerCDF(s: f64) f64 {
-    // P(S ≤ s) = 1 - exp(-4s²/π) * (1 + 4s²/π)
-    const x = 4.0 * s * s / std.math.pi;
-    return 1.0 - std.math.exp(-x) * (1.0 + x);
+/// erf via Abramowitz & Stegun 7.1.26 (|error| <= 1.5e-7).
+/// NOTE: the exp(-a^2) factor is part of the formula -- dropping it is the
+/// defect found in tools/uart_echo_test.zig:normalCDFApprox.
+fn erfAS(x: f64) f64 {
+    const sign: f64 = if (x < 0) -1.0 else 1.0;
+    const a = @abs(x);
+    const t = 1.0 / (1.0 + 0.3275911 * a);
+    const poly = ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
+    return sign * (1.0 - poly * std.math.exp(-a * a));
 }
 
-/// Approximate p-value for KS statistic
-fn ksPValue(ks_stat: f64, n: usize) f64 {
-    // Approximation: p ≈ 2 * exp(-2 * n * ks²)
+/// Wigner surmise CDF for the GUE spacing distribution, unit mean spacing.
+///
+///   p(s) = (32/π²) s² exp(-4s²/π)
+///   F(s) = erf(2s/√π) − (4s/π) exp(-4s²/π)      [exact, closed form]
+///
+/// Previous implementation was `1 − e^{-x}(1+x)`, x = 4s²/π. Differentiating it
+/// gives (32/π²) s³ e^{-4s²/π} — an s³ density, not the GUE surmise. It also
+/// produced the p95 = 1.93 / 2.15 family of wrong reference values.
+/// Verified: dF/ds = p(s), F(∞) = 1, ∫s·p = 1 (see scripts, and the analytic
+/// check that the erf coefficient is exactly 1 and the second term exactly 4s/π).
+fn wignerCDF(s: f64) f64 {
+    if (s <= 0.0) return 0.0;
+    const pi = std.math.pi;
+    return erfAS(2.0 * s / @sqrt(pi)) - (4.0 * s / pi) * std.math.exp(-4.0 * s * s / pi);
+}
+
+/// Two-sided KS critical value at the 95% level, D_crit ≈ 1.36/√n.
+///
+/// Replaces the former `ksPValue` (p ≈ 2·exp(−2n·D²)). A p-value here is not
+/// meaningful: the Wigner surmise is not the exact GUE gap distribution
+/// (that is a Fredholm determinant / Painlevé V), so the systematic
+/// reference error is fixed while D_crit shrinks as 1/√n — at n = 10⁵ any
+/// dataset is rejected by construction. Report D as an effect size instead.
+fn ksCriticalValue95(n: usize) f64 {
     const n_f = @as(f64, @floatFromInt(n));
-    const exponent = -2.0 * n_f * ks_stat * ks_stat;
-    return 2.0 * std.math.exp(exponent);
+    return 1.36 / @sqrt(n_f);
+}
+
+test "wignerCDF: derivative reproduces the surmise pdf" {
+    const h = 1e-6;
+    for ([_]f64{ 0.1, 0.5, 1.0, 1.7518, 3.0 }) |s| {
+        const pdf = (32.0 / (std.math.pi * std.math.pi)) * s * s * std.math.exp(-4.0 * s * s / std.math.pi);
+        const d = (wignerCDF(s + h) - wignerCDF(s - h)) / (2.0 * h);
+        try std.testing.expect(@abs(d - pdf) < 1e-5);
+    }
+}
+
+test "wignerCDF: normalised, and is GUE rather than GOE" {
+    try std.testing.expect(@abs(wignerCDF(12.0) - 1.0) < 1e-6);
+    // GUE(0.3) = 0.027254; GOE(0.3) = 1 - exp(-π·0.09/4) = 0.068245.
+    // The two curves cross near s = 1 (0.5331 vs 0.5441), so a guard placed
+    // at s = 1 would pass even if the functions were swapped.
+    try std.testing.expect(@abs(wignerCDF(0.3) - 0.027254) < 1e-4);
+    try std.testing.expect(@abs(wignerCDF(1.7518) - 0.95) < 1e-4);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -287,9 +332,9 @@ pub fn runZetaSpacingCommand(allocator: std.mem.Allocator, args: []const []const
     std.debug.print("\n{s}GUE COMPARISON:{s}\n", .{ CYAN, RESET });
     const gue_result = try compareVsGUE(&spacings, allocator);
 
-    const verdict_color = if (gue_result.ks_p_value > 0.05) "\x1b[32m" else "\x1b[31m";
-    std.debug.print("  KS statistic: {d:.6}\n", .{gue_result.ks_statistic});
-    std.debug.print("  p-value:      {d:.6}\n", .{gue_result.ks_p_value});
+    const verdict_color = if (gue_result.ks_statistic <= gue_result.ks_critical_95) "\x1b[32m" else "\x1b[33m";
+    std.debug.print("  KS statistic: {d:.6}  (effect size, not a test)\n", .{gue_result.ks_statistic});
+    std.debug.print("  D_crit(95%): {d:.6}\n", .{gue_result.ks_critical_95});
     std.debug.print("  {s}Verdict: {s}{s}\n", .{ verdict_color, gue_result.verdict, RESET });
 
     // Sample spacings

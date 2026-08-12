@@ -2686,35 +2686,38 @@ const JitterTracker = struct {
         };
     }
 
-    // Normal CDF approximation (Abramowitz & Stegun formula)
+    /// Standard normal CDF, via erf from Abramowitz & Stegun 7.1.26.
+    ///
+    ///   erf(a) = 1 - (a1 t + a2 t^2 + a3 t^3 + a4 t^4 + a5 t^5) * exp(-a^2),
+    ///   t = 1/(1 + 0.3275911 a),   |error| <= 1.5e-7
+    ///
+    /// The previous implementation dropped the exp(-a^2) factor and mis-nested
+    /// the polynomial (it also added a spurious 0.3275911*t^5 term). Effect:
+    /// F(0) = 0.3362 instead of 0.5, |error| up to 0.164, and the range was
+    /// clamped to [0.086, 0.914] -- it never approached 0 or 1. Since the KS
+    /// critical value here is 1.36/sqrt(n), the reference error alone exceeded
+    /// it for n > ~250, so both the Normal and Log-Normal fits reported
+    /// "does not fit" for every sample of realistic size, independently of the
+    /// data. Verified against the exact CDF after the fix (max error 1.5e-7).
     fn normalCDFApprox(z: f64) f64 {
         const sign: f64 = if (z >= 0) 1.0 else -1.0;
         const a = @abs(z) / @sqrt(2.0);
 
-        const p = 0.3275911;
-
-        const t = 1.0 / (1.0 + p * a);
-        const t2 = t * t;
-        const t3 = t2 * t;
-        const t4 = t3 * t;
-        const t5 = t4 * t;
-
-        // Abramowitz & Stegun approximation for erf
-        const term1 = 0.254829592 * t5;
-        const term2 = -0.284496736 * t4;
-        const term3 = 1.421413741 * t3;
-        const term4 = -1.453152027 * t2;
-        const term5 = 1.061405429 * t;
-        const term6 = 0.3275911 * t5;
-
-        const inner1 = term1 + term2;
-        const inner2 = inner1 + term3 * t3 + term4;
-        const inner3 = inner2 * t2 + term5;
-        const erf_approx = inner3 * t + term6;
-
-        const erf = 1.0 - erf_approx;
+        const t = 1.0 / (1.0 + 0.3275911 * a);
+        const poly = ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
+        const erf = 1.0 - poly * @exp(-a * a);
 
         return 0.5 * (1.0 + sign * erf);
+    }
+
+    test "normalCDFApprox matches the standard normal CDF" {
+        // Anchors: F(0) = 0.5 exactly; symmetry; tails reach 0 and 1.
+        try std.testing.expect(@abs(normalCDFApprox(0.0) - 0.5) < 1e-7);
+        try std.testing.expect(@abs(normalCDFApprox(1.0) - 0.8413447) < 1e-6);
+        try std.testing.expect(@abs(normalCDFApprox(-1.0) - 0.1586553) < 1e-6);
+        try std.testing.expect(@abs(normalCDFApprox(1.959964) - 0.975) < 1e-6);
+        try std.testing.expect(normalCDFApprox(-6.0) < 1e-6);
+        try std.testing.expect(normalCDFApprox(6.0) > 1.0 - 1e-6);
     }
 
     pub fn showDistributionFit(self: *const JitterTracker) void {

@@ -328,7 +328,7 @@ pub fn analyzeZetaSpacings(allocator: std.mem.Allocator, zeros: *const zeta_impo
 /// Determine verdict based on CF stats and GUE comparison
 fn determineVerdict(cf_stats: *const CFStats, gue: *const zeta_spacing.GUEComparison) ZetaVerdict {
     // If GUE consistent and CF looks generic
-    if (gue.ks_p_value > 0.05 and cf_stats.mu < 2.5) {
+    if (gue.ks_statistic <= gue.ks_critical_95 and cf_stats.mu < 2.5) {
         return .gue_consistent;
     }
 
@@ -410,7 +410,7 @@ pub fn runZetaCFCommand(allocator: std.mem.Allocator, args: []const []const u8) 
 
     std.debug.print("\n{s}GUE COMPARISON:{s}\n", .{ CYAN, RESET });
     std.debug.print("  KS statistic:        {d:.6}\n", .{result.gue_comparison.ks_statistic});
-    std.debug.print("  p-value:             {d:.6}\n", .{result.gue_comparison.ks_p_value});
+    std.debug.print("  D_crit(95%):         {d:.6}\n", .{result.gue_comparison.ks_critical_95});
 
     const verdict_color = switch (result.verdict) {
         .generic_transcendental => GREEN,
