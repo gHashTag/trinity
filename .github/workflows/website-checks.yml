@@ -47,7 +47,18 @@ jobs:
 
       - run: npm ci
 
-      # Not a gate on the count, a gate on the direction. 184 today.
+      # Every aria-controls / aria-labelledby / aria-describedby resolves to an
+      # id that is actually declared. A dangling aria-controls="mobile-menu" sat
+      # in the tree until this was written.
+      - name: ARIA references resolve
+        run: npm run check:aria
+
+      # Not a gate on the count, a gate on the DIRECTION, and per file: a scalar
+      # total passes when one file is fixed and another breaks by the same
+      # amount. --selftest first, so a gate nobody has watched fail is not
+      # trusted on the day it matters. 184 across 27 files today.
+      - name: the ratchet can fail
+        run: npm run typecheck:ratchet -- --selftest
       - name: typecheck ratchet
         run: npm run typecheck:ratchet
 
