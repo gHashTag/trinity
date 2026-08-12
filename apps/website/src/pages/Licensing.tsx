@@ -34,8 +34,8 @@ const CORES = [
   {
     name: 'GF-T multiplier',
     tag: 'Ternary arithmetic',
-    body: 'The multiplier for GF-T — a float whose exponent is a balanced-ternary number and whose fields are fixed. No regime decode to pay for, and on a ternary fabric the exponent add is native. Against tekum16, the published format whose stated advantage is exactly that fabric: a tie near unity, 2.84× lower error at |e| 8–20 and 5.53× lower at |e| 20–38, with a uniform 9-bit mantissa where tekum16 tapers to four.',
-    proof: 'Published as arXiv:2606.05017 with an independent reference model and bit-exact vectors. Ratios re-measured independently on 8 August 2026 and they reproduce.',
+    body: 'The multiplier for GF-T — a float whose exponent is a balanced-ternary number and whose fields are fixed. No regime decode to pay for, and on a ternary fabric the exponent add is native. Against takum, the published tapered format nearest this niche: 2.1× lower mean relative error at sixteen bits and an exact 2.6× at thirty-two, with a uniform 9-bit mantissa where a tapered format narrows. Earlier copy on this page compared against tekum16 and quoted 2.84× and 5.53×; that is withdrawn — the oracle labelled tekum decoded identically to the takum oracle across all 65,536 sixteen-bit codes.',
+    proof: 'Published as arXiv:2606.05017 with an independent reference model and bit-exact vectors. Distinctness of the reference models is now checked by enumerating the whole 16-bit code space rather than assumed.',
   },
   {
     name: 'GF16 4×4 matmul',
@@ -81,7 +81,7 @@ const RU = {
   ctaVerify: 'Как я верифицирую',
   coresTitle: 'Доступные ядра',
   cores: [
-    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — float, у которого экспонента является сбалансированным тернарным числом, а поля фиксированы. Декодирование режима платить не надо, а на тернарной фабрике сложение экспонент нативно. Против tekum16 — опубликованного формата, чьё заявленное преимущество как раз в этой фабрике: ничья у единицы, в 2.84 раза меньше ошибки при |e| 8–20 и в 5.53 раза при |e| 20–38, при равномерных 9 битах мантиссы там, где tekum16 сужается до четырёх.', proof: 'Опубликован как arXiv:2606.05017 с независимой эталонной моделью и побитовыми векторами. Отношения перемерены независимо 8 августа 2026 — воспроизводятся.' },
+    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — float, у которого экспонента является сбалансированным тернарным числом, а поля фиксированы. Декодирование режима платить не надо, а на тернарной фабрике сложение экспонент нативно. Против takum — ближайшего к нише опубликованного tapered-формата: в 2.1 раза меньше средней относительной ошибки на шестнадцати битах и точно в 2.6 раза на тридцати двух, при равномерных 9 битах мантиссы там, где tapered-формат сужается. Раньше здесь стояло сравнение с tekum16 и числа 2.84× и 5.53× — отозвано: оракул, помеченный tekum, декодировал все 65 536 шестнадцатибитных кодов идентично takum-оракулу.', proof: 'Опубликован как arXiv:2606.05017 с независимой эталонной моделью и побитовыми векторами. Отличимость эталонных моделей теперь проверяется перебором всего 16-битного кодового пространства, а не предполагается.' },
     { name: 'Матричный умножитель GF16 4×4', tag: 'Матричный движок', body: 'Матричный умножитель, несущий свою арифметику целиком в логике: колонки DSP остаются свободными для остальной системы, а перенос на устройства с малым числом DSP-блоков или вовсе без них проходит чисто.', proof: '36.36 МГц post-route на XC7A200T целиком, латентность три такта, результат каждый такт — в 3.6 раза выше 9.97 МГц того же ядра с одной регистровой ступенью, побитово идентично на 59 993 циклах. Только логика: 32 252 LUT без единого DSP48 либо 21 223 LUT с 64 DSP.' },
     { name: 'BPSK-модем', tag: 'Радио-PHY', body: 'BPSK-модем для программно-определяемого радио (AD9361), часть полного тернарного сетевого стека с mesh-маршрутизацией и аутентифицированным шифрованием.', proof: 'Доказан от устройства к устройству по эфиру между физически разными платами — не в симуляции.' },
     { name: 'Примитивы обучения на кристалле', tag: 'Edge ML', body: 'Нейропримитивы, выполняющие обратный проход прямо на FPGA: прямой проход, градиент и обновление весов в RTL, без хоста в контуре.', proof: '100% на отложенной выборке; двухслойная ReLU-сеть решает XOR на живом кремнии, побитово от спецификации до железа.' },
@@ -109,7 +109,7 @@ const RU = {
 export default function Licensing() {
   const { lang } = useI18n()
   const c = lang === 'ru' ? RU : null
-  usePageMeta("Core licensing", "License GF-T — a ternary-native float measured 2.84× and 5.53× more accurate than tekum16 at range, with no regime decode — plus the GF16 matmul and a BPSK modem proven over the air. Reference model and bit-exact vectors included.")
+  usePageMeta("Core licensing", "License GF-T — a ternary-native float with fixed fields and no regime decode, measured 2.1× more accurate than takum16 and an exact 2.6× against takum32 — plus the GF16 matmul and a BPSK modem proven over the air. Reference model and bit-exact vectors included.")
   return (
     <main>
       <QuantumBackground />

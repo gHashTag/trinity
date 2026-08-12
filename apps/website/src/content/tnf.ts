@@ -408,6 +408,90 @@ export const theorems = {
       why: { en: 'The remainder is arithmetic, not engineering, and it is largest exactly where modern formats live.', ru: 'Остаток — арифметика, а не инженерия, и он максимален именно там, где живут современные форматы.' },
       tag: 'proved' as Tag,
     },
+    {
+      id: 'T3/T4',
+      name: { en: 'The exact taper of posit and takum', ru: 'Точный taper posit и takum' },
+      stmt: { en: 'The significand of a posit narrows by exactly 2^−es per binade; takum fixes a 3-bit regime field. Applied to 51 formats with a published oracle, the 83-format catalogue resolves into four ladder shapes and no fifth.', ru: 'Значащая posit сужается ровно на 2^−es за бинаду; takum фиксирует 3-битное regime-поле. Применённое к 51 формату с опубликованным оракулом, это разрешает каталог 83 форматов в четыре формы лестницы и никакой пятой.' },
+      why: { en: 'A taxonomy that predicts rather than describes: given the ladder shape, the decode cost and the precision profile follow.', ru: 'Таксономия, которая предсказывает, а не описывает: по форме лестницы следуют и цена декода, и профиль точности.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T5',
+      name: { en: 'Precision wobble', ru: 'Дрожание точности' },
+      stmt: { en: 'A format that scales by r^e with a uniformly quantised significand has wobble — precision oscillates within each scale step unless r = 2.', ru: 'Формат, шкалирующий r^e при равномерно квантованной значащей, имеет wobble — точность колеблется внутри шага масштаба, если r ≠ 2.' },
+      why: { en: 'This reproduces a result sixty years older (IBM System/360 hex) and is the second independent argument for a binary scale inside TNF.', ru: 'Это воспроизводит результат на шестьдесят лет старше (IBM System/360, hex) и служит вторым независимым аргументом за бинарную шкалу внутри TNF.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T9',
+      name: { en: 'Unallocated positions are a pure loss', ru: 'Нераспределённые позиции — чистая потеря' },
+      stmt: { en: 'Every position the encoding does not allocate still costs 2^k of the code space; there is no neutral spare capacity in a fixed-width format.', ru: 'Каждая позиция, которую кодировка не распределила, всё равно стоит 2^k кодового пространства; нейтрального запаса в формате фиксированной ширины не существует.' },
+      why: { en: 'This is why the width rule is an equality, 1 + E_t + M = N, and not an inequality.', ru: 'Именно поэтому правило ширины — равенство 1 + E_t + M = N, а не неравенство.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T10',
+      name: { en: 'Why the scale radix is 2 and not 3', ru: 'Почему основание шкалы 2, а не 3' },
+      stmt: { en: 'On the scale of a floating-point value, a binary radix beats a ternary one by 0.331 position per number.', ru: 'На шкале значения с плавающей точкой бинарное основание опережает троичное на 0.331 позиции на число.' },
+      why: { en: 'Our own ternary claim is therefore confined to the exponent field, not to the scale. A result against us, stated in our own numbers.', ru: 'Поэтому наше собственное троичное заявление ограничено полем экспоненты, а не шкалой. Результат против нас, изложенный нашими же числами.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T13/T14',
+      name: { en: 'The regime radius does not matter; the scan does', ru: 'Радиус regime не имеет значения — имеет скан' },
+      stmt: { en: 'A ladder is a function of codeword lengths, and a logarithmic ladder is the floor: ℓ(e) ≥ log₂|e|. The regime radius is irrelevant to cost; the decode cost is set by the scan, not by the ladder. Unbounded range costs 40.', ru: 'Лестница есть функция длин кодовых слов, а логарифмическая лестница — пол: ℓ(e) ≥ log₂|e|. Радиус regime на цену не влияет; цену декода задаёт скан, а не лестница. Неограниченный диапазон стоит 40.' },
+      why: { en: 'T13 retracts an earlier construction of our own. What remains is the stronger statement: the scan is the price, and a fixed field has no scan.', ru: 'Т13 отзывает нашу же более раннюю конструкцию. Остаётся более сильное утверждение: цена — это скан, а у фиксированного поля скана нет.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T15/T17/T18',
+      name: { en: 'Area and precision are commensurable', ru: 'Площадь и точность соизмеримы' },
+      stmt: { en: 'With λ = dA/dM the area of a regime codec converts into mantissa bits of silicon; A(M) = cM^α, and the precision value of a regime falls as 1/M.', ru: 'При λ = dA/dM площадь regime-кодека переводится в биты мантиссы кремния; A(M) = cM^α, а ценность regime в точности падает как 1/M.' },
+      why: { en: 'It makes "is the regime worth it?" a computation instead of an opinion — and the answer turns negative as the format widens.', ru: 'Это превращает вопрос «стоит ли regime своих денег?» в вычисление вместо мнения — и ответ становится отрицательным по мере роста ширины формата.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T19/T20',
+      name: { en: 'The value law costs more than the field layout', ru: 'Закон значения дороже раскладки полей' },
+      stmt: { en: 'A logarithmic decode is priced by the TARGET precision, not by the width of the source field — verified against takum32 at d = 2.', ru: 'Логарифмический декод оценивается по ЦЕЛЕВОЙ точности, а не по ширине исходного поля — проверено против takum32 при d = 2.' },
+      why: { en: 'Two formats with identical field widths can differ by an order of magnitude in decoder area if one of them is logarithmic.', ru: 'Два формата с идентичными ширинами полей могут отличаться на порядок по площади декодера, если один из них логарифмический.' },
+      tag: 'measured' as Tag,
+    },
+    {
+      id: 'T21',
+      name: { en: 'The binary scale is the unique implementable optimum', ru: 'Бинарная шкала — единственный реализуемый оптимум' },
+      stmt: { en: 'Scaling is a shift if and only if the radix is 2. Corollary 21: between the shift and φ there is nothing.', ru: 'Шкалирование есть сдвиг ⟺ основание равно 2. Следствие 21: между сдвигом и φ ничего нет.' },
+      why: { en: 'Together with T25 this closes the radix question from both sides: 2 for the scale, φ for the alphabet, and no third option in between.', ru: 'Вместе с Т25 это закрывает вопрос основания с двух сторон: 2 для шкалы, φ для алфавита, и никакого третьего варианта между ними.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'Cor.18/26',
+      name: { en: 'Where the trit wins and where it draws', ru: 'Где трит выигрывает и где играет вничью' },
+      stmt: { en: 'A ternary field buys ∆ = E(1 − log₃2) = 0.3691·E positions and costs κ(3)/κ(2) = 1.683 per position when packed into a binary fabric; the two cancel at ∆ = 0.331·E_t.', ru: 'Троичное поле покупает ∆ = E(1 − log₃2) = 0.3691·E позиций и стоит κ(3)/κ(2) = 1.683 за позицию при упаковке в бинарную фабрику; они сокращаются при ∆ = 0.331·E_t.' },
+      why: { en: 'On positions the trit wins unconditionally; on binary bits it draws. This is why BNF16 and TNF16 synthesise within 1% of each other.', ru: 'На позициях трит выигрывает безусловно, на бинарных битах — играет вничью. Поэтому BNF16 и TNF16 синтезируются в пределах 1% друг от друга.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T39–T42',
+      name: { en: 'Taper is paid in delay, not in area', ru: 'Taper платится задержкой, а не площадью' },
+      stmt: { en: 'All 14 fixed-field decoders clear all 3 tapered ones in frequency, and the worst fixed leads the best tapered by 1.43×; in area they overlap (posit8 214 LUT against IBM hex 243). A barrel shifter is sized by range, not by width: 210 layers → 3.15 octaves → 2 bits suffice.', ru: 'Все 14 фиксированно-полевых декодеров выше всех 3 tapered по частоте, и худший фиксированный ведёт лучший tapered в 1.43×; по площади они перекрываются (posit8 214 LUT против IBM hex 243). Barrel-сдвигатель оценивается по диапазону, а не по ширине: 210 слоёв → 3.15 октавы → достаточно 2 бита.' },
+      why: { en: 'The regime inversion is here too: the ordering of areas flips depending on whether the scale is a compile-time constant or a runtime variable.', ru: 'Здесь же и regime-инверсия: порядок площадей переворачивается в зависимости от того, константа ли масштаб на компиляции или переменная в рантайме.' },
+      tag: 'measured' as Tag,
+    },
+    {
+      id: 'T48',
+      name: { en: 'Transforms and formats do not compose', ru: 'Преобразования и форматы не композируются' },
+      stmt: { en: 'A data transform (block scaling, rotation, a learned codebook) and a number format cannot be evaluated independently and then combined — the pair has to be measured as a pair.', ru: 'Преобразование данных (блочное масштабирование, поворот, обученный codebook) и числовой формат нельзя оценить независимо и потом сложить — пару надо мерить как пару.' },
+      why: { en: 'This is the theorem that catches most published format comparisons, including three of our own retracted ones.', ru: 'Именно эта теорема ловит большинство публикуемых сравнений форматов, включая три наших собственных отозванных.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T50–T52',
+      name: { en: 'The document is an artefact', ru: 'Документ — это артефакт' },
+      stmt: { en: 'The ladder shape decides whether a window is needed at all; wobble admits no crossover; and the taxonomy is prescriptive rather than descriptive — pairs of (transform, format) must be guarded, not just listed.', ru: 'Форма лестницы решает, нужно ли окно вообще; wobble не допускает кроссовера; таксономия предписательна, а не описательна — пары (преобразование, формат) надо охранять, а не просто перечислять.' },
+      why: { en: 'A format specification that does not say which pairings are forbidden is incomplete, and every retraction in this work came from a missing guard.', ru: 'Спецификация формата, не говорящая, какие пары запрещены, неполна — и каждая ретракция в этой работе выросла из отсутствующего охранника.' },
+      tag: 'proved' as Tag,
+    },
   ],
 }
 
@@ -564,6 +648,146 @@ export const landscape = {
       { en: 'No RTL for tekum, and no company found working specifically on ternary or φ inference formats; the nearest commercial multiplier-free efforts are logarithmic.', ru: 'Нет RTL для tekum и не найдено компании, работающей именно над троичными или φ-форматами инференса; ближайшие коммерческие multiply-free попытки — логарифмические.' },
     ],
     caveat: { en: 'These are statements about a search, not about priority. None of them is stated as “first”.', ru: 'Это утверждения о поиске, а не о приоритете. Ни одно из них не заявлено как «первый».' },
+  },
+}
+
+/* ───────────── FINDINGS FROM THE 2026 LITERATURE REVIEW ───────────── */
+
+export const findings = {
+  badge: { en: 'CONCLUSIONS FROM THE REVIEW · AUGUST 2026', ru: 'ВЫВОДЫ ИЗ ИССЛЕДОВАНИЯ · АВГУСТ 2026' },
+  title: {
+    en: 'What a full read of the 2025–2026 literature changes about this claim',
+    ru: 'Что сплошное чтение литературы 2025–2026 меняет в этом заявлении',
+  },
+  sub: {
+    en: 'Twenty-eight works were checked by direct retrieval of the arXiv or publisher page; two entries could not be confirmed and are marked as such in the notes rather than cited here. What follows is what survived the read — including the parts that went against us.',
+    ru: 'Двадцать восемь работ проверены прямым обращением к странице arXiv или издателя; две записи подтвердить не удалось, и они помечены в заметках, а не процитированы здесь. Ниже — то, что пережило чтение, включая места, сыгравшие против нас.',
+  },
+  items: [
+    {
+      n: '01',
+      h: { en: 'A theorem-chosen radix against an empirically chosen one', ru: 'Основание, выбранное теоремой, против выбранного эмпирически' },
+      b: {
+        en: 'AetherFloat (26 Feb 2026) removes the hidden leading bit, base-2 normalisation and sign-magnitude coding to escape the AMAX block-scaling penalty — the same ground we stand on. The difference is not the outcome but the warrant: their quad-radix is proposed, ours is forced. T25 gives r² = r + 1 as the only closure condition, and T27 enumerates every multiply-free scale by companion-matrix sparsity. We can state what cannot exist; an empirical radix cannot.',
+        ru: 'AetherFloat (26.02.2026) убирает скрытый ведущий бит, нормализацию по основанию 2 и sign-magnitude кодирование, чтобы уйти от штрафа блочного масштабирования AMAX — это та же земля, на которой стоим мы. Разница не в результате, а в основании права: их quad-radix предложен, наш — вынужден. Т25 даёт r² = r + 1 как единственное условие замкнутости, Т27 перечисляет все multiply-free шкалы по разрежённости companion-матрицы. Мы можем сказать, чего существовать не может; эмпирический радикс — не может.',
+      },
+      tag: 'proved' as Tag,
+      refs: [{ label: 'AetherFloat · arXiv:2603.08741', url: 'https://arxiv.org/abs/2603.08741' }],
+    },
+    {
+      n: '02',
+      h: { en: 'The nearest neighbour tapers; we fix the fields', ru: 'Ближайший сосед сужается; мы фиксируем поля' },
+      b: {
+        en: 'Tekum (Hunhold, 25 Nov 2025) is balanced-ternary tapered-precision arithmetic and its abstract claims to surpass both posit and takum. That is the same word — ternary — over a different hardware contract. Tekum carries a variable-length regime and therefore a scan; TNF carries a fixed ternary exponent field and therefore a constant-latency decode. By T2 the two are separable by measurement alone: a tapered format loses M_eff with |e| (posit16 −0.254 bit/binade, takum16 −0.113), a fixed-field one does not (TNF16 9 → 8.99/9.01).',
+        ru: 'Tekum (Hunhold, 25.11.2025) — балансно-троичная арифметика с taper, и её абстракт заявляет превосходство над posit и takum. Это то же слово — троичность — над иным аппаратным контрактом. У tekum regime переменной длины, а значит скан; у TNF фиксированное троичное поле экспоненты, а значит декод постоянной задержки. По Т2 их разделяет одно измерение: tapered-формат теряет M_eff с ростом |e| (posit16 −0.254 бита/бинада, takum16 −0.113), фиксированно-полевой — нет (TNF16 9 → 8.99/9.01).',
+      },
+      tag: 'measured' as Tag,
+      refs: [
+        { label: 'Tekum · arXiv:2512.10964', url: 'https://arxiv.org/abs/2512.10964' },
+        { label: 'takum · arXiv:2404.18603', url: 'https://arxiv.org/abs/2404.18603' },
+      ],
+    },
+    {
+      n: '03',
+      h: { en: 'The proof bar rose, and it rose in our favour', ru: 'Планка доказательства поднялась — и поднялась в нашу пользу' },
+      b: {
+        en: 'Two 2026 clusters now formalise low-precision arithmetic: FLoPS puts P3109 into Lean, and ARCH HDL generates SystemVerilog, SMT-LIB and a Lean 4 model from one bit-vector IR, proving multiplier-free operators over all 2^64 inputs. Both verify a given encoding exhaustively. T26 is a different kind of statement: in Z[φ] the whole linear path carries no rounding error at any fan-in and any depth, machine-checked in Coq — a property of the algebra, not of a bit pattern, so no input enumeration is involved. Exhaustive checking and algebraic closure are different layers, and a reviewer can check ours without hardware.',
+        ru: 'Два кластера 2026 года формализуют малоразрядную арифметику: FLoPS переносит P3109 в Lean, а ARCH HDL генерирует SystemVerilog, SMT-LIB и модель Lean 4 из единого bit-vector IR, доказывая multiplier-free операторы на всех 2^64 входах. Оба верифицируют заданную кодировку исчерпывающе. Т26 — утверждение иного рода: в Z[φ] весь линейный путь не несёт ошибки округления при любом fan-in и любой глубине, машинно проверено в Coq — свойство алгебры, а не битового шаблона, так что перечисление входов не участвует. Исчерпывающая проверка и алгебраическая замкнутость — разные слои, и наш слой рецензент может проверить без железа.',
+      },
+      tag: 'coq' as Tag,
+      refs: [
+        { label: 'FLoPS · arXiv:2602.15965', url: 'https://arxiv.org/abs/2602.15965' },
+        { label: 'ARCH HDL · arXiv:2607.23715', url: 'https://arxiv.org/abs/2607.23715' },
+        { label: 'P3109 for ML · arXiv:2606.04028', url: 'https://arxiv.org/abs/2606.04028' },
+      ],
+    },
+    {
+      n: '04',
+      h: { en: 'The block-scaling cluster argues our motivation for us', ru: 'Кластер блочного масштабирования аргументирует нашу мотивацию за нас' },
+      b: {
+        en: 'Four independent 2026 works say the same thing about current practice: max-magnitude block scales are suboptimal by quantisation error (ScaleSearch), FP4 sensitivity is layer- and block-dependent (NVFP4/MXFP4 diagnosis), block-based inference needs a co-designed pipeline to hold up across attention (Harmonia), and non-linear block scaling breaks end-to-end checks under fault injection (BFP-NPU reliability). A precision law in closed form is the alternative these papers describe the need for without naming.',
+        ru: 'Четыре независимые работы 2026 года говорят о текущей практике одно и то же: масштабы блока по max-magnitude субоптимальны по ошибке квантизации (ScaleSearch), чувствительность FP4 зависит от слоя и блока (диагностика NVFP4/MXFP4), блочный инференс требует co-design всего конвейера, чтобы удержаться на attention (Harmonia), а нелинейное блочное масштабирование ломает end-to-end проверки под инъекцией сбоев (надёжность BFP-NPU). Закон точности в замкнутой форме — та альтернатива, потребность в которой эти работы описывают, не называя.',
+      },
+      tag: 'competitor' as Tag,
+      refs: [
+        { label: 'ScaleSearch · arXiv:2605.12464', url: 'https://arxiv.org/abs/2605.12464' },
+        { label: 'FP4 diagnosis · arXiv:2603.08747', url: 'https://arxiv.org/abs/2603.08747' },
+        { label: 'Harmonia · arXiv:2602.04595', url: 'https://arxiv.org/abs/2602.04595' },
+        { label: 'BFP-NPU reliability · arXiv:2604.10494', url: 'https://arxiv.org/abs/2604.10494' },
+      ],
+    },
+    {
+      n: '05',
+      h: { en: 'Ternary weights are cheap; ternary hardware is not', ru: 'Троичные веса дешевы; троичное железо — нет' },
+      b: {
+        en: 'The 1.58-bit line is thriving on the algorithmic side and expensive on the physical one. BitROM states that LLaMA-7B needs more than 1000 cm² of silicon on advanced CMOS nodes and answers with a bidirectional ROM array; LUT-based accelerator generation replaces multiplication with conditional additions in TSMC 16 nm; NativeTernary reaches exactly 2.000 bit/weight but as a wire format; TernaryLM trains natively to 58.42 validation perplexity on TinyStories. None of them changes the multiplication itself. GFTernary does — the weight application is one integer addition, a Fibonacci step in Z[φ], and by T8 the reason our own ternary claim stays architectural is written into the same theory.',
+        ru: 'Линия 1.58 бита процветает на алгоритмической стороне и дорога на физической. BitROM указывает, что LLaMA-7B требует более 1000 см² кремния на продвинутых узлах CMOS, и отвечает двунаправленным ROM-массивом; генерация LUT-ускорителей заменяет умножение условными сложениями в TSMC 16 нм; NativeTernary достигает ровно 2.000 бита/вес, но как формат передачи; TernaryLM обучается нативно до validation perplexity 58.42 на TinyStories. Ни одна из них не меняет само умножение. GFTernary меняет: применение веса — одно целочисленное сложение, шаг Фибоначчи в Z[φ]; и по Т8 причина, по которой наше собственное троичное заявление остаётся архитектурным, записана в той же теории.',
+      },
+      tag: 'competitor' as Tag,
+      refs: [
+        { label: 'BitROM · arXiv:2509.08542', url: 'https://arxiv.org/abs/2509.08542' },
+        { label: 'LUT 1.58-bit · arXiv:2604.25183', url: 'https://arxiv.org/abs/2604.25183' },
+        { label: 'NativeTernary · arXiv:2604.03336', url: 'https://arxiv.org/abs/2604.03336' },
+        { label: 'TernaryLM · arXiv:2602.07374', url: 'https://arxiv.org/abs/2602.07374' },
+      ],
+    },
+    {
+      n: '06',
+      h: { en: 'Degree-three scales are an empty field, as of August 2026', ru: 'Шкалы третьей степени — пустое поле на август 2026' },
+      b: {
+        en: 'T27 names three degree-three multiply-free scales — plastic 1.3247, supergolden 1.4656, tribonacci 1.8393 — and a targeted search of 2025–2026 arXiv found no hardware-arithmetic work on any of them; the only tribonacci results found are pure number theory. This is a statement about a search, not a proof of absence, and it is dated: it can stop being true next month. It also cuts both ways — the same silence means no external result confirms the ladder rungs above 4 bits either.',
+        ru: 'Т27 называет три multiply-free шкалы третьей степени — plastic 1.3247, supergolden 1.4656, tribonacci 1.8393 — и целевой поиск по arXiv 2025–2026 не нашёл ни одной работы по аппаратной арифметике ни для одной из них; единственные найденные результаты по трибоначчи — чистая теория чисел. Это утверждение о поиске, а не доказательство отсутствия, и оно датировано: перестать быть верным оно может в следующем месяце. Режет оно и в обе стороны — та же тишина означает, что и ступени лестницы выше 4 бит никем извне не подтверждены.',
+      },
+      tag: 'derived' as Tag,
+      refs: [{ label: 'GoldenFloat · arXiv:2606.05017', url: 'https://arxiv.org/abs/2606.05017' }],
+    },
+    {
+      n: '07',
+      h: { en: 'The standard is moving fast enough to be a deadline', ru: 'Стандарт движется достаточно быстро, чтобы быть сроком' },
+      b: {
+        en: 'IEEE P3109 went v2.0 (29 Oct 2024) → v3.0 (21 Jul 2025) → v3.2 (5 Jan 2026) → v3.2.1 → v3.2.2 (13 Mar 2026) → v4.0 (26 Jun 2026): six releases in twenty months. Our own 83-format catalogue already carries a P3109 v3.2.0 cross-walk, which is now two minor versions behind. A format proposal that is not tracked against this cadence dates itself, and the cross-walk is a maintenance obligation rather than a completed deliverable.',
+        ru: 'IEEE P3109 прошёл v2.0 (29.10.2024) → v3.0 (21.07.2025) → v3.2 (05.01.2026) → v3.2.1 → v3.2.2 (13.03.2026) → v4.0 (26.06.2026): шесть выпусков за двадцать месяцев. Наш собственный каталог 83 форматов уже несёт cross-walk к P3109 v3.2.0, и он отстал на две минорные версии. Предложение формата, не отслеживаемое против этого темпа, само себя датирует, а cross-walk — обязательство по поддержке, а не закрытая поставка.',
+      },
+      tag: 'spec' as Tag,
+      refs: [
+        { label: '83-format catalogue · arXiv:2606.09686', url: 'https://arxiv.org/abs/2606.09686' },
+        { label: 'P3109 Interim Report v4.0', url: 'https://docenti.ing.unipi.it/m.cococcioni/IEEE_P3109_WG_Interim_Report_ver_4.0_2026_06_26.pdf' },
+      ],
+    },
+    {
+      n: '08',
+      h: { en: 'The open flow is the method, and it has a benchmark', ru: 'Открытый поток — это метод, и у него есть эталон' },
+      b: {
+        en: 'Every hardware number on this page comes from Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus 13.0, median of five seeds, DSP inference off — no Vivado in the loop. Basilisk quantifies what that costs: a tuned open flow reached 2.3× frequency and 1.6× logic area over baseline Yosys+OpenROAD in open 130 nm. So an open-flow number is not a weaker number, but it is a number attached to a toolchain version, and we publish the version with the number.',
+        ru: 'Каждое аппаратное число на этой странице получено на Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus 13.0, медиана пяти seed’ов, инференс DSP выключен — без Vivado в цепи. Basilisk оценивает, чего это стоит: настроенный открытый поток дал 2.3× по частоте и 1.6× по площади логики относительно базового Yosys+OpenROAD в открытом 130 нм. Значит, число открытого потока не слабее — но это число, привязанное к версии тулчейна, и мы публикуем версию вместе с числом.',
+      },
+      tag: 'measured' as Tag,
+      refs: [{ label: 'Basilisk · arXiv:2405.04257', url: 'https://arxiv.org/abs/2405.04257' }],
+    },
+    {
+      n: '09',
+      h: { en: 'We wrote the competitor’s decoder ourselves, and it is a distinct oracle', ru: 'Мы сами написали декодер конкурента — и это отдельный оракул' },
+      b: {
+        en: 'Reading a rival’s abstract is not a comparison. So Definitions 7–8 of the tekum paper were implemented directly — anchor, regime r, c = max(0, |r| − 2), fraction, specials, value s(1+f)·3^e — and run against our own takum16 and GF16 oracles. One accounting point has to be stated first: native tekum at n = 16 has 3^16 = 43 046 721 trit words, so a 65 536-input sweep is an explicitly labelled rank adapter, not a bit-level encoding. On that adapter, 65 536 of 65 536 codes differ from takum16 (2 special mismatches) and 65 536 of 65 536 differ from GF16 (1 023 special mismatches), with no bijection between value sets in either case. A nearest-grid model fits M_eff at −0.1210 bit/binade over |e| = 0…30, which is window-dependent modelling and is tagged as such.',
+        ru: 'Прочитать абстракт конкурента — не сравнение. Поэтому Определения 7–8 работы по tekum реализованы напрямую — anchor, regime r, c = max(0, |r| − 2), fraction, специальные значения, значение s(1+f)·3^e — и прогнаны против наших собственных оракулов takum16 и GF16. Одну учётную вещь надо сказать вперёд: нативный tekum при n = 16 имеет 3^16 = 43 046 721 тритовых слов, поэтому перебор 65 536 входов — явно помеченный rank-адаптер, а не побитовая кодировка. На этом адаптере 65 536 из 65 536 кодов расходятся с takum16 (2 расхождения по особым значениям) и 65 536 из 65 536 — с GF16 (1 023 расхождения), и биекции между множествами значений нет ни в одном случае. Модель nearest-grid даёт наклон M_eff −0.1210 бита/бинада на |e| = 0…30, и это оконно-зависимое моделирование, так и помечено.',
+      },
+      tag: 'measured' as Tag,
+      refs: [{ label: 'Tekum · arXiv:2512.10964', url: 'https://arxiv.org/abs/2512.10964' }],
+    },
+    {
+      n: '10',
+      h: { en: 'At four bits, software cannot pick the radix — and we tried', ru: 'На четырёх битах софт основание не выбирает — и мы пробовали' },
+      b: {
+        en: 'The 4-bit rung of the ladder was decided by perplexity alone, and perplexity at that width is noisy. Seven radices — φ, supergolden 1.4656, plastic 1.3247, and the controls 2, √2, √3, 1.5 — were therefore compared on eight independent software proxies: worst-case and L1 scale-quantisation error, a curvature-weighted error under normal, Student t(3) and Laplace weights, round-trip SQNR per 32-weight block, scale-code overload, and binade coverage. Medians over five seeds, and a repeat run byte-identical. The leaders conflict: √2 leads the curvature proxy under normal weights, 1.5 leads L1 and the Laplace SQNR, √3 leads under a heavy tail, and the L1 winner changes with the required range (plastic at 6 binades, √2 at 8, 1.5 at 10, √3 at 12). Five of eight margins fall inside the seed spread. The honest reading is that the 4-bit choice is not resolvable in software at all: it needs the same runtime-variable scale-applier synthesised for every candidate in one flow, measured for LUT, routed Fmax, critical-path depth and register count over five seeds. Until that runs, the φ pick at 4 bits stands on the perplexity result alone, and we say so.',
+        ru: '4-битная ступень лестницы была решена одной перплексией, а перплексия на этой ширине шумна. Поэтому семь оснований — φ, supergolden 1.4656, plastic 1.3247 и контроли 2, √2, √3, 1.5 — сравнены по восьми независимым программным прокси: worst-case и L1 ошибка квантизации масштаба, ошибка, взвешенная кривизной, при нормальных, стьюдентовых t(3) и лапласовых весах, round-trip SQNR по блокам из 32 весов, перегрузка кода масштаба и покрытие бинад. Медианы по пяти seed’ам, повторный прогон побайтно идентичен. Лидеры конфликтуют: √2 ведёт по кривизне при нормальных весах, 1.5 — по L1 и по лапласову SQNR, √3 — при тяжёлом хвосте, а победитель по L1 меняется с требуемым диапазоном (plastic на 6 бинадах, √2 на 8, 1.5 на 10, √3 на 12). Пять отрывов из восьми лежат внутри разброса по seed’ам. Честное чтение: 4-битный выбор в софте не разрешается вообще — нужен один и тот же runtime-variable applier масштаба, синтезированный для каждого кандидата в одном потоке, с измерением LUT, разведённого Fmax, глубины критического пути и числа регистров на пяти seed’ах. Пока это не прогнано, выбор φ на 4 битах стоит на одном перплексити-результате, и мы это говорим.',
+      },
+      tag: 'measured' as Tag,
+      refs: [{ label: 'FP4 diagnosis · arXiv:2603.08747', url: 'https://arxiv.org/abs/2603.08747' }, { label: 'AetherFloat · arXiv:2603.08741', url: 'https://arxiv.org/abs/2603.08741' }],
+    },
+  ],
+  footer: {
+    en: 'The full review, with the two unconfirmed entries and the works judged not relevant, is kept with the sources rather than summarised away.',
+    ru: 'Полный обзор, вместе с двумя неподтверждёнными записями и работами, признанными нерелевантными, хранится при источниках, а не сворачивается в резюме.',
   },
 }
 

@@ -13,8 +13,13 @@ const GPU_OPTIONS = [
   { id: 'a100', name: 'NVIDIA A100 (80GB)', price: 1.89, tflops: 312 },
 ]
 
-// Mining mode calculations
-const MINING_EFFICIENCY = 578.8 // Trinity efficiency multiplier
+// This component is not routed anywhere and is kept only as history.
+// The multiplier that used to sit here was 578.8, and nothing measured
+// supports it. The only defensible efficiency figure we own is the ternary
+// neuron's MHz-per-LUT lead over binary32 on Artix-7: 0.1797 against 0.1631,
+// which is +10.2%. If this calculator is ever revived, it must be labelled a
+// projection and use that number, not a three-digit multiplier.
+const MINING_EFFICIENCY = 1.102 // measured MHz/LUT lead of the ternary neuron over binary32
 
 export default function CalculatorSection() {
   const { t } = useI18n()
@@ -31,7 +36,9 @@ export default function CalculatorSection() {
   // Mining mode calculations
   const miningRevenuePerTflop = 0.05 // $/hour per TFLOP (estimated)
   const binaryMiningRevenue = nodes * selectedGPU.tflops * miningRevenuePerTflop * hoursPerMonth
-  const trinityMiningRevenue = binaryMiningRevenue * 8 // 8x efficiency from ternary
+  // Was ×8 "from ternary" — unsupported. Ternary lost to binary three times
+  // independently in our own measurements; the only lead is the +10.2% above.
+  const trinityMiningRevenue = binaryMiningRevenue * MINING_EFFICIENCY
   const miningProfit = trinityMiningRevenue - trinityCost
 
   return (

@@ -22,6 +22,8 @@ const TnfLadder = lazy(() => import('./components/sections/tnf').then((m) => ({ 
 const TnfTheorems = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfTheorems })))
 const TnfLimits = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLimits })))
 const TnfLandscape = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLandscape })))
+const TnfCalculators = lazy(() => import('./components/sections/tnf/Calculators'))
+const TnfFindings = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFindings })))
 const TnfLineage = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLineage })))
 const TnfReproduce = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfReproduce })))
 const PublicationsSection = lazy(() => import('./components/sections/PublicationsSection'))
@@ -46,8 +48,10 @@ export default function App() {
         <TnfFrontier />
         <TnfLadder />
         <TnfTheorems />
+        <TnfCalculators />
         <TnfLimits />
         <TnfLandscape />
+        <TnfFindings />
         <TnfLineage />
         <PublicationsSection />
         <TnfReproduce />

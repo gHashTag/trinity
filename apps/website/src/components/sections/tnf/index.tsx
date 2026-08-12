@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { useI18n } from '../../../i18n/context'
 import {
   TAG_LABEL, PAPER, hero, claim, formats, frontier, ladder,
-  theorems, limits, landscape, lineage, reproduce, type Tag,
+  theorems, limits, landscape, findings, lineage, reproduce, type Tag,
 } from '../../../content/tnf'
 import './tnf.css'
 
@@ -509,6 +509,40 @@ export function TnfLandscape() {
             <p className="tnf-note">{L(landscape.negatives.caveat)}</p>
           </div>
         </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ───────────────────────────── FINDINGS ───────────────────────────── */
+
+// Раздел «Выводы из исследования»: каждый пункт несёт тег происхождения и
+// прямые ссылки на проверенные работы. Ни одна цифра не вписана здесь —
+// весь текст и все ссылки приходят из content/tnf.ts.
+export function TnfFindings() {
+  const { L } = useL()
+  return (
+    <section id="findings" className="tnf-section" style={{ background: 'rgba(124,199,255,0.02)' }}>
+      <div className="tnf-wrap">
+        <Head badge={findings.badge} title={findings.title} lede={findings.sub} wide />
+        <motion.div {...fade} className="tnf-grid tnf-grid-2">
+          {findings.items.map((it) => (
+            <div className="tnf-cell" key={it.n}>
+              <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'baseline', flexWrap: 'wrap', marginBottom: '0.55rem' }}>
+                <span className="tnf-mono" style={{ color: 'var(--golden)', fontWeight: 600, fontSize: '0.9rem' }}>{it.n}</span>
+                <strong style={{ fontSize: '0.98rem', fontWeight: 600 }}>{L(it.h)}</strong>
+                <TagChip tag={it.tag} />
+              </div>
+              <p style={{ fontSize: '0.86rem', lineHeight: 1.68, margin: '0 0 0.85rem', maxWidth: 'none' }}>{L(it.b)}</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem 1rem' }}>
+                {it.refs.map((r) => (
+                  <a className="tnf-link" key={r.url} href={r.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.76rem' }}>{r.label}</a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </motion.div>
+        <motion.p {...fade} className="tnf-note" style={{ marginTop: '1.4rem' }}>{L(findings.footer)}</motion.p>
       </div>
     </section>
   )
