@@ -52,33 +52,33 @@ const store = {
 };
 
 /* Заголовок и описание на каждый язык. Формулировки держатся тех же границ,
-   что и страница: пара форматов, 52 теоремы, 16 ретракций, железо измерено на
+   что и страница: пара форматов, 52 теоремы, железо измерено на
    открытом потоке на XC7A200T — без «первого» и без обещаний кремния. */
 const SEO = {
   en: {
     locale: 'en_US',
     title: 'TRINITY | TNF · GFTernary — a reference format for the ternary datapath',
-    description: 'TNF and GFTernary: a reference format pair for the ternary datapath. 52 theorems, 16 retractions, and every hardware number measured on an open flow on XC7A200T.',
+    description: 'TNF and GFTernary: a reference format pair for the ternary datapath. 52 theorems, and every hardware number measured on an open flow on XC7A200T.',
   },
   ru: {
     locale: 'ru_RU',
     title: 'TRINITY | TNF · GFTernary — референсная пара форматов для тернарного датапути',
-    description: 'TNF и GFTernary: референсная пара числовых форматов для тернарного датапути. 52 теоремы, 16 ретракций, и каждое аппаратное число измерено на открытом потоке на XC7A200T.',
+    description: 'TNF и GFTernary: референсная пара числовых форматов для тернарного датапути. 52 теоремы, и каждое аппаратное число измерено на открытом потоке на XC7A200T.',
   },
   de: {
     locale: 'de_DE',
     title: 'TRINITY | TNF · GFTernary — Referenzformate für den ternären Datenpfad',
-    description: 'TNF und GFTernary: ein Referenzpaar von Zahlenformaten für den ternären Datenpfad. 52 Theoreme, 16 Rücknahmen, und jede Hardwarezahl auf einem offenen Flow auf XC7A200T gemessen.',
+    description: 'TNF und GFTernary: ein Referenzpaar von Zahlenformaten für den ternären Datenpfad. 52 Theoreme, und jede Hardwarezahl auf einem offenen Flow auf XC7A200T gemessen.',
   },
   es: {
     locale: 'es_ES',
     title: 'TRINITY | TNF · GFTernary — formatos de referencia para la ruta de datos ternaria',
-    description: 'TNF y GFTernary: un par de formatos numéricos de referencia para la ruta de datos ternaria. 52 teoremas, 16 retractaciones, y cada número de hardware medido en un flujo abierto sobre XC7A200T.',
+    description: 'TNF y GFTernary: un par de formatos numéricos de referencia para la ruta de datos ternaria. 52 teoremas, y cada número de hardware medido en un flujo abierto sobre XC7A200T.',
   },
   zh: {
     locale: 'zh_CN',
     title: 'TRINITY | TNF · GFTernary — 三进制数据通路的参考数字格式',
-    description: 'TNF 与 GFTernary：面向三进制数据通路的一对参考数字格式。52 条定理，16 项撤回，所有硬件数据均在 XC7A200T 上以开源流程实测。',
+    description: 'TNF 与 GFTernary：面向三进制数据通路的一对参考数字格式。52 条定理，所有硬件数据均在 XC7A200T 上以开源流程实测。',
   },
 } as const
 

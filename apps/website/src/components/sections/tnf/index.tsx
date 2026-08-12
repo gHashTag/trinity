@@ -144,6 +144,26 @@ export function TnfHero() {
       <div className="tnf-wrap">
         <Lockup />
 
+        {/* Слоган стоит там же, где стоял прежде — прямо под знаком, зелёным
+            курсивным антиквой. Подпись под ним обязательна: без неё тождество
+            читается как заявленная теорема, а это разные вещи. */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35, duration: 0.7 }}
+          style={{ margin: 'var(--sp1) 0 var(--sp2)' }}
+        >
+          <div style={{
+            fontFamily: '"Times New Roman", Times, serif', fontStyle: 'italic', fontWeight: 400,
+            fontSize: 'clamp(1.15rem, 4.2vw, 2rem)', color: 'var(--accent)', lineHeight: 1.1,
+          }}>
+            {hero.slogan.formula}
+          </div>
+          <div style={{ color: 'var(--muted)', fontSize: 'var(--f-1)', marginTop: '0.45rem', maxWidth: '46ch', textAlign: 'left', marginLeft: 0 }}>
+            {L(hero.slogan.caption)}
+          </div>
+        </motion.div>
+
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
           <span className="tnf-badge" style={{ color: 'var(--accent)' }}>{L(hero.eyebrow)}</span>
 
@@ -201,7 +221,7 @@ export function TnfHero() {
 
         <motion.div {...fade} style={{ marginTop: 'var(--sp2)', color: 'var(--muted)', fontSize: 'var(--f-1)' }}>
           {L(PAPER.title)} · {PAPER.author} · ORCID {PAPER.orcid} · {L(PAPER.date)} · {PAPER.theorems}{' '}
-          {key === 'ru' ? 'теорем' : 'theorems'} · {PAPER.retractions} {key === 'ru' ? 'ретракций' : 'retractions'}
+          {key === 'ru' ? 'теорем' : 'theorems'}
         </motion.div>
 
         {/* Две работы, на которых стоит эта: они были упомянуты в разделах ниже,
