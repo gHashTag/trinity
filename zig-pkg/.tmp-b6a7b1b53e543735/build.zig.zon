@@ -1,0 +1,9 @@
+{
+  .name = zig_hdc,
+  .version = "0.1.0",
+  .dependencies = .{
+    .zig_golden_float = .{
+      .url = "https://github.com/gHashTag/zig-golden-float/archive/main.tar.gz",
+    },
+  },
+}

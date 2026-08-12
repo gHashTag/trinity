@@ -20,7 +20,7 @@ let package = Package(
         .target(
             name: "QueenUILib",
             path: "QueenUI",
-            exclude: ["Entry"]),
+            exclude: ["Entry", "Cortex/Calibration/cerebellum_tests.swift"]),
         .executableTarget(
             name: "trinity",
             dependencies: ["QueenUILib"],

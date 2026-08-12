@@ -2,6 +2,13 @@
     .name = .trinity,
     .version = "0.16.0",
     .dependencies = .{
+        // src/vsa.zig and the 27 files of src/vsa/ were extracted here in 42490a222.
+        // build.zig kept building modules from the old path; this is the half that
+        // never landed.
+        .zig_hdc = .{
+            .url = "git+https://github.com/gHashTag/zig-hdc#main",
+            .hash = "PLACEHOLDER",
+        },
         .emsdk = .{
             .url = "git+https://github.com/emscripten-core/emsdk?ref=4.0.9#3bcf1dcd01f040f370e10fe673a092d9ed79ebb5",
             .hash = "N-V-__8AAJl1DwBezhYo_VE6f53mPVm00R-Fk28NPW7P14EQ",

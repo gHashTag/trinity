@@ -1,0 +1,15 @@
+# Zig
+zig-cache/
+zig-out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+.env*
+!.env.example
