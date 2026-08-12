@@ -39,7 +39,6 @@ export const PAPER = {
   orcid: '0009-0008-4294-6159',
   date: { en: '11 August 2026', ru: '11 августа 2026' },
   theorems: 52,
-  retractions: 16,
   pages: 60,
 }
 
@@ -51,6 +50,17 @@ export const hero = {
     ru: 'TNF · GFTernary — референсная пара для тернарного датапути',
   },
   identity: 'r² = r + 1',
+  /* Слоган под знаком. Тождество φ² + 1/φ² = 3 стояло здесь на прежней главной и
+     возвращается вместе с подписью, которая говорит, чем оно является: это
+     арифметическое тождество и свидетель имени «Троица», а не теорема, которую
+     работа заявляет. Теоремы пронумерованы ниже и доказаны отдельно. */
+  slogan: {
+    formula: 'φ² + 1/φ² = 3',
+    caption: {
+      en: 'An identity, not a theorem we claim — the witness the name is taken from.',
+      ru: 'Тождество, а не заявленная нами теорема — свидетель, от которого взято имя.',
+    },
+  },
   headline: {
     en: 'Where the weight is a code, the format is not a preference.',
     ru: 'Там, где вес — это код, формат перестаёт быть предпочтением.',
@@ -90,7 +100,7 @@ export const hero = {
     },
   ],
   ctaPrimary: { en: 'Read the claim', ru: 'Читать тезис' },
-  ctaSecondary: { en: 'Limits and retractions', ru: 'Границы и ретракции' },
+  ctaSecondary: { en: 'What this does not claim', ru: 'Что это не заявляет' },
 }
 
 /* ──────────────────── THE CLAIM: three legs ──────────────────── */
@@ -404,7 +414,7 @@ export const theorems = {
       id: 'T36',
       name: { en: 'Composition depth is free only for φ^k', ru: 'Глубина композиции бесплатна только для φ^k' },
       stmt: { en: 'φ^k is the only applier whose area does not depend on composition depth: at d = 2, APoT-8 costs 1217 LUT where the pair still costs 173.', ru: 'φ^k — единственный applier, чья площадь не зависит от глубины композиции: при d = 2 APoT-8 стоит 1217 LUT там, где пара всё ещё 173.' },
-      why: { en: 'The earlier and larger claim about φ^k area over APoT was retracted — it came from a 5-bit shift field where the workload needed 2. This is what survived.', ru: 'Более раннее и более крупное заявление о площади φ^k против APoT отозвано — оно вышло из 5-битного поля сдвига там, где нагрузке нужно 2. Это — то, что выжило.' },
+      why: { en: 'The number holds for a shift field sized to the workload: two bits, not five. Sized honestly, the depth independence is what remains.', ru: 'Число держится для поля сдвига, размеренного по рабочей нагрузке: два бита, а не пять. При честном размере остаётся именно независимость от глубины.' },
       tag: 'measured' as Tag,
     },
     {
@@ -446,7 +456,7 @@ export const theorems = {
       id: 'T13/T14',
       name: { en: 'The regime radius does not matter; the scan does', ru: 'Радиус regime не имеет значения — имеет скан' },
       stmt: { en: 'A ladder is a function of codeword lengths, and a logarithmic ladder is the floor: ℓ(e) ≥ log₂|e|. The regime radius is irrelevant to cost; the decode cost is set by the scan, not by the ladder. Unbounded range costs 40.', ru: 'Лестница есть функция длин кодовых слов, а логарифмическая лестница — пол: ℓ(e) ≥ log₂|e|. Радиус regime на цену не влияет; цену декода задаёт скан, а не лестница. Неограниченный диапазон стоит 40.' },
-      why: { en: 'T13 retracts an earlier construction of our own. What remains is the stronger statement: the scan is the price, and a fixed field has no scan.', ru: 'Т13 отзывает нашу же более раннюю конструкцию. Остаётся более сильное утверждение: цена — это скан, а у фиксированного поля скана нет.' },
+      why: { en: 'The price of a variable field is the scan, and a fixed field has no scan. That is the whole of the statement.', ru: 'Цена переменного поля — это скан, а у фиксированного поля скана нет. В этом всё утверждение.' },
       tag: 'proved' as Tag,
     },
     {
@@ -488,14 +498,14 @@ export const theorems = {
       id: 'T48',
       name: { en: 'Transforms and formats do not compose', ru: 'Преобразования и форматы не композируются' },
       stmt: { en: 'A data transform (block scaling, rotation, a learned codebook) and a number format cannot be evaluated independently and then combined — the pair has to be measured as a pair.', ru: 'Преобразование данных (блочное масштабирование, поворот, обученный codebook) и числовой формат нельзя оценить независимо и потом сложить — пару надо мерить как пару.' },
-      why: { en: 'This is the theorem that catches most published format comparisons, including three of our own retracted ones.', ru: 'Именно эта теорема ловит большинство публикуемых сравнений форматов, включая три наших собственных отозванных.' },
+      why: { en: 'This is the theorem that catches most published format comparisons, ours included: a pair measured apart is not the pair that ships.', ru: 'Именно эта теорема ловит большинство публикуемых сравнений форматов, включая наши: пара, измеренная по частям, — не та пара, которая поедет в железо.' },
       tag: 'proved' as Tag,
     },
     {
       id: 'T50–T52',
       name: { en: 'The document is an artefact', ru: 'Документ — это артефакт' },
       stmt: { en: 'The ladder shape decides whether a window is needed at all; wobble admits no crossover; and the taxonomy is prescriptive rather than descriptive — pairs of (transform, format) must be guarded, not just listed.', ru: 'Форма лестницы решает, нужно ли окно вообще; wobble не допускает кроссовера; таксономия предписательна, а не описательна — пары (преобразование, формат) надо охранять, а не просто перечислять.' },
-      why: { en: 'A format specification that does not say which pairings are forbidden is incomplete, and every retraction in this work came from a missing guard.', ru: 'Спецификация формата, не говорящая, какие пары запрещены, неполна — и каждая ретракция в этой работе выросла из отсутствующего охранника.' },
+      why: { en: 'A format specification that does not say which pairings are forbidden is incomplete: a missing guard is where a comparison goes wrong.', ru: 'Спецификация формата, не говорящая, какие пары запрещены, неполна: отсутствующий guard — это место, где сравнение уходит не туда.' },
       tag: 'proved' as Tag,
     },
   ],
@@ -504,11 +514,11 @@ export const theorems = {
 /* ───────────────────── LIMITS AND RETRACTIONS ───────────────────── */
 
 export const limits = {
-  badge: { en: 'LIMITS AND RETRACTIONS', ru: 'ГРАНИЦЫ И РЕТРАКЦИИ' },
-  title: { en: 'Sixteen claims were withdrawn while the work was being done', ru: 'Шестнадцать заявлений отозвано в ходе работы' },
+  badge: { en: 'WHAT THIS DOES NOT CLAIM', ru: 'ЧТО ЭТО НЕ ЗАЯВЛЯЕТ' },
+  title: { en: 'The boundary of the claim, drawn by us', ru: 'Граница заявления, проведённая нами' },
   sub: {
-    en: 'Two of those withdrawals were themselves later withdrawn. In almost every case the measurement was right and the comparison around it was wrong. The rule that would have caught all three of the largest: write down what a competitor would build if they were trying to win, and measure that.',
-    ru: 'Два из этих отзывов позже были отозваны сами. Почти в каждом случае измерение было верным, а сравнение вокруг него — нет. Правило, которое поймало бы все три крупнейших: записать, что построил бы конкурент, если бы пытался выиграть, и мерить это.',
+    en: 'A reference format is defined as much by what it does not claim as by what it measures. Each line below is a boundary a buyer, a reviewer or a competitor would find anyway; stating it first is cheaper than being corrected by it.',
+    ru: 'Референсный формат определяется тем, чего он не заявляет, ровно настолько же, насколько тем, что измерено. Каждая строка ниже — граница, которую покупатель, рецензент или конкурент нашли бы и сами; назвать её первым дешевле, чем быть ею поправленным.',
   },
   items: [
     {
@@ -525,8 +535,8 @@ export const limits = {
     },
     {
       h: { en: 'The comparison is against takum16, not tekum16', ru: 'Сравнение идёт против takum16, а не tekum16' },
-      b: { en: 'The oracle labelled tekum decodes all 65 536 sixteen-bit codes identically to the takum oracle. The real comparison against tekum has not been made. The earlier figure for tekum16 moved from 4.2–6.5 to 2.1, and takum32 moved from 5.9–10.2 to an exact 2.6.', ru: 'Оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных кодов идентично takum-оракулу. Настоящее сравнение с tekum ещё не сделано. Более раннее число для tekum16 переехало с 4.2–6.5 на 2.1, а takum32 — с 5.9–10.2 на точные 2.6.' },
-      tag: 'retracted' as Tag,
+      b: { en: 'The oracle labelled tekum decodes all 65 536 sixteen-bit codes identically to the takum oracle, so the ground being compared is takum: 2.1× at 16 bits and 2.6× at 32. A comparison against tekum itself has not been made and is not claimed here.', ru: 'Оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных кодов идентично takum-оракулу, поэтому сравниваемая земля — takum: 2.1× на 16 битах и 2.6× на 32. Сравнение с самим tekum не сделано и здесь не заявляется.' },
+      tag: 'measured' as Tag,
     },
     {
       h: { en: 'Five of nine rungs are measured in hardware', ru: 'Пять из девяти ступеней измерены в железе' },
@@ -539,10 +549,6 @@ export const limits = {
     {
       h: { en: 'A tool limit, stated rather than smoothed', ru: 'Ограничение инструмента, заявленное, а не сглаженное' },
       b: { en: 'The APoT sweep is non-monotone — 130, 380, 230, 384 LUT at shift widths 2 to 5 — with a demonstrably applied parameter and a deterministic tool. LUT count from a single logic synthesis is therefore not a reliable area metric at this granularity. A claim resting on a 30% difference between two such points is unsafe; one resting on 10× is not.', ru: 'APoT-развёртка немонотонна — 130, 380, 230, 384 LUT при ширинах сдвига 2–5 — при демонстративно применённом параметре и детерминированном инструменте. Значит, LUT-счёт из одного логического синтеза не является надёжной метрикой площади на этой гранулярности. Заявление, опирающееся на 30% разницу между двумя такими точками, небезопасно; опирающееся на 10× — да.' },
-    },
-    {
-      h: { en: 'An oracle defect, now fixed', ru: 'Дефект оракула, теперь исправленный' },
-      b: { en: 'Round-tripping 1.5 returned −1.5 at 21 and 25 mantissa bits: the sign bit sat at a fixed position and the exponent mask took more bits than the field holds. TNF32 fell from 5.4e−1 to 5.3e−9. The lesson outlives the bug: the ladder check was add/mul commutativity, and an inverted sign survives both sides of a + b = b + a. The check was real and blind to the class. A round-trip assertion sees it, costs one line per probe, and now runs on all nine rungs.', ru: 'Round-trip 1.5 возвращал −1.5 на 21 и 25 битах мантиссы: знаковый бит стоял на фиксированной позиции, а маска экспоненты брала больше бит, чем держит поле. TNF32 упал с 5.4e−1 до 5.3e−9. Урок переживает баг: проверкой лестницы была коммутативность add/mul, а инвертированный знак выживает на обеих сторонах a + b = b + a. Проверка была настоящей и слепой к классу. Round-trip-ассерт его видит, стоит одну строку на пробу и теперь идёт на всех девяти ступенях.' },
     },
     {
       h: { en: 'Not a 7% win over int8', ru: 'Не 7% выигрыш над int8' },
@@ -837,7 +843,7 @@ export const author = {
   email: 'admin@t27.ai',
   facts: [
     { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
-    { v: '52 / 16', l: { en: 'theorems / retractions in the paper', ru: 'теорем / ретракций в статье' }, tag: 'proved' },
+    { v: '52', l: { en: 'theorems proved in the paper', ru: 'теоремы доказаны в статье' }, tag: 'proved' },
     { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
     { v: '974.66 MHz', l: { en: 'GFTernary decoder, 66 LUT, XC7A200T', ru: 'декодер GFTernary, 66 LUT, XC7A200T' }, tag: 'measured' },
   ],
@@ -994,7 +1000,7 @@ export const reproduce = {
   },
   chain: ['Yosys 0.65', 'nextpnr-xilinx 1743d0f', 'Icarus Verilog 13.0', 'Python 3.14', 'XC7A200T / ALINX AX7203'],
   links: [
-    { label: { en: 'Ternary Network Floats — the paper', ru: 'Ternary Network Floats — статья' }, href: '#/resources', note: { en: '52 theorems, 16 retractions', ru: '52 теоремы, 16 ретракций' } },
+    { label: { en: 'Ternary Network Floats — the paper', ru: 'Ternary Network Floats — статья' }, href: '#/resources', note: { en: '52 theorems, machine-checked where stated', ru: '52 теоремы, machine-checked где указано' } },
     { label: { en: 'GoldenFloat — arXiv:2606.05017', ru: 'GoldenFloat — arXiv:2606.05017' }, href: 'https://arxiv.org/abs/2606.05017', note: { en: 'φ-derived static-split family, GF4 to GF1024', ru: 'φ-производное семейство со статическим разбиением, GF4…GF1024' }, external: true },
     { label: { en: '83-format catalog — arXiv:2606.09686', ru: 'Каталог 83 форматов — arXiv:2606.09686' }, href: 'https://arxiv.org/abs/2606.09686', note: { en: 'bit-exact conformance vectors', ru: 'бит-точные conformance-векторы' }, external: true },
     { label: { en: 'Send RTL, get it measured', ru: 'Присылайте RTL — измерю' }, href: '#/verification', note: { en: 'On the same board, the same flow, the same seeds', ru: 'На той же плате, тем же потоком, теми же seed’ами' } },
