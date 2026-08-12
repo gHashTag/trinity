@@ -595,9 +595,11 @@ export function TnfLandscape() {
         <Head badge={landscape.badge} title={landscape.title} lede={landscape.sub} wide />
         <motion.div {...fade} className="tnf-grid tnf-grid-2">
           {landscape.items.map((it) => (
-            <div className="tnf-cell" key={it.name}>
+            <div className="tnf-cell" key={typeof it.name === 'string' ? it.name : it.name.en}>
               <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                <strong style={{ fontSize: '0.98rem', fontWeight: 600 }}>{it.name}</strong>
+                {/* Часть имён — прозвища работ (takum, posit, MXFP4) и не переводятся;
+                    те, что содержат английскую фразу, заданы парой языков. */}
+                <strong style={{ fontSize: '0.98rem', fontWeight: 600 }}>{typeof it.name === 'string' ? it.name : L(it.name)}</strong>
                 <span className="tnf-tag" style={{ color: KIND_COLOR[it.kind] }}>{KIND_LABEL[it.kind][key]}</span>
               </div>
               <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginBottom: '0.7rem' }}>
@@ -765,6 +767,9 @@ export function TnfInvest() {
   const { L } = useL()
   const v = invest
   const muted: React.CSSProperties = { color: 'var(--muted)', fontSize: 'var(--f-1)', lineHeight: 1.7, display: 'block' }
+  /* Числа в блоке частично локализуемы: разделитель и суффикс порядка отличаются
+     ($9.8B против $9,8 млрд), поэтому `v` — либо строка, либо пара языков. */
+  const V = (x: string | { en: string; ru: string }) => (typeof x === 'string' ? x : L(x))
   const Src = ({ s }: { s?: { u: string; n: string } }) =>
     s ? (
       <a className="tnf-link" href={s.u} target="_blank" rel="noopener noreferrer" style={{ fontSize: 'var(--f-2)' }}>
@@ -777,10 +782,10 @@ export function TnfInvest() {
         <Head badge={v.badge} title={v.title} lede={v.sub} wide />
 
         <motion.h3 {...fade} className="tnf-h3">{L(v.factsTitle)}</motion.h3>
-        <motion.div {...fade} className="tnf-grid tnf-grid-4" style={{ marginBottom: 'var(--sp3)' }}>
+        <motion.div {...fade} className="tnf-grid tnf-grid-3" style={{ marginBottom: 'var(--sp3)' }}>
           {v.facts.map((t) => (
-            <div className="tnf-cell" key={t.v + L(t.l)}>
-              <strong style={{ display: 'block', fontSize: 'var(--f2)', fontWeight: 600, marginBottom: '0.3rem' }}>{t.v}</strong>
+            <div className="tnf-cell" key={V(t.v) + L(t.l)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f2)', fontWeight: 600, marginBottom: '0.3rem' }}>{V(t.v)}</strong>
               <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(t.l)}</span>
               <TagChip tag={t.tag as Tag} />
             </div>
@@ -805,8 +810,8 @@ export function TnfInvest() {
         <motion.p {...fade} style={{ ...muted, maxWidth: '78ch', textAlign: 'left', marginLeft: 0, marginBottom: 'var(--sp1)' }}>{L(v.marketSub)}</motion.p>
         <motion.div {...fade} className="tnf-grid tnf-grid-4" style={{ marginBottom: 'var(--sp3)' }}>
           {v.market.map((m) => (
-            <div className="tnf-cell" key={m.v + L(m.l)}>
-              <strong style={{ display: 'block', fontSize: 'var(--f1)', fontWeight: 600, marginBottom: '0.3rem' }}>{m.v}</strong>
+            <div className="tnf-cell" key={V(m.v) + L(m.l)}>
+              <strong style={{ display: 'block', fontSize: 'var(--f1)', fontWeight: 600, marginBottom: '0.3rem' }}>{V(m.v)}</strong>
               <span style={{ ...muted, marginBottom: '0.5rem' }}>{L(m.l)}</span>
               <span style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <TagChip tag={m.tag as Tag} />
