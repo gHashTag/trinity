@@ -289,6 +289,57 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That the target toolchain is the truth. It is the stated reference, which is a different and weaker thing: it makes results comparable, not correct.',
   },
+  {
+    id: 'T24',
+    name: 'A pin that names a moving target and asserts its content is a scheduled failure',
+    statement:
+      'A dependency declaration that combines a mutable reference with a content hash is not a pin. The reference keeps moving, the hash keeps asserting, and the two disagree the moment anything is merged upstream. The failure lands at fetch — before a compiler reads a line — so it presents as an unbuildable package rather than as an out-of-date dependency, and nothing downstream can run to report which.',
+    worked:
+      'A manifest here declared `archive/refs/heads/main.tar.gz` with `golden_float-0.2.0-h7LKhdEX…` while upstream had reached 2.1.0. It had been broken since the first merge after it was written. I re-pinned it, merged one commit upstream, and broke it again within the hour — which is the proof, not an anecdote. Pinning to a commit tarball ends it.',
+    citation:
+      'Dolstra, “The Purely Functional Software Deployment Model”, PhD thesis, Utrecht, 2006 — content-addressed deployment',
+    url: 'https://edolstra.github.io/pubs/phd-thesis.pdf',
+    doesNotClaim:
+      'That a commit pin is current. It is immutable, which is a different property and the one that makes the build reproducible; staying up to date is a separate job for a separate tool.',
+  },
+  {
+    id: 'T25',
+    name: 'A guard must exercise the same path as the thing it guards',
+    statement:
+      'When a check re-derives its input by a route the build does not take, it stops measuring the artefact and starts measuring its own derivation. The two agree until a configuration difference separates them, and then the guard reports on itself with the confidence it would have had about the subject.',
+    worked:
+      'A step written to refuse a test suite that runs nothing invoked `zig test src/root.zig` directly, bypassing the `link_libc` the build sets. On Linux that produced “C allocator is only available when linking against libc”, so no count was parsed and the guard declared the suite empty — while the step directly above it had just run the suite green. One invocation, read twice, is the fix.',
+    citation:
+      'Beizer, “Software Testing Techniques”, 2nd ed., 1990 — on the test harness as part of the system under test',
+    doesNotClaim:
+      'That sharing the path makes a guard correct. It removes one failure mode: disagreement between the guard\u2019s environment and the build\u2019s. Everything the guard asserts is still only as good as the assertion.',
+  },
+  {
+    id: 'T26',
+    name: 'Success returned by a buffered write is a claim about the buffer',
+    statement:
+      'A write call that returns without error has committed data to whatever layer accepted it, not necessarily to the medium. Where the interface buffers by default, the last unflushed segment exists only in memory, and the operation that reports success and the operation that loses the data are the same one. The reader is the first component in a position to notice.',
+    worked:
+      'Zig 0.15 made `File.writer` take a buffer. A save routine written against the unbuffered interface still compiled after the type changed and still returned success, but the tail of every file stayed in memory — so `save()` reported writing a graph that `load()` could not read. An explicit flush before close is the whole fix, and nothing in the type system asked for it.',
+    citation:
+      'Pillai, Chidambaram, Alagappan, Al-Kiswany, Arpaci-Dusseau & Arpaci-Dusseau, “All File Systems Are Not Created Equal: On the Complexity of Crafting Crash-Consistent Applications”, OSDI 2014',
+    url: 'https://www.usenix.org/conference/osdi14/technical-sessions/presentation/pillai',
+    doesNotClaim:
+      'That flushing makes a write durable. Flush moves data out of the process; durability against power loss is a further step, and this theorem is only about the gap between “returned success” and “a reader can see it”.',
+  },
+  {
+    id: 'T27',
+    name: 'A fault that disables its own detector stays dormant indefinitely',
+    statement:
+      'Faults differ in whether the mechanism that would report them survives their presence. Where a fault prevents the artefact from being built or run at all, every instrument that operates on the built artefact is disabled by the very condition it exists to detect. Such a fault is not found late because it is subtle; it is not found at all, because nothing that could observe it can start.',
+    worked:
+      'One directory was split across two repositories and each half kept flat relative imports of the other. `packed_vsa.zig` in one imported `knowledge_graph.zig`, which is in the other; that file imported `packed_vsa.zig` right back. Neither half compiled — and being uncompilable is exactly what stopped either from reporting the other missing. The dormancy ended only when an unrelated export forced a compiler to look.',
+    citation:
+      'Avižienis, Laprie, Randell & Landwehr, “Basic Concepts and Taxonomy of Dependable and Secure Computing”, IEEE TDSC 1(1), 2004 — fault dormancy and activation',
+    url: 'https://doi.org/10.1109/TDSC.2004.2',
+    doesNotClaim:
+      'That an external instrument would necessarily have caught it either. It says only that no internal one could, which is why the first check on a repository has to be one that runs before anything in it does.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
