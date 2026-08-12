@@ -2,7 +2,8 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-const sectionIds = ['hero', 'theorems', 'publications', 'solution', 'benchmarks', 'calculator', 'depin', 'team', 'invest']
+// Порядок повторяет порядок аргумента на главной, а не порядок продуктов.
+const sectionIds = ['hero', 'claim', 'formats', 'frontier', 'ladder', 'theorems', 'limits', 'landscape', 'reproduce']
 const BASE = import.meta.env.BASE_URL
 // Docs points to t27.ai/docs/ (custom domain)
 const DOCS_URL = 'https://t27.ai/docs/'
@@ -19,7 +20,10 @@ type PageLink = { href: string; en: string; ru: string; note: string; noteRu: st
 // fixed-height row with no room left — so they live behind one disclosure
 // instead of pushing each other off the right edge.
 const PAGES: PageLink[] = [
-  { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: '2.84× and 5.53× more accurate than tekum16', noteRu: 'В 2.84 и 5.53 раза точнее tekum16' },
+  // Прежняя подпись несла «2.84× и 5.53× точнее tekum16». Это заявление
+  // отозвано: оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных
+  // кодов идентично takum-оракулу, поэтому сравнение шло не с tekum.
+  { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: 'A φ-derived static-split float family', noteRu: 'φ-производное семейство float со статическим разбиением' },
   { href: '#/start', en: 'Start here', ru: 'С чего начать', note: 'Four checks you can run yourself, in order', noteRu: 'Четыре проверки, которые запускаете сами, по порядку' },
   { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on live silicon', noteRu: 'Присылаете RTL — измеряю на живом кремнии' },
   { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores that have been to silicon', noteRu: 'Ядра, уже прошедшие кремний' },

@@ -1,0 +1,604 @@
+// Единственный источник правды для главной страницы t27.ai.
+//
+// Каждое число здесь взято из статьи «Trinity S³AI: Ternary Network Floats»
+// (D. Vasilev, 11.08.2026) и несёт тег происхождения. Правило дома: цифра без
+// тега на страницу не попадает. Теги:
+//   measured    — наблюдено запуском названного инструмента на железе автора
+//   proved      — доказано в статье (номер теоремы указан)
+//   coq         — машинно проверено в Coq
+//   spec        — свойство спецификации, не измерение
+//   derived     — выведено из измеренного, не наблюдено напрямую
+//   competitor  — результат конкурента, воспроизведён и признан
+//   retracted   — заявление отозвано; показывается как отозванное
+//
+// Тулчейн всех аппаратных чисел: openXC7 (Yosys 0.65 + nextpnr-xilinx 1743d0f)
+// + Icarus Verilog 13.0, XC7A200T (ALINX AX7203), медиана 5 seed'ов,
+// DSP-инференс выключен.
+
+export type Tag = 'measured' | 'proved' | 'coq' | 'spec' | 'derived' | 'competitor' | 'retracted'
+
+export const TAG_LABEL: Record<Tag, { en: string; ru: string; color: string }> = {
+  measured: { en: 'measured', ru: 'измерено', color: '#00FF88' },
+  proved: { en: 'proved', ru: 'доказано', color: '#7CC7FF' },
+  coq: { en: 'machine-checked in Coq', ru: 'машинно проверено в Coq', color: '#C08CFF' },
+  spec: { en: 'specification', ru: 'спецификация', color: '#FFD700' },
+  derived: { en: 'derived', ru: 'выведено', color: '#FFA45C' },
+  competitor: { en: 'competitor result', ru: 'результат конкурента', color: '#9BA3AF' },
+  retracted: { en: 'retracted', ru: 'отозвано', color: '#FF6B6B' },
+}
+
+export const PAPER = {
+  title: { en: 'Trinity S³AI: Ternary Network Floats', ru: 'Trinity S³AI: Ternary Network Floats' },
+  author: 'D. Vasilev',
+  orcid: '0009-0008-4294-6159',
+  date: { en: '11 August 2026', ru: '11 августа 2026' },
+  theorems: 52,
+  retractions: 16,
+  pages: 60,
+}
+
+/* ─────────────────────────── HERO ─────────────────────────── */
+
+export const hero = {
+  eyebrow: {
+    en: 'TNF · GFTernary — a reference pair for the ternary datapath',
+    ru: 'TNF · GFTernary — референсная пара для тернарного датапути',
+  },
+  identity: 'r² = r + 1',
+  headline: {
+    en: 'Where the weight is a code, the format is not a preference.',
+    ru: 'Там, где вес — это код, формат перестаёт быть предпочтением.',
+  },
+  sub: {
+    en: 'A ternary neuron has exactly three sites where a number format could live and needs one. GFTernary closes the weight. TNF closes the accumulator. No published pair closes both.',
+    ru: 'У тернарного нейрона ровно три места, где мог бы жить числовой формат, и нужен только одному. GFTernary закрывает вес. TNF закрывает аккумулятор. Ни одна опубликованная пара не закрывает оба.',
+  },
+  metrics: [
+    {
+      value: '66 LUT',
+      unit: '@ 974.66 MHz',
+      label: { en: 'GFTernary decoder, isolated', ru: 'декодер GFTernary, изолированно' },
+      note: { en: 'Bare wire on the same part is 112 LUT @ 827.81 MHz', ru: 'Голый провод на той же части — 112 LUT @ 827.81 МГц' },
+      tag: 'measured' as Tag,
+    },
+    {
+      value: '0.1797',
+      unit: 'MHz/LUT',
+      label: { en: 'Throughput per area, 20 range-bearing formats', ru: 'Пропускная способность на площадь, 20 форматов с диапазоном' },
+      note: { en: '+10.2% over binary32 (0.1631); 6.1× over posit32 (0.0295)', ru: '+10.2% к binary32 (0.1631); 6.1× к posit32 (0.0295)' },
+      tag: 'measured' as Tag,
+    },
+    {
+      value: '0',
+      unit: { en: 'rounding error', ru: 'ошибок округления' } as any,
+      label: { en: 'Whole linear path in Z[φ], any fan-in, any depth', ru: 'Весь линейный путь в Z[φ], любой fan-in, любая глубина' },
+      note: { en: 'Theorem 26; weight application is a Fibonacci step (a,b) ↦ (b, a+b)', ru: 'Теорема 26; применение веса = шаг Фибоначчи (a,b) ↦ (b, a+b)' },
+      tag: 'coq' as Tag,
+    },
+    {
+      value: '28 LUT',
+      unit: { en: 'per weight', ru: 'на вес' } as any,
+      label: { en: 'Ternary neuron, zero DSP at any fan-in', ru: 'Тернарный нейрон, нулевой DSP при любом fan-in' },
+      note: { en: 'fan-in 8, DSP inference disabled', ru: 'fan-in 8, DSP-инференс выключен' },
+      tag: 'measured' as Tag,
+    },
+  ],
+  ctaPrimary: { en: 'Read the claim', ru: 'Читать тезис' },
+  ctaSecondary: { en: 'Limits and retractions', ru: 'Границы и ретракции' },
+}
+
+/* ──────────────────── THE CLAIM: three legs ──────────────────── */
+
+export const claim = {
+  badge: { en: 'WHAT IS CLAIMED', ru: 'ЧТО ИМЕННО ЗАЯВЛЕНО' },
+  title: {
+    en: 'For a ternary datapath, {GFTernary, TNF} is a reference format',
+    ru: 'Для тернарного датапути пара {GFTernary, TNF} — референсный формат',
+  },
+  sub: {
+    en: 'Reference is not a superlative. It rests on three properties, each of which is a measurement rather than a preference — and each of which can be attacked directly.',
+    ru: '«Референсный» — не превосходная степень. Слово держится на трёх свойствах, каждое из которых — измерение, а не предпочтение, и каждое можно атаковать напрямую.',
+  },
+  legs: [
+    {
+      n: '1',
+      name: { en: 'Completeness', ru: 'Полнота' },
+      body: {
+        en: 'Three sites: the weight (multiplication is a sign-select, so the weight is a code), the sample (arrives ADC-native), the accumulator (the only object carrying dynamic range). GFTernary closes the weight, TNF closes the accumulator. Ternary methods in the literature answer the weight and leave the accumulator in fp16 or int8; the format literature answers the accumulator and assumes a multiplier exists.',
+        ru: 'Три места: вес (умножение = sign-select, значит вес — это код), сэмпл (приходит ADC-native), аккумулятор (единственный объект с динамическим диапазоном). GFTernary закрывает вес, TNF закрывает аккумулятор. Тернарные методы в литературе отвечают на вес и оставляют аккумулятор в fp16 или int8; форматная литература отвечает на аккумулятор и предполагает, что умножитель есть.',
+      },
+      tag: 'proved' as Tag,
+    },
+    {
+      n: '2',
+      name: { en: 'Forced, not chosen', ru: 'Вынужденность, а не выбор' },
+      body: {
+        en: 'The alphabet radix is the only r > 1 with r² = r + 1 (Theorem 25). The E/M split is the solution of a maximisation with the range constraint active (Theorem 23). Once the workload range is measured, there is no free parameter left to tune.',
+        ru: 'Основание алфавита — единственное r > 1 с r² = r + 1 (Теорема 25). Разбиение E/M — решение задачи максимизации с активным ограничением диапазона (Теорема 23). Как только диапазон нагрузки измерен, свободного параметра для тюнинга не остаётся.',
+      },
+      tag: 'proved' as Tag,
+    },
+    {
+      n: '3',
+      name: { en: 'Predictive', ru: 'Предсказательность' },
+      body: {
+        en: 'Mean relative error is a closed form in one number, the mantissa width: E[|rel err|] = ½·E[1/s]·2^−(M+1), independent of the exponent (Theorem 1). Predicted 0.3861 on our workload; measured 0.3756 on average across eight rungs, spread 0.369–0.390. The accumulator can therefore be sized before it is built.',
+        ru: 'Средняя относительная ошибка — замкнутая форма от одного числа, ширины мантиссы: E[|отн. ошибка|] = ½·E[1/s]·2^−(M+1), независимо от экспоненты (Теорема 1). Предсказание 0.3861 на нашей нагрузке; измерено в среднем 0.3756 на восьми ступенях, разброс 0.369–0.390. Значит, аккумулятор можно отмерить до того, как он построен.',
+      },
+      tag: 'measured' as Tag,
+    },
+  ],
+}
+
+/* ──────────────────────── THE TWO FORMATS ──────────────────────── */
+
+export const formats = {
+  badge: { en: 'THE TWO FORMATS', ru: 'ДВА ФОРМАТА' },
+  title: { en: 'One closes the weight. One closes the accumulator.', ru: 'Один закрывает вес. Другой — аккумулятор.' },
+  tnf: {
+    name: 'TNF16',
+    layout: { en: '[ s | E_t = 4 balanced-ternary trits | M = 11 bits ]', ru: '[ s | E_t = 4 балансно-троичных трита | M = 11 бит ]' },
+    value: 'v = (−1)^s · (1 + M/2⁹) · 2^e,  e = Σ tᵢ·3ⁱ ∈ [−40, +40]',
+    rule: { en: 'Width rule: 1 + E_t + M = N', ru: 'Правило ширины: 1 + E_t + M = N' },
+    props: [
+      {
+        h: { en: 'No regime decode', ru: 'Нет regime-декода' },
+        b: {
+          en: 'The dominant cost of a tapered format is the variable regime: find it, compute its length, barrel-shift the significand. With fixed fields this is a bit slice.',
+          ru: 'Доминирующая цена tapered-формата — переменный regime: найти его, посчитать длину, barrel-shift значащей. У фиксированных полей это битовый срез.',
+        },
+        tag: 'spec' as Tag,
+      },
+      {
+        h: { en: 'The exponent is already ternary', ru: 'Экспонента уже троичная' },
+        b: {
+          en: '4 trits = 3⁴ = 81 exponent steps. On a ternary fabric exponent addition is native. On the binary FPGA where every number here was measured, it neither wins nor loses — and is labelled as architectural.',
+          ru: '4 трита = 3⁴ = 81 шаг экспоненты. На троичной фабрике сложение экспонент нативно. На бинарной FPGA, где измерены все числа здесь, оно ни выигрывает, ни проигрывает — и помечено как архитектурное.',
+        },
+        tag: 'spec' as Tag,
+      },
+      {
+        h: { en: 'Precision does not narrow', ru: 'Точность не сужается' },
+        b: {
+          en: '9 mantissa bits at every magnitude. Flatness 1.05–1.07 — at most 7% spread across a workload spanning 76 binades. For posit16 the same diagnostic reads −0.254 bits per binade, for takum16 −0.113.',
+          ru: '9 бит мантиссы на каждой величине. Flatness 1.05–1.07 — разброс не более 7% на нагрузке в 76 бинад. Та же диагностика даёт для posit16 −0.254 бита на бинаду, для takum16 −0.113.',
+        },
+        tag: 'measured' as Tag,
+      },
+    ],
+  },
+  gft: {
+    name: 'GFTernary',
+    layout: { en: 'Two-bit alphabet { −φ, 0, +φ }', ru: 'Двухбитный алфавит { −φ, 0, +φ }' },
+    value: 'Z[φ] = { a + bφ } is a ring;  φ·(a + bφ) = b + (a+b)φ',
+    rule: { en: 'Weight application = one integer addition, no shift', ru: 'Применение веса = одно целочисленное сложение, без сдвига' },
+    props: [
+      {
+        h: { en: 'Uniqueness of the golden alphabet', ru: 'Уникальность золотого алфавита' },
+        b: {
+          en: 'Require that the product of two weights be expressible in the additive lattice the datapath already computes — that is r² = r + 1 — and r = φ follows uniquely (Theorem 25).',
+          ru: 'Потребуем, чтобы произведение двух весов выражалось в аддитивной решётке, которую датапуть уже считает, то есть r² = r + 1 — и r = φ следует единственно (Теорема 25).',
+        },
+        tag: 'proved' as Tag,
+      },
+      {
+        h: { en: 'Depth costs no multiplier', ru: 'Глубина не стоит умножителя' },
+        b: {
+          en: 'The gain of k stacked φ-layers is φᵏ = F_k·φ + F_{k−1} — a pair of integers, exact. With {−1, 0, +1} the layer gain is 1 and carries no information, so every published method attaches a learned real α per layer — and multiplying by α puts the multiplier back.',
+          ru: 'Усиление k сложенных φ-слоёв = φᵏ = F_k·φ + F_{k−1} — пара целых, точно. У алфавита {−1, 0, +1} усиление слоя равно 1 и не несёт информации, поэтому каждый опубликованный метод навешивает обучаемый вещественный α на слой — а умножение на α возвращает умножитель.',
+        },
+        tag: 'proved' as Tag,
+      },
+      {
+        h: { en: 'Between the shift and φ there is nothing', ru: 'Между сдвигом и φ ничего нет' },
+        b: {
+          en: 'A scale is multiply-free iff it is an algebraic integer whose companion matrix has entries in {0, ±1} (Theorem 27). Degree 1 gives ±2^k. Degree 2 gives exactly r² = r + 1 and r² = −r + 1, the same ladder. φ is the only multiply-free refinement of the powers of two at two registers.',
+          ru: 'Масштаб применим без умножителя ⟺ он алгебраическое целое, у которого companion-матрица имеет элементы в {0, ±1} (Теорема 27). Степень 1 даёт ±2^k. Степень 2 даёт ровно r² = r + 1 и r² = −r + 1 — та же лестница. φ — единственное multiply-free уточнение степеней двойки при двух регистрах.',
+        },
+        tag: 'proved' as Tag,
+      },
+    ],
+  },
+}
+
+/* ─────────────────────── MEASURED FRONTIER ─────────────────────── */
+
+export const frontier = {
+  badge: { en: 'MEASURED ON SILICON', ru: 'ИЗМЕРЕНО НА КРЕМНИИ' },
+  title: { en: 'Isolated decoder, and one whole ternary neuron', ru: 'Изолированный декодер и один целый тернарный нейрон' },
+  sub: {
+    en: 'XC7A200T (ALINX AX7203) on the open flow: Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus Verilog 13.0, median of 5 seeds, DSP inference disabled. One device family. Not a multi-corner characterisation; an ASIC mapping will differ.',
+    ru: 'XC7A200T (ALINX AX7203) на открытом потоке: Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus Verilog 13.0, медиана 5 seed’ов, DSP-инференс выключен. Одна family устройств. Это не многоугловая характеризация; ASIC-маппинг будет отличаться.',
+  },
+  decoderCaption: {
+    en: 'Isolated decoder — area and frequency (bare wire: 112 LUT @ 827.81 MHz)',
+    ru: 'Изолированный декодер — площадь и частота (голый провод: 112 LUT @ 827.81 МГц)',
+  },
+  decoder: [
+    { rank: 1, name: 'GFTernary', kind: { en: 'fixed', ru: 'фикс.' }, lut: 66, fmax: 974.66, ours: true },
+    { rank: 2, name: 'int8', kind: { en: 'fixed', ru: 'фикс.' }, lut: 76, fmax: 925.93, ours: false },
+    { rank: 3, name: 'binary32', kind: { en: 'fixed', ru: 'фикс.' }, lut: 112, fmax: 886.52, ours: false },
+    { rank: 4, name: 'TNF16', kind: { en: 'fixed', ru: 'фикс.' }, lut: 101, fmax: 407.66, ours: true },
+    { rank: 6, name: 'BNF16', kind: { en: 'fixed', ru: 'фикс.' }, lut: 97, fmax: 388.35, ours: true },
+    { rank: 13, name: 'binary16', kind: { en: 'fixed', ru: 'фикс.' }, lut: 164, fmax: 235.18, ours: false },
+    { rank: 15, name: 'LNS16', kind: { en: 'log', ru: 'лог.' }, lut: 270, fmax: 93.17, ours: false },
+    { rank: 17, name: 'posit16', kind: { en: 'tapered', ru: 'tapered' }, lut: 302, fmax: 62.39, ours: false },
+    { rank: 18, name: 'posit32', kind: { en: 'tapered', ru: 'tapered' }, lut: 517, fmax: 49.05, ours: false },
+  ],
+  decoderNote: {
+    en: 'GFTernary lands at 66 LUT where the bare wire is 112: decoding a two-bit alphabet lets the synthesiser simplify the register downstream. Against posit32 that is 7.8× in area and 19.9× in frequency.',
+    ru: 'GFTernary даёт 66 LUT там, где голый провод — 112: декод двухбитного алфавита позволяет синтезатору упростить регистр ниже по потоку. Против posit32 это 7.8× по площади и 19.9× по частоте.',
+  },
+  neuronCaption: {
+    en: 'One ternary neuron, whole accumulator observable — throughput per area, MHz per LUT',
+    ru: 'Один тернарный нейрон, весь аккумулятор наблюдаем — пропускная способность на площадь, МГц на LUT',
+  },
+  neuron: [
+    { rank: 1, name: 'GFTernary', lut: 463, tpa: 0.1797, ours: true },
+    { rank: 2, name: 'binary32', lut: 472, tpa: 0.1631, ours: false },
+    { rank: 3, name: 'fp8 e5m2', lut: 480, tpa: 0.1397, ours: false },
+    { rank: 4, name: 'VAX F', lut: 527, tpa: 0.1395, ours: false },
+    { rank: 5, name: 'fp8 e4m3', lut: 485, tpa: 0.1382, ours: false },
+    { rank: 6, name: 'GF10', lut: 533, tpa: 0.1354, ours: true },
+    { rank: 7, name: 'binary16', lut: 522, tpa: 0.1213, ours: false },
+    { rank: 10, name: 'TNF32', lut: 569, tpa: 0.1176, ours: true },
+    { rank: 12, name: 'TNF16', lut: 565, tpa: 0.1173, ours: true },
+    { rank: 17, name: 'takum16', lut: 789, tpa: 0.0747, ours: false },
+    { rank: 20, name: 'posit32', lut: 953, tpa: 0.0295, ours: false },
+  ],
+  neuronNote: {
+    en: '8 of the 20 slots are ours (GFTernary, TNF, BNF, GF families). The advantage over the next format is +10.2%; over the last, 6.1×. The claim that survives on buyable silicon is about fixed fields: no regime codec, no exponent to compute.',
+    ru: '8 из 20 позиций — наши (GFTernary, TNF, BNF, семейства GF). Преимущество над следующим форматом +10.2%, над последним — 6.1×. На покупаемом кремнии выживает заявление про фиксированные поля: нет regime-кодека, нет экспоненты для вычисления.',
+  },
+  ops: {
+    title: { en: 'What an operation costs', ru: 'Сколько стоит операция' },
+    rows: [
+      {
+        family: 'LNS / takum',
+        mul: { en: 'free — exponents add', ru: 'бесплатно — экспоненты складываются' },
+        add: { en: 'log(1+2^x) table — 10 967 LUT', ru: 'таблица log(1+2^x) — 10 967 LUT' },
+      },
+      {
+        family: 'Z[φ]',
+        mul: { en: 'Fibonacci step — one adder', ru: 'шаг Фибоначчи — один сумматор' },
+        add: { en: 'component-wise — 64 LUT', ru: 'покомпонентно — 64 LUT' },
+      },
+    ],
+    tag: 'measured' as Tag,
+  },
+}
+
+/* ───────────────────────── THE LADDER ───────────────────────── */
+
+export const ladder = {
+  badge: { en: 'WHICH RUNG THE BUDGET BUYS', ru: 'КАКУЮ СТУПЕНЬ ПОКУПАЕТ БЮДЖЕТ' },
+  title: { en: 'The optimum has a closed form in the weight histogram', ru: 'Оптимум имеет замкнутую форму в гистограмме весов' },
+  sub: {
+    en: 'SmolLM2-135M on wikitext-2, 12 windows × 2048 tokens, fp32 = 14.36. The same ordering and the same winner at each budget reproduces on Qwen2.5-0.5B (fp32 = 12.27). Predictions were printed before the numbers were computed.',
+    ru: 'SmolLM2-135M на wikitext-2, 12 окон × 2048 токенов, fp32 = 14.36. Тот же порядок и тот же победитель на каждом бюджете воспроизводится на Qwen2.5-0.5B (fp32 = 12.27). Предсказания печатались до вычисления чисел.',
+  },
+  header: { en: ['bits', 'shift (2)', 'φ (1.618)', 'supergolden (1.4656)', 'plastic (1.3247)'], ru: ['бит', 'сдвиг (2)', 'φ (1.618)', 'supergolden (1.4656)', 'plastic (1.3247)'] },
+  rows: [
+    { bits: 3, vals: ['2309.86', '41835.53', '1367268.11', '6720092.29'], win: 0 },
+    { bits: 4, vals: ['76.81', '24.43', '25.10', '55.72'], win: 1 },
+    { bits: 5, vals: ['77.52', '22.73', '18.93', '16.45'], win: 3 },
+  ],
+  hw: {
+    title: { en: 'What each rung costs in hardware, at one adder', ru: 'Сколько стоит ступень в железе, при одном сумматоре' },
+    rows: [
+      { rung: 'φ, 4 bits', lut: '—', fmax: '—', ppl: '24.43', vs: { en: 'best 4-bit scale', ru: 'лучший 4-битный масштаб' } },
+      { rung: 'r⁵ = r³ + 1, 5 bits', lut: '95 LUT', fmax: '482.39 MHz', ppl: '15.9242', vs: { en: '+10.9% of fp32', ru: '+10.9% к fp32' } },
+      { rung: 'r⁶ = r + 1, 6 bits', lut: '122 LUT', fmax: '612.00 MHz', ppl: '14.8882', vs: { en: '+3.7% of fp32', ru: '+3.7% к fp32' } },
+    ],
+    tag: 'measured' as Tag,
+  },
+  block: {
+    title: { en: 'The block axis, including where we do not win', ru: 'Блочная ось — включая то, где мы не выигрываем' },
+    closed: {
+      en: 'The element is closed, and not by us: the best 8-level codebook beats the unrolled one by 0.9% in perplexity, with squared error nearly 15× better. That axis does not belong to the element format at all — it belongs to MXFP4. Stated as a competitor result, with the bound that makes a fourth attempt of ours unjustified.',
+      ru: 'Элемент закрыт, и не нами: лучший 8-уровневый кодбук бьёт развёрнутый на 0.9% по perplexity, при squared error лучше почти в 15 раз. Эта ось не принадлежит формату элемента вообще — она принадлежит MXFP4. Заявлено как результат конкурента, с границей, делающей четвёртую нашу попытку неоправданной.',
+    },
+    openTitle: { en: 'The scale is not closed', ru: 'Масштаб не закрыт' },
+    rows: [
+      { scheme: 'φ^k, 4b/32', scaleBits: '0.1250', total: '4.1250', a: '21.3545', b: '14.8512', ours: true },
+      { scheme: '2^k, 4b/32', scaleBits: '0.1250', total: '4.1250', a: '22.4998', b: '14.9447', ours: false },
+      { scheme: 'MXFP4, E8M0 8b/32', scaleBits: '0.2500', total: '4.2500', a: '22.4998', b: '14.9447', ours: false },
+    ],
+    caveat: {
+      en: 'This is not “our format beats MXFP4”. The element stays E2M1; only the radix of the scale changes. It wins on two models at 0.125 fewer bits per weight. Above 4.25 bits per weight the frontier belongs to scales that carry a mantissa (E4M3).',
+      ru: 'Это не «наш формат бьёт MXFP4». Элемент остаётся E2M1; меняется только основание масштаба. Выигрыш на двух моделях при 0.125 бита на вес дешевле. Выше 4.25 бита на вес фронтир принадлежит масштабам, несущим мантиссу (E4M3).',
+    },
+  },
+}
+
+/* ───────────────────────── THEOREM MAP ───────────────────────── */
+
+export const theorems = {
+  badge: { en: '52 THEOREMS — THE LOAD-BEARING ONES', ru: '52 ТЕОРЕМЫ — НЕСУЩИЕ' },
+  title: { en: 'The results the rest of the paper is built on', ru: 'Результаты, на которых стоит остальная работа' },
+  items: [
+    {
+      id: 'T1',
+      name: { en: 'Precision law', ru: 'Закон точности' },
+      stmt: { en: 'E[|rel err|] = ½·E[1/s]·2^−(M+1), independent of the exponent. Constants: ½ln2 = 0.3466 for a uniform significand on [1,2), ½(2ln2)⁻¹ = 0.3607 under Benford.', ru: 'E[|отн. ошибка|] = ½·E[1/s]·2^−(M+1), независимо от экспоненты. Константы: ½ln2 = 0.3466 при равномерной значащей на [1,2), ½(2ln2)⁻¹ = 0.3607 по Бенфорду.' },
+      why: { en: 'Predicted 0.3861, measured 0.3756 across eight rungs. This is what makes the accumulator sizeable before it is built.', ru: 'Предсказано 0.3861, измерено 0.3756 на восьми ступенях. Именно это позволяет отмерить аккумулятор до постройки.' },
+      tag: 'measured' as Tag,
+    },
+    {
+      id: 'T2',
+      name: { en: 'The diagnostic', ru: 'Диагностика' },
+      stmt: { en: 'Effective mantissa M_eff is constant across binades iff the format holds a constant significand width and has not exhausted its range. For a tapered format M_eff falls with |e|, and the slope is the narrowing rate.', ru: 'Эффективная мантисса M_eff постоянна по бинадам ⟺ формат держит постоянную ширину значащей и не исчерпал диапазон. Для tapered-формата M_eff падает с |e|, наклон = скорость сужения.' },
+      why: { en: 'Recovers the declared M to 0.01 bit for every fixed-field format (TNF16 9 → 8.99/9.01, GF16 9 → 8.99, bfloat16 7 → 7.04) and separates tapered cleanly.', ru: 'Восстанавливает объявленную M до 0.01 бита для каждого фиксированно-полевого формата (TNF16 9 → 8.99/9.01, GF16 9 → 8.99, bfloat16 7 → 7.04) и чисто отделяет tapered.' },
+      tag: 'measured' as Tag,
+    },
+    {
+      id: 'T6',
+      name: { en: 'Range–precision dichotomy', ru: 'Дихотомия диапазон–точность' },
+      stmt: { en: 'If the exponent takes unboundedly many values, the significand length falls to zero — and by T1 so does M_eff. Constant precision and unbounded range are incompatible.', ru: 'Если экспонента принимает неограниченно много значений, длина значащей падает до нуля — и по Т1 вместе с ней M_eff. Постоянная точность и неограниченный диапазон несовместимы.' },
+      why: { en: 'This is why there is a ladder at all, rather than one universal format.', ru: 'Именно поэтому существует лестница, а не один универсальный формат.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T7',
+      name: { en: 'Radix economy', ru: 'Экономия основания' },
+      stmt: { en: 'The cost b·log_b R is minimised at r = e; three is the nearest integer. Ternary sits 0.46% above the optimum, binary 6.15%.', ru: 'Цена b·log_b R минимальна при r = e; три — ближайшее целое. Троичное на 0.46% выше оптимума, бинарное — на 6.15%.' },
+      why: { en: 'The 68-year-old argument, stated exactly, so that its limits can be stated too.', ru: '68-летний аргумент, сформулированный точно — чтобы можно было сформулировать и его границы.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T8',
+      name: { en: 'No free range on a binary fabric', ru: 'На бинарной фабрике диапазон не бесплатен' },
+      stmt: { en: 'A field of E_t trits covers 3^{E_t} values, and 3^{E_t} never divides a power of two — the remainder is lost. Ternary buys 0.3691·E positions and costs 1.683 per position when packed into a binary fabric.', ru: 'Поле из E_t тритов покрывает 3^{E_t} значений, а 3^{E_t} никогда не делит степень двойки — остаток теряется. Троичное покупает 0.3691·E позиций и стоит 1.683 за позицию при упаковке в бинарную фабрику.' },
+      why: { en: 'This theorem is the reason our own ternary claim is architectural and not commercial. It is also why BNF16 and TNF16 synthesise within 1% of each other.', ru: 'Эта теорема — причина, по которой наше собственное троичное заявление архитектурное, а не коммерческое. И она же объясняет, почему BNF16 и TNF16 синтезируются в пределах 1% друг от друга.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T22',
+      name: { en: 'The width rule generates the frontier', ru: 'Правило ширины порождает фронтир' },
+      stmt: { en: 'The family F_N = {(E_t, M) : 1 + E_t + M = N} is exactly the Pareto frontier in (M_eff, range).', ru: 'Семейство F_N = {(E_t, M) : 1 + E_t + M = N} есть в точности Парето-фронтир в (M_eff, диапазон).' },
+      why: { en: 'The ladder is not a design catalogue. It is the frontier, and there is nothing off it to choose.', ru: 'Лестница — не каталог дизайнов. Это фронтир, и вне него выбирать нечего.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T23',
+      name: { en: 'Optimal member for a named range', ru: 'Оптимальный член для названного диапазона' },
+      stmt: { en: 'E_t* = ⌈log₃(b+1)⌉ and M* = N − 1 − ⌈log₃(b+1)⌉, a unique maximum.', ru: 'E_t* = ⌈log₃(b+1)⌉ и M* = N − 1 − ⌈log₃(b+1)⌉, единственный максимум.' },
+      why: { en: 'No free parameter once the workload is named — and naming the workload is a measurement, not a choice.', ru: 'Свободного параметра нет, как только нагрузка названа — а именование нагрузки есть измерение, не выбор.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T24',
+      name: { en: 'Regret of a misnamed range', ru: 'Штраф за неверно названный диапазон' },
+      stmt: { en: 'The penalty is asymmetric: oversizing pays in precision logarithmically at every value, undersizing pays in range linearly but only on the tail. Under uncertainty, round up.', ru: 'Штраф асимметричен: пере-размер платит точностью логарифмически на каждом значении, недо-размер платит диапазоном линейно, но только на хвосте. При неопределённости округлять вверх.' },
+      why: { en: 'This contradicts the intuition that a wider exponent is the conservative choice.', ru: 'Это противоречит интуиции, что более широкая экспонента — консервативный выбор.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T25',
+      name: { en: 'Uniqueness of the golden alphabet', ru: 'Уникальность золотого алфавита' },
+      stmt: { en: 'Requiring the product of two weights to lie in the additive lattice the datapath already computes gives r² = r + 1, hence r = φ, uniquely.', ru: 'Требование, чтобы произведение двух весов лежало в аддитивной решётке, которую датапуть уже считает, даёт r² = r + 1, откуда r = φ единственно.' },
+      why: { en: 'The radix is forced by closure, not selected for elegance.', ru: 'Основание вынуждено замкнутостью, а не выбрано за элегантность.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T26',
+      name: { en: 'Exactness of the multiply-free path', ru: 'Точность multiply-free пути' },
+      stmt: { en: 'In Z[φ] the whole linear path of a network — any fan-in, any depth — is computed with no rounding error at all.', ru: 'В Z[φ] весь линейный путь сети — любой fan-in, любая глубина — вычисляется без ошибки округления вообще.' },
+      why: { en: 'Machine-checked in Coq. This is the strongest single statement in the paper, and it is the one a reviewer can check without hardware.', ru: 'Машинно проверено в Coq. Это сильнейшее одиночное утверждение работы, и именно его рецензент может проверить без железа.' },
+      tag: 'coq' as Tag,
+    },
+    {
+      id: 'T27',
+      name: { en: 'Enumeration of multiply-free scales', ru: 'Перечисление multiply-free масштабов' },
+      stmt: { en: 'A scale is applicable without a multiplier iff it is an algebraic integer whose companion matrix has entries in {0, ±1}. Degree 1: ±2^k. Degree 2: exactly φ and φ⁻¹. Degree 3: plastic 1.3247, supergolden 1.4656, tribonacci 1.8393. Degree 4: the coefficient vector loses sparsity and the cost doubles.', ru: 'Масштаб применим без умножителя ⟺ он алгебраическое целое, у которого companion-матрица имеет элементы в {0, ±1}. Степень 1: ±2^k. Степень 2: ровно φ и φ⁻¹. Степень 3: plastic 1.3247, supergolden 1.4656, tribonacci 1.8393. Степень 4: коэффициентный вектор теряет разрежённость, цена удваивается.' },
+      why: { en: 'Fineness costs registers, not adders: r^d = r + 1 reaches any granularity at one adder and d registers.', ru: 'Тонкость стоит регистров, не сумматоров: r^d = r + 1 достигает любой гранулярности при одном сумматоре и d регистрах.' },
+      tag: 'proved' as Tag,
+    },
+    {
+      id: 'T36',
+      name: { en: 'Composition depth is free only for φ^k', ru: 'Глубина композиции бесплатна только для φ^k' },
+      stmt: { en: 'φ^k is the only applier whose area does not depend on composition depth: at d = 2, APoT-8 costs 1217 LUT where the pair still costs 173.', ru: 'φ^k — единственный applier, чья площадь не зависит от глубины композиции: при d = 2 APoT-8 стоит 1217 LUT там, где пара всё ещё 173.' },
+      why: { en: 'The earlier and larger claim about φ^k area over APoT was retracted — it came from a 5-bit shift field where the workload needed 2. This is what survived.', ru: 'Более раннее и более крупное заявление о площади φ^k против APoT отозвано — оно вышло из 5-битного поля сдвига там, где нагрузке нужно 2. Это — то, что выжило.' },
+      tag: 'measured' as Tag,
+    },
+    {
+      id: 'T49',
+      name: { en: 'The radix argument holds on positions, not on bits', ru: 'Аргумент основания держится на позициях, а не на битах' },
+      stmt: { en: 'Packing loss: 4 bits 6/8 = −25.0%; 6 bits 27/32 = −15.6%; 8 bits 108/128 = −15.6%; 16 bits 31 104/32 768 = −5.1%.', ru: 'Потери на упаковке: 4 бита 6/8 = −25.0%; 6 бит 27/32 = −15.6%; 8 бит 108/128 = −15.6%; 16 бит 31 104/32 768 = −5.1%.' },
+      why: { en: 'The remainder is arithmetic, not engineering, and it is largest exactly where modern formats live.', ru: 'Остаток — арифметика, а не инженерия, и он максимален именно там, где живут современные форматы.' },
+      tag: 'proved' as Tag,
+    },
+  ],
+}
+
+/* ───────────────────── LIMITS AND RETRACTIONS ───────────────────── */
+
+export const limits = {
+  badge: { en: 'LIMITS AND RETRACTIONS', ru: 'ГРАНИЦЫ И РЕТРАКЦИИ' },
+  title: { en: 'Sixteen claims were withdrawn while the work was being done', ru: 'Шестнадцать заявлений отозвано в ходе работы' },
+  sub: {
+    en: 'Two of those withdrawals were themselves later withdrawn. In almost every case the measurement was right and the comparison around it was wrong. The rule that would have caught all three of the largest: write down what a competitor would build if they were trying to win, and measure that.',
+    ru: 'Два из этих отзывов позже были отозваны сами. Почти в каждом случае измерение было верным, а сравнение вокруг него — нет. Правило, которое поймало бы все три крупнейших: записать, что построил бы конкурент, если бы пытался выиграть, и мерить это.',
+  },
+  items: [
+    {
+      h: { en: 'The fabric on which this format is optimal is not for sale', ru: 'Фабрика, на которой этот формат оптимален, не продаётся' },
+      b: { en: 'T8 locks the benefit of ternary encoding to a ternary fabric, and no commercially available process provides one. Every hardware number here was measured on a binary FPGA, where the ternary exponent neither wins nor loses. The ternary claim is architectural and is labelled as such.', ru: 'Т8 запирает выгоду троичного кодирования на троичной фабрике, а коммерчески доступного процесса нет. Каждое аппаратное число здесь измерено на бинарной FPGA, где троичная экспонента ни выигрывает, ни проигрывает. Троичное заявление архитектурное и так и помечено.' },
+    },
+    {
+      h: { en: 'Ternary lost to binary three times, independently', ru: 'Троичное проиграло бинарному три раза, независимо' },
+      b: { en: 'BNF16 against TNF16 within 1% in placed silicon; GF8 against GF-T8; MXFP4 against TNF4 on the block axis. We add no support to “ternary beats binary” as a general statement. We measured it three times and each time it went against us. The contribution is the condition under which the 68-year-old argument applies.', ru: 'BNF16 против TNF16 в пределах 1% в размещённом кремнии; GF8 против GF-T8; MXFP4 против TNF4 на блочной оси. Мы не добавляем поддержки утверждению «троичное бьёт бинарное» как общему. Мы измерили его трижды, и каждый раз он был против нас. Вклад — условие, при котором применим 68-летний аргумент.' },
+    },
+    {
+      h: { en: 'TNF is not the most accurate format at its width', ru: 'TNF — не самый точный формат на своей ширине' },
+      b: { en: 'posit16 and binary16 are ahead near unity; binary formats are ahead outright at 32 bits. A reference is not required to win those comparisons. It is required to be the thing they are measured against.', ru: 'posit16 и binary16 впереди около единицы; бинарные форматы впереди прямо на 32 битах. Референс не обязан выигрывать эти сравнения. Он обязан быть тем, относительно чего их измеряют.' },
+    },
+    {
+      h: { en: 'The comparison is against takum16, not tekum16', ru: 'Сравнение идёт против takum16, а не tekum16' },
+      b: { en: 'The oracle labelled tekum decodes all 65 536 sixteen-bit codes identically to the takum oracle. The real comparison against tekum has not been made. The earlier figure for tekum16 moved from 4.2–6.5 to 2.1, and takum32 moved from 5.9–10.2 to an exact 2.6.', ru: 'Оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных кодов идентично takum-оракулу. Настоящее сравнение с tekum ещё не сделано. Более раннее число для tekum16 переехало с 4.2–6.5 на 2.1, а takum32 — с 5.9–10.2 на точные 2.6.' },
+      tag: 'retracted' as Tag,
+    },
+    {
+      h: { en: 'Five of nine rungs are measured in hardware', ru: 'Пять из девяти ступеней измерены в железе' },
+      b: { en: 'TNF4 through TNF64 (TNF64: 7479 LUT @ 48.20 MHz). TNF128 (M = 119) does not close routing on this part and is not claimed; TNF256 and above exceed a single Artix-7 fabric entirely. The specification table and the placed-and-routed table are kept apart on purpose.', ru: 'TNF4…TNF64 (TNF64: 7479 LUT @ 48.20 МГц). TNF128 (M = 119) не сходится в разводке на этой части и не заявляется; TNF256 и выше превышают одну фабрику Artix-7 целиком. Таблица спецификации и таблица размещённого-разведённого держатся отдельно намеренно.' },
+    },
+    {
+      h: { en: 'No head-to-head in hardware against takum', ru: 'Нет head-to-head в железе против takum' },
+      b: { en: 'Its codec RTL is public (VHDL, arXiv:2408.10594) but we did not synthesise it alongside, so the cost figures are TNF’s own. What is visible in the source as structure rather than measurement: the 16-bit codec instantiates a generated 725-line leading-zero counter and a barrel shifter — the regime decode a fixed-field format does not have.', ru: 'Его codec RTL публичен (VHDL, arXiv:2408.10594), но мы не синтезировали его рядом, поэтому цифры цены — собственные у TNF. Что видно в исходнике как структура, а не измерение: 16-битный кодек инстанцирует сгенерированный 725-строчный leading-zero-counter и barrel shifter — regime-декод, которого у фиксированно-полевого формата нет.' },
+    },
+    {
+      h: { en: 'A tool limit, stated rather than smoothed', ru: 'Ограничение инструмента, заявленное, а не сглаженное' },
+      b: { en: 'The APoT sweep is non-monotone — 130, 380, 230, 384 LUT at shift widths 2 to 5 — with a demonstrably applied parameter and a deterministic tool. LUT count from a single logic synthesis is therefore not a reliable area metric at this granularity. A claim resting on a 30% difference between two such points is unsafe; one resting on 10× is not.', ru: 'APoT-развёртка немонотонна — 130, 380, 230, 384 LUT при ширинах сдвига 2–5 — при демонстративно применённом параметре и детерминированном инструменте. Значит, LUT-счёт из одного логического синтеза не является надёжной метрикой площади на этой гранулярности. Заявление, опирающееся на 30% разницу между двумя такими точками, небезопасно; опирающееся на 10× — да.' },
+    },
+    {
+      h: { en: 'An oracle defect, now fixed', ru: 'Дефект оракула, теперь исправленный' },
+      b: { en: 'Round-tripping 1.5 returned −1.5 at 21 and 25 mantissa bits: the sign bit sat at a fixed position and the exponent mask took more bits than the field holds. TNF32 fell from 5.4e−1 to 5.3e−9. The lesson outlives the bug: the ladder check was add/mul commutativity, and an inverted sign survives both sides of a + b = b + a. The check was real and blind to the class. A round-trip assertion sees it, costs one line per probe, and now runs on all nine rungs.', ru: 'Round-trip 1.5 возвращал −1.5 на 21 и 25 битах мантиссы: знаковый бит стоял на фиксированной позиции, а маска экспоненты брала больше бит, чем держит поле. TNF32 упал с 5.4e−1 до 5.3e−9. Урок переживает баг: проверкой лестницы была коммутативность add/mul, а инвертированный знак выживает на обеих сторонах a + b = b + a. Проверка была настоящей и слепой к классу. Round-trip-ассерт его видит, стоит одну строку на пробу и теперь идёт на всех девяти ступенях.' },
+    },
+    {
+      h: { en: 'Not a 7% win over int8', ru: 'Не 7% выигрыш над int8' },
+      b: { en: 'int8 carries no range and is not doing the same work. Range is stated separately: ±40 in powers of two, roughly ±12 decades, where a regime field is unbounded.', ru: 'int8 не несёт диапазона и делает не ту же работу. Диапазон заявляется отдельно: ±40 в степенях двойки, примерно ±12 декад, там где regime-поле неограниченно.' },
+    },
+    {
+      h: { en: 'Precision above TNF32 is limited by the instrument', ru: 'Точность выше TNF32 ограничена измерительным инструментом' },
+      b: { en: 'TNF64 carries 52 mantissa bits — exactly the significand of the IEEE double in which the metric is computed. An AI assistant was used in preparing the software, the measurement harness and the manuscript; every number was obtained by running the named tools on hardware the author owns, no measurement is estimated, and where a figure is derived rather than observed it is labelled.', ru: 'TNF64 несёт 52 бита мантиссы — ровно значащую IEEE double, в которой считается метрика. AI-ассистент использовался при подготовке ПО, измерительного харнесса и рукописи; каждое число получено запуском названных инструментов на железе в собственности автора, ни одно измерение не оценено, а где цифра выведена, а не наблюдена, она помечена.' },
+    },
+  ],
+}
+
+/* ───────────────────────── LANDSCAPE ───────────────────────── */
+
+export const landscape = {
+  badge: { en: 'LANDSCAPE', ru: 'ЛАНДШАФТ' },
+  title: { en: 'Who else is on this ground, and where the line falls', ru: 'Кто ещё на этой земле и где проходит граница' },
+  sub: {
+    en: 'Each entry states what the other work does, and what specifically distinguishes it — not who is better. Where a negative statement is made it is scoped to the verified search window, not to the literature.',
+    ru: 'Каждая запись говорит, что делает чужая работа и что именно её отличает — а не кто лучше. Где сделано отрицательное утверждение, оно ограничено проверенным окном поиска, а не литературой в целом.',
+  },
+  items: [
+    {
+      name: 'Tekum',
+      who: 'L. Hunhold, 2025',
+      url: 'https://arxiv.org/abs/2512.10964',
+      kind: 'threat' as const,
+      line: {
+        en: 'Balanced-ternary tapered-precision arithmetic — the same niche, and the closest work that exists. The line: tekum tapers, so its significand width varies with magnitude; TNF fixes its fields, so it does not. No tekum RTL was found in the verified search window, and our own tekum oracle turned out to decode identically to takum, so the head-to-head is open work, not a settled comparison.',
+        ru: 'Балансно-троичная tapered-арифметика — та же ниша и ближайшая существующая работа. Граница: tekum сужается, поэтому ширина его значащей меняется с величиной; TNF фиксирует поля, поэтому не меняется. RTL для tekum в проверенном окне поиска не найден, а наш собственный tekum-оракул оказался декодирующим идентично takum — значит, head-to-head это открытая работа, а не решённое сравнение.',
+      },
+    },
+    {
+      name: 'Takum',
+      who: 'L. Hunhold, 2024',
+      url: 'https://arxiv.org/abs/2404.18603',
+      kind: 'threat' as const,
+      line: {
+        en: 'Tapered precision with a fixed 3-bit regime field, and a public codec RTL in VHDL (arXiv:2408.10594). The diagnostic of T2 reads its narrowing directly: −0.113 bits per binade. Cost figures here are TNF’s own; we did not synthesise the takum codec alongside.',
+        ru: 'Tapered-точность с фиксированным 3-битным regime-полем и публичным codec RTL на VHDL (arXiv:2408.10594). Диагностика Т2 читает его сужение прямо: −0.113 бита на бинаду. Цифры цены здесь собственные у TNF; мы не синтезировали takum-кодек рядом.',
+      },
+    },
+    {
+      name: 'Posit',
+      who: 'Gustafson & Yonemoto, 2017',
+      url: 'https://posithub.org/docs/Posits4.pdf',
+      kind: 'context' as const,
+      line: {
+        en: 'The reference tapered family. Measured here, not argued about: posit16 at 302 LUT and 62.39 MHz isolated, posit32 at 953 LUT and 0.0295 MHz/LUT in the neuron. Its narrowing is −0.254 bits per binade. Taper is paid in latency rather than area: all fourteen fixed-field formats sit above all three tapered ones in frequency, while in area they overlap.',
+        ru: 'Референсное tapered-семейство. Здесь оно измерено, а не обсуждается: posit16 — 302 LUT и 62.39 МГц изолированно, posit32 — 953 LUT и 0.0295 МГц/LUT в нейроне. Сужение — −0.254 бита на бинаду. Taper платится задержкой, а не площадью: все четырнадцать фиксированно-полевых форматов выше всех трёх tapered по частоте, тогда как по площади они перекрываются.',
+      },
+    },
+    {
+      name: 'MXFP4 / NVFP4',
+      who: 'Egiazarian et al.; NVIDIA, 2025',
+      url: 'https://arxiv.org/abs/2509.23202',
+      kind: 'confirms' as const,
+      line: {
+        en: 'Owns the block-element axis, and we say so: the best 8-level codebook beats the unrolled one by 0.9% with squared error nearly 15× better, which is the bound that makes a fourth attempt of ours unjustified. The scale radix is a separate question, and there a φ-grid wins on two models at 0.125 fewer bits per weight — with the element unchanged at E2M1.',
+        ru: 'Владеет осью блочного элемента, и мы это говорим: лучший 8-уровневый кодбук бьёт развёрнутый на 0.9% при squared error лучше почти в 15 раз, и это граница, делающая четвёртую нашу попытку неоправданной. Основание масштаба — отдельный вопрос, и там φ-сетка выигрывает на двух моделях при 0.125 бита на вес дешевле — при элементе, неизменно остающемся E2M1.',
+      },
+    },
+    {
+      name: 'FQP — Fibonacci Quantization Processor',
+      who: 'DAC 2024',
+      url: 'https://doi.org/10.1145/3649329.3656502',
+      kind: 'threat' as const,
+      line: {
+        en: 'Nearest hardware neighbour in the Fibonacci direction, and the clearest illustration of Corollary 20: it carries two arithmetic blocks plus topological-order routing, because F₄·F₄ = 9 is not a Fibonacci number, so the product leaves the representable set. Closure under Z[φ] is what removes that machinery.',
+        ru: 'Ближайший аппаратный сосед в фибоначчиевом направлении и самая ясная иллюстрация Следствия 20: он несёт два арифметических блока плюс routing в топологическом порядке, потому что F₄·F₄ = 9 не число Фибоначчи, и произведение выходит из представимого множества. Замкнутость в Z[φ] — это то, что убирает такую машинерию.',
+      },
+    },
+    {
+      name: 'Fibbinary for neuromorphic radio',
+      who: '2025',
+      url: 'https://arxiv.org/abs/2511.01921',
+      kind: 'context' as const,
+      line: {
+        en: 'Saves 45% multiplier power and 44% multiplier area. The distinction is the verb: the multiplier is made cheaper, not removed. In Z[φ] the weight application is a Fibonacci step and there is no multiplier to make cheaper.',
+        ru: 'Экономит 45% мощности и 44% площади умножителя. Отличие — в глаголе: умножитель удешевлён, а не убран. В Z[φ] применение веса есть шаг Фибоначчи, и удешевлять нечего.',
+      },
+    },
+    {
+      name: 'BitNet b1.58 and the {−1, 0, +1} hardware line',
+      who: '2024–2026',
+      url: 'https://arxiv.org/abs/2402.17764',
+      kind: 'confirms' as const,
+      line: {
+        en: 'Confirms the demand side: ternary weights are worth building hardware for. It also shows the gap this work addresses — the layer gain of a {−1, 0, +1} alphabet is 1 and carries no information, so a learned real scale per layer is attached, and that scale is a multiplication.',
+        ru: 'Подтверждает сторону спроса: под тернарные веса стоит строить железо. И показывает разрыв, который закрывает эта работа: усиление слоя у алфавита {−1, 0, +1} равно 1 и не несёт информации, поэтому на слой навешивается обучаемый вещественный масштаб — а этот масштаб есть умножение.',
+      },
+    },
+    {
+      name: 'GoldenFloat · the 83-format catalog',
+      who: 'D. Vasilev, 2026',
+      url: 'https://arxiv.org/abs/2606.05017',
+      kind: 'ours' as const,
+      line: {
+        en: 'Our own prior work, and the base this stands on: a φ-derived static-split float family (arXiv:2606.05017v3) and an 83-format catalog with bit-exact conformance vectors (arXiv:2606.09686v2). There φ chose field widths. Here it enters the weight alphabet, which is a different and stronger statement — closure rather than density.',
+        ru: 'Наша собственная предыдущая работа и база, на которой стоит эта: φ-производное семейство float’ов со статическим разбиением (arXiv:2606.05017v3) и каталог 83 форматов с бит-точными conformance-векторами (arXiv:2606.09686v2). Там φ выбирало ширины полей. Здесь оно входит в весовой алфавит, а это другое и более сильное утверждение — про замкнутость, а не про плотность.',
+      },
+    },
+  ],
+  negatives: {
+    title: { en: 'Searched for and not found — scoped to the verified window', ru: 'Искали и не нашли — в границах проверенного окна' },
+    items: [
+      { en: 'No work using plastic, supergolden or tribonacci constants as a scale base for quantisation, although T27 enumerates them as the degree-3 rung.', ru: 'Нет работ, использующих plastic, supergolden или tribonacci как основание масштаба для квантизации, хотя Т27 перечисляет их как ступень степени 3.' },
+      { en: 'No adaptation of the Quire or Kulisch accumulator to a ternary or φ datapath.', ru: 'Нет адаптации аккумулятора Quire или Kulisch к троичному или φ-датапути.' },
+      { en: 'No RTL for tekum, and no company found working specifically on ternary or φ inference formats; the nearest commercial multiplier-free efforts are logarithmic.', ru: 'Нет RTL для tekum и не найдено компании, работающей именно над троичными или φ-форматами инференса; ближайшие коммерческие multiply-free попытки — логарифмические.' },
+    ],
+    caveat: { en: 'These are statements about a search, not about priority. None of them is stated as “first”.', ru: 'Это утверждения о поиске, а не о приоритете. Ни одно из них не заявлено как «первый».' },
+  },
+}
+
+/* ───────────────────────── LINEAGE ───────────────────────── */
+
+export const lineage = {
+  badge: { en: 'A 68-YEAR-OLD ARGUMENT', ru: '68-ЛЕТНИЙ АРГУМЕНТ' },
+  title: { en: 'The ternary line was ended administratively, not technically', ru: 'Троичная линия была прекращена административно, а не технически' },
+  items: [
+    { year: 'c. 1840', h: { en: 'Thomas Fowler, Devon', ru: 'Томас Фаулер, Девон' }, b: { en: 'Builds a balanced-ternary calculating machine. The radix argument is made mechanically, before it is made electronically.', ru: 'Строит балансно-троичную вычислительную машину. Аргумент основания сделан механически — раньше, чем электронно.' } },
+    { year: '1958', h: { en: 'Setun, Moscow State University', ru: 'Сетунь, МГУ' }, b: { en: 'N. P. Brusentsov builds it with S. L. Sobolev’s support, using paired ferrite cores for three stable states. The argument becomes a working computer.', ru: 'Н. П. Брусенцов строит её при поддержке С. Л. Соболева, используя парные ферритовые сердечники для трёх устойчивых состояний. Аргумент становится работающим компьютером.' } },
+    { year: '1959–1965', h: { en: 'About fifty machines shipped', ru: 'Выпущено около пятидесяти машин' }, b: { en: 'A production ternary computer existed and was used.', ru: 'Серийный троичный компьютер существовал и использовался.' } },
+    { year: '1970', h: { en: 'Setun-70', ru: 'Сетунь-70' }, b: { en: 'Its instruction-set ideas anticipate arguments later made independently for RISC. It never reaches series production, and the line is ended administratively.', ru: 'Идеи её системы команд предвосхищают аргументы, позже независимо сделанные для RISC. Серийного производства она не достигает, и линия прекращается административно.' } },
+    { year: '1980s–', h: { en: 'Knuth keeps it in circulation', ru: 'Кнут удерживает идею в обороте' }, b: { en: 'Calling balanced ternary “perhaps the prettiest number system of all”. The line continues in device work rather than architecture: CNTFET and memristor ternary logic, and recently silicon-photonic balanced-ternary proposals.', ru: 'Называя балансно-троичную «пожалуй, самой красивой системой счисления». Линия продолжается в приборной работе, а не в архитектуре: CNTFET- и мемристорная троичная логика, недавно — кремний-фотонные балансно-троичные предложения.' } },
+    { year: '2026', h: { en: 'The missing piece was not a fabric', ru: 'Не хватало не фабрики' }, b: { en: 'What the ternary programme lacked was a radix under which its symbols compose. The golden ratio has had that property — r² = r + 1 — since Euclid divided a segment in extreme and mean ratio. Putting it in the weight alphabet turns the old argument from a claim about storage density into a statement about arithmetic closure.', ru: 'Троичной программе не хватало не лучшей фабрики, а основания, при котором её символы компонуются. У золотого сечения это свойство — r² = r + 1 — было со времён Евклида, делившего отрезок в крайнем и среднем отношении. Помещение его в весовой алфавит превращает старый аргумент из заявления о плотности хранения в утверждение об арифметической замкнутости.' } },
+  ],
+}
+
+/* ───────────────────────── REPRODUCE ───────────────────────── */
+
+export const reproduce = {
+  badge: { en: 'REPRODUCE IT', ru: 'ВОСПРОИЗВЕСТИ' },
+  title: { en: 'A result nobody can reproduce without buying something is not a public result', ru: 'Результат, который нельзя воспроизвести не купив что-то, не является публичным результатом' },
+  sub: {
+    en: 'The oracle, the RTL, the equivalence testbenches and the synthesis commands are public. The whole toolchain is open and none of it requires a licence.',
+    ru: 'Оракул, RTL, эквивалентностные тестбенчи и команды синтеза публичны. Весь тулчейн открыт, и ничто в нём не требует лицензии.',
+  },
+  chain: ['Yosys 0.65', 'nextpnr-xilinx 1743d0f', 'Icarus Verilog 13.0', 'Python 3.14', 'XC7A200T / ALINX AX7203'],
+  links: [
+    { label: { en: 'Ternary Network Floats — the paper', ru: 'Ternary Network Floats — статья' }, href: '#/resources', note: { en: '52 theorems, 16 retractions', ru: '52 теоремы, 16 ретракций' } },
+    { label: { en: 'GoldenFloat — arXiv:2606.05017', ru: 'GoldenFloat — arXiv:2606.05017' }, href: 'https://arxiv.org/abs/2606.05017', note: { en: 'φ-derived static-split family, GF4 to GF1024', ru: 'φ-производное семейство со статическим разбиением, GF4…GF1024' }, external: true },
+    { label: { en: '83-format catalog — arXiv:2606.09686', ru: 'Каталог 83 форматов — arXiv:2606.09686' }, href: 'https://arxiv.org/abs/2606.09686', note: { en: 'bit-exact conformance vectors', ru: 'бит-точные conformance-векторы' }, external: true },
+    { label: { en: 'Send RTL, get it measured', ru: 'Присылайте RTL — измерю' }, href: '#/verification', note: { en: 'On the same board, the same flow, the same seeds', ru: 'На той же плате, тем же потоком, теми же seed’ами' } },
+    { label: { en: 'Licensing the arithmetic cores', ru: 'Лицензирование арифметических ядер' }, href: '#/ip', note: { en: 'Cores that have been through the flow', ru: 'Ядра, прошедшие поток' } },
+    { label: { en: 'Every measured number, and its limits', ru: 'Все измеренные числа и их границы', }, href: '#/proof', note: { en: 'The proof page', ru: 'Страница доказательств' } },
+  ],
+  contact: 'admin@t27.ai',
+}

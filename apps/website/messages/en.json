@@ -4,67 +4,21 @@
   "langHref": "?lang=ru",
   "nav": [
     "TRINITY",
+    "Claim",
+    "Formats",
+    "Measured",
+    "Ladder",
     "Theorems",
-    "Publications",
-    "Solution",
-    "Benchmarks",
-    "Calculator",
-    "DePIN",
-    "Team",
-    "Invest"
+    "Limits",
+    "Landscape",
+    "Reproduce"
   ],
   "hero": {
-    "tag": "GF-T · a ternary-native float that beats the published state of the art at range",
-    "badge_publications": "2 arXiv PAPERS",
-    "badge_doi": "DOI-VERIFIED",
-    "headline": "φ² + 1/φ² = 3",
-    "subheadline": "2.84× and 5.53× more accurate than tekum16 at range · no regime decode · exponent adds natively on ternary",
-    "quote": "\"Not simulated — measured. Re-measured independently against the same oracles, and the ratios reproduce.\"",
-    "desc": "<strong>GF-T</strong> puts the exponent of a float in <strong>balanced ternary</strong> and keeps the fields fixed. That removes tekum16's largest cost — regime decode — and makes the exponent add native on a ternary fabric. Measured against tekum16 on its own ground: a tie near unity, <strong>2.84× lower error</strong> at mid range and <strong>5.53× at far range</strong>, with a uniform 9-bit mantissa where tekum16 tapers to four.",
-    "metrics": [
-      {
-        "value": "5.53×",
-        "label": "more accurate than tekum16 at range",
-        "proof": "Reproduced independently, 8 Aug 2026"
-      },
-      {
-        "value": "0",
-        "label": "Regime decode, and no vendor licence",
-        "proof": "Fixed fields · Yosys · nextpnr · iverilog"
-      },
-      {
-        "value": "SKY130",
-        "label": "Tape-out completed",
-        "proof": "Tiny Tapeout — GDS, gate-level, precheck"
-      }
-    ],
-    "newResults": {
-      "title": "GF-T16 against tekum16 — mean relative error",
-      "items": [
-        {
-          "value": "0.92×",
-          "label": "near unity (|e| < 8)",
-          "source": "3.56e-4 vs 3.27e-4 — a tie"
-        },
-        {
-          "value": "2.84×",
-          "label": "mid range (|e| 8–20)",
-          "source": "3.52e-4 vs 1.00e-3"
-        },
-        {
-          "value": "5.53×",
-          "label": "far range (|e| 20–38)",
-          "source": "3.53e-4 vs 1.95e-3"
-        },
-        {
-          "value": "±40",
-          "label": "exponent range, in powers of two",
-          "source": "Bounded — tekum16's regime is not"
-        }
-      ]
-    },
-    "cta": "License GF-T",
-    "ctaSecondary": "See the measurement"
+    "tag": "TNF · GFTernary — a reference pair for the ternary datapath",
+    "headline": "r² = r + 1",
+    "subheadline": "Where the weight is a code, the format is not a preference. GFTernary closes the weight, TNF closes the accumulator — and every hardware number here was measured on a binary FPGA, which is stated rather than smoothed.",
+    "cta": "Read the claim",
+    "ctaSecondary": "Limits and retractions"
   },
   "navExtra": {
     "dashboard": "Dashboard",
