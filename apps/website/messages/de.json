@@ -4,67 +4,21 @@
   "langHref": "?lang=en",
   "nav": [
     "TRINITY",
+    "These",
+    "Formate",
+    "Gemessen",
+    "Leiter",
     "Theoreme",
-    "Publikationen",
-    "Lösung",
-    "Benchmarks",
-    "Rechner",
-    "DePIN",
-    "Team",
-    "Investieren"
+    "Grenzen",
+    "Landschaft",
+    "Reproduzieren"
   ],
   "hero": {
-    "badge_publications": "7 PUBLIKATIONEN",
-    "badge_doi": "DOI-VERIFIZIERT",
-    "tag": "GF-T · ein ternär-nativer Float, der den veröffentlichten Stand der Technik am Bereichsrand schlägt",
-    "headline": "φ² + 1/φ² = 3",
-    "subheadline": "2,84× und 5,53× genauer als tekum16 im Bereich · keine Regime-Dekodierung · Exponent addiert nativ ternär",
-    "quote": "«Nicht simuliert — gemessen. Unabhängig gegen dieselben Orakel nachgemessen, die Verhältnisse reproduzieren.»",
-    "desc": "<strong>GF-T</strong> legt den Exponenten eines Floats in <strong>balancierte Ternärdarstellung</strong> und hält die Felder fest. Das entfernt tekum16s größten Kostenpunkt — die Regime-Dekodierung — und macht die Exponentenaddition auf einer ternären Fabric nativ. Gegen tekum16 auf dessen eigenem Terrain gemessen: ein Gleichstand nahe Eins, <strong>2,84× geringerer Fehler</strong> im mittleren und <strong>5,53× im fernen Bereich</strong>, bei gleichmäßigen 9 Mantissenbits dort, wo tekum16 auf vier verengt.",
-    "metrics": [
-      {
-        "value": "5.53×",
-        "label": "genauer als tekum16 im Bereich",
-        "proof": "Unabhängig reproduziert, 8. Aug. 2026"
-      },
-      {
-        "value": "0",
-        "label": "Regime-Dekodierung, und keine Herstellerlizenz",
-        "proof": "Feste Felder · Yosys · nextpnr · iverilog"
-      },
-      {
-        "value": "SKY130",
-        "label": "Tape-out abgeschlossen",
-        "proof": "Tiny Tapeout — GDS, Gatterebene, Precheck"
-      }
-    ],
-    "newResults": {
-      "title": "GF-T16 gegen tekum16 — mittlerer relativer Fehler",
-      "items": [
-        {
-          "value": "0.92×",
-          "label": "nahe Eins (|e| < 8)",
-          "source": "3.56e-4 vs 3.27e-4 — Gleichstand"
-        },
-        {
-          "value": "2.84×",
-          "label": "mittlerer Bereich (|e| 8–20)",
-          "source": "3.52e-4 vs 1.00e-3"
-        },
-        {
-          "value": "5.53×",
-          "label": "ferner Bereich (|e| 20–38)",
-          "source": "3.53e-4 vs 1.95e-3"
-        },
-        {
-          "value": "±40",
-          "label": "Exponentenbereich, in Zweierpotenzen",
-          "source": "Begrenzt — tekum16s Regime ist es nicht"
-        }
-      ]
-    },
-    "cta": "GF-T lizenzieren",
-    "ctaSecondary": "Die Messung ansehen"
+    "tag": "TNF · GFTernary — ein Referenzpaar für den ternären Datenpfad",
+    "headline": "r² = r + 1",
+    "subheadline": "Wo das Gewicht ein Code ist, ist das Format keine Vorliebe. GFTernary schließt das Gewicht, TNF den Akkumulator — und jede Hardwarezahl hier wurde auf einem binären FPGA gemessen, was ausgesprochen und nicht geglättet wird.",
+    "cta": "Die These lesen",
+    "ctaSecondary": "Grenzen und Rücknahmen"
   },
   "navExtra": {
     "dashboard": "Dashboard",

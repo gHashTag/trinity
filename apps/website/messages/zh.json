@@ -4,67 +4,21 @@
   "langHref": "?lang=en",
   "nav": [
     "TRINITY",
+    "论点",
+    "格式",
+    "实测",
+    "阶梯",
     "定理",
-    "出版物",
-    "解决方案",
-    "基准测试",
-    "计算器",
-    "DePIN",
-    "团队",
-    "投资"
+    "边界",
+    "格局",
+    "复现"
   ],
   "hero": {
-    "badge_publications": "7篇出版物",
-    "badge_doi": "DOI已验证",
-    "tag": "GF-T · 原生三进制浮点，在动态范围两端超越已发表的最优水平",
-    "headline": "φ² + 1/φ² = 3",
-    "subheadline": "在远端比 tekum16 精确 2.84 倍与 5.53 倍 · 无需regime解码 · 指数在三进制上原生相加",
-    "quote": "“不是仿真，是实测。用相同的参考模型独立复测，比值可以复现。”",
-    "desc": "<strong>GF-T</strong> 把浮点数的指数写成<strong>平衡三进制</strong>并保持字段固定。这去掉了 tekum16 最大的开销——regime解码——并使指数相加在三进制工艺上成为原生操作。在 tekum16 自己的领域上实测：接近 1 时打平，中段误差低 <strong>2.84 倍</strong>，远端低 <strong>5.53 倍</strong>，且在 tekum16 收窄到 4 位的地方仍保持均匀的 9 位尾数。",
-    "metrics": [
-      {
-        "value": "5.53×",
-        "label": "在远端比 tekum16 更精确",
-        "proof": "独立复现，2026 年 8 月 8 日"
-      },
-      {
-        "value": "0",
-        "label": "regime解码，且无需厂商许可",
-        "proof": "固定字段 · Yosys · nextpnr · iverilog"
-      },
-      {
-        "value": "SKY130",
-        "label": "已完成流片",
-        "proof": "Tiny Tapeout — GDS、门级、预检"
-      }
-    ],
-    "newResults": {
-      "title": "GF-T16 对比 tekum16 — 平均相对误差",
-      "items": [
-        {
-          "value": "0.92×",
-          "label": "接近 1（|e| < 8）",
-          "source": "3.56e-4 vs 3.27e-4 — 打平"
-        },
-        {
-          "value": "2.84×",
-          "label": "中段（|e| 8–20）",
-          "source": "3.52e-4 vs 1.00e-3"
-        },
-        {
-          "value": "5.53×",
-          "label": "远端（|e| 20–38）",
-          "source": "3.53e-4 vs 1.95e-3"
-        },
-        {
-          "value": "±40",
-          "label": "指数范围，以 2 的幂计",
-          "source": "有界 — tekum16 的regime没有边界"
-        }
-      ]
-    },
-    "cta": "授权 GF-T",
-    "ctaSecondary": "查看测量"
+    "tag": "TNF · GFTernary — 三进制数据通路的参考格式对",
+    "headline": "r² = r + 1",
+    "subheadline": "当权重本身就是编码时，格式便不再是偏好。GFTernary 封闭权重，TNF 封闭累加器——本页每个硬件数字都是在二进制 FPGA 上实测的，此点明示而非掩饰。",
+    "cta": "阅读论点",
+    "ctaSecondary": "边界与撤回"
   },
   "navExtra": {
     "dashboard": "仪表板",

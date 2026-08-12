@@ -4,67 +4,21 @@
   "langHref": "?lang=en",
   "nav": [
     "TRINITY",
+    "Tesis",
+    "Formatos",
+    "Medido",
+    "Escalera",
     "Teoremas",
-    "Publicaciones",
-    "Solucion",
-    "Benchmarks",
-    "Calculadora",
-    "DePIN",
-    "Equipo",
-    "Invertir"
+    "Límites",
+    "Panorama",
+    "Reproducir"
   ],
   "hero": {
-    "badge_publications": "7 PUBLICACIONES",
-    "badge_doi": "DOI-VERIFICADO",
-    "tag": "GF-T · un float ternario nativo que supera el estado del arte publicado en los extremos del rango",
-    "headline": "φ² + 1/φ² = 3",
-    "subheadline": "2,84× y 5,53× más preciso que tekum16 en rango · sin decodificación de régimen · el exponente suma de forma nativa en ternario",
-    "quote": "«No simulado — medido. Vuelto a medir de forma independiente contra los mismos oráculos, y las proporciones se reproducen.»",
-    "desc": "<strong>GF-T</strong> escribe el exponente de un float en <strong>ternario balanceado</strong> y mantiene los campos fijos. Eso elimina el mayor coste de tekum16 — la decodificación de régimen — y hace que la suma de exponentes sea nativa en una fábrica ternaria. Medido contra tekum16 en su propio terreno: empate cerca de la unidad, <strong>2,84× menos error</strong> en rango medio y <strong>5,53× en rango lejano</strong>, con una mantisa uniforme de 9 bits donde tekum16 se estrecha a cuatro.",
-    "metrics": [
-      {
-        "value": "5.53×",
-        "label": "más preciso que tekum16 en rango",
-        "proof": "Reproducido de forma independiente, 8 ago 2026"
-      },
-      {
-        "value": "0",
-        "label": "Decodificación de régimen, y sin licencia de proveedor",
-        "proof": "Campos fijos · Yosys · nextpnr · iverilog"
-      },
-      {
-        "value": "SKY130",
-        "label": "Tape-out completado",
-        "proof": "Tiny Tapeout — GDS, nivel de puerta, precheck"
-      }
-    ],
-    "newResults": {
-      "title": "GF-T16 frente a tekum16 — error relativo medio",
-      "items": [
-        {
-          "value": "0.92×",
-          "label": "cerca de la unidad (|e| < 8)",
-          "source": "3.56e-4 vs 3.27e-4 — empate"
-        },
-        {
-          "value": "2.84×",
-          "label": "rango medio (|e| 8–20)",
-          "source": "3.52e-4 vs 1.00e-3"
-        },
-        {
-          "value": "5.53×",
-          "label": "rango lejano (|e| 20–38)",
-          "source": "3.53e-4 vs 1.95e-3"
-        },
-        {
-          "value": "±40",
-          "label": "rango del exponente, en potencias de dos",
-          "source": "Acotado — el régimen de tekum16 no lo es"
-        }
-      ]
-    },
-    "cta": "Licenciar GF-T",
-    "ctaSecondary": "Ver la medición"
+    "tag": "TNF · GFTernary — un par de referencia para la ruta de datos ternaria",
+    "headline": "r² = r + 1",
+    "subheadline": "Donde el peso es un código, el formato deja de ser una preferencia. GFTernary cierra el peso, TNF cierra el acumulador — y cada número de hardware aquí se midió en una FPGA binaria, lo que se declara en lugar de suavizarse.",
+    "cta": "Leer la tesis",
+    "ctaSecondary": "Límites y retractaciones"
   },
   "navExtra": {
     "dashboard": "Panel",
