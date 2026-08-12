@@ -27,6 +27,7 @@ const TnfVisuals = lazy(() => import('./components/sections/tnf/PhiViz'))
 const TnfFindings = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFindings })))
 const TnfLineage = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLineage })))
 const TnfAuthor = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfAuthor })))
+const TnfInvest = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfInvest })))
 const TnfReproduce = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfReproduce })))
 const PublicationsSection = lazy(() => import('./components/sections/PublicationsSection'))
 
@@ -58,6 +59,7 @@ export default function App() {
         <TnfLineage />
         <PublicationsSection />
         <TnfAuthor />
+        <TnfInvest />
         <TnfReproduce />
       </Suspense>
 

@@ -79,6 +79,18 @@
 
 .tnf-h2.wide { max-width: 34ch; }
 
+/* Подзаголовок внутри секции: блок инвестиций делится на четыре части, и без
+   уровня между .tnf-h2 и текстом ячейки они читались как один поток. Размер
+   стоит на шкале, кромка совпадает с лидом. */
+.tnf-h3 {
+  font-size: var(--f1);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--sp1);
+  text-align: left;
+  max-width: none;
+}
+
 .tnf-lede {
   color: var(--muted);
   max-width: 68ch;
