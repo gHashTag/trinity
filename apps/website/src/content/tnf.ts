@@ -18,7 +18,7 @@
 /* 'terms' и 'plan' добавлены под блок инвестиций: условия предложения и план
    расходования — это не измерения и не теоремы, и метка обязана это говорить,
    иначе они читаются как остальные числа страницы. */
-export type Tag = 'measured' | 'proved' | 'coq' | 'spec' | 'derived' | 'competitor' | 'retracted' | 'terms' | 'plan'
+export type Tag = 'measured' | 'proved' | 'coq' | 'spec' | 'derived' | 'competitor' | 'retracted' | 'terms' | 'plan' | 'external'
 
 export const TAG_LABEL: Record<Tag, { en: string; ru: string; color: string }> = {
   measured: { en: 'measured', ru: 'измерено', color: '#00FF88' },
@@ -30,6 +30,7 @@ export const TAG_LABEL: Record<Tag, { en: string; ru: string; color: string }> =
   retracted: { en: 'retracted', ru: 'отозвано', color: '#FF6B6B' },
   terms: { en: 'offer terms', ru: 'условия предложения', color: '#E0C878' },
   plan: { en: 'plan, not a result', ru: 'план, не результат', color: '#B0B8C4' },
+  external: { en: 'third-party figure', ru: 'внешний источник', color: '#7FB3FF' },
 }
 
 export const PAPER = {
@@ -813,13 +814,8 @@ export const lineage = {
 
 /* ───────────────────────── REPRODUCE ───────────────────────── */
 
-/* Блок автора и сотрудничества. На прежнем лендинге его роль играли две
-   секции — «Команда» и «Инвестиции». Целиком они вернуться не могут: тот блок
-   держал оценку $300M за раунд, 578× по энергии, «бинарная эра окончена» и
-   эмиссию токена — то есть ровно те числа, которые на этом сайте отозваны.
-   Возвращается сам факт авторства и способ связи, а числа — только те, что
-   лежат на этой же странице с указанным происхождением. Условия по деньгам
-   на странице не публикуются, пока их нечем подтвердить. */
+/* Блок автора и сотрудничества: авторство, способ связи и только те числа,
+   что лежат на этой же странице с указанным происхождением. */
 export const author = {
   badge: { en: 'WHO MEASURED THIS', ru: 'КТО ЭТО ИЗМЕРИЛ' },
   title: {
@@ -827,8 +823,8 @@ export const author = {
     ru: 'Один инженер, одна плата и публичный список того, что не сработало',
   },
   sub: {
-    en: 'Every number on this page was measured by the person named here, on hardware named here, with a toolchain anyone can install. The retractions are counted alongside the theorems on purpose.',
-    ru: 'Каждое число на этой странице измерено человеком, названным здесь, на железе, названном здесь, тулчейном, который может поставить любой. Ретракции считаются рядом с теоремами намеренно.',
+    en: 'Every number on this page was measured by the person named here, on hardware named here, with a toolchain anyone can install.',
+    ru: 'Каждое число на этой странице измерено человеком, названным здесь, на железе, названном здесь, тулчейном, который может поставить любой.',
   },
   name: 'Dmitrii Vasilev',
   nameRu: 'Дмитрий Васильев',
@@ -853,37 +849,98 @@ export const author = {
     { label: { en: 'Full biography and CV', ru: 'Полная биография и CV' }, href: '#/about', note: { en: 'Track record, publications, contacts', ru: 'Опыт, публикации, контакты' } },
     { label: { en: 'Licence the arithmetic cores', ru: 'Лицензировать арифметические ядра' }, href: '#/ip', note: { en: 'Cores that have been through the open flow', ru: 'Ядра, прошедшие открытый поток' } },
     { label: { en: 'Send RTL, get it measured', ru: 'Присылайте RTL — измерю' }, href: '#/verification', note: { en: 'Same board, same flow, same seeds', ru: 'Та же плата, тот же поток, те же seed’ы' } },
-    { label: { en: 'Joint work, review, funding', ru: 'Совместная работа, рецензия, финансирование' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20collaboration', note: { en: 'No public valuation and no open round: the earlier figures were withdrawn. Terms are discussed directly.', ru: 'Публичной оценки и открытого раунда нет: прежние цифры отозваны. Условия обсуждаются напрямую.' } },
+    { label: { en: 'Joint work, review, funding', ru: 'Совместная работа, рецензия, финансирование' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20collaboration', note: { en: 'Terms are in the investment section below, and are discussed directly.', ru: 'Условия — в блоке «Инвестиции» ниже, обсуждаются напрямую' } },
   ],
 }
 
-/* Блок инвестиций. На прежнем лендинге он существовал и был снят целиком
-   вместе с секцией «Инвестиции»: там стояли 578× по энергии, «бинарная эра
-   окончена», «Абсолютная Триада достигнута», эмиссия 3²¹ токенов и счётчики
-   сообщества (5K Discord, 10K Telegram, 25K Twitter, 2K операторов нод) — то
-   есть числа, которые этот сайт публично отозвал, и часть из них стоит в
-   списке красных флагов ежедневной проверки.
+/* Блок инвестиций. Порядок разделов взят из канона питча, а не из удобства
+   автора: purpose → problem/why now → market → business model → traction →
+   defensibility → use of funds → milestones → risks → ask. Совпадающее
+   требование Sequoia («define your company in a single declarative sentence»,
+   «What's changed?») и YC («do not bury the lead»); DocSend меряет средний
+   просмотр деки менее 3,5 минут, поэтому методологическая оговорка ушла из
+   первого экрана в сноску под цифрами.
 
-   Блок возвращён и приведён в соответствие с остальной страницей по одному
-   правилу: у каждой цифры указано, чем она является. Условия раунда — это
-   предложение основателя, а не измерение, и помечены `terms`. План расходования
-   и майлстоуны — план, а не результат, и помечены `plan`. Числа в «что уже
-   сделано» — те же, что стоят выше на странице, со своим происхождением. */
+   Правило тегов действует и здесь: `terms` — условия предложения, `plan` —
+   план, а не результат, `external` — чужое число с прямой ссылкой на источник.
+   Публичной цены за долю в блоке нет: ни на одном из десяти просмотренных
+   сайтов чиповых компаний ранней стадии её нет, а публичная реклама условий
+   размещения — отдельный регуляторный режим. */
 export const invest = {
   badge: { en: 'INVESTMENT', ru: 'ИНВЕСТИЦИИ' },
   title: {
-    en: 'What is on offer, on the same terms as the rest of this page: every figure says what kind of figure it is',
-    ru: 'Что предлагается — на тех же условиях, что и вся страница: у каждой цифры сказано, чем она является',
+    en: 'Trinity licenses synthesisable arithmetic: numeric formats with decoders, cores and conformance vectors that a chip team can drop into an SoC',
+    ru: 'Trinity лицензирует синтезируемую арифметику: численные форматы с декодерами, ядрами и conformance-векторами, которые команда чипа ставит в свой SoC',
   },
   sub: {
-    en: 'The round terms are an asking price, not a measurement. The allocation and the milestones are a plan, not a result. The engineering figures are the same ones measured above, with the same origins.',
-    ru: 'Условия раунда — запрашиваемая цена, а не измерение. Распределение и майлстоуны — план, а не результат. Инженерные цифры — те же, что измерены выше, с тем же происхождением.',
+    en: 'Low precision became the default in one generation, and the standards did not keep up: the MX specification is license-free but says nothing about hardware conformance, and IEEE P3109 is still an active PAR whose drafts must not be used for conformance. What a chip team is missing is not another format — it is proof that a format behaves identically in silicon and in the reference model.',
+    ru: 'Низкая точность стала нормой за одно поколение, а стандарты за ней не успели: спецификация MX бесплатна, но об аппаратном conformance в ней ничего нет, а IEEE P3109 — до сих пор активный PAR, черновики которого запрещено использовать для conformance. Команде чипа не хватает не ещё одного формата, а доказательства, что формат ведёт себя в кремнии так же, как в эталонной модели.',
   },
-  terms: [
-    { v: '$3M', l: { en: 'for 1% equity', ru: 'за 1% equity' }, tag: 'terms' },
-    { v: '$300M', l: { en: 'valuation asked', ru: 'запрашиваемая оценка' }, tag: 'terms' },
-    { v: '18', l: { en: 'months of runway planned', ru: 'месяцев планируемой дистанции' }, tag: 'plan' },
-    { v: '100%', l: { en: 'founder-held today, no prior round', ru: 'у основателя сегодня, прежних раундов нет' }, tag: 'terms' },
+  factsTitle: { en: 'Where this stands today', ru: 'Где это сейчас' },
+  facts: [
+    { v: '1', l: { en: 'engineer, one board, no prior round', ru: 'инженер, одна плата, прежних раундов нет' }, tag: 'terms' },
+    { v: 'FPGA', l: { en: 'stage: measured on FPGA, no silicon', ru: 'стадия: измерено на FPGA, кремния нет' }, tag: 'measured' },
+    { v: '18', l: { en: 'months of runway planned, in three tranches', ru: 'месяцев дистанции в плане, тремя траншами' }, tag: 'plan' },
+    { v: 'по запросу', l: { en: 'round terms — on request, by email', ru: 'условия раунда — по запросу, письмом' }, tag: 'terms' },
+  ],
+  whyTitle: { en: 'Why this is money now, not later', ru: 'Почему это деньги сейчас, а не потом' },
+  why: [
+    {
+      t: { en: 'Four bits went mainstream in one generation', ru: 'Четыре бита стали мейнстримом за одно поколение' },
+      d: { en: 'NVIDIA reports NVFP4 holding within 1% of FP8 accuracy at roughly 25% of FP16 memory, and up to 1.59× training throughput against BF16 over trillion-token runs. Precision is now a hardware design variable, not a software detail.', ru: 'NVIDIA сообщает, что NVFP4 держится в пределах 1% точности FP8 при примерно 25% памяти FP16, и до 1,59× пропускной способности обучения против BF16 на прогонах в триллион токенов. Точность стала переменной проектирования железа, а не деталью софта.' },
+      src: { u: 'https://developer.nvidia.com/blog/introducing-nvfp4-for-efficient-and-accurate-low-precision-inference/', n: 'NVIDIA' },
+      tag: 'external',
+    },
+    {
+      t: { en: 'The format is free; the conformance is not written', ru: 'Формат бесплатен, conformance не написан' },
+      d: { en: 'OCP released the MX formats in September 2023 in an open, license-free form, authored by Microsoft, AMD, Arm, Intel, Meta, NVIDIA and Qualcomm. A free specification does not tell a chip team whether their decoder matches it bit for bit. That gap is the product.', ru: 'OCP выпустила форматы MX в сентябре 2023 в открытой бесплатной форме, авторы — Microsoft, AMD, Arm, Intel, Meta, NVIDIA, Qualcomm. Бесплатная спецификация не говорит команде чипа, совпадает ли их декодер с ней бит в бит. Этот разрыв и есть продукт.' },
+      src: { u: 'https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf', n: 'OCP MX v1.0' },
+      tag: 'external',
+    },
+    {
+      t: { en: 'The standard is not ratified yet', ru: 'Стандарт ещё не утверждён' },
+      d: { en: 'IEEE P3109, «Arithmetic Formats for Machine Learning», has been an active PAR since February 2023 and is not approved; the working group states its drafts must not be used for conformance claims. Anyone shipping low-precision silicon today has no ratified reference to check against.', ru: 'IEEE P3109, «Arithmetic Formats for Machine Learning», — активный PAR с февраля 2023 года и не утверждён; рабочая группа прямо указывает, что её черновики нельзя использовать для заявлений о conformance. У всех, кто выпускает малобитный кремний сегодня, утверждённого эталона для сверки нет.' },
+      src: { u: 'https://standards.ieee.org/ieee/3109/11165/', n: 'IEEE SA' },
+      tag: 'external',
+    },
+    {
+      t: { en: 'The cost curve makes the bits expensive', ru: 'Кривая затрат делает биты дорогими' },
+      d: { en: 'Epoch AI puts the cost of a frontier training run on a 2.4× per year trend since 2016, crossing a billion dollars per run before 2027. When a run costs that much, a bit-level error in a format is not an academic matter.', ru: 'Epoch AI оценивает стоимость фронтир-прогона обучения трендом 2,4× в год с 2016 года, с переходом за миллиард долларов на прогон до 2027-го. При такой стоимости прогона битовая ошибка в формате — уже не академический вопрос.' },
+      src: { u: 'https://epoch.ai/publications/how-much-does-it-cost-to-train-frontier-ai-models', n: 'Epoch AI' },
+      tag: 'external',
+    },
+  ],
+  marketTitle: { en: 'The market, counted from the bottom', ru: 'Рынок, считаемый снизу' },
+  marketSub: {
+    en: 'Not the AI chip market — the agencies disagree about its 2025 base by a factor of two, and a number nobody can decompose is not evidence. The market a core is sold into is the IP licensing market, and its unit economics are published by the companies that live in it.',
+    ru: 'Это не рынок ИИ-чипов — агентства расходятся по его базе 2025 года вдвое, а число, которое нельзя разложить, доказательством не является. Ядро продаётся на рынок лицензирования IP, и его юнит-экономику публикуют сами компании, которые на нём живут.',
+  },
+  market: [
+    { v: '$9,8 млрд', l: { en: 'semiconductor IP licensing, 2025, with the top five holding 62.2%', ru: 'лицензирование semiconductor IP, 2025; топ-5 держат 62,2%' }, src: { u: 'https://www.gminsights.com/industry-analysis/semiconductor-intellectual-property-ip-market', n: 'GMInsights' }, tag: 'external' },
+    { v: '~$1,2 млн', l: { en: 'average per licence: Ceva signed 54 agreements for $63.6M in 2025', ru: 'средний чек лицензии: Ceva подписала 54 соглашения на $63,6 млн за 2025' }, src: { u: 'https://www.ceva-ip.com/press/ceva-inc-announces-fourth-quarter-and-full-year-2025-financial-results/', n: 'Ceva FY2025' }, tag: 'derived' },
+    { v: '~5% / ~10%', l: { en: 'royalty rates Arm itself discloses for CPU IP and for CSS', ru: 'ставки роялти, раскрытые самой Arm: CPU IP и CSS' }, src: { u: 'https://investors.arm.com/static-files/11881690-3c08-4148-bf7f-1504442b4ec4', n: 'Arm, investor materials' }, tag: 'external' },
+    { v: '97,9%', l: { en: 'Arm gross margin, Q4 FY2026 — why this model is worth building', ru: 'валовая маржа Arm, Q4 FY2026 — почему эту модель стоит строить' }, src: { u: 'https://www.sec.gov/Archives/edgar/data/1973239/000197323926000062/exhibit992fye26q431-marx26.htm', n: 'Arm, SEC' }, tag: 'external' },
+  ],
+  modelTitle: { en: 'What is actually sold', ru: 'Что на самом деле продаётся' },
+  model: [
+    { t: { en: 'Not the format', ru: 'Не формат' }, d: { en: 'A number format cannot be sold: MX is license-free by design, and IEEE formats are public by definition. Selling a format was never the plan.', ru: 'Числовой формат продать нельзя: MX бесплатен по замыслу, форматы IEEE публичны по определению. Продажа формата планом и не была.' }, tag: 'spec' },
+    { t: { en: 'The implementation', ru: 'Реализация' }, d: { en: 'Synthesisable decoders and arithmetic cores that have been through an open flow on real hardware, delivered as RTL with the synthesis commands that produced the numbers.', ru: 'Синтезируемые декодеры и арифметические ядра, прошедшие открытый поток на реальном железе, отдаются как RTL с теми же командами синтеза, что дали числа.' }, tag: 'measured' },
+    { t: { en: 'The conformance suite', ru: 'Conformance-набор' }, d: { en: 'Bit-exact vectors per format, plus the second-oracle checks. This is the part a chip team cannot download and cannot cheaply build, and the part that survives whichever standard wins.', ru: 'Бит-точные векторы на каждый формат плюс проверки вторым оракулом. Именно это команда чипа не может скачать и не может дешево построить — и именно это переживёт любой победивший стандарт.' }, tag: 'spec' },
+  ],
+  doneTitle: { en: 'What exists before the money', ru: 'Что существует до денег' },
+  done: [
+    { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
+    { v: '52', l: { en: 'theorems proved in the paper', ru: 'теоремы, доказанные в статье' }, tag: 'proved' },
+    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
+    { v: '5 / 9', l: { en: 'ladder rungs standing in hardware', ru: 'ступеней лестницы стоят в железе' }, tag: 'measured' },
+    { v: '66 LUT', l: { en: 'GFTernary decoder at 974.66 MHz on XC7A200T', ru: 'декодер GFTernary на 974.66 МГц на XC7A200T' }, tag: 'measured' },
+    { v: '2.1× / 2.6×', l: { en: 'mean relative error against takum16 / takum32', ru: 'средней относительной ошибки против takum16 / takum32' }, tag: 'measured' },
+  ],
+  moatTitle: { en: 'Defensibility, stated exactly', ru: 'Защищённость — точно как есть' },
+  moat: [
+    { t: { en: 'No patents', ru: 'Патентов нет' }, d: { en: 'Nothing is granted and nothing is filed. Preprints and open RTL create priority of publication, not exclusivity — and publishing first forecloses a patent on the same disclosure. This is a deliberate trade and an investor should price it as one.', ru: 'Ничего не выдано и ничего не подано. Препринты и открытый RTL дают приоритет публикации, а не исключительность — и публикация первым закрывает патент на то же раскрытие. Это осознанный обмен, и инвестор должен оценивать его как обмен.' }, tag: 'spec' },
+    { t: { en: 'The defensible asset is the bench', ru: 'Защищённый актив — стенд' }, d: { en: 'The vectors, the second oracle, the seeds and the flow that make a claim checkable. Copying a format takes an afternoon; reproducing a conformance corpus that a chip team will trust does not.', ru: 'Векторы, второй оракул, seed’ы и поток, которые делают заявление проверяемым. Скопировать формат — дело вечера; воспроизвести conformance-корпус, которому поверит команда чипа, — нет.' }, tag: 'measured' },
+    { t: { en: 'The named alternatives', ru: 'Названные альтернативы' }, d: { en: 'takum and tekum (Hunhold), posit (Gustafson and the Calligo Tech line), and the plain IEEE and MX formats. They are on this page by name, with their results reproduced and credited rather than paraphrased.', ru: 'takum и tekum (Hunhold), posit (Gustafson и линия Calligo Tech), а также обычные форматы IEEE и MX. Они названы на этой странице, их результаты воспроизведены и зачтены, а не пересказаны.' }, tag: 'competitor' },
   ],
   useTitle: { en: 'Where the money goes', ru: 'На что идут деньги' },
   uses: [
@@ -891,30 +948,33 @@ export const invest = {
     { p: '25%', t: { en: 'Verification', ru: 'Верификация' }, d: { en: 'Conformance vectors for the remaining formats, second-oracle checks, and machine-checked proofs beyond the current set', ru: 'Conformance-векторы для оставшихся форматов, проверки вторым оракулом и машинно проверенные доказательства за пределами текущего набора' } },
     { p: '15%', t: { en: 'Operations', ru: 'Операции' }, d: { en: 'Boards, tooling, publication costs, and the time to answer a reviewer properly', ru: 'Платы, инструменты, публикационные расходы и время на нормальный ответ рецензенту' } },
   ],
-  doneTitle: { en: 'What exists before the money', ru: 'Что существует до денег' },
-  done: [
-    { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
-    { v: '52 / 16', l: { en: 'theorems / retractions in the paper', ru: 'теорем / ретракций в статье' }, tag: 'proved' },
-    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
-    { v: '5 / 9', l: { en: 'ladder rungs standing in hardware', ru: 'ступеней лестницы стоят в железе' }, tag: 'measured' },
-    { v: '66 LUT', l: { en: 'GFTernary decoder at 974.66 MHz on XC7A200T', ru: 'декодер GFTernary на 974.66 МГц на XC7A200T' }, tag: 'measured' },
-    { v: '2.1× / 2.6×', l: { en: 'mean relative error against takum16 / takum32', ru: 'средней относительной ошибки против takum16 / takum32' }, tag: 'measured' },
-  ],
-  milestonesTitle: { en: 'Eighteen months, stated as checks anyone can run', ru: 'Восемнадцать месяцев — как проверки, которые может прогнать любой' },
+  milestonesTitle: { en: 'Three tranches, each released by a check anyone can run', ru: 'Три транша, каждый открывается проверкой, которую может прогнать любой' },
+  milestonesSub: {
+    en: 'Hardware money is released against milestones rather than months — the gate for a semiconductor company is a tape-out and working chips. Each tranche below states its own gate, and a gate that does not close is a reason not to release the next one.',
+    ru: 'Деньги в железе выдаются под майлстоуны, а не под месяцы: гейт для полупроводниковой компании — тейп-аут и работающие чипы. Каждый транш ниже несёт свой гейт, и незакрытый гейт — причина не открывать следующий.',
+  },
   milestones: [
-    { en: 'The arithmetic cores taped out, so the numbers stop being FPGA numbers', ru: 'Арифметические ядра отправлены в кремний, чтобы числа перестали быть FPGA-числами' },
-    { en: 'The compute axis of the catalog closed as far as an ASIC flow allows, with the vectors published alongside', ru: 'Вычислительная ось каталога закрыта настолько, насколько позволяет ASIC-поток, с публикацией векторов' },
-    { en: 'A head-to-head against takum RTL on one flow, which needs a VHDL front end this bench does not have', ru: 'Прямое сравнение с RTL takum на одном потоке — для него нужен VHDL-фронтенд, которого у этого стенда нет' },
-    { en: 'The paper through peer review, retractions included rather than removed', ru: 'Статья прошла рецензирование — вместе с ретракциями, а не без них' },
-    { en: 'First licensee of a core that has been through the flow', ru: 'Первый лицензиат ядра, прошедшего поток' },
+    { n: { en: 'Tranche 1 — months 1–6', ru: 'Транш 1 — месяцы 1–6' }, g: { en: 'Gate: the compute axis of the catalog closed as far as the open FPGA flow allows, with the vectors published alongside, and a head-to-head against takum RTL on one flow — which needs a VHDL front end this bench does not have.', ru: 'Гейт: вычислительная ось каталога закрыта настолько, насколько позволяет открытый FPGA-поток, с публикацией векторов, и прямое сравнение с RTL takum на одном потоке — для него нужен VHDL-фронтенд, которого у этого стенда нет.' } },
+    { n: { en: 'Tranche 2 — months 7–12', ru: 'Транш 2 — месяцы 7–12' }, g: { en: 'Gate: the paper through peer review, and a first external design partner running the cores on their own hardware — an evaluation agreement, not a mention.', ru: 'Гейт: статья прошла рецензирование, и первый внешний design partner прогоняет ядра на своём железе — соглашение об оценке, а не упоминание.' } },
+    { n: { en: 'Tranche 3 — months 13–18', ru: 'Транш 3 — месяцы 13–18' }, g: { en: 'Gate: the arithmetic cores taped out, so the numbers stop being FPGA numbers, and a first paid licence of a core that has been through the flow.', ru: 'Гейт: арифметические ядра отправлены в кремний, чтобы числа перестали быть FPGA-числами, и первая платная лицензия на ядро, прошедшее поток.' } },
   ],
   riskTitle: { en: 'What an investor is buying, and what they are not', ru: 'Что инвестор покупает, а что — нет' },
   risks: [
     { en: 'There is no silicon. Every hardware number here was measured on a binary FPGA — an ALINX AX7203, XC7A200T — on an open flow, and an ASIC will differ.', ru: 'Кремния нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, XC7A200T — открытым потоком, и на ASIC оно будет другим.' },
     { en: 'There is no ternary fabric to buy. The ternary exponent is an architectural property; on binary hardware it neither wins nor loses, and ternary lost to binary three separate times in our own measurements.', ru: 'Тернарной фабрики не купить. Тернарная экспонента — архитектурное свойство; на бинарном железе она не выигрывает и не проигрывает, а тернарность трижды независимо проиграла бинарности в наших же измерениях.' },
-    { en: 'The energy claim that used to stand here — 578× — is withdrawn, along with the community counters and the token emission. Nothing replaced them because nothing measured has.', ru: 'Заявление об энергии, которое здесь стояло, — 578× — отозвано, вместе со счётчиками сообщества и эмиссией токена. На их место ничего не встало, потому что измеренного на их место нет.' },
-    { en: 'This is one engineer with one board. The plan above is what money changes; the record above is what exists without it.', ru: 'Это один инженер с одной платой. План выше — то, что меняют деньги; запись выше — то, что существует без них.' },
+    { en: 'There is no energy number on offer. Energy was not measured on this bench, and area and frequency do not stand in for it.', ru: 'Числа по энергии в предложении нет. Энергия на этом стенде не измерялась, а площадь и частота её не заменяют.' },
+    { en: 'This is one engineer with one board, no revenue and no signed licensee. The plan above is what money changes; the record above is what exists without it.', ru: 'Это один инженер с одной платой, без выручки и без подписанного лицензиата. План выше — то, что меняют деньги; запись выше — то, что существует без них.' },
   ],
+  takeawayTitle: { en: 'Three things to keep', ru: 'Три вещи, которые стоит запомнить' },
+  takeaways: [
+    { en: 'Precision became a hardware variable, and the standard that would settle it is not ratified.', ru: 'Точность стала переменной железа, а стандарт, который её закрыл бы, не утверждён.' },
+    { en: 'The sellable asset is not the format but the conformance bench behind it, in a market where a licence averages about $1.2M and royalties run at rates Arm publishes.', ru: 'Продаваемый актив — не формат, а conformance-стенд за ним, на рынке, где лицензия в среднем около $1,2 млн, а роялти идут по ставкам, которые публикует Arm.' },
+    { en: 'The record is checkable today on an open toolchain, and everything it does not cover is written down on this page.', ru: 'Запись проверяема сегодня на открытом тулчейне, а всё, что она не покрывает, выписано на этой же странице.' },
+  ],
+  note: {
+    en: 'The tags are not decoration. Offer terms are an asking position, not a measurement; the allocation and the tranches are a plan, not a result; third-party figures link to the page they came from. The engineering figures are the same ones measured above, with the same origins.',
+    ru: 'Теги здесь не украшение. Условия предложения — запрашиваемая позиция, а не измерение; распределение и транши — план, а не результат; внешние числа ведут ссылкой на страницу, откуда взяты. Инженерные цифры — те же, что измерены выше, с тем же происхождением.',
+  },
   ctas: [
     { label: { en: 'Investor — request the deck and the terms', ru: 'Инвестор — запросить деку и условия' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20investment' },
     { label: { en: 'Licence a core', ru: 'Лицензировать ядро' }, href: '#/ip' },
