@@ -27,6 +27,30 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | null>(null);
 
+// Reading localStorage is not always allowed. In a sandboxed iframe without
+// allow-same-origin the property access itself throws SecurityError, and this
+// one ran inside the useState initialiser — before the first render — so the
+// throw took the whole tree down and the page was a black screen with one line
+// in the console. A remembered language is a convenience; losing it is worth a
+// paragraph of comment, and losing the site is not. Both directions are guarded
+// and both fail silently back to the default.
+const store = {
+  get(key: string): string | null {
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  set(key: string, value: string): void {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch {
+      /* no storage in this context; the choice simply is not remembered */
+    }
+  },
+};
+
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     // Client-side only initialization
@@ -35,12 +59,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       const urlParams = new URLSearchParams(window.location.search);
       const urlLang = urlParams.get('lang');
       if (urlLang && LANGS.includes(urlLang as Lang)) {
-        localStorage.setItem('trinity-lang', urlLang);
+        store.set('trinity-lang', urlLang);
         return urlLang as Lang;
       }
       
       // 2. Check localStorage
-      const saved = localStorage.getItem('trinity-lang');
+      const saved = store.get('trinity-lang');
       if (saved && LANGS.includes(saved as Lang)) {
         return saved as Lang;
       }
@@ -78,8 +102,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   // Save to localStorage when lang changes
   useEffect(() => {
     if (mounted) {
-      console.log('Saving language to localStorage:', lang);
-      localStorage.setItem('trinity-lang', lang);
+      store.set('trinity-lang', lang);
       document.documentElement.lang = lang;
     }
   }, [lang, mounted]);
