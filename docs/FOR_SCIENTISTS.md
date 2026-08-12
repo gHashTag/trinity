@@ -18,6 +18,12 @@
 | **Ω_Λ** | γ⁸π⁴/φ² | 0.688 | 0.688±0.017 | ✅ |
 | **Jarlskog J** | 21γ⁵/(π²φ⁴e²) | 3.04×10⁻⁵ | 3.04×10⁻⁵ | 0.003% |
 
+**Disclosure, 2026-08-12 — three of the rows above are calibrated, not predicted, and two print a wrong number.**
+
+- **G and Ω_Λ are calibrations.** π³γ²/φ = 1.067914 and γ⁸π⁴/φ² = 0.000359 are dimensionless numbers. The printed 6.68×10⁻¹¹ and 0.688 are those numbers multiplied by fitted scale factors — G_SCALE ≈ 6.25×10⁻¹¹ and OMEGA_COARSE_SCALE ≈ 1909, described as "empirical calibration to match measurements" in `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`. With one free multiplicative parameter fitted to one target the residual is zero by construction, so the "0.09%" and the "0.688 ± 0.017 ✅" are calibration residuals, not predictive accuracies.
+- **α row.** 4φ²/(9π²) = 0.117894, not 0.007297 — the formula and the value in that row do not match (the same expression is printed as α_s = 0.1181 in `docs/papers/README_FOR_SCIENTISTS.md`). Both the Prediction and the CODATA column hold the same figure, so the "0.0002%" was computed between two copies of one number.
+- **Jarlskog row.** 21γ⁵/(π²φ⁴e²) = 3.0801×10⁻⁵, not 3.04×10⁻⁵. The row prints 3.04×10⁻⁵ in both the Prediction and the Measured column, so the "0.003%" was computed between two copies of the same wrong number. The correct value 3.08×10⁻⁵ does agree with PDG ≈ 3.08×10⁻⁵ (as already printed in `docs/static/papers/TRINITY_UNIFIED_v12.tex`) — the agreement is real, the arithmetic reported was not.
+
 where:
 - φ = (1+√5)/2 = 1.61803398874989482
 - γ = φ⁻³ = 0.236067977499789696

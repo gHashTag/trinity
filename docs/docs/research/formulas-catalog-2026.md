@@ -35,6 +35,8 @@
 | 17 | sin²θ₂₃ = 4πφ²/(3e³) | Neutrino | **0.0028%** | particle_physics/formulas.zig |
 | 18 | δ_CP = 8π³/(9e²) | Neutrino | **0.00016%** | particle_physics/formulas.zig |
 
+**Disclosure (2026-08-12) — row 11 (G) is a one-parameter calibration, not a prediction.** π³γ²/φ = 1.067914 and is dimensionless; the 0.09% figure compares `π³γ²/φ × G_SCALE` to CODATA with `G_SCALE ≈ 6.25×10⁻¹¹` fitted to that same measurement (`t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`: "empirical calibration to match measurements"). With one free multiplicative parameter fitted to one target the residual is zero by construction. The smoking-gun total of 18 in the Summary by Domain table therefore includes one calibrated fit; it is left uncorrected here and disclosed instead.
+
 ---
 
 ## Domain 1: Sacred Mathematics
@@ -162,6 +164,8 @@ Sacred Formula: `V = n × 3^k × π^m × φ^p × e^q × γ^r`
 | G5 | Ω_Λ = γ⁸π⁴/φ² | 0.69 | ✅ Consistent |
 | G6 | Ω_DM = γ⁴π²/φ | 0.26 | ✅ Consistent |
 | G7 | S_BH = A/4 (from γ=0.274) | Bekenstein-Hawking | ✅ With correct γ |
+
+**Disclosure (2026-08-12):** G1, G5 and G6 all carry undisclosed fitted scale factors. Raw values: π³γ²/φ = **1.067914** (quoted as 6.674×10⁻¹¹, scale ≈ 6.25×10⁻¹¹), γ⁸π⁴/φ² = **0.000359** (quoted as 0.69, scale ≈ 1908.84), γ⁴π²/φ = **0.018944** (quoted as 0.26, implied scale ≈ 13.7 = 0.26 ÷ 0.018944). The first two scale factors are recorded in `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md` as "empirical calibration to match measurements"; the third is inferred from the ratio printed here. With one free multiplicative parameter fitted to one target the residual is zero by construction, so these are calibrations, not predictions. Q5 in Domain 3 is the same γ⁴π²/φ = 0.018944 expression relabelled as axion relic density, so "SMOKING GUN — matches DM!" rests on the same fitted factor and on reusing one expression for two different observables.
 
 ---
 

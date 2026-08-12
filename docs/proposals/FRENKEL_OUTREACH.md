@@ -107,6 +107,7 @@ The mathematics led to φ-based expressions that approximate some physical const
 - m_p/m_e ≈ 6π⁵ (0.002% error)
 - Several relations for CKM/PMNS mixing angles
 - Gravitational constant G from π³γ²/φ (0.09% error)
+  (**Disclosure, 2026-08-12:** π³γ²/φ = 1.067914 is dimensionless. The 6.68×10⁻¹¹ figure is that number multiplied by a fitted scale factor G_SCALE ≈ 6.25×10⁻¹¹, calibrated to CODATA G. With one free multiplicative parameter fitted to one target the residual is zero by construction, so the "0.09%" is a calibration residual, not a prediction — see t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md.)
 
 **But** — I've also documented predictions that failed. I maintain an "Evidence Ladder" grading each claim as Established, Speculative, or Rejected.
 

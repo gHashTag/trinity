@@ -99,6 +99,8 @@ f_γ = φ³π/γ ≈ 56 Hz            (Neural gamma frequency)
 θ_QCD = |φ² + φ⁻² - 3| = 0      (Strong CP angle — EXACT)
 ```
 
+**Disclosure (2026-08-12):** the three cosmology/gravity lines above (G, Ω_Λ, Ω_DM) are dimensionless expressions that are multiplied by fitted scale factors before being compared to data — π³γ²/φ = 1.067914 (× ≈6.25×10⁻¹¹), γ⁸π⁴/φ² = 0.000359 (× ≈1908.84), γ⁴π²/φ = 0.018944 (× ≈13.7). The first two scale factors are recorded in `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md` as "empirical calibration to match measurements". Their quoted errors are calibration residuals, not predictive accuracy.
+
 ### 2.3 QCD/Axion Formulas (NEW: 2026)
 
 ```
@@ -369,6 +371,7 @@ Level 12: Observable Universe
 1. **Why does G = π³γ²/φ work to 0.09% if γ is wrong?**
    - Possible answer: Formula is correct, γ in formula is not Barbero-Immirzi
    - Needs: Theoretical justification for γ in gravity formula
+   - **Answered 2026-08-12 — the premise is wrong.** π³γ²/φ = **1.067914** and is dimensionless. It does not "work to 0.09%"; `π³γ²/φ × G_SCALE` works to 0.09%, where `G_SCALE ≈ 6.25×10⁻¹¹` was fitted to CODATA (`t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`: "empirical calibration to match measurements"). One free multiplicative parameter fitted to one target gives zero residual by construction. Because the scale absorbs any change in γ, the 0.09% figure carries **no information about γ at all** — which is why it does not conflict with the rejection recorded at §3.8 / §5.1. Open question 2 below resolves the same way: the accuracy is neither coincidence nor fundamental, it is calibration.
 
 2. **Is the 0.09% G accuracy coincidence or fundamental?**
    - Current assessment: **compelling but not conclusive**

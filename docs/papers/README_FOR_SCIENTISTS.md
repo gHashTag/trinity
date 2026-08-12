@@ -24,6 +24,8 @@ Key original proposals include:
 
 All results are timestamped (March 2026) and openly falsifiable.
 
+> **Note, 2026-08-12 — the Barbero-Immirzi identification was REJECTED inside this corpus.** `docs/DELTA-001.md` (2026-03-28, status FALSIFIED) records the test: predicted 0.236068 vs canonical 0.237533, 0.617% error; canonical value from Rovelli & Vidotto, *Covariant Loop Quantum Gravity* (2014). Everywhere below, the symbol γ is retained as notation for the number φ⁻³ only; the physical identification with the Barbero-Immirzi parameter of loop quantum gravity is withdrawn. The status "PENDING" on row 1 of the Prediction Status table, and the statement that no prediction is FALSIFIED, both predate that rejection and are superseded by it.
+
 ---
 
 ## Main Results
@@ -41,6 +43,8 @@ See **`src/sacred/proof_types.zig`** (`particle_physics_constants`) and **`src/t
 | sin² θ_W | 2 π³ e / 729 | 0.23122 | 0.009% | 0.23122 ± 0.00003 |
 | Jarlskog J | 21 γ⁵ / (π² φ⁴ e²) | 3.04×10⁻⁵ | 0.003% | 3.04×10⁻⁵ ± 0.06×10⁻⁵ |
 | sin² θ₁₃ | 3 γ φ² / (π³ e) | 0.02236 | 0.008% | 0.02236 ± 0.00065 |
+
+> **Correction, 2026-08-12 — the Jarlskog row.** 21 γ⁵ / (π² φ⁴ e²) = 3.0801×10⁻⁵, ~~3.04×10⁻⁵~~. The row above prints 3.04×10⁻⁵ in both the Value column and the PDG column, so the quoted 0.003% was computed between two copies of the same wrong number. The correct value 3.08×10⁻⁵ does agree with PDG ≈ 3.08×10⁻⁵ — as already printed in `docs/static/papers/TRINITY_UNIFIED_v12.tex`. The agreement is real; the arithmetic reported here was not. The same wrong figure appears in the Abstract above and in row 2 of the Prediction Status table below.
 
 **CKM Matrix (γ-hierarchy):**
 - |V_ud| ≈ 1 - γ/2

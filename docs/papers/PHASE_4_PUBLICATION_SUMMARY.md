@@ -119,6 +119,8 @@ G = π³γ²/φ ≈ 6.68×10⁻¹¹ m³/kg·s²
 S_BH = A/4ℓ_P²(1 + γ ln A/4ℓ_P²)
 ```
 
+> **Disclosure (2026-08-12) — the three constants above carry fitted scale factors.** As written the expressions are dimensionless: π³γ²/φ = **1.067914**, γ⁸π⁴/φ² = **0.000359**, γ⁴π²/φ = **0.018944**. The values quoted (6.68×10⁻¹¹ m³/kg·s², 0.69, 0.26) are these expressions multiplied by `G_SCALE ≈ 6.25×10⁻¹¹`, `OMEGA_COARSE_SCALE ≈ 1908.84` and ≈13.7 respectively, each fitted to the single measurement it is then compared with. `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md` records the first two scale factors and calls them "empirical calibration to match measurements". With one free multiplicative parameter fitted to one target the residual is zero by construction, so the 0.09%, <0.2% and <3% figures in the table below are calibration residuals, not predictive accuracy. Any arXiv submission built from GRAVITY_PHI.tex must state this in the abstract.
+
 **Main Results:**
 | Constant | Experimental | TRINITY | Error |
 |----------|--------------|---------|-------|
@@ -255,6 +257,8 @@ t_present  = φ⁻²                   = 382 ms
 t_P        = γ⁴π²/φ                = 5.39×10⁻⁴⁴ s
 ```
 
+> **Disclosure (2026-08-12):** the G, Ω_Λ and Ω_DM lines in the block above print post-calibration values. The formulas themselves evaluate to 1.067914, 0.000359 and 0.018944.
+
 ---
 
 ## PUBLICATION STATUS
@@ -299,6 +303,8 @@ t_P        = γ⁴π²/φ                = 5.39×10⁻⁴⁴ s
 3. Consciousness threshold at φ⁻¹ = 0.618
 4. Temporal fractal dimension D_t = 1 + γ
 5. Sacred formula applies across all physics domains
+
+> **Disclosure (2026-08-12) — claim 1 was tested and rejected inside this project.** `trinity/docs/DELTA-001.md` (2026-03-28), "DELTA-001: γ = φ⁻³ Hypothesis — REJECTED", status FALSIFIED: predicted 0.236068 against the canonical Barbero-Immirzi value 0.237533 (Rovelli & Vidotto, *Covariant Loop Quantum Gravity*, 2014), +0.617% error. γ = φ⁻³ survives in this framework as **notation for φ⁻³**, not as an identification with the loop-quantum-gravity parameter. Claim 1 is left on the list rather than deleted so the correction stays visible.
 
 ---
 

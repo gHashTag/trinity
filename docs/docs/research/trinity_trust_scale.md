@@ -110,6 +110,15 @@ Answer: it's like target shooting:
 
 For dimensionless constants like α the standard is **100x stricter**, because they are measured with extreme precision (α: 137.035999177 ± 0.000000084).
 
+**Disclosure, 2026-08-12 — this comparison does not survive the page's own rules.** π³γ²/φ is a **dimensionless number and equals 1.067914**. The SI figure 6.674×10⁻¹¹ is `π³γ²/φ × G_SCALE`, where `G_SCALE ≈ 6.25×10⁻¹¹` was fitted to CODATA after the fact (`t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`: "empirical calibration to match measurements"). Two consequences for the shooting-target picture above:
+
+1. **G is not protected by the looser dimensional standard.** The whole argument of this section is that α is held to a stricter bar because it is dimensionless while G is not. But the *formula* π³γ²/φ is dimensionless — the dimensions come from the fitted scale factor, not from φ. Under step 1 of "How We Decide" below, G therefore faces the < 0.01% bar, which it does not meet without the fitted scale.
+2. **Step 4 of "How We Decide" is answered AFTER.** "Was the formula devised BEFORE or AFTER comparing with data?" — `G_SCALE` was set by dividing the measured G by the formula's value. That is the definition of after.
+
+With one free multiplicative parameter fitted to one target the 0.09% residual is zero by construction, so on this page's own metal-detector analogy the detector was tuned until it beeped. The same applies to the CONFIRMED entries: Ω_Λ = γ⁸π⁴/φ² = 0.000359, not 0.69 (`OMEGA_COARSE_SCALE ≈ 1908.84`), and Ω_DM = γ⁴π²/φ = 0.018944, not 0.26 (implied scale ≈13.7).
+
+Nothing above is deleted. A trust scale that quietly removed its own misjudgement would be worth less than one that records it, so the SMOKING GUN and CONFIRMED entries, the target diagram and the G-versus-α argument are all left standing — with the note that by rules 1 and 4 below, G currently rates NUMEROLOGY WARNING ("exponents chosen after the fact"), not SMOKING GUN, until `G_SCALE` is derived rather than fitted.
+
 ---
 
 ## What This Protects Against
@@ -135,6 +144,8 @@ We are trying to answer real questions:
 | Why isn't memory consolidated instantly? | 1.618 hours | Smoking gun |
 | Why is G = exactly 6.674×10⁻¹¹? | π³γ²/φ | Smoking gun |
 | Why is α = exactly 1/137.036? | φ⁻¹⁰π¹⁰γ⁸ | Numerology warning (complex exponents) |
+
+**CORRECTED 2026-08-12:** row 3 does not answer its own question. π³γ²/φ = 1.067914, a dimensionless number; it does not explain why G is 6.674×10⁻¹¹ rather than any other value, because the factor that sets that value (`G_SCALE ≈ 6.25×10⁻¹¹`) was read off from the measurement. The honest status of that row is a calibration, not a smoking gun. See the Disclosure above.
 
 ---
 

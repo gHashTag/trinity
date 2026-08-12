@@ -94,6 +94,16 @@ For each formula in {G1, BH1, SH1, SC3, SC4}:
 
 ---
 
+## Amendment 1 (2026-08-12): G1 is scale-degenerate and cannot discriminate γ
+
+G1 as written, `G = π³γ²/φ`, is **dimensionless and evaluates to 1.067914**; it is not 6.67430×10⁻¹¹ m³/kg·s². Comparison to CODATA goes through a fitted factor, `G_SCALE ≈ 6.25×10⁻¹¹`, recorded in `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md` as "empirical calibration to match measurements". This breaks Step 2 of the Analysis Protocol above: if `G_SCALE` is refit for each γ candidate, then Δ_φ = Δ₁ = 0 exactly and G1 votes for neither hypothesis. G1 discriminates **only** if the scale is frozen — and it must be frozen at a value fixed independently of both candidates, otherwise whichever γ was used to fit it wins by construction. Until `compare_gamma_candidates.py` is amended to state and freeze the scale, G1 must be scored as ABSTAIN, not as a vote, and the ≥4/5 thresholds in Step 3 recomputed over the remaining formulas.
+
+## Amendment 2 (2026-08-12): the corpus already rejected this identification
+
+This document is dated 2026-04-08. `trinity/docs/DELTA-001.md`, dated 2026-03-28, records "DELTA-001: γ = φ⁻³ Hypothesis — REJECTED", status FALSIFIED: 0.236068 predicted against canonical Barbero-Immirzi 0.237533 (Rovelli & Vidotto, *Covariant Loop Quantum Gravity*, 2014), +0.617% error — the same Δ printed at the Seal below. The pre-registration is therefore **not** sealed before the evidence; H-B was already the corpus's standing verdict when this was written, and DELTA-001 is not cited anywhere above. The title's phrasing "Barbero-Immirzi Parameter from the Golden Section" presupposes the identification under test and should be read as the name of hypothesis H-A, not as an established result. This document is kept intact; the amendment is the correction.
+
+---
+
 ## Seal
 
 This document was created before running `compare_gamma_candidates.py`.
@@ -105,3 +115,5 @@ This document was created before running `compare_gamma_candidates.py`.
 ```
 
 *Amendment log: (empty at pre-registration)*
+
+*Amendment log, updated 2026-08-12: Amendment 1 — G1 is scale-degenerate, score as ABSTAIN. Amendment 2 — DELTA-001 (2026-03-28) had already rejected the identification eleven days before this pre-registration was written. Both are recorded above, before the Seal.*

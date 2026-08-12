@@ -234,6 +234,8 @@ tri clara demo
 └── N_gen = 3      → exact identity ✅
 ```
 
+**Disclosure, 2026-08-12:** π³γ²/φ = 1.067914 — a **dimensionless** number. "G = π³γ²/φ → 0.09% accuracy" means that number times a fitted scale factor G_SCALE ≈ 6.25×10⁻¹¹ reproduces CODATA G. With one free multiplicative parameter fitted to one target the residual is zero by construction, so 0.09% is a calibration residual, not a prediction. The same holds for the "Consistent (3)" entries below: Ω_Λ = γ⁸π⁴/φ² = 0.000359 (scaled by ≈1909 to reach 0.685, ≈1917 for 0.688) and Ω_DM = γ⁴π²/φ = 0.018944 (scaled to 0.257). Scale factors and the phrase "empirical calibration to match measurements" are documented in `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`.
+
 **NOT:** "Box of separate formulas"
 **YES:** "Tree with one root, many branches"
 
@@ -337,6 +339,11 @@ The core identity φ² + φ⁻² = 3 generates numerical values for 30+ fundamen
 | γ (LQG) | φ⁻³ | 0.23607 | 0.617% |
 
 where γ = φ⁻³ ≈ 0.23607 is derived from φ.
+
+**CORRECTED 2026-08-12:** three rows above are wrong as printed.
+- Jarlskog J: the formula 21γ⁵/(π²φ⁴e²) evaluates to ~~3.04×10⁻⁵~~ **3.0801×10⁻⁵**. The corrected value does match PDG ≈3.08×10⁻⁵, but the printed error 0.003% was computed between two copies of the same wrong number, so it measured nothing.
+- α_s(M_Z): 4φ²/(9π²) = 0.117894, which is **0.17%** from 0.1181, not ~~0.005%~~.
+- γ (LQG): this row is **notation only**. The identification of φ⁻³ with the Barbero-Immirzi parameter was REJECTED in this repo on 2026-03-28 — see the DELTA-001 table above and [docs/DELTA-001.md](docs/DELTA-001.md) (status FALSIFIED, 0.236068 vs canonical 0.237533, +0.617%, Rovelli & Vidotto 2014). φ⁻³ is retained as a constant; the physical identification is withdrawn.
 
 **See [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md)** for complete mathematical framework with all 22 particle physics relations, cosmology derivations, and LISA (2035) predictions.
 

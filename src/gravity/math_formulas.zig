@@ -36,6 +36,14 @@ pub const PHI = sacred_constants.PHI;
 pub const PHI_CUBED: f64 = PHI * PHI * PHI;
 
 /// Barbero-Immirzi parameter γ = φ⁻³
+///
+/// **Note, 2026-08-12:** NOTATION ONLY — the physical identification with the
+/// loop-quantum-gravity Barbero-Immirzi parameter was REJECTED in DELTA-001
+/// (trinity/docs/DELTA-001.md, 2026-03-28, status FALSIFIED): φ⁻³ = 0.236068
+/// vs canonical 0.237533 (Rovelli & Vidotto, Covariant Loop Quantum Gravity,
+/// 2014), +0.617% error. φ⁻³ is retained here as a constant; the physical
+/// identification is withdrawn. Cf. src/qcd/formulas.zig, which already
+/// carries this disclosure on its own GAMMA.
 pub const GAMMA: f64 = 1.0 / PHI_CUBED;
 
 /// Fundamental TRINITY identity: φ² + φ⁻² = 3
@@ -96,6 +104,15 @@ pub fn G_from_sacred() f64 {
 
 /// Alternative G via φ powers
 /// G ≈ γ⁶ × π³ / φ
+///
+/// **Disclosure, 2026-08-12:** this returns 0.003317 — DIMENSIONLESS, and ~8
+/// orders of magnitude away from any gravitational constant. It is not G and
+/// must not be compared to G_EXP without a scale factor. Note also that the
+/// published pages use γ², not γ⁶: π³γ²/φ = 1.067914, which reaches the SI
+/// value only via G_SCALE ~ 6.25e-11 fitted to CODATA (see
+/// t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md,
+/// "empirical calibration to match measurements"). The two forms disagree
+/// with each other and neither is dimensionally G.
 pub fn G_phi() f64 {
     return math.pow(f64, GAMMA, 6) * PI * PI * PI / PHI;
 }

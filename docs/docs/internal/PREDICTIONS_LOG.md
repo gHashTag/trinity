@@ -128,11 +128,14 @@ Each prediction has an explicit **kill-switch** — experimental result that wou
 #### P-GRV-001: Gravitational Constant from φ
 - **Formula ID**: `G_from_phi`
 - **Registered**: 2026-03-08
+- **Fit Origin**: **POSTDICTION** (added 2026-08-12) — γ-dependent AND scale-fitted, therefore **ineligible** under the Eligibility Rule at the top of this log. This was the only entry in the file carrying no `Fit Origin` field; the omission is recorded rather than quietly corrected.
 - **Prediction**: G = π³γ²/φ ≈ 6.68×10⁻¹¹ m³/kg·s²
 - **Expected range**: Within 1% of CODATA 2018
 - **Target experiment**: Laboratory G measurements (CODATA updates)
 - **Falsification trigger**: Error > 1% from CODATA recommended value
 - **Status**: PENDING
+- **Disclosure, 2026-08-12**: π³γ²/φ = **1.067914** and is **dimensionless** — it is not 6.68×10⁻¹¹ m³/kg·s². The quoted SI value is `π³γ²/φ × G_SCALE` with `G_SCALE ≈ 6.25×10⁻¹¹`, a scale factor fitted to CODATA (`t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`, which records `G_raw ≈ 1.068`, `G_SCALE ≈ 6.25e-11`, and calls it "empirical calibration to match measurements"). `G_SCALE` is exactly the kind of parameter the Rationale above rules out: "optimized after seeing target values, violating the pre-registration principle."
+- **Kill-switch is unreachable as written, 2026-08-12**: with one free multiplicative parameter fitted to one target the residual is zero by construction, so the falsification trigger above cannot fire. If CODATA revises G, refitting `G_SCALE` restores agreement and the error never exceeds 1%. A trigger that no experimental outcome can pull is not a kill-switch. To make it one, `G_SCALE` must either be derived from theory or **frozen at a pre-registered value**, with the trigger then restated against the frozen scale.
 - **Note**: See `src/gravity/sacred_gravity.zig`
 
 #### P-GRV-002 through P-GRV-006: LISA Predictions

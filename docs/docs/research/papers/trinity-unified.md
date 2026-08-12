@@ -19,6 +19,8 @@ TRINITY is a unified research framework using φ as a connecting principle acros
 └── N_gen = 3 (Fermions)
 ```
 
+**Disclosure, 2026-08-12:** the gravity branch above is a calibrated fit, not a derivation. π³γ²/φ = **1.067914** and is **dimensionless**; reaching the SI gravitational constant requires multiplying by `G_SCALE ≈ 6.25×10⁻¹¹`, a factor fitted to CODATA rather than derived — see `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`, which describes it as "empirical calibration to match measurements". With one free multiplicative parameter fitted to one target the residual is zero by construction, so this is a calibration, not a prediction, and this branch should not be counted among the smoking guns until `G_SCALE` is derived.
+
 ## Key Results
 
 **10 Smoking Guns** across particle physics, gravity, QCD, cosmology, and consciousness.

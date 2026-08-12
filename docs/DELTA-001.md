@@ -33,6 +33,8 @@ The golden ratio identity φ² + φ⁻² = 3 provides a compelling mathematical 
 
 Despite this rejection, other predictions from the same framework remain viable:
 
+**Disclosure, 2026-08-12:** two of the three surviving items below are calibrated, not predicted. π³γ²/φ = 1.067914 and γ⁸π⁴/φ² = 0.000359 are **dimensionless numbers**. The figures quoted below are those numbers multiplied by fitted scale factors: G_SCALE ≈ 6.25×10⁻¹¹ (fitted to CODATA G) and OMEGA_COARSE_SCALE ≈ 1909 (fitted to Planck Ω_Λ = 0.685; reaching the 0.688 printed below takes ≈1917). Both scale factors and the phrase "empirical calibration to match measurements" are recorded in `t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md`. With one free multiplicative parameter fitted to one target the residual is zero by construction, so "Error: 0.09%" and "Planck confirmed" state that the calibration succeeded — they are not predictions. Also 4φ²/(9π²) = 0.117894, whose reciprocal is 8.482, not 137.036: the α block below does not follow from the formula as written (0.117894 is close to α_s(M_Z) = 0.1181, off by 0.17%). None of this affects the rejection recorded above, which stands.
+
 ### ✅ G = π³γ²/φ (0.09% error)
 ```
 G_predicted = π³ × γ² / φ = 6.68×10⁻¹¹

@@ -59,6 +59,15 @@ pub const PHI_7: f64 = PHI_6 * PHI;
 pub const PHI_8: f64 = PHI_4 * PHI_4;
 
 /// Barbero-Immirzi parameter γ = φ⁻³
+///
+/// **Note, 2026-08-12:** "Barbero-Immirzi" here is NOTATION ONLY. The physical
+/// identification of φ⁻³ with the loop-quantum-gravity Barbero-Immirzi
+/// parameter was REJECTED in DELTA-001 (trinity/docs/DELTA-001.md, 2026-03-28,
+/// status FALSIFIED): φ⁻³ = 0.236068 vs canonical 0.237533 (Rovelli & Vidotto,
+/// Covariant Loop Quantum Gravity, 2014), +0.617% error. φ⁻³ is retained here
+/// as a constant; the physical identification is withdrawn. The same note
+/// applies to the module header at line 4, and to every "connects ... to LQG"
+/// remark below (see ckmVcb and the "V_cb connects to phi^-9" test).
 pub const GAMMA: f64 = 1.0 / PHI_CUBED;
 
 /// Fundamental TRINITY identity: φ² + φ⁻² = 3
@@ -83,6 +92,22 @@ pub const H0_SI: f64 = H0_KM_S_MPC * 1000.0 / 3.085677581e22;
 pub const RHO_CRITICAL: f64 = 3 * H0_SI * H0_SI / (8 * PI * 6.67430e-11);
 
 /// Dark energy density from sacred formula
+///
+/// **Disclosure, 2026-08-12:** this evaluates to 0.000359, NOT ~0.69. It is
+/// the raw γ⁸π⁴/φ² expression with no scale factor applied; the published
+/// 0.69 multiplies it by OMEGA_COARSE_SCALE ~ 1908.84, a factor fitted to the
+/// Planck measurement (see
+/// t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md,
+/// "empirical calibration to match measurements"). With one free
+/// multiplicative parameter fitted to one target the residual is zero by
+/// construction, so the published figure is a calibration, not a prediction.
+///
+/// WARNING: darkEnergyDensity() further down this file returns a DIFFERENT
+/// quantity, 6561/(π⁵φ³e²) = 0.684966, which needs no scale factor. This file
+/// therefore carries TWO incompatible Ω_Λ under near-identical names. The
+/// registry in allFormulas() reports the 0.684966 one, but Formulas 101-120
+/// consume THIS constant, so their printed values are not the ones stated in
+/// their own doc comments.
 pub const OMEGA_LAMBDA: f64 = std.math.pow(f64, GAMMA, 8) * std.math.pow(f64, PI, 4) / PHI_SQ;
 
 /// Dark matter density from sacred formula
@@ -989,7 +1014,14 @@ pub fn gammaBandwidth() f64 {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /// Formula 101: Λ-Φ Coupling Constant
-/// λ_couple = φ × γ × Ω_Λ ≈ 0.111
+/// λ_couple = φ × γ × Ω_Λ ~~≈ 0.111~~
+///
+/// **CORRECTED 2026-08-12:** the "≈ 0.111" above is WRONG. OMEGA_LAMBDA as
+/// defined in this file is 0.000359, not ~0.69, so this function actually
+/// returns 0.000137. Formula 103 (anthropicPhiMeasure, returns 0.000173, doc
+/// implies ~0.382) and Formula 105 (observerProbabilityPhi, returns 0.011490
+/// against the 0.45 the registry compares it to) are affected the same way,
+/// as are Formulas 108, 119 and 120, which also consume OMEGA_LAMBDA.
 pub fn lambdaPhiCoupling() f64 {
     return PHI * GAMMA * OMEGA_LAMBDA;
 }

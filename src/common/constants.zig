@@ -90,17 +90,45 @@ pub const CONSCIOUSNESS_TRANSCENDENT: f64 = 1.0;
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// COSMOLOGICAL CONSTANTS (φ-based)
 /// ═══════════════════════════════════════════════════════════════════════════════
-/// Derived from sacred mathematics
+/// ~~Derived from sacred mathematics~~
+/// **CORRECTED 2026-08-12:** "derived" overstates all three constants below.
+/// G_PHI, OMEGA_LAMBDA and OMEGA_DM are dimensionless φ-expressions whose
+/// published values additionally use scale factors fitted to measurement.
+/// See the per-constant disclosures below.
 /// Gravitational constant from φ: G = π³γ²/φ (alternative form)
+///
+/// **Disclosure, 2026-08-12:** this expression evaluates to 1.067914 and is
+/// DIMENSIONLESS. It is NOT the SI gravitational constant, despite the name
+/// G_PHI and the doc comment above. Reaching 6.674e-11 m^3/kg/s^2 requires
+/// G_SCALE ~ 6.25e-11, a factor fitted to CODATA rather than derived — see
+/// t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md,
+/// which calls it "empirical calibration to match measurements". With one
+/// free multiplicative parameter fitted to one target the residual is zero
+/// by construction, so this is a calibration, not a prediction.
+/// Do not use this constant as G.
 pub const G_PHI: f64 = std.math.pow(f64, PI, 3) * GAMMA * GAMMA / PHI;
 
 /// Reduced Hubble constant from φ
 pub const H_PHI: f64 = 70.0 * PHI_INV; // km/s/Mpc scaled
 
-/// Dark energy density parameter: Ω_Λ = γ⁸π⁴/φ² ≈ 0.69
+/// Dark energy density parameter: Ω_Λ = γ⁸π⁴/φ² ~~≈ 0.69~~
+///
+/// **CORRECTED 2026-08-12:** the "≈ 0.69" above is WRONG. The expression on
+/// the line below evaluates to 0.000359 — off by a factor of ~1909, three
+/// orders of magnitude. The published 0.69 is 0.000359 × OMEGA_COARSE_SCALE
+/// (~1908.84), a scale factor fitted to the Planck measurement, not derived
+/// (see t27/docs/nona-02-organism/physics-kepler/KEPLER-NEWTON-VERIFICATION.md,
+/// "empirical calibration to match measurements"). Callers that treat this
+/// constant as ~0.69 are wrong by ~1909x — see lambdaPhiCoupling /
+/// anthropicPhiMeasure / observerProbabilityPhi in
+/// src/particle_physics/formulas.zig.
 pub const OMEGA_LAMBDA: f64 = std.math.pow(f64, GAMMA, 8) * std.math.pow(f64, PI, 4) / PHI_SQ;
 
-/// Dark matter density parameter: Ω_DM = γ⁴π²/φ ≈ 0.26
+/// Dark matter density parameter: Ω_DM = γ⁴π²/φ ~~≈ 0.26~~
+///
+/// **CORRECTED 2026-08-12:** the "≈ 0.26" above is WRONG. The expression on
+/// the line below evaluates to 0.018944; reaching the quoted 0.26 needs a
+/// fitted factor of ~13.7 (0.26 / 0.018944). No such factor is applied here.
 pub const OMEGA_DM: f64 = std.math.pow(f64, GAMMA, 4) * PI * PI / PHI;
 
 /// ═══════════════════════════════════════════════════════════════════════════════
