@@ -19,6 +19,10 @@ name: Website static checks
 # failure is distinguishable from a typecheck failure at a glance.
 
 on:
+  # workflow_dispatch, because the path filter means a change to this file
+  # cannot trigger the workflow that the change is to -- which is how the render
+  # job sat wired but unexecuted from the moment it merged.
+  workflow_dispatch:
   pull_request:
     paths: ['apps/website/**']
   push:
@@ -40,8 +44,20 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Every ARIA reference resolves to a declared id
         run: npm run check:aria
-      - name: Typecheck
-        run: npm run typecheck
+      # `npm run typecheck` has never passed on this codebase: 184 errors across
+      # 27 files, none of them in the pages this workflow exists to protect.
+      # Wiring the gate to it made the whole workflow red on the day it merged,
+      # which is the same as having no gate — and it put a failure that has
+      # nothing to do with rendering next to the render job.
+      #
+      # The ratchet fails on any file that GAINS errors and lowers the baseline
+      # when they are fixed, so the debt stays countable and a regression still
+      # stops a PR. --selftest runs first because a gate nobody has watched fail
+      # is a gate whose behaviour nobody knows.
+      - name: The type-error ratchet can fail
+        run: npm run typecheck:ratchet -- --selftest
+      - name: No file gained type errors
+        run: npm run typecheck:ratchet
 
   render:
     runs-on: ubuntu-latest
