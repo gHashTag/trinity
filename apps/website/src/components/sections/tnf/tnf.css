@@ -91,6 +91,9 @@
 .tnf-grid { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
 .tnf-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .tnf-grid-2 { grid-template-columns: repeat(2, 1fr); }
+/* Четыре факта об авторе: на 900px рвётся на две колонки, на 560px в одну —
+   иначе число и подпись под ним сжимаются до переноса внутри слова. */
+.tnf-grid-4 { grid-template-columns: repeat(4, 1fr); }
 /* min-width: 0 открывает горизонтальную прокрутку таблиц внутри ячейки: у grid-
    элемента min-width по умолчанию = auto, и широкая таблица распирала
    ячейку до 468px на экране 375px — вся страница ездила вбок. */
@@ -193,10 +196,12 @@
 @media (max-width: 900px) {
   .tnf-grid-3 { grid-template-columns: 1fr; }
   .tnf-grid-2 { grid-template-columns: 1fr; }
+  .tnf-grid-4 { grid-template-columns: repeat(2, 1fr); }
   .tnf-h2 { max-width: none; }
 }
 
 @media (max-width: 560px) {
+  .tnf-grid-4 { grid-template-columns: 1fr; }
   /* Таблицы сжимаются, но не переносят числа: строка чисел, разорванная
      на две строки, читается как два разных числа. */
   .tnf-table { font-size: 0.8125rem; }

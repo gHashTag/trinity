@@ -808,6 +808,50 @@ export const lineage = {
 
 /* ───────────────────────── REPRODUCE ───────────────────────── */
 
+/* Блок автора и сотрудничества. На прежнем лендинге его роль играли две
+   секции — «Команда» и «Инвестиции». Целиком они вернуться не могут: тот блок
+   держал оценку $300M за раунд, 578× по энергии, «бинарная эра окончена» и
+   эмиссию токена — то есть ровно те числа, которые на этом сайте отозваны.
+   Возвращается сам факт авторства и способ связи, а числа — только те, что
+   лежат на этой же странице с указанным происхождением. Условия по деньгам
+   на странице не публикуются, пока их нечем подтвердить. */
+export const author = {
+  badge: { en: 'WHO MEASURED THIS', ru: 'КТО ЭТО ИЗМЕРИЛ' },
+  title: {
+    en: 'One engineer, one board, and a public record of what did not work',
+    ru: 'Один инженер, одна плата и публичный список того, что не сработало',
+  },
+  sub: {
+    en: 'Every number on this page was measured by the person named here, on hardware named here, with a toolchain anyone can install. The retractions are counted alongside the theorems on purpose.',
+    ru: 'Каждое число на этой странице измерено человеком, названным здесь, на железе, названном здесь, тулчейном, который может поставить любой. Ретракции считаются рядом с теоремами намеренно.',
+  },
+  name: 'Dmitrii Vasilev',
+  nameRu: 'Дмитрий Васильев',
+  role: {
+    en: 'FPGA/RTL and hardware-AI engineer · author of the GF-T ternary format · specification → RTL → open synthesis flow',
+    ru: 'Инженер FPGA/RTL и аппаратного ИИ · автор тернарного формата GF-T · спецификация → RTL → открытый поток синтеза',
+  },
+  photo: 'https://avatars.githubusercontent.com/u/6774813?v=4',
+  orcid: '0009-0008-4294-6159',
+  email: 'admin@t27.ai',
+  facts: [
+    { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
+    { v: '52 / 16', l: { en: 'theorems / retractions in the paper', ru: 'теорем / ретракций в статье' }, tag: 'proved' },
+    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
+    { v: '974.66 MHz', l: { en: 'GFTernary decoder, 66 LUT, XC7A200T', ru: 'декодер GFTernary, 66 LUT, XC7A200T' }, tag: 'measured' },
+  ],
+  notClaimed: {
+    en: 'Not claimed here: silicon (none exists), a ternary fabric (none was available), and any comparison against tekum — the comparison is against takum, which is a different format.',
+    ru: 'Здесь не заявляется: кремний (его нет), тернарная фабрика (её не было) и любое сравнение с tekum — сравнение идёт с takum, а это другой формат.',
+  },
+  links: [
+    { label: { en: 'Full biography and CV', ru: 'Полная биография и CV' }, href: '#/about', note: { en: 'Track record, publications, contacts', ru: 'Опыт, публикации, контакты' } },
+    { label: { en: 'Licence the arithmetic cores', ru: 'Лицензировать арифметические ядра' }, href: '#/ip', note: { en: 'Cores that have been through the open flow', ru: 'Ядра, прошедшие открытый поток' } },
+    { label: { en: 'Send RTL, get it measured', ru: 'Присылайте RTL — измерю' }, href: '#/verification', note: { en: 'Same board, same flow, same seeds', ru: 'Та же плата, тот же поток, те же seed’ы' } },
+    { label: { en: 'Joint work, review, funding', ru: 'Совместная работа, рецензия, финансирование' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20collaboration', note: { en: 'No public valuation and no open round: the earlier figures were withdrawn. Terms are discussed directly.', ru: 'Публичной оценки и открытого раунда нет: прежние цифры отозваны. Условия обсуждаются напрямую.' } },
+  ],
+}
+
 export const reproduce = {
   badge: { en: 'REPRODUCE IT', ru: 'ВОСПРОИЗВЕСТИ' },
   title: { en: 'A result nobody can reproduce without buying something is not a public result', ru: 'Результат, который нельзя воспроизвести не купив что-то, не является публичным результатом' },
