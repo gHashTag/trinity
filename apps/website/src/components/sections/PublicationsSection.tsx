@@ -163,7 +163,7 @@ export default function PublicationsSection() {
               display: 'inline-flex',
               alignItems: 'center',
               fontSize: '0.75rem',
-              color: 'rgba(52, 152, 219, 0.9)',
+              color: 'var(--muted)', // был синий мимо палитры, контраст на грани
               gap: '0.3rem'
             }}>
               <span style={{ opacity: 0.7 }}>DOI:</span>

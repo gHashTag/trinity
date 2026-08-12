@@ -87,7 +87,7 @@ function Lockup() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
         style={{
-          fontSize: 'clamp(var(--f1), 2.618vw, var(--f3))',
+          fontSize: 'clamp(var(--f2), 3.4vw, var(--f4))',
           fontWeight: 300,
           letterSpacing: '0.146em', // 0.236 / φ
           color: 'var(--text)',
@@ -98,14 +98,19 @@ function Lockup() {
         Trinity S<sup style={{ fontSize: '0.618em', top: '-0.5em' }}>3</sup>AI
       </motion.div>
 
-      <TrinityLogo withLabel={false} height="clamp(89px, 16.18vw, 178px)" />
+      {/* Знак — главный элемент связки, поэтому он и мерится от неё, а не
+          подгоняется на глаз: визуальная высота знака = нижняя строка × φ⁴·⁵
+          (полушаг той же шкалы, 8.72), то есть 26 px × 8.72 ≈ 227 px. Габарит
+          SVG чуть больше визуальной высоты — внутренние поля viewBox дают
+          коэффициент ≈0.9 (замерено), отсюда 227 / 0.9 ≈ 254 px. */}
+      <TrinityLogo withLabel={false} height="clamp(128px, 21vw, 254px)" />
 
       <motion.div
         aria-label={TNF_WORDMARK}
         style={{
           display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
-          // φ⁻¹ of the line above it
-          fontSize: 'clamp(var(--f-1), 1.618vw, var(--f2))',
+          // φ⁻¹ от строки над знаком
+          fontSize: 'clamp(var(--f0), 2.1vw, var(--f2))',
           fontWeight: 300,
           letterSpacing: 'clamp(0.146em, 0.618vw, 0.236em)',
           color: 'var(--text)',
@@ -145,7 +150,11 @@ export function TnfHero() {
           <div
             className="tnf-mono"
             style={{
-              fontSize: 'clamp(var(--f4), 8vw, var(--f6))',
+              /* Была clamp(--f4, 8vw, --f6) = до 110 px и перебивала знак:
+                 формула читалась как заголовок страницы. Шаг вниз по шкале до
+                 --f5 = 68 px даёт ровно φ к заголовку h1 (68 / 42 = 1.618) и
+                 оставляет знак старшим по величине. */
+              fontSize: 'clamp(var(--f3), 5.6vw, var(--f5))',
               fontWeight: 300,
               letterSpacing: '-0.03em',
               lineHeight: 1,

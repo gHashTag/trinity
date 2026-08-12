@@ -58,7 +58,7 @@ function FieldRule() {
   }, [])
 
   // chart box
-  const W = 620, H = 220, pad = { l: 34, r: 12, t: 12, b: 26 }
+  const W = 620, H = 236, pad = { l: 34, r: 12, t: 30, b: 26 }
   const x = (v: number) => pad.l + ((v - 4) / 60) * (W - pad.l - pad.r)
   const y = (v: number) => H - pad.b - (v / 25) * (H - pad.t - pad.b)
 
@@ -137,13 +137,13 @@ function FieldRule() {
         {[0, 5, 10, 15, 20, 25].map((g) => (
           <g key={g}>
             <line x1={pad.l} x2={W - pad.r} y1={y(g)} y2={y(g)} stroke="rgba(255,255,255,0.07)" />
-            <text x={pad.l - 6} y={y(g) + 3} fill="var(--muted)" fontSize="9" textAnchor="end">{g}</text>
+            <text x={pad.l - 6} y={y(g) + 3} fill="var(--muted)" fontSize="11" textAnchor="end">{g}</text>
           </g>
         ))}
         {[8, 16, 32, 64].map((g) => (
           <g key={g}>
             <line x1={x(g)} x2={x(g)} y1={pad.t} y2={H - pad.b} stroke="rgba(255,255,255,0.07)" />
-            <text x={x(g)} y={H - pad.b + 13} fill="var(--muted)" fontSize="9" textAnchor="middle">{g}</text>
+            <text x={x(g)} y={H - pad.b + 13} fill="var(--muted)" fontSize="11" textAnchor="middle">{g}</text>
           </g>
         ))}
         <path
@@ -155,8 +155,16 @@ function FieldRule() {
           fill="none" stroke="var(--accent)" strokeWidth="1.4" strokeLinejoin="round"
         />
         <line x1={x(n)} x2={x(n)} y1={pad.t} y2={H - pad.b} stroke="rgba(255,255,255,0.35)" />
-        <circle cx={x(n)} cy={y(e)} r="3.5" fill="var(--accent)" />
-        <text x={x(n) + 7} y={y(e) - 6} fill="var(--text)" fontSize="10">N={n}, e={e}</text>
+        <circle cx={x(n)} cy={y(e)} r="4.5" fill="var(--accent)" />
+        {/* Значение стояло подписью у самой точки и ложилось прямо на кривую —
+            читать было нельзя. Оно вынесено в постоянный угол над полем: место
+            не меняется, наезжать не на что. */}
+        <g transform={`translate(${pad.l + 2}, 4)`}>
+          <rect x="0" y="0" width="136" height="20" rx="4" fill="rgba(0,0,0,0.72)" stroke="var(--border)" />
+          <text x="8" y="14" fill="var(--text)" fontSize="12" fontWeight="500">
+            N = {n} · e = {e} · m = {m}
+          </text>
+        </g>
       </svg>
       <div style={{ display: 'flex', gap: 'var(--sp2)', flexWrap: 'wrap', fontSize: 'var(--f-2)', color: 'var(--muted)', marginTop: 'var(--sp0)' }}>
         <span style={{ color: 'var(--accent)' }}>— {t.steps}</span>
@@ -231,20 +239,20 @@ function CostPlane() {
         {[0, 200, 400, 600, 800, 1000].map((g) => (
           <g key={g}>
             <line x1={pad.l} x2={W - pad.r} y1={y(g)} y2={y(g)} stroke="rgba(255,255,255,0.07)" />
-            <text x={pad.l - 6} y={y(g) + 3} fill="var(--muted)" fontSize="9" textAnchor="end">{g}</text>
+            <text x={pad.l - 6} y={y(g) + 3} fill="var(--muted)" fontSize="11" textAnchor="end">{g}</text>
           </g>
         ))}
         {[100, 200, 300, 400, 500].map((g) => (
           <g key={g}>
             <line x1={x(g)} x2={x(g)} y1={pad.t} y2={H - pad.b} stroke="rgba(255,255,255,0.07)" />
-            <text x={x(g)} y={H - pad.b + 13} fill="var(--muted)" fontSize="9" textAnchor="middle">{g}</text>
+            <text x={x(g)} y={H - pad.b + 13} fill="var(--muted)" fontSize="11" textAnchor="middle">{g}</text>
           </g>
         ))}
 
         {/* the bare wire */}
         <line x1={pad.l} x2={W - pad.r} y1={y(827.81)} y2={y(827.81)} stroke="var(--golden)" strokeWidth="1" strokeDasharray="4 4" opacity="0.55" />
         <line x1={x(112)} x2={x(112)} y1={pad.t} y2={H - pad.b} stroke="var(--golden)" strokeWidth="1" strokeDasharray="4 4" opacity="0.55" />
-        <text x={W - pad.r} y={y(827.81) - 5} fill="var(--golden)" fontSize="9" textAnchor="end" opacity="0.8">{t.wire} · 112 LUT · 827.81</text>
+        <text x={W - pad.r} y={y(827.81) - 6} fill="var(--golden)" fontSize="11" textAnchor="end" opacity="0.8">{t.wire} · 112 LUT · 827.81</text>
 
         {pts.map((p) => {
           const on = hover === p.name
@@ -262,7 +270,7 @@ function CostPlane() {
                 y={y(p.fmax) + 3.5 + nudge.dy}
                 textAnchor={flip ? 'end' : 'start'}
                 fill={p.ours ? 'var(--accent)' : 'var(--muted)'}
-                fontSize={on ? 11 : 10}
+                fontSize={on ? 13 : 12}
                 fontWeight={p.ours ? 600 : 400}
               >
                 {p.name}{on ? ` · ${p.lut} LUT · ${p.fmax} MHz` : ''}
@@ -271,8 +279,8 @@ function CostPlane() {
           )
         })}
 
-        <text x={W - pad.r} y={H - 4} fill="var(--muted)" fontSize="9" textAnchor="end">{t.xl}</text>
-        <text x={pad.l - 40} y={12} fill="var(--muted)" fontSize="9">{t.yl}</text>
+        <text x={W - pad.r} y={H - 4} fill="var(--muted)" fontSize="11" textAnchor="end">{t.xl}</text>
+        <text x={pad.l - 40} y={12} fill="var(--muted)" fontSize="11">{t.yl}</text>
       </svg>
 
       <div style={{ display: 'flex', gap: 'var(--sp2)', flexWrap: 'wrap', fontSize: 'var(--f-2)', color: 'var(--muted)', marginTop: 'var(--sp1)' }}>

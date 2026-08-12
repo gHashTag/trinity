@@ -10,10 +10,16 @@
 :root {
   --phi: 1.618;
 
-  /* Кегли: φ⁻² … φ⁴ от базы 1rem */
-  --f-3: 0.382rem;
-  --f-2: 0.618rem;
-  --f-1: 0.786rem;
+  /* Кегли: φ⁻² … φ⁴ от базы 1rem.
+     Два нижних шага не чистые φ^n, и это сознательно: 0.618rem = 9.9 px,
+     0.786rem = 12.6 px, а замером по странице такой текст читался хуже
+     основного вдвое — 68 подписей происхождения, самая важная вещь на сайте,
+     оказались самым мелким кеглем. Пол читаемости 13 px важнее чистоты
+     отношения, поэтому прогрессия действует ВЫШЕ пола, а два нижних шага
+     прижаты к нему. Ритм отступов остался чистым φ^n. */
+  --f-3: 0.75rem;    /* 12 px — только для капса с трекингом */
+  --f-2: 0.8125rem;  /* 13 px — пол читаемости */
+  --f-1: 0.875rem;   /* 14 px */
   --f0:  1rem;
   --f1:  1.272rem;
   --f2:  1.618rem;
@@ -98,11 +104,13 @@
 }
 .tnf-grid, .tnf-grid > * { min-width: 0; }
 
+/* Теги происхождения — несущая конструкция честности на странице, а были
+   кеглем 10.6 px, мельче всего остального. */
 .tnf-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.66rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   font-weight: 600;
@@ -117,11 +125,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-.tnf-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.tnf-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .tnf-table th {
   text-align: right;
   font-weight: 600;
-  font-size: 0.68rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -191,7 +199,7 @@
 @media (max-width: 560px) {
   /* Таблицы сжимаются, но не переносят числа: строка чисел, разорванная
      на две строки, читается как два разных числа. */
-  .tnf-table { font-size: 0.78rem; }
+  .tnf-table { font-size: 0.8125rem; }
   .tnf-table th, .tnf-table td { padding: 0.5rem 0.5rem; }
   .tnf-bar { display: none; }
 }
