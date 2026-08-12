@@ -2710,16 +2710,6 @@ const JitterTracker = struct {
         return 0.5 * (1.0 + sign * erf);
     }
 
-    test "normalCDFApprox matches the standard normal CDF" {
-        // Anchors: F(0) = 0.5 exactly; symmetry; tails reach 0 and 1.
-        try std.testing.expect(@abs(normalCDFApprox(0.0) - 0.5) < 1e-7);
-        try std.testing.expect(@abs(normalCDFApprox(1.0) - 0.8413447) < 1e-6);
-        try std.testing.expect(@abs(normalCDFApprox(-1.0) - 0.1586553) < 1e-6);
-        try std.testing.expect(@abs(normalCDFApprox(1.959964) - 0.975) < 1e-6);
-        try std.testing.expect(normalCDFApprox(-6.0) < 1e-6);
-        try std.testing.expect(normalCDFApprox(6.0) > 1.0 - 1e-6);
-    }
-
     pub fn showDistributionFit(self: *const JitterTracker) void {
         const fit = self.fitLatencyDistribution() catch |err| {
             printDim("    Error: {any}\n", .{err});
@@ -10577,4 +10567,19 @@ fn exportSimulationCSV(passed: usize, total: usize, total_time_ms: i64, jitter_t
 
     printErr("\n", .{});
     printErr("\n[+] Simulation CSV export complete\n", .{});
+}
+
+// Tests placed at file scope: test declarations nested inside a struct are not
+// collected by `zig test` unless the struct is referenced, so the previous
+// in-struct placement silently ran zero tests.
+test "normalCDFApprox matches the standard normal CDF" {
+    const f = JitterTracker.normalCDFApprox;
+    // F(0) = 0.5 exactly; symmetry; tails actually reach 0 and 1.
+    // Before the fix: F(0) = 0.3362, |error| <= 0.164, range [0.086, 0.914].
+    try std.testing.expect(@abs(f(0.0) - 0.5) < 1e-7);
+    try std.testing.expect(@abs(f(1.0) - 0.8413447) < 1e-6);
+    try std.testing.expect(@abs(f(-1.0) - 0.1586553) < 1e-6);
+    try std.testing.expect(@abs(f(1.959964) - 0.975) < 1e-6);
+    try std.testing.expect(f(-6.0) < 1e-6);
+    try std.testing.expect(f(6.0) > 1.0 - 1e-6);
 }
