@@ -1,0 +1,40 @@
+name: Website static checks
+
+# The website has had a typecheck, an API-contract check, a render check and an
+# ARIA-reference check for some time. Until now CI ran none of them: they were
+# manual commands, so they ran when someone remembered.
+#
+# That is how the mobile language switcher shipped broken — the check that finds
+# it existed and nothing invoked it — and how a dangling aria-controls="mobile-menu"
+# sat in the tree.
+#
+# This wires the cheap half: no browser, no server, no build artefacts to serve.
+# `check:render` drives real Chrome over a built dist and is deliberately NOT
+# here yet — it needs a browser and a local server in CI, and a flaky gate gets
+# muted within a week. Wiring it is a separate change that has to prove itself
+# stable first.
+
+on:
+  pull_request:
+    paths: ['apps/website/**']
+  push:
+    branches: [main, master]
+    paths: ['apps/website/**']
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Every ARIA reference resolves to a declared id
+        run: npm run check:aria
+      - name: Typecheck
+        run: npm run typecheck
