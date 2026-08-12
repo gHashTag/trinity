@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://maas-log-prod.cn-wlcb.ufileos.com/anthropic/9abb931a-09e2-47f1-b604-85eb9b561805/52f3aea9c58e791b8438dfaa4e33281f.jpg?UCloudPublicKey=TOKEN_e15ba47a-d098-4fbd-9afc-a0dcf0e4e621&Expires=1774961194&Signature=HpSLonNyhvxJewblKFKHIDlKjxI=" alt="Trinity">
+  <img src="docs/static/img/logo.svg" alt="Trinity" width="180" height="180">
 </p>
 
 <p align="center">
@@ -195,7 +195,7 @@ npm install -g @playra/tri
 
 # 2. Verify
 tri --version
-# Output: TRI CLI v5.1.0
+# Output: TRI CLI v6.3.0
 
 # 3. See sacred constants
 tri constants
@@ -364,7 +364,7 @@ Brain waves synchronize at golden ratio frequencies. α, β, γ rhythms are conn
 - `QuantumMetrics.coherence` = φ-coherence: degree to which oscillations between brain modules follow golden frequency relationships
 - SacredWaveFunction ψ(θ) amplitudes = resonant modes of architecture
 
-**Reference:** [LinkedIn: Golden Ratio in Brain Waves](https://www.linkedin.com/posts/andrei-ursachi-065275203_frontiers-golden-ratio-organization-in-activity-7435035866231754752-xcs9)
+**Reference:** [Frontiers in Physics: golden-ratio organization in brain waves](https://www.frontiersin.org/journals/physics/articles/10.3389/fphy.2023.1181416/full)
 
 ### Bridge 3: Qutrits → Ternary Neurons → Connectome
 
@@ -397,7 +397,7 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 
 ## Installation
 
-**Trinity v5.1.0 "HEARTBEAT"** — Install via your preferred package manager:
+**Trinity v6.3.0** — Install via your preferred package manager:
 
 | Method | Command |
 |--------|---------|
@@ -419,7 +419,7 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 
 ```bash
 tri --version
-# Output: TRI CLI v5.1.0
+# Output: TRI CLI v6.3.0
 
 tri constants
 # Shows all constants (φ, π, e, μ, χ, σ, ε...)
@@ -542,7 +542,7 @@ tri math compare --pellis
 ```
 
 <p align="center">
-  <img src="demotapes/tri_math_constants.gif" alt="tri math demo" width="600">
+  <em>Reproduce locally:</em> <code>vhs tapes/tri-math-demo.tape</code>
 </p>
 
 #### Sacred Biology (v14.0)
@@ -776,7 +776,7 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 | Domain | Docs | Status |
 |--------|------|--------|
 | **Common** | [`src/common/README.md`](src/common/README.md) | ✅ Stable - Single source of truth for constants, protocol, errors |
-| **VSA** | [`src/vsa/README.md`](src/vsa/README.md) | ✅ Stable - Vector Symbolic Architecture (99.5% test pass) |
+| **VSA** | [`src/vsa_core/`](src/vsa_core/) | ✅ Stable - Vector Symbolic Architecture (99.5% test pass) |
 | **TTT Data** | [`external/zig-golden-float/`](external/zig-golden-float/) | ✅ Phase B/C Complete - Enum & constants support |
 | **UART/FPGA** | [`fpga/openxc7-synth/UART_README.md`](fpga/openxc7-synth/UART_README.md) | ✅ v6.0 Current - FPGA communication protocol |
 
@@ -1022,7 +1022,7 @@ zig build-exe src/bench_arith.zig -O ReleaseFast --name bench-arith
 
 **Note:** Full benchmark suite requires FPGA synthesis for hardware-accurate GF16/TF3 measurements. Current software implementations provide baseline comparisons.
 
-[docs/benchmarks/format_comparison_matrix.md](docs/benchmarks/format_comparison_matrix.md) — Detailed format properties table
+[docs/PRODUCTION_BENCHMARKS.md](docs/PRODUCTION_BENCHMARKS.md) — Detailed benchmark and format properties tables
 
 ---
 
@@ -1183,7 +1183,7 @@ Attribution for listed docs and packages is checked by [`src/tri/author_attribut
 ## Community
 
 <p align="center">
-  <a href="https://www.reddit.com/r/t27ai/"><img src="https://img.shields.io/badge/Reddit-r-t27ai-FF4500?style=for-the-badge&logo=reddit" alt="Reddit"></a>
+  <a href="https://www.reddit.com/r/t27ai/"><img src="https://img.shields.io/badge/Reddit-r%2Ft27ai-FF4500?style=for-the-badge&logo=reddit" alt="Reddit"></a>
   <a href="https://t.me/t27_lang"><img src="https://img.shields.io/badge/Telegram-t27__lang-229ED9?style=for-the-badge&logo=telegram" alt="Telegram"></a>
   <a href="https://x.com/t27_lang"><img src="https://img.shields.io/badge/X-t27__lang-000000?style=for-the-badge&logo=x" alt="X"></a>
 </p>
@@ -1234,26 +1234,6 @@ Attribution for listed docs and packages is checked by [`src/tri/author_attribut
 
 **To add topics manually:** Visit https://github.com/gHashTag/trinity and click "Add topics" in the About section.
 
----
-
-## License
-
-MIT -- see [LICENSE](LICENSE)
-
----
-
-<p align="center">
-  <a href="https://github.com/gHashTag/trinity/releases/v5.1.0"><strong>Download v5.1.0 "HEARTBEAT"</strong></a> &bull;
-  <a href="https://gHashTag.github.io/trinity/">Dashboard</a> &bull;
-  <a href="https://gHashTag.github.io/trinity/docs/">Documentation</a>
-</p>
-
-<p align="center">
-  <code>φ² + 1/φ² = 3 = TRINITY</code><br>
-  <code>v5.1.0 HEARTBEAT — 28 March 2026</code>
-</p>
-
----
 
 ## 📦 Model Documentation (Consolidated)
 
@@ -1265,3 +1245,23 @@ MIT -- see [LICENSE](LICENSE)
 - VSA (Vector Symbolic Architecture)
 - Ternary Models
 - Hybrid Models
+
+---
+
+## License
+
+MIT -- see [LICENSE](LICENSE)
+
+---
+
+<p align="center">
+  <a href="https://github.com/gHashTag/trinity/releases/tag/v6.3.0"><strong>Download v6.3.0</strong></a> &bull;
+  <a href="https://gHashTag.github.io/trinity/">Dashboard</a> &bull;
+  <a href="https://gHashTag.github.io/trinity/docs/">Documentation</a>
+</p>
+
+<p align="center">
+  <code>φ² + 1/φ² = 3 = TRINITY</code><br>
+  <code>v6.3.0 — Analysis Notebooks + Conference Abstracts, 26 March 2026</code>
+</p>
+
