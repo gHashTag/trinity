@@ -310,12 +310,12 @@ export function TnfFrontier() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>{key === 'ru' ? 'формат' : 'format'}</th>
-                    <th>{key === 'ru' ? 'вид' : 'kind'}</th>
-                    <th>LUT</th>
-                    <th>{key === 'ru' ? 'МГц' : 'MHz'}</th>
-                    <th style={{ width: '90px' }} />
+                    <th scope="col">#</th>
+                    <th scope="col">{key === 'ru' ? 'формат' : 'format'}</th>
+                    <th scope="col">{key === 'ru' ? 'вид' : 'kind'}</th>
+                    <th scope="col">LUT</th>
+                    <th scope="col">{key === 'ru' ? 'МГц' : 'MHz'}</th>
+                    <th scope="col" style={{ width: '90px' }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -348,11 +348,11 @@ export function TnfFrontier() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>{key === 'ru' ? 'формат' : 'format'}</th>
-                    <th>LUT</th>
-                    <th>{key === 'ru' ? 'МГц/LUT' : 'MHz/LUT'}</th>
-                    <th style={{ width: '90px' }} />
+                    <th scope="col">#</th>
+                    <th scope="col">{key === 'ru' ? 'формат' : 'format'}</th>
+                    <th scope="col">LUT</th>
+                    <th scope="col">{key === 'ru' ? 'МГц/LUT' : 'MHz/LUT'}</th>
+                    <th scope="col" style={{ width: '90px' }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -386,9 +386,9 @@ export function TnfFrontier() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>{key === 'ru' ? 'семейство' : 'family'}</th>
-                    <th style={{ textAlign: 'left' }}>{key === 'ru' ? 'умножение' : 'multiply'}</th>
-                    <th style={{ textAlign: 'left' }}>{key === 'ru' ? 'сложение' : 'add'}</th>
+                    <th scope="col">{key === 'ru' ? 'семейство' : 'family'}</th>
+                    <th scope="col" style={{ textAlign: 'left' }}>{key === 'ru' ? 'умножение' : 'multiply'}</th>
+                    <th scope="col" style={{ textAlign: 'left' }}>{key === 'ru' ? 'сложение' : 'add'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -427,7 +427,7 @@ export function TnfLadder() {
             <div className="tnf-scroll">
               <table className="tnf-table">
                 <thead>
-                  <tr>{ladder.header[key].map((h) => <th key={h}>{h}</th>)}</tr>
+                  <tr>{ladder.header[key].map((h) => <th scope="col" key={h}>{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {ladder.rows.map((r) => (
@@ -457,11 +457,11 @@ export function TnfLadder() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>{key === 'ru' ? 'ступень' : 'rung'}</th>
-                    <th>LUT</th>
-                    <th>Fmax</th>
-                    <th>ppl</th>
-                    <th style={{ textAlign: 'left' }}>vs fp32</th>
+                    <th scope="col">{key === 'ru' ? 'ступень' : 'rung'}</th>
+                    <th scope="col">LUT</th>
+                    <th scope="col">Fmax</th>
+                    <th scope="col">ppl</th>
+                    <th scope="col" style={{ textAlign: 'left' }}>vs fp32</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -497,11 +497,11 @@ export function TnfLadder() {
               <table className="tnf-table">
                 <thead>
                   <tr>
-                    <th>{key === 'ru' ? 'схема' : 'scheme'}</th>
-                    <th>{key === 'ru' ? 'бит масштаба/вес' : 'scale bits/weight'}</th>
-                    <th>{key === 'ru' ? 'всего бит/вес' : 'total bits/weight'}</th>
-                    <th>ppl A</th>
-                    <th>ppl B</th>
+                    <th scope="col">{key === 'ru' ? 'схема' : 'scheme'}</th>
+                    <th scope="col">{key === 'ru' ? 'бит масштаба/вес' : 'scale bits/weight'}</th>
+                    <th scope="col">{key === 'ru' ? 'всего бит/вес' : 'total bits/weight'}</th>
+                    <th scope="col">ppl A</th>
+                    <th scope="col">ppl B</th>
                   </tr>
                 </thead>
                 <tbody>

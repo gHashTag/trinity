@@ -57,6 +57,11 @@ const EMAIL = 'admin@t27.ai'
 // never against tekum. What replaces it is the taper diagnostic (Theorem 2),
 // which is a measurement of the incumbent's own published behaviour and does
 // not depend on any oracle of ours being distinct from anyone else's.
+/* Столбцы этой таблицы — Format / Declared M / Recovered M_eff / Slope.
+   До 13.08.2026 английские подписи над ней читались «Accuracy against tekum16»
+   с колонками GF-T16 / tekum16: остаток отозванного сравнения, разъехавшийся
+   с данными. Русская версия уже была честной, а английская — язык по умолчанию.
+   Заголовок, пояснение и шапка обязаны меняться вместе с этим массивом. */
 const ACCURACY: [string, string, string, string][] = [
   ['TNF16 (fixed fields)', '9', '8.99 / 9.01', '0 — flat'],
   ['GF16 (fixed fields)', '9', '8.99', '0 — flat'],
@@ -226,15 +231,15 @@ value = (-1)^sign · (1 + M/2^9) · 2^e,   e = Σ tᵢ·3ⁱ  ∈ [−40, +40]`}
         {/* Accuracy */}
         <motion.div className="premium-card" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
-            {c ? c.accuracyTitle : 'Accuracy against tekum16'}
+            {c ? c.accuracyTitle : 'Taper diagnostic: recovered significand width'}
           </h2>
           <p style={{ fontSize: '0.9rem', lineHeight: 1.6, opacity: 0.85, maxWidth: '64ch', margin: '0 auto 1.2rem' }}>
-            {c ? c.accuracyNote : 'Mean relative error over an encode → decode round trip, 6000 values, random sign. Re-measured independently on 8 August 2026 against the same oracles: the ratios reproduce exactly. Bins are in powers of two.'}
+            {c ? c.accuracyNote : 'Theorem 2: effective mantissa width M_eff is constant across binades iff the format holds a constant significand and has not exhausted its range. The tool recovers the declared width to 0.01 of a bit for every fixed-field format and separates tapered formats by their slope. What is measured here is the competitors\u2019 own published behaviour, not our oracle against theirs.'}
           </p>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '420px' }}>
               <thead>
-                <tr>{(c ? c.cols : ['Magnitude', 'GF-T16', 'tekum16', 'Result']).map((h) => <th key={h} style={th}>{h}</th>)}</tr>
+                <tr>{(c ? c.cols : ['Format', 'Declared M', 'Recovered M_eff', 'Slope']).map((h) => <th key={h} style={th}>{h}</th>)}</tr>
               </thead>
               <tbody>
                 {(c ? c.accuracy : ACCURACY).map((row) => (

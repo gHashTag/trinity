@@ -116,6 +116,7 @@ function Range(p: { label: string; min: number; max: number; step: number; value
         type="range" min={p.min} max={p.max} step={p.step} value={p.value}
         onChange={(e) => p.onChange(Number(e.target.value))}
         aria-label={p.label}
+        aria-valuetext={`${p.value}${p.suffix ?? ''}`}
         style={{ width: '100%', accentColor: 'var(--golden)' }}
       />
     </div>

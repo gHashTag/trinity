@@ -51,6 +51,37 @@ const store = {
   },
 };
 
+/* Заголовок и описание на каждый язык. Формулировки держатся тех же границ,
+   что и страница: пара форматов, 52 теоремы, 16 ретракций, железо измерено на
+   открытом потоке на XC7A200T — без «первого» и без обещаний кремния. */
+const SEO = {
+  en: {
+    locale: 'en_US',
+    title: 'TRINITY | TNF · GFTernary — a reference format for the ternary datapath',
+    description: 'TNF and GFTernary: a reference format pair for the ternary datapath. 52 theorems, 16 retractions, and every hardware number measured on an open flow on XC7A200T.',
+  },
+  ru: {
+    locale: 'ru_RU',
+    title: 'TRINITY | TNF · GFTernary — референсная пара форматов для тернарного датапути',
+    description: 'TNF и GFTernary: референсная пара числовых форматов для тернарного датапути. 52 теоремы, 16 ретракций, и каждое аппаратное число измерено на открытом потоке на XC7A200T.',
+  },
+  de: {
+    locale: 'de_DE',
+    title: 'TRINITY | TNF · GFTernary — Referenzformate für den ternären Datenpfad',
+    description: 'TNF und GFTernary: ein Referenzpaar von Zahlenformaten für den ternären Datenpfad. 52 Theoreme, 16 Rücknahmen, und jede Hardwarezahl auf einem offenen Flow auf XC7A200T gemessen.',
+  },
+  es: {
+    locale: 'es_ES',
+    title: 'TRINITY | TNF · GFTernary — formatos de referencia para la ruta de datos ternaria',
+    description: 'TNF y GFTernary: un par de formatos numéricos de referencia para la ruta de datos ternaria. 52 teoremas, 16 retractaciones, y cada número de hardware medido en un flujo abierto sobre XC7A200T.',
+  },
+  zh: {
+    locale: 'zh_CN',
+    title: 'TRINITY | TNF · GFTernary — 三进制数据通路的参考数字格式',
+    description: 'TNF 与 GFTernary：面向三进制数据通路的一对参考数字格式。52 条定理，16 项撤回，所有硬件数据均在 XC7A200T 上以开源流程实测。',
+  },
+} as const
+
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     // Client-side only initialization
@@ -99,12 +130,26 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     return () => { cancelled = true; };
   }, [lang, catalogues]);
 
-  // Save to localStorage when lang changes
+  /* Заголовок вкладки и описание оставались английскими при любом выбранном
+     языке: html[lang] переключался, а <title> и meta[description] из index.html
+     нет — то есть в выдаче поиска по русским запросам страница представлялась
+     по-английски. Обновляются здесь же, одним источником с lang. */
   useEffect(() => {
-    if (mounted) {
-      store.set('trinity-lang', lang);
-      document.documentElement.lang = lang;
-    }
+    if (!mounted) return;
+    store.set('trinity-lang', lang);
+    document.documentElement.lang = lang;
+
+    const meta = SEO[lang as keyof typeof SEO];
+    if (!meta) return;
+    document.title = meta.title;
+    const set = (sel: string, attr: string, val: string) => {
+      const el = document.querySelector(sel);
+      if (el) el.setAttribute(attr, val);
+    };
+    set('meta[name="description"]', 'content', meta.description);
+    set('meta[property="og:title"]', 'content', meta.title);
+    set('meta[property="og:description"]', 'content', meta.description);
+    set('meta[property="og:locale"]', 'content', meta.locale);
   }, [lang, mounted]);
 
   // Deep merge with English fallback to prevent crashes on missing keys
