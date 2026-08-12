@@ -616,7 +616,7 @@ export const landscape = {
       },
     },
     {
-      name: 'Fibbinary for neuromorphic radio',
+      name: { en: 'Fibbinary for neuromorphic radio', ru: 'Fibbinary для нейроморфного радио' },
       who: '2025',
       url: 'https://arxiv.org/abs/2511.01921',
       kind: 'context' as const,
@@ -626,7 +626,7 @@ export const landscape = {
       },
     },
     {
-      name: 'BitNet b1.58 and the {−1, 0, +1} hardware line',
+      name: { en: 'BitNet b1.58 and the {−1, 0, +1} hardware line', ru: 'BitNet b1.58 и аппаратная линия {−1, 0, +1}' },
       who: '2024–2026',
       url: 'https://arxiv.org/abs/2402.17764',
       kind: 'confirms' as const,
@@ -636,7 +636,7 @@ export const landscape = {
       },
     },
     {
-      name: 'GoldenFloat · the 83-format catalog',
+      name: { en: 'GoldenFloat · the 83-format catalog', ru: 'GoldenFloat · каталог из 83 форматов' },
       who: 'D. Vasilev, 2026',
       url: 'https://arxiv.org/abs/2606.05017',
       kind: 'ours' as const,
@@ -756,7 +756,7 @@ export const findings = {
       },
       tag: 'spec' as Tag,
       refs: [
-        { label: '83-format catalogue · arXiv:2606.09686', url: 'https://arxiv.org/abs/2606.09686' },
+        { label: '83 formats · arXiv:2606.09686', url: 'https://arxiv.org/abs/2606.09686' },
         { label: 'P3109 Interim Report v4.0', url: 'https://docenti.ing.unipi.it/m.cococcioni/IEEE_P3109_WG_Interim_Report_ver_4.0_2026_06_26.pdf' },
       ],
     },
@@ -876,12 +876,14 @@ export const invest = {
     en: 'Low precision became the default in one generation, and the standards did not keep up: the MX specification is license-free but says nothing about hardware conformance, and IEEE P3109 is still an active PAR whose drafts must not be used for conformance. What a chip team is missing is not another format — it is proof that a format behaves identically in silicon and in the reference model.',
     ru: 'Низкая точность стала нормой за одно поколение, а стандарты за ней не успели: спецификация MX бесплатна, но об аппаратном conformance в ней ничего нет, а IEEE P3109 — до сих пор активный PAR, черновики которого запрещено использовать для conformance. Команде чипа не хватает не ещё одного формата, а доказательства, что формат ведёт себя в кремнии так же, как в эталонной модели.',
   },
-  factsTitle: { en: 'Where this stands today', ru: 'Где это сейчас' },
+  factsTitle: { en: 'The terms, and where this stands today', ru: 'Условия и где это сейчас' },
   facts: [
-    { v: '1', l: { en: 'engineer, one board, no prior round', ru: 'инженер, одна плата, прежних раундов нет' }, tag: 'terms' },
-    { v: 'FPGA', l: { en: 'stage: measured on FPGA, no silicon', ru: 'стадия: измерено на FPGA, кремния нет' }, tag: 'measured' },
+    { v: '$3M', l: { en: 'for 1% equity — the asking terms', ru: 'за 1% equity — запрашиваемые условия' }, tag: 'terms' },
+    { v: '$300M', l: { en: 'valuation asked, pre-money', ru: 'запрашиваемая оценка, pre-money' }, tag: 'terms' },
+    { v: '100%', l: { en: 'founder-held today, no prior round', ru: 'у основателя сегодня, прежних раундов нет' }, tag: 'terms' },
     { v: '18', l: { en: 'months of runway planned, in three tranches', ru: 'месяцев дистанции в плане, тремя траншами' }, tag: 'plan' },
-    { v: 'по запросу', l: { en: 'round terms — on request, by email', ru: 'условия раунда — по запросу, письмом' }, tag: 'terms' },
+    { v: 'FPGA', l: { en: 'stage: measured on FPGA, no silicon yet', ru: 'стадия: измерено на FPGA, кремния пока нет' }, tag: 'measured' },
+    { v: '83 / 52', l: { en: 'formats catalogued and theorems proved behind the ask', ru: 'форматов в каталоге и теорем доказано за этим запросом' }, tag: 'proved' },
   ],
   whyTitle: { en: 'Why this is money now, not later', ru: 'Почему это деньги сейчас, а не потом' },
   why: [
@@ -916,9 +918,9 @@ export const invest = {
     ru: 'Это не рынок ИИ-чипов — агентства расходятся по его базе 2025 года вдвое, а число, которое нельзя разложить, доказательством не является. Ядро продаётся на рынок лицензирования IP, и его юнит-экономику публикуют сами компании, которые на нём живут.',
   },
   market: [
-    { v: '$9,8 млрд', l: { en: 'semiconductor IP licensing, 2025, with the top five holding 62.2%', ru: 'лицензирование semiconductor IP, 2025; топ-5 держат 62,2%' }, src: { u: 'https://www.gminsights.com/industry-analysis/semiconductor-intellectual-property-ip-market', n: 'GMInsights' }, tag: 'external' },
-    { v: '~$1,2 млн', l: { en: 'average per licence: Ceva signed 54 agreements for $63.6M in 2025', ru: 'средний чек лицензии: Ceva подписала 54 соглашения на $63,6 млн за 2025' }, src: { u: 'https://www.ceva-ip.com/press/ceva-inc-announces-fourth-quarter-and-full-year-2025-financial-results/', n: 'Ceva FY2025' }, tag: 'derived' },
-    { v: '~5% / ~10%', l: { en: 'royalty rates Arm itself discloses for CPU IP and for CSS', ru: 'ставки роялти, раскрытые самой Arm: CPU IP и CSS' }, src: { u: 'https://investors.arm.com/static-files/11881690-3c08-4148-bf7f-1504442b4ec4', n: 'Arm, investor materials' }, tag: 'external' },
+    { v: { en: '$9.8B', ru: '$9,8 млрд' }, l: { en: 'semiconductor IP licensing, 2025, with the top five holding 62.2%', ru: 'лицензирование semiconductor IP, 2025; топ-5 держат 62,2%' }, src: { u: 'https://www.gminsights.com/industry-analysis/semiconductor-intellectual-property-ip-market', n: 'GMInsights' }, tag: 'external' },
+    { v: { en: '~$1.2M', ru: '~$1,2 млн' }, l: { en: 'average per licence: Ceva signed 54 agreements for $63.6M in 2025', ru: 'средний чек лицензии: Ceva подписала 54 соглашения на $63,6 млн за 2025' }, src: { u: 'https://www.ceva-ip.com/press/ceva-inc-announces-fourth-quarter-and-full-year-2025-financial-results/', n: 'Ceva FY2025' }, tag: 'derived' },
+    { v: '~5% / ~10%', l: { en: 'royalty rates Arm itself discloses for CPU IP and for CSS', ru: 'ставки роялти, раскрытые самой Arm: CPU IP и CSS' }, src: { u: 'https://investors.arm.com/static-files/11881690-3c08-4148-bf7f-1504442b4ec4', n: 'Arm IR' }, tag: 'external' },
     { v: '97,9%', l: { en: 'Arm gross margin, Q4 FY2026 — why this model is worth building', ru: 'валовая маржа Arm, Q4 FY2026 — почему эту модель стоит строить' }, src: { u: 'https://www.sec.gov/Archives/edgar/data/1973239/000197323926000062/exhibit992fye26q431-marx26.htm', n: 'Arm, SEC' }, tag: 'external' },
   ],
   modelTitle: { en: 'What is actually sold', ru: 'Что на самом деле продаётся' },
