@@ -51,13 +51,13 @@ const DIFFERENCE = 'Two things here exist nowhere on that list: a backward pass 
 const RU = {
   eyebrow: 'Курс',
   h1: 'Обучите нейросеть прямо на FPGA.',
-  lede: 'Не инференс — именно обучение, на самом кристалле. Восемь модулей: от пустого тулчейна до сети, которая учится на живом кремнии. Полностью на открытых инструментах: без Vivado, без лицензий, без единого шага, который вы не сможете повторить сами.',
+  lede: 'Не инференс — именно обучение, на самом кристалле. Восемь модулей: от пустого тулчейна до сети, которая учится прямо на FPGA-плате. Полностью на открытых инструментах: без Vivado, без лицензий, без единого шага, который вы не сможете повторить сами.',
   ctaSeat: 'Забронировать место',
   ctaVerif: 'Посмотреть работы по верификации',
   seatNote: 'Следующий поток стартует, когда наберётся группа — напишите, и я придержу место.',
   whyTitle: 'Зачем этот курс',
   why1: 'Вендорские курсы учат вендорским инструментам. Курсы по ASIC заканчиваются на тейпауте. Никто не учит тому, что мне пришлось доказать на железе: нейросеть, делающая обратный проход прямо на FPGA, проверенная побитово — на тулчейне, который студент ставит бесплатно на свой ноутбук.',
-  why2: 'Я учу этому, потому что сам это построил: собственный формат чисел от статьи на arXiv через RTL, умещающийся в логику без единого аппаратного умножителя, до тейпаута на SKY130 — и до этого обучил больше тысячи разработчиков.',
+  why2: 'Я учу этому, потому что сам это построил: собственный формат чисел от статьи на arXiv через RTL, умещающийся в логику без единого аппаратного умножителя, до дизайна, отправленного на изготовление по SKY130 (измерений на кристалле нет) — и до этого обучил больше тысячи разработчиков.',
   modulesTitle: 'Восемь модулей',
   modules: [
     { n: '01', title: 'Открытый флоу с нуля', body: 'Yosys, nextpnr-xilinx, prjxray, openFPGALoader и iverilog, установленные и проверенные на macOS arm64 или Linux. Первый битстрим мигает светодиодом на реальной плате — и ни одной вендор-лицензии в цепочке.' },
@@ -104,7 +104,7 @@ export default function Course() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="course" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
+      <section id="course" style={{ maxWidth: '900px', alignItems: 'stretch', textAlign: 'left' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -113,7 +113,7 @@ export default function Course() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          style={{ marginBottom: '2rem' }}
+          style={{ marginBottom: '2rem', textAlign: 'center' }}
         >
           <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.75rem', margin: '0 0 0.75rem' }}>
             {c ? c.eyebrow : 'Course'}
@@ -121,11 +121,11 @@ export default function Course() {
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
             {c ? c.h1 : 'Train a neural network on an FPGA.'}
           </h1>
-          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '68ch' }}>
             {c ? c.lede : (
               <>
               Not inference — <strong>training</strong>, on the chip itself. Eight modules from an empty
-              toolchain to a network that learns on real silicon, built entirely on open-source tools.
+              toolchain to a network that learns on the FPGA board itself, built entirely on open-source tools.
               No Vivado, no licence, nothing you cannot reproduce yourself.
               </>
             )}
@@ -150,8 +150,8 @@ export default function Course() {
               {c ? c.ctaVerif : 'See the verification work'}
             </motion.a>
           </div>
-          <p style={{ fontSize: '0.85rem', opacity: 0.75, marginTop: '1.25rem', marginBottom: 0 }}>
-            The next cohort runs when enough people are in — say the word and I will hold you a place.
+          <p style={{ fontSize: '0.85rem', opacity: 0.75, margin: '1.25rem 0 0' }}>
+            {c ? c.seatNote : 'The next cohort runs when enough people are in — say the word and I will hold you a place.'}
           </p>
         </motion.div>
 
@@ -166,15 +166,10 @@ export default function Course() {
         >
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>{c ? c.whyTitle : 'Why this course exists'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, margin: 0 }}>
-            Vendor courses teach you vendor tools. ASIC courses stop at the tape-out. Nobody teaches
-            the thing I actually had to prove on hardware: a neural network performing its own
-            backward pass on an FPGA, verified bit-exact against an independent model — with a
-            toolchain a student can install for free on a laptop.
+            {c ? c.why1 : `Vendor courses teach you vendor tools. ASIC courses stop at the tape-out. Nobody teaches the thing I actually had to prove on hardware: a neural network performing its own backward pass on an FPGA, verified bit-exact against an independent model — with a toolchain a student can install for free on a laptop.`}
           </p>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, marginBottom: 0 }}>
-            I teach it because I built it: a number format of my own from an arXiv paper, through RTL
-            at RTL that needs no hard multipliers at all, to a SKY130 tape-out — and I have taught over a thousand
-            developers before that.
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, margin: '0.9rem 0 0' }}>
+            {c ? c.why2 : `I teach it because I built it: a number format of my own from an arXiv paper, through RTL that needs no hard multipliers at all, to a design submitted for SKY130 fabrication — no die measurements yet. And I taught over a thousand developers before that.`}
           </p>
         </motion.div>
 
@@ -189,7 +184,7 @@ export default function Course() {
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.modulesTitle : 'Eight modules'}</h2>
           <div style={{ display: 'grid', gap: '0.85rem' }}>
             {(c ? c.modules : MODULES).map((m) => (
-              <div key={m.n} className="premium-card" style={{ padding: '1.35rem 1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
+              <div key={m.n} className="premium-card" style={{ padding: '1.35rem 1.5rem', display: 'flex', flexDirection: 'row', gap: '1.25rem', alignItems: 'flex-start' }}>
                 <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.95rem', fontVariantNumeric: 'tabular-nums', opacity: 0.8, paddingTop: '0.15rem' }}>{m.n}</span>
                 <div>
                   <h3 style={{ fontSize: '1.02rem', margin: '0 0 0.45rem' }}>{m.title}</h3>
@@ -209,7 +204,7 @@ export default function Course() {
           style={{ marginBottom: '2rem' }}
         >
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.audienceTitle : 'Who it is for'}</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
             {(c ? c.audience : AUDIENCE).map(([who, why]) => (
               <div key={who} className="premium-card" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.02rem', margin: '0 0 0.55rem', color: 'var(--accent)' }}>{who}</h3>
@@ -217,9 +212,8 @@ export default function Course() {
               </div>
             ))}
           </div>
-          <p style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '1.25rem' }}>
-            Prerequisites: basic Python and the idea of digital logic. Verilog is taught from zero.
-            A board is optional — runs on my hardware are included in two of the tiers.
+          <p style={{ fontSize: '0.9rem', opacity: 0.8, margin: '1.25rem 0 0' }}>
+            {c ? c.prereq : 'Prerequisites: basic Python and the idea of digital logic. Verilog is taught from zero. A board is optional — runs on my hardware are included in two of the tiers.'}
           </p>
         </motion.div>
 
@@ -235,7 +229,7 @@ export default function Course() {
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '1rem' }}>
             {c ? c.altTitle : 'How this differs from the free alternatives'}
           </h2>
-          <div style={{ display: 'grid', gap: '0.9rem', textAlign: 'left', maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
+          <div style={{ display: 'grid', gap: '0.9rem', textAlign: 'left', maxWidth: '68ch' }}>
             {(c ? c.alternatives : ALTERNATIVES).map((a) => (
               <div key={a.name} style={{ borderLeft: '2px solid var(--border)', paddingLeft: '0.9rem' }}>
                 <p style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.15rem' }}>
@@ -245,7 +239,7 @@ export default function Course() {
               </div>
             ))}
           </div>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, marginTop: '1.25rem', marginBottom: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.65, marginTop: '1.25rem', marginBottom: 0, maxWidth: '68ch' }}>
             {c ? c.difference : DIFFERENCE}
           </p>
         </motion.div>
@@ -259,7 +253,7 @@ export default function Course() {
           style={{ marginBottom: '2rem' }}
         >
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.formatsTitle : 'Formats'}</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
             {(c ? c.tiers : TIERS).map((t) => (
               <div key={t.name} className="premium-card" style={{ padding: '1.5rem' }}>
                 <p style={{ fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
@@ -281,8 +275,7 @@ export default function Course() {
         >
           <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>{c ? c.finalTitle : 'Want a seat in the next cohort?'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '52ch', margin: '0 auto 1.5rem' }}>
-            Tell me where you are starting from and what you want to build. I will tell you honestly
-            whether this course is the right thing for you.
+            {c ? c.finalLede : 'Tell me where you are starting from and what you want to build. I will tell you honestly whether this course is the right thing for you.'}
           </p>
           <motion.a
             href={`mailto:${CONTACT.email}?subject=Course%20—%20reserve%20a%20seat`}

@@ -64,6 +64,27 @@ const TERMS = [
   { name: 'Custom arithmetic', price: 'from $280/h', body: 'A format or datapath designed for your constraints, delivered with the same bit-exact verification.' },
 ]
 
+const PRICING_BENCHMARKS = [
+  {
+    label: '7BlockLabs',
+    detailEn: '$3 500 per independent-audit engineer-day',
+    detailRu: '$3 500 за день работы независимого аудитора',
+    href: 'https://www.7blocklabs.com/blog/smart-contract-audit-cost-range-2026-and-trail-of-bits-smart-contract-audit-cost-benchmarks',
+  },
+  {
+    label: 'Dice',
+    detailEn: '$75–90 per hour for a contract senior verification engineer',
+    detailRu: '$75–90 в час для контрактного senior-верификатора',
+    href: 'https://www.dice.com/jobs/q-design+verification+engineer-jobs',
+  },
+  {
+    label: 'ChipFoundry',
+    detailEn: '$14 950 for one SKY130 MPW slot',
+    detailRu: '$14 950 за один MPW-слот на SKY130',
+    href: 'https://chipfoundry.io/faqs',
+  },
+]
+
 const INCLUDED = [
   'Synthesisable RTL, readable rather than obfuscated.',
   'An independent reference model — the thing that lets you prove the core is right, not just believe it.',
@@ -76,15 +97,15 @@ const INCLUDED = [
 const RU = {
   eyebrow: 'Лицензирование IP',
   h1: 'Формат, который обходит опубликованный уровень. И ядра к нему.',
-  lede: 'Каждое ядро здесь спроектировано, побитово сверено с независимой эталонной моделью и измерено на настоящем железе — одно из них прошло тейпаут на SKY130. Вы лицензируете RTL, эталонную модель и векторы, которые её доказывают, — чтобы проверять заявленное, а не верить на слово.',
+  lede: 'Каждое ядро здесь спроектировано, побитово сверено с независимой эталонной моделью и измерено на реальной FPGA-плате; один дизайн отправлен на изготовление по SKY130 — измерений на кристалле пока нет. Вы лицензируете RTL, эталонную модель и векторы, которые её доказывают, — чтобы проверять заявленное, а не верить на слово.',
   ctaEnquire: 'Спросить про ядро',
   ctaVerify: 'Как я верифицирую',
   coresTitle: 'Доступные ядра',
   cores: [
-    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — float, у которого экспонента является сбалансированным тернарным числом, а поля фиксированы. Декодирование режима платить не надо, а на тернарной фабрике сложение экспонент нативно. Против takum — ближайшего к нише опубликованного tapered-формата: в 2.1 раза меньше средней относительной ошибки на шестнадцати битах и точно в 2.6 раза на тридцати двух, при равномерных 9 битах мантиссы там, где tapered-формат сужается. Раньше здесь стояло сравнение с tekum16 и числа 2.84× и 5.53× — отозвано: оракул, помеченный tekum, декодировал все 65 536 шестнадцатибитных кодов идентично takum-оракулу.', proof: 'Опубликован как arXiv:2606.05017 с независимой эталонной моделью и побитовыми векторами. Отличимость эталонных моделей теперь проверяется перебором всего 16-битного кодового пространства, а не предполагается.' },
+    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — float, у которого экспонента является сбалансированным тернарным числом, а поля фиксированы. Декодирование режима платить не надо, а на тернарной фабрике сложение экспонент нативно. Против takum — ближайшего к нише опубликованного tapered-формата: в 2.1 раза меньше средней относительной ошибки на шестнадцати битах и точно в 2.6 раза на тридцати двух, при равномерных 9 битах мантиссы там, где tapered-формат сужается. Раньше здесь стояло сравнение с оракулом, помеченным tekum, и два отдельных множителя — отозвано: этот оракул декодировал все 65 536 шестнадцатибитных кодов идентично takum-оракулу, то есть отличимости не было.', proof: 'Опубликован как arXiv:2606.05017 с независимой эталонной моделью и побитовыми векторами. Отличимость эталонных моделей теперь проверяется перебором всего 16-битного кодового пространства, а не предполагается.' },
     { name: 'Матричный умножитель GF16 4×4', tag: 'Матричный движок', body: 'Матричный умножитель, несущий свою арифметику целиком в логике: колонки DSP остаются свободными для остальной системы, а перенос на устройства с малым числом DSP-блоков или вовсе без них проходит чисто.', proof: '36.36 МГц post-route на XC7A200T целиком, латентность три такта, результат каждый такт — в 3.6 раза выше 9.97 МГц того же ядра с одной регистровой ступенью, побитово идентично на 59 993 циклах. Только логика: 32 252 LUT без единого DSP48 либо 21 223 LUT с 64 DSP.' },
     { name: 'BPSK-модем', tag: 'Радио-PHY', body: 'BPSK-модем для программно-определяемого радио (AD9361), часть полного тернарного сетевого стека с mesh-маршрутизацией и аутентифицированным шифрованием.', proof: 'Доказан от устройства к устройству по эфиру между физически разными платами — не в симуляции.' },
-    { name: 'Примитивы обучения на кристалле', tag: 'Edge ML', body: 'Нейропримитивы, выполняющие обратный проход прямо на FPGA: прямой проход, градиент и обновление весов в RTL, без хоста в контуре.', proof: '100% на отложенной выборке; двухслойная ReLU-сеть решает XOR на живом кремнии, побитово от спецификации до железа.' },
+    { name: 'Примитивы обучения на FPGA', tag: 'Edge ML', body: 'Нейропримитивы, выполняющие обратный проход прямо на FPGA: прямой проход, градиент и обновление весов в RTL, без хоста в контуре.', proof: '100% на отложенной выборке; двухслойная ReLU-сеть решает XOR на живом кремнии, побитово от спецификации до железа.' },
   ],
   includedTitle: 'Что входит в лицензию',
   included: [
@@ -94,7 +115,7 @@ const RU = {
     'Отчёт с измерениями на настоящем железе: частота, ресурсы, проверка на защёлки.',
     'Помощь с интеграцией — ядро, которое не встало в вашу систему, не стоит ничего.',
   ],
-  termsTitle: 'Условия',
+  termsTitle: 'Цены лицензирования',
   terms: [
     { name: 'Оценочная', price: 'от $2 500', body: 'Исходники и тест-векторы под один проект — измерить в своём флоу, прежде чем брать на себя обязательства.' },
     { name: 'Один проект', price: 'от $25 000', body: 'Использование в одном продукте, с поддержкой интеграции и верификационной обвязкой, которая доказывает работоспособность.' },
@@ -102,6 +123,8 @@ const RU = {
     { name: 'Своя арифметика', price: 'от $280/ч', body: 'Формат или тракт данных под ваши ограничения, с той же побитовой верификацией.' },
   ],
   termsNote: 'Цены — точка отсчёта, а не тариф: честная цифра зависит от устройства, нужных прав и объёма интеграционной работы. Спросите — получите настоящую цифру, а не буклет.',
+  pricingBasisTitle: 'На чём основаны ориентиры',
+  pricingBasis: 'Ориентиры привязаны к публичным рыночным данным, а не назначены на глаз. Ссылки стоят рядом с ценами, чтобы их можно было проверить.',
   finalTitle: 'Какое ядро подходит вашему дизайну?',
   finalLede: 'Назовите устройство и бюджет, в который укладываетесь. Если ни одно из этих ядер не подходит — так и скажу, и назову цену за сделанное под вас.',
 }
@@ -115,7 +138,7 @@ export default function Licensing() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="licensing" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
+      <section id="licensing" style={{ maxWidth: '900px', alignItems: 'stretch', textAlign: 'left' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -126,17 +149,17 @@ export default function Licensing() {
           transition={{ duration: 0.7 }}
           style={{ marginBottom: '2rem' }}
         >
-          <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.75rem', margin: '0 0 0.75rem' }}>
+          <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.82rem', margin: '0 0 0.75rem' }}>
             {c ? c.eyebrow : 'IP licensing'}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
-            {c ? c.h1 : 'Arithmetic cores that have already been to silicon.'}
+            {c ? c.h1 : 'A format that beats the published level. And the cores that carry it.'}
           </h1>
-          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '68ch' }}>
             {c ? c.lede : (
               <>
                 Every core here was designed, verified bit-exact against an independent model, and
-                measured on real hardware — one of them through a SKY130 tape-out. You license the
+                measured on a real FPGA board; one design was submitted for SKY130 fabrication — no die measurements yet. You license the
                 RTL, the reference model and the vectors that prove it, so you can check the claims
                 instead of trusting them.
               </>
@@ -202,17 +225,17 @@ export default function Licensing() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.termsTitle : 'Terms'}</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.termsTitle : 'Licensing prices'}</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
             {(c ? c.terms : TERMS).map((t) => (
               <div key={t.name} className="premium-card" style={{ padding: '1.5rem' }}>
-                <p style={{ fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
+                <p style={{ fontSize: '0.82rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
                 <p style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--accent)', margin: '0 0 0.6rem' }}>{t.price}</p>
-                <p style={{ fontSize: '0.88rem', lineHeight: 1.55, margin: 0, opacity: 0.88 }}>{t.body}</p>
+                <p style={{ fontSize: '0.9rem', lineHeight: 1.55, margin: 0, opacity: 0.88 }}>{t.body}</p>
               </div>
             ))}
           </div>
-          <p style={{ fontSize: '0.86rem', opacity: 0.75, marginTop: '1.25rem', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '0.86rem', opacity: 0.75, margin: '1.25rem 0 0', lineHeight: 1.6 }}>
             {c ? c.termsNote : (
               <>
                 Prices are starting points, not a tariff — the honest number depends on the device, the
@@ -221,6 +244,25 @@ export default function Licensing() {
               </>
             )}
           </p>
+          <div className="premium-card" style={{ marginTop: '1rem', padding: '1.25rem 1.5rem' }}>
+            <h3 style={{ fontSize: '1.05rem', margin: '0 0 0.6rem' }}>
+              {c ? c.pricingBasisTitle : 'How these starting prices are grounded'}
+            </h3>
+            <p style={{ fontSize: '0.9rem', lineHeight: 1.55, margin: '0 0 0.75rem', opacity: 0.88 }}>
+              {c ? c.pricingBasis : 'The starting points are anchored to public market figures, not set by feel. The links sit next to the prices so you can check the basis.'}
+            </p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: '0.4rem' }}>
+              {PRICING_BENCHMARKS.map((benchmark) => (
+                <li key={benchmark.label} style={{ fontSize: '0.86rem', lineHeight: 1.5 }}>
+                  <a href={benchmark.href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
+                    {benchmark.label}
+                  </a>
+                  {' — '}
+                  {c ? benchmark.detailRu : benchmark.detailEn}
+                </li>
+              ))}
+            </ul>
+          </div>
         </motion.div>
 
         {/* CTA */}
@@ -233,7 +275,7 @@ export default function Licensing() {
           style={{ textAlign: 'center' }}
         >
           <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>{c ? c.finalTitle : 'Which core fits your design?'}</h2>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '52ch', margin: '0 auto 1rem' }}>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '58ch', margin: '0 0 1rem' }}>
             {c ? c.finalLede : (
               <>
                 Tell me the device and the budget you are working against. If none of these cores is

@@ -174,7 +174,7 @@ const RU = {
     ['$0', 'за первый модуль'],
   ] as [string, string][],
   eyebrow: 'Верификация на живом железе',
-  h1: 'Не симуляция. Измерено на живом кремнии.',
+  h1: 'Не симуляция. Измерено на живой FPGA-плате.',
   lede: 'Присылаете RTL — я прогоняю его на настоящем Xilinx Artix-7 и возвращаю подписанный отчёт: побитовое соответствие независимой эталонной модели, достигнутая частота, ресурсы и битстрим. Всё на полностью открытом флоу, поэтому любую цифру вы можете перепроверить сами.',
   ctaRun: 'Запросить прогон',
   ctaSample: 'Посмотреть образец отчёта',
@@ -326,7 +326,7 @@ export default function HardwareVerification() {
             {c ? c.eyebrow : 'Hardware-verified RTL'}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
-            {c ? c.h1 : 'Not simulated. Measured on live silicon.'}
+            {c ? c.h1 : 'Not simulated. Measured on a live FPGA board.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
             {c ? c.lede : (
