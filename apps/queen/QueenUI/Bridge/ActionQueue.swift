@@ -10,6 +10,8 @@ enum QueenActionHandling: Equatable {
     case refresh
     case clearQueue
     case queenRuntime
+    /// Executed in-process by the Queen's own hive, not by the Zig runtime.
+    case hive
 }
 
 struct QueenActionDefinition: Equatable {
@@ -26,6 +28,11 @@ enum QueenActionCatalog {
         action("farm_evolve", "Evolve farm", .requiresConfirmation),
         action("farm_kill_idle", "Kill idle services", .requiresConfirmation),
         action("git_commit", "Commit state", .requiresConfirmation),
+        hive("hive_start", "Run the hive 24/7", .requiresConfirmation),
+        hive("hive_pause", "Pause the hive", .safe),
+        hive("hive_stop_all", "Stop every bee", .requiresConfirmation),
+        hive("hive_cycle", "Run one hive cycle", .safe),
+        hive("hive_rescan", "Re-measure the system", .safe),
         action("git_push", "Push changes", .requiresConfirmation),
         refresh("issues_refresh", "Refresh issues"),
         refresh("keys_test", "Test keys"),
@@ -73,6 +80,19 @@ enum QueenActionCatalog {
             handling: .refresh
         )
     }
+
+    private static func hive(
+        _ id: String,
+        _ title: String,
+        _ risk: QueenActionRisk
+    ) -> QueenActionDefinition {
+        QueenActionDefinition(
+            id: id,
+            title: title,
+            risk: risk,
+            handling: .hive
+        )
+    }
 }
 
 struct QueenActionEnvelope: Codable, Equatable {
@@ -117,6 +137,11 @@ struct QueenActionFeedback: Identifiable, Equatable {
 extension Notification.Name {
     static let queenWorkspaceRefresh = Notification.Name(
         "com.trinity.queen.workspace-refresh"
+    )
+    /// Object is a `Screen`. Routes to screens that have no petal on the
+    /// 27-block triangle.
+    static let queenOpenScreen = Notification.Name(
+        "com.trinity.queen.open-screen"
     )
 }
 
@@ -163,7 +188,50 @@ class ActionQueue: ObservableObject {
             clearDurableQueue(definition: definition)
         case .queenRuntime:
             enqueueForRuntime(definition: definition, params: params)
+        case .hive:
+            dispatchToHive(definition: definition)
         }
+    }
+
+    /// Hive actions run inside this process — the bees are child processes of
+    /// the Queen, so there is nothing to hand to the Zig runtime.
+    private func dispatchToHive(definition: QueenActionDefinition) {
+        let hive = HiveOrchestrator.shared
+        let detail: String
+
+        switch definition.id {
+        case "hive_start":
+            hive.start()
+            detail = "24/7 loop armed."
+        case "hive_pause":
+            hive.pause()
+            detail = "Loop paused. Running bees were left to finish."
+        case "hive_stop_all":
+            hive.stopAll()
+            detail = "Loop paused and every live bee terminated."
+        case "hive_cycle":
+            hive.runCycleNow()
+            detail = "One supervision cycle started."
+        case "hive_rescan":
+            Task { await hive.rescan() }
+            detail = "Re-measuring the system."
+        default:
+            showFeedback(
+                actionID: definition.id,
+                title: "Unhandled hive action",
+                detail: "\(definition.id) is declared as a hive action but has no handler.",
+                phase: .failed
+            )
+            return
+        }
+
+        lastEnqueued = definition.id
+        showFeedback(
+            actionID: definition.id,
+            title: definition.title,
+            detail: detail,
+            phase: .succeeded
+        )
     }
 
     func dismissFeedback() {

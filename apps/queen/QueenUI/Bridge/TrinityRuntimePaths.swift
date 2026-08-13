@@ -27,7 +27,35 @@ public enum TrinityRuntimePaths {
             return URL(fileURLWithPath: environmentRoot).standardizedFileURL.path
         }
 
-        return FileManager.default.currentDirectoryPath
+        // A bundle launched from Finder inherits "/" as its working directory,
+        // where every repo-relative read silently returns nothing. Fall back to
+        // the first candidate that actually looks like the Trinity checkout.
+        let cwd = FileManager.default.currentDirectoryPath
+        if looksLikeTrinityRoot(cwd) { return cwd }
+        if let discovered = fallbackRoots.first(where: looksLikeTrinityRoot) {
+            return discovered
+        }
+        return cwd
+    }
+
+    /// Ordered guesses, tried only when the working directory is not the repo.
+    private static var fallbackRoots: [String] {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        return [
+            "\(home)/trinity",
+            "\(home)/Desktop/PROJECTS/trinity",
+        ]
+    }
+
+    /// A directory is the Trinity root when it carries the runtime state
+    /// directory the app reads from. Checked rather than assumed.
+    public static func looksLikeTrinityRoot(_ path: String) -> Bool {
+        var isDirectory: ObjCBool = false
+        let marker = URL(fileURLWithPath: path)
+            .appendingPathComponent(".trinity", isDirectory: true)
+            .path
+        return FileManager.default.fileExists(atPath: marker, isDirectory: &isDirectory)
+            && isDirectory.boolValue
     }
 
     public static var stateRoot: String {

@@ -44,6 +44,23 @@ enum QueenMenuShortcutPolicy {
         return rowOffset + digit - 1
     }
 
+    /// Screens that have no petal on the 27-block triangle and are reached by
+    /// a direct chord instead. Works from any screen, not only the main menu.
+    static let offMenuScreens: [(character: Character, screen: Screen, label: String)] = [
+        ("h", .hive, "Cmd+Shift+H"),
+    ]
+
+    static func offMenuScreen(
+        character: Character?,
+        modifiers: NSEvent.ModifierFlags
+    ) -> Screen? {
+        guard let character else { return nil }
+        let exact = modifiers.intersection(relevantModifiers)
+        guard exact == [.command, .shift] else { return nil }
+        let lowered = Character(character.lowercased())
+        return offMenuScreens.first { $0.character == lowered }?.screen
+    }
+
     static func label(forPetalIndex petalIndex: Int) -> String? {
         guard (0..<27).contains(petalIndex) else {
             return nil

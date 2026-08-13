@@ -24,6 +24,27 @@ struct SwarmScreen: View {
                     Spacer()
                     StatCard(label: "Cells", value: "\(cells.count)")
                         .frame(width: ParietalSpacing.xLargeFrame)
+                    // The Hive has no petal on the triangle; this and
+                    // Cmd+Shift+H are the two ways in.
+                    Button {
+                        NotificationCenter.default.post(
+                            name: .queenOpenScreen,
+                            object: Screen.hive
+                        )
+                    } label: {
+                        HStack(spacing: ParietalSpacing.xxs) {
+                            Text("\u{1F451}").font(WernickeTypography.caption)
+                            Text("Hive").font(WernickeTypography.captionBold)
+                        }
+                        .foregroundStyle(V4Color.textPrimary)
+                        .padding(.horizontal, ParietalSpacing.sm)
+                        .padding(.vertical, ParietalSpacing.xxs)
+                        .background(V4Color.surface)
+                        .clipShape(SwiftUI.Capsule())
+                        .overlay { SwiftUI.Capsule().stroke(V4Color.golden.opacity(0.64), lineWidth: 1) }
+                    }
+                    .buttonStyle(.plain)
+                    .help("Open the Hive — ranked self-improvement targets and live bees (Cmd+Shift+H)")
                     ActionButton(icon: "+", label: "New Cell", color: V4Color.accent,
                                  action: "cell_create")
                 }

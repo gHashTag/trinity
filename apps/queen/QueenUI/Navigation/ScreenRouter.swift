@@ -27,6 +27,8 @@ struct ScreenRouter: View {
             SEVOFarmScreen()
         case .swarm:
             SwarmScreen()
+        case .hive:
+            HiveScreen()
         case .brainHealth:
             BrainHealthScreen()
         case .sacredMath:

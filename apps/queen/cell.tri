@@ -6,8 +6,8 @@ kind = "frontend"
 path = "apps/queen"
 min_core_version = "1.0.0"
 status = "stable"
-description = "27-screen SwiftUI personal CTO interface"
-capabilities = ["ui", "chat", "dashboard", "telegram"]
+description = "28-screen SwiftUI personal CTO interface with the Hive bee orchestrator"
+capabilities = ["ui", "chat", "dashboard", "telegram", "hive"]
 files = 0
 tests = 0
 owner = "agent:ralph"
@@ -26,10 +26,14 @@ events = ["on_ui_ready"]
 [dependencies]
 
 [permissions]
-level = "L0"
-filesystem = "read"
+# Raised from L0 when the Hive landed. The declaration follows the code:
+# the Hive spawns `claude` child processes and writes .trinity/queen/hive*.
+# Leaving this at L0 would have made the manifest describe an app that no
+# longer exists.
+level = "L2"
+filesystem = "write"
 network = "none"
-process = "none"
+process = "spawn"
 
 ffi = "none"
 concurrency = "none"

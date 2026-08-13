@@ -105,6 +105,13 @@ public struct MainView: View {
                 selectPetal(petal)
             }
         }
+        .onReceive(
+            NotificationCenter.default.publisher(for: .queenOpenScreen)
+        ) { notification in
+            guard let screen = notification.object as? Screen else { return }
+            navigationState.selectedHostedPetal = nil
+            navigationState.selectedScreen = screen
+        }
     }
 
     @ViewBuilder
@@ -212,6 +219,18 @@ public struct MainView: View {
         guard keyMonitor == nil else { return }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             let ch = event.charactersIgnoringModifiers?.first
+
+            // The triangle has 27 petals and the Queen has more organs than
+            // that, so the Hive gets a direct key instead of taking a petal
+            // away from an existing screen.
+            if let screen = QueenMenuShortcutPolicy.offMenuScreen(
+                character: ch,
+                modifiers: event.modifierFlags
+            ) {
+                navigationState.selectedHostedPetal = nil
+                navigationState.selectedScreen = screen
+                return nil
+            }
 
             if let digit = ch?.wholeNumberValue,
                let petalIndex = QueenMenuShortcutPolicy.petalIndex(

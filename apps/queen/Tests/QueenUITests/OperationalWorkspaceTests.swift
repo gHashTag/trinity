@@ -44,9 +44,26 @@ struct OperationalWorkspaceTests {
             "swarm_decompose",
             "telegram_check",
             "telegram_test",
+            // Hive actions run in-process rather than via the Zig runtime.
+            "hive_start",
+            "hive_pause",
+            "hive_stop_all",
+            "hive_cycle",
+            "hive_rescan",
         ])
 
         #expect(Set(QueenActionCatalog.all.map(\.id)) == expected)
+        #expect(
+            QueenActionCatalog.definition(for: "hive_start")?.handling == .hive
+        )
+        #expect(
+            QueenActionCatalog.definition(for: "hive_start")?.risk
+                == .requiresConfirmation
+        )
+        #expect(
+            QueenActionCatalog.definition(for: "hive_stop_all")?.risk
+                == .requiresConfirmation
+        )
         #expect(
             QueenActionCatalog.definition(for: "farm_kill_idle")?.risk
                 == .requiresConfirmation

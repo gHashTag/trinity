@@ -4955,6 +4955,20 @@ struct EmptyThreadView: View {
         return Array(items.prefix(6))
     }
 
+    /// Suggestions laid out three per row, however many there happen to be.
+    private var suggestionRows: [[(String, String, ChatMode)]] {
+        EmptyThreadView.chunk(suggestions, size: 3)
+    }
+
+    /// Splits into rows of at most `size`. Extracted so the layout rule is
+    /// checkable without rendering a view.
+    static func chunk<T>(_ items: [T], size: Int) -> [[T]] {
+        guard size > 0 else { return items.isEmpty ? [] : [items] }
+        return stride(from: 0, to: items.count, by: size).map {
+            Array(items[$0..<min($0 + size, items.count)])
+        }
+    }
+
     private let quickActions: [(icon: String, label: String)] = [
         ("chevron.left.forwardslash.chevron.right", "Write code"),
         ("ladybug", "Debug issue"),
@@ -5004,16 +5018,16 @@ struct EmptyThreadView: View {
                 }
             }
 
-            // Contextual suggestion chips grid
+            // Contextual suggestion chips grid.
+            // Rows are built from the suggestions that actually exist: the
+            // contextual ones appear only when live state provides them, so a
+            // fixed 0..<3 / 3..<6 read past the end and trapped the whole app.
             VStack(spacing: ParietalSpacing.sm + 2) {
-                HStack(spacing: ParietalSpacing.sm + 2) {
-                    ForEach(0..<3) { i in
-                        suggestionChip(suggestions[i])
-                    }
-                }
-                HStack(spacing: ParietalSpacing.sm + 2) {
-                    ForEach(3..<6) { i in
-                        suggestionChip(suggestions[i])
+                ForEach(Array(suggestionRows.enumerated()), id: \.offset) { _, row in
+                    HStack(spacing: ParietalSpacing.sm + 2) {
+                        ForEach(Array(row.enumerated()), id: \.offset) { _, item in
+                            suggestionChip(item)
+                        }
                     }
                 }
             }

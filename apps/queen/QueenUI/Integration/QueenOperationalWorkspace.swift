@@ -58,6 +58,8 @@ enum QueenWorkspaceCatalog {
             details = ("Research agent status and focus", "heartbeats")
         case .swarm:
             details = ("Cell registry and task decomposition", "src/*/cell.tri")
+        case .hive:
+            details = ("Ranked self-improvement targets and live bees", ".trinity/queen/hive.json")
         case .brainHealth:
             details = ("Runtime diagnostics and neural health", ".trinity")
         case .build:
