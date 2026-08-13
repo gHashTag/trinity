@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './Queen.css'
 
 // The queen's panels read a backend that this site does not contain. t27.ai is
@@ -62,40 +62,34 @@ function useProbe<T>(path: string, intervalMs: number): Probe<T> {
   return probe
 }
 
+// These are the shapes the brain ACTUALLY returns, read off
+// src/background_agent/server.zig rather than assumed.
+//
+// The version of this page in apps/queen-web rendered five metrics --
+// trinity_signature, improve_cycles, uptime_seconds, env_status, swarm_active --
+// and called /api/status, /api/episodes, /api/improve and /api/pipeline. The
+// brain serves NONE of those. /health returns exactly {"status":"ok"}, and the
+// only /api routes that exist are /api/containers and /api/sessions.
+//
+// So those five metrics could never be filled, by any deployment, ever. A panel
+// whose value is structurally unobtainable is worse than a missing panel: it
+// reads as "not yet" when the truth is "not ever".
+
 interface HealthResponse {
   status: string
-  trinity_signature: number
-  improve_cycles: number
-  uptime_seconds: number
 }
 
-interface SystemStatus {
-  trinity_identity: number
-  env_status: 'active' | 'degraded' | 'maintenance'
-  swarm_active: boolean
-}
-
-interface Episode {
+interface Container {
   id: string
-  timestamp: number
-  action_type: string
-  outcome: string
-  success: boolean
-  duration_ms: number
+  name: string
+  status: string
+  railway_service_id?: string
 }
 
-interface ImproveResponse {
-  success: boolean
-  message: string
-  applied_deltas: number
-  quality_score: number
-}
-
-function formatUptime(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`
-  return `${Math.floor(seconds / 86400)}d`
+interface Session {
+  id: string
+  name?: string
+  status?: string
 }
 
 function BrainOffline({ reason }: { reason: string | null }) {
@@ -104,8 +98,8 @@ function BrainOffline({ reason }: { reason: string | null }) {
       <h3>The brain is not connected</h3>
       <p>
         This page is the queen's face. Her brain is a separate service that answers{' '}
-        <code>/health</code>, <code>/api/status</code>, <code>/api/episodes</code> and{' '}
-        <code>/api/improve</code>. This site is static hosting and serves none of them.
+        <code>/health</code>, <code>/api/containers</code> and <code>/api/sessions</code>.
+        This site is static hosting and serves none of them.
       </p>
       <p className="queen-offline-detail">
         {QUEEN_API
@@ -130,106 +124,108 @@ function MetricCard({ label, value, status }: { label: string; value: string | n
   )
 }
 
-function StatusDashboard() {
-  const health = useProbe<HealthResponse>('/health', 5000)
-  const status = useProbe<SystemStatus>('/api/status', 10000)
+function StatusDashboard({ health }: { health: Probe<HealthResponse> }) {
   const dash = '—'
-
   return (
     <section className="queen-card">
-      <h2>👑 Status</h2>
+      <h2>👑 Liveness</h2>
       <div className="queen-metrics">
         <MetricCard
-          label="Trinity signature"
-          value={health.data ? `φ² + 1/φ² = ${health.data.trinity_signature}` : dash}
+          label="Brain"
+          value={health.state === 'ok' ? (health.data?.status ?? 'ok') : dash}
+          status={health.state === 'ok' ? 'active' : undefined}
         />
-        <MetricCard label="Uptime" value={health.data ? formatUptime(health.data.uptime_seconds) : dash} />
-        <MetricCard label="Improve cycles" value={health.data ? health.data.improve_cycles : dash} />
-        <MetricCard
-          label="Environment"
-          value={status.data ? status.data.env_status : dash}
-          status={status.data?.env_status}
-        />
-        <MetricCard label="Swarm" value={status.data ? (status.data.swarm_active ? 'active' : 'idle') : dash} />
+        <MetricCard label="Address" value={QUEEN_API ?? 'not configured'} />
       </div>
+      <p className="queen-sub" style={{ marginTop: '1rem', marginBottom: 0 }}>
+        <code>/health</code> is the only endpoint the brain answers without a token,
+        and it returns liveness alone — no counters, no uptime. Anything more
+        specific here would be invented rather than measured.
+      </p>
     </section>
   )
 }
 
-function ImprovementPanel({ enabled }: { enabled: boolean }) {
-  const [running, setRunning] = useState(false)
-  const [result, setResult] = useState<ImproveResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  const trigger = useCallback(async () => {
-    setRunning(true); setResult(null); setError(null)
-    try {
-      setResult(await readJson<ImproveResponse>('/api/improve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      }))
-    } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setRunning(false)
-    }
-  }, [])
-
+function ImprovementPanel() {
+  // The button used to POST /api/improve. That route does not exist in
+  // src/background_agent/server.zig -- the brain's whole surface is /health,
+  // /api/containers and /api/sessions. A button that always fails is worse
+  // than no button, so this states the gap instead of pretending at it.
   return (
     <section className="queen-card">
       <h2>🔄 Self-improvement</h2>
-      <p className="queen-sub">Runs one autonomous cycle through the .tri pipeline.</p>
-      <button className="queen-button" onClick={trigger} disabled={!enabled || running}>
-        {running ? 'Running…' : enabled ? 'Trigger improvement' : 'Unavailable — no brain'}
-      </button>
-      {error && <div className="queen-result failure">Request failed: {error}</div>}
-      {result && (
-        <div className={`queen-result ${result.success ? 'success' : 'failure'}`}>
-          <strong>{result.success ? '✓' : '✗'}</strong> {result.message}
-          <div className="queen-result-rows">
-            <span>Applied deltas: {result.applied_deltas}</span>
-            <span>Quality: {(result.quality_score * 100).toFixed(0)}%</span>
-          </div>
-        </div>
-      )}
+      <p className="queen-sub">
+        The queen's original panel triggered a cycle through <code>POST /api/improve</code>.
+        The brain does not implement that route, so the control is not shown: it could
+        only ever have returned an error.
+      </p>
+      <p className="queen-sub" style={{ marginBottom: 0 }}>
+        Restoring it means adding the route to <code>src/background_agent/server.zig</code>,
+        which is a change to the brain rather than to this page.
+      </p>
     </section>
   )
 }
 
-function EpisodeViewer() {
-  const episodes = useProbe<Episode[]>('/api/episodes', 30000)
-  // The original called episodes?.slice(0, 10) directly. A backend that answers
-  // with an object rather than an array crashes the page on that line, so the
-  // shape is checked before it is used.
-  const list = Array.isArray(episodes.data) ? episodes.data.slice(0, 10) : []
+/** The two collections the brain really exposes. Both sit behind a token. */
+function BrainInventory() {
+  const containers = useProbe<Container[]>('/api/containers', 20000)
+  const sessions = useProbe<Session[]>('/api/sessions', 20000)
+
+  // The original called episodes?.slice(0, 10) on whatever came back; an object
+  // rather than an array crashed the page on that line. Shape is checked first.
+  const asList = <T,>(p: Probe<T[]>) => (Array.isArray(p.data) ? p.data : [])
+
+  const renderState = (p: Probe<unknown>, what: string) => {
+    if (p.state === 'loading') return <p className="queen-sub">Loading {what}…</p>
+    if (p.state === 'unreachable') {
+      const locked = p.error === 'HTTP 401'
+      return (
+        <p className="queen-sub">
+          {locked
+            ? <>Requires a token. <code>/api/{what}</code> is authenticated — this page holds no credentials and does not ask for any.</>
+            : <>No {what}: {p.error}</>}
+        </p>
+      )
+    }
+    return null
+  }
 
   return (
-    <section className="queen-card">
-      <h2>📜 Recent episodes</h2>
-      {episodes.state === 'loading' && <p className="queen-sub">Loading…</p>}
-      {episodes.state === 'ok' && list.length === 0 && (
-        <p className="queen-sub">The brain answered, and has no episodes to report.</p>
-      )}
-      {episodes.state === 'unreachable' && <p className="queen-sub">No episodes: {episodes.error}</p>}
-      <div className="queen-episodes">
-        {list.map(ep => (
-          <article key={ep.id} className={`queen-episode ${ep.success ? 'success' : 'failure'}`}>
-            <header>
-              <code>{ep.id.slice(0, 8)}</code>
-              <time>{new Date(ep.timestamp).toLocaleString()}</time>
-            </header>
-            <p>
-              <strong>{ep.action_type}</strong> — {ep.outcome}
-            </p>
-            <footer>
-              <span>{ep.duration_ms} ms</span>
-              <span className={ep.success ? 'ok' : 'bad'}>{ep.success ? '✓ success' : '✗ failed'}</span>
-            </footer>
-          </article>
-        ))}
-      </div>
-    </section>
+    <>
+      <section className="queen-card">
+        <h2>📦 Containers</h2>
+        {renderState(containers, 'containers')}
+        <div className="queen-episodes">
+          {asList(containers).slice(0, 10).map(c => (
+            <article key={c.id} className={`queen-episode ${c.status === 'ACTIVE' ? 'success' : 'failure'}`}>
+              <header>
+                <code>{c.id.slice(0, 8)}</code>
+                <span>{c.status}</span>
+              </header>
+              <p><strong>{c.name}</strong></p>
+              {c.railway_service_id && <footer><span>railway: {c.railway_service_id.slice(0, 8)}</span></footer>}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="queen-card" style={{ marginTop: '1.25rem' }}>
+        <h2>🧵 Sessions</h2>
+        {renderState(sessions, 'sessions')}
+        <div className="queen-episodes">
+          {asList(sessions).slice(0, 10).map(s => (
+            <article key={s.id} className="queen-episode">
+              <header>
+                <code>{s.id.slice(0, 8)}</code>
+                <span>{s.status ?? ''}</span>
+              </header>
+              {s.name && <p><strong>{s.name}</strong></p>}
+            </article>
+          ))}
+        </div>
+      </section>
+    </>
   )
 }
 
@@ -275,10 +271,10 @@ export default function Queen() {
       {kingdom === 'brain' && (
         <>
           <div className="queen-grid">
-            <StatusDashboard />
-            <ImprovementPanel enabled={connected} />
+            <StatusDashboard health={health} />
+            <ImprovementPanel />
           </div>
-          <EpisodeViewer />
+          <BrainInventory />
         </>
       )}
 
