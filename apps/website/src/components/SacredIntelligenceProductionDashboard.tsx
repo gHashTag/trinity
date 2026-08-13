@@ -469,7 +469,9 @@ const SacredBrainMetricsWidget: React.FC<{
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-300">Brain Activity</span>
           <span className="text-yellow-400 font-semibold">
-            {metrics.analyses_performed > 0 ? ((metrics.analyses_performed / metrics.total_commands) * 100).toFixed(1) : 0}%
+            {metrics.total_commands > 0
+              ? `${((metrics.analyses_performed / metrics.total_commands) * 100).toFixed(1)}%`
+              : '—'}
           </span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
