@@ -181,7 +181,7 @@ export default function GFT() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="gft" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
+      <section id="gft" className="subpage-layout" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ marginBottom: '2rem' }}>

@@ -104,7 +104,7 @@ export default function Course() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="course" style={{ maxWidth: '900px', alignItems: 'stretch', textAlign: 'left' }}>
+      <section id="course" className="subpage-layout" style={{ maxWidth: '900px', alignItems: 'stretch', textAlign: 'left' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
