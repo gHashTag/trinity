@@ -25,34 +25,40 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "16 of 16 declared files found in src/ (13 before the fix)",
-          "command": "info.yaml source_files -> src/"
+          "command": "info.yaml source_files -> src/",
+          "detailRu": "В src/ найдены 16 из 16 объявленных файлов (до исправления было 13)."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean, after the three missing files were declared",
-          "command": "iverilog -g2012 -t null -I src -s tt_um_trinity_nano src/*.v"
+          "command": "iverilog -g2012 -t null -I src -s tt_um_trinity_nano src/*.v",
+          "detailRu": "Сборка чистая после объявления трёх отсутствовавших файлов."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "10,534 cells including submodules, 4,050 wires. 4,663x $_MUX_, 2,252x $_AND_, 1,660x $_OR_, 1,316x $_XOR_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "10 534 ячейки вместе с подмодулями, 4 050 соединений: $_MUX_ — 4 663, $_AND_ — 2 252, $_OR_ — 1 660, $_XOR_ — 1 316."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "210 flip-flops, so a clock frequency is a meaningful thing to ask about",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "210 триггеров, поэтому вопрос о тактовой частоте имеет смысл."
         }
       ],
-      "slug": "gHashTag/t27/chips/phi"
+      "slug": "gHashTag/t27/chips/phi",
+      "whatRu": "Одноэлементный тернарный MAC dot4 GF16 с тестом самозапуска по числам Лукаса."
     },
     {
       "id": "euler",
@@ -70,34 +76,40 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "34 of 34 declared files found in src/",
-          "command": "info.yaml source_files -> src/"
+          "command": "info.yaml source_files -> src/",
+          "detailRu": "В src/ найдены 34 из 34 объявленных файлов."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean from the declared list alone",
-          "command": "iverilog -g2012 -t null -I src -s tt_um_ghtag_trinity_gf16 src/*.v"
+          "command": "iverilog -g2012 -t null -I src -s tt_um_ghtag_trinity_gf16 src/*.v",
+          "detailRu": "Сборка чистая только по объявленному списку."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "39,991 cells including submodules, 37,170 wires. 18,083x $_MUX_, 8,073x $_AND_, 5,823x $_OR_, 5,469x $_XOR_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "39 991 ячейка вместе с подмодулями, 37 170 соединений: $_MUX_ — 18 083, $_AND_ — 8 073, $_OR_ — 5 823, $_XOR_ — 5 469."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "473 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "473 триггера."
         }
       ],
-      "slug": "gHashTag/t27/chips/euler"
+      "slug": "gHashTag/t27/chips/euler",
+      "whatRu": "Движок GF16 из тайлов 8×2."
     },
     {
       "id": "gamma",
@@ -115,34 +127,40 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "44 of 44 declared files found in src/ (43 before the fix)",
-          "command": "info.yaml source_files -> src/"
+          "command": "info.yaml source_files -> src/",
+          "detailRu": "В src/ найдены 44 из 44 объявленных файлов (до исправления было 43)."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean, after the missing file was declared",
-          "command": "iverilog -g2012 -t null -I src -s tt_um_trinity_max_true src/*.v"
+          "command": "iverilog -g2012 -t null -I src -s tt_um_trinity_max_true src/*.v",
+          "detailRu": "Сборка чистая после объявления отсутствовавшего файла."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "205,992 cells including submodules, 102,588 wires. 90,628x $_MUX_, 45,141x $_AND_, 32,355x $_OR_, 27,239x $_XOR_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "205 992 ячейки вместе с подмодулями, 102 588 соединений: $_MUX_ — 90 628, $_AND_ — 45 141, $_OR_ — 32 355, $_XOR_ — 27 239."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "1,929 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "1 929 триггеров."
         }
       ],
-      "slug": "gHashTag/t27/chips/gamma"
+      "slug": "gHashTag/t27/chips/gamma",
+      "whatRu": "Нейроморфный массив из 32 тайлов в 8 столбцах."
     },
     {
       "id": "mini",
@@ -160,35 +178,42 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "1 of 1 declared file found (info.yaml declared none until 11 Aug 2026)",
-          "command": "glob src/*.v"
+          "command": "glob src/*.v",
+          "detailRu": "Найден 1 из 1 объявленного файла (до 11 августа 2026 года info.yaml не объявлял файлов)."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean",
-          "command": "iverilog -g2012 -t null -I src -s tt_um_qbrain_mini src/tt_um_qbrain_mini.v"
+          "command": "iverilog -g2012 -t null -I src -s tt_um_qbrain_mini src/tt_um_qbrain_mini.v",
+          "detailRu": "Сборка чистая."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "49 cells including submodules, 57 wires. 28x $_XOR_, 16x $_DFFE_PN0P_, 1x $_DFF_PN0_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "49 ячеек вместе с подмодулями, 57 соединений: $_XOR_ — 28, $_DFFE_PN0P_ — 16, $_DFF_PN0_ — 1."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "17 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "17 триггеров."
         }
       ],
       "slug": "gHashTag/trinity-fpga/ttsky26c/mini",
-      "note": "src/config.json marks this SKELETON - full RTL is a future wave, and the cell count agrees. Declaring the sources makes the build deterministic; it does not make a skeleton a finished design."
+      "note": "src/config.json marks this SKELETON - full RTL is a future wave, and the cell count agrees. Declaring the sources makes the build deterministic; it does not make a skeleton a finished design.",
+      "whatRu": "Одноколоночная кора: 4 ячейки GF16, ROM на 75 слов, ISA из 16 опкодов.",
+      "noteRu": "src/config.json помечает это как SKELETON — полный RTL появится в следующей волне, и число ячеек это подтверждает. Объявление исходников делает сборку детерминированной; оно не превращает каркас в готовый дизайн."
     },
     {
       "id": "holo",
@@ -206,35 +231,42 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "1 of 1 declared file found (info.yaml declared none until 11 Aug 2026)",
-          "command": "glob src/*.v"
+          "command": "glob src/*.v",
+          "detailRu": "Найден 1 из 1 объявленного файла (до 11 августа 2026 года info.yaml не объявлял файлов)."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean",
-          "command": "iverilog -g2012 -t null -I src -s tt_um_qbrain_holo src/tt_um_qbrain_holo.v"
+          "command": "iverilog -g2012 -t null -I src -s tt_um_qbrain_holo src/tt_um_qbrain_holo.v",
+          "detailRu": "Сборка чистая."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "128 cells including submodules, 193 wires. 63x $_DFFE_PN0P_, 42x $_XOR_, 3x $_DFF_PN0_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "128 ячеек вместе с подмодулями, 193 соединения: $_DFFE_PN0P_ — 63, $_XOR_ — 42, $_DFF_PN0_ — 3."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "66 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "66 триггеров."
         }
       ],
       "slug": "gHashTag/trinity-fpga/ttsky26c/holo",
-      "note": "src/config.json marks this SKELETON - full RTL is a future wave, and the cell count agrees. Declaring the sources makes the build deterministic; it does not make a skeleton a finished design."
+      "note": "src/config.json marks this SKELETON - full RTL is a future wave, and the cell count agrees. Declaring the sources makes the build deterministic; it does not make a skeleton a finished design.",
+      "whatRu": "Голографический вариант колонки Quantum Brain.",
+      "noteRu": "src/config.json помечает это как SKELETON — полный RTL появится в следующей волне, и число ячеек это подтверждает. Объявление исходников делает сборку детерминированной; оно не превращает каркас в готовый дизайн."
     },
     {
       "id": "tinygpu",
@@ -251,35 +283,41 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "10 of 10 declared files found",
-          "command": "info.yaml source_files -> src/"
+          "command": "info.yaml source_files -> src/",
+          "detailRu": "Найдены 10 из 10 объявленных файлов."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean from the declared list alone",
-          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>",
+          "detailRu": "Сборка чистая только по объявленному списку."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "34,223 cells including submodules, 15,846 wires. 11,251x $_AND_, 9,213x $_OR_, 5,942x $_MUX_, 3,065x $_XOR_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "34 223 ячейки вместе с подмодулями, 15 846 соединений: $_AND_ — 11 251, $_OR_ — 9 213, $_MUX_ — 5 942, $_XOR_ — 3 065."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "3,383 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "3 383 триггера."
         }
       ],
       "what": "Somebody else's GPU, the largest of the three.",
-      "slug": "pongsagon/tt_um_pongsagon_tinygpu_v2"
+      "slug": "pongsagon/tt_um_pongsagon_tinygpu_v2",
+      "whatRu": "Чужой GPU, крупнейший из трёх."
     },
     {
       "id": "float-synth",
@@ -297,34 +335,40 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "2 of 2 declared files found",
-          "command": "info.yaml source_files -> src/"
+          "command": "info.yaml source_files -> src/",
+          "detailRu": "Найдены 2 из 2 объявленных файлов."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean from the declared list alone",
-          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>",
+          "detailRu": "Сборка чистая только по объявленному списку."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "900 cells including submodules, 904 wires. 210x $_NOT_, 197x $_OR_, 180x $_AND_, 180x $_DFF_P_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "900 ячеек вместе с подмодулями, 904 соединения: $_NOT_ — 210, $_OR_ — 197, $_AND_ — 180, $_DFF_P_ — 180."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "183 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "183 триггера."
         }
       ],
-      "slug": "NikLeberg/tt_um_float_synth"
+      "slug": "NikLeberg/tt_um_float_synth",
+      "whatRu": "Синтезатор чисел с плавающей точкой — из трёх ближе всего к моей теме."
     },
     {
       "id": "serv-soc",
@@ -342,34 +386,40 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "40 of 40 declared files found",
-          "command": "info.yaml source_files -> src/"
+          "command": "info.yaml source_files -> src/",
+          "detailRu": "Найдены 40 из 40 объявленных файлов."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean from the declared list alone",
-          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>",
+          "detailRu": "Сборка чистая только по объявленному списку."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "8,301 cells including submodules, 4,903 wires. 2,081x $_AND_, 1,957x $_OR_, 1,605x $_MUX_, 689x $_DFFE_PP0P_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "8 301 ячейка вместе с подмодулями, 4 903 соединения: $_AND_ — 2 081, $_OR_ — 1 957, $_MUX_ — 1 605, $_DFFE_PP0P_ — 689."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "1,751 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "1 751 триггер."
         }
       ],
-      "slug": "divadnauj-GB/tt_um_divadnauj-GB_serv_soc_wb"
+      "slug": "divadnauj-GB/tt_um_divadnauj-GB_serv_soc_wb",
+      "whatRu": "Разрядно-последовательное ядро RISC-V с SoC на Wishbone, 40 объявленных файлов."
     },
     {
       "id": "stoch-neuron",
@@ -388,33 +438,39 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "2 of 2 declared files found",
-          "command": "info.yaml source_files -> src/"
+          "command": "info.yaml source_files -> src/",
+          "detailRu": "Найдены 2 из 2 объявленных файлов."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean from the declared list alone",
-          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>",
+          "detailRu": "Сборка чистая только по объявленному списку."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "1,575 cells including submodules, 810 wires. 445x $_AND_, 439x $_OR_, 249x $_MUX_, 173x $_DFFE_PN0P_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "1 575 ячеек вместе с подмодулями, 810 соединений: $_AND_ — 445, $_OR_ — 439, $_MUX_ — 249, $_DFFE_PN0P_ — 173."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "208 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "208 триггеров."
         }
-      ]
+      ],
+      "whatRu": "Нейрон на стохастических вычислениях."
     },
     {
       "id": "serdes",
@@ -433,33 +489,39 @@
           "name": "sources resolve",
           "status": "PASS",
           "detail": "2 of 2 declared files found",
-          "command": "info.yaml source_files -> src/"
+          "command": "info.yaml source_files -> src/",
+          "detailRu": "Найдены 2 из 2 объявленных файлов."
         },
         {
           "name": "elaborates",
           "status": "PASS",
           "detail": "clean from the declared list alone",
-          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>"
+          "command": "iverilog -g2012 -t null -I src -s <top> <declared sources>",
+          "detailRu": "Сборка чистая только по объявленному списку."
         },
         {
           "name": "no inferred latches",
           "status": "PASS",
           "detail": "no $_DLATCH_ cells after techmap",
-          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*"
+          "command": "yosys: select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*",
+          "detailRu": "После techmap ячеек $_DLATCH_ нет."
         },
         {
           "name": "synthesises",
           "status": "PASS",
           "detail": "244 cells including submodules, 115 wires. 123x $_MUX_, 36x $_DFFE_PN0P_, 29x $_DFFE_PP_, 18x $_DFFE_PN0N_",
-          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat"
+          "command": "yosys: read; hierarchy -top; proc; opt; fsm; memory; techmap; flatten; stat",
+          "detailRu": "244 ячейки вместе с подмодулями, 115 соединений: $_MUX_ — 123, $_DFFE_PN0P_ — 36, $_DFFE_PP_ — 29, $_DFFE_PN0N_ — 18."
         },
         {
           "name": "has clocked logic",
           "status": "PASS",
           "detail": "103 flip-flops",
-          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist"
+          "command": "yosys stat: sum of $_DFF*/$_SDFF*/$_ADFF* cells in the flattened netlist",
+          "detailRu": "103 триггера."
         }
-      ]
+      ],
+      "whatRu": "Последовательный преобразователь SERDES, самый компактный из пяти."
     }
   ]
 }
