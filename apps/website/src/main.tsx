@@ -1,6 +1,7 @@
 import { StrictMode, lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+import FormatSelection from './pages/FormatSelection'
 import './index.css'
 import App from './App.tsx'
 import { I18nProvider } from './i18n/context.tsx'
@@ -46,6 +47,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/dashboard" element={<ProductionDashboard />} />
             <Route path="/tree" element={<TechTreePage />} />
             <Route path="/start" element={<Start />} />
+            <Route path="/select" element={<FormatSelection />} />
             <Route path="/verification" element={<HardwareVerification />} />
             <Route path="/course" element={<Course />} />
             <Route path="/cases" element={<CaseStudies />} />

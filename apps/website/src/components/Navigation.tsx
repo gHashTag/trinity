@@ -25,6 +25,7 @@ const PAGES: PageLink[] = [
   // кодов идентично takum-оракулу, поэтому сравнение шло не с tekum.
   { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: 'A φ-derived static-split float family', noteRu: 'φ-производное семейство float со статическим разбиением' },
   { href: '#/start', en: 'Start here', ru: 'С чего начать', note: 'Four checks you can run yourself, in order', noteRu: 'Четыре проверки, которые запускаете сами, по порядку' },
+  { href: '#/select', en: 'Choose a format', ru: 'Выбор формата', note: 'A task-by-format comparison matrix', noteRu: 'Матрица сравнения формата и задачи' },
   { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on a live FPGA board', noteRu: 'Присылаете RTL — измеряю на живой FPGA-плате' },
   { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores with RTL, reference model and vectors', noteRu: 'Ядра: RTL, эталонная модель и векторы' },
   { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
