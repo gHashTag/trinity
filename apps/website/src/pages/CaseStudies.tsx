@@ -83,7 +83,7 @@ function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang
         <h3 style={{ margin: 0, fontSize: 'clamp(1.05rem, 3vw, 1.3rem)' }}>{run.design}</h3>
         <code style={{ fontSize: '0.82rem', opacity: 0.75 }}>{run.top} · {run.tiles} · {run.date}</code>
       </div>
-      <p style={{ fontSize: '0.9rem', opacity: 0.85, margin: '0.5rem 0 0.4rem', lineHeight: 1.6 }}>{run.what}</p>
+      <p style={{ fontSize: '0.9rem', opacity: 0.85, margin: '0.5rem 0 0.4rem', lineHeight: 1.6 }}>{lang === 'ru' ? (run.whatRu ?? run.what) : run.what}</p>
       <a href={run.repoUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem' }}>{run.repo}</a>
 
       <div style={{ margin: '1rem 0 0' }}>
@@ -95,7 +95,7 @@ function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang
               </span>
               <strong style={{ fontSize: '0.88rem' }}>{k.name}</strong>
             </div>
-            <p style={{ fontSize: '0.85rem', opacity: 0.85, margin: '0.3rem 0 0.35rem', lineHeight: 1.55 }}>{k.detail}</p>
+            <p style={{ fontSize: '0.85rem', opacity: 0.85, margin: '0.3rem 0 0.35rem', lineHeight: 1.55 }}>{lang === 'ru' ? (k.detailRu ?? k.detail) : k.detail}</p>
             <code style={{ fontSize: '0.82rem', opacity: 0.6, display: 'block', overflowX: 'auto', whiteSpace: 'pre' }}>{k.command}</code>
           </div>
         ))}
@@ -103,7 +103,7 @@ function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang
 
       {run.note && (
         <p style={{ fontSize: '0.82rem', lineHeight: 1.6, margin: '0.8rem 0 0', opacity: 0.8, borderLeft: '2px solid var(--muted)', paddingLeft: '0.7rem' }}>
-          {run.note}
+          {lang === 'ru' ? (run.noteRu ?? run.note) : run.note}
         </p>
       )}
       {/* The result page is the thing worth sending to a reviewer, so the card

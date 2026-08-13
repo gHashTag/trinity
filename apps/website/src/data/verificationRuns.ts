@@ -15,6 +15,7 @@ export type Check = {
   name: string
   status: 'PASS' | 'FAIL' | 'SKIP'
   detail: string
+  detailRu?: string
   command: string
 }
 
@@ -26,6 +27,7 @@ export type Run = {
   top: string
   tiles: string
   what: string
+  whatRu?: string
   checks: Check[]
   found?: string
   date: string
@@ -33,6 +35,7 @@ export type Run = {
   thirdParty?: boolean
   /** A caveat the card must show, e.g. that the design is a declared skeleton. */
   note?: string
+  noteRu?: string
   /** Path under /r/. Identifies the design, not the repository. */
   slug: string
 }
