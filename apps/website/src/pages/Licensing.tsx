@@ -64,6 +64,27 @@ const TERMS = [
   { name: 'Custom arithmetic', price: 'from $280/h', body: 'A format or datapath designed for your constraints, delivered with the same bit-exact verification.' },
 ]
 
+const PRICING_BENCHMARKS = [
+  {
+    label: '7BlockLabs',
+    detailEn: '$3 500 per independent-audit engineer-day',
+    detailRu: '$3 500 за день работы независимого аудитора',
+    href: 'https://www.7blocklabs.com/blog/smart-contract-audit-cost-range-2026-and-trail-of-bits-smart-contract-audit-cost-benchmarks',
+  },
+  {
+    label: 'Dice',
+    detailEn: '$75–90 per hour for a contract senior verification engineer',
+    detailRu: '$75–90 в час для контрактного senior-верификатора',
+    href: 'https://www.dice.com/jobs/q-design+verification+engineer-jobs',
+  },
+  {
+    label: 'ChipFoundry',
+    detailEn: '$14 950 for one SKY130 MPW slot',
+    detailRu: '$14 950 за один MPW-слот на SKY130',
+    href: 'https://chipfoundry.io/faqs',
+  },
+]
+
 const INCLUDED = [
   'Synthesisable RTL, readable rather than obfuscated.',
   'An independent reference model — the thing that lets you prove the core is right, not just believe it.',
@@ -94,7 +115,7 @@ const RU = {
     'Отчёт с измерениями на настоящем железе: частота, ресурсы, проверка на защёлки.',
     'Помощь с интеграцией — ядро, которое не встало в вашу систему, не стоит ничего.',
   ],
-  termsTitle: 'Условия',
+  termsTitle: 'Цены лицензирования',
   terms: [
     { name: 'Оценочная', price: 'от $2 500', body: 'Исходники и тест-векторы под один проект — измерить в своём флоу, прежде чем брать на себя обязательства.' },
     { name: 'Один проект', price: 'от $25 000', body: 'Использование в одном продукте, с поддержкой интеграции и верификационной обвязкой, которая доказывает работоспособность.' },
@@ -102,6 +123,8 @@ const RU = {
     { name: 'Своя арифметика', price: 'от $280/ч', body: 'Формат или тракт данных под ваши ограничения, с той же побитовой верификацией.' },
   ],
   termsNote: 'Цены — точка отсчёта, а не тариф: честная цифра зависит от устройства, нужных прав и объёма интеграционной работы. Спросите — получите настоящую цифру, а не буклет.',
+  pricingBasisTitle: 'На чём основаны ориентиры',
+  pricingBasis: 'Ориентиры привязаны к публичным рыночным данным, а не назначены на глаз. Ссылки стоят рядом с ценами, чтобы их можно было проверить.',
   finalTitle: 'Какое ядро подходит вашему дизайну?',
   finalLede: 'Назовите устройство и бюджет, в который укладываетесь. Если ни одно из этих ядер не подходит — так и скажу, и назову цену за сделанное под вас.',
 }
@@ -202,13 +225,13 @@ export default function Licensing() {
           transition={{ duration: 0.6 }}
           style={{ marginBottom: '2rem' }}
         >
-          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.termsTitle : 'Terms'}</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginBottom: '1.25rem' }}>{c ? c.termsTitle : 'Licensing prices'}</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
             {(c ? c.terms : TERMS).map((t) => (
               <div key={t.name} className="premium-card" style={{ padding: '1.5rem' }}>
-                <p style={{ fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
+                <p style={{ fontSize: '0.82rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
                 <p style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--accent)', margin: '0 0 0.6rem' }}>{t.price}</p>
-                <p style={{ fontSize: '0.88rem', lineHeight: 1.55, margin: 0, opacity: 0.88 }}>{t.body}</p>
+                <p style={{ fontSize: '0.9rem', lineHeight: 1.55, margin: 0, opacity: 0.88 }}>{t.body}</p>
               </div>
             ))}
           </div>
@@ -221,6 +244,25 @@ export default function Licensing() {
               </>
             )}
           </p>
+          <div className="premium-card" style={{ marginTop: '1rem', padding: '1.25rem 1.5rem' }}>
+            <h3 style={{ fontSize: '1.05rem', margin: '0 0 0.6rem' }}>
+              {c ? c.pricingBasisTitle : 'How these starting prices are grounded'}
+            </h3>
+            <p style={{ fontSize: '0.9rem', lineHeight: 1.55, margin: '0 0 0.75rem', opacity: 0.88 }}>
+              {c ? c.pricingBasis : 'The starting points are anchored to public market figures, not set by feel. The links sit next to the prices so you can check the basis.'}
+            </p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: '0.4rem' }}>
+              {PRICING_BENCHMARKS.map((benchmark) => (
+                <li key={benchmark.label} style={{ fontSize: '0.86rem', lineHeight: 1.5 }}>
+                  <a href={benchmark.href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
+                    {benchmark.label}
+                  </a>
+                  {' — '}
+                  {c ? benchmark.detailRu : benchmark.detailEn}
+                </li>
+              ))}
+            </ul>
+          </div>
         </motion.div>
 
         {/* CTA */}
