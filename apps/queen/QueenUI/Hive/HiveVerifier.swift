@@ -130,6 +130,12 @@ struct HiveVerifier {
         if build.timedOut {
             return .unavailable("`swift build` exceeded \(Int(timeout))s - verdict unknown, not assumed")
         }
+        // A verdict is only as good as the output it was read from. If the
+        // drain was cut short, a pass has no tally behind it and a failure has
+        // an empty detail - both of which read as evidence and are not.
+        if build.outputTruncated {
+            return .unavailable("`swift build` output was not read to the end - verdict unknown, not assumed")
+        }
         if build.exitCode != 0 {
             return .failed("`swift build` failed:\n" + Self.tail(build.standardError + build.standardOutput))
         }
@@ -142,6 +148,9 @@ struct HiveVerifier {
         )
         if test.timedOut {
             return .unavailable("`swift test` exceeded \(Int(timeout))s - verdict unknown, not assumed")
+        }
+        if test.outputTruncated {
+            return .unavailable("`swift test` output was not read to the end - verdict unknown, not assumed")
         }
         if test.exitCode != 0 {
             return .failed("`swift test` failed:\n" + Self.tail(test.standardOutput + test.standardError))
@@ -212,7 +221,10 @@ struct HiveVerifier {
             arguments: ["-C", root, "rev-parse", "HEAD"],
             timeout: 20
         )
-        guard result.exitCode == 0 else { return nil }
+        // A partial read of a commit hash is worse than none: it would be
+        // recorded as the commit a verdict was measured against and could never
+        // match a full hash again.
+        guard result.exitCode == 0, !result.outputTruncated else { return nil }
         let head = result.standardOutput.trimmingCharacters(in: .whitespacesAndNewlines)
         return head.isEmpty ? nil : head
     }

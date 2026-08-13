@@ -431,25 +431,68 @@ struct HiveOrderingKeyTests {
         _ module: String,
         score: Double,
         confidence: Double,
-        weightedTotal: Double
+        weightedTotal: Double,
+        signals: [HiveSignal] = []
     ) -> HiveTarget {
         HiveTarget(
-            module: module, path: module, realm: .core, signals: [],
+            module: module, path: module, realm: .core, signals: signals,
             score: score, confidence: confidence, weightedTotal: weightedTotal
         )
     }
 
-    /// The key is the weighted mean with zero substituted for every unread
-    /// signal. Stated as an identity so the name cannot drift from the
-    /// arithmetic again.
-    @Test func theKeyIsTheZeroImputedMean() {
-        let totalWeight = HiveSignal.Kind.allCases.reduce(0.0) { $0 + $1.weight }
+    /// One signal, already normalised. `nil` means its probe failed.
+    private func signal(_ kind: HiveSignal.Kind, _ value: Double?) -> HiveSignal {
+        let state: HiveSignalState = value.map { .measured($0) } ?? .unmeasured("probe failed")
+        return HiveSignal(kind: kind, raw: state, normalized: state)
+    }
+
+    /// `zeroImputedScore` is the weighted mean with zero substituted for every
+    /// unread signal. Stated as an identity so the name cannot drift from the
+    /// arithmetic again - and it is the LOWER BOUND, not the key. Ordering on
+    /// it was the defect: it reads every failed probe as perfect health.
+    @Test func theZeroImputedScoreIsTheLowerBoundNotTheKey() {
+        let totalWeight = HiveSignal.Kind.totalWeight
         #expect(abs(totalWeight - 1.0) < 1e-12)
 
         let t = target("m", score: 0.9, confidence: 0.4, weightedTotal: 0.36)
         #expect(t.zeroImputedScore == 0.36 / totalWeight)
-        // And it is NOT the honest score, which imputes nothing.
+        #expect(t.lowerBound == t.zeroImputedScore)
+        // And it is neither of the other two numbers on display.
         #expect(t.zeroImputedScore != t.score)
+        #expect(t.zeroImputedScore != t.priorImputedScore)
+    }
+
+    /// The sort follows the declared-prior key, and would have produced the
+    /// opposite order under the key it replaced.
+    @Test func theSortFollowsThePriorImputedKeyAndNotTheZeroImputedOne() {
+        // Fully measured, every signal at 0.42.
+        let fullSignals = HiveSignal.Kind.allCases.map { signal($0, 0.42) }
+        let full = target(
+            "a-full", score: 0.42, confidence: 1.0, weightedTotal: 0.42, signals: fullSignals
+        )
+
+        // Read on 58% of the weight and genuinely bad there; the rest unread.
+        let partialSignals: [HiveSignal] = [
+            signal(.todoDensity, 0.5),
+            signal(.churn, nil),
+            signal(.testGap, 1.0),
+            signal(.sizeRisk, nil),
+            signal(.declaredIncomplete, nil),
+            signal(.openIssues, 0.5),
+        ]
+        let partial = target(
+            "b-partial", score: 0.39 / 0.58, confidence: 0.58,
+            weightedTotal: 0.39, signals: partialSignals
+        )
+
+        // The old key ranks the fully measured module first, because it counts
+        // three failed probes as three readings of zero.
+        #expect(partial.zeroImputedScore < full.zeroImputedScore)
+        // The key the queue uses ranks the other way, and that is the order
+        // that comes out of the sort.
+        #expect(partial.priorImputedScore > full.priorImputedScore)
+        #expect(HivePriorityEngine.ordered([full, partial]).map(\.module)
+            == ["b-partial", "a-full"])
     }
 
     /// The tie-break the file declares now actually fires.
@@ -467,8 +510,10 @@ struct HiveOrderingKeyTests {
         #expect(blind.score * blind.confidence != sighted.score * sighted.confidence)
         #expect(blind.score * blind.confidence > sighted.score * sighted.confidence)
 
-        // The new key is bitwise equal, so the declared tie-break decides.
+        // Both of the keys that followed it are bitwise equal here, so the
+        // declared tie-break decides and the fully measured target goes first.
         #expect(blind.zeroImputedScore == sighted.zeroImputedScore)
+        #expect(blind.priorImputedScore == sighted.priorImputedScore)
         #expect(HivePriorityEngine.ordered([blind, sighted]).first?.module == "z-sighted")
         #expect(HivePriorityEngine.ordered([sighted, blind]).first?.module == "z-sighted")
     }
@@ -481,13 +526,19 @@ struct HiveOrderingKeyTests {
         #expect(HivePriorityEngine.ordered([second, first]).map(\.module) == ["a", "b"])
     }
 
-    /// The order the queue is really in, asserted on the ORDER rather than on
-    /// the numbers behind it - which is the gap that let the old key run
-    /// untested for as long as it did.
-    @Test func theHigherZeroImputedKeyIsRankedFirst() {
-        let weak = target("weak", score: 1.0, confidence: 0.2, weightedTotal: 0.2)
-        let strong = target("strong", score: 0.6, confidence: 1.0, weightedTotal: 0.6)
-        #expect(HivePriorityEngine.ordered([weak, strong]).map(\.module) == ["strong", "weak"])
+    /// A target the scan barely read is not ranked at all - it is an
+    /// instrument fault, and the remedy is the probe, not a bee. Asserted on
+    /// the ORDER rather than on the numbers behind it, which is the gap that
+    /// let the old key run untested for as long as it did.
+    @Test func aTargetUnderTheFloorIsNotRankedAtAll() {
+        let barelyRead = target("weak", score: 1.0, confidence: 0.2, weightedTotal: 0.2)
+        let measured = target("strong", score: 0.6, confidence: 1.0, weightedTotal: 0.6)
+
+        #expect(HivePriorityEngine.ordered([barelyRead, measured]).map(\.module) == ["strong"])
+
+        let queue = HivePriorityEngine.queue(of: [barelyRead, measured])
+        #expect(queue.ranked.map(\.target.module) == ["strong"])
+        #expect(queue.instrumentFaults.map(\.module) == ["weak"])
     }
 }
 

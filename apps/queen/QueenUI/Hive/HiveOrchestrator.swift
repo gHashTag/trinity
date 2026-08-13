@@ -22,7 +22,16 @@ final class HiveOrchestrator: ObservableObject {
 
     @Published private(set) var policy: HivePolicy
     @Published private(set) var tasks: [HiveTask] = []
-    @Published private(set) var targets: [HiveTarget] = []
+    /// The last scan, split into what the evidence could rank and what it
+    /// could not. The queue - not a flat list - because those two halves have
+    /// different remedies and printing them as one list states a comparison
+    /// the scan never made.
+    @Published private(set) var queue: HiveQueue = .empty
+    /// Every target from the last scan, ranked ones first. Kept for counting.
+    var targets: [HiveTarget] { queue.allTargets }
+    /// The fault list as it stood when it was last recorded, so an unchanged
+    /// instrument does not write an audit line every cycle.
+    private var recordedFaults: [String] = []
     @Published private(set) var bees: [Bee] = []
     @Published private(set) var events: [HiveEvent] = []
     @Published private(set) var isScanning = false
@@ -202,9 +211,26 @@ final class HiveOrchestrator: ObservableObject {
             .sorted { $0.score > $1.score }
     }
 
-    /// Ranked targets minus the ones the operator has ruled out.
+    /// The ranked rows minus the ones the operator has ruled out.
+    ///
+    /// Positions are the queue's own, so a gap means something above was ruled
+    /// out rather than that the numbering is broken.
+    var eligibleRows: [HiveRankedTarget] {
+        queue.ranked.filter { policy.skippedModules[$0.target.module] == nil }
+    }
+
+    /// Ranked targets minus the ones the operator has ruled out. Instrument
+    /// faults are NOT in here: they were never ranked.
     var eligibleTargets: [HiveTarget] {
-        targets.filter { policy.skippedModules[$0.module] == nil }
+        eligibleRows.map(\.target)
+    }
+
+    /// Targets the scan read too little of to rank at all. Their remedy is to
+    /// repair the probe, so they are surfaced rather than silently dropped -
+    /// and they carry no position and no score, because the scan never
+    /// compared them with anything.
+    var instrumentFaults: [HiveTarget] {
+        queue.instrumentFaults.filter { policy.skippedModules[$0.module] == nil }
     }
 
     var doneCount: Int { tasks.filter { $0.state == .done }.count }
@@ -385,12 +411,39 @@ final class HiveOrchestrator: ObservableObject {
         statusLine = "scanning the system..."
         let scanner = self.scanner
         let facts = await Task.detached(priority: .utility) { scanner.scan() }.value
-        targets = HivePriorityEngine.rank(facts)
+        queue = HivePriorityEngine.queue(facts)
         lastScanAt = Date()
         isScanning = false
 
-        let fullyMeasured = targets.filter { $0.confidence >= 0.999 }.count
-        statusLine = "ranked \(targets.count) modules - \(fullyMeasured) fully measured"
+        let fullyMeasured = queue.ranked.filter { $0.target.confidence >= 0.999 }.count
+        var line = "ranked \(queue.ranked.count) modules - \(fullyMeasured) fully measured"
+        if !queue.instrumentFaults.isEmpty {
+            line += " - \(queue.instrumentFaults.count) unranked (instrument fault)"
+        }
+        if queue.hasUnsettledPairs {
+            let unsettled = queue.ranked.filter { !$0.separation.isSettled }.count
+            line += " - \(unsettled) pair(s) not settled by the evidence"
+        }
+        statusLine = line
+
+        // One audit line when the instrument's blind spots change, and only
+        // then. A module the scanner keeps failing to read is a fault to fix,
+        // not a target to rank, and it would otherwise vanish between cycles.
+        let faults = queue.instrumentFaults.map(\.module).sorted()
+        if faults != recordedFaults {
+            recordedFaults = faults
+            if !faults.isEmpty {
+                let detail = queue.instrumentFaults
+                    .prefix(3)
+                    .map { "\($0.module) (\(Int($0.confidence * 100))% read: \($0.unreadProbeDetail))" }
+                    .joined(separator: "; ")
+                record(
+                    kind: "instrument_fault",
+                    detail: "\(faults.count) module(s) left the ranked queue - too little was "
+                        + "measured to rank them, so the remedy is the probe, not a bee: \(detail)"
+                )
+            }
+        }
     }
 
     // MARK: - The cycle

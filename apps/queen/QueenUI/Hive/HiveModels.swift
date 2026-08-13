@@ -56,6 +56,48 @@ struct HiveSignal: Identifiable, Equatable {
             }
         }
 
+        /// The declared weight of all six signals together.
+        ///
+        /// Read, never assumed to be 1.0: `confidence` and both bounds divide
+        /// by it, and a seventh signal added by a later wave must move all
+        /// three together or they stop being comparable.
+        static var totalWeight: Double {
+            allCases.reduce(0.0) { $0 + $1.weight }
+        }
+
+        /// The normalised reading this signal is ASSUMED to have taken when its
+        /// probe failed. Used by the queue's ordering key, and by nothing else.
+        ///
+        /// PLACEHOLDER VALUES. Every number below is a guess about severity,
+        /// exactly like `scale` above, and written down here for the same
+        /// reason: so it can be argued with instead of being buried in an
+        /// estimator. Each one is meant to be the MEDIAN normalised reading of
+        /// that signal over a named scan corpus, computed once, offline, and
+        /// frozen here as a literal with its date and commit. No such corpus
+        /// has been recorded yet, so these are the author's guesses and must be
+        /// replaced by measured medians before anyone calls them calibrated.
+        ///
+        /// It must never be recomputed per scan. A prior taken from the
+        /// scanned set makes a module's rank a function of which other modules
+        /// happened to be scanned beside it, which is the exact coupling the
+        /// fixed `scale` was introduced to remove.
+        ///
+        /// It must never be zero. Zero here is `zeroImputedScore` wearing the
+        /// new key's name, and reinstates the one rule the instrument exists to
+        /// enforce: a probe that failed is not a reading of health.
+        var priorWhenUnread: Double {
+            switch self {
+            // Most modules in this tree are under-tested, so an unread test
+            // count is far more likely to be bad news than good.
+            case .testGap: return 0.60
+            case .churn: return 0.15
+            case .todoDensity: return 0.10
+            case .sizeRisk: return 0.10
+            case .declaredIncomplete: return 0.10
+            case .openIssues: return 0.10
+            }
+        }
+
         /// The declared full-scale reading for this signal, in the signal's own
         /// units. `nil` means the raw reading already lies in 0...1 and needs
         /// no normalisation at all.
@@ -166,25 +208,18 @@ struct HiveTarget: Identifiable, Equatable {
 
     var measuredCount: Int { signals.filter { $0.normalized.isMeasured }.count }
 
-    /// The key the queue is ordered on: the weighted mean computed by
-    /// substituting ZERO for every signal that was not measured.
+    /// The weighted mean computed by substituting ZERO for every signal that
+    /// was not measured. REPORTED, never ordered on - it is the lower end of
+    /// this target's interval and is exposed as `lowerBound` under that name.
     ///
-    /// Named for what it is. It used to be called `rankingScore` and justified
-    /// as "the score read as at least this bad", which is arithmetically the
-    /// opposite of what it does: `weighted / totalWeight` is a lower bound only
+    /// It ordered the queue for six cycles, under two successive names, and it
+    /// was wrong the whole time: `weighted / totalWeight` is a lower bound only
     /// if you assume every unread signal would have read zero, and refusing
     /// that assumption is the instrument's first documented rule. The file
-    /// therefore contradicted itself in two places at once, and the suite
-    /// asserted the no-imputation rule on `score` - the honest number - while
-    /// the queue was ordered on this one.
-    ///
-    /// The design is kept, because it does a real job: `score` divides by the
-    /// measured weight only, so a module measured on two signals counts each of
-    /// them 2.3x more heavily than the same signal on a fully scanned module,
-    /// and ordering on that hands the top of the queue to whichever module the
-    /// Queen knows least about. What changes is that the assumption is now
-    /// named where it can be argued with, and the honest `score` still sits
-    /// beside it on the screen.
+    /// contradicted itself in two places at once, and the suite asserted the
+    /// no-imputation rule on `score` - the honest number, which nothing sorted
+    /// by - while the sort read this one. See `priorImputedScore` for what
+    /// replaced it and why.
     ///
     /// One division, not a division followed by a multiplication. `score *
     /// confidence` is the same number in exact arithmetic and a different one
@@ -193,8 +228,127 @@ struct HiveTarget: Identifiable, Equatable {
     /// were skipped and a target with a FAILED probe could be placed above a
     /// fully measured one.
     var zeroImputedScore: Double {
-        let totalWeight = HiveSignal.Kind.allCases.reduce(0.0) { $0 + $1.weight }
+        let totalWeight = HiveSignal.Kind.totalWeight
         return totalWeight > 0 ? weightedTotal / totalWeight : 0
+    }
+
+    // MARK: - The key the queue is ordered on
+
+    /// THE ORDERING KEY: the weakness actually measured, plus a declared
+    /// typical reading for every probe that failed.
+    ///
+    ///     key = SUM over measured   (normalised * weight)
+    ///         + SUM over unmeasured (priorWhenUnread * weight)
+    ///         all over the total weight
+    ///
+    /// WHY THIS AND NOT THE OTHER TWO, so the next reader does not have to
+    /// re-litigate it:
+    ///
+    /// The queue is a top-k selection under a budget, and the cost of getting
+    /// it wrong is the regret of spending a bee on module i instead of on the
+    /// true worst one: V_worst - V_i. That loss is LINEAR in the ranked
+    /// quantity, and for a linear loss the selection that minimises it is
+    /// argmax of the POSTERIOR MEAN. So the key has to be a mean. Both keys
+    /// this replaced are bounds or ratios, which is why both were wrong, and
+    /// wrong in opposite directions.
+    ///
+    ///   - `zeroImputedScore` is this same expression with every prior set to
+    ///     zero. It is the maximin answer - what you get by refusing to say
+    ///     anything at all about the unread signals - and its bias against a
+    ///     module whose probe failed is exactly -p_true * weight, always
+    ///     negative. A failed probe always reads as health. That is a direct
+    ///     violation of the instrument's first documented rule, committed by
+    ///     the very line that ordered the queue.
+    ///
+    ///   - `score` is this same expression with each prior set to the module's
+    ///     OWN measured mean: lower + score * (1 - confidence) = score,
+    ///     algebraically. It is self-imputation, its bias is correlated with
+    ///     the module's own measured weakness, and the amplification is
+    ///     1/confidence - between 2.5x and 4.2x over the two-signal subsets of
+    ///     these six. Ordering on it hands the top of the queue to whichever
+    ///     module the Queen knows least about.
+    ///
+    ///   - A declared constant is the only one of the three whose bias can be
+    ///     driven to zero, because "is 0.15 the right prior for churn" is a
+    ///     checkable claim about a written-down number rather than a structural
+    ///     property of the estimator. The condition it is chosen to satisfy is
+    ///     NEUTRALITY: the ranking must not move when a probe fails and nothing
+    ///     about the module has changed, or the queue is ordered by how well
+    ///     the scanner worked rather than by the state of the code.
+    ///
+    /// Interval dominance was considered as the comparator and rejected: it is
+    /// the right STATEMENT of what the evidence settles, but overlap is
+    /// intransitive, so it is not a strict weak ordering and `sorted(by:)` may
+    /// not be handed it. It is reported instead - see `HiveSeparation`.
+    ///
+    /// One sum then one division, in `allCases` order. The association is
+    /// fixed so that a module measured at exactly the declared prior and a
+    /// module whose probe failed produce the same key BIT FOR BIT, and the
+    /// declared tie-breaks below actually get to run. The last key computed as
+    /// a division followed by a multiplication put a failed probe above a
+    /// fully measured module because 0.88 * 0.55 is not 0.484.
+    var priorImputedScore: Double {
+        let totalWeight = HiveSignal.Kind.totalWeight
+        guard totalWeight > 0 else { return 0 }
+        var sum = 0.0
+        for kind in HiveSignal.Kind.allCases {
+            let reading = signals.first { $0.kind == kind }?.normalized
+            if let normalized = reading?.value {
+                sum += normalized * kind.weight
+            } else {
+                // Includes a signal the engine never produced at all: absent is
+                // not zero here either.
+                sum += kind.priorWhenUnread * kind.weight
+            }
+        }
+        return sum / totalWeight
+    }
+
+    /// Weight of the signals whose probes failed, as a share of the total.
+    var unmeasuredShare: Double {
+        let totalWeight = HiveSignal.Kind.totalWeight
+        guard totalWeight > 0 else { return 0 }
+        var sum = 0.0
+        for kind in HiveSignal.Kind.allCases {
+            let reading = signals.first { $0.kind == kind }?.normalized
+            if reading?.value == nil { sum += kind.weight }
+        }
+        return sum / totalWeight
+    }
+
+    /// The honest lower end of the interval: what this module would score if
+    /// every unread signal turned out to be perfectly healthy. It is
+    /// `zeroImputedScore` under the name that describes it.
+    var lowerBound: Double { zeroImputedScore }
+
+    /// The honest upper end: every unread signal at full scale.
+    var upperBound: Double { lowerBound + unmeasuredShare }
+
+    /// True when too little of this module was read for its rank to mean
+    /// anything. Such a target leaves the ranked queue entirely: the remedy is
+    /// to repair the probe, not to send a bee at the module.
+    var isInstrumentFault: Bool {
+        confidence < HiveInvariants.minimumDispatchConfidence
+    }
+
+    /// The probes that failed, in declared order, each with its own reason.
+    var unreadProbes: [(kind: HiveSignal.Kind, why: String)] {
+        HiveSignal.Kind.allCases.compactMap { kind in
+            guard let signal = signals.first(where: { $0.kind == kind }) else {
+                return (kind, "signal not produced by the scan")
+            }
+            guard case .unmeasured(let why) = signal.normalized else { return nil }
+            return (kind, why)
+        }
+    }
+
+    /// One line naming every probe that failed and why - the operator's
+    /// instruction sheet when a target is an instrument fault rather than a
+    /// weak module.
+    var unreadProbeDetail: String {
+        let parts = unreadProbes.map { "\($0.kind.label): \($0.why)" }
+        guard !parts.isEmpty else { return "every signal was read" }
+        return parts.joined(separator: "; ")
     }
 
     /// The signals that actually drove the score, strongest first.

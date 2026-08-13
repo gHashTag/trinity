@@ -1,11 +1,101 @@
 import Foundation
 
+// MARK: - The queue
+
+/// What one scan produced: the part of the system the evidence can rank, and
+/// the part where the fault is in the instrument rather than in the code.
+///
+/// Two lists rather than one, because they have different remedies. A weak
+/// module wants a bee. A module the scanner could not read wants its probe
+/// fixed, and ranking it beside the others - with a position and a score -
+/// states a comparison the scan never made.
+struct HiveQueue: Equatable {
+    /// Dispatchable, in order. Every row cleared the confidence gate.
+    let ranked: [HiveRankedTarget]
+    /// Below the confidence floor: not ranked, not dropped. Least-measured
+    /// first, which orders the instrument, not the modules.
+    let instrumentFaults: [HiveTarget]
+
+    static let empty = HiveQueue(ranked: [], instrumentFaults: [])
+
+    /// Every target from the scan, ranked ones first.
+    var allTargets: [HiveTarget] { ranked.map(\.target) + instrumentFaults }
+
+    var hasUnsettledPairs: Bool { ranked.contains { $0.separation != .settled } }
+
+    /// The line the screen prints over the list. It has to name the assumption
+    /// the order makes, because the order cannot be read off the numbers
+    /// beside it: three different keys are on display and only one of them
+    /// sorts.
+    static let orderingSentence =
+        "Ranked on the weakness actually measured, plus a written-down typical value for "
+        + "every probe that failed - never zero, never the module's own average; "
+        + "'not settled' means the unread signals could still flip this pair."
+}
+
+/// One row of the ranked queue: a target, its position, and what the evidence
+/// does or does not settle about it against the row above.
+struct HiveRankedTarget: Identifiable, Equatable {
+    let target: HiveTarget
+    /// 1-based position in the queue.
+    let position: Int
+    /// This row against the one immediately above it.
+    let separation: HiveSeparation
+
+    var id: String { target.module }
+}
+
+/// Whether the evidence actually separates a row from the one above it.
+///
+/// Reported, never used as a comparator: overlap is intransitive, so it is not
+/// a strict weak ordering, and a dispatcher must still produce a next item.
+enum HiveSeparation: Equatable {
+    /// The first row, or two intervals that do not touch.
+    case settled
+    /// The intervals overlap: the unread signals could still flip this pair.
+    /// `breakEven` is the reading that would do it, when one exists.
+    case notSettled(breakEven: HiveBreakEven?)
+
+    var isSettled: Bool {
+        if case .settled = self { return true }
+        return false
+    }
+}
+
+/// The imputation at which a row would draw level with the row above it.
+struct HiveBreakEven: Equatable {
+    /// The normalised reading, uniform across every unread signal of the lower
+    /// row.
+    let normalized: Double
+    /// The same reading in each unread signal's own units.
+    let readings: [Reading]
+
+    struct Reading: Equatable {
+        let kind: HiveSignal.Kind
+        /// `normalized` mapped back through `kind.scale`. For a signal that is
+        /// already absolute, the two are the same number.
+        let inOwnUnits: Double
+    }
+
+    /// "Churn (30d) 11.4 of 20, Open issues 5.7 of 10".
+    var summary: String {
+        readings.map { reading in
+            if let scale = reading.kind.scale {
+                return "\(reading.kind.label) \(String(format: "%.1f", reading.inOwnUnits)) "
+                    + "of \(String(format: "%g", scale))"
+            }
+            return "\(reading.kind.label) \(String(format: "%.2f", reading.inOwnUnits))"
+        }
+        .joined(separator: ", ")
+    }
+}
+
 /// Ranks the parts of the Queen's own system by how much they need work.
 ///
 /// Pure: facts in, ranked targets out. No disk, no clock, no network - so the
 /// ranking is reproducible and testable. `HiveRepoScanner` supplies the facts.
 ///
-/// Two rules the arithmetic enforces:
+/// Three rules the arithmetic enforces:
 ///   1. An unmeasured signal is excluded from the score, not counted as zero.
 ///      Its weight is removed from the denominator and shows up as lost
 ///      confidence instead.
@@ -13,9 +103,34 @@ import Foundation
 ///      (`HiveSignal.Kind.scale`), not against the scanned set. A score is
 ///      therefore a property of the module and survives both the removal of
 ///      another module and the passage of a scan cycle.
+///   3. The ORDER is taken from `HiveTarget.priorImputedScore`, which imputes a
+///      declared per-signal prior - never zero, and never the module's own
+///      average - for each probe that failed. Rule 1 governs the reported
+///      numbers; rule 3 governs the sort, and for six cycles they contradicted
+///      each other because no test was written against the second one.
 enum HivePriorityEngine {
 
+    /// Every scanned target: the ranked queue first, in dispatch order, then
+    /// the instrument faults.
+    ///
+    /// This is the flat view, kept for counting and for callers that want the
+    /// whole scan. The queue the Queen dispatches from is `queue(_:)`, which
+    /// keeps the two lists apart - a target below the confidence floor is not
+    /// ranked at all, and printing a rank number beside it was the
+    /// presentation half of the bug this wave fixed.
     static func rank(_ facts: [HiveModuleFacts]) -> [HiveTarget] {
+        queue(facts).allTargets
+    }
+
+    /// Scan facts in, the operator's queue out.
+    static func queue(_ facts: [HiveModuleFacts]) -> HiveQueue {
+        queue(of: measure(facts))
+    }
+
+    /// The per-module measurement pass: facts in, targets out, in input order
+    /// and with no ordering applied. Split from the ordering so a test can hold
+    /// one of them still while it moves the other.
+    static func measure(_ facts: [HiveModuleFacts]) -> [HiveTarget] {
         guard !facts.isEmpty else { return [] }
 
         let raws = facts.map { rawReadings(for: $0) }
@@ -73,32 +188,117 @@ enum HivePriorityEngine {
             )
         }
 
-        return ordered(targets)
+        return targets
     }
 
-    /// The queue's order, as its own function so a test can assert on the
-    /// ORDER rather than only on the numbers behind it.
-    ///
-    /// Ordered on the zero-imputed reading, so thin evidence cannot buy a place
-    /// at the top of the queue. That key names its own assumption: signals that
-    /// were not read count as zero for ORDERING only, while `score` - which
-    /// imputes nothing - stays on display beside it. Confidence breaks ties so
-    /// a well-measured target wins over an equally-scored guess, and the module
-    /// name makes the result deterministic.
-    ///
-    /// The tie-breaks reach at all only because the key is a single division.
-    /// Computed as score*confidence, two mathematically equal keys differed in
-    /// the last bit (0.88*0.55 is 0.48400000000000004, while 0.484*1.0 is
-    /// 0.484), so the comparison never reached the confidence rule and the
-    /// target with a FAILED probe was placed above the fully measured one.
+    /// The ranked queue, as its own function so a test can assert on the ORDER
+    /// rather than only on the numbers behind it.
     static func ordered(_ targets: [HiveTarget]) -> [HiveTarget] {
-        targets.sorted {
-            if $0.zeroImputedScore != $1.zeroImputedScore {
-                return $0.zeroImputedScore > $1.zeroImputedScore
+        queue(of: targets).ranked.map(\.target)
+    }
+
+    /// Splits the scan into the part the evidence can rank and the part where
+    /// the fault is in the instrument, then orders the first.
+    ///
+    /// L0, THE GATE. A target below `HiveInvariants.minimumDispatchConfidence`
+    /// leaves the ranked queue entirely. `HiveTaskFactory.rejection` already
+    /// refused it a bee; what it did not do was stop the queue printing a
+    /// position and a number beside it, which reads as a ranking of modules
+    /// when it is a ranking of how well the scanner happened to work. Its
+    /// remedy is to repair the probe, so it is listed where that can be read.
+    ///
+    /// L1, THE KEY. `priorImputedScore` - see the derivation there. Confidence
+    /// breaks ties, so between two targets of equal expected weakness the
+    /// better-measured one goes first; the module name makes the rest
+    /// deterministic.
+    ///
+    /// L2, THE REPORT. Every adjacent pair whose intervals overlap is marked
+    /// `notSettled`. Interval dominance is the honest statement of what the
+    /// evidence settles, but it cannot BE the order: on real scans the overlap
+    /// relation is intransitive (A ~ B and B ~ C while A is settled against C),
+    /// so it is not a strict weak ordering and `sorted(by:)` may not be given
+    /// it. A dispatcher must still produce a next item. So the queue is ordered
+    /// on the key and says out loud which neighbours the evidence did not
+    /// separate, rather than picking one silently and presenting it as a rank.
+    static func queue(of targets: [HiveTarget]) -> HiveQueue {
+        let survivors = targets
+            .filter { !$0.isInstrumentFault }
+            .sorted(by: precedes)
+
+        // Least-measured first. This is an ordering on the INSTRUMENT - which
+        // probe to go and fix - not on the modules' need for work, and it must
+        // not be read as one.
+        let faults = targets
+            .filter(\.isInstrumentFault)
+            .sorted {
+                if $0.confidence != $1.confidence { return $0.confidence < $1.confidence }
+                return $0.module < $1.module
             }
-            if $0.confidence != $1.confidence { return $0.confidence > $1.confidence }
-            return $0.module < $1.module
+
+        var rows: [HiveRankedTarget] = []
+        rows.reserveCapacity(survivors.count)
+        for (index, target) in survivors.enumerated() {
+            guard index > 0 else {
+                // Nothing above it, so there is no pair to leave unsettled.
+                rows.append(HiveRankedTarget(target: target, position: 1, separation: .settled))
+                continue
+            }
+            let above = survivors[index - 1]
+            let separation: HiveSeparation = intervalsOverlap(above, target)
+                ? .notSettled(breakEven: breakEven(below: target, above: above))
+                : .settled
+            rows.append(
+                HiveRankedTarget(target: target, position: index + 1, separation: separation)
+            )
         }
+        return HiveQueue(ranked: rows, instrumentFaults: faults)
+    }
+
+    /// The comparator, named so it can be tested directly.
+    ///
+    /// The tie-breaks reach at all only because the key is one sum and one
+    /// division. Computed as score*confidence, two mathematically equal keys
+    /// differed in the last bit (0.88*0.55 is 0.48400000000000004, while
+    /// 0.484*1.0 is 0.484), the comparison never reached the confidence rule,
+    /// and the target with a FAILED probe was placed above the fully measured
+    /// one.
+    static func precedes(_ lhs: HiveTarget, _ rhs: HiveTarget) -> Bool {
+        if lhs.priorImputedScore != rhs.priorImputedScore {
+            return lhs.priorImputedScore > rhs.priorImputedScore
+        }
+        if lhs.confidence != rhs.confidence { return lhs.confidence > rhs.confidence }
+        return lhs.module < rhs.module
+    }
+
+    /// Whether what the evidence leaves open for these two still overlaps.
+    static func intervalsOverlap(_ lhs: HiveTarget, _ rhs: HiveTarget) -> Bool {
+        lhs.lowerBound <= rhs.upperBound && rhs.lowerBound <= lhs.upperBound
+    }
+
+    /// The reading every unread signal of `below` would have to take for it to
+    /// draw level with `above`.
+    ///
+    ///     p* = (key_above - lower_below) / unmeasuredShare_below
+    ///
+    /// `nil` when `below` has nothing left unread (no reading of ITS could
+    /// change the pair - the doubt belongs to the row above), or when no
+    /// reading in 0...1 would do it.
+    static func breakEven(below: HiveTarget, above: HiveTarget) -> HiveBreakEven? {
+        let unreadShare = below.unmeasuredShare
+        guard unreadShare > 0 else { return nil }
+        let point = (above.priorImputedScore - below.lowerBound) / unreadShare
+        guard point > 0, point <= 1 else { return nil }
+        return HiveBreakEven(
+            normalized: point,
+            readings: below.unreadProbes.map { probe in
+                HiveBreakEven.Reading(
+                    kind: probe.kind,
+                    // Back into the signal's own units, so the operator is told
+                    // "about 11 commits", not "0.57 of something".
+                    inOwnUnits: point * (probe.kind.scale ?? 1)
+                )
+            }
+        )
     }
 
     // MARK: - Raw readings

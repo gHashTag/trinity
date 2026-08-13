@@ -26,6 +26,31 @@ enum HiveProcess {
         let standardError: String
         /// True when the process was killed because it outlived its timeout.
         let timedOut: Bool
+        /// True when at least one of the two streams was NOT read to EOF, so
+        /// what came back may be a prefix of what the child wrote.
+        ///
+        /// Separate from `timedOut`, which is about the child's wall clock
+        /// only. A child can exit 0, well inside its timeout, and still leave
+        /// this true: a grandchild holding the inherited descriptor keeps the
+        /// pipe open past the drain grace, and then a complete-looking result
+        /// is a partial read. Without this flag the caller cannot tell the two
+        /// apart, and `HiveRepoScanner.readChurn` scored a truncated git log as
+        /// a measured churn of zero for the whole repository.
+        let outputTruncated: Bool
+
+        init(
+            exitCode: Int32,
+            standardOutput: String,
+            standardError: String,
+            timedOut: Bool,
+            outputTruncated: Bool = false
+        ) {
+            self.exitCode = exitCode
+            self.standardOutput = standardOutput
+            self.standardError = standardError
+            self.timedOut = timedOut
+            self.outputTruncated = outputTruncated
+        }
     }
 
     /// Runs a command to completion. Both pipes are drained concurrently so a
@@ -67,14 +92,23 @@ enum HiveProcess {
         let errData = UnsafeDataBox()
         let group = DispatchGroup()
 
+        // Read INCREMENTALLY into the box, not with `readDataToEndOfFile()`.
+        //
+        // That call publishes its bytes by returning, and on the bounded path
+        // it has not returned - that is what the bound is for. The box was
+        // therefore still the empty `Data()` when the caller read it, and every
+        // byte the child had already written was thrown away: measured, exit 0,
+        // `timedOut` false, stdout zero bytes, with the full JSON line sitting
+        // unread in the pipe. Appending under the box's own lock puts the bytes
+        // where the caller can find them the moment they arrive.
         group.enter()
         DispatchQueue.global(qos: .utility).async {
-            outData.value = outPipe.fileHandleForReading.readDataToEndOfFile()
+            Self.drain(outPipe.fileHandleForReading, into: outData)
             group.leave()
         }
         group.enter()
         DispatchQueue.global(qos: .utility).async {
-            errData.value = errPipe.fileHandleForReading.readDataToEndOfFile()
+            Self.drain(errPipe.fileHandleForReading, into: errData)
             group.leave()
         }
 
@@ -96,20 +130,64 @@ enum HiveProcess {
         // not exotic. An unbounded `group.wait()` here would hold the caller for
         // ever - the second unbounded block on this path, one line after the one
         // the SIGKILL escalation was added to fix.
-        if group.wait(timeout: .now() + Self.readerDrainGraceSeconds) == .timedOut {
-            // Whatever arrived so far is what there is. The handles are closed
-            // so the detached readers unblock and their `leave` cannot outlive
-            // this call; the boxes are only read after this point.
+        let drained = group.wait(timeout: .now() + Self.readerDrainGraceSeconds) != .timedOut
+        if !drained {
+            // Whatever arrived so far is what there is - and it really is in
+            // the boxes now, because the readers append as they go. The handles
+            // are closed so the detached readers stop.
             try? outPipe.fileHandleForReading.close()
             try? errPipe.fileHandleForReading.close()
         }
+
+        // Complete means "read to EOF", which is the only state in which the
+        // absence of a line is evidence that the child never wrote it.
+        //
+        // The bound is consulted FIRST, and it is decisive. Closing a
+        // descriptor underneath a blocked `read` does not reliably surface as
+        // an error - on this platform the call can return 0, which is
+        // indistinguishable from a genuine end of file, and the reader would
+        // then claim it read everything a moment after being cut off. What is
+        // known for certain is that the drain did not finish inside its bound.
+        let truncated = !drained || !(outData.reachedEnd && errData.reachedEnd)
 
         return Result(
             exitCode: process.terminationStatus,
             standardOutput: String(data: outData.value, encoding: .utf8) ?? "",
             standardError: String(data: errData.value, encoding: .utf8) ?? "",
-            timedOut: timedOut
+            timedOut: timedOut,
+            outputTruncated: truncated
         )
+    }
+
+    /// Copies a pipe into a box until EOF, appending as it goes.
+    ///
+    /// Uses `read(2)` on the descriptor rather than `FileHandle.availableData`.
+    /// The bounded path closes this handle underneath a blocked reader to
+    /// unblock it, and the FileHandle accessors answer that by raising an
+    /// Objective-C exception, which Swift cannot catch: the crash would land in
+    /// the drain the bound exists to survive. `read` returns -1 and the loop
+    /// leaves quietly, with everything that arrived already in the box.
+    static func drain(_ handle: FileHandle, into box: UnsafeDataBox) {
+        let descriptor = handle.fileDescriptor
+        var buffer = [UInt8](repeating: 0, count: 16 * 1024)
+        while true {
+            let count = buffer.withUnsafeMutableBytes { raw -> Int in
+                read(descriptor, raw.baseAddress, raw.count)
+            }
+            if count > 0 {
+                box.append(Data(buffer[0..<count]))
+                continue
+            }
+            if count == 0 {
+                box.markReachedEnd()
+                return
+            }
+            // Interrupted by a signal: the read never happened, so retry.
+            if errno == EINTR { continue }
+            // Anything else - EBADF from the close above, most likely - ends
+            // the drain without claiming the stream was read to its end.
+            return
+        }
     }
 
     /// Asks a process to stop, then makes it stop.
@@ -210,6 +288,13 @@ enum HiveAuthProbe {
             timeout: 20
         )
         if result.timedOut { return .unknown("`claude auth status` timed out") }
+        // A truncated read is not an answer. Without this the probe parses an
+        // empty string, reports "empty response", and the operator is told the
+        // CLI's sign-in state could not be determined when in fact the report
+        // arrived and was discarded.
+        if result.outputTruncated {
+            return .unknown("`claude auth status` replied but its output was not read to the end")
+        }
 
         // The exit code is not the answer: `claude auth status` exits 1 when
         // signed out and still prints a well-formed report on stdout. Reading
@@ -226,8 +311,42 @@ enum HiveAuthProbe {
     }
 }
 
-/// Small reference box so concurrent readers can hand data back out of a
+/// Small reference box so a concurrent reader can hand data back out of a
 /// dispatch group without capturing an inout.
+///
+/// Every access takes the lock, because the caller reads the box on a bounded
+/// schedule while the reader may still be appending to it. The point of the box
+/// is that the bytes are IN it as they arrive rather than at the end: a reader
+/// that publishes only when it finishes has nothing to publish on the path
+/// where it does not finish.
 final class UnsafeDataBox: @unchecked Sendable {
-    var value = Data()
+    private let lock = NSLock()
+    private var storage = Data()
+    private var sawEndOfFile = false
+
+    var value: Data {
+        lock.lock()
+        defer { lock.unlock() }
+        return storage
+    }
+
+    /// True only when the stream was read all the way to EOF. False means what
+    /// is in the box may be a prefix - never that the child wrote nothing.
+    var reachedEnd: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return sawEndOfFile
+    }
+
+    func append(_ chunk: Data) {
+        lock.lock()
+        storage.append(chunk)
+        lock.unlock()
+    }
+
+    func markReachedEnd() {
+        lock.lock()
+        sawEndOfFile = true
+        lock.unlock()
+    }
 }
