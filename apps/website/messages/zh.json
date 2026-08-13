@@ -23,7 +23,8 @@
   "navExtra": {
     "dashboard": "仪表板",
     "tree": "研究实验室",
-    "docs": "文档"
+    "docs": "文档",
+    "about": "关于作者"
   },
   "theorems": {
     "badge": "数学基础",
@@ -1760,5 +1761,40 @@
         "desc": "arXiv:2502.16473"
       }
     ]
+  },
+  "about": {
+    "name": "Dmitrii Vasilev",
+    "role": "硬件 AI 与 FPGA/RTL 工程师 · GF-T 三进制浮点格式作者 · 规范 → RTL → FPGA · ML 系统与边缘 AI",
+    "bioTitle": "关于我",
+    "bio": [
+      "我构建高效 AI 计算的完整技术栈：从数值格式和执行它的 RTL，到开发板上的逐位精确验证。我是 GF-T 三进制浮点格式以及更广泛 GoldenFloat 系列（GF-T8/16/32；基于 φ 的 GF4→GF1024）的作者；该系列以包含 83 种格式和逐位精确一致性向量的目录形式发布。",
+      "我将一个 arXiv 论文中的新数值格式部署到实际的 Xilinx Artix-7（ALINX AX7203，XC7A200T）上，使用完全开放的流程：Yosys、nextpnr 和 prjxray，不依赖厂商工具。一个 SKY130 设计已通过 Tiny Tapeout 送交制造；目前没有芯片上的测量结果。我的工作围绕规范 → RTL → 验证 → 开发板这条链路展开：每个 RTL 节点都与独立的 Python 黄金模型逐位比对，在综合前发现规范与 RTL 的偏差。",
+      "在硬件工作之前，我用了十多年开发和教授软件：AI 智能体与多智能体系统、React Native 以及 Web3。我接受全球远程或合同工作（UTC+7），方向包括硬件 AI、FPGA/RTL/验证、ML 系统和边缘 AI。"
+    ],
+    "achievementsTitle": "主要成果（硬件，2026）",
+    "achievements": [
+      "FPGA 上的神经网络训练：原语可直接在开发板上训练，规范 → RTL → 开发板的完整链路均与黄金模型逐位核对。",
+      "GF16 4×4 矩阵乘法：映射到 Xilinx Artix-7 逻辑，使用 0 个 DSP48 和 0 个锁存器：32,252 个 LUT；允许使用硬乘法器时为 21,223 个。",
+      "Tiny Tapeout SKY130：设计已送交制造；GDS、门级测试和预检查均已通过。目前还没有芯片测量结果。",
+      "逐节点逐位精确验证：每个 RTL 节点都与独立的 Python 黄金模型核对（iverilog 加 KAT 向量），在综合前发现规范与 RTL 的偏差。",
+      "tri-net：完整的三进制网络栈（133 个 .t27 规范），包括 GF16 PHY、基于 AD9361 的 BPSK 调制解调器、网格路由和 AEAD 加密；已完成设备间无线验证。"
+    ],
+    "publicationsTitle": "公开发表",
+    "publications": [
+      {
+        "title": "GoldenFloat：基于 φ 的浮点格式系列（GF4→GF1024）— arXiv:2606.05017",
+        "url": "https://arxiv.org/abs/2606.05017"
+      },
+      {
+        "title": "包含逐位精确一致性向量的 83 种格式数值目录：FP8、BF16、MXFP4 — arXiv:2606.09686",
+        "url": "https://arxiv.org/abs/2606.09686"
+      }
+    ],
+    "links": {
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "arxiv1": "arXiv：GoldenFloat",
+      "arxiv2": "arXiv：83 种格式目录"
+    }
   }
 }

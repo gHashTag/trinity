@@ -23,7 +23,8 @@
   "navExtra": {
     "dashboard": "Dashboard",
     "tree": "Forschungslab",
-    "docs": "Doku"
+    "docs": "Doku",
+    "about": "Über den Autor"
   },
   "theorems": {
     "badge": "MATHEMATISCHE GRUNDLAGE",
@@ -1728,5 +1729,40 @@
     "parameters": "Konsolidierte Parameter",
     "optimizer": "Optimierer",
     "adam": "ADAM"
+  },
+  "about": {
+    "name": "Dmitrii Vasilev",
+    "role": "Hardware-AI- und FPGA/RTL-Ingenieur · Autor des ternären GF-T-Gleitkommaformats · Spezifikation → RTL → FPGA · ML-Systeme und Edge AI",
+    "bioTitle": "Über mich",
+    "bio": [
+      "Ich entwickle den vollständigen Stack für effiziente KI-Berechnungen — vom Zahlenformat und dem ausführenden RTL bis zur bitgenauen Verifikation auf einem Board. Ich bin Autor von GF-T, einem ternären Gleitkommaformat, und der umfassenderen GoldenFloat-Familie (GF-T8/16/32; φ-abgeleitetes GF4→GF1024), veröffentlicht als Katalog mit 83 Formaten und bitgenauen Konformitätsvektoren.",
+      "Ich habe ein neues Zahlenformat aus einem arXiv-Paper auf eine echte Xilinx Artix-7 (ALINX AX7203, XC7A200T) gebracht — mit vollständig offenen Werkzeugen: Yosys, nextpnr und prjxray, ohne Hersteller-Tools. Ein SKY130-Design wurde über Tiny Tapeout zur Fertigung eingereicht; Messungen auf einem Chip gibt es nicht. Im Mittelpunkt steht die Kette Spezifikation → RTL → Verifikation → Board: Jeder RTL-Knoten wird bitweise gegen ein unabhängiges Python-Goldenmodell geprüft, sodass Abweichungen zwischen Spezifikation und RTL vor der Synthese auffallen.",
+      "Vor der Hardware habe ich mehr als zehn Jahre Software entwickelt und vermittelt — KI-Agenten und Multi-Agenten-Systeme, React Native und Web3. Ich bin weltweit (UTC+7) für Remote- und Vertragsarbeit in den Bereichen Hardware-AI, FPGA/RTL/Verifikation, ML-Systeme und Edge AI offen."
+    ],
+    "achievementsTitle": "Wichtige Ergebnisse (Hardware, 2026)",
+    "achievements": [
+      "Neuronales Training auf dem FPGA — Primitive, die direkt auf dem Board trainieren; die gesamte Kette Spezifikation → RTL → Board ist bitweise gegen das Goldenmodell geprüft.",
+      "GF16-Matrixmultiplikation 4×4 — auf Xilinx-Artix-7-Logik mit 0 DSP48 und 0 Latches: 32.252 LUTs oder 21.223 bei Nutzung der Hard-Multiplizierer.",
+      "Tiny Tapeout SKY130 — das Design wurde zur Fertigung eingereicht: GDS, Gate-Level-Test und Precheck sind bestanden. Messungen auf einem Chip gibt es noch nicht.",
+      "Bitgenaue Verifikation pro Knoten — jeder RTL-Knoten wird gegen ein unabhängiges Python-Goldenmodell geprüft (iverilog plus KAT-Vektoren); Abweichungen zwischen Spezifikation und RTL werden vor der Synthese erkannt.",
+      "tri-net — ein vollständiger ternärer Netzwerk-Stack (133 .t27-Spezifikationen): GF16-PHY, ein BPSK-Modem über AD9361, Mesh-Routing und AEAD-Kryptografie — zwischen Geräten über Funk nachgewiesen."
+    ],
+    "publicationsTitle": "Veröffentlichungen",
+    "publications": [
+      {
+        "title": "GoldenFloat: Eine φ-abgeleitete Gleitkommafamilie (GF4→GF1024) — arXiv:2606.05017",
+        "url": "https://arxiv.org/abs/2606.05017"
+      },
+      {
+        "title": "Ein numerischer Katalog mit 83 Formaten und bitgenauen Konformitätsvektoren: FP8, BF16, MXFP4 — arXiv:2606.09686",
+        "url": "https://arxiv.org/abs/2606.09686"
+      }
+    ],
+    "links": {
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "arxiv1": "arXiv: GoldenFloat",
+      "arxiv2": "arXiv: Katalog mit 83 Formaten"
+    }
   }
 }
