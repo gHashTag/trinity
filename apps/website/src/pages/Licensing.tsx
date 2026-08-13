@@ -76,15 +76,15 @@ const INCLUDED = [
 const RU = {
   eyebrow: 'Лицензирование IP',
   h1: 'Формат, который обходит опубликованный уровень. И ядра к нему.',
-  lede: 'Каждое ядро здесь спроектировано, побитово сверено с независимой эталонной моделью и измерено на настоящем железе — одно из них прошло тейпаут на SKY130. Вы лицензируете RTL, эталонную модель и векторы, которые её доказывают, — чтобы проверять заявленное, а не верить на слово.',
+  lede: 'Каждое ядро здесь спроектировано, побитово сверено с независимой эталонной моделью и измерено на реальной FPGA-плате; один дизайн отправлен на изготовление по SKY130 — измерений на кристалле пока нет. Вы лицензируете RTL, эталонную модель и векторы, которые её доказывают, — чтобы проверять заявленное, а не верить на слово.',
   ctaEnquire: 'Спросить про ядро',
   ctaVerify: 'Как я верифицирую',
   coresTitle: 'Доступные ядра',
   cores: [
-    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — float, у которого экспонента является сбалансированным тернарным числом, а поля фиксированы. Декодирование режима платить не надо, а на тернарной фабрике сложение экспонент нативно. Против takum — ближайшего к нише опубликованного tapered-формата: в 2.1 раза меньше средней относительной ошибки на шестнадцати битах и точно в 2.6 раза на тридцати двух, при равномерных 9 битах мантиссы там, где tapered-формат сужается. Раньше здесь стояло сравнение с tekum16 и числа 2.84× и 5.53× — отозвано: оракул, помеченный tekum, декодировал все 65 536 шестнадцатибитных кодов идентично takum-оракулу.', proof: 'Опубликован как arXiv:2606.05017 с независимой эталонной моделью и побитовыми векторами. Отличимость эталонных моделей теперь проверяется перебором всего 16-битного кодового пространства, а не предполагается.' },
+    { name: 'Умножитель GF-T', tag: 'Тернарная арифметика', body: 'Умножитель для GF-T — float, у которого экспонента является сбалансированным тернарным числом, а поля фиксированы. Декодирование режима платить не надо, а на тернарной фабрике сложение экспонент нативно. Против takum — ближайшего к нише опубликованного tapered-формата: в 2.1 раза меньше средней относительной ошибки на шестнадцати битах и точно в 2.6 раза на тридцати двух, при равномерных 9 битах мантиссы там, где tapered-формат сужается. Раньше здесь стояло сравнение с оракулом, помеченным tekum, и два отдельных множителя — отозвано: этот оракул декодировал все 65 536 шестнадцатибитных кодов идентично takum-оракулу, то есть отличимости не было.', proof: 'Опубликован как arXiv:2606.05017 с независимой эталонной моделью и побитовыми векторами. Отличимость эталонных моделей теперь проверяется перебором всего 16-битного кодового пространства, а не предполагается.' },
     { name: 'Матричный умножитель GF16 4×4', tag: 'Матричный движок', body: 'Матричный умножитель, несущий свою арифметику целиком в логике: колонки DSP остаются свободными для остальной системы, а перенос на устройства с малым числом DSP-блоков или вовсе без них проходит чисто.', proof: '36.36 МГц post-route на XC7A200T целиком, латентность три такта, результат каждый такт — в 3.6 раза выше 9.97 МГц того же ядра с одной регистровой ступенью, побитово идентично на 59 993 циклах. Только логика: 32 252 LUT без единого DSP48 либо 21 223 LUT с 64 DSP.' },
     { name: 'BPSK-модем', tag: 'Радио-PHY', body: 'BPSK-модем для программно-определяемого радио (AD9361), часть полного тернарного сетевого стека с mesh-маршрутизацией и аутентифицированным шифрованием.', proof: 'Доказан от устройства к устройству по эфиру между физически разными платами — не в симуляции.' },
-    { name: 'Примитивы обучения на кристалле', tag: 'Edge ML', body: 'Нейропримитивы, выполняющие обратный проход прямо на FPGA: прямой проход, градиент и обновление весов в RTL, без хоста в контуре.', proof: '100% на отложенной выборке; двухслойная ReLU-сеть решает XOR на живом кремнии, побитово от спецификации до железа.' },
+    { name: 'Примитивы обучения на FPGA', tag: 'Edge ML', body: 'Нейропримитивы, выполняющие обратный проход прямо на FPGA: прямой проход, градиент и обновление весов в RTL, без хоста в контуре.', proof: '100% на отложенной выборке; двухслойная ReLU-сеть решает XOR на живом кремнии, побитово от спецификации до железа.' },
   ],
   includedTitle: 'Что входит в лицензию',
   included: [
@@ -115,7 +115,7 @@ export default function Licensing() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="licensing" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
+      <section id="licensing" style={{ maxWidth: '900px', alignItems: 'stretch', textAlign: 'left' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -126,17 +126,17 @@ export default function Licensing() {
           transition={{ duration: 0.7 }}
           style={{ marginBottom: '2rem' }}
         >
-          <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.75rem', margin: '0 0 0.75rem' }}>
+          <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.82rem', margin: '0 0 0.75rem' }}>
             {c ? c.eyebrow : 'IP licensing'}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
-            {c ? c.h1 : 'Arithmetic cores that have already been to silicon.'}
+            {c ? c.h1 : 'A format that beats the published level. And the cores that carry it.'}
           </h1>
-          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '68ch' }}>
             {c ? c.lede : (
               <>
                 Every core here was designed, verified bit-exact against an independent model, and
-                measured on real hardware — one of them through a SKY130 tape-out. You license the
+                measured on a real FPGA board; one design was submitted for SKY130 fabrication — no die measurements yet. You license the
                 RTL, the reference model and the vectors that prove it, so you can check the claims
                 instead of trusting them.
               </>
@@ -212,7 +212,7 @@ export default function Licensing() {
               </div>
             ))}
           </div>
-          <p style={{ fontSize: '0.86rem', opacity: 0.75, marginTop: '1.25rem', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '0.86rem', opacity: 0.75, margin: '1.25rem 0 0', lineHeight: 1.6 }}>
             {c ? c.termsNote : (
               <>
                 Prices are starting points, not a tariff — the honest number depends on the device, the
@@ -233,7 +233,7 @@ export default function Licensing() {
           style={{ textAlign: 'center' }}
         >
           <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>{c ? c.finalTitle : 'Which core fits your design?'}</h2>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '52ch', margin: '0 auto 1rem' }}>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '58ch', margin: '0 0 1rem' }}>
             {c ? c.finalLede : (
               <>
                 Tell me the device and the budget you are working against. If none of these cores is

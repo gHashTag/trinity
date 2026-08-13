@@ -25,8 +25,8 @@ const PAGES: PageLink[] = [
   // кодов идентично takum-оракулу, поэтому сравнение шло не с tekum.
   { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: 'A φ-derived static-split float family', noteRu: 'φ-производное семейство float со статическим разбиением' },
   { href: '#/start', en: 'Start here', ru: 'С чего начать', note: 'Four checks you can run yourself, in order', noteRu: 'Четыре проверки, которые запускаете сами, по порядку' },
-  { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on live silicon', noteRu: 'Присылаете RTL — измеряю на живом кремнии' },
-  { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores that have been to silicon', noteRu: 'Ядра, уже прошедшие кремний' },
+  { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on a live FPGA board', noteRu: 'Присылаете RTL — измеряю на живой FPGA-плате' },
+  { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores with RTL, reference model and vectors', noteRu: 'Ядра: RTL, эталонная модель и векторы' },
   { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
   { href: '#/cases', en: 'Case studies', ru: 'Работы', note: 'Verification runs on other people’s RTL', noteRu: 'Прогоны чужого RTL' },
   { href: '#/course', en: 'Course', ru: 'Курс', note: 'Train a neural network on an FPGA', noteRu: 'Обучите нейросеть прямо на FPGA' },

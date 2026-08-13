@@ -81,22 +81,22 @@ function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang
     <div className="premium-card" style={{ textAlign: 'left', marginBottom: '1rem' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'baseline', justifyContent: 'space-between' }}>
         <h3 style={{ margin: 0, fontSize: 'clamp(1.05rem, 3vw, 1.3rem)' }}>{run.design}</h3>
-        <code style={{ fontSize: '0.75rem', opacity: 0.75 }}>{run.top} · {run.tiles} · {run.date}</code>
+        <code style={{ fontSize: '0.82rem', opacity: 0.75 }}>{run.top} · {run.tiles} · {run.date}</code>
       </div>
       <p style={{ fontSize: '0.9rem', opacity: 0.85, margin: '0.5rem 0 0.4rem', lineHeight: 1.6 }}>{run.what}</p>
-      <a href={run.repoUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem' }}>{run.repo}</a>
+      <a href={run.repoUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem' }}>{run.repo}</a>
 
       <div style={{ margin: '1rem 0 0' }}>
         {run.checks.map((k) => (
           <div key={k.name} style={{ borderTop: '1px solid var(--border)', padding: '0.6rem 0' }}>
             <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'baseline' }}>
-              <span style={{ color: k.status === 'PASS' ? 'var(--accent)' : '#ff6b6b', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', minWidth: '3.2em' }}>
+              <span style={{ color: k.status === 'PASS' ? 'var(--accent)' : '#ff6b6b', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.08em', minWidth: '3.2em' }}>
                 {k.status}
               </span>
               <strong style={{ fontSize: '0.88rem' }}>{k.name}</strong>
             </div>
             <p style={{ fontSize: '0.85rem', opacity: 0.85, margin: '0.3rem 0 0.35rem', lineHeight: 1.55 }}>{k.detail}</p>
-            <code style={{ fontSize: '0.72rem', opacity: 0.6, display: 'block', overflowX: 'auto', whiteSpace: 'pre' }}>{k.command}</code>
+            <code style={{ fontSize: '0.82rem', opacity: 0.6, display: 'block', overflowX: 'auto', whiteSpace: 'pre' }}>{k.command}</code>
           </div>
         ))}
       </div>
@@ -113,16 +113,18 @@ function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang
       </p>
       {run.found && (
         <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: '0.9rem', marginTop: '1rem' }}>
-          <div style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.7, marginBottom: '0.35rem' }}>{foundLabel}</div>
+          <div style={{ fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.7, marginBottom: '0.35rem' }}>{foundLabel}</div>
           <p style={{ fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>{run.found}</p>
         </div>
       )}
       {failed === 0 && !run.found && (
-        <p style={{ fontSize: '0.82rem', opacity: 0.6, margin: '0.8rem 0 0' }}>Nothing surfaced. That is a result too.</p>
+        <p style={{ fontSize: '0.85rem', opacity: 0.65, margin: '0.8rem 0 0' }}>
+          {lang === 'ru' ? 'Ничего не всплыло. Это тоже результат.' : 'Nothing surfaced. That is a result too.'}
+        </p>
       )}
       {/* The stamp, not a footnote: which commit, which tool build, which day.
           Without it a card is a claim; with it a reader can go and repeat it. */}
-      <p style={{ fontSize: '0.72rem', opacity: 0.55, margin: '0.9rem 0 0', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: '0.6rem' }}>
+      <p style={{ fontSize: '0.82rem', opacity: 0.55, margin: '0.9rem 0 0', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: '0.6rem' }}>
         {run.repo.split(' · ')[0]}{PROVENANCE.commits[run.origin] ? ` @ ${PROVENANCE.commits[run.origin]}` : ''} · {PROVENANCE.ranAt} ·{' '}
         {PROVENANCE.yosys} · {PROVENANCE.iverilog}
       </p>
@@ -133,6 +135,12 @@ function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang
 export default function CaseStudies() {
   const { lang } = useI18n()
   const c = lang === 'ru' ? RU : EN
+  const all = [...RUNS, ...THIRD_PARTY_RUNS]
+  const checksTotal = all.reduce((n, r) => n + r.checks.length, 0)
+  const checksFailed = all.reduce((n, r) => n + r.checks.filter((k) => k.status !== 'PASS').length, 0)
+  const stats: [string, string][] = lang === 'ru'
+    ? [[String(all.length), 'дизайнов прогнано'], [`${checksTotal - checksFailed}/${checksTotal}`, 'проверок прошло'], [PROVENANCE.ranAt, 'день прогона']]
+    : [[String(all.length), 'designs run'], [`${checksTotal - checksFailed}/${checksTotal}`, 'checks passed'], [PROVENANCE.ranAt, 'run on']]
   usePageMeta(
     lang === 'ru' ? 'Работы' : 'Case studies',
     'Verification runs on other people’s RTL: what was checked, what it surfaced, and the numbers measured on a live Artix-7.',
@@ -152,7 +160,7 @@ export default function CaseStudies() {
           transition={{ duration: 0.7 }}
           style={{ marginBottom: '2rem' }}
         >
-          <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.75rem', margin: '0 0 0.75rem' }}>
+          <p style={{ color: 'var(--accent)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.82rem', margin: '0 0 0.75rem' }}>
             {c.eyebrow}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
@@ -162,6 +170,20 @@ export default function CaseStudies() {
             {c.lede}
           </p>
         </motion.div>
+
+        {/* Итог сверху: на странице тринадцать тысяч пикселей карточек, и до этой
+            строки объём проделанного нельзя было увидеть, не прокрутив всё. */}
+        <div
+          className="premium-card"
+          style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '1rem 2.5rem', padding: '1.2rem 1.5rem', marginBottom: '2rem' }}
+        >
+          {stats.map(([n, label]) => (
+            <div key={label} style={{ textAlign: 'left' }}>
+              <div style={{ fontSize: '1.7rem', fontWeight: 700, color: 'var(--accent)', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>{n}</div>
+              <div style={{ fontSize: '0.85rem', opacity: 0.75 }}>{label}</div>
+            </div>
+          ))}
+        </div>
 
         {/* One line to the service, then the runs.
 
