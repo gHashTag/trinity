@@ -11,8 +11,8 @@
             .hash = "raylib_zig-5.6.0-dev-KE8REENOBQC-m5nK7M2b5aKSIubJPbPLUYcRhT7aT3RN",
         },
         .zig_hdc = .{
-            .url = "https://github.com/gHashTag/zig-hdc/archive/e3c3e11800b756da232a9307d97cc972dcde8de0.tar.gz",
-            .hash = "zig_hdc-0.1.0-6NS2Eut8FQBT_V91nPpHjOw-2sQJl8bgzOdpss9lVnPy",
+            .url = "https://github.com/gHashTag/zig-hdc/archive/b73b2fa29874f4e30297f167a6ea8a3c2ded9d32.tar.gz",
+            .hash = "zig_hdc-0.1.0-6NS2Eg99FQCG62j7TmpGwVTnq07LhNb1FUHrwUacgWdO",
         },
         .zig_golden_float = .{
             .url = "https://github.com/gHashTag/zig-golden-float/archive/e7ce32885de2a8c50b7b6a3030d0592202145dd1.tar.gz",
