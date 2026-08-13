@@ -171,7 +171,6 @@ zig build bench-mnist && ./.zig-cache/o/*/bench-mnist --weights=mnist_mlp_784x12
 ls results/quant_*.csv results/arith_*.csv results/nn_*.csv results/mnist_*.csv
 ```
 
-<<<<<<< HEAD
 ### Documentation
 
 - **[Phase 1 Methodology](docs/research/phase1_methodology.md)** — Full experimental protocol
