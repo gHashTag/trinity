@@ -23,7 +23,8 @@
   "navExtra": {
     "dashboard": "Panel",
     "tree": "Lab. Investigacion",
-    "docs": "Docs"
+    "docs": "Docs",
+    "about": "Sobre el autor"
   },
   "theorems": {
     "badge": "FUNDAMENTO MATEMÁTICO",
@@ -1760,5 +1761,40 @@
         "desc": "arXiv:2502.16473"
       }
     ]
+  },
+  "about": {
+    "name": "Dmitrii Vasilev",
+    "role": "Ingeniero de Hardware-AI y FPGA/RTL · Autor del formato de coma flotante ternario GF-T · especificación → RTL → FPGA · sistemas ML y Edge AI",
+    "bioTitle": "Sobre mí",
+    "bio": [
+      "Construyo la pila completa para un cómputo de IA eficiente: desde el formato numérico y el RTL que lo ejecuta hasta la verificación bit a bit en una placa. Soy el autor de GF-T, un formato de coma flotante ternario, y de la familia más amplia GoldenFloat (GF-T8/16/32; GF4→GF1024 derivada de φ), publicada como un catálogo de 83 formatos con vectores de conformidad bit a bit.",
+      "Llevé un formato numérico nuevo desde un artículo de arXiv hasta una Xilinx Artix-7 activa (ALINX AX7203, XC7A200T) usando un flujo completamente abierto: Yosys, nextpnr y prjxray, sin herramientas del fabricante. Un diseño SKY130 fue enviado a fabricación mediante Tiny Tapeout; no hay mediciones en un chip. Mi trabajo se centra en la cadena especificación → RTL → verificación → placa: cada nodo RTL se comprueba bit a bit frente a un modelo dorado independiente en Python, para detectar divergencias entre la especificación y el RTL antes de la síntesis.",
+      "Antes del hardware pasé más de diez años desarrollando y enseñando software: agentes de IA y sistemas multiagente, React Native y Web3. Estoy disponible para trabajo remoto o por contrato en todo el mundo (UTC+7) en hardware-AI, FPGA/RTL/verificación, sistemas ML y edge AI."
+    ],
+    "achievementsTitle": "Resultados principales (hardware, 2026)",
+    "achievements": [
+      "Entrenamiento neuronal en FPGA: primitivas que entrenan en la propia placa, con toda la cadena especificación → RTL → placa comprobada bit a bit frente al modelo dorado.",
+      "Multiplicación de matrices GF16 4×4: se implementa en la lógica Xilinx Artix-7 con 0 DSP48 y 0 latches: 32.252 LUT, o 21.223 usando multiplicadores dedicados.",
+      "Tiny Tapeout SKY130: el diseño fue enviado a fabricación; GDS, prueba a nivel de puertas y precheck han pasado. Aún no hay mediciones en un chip.",
+      "Verificación bit a bit por nodo: cada nodo RTL se comprueba frente a un modelo dorado independiente en Python (iverilog y vectores KAT), detectando divergencias antes de la síntesis.",
+      "tri-net: una pila de red ternaria completa (133 especificaciones .t27): PHY GF16, módem BPSK sobre AD9361, encaminamiento mesh y criptografía AEAD, demostrados entre dispositivos por radio."
+    ],
+    "publicationsTitle": "Publicaciones",
+    "publications": [
+      {
+        "title": "GoldenFloat: Una familia de coma flotante derivada de φ (GF4→GF1024) — arXiv:2606.05017",
+        "url": "https://arxiv.org/abs/2606.05017"
+      },
+      {
+        "title": "Un catálogo numérico de 83 formatos con vectores de conformidad bit a bit: FP8, BF16, MXFP4 — arXiv:2606.09686",
+        "url": "https://arxiv.org/abs/2606.09686"
+      }
+    ],
+    "links": {
+      "linkedin": "LinkedIn",
+      "github": "GitHub",
+      "arxiv1": "arXiv: GoldenFloat",
+      "arxiv2": "arXiv: Catálogo de 83 formatos"
+    }
   }
 }
