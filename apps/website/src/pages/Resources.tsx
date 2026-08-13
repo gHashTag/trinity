@@ -39,6 +39,10 @@ const STATUS_LABEL: Record<Resource['status'], Record<Lang, string>> = {
   unverified: { ru: 'не проверен', en: 'unverified' },
 }
 
+function noteFor(r: Resource, lang: Lang): string | undefined {
+  return lang === 'ru' ? (r.noteRu ?? r.note) : r.note
+}
+
 const COPY = {
   title: { ru: 'Ресурсы', en: 'Resources' },
   lede: {
@@ -158,7 +162,7 @@ function Group({
               </span>
             </div>
 
-            {r.note && (
+            {noteFor(r, lang) && (
               <p
                 style={{
                   color: dim,
@@ -169,7 +173,7 @@ function Group({
                   textAlign: 'left',
                 }}
               >
-                {r.note}
+                {noteFor(r, lang)}
               </p>
             )}
           </article>
@@ -277,7 +281,7 @@ export default function Resources() {
                   <a href={r.href} target="_blank" rel="noopener noreferrer">
                     {r.title}
                   </a>
-                  {r.note && <span style={{ color: dim }}> — {r.note}</span>}
+                  {noteFor(r, lang) && <span style={{ color: dim }}> — {noteFor(r, lang)}</span>}
                 </li>
               ))}
             </ul>
