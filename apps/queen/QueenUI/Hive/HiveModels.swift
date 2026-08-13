@@ -71,11 +71,34 @@ struct HiveSignal: Identifiable, Equatable {
         /// PLACEHOLDER VALUES. Every number below is a guess about severity,
         /// exactly like `scale` above, and written down here for the same
         /// reason: so it can be argued with instead of being buried in an
-        /// estimator. Each one is meant to be the MEDIAN normalised reading of
-        /// that signal over a named scan corpus, computed once, offline, and
-        /// frozen here as a literal with its date and commit. No such corpus
-        /// has been recorded yet, so these are the author's guesses and must be
-        /// replaced by measured medians before anyone calls them calibrated.
+        /// estimator.
+        ///
+        /// Each one should be the MEAN normalised reading of that signal over a
+        /// named scan corpus, computed once, offline, and frozen here as a
+        /// literal with its date and commit. The mean, not the median: the
+        /// ordering key is an expected value, and for a linear loss the
+        /// optimal rule is the argmax of a posterior MEAN. An earlier draft of
+        /// this comment said median in one sentence and argued for a mean in
+        /// the next. For these signals the difference is not cosmetic - most
+        /// are zero-inflated, so their medians are 0.0000, and calibrating to a
+        /// median would set the prior to the one value the paragraph below
+        /// forbids.
+        ///
+        /// Measured over the 21-module trios-macos tree on 2026-08-13, for the
+        /// four signals that are readable there at all:
+        ///     todoDensity  median 0.0000  mean 0.1199
+        ///     churn        median 0.0500  mean 0.0810
+        ///     testGap      median 0.0000  mean 0.0822
+        ///     sizeRisk     median 0.1110  mean 0.3354
+        /// One scan of one tree is not a corpus, so these are recorded as
+        /// evidence rather than adopted. But note testGap: the declared 0.60
+        /// below is justified by a comment claiming most modules here are
+        /// under-tested, and the measurement says the opposite.
+        ///
+        /// `declaredIncomplete` and `openIssues` were measurable on NO module
+        /// of that tree - n = 0 for both. Their priors cannot be calibrated
+        /// against this corpus at all, and no amount of scanning it will
+        /// change that. They are, and must stay labelled as, pure declarations.
         ///
         /// It must never be recomputed per scan. A prior taken from the
         /// scanned set makes a module's rank a function of which other modules

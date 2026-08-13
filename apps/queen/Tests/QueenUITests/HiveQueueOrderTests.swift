@@ -83,9 +83,17 @@ struct HiveQueueOrderTests {
         #expect(keys == keys.sorted(by: >))
     }
 
-    @Test func aProbeFailureDoesNotMoveTheKeyWhenTheDeclaredPriorIsRight() {
-        // Neutrality with respect to probe failure: nothing about the module
-        // changed, only whether the scanner managed to read it. churn's
+    @Test func theKeyIsUnchangedWhenTheDeclaredPriorMatchesTheReading() {
+        // Neutrality OF THE KEY with respect to probe failure. Named narrowly
+        // on purpose: an adversarial review measured what the old name implied
+        // and found the RANK moves in 46.7% of single-probe failures, because
+        // the key is unchanged only when the true reading equals the declared
+        // prior exactly - and even then the tie-break reorders the pair. The
+        // key is the neutral quantity; the ranking is not, and the test that
+        // says so is directly below.
+        //
+        // Nothing about the module changed here, only whether the scanner
+        // managed to read it. churn's
         // declared prior is 0.15 of full scale, and full scale is 20 commits,
         // so a module that really churned 3 times is the module the prior
         // describes. Its key must not move when the probe fails.
