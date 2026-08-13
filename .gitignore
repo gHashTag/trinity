@@ -316,6 +316,11 @@ fpga/tools/weight_pack_wide
 !CLAUDE.md
 !.github/
 !docs/**
+# Queen Trinity Orchestrator Law: every container MUST carry SOUL.md at
+# its root. The *.md rule above made that impossible to honour -- only
+# templates/SOUL.md was re-included, so a container's own soul could never
+# be committed without -f.
+!**/SOUL.md
 
 # Docker files in root (use deploy/ subdirectory instead)
 Dockerfile*
