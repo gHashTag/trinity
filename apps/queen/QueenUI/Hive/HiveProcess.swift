@@ -13,6 +13,13 @@ enum HiveProcess {
     /// now` does nothing, and only killing the app recovers it.
     static let terminationGraceSeconds: TimeInterval = 5
 
+    /// How long the pipe readers get to finish after the child is gone.
+    ///
+    /// Bounded for the same reason the child's own wait is bounded: a reader
+    /// blocked on a descriptor a grandchild still holds open would otherwise
+    /// wedge the caller for ever, with the process already dead.
+    static let readerDrainGraceSeconds: Double = 5
+
     struct Result {
         let exitCode: Int32
         let standardOutput: String
@@ -81,7 +88,21 @@ enum HiveProcess {
             terminateHard(process)
         }
         process.waitUntilExit()
-        group.wait()
+        // Killing the child is not enough to unblock the readers.
+        //
+        // `readDataToEndOfFile()` returns when the WRITE end of the pipe closes,
+        // and a grandchild that inherited the descriptor keeps it open after its
+        // parent dies. `claude -p` spawns tool subprocesses, so this is ordinary,
+        // not exotic. An unbounded `group.wait()` here would hold the caller for
+        // ever - the second unbounded block on this path, one line after the one
+        // the SIGKILL escalation was added to fix.
+        if group.wait(timeout: .now() + Self.readerDrainGraceSeconds) == .timedOut {
+            // Whatever arrived so far is what there is. The handles are closed
+            // so the detached readers unblock and their `leave` cannot outlive
+            // this call; the boxes are only read after this point.
+            try? outPipe.fileHandleForReading.close()
+            try? errPipe.fileHandleForReading.close()
+        }
 
         return Result(
             exitCode: process.terminationStatus,
