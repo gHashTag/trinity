@@ -205,7 +205,7 @@ export default function Resources() {
   return (
     <main>
       <Navigation />
-      <div style={wrap}>
+      <div className="subpage-layout subpage-layout--resources" style={wrap}>
         <h1 style={{ marginBottom: '0.3em' }}>{COPY.title[lang]}</h1>
         <p style={{ color: dim, lineHeight: 1.75, marginBottom: '0.6em', maxWidth: 'none', textAlign: 'left' }}>
           {COPY.lede[lang]}

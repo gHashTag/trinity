@@ -129,6 +129,41 @@ section ol {
   text-align: left;
 }
 
+/* Подстраницы используют три разных поверхности вместо ленты одинаковых
+   серых карточек. Правило действует только на длинные маршруты с классом
+   subpage-layout; у главной страницы остаётся собственная система разделов. */
+.subpage-layout > :not(.radial-glow):not(nav):not(.verification-anchor):not(.verification-toc) {
+  width: 100%;
+  margin-bottom: clamp(1.6rem, 3.5vw, 2.4rem);
+}
+
+.subpage-layout > :not(.radial-glow):not(nav):not(.verification-anchor):not(.verification-toc):nth-child(3n + 1) {
+  padding-block: clamp(0.4rem, 1.5vw, 0.9rem);
+  border-block: 1px solid var(--border);
+}
+
+.subpage-layout > :not(.radial-glow):not(nav):not(.verification-anchor):not(.verification-toc):nth-child(3n + 2) {
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+}
+
+.subpage-layout > :not(.radial-glow):not(nav):not(.verification-anchor):not(.verification-toc):nth-child(3n) {
+  padding: clamp(1rem, 2.6vw, 1.7rem) clamp(1.1rem, 3vw, 2rem);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  background: linear-gradient(90deg, rgba(0, 255, 136, 0.075), rgba(0, 255, 136, 0.012));
+}
+
+.subpage-layout > :last-child {
+  margin-bottom: 0;
+}
+
+.subpage-layout > .radial-glow {
+  width: auto;
+}
+
 .tight {
   max-width: var(--narrow-w);
   margin-left: auto;
