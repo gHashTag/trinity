@@ -136,6 +136,47 @@ section ol {
   width: 100%;
 }
 
+.verification-anchor {
+  scroll-margin-top: 96px;
+}
+
+.verification-toc {
+  width: 100%;
+  margin: 0 0 2rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  text-align: left;
+}
+
+.verification-toc > strong {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: var(--text);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+
+.verification-toc__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.8rem;
+}
+
+.verification-toc__links a {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.verification-toc__links a:hover,
+.verification-toc__links a:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(clamp(250px, 45%, 320px), 1fr));

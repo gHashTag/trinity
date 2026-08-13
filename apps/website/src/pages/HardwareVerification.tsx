@@ -155,6 +155,43 @@ const RELATED_RU = [
   { href: '#/course', title: 'Научиться самому', body: 'Восемь модулей от пустого тулчейна до сети, которая учится на самом кристалле.' },
 ]
 
+const PAGE_TOC = {
+  en: [
+    ['#self-serve', 'Run it yourself'],
+    ['#report', 'Example report'],
+    ['#conformance', 'Independent evidence'],
+    ['#signal-health', 'Signal health'],
+    ['#method', 'The method'],
+    ['#start', 'Start a request'],
+    ['#deliverables', 'The report'],
+    ['#workflow', 'How it works'],
+    ['#pricing', 'Pricing'],
+    ['#proof', 'Track record'],
+    ['#conditions', 'Working together'],
+    ['#limits', 'Scope and limits'],
+    ['#contact', 'Contact'],
+    ['#tiers', 'Delivery tiers'],
+    ['#science', 'The science'],
+  ],
+  ru: [
+    ['#self-serve', 'Запустить самому'],
+    ['#report', 'Пример отчёта'],
+    ['#conformance', 'Независимые доказательства'],
+    ['#signal-health', 'Надёжность сигнала'],
+    ['#method', 'Метод'],
+    ['#start', 'Начать заявку'],
+    ['#deliverables', 'Содержание отчёта'],
+    ['#workflow', 'Как это работает'],
+    ['#pricing', 'Стоимость'],
+    ['#proof', 'Что уже проверено'],
+    ['#conditions', 'Как работаем'],
+    ['#limits', 'Границы метода'],
+    ['#contact', 'Контакты'],
+    ['#tiers', 'Уровни работ'],
+    ['#science', 'Научная основа'],
+  ],
+} as const
+
 // Russian copy. Other locales fall back to English rather than showing gaps.
 const RU = {
   autoTitle: 'Начать — без переписки',
@@ -233,7 +270,7 @@ function TierSection({ lang }: { lang: string }) {
   const ru = lang === 'ru'
   const L = (x: { en: string; ru: string }) => (ru ? x.ru : x.en)
   return (
-    <div style={{ width: '100%', maxWidth: '900px', margin: '2.5rem auto 0', textAlign: 'left' }}>
+    <div id="tiers" className="verification-anchor" style={{ width: '100%', maxWidth: '900px', margin: '2.5rem auto 0', textAlign: 'left' }}>
       <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
         {ru ? 'Что именно вы получите' : 'What you actually get'}
       </h2>
@@ -270,7 +307,7 @@ function TierSection({ lang }: { lang: string }) {
 function ScienceSection({ lang }: { lang: string }) {
   const ru = lang === 'ru'
   return (
-    <div style={{ width: '100%', maxWidth: '900px', margin: '3rem auto 0', textAlign: 'left' }}>
+    <div id="science" className="verification-anchor" style={{ width: '100%', maxWidth: '900px', margin: '3rem auto 0', textAlign: 'left' }}>
       <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
         {ru ? 'На чём это стоит' : 'What this rests on'}
       </h2>
@@ -377,6 +414,24 @@ export default function HardwareVerification() {
           </p>
         </motion.div>
 
+        <nav className="verification-toc verification-anchor" aria-label={ru ? 'Оглавление страницы' : 'Page contents'}>
+          <strong>{ru ? 'На этой странице' : 'On this page'}</strong>
+          <div className="verification-toc__links">
+            {(ru ? PAGE_TOC.ru : PAGE_TOC.en).map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                onClick={(event) => {
+                  event.preventDefault()
+                  document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </nav>
+
         {/* The thing that actually runs, before anything the reader has to ask
             me for. Everything below this is either a deeper tier or an
             explanation of what this one does not establish. */}
@@ -384,20 +439,27 @@ export default function HardwareVerification() {
 
         {/* Paste that, get this. Extracted from a real run rather than written,
             so it cannot drift from what the tool actually says. */}
-        <ExampleReport />
+        <div id="report" className="verification-anchor">
+          <ExampleReport />
+        </div>
 
         {/* The tier above the free one, shown rather than described -- including
             the run where the adjudication went against my own reference model. */}
-        <ConformanceEvidence />
+        <div id="conformance" className="verification-anchor">
+          <ConformanceEvidence />
+        </div>
 
         {/* The same check, pointed at me. It is the worst number on this page
             and it is mine, which is the only reason the rest is worth reading. */}
-        <SignalHealth />
+        <div id="signal-health" className="verification-anchor">
+          <SignalHealth />
+        </div>
 
         {/* The method, drawn. Placed before the deliverables because every item in
             that list depends on the reader believing this one idea. */}
         <motion.div
-          className="premium-card"
+          id="method"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -413,7 +475,8 @@ export default function HardwareVerification() {
         {/* How a request actually starts. Named plainly because "get in touch"
             is the step most people never take. */}
         <motion.div
-          className="premium-card"
+          id="start"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -444,6 +507,8 @@ export default function HardwareVerification() {
 
         {/* What you get */}
         <motion.div
+          id="deliverables"
+          className="verification-anchor"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -463,7 +528,8 @@ export default function HardwareVerification() {
 
         {/* How it works */}
         <motion.div
-          className="premium-card"
+          id="workflow"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -480,6 +546,8 @@ export default function HardwareVerification() {
 
         {/* Pricing */}
         <motion.div
+          id="pricing"
+          className="verification-anchor"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -517,7 +585,8 @@ export default function HardwareVerification() {
 
         {/* Proof */}
         <motion.div
-          className="premium-card"
+          id="proof"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -550,6 +619,8 @@ export default function HardwareVerification() {
         {/* Related pages. The header dock only carries one link to this service,
             so licensing, evidence and the course are reached from here. */}
         <motion.div
+          id="related"
+          className="verification-anchor"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -571,6 +642,8 @@ export default function HardwareVerification() {
 
         {/* Practicals */}
         <motion.div
+          id="conditions"
+          className="verification-anchor"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -590,7 +663,8 @@ export default function HardwareVerification() {
 
         {/* Scope & limits */}
         <motion.div
-          className="premium-card"
+          id="limits"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -610,7 +684,8 @@ export default function HardwareVerification() {
 
         {/* Contact */}
         <motion.div
-          className="premium-card"
+          id="contact"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
