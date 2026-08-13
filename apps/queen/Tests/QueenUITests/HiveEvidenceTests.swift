@@ -441,7 +441,7 @@ struct HiveScoreStabilityTests {
         let fullTarget = try! #require(ranked.first { $0.module == "src/full" })
 
         #expect(thinTarget.score > fullTarget.score)
-        #expect(thinTarget.rankingScore < fullTarget.rankingScore)
+        #expect(thinTarget.zeroImputedScore < fullTarget.zeroImputedScore)
         #expect(ranked.first?.module == "src/full")
     }
 

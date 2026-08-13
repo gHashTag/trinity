@@ -67,17 +67,35 @@ enum HivePriorityEngine {
                     realm: fact.realm,
                     signals: signals,
                     score: score,
-                    confidence: confidence
+                    confidence: confidence,
+                    weightedTotal: weighted
                 )
             )
         }
 
-        // Ordered on the full-weight reading, so thin evidence cannot buy a
-        // place at the top of the queue. Confidence breaks ties so a
-        // well-measured target wins over an equally-scored guess, and the
-        // module name makes the result deterministic.
-        return targets.sorted {
-            if $0.rankingScore != $1.rankingScore { return $0.rankingScore > $1.rankingScore }
+        return ordered(targets)
+    }
+
+    /// The queue's order, as its own function so a test can assert on the
+    /// ORDER rather than only on the numbers behind it.
+    ///
+    /// Ordered on the zero-imputed reading, so thin evidence cannot buy a place
+    /// at the top of the queue. That key names its own assumption: signals that
+    /// were not read count as zero for ORDERING only, while `score` - which
+    /// imputes nothing - stays on display beside it. Confidence breaks ties so
+    /// a well-measured target wins over an equally-scored guess, and the module
+    /// name makes the result deterministic.
+    ///
+    /// The tie-breaks reach at all only because the key is a single division.
+    /// Computed as score*confidence, two mathematically equal keys differed in
+    /// the last bit (0.88*0.55 is 0.48400000000000004, while 0.484*1.0 is
+    /// 0.484), so the comparison never reached the confidence rule and the
+    /// target with a FAILED probe was placed above the fully measured one.
+    static func ordered(_ targets: [HiveTarget]) -> [HiveTarget] {
+        targets.sorted {
+            if $0.zeroImputedScore != $1.zeroImputedScore {
+                return $0.zeroImputedScore > $1.zeroImputedScore
+            }
             if $0.confidence != $1.confidence { return $0.confidence > $1.confidence }
             return $0.module < $1.module
         }

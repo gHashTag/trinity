@@ -4,6 +4,15 @@ import Foundation
 /// scanner can shell out to git without dragging in the streaming machinery.
 enum HiveProcess {
 
+    /// How long a process gets to honour SIGTERM before it is killed outright.
+    ///
+    /// `Process.terminate()` sends SIGTERM, which is a request. A git
+    /// subprocess that ignores it holds the calling thread in
+    /// `waitUntilExit()` for ever, and because the scan runs inside the cycle
+    /// that wedges the whole loop: the Hive keeps showing 24/7 ARMED, `Cycle
+    /// now` does nothing, and only killing the app recovers it.
+    static let terminationGraceSeconds: TimeInterval = 5
+
     struct Result {
         let exitCode: Int32
         let standardOutput: String
@@ -69,7 +78,7 @@ enum HiveProcess {
         }
         if process.isRunning {
             timedOut = true
-            process.terminate()
+            terminateHard(process)
         }
         process.waitUntilExit()
         group.wait()
@@ -80,6 +89,26 @@ enum HiveProcess {
             standardError: String(data: errData.value, encoding: .utf8) ?? "",
             timedOut: timedOut
         )
+    }
+
+    /// Asks a process to stop, then makes it stop.
+    ///
+    /// SIGTERM first, because a well-behaved child flushes and exits; SIGKILL
+    /// after the grace period, because a child that ignores SIGTERM is exactly
+    /// the case the caller cannot survive. Signals only this process's own
+    /// child, whose pid is known to be current, never a pid read from a file.
+    static func terminateHard(
+        _ process: Process,
+        graceSeconds: TimeInterval = terminationGraceSeconds
+    ) {
+        guard process.isRunning else { return }
+        process.terminate()
+        let deadline = Date().addingTimeInterval(graceSeconds)
+        while process.isRunning && Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+        guard process.isRunning else { return }
+        kill(process.processIdentifier, SIGKILL)
     }
 
     /// Resolves an executable by name across the places the user's tools live,

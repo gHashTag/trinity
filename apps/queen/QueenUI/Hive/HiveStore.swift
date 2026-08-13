@@ -34,6 +34,11 @@ struct HiveStore {
             return HiveState()
         }
         state.policy = state.policy.sanitized()
+        // The rate window is cut to the last hour here, at the one place every
+        // load passes through. A window carried whole out of a file written
+        // three days ago is not a measurement of this hour, and replaying it
+        // would block the loop for an hour after every launch.
+        state.spawnWindow = HiveState.prunedSpawnWindow(state.spawnWindow)
         // A bee cannot survive an app restart - anything left `running` in the
         // file is a crash artefact, and is returned to the queue rather than
         // silently counted as either a success or a failure.
@@ -241,15 +246,70 @@ struct HiveRetention {
     }
 }
 
+// MARK: - Transcripts
+
+/// Reads back what a bee wrote before the Queen lost sight of it.
+///
+/// `BeeRunner` streams every line to `.trinity/queen/hive/<sessionID>.jsonl`
+/// as it arrives, so a bee interrupted by a crash, a rebuild or a Stop-all
+/// leaves its own evidence on disk. That file is the only thing that can tell
+/// a reservation apart from a real cost once the process is gone.
+enum HiveTranscript {
+
+    static func summarise(at url: URL) -> HiveTranscriptSummary {
+        guard let text = try? String(contentsOf: url, encoding: .utf8) else { return .absent }
+        var lines = 0
+        var lastCost: Double?
+        for line in text.components(separatedBy: "\n") where !line.trimmingCharacters(in: .whitespaces).isEmpty {
+            lines += 1
+            guard line.contains("total_cost_usd"),
+                  let data = line.data(using: .utf8),
+                  let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let cost = object["total_cost_usd"] as? Double else { continue }
+            lastCost = cost
+        }
+        return HiveTranscriptSummary(lines: lines, lastCostUSD: lastCost)
+    }
+}
+
+/// Whether a process id still names a running process.
+///
+/// `kill(pid, 0)` sends nothing; it only asks whether the process exists and
+/// could be signalled. The hive deliberately stops there and never signals a
+/// pid it read out of a file: pids are reused, and the process wearing this one
+/// after a reboot is somebody else's. An orphan is therefore reported and
+/// worked around - its worktree name is unique to its session, so no later bee
+/// can be dispatched into the directory it is still writing to - rather than
+/// killed on a guess.
+enum HiveProcessLiveness {
+    static func isAlive(_ pid: Int32) -> Bool {
+        guard pid > 0 else { return false }
+        return kill(pid, 0) == 0 || errno == EPERM
+    }
+}
+
 // MARK: - Rate limiting
 
 /// Rolling-window rate limiter for bee spawns.
 ///
-/// Deliberately in-memory: the point is to stop a runaway loop inside one
-/// running Queen, and a restart is a human-initiated event that should not
-/// inherit an old window's debt.
+/// Seeded from the persisted window and written back on every spawn, so the
+/// bound it enforces - at most `maxBeesPerHour` spawns in any rolling hour -
+/// is a statement about the machine rather than about one launch of the app.
+///
+/// It used to be in-memory only, justified as "a restart is a human-initiated
+/// event that should not inherit an old window's debt". That justification
+/// depends on a fact about the environment, and the environment stopped
+/// supplying it: a watchdog relaunches this app within 60s of it dying, so a
+/// crash-loop resets the window as fast as it can crash. The bound is now
+/// correct by construction instead of correct by assumption, which is what
+/// makes auto-resume on launch safe to add.
 struct HiveRateLimiter {
     private(set) var spawnTimes: [Date] = []
+
+    init(spawnTimes: [Date] = [], now: Date = Date()) {
+        self.spawnTimes = spawnTimes
+        prune(now)
+    }
 
     mutating func record(_ now: Date = Date()) {
         spawnTimes.append(now)

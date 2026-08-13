@@ -157,22 +157,45 @@ struct HiveTarget: Identifiable, Equatable {
     let score: Double
     /// Share of total weight that was actually measured. 1.0 = fully calibrated.
     let confidence: Double
+    /// Sum of `normalized * weight` over the measured signals, before any
+    /// division. Carried so the ordering key can be one division rather than a
+    /// division followed by a multiplication - see `zeroImputedScore`.
+    let weightedTotal: Double
 
     var id: String { module }
 
     var measuredCount: Int { signals.filter { $0.normalized.isMeasured }.count }
 
-    /// The key the queue is ordered on: the score on the *full* weight basis,
-    /// read as "at least this bad".
+    /// The key the queue is ordered on: the weighted mean computed by
+    /// substituting ZERO for every signal that was not measured.
     ///
-    /// `score` divides by the measured weight only, so a module measured on two
-    /// signals counts each of them 2.3x more heavily than the same signal on a
-    /// fully scanned module. Ordering on that hands the top of the queue to
-    /// whichever module the Queen knows least about. Multiplying the score back
-    /// by the confidence undoes exactly that amplification while leaving
-    /// `score` itself - the honest "of what was read, this is how bad it is" -
-    /// on display beside it.
-    var rankingScore: Double { score * confidence }
+    /// Named for what it is. It used to be called `rankingScore` and justified
+    /// as "the score read as at least this bad", which is arithmetically the
+    /// opposite of what it does: `weighted / totalWeight` is a lower bound only
+    /// if you assume every unread signal would have read zero, and refusing
+    /// that assumption is the instrument's first documented rule. The file
+    /// therefore contradicted itself in two places at once, and the suite
+    /// asserted the no-imputation rule on `score` - the honest number - while
+    /// the queue was ordered on this one.
+    ///
+    /// The design is kept, because it does a real job: `score` divides by the
+    /// measured weight only, so a module measured on two signals counts each of
+    /// them 2.3x more heavily than the same signal on a fully scanned module,
+    /// and ordering on that hands the top of the queue to whichever module the
+    /// Queen knows least about. What changes is that the assumption is now
+    /// named where it can be argued with, and the honest `score` still sits
+    /// beside it on the screen.
+    ///
+    /// One division, not a division followed by a multiplication. `score *
+    /// confidence` is the same number in exact arithmetic and a different one
+    /// in IEEE754: two modules with mathematically identical keys compared
+    /// unequal, so the declared confidence and module-name tie-breaks below
+    /// were skipped and a target with a FAILED probe could be placed above a
+    /// fully measured one.
+    var zeroImputedScore: Double {
+        let totalWeight = HiveSignal.Kind.allCases.reduce(0.0) { $0 + $1.weight }
+        return totalWeight > 0 ? weightedTotal / totalWeight : 0
+    }
 
     /// The signals that actually drove the score, strongest first.
     var drivers: [HiveSignal] {
@@ -482,6 +505,39 @@ struct HiveEvent: Codable, Identifiable, Equatable {
     }
 }
 
+// MARK: - Reservations
+
+/// What a bee was charged at dispatch, and everything needed to settle that
+/// charge after the process that made it is gone.
+///
+/// Held in the state file rather than only in memory. A reservation that lives
+/// in a variable is cancelled by the very event it exists to survive: three
+/// rebuild-or-crash restarts in a morning, two bees in flight each time, and
+/// the ledger keeps six full per-bee budgets against about two dollars of real
+/// work - with nothing on screen saying the money was never spent.
+struct HiveReservation: Codable, Equatable {
+    var taskID: String
+    var sessionID: String
+    /// The local-day key the charge landed on, so a settlement taken after
+    /// midnight cannot credit the wrong day.
+    var day: String
+    var amount: Double
+    /// The bee's process id, so a reservation found at load can be told apart
+    /// from one whose bee is still running. Never signalled - see
+    /// `HiveProcessLiveness`.
+    var pid: Int32?
+    var startedAt: Date
+
+    init(taskID: String, sessionID: String, day: String, amount: Double, pid: Int32?, startedAt: Date = Date()) {
+        self.taskID = taskID
+        self.sessionID = sessionID
+        self.day = day
+        self.amount = amount
+        self.pid = pid
+        self.startedAt = startedAt
+    }
+}
+
 /// Persisted hive state. One file, atomically written.
 struct HiveState: Codable, Equatable {
     var policy: HivePolicy
@@ -490,12 +546,34 @@ struct HiveState: Codable, Equatable {
     /// Dollars spent per local day, keyed `yyyy-MM-dd`. Survives restarts so a
     /// crash-loop cannot reset the day's ceiling by restarting the app.
     var spendByDay: [String: Double]
+    /// When each bee was spawned, so the hourly rate bound survives a restart.
+    ///
+    /// The window used to be in memory only, on the argument that a restart is
+    /// a human-initiated event that should not inherit an old window's debt.
+    /// That argument fails the moment anything relaunches the app on its own:
+    /// a watchdog that restores the process within 60s turns the rate limit
+    /// into a limit per launch, and the limiter's own bound - "at most
+    /// maxBeesPerHour spawns in any rolling hour" - stops being true of the
+    /// machine. Pruned to the last hour on load, so a window recorded three
+    /// days ago cannot be replayed as this hour's spend.
+    var spawnWindow: [Date]
+    /// Live reservations, keyed by task id. Written before the bee is launched
+    /// so a crash between the charge and the launch cannot lose the charge.
+    var reservations: [String: HiveReservation]
 
-    init(policy: HivePolicy = .default, tasks: [HiveTask] = [], spendByDay: [String: Double] = [:]) {
+    init(
+        policy: HivePolicy = .default,
+        tasks: [HiveTask] = [],
+        spendByDay: [String: Double] = [:],
+        spawnWindow: [Date] = [],
+        reservations: [String: HiveReservation] = [:]
+    ) {
         self.policy = policy
         self.tasks = tasks
         self.updatedAt = Date()
         self.spendByDay = spendByDay
+        self.spawnWindow = spawnWindow
+        self.reservations = reservations
     }
 
     init(from decoder: Decoder) throws {
@@ -504,6 +582,23 @@ struct HiveState: Codable, Equatable {
         tasks = try c.decode([HiveTask].self, forKey: .tasks)
         updatedAt = try c.decodeIfPresent(Date.self, forKey: .updatedAt) ?? Date()
         spendByDay = try c.decodeIfPresent([String: Double].self, forKey: .spendByDay) ?? [:]
+        // Optional, so a state file written before the window was persisted
+        // keeps loading instead of throwing and resetting every setting.
+        spawnWindow = try c.decodeIfPresent([Date].self, forKey: .spawnWindow) ?? []
+        reservations = try c.decodeIfPresent([String: HiveReservation].self, forKey: .reservations) ?? [:]
+    }
+
+    /// The rolling window, cut to the last hour.
+    ///
+    /// Applied on load. Without it a persisted window is worse than none: a
+    /// file written days ago would hand the limiter six spawns that never
+    /// happened this hour, and the loop would refuse to work for an hour after
+    /// every launch.
+    static func prunedSpawnWindow(_ window: [Date], now: Date = Date()) -> [Date] {
+        let cutoff = now.addingTimeInterval(-3600)
+        // Dates in the future are dropped too: a clock that moved backwards
+        // would otherwise leave entries that never expire.
+        return window.filter { $0 >= cutoff && $0 <= now }.sorted()
     }
 
     /// Local-day key. Local, not UTC: the ceiling is a human's daily budget.

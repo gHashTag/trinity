@@ -16,6 +16,11 @@ struct HiveScreen: View {
         ScrollView {
             VStack(spacing: ParietalSpacing.standard) {
                 header
+                // A loop the state file calls armed, with no clock behind it,
+                // says so here rather than looking like health.
+                if let advice = hive.loopStatus.advice {
+                    blockerBanner(advice)
+                }
                 if let blocker = hive.blocker {
                     blockerBanner(blocker)
                 }
@@ -60,7 +65,10 @@ struct HiveScreen: View {
                     if let last = hive.lastScanAt {
                         Text("scanned \(relative(last))")
                     }
-                    if let next = hive.nextCycleAt, hive.policy.enabled {
+                    // The countdown is shown only when a clock exists. Derived
+                    // from the policy flag it kept counting down over a loop
+                    // that had no timer at all.
+                    if let next = hive.nextCycleAt, hive.loopStatus.isTicking {
                         Text("- next cycle \(countdown(to: next))")
                     }
                 }
@@ -73,18 +81,31 @@ struct HiveScreen: View {
         .padding()
     }
 
+    /// Reads the clock, not the wish.
+    ///
+    /// `policy.enabled` is persisted and survives a restart; the timer does
+    /// not. A badge derived from the policy showed 24/7 ARMED over a loop with
+    /// a queue, no bees and no clock, for as long as the operator left it.
     private var loopBadge: some View {
-        HStack(spacing: ParietalSpacing.xxs) {
+        let status = hive.loopStatus
+        let colour: Color = {
+            switch status {
+            case .ticking: return V4Color.statusOK
+            case .resumeRequired: return V4Color.warning
+            case .idle: return V4Color.textSecondary
+            }
+        }()
+        return HStack(spacing: ParietalSpacing.xxs) {
             Circle()
-                .fill(hive.policy.enabled ? V4Color.statusOK : V4Color.textSecondary)
+                .fill(colour)
                 .frame(width: ParietalSpacing.statusDot, height: ParietalSpacing.statusDot)
-            Text(hive.policy.enabled ? "24/7 ARMED" : "IDLE")
+            Text(status.label)
                 .font(WernickeTypography.caption2Bold)
-                .foregroundStyle(hive.policy.enabled ? V4Color.statusOK : V4Color.textSecondary)
+                .foregroundStyle(colour)
         }
         .padding(.horizontal, ParietalSpacing.sm)
         .padding(.vertical, ParietalSpacing.xxs)
-        .background((hive.policy.enabled ? V4Color.statusOK : V4Color.textSecondary).opacity(V4Color.opacity15))
+        .background(colour.opacity(V4Color.opacity15))
         .clipShape(SwiftUI.Capsule())
     }
 
@@ -107,11 +128,18 @@ struct HiveScreen: View {
 
     private var controls: some View {
         HStack(spacing: ParietalSpacing.sm) {
-            if hive.policy.enabled {
+            // Run 24/7 is offered whenever no cycle is scheduled, including the
+            // armed-but-not-ticking state a restart leaves behind. Keying this
+            // off the policy flag hid the only button that could restore the
+            // loop precisely when it was the only button that would work.
+            if hive.loopStatus.isTicking {
                 pill("\u{23F8}", "Pause loop", V4Color.warning) { hive.pause() }
                 pill("\u{1F6D1}", "Stop all bees", V4Color.error) { hive.stopAll() }
             } else {
                 pill("\u{25B6}", "Run 24/7", V4Color.statusOK) { hive.start() }
+                if hive.policy.enabled {
+                    pill("\u{23F8}", "Disarm", V4Color.warning) { hive.pause() }
+                }
             }
             pill("\u{1F504}", "Cycle now", V4Color.accent) { hive.runCycleNow() }
             pill("\u{1F510}", "Preflight", V4Color.warning) { Task { await hive.preflight() } }

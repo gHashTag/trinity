@@ -263,12 +263,30 @@ final class BeeRunner: @unchecked Sendable {
         }
     }
 
+    /// The live child's pid, persisted at dispatch so a reservation found in
+    /// the state file after a restart can be told apart from one whose bee is
+    /// still running.
+    var processIdentifier: Int32? {
+        lock.lock(); defer { lock.unlock() }
+        guard let process, process.isRunning else { return nil }
+        return process.processIdentifier
+    }
+
     func terminate() {
         lock.lock()
         let process = self.process
         lock.unlock()
         guard let process, process.isRunning else { return }
         process.terminate()
+        // SIGTERM is a request; SIGKILL is not. The escalation runs on the
+        // runner's own queue so the caller - the main actor, when an operator
+        // presses Stop all bees - is never held waiting for a child that has
+        // decided to ignore SIGTERM.
+        let grace = Int(HiveProcess.terminationGraceSeconds * 1000)
+        queue.asyncAfter(deadline: .now() + .milliseconds(grace)) {
+            guard process.isRunning else { return }
+            kill(process.processIdentifier, SIGKILL)
+        }
     }
 
     // MARK: - Line assembly

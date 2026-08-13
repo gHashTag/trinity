@@ -75,6 +75,141 @@ struct HiveDispatchContext: Equatable {
     }
 }
 
+// MARK: - The clock
+
+/// What the operator is told about the loop's clock.
+///
+/// `policy.enabled` is a persisted wish, not a running clock. It is written to
+/// hive.json and read back on launch, while the timer that actually drives the
+/// cycle is created only when an operator arms the loop. So after a rebuild, a
+/// crash, or a watchdog relaunch, the state file says enabled and nothing is
+/// scheduled - and a badge derived from the policy reads 24/7 ARMED over a
+/// queue that will never be dispatched again without a human.
+///
+/// Three states, so "armed but not ticking" has a name, an event and a remedy
+/// instead of looking exactly like health.
+enum HiveLoopStatus: String, Equatable {
+    /// Not armed. Nothing is scheduled and nothing should be.
+    case idle
+    /// Armed, and a cycle is scheduled.
+    case ticking
+    /// Armed in the state file, with no cycle scheduled.
+    case resumeRequired
+
+    static func of(enabled: Bool, ticking: Bool) -> HiveLoopStatus {
+        guard enabled else { return .idle }
+        return ticking ? .ticking : .resumeRequired
+    }
+
+    var label: String {
+        switch self {
+        case .idle: return "IDLE"
+        case .ticking: return "24/7 ARMED"
+        case .resumeRequired: return "ARMED, NOT TICKING"
+        }
+    }
+
+    /// True only when a cycle is really scheduled. Every badge, countdown and
+    /// Run button reads this rather than the policy flag.
+    var isTicking: Bool { self == .ticking }
+
+    /// Whether the operator has to do something to restore the loop.
+    var needsOperator: Bool { self == .resumeRequired }
+
+    var advice: String? {
+        guard self == .resumeRequired else { return nil }
+        return "the loop is armed in the state file but no cycle is scheduled - "
+            + "it will not dispatch until someone presses Run 24/7"
+    }
+}
+
+/// The cycle mutex, with a deadline.
+///
+/// A bare `cycleInFlight` boolean is a lock nothing can ever release once the
+/// cycle holding it wedges - a git subprocess that ignores SIGTERM leaves the
+/// loop showing 24/7 ARMED with a stale status line, `Cycle now` doing
+/// literally nothing, and Pause-then-Run re-arming a timer that returns at the
+/// same guard. The only exit was killing the app.
+///
+/// The generation token exists because forcing the latch open creates two
+/// claimants: the wedged cycle, if it ever returns, must not release a latch a
+/// newer cycle now holds.
+struct HiveCycleLatch: Equatable {
+    private(set) var startedAt: Date?
+    private(set) var generation = 0
+
+    var isInFlight: Bool { startedAt != nil }
+
+    enum Admission: Equatable {
+        case admitted(token: Int)
+        case busy(heldFor: TimeInterval)
+        case forced(token: Int, heldFor: TimeInterval)
+
+        var token: Int? {
+            switch self {
+            case .admitted(let token): return token
+            case .forced(let token, _): return token
+            case .busy: return nil
+            }
+        }
+    }
+
+    /// How long a cycle may hold the latch before a later cycle forces it open.
+    ///
+    /// Derived rather than guessed. A cycle's own work is a repository scan
+    /// whose git calls each cap at 30s, so its honest bound scales with the
+    /// number of modules and cannot be written as one constant. What can be
+    /// written down is that a cycle still holding the latch after an hour, and
+    /// after two of its own intervals, has stopped being slow and started
+    /// being wedged.
+    static func wedgeDeadline(cycleIntervalSeconds: Int) -> TimeInterval {
+        max(3600, TimeInterval(cycleIntervalSeconds) * 2)
+    }
+
+    mutating func enter(now: Date = Date(), deadline: TimeInterval) -> Admission {
+        if let startedAt {
+            let held = now.timeIntervalSince(startedAt)
+            guard held >= deadline else { return .busy(heldFor: held) }
+            generation += 1
+            self.startedAt = now
+            return .forced(token: generation, heldFor: held)
+        }
+        generation += 1
+        startedAt = now
+        return .admitted(token: generation)
+    }
+
+    /// Only the cycle that currently holds the latch may clear it.
+    mutating func leave(token: Int) {
+        guard token == generation else { return }
+        startedAt = nil
+    }
+}
+
+// MARK: - Reservation repair
+
+/// What a bee's transcript says about a bee the Queen can no longer supervise.
+struct HiveTranscriptSummary: Equatable {
+    /// Non-empty stream lines the bee wrote.
+    var lines: Int
+    /// The last `total_cost_usd` the bee reported, if it reported one.
+    var lastCostUSD: Double?
+
+    /// No transcript file at all.
+    static let absent = HiveTranscriptSummary(lines: 0, lastCostUSD: nil)
+}
+
+/// How to settle a reservation whose bee the Queen cannot ask.
+enum HiveReservationRepair: Equatable {
+    /// The transcript reported a cost. Charge exactly that and refund the rest.
+    case charge(Double)
+    /// The bee wrote nothing at all, so it cannot have spent anything.
+    case refundInFull
+    /// The bee produced real output and never reported a cost. Absent is not
+    /// zero: the reservation stands.
+    case keep
+}
+
 /// What a finished bee does to the failure streak.
 ///
 /// Three values, not a Bool. A bee whose work could not be checked has neither
@@ -97,11 +232,29 @@ enum HiveDispatch {
     /// dangerous refusals are checked first, so a signed-out CLI or a tripped
     /// breaker can never be masked by an empty queue.
     static func decide(_ context: HiveDispatchContext) -> HiveDispatchDecision {
-        let policy = context.policy
-
-        guard policy.enabled else {
+        guard context.policy.enabled else {
             return .idle("the loop is not armed")
         }
+        if let refusal = guardrails(context) { return refusal }
+        guard let next = nextTask(in: context) else {
+            return .idle("nothing schedulable in the queue")
+        }
+        return .dispatch(next)
+    }
+
+    /// Everything that must hold before any bee goes out, whoever asked for it.
+    /// Returns nil when the envelope is clear.
+    ///
+    /// Split out of `decide` so the operator's buttons cross the same
+    /// guardrails as the cycle. `Send a bee` and a typed instruction used to
+    /// reach `spawn` directly, which meant an operator could walk past the
+    /// daily ceiling, the concurrency limit, the rate window and both breakers
+    /// by clicking. An operator chooses WHICH task runs; the safety envelope is
+    /// not theirs to choose. The armed flag is deliberately not part of this:
+    /// sending one bee by hand while the loop is paused is the point of the
+    /// button.
+    static func guardrails(_ context: HiveDispatchContext) -> HiveDispatchDecision? {
+        let policy = context.policy
 
         let violations = HiveInvariants.check(
             policy: policy,
@@ -157,10 +310,41 @@ enum HiveDispatch {
             )
         }
 
-        guard let next = nextTask(in: context) else {
-            return .idle("nothing schedulable in the queue")
+        return nil
+    }
+
+    /// The single admission gate every spawn passes, whoever asked for it.
+    ///
+    /// Returns the refusal, or nil when the bee may go out. The operator paths
+    /// - `Send a bee` on a ranked target, and a typed instruction - used to
+    /// reach `spawn` with only the attempt budget between them and a process,
+    /// so pressing the button twice put two `claude -p` sessions in one
+    /// worktree, made two SwiftUI rows share an identity, and left a
+    /// reservation no completion would ever settle. An operator chooses WHICH
+    /// task runs; they do not choose the safety envelope.
+    static func admissionRefusal(
+        taskID: String,
+        liveTaskIDs: Set<String>,
+        reservedTaskIDs: Set<String>
+    ) -> String? {
+        if liveTaskIDs.contains(taskID) {
+            return "a bee is already working on \(taskID) - two sessions would edit the same files"
         }
-        return .dispatch(next)
+        if reservedTaskIDs.contains(taskID) {
+            return "\(taskID) still holds an unsettled budget reservation from an earlier bee"
+        }
+        return nil
+    }
+
+    /// How to settle a reservation from the evidence its bee left behind.
+    ///
+    /// Three absences, kept apart. A bee that wrote nothing never ran and is
+    /// refunded whole; a bee whose transcript carries a cost line is charged
+    /// exactly that; a bee that produced real output and no cost line keeps its
+    /// reservation, because what it spent is unknown and unknown is not zero.
+    static func repair(_ summary: HiveTranscriptSummary) -> HiveReservationRepair {
+        if let cost = summary.lastCostUSD { return .charge(max(0, cost)) }
+        return summary.lines == 0 ? .refundInFull : .keep
     }
 
     /// Highest score first among tasks that may still be attempted, skipping
