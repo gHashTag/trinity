@@ -1,72 +1,60 @@
-name: Queen Self-Improving Container
+name: Queen — build check
+
+# Railway deploys the Queen itself, from its own GitHub hook, the same way
+# woody-weed-bot ships. This workflow therefore does NOT deploy: it only proves
+# the artefact Railway is about to build actually builds.
+#
+# It replaces a workflow that pushed a Docker image and called a Railway
+# GraphQL mutation. That version ran 35 times between 2026-04-01 and
+# 2026-04-03 and succeeded zero times — 32 failures and 3 cancellations, every
+# one of them on the same "Build and Push to Railway" step. It could not have
+# worked: it pushed to a registry without ever running `docker login`, it
+# carried a placeholder project id (90c3f0c8-…-5e123abc4567) instead of the
+# real one (e6dfacdc-3eed-48ae-929b-02e87f07f0aa), its `test` job read
+# `steps.deploy.outputs` from a different job, and on every run it posted
+# "✅ Queen deployed" to issue 476 — a claim that was never once true.
+#
+# Railway собирает Королеву сам, по своему GitHub-хуку. Этот workflow ничего
+# не деплоит — он только доказывает, что артефакт действительно собирается.
 
 on:
   push:
     branches: [main]
-    paths: [apps/queen-web/**, src/tri/queen/**, deploy/Dockerfile.queen]
+    paths:
+      - 'apps/queen-web/**'
+      - '.github/workflows/queen-deploy.yml'
+  pull_request:
+    paths:
+      - 'apps/queen-web/**'
   workflow_dispatch:
 
-env:
-  RAILWAY_PROJECT_ID: 90c3f0c8-c26e-4c77-9e45-5e123abc4567
-
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/queen-web
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configure Railway
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/queen-web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # A build that emits nothing still exits 0. Assert the artefact exists,
+      # so this check cannot go green on an empty dist.
+      - name: Assert the bundle was actually emitted
         run: |
-          echo "RAILWAY_API_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
-          echo "RAILWAY_PROJECT_ID=${{ env.RAILWAY_PROJECT_ID }}" >> $GITHUB_ENV
-
-      - name: Build and Push to Railway
-        run: |
-          # Build Queen container image
-          docker build -f deploy/Dockerfile.queen -t registry.${{ env.RAILWAY_PROJECT_ID }}.railway.app/queen:latest .
-
-          # Push to Railway registry
-          docker push registry.${{ env.RAILWAY_PROJECT_ID }}.railway.app/queen:latest
-
-      - name: Deploy to Railway
-        run: |
-          # Trigger Railway deployment via API
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            https://backboard.railway.app/graphql/v2 \
-            -d '{
-              "query": "mutation { deployService(input: { projectId: \"'"$RAILWAY_PROJECT_ID"'\", serviceName: \"queen\" }) { id } }"
-            }'
-
-      - name: Get Deployment URL
-        run: |
-          # Get service URL from Railway
-          SERVICE_URL=$(curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            https://backboard.railway.app/graphql/v2 \
-            -d '{
-              "query": "query { project(id: \"'"$RAILWAY_PROJECT_ID"'\") { services { name url } } }"
-            }' | jq -r '.data.project.services[] | select(.name == "queen") | .url')
-
-          echo "Queen deployed to: $SERVICE_URL"
-          echo "queen_url=$SERVICE_URL" >> $GITHUB_OUTPUT
-
-      - name: Comment on Issue
-        if: github.event_name == 'push'
-        run: |
-          gh issue comment 476 --body "✅ Queen deployed to ${{ steps.deploy.outputs.queen_url }}"
-
-  test:
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
-      - name: Test Health Endpoint
-        run: |
-          # Wait for deployment to be ready
-          sleep 30
-
-          # Test health endpoint
-          curl -f ${{ steps.deploy.outputs.queen_url }}/health || exit 1
+          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
+          test -n "$(find dist/assets -name '*.js' -print -quit)" || { echo "no JS bundle emitted"; exit 1; }
+          echo "emitted:"
+          ls -la dist dist/assets
