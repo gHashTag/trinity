@@ -355,9 +355,22 @@ enum HiveDispatch {
             .filter { context.policy.skippedModules[$0.module] == nil }
             .filter { $0.attempts < context.policy.maxAttemptsPerTask }
             .sorted {
-                // Score first, then the oldest task, so a tie cannot starve one
-                // module forever behind another with the same score.
-                if $0.score != $1.score { return $0.score > $1.score }
+                // The SAME key the ranked queue is ordered on, not `score`.
+                //
+                // This line used to read `$0.score > $1.score`, which is the
+                // self-imputing key the ordering work had just replaced: it
+                // divides by the measured weight only, so a barely-read module
+                // outranks a fully-read worse one. The screen showed the new
+                // order and the dispatcher used the old one, and they disagreed
+                // on about a quarter of scans.
+                //
+                // A task written before dispatchKey existed falls back to
+                // `score` for one cycle, until materialiseTasks refreshes it.
+                let l = $0.dispatchKey ?? $0.score
+                let r = $1.dispatchKey ?? $1.score
+                if l != r { return l > r }
+                // Then the oldest, so a tie cannot starve one module forever
+                // behind another with the same key.
                 if $0.createdAt != $1.createdAt { return $0.createdAt < $1.createdAt }
                 return $0.id < $1.id
             }

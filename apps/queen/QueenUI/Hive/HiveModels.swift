@@ -451,6 +451,19 @@ struct HiveTask: Codable, Identifiable, Equatable {
     /// When the most recent bee was sent out for this task. A verdict older
     /// than this describes work that has since been overwritten.
     var lastDispatchAt: Date?
+    /// The key the ranked queue was ordered on when this task was made.
+    ///
+    /// Carried on the task because the DISPATCHER, not the screen, decides
+    /// which bee goes out - and it used to sort on `score`, the self-imputing
+    /// key the ordering work had just replaced. The displayed queue and the
+    /// dispatched task then disagreed on 26% of scans. Whatever orders the
+    /// list must be the same number that picks the work, so it travels with
+    /// the task rather than being recomputed from fields that cannot
+    /// reconstruct it.
+    ///
+    /// Optional only for state files written before this existed. Those are
+    /// refreshed on the first cycle after launch, so the gap closes itself.
+    var dispatchKey: Double?
 
     init(
         id: String,
@@ -509,6 +522,7 @@ struct HiveTask: Codable, Identifiable, Equatable {
         verifiedAtCommit = try c.decodeIfPresent(String.self, forKey: .verifiedAtCommit)
         verifiedAt = try c.decodeIfPresent(Date.self, forKey: .verifiedAt)
         lastDispatchAt = try c.decodeIfPresent(Date.self, forKey: .lastDispatchAt)
+        dispatchKey = try c.decodeIfPresent(Double.self, forKey: .dispatchKey)
     }
 
     /// Erases every trace of a previous attempt's verdict.
