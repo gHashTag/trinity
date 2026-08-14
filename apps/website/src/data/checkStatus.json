@@ -1,0 +1,33 @@
+{
+  "note": "Each verdict is the conclusion of the job that attests that check, not of the workflow containing it: a green workflow can hold a red job, and a badge for the wrapper would say the opposite of the truth.",
+  "entries": [
+    {
+      "id": "paths",
+      "job": "build-paths-fixtures",
+      "conclusion": "success",
+      "at": "2026-08-11T15:56:00Z",
+      "url": "https://github.com/gHashTag/trinity/actions/runs/31509707234/job/93840126030"
+    },
+    {
+      "id": "structural",
+      "job": "planted-latch-must-be-caught / check",
+      "conclusion": "success",
+      "at": "2026-08-11T05:27:45Z",
+      "url": "https://github.com/gHashTag/trinity/actions/runs/31461710172/job/93686374393"
+    },
+    {
+      "id": "signal",
+      "job": "signal-health-numbers",
+      "conclusion": "success",
+      "at": "2026-08-11T15:56:00Z",
+      "url": "https://github.com/gHashTag/trinity/actions/runs/31509707234/job/93840125968"
+    },
+    {
+      "id": "conformance",
+      "job": "planted-defect-must-be-caught-with-the-right-count / conformance",
+      "conclusion": "success",
+      "at": "2026-08-11T15:56:00Z",
+      "url": "https://github.com/gHashTag/trinity/actions/runs/31509707234/job/93840126261"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "name": "TRINITY — Native Ternary Hardware for AI",
   "short_name": "TRINITY",
-  "description": "Native ternary hardware for AI. GF-T, a ternary-native float that beats the published state of the art.",
+  "description": "Native ternary hardware for AI. GF-T, a ternary-native float that beats the published state of the art at range.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -246,7 +246,19 @@ function cleanup() {
   try { ws.close(); } catch { /* already gone */ }
   chrome.kill();
   server.close();
-  rmSync(profile, { recursive: true, force: true });
+  // chrome.kill() only sends the signal; the browser is frequently still
+  // writing into its profile when this line runs, and rmSync then throws
+  // ENOTEMPTY despite recursive+force, because files reappear underneath it.
+  //
+  // That failure has nothing to do with what this script measures. One run
+  // printed "no uncaught errors and no console.error across 4 panels" and
+  // then exited 1 on the rmdir - a green measurement reported as a red gate.
+  // Retry, and if it still will not go, say so and leave the verdict alone.
+  try {
+    rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  } catch (e) {
+    console.error(`  (temporary profile could not be removed: ${e.code}; ignored - it is not part of the check)`);
+  }
 }
 
 const onLoad = drain();
@@ -377,6 +389,158 @@ for (let layer = 1; layer <= LAYERS; layer++) {
 await wait(1000);  // whatever the newly-mounted panels do on their next tick
 const late = drain();
 if (late.length) report('after everything was expanded', late);
+
+// ── Popups: rendered is not the same as reachable ──
+//
+// On 2026-08-11 the language dropdown was reported as "the modal does not open".
+// It opened every time: aria-expanded flipped, all four options entered the DOM
+// at opacity 1, visibility visible. `.nav-dock` is `overflow-x: auto`, and CSS
+// turns the other axis into `auto` too whenever one axis is not `visible`, so a
+// 38px-tall dock clipped a dropdown that opens at `top: 100%` out of existence:
+// 121px of it below the dock's edge, scrollHeight 158 against clientHeight 36,
+// elementFromPoint at its centre returning the page behind it.
+//
+// Every check that existed would have passed. The element was present, had the
+// right class, had children, was not display:none. The only thing separating
+// this from a working popup is whether the pixel a user aims at belongs to the
+// popup — so that is what this asks.
+//
+// Two further traps, both found by measuring rather than reasoning: `position:
+// fixed` did not escape, because the dock also carries `transform:
+// translateX(-50%)` and a transformed ancestor becomes the containing block for
+// fixed descendants; and `min-width: 100%` then resolved against the viewport
+// instead of the button. The fix is a portal.
+// /canvas deliberately renders no Navigation, so the popups do not exist there —
+// the first run of this check found zero and said so rather than passing. They
+// live on every ordinary route, so move to one before asking.
+await evaluate(`(async () => {
+  location.hash = '#/proof';
+  await new Promise(r => setTimeout(r, 1200));
+  return document.querySelectorAll('.lang-switcher').length;
+})()`);
+
+// Enumerated from ARIA, not from a list. An element that declares
+// `aria-haspopup` together with `aria-controls` is telling us it opens something
+// and naming what — so a popup added later is covered without editing this file,
+// and a trigger whose `aria-controls` points at nothing is itself a defect the
+// sweep reports. That is not hypothetical: the hamburger declared
+// aria-controls="mobile-menu" while the menu carried only a className, so a
+// screen reader following the reference found nothing.
+const SWEEP = `(async () => {
+  const out = [];
+  const trigs = [...document.querySelectorAll('[aria-haspopup][aria-controls]')]
+    .filter(t => {
+      const s = getComputedStyle(t);
+      return s.display !== 'none' && s.visibility !== 'hidden' && t.getBoundingClientRect().width > 0;
+    });
+  for (const t of trigs) {
+    const id = t.getAttribute('aria-controls');
+    const label = (t.getAttribute('aria-label') || t.className || id).toString().slice(0, 40);
+    if (t.getAttribute('aria-expanded') === 'true') t.click();
+    await new Promise(r => setTimeout(r, 250));
+    t.click();
+    await new Promise(r => setTimeout(r, 450));
+    const panel = document.getElementById(id);
+    if (!panel) { out.push([label, 'aria-controls="' + id + '" matches no element']); t.click(); continue; }
+    const child = panel.querySelector('a,button');
+    if (!child) { out.push([label, 'the panel has no interactive child']); t.click(); continue; }
+    const c = child.getBoundingClientRect();
+    if (c.width === 0 || c.height === 0) { out.push([label, 'its first option has zero size']); t.click(); continue; }
+    if (c.top < 0 || c.bottom > innerHeight || c.left < 0 || c.right > innerWidth) {
+      out.push([label, 'its first option is outside the viewport: top ' + Math.round(c.top) +
+                       ', bottom ' + Math.round(c.bottom) + ', viewport ' + innerWidth + 'x' + innerHeight]);
+      t.click(); continue;
+    }
+    const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2);
+    if (!(hit && (hit === child || child.contains(hit) || panel.contains(hit)))) {
+      const owner = hit ? (hit.className || hit.tagName).toString().slice(0, 40) : 'nothing';
+      out.push([label, 'its first option is not the element at its own centre — ' + owner + ' is']);
+      t.click(); continue;
+    }
+    out.push([label, 'ok']);
+
+    // One level of recursion, because the case that broke was nested: the mobile
+    // language switcher only enters the DOM once the hamburger has opened the
+    // menu, so a sweep that snapshots triggers up front never sees it. Checking
+    // only the outer popups would have LOST the coverage the targeted check had.
+    for (const nt of panel.querySelectorAll('[aria-haspopup][aria-controls]')) {
+      const ns = getComputedStyle(nt);
+      if (ns.display === 'none' || ns.visibility === 'hidden') continue;
+      const nid = nt.getAttribute('aria-controls');
+      const nlabel = label + ' > ' + (nt.getAttribute('aria-label') || nt.className || nid).toString().slice(0, 32);
+      nt.click();
+      await new Promise(r => setTimeout(r, 400));
+      const np = document.getElementById(nid);
+      if (!np) { out.push([nlabel, 'aria-controls="' + nid + '" matches no element']); continue; }
+      const nc = np.querySelector('a,button');
+      if (!nc) { out.push([nlabel, 'the panel has no interactive child']); nt.click(); continue; }
+      const q = nc.getBoundingClientRect();
+      if (q.width === 0 || q.height === 0) { out.push([nlabel, 'its first option has zero size']); nt.click(); continue; }
+      if (q.top < 0 || q.bottom > innerHeight || q.left < 0 || q.right > innerWidth) {
+        out.push([nlabel, 'its first option is outside the viewport: top ' + Math.round(q.top) +
+                          ', bottom ' + Math.round(q.bottom) + ', viewport ' + innerWidth + 'x' + innerHeight]);
+        nt.click(); continue;
+      }
+      const nhit = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2);
+      if (!(nhit && (nhit === nc || nc.contains(nhit) || np.contains(nhit)))) {
+        const owner = nhit ? (nhit.className || nhit.tagName).toString().slice(0, 40) : 'nothing';
+        out.push([nlabel, 'its first option is not the element at its own centre — ' + owner + ' is']);
+        nt.click(); continue;
+      }
+      out.push([nlabel, 'ok']);
+      nt.click();
+      await new Promise(r => setTimeout(r, 150));
+    }
+
+    t.click();
+    await new Promise(r => setTimeout(r, 150));
+  }
+  return JSON.stringify(out);
+})()`;
+
+const sweep = async (where) => {
+  const raw = await evaluate(SWEEP);
+  const rows = JSON.parse(raw || '[]');
+  const bad = rows.filter(([, v]) => v !== 'ok');
+  if (!rows.length) {
+    console.error(`\n  0 popup triggers found ${where}. The nav declares aria-haspopup on the`);
+    console.error('  language switcher, the pages button and the hamburger, so this is a');
+    console.error('  broken sweep, not an absence of popups.');
+    cleanup();
+    process.exit(1);
+  }
+  if (bad.length) {
+    console.error(`\n  A popup rendered but could not be used ${where}:`);
+    for (const [label, why] of bad) console.error(`    ${label}: ${why}`);
+    cleanup();
+    process.exit(1);
+  }
+  console.log(`  ${rows.length} popup(s) ${where}: ${rows.map(r => r[0]).join(', ')} — all reachable.`);
+};
+
+await sweep('at desktop width');
+
+// ── The same question at a mobile width ──
+//
+// Below 1100px the dock is hidden and a hamburger takes over, and the language
+// switcher is rendered a SECOND time inside `.mobile-menu-footer`. That path has
+// its own CSS — `.mobile-menu .lang-dropdown` opens the list upward — and the
+// portal fix above can break it, because a portalled element is no longer a
+// descendant and the selector stops applying. `.mobile-menu` is `overflow-y:
+// auto`, so the clip detection fires there too.
+//
+// The desktop pass says nothing about any of that. This one resizes, opens the
+// hamburger, and asks the same question of the switcher inside it.
+await call('Emulation.setDeviceMetricsOverride',
+           { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await evaluate(`(async () => {
+  location.hash = '#/proof';
+  await new Promise(r => setTimeout(r, 1200));
+})()`);
+
+await sweep('at 390px');
+await call('Emulation.clearDeviceMetricsOverride');
+
 
 // ── The check that this check ran ──
 //

@@ -1,0 +1,75 @@
+name: rtl-check self-test
+
+# The reusable workflow is offered to other people to run in their own
+# repositories. Before that is a reasonable thing to offer, it has to be shown
+# failing on a design that deserves to fail — a check nobody has watched go red
+# is not a check.
+#
+# Two fixtures, one clean and one carrying exactly one planted latch. The clean
+# one must pass. The planted one must fail, and the assert job says so if it
+# does not, which is the case that would otherwise pass silently and ship a
+# green tick to everybody.
+
+on:
+  push:
+    paths:
+      - '.github/workflows/rtl-check.yml'
+      - '.github/workflows/rtl-check-selftest.yml'
+      - 'tests/rtl-check-fixtures/**'
+  pull_request:
+    paths:
+      - '.github/workflows/rtl-check.yml'
+      - '.github/workflows/rtl-check-selftest.yml'
+      - 'tests/rtl-check-fixtures/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-must-pass:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_good
+      path: tests/rtl-check-fixtures/good
+      # The fixture is one 4-bit register, so the netlist holds exactly four
+      # flip-flops. Asserting the number and not just the verdict is the check
+      # that was missing: a counter returning 0 for every design in the world
+      # passed this self-test for weeks, because "it ran and did not fail" was
+      # all that was ever asked of it.
+      expect_flops: '4'
+
+  # A job that calls a reusable workflow may not carry continue-on-error --
+  # Actions rejects the whole file for it, which is how the first version of
+  # this self-test failed: valid YAML, invalid workflow. So the expectation is
+  # passed into the check, which inverts its own verdict. This job going GREEN
+  # means the planted latch was caught; it going red means it was not.
+  planted-latch-must-be-caught:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_latch
+      path: tests/rtl-check-fixtures/latch
+      expect: fail
+
+  # The assertion itself needs a red before it can be trusted, for exactly the
+  # reason it was added: the old self-test passed because nothing it checked
+  # could fail. Same clean fixture, a flop count that is deliberately wrong by
+  # one. This job going GREEN means the wrong number was caught.
+  wrong-flop-count-must-be-caught:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_good
+      path: tests/rtl-check-fixtures/good
+      expect_flops: '5'
+      expect: fail
+
+  # A submission that lists its sources with the src/ prefix already on must
+  # resolve to the same file as one that does not. Both spellings occur in real
+  # repositories, and prefixing twice fails about a path convention while
+  # looking like a failure about the design.
+  src-prefixed-info-yaml-must-resolve:
+    uses: ./.github/workflows/rtl-check.yml
+    with:
+      top: fixture_prefixed
+      path: tests/rtl-check-fixtures/prefixed
+      expect_flops: '4'

@@ -1,6 +1,7 @@
 import { StrictMode, lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+import FormatSelection from './pages/FormatSelection'
 import './index.css'
 import App from './App.tsx'
 import { I18nProvider } from './i18n/context.tsx'
@@ -16,6 +17,7 @@ const TrinityCanvasWasm = lazy(() => import('./components/TrinityCanvasWasm.tsx'
 const ProductionDashboard = lazy(() => import('./components/ProductionDashboard.tsx'))
 const TechTreePage = lazy(() => import('./pages/TechTreePage.tsx'))
 const HardwareVerification = lazy(() => import('./pages/HardwareVerification.tsx'))
+const Start = lazy(() => import('./pages/Start.tsx'))
 const Course = lazy(() => import('./pages/Course.tsx'))
 const CaseStudies = lazy(() => import('./pages/CaseStudies.tsx'))
 const GFT = lazy(() => import('./pages/GFT.tsx'))
@@ -44,6 +46,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/" element={<App />} />
             <Route path="/dashboard" element={<ProductionDashboard />} />
             <Route path="/tree" element={<TechTreePage />} />
+            <Route path="/start" element={<Start />} />
+            <Route path="/select" element={<FormatSelection />} />
             <Route path="/verification" element={<HardwareVerification />} />
             <Route path="/course" element={<Course />} />
             <Route path="/cases" element={<CaseStudies />} />

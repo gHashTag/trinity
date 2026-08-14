@@ -1,0 +1,222 @@
+/* Главная страница под «Ternary Network Floats». Одна сетка, один ритм.
+   Никаких новых цветов кроме тега происхождения — он единственный носитель
+   смысла, которому позволено красить.
+
+   Ритм страницы — один множитель, φ = 1.618. Каждый шаг кегля и каждый шаг
+   отступа берётся из одной геометрической прогрессии, поэтому расстояния между
+   вещами не выбраны на глаз: они наследуют то же отношение, которым формат
+   выбирает ширины полей. Дробные rem'ы ниже — не подгонка, а φ^n, округлённые
+   до тысячных. */
+:root {
+  --phi: 1.618;
+
+  /* Кегли: φ⁻² … φ⁴ от базы 1rem.
+     Два нижних шага не чистые φ^n, и это сознательно: 0.618rem = 9.9 px,
+     0.786rem = 12.6 px, а замером по странице такой текст читался хуже
+     основного вдвое — 68 подписей происхождения, самая важная вещь на сайте,
+     оказались самым мелким кеглем. Пол читаемости 13 px важнее чистоты
+     отношения, поэтому прогрессия действует ВЫШЕ пола, а два нижних шага
+     прижаты к нему. Ритм отступов остался чистым φ^n. */
+  --f-3: 0.75rem;    /* 12 px — только для капса с трекингом */
+  --f-2: 0.8125rem;  /* 13 px — пол читаемости */
+  --f-1: 0.875rem;   /* 14 px */
+  --f0:  1rem;
+  --f1:  1.272rem;
+  --f2:  1.618rem;
+  --f3:  2.058rem;
+  --f4:  2.618rem;
+  --f5:  4.236rem;
+  --f6:  6.854rem;
+
+  /* Отступы — та же прогрессия, чтобы вертикальный ритм и кегли совпадали */
+  --sp-1: 0.382rem;
+  --sp0:  0.618rem;
+  --sp1:  1rem;
+  --sp2:  1.618rem;
+  --sp3:  2.618rem;
+  --sp4:  4.236rem;
+  --sp5:  6.854rem;
+}
+
+.tnf-wrap {
+  width: 100%;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  text-align: left;
+}
+
+.tnf-section {
+  padding: clamp(var(--sp3), 6.854vw, var(--sp5)) var(--sp2);
+  /* Док-навигация зафиксирована сверху и без этого отступа ложится
+     на заголовок раздела при переходе по якорю. */
+  scroll-margin-top: 92px;
+  border-top: 1px solid var(--border);
+  display: block;
+  text-align: left;
+  max-width: none;
+  width: 100%;
+}
+
+.tnf-badge {
+  font-size: var(--f-1);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: var(--sp1);
+  display: block;
+}
+
+.tnf-h2 {
+  font-size: clamp(var(--f2), 3.6vw, var(--f4));
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  /* 1.236 = 2 − φ⁻¹: плотный интерлиньяж для крупного кегля */
+  line-height: 1.236;
+  margin: 0 0 var(--sp1);
+  max-width: 22ch;
+}
+
+.tnf-h2.wide { max-width: 34ch; }
+
+/* Подзаголовок внутри секции: блок инвестиций делится на четыре части, и без
+   уровня между .tnf-h2 и текстом ячейки они читались как один поток. Размер
+   стоит на шкале, кромка совпадает с лидом. */
+.tnf-h3 {
+  font-size: var(--f1);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--sp1);
+  text-align: left;
+  max-width: none;
+}
+
+.tnf-lede {
+  color: var(--muted);
+  max-width: 68ch;
+  margin: 0 0 var(--sp3);
+  font-size: clamp(0.95rem, 1.15vw, 1.05rem);
+  /* 1.618 — тот же множитель, что и в шкале: строка стоит на φ */
+  line-height: var(--phi);
+}
+
+.tnf-grid { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.tnf-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.tnf-grid-2 { grid-template-columns: repeat(2, 1fr); }
+/* Четыре факта об авторе: на 900px рвётся на две колонки, на 560px в одну —
+   иначе число и подпись под ним сжимаются до переноса внутри слова. */
+.tnf-grid-4 { grid-template-columns: repeat(4, 1fr); }
+/* min-width: 0 открывает горизонтальную прокрутку таблиц внутри ячейки: у grid-
+   элемента min-width по умолчанию = auto, и широкая таблица распирала
+   ячейку до 468px на экране 375px — вся страница ездила вбок. */
+/* Карточки полупрозрачны, чтобы звёздное поле просвечивало и страница читалась
+   как один слой, а не как чёрные плашки поверх фона. */
+.tnf-cell {
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(2px);
+  padding: clamp(var(--sp2), 2.2vw, var(--f2));
+  min-width: 0;
+}
+.tnf-grid, .tnf-grid > * { min-width: 0; }
+
+/* Теги происхождения — несущая конструкция честности на странице, а были
+   кеглем 10.6 px, мельче всего остального. */
+.tnf-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.tnf-mono {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.tnf-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.tnf-table th {
+  text-align: right;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tnf-table th:first-child, .tnf-table td:first-child { text-align: left; }
+.tnf-table td {
+  text-align: right;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.045);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tnf-table tr.ours td { color: var(--text); }
+.tnf-table tr.ours td:first-child { font-weight: 600; }
+.tnf-table td { color: var(--muted); }
+.tnf-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+.tnf-scroll > .tnf-table { min-width: 26rem; }
+/* Ранги в таблицах неподряд (1, 2, 4, 6, 13…) — это место в полном
+   списке из 20 форматов, поэтому колонка с ними остаётся и на узком
+   экране. Возможность сдвинуть таблицу надо показать: без градиента у правого
+   края обрезанная колонка выглядит как вёрстка, а не как прокрутка. */
+@supports (mask-image: linear-gradient(90deg, #000, transparent)) {
+  .tnf-scroll { mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%); }
+  .tnf-scroll:not(:hover) { mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%); }
+}
+@media (min-width: 900px) {
+  /* На широком экране таблицы умещаются целиком — градиент там лишний. */
+  .tnf-scroll { mask-image: none; }
+}
+
+.tnf-bar { height: 6px; background: rgba(255,255,255,0.09); border-radius: 3px; overflow: hidden; min-width: 70px; }
+.tnf-bar > i { display: block; height: 100%; border-radius: 3px; }
+
+.tnf-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  max-width: 74ch;
+  margin-top: 1.25rem;
+  border-left: 2px solid var(--border);
+  padding-left: 1rem;
+}
+
+.tnf-kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.3rem 0.55rem;
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+  white-space: nowrap;
+}
+
+.tnf-link { color: var(--text); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.tnf-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 900px) {
+  .tnf-grid-3 { grid-template-columns: 1fr; }
+  .tnf-grid-2 { grid-template-columns: 1fr; }
+  .tnf-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .tnf-h2 { max-width: none; }
+}
+
+@media (max-width: 560px) {
+  .tnf-grid-4 { grid-template-columns: 1fr; }
+  /* Таблицы сжимаются, но не переносят числа: строка чисел, разорванная
+     на две строки, читается как два разных числа. */
+  .tnf-table { font-size: 0.8125rem; }
+  .tnf-table th, .tnf-table td { padding: 0.5rem 0.5rem; }
+  .tnf-bar { display: none; }
+}

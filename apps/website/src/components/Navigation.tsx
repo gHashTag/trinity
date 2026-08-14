@@ -2,7 +2,8 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-const sectionIds = ['hero', 'theorems', 'publications', 'solution', 'benchmarks', 'calculator', 'depin', 'team', 'invest']
+// Порядок повторяет порядок аргумента на главной, а не порядок продуктов.
+const sectionIds = ['hero', 'claim', 'formats', 'frontier', 'ladder', 'theorems', 'limits', 'landscape', 'reproduce']
 const BASE = import.meta.env.BASE_URL
 // Docs points to t27.ai/docs/ (custom domain)
 const DOCS_URL = 'https://t27.ai/docs/'
@@ -19,9 +20,14 @@ type PageLink = { href: string; en: string; ru: string; note: string; noteRu: st
 // fixed-height row with no room left — so they live behind one disclosure
 // instead of pushing each other off the right edge.
 const PAGES: PageLink[] = [
-  { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: '2.84× and 5.53× more accurate than tekum16', noteRu: 'В 2.84 и 5.53 раза точнее tekum16' },
-  { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on live silicon', noteRu: 'Присылаете RTL — измеряю на живом кремнии' },
-  { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores that have been to silicon', noteRu: 'Ядра, уже прошедшие кремний' },
+  // Прежняя подпись несла «2.84× и 5.53× точнее tekum16». Это заявление
+  // отозвано: оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных
+  // кодов идентично takum-оракулу, поэтому сравнение шло не с tekum.
+  { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: 'A φ-derived static-split float family', noteRu: 'φ-производное семейство float со статическим разбиением' },
+  { href: '#/start', en: 'Start here', ru: 'С чего начать', note: 'Four checks you can run yourself, in order', noteRu: 'Четыре проверки, которые запускаете сами, по порядку' },
+  { href: '#/select', en: 'Choose a format', ru: 'Выбор формата', note: 'A task-by-format comparison matrix', noteRu: 'Матрица сравнения формата и задачи' },
+  { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on a live FPGA board', noteRu: 'Присылаете RTL — измеряю на живой FPGA-плате' },
+  { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores with RTL, reference model and vectors', noteRu: 'Ядра: RTL, эталонная модель и векторы' },
   { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
   { href: '#/cases', en: 'Case studies', ru: 'Работы', note: 'Verification runs on other people’s RTL', noteRu: 'Прогоны чужого RTL' },
   { href: '#/course', en: 'Course', ru: 'Курс', note: 'Train a neural network on an FPGA', noteRu: 'Обучите нейросеть прямо на FPGA' },
@@ -217,6 +223,10 @@ export default memo(function Navigation() {
         >
           <div
             className="mobile-menu"
+            // The hamburger declares aria-controls="mobile-menu"; without this id
+            // that reference resolved to nothing, so a screen reader following it
+            // found no menu. Caught by an ARIA-driven sweep in render-check.
+            id="mobile-menu"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

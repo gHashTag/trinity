@@ -34,6 +34,8 @@ export interface Resource {
   status: ResourceStatus
   /** A discrepancy, a caveat, or what makes this row load-bearing. */
   note?: string
+  /** Русское примечание для страницы /resources. */
+  noteRu?: string
 }
 
 export const CORPUS_VERIFIED = '2026-08-09'
@@ -48,6 +50,7 @@ export const papers: Resource[] = [
     verified: '2026-08-09',
     status: 'live',
     note: 'v3, 22 Jun 2026, 20 pp, cs.AR primary + cs.MS. v1 = 19 pp, v2 = 20 pp.',
+    noteRu: "v3, 22 июня 2026 года, 20 страниц, основная рубрика cs.AR плюс cs.MS. v1 — 19 страниц, v2 — 20 страниц.",
   },
   {
     kind: 'paper',
@@ -58,6 +61,7 @@ export const papers: Resource[] = [
     verified: '2026-08-09',
     status: 'live',
     note: '83 formats, not 84. The 84-format title is v1 only and is historical.',
+    noteRu: "83 формата, не 84. Заголовок про 84 формата был только у v1 и теперь имеет историческое значение.",
   },
   {
     kind: 'paper',
@@ -67,6 +71,7 @@ export const papers: Resource[] = [
     verified: '2026-07-28',
     status: 'unverified',
     note: 'v1, 27 May 2026, 32 pp, cs.AI. Not re-opened in the 2026-08-09 pass.',
+    noteRu: "v1, 27 мая 2026 года, 32 страницы, cs.AI. В проверке 9 августа 2026 года запись повторно не открывали.",
   },
 ]
 
@@ -80,6 +85,7 @@ export const datasets: Resource[] = [
     status: 'live',
     note:
       'v0.1.0, 2026-04-07, 22 views / 9 downloads. The GitHub profile README calls this "t27 language spec" — WRONG, it is a GoldenFloat record. Also overlaps arXiv:2606.05017 with a different version number and no visible cross-link.',
+    noteRu: "v0.1.0, 7 апреля 2026 года, 22 просмотра и 9 скачиваний. В профиле GitHub это названо «спецификацией языка t27» — неверно: запись относится к GoldenFloat. Она также пересекается с arXiv:2606.05017, но имеет другой номер версии и не содержит видимой перекрёстной ссылки.",
   },
   {
     kind: 'dataset',
@@ -90,6 +96,7 @@ export const datasets: Resource[] = [
     status: 'live',
     note:
       '2026-03-26, 54 views / 12 downloads. The GitHub profile README calls this "Trinity v9.0" — WRONG, the record says v5.0.',
+    noteRu: "26 марта 2026 года, 54 просмотра и 12 скачиваний. В профиле GitHub это названо «Trinity v9.0» — неверно: в записи указана версия v5.0.",
   },
   {
     kind: 'dataset',
@@ -100,6 +107,7 @@ export const datasets: Resource[] = [
     status: 'live',
     note:
       '2026-03-11, 141 views / 12 downloads. Description matches the README. ✓ Concept DOI 10.5281/zenodo.18939351.',
+    noteRu: "11 марта 2026 года, 141 просмотр и 12 скачиваний. Описание совпадает с README. Концептуальный DOI: 10.5281/zenodo.18939351.",
   },
 
   // The B-series: seven records the GitHub profile never mentioned. Found via the
@@ -112,6 +120,7 @@ export const datasets: Resource[] = [
     verified: '2026-08-09',
     status: 'live',
     note: 'v5.0, 2026-03-26, 69 views.',
+    noteRu: "v5.0, 26 марта 2026 года, 69 просмотров.",
   },
   {
     kind: 'dataset',
@@ -122,6 +131,7 @@ export const datasets: Resource[] = [
     status: 'live',
     note:
       'v5.0, 2026-03-26, 54 views. Overlaps the unpublished FPL paper "Zero-DSP Ternary Transformer Inference on a $30 FPGA" — check for self-overlap before submitting.',
+    noteRu: "v5.0, 26 марта 2026 года, 54 просмотра. Есть пересечение с неопубликованной статьёй FPL «Zero-DSP Ternary Transformer Inference on a $30 FPGA» — перед отправкой нужно проверить самопересечение.",
   },
   {
     kind: 'dataset',
@@ -132,6 +142,7 @@ export const datasets: Resource[] = [
     status: 'live',
     note:
       'v5.0, 2026-03-26, 64 views. This — not 19456875 — is the record closest to "t27 language spec".',
+    noteRu: "v5.0, 26 марта 2026 года, 64 просмотра. Именно эта запись, а не 19456875, ближе всего к описанию «спецификация языка t27».",
   },
   {
     kind: 'dataset',
@@ -141,6 +152,7 @@ export const datasets: Resource[] = [
     verified: '2026-08-09',
     status: 'live',
     note: 'v5.0, 2026-03-26, 54 views.',
+    noteRu: "v5.0, 26 марта 2026 года, 54 просмотра.",
   },
   {
     kind: 'dataset',
@@ -150,6 +162,7 @@ export const datasets: Resource[] = [
     verified: '2026-08-09',
     status: 'live',
     note: 'v5.0, 2026-03-26, 49 views.',
+    noteRu: "v5.0, 26 марта 2026 года, 49 просмотров.",
   },
   {
     kind: 'dataset',
@@ -160,6 +173,7 @@ export const datasets: Resource[] = [
     status: 'live',
     note:
       'v5.0, 2026-03-26, 54 views. Overlaps the unpublished arXiv draft "Sacred GF16/TF3-9 Arithmetic on Artix-7".',
+    noteRu: "v5.0, 26 марта 2026 года, 54 просмотра. Есть пересечение с неопубликованным черновиком arXiv «Sacred GF16/TF3-9 Arithmetic on Artix-7».",
   },
   {
     kind: 'dataset',
@@ -170,6 +184,7 @@ export const datasets: Resource[] = [
     status: 'live',
     note:
       'v5.0, 2026-03-26, **228 views — the most-viewed record in the corpus**, and it appears on no profile, README or CV.',
+    noteRu: "v5.0, 26 марта 2026 года, 228 просмотров — наибольшее число просмотров среди записей корпуса; при этом упоминания нет ни в профиле, ни в README, ни в резюме.",
   },
 ]
 
@@ -181,6 +196,7 @@ export const upstream: Resource[] = [
     verified: '2026-08-10',
     status: 'live',
     note: 'MERGED. The maintainer took the board integration, declined the CI workflow with a reason, and asked for the bitstream work to be split out — which became #682.',
+    noteRu: "СМЕРЖЕН. Сопровождающий принял интеграцию платы, обоснованно отклонил workflow CI и попросил вынести работу с битстримом отдельно — так появился PR #682.",
   },
   {
     kind: 'repo',
@@ -189,6 +205,7 @@ export const upstream: Resource[] = [
     verified: '2026-08-10',
     status: 'live',
     note: 'MERGED — "Applied. Thanks!" The split the maintainer asked for in #663.',
+    noteRu: "СМЕРЖЕН — «Применено. Спасибо!». Это отдельная работа с битстримом, которую сопровождающий попросил вынести из PR #663.",
   },
   {
     kind: 'repo',
@@ -197,6 +214,7 @@ export const upstream: Resource[] = [
     verified: '2026-08-10',
     status: 'live',
     note: 'MERGED 2026-08-09 — "LGTM, thanks for the contribution!"',
+    noteRu: "СМЕРЖЕН 9 августа 2026 года — «LGTM, спасибо за вклад!».",
   },
   {
     kind: 'repo',
@@ -205,6 +223,7 @@ export const upstream: Resource[] = [
     verified: '2026-08-10',
     status: 'live',
     note: 'MERGED 2026-08-09 — "LGTM, thanks for the contribution!"',
+    noteRu: "СМЕРЖЕН 9 августа 2026 года — «LGTM, спасибо за вклад!».",
   },
   {
     kind: 'repo',
@@ -213,6 +232,7 @@ export const upstream: Resource[] = [
     verified: '2026-08-10',
     status: 'live',
     note: 'MERGED 2026-08-10 — "I merged this. I am actually thinking about making a regression test suite for nextpnr-xilinx and your example above would be a nice start."',
+    noteRu: "СМЕРЖЕН 10 августа 2026 года — «Я это смержил. Думаю добавить набор регрессионных тестов для nextpnr-xilinx, и ваш пример хорошо для этого подходит».",
   },
   {
     kind: 'repo',
@@ -221,6 +241,7 @@ export const upstream: Resource[] = [
     verified: '2026-08-10',
     status: 'live',
     note: 'MERGED 2026-08-10.',
+    noteRu: "СМЕРЖЕН 10 августа 2026 года.",
   },
   {
     kind: 'repo',
@@ -229,6 +250,7 @@ export const upstream: Resource[] = [
     verified: '2026-08-10',
     status: 'live',
     note: 'MERGED 2026-08-10.',
+    noteRu: "СМЕРЖЕН 10 августа 2026 года.",
   },
   {
     kind: 'repo',
@@ -237,6 +259,7 @@ export const upstream: Resource[] = [
     verified: '2026-08-10',
     status: 'live',
     note: 'MERGED 2026-08-09 — "LGTM, this is merged. Thanks for the contribution!" The underlying IDDR capture issue stays open in the toolchain.',
+    noteRu: "СМЕРЖЕН 9 августа 2026 года — «LGTM, это смержено. Спасибо за вклад!». Исходная проблема захвата IDDR в тулчейне всё ещё открыта.",
   },
 ]
 
@@ -249,6 +272,7 @@ export const channels: Resource[] = [
     status: 'live',
     note:
       'Strongest social channel: 12 articles, best one at 7.8K reach / 19 bookmarks / 20 comments. Two further posts were pulled — one flagged as machine-written, one at -8 votes.',
+    noteRu: "Канал с наибольшим охватом среди проверенных: 12 статей, максимальный охват одной публикации — 7,8 тыс., 19 добавлений в закладки и 20 комментариев. Ещё две публикации сняты: одну пометили как написанную машиной, другая получила −8 голосов.",
   },
   {
     kind: 'channel',
@@ -257,6 +281,7 @@ export const channels: Resource[] = [
     verified: '2026-08-09',
     status: 'live',
     note: '612 followers. Last post: 461 impressions, 1 reaction.',
+    noteRu: "612 подписчиков. Последняя публикация: 461 показ и 1 реакция.",
   },
   {
     kind: 'channel',
@@ -266,6 +291,7 @@ export const channels: Resource[] = [
     status: 'live',
     note:
       '118 followers, 145 posts, joined Apr 2019. Formerly @koshasuperstar — renamed, not a separate account.',
+    noteRu: "118 подписчиков, 145 публикаций, аккаунт создан в апреле 2019 года. Ранее использовался хэндл @koshasuperstar — это переименование, а не отдельный аккаунт.",
   },
   {
     kind: 'channel',
@@ -275,6 +301,7 @@ export const channels: Resource[] = [
     status: 'unverified',
     note:
       'This is the handle the site footer links. The GitHub README links @t27_dev instead. Pick one.',
+    noteRu: "Это хэндл, на который ссылается подвал сайта. В README GitHub указан @t27_dev вместо него. Нужно выбрать один вариант.",
   },
   {
     kind: 'channel',
@@ -283,6 +310,7 @@ export const channels: Resource[] = [
     verified: '2026-08-09',
     status: 'unverified',
     note: 'Subscriber count not measured.',
+    noteRu: "Число подписчиков не измерялось.",
   },
   {
     kind: 'channel',
@@ -292,6 +320,7 @@ export const channels: Resource[] = [
     status: 'live',
     note:
       't.me/s/t27_dev returns only a bio. The GitHub README Telegram badge points here, so it leads to a DM box rather than a broadcast channel.',
+    noteRu: "t.me/s/t27_dev возвращает только биографию. Значок Telegram в README GitHub ведёт сюда, то есть открывает личные сообщения, а не канал вещания.",
   },
   {
     kind: 'channel',
@@ -301,6 +330,7 @@ export const channels: Resource[] = [
     status: 'live',
     note:
       'PUBLIC as of 2026-08-09 (verified: subreddit_type "public", 1 subscriber). Was restricted from creation on 27 Mar 2026 until a review request was approved. Two posts, both by the owner, silent four months — it now needs content, not permissions.',
+    noteRu: "ПУБЛИЧЕН на 9 августа 2026 года (проверено: тип сообщества «public», 1 подписчик). До одобрения запроса на проверку создание было ограничено с 27 марта 2026 года. Две публикации, обе от владельца, четыре месяца без активности — теперь нужны материалы, а не разрешения.",
   },
   {
     kind: 'channel',
@@ -310,6 +340,7 @@ export const channels: Resource[] = [
     status: 'live',
     note:
       '18 subscribers. Best post 166 views — the Russian Knuth/Setun piece; PhD monograph post 91. Same pattern as Habr: culturally-anchored Russian framing outperforms English announcements.',
+    noteRu: "18 подписчиков. Пост с наибольшим охватом набрал 166 просмотров — это русскоязычный текст о Кнуте и Сетуни; пост о докторской монографии — 91 просмотр. Как и на Habr, культурно привязанная русская подача работает лучше англоязычных анонсов.",
   },
   {
     kind: 'channel',
@@ -319,6 +350,7 @@ export const channels: Resource[] = [
     status: 'unverified',
     note:
       'A third X handle, found only in the r/t27ai sidebar. X is now split three ways: @t27_dev (118 followers, the real history), @t27_lang (site footer), @trinity_cli (subreddit).',
+    noteRu: "Третий хэндл X, найденный только в боковой панели r/t27ai. Сейчас присутствуют три адреса: @t27_dev (118 подписчиков, основная история), @t27_lang (подвал сайта) и @trinity_cli (сабреддит).",
   },
   {
     kind: 'channel',
@@ -327,6 +359,7 @@ export const channels: Resource[] = [
     verified: '2026-08-09',
     status: 'unverified',
     note: 'Linked only from the r/t27ai sidebar; absent from the profile, the site and the CV.',
+    noteRu: "Ссылка есть только в боковой панели r/t27ai; в профиле, на сайте и в резюме её нет.",
   },
   {
     kind: 'channel',
@@ -336,6 +369,7 @@ export const channels: Resource[] = [
     status: 'live',
     note:
       'Auto-generated username carrying real FPGA posts in r/FPGA and r/Zig. Reputation cannot accrue to a name nobody recognises.',
+    noteRu: "Автоматически созданное имя пользователя с реальными публикациями о FPGA в r/FPGA и r/Zig. Репутация не накапливается вокруг имени, которое никто не узнаёт.",
   },
   {
     kind: 'channel',
@@ -345,6 +379,7 @@ export const channels: Resource[] = [
     status: 'broken',
     note:
       '/ghashtag redirects here. The profile still links twitter.com/koshasuperstar — a dead handle.',
+    noteRu: "/ghashtag перенаправляет сюда. В профиле по-прежнему указана ссылка twitter.com/koshasuperstar — это неработающий хэндл.",
   },
   {
     kind: 'channel',
@@ -353,6 +388,7 @@ export const channels: Resource[] = [
     verified: '2026-08-09',
     status: 'live',
     note: '56 followers, 7 posts, dormant since Nov 2021.',
+    noteRu: "56 подписчиков, 7 публикаций, без обновлений с ноября 2021 года.",
   },
   {
     kind: 'channel',
@@ -362,6 +398,7 @@ export const channels: Resource[] = [
     status: 'live',
     note:
       '89 followers, 217 repositories total / 187 public. The profile README still says 210 total / 186 public / 86 followers.',
+    noteRu: "89 подписчиков, всего 217 репозиториев и 187 публичных. В README профиля по-прежнему указаны старые значения: 210 всего, 186 публичных и 86 подписчиков.",
   },
 ]
 
@@ -382,6 +419,7 @@ export const identities: Resource[] = [
     status: 'broken',
     note:
       'Returns "Not Found". The three arXiv papers do not resolve to one author page, so nothing can link to a single publication list.',
+    noteRu: "Возвращает «Not Found». Три статьи arXiv не ведут на единую страницу автора, поэтому ничего не связывает их в один список публикаций.",
   },
   {
     kind: 'identity',
@@ -412,6 +450,7 @@ export const retractions: Resource[] = [
     status: 'live',
     note:
       'WITHDRAWN by the authors. An independent arithmetic check showed the algebraic identity does not deliver the claimed numerical match at the precision required. Marked never to be restated. Listed here because a programme that retracts its own physics claim on arithmetic should say so where it can be found, not only in a repository.',
+    noteRu: "ОТОЗВАНО авторами. Независимая арифметическая проверка показала, что алгебраическое тождество не даёт заявленного численного совпадения с требуемой точностью. Утверждение помечено как не подлежащее повторной публикации. Запись оставлена здесь, потому что программа, отзывающая собственное физическое утверждение после арифметической проверки, должна указывать это там, где утверждение можно найти, а не только в репозитории.",
   },
 ]
 

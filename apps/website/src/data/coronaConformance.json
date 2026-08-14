@@ -1,0 +1,58 @@
+{
+  "oracle": "ml_dtypes (JAX project) — an implementation neither derived from nor written alongside the RTL under test",
+  "method": "every code point of each format, compared as float32 bit patterns; NaN payloads are not compared because no specification fixes them",
+  "exhaustive": true,
+  "totalCodePoints": 66448,
+  "totalMismatches": 0,
+  "results": [
+    {
+      "module": "fp4_decode",
+      "codes": 16,
+      "oracle": "ml_dtypes.float4_e2m1fn",
+      "mismatches": 0,
+      "examples": []
+    },
+    {
+      "module": "fp6_e2m3_decode",
+      "codes": 64,
+      "oracle": "ml_dtypes.float6_e2m3fn",
+      "mismatches": 0,
+      "examples": []
+    },
+    {
+      "module": "fp6_e3m2_decode",
+      "codes": 64,
+      "oracle": "ml_dtypes.float6_e3m2fn",
+      "mismatches": 0,
+      "examples": []
+    },
+    {
+      "module": "fp8_e4m3_fnuz_decode",
+      "codes": 256,
+      "oracle": "ml_dtypes.float8_e4m3fnuz",
+      "mismatches": 0,
+      "examples": []
+    },
+    {
+      "module": "fp8_e5m2_decode",
+      "codes": 256,
+      "oracle": "ml_dtypes.float8_e5m2",
+      "mismatches": 0,
+      "examples": []
+    },
+    {
+      "module": "mxfp8_e4m3_decode",
+      "codes": 256,
+      "oracle": "ml_dtypes.float8_e4m3fn",
+      "mismatches": 0,
+      "examples": []
+    },
+    {
+      "module": "bf16_decode",
+      "codes": 65536,
+      "oracle": "ml_dtypes.bfloat16",
+      "mismatches": 0,
+      "examples": []
+    }
+  ]
+}

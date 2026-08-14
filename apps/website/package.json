@@ -13,7 +13,9 @@
     "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
     "check:api": "node scripts/api-contract-check.mjs",
     "check:render": "node scripts/render-check.mjs",
-    "check:deployed": "node scripts/deployed-check.mjs"
+    "check:deployed": "node scripts/deployed-check.mjs",
+    "check:aria": "node scripts/aria-refs-check.mjs",
+    "typecheck:update": "node scripts/typecheck-ratchet.mjs --update"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

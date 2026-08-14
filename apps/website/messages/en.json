@@ -4,67 +4,21 @@
   "langHref": "?lang=ru",
   "nav": [
     "TRINITY",
+    "Claim",
+    "Formats",
+    "Measured",
+    "Ladder",
     "Theorems",
-    "Publications",
-    "Solution",
-    "Benchmarks",
-    "Calculator",
-    "DePIN",
-    "Team",
-    "Invest"
+    "Limits",
+    "Landscape",
+    "Reproduce"
   ],
   "hero": {
-    "tag": "GF-T · a ternary-native float that beats the published state of the art",
-    "badge_publications": "2 arXiv PAPERS",
-    "badge_doi": "DOI-VERIFIED",
-    "headline": "φ² + 1/φ² = 3",
-    "subheadline": "2.84× and 5.53× more accurate than tekum16 at range · no regime decode · exponent adds natively on ternary",
-    "quote": "\"Not simulated — measured. Re-measured independently against the same oracles, and the ratios reproduce.\"",
-    "desc": "<strong>GF-T</strong> puts the exponent of a float in <strong>balanced ternary</strong> and keeps the fields fixed. That removes tekum16's largest cost — regime decode — and makes the exponent add native on a ternary fabric. Measured against tekum16 on its own ground: a tie near unity, <strong>2.84× lower error</strong> at mid range and <strong>5.53× at far range</strong>, with a uniform 9-bit mantissa where tekum16 tapers to four.",
-    "metrics": [
-      {
-        "value": "5.53×",
-        "label": "more accurate than tekum16 at range",
-        "proof": "Reproduced independently, 8 Aug 2026"
-      },
-      {
-        "value": "0",
-        "label": "Regime decode, and no vendor licence",
-        "proof": "Fixed fields · Yosys · nextpnr · iverilog"
-      },
-      {
-        "value": "SKY130",
-        "label": "Tape-out completed",
-        "proof": "Tiny Tapeout — GDS, gate-level, precheck"
-      }
-    ],
-    "newResults": {
-      "title": "GF-T16 against tekum16 — mean relative error",
-      "items": [
-        {
-          "value": "0.92×",
-          "label": "near unity (|e| < 8)",
-          "source": "3.56e-4 vs 3.27e-4 — a tie"
-        },
-        {
-          "value": "2.84×",
-          "label": "mid range (|e| 8–20)",
-          "source": "3.52e-4 vs 1.00e-3"
-        },
-        {
-          "value": "5.53×",
-          "label": "far range (|e| 20–38)",
-          "source": "3.53e-4 vs 1.95e-3"
-        },
-        {
-          "value": "±40",
-          "label": "exponent range, in powers of two",
-          "source": "Bounded — tekum16's regime is not"
-        }
-      ]
-    },
-    "cta": "License GF-T",
-    "ctaSecondary": "See the measurement"
+    "tag": "TNF · GFTernary — a reference pair for the ternary datapath",
+    "headline": "r² = r + 1",
+    "subheadline": "Where the weight is a code, the format is not a preference. GFTernary closes the weight, TNF closes the accumulator — and every hardware number here was measured on a binary FPGA, which is stated rather than smoothed.",
+    "cta": "Read the claim",
+    "ctaSecondary": "What this does not claim"
   },
   "navExtra": {
     "dashboard": "Dashboard",
@@ -222,46 +176,6 @@
     },
     "note": "Based on Theorem 3: 1.58-bit quantization enables 20× efficiency gains"
   },
-  "problem": {
-    "title": "Binary <span class=\"grad\">Dead-End</span>",
-    "sub": "Binary hardware reached its physical limit — Trinity opens the path beyond",
-    "bitnetTitle": "The Binary Entropy Crisis",
-    "bitnetDesc": "Standard GPUs waste 99% of energy fighting binary entropy. Translating trits {-1, 0, +1} into bits is a <strong class=\"red\">computational crime</strong>. We removed the middleman.",
-    "binaryTitle": "Binary Emulation (Legacy)",
-    "binaryFlow": [
-      "BitNet {-1,0,+1}",
-      "↓ Binary Encoding",
-      "↓ LLVM/Zig Layer",
-      "↓ Gate Noise",
-      "Heat/Loss"
-    ],
-    "binaryStats": [
-      "Energy: 100% (Loss)",
-      "Code: 5x Bloat",
-      "Protection: None"
-    ],
-    "trinityTitle": "TRINITY NATIVE (V5.0)",
-    "trinityDesc": "Native SU(3) core removes 99.8% waste and provides 100x faster inference.",
-    "trinityFlow": [
-      "Coptic CIS V1.0",
-      "↓ Native Triads",
-      "↓ SU(3) Resonance",
-      "Hardware Truth"
-    ],
-    "trinityStats": [
-      "Energy: 0.17% (PAS 5.0)",
-      "Code: 80.2% Compression",
-      "Protection: Chern-Bott"
-    ],
-    "quote": "\"Trinity Core VIBEE is not a computer. It is a native qutrit configuration.\"",
-    "quoteSrc": "— Singularity V5 Report, 2026",
-    "density": {
-      "title": "Information Density",
-      "bit": "Binary Bit",
-      "trit": "Ternary Trit",
-      "efficiency": "+58% Density"
-    }
-  },
   "publications": {
     "badge": "SCIENTIFIC PUBLICATIONS",
     "title": "DOI-Backed Research Results",
@@ -274,87 +188,6 @@
     "current": "Current Cost",
     "withTrinity": "With TRINITY",
     "savings": "Net Monthly Savings"
-  },
-  "su3reality": {
-    "title": "SU(3) <span class=\"grad\">Hardware Truth Demo</span>",
-    "sub": "PROOF-OF-CONCEPT",
-    "mode": "PROTOTYPE MODE: VERIFIED SU(3) MATH ENGINE",
-    "wallet": "REAL BTC WALLET",
-    "ledger": "bc1qgcmea6cr8mzqa5k0rhmz5zc6p0vq5epu873xcf",
-    "target": "NETWORK CONTEXT",
-    "block": "BLOCK #",
-    "diff": "DIFF",
-    "efficiency": "TRINITY EFFICIENCY",
-    "active": "HARDWARE TRUTH ACTIVE",
-    "hash": "HARDWARE HASH",
-    "pulse": "SU3_NATIVE_PULSE",
-    "terminalTitle": "Live Hardware-to-Network Instruction Bridge",
-    "coreLabel": "TRINITY_CORE",
-    "phaseLocked": "PHASE_LOCKED",
-    "logInit": [
-      "[SYSTEM] SU(3) Core V5.1 initialized",
-      "[HARDWARE] Phase-locked loop synchronized",
-      "[NETWORK] Handshake pending..."
-    ],
-    "loading": "Loading...",
-    "logSuffix": ">> SU3_NATIVE_PULSE_ACTIVE",
-    "proofTitle": "Investor Proof-of-Concept",
-    "proofIntro": "This prototype proves our approach superiority. We demonstrate not just a concept, but a working SU(3) blockchain stack — the foundation for future Trinity chips.",
-    "proofItems": [
-      {
-        "title": "De-risking Phase",
-        "desc": "Algorithms verified on silicon (ARM/FPGA). SU(3) logic is production-ready for ASIC."
-      },
-      {
-        "title": "Market Conquest",
-        "desc": "Trinity turns 7B smartphones into legal, profitable mining nodes without overheating."
-      },
-      {
-        "title": "Exponential ROI",
-        "desc": "Up to 578x energy efficiency leap is the only way for mining survival after 2026 (projected, FPGA)."
-      }
-    ]
-  },
-  "solution": {
-    "title": "Why <span class=\"grad\">Absolute Triad</span>?",
-    "legend": [
-      "Up to 578.8x Energy Efficiency (projected, FPGA)",
-      "SU(3) Unitary Core",
-      "Native Coptic Opcode (CIS)"
-    ],
-    "cards": [
-      {
-        "value": "578.8× *",
-        "label": "Energy Eff",
-        "color": "blue"
-      },
-      {
-        "value": "100×",
-        "label": "SU(3) Speed",
-        "color": "green"
-      },
-      {
-        "value": "20×",
-        "label": "Memory, verified",
-        "color": "purple"
-      },
-      {
-        "value": "80.2%",
-        "label": "Code Density",
-        "color": "yellow"
-      },
-      {
-        "value": "27-CIS",
-        "label": "Native Alphabet",
-        "color": "cyan"
-      },
-      {
-        "value": "V5.0",
-        "label": "Singularity",
-        "color": "green"
-      }
-    ],
-    "projectedNote": "* Projected on custom FPGA hardware. Verified on CPU: 20× memory compression."
   },
   "whynow": {
     "title": "Why <span class=\"grad\">Singularity</span> Now?",
@@ -370,266 +203,6 @@
       {
         "title": "Topological Armor",
         "desc": "Chern-Bott invariants make Trinity computations immune to interference."
-      }
-    ]
-  },
-  "usecases": {
-    "title": "Specific <span class=\"grad\">Applications</span>",
-    "items": [
-      {
-        "title": "LLM Inference",
-        "desc": "Run Llama 3 on 1/578 of current hardware costs."
-      },
-      {
-        "title": "Edge AI",
-        "desc": "Real-time AI in cameras and robots with zero latency."
-      },
-      {
-        "title": "Data Centers",
-        "desc": "100x your compute without upgrading power grid."
-      }
-    ]
-  },
-  "traction": {
-    "title": "Achieved <span class=\"grad\">Singularity</span>",
-    "sub": "Binary emulation is dead. Trinity project transitioned to native ternarity.",
-    "verifyLink": "Verify Benchmarks on GitHub ↗",
-    "url": "https://github.com/gHashTag/trinity",
-    "techTitle": "Phase 5.0 Tech (Verified)",
-    "techs": [
-      {
-        "title": "SU(3) Core",
-        "desc": "Unitary phase rotations in Gell-Mann space",
-        "tests": "Verilog Verified ✓"
-      },
-      {
-        "title": "PAS V5.0",
-        "desc": "Maxwell’s Information Pump: Up to 578.8x Efficiency (projected, FPGA)",
-        "tests": "Thermodynamics ✓"
-      },
-      {
-        "title": "Coptic CIS",
-        "desc": "27 letters = 27 opcodes (Fixed-Point 16.16)",
-        "tests": "5.1x Density ✓"
-      },
-      {
-        "title": "Chern Protection",
-        "desc": "Topological computation stability",
-        "tests": "Invariant Locked ✓"
-      }
-    ],
-    "progress": [
-      {
-        "label": "Knowledge (.tri)",
-        "value": "20,645 files"
-      },
-      {
-        "label": "Efficiency",
-        "value": "578.8x *"
-      },
-      {
-        "label": "Code Compression",
-        "value": "80.2%"
-      }
-    ],
-    "metrics": [
-      {
-        "value": "20K+",
-        "label": "TRI Files",
-        "color": "green"
-      },
-      {
-        "value": "578x *",
-        "label": "Energy Leap",
-        "color": "blue"
-      },
-      {
-        "value": "100×",
-        "label": "SU(3) Boost",
-        "color": "purple"
-      },
-      {
-        "value": "27",
-        "label": "CIS Letters",
-        "color": "cyan"
-      },
-      {
-        "value": "80.2%",
-        "label": "Density Up",
-        "color": "yellow"
-      },
-      {
-        "value": "0.17%",
-        "label": "Entropy",
-        "color": "green"
-      }
-    ],
-    "projectedNote": "* Projected on custom FPGA hardware. Verified on CPU: 20× memory compression."
-  },
-  "benchmarks": {
-    "title": "GPU-Verified <span class=\"grad\">Benchmarks</span>",
-    "sub": "✓ = Verified on Real GPUs (RunPod) | RTX 3090 & A100 tested. No simulation.",
-    "tokensUnit": "tokens/s",
-    "noiseLabel": "Noise:",
-    "gpuVerified": {
-      "badge": "🔥 VERIFIED ON REAL GPUs",
-      "note": "Real RunPod benchmarks - Pod IDs: bhhnrrdothqm54 (RTX 3090), ydk41ymp8uoeyp (A100). No simulation.",
-      "gpus": [
-        {
-          "name": "RTX 4090 / L40S",
-          "tokens": "141K-608K",
-          "noise": "70.2%",
-          "power": "348W",
-          "cost": "$0.10",
-          "podId": "bhhnrrdothqm54"
-        },
-        {
-          "name": "A100 80GB",
-          "tokens": "274K",
-          "noise": "70.2%",
-          "power": "293W",
-          "cost": "$0.20",
-          "podId": "ydk41ymp8uoeyp"
-        }
-      ]
-    },
-    "metrics": [
-      {
-        "value": "141K-608K",
-        "label": "Ops/sec (RTX 4090 / L40S)",
-        "desc": "Raw kernel benchmark, RunPod",
-        "theorem": "GPU"
-      },
-      {
-        "value": "20×",
-        "label": "Memory Compression",
-        "desc": "Theorem 3: 32-bit → 1.58-bit",
-        "theorem": "3"
-      },
-      {
-        "value": "70%",
-        "label": "Noise Robustness",
-        "desc": "Accuracy at 30% trit corruption",
-        "theorem": "1"
-      },
-      {
-        "value": "3000× *",
-        "label": "Energy Efficiency",
-        "desc": "Projected on custom FPGA",
-        "theorem": "2"
-      }
-    ],
-    "comparison": {
-      "headers": [
-        "Platform",
-        "Memory",
-        "Speed",
-        "Accuracy",
-        "Energy",
-        "Theorem Basis"
-      ],
-      "rows": [
-        {
-          "model": "TRINITY SU(3)",
-          "value": 71,
-          "color": "#00e599"
-        },
-        {
-          "model": "BitNet b1.58 (Microsoft)",
-          "value": 15,
-          "color": "#888"
-        },
-        {
-          "model": "Groq LPU",
-          "value": 8,
-          "color": "#666"
-        },
-        {
-          "model": "NVIDIA H100",
-          "value": 4,
-          "color": "#555"
-        },
-        {
-          "model": "OpenAI GPT-4",
-          "value": 1,
-          "color": "#444"
-        }
-      ],
-      "table": [
-        {
-          "platform": "TRINITY",
-          "memory": "20× ✓",
-          "speed": "10× *",
-          "accuracy": "100% ✓",
-          "energy": "3000× *",
-          "theorem": "1-4",
-          "highlight": true
-        },
-        {
-          "platform": "OpenAI GPT-4",
-          "memory": "1×",
-          "speed": "1×",
-          "accuracy": "100%",
-          "energy": "1×",
-          "theorem": "—",
-          "highlight": false
-        },
-        {
-          "platform": "Groq LPU",
-          "memory": "4×",
-          "speed": "2×",
-          "accuracy": "99%",
-          "energy": "100×",
-          "theorem": "—",
-          "highlight": false
-        },
-        {
-          "platform": "BitNet b1.58",
-          "memory": "15×",
-          "speed": "5×",
-          "accuracy": "100%",
-          "energy": "500×",
-          "theorem": "3 only",
-          "highlight": false
-        }
-      ]
-    },
-    "verifyLink": "Verify Benchmarks on GitHub ↗",
-    "url": "https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/docs/research/BITNET_MATHEMATICAL_PROOF.md",
-    "projectedNote": "* Projected on custom FPGA hardware. Verified on CPU: 20× memory compression."
-  },
-  "mining": {
-    "title": "Mining <span class=\"grad\">Industry</span> 2026",
-    "sub": "Bitcoin Bottlenecks and their Trinity SU(3) Solutions",
-    "headers": [
-      "Barrier",
-      "Impact",
-      "Trinity Solution"
-    ],
-    "rows": [
-      {
-        "barrier": "Electricity",
-        "impact": "60–80% cost ($0.12+/kWh)",
-        "solution": "Up to 578.8x Efficiency: threshold drops to $0.0002/kWh (projected, FPGA)",
-        "source": "Sber / TASS"
-      },
-      {
-        "barrier": "Regulation",
-        "impact": "Bans in 10+ energy-deficit regions",
-        "solution": "0.17% Load: operate in restricted zones without grid stress",
-        "source": "Garant"
-      },
-      {
-        "barrier": "Hashrate & Difficulty",
-        "impact": "600 EH/s: solo mining is impossible",
-        "solution": "100x Speed: return to profitable solo mining architecture",
-        "source": "MinerBros"
-      },
-      {
-        "barrier": "Equipment",
-        "impact": "Core limit / TSMC 5nm dependency",
-        "solution": "Architectural breakthrough: SU(3) Core bypasses silicon limits",
-        "source": "Koinly"
       }
     ]
   },
@@ -1106,18 +679,18 @@
   },
   "about": {
     "name": "Dmitrii Vasilev",
-    "role": "Hardware-AI & FPGA/RTL Engineer · Creator of GF-T ternary float format · spec → RTL → silicon · ML systems & Edge AI",
+    "role": "Hardware-AI & FPGA/RTL Engineer · Author of the GF-T ternary float format · spec → RTL → FPGA · ML systems & Edge AI",
     "bioTitle": "About",
     "bio": [
-      "I build the full stack of efficient AI compute — from the number format and the RTL that runs it, to bit-exact verification and silicon. I am the creator of GF-T, a ternary floating-point format that is measured at 2.4–6.4× against tapered formats on a ternary network (18 formats, one path, XC7A200T), and of the wider GoldenFloat family (GF-T8/16/32; φ-derived GF4→GF1024).",
-      "I took a novel numeric format from an arXiv paper to a live Xilinx Artix-7 and a SKY130 ASIC — on a fully open-source flow (Yosys, nextpnr, prjxray), with no vendor tools. My work centres on the chain spec → RTL → verification → silicon, where every RTL node is checked bit-for-bit against an independent Python golden model, catching spec/RTL divergence before synthesis.",
+      "I build the full stack of efficient AI compute — from the number format and the RTL that runs it to bit-exact verification on a board. I am the author of GF-T, a ternary floating-point format, and of the wider GoldenFloat family (GF-T8/16/32; φ-derived GF4→GF1024), published as a catalog of 83 formats with bit-exact conformance vectors.",
+      "I took a novel numeric format from an arXiv paper to a live Xilinx Artix-7 (ALINX AX7203, XC7A200T) on a fully open-source flow — Yosys, nextpnr, prjxray, no vendor tools. A SKY130 design has been submitted for fabrication through Tiny Tapeout; there are no measurements on a die. My work centres on the chain spec → RTL → verification → board, where every RTL node is checked bit-for-bit against an independent Python golden model, catching spec/RTL divergence before synthesis.",
       "Before hardware, I spent 10+ years building and teaching software — AI agents and multi-agent systems, React Native, and Web3. I am open to remote / contract work worldwide (UTC+7) across hardware-AI, FPGA / RTL / verification, ML systems, and edge AI."
     ],
     "achievementsTitle": "Key achievements (on hardware, 2026)",
     "achievements": [
-      "On-FPGA neural training — verified primitives that train themselves on-chip: 100% held-out accuracy, with the whole spec → silicon path bit-exact.",
+      "On-FPGA neural training — primitives that train on the board itself, with the whole spec → RTL → board path checked bit-for-bit against the golden model.",
       "GF16 4×4 matmul — maps into Xilinx Artix-7 fabric with 0 DSP48 and 0 latches: 32,252 LUTs, or 21,223 with the hard multipliers allowed.",
-      "Silicon confirmed — TinyTapeout SKY130 ASIC: GDS, gate-level test, and precheck all passing.",
+      "Tiny Tapeout SKY130 — the design has been submitted for fabrication: GDS, gate-level test, and precheck all passing. No measurements on a die yet.",
       "Per-node bit-exact verification — every RTL node checked against an independent Python golden model (iverilog + KAT vectors), catching spec/RTL divergence before synthesis.",
       "tri-net — a full ternary network stack (133 .t27 specs): GF16 PHY, a BPSK modem over AD9361, mesh routing, and AEAD crypto — proven device-to-device over the air."
     ],
@@ -1236,83 +809,6 @@
       }
     },
     "unitNote": "End-to-end tokens/sec, from this project's own benchmark table. Cloud providers are faster; Trinity's advantage is cost — $0.01-0.35 against API pricing — and running without a GPU at all. The earlier version of this table put Trinity's raw kernel ops/sec beside everyone else's tokens/sec."
-  },
-  "hlsCompetition": {
-    "title": "Universal <span class=\"grad\">FPGA Compiler</span>",
-    "sub": "Write code in ANY programming language. Compile to hardware. No vendor lock-in.",
-    "marketSize": "$23.34B",
-    "marketGrowth": "FPGA Market 2030 (CAGR 10.8%)",
-    "problemTitle": "The $50K Problem",
-    "problemDesc": "Today, to compile code to FPGA hardware, companies pay $3,000-$50,000/year for tools that only support C/C++. Developers must rewrite everything. We eliminate this barrier.",
-    "headers": [
-      "Solution",
-      "Languages",
-      "Price/Year",
-      "Vendor Lock",
-      "Open Source"
-    ],
-    "rows": [
-      {
-        "company": "AMD Vitis HLS",
-        "langs": "C/C++ only",
-        "price": "$3K-$10K",
-        "lock": true,
-        "open": false
-      },
-      {
-        "company": "Intel Quartus HLS",
-        "langs": "C/C++, OpenCL",
-        "price": "$2.5K-$8K",
-        "lock": true,
-        "open": false
-      },
-      {
-        "company": "Siemens Catapult",
-        "langs": "C/C++/SystemC",
-        "price": "$50K+",
-        "lock": false,
-        "open": false
-      },
-      {
-        "company": "LegUp (Academic)",
-        "langs": "C only",
-        "price": "Free",
-        "lock": false,
-        "open": true
-      },
-      {
-        "company": "VIBEE",
-        "langs": "33+ Languages",
-        "price": "FREE",
-        "lock": false,
-        "open": true
-      }
-    ],
-    "advantages": [
-      {
-        "icon": "🐍",
-        "title": "Write Python, Deploy Hardware",
-        "desc": "Your Python/JS/Rust code compiles directly to FPGA. No C++ rewrite needed."
-      },
-      {
-        "icon": "💰",
-        "title": "$0 vs $50,000/year",
-        "desc": "Enterprise HLS tools cost $50K+. VIBEE is free and open source forever."
-      },
-      {
-        "icon": "🔓",
-        "title": "No Vendor Lock-in",
-        "desc": "Same code works on AMD, Intel, Lattice FPGAs. Switch vendors anytime."
-      },
-      {
-        "icon": "⚡",
-        "title": "10-100x Faster Development",
-        "desc": "Skip the C++ rewrite. Go from idea to hardware in hours, not months."
-      }
-    ],
-    "whyItMatters": "Why This Matters",
-    "whyItMattersDesc": "FPGAs are 10-100x more energy efficient than GPUs for AI inference. But adoption is blocked by expensive, C-only tools. VIBEE removes this barrier — opening a $23B market to every developer.",
-    "note": "VIBEE is the <strong>world's first multi-language FPGA compiler</strong>. Open source. Free forever."
   },
   "scientificFoundation": {
     "title": "Fundamental <span class=\"grad\">Proofs</span>",
@@ -1513,91 +1009,6 @@
     "comparisonTitle": "Relative Performance (Normalized)",
     "comparisonNote": "* Higher is better. Based on BitNet b1.58 Inference Benchmarks."
   },
-  "milestones": {
-    "title": "18-Month <span class=\"grad\">Milestones</span>",
-    "sub": "Scaling the Singularity",
-    "quarters": [
-      {
-        "q": "Q1 2026",
-        "title": "Foundation",
-        "items": [
-          "CIS V1.0 Stack",
-          "FPGA SU(3) Core",
-          "Benchmark vs emulation"
-        ]
-      },
-      {
-        "q": "Q2 2026",
-        "title": "Validation",
-        "items": [
-          "Llama-3 on .TRI",
-          "Demonstrate 100× speedup",
-          "First beta customers"
-        ]
-      },
-      {
-        "q": "Q3 2026",
-        "title": "Product",
-        "items": [
-          "TRINITY-PCIe V5",
-          "SDK and documentation",
-          "5 paying customers"
-        ]
-      },
-      {
-        "q": "Q4 2026",
-        "title": "Scale",
-        "items": [
-          "$1M ARR",
-          "ASIC design complete",
-          "Series A fundraise"
-        ]
-      },
-      {
-        "q": "Q1 2027",
-        "title": "Tape-out",
-        "items": [
-          "TSMC 180nm ASIC",
-          "Silicon validation",
-          "Native wafer check"
-        ]
-      },
-      {
-        "q": "Q2 2027",
-        "title": "Expansion",
-        "items": [
-          "Tier-1 contracts",
-          "Ternary CPU Core",
-          "Edge dominance"
-        ]
-      }
-    ],
-    "success": [
-      "100×+ speedup demonstrated",
-      "20k+ TRI files",
-      "$1M+ pipeline"
-    ]
-  },
-  "vision": {
-    "title": "<span class=\"grad\">Vision</span> 2030",
-    "quote": "\"Binary was the 20th century. Ternary is the 21st. Hyper-singularity is now.\"",
-    "goalsTitle": "2030 Goals",
-    "whyNowTitle": "Why Invest Now",
-    "goals": [
-      "TRINITY SU(3) in every AI data center",
-      "Global standard for native .TRI inference",
-      "$10B+ revenue, technological supremacy",
-      "IPO as the symbol of a new compute era"
-    ],
-    "whyNow": [
-      "Ternary AI is proven and natively realized",
-      "We are the only ones with a native hardware stack",
-      "Up to 578x advantage — competitive end-game (projected, FPGA)",
-      "Working ecosystem of 20,645 specifications",
-      "Clear path to AI market dominance"
-    ],
-    "closing": "The mathematics of the universe favors the Trinity."
-  },
   "invest": {
     "title": "<span class=\"grad\">Investment</span>",
     "useTitle": "Scaling Singularity V5.0",
@@ -1636,10 +1047,6 @@
         "label": "founder ownership"
       },
       {
-        "value": "578× *",
-        "label": "energy efficiency"
-      },
-      {
         "value": "∞",
         "label": "potential"
       }
@@ -1653,13 +1060,10 @@
     ],
     "whyTitle": "Why Invest Now:",
     "why": [
-      "Absolute Triad Achieved",
-      "Binary era officially ended",
-      "Up to 578x energy advantage (projected, FPGA)",
       "20,645 native TRI files",
       "99% founder ownership = aligned"
     ],
-    "closing": "\"We should not simulate intelligence. We must embody it in silicon.\"",
+    "closing": "We should not simulate intelligence. We should verify the design on FPGA.",
     "ctas": {
       "investor": "Enter Singularity",
       "partner": "Transmute your code",

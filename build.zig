@@ -13,16 +13,33 @@ pub fn build(b: *std.Build) void {
     // Cycle 78: Optional tree-sitter integration for VIBEE AST analysis
     const enable_treesitter = b.option(bool, "treesitter", "Enable tree-sitter AST analysis for VIBEE (requires libtree-sitter)") orelse false;
 
+    // The modules src/trinity.zig lost when 42490a22 moved them out. Declared
+    // here, before the first use, because three separate targets root that file.
+    //
+    // The naming in golden-float is confusing enough to be worth writing down:
+    // its root exports `bigint`, and that name points at ternary/hybrid.zig,
+    // while the actual bigint is exported as `ternary_primitives`. The aliases
+    // below are chosen by what each module CONTAINS -- checked symbol by symbol
+    // against what src/trinity.zig re-exports -- not by what it is called.
+    const zig_hdc_dep2 = b.dependency("zig_hdc", .{ .target = target, .optimize = optimize });
+    const gf_dep = b.dependency("zig_golden_float", .{ .target = target, .optimize = optimize });
+    const hdc_vsa_mod = zig_hdc_dep2.module("zig-hdc-vsa");
+    const gf_mod = gf_dep.module("golden-float");
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
+            .{ .name = "golden_float", .module = gf_mod },
+        },
     });
 
     // VIBEEC compiler module — single source of truth from trinity-nexus/lang
     const trinity_lang_mod = b.createModule(.{
-        .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
+        .root_source_file = b.path("deploy/trinity-nexus/lang/src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -44,6 +61,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
+                .{ .name = "golden_float", .module = gf_mod },
+            },
         }),
     });
     b.installArtifact(lib);
@@ -175,6 +196,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
+                .{ .name = "golden_float", .module = gf_mod },
+            },
         }),
     });
 
@@ -182,16 +207,29 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
 
-    // VSA tests
-    const vsa_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+    // src/vsa.zig was migrated to gHashTag/zig-hdc in 42490a22 and the two
+    // references below were left pointing at the empty space, which is one of
+    // the reasons this build has failed since March. The module is intact
+    // there and exports all fourteen symbols this repository asked of the
+    // file it lost; the package itself could not be depended on until its
+    // manifest was repaired (zig-hdc#1), which is why the reference could not
+    // simply be updated at the time.
+    const zig_hdc_dep = b.dependency("zig_hdc", .{
+        .target = target,
+        .optimize = optimize,
     });
-    const run_vsa_tests = b.addRunArtifact(vsa_tests);
-    test_step.dependOn(&run_vsa_tests.step);
+    const hdc_vsa = zig_hdc_dep.module("zig-hdc-vsa");
+
+    // VSA tests are no longer run from here. addTest requires its root module to
+    // carry a known target, and a module exported by a dependency does not: it
+    // takes its target from whatever compiles it. Rebuilding one locally from
+    // the dependency's source would mean re-declaring that package's own
+    // imports here and testing somebody else's code from the outside.
+    //
+    // They are not lost, which is the part that matters. gHashTag/zig-hdc runs
+    // `zig build test` over exactly this module in its own CI, on 0.15.2 --
+    // the version this repository targets -- so the tests execute where the
+    // code lives and against the compiler that will consume it.
 
     // Queen API tests
     const queen_api_tests = b.addTest(.{
@@ -207,7 +245,7 @@ pub fn build(b: *std.Build) void {
     // Benchmark tests
     const bench_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("benchmarks/benchmark_test.zig"),
+            .root_source_file = b.path("tests/benchmarks/benchmarks/benchmark_test.zig"),
             .target = target,
             .optimize = .ReleaseFast,
             .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
@@ -348,7 +386,7 @@ pub fn build(b: *std.Build) void {
     const bench_core = b.addExecutable(.{
         .name = "bench-core",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("benchmarks/bench_core.zig"),
+            .root_source_file = b.path("tests/benchmarks/benchmarks/bench_core.zig"),
             .target = target,
             .optimize = .ReleaseFast,
             .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
@@ -364,7 +402,7 @@ pub fn build(b: *std.Build) void {
     const bench_compress = b.addExecutable(.{
         .name = "bench-compress",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("benchmarks/bench_compression.zig"),
+            .root_source_file = b.path("tests/benchmarks/benchmarks/bench_compression.zig"),
             .target = target,
             .optimize = .ReleaseFast,
         }),
@@ -1145,12 +1183,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // VSA module for TRI (moved up: needed by tvc_corpus_mod and fluent CLI)
-    const vsa_tri = b.createModule(.{
-        .root_source_file = b.path("src/vsa.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // VSA module for TRI (needed by tvc_corpus_mod and fluent CLI), now the
+    // migrated module rather than a path to a file that is not here.
+    const vsa_tri = hdc_vsa;
     // TVC Corpus module for TRI (moved up: needed by fluent CLI and hybrid chat)
     const tvc_corpus_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
@@ -1810,7 +1845,7 @@ pub fn build(b: *std.Build) void {
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/hslm/root.zig"),
+            .root_source_file = b.path("external/zig-hslm/src/root.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -2146,7 +2181,7 @@ pub fn build(b: *std.Build) void {
         const photon_demo = b.addExecutable(.{
             .name = "photon-demo",
             .root_module = b.createModule(.{
-                .root_source_file = b.path("src/vsa/photon_demo.zig"),
+                .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_demo.zig"),
                 .target = target,
                 .optimize = optimize,
             }),
@@ -2171,7 +2206,7 @@ pub fn build(b: *std.Build) void {
         const photon_immersive = b.addExecutable(.{
             .name = "photon-immersive",
             .root_module = b.createModule(.{
-                .root_source_file = b.path("src/vsa/photon_immersive.zig"),
+                .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_immersive.zig"),
                 .target = target,
                 .optimize = optimize,
             }),
@@ -2196,7 +2231,7 @@ pub fn build(b: *std.Build) void {
     const trinity_canvas = b.addExecutable(.{
         .name = "trinity-canvas",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa/photon_trinity_canvas.zig"),
+            .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_trinity_canvas.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -2281,7 +2316,7 @@ pub fn build(b: *std.Build) void {
 
         const wasm_root = b.createModule(.{
             // ONE SOURCE OF TRUTH: same file as native build, with is_emscripten gates
-            .root_source_file = b.path("src/vsa/photon_trinity_canvas.zig"),
+            .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_trinity_canvas.zig"),
             .target = target,
             .optimize = optimize,
             .link_libc = true,
@@ -2360,7 +2395,7 @@ pub fn build(b: *std.Build) void {
     const photon_terminal = b.addExecutable(.{
         .name = "photon-terminal",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vsa/photon_terminal.zig"),
+            .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_terminal.zig"),
             .target = target,
             .optimize = optimize,
         }),

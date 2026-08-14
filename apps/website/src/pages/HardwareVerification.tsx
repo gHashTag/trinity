@@ -7,6 +7,11 @@ import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { THEOREMS, SCIENCE_INTRO_EN, SCIENCE_INTRO_RU } from '../data/verificationScience'
+import { DELIVERY_TIERS, TIERS_LEDE } from '../data/verificationTiers'
+import SelfServeRun from '../components/SelfServeRun'
+import ExampleReport from '../components/ExampleReport'
+import ConformanceEvidence from '../components/ConformanceEvidence'
+import SignalHealth from '../components/SignalHealth'
 
 const REQUEST_URL = 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml'
 
@@ -85,17 +90,35 @@ const DELIVERABLES = [
   },
 ]
 
+/* Ставки привязаны к публичным рыночным ориентирам, а не назначены на глаз.
+   Расчётная база: инженеро-день независимой верификации, помноженный на реальный
+   объём работы каждого уровня. Ориентиры перечислены в PRICING_NOTE ниже. */
 const TIERS = [
-  { name: 'Single core', price: '$300', body: 'One module or IP core: bit-exact check, timing, resources, report.' },
-  { name: 'Block', price: '$800', body: 'A full block with multiple cores, integration checks and a written analysis.' },
-  { name: 'Tape-out ready', price: '$2 000', body: 'Full verification pass, latch-free/timing sign-off and a review against your target process.' },
-  { name: 'Retainer', price: '$1–3k / mo', body: 'Continuous regression on real hardware for your repository, on every release.' },
+  { name: 'Single core', price: 'from $2 500', body: 'One module or IP core: bit-exact check against an independent reference model, timing, resources, signed report. Typically 4–6 engineer-days.' },
+  { name: 'Block', price: 'from $9 000', body: 'A subsystem of several cores: integration checks, cross-module corner cases and a written analysis. Typically 14–30 engineer-days.' },
+  { name: 'Tape-out ready', price: 'from $35 000', body: 'Full verification pass, latch-free and timing sign-off, review against your target process. Less than the cost of one MPW slot plus a re-spin.' },
+  { name: 'Retainer', price: '$8–20k / mo', body: 'Continuous regression on live hardware for your repository, on every release — roughly half to one dedicated verification engineer.' },
+]
+
+/* Внешние ориентиры, по которым посчитан прайс. Каждое число — со ссылкой,
+   чтобы покупатель мог проверить, что цена стоит на рынке, а не в воздухе. */
+const PRICING_NOTE = {
+  en: 'Rates are anchored to public market figures, not set by feel: independent audit work bills at $3 500 per engineer-day and $20–25k per engineer-week; a contract senior verification engineer is $75–90/hour; one SKY130 MPW slot alone is $14 950; and 28 nm shuttle area runs €11 300/mm². Verification is 70–80% of a project. The first module is free, so nothing is owed before there is a result.',
+  ru: 'Ставки привязаны к публичным рыночным числам, а не назначены на глаз: независимый аудит стоит $3 500 за инженеро-день и $20–25k за инженеро-неделю; контрактный senior-верификатор — $75–90/час; один MPW-слот на SKY130 сам по себе — $14 950; площадь на 28 нм — €11 300/мм². На верификацию уходит 70–80% проекта. Первый модуль бесплатный, так что до результата вы ничего не должны.',
+}
+
+const PRICING_SOURCES: [string, string][] = [
+  ['$3 500 / инженеро-день · $20–25k / инженеро-неделя — независимый аудит', 'https://www.7blocklabs.com/blog/smart-contract-audit-cost-range-2026-and-trail-of-bits-smart-contract-audit-cost-benchmarks'],
+  ['$75–90 / час — контракт senior DV', 'https://www.dice.com/jobs/q-design+verification+engineer-jobs'],
+  ['$14 950 — один MPW-слот на SKY130', 'https://chipfoundry.io/faqs'],
+  ['70–80% проекта — доля верификации', 'https://anysilicon.com/the-ultimate-guide-to-asic-verification/'],
+  ['$85 000 / год — Arm Flexible Access, Standard Tier', 'https://www.arm.com/products/flexible-access'],
 ]
 
 const PROOF = [
   ['32,252 LUT · 0 DSP48', 'A GF16 4×4 matmul that maps into Artix-7 fabric with no hard multipliers at all — 21,223 LUTs if the 64 DSP blocks are allowed. Combinational, 0 latches.'],
-  ['100% held-out', 'A neural network that trains itself on the FPGA — bit-exact from spec to silicon.'],
-  ['SKY130 silicon', 'Taped out through Tiny Tapeout: GDS, gate-level test and precheck passed.'],
+  ['100% held-out', 'A neural network that trains itself on the FPGA — bit-exact from specification to FPGA.'],
+  ['SKY130: submitted', 'Taped out through Tiny Tapeout: GDS, gate-level test and precheck passed. The die is at the fab; no measurement on silicon is claimed.'],
   ['83 formats', 'Published bit-exact conformance vectors for FP8, BF16, MXFP4 and microscaling.'],
 ]
 
@@ -132,6 +155,43 @@ const RELATED_RU = [
   { href: '#/course', title: 'Научиться самому', body: 'Восемь модулей от пустого тулчейна до сети, которая учится на самом кристалле.' },
 ]
 
+const PAGE_TOC = {
+  en: [
+    ['#self-serve', 'Run it yourself'],
+    ['#report', 'Example report'],
+    ['#conformance', 'Independent evidence'],
+    ['#signal-health', 'Signal health'],
+    ['#method', 'The method'],
+    ['#start', 'Start a request'],
+    ['#deliverables', 'The report'],
+    ['#workflow', 'How it works'],
+    ['#pricing', 'Pricing'],
+    ['#proof', 'Track record'],
+    ['#conditions', 'Working together'],
+    ['#limits', 'Scope and limits'],
+    ['#contact', 'Contact'],
+    ['#tiers', 'Delivery tiers'],
+    ['#science', 'The science'],
+  ],
+  ru: [
+    ['#self-serve', 'Запустить самому'],
+    ['#report', 'Пример отчёта'],
+    ['#conformance', 'Независимые доказательства'],
+    ['#signal-health', 'Надёжность сигнала'],
+    ['#method', 'Метод'],
+    ['#start', 'Начать заявку'],
+    ['#deliverables', 'Содержание отчёта'],
+    ['#workflow', 'Как это работает'],
+    ['#pricing', 'Стоимость'],
+    ['#proof', 'Что уже проверено'],
+    ['#conditions', 'Как работаем'],
+    ['#limits', 'Границы метода'],
+    ['#contact', 'Контакты'],
+    ['#tiers', 'Уровни работ'],
+    ['#science', 'Научная основа'],
+  ],
+} as const
+
 // Russian copy. Other locales fall back to English rather than showing gaps.
 const RU = {
   autoTitle: 'Начать — без переписки',
@@ -151,7 +211,7 @@ const RU = {
     ['$0', 'за первый модуль'],
   ] as [string, string][],
   eyebrow: 'Верификация на живом железе',
-  h1: 'Не симуляция. Измерено на живом кремнии.',
+  h1: 'Не симуляция. Измерено на живой FPGA-плате.',
   lede: 'Присылаете RTL — я прогоняю его на настоящем Xilinx Artix-7 и возвращаю подписанный отчёт: побитовое соответствие независимой эталонной модели, достигнутая частота, ресурсы и битстрим. Всё на полностью открытом флоу, поэтому любую цифру вы можете перепроверить сами.',
   ctaRun: 'Запросить прогон',
   ctaSample: 'Посмотреть образец отчёта',
@@ -171,24 +231,24 @@ const RU = {
   ],
   pricingTitle: 'Стоимость',
   tiers: [
-    { name: 'Одно ядро', price: '$300', body: 'Один модуль или IP-ядро: побитовая проверка, тайминг, ресурсы, отчёт.' },
-    { name: 'Блок', price: '$800', body: 'Блок из нескольких ядер, проверка интеграции и письменный разбор.' },
-    { name: 'Готовность к тейпауту', price: '$2 000', body: 'Полный проход верификации, latch-free и закрытие тайминга, ревью под ваш процесс.' },
-    { name: 'Абонемент', price: '$1–3k / мес', body: 'Постоянные регрессии на реальном железе для вашего репозитория, на каждый релиз.' },
+    { name: 'Одно ядро', price: 'от $2 500', body: 'Один модуль или IP-ядро: побитовая проверка против независимой эталонной модели, тайминг, ресурсы, подписанный отчёт. Обычно 4–6 инженеро-дней.' },
+    { name: 'Блок', price: 'от $9 000', body: 'Подсистема из нескольких ядер: проверка интеграции, краевые случаи на стыках модулей и письменный разбор. Обычно 14–30 инженеро-дней.' },
+    { name: 'Готовность к тейпауту', price: 'от $35 000', body: 'Полный проход верификации, latch-free и закрытие тайминга, ревью под ваш процесс. Дешевле одного MPW-слота вместе с пересдачей.' },
+    { name: 'Абонемент', price: '$8–20k / мес', body: 'Постоянные регрессии на живом железе для вашего репозитория, на каждый релиз — примерно от половины до одного выделенного верификатора.' },
   ],
   proofTitle: 'Почему числам можно верить',
-  proofLede: 'Этот пайплайн я построил для собственной работы — тернарный формат чисел прошёл путь от статьи на arXiv до работающего кремния, с побитовой проверкой на каждом шаге.',
+  proofLede: 'Этот пайплайн я построил для собственной работы — тернарный формат чисел прошёл путь от статьи на arXiv до размещённого и разведённого Artix-7, с побитовой проверкой на каждом шаге.',
   proof: [
     ['32 252 LUT · 0 DSP48', 'Матричный умножитель GF16 4×4 умещается в логику Artix-7 вообще без аппаратных умножителей — 21 223 LUT, если разрешить 64 DSP-блока. Комбинационный, 0 защёлок.'],
-    ['100% held-out', 'Нейросеть, обучающаяся прямо на FPGA — путь спека→кремний побитово точен.'],
-    ['Кремний SKY130', 'ASIC через TinyTapeout: GDS ✅ · gate-level тест ✅ · precheck ✅.'],
+    ['100% held-out', 'Нейросеть, обучающаяся прямо на FPGA — путь спецификация→FPGA побитово точен.'],
+    ['SKY130: отправлен', 'ASIC через TinyTapeout: GDS, gate-level тест и precheck пройдены; кристалл отправлен на изготовление, измерений на кремнии нет.'],
     ['83 формата', 'Опубликованные побитовые векторы соответствия для FP8, BF16, MXFP4 и microscaling.'],
   ],
   practicalsTitle: 'Как мы работаем',
   practicals: [
     { title: 'Сроки', body: 'Одно ядро — обычно 3–5 рабочих дней. По крупным блокам дата называется до начала работ. Если дедлайн горит — скажите сразу.' },
     { title: 'Ваш RTL остаётся вашим', body: 'Исходники используются только для вашего отчёта, никогда не публикуются и не переиспользуются, удаляются по запросу. NDA — пожалуйста, до отправки чего-либо.' },
-    { title: 'Оплата', body: 'Инвойс в USD или EUR либо стейблкоин — как вам удобнее. Оплата по факту отчёта; первый модуль бесплатный, так что до результата вы ничего не должны.' },
+    { title: 'Оплата', body: 'Инвойс в USD или EUR либо стейблкоин — как вам удобнее. Оплата по факту отчёта; первый модуль бесплатный, так что до результата вы ничего не должны. Крупные уровни — тремя частями: старт, промежуточный отчёт, приёмка.' },
     { title: 'Что прислать', body: 'RTL или спецификацию, определение правильного поведения (эталонные выходы, алгоритм или статью), целевую частоту и ограничения. Этого обычно достаточно для старта.' },
   ],
   limitsTitle: 'Чем это не является',
@@ -205,10 +265,49 @@ const RU = {
 }
 
 
+
+function TierSection({ lang }: { lang: string }) {
+  const ru = lang === 'ru'
+  const L = (x: { en: string; ru: string }) => (ru ? x.ru : x.en)
+  return (
+    <div id="tiers" className="verification-anchor" style={{ width: '100%', maxWidth: '900px', margin: '2.5rem auto 0', textAlign: 'left' }}>
+      <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
+        {ru ? 'Что именно вы получите' : 'What you actually get'}
+      </h2>
+      <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, margin: '0 0 1.4rem', maxWidth: '64ch' }}>
+        {L(TIERS_LEDE)}
+      </p>
+      {DELIVERY_TIERS.map((t) => (
+        <div key={t.id} className="premium-card" style={{ textAlign: 'left', marginBottom: '0.9rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <h3 style={{ margin: 0, fontSize: 'clamp(1rem, 2.7vw, 1.18rem)' }}>
+              {L(t.name)}
+              {t.automated && (
+                <span style={{ marginLeft: '0.6rem', fontSize: '0.68rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', border: '1px solid var(--accent)', borderRadius: '999px', padding: '2px 8px' }}>
+                  {ru ? 'кнопкой выше' : 'the button above'}
+                </span>
+              )}
+            </h3>
+            <code style={{ fontSize: '0.76rem', opacity: 0.8 }}>{L(t.price)} · {L(t.turnaround)}</code>
+          </div>
+          <ul style={{ paddingLeft: '1.1rem', margin: '0.8rem 0 0' }}>
+            {(ru ? t.delivers.ru : t.delivers.en).map((d) => (
+              <li key={d} style={{ fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '0.45rem' }}>{d}</li>
+            ))}
+          </ul>
+          <p style={{ fontSize: '0.83rem', lineHeight: 1.6, margin: '0.9rem 0 0', opacity: 0.75, borderTop: '1px solid var(--border)', paddingTop: '0.6rem' }}>
+            <strong>{ru ? 'Что уже сделано: ' : 'Track record: '}</strong>{L(t.track)}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ScienceSection({ lang }: { lang: string }) {
   const ru = lang === 'ru'
   return (
-    <div style={{ width: '100%', maxWidth: '900px', margin: '3rem auto 0', textAlign: 'left' }}>
+    <div id="science" className="verification-anchor" style={{ width: '100%', maxWidth: '900px', margin: '3rem auto 0', textAlign: 'left' }}>
       <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.6rem' }}>
         {ru ? 'На чём это стоит' : 'What this rests on'}
       </h2>
@@ -243,13 +342,13 @@ export default function HardwareVerification() {
   const { lang } = useI18n()
   const ru = lang === 'ru'
   const c = ru ? RU : null
-  usePageMeta("Hardware-verified RTL", "Send your RTL and get it measured on a live Xilinx Artix-7: bit-exact conformance against an independent model, timing, resources and the bitstream. From $300, first module free.")
+  usePageMeta("Hardware-verified RTL", "Send your RTL and get it measured on a live Xilinx Artix-7: bit-exact conformance against an independent model, timing, resources and the bitstream. From $2 500 per core, first module free.")
   return (
     <main>
       <QuantumBackground />
       <Navigation />
 
-      <section id="verification" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
+      <section id="verification" className="subpage-layout" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
         {/* Hero */}
@@ -264,7 +363,7 @@ export default function HardwareVerification() {
             {c ? c.eyebrow : 'Hardware-verified RTL'}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
-            {c ? c.h1 : 'Not simulated. Measured on live silicon.'}
+            {c ? c.h1 : 'Not simulated. Measured on a live FPGA board.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: 0, maxWidth: '62ch', marginLeft: 'auto', marginRight: 'auto' }}>
             {c ? c.lede : (
@@ -277,15 +376,13 @@ export default function HardwareVerification() {
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.75rem' }}>
             <motion.a
-              href={REQUEST_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#self-serve"
               className="btn"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               style={{ padding: '12px 28px', fontSize: '0.9rem' }}
             >
-              {c ? c.ctaRun : 'Request a run'}
+              {c ? 'Запустить бесплатно' : 'Run it free'}
             </motion.a>
             <motion.a
               href={CONTACT.sampleReport}
@@ -317,10 +414,52 @@ export default function HardwareVerification() {
           </p>
         </motion.div>
 
+        <nav className="verification-toc verification-anchor" aria-label={ru ? 'Оглавление страницы' : 'Page contents'}>
+          <strong>{ru ? 'На этой странице' : 'On this page'}</strong>
+          <div className="verification-toc__links">
+            {(ru ? PAGE_TOC.ru : PAGE_TOC.en).map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                onClick={(event) => {
+                  event.preventDefault()
+                  document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </nav>
+
+        {/* The thing that actually runs, before anything the reader has to ask
+            me for. Everything below this is either a deeper tier or an
+            explanation of what this one does not establish. */}
+        <SelfServeRun />
+
+        {/* Paste that, get this. Extracted from a real run rather than written,
+            so it cannot drift from what the tool actually says. */}
+        <div id="report" className="verification-anchor">
+          <ExampleReport />
+        </div>
+
+        {/* The tier above the free one, shown rather than described -- including
+            the run where the adjudication went against my own reference model. */}
+        <div id="conformance" className="verification-anchor">
+          <ConformanceEvidence />
+        </div>
+
+        {/* The same check, pointed at me. It is the worst number on this page
+            and it is mine, which is the only reason the rest is worth reading. */}
+        <div id="signal-health" className="verification-anchor">
+          <SignalHealth />
+        </div>
+
         {/* The method, drawn. Placed before the deliverables because every item in
             that list depends on the reader believing this one idea. */}
         <motion.div
-          className="premium-card"
+          id="method"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -336,7 +475,8 @@ export default function HardwareVerification() {
         {/* How a request actually starts. Named plainly because "get in touch"
             is the step most people never take. */}
         <motion.div
-          className="premium-card"
+          id="start"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -367,6 +507,8 @@ export default function HardwareVerification() {
 
         {/* What you get */}
         <motion.div
+          id="deliverables"
+          className="verification-anchor"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -386,7 +528,8 @@ export default function HardwareVerification() {
 
         {/* How it works */}
         <motion.div
-          className="premium-card"
+          id="workflow"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -403,6 +546,8 @@ export default function HardwareVerification() {
 
         {/* Pricing */}
         <motion.div
+          id="pricing"
+          className="verification-anchor"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -419,11 +564,29 @@ export default function HardwareVerification() {
               </div>
             ))}
           </div>
+          {/* Ориентиры под ценой: покупатель должен видеть, из чего она посчитана. */}
+          <p style={{ fontSize: '0.88rem', lineHeight: 1.65, opacity: 0.82, marginTop: '1.1rem', textAlign: 'left', marginLeft: 0, maxWidth: '78ch' }}>
+            {ru ? PRICING_NOTE.ru : PRICING_NOTE.en}
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1.1rem', marginTop: '0.7rem' }}>
+            {PRICING_SOURCES.map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
         </motion.div>
 
         {/* Proof */}
         <motion.div
-          className="premium-card"
+          id="proof"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -433,7 +596,7 @@ export default function HardwareVerification() {
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>{c ? c.proofTitle : 'Why trust the numbers'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, marginTop: 0 }}>
             This pipeline was built for my own research — a ternary floating-point format taken from
-            an arXiv paper all the way to working silicon, verified bit-exact at every step.
+            an arXiv paper all the way to a placed and routed Artix-7, verified bit-exact at every step.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
             {(c ? c.proof : PROOF).map(([metric, note]) => (
@@ -456,6 +619,8 @@ export default function HardwareVerification() {
         {/* Related pages. The header dock only carries one link to this service,
             so licensing, evidence and the course are reached from here. */}
         <motion.div
+          id="related"
+          className="verification-anchor"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -477,6 +642,8 @@ export default function HardwareVerification() {
 
         {/* Practicals */}
         <motion.div
+          id="conditions"
+          className="verification-anchor"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -496,7 +663,8 @@ export default function HardwareVerification() {
 
         {/* Scope & limits */}
         <motion.div
-          className="premium-card"
+          id="limits"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -516,7 +684,8 @@ export default function HardwareVerification() {
 
         {/* Contact */}
         <motion.div
-          className="premium-card"
+          id="contact"
+          className="verification-anchor premium-card"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -543,7 +712,8 @@ export default function HardwareVerification() {
         </motion.div>
       </section>
 
-      <ScienceSection lang={lang} />
+      <TierSection lang={lang} />
+        <ScienceSection lang={lang} />
 
       <Footer />
     </main>

@@ -19,7 +19,7 @@ const LINKS = {
 const PHOTO = 'https://avatars.githubusercontent.com/u/6774813?v=4'
 
 export default function AboutAuthor() {
-  usePageMeta("About the author", "Dmitrii Vasilev — hardware-AI and FPGA/RTL engineer, creator of the GF-T ternary number format, from specification through RTL to silicon.")
+  usePageMeta("About the author", "Dmitrii Vasilev — hardware-AI and FPGA/RTL engineer, author of the GF-T ternary number format, from specification through RTL to a board.")
   const { t } = useI18n()
   const a = t.about || {}
 
@@ -28,16 +28,19 @@ export default function AboutAuthor() {
       <QuantumBackground />
       <Navigation />
 
-      <section id="about" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
+      <section id="about" className="subpage-layout" style={{ maxWidth: '900px', alignItems: 'stretch' }}>
         <div className="radial-glow" style={{ opacity: 0.2, background: 'radial-gradient(circle at center, rgba(0, 255, 136, 0.08) 0%, transparent 60%)' }} />
 
-        {/* Header: photo + name + headline */}
+        {/* Header: photo + name + headline.
+            `.premium-card` sets flex-direction: column, so a bare display:flex below
+            still stacked the photo above the name and left a void under the buttons.
+            The row has to be asked for explicitly; wrap keeps the mobile stack. */}
         <motion.div
           className="premium-card"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          style={{ display: 'flex', gap: 'clamp(1.5rem, 5vw, 3rem)', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2rem' }}
+          style={{ display: 'flex', flexDirection: 'row', gap: 'clamp(1.5rem, 5vw, 3rem)', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-start', marginBottom: '2rem' }}
         >
           <motion.img
             src={PHOTO}
@@ -49,11 +52,11 @@ export default function AboutAuthor() {
             style={{ width: 'clamp(110px, 18vw, 150px)', height: 'clamp(110px, 18vw, 150px)', borderRadius: '50%', border: '1px solid var(--border)' }}
           />
           <div style={{ flex: '1 1 320px' }}>
-            <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.6rem)', margin: '0 0 0.5rem' }}>
+            <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.6rem)', margin: '0 0 0.5rem', textAlign: 'left' }}>
               {a.name || 'Dmitrii Vasilev'}
             </h1>
-            <p style={{ color: 'var(--accent)', fontSize: 'clamp(0.9rem, 2.5vw, 1.05rem)', fontWeight: 500, lineHeight: 1.5, margin: 0, maxWidth: 'none' }}>
-              {a.role || 'Hardware-AI & FPGA/RTL Engineer · Creator of GF-T ternary float format · spec → RTL → silicon · ML systems & Edge AI'}
+            <p style={{ color: 'var(--accent)', fontSize: 'clamp(0.9rem, 2.5vw, 1.05rem)', fontWeight: 500, lineHeight: 1.5, margin: 0, maxWidth: 'none', textAlign: 'left' }}>
+              {a.role || 'Hardware-AI & FPGA/RTL Engineer · Author of the GF-T ternary float format · spec → RTL → FPGA · ML systems & Edge AI'}
             </p>
 
             {/* CTA links */}
@@ -152,15 +155,15 @@ export default function AboutAuthor() {
 
 // English defaults (also the fallback content for locales without an `about` block)
 const DEFAULT_BIO = [
-  'I build the full stack of efficient AI compute — from the number format and the RTL that runs it, to bit-exact verification and silicon. I am the creator of GF-T, a ternary floating-point format measured at 2.4–6.4× against tapered formats on a ternary network (18 formats, one path, XC7A200T), and of the wider GoldenFloat family (GF-T8/16/32; φ-derived GF4→GF1024).',
-  'I took a novel numeric format from an arXiv paper to a live Xilinx Artix-7 and a SKY130 ASIC — on a fully open-source flow (Yosys, nextpnr, prjxray), with no vendor tools. My work centres on the chain spec → RTL → verification → silicon, where every RTL node is checked bit-for-bit against an independent Python golden model, catching spec/RTL divergence before synthesis.',
+  'I build the full stack of efficient AI compute — from the number format and the RTL that runs it to bit-exact verification on a board. I am the author of GF-T, a ternary floating-point format, and of the wider GoldenFloat family (GF-T8/16/32; φ-derived GF4→GF1024), published as a catalog of 83 formats with bit-exact conformance vectors.',
+  'I took a novel numeric format from an arXiv paper to a live Xilinx Artix-7 (ALINX AX7203, XC7A200T) on a fully open-source flow — Yosys, nextpnr, prjxray, no vendor tools. A SKY130 design has been submitted for fabrication through Tiny Tapeout; there are no measurements on a die. My work centres on the chain spec → RTL → verification → board, where every RTL node is checked bit-for-bit against an independent Python golden model, catching spec/RTL divergence before synthesis.',
   'Before hardware, I spent 10+ years building and teaching software — AI agents and multi-agent systems, React Native, and Web3. I am open to remote / contract work worldwide (UTC+7) across hardware-AI, FPGA / RTL / verification, ML systems, and edge AI.',
 ]
 
 const DEFAULT_ACHIEVEMENTS = [
-  'On-FPGA neural training — verified primitives that train themselves on-chip: 100% held-out accuracy, with the whole spec → silicon path bit-exact.',
+  'On-FPGA neural training — primitives that train on the board itself, with the whole spec → RTL → board path checked bit-for-bit against the golden model.',
   'GF16 4×4 matmul — maps into Xilinx Artix-7 fabric with 0 DSP48 and 0 latches: 32,252 LUTs, or 21,223 with the hard multipliers allowed.',
-  'Silicon confirmed — TinyTapeout SKY130 ASIC: GDS, gate-level test, and precheck all passing.',
+  'Tiny Tapeout SKY130 — the design has been submitted for fabrication: GDS, gate-level test, and precheck all passing. No measurements on a die yet.',
   'Per-node bit-exact verification — every RTL node checked against an independent Python golden model (iverilog + KAT vectors), catching spec/RTL divergence before synthesis.',
   'tri-net — a full ternary network stack (133 .t27 specs): GF16 PHY, a BPSK modem over AD9361, mesh routing, and AEAD crypto — proven device-to-device over the air.',
 ]
