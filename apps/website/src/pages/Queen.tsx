@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useI18n } from '../i18n/context'
 import './Queen.css'
 
 // The queen's panels read a backend that this site does not contain. t27.ai is
@@ -15,6 +16,46 @@ import './Queen.css'
 const ENV_API = (import.meta.env.VITE_QUEEN_API as string | undefined)?.replace(/\/+$/, '')
 const IS_LOCAL = typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
 const QUEEN_API = ENV_API ?? (IS_LOCAL ? 'http://localhost:8080' : null)
+
+const RU = {
+  brainOfflineTitle: 'Мозг не подключён',
+  offlineP1: 'Эта страница — лицо королевы. Её мозг — отдельный сервис, который отвечает на',
+  offlineP2: 'Этот сайт размещён как статический и не обслуживает ни один из этих эндпоинтов.',
+  tried: 'Проверен адрес',
+  noAddress: 'Адрес не настроен. Соберите страницу с',
+  noAddressEnd: ', чтобы направить её к работающему мозгу.',
+  offlineNote: 'Ничто ниже не работает в реальном времени. Пустые панели выглядели бы так же, как у исправной королевы, которой нечего сообщить, поэтому страница прямо указывает, какой это случай.',
+  liveness: 'Доступность',
+  brain: 'Мозг',
+  address: 'Адрес',
+  notConfigured: 'не настроен',
+  healthP: ' — единственный эндпоинт, на который мозг отвечает без токена, и он возвращает только признак доступности — без счётчиков и времени работы. Любая более конкретная информация здесь была бы выдумана, а не измерена.',
+  selfImprovement: 'Самоулучшение',
+  improvementP1: 'Исходная панель королевы запускала цикл через',
+  improvementP2: '. Мозг не реализует этот маршрут, поэтому элемент управления не показан: он всегда возвращал бы ошибку.',
+  improvementP3: 'Чтобы восстановить его, нужно добавить маршрут в',
+  improvementP4: '; это изменение мозга, а не этой страницы.',
+  loading: 'Загрузка',
+  containers: 'Контейнеры',
+  containersGenitive: 'контейнеров',
+  sessions: 'Сессии',
+  sessionsGenitive: 'сессий',
+  requiresToken: 'Требуется токен.',
+  requiresTokenEnd: ' требует аутентификации — эта страница не хранит учётных данных и не запрашивает их.',
+  no: 'Нет',
+  noBackendError: 'серверная часть не настроена',
+  failedFetch: 'не удалось выполнить запрос',
+  expectedJson: 'ожидался JSON, получен ',
+  kingdomBrain: '🧠 Мозг (ветвь I)',
+  kingdomBody: '💪 Тело (ветвь II)',
+  kingdomSpirit: '🔮 Дух (ветвь III)',
+  title: '👑 Queen Trinity',
+  subtitle: 'Самоулучшающийся контейнер · φ² + 1/φ² = 3',
+  body: '💪 Тело',
+  bodyP: 'Телесная ветвь — это аппаратная ветвь: бинарная FPGA ALINX AX7203 (Xilinx Artix-7 XC7A200T). У неё пока нет эндпоинта в мозге королевы, поэтому здесь нечего читать.',
+  spirit: '🔮 Дух',
+  spiritP: 'Духовная ветвь — это корпус и его утверждения. У неё пока нет эндпоинта в мозге королевы, поэтому здесь нечего читать.',
+}
 
 type ProbeState = 'loading' | 'ok' | 'unreachable'
 
@@ -92,23 +133,34 @@ interface Session {
   status?: string
 }
 
+function translatedProbeError(error: string | null, c: typeof RU | null) {
+  if (!c || !error) return error
+  if (error === 'no backend configured') return c.noBackendError
+  if (error === 'Failed to fetch') return c.failedFetch
+  if (error.startsWith('expected JSON, got ')) return `${c.expectedJson}${error.slice('expected JSON, got '.length)}`
+  return error
+}
+
 function BrainOffline({ reason }: { reason: string | null }) {
+  const { lang } = useI18n()
+  const c = lang === 'ru' ? RU : null
+  const displayReason = translatedProbeError(reason, c)
+
   return (
     <div className="queen-offline">
-      <h3>The brain is not connected</h3>
+      <h3>{c ? c.brainOfflineTitle : 'The brain is not connected'}</h3>
       <p>
-        This page is the queen's face. Her brain is a separate service that answers{' '}
-        <code>/health</code>, <code>/api/containers</code> and <code>/api/sessions</code>.
-        This site is static hosting and serves none of them.
+        {c ? c.offlineP1 : "This page is the queen's face. Her brain is a separate service that answers"}{' '}
+        <code>/health</code>, <code>/api/containers</code> {c ? 'и' : 'and'} <code>/api/sessions</code>.{' '}
+        {c ? c.offlineP2 : 'This site is static hosting and serves none of them.'}
       </p>
       <p className="queen-offline-detail">
         {QUEEN_API
-          ? <>Tried <code>{QUEEN_API}</code> — {reason}</>
-          : <>No address configured. Build with <code>VITE_QUEEN_API=https://your-brain.example</code> to point this page at a running brain.</>}
+          ? <>{c ? c.tried : 'Tried'} <code>{QUEEN_API}</code> — {displayReason}</>
+          : <>{c ? c.noAddress : 'No address configured. Build with'} <code>VITE_QUEEN_API=https://your-brain.example</code>{c ? c.noAddressEnd : ' to point this page at a running brain.'}</>}
       </p>
       <p className="queen-offline-note">
-        Nothing below is live. Empty panels would have looked the same as a healthy
-        queen with nothing to report, so the page says which one it is.
+        {c ? c.offlineNote : 'Nothing below is live. Empty panels would have looked the same as a healthy queen with nothing to report, so the page says which one it is.'}
       </p>
     </div>
   )
@@ -125,43 +177,43 @@ function MetricCard({ label, value, status }: { label: string; value: string | n
 }
 
 function StatusDashboard({ health }: { health: Probe<HealthResponse> }) {
+  const { lang } = useI18n()
+  const c = lang === 'ru' ? RU : null
   const dash = '—'
   return (
     <section className="queen-card">
-      <h2>👑 Liveness</h2>
+      <h2>{c ? `👑 ${c.liveness}` : '👑 Liveness'}</h2>
       <div className="queen-metrics">
         <MetricCard
-          label="Brain"
+          label={c ? c.brain : 'Brain'}
           value={health.state === 'ok' ? (health.data?.status ?? 'ok') : dash}
           status={health.state === 'ok' ? 'active' : undefined}
         />
-        <MetricCard label="Address" value={QUEEN_API ?? 'not configured'} />
+        <MetricCard label={c ? c.address : 'Address'} value={QUEEN_API ?? (c ? c.notConfigured : 'not configured')} />
       </div>
       <p className="queen-sub" style={{ marginTop: '1rem', marginBottom: 0 }}>
-        <code>/health</code> is the only endpoint the brain answers without a token,
-        and it returns liveness alone — no counters, no uptime. Anything more
-        specific here would be invented rather than measured.
+        <code>/health</code>{c ? c.healthP : ' is the only endpoint the brain answers without a token, and it returns liveness alone — no counters, no uptime. Anything more specific here would be invented rather than measured.'}
       </p>
     </section>
   )
 }
 
 function ImprovementPanel() {
+  const { lang } = useI18n()
+  const c = lang === 'ru' ? RU : null
+
   // The button used to POST /api/improve. That route does not exist in
   // src/background_agent/server.zig -- the brain's whole surface is /health,
   // /api/containers and /api/sessions. A button that always fails is worse
   // than no button, so this states the gap instead of pretending at it.
   return (
     <section className="queen-card">
-      <h2>🔄 Self-improvement</h2>
+      <h2>{c ? `🔄 ${c.selfImprovement}` : '🔄 Self-improvement'}</h2>
       <p className="queen-sub">
-        The queen's original panel triggered a cycle through <code>POST /api/improve</code>.
-        The brain does not implement that route, so the control is not shown: it could
-        only ever have returned an error.
+        {c ? c.improvementP1 : "The queen's original panel triggered a cycle through"}{' '}<code>POST /api/improve</code>{c ? c.improvementP2 : '. The brain does not implement that route, so the control is not shown: it could only ever have returned an error.'}
       </p>
       <p className="queen-sub" style={{ marginBottom: 0 }}>
-        Restoring it means adding the route to <code>src/background_agent/server.zig</code>,
-        which is a change to the brain rather than to this page.
+        {c ? c.improvementP3 : 'Restoring it means adding the route to'} <code>src/background_agent/server.zig</code>{c ? c.improvementP4 : ', which is a change to the brain rather than to this page.'}
       </p>
     </section>
   )
@@ -169,6 +221,8 @@ function ImprovementPanel() {
 
 /** The two collections the brain really exposes. Both sit behind a token. */
 function BrainInventory() {
+  const { lang } = useI18n()
+  const c = lang === 'ru' ? RU : null
   const containers = useProbe<Container[]>('/api/containers', 20000)
   const sessions = useProbe<Session[]>('/api/sessions', 20000)
 
@@ -177,14 +231,16 @@ function BrainInventory() {
   const asList = <T,>(p: Probe<T[]>) => (Array.isArray(p.data) ? p.data : [])
 
   const renderState = (p: Probe<unknown>, what: string) => {
-    if (p.state === 'loading') return <p className="queen-sub">Loading {what}…</p>
+    const noun = what === 'containers' ? c?.containersGenitive : c?.sessionsGenitive
+    const error = translatedProbeError(p.error, c)
+    if (p.state === 'loading') return <p className="queen-sub">{c ? `${c.loading} ${noun}…` : `Loading ${what}…`}</p>
     if (p.state === 'unreachable') {
       const locked = p.error === 'HTTP 401'
       return (
         <p className="queen-sub">
           {locked
-            ? <>Requires a token. <code>/api/{what}</code> is authenticated — this page holds no credentials and does not ask for any.</>
-            : <>No {what}: {p.error}</>}
+            ? <>{c ? c.requiresToken : 'Requires a token.'} <code>/api/{what}</code>{c ? c.requiresTokenEnd : ' is authenticated — this page holds no credentials and does not ask for any.'}</>
+            : <>{c ? `${c.no} ${noun}:` : `No ${what}:`} {error}</>}
         </p>
       )
     }
@@ -194,7 +250,7 @@ function BrainInventory() {
   return (
     <>
       <section className="queen-card">
-        <h2>📦 Containers</h2>
+        <h2>{c ? `📦 ${c.containers}` : '📦 Containers'}</h2>
         {renderState(containers, 'containers')}
         <div className="queen-episodes">
           {asList(containers).slice(0, 10).map(c => (
@@ -211,7 +267,7 @@ function BrainInventory() {
       </section>
 
       <section className="queen-card" style={{ marginTop: '1.25rem' }}>
-        <h2>🧵 Sessions</h2>
+        <h2>{c ? `🧵 ${c.sessions}` : '🧵 Sessions'}</h2>
         {renderState(sessions, 'sessions')}
         <div className="queen-episodes">
           {asList(sessions).slice(0, 10).map(s => (
@@ -238,6 +294,9 @@ const KINGDOMS: { key: Kingdom; label: string }[] = [
 ]
 
 export default function Queen() {
+  const { lang } = useI18n()
+  const c = lang === 'ru' ? RU : null
+
   // In the original these three tabs were <Link to="?kingdom=…"> and the state
   // setter was never called, so the highlight sat on "brain" whatever you
   // clicked and nothing read the query string. They are buttons now, and the
@@ -249,8 +308,8 @@ export default function Queen() {
   return (
     <div className="queen-page">
       <header className="queen-header">
-        <h1>👑 Queen Trinity</h1>
-        <p>Self-improving container · φ² + 1/φ² = 3</p>
+        <h1>{c ? c.title : '👑 Queen Trinity'}</h1>
+        <p>{c ? c.subtitle : 'Self-improving container · φ² + 1/φ² = 3'}</p>
       </header>
 
       <nav className="queen-tabs">
@@ -261,7 +320,9 @@ export default function Queen() {
             className={kingdom === k.key ? 'active' : ''}
             aria-pressed={kingdom === k.key}
           >
-            {k.label}
+            {c
+              ? (k.key === 'brain' ? c.kingdomBrain : k.key === 'body' ? c.kingdomBody : c.kingdomSpirit)
+              : k.label}
           </button>
         ))}
       </nav>
@@ -280,20 +341,18 @@ export default function Queen() {
 
       {kingdom === 'body' && (
         <section className="queen-card">
-          <h2>💪 Body</h2>
+          <h2>{c ? c.body : '💪 Body'}</h2>
           <p className="queen-sub">
-            The body is the hardware strand — FPGA fleet and silicon. It has no
-            endpoint on the queen's brain yet, so there is nothing here to read.
+            {c ? c.bodyP : 'The body is the hardware strand — binary FPGA ALINX AX7203 (Xilinx Artix-7 XC7A200T). It has no endpoint on the queen’s brain yet, so there is nothing here to read.'}
           </p>
         </section>
       )}
 
       {kingdom === 'spirit' && (
         <section className="queen-card">
-          <h2>🔮 Spirit</h2>
+          <h2>{c ? c.spirit : '🔮 Spirit'}</h2>
           <p className="queen-sub">
-            The spirit strand is the corpus and its claims. It has no endpoint on
-            the queen's brain yet, so there is nothing here to read.
+            {c ? c.spiritP : "The spirit strand is the corpus and its claims. It has no endpoint on the queen’s brain yet, so there is nothing here to read."}
           </p>
         </section>
       )}
