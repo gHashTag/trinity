@@ -21,8 +21,11 @@
 
 Точки, где этот порядок закреплён и где он разъезжается первым:
 
-- `index.html` — `<title>`, `og:title`, `twitter:title`, `description`,
-  JSON-LD и `#boot h1` (единственное, что видит читатель без JavaScript);
+- `index.html` — `<title>`, `og:title`, `twitter:title`, `description`, JSON-LD;
+- `messages/{en,ru,de,es,zh}.json`, ключ `hero.tag` — именно оттуда плагин
+  `prerenderHero` в `vite.config.ts` собирает блок `#boot` — единственное, что
+  видит читатель без JavaScript и поисковый робот. Правка `#boot` в
+  `index.html` на сборку НЕ влияет: плагин перепишет его целиком;
 - `src/content/tnf.ts` — `hero.eyebrow`, `hero.sub`, `claim.title`;
 - `src/components/sections/tnf/index.tsx` — константа `WORDMARK` в связке;
 - `src/components/Navigation.tsx` — подписи `note` / `noteRu`;
@@ -109,6 +112,12 @@ URL строго вида `http://localhost:4173/index.html?lang=ru#/<route>` �
 коммит. Расписание заявлено раз в 15 минут, наблюдаемый интервал — около часа,
 поэтому читателю честно обещать «в течение часа», а не «через 15 минут», и
 проверять `curl`-ом.
+
+С 14.08.2026 публикатор пишет измеренную задержку в `status/delivery.json`
+(https://t27.ai/status/delivery.json): коммит-источник, время публикации и
+разница в минутах. Первые записи — 11–21 минута, но это был ручной запуск;
+цифру для обещаний брать из этого файла, когда в нём накопится ряд
+автоматических запусков, а не из расписания.
 
 Мерж в `main` этого репозитория сам по себе публикацией не является. Маршрут
 SPA `#/blog/<slug>` отдаёт 200 всегда и доказательством тоже не является —
