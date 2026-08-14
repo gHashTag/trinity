@@ -6,6 +6,7 @@ import ChatMessage from '../components/chat/ChatMessage';
 import ChatInput from '../components/chat/ChatInput';
 import ConnectionStatus from '../components/chat/ConnectionStatus';
 import { sendMessage, clearContext, type ChatResponse } from '../services/chatApi';
+import { useI18n } from '../i18n/context';
 
 interface Message {
   id: number;
@@ -35,6 +36,8 @@ function triggerWave(role: 'user' | 'assistant') {
 }
 
 export default function CosmicChat() {
+  const { t } = useI18n();
+  const c = t.chat;
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextId, setNextId] = useState(1);
@@ -96,7 +99,7 @@ export default function CosmicChat() {
       setMessages(prev => [...prev, {
         id: userId + 1,
         role: 'assistant',
-        content: 'Connection error. Is the Trinity chat server running? (tri serve --chat)',
+        content: c.connectionError,
         source: 'Error',
         confidence: 0,
       }]);
@@ -124,15 +127,15 @@ export default function CosmicChat() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link to="/" style={{ color: '#666', textDecoration: 'none', fontSize: 12, fontFamily: 'monospace' }}>
-            &larr; HOME
+            &larr; {c.home}
           </Link>
-          <ConnectionStatus />
+          <ConnectionStatus labels={{ connected: c.connected, offline: c.offline }} />
         </div>
         <div style={{
           color: '#ffd700', fontSize: 13, fontFamily: 'monospace', letterSpacing: 2,
           textShadow: '0 0 10px rgba(255,215,0,0.3)',
         }}>
-          COSMIC CHAT v2.4
+          {c.title}
         </div>
         <button
           onClick={handleClear}
@@ -142,7 +145,7 @@ export default function CosmicChat() {
             fontSize: 10, fontFamily: 'monospace', letterSpacing: 1,
           }}
         >
-          CLEAR
+          {c.clear}
         </button>
       </div>
 
@@ -163,7 +166,7 @@ export default function CosmicChat() {
             }}>
               <div style={{ fontSize: 'clamp(36px, 15vw, 64px)', color: '#ffd700', fontFamily: 'serif' }}>&phi;</div>
               <div style={{ color: '#666', fontFamily: 'monospace', fontSize: 12, marginTop: 8 }}>
-                Trinity Chat v2.4 - Self-Reflection + Multi-Modal + Context
+                {c.welcome}
               </div>
             </div>
           )}
@@ -179,6 +182,7 @@ export default function CosmicChat() {
                 tool_name={msg.tool_name}
                 reflection={msg.reflection}
                 learned={msg.learned}
+                labels={{ yourMessage: c.yourMessage, trinityResponse: c.trinityResponse, learned: c.learned, learnedAria: c.learnedAria, filtered: c.filtered, filteredAria: c.filteredAria }}
               />
             ))}
           </AnimatePresence>
@@ -207,7 +211,7 @@ export default function CosmicChat() {
         zIndex: 10,
       }}>
         <div style={{ maxWidth: 800, width: '100%', margin: '0 auto' }}>
-          <ChatInput onSend={handleSend} disabled={loading} />
+          <ChatInput onSend={handleSend} disabled={loading} labels={c.input} />
         </div>
       </div>
     </div>

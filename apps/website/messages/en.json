@@ -1804,5 +1804,36 @@
     "parameters": "Consolidated Parameters",
     "optimizer": "Optimizer",
     "adam": "ADAM"
+  },
+  "chat": {
+  "home": "HOME",
+  "connected": "CONNECTED",
+  "offline": "OFFLINE",
+  "title": "COSMIC CHAT v2.4",
+  "clear": "CLEAR",
+  "welcome": "Trinity Chat v2.4 - Self-Reflection + Multi-Modal + Context",
+  "connectionError": "Connection error. Is the Trinity chat server running? (tri serve --chat)",
+  "yourMessage": "Your message",
+  "trinityResponse": "Trinity response",
+  "learned": "LEARNED",
+  "learnedAria": "This response was learned and saved to memory",
+  "filtered": "FILTERED",
+  "filteredAria": "Filtered",
+  "input": {
+    "region": "Chat input",
+    "attachmentOptions": "Attachment options",
+    "imagePlaceholder": "image_path (optional)",
+    "audioPlaceholder": "audio_path (optional)",
+    "imageAria": "Image file path",
+    "audioAria": "Audio file path",
+    "attachTitle": "Attach image/audio path",
+    "hideAttachments": "Hide attachment options",
+    "showAttachments": "Show attachment options",
+    "messagePlaceholder": "Message Trinity...",
+    "messageAria": "Type your message",
+    "sendAria": "Send message",
+    "send": "SEND",
+    "instructions": "Press Enter to send, Shift+Enter for new line"
   }
+}
 }

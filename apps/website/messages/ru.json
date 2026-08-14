@@ -1804,5 +1804,36 @@
     "parameters": "Консолидированные Параметры",
     "optimizer": "Оптимизатор",
     "adam": "ADAM"
+  },
+  "chat": {
+  "home": "ГЛАВНАЯ",
+  "connected": "ПОДКЛЮЧЕНО",
+  "offline": "ОФЛАЙН",
+  "title": "КОСМИЧЕСКИЙ ЧАТ v2.4",
+  "clear": "ОЧИСТИТЬ",
+  "welcome": "Чат Trinity v2.4 — саморефлексия, мультимодальность и контекст",
+  "connectionError": "Ошибка подключения. Запущен ли сервер чата Trinity? (tri serve --chat)",
+  "yourMessage": "Ваше сообщение",
+  "trinityResponse": "Ответ Trinity",
+  "learned": "ЗАПОМНЕНО",
+  "learnedAria": "Этот ответ изучен и сохранён в памяти",
+  "filtered": "ФИЛЬТР",
+  "filteredAria": "Отфильтровано",
+  "input": {
+    "region": "Поле чата",
+    "attachmentOptions": "Параметры вложений",
+    "imagePlaceholder": "путь_к_изображению (необязательно)",
+    "audioPlaceholder": "путь_к_аудио (необязательно)",
+    "imageAria": "Путь к файлу изображения",
+    "audioAria": "Путь к аудиофайлу",
+    "attachTitle": "Прикрепить путь к изображению или аудио",
+    "hideAttachments": "Скрыть параметры вложений",
+    "showAttachments": "Показать параметры вложений",
+    "messagePlaceholder": "Сообщение Trinity...",
+    "messageAria": "Введите сообщение",
+    "sendAria": "Отправить сообщение",
+    "send": "ОТПРАВИТЬ",
+    "instructions": "Enter — отправить, Shift+Enter — новая строка"
   }
+}
 }
