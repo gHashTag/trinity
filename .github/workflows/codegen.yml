@@ -13,7 +13,12 @@ on:
 jobs:
   validate:
     name: Validate VIBEE Codegen
-    runs-on: macos-latest
+    # ubuntu, like the other 116 jobs in this repo. Zig 0.15.2 cannot link
+    # against the SDK on current macos-latest -- the build dies with undefined
+    # _abort, _bzero, ___availability_version_check and the rest of libSystem,
+    # before compiling anything of ours. Same failure appears on a developer
+    # Mac running macOS 26.
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -82,7 +87,7 @@ jobs:
 
   count-patterns:
     name: Count Pattern Coverage
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
