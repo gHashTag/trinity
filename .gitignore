@@ -321,6 +321,10 @@ fpga/tools/weight_pack_wide
 # templates/SOUL.md was re-included, so a container's own soul could never
 # be committed without -f.
 !**/SOUL.md
+# Skills are source, not generated reports. The existing ones under
+# .claude/skills/ are tracked only because they predate the *.md rule above --
+# every skill written since has been silently unstageable without -f.
+!.claude/skills/**
 
 # Docker files in root (use deploy/ subdirectory instead)
 Dockerfile*
