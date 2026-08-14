@@ -1,0 +1,28 @@
+# Trinity Node — decentralised inference network
+#
+# Thin by design: the binary is built by the workflow with Zig and copied in,
+# exactly as deploy/Dockerfile.tri's generated sibling does for the CLI. The
+# alternative — installing Zig inside the image and building there — costs a
+# toolchain download per arch and buys nothing, since CI already has Zig.
+#
+# This file is a reconstruction. The workflow referenced deploy/Dockerfile.node
+# and the file was absent from every commit, so `Build & Push Trinity Node`
+# failed at `failed to read dockerfile` and had never published an image. The
+# shape is taken from the CLI image, which does work.
+
+FROM ubuntu:22.04
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY docker-artifacts/trinity-node /usr/local/bin/trinity-node
+RUN chmod +x /usr/local/bin/trinity-node
+
+LABEL org.opencontainers.image.title="Trinity Node"
+LABEL org.opencontainers.image.description="Decentralised inference network node — Trinity"
+LABEL org.opencontainers.image.source="https://github.com/gHashTag/trinity"
+LABEL org.opencontainers.image.licenses="MIT"
+
+WORKDIR /workspace
+ENTRYPOINT ["trinity-node"]
