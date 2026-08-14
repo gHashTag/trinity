@@ -843,7 +843,8 @@ test "5-node simulation with disk persistence" {
     _ = try new3.loadFromDisk();
     _ = try new4.loadFromDisk();
 
-    // Verify total recovered matches
+    // Verify total recovered: after compression, fewer shards than shard_count is expected
+    // (encryption + ternary encoding + RLE can reduce 2048 bytes to ~100 bytes = 2 shards)
     var total_recovered: u32 = 0;
     const new_peers_arr = [_]*storage_mod.StorageProvider{ &new0, &new1, &new2, &new3, &new4 };
     for (new_peers_arr) |p| {
