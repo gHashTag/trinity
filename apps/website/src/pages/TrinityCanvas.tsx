@@ -45,6 +45,7 @@ import { connectPasWebSocket, disconnectPasWebSocket, type PasWsMessage, type Pa
 import TrinityCanvasWasm from '../components/TrinityCanvasWasm';
 import KoscheiStatusWidget from '../components/KoscheiStatusWidget';
 import { SampleBadge } from '../components/SampleBadge';
+import { useI18n } from '../i18n/context';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -207,6 +208,30 @@ const FILE_INDEX: FinderFile[] = [
 const CATEGORY_LABELS: Record<string, string> = {
   core: 'Ядро VSA', node: 'Storage Node', spec: 'Спецификации',
   web: 'Веб-фронтенд', doc: 'Документация', compiler: 'VIBEE Компилятор',
+};
+
+// This canvas predates the site's language context and used English labels in
+// its own data tables. Keep the IDs and navigation order stable, but provide a
+// Russian presentation layer for the page's visible controls.
+const PETAL_LABELS_RU: Record<string, string> = {
+  chat: 'ЧАТ', code: 'КОД', explain: 'ОБЪЯСНИТЬ', debug: 'ОТЛАДКА',
+  review: 'ПРОВЕРКА', translate: 'ПЕРЕВОД', vibee: 'VIBEE', voice: 'ГОЛОС',
+  compose: 'СОСТАВИТЬ', files: 'ФАЙЛЫ', editor: 'РЕДАКТОР', build: 'СБОРКА',
+  test: 'ТЕСТ', terminal: 'ТЕРМИНАЛ', git: 'GIT', deploy: 'РАЗВЁРТЫВАНИЕ',
+  network: 'СЕТЬ', settings: 'НАСТРОЙКИ', docs: 'ДОКУМЕНТЫ', reels: 'РОЛИКИ',
+  feed: 'ЛЕНТА', roadmap: 'ПЛАН', benchmarks: 'ТЕСТЫ', research: 'ИССЛЕДОВАНИЯ',
+  formulas: 'ФОРМУЛЫ', community: 'СООБЩЕСТВО', about: 'О ПРОЕКТЕ',
+};
+
+const LAYER_LABELS_RU: Partial<Record<CanvasLayer, string>> = {
+  chat: 'ЧАТ', editor: 'РЕДАКТОР', finder: 'ФАЙЛЫ', vision: 'ЗРЕНИЕ',
+  voice: 'ГОЛОС', settings: 'НАСТРОЙКИ', viz: 'ВИЗУАЛИЗАЦИЯ',
+};
+
+const LAYER_HINTS_EN: Partial<Record<CanvasLayer, string>> = {
+  chat: 'Chat in waves', editor: 'Code inside the field', finder: 'Files as photons',
+  vision: 'Images in waves', voice: 'Voice as a wave', tools: 'Three Worlds',
+  settings: 'Wave settings', viz: 'Pure canvas',
 };
 
 // ═══ 27 Sacred Worlds — polygon blocks from 999.svg (exact Raylib coordinates) ═══
@@ -403,6 +428,8 @@ const EDITOR_PRESETS: Record<string, { label: string; code: string; color: strin
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function TrinityCanvas() {
+  const { lang } = useI18n();
+  const isRu = lang === 'ru';
   const [wasmMode, setWasmMode] = useState(false);
   const [layer, setLayer] = useState<CanvasLayer>('petals');
   const [vizMode, setVizMode] = useState<VizMode>('trinity-computer');
@@ -546,15 +573,27 @@ export default function TrinityCanvas() {
 
   // ─── Command bar filtered results ─────────────────────────────────────────
 
+  const localizedCommands = useMemo(() => COMMAND_ITEMS.map(item => ({
+    ...item,
+    label: isRu
+      ? (item.id.startsWith('world-') || item.id.startsWith('viz-')
+        ? (PETAL_LABELS_RU[item.id.replace(/^world-|^viz-/, '')] ?? item.label)
+        : (item.layer ? (LAYER_LABELS_RU[item.layer] ?? item.label) : item.label))
+      : item.label,
+    hint: isRu
+      ? (item.layer && LAYER_INFO[item.layer].hint ? LAYER_INFO[item.layer].hint : item.hint)
+      : (item.layer ? (LAYER_HINTS_EN[item.layer] ?? item.hint) : item.hint),
+  })), [isRu]);
+
   const cmdResults = useMemo(() => {
     const q = cmdQuery.toLowerCase();
-    if (!q) return COMMAND_ITEMS.slice(0, 9);
-    return COMMAND_ITEMS.filter(item =>
+    if (!q) return localizedCommands.slice(0, 9);
+    return localizedCommands.filter(item =>
       item.label.toLowerCase().includes(q) ||
       item.hint.toLowerCase().includes(q) ||
       item.id.toLowerCase().includes(q)
     ).slice(0, 9);
-  }, [cmdQuery]);
+  }, [cmdQuery, localizedCommands]);
 
   // ─── Connection status (global) ─────────────────────────────────────────
 
@@ -1252,7 +1291,34 @@ export default function TrinityCanvas() {
     );
   }
 
-  const info = LAYER_INFO[layer];
+  const info = {
+    ...LAYER_INFO[layer],
+    label: isRu ? (LAYER_LABELS_RU[layer] ?? LAYER_INFO[layer].label) : LAYER_INFO[layer].label,
+    hint: isRu ? LAYER_INFO[layer].hint : (LAYER_HINTS_EN[layer] ?? LAYER_INFO[layer].hint),
+  };
+  const petalLabel = (petal: PetalItem) => isRu ? (PETAL_LABELS_RU[petal.id] ?? petal.label) : petal.label;
+  const categoryLabel = (category: string) => {
+    if (!isRu) return CATEGORY_LABELS[category];
+    return ({
+      core: 'Ядро VSA', node: 'Узел хранения', spec: 'Спецификации',
+      web: 'Веб-фронтенд', doc: 'Документация', compiler: 'Компилятор VIBEE',
+    } as Record<string, string>)[category] ?? CATEGORY_LABELS[category];
+  };
+  const editorLabel = (key: string, label: string) => isRu
+    ? ({ js: 'JavaScript', vibee: 'VIBEE', zig: 'Zig' }[key] ?? label)
+    : label;
+  const sectionLabel = (label: string) => isRu ? ({
+    'STORAGE ROUTING': 'МАРШРУТИЗАЦИЯ ХРАНЕНИЯ',
+    'DHT KADEMLIA': 'DHT KADEMLIA',
+    'PEER HEALTH': 'СОСТОЯНИЕ УЗЛОВ',
+    'SHARD DISTRIBUTION': 'РАСПРЕДЕЛЕНИЕ ОСКОЛКОВ',
+    'RS CONFIG': 'КОНФИГУРАЦИЯ RS',
+    '$TRI EARNINGS': 'НАЧИСЛЕНИЯ $TRI',
+    RECOVERY: 'ВОССТАНОВЛЕНИЕ',
+    'NETWORK TRANSFER': 'СЕТЕВОЙ ОБМЕН',
+    'PoS PROOF RATE': 'ЧАСТОТА ПРОВЕРКИ PoS',
+    'SWARM LIVE': 'СОСТОЯНИЕ РОЯ',
+  } as Record<string, string>)[label] ?? label : label;
   const particles = layer === 'chat' ? 800 : layer === 'petals' ? 1200 : layer === 'voice' ? 2000 : 1500;
 
   return (
@@ -1277,7 +1343,7 @@ export default function TrinityCanvas() {
       <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 110, display: 'flex', alignItems: 'center', gap: 6 }}>
         <div style={{ width: 6, height: 6, borderRadius: '50%', background: connected ? '#00e599' : '#ff4444', boxShadow: `0 0 6px ${connected ? '#00e599' : '#ff4444'}` }} />
         <span style={{ color: connected ? '#00e599' : '#ff4444', fontSize: 8, fontFamily: MONO, letterSpacing: 1, opacity: 0.5 }}>
-          {connected ? 'LIVE' : 'OFFLINE'}
+          {isRu ? (connected ? 'В СЕТИ' : 'ОФЛАЙН') : (connected ? 'LIVE' : 'OFFLINE')}
         </span>
       </div>
 
@@ -1306,7 +1372,7 @@ export default function TrinityCanvas() {
                     boxShadow: isActive ? `0 0 10px hsla(${hue}, 80%, 60%, 0.6)` : 'none',
                     cursor: 'pointer', transition: 'all 0.3s',
                   }}
-                  title={`${i + 1} ${LAYER_INFO[l].label}`}
+                  title={`${i + 1} ${isRu ? (LAYER_LABELS_RU[l] ?? LAYER_INFO[l].label) : LAYER_INFO[l].label}`}
                 />
               );
             })}
@@ -1476,7 +1542,7 @@ export default function TrinityCanvas() {
               const hp = PETALS[hoveredBlock];
               const rc = REALM_COLORS[hp.realm].primary;
               const tx = mousePos.x + 15, ty = mousePos.y - 28;
-              const tw = hp.label.length * 9 + 30;
+              const tw = petalLabel(hp).length * 9 + 30;
               return (
                 <g pointerEvents="none">
                   <rect x={tx} y={ty} width={tw} height={24} rx={6} ry={6}
@@ -1484,7 +1550,7 @@ export default function TrinityCanvas() {
                   <circle cx={tx + 10} cy={ty + 12} r={4} fill={rc} />
                   <text x={tx + 20} y={ty + 13} dominantBaseline="middle"
                     fill="#000000" fontSize={11} fontFamily={FONT} fontWeight={500}
-                  >{hp.label}</text>
+                  >{petalLabel(hp)}</text>
                 </g>
               );
             })()}
@@ -1501,7 +1567,7 @@ export default function TrinityCanvas() {
               <div style={{ color: '#ffd700', fontSize: 11, fontFamily: FONT, letterSpacing: 2, opacity: 0.5 }}>TRINITY CHAT v2.6</div>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: connected ? '#00e599' : '#ff4444', boxShadow: `0 0 4px ${connected ? '#00e599' : '#ff4444'}` }} />
             </div>
-            <button onClick={async () => { await clearContext(); setMessages([]); }} style={{ ...glassStyle(), padding: '3px 10px', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: 10, fontFamily: FONT, letterSpacing: 1 }}>CLEAR</button>
+            <button onClick={async () => { await clearContext(); setMessages([]); }} style={{ ...glassStyle(), padding: '3px 10px', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: 10, fontFamily: FONT, letterSpacing: 1 }}>{isRu ? 'ОЧИСТИТЬ' : 'CLEAR'}</button>
           </div>
           <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 24px', maxWidth: 720, width: '100%', margin: '0 auto' }}>
             {messages.length === 0 && (
@@ -1564,7 +1630,7 @@ export default function TrinityCanvas() {
                   border: `1px solid ${editorLang === k ? v.color + '50' : 'rgba(255,255,255,0.06)'}`,
                   color: editorLang === k ? v.color : 'rgba(255,255,255,0.3)',
                   cursor: 'pointer', fontSize: 11, fontFamily: FONT, fontWeight: 500,
-                }}>{v.label}</button>
+                }}>{editorLabel(k, v.label)}</button>
               ))}
               <div style={{ flex: 1 }} />
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: connected ? '#00e599' : '#ff4444' }} />
@@ -1576,7 +1642,7 @@ export default function TrinityCanvas() {
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button onClick={handleEditorRun} disabled={editorCompiling} style={{ padding: '7px 22px', borderRadius: 10, background: editorCompiling ? 'rgba(255,255,255,0.05)' : 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.3)', color: editorCompiling ? '#666' : '#00ff88', cursor: editorCompiling ? 'default' : 'pointer', fontSize: 12, fontFamily: FONT, fontWeight: 600, letterSpacing: 1 }}>
-                {editorCompiling ? '...' : editorLang === 'vibee' ? 'COMPILE' : editorLang === 'zig' ? 'ANALYZE' : 'RUN'}
+                {editorCompiling ? '...' : editorLang === 'vibee' ? (isRu ? 'СОБРАТЬ' : 'COMPILE') : editorLang === 'zig' ? (isRu ? 'АНАЛИЗ' : 'ANALYZE') : (isRu ? 'ЗАПУСК' : 'RUN')}
               </button>
               <div style={{ flex: 1, color: 'rgba(255,255,255,0.15)', fontSize: 10, fontFamily: FONT }}>
                 {editorLang === 'js' ? 'Hot-reload' : editorLang === 'vibee' ? 'Real VIBEE Parse (backend)' : 'AI Analysis (backend)'}
@@ -1617,7 +1683,7 @@ export default function TrinityCanvas() {
                     color: active ? '#00ccff' : 'rgba(255,255,255,0.4)',
                     fontFamily: FONT, cursor: 'pointer',
                   }}>
-                    {label}: {count}
+                    {isRu ? categoryLabel(cat) : label}: {count}
                   </button>
                 );
               })}
@@ -1637,7 +1703,7 @@ export default function TrinityCanvas() {
                     <span style={{ fontSize: 13 }}>{file.icon}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ color: file.color, fontSize: 11, fontFamily: MONO, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.path}</div>
-                      <div style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: FONT }}>{CATEGORY_LABELS[file.category]}</div>
+                      <div style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: FONT }}>{categoryLabel(file.category)}</div>
                     </div>
                   </motion.div>
                 ))}
@@ -1673,7 +1739,7 @@ export default function TrinityCanvas() {
                       borderRadius: 6, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 11, padding: '2px 8px', fontFamily: MONO,
                     }}>ESC</button>
                   </div>
-                  <div style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: FONT }}>{CATEGORY_LABELS[selectedFile.category]}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, fontFamily: FONT }}>{categoryLabel(selectedFile.category)}</div>
                   <div style={{ flex: 1, overflowY: 'auto', fontFamily: MONO, fontSize: 11, color: 'rgba(255,255,255,0.55)', whiteSpace: 'pre-wrap', lineHeight: 1.6, padding: '8px 0' }}>
                     {filePreviewLoading ? 'Loading...' : filePreview || 'Loading preview...'}
                   </div>
@@ -1914,7 +1980,7 @@ export default function TrinityCanvas() {
                 {/* ── Storage Routing + Self-healing (v2.7) ── */}
                 {storageMetrics && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
-                    {sectionHeader('routing', 'STORAGE ROUTING', '#ffd700')}
+                    {sectionHeader('routing', sectionLabel('STORAGE ROUTING'), '#ffd700')}
                     {!storageCollapsed['routing'] && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
@@ -1949,7 +2015,7 @@ export default function TrinityCanvas() {
                 {/* ── DHT Kademlia Routing (v2.8) ── */}
                 {storageMetrics && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '2px 0', borderTop: '1px solid rgba(255,215,0,0.1)' }}>
-                    {sectionHeader('dht', 'DHT KADEMLIA', '#ffd700')}
+                    {sectionHeader('dht', sectionLabel('DHT KADEMLIA'), '#ffd700')}
                     {!storageCollapsed['dht'] && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
@@ -2395,7 +2461,7 @@ export default function TrinityCanvas() {
                 {/* ── Storage Network: Peers + Shards + RS (v2.7) ── */}
                 {storageMetrics && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '4px 0', borderTop: '1px solid rgba(0,200,255,0.1)' }}>
-                    {sectionHeader('peers', 'PEER HEALTH', '#00ccff')}
+                    {sectionHeader('peers', sectionLabel('PEER HEALTH'), '#00ccff')}
                     {!storageCollapsed['peers'] && (
                       <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                         <div style={{ display: 'flex', gap: 2, flex: 1 }}>
@@ -2413,7 +2479,7 @@ export default function TrinityCanvas() {
                       </div>
                     )}
 
-                    {sectionHeader('shards', 'SHARD DISTRIBUTION', '#00ccff')}
+                    {sectionHeader('shards', sectionLabel('SHARD DISTRIBUTION'), '#00ccff')}
                     {!storageCollapsed['shards'] && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <div style={{ display: 'flex', gap: 6, fontSize: 8, fontFamily: MONO }}>
@@ -2438,7 +2504,7 @@ export default function TrinityCanvas() {
                       </div>
                     )}
 
-                    {sectionHeader('rs', 'RS CONFIG', '#00ccff')}
+                    {sectionHeader('rs', sectionLabel('RS CONFIG'), '#00ccff')}
                     {!storageCollapsed['rs'] && (
                       <div style={{ display: 'flex', gap: 6, fontSize: 8, fontFamily: MONO }}>
                         <span style={{ color: '#00ccff' }}>k={storageMetrics.rs_data_shards}</span>
@@ -2451,7 +2517,7 @@ export default function TrinityCanvas() {
                     )}
 
                     {/* ── $TRI Earnings (v2.10) ── */}
-                    {sectionHeader('tri', '$TRI EARNINGS', '#00ccff')}
+                    {sectionHeader('tri', sectionLabel('$TRI EARNINGS'), '#00ccff')}
                     {!storageCollapsed['tri'] && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <div style={{ display: 'flex', gap: 3 }}>
@@ -2662,7 +2728,7 @@ export default function TrinityCanvas() {
                 {/* ── Storage Network: Recovery + Transfer + PoS (v2.7) ── */}
                 {storageMetrics && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '4px 0', borderTop: '1px solid rgba(170,100,255,0.1)' }}>
-                    {sectionHeader('recovery', 'RECOVERY', '#aa66ff')}
+                    {sectionHeader('recovery', sectionLabel('RECOVERY'), '#aa66ff')}
                     {!storageCollapsed['recovery'] && (
                       <div style={{ display: 'flex', gap: 6, fontSize: 8, fontFamily: MONO }}>
                         <span style={{ color: storageMetrics.scrub_corruptions > 0 ? '#ff4444' : '#00e599' }}>
@@ -2677,7 +2743,7 @@ export default function TrinityCanvas() {
                       </div>
                     )}
 
-                    {sectionHeader('bandwidth', 'NETWORK TRANSFER', '#aa66ff')}
+                    {sectionHeader('bandwidth', sectionLabel('NETWORK TRANSFER'), '#aa66ff')}
                     {!storageCollapsed['bandwidth'] && (
                       <div style={{ display: 'flex', gap: 4 }}>
                         {[
@@ -2694,7 +2760,7 @@ export default function TrinityCanvas() {
                       </div>
                     )}
 
-                    {sectionHeader('pos', 'PoS PROOF RATE', '#aa66ff')}
+                    {sectionHeader('pos', sectionLabel('PoS PROOF RATE'), '#aa66ff')}
                     {!storageCollapsed['pos'] && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -2726,7 +2792,7 @@ export default function TrinityCanvas() {
                     )}
 
                     {/* ── Swarm Live (v2.9) ── */}
-                    {sectionHeader('swarm', 'SWARM LIVE', '#aa66ff')}
+                    {sectionHeader('swarm', sectionLabel('SWARM LIVE'), '#aa66ff')}
                     {!storageCollapsed['swarm'] && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <div style={{ display: 'flex', gap: 4, fontSize: 8, fontFamily: MONO }}>
