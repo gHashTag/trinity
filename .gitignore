@@ -312,6 +312,9 @@ fpga/tools/weight_pack_wide
 !CLAUDE.md
 !.github/
 !docs/
+# `!docs/` only re-includes the directory; `*.md` still matches files inside it,
+# so blog posts have to be named explicitly or they are silently never staged.
+!docs/blog/*.md
 
 # Docker files in root (use deploy/ subdirectory instead)
 Dockerfile*
