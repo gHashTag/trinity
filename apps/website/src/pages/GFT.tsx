@@ -107,7 +107,10 @@ const LIMITS = [
 
 const RU = {
   eyebrow: 'Формат',
-  h1: 'GF-T — float, у которого экспонента тернарная.',
+  /* 14.08.2026: в заголовке стоит имя, под которым формат идёт на главной и в
+     статье — GFTernary, а старое GF-T рядом в скобках: именно так он
+     назван в RTL и в conformance-векторах, на которые ссылается эта же страница. */
+  h1: 'GFTernary (GF-T) — float, у которого экспонента тернарная.',
   lede: 'Экспонента — сбалансированное тернарное число, поля фиксированы. Декодирования режима нет — извлечение полей есть битовый срез, а на тернарной фабрике сложение экспонент нативно. Против takum16 — в 2.1 раза меньше средней относительной ошибки, против takum32 — точно в 2.6 раза.',
   layoutTitle: 'Как устроен',
   retractedH: 'Что здесь стояло раньше и почему снято',
@@ -163,7 +166,7 @@ export default function GFT() {
   const { lang } = useI18n()
   const c = lang === 'ru' ? RU : null
   usePageMeta(
-    lang === 'ru' ? 'GF-T — тернарно-нативный float' : 'GF-T — a ternary-native float',
+    lang === 'ru' ? 'GFTernary (GF-T) — тернарно-нативный float' : 'GFTernary (GF-T) — a ternary-native float',
     'GF-T puts the exponent of a float in balanced ternary and keeps the fields fixed: no regime decode, a mantissa that does not taper, 219 LUTs and zero DSP blocks, 147 MHz pipelined on Artix-7. Measured against takum, not tekum — the earlier tekum figures are withdrawn.',
   )
 
@@ -189,7 +192,7 @@ export default function GFT() {
             {c ? c.eyebrow : 'The format'}
           </p>
           <h1 style={{ fontSize: 'clamp(1.9rem, 5.5vw, 2.8rem)', margin: '0 0 1rem', lineHeight: 1.15 }}>
-            {c ? c.h1 : 'GF-T — a float whose exponent is ternary.'}
+            {c ? c.h1 : 'GFTernary (GF-T) — a float whose exponent is ternary.'}
           </h1>
           <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', lineHeight: 1.65, margin: '0 auto', maxWidth: '64ch' }}>
             {c ? c.lede : 'The exponent is a balanced-ternary number and the fields are fixed. There is no regime to decode — extraction is a bit slice — and on a ternary fabric the exponent add is native. Against takum16: 2.1× lower mean relative error; against takum32, an exact 2.6×.'}

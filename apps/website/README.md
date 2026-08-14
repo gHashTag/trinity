@@ -1,76 +1,115 @@
-# React + TypeScript + Vite
+# t27.ai — исходники сайта
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Здесь лежит SPA, из которой собирается живой сайт https://t27.ai. До 14.08.2026
+в этом файле стоял шаблон `React + TypeScript + Vite` — документ, который не
+описывал ни одного правила этого проекта. Он заменён.
 
-Currently, two official plugins are available:
+## Что этот сайт утверждает и в каком порядке
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Сайт представляет **пару** числовых форматов для тернарного датапути:
 
-## React Compiler
+| Порядок | Формат        | Роль в нейроне | Чем подкреплён                                                        |
+| ------- | ------------- | -------------- | --------------------------------------------------------------------- |
+| первый  | **GFTernary** (в артефактах — `GF-T`) | вес            | декодер 66 LUT @ 974.66 МГц на XC7A200T `[измерено]`, страница `/gft` |
+| второй  | **TNF** (Ternary Network Floats)      | аккумулятор    | лестница из 9 ступеней, в железе разведено 5 `[измерено]`             |
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+Порядок имён перевёрнут 14.08.2026 по распоряжению автора: впереди тот член
+пары, у которого есть собственная измеренная аппаратная цифра и собственная
+страница. Пара остаётся парой — меняется порядок, не состав. Если правите
+надзаголовок, вордмарк или мета-теги, меняйте их **вместе**: они читаются как
+одно утверждение.
 
-## Expanding the ESLint configuration
+Точки, где этот порядок закреплён и где он разъезжается первым:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `index.html` — `<title>`, `og:title`, `twitter:title`, `description`,
+  JSON-LD и `#boot h1` (единственное, что видит читатель без JavaScript);
+- `src/content/tnf.ts` — `hero.eyebrow`, `hero.sub`, `claim.title`;
+- `src/components/sections/tnf/index.tsx` — константа `WORDMARK` в связке;
+- `src/components/Navigation.tsx` — подписи `note` / `noteRu`;
+- `src/hooks/usePageMeta.ts` — заголовки и описания подстраниц.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Правила честности (BINDING)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Нарушение любого пункта — регресс, а не стилистика.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Никаких «первый / единственный / лучший».
+- Каталог — **83 формата** (не 84). Препринт arXiv:2606.09686 в v1 говорит 84;
+  это расхождение известно и лечится erratum, а не подгонкой сайта.
+- Сравнение точности — **только с takum**: 2.1× на 16 битах, точно 2.6× на 32.
+  С **tekum** сравнения нет: оракул, помеченный tekum, декодировал все 65 536
+  шестнадцатибитных кодов идентично takum-оракулу.
+- Кремния нет. Всё железо разведено на бинарной FPGA ALINX AX7203
+  (Xilinx Artix-7 XC7A200T). SKY130 / Tiny Tapeout — «отправлен на
+  изготовление», измерений на кристалле нет.
+- В железе 5 ступеней лестницы из 9. TNF128 не заявлен.
+- Тернарность трижды независимо проиграла бинарности в наших же измерениях;
+  вклад — условие, при котором применим 68-летний аргумент о радиксе, а не сам
+  аргумент.
+- Каждое число на главной несёт тег происхождения (`measured`, `proved`, `coq`,
+  `spec`, `derived`, `competitor`, `retracted`, `terms`, `plan`, `external`).
+  Цифра без тега на страницу не попадает. Единственный источник цифр главной —
+  `src/content/tnf.ts`; компоненты только показывают факт и обязаны показать его
+  тег.
+- Состояние PR называть точно: `merged` / «отправлен в апстрим», не «принят».
+
+Строки, которых на живом сайте быть не должно (отозванные заявления):
+`2.84`, `5.53`, `tekum16`, `100x Faster`, `99.8%`, `578.8`, `Binary Era is Over`.
+
+## Разработка
+
+```bash
+npm ci                  # или bun install
+npx tsc --noEmit        # типы; обязательный гейт
+npx vite build          # сборка; печатает стектрейсы даже при успехе —
+                        # перенаправьте вывод в файл и грепните "built in"
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Визуальная проверка
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Любая правка вёрстки проверяется глазами, а не «должно быть нормально»:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+python3 -m http.server 4173 --directory dist &
+node ../../../wave_audit/qa/page_shot.js <route>
 ```
-# Trinity Website
-# Trigger deployment 20260204071225
-# Deploy 071308
+
+URL строго вида `http://localhost:4173/index.html?lang=ru#/<route>` — запрос
+**до** решётки, иначе страница отрендерится по-английски. Скрипт прокручивает
+страницу перед fullPage-снимком: блоки на `framer-motion whileInView` иначе
+остаются прозрачными и выглядят как пустые провалы, которые дефектом не
+являются. Смотреть на снимке: переносы слов, обрезанный текст, контраст текста
+к фону.
+
+### Уроки вёрстки, которые не надо переоткрывать
+
+- Вложенный `<section>` наследует глобальные `min-height: 60vh`, вертикальное
+  центрирование и `text-align: center` — между блоками появляются экраны
+  пустоты. Внутри страницы использовать `<div>`.
+- `.premium-card` задаёт `flex-direction: column`; любой inline `display: flex`
+  внутри требует явного `flexDirection: 'row'`.
+- `<p>` без явного margin получает глобальный `margin: 0 auto` и вместе с
+  max-width даёт ложный отступ слева. Задавать margin целиком:
+  `margin: '0.9rem 0 0'`.
+- `<p>` внутри `.tnf-section` центрируется CSS; для длинного текста задавать
+  `maxWidth: 'none'` и выравнивание по левому краю.
+- Сетка `repeat(auto-fit, minmax(220–260px, 1fr))` при контейнере 900px и
+  четырёх карточках даёт 3+1 с сиротой; для четырёх ставить
+  `minmax(300–320px, 1fr)`.
+- Пол кегля — `0.82rem` (13px).
+- Массивы навигации позиционные: порядок не менять без причины.
+- Русская локаль ломается не в словаре, а в захардкоженных JSX-абзацах —
+  искать по строкам английского текста прямо в `.tsx`.
+
+## Как правка доходит до читателя
+
+Живой сайт обслуживает **другой** репозиторий — `gHashTag/ghashtag.github.io`
+(apex). Его workflow `publish-website.yml` собирает эту SPA, копирует ассеты,
+пересобирает статический блог и лендинги, прогоняет `verify-site.sh` и делает
+коммит. Расписание заявлено раз в 15 минут, наблюдаемый интервал — около часа,
+поэтому читателю честно обещать «в течение часа», а не «через 15 минут», и
+проверять `curl`-ом.
+
+Мерж в `main` этого репозитория сам по себе публикацией не является. Маршрут
+SPA `#/blog/<slug>` отдаёт 200 всегда и доказательством тоже не является —
+проверять статический путь `blog/<slug>/index.html`.
