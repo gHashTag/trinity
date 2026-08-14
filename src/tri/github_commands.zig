@@ -1980,15 +1980,8 @@ pub fn handleWorktree(allocator: std.mem.Allocator, name: []const u8) !void {
 
     std.debug.print("{s}Creating worktree: {s}{s}\n", .{ CYAN, name, RESET });
 
-    var child = std.process.Child.init(&.{
-        "git",
-        "worktree",
-        "add",
-        "../",
-    }, allocator);
-    var name_buf = try allocator.dupe(u8, name);
-    defer allocator.free(name_buf);
-
+    // Заготовка child и name_buf не использовалась: реальная команда
+    // собирается ниже в full_cmd.
     var full_cmd = std.ArrayList([]const u8).init(allocator);
     defer full_cmd.deinit();
     try full_cmd.appendSlice(&.{ "git", "worktree", "add", try std.fmt.allocPrint(allocator, "../{s}", .{name}), "-b", name });
@@ -2081,7 +2074,7 @@ pub fn handleBoard(allocator: std.mem.Allocator) !void {
     defer parsed.deinit();
 
     if (parsed.value == .array) {
-        for (parsed.value.array.items, 0..) |item, i| {
+        for (parsed.value.array.items) |item| {
             const number = item.object.get("number").?.integer;
             const title = item.object.get("title").?.string;
             const state = item.object.get("state").?.string;
