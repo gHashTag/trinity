@@ -68,9 +68,16 @@ function Head({ badge, title, lede, wide }: { badge: Bi; title: Bi; lede?: Bi; w
 // which read as a third voice in a lockup that should have one.
 //
 // The lower line assembles letter by letter because it is the one name a visitor
-// is asked to remember. Singular Network: the initials are the format's name in
-// the paper and in every conformance vector, so a plural would unname it.
-const TNF_WORDMARK = 'TERNARY NETWORK FLOATS'
+// is asked to remember.
+//
+// 14.08.2026: этой строкой было TERNARY NETWORK FLOATS. Порядок имён на
+// странице перевёрнут по распоряжению автора: у пары ровно два члена, и в
+// первую строку выносится тот, у которого есть собственная измеренная
+// аппаратная цифра (декодер 66 LUT @ 974.66 МГц на XC7A200T) и собственная
+// страница /gft. TNF остаётся вторым членом пары и живёт в надзаголовке под
+// знаком, а не в вордмарке. Второй строки в связке не появляется: три голоса
+// в одном лого — та же ошибка, от которой этот файл уже уходил.
+const WORDMARK = 'GFTERNARY'
 
 function Lockup() {
   return (
@@ -107,7 +114,7 @@ function Lockup() {
       <TrinityLogo withLabel={false} height="clamp(128px, 21vw, 254px)" />
 
       <motion.div
-        aria-label={TNF_WORDMARK}
+        aria-label={WORDMARK}
         style={{
           display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
           // φ⁻¹ от строки над знаком
@@ -119,7 +126,7 @@ function Lockup() {
           marginTop: 'var(--sp0)', // the gap above the mark, divided by φ
         }}
       >
-        {TNF_WORDMARK.split('').map((ch, i) => (
+        {WORDMARK.split('').map((ch, i) => (
           <motion.span
             key={i}
             aria-hidden="true"

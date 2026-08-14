@@ -23,7 +23,11 @@ const PAGES: PageLink[] = [
   // Прежняя подпись несла «2.84× и 5.53× точнее tekum16». Это заявление
   // отозвано: оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных
   // кодов идентично takum-оракулу, поэтому сравнение шло не с tekum.
-  { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: 'A φ-derived static-split float family', noteRu: 'φ-производное семейство float со статическим разбиением' },
+  /* 14.08.2026: видимое имя приведено к тому, которым формат назван в статье и
+     в теле главной — GFTernary; старое GF-T оставлено в скобках, потому что оно
+     стоит в conformance-векторах, в RTL и в внешних ссылках — убрать его совсем
+     значило бы разорвать связь между страницей и артефактами. */
+  { href: '#/gft', en: 'GFTernary (GF-T)', ru: 'Формат GFTernary (GF-T)', note: 'The weight format: fixed fields, ternary exponent, measured cost', noteRu: 'Формат веса: фиксированные поля, тернарная экспонента, измеренная цена' },
   { href: '#/start', en: 'Start here', ru: 'С чего начать', note: 'Four checks you can run yourself, in order', noteRu: 'Четыре проверки, которые запускаете сами, по порядку' },
   { href: '#/select', en: 'Choose a format', ru: 'Выбор формата', note: 'A task-by-format comparison matrix', noteRu: 'Матрица сравнения формата и задачи' },
   { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on a live FPGA board', noteRu: 'Присылаете RTL — измеряю на живой FPGA-плате' },
