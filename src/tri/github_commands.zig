@@ -1968,6 +1968,132 @@ fn printIssueHelp() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Bot Commands: /worktree, /pr, /board (Issue #57)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn handleWorktree(allocator: std.mem.Allocator, name: []const u8) !void {
+    if (name.len == 0) {
+        std.debug.print("{s}Error: worktree name required{s}\n", .{ RED, RESET });
+        std.debug.print("Usage: /worktree <name>\n", .{});
+        return;
+    }
+
+    std.debug.print("{s}Creating worktree: {s}{s}\n", .{ CYAN, name, RESET });
+
+    var child = std.process.Child.init(&.{
+        "git",
+        "worktree",
+        "add",
+        "../",
+    }, allocator);
+    var name_buf = try allocator.dupe(u8, name);
+    defer allocator.free(name_buf);
+
+    var full_cmd = std.ArrayList([]const u8).init(allocator);
+    defer full_cmd.deinit();
+    try full_cmd.appendSlice(&.{ "git", "worktree", "add", try std.fmt.allocPrint(allocator, "../{s}", .{name}), "-b", name });
+
+    var child_proc = std.process.Child.init(full_cmd.items, allocator);
+    child_proc.cwd = null;
+
+    const result = child_proc.spawnAndWait() catch |err| {
+        std.debug.print("{s}Failed to create worktree: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
+    switch (result) {
+        .Exited => |code| {
+            if (code == 0) {
+                std.debug.print("{s}Worktree created: ../{s} (branch: {s}){s}\n", .{ GREEN, name, name, RESET });
+            } else {
+                std.debug.print("{s}Worktree creation failed (exit {d}){s}\n", .{ RED, code, RESET });
+            }
+        },
+        else => std.debug.print("{s}Worktree creation interrupted{s}\n", .{ RED, RESET }),
+    }
+}
+
+pub fn handlePR(allocator: std.mem.Allocator, maybe_number: ?[]const u8) !void {
+    if (maybe_number) |num| {
+        std.debug.print("{s}Viewing PR #{s}...{s}\n", .{ CYAN, num, RESET });
+        var child = std.process.Child.init(&.{ "gh", "pr", "view", num, "--json", "number,title,url,state,additions,deletions" }, allocator);
+        child.stdout_behavior = .Pipe;
+        child.stderr_behavior = .Pipe;
+
+        const result = child.spawnAndWait() catch |err| {
+            std.debug.print("{s}Failed to view PR: {}{s}\n", .{ RED, err, RESET });
+            return;
+        };
+        _ = result;
+    } else {
+        std.debug.print("{s}Creating PR from current branch...{s}\n", .{ CYAN, RESET });
+
+        const branch_result = try std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "git", "branch", "--show-current" },
+        });
+        defer allocator.free(branch_result.stdout);
+        defer allocator.free(branch_result.stderr);
+
+        const branch = std.mem.trimRight(u8, branch_result.stdout, "\n");
+        std.debug.print("  Branch: {s}\n", .{branch});
+
+        var child = std.process.Child.init(&.{ "gh", "pr", "create", "--fill" }, allocator);
+        _ = child.spawnAndWait() catch {};
+    }
+}
+
+pub fn handleBoard(allocator: std.mem.Allocator) !void {
+    std.debug.print("{s}GitHub Project Board{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    var child = std.process.Child.init(&.{
+        "gh",
+        "issue",
+        "list",
+        "--limit",
+        "20",
+        "--json",
+        "number,title,labels,state",
+    }, allocator);
+    child.stdout_behavior = .Pipe;
+    child.stderr_behavior = .Inherit;
+
+    const result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{
+            "gh",
+            "issue",
+            "list",
+            "--limit",
+            "20",
+            "--json",
+            "number,title,labels,state",
+        },
+    });
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, result.stdout, .{}) catch |err| {
+        std.debug.print("{s}Failed to parse issue list: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    if (parsed.value == .array) {
+        for (parsed.value.array.items, 0..) |item, i| {
+            const number = item.object.get("number").?.integer;
+            const title = item.object.get("title").?.string;
+            const state = item.object.get("state").?.string;
+
+            const emoji: []const u8 = if (std.mem.eql(u8, state, "OPEN")) "🟢" else "🔴";
+            std.debug.print("  {s} #{d}: {s}\n", .{ emoji, @as(u32, @intCast(number)), title });
+        }
+        std.debug.print("\n{s}Total: {d} issues{s}\n", .{ CYAN, parsed.value.array.items.len, RESET });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Tests
 // ═══════════════════════════════════════════════════════════════════════════════
 

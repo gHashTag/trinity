@@ -1,0 +1,98 @@
+name: uart_bridge
+version: "1.0.0"
+language: verilog
+module: fpga.uart
+
+description: |
+  UART RX/TX bridge for FPGA host communication.
+  Configurable baud rate, parity, and stop bits.
+
+  Issue: #507 FPGA-001 Phase 1
+  phi^2 + 1/phi^2 = 3 | TRINITY
+
+types:
+  UARTConfig:
+    fields:
+      - name: baud_rate
+        type: u32
+        description: "Baud rate (default 115200)"
+      - name: data_bits
+        type: u8
+        description: "Data bits: 5, 6, 7, or 8"
+      - name: parity
+        type: "[]const u8"
+        description: "none, even, odd"
+      - name: stop_bits
+        type: u8
+        description: "1 or 2"
+      - name: clock_freq_hz
+        type: u32
+        description: "System clock frequency"
+
+  UARTFrame:
+    fields:
+      - name: start_bit
+        type: bool
+      - name: data
+        type: u8
+      - name: parity_bit
+        type: "?bool"
+      - name: stop_bits
+        type: u8
+
+constants:
+  DEFAULT_BAUD:
+    type: u32
+    value: 115200
+    description: "Standard baud rate"
+
+  CLOCK_FREQ:
+    type: u32
+    value: 100000000
+    description: "100 MHz system clock"
+
+  MAX_FRAME_BITS:
+    type: u8
+    value: 12
+    description: "Max: start + 8 data + parity + 2 stop"
+
+behaviors:
+  - name: tx_send
+    given: "A byte to transmit and UART config"
+    when: "TX buffer is empty"
+    then: "Serializes byte into UART frame with start/parity/stop bits. Drives TX line."
+
+  - name: rx_receive
+    given: "RX line with incoming UART frame"
+    when: "Start bit detected"
+    then: "Samples data bits at center of each bit period. Validates parity and stop bit. Returns received byte."
+
+  - name: compute_divider
+    given: "Clock frequency and baud rate"
+    when: "UART config is set"
+    then: "Computes clock divider = clock_freq / (16 * baud_rate) for 16x oversampling."
+
+tests:
+  - name: "tx_frame_0x55"
+    given: "Byte 0x55 (01010101) with 8N1 config"
+    expect: "TX outputs: start(0), 1,0,1,0,1,0,1,0, stop(1)"
+
+  - name: "rx_frame_0xAA"
+    given: "RX receives start + 0,1,0,1,0,1,0,1 + stop"
+    expect: "Received byte == 0xAA"
+
+  - name: "parity_even"
+    given: "Byte 0x03 (00000011) with even parity"
+    expect: "Parity bit == 0 (2 ones, even)"
+
+  - name: "divider_115200"
+    given: "100MHz clock, 115200 baud"
+    expect: "divider == 54 (100M / (16 * 115200))"
+
+  - name: "full_roundtrip"
+    given: "TX sends 0x42 at 115200 8N1"
+    expect: "RX receives 0x42 with no framing error"
+
+invariants:
+  - "forall c: UARTConfig :: c.baud_rate > 0 and c.clock_freq_hz > c.baud_rate * 16"
+  - "forall f: UARTFrame :: f.start_bit == false"

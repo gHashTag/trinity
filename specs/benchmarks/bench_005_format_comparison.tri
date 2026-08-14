@@ -1,0 +1,134 @@
+name: bench_005_ternary_vs_binary
+version: "1.0.0"
+language: zig
+module: bench.format_comparison
+
+description: |
+  BENCH-005: Ternary vs Binary — Extended Multi-Dataset Validation.
+  Compare 5 number formats (FP32, GF16, FP16, BF16, Ternary) on MNIST + CIFAR-10.
+
+  Issue: #494
+  phi^2 + 1/phi^2 = 3 | TRINITY
+
+types:
+  FormatConfig:
+    fields:
+      - name: name
+        type: "[]const u8"
+      - name: bits
+        type: u8
+      - name: bytes_per_weight
+        type: f64
+      - name: compression_vs_fp32
+        type: f64
+
+  DatasetConfig:
+    fields:
+      - name: name
+        type: "[]const u8"
+      - name: n_images
+        type: usize
+      - name: n_classes
+        type: u8
+      - name: resolution
+        type: u8
+      - name: channels
+        type: u8
+      - name: input_dim
+        type: usize
+
+  BenchResult:
+    fields:
+      - name: format
+        type: FormatConfig
+      - name: dataset
+        type: DatasetConfig
+      - name: seed
+        type: u32
+      - name: accuracy
+        type: f64
+      - name: loss
+        type: f64
+      - name: training_ms
+        type: u64
+      - name: inference_us_per_sample
+        type: u64
+      - name: model_bytes
+        type: usize
+
+  ComparisonReport:
+    fields:
+      - name: baseline_accuracy
+        type: f64
+      - name: format_gap_pct
+        type: f64
+      - name: pass
+        type: bool
+
+constants:
+  FORMATS:
+    type: "[]FormatConfig"
+    value: "[FP32, GF16, FP16, BF16, Ternary]"
+    description: "5 formats under test"
+
+  DATASETS:
+    type: "[]DatasetConfig"
+    value: "[MNIST, CIFAR-10]"
+
+  GF16_MAX_GAP_PCT:
+    type: f64
+    value: 0.5
+    description: "GF16 gap vs FP32 must be <= 0.5%"
+
+  TERNARY_MAX_GAP_MNIST:
+    type: f64
+    value: 2.0
+    description: "Ternary gap on MNIST <= 2%"
+
+  TERNARY_MAX_GAP_CIFAR:
+    type: f64
+    value: 5.0
+    description: "Ternary gap on CIFAR-10 <= 5%"
+
+  N_SEEDS:
+    type: u8
+    value: 3
+    description: "3 seeds per format/dataset combo"
+
+behaviors:
+  - name: runBench
+    given: "A format config, dataset config, and seed"
+    when: "Benchmark execution requested"
+    then: "Trains MLP with specified format, measures accuracy/loss/time. Returns BenchResult."
+
+  - name: compareFormats
+    given: "BenchResults for all 5 formats on a dataset"
+    when: "Comparison report needed"
+    then: "Computes gap vs FP32 baseline, checks against thresholds. Returns ComparisonReport."
+
+  - name: exportCSV
+    given: "All BenchResults (30 total = 5 formats × 2 datasets × 3 seeds)"
+    when: "Results export requested"
+    then: "Writes CSV to experiments/bench/bench_005_results.csv"
+
+tests:
+  - name: "gf16_gap_within_threshold"
+    given: "GF16 and FP32 results on MNIST"
+    expect: "abs(gf16_accuracy - fp32_accuracy) * 100 <= 0.5"
+
+  - name: "ternary_gap_mnist"
+    given: "Ternary and FP32 results on MNIST"
+    expect: "abs(ternary_accuracy - fp32_accuracy) * 100 <= 2.0"
+
+  - name: "ternary_gap_cifar"
+    given: "Ternary and FP32 results on CIFAR-10"
+    expect: "abs(ternary_accuracy - fp32_accuracy) * 100 <= 5.0"
+
+  - name: "total_runs_30"
+    given: "5 formats, 2 datasets, 3 seeds"
+    expect: "total_results.len == 30"
+
+invariants:
+  - "forall r: BenchResult :: 0.0 <= r.accuracy <= 1.0"
+  - "forall r: BenchResult :: r.model_bytes > 0"
+  - "forall r: BenchResult :: r.training_ms > 0"

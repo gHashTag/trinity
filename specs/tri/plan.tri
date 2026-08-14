@@ -1,0 +1,58 @@
+name: tri_plan
+version: "1.0.0"
+language: zig
+module: tri.plan
+
+description: |
+  Planning phase of the TRI pipeline. Takes a decomposition DAG and produces
+  an execution plan with scheduling, resource allocation, and risk assessment.
+
+  phi^2 + 1/phi^2 = 3 | TRINITY
+
+types:
+  PlanStep:
+    fields:
+      - name: task_id
+        type: usize
+      - name: scheduled_order
+        type: usize
+      - name: parallel_group
+        type: usize
+      - name: estimated_duration_ms
+        type: u64
+
+  ExecutionPlan:
+    fields:
+      - name: steps
+        type: "[]PlanStep"
+      - name: parallel_groups
+        type: usize
+      - name: estimated_total_ms
+        type: u64
+      - name: risk_level
+        type: "[]const u8"
+        description: "low / medium / high"
+
+behaviors:
+  - name: createPlan
+    given: "A DecompositionResult from tri decompose"
+    when: "User runs `tri plan`"
+    then: "Groups independent tasks into parallel batches, estimates durations, assesses risk. Returns ExecutionPlan."
+
+  - name: optimizePlan
+    given: "An ExecutionPlan with timing estimates"
+    when: "Plan needs optimization"
+    then: "Reorders tasks to minimize critical path length. Returns optimized ExecutionPlan."
+
+tests:
+  - name: "plan_single_task"
+    given: "One task decomposition"
+    expect: "plan.parallel_groups == 1 and plan.steps.len == 1"
+
+  - name: "plan_groups_parallel_tasks"
+    given: "3 independent tasks"
+    expect: "plan.parallel_groups == 1 and all 3 in same group"
+
+  - name: "plan_respects_dependencies"
+    given: "Task B depends on A"
+    expect: "A.scheduled_order < B.scheduled_order"
