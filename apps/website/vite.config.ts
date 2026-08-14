@@ -53,6 +53,86 @@ function prerenderHero(): Plugin {
   }
 }
 
+/**
+ * Emit dist/rss.xml from the same posts.ts the page renders.
+ *
+ * Generated rather than hand-kept, because a feed that drifts from the site is
+ * worse than no feed: it is a second source of truth that nobody looks at until
+ * it is wrong. The publisher rsyncs the whole dist tree to the apex, so this
+ * lands at https://t27.ai/rss.xml with no change on that side.
+ *
+ * The posts module is loaded by transpiling it with esbuild rather than by
+ * pattern-matching the file, so the feed cannot disagree with what the site
+ * shows — if the schema changes, this breaks loudly instead of quietly
+ * emitting nonsense.
+ */
+function rssFeed(): Plugin {
+  return {
+    name: 'rss-feed',
+    apply: 'build',
+    async closeBundle() {
+      const esbuild = await import('esbuild')
+      const entry = path.resolve(__dirname, 'src/data/blog/posts.ts')
+      const out = path.resolve(__dirname, 'node_modules/.rss-posts.mjs')
+
+      await esbuild.build({
+        entryPoints: [entry],
+        outfile: out,
+        bundle: true,
+        format: 'esm',
+        platform: 'node',
+        logLevel: 'silent',
+      })
+
+      const mod = await import(`${out}?t=${Date.now()}`)
+      const posts = (mod.publishedPosts?.() ?? []) as Array<{
+        slug: string
+        title: string
+        summary: string
+        date: string
+        tags: string[]
+      }>
+      if (!posts.length) throw new Error('rss-feed: publishedPosts() returned nothing')
+
+      const site = 'https://t27.ai'
+      const rfc822 = (d: string) => new Date(`${d}T12:00:00Z`).toUTCString()
+      const sorted = [...posts].sort((a, b) => (a.date < b.date ? 1 : -1))
+
+      const items = sorted
+        .map((p) => {
+          const link = `${site}/#/blog/${p.slug}`
+          return `    <item>
+      <title>${escapeHtml(p.title)}</title>
+      <link>${escapeHtml(link)}</link>
+      <guid isPermaLink="false">${escapeHtml(p.slug)}</guid>
+      <pubDate>${rfc822(p.date)}</pubDate>
+      <description>${escapeHtml(p.summary)}</description>
+${(p.tags ?? []).map((t) => `      <category>${escapeHtml(t)}</category>`).join('\n')}
+    </item>`
+        })
+        .join('\n')
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Trinity — measured results</title>
+    <link>${site}/#/blog</link>
+    <atom:link href="${site}/rss.xml" rel="self" type="application/rss+xml" />
+    <description>Measured results and the methods behind them. Every post names what is not proven.</description>
+    <language>en</language>
+    <lastBuildDate>${rfc822(sorted[0].date)}</lastBuildDate>
+${items}
+  </channel>
+</rss>
+`
+      const dist = path.resolve(__dirname, 'dist')
+      fs.mkdirSync(dist, { recursive: true })
+      fs.writeFileSync(path.join(dist, 'rss.xml'), xml, 'utf-8')
+      fs.rmSync(out, { force: true })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig(() => ({
   // Relative base so the built SPA works wherever it is served from: the apex
@@ -60,7 +140,7 @@ export default defineConfig(() => ({
   // the subpath deploy asked for /assets/... at the apex root, got 404s, and
   // the page rendered blank. Safe here because routing is HashRouter.
   base: './',
-  plugins: [react(), prerenderHero()],
+  plugins: [react(), prerenderHero(), rssFeed()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
