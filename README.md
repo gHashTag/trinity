@@ -414,15 +414,49 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 | **Windows** | [docs/quickstart_windows.md](docs/quickstart_windows.md) |
 | **Docker** | See container image: `ghcr.io/ghashtag/trinity:latest` |
 
+### The container image, verified
+
+This is the path that was actually run end to end on 2026-08-14, against the
+image CI published from `c768953`:
+
+```bash
+# amd64 only -- the workflow builds `platforms: linux/amd64`, so Apple Silicon
+# needs the explicit platform and will run it under emulation.
+docker pull --platform linux/amd64 \
+  ghcr.io/ghashtag/trinity:c7689530274d706fb0876b41e3ec0671ae16960d
+
+docker run --rm --platform linux/amd64 \
+  ghcr.io/ghashtag/trinity:c7689530274d706fb0876b41e3ec0671ae16960d blog
+```
+
+**Pin the commit sha rather than `:latest`.** Two pushes to `main` fifteen
+seconds apart both published, and `:latest` ended up on the earlier of the two —
+it currently resolves to `sha256:922105c3…`, which predates the newest
+`tri blog` subcommand. The sha tag resolved to `sha256:4e5b8dc0…` and had it.
+
+`ENTRYPOINT` is `tri`, so arguments go straight through: `docker run … blog`,
+not `docker run … tri blog` — the latter becomes `tri tri blog` and falls
+through to the chat handler.
+
 ### Verify Installation
 
 ```bash
 tri --version
-# Output: TRI CLI v6.3.0
+# Output: Trinity v5.1.0 (unknown)
+#         Zig: 0.15.2
 
 tri constants
-# Shows all constants (φ, π, e, μ, χ, σ, ε...)
+# Shows all constants (φ, π, e, μ, χ, σ, ε...)   — exits 0
 ```
+
+> **The version numbers disagree and this is not yet resolved.** The heading
+> above says v6.3.0, npm publishes `@playra/tri` at 1.0.1, and the binary
+> reports v5.1.0. Only the binary's output was measured, by running it; the
+> other two are what the registry and this file claim.
+>
+> Of the four install methods listed above, only the container image was
+> exercised. npm shows the package exists and Homebrew shows the tap repository
+> resolves; neither was installed and run here, so neither is asserted to work.
 
 ---
 
