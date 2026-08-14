@@ -102,7 +102,7 @@ pub fn runZetaVerdictCommand(allocator: std.mem.Allocator, args: []const []const
     try spacings.formatSummary(std.fs.File.stderr().deprecatedWriter());
 
     const gue_result = try zeta_spacing.compareVsGUE(&spacings, allocator);
-    const gue_color = if (gue_result.ks_p_value > 0.05) GREEN else "\x1b[31m";
+    const gue_color = if (gue_result.ks_statistic <= gue_result.ks_critical_95) GREEN else "\x1b[33m";
     std.debug.print("  GUE comparison: {s}{s}{s}\n\n", .{ gue_color, gue_result.verdict, RESET });
 
     std.debug.print("{s}═ STAGE 2: CF Analysis ═{s}\n", .{ CYAN, RESET });
@@ -148,7 +148,7 @@ fn determineFinalVerdict(
     pslq: *const zeta_pslq.PSLQSearchResult,
 ) FinalVerdict {
     // If all three tests point to generic/random
-    if (gue.ks_p_value > 0.05 and cf_stats.mu < 2.5 and pslq.relations_found == 0) {
+    if (gue.ks_statistic <= gue.ks_critical_95 and cf_stats.mu < 2.5 and pslq.relations_found == 0) {
         return FinalVerdict{
             .verdict = .gue_consistent,
             .description = "GUE CONSISTENT: Spacings follow random matrix predictions. CF is generic, no arithmetic relations found.",

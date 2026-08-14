@@ -27,14 +27,18 @@ Extended search: $9 \times 13 \times 9 \times 13 \times 9 = 123{,}201$ combinati
 
 ---
 
-## Established Constants (75 fits)
+## Established Constants (70 fits)
+
+> **Audit note (2026-08-13).** The heading previously read 75. A machine count of
+> data rows in the tables below returns **70**. Verified by an independent
+> re-count of the per-subsection headings.
 
 ### Particle Physics (12)
 
 | Name | Target | Formula $(n, k, m, p, q)$ | Computed | Error |
 |------|--------|--------------------------|----------|-------|
 | $1/\alpha$ (fine structure) | 137.036 | $(4, 2, -1, 1, 2)$ | 137.0027 | 0.024% |
-| $m_p/m_e$ | 1836.15 | $(9, 4, 0, 4, -1)$ | 1838.161 | 0.109% |
+| $m_p/m_e$ | 1836.152673426(32) | $(9, 4, 0, 4, -1)$ | 1838.161 | 0.109% — see audit note |
 | $\sin^2(\theta_W)$ | 0.2229 | $(8, -1, 0, -1, -2)$ | 0.2230 | 0.065% |
 | $M_\text{Higgs}$ (GeV) | 125.25 | $(5, 3, 0, 4, -2)$ | 125.226 | 0.019% |
 | $M_W$ (GeV) | 80.377 | $(2, 4, -1, 3, -1)$ | 80.359 | 0.023% |
@@ -191,19 +195,19 @@ These go **beyond** the standard search bounds — experimental conjectures.
 | $\Sigma m_\nu$ | $3 \cdot 3^{6} \cdot \pi^{-4} \cdot \varphi^{-4} \cdot e^{-4}$ | 0.060 | eV | Upper bound \<0.12 eV |
 | Inflation $N_e$ | $8 \cdot 3^{2} \cdot \pi^{-1} \cdot \varphi^{2}$ | 60.0 | e-folds | Consistent |
 | Tensor-to-scalar $r$ | $4 \cdot 3^{-2} \cdot \pi^{-2} \cdot \varphi^{-5} \cdot e^{2}$ | 0.030 | — | Below BICEP2 bound |
-| Neutron lifetime $\tau_n$ | $2 \cdot 3^{4} \cdot \pi^{4} \cdot \varphi^{-6}$ | 879.4 | s | Measured: 879.4 s |
+| Neutron lifetime $\tau_n$ | $2 \cdot 3^{4} \cdot \pi^{4} \cdot \varphi^{-6}$ | 879.4 | s | Measured: **878.4 ± 0.5 s** ([PDG 2024](https://pdg.lbl.gov/2024/listings/rpp2024-list-n.pdf)) → **+2.0σ** |
 | Topological $S_\text{topo}$ | $4 \cdot 3^{-1} \cdot \pi^{-4} \cdot \varphi^{4} \cdot e^{2}$ | 0.6932 | nat | $\approx \ln 2$ |
 | $N_\text{eff}$ hint | $1 \cdot 3^{3} \cdot \pi^{-1} \cdot \varphi^{2} \cdot e^{-2}$ | 3.0451 | — | PDG: $2.99 \pm 0.17$ |
 | M-theory dim | $4 \cdot 3^{-4} \cdot \varphi^{5} \cdot e^{3}$ | 11.0001 | dim | Theory: 11 |
 | Bosonic string dim | $2 \cdot 3^{-1} \cdot \pi \cdot \varphi^{-1} \cdot e^{3}$ | 25.999 | dim | Theory: 26 |
 | $\Delta m^2_{32}$ hint | $1 \cdot 3^{-3} \cdot \pi^{-2} \cdot \varphi^{-5} \cdot e^{2}$ | 0.00250 | eV$^2$ | Measured: 0.00251 |
 | $S_8$ ($\sigma_8 \Omega_m^{1/2}$) | $8 \cdot 3^{-5} \cdot \pi^{-2} \cdot e^{3}$ | 0.0670 | — | Unmeasured |
-| **QCD phase $T_c$** | $7 \cdot 3^{0} \cdot \pi^{1} \cdot \varphi^{2} \cdot e^{1}$ | 156.5 | MeV | **Unmeasured** — predicted at **0.0008%** error |
+| QCD phase $T_c$ | $7 \cdot 3^{0} \cdot \pi^{1} \cdot \varphi^{2} \cdot e^{1}$ | 156.5 | MeV | Measured 156.5 ± 1.5 MeV (HotQCD 2019, Phys. Lett. B 795, 15) → +0.0008σ, but **126 hits expected by chance** at this precision — see audit note |
 | **Dirac CP phase** | $7 \cdot 3^{-2} \cdot \pi^{4} \cdot \varphi^{-4} \cdot e^{3}$ | 222.0 | ° | **Testable** — predicted at **0.008%** error |
 | **Dark photon X17** | $4 \cdot 3^{6} \cdot \pi^{-1} \cdot e^{-4}$ | 17.0 | MeV | **Testable** — predicted at **0.0025%** error (X17 anomaly at ~17 MeV) |
 | **Sterile neutrino** | $2 \cdot 3^{6} \cdot \pi^{-4} \cdot \varphi^{-3} \cdot e^{-1}$ | 1.30 | eV | **Testable** — predicted at **0.010%** error |
 | **WIMP mass** | $8 \cdot 3^{2} \cdot \pi^{-2} \cdot \varphi^{4}$ | 50.0 | GeV | **Testable** — predicted at **0.003%** error |
-| **Reionization $z_{re}$** | $2 \cdot 3^{-2} \cdot \pi^{4} \cdot \varphi^{2} \cdot e^{-2}$ | 7.67 | — | **Testable** — predicted at **0.005%** error |
+| Reionization $z_{re}$ | $2 \cdot 3^{-2} \cdot \pi^{4} \cdot \varphi^{2} \cdot e^{-2}$ | 7.67 | — | Measured 7.67 ± 0.73 (Planck) → 0.0σ, but **1260 hits expected by chance** at this precision — see audit note |
 
 ---
 
@@ -211,7 +215,7 @@ These go **beyond** the standard search bounds — experimental conjectures.
 
 | Category | Error Range | Count |
 |----------|------------|-------|
-| **EXACT** | \< 0.01% | 35 (Koide, $\alpha_s$, $m_e$, Spatial, Proton lifetime, Beta Q, Meissel-Mertens, Ramanujan-Soldner, $m_\tau/m_\mu$, $m_\mu/m_e$, $V_{cb}$, $V_{td}$, Planck time, H ground, U-235, Avogadro, Solar mass, $H_0$ SH0ES, Bernstein, Conway, Magic numbers 20/28/50/82/126, BCS gap, Bohr magneton, Nuclear magneton, Sphere packing) |
+| **EXACT** | \< 0.01% | 32 (Koide, $\alpha_s$, $m_e$, Spatial, Proton lifetime, Beta Q, Meissel-Mertens, Ramanujan-Soldner, $m_\tau/m_\mu$, $m_\mu/m_e$, $V_{cb}$, $V_{td}$, Planck time, H ground, U-235, Avogadro, Solar mass, $H_0$ SH0ES, Bernstein, Conway, Magic numbers 20/28/50/82/126, BCS gap, Bohr magneton, Nuclear magneton, Sphere packing) |
 | **CLOSE** | 0.01% – 1% | 40 |
 | **APPROX** | \> 1% | 0 |
 
@@ -231,10 +235,40 @@ When fitting random numbers (uniformly distributed from 0.01 to 10000):
 
 | Error Threshold | Standard Search | Extended Search | Significance |
 |----------------|----------------|-----------------|-------------|
-| \< 0.01% (EXACT) | 1 in 500 (0.2%) | 1 in 35 (2.9%) | ~10σ |
+| \< 0.01% (EXACT) | **~64%** (was: 1 in 500) | **~100%** (was: 1 in 35) | **none** (was: ~10σ) |
 | \< 0.001% | 1 in 20,000 (0.005%) | 1 in 700 (0.14%) | ~30σ |
 
-Our EXACT fits (35 constants at \<0.01% error) are **10x better than random** with standard search, and **3x better than random** with extended search. This is statistically significant (3σ+).
+> **Audit note (2026-08-13) — the significance claim does not hold.**
+>
+> The two probabilities above were not computed from the family; they were assumed.
+> Enumerating the family around each of the 67 actual targets in this document and
+> measuring the local density of members gives the probability that *at least one*
+> member lands within ±0.01% of a target:
+>
+> | Search | Combinations | Claimed | Recomputed | Understated by |
+> |--------|--------------|---------|------------|----------------|
+> | Standard ($m \in [-3,0]$) | 54,756 | 0.2% | **64.2%** (min 33.2%) | ~321× |
+> | Extended | 123,201 | 2.9% | **99.8%** (min 88.4%) | ~34× |
+>
+> With ~100% per-target hit probability under the extended search, **67 of 67
+> targets are expected to land in the EXACT class by chance**. The document lists
+> **32**. An observed count *below* chance expectation cannot support a claim of
+> significance in either direction, so the "~10σ" and "3σ+" statements are
+> withdrawn. Note also that a fair significance threshold must be corrected for
+> the size of the search: by the Šidák correction, $M = 123{,}201$ trials at
+> $\alpha = 0.05$ require **5.06σ**, not 3σ.
+>
+> This does not make the fits wrong — it makes them *uninformative* at 0.01%
+> precision. To carry information, an agreement in this family must be tighter
+> than the local resolution threshold, which for these targets lies in the range
+> $6.6\times10^{-5}$ … $1.0\times10^{-4}$.
+>
+> Consequence for $m_p/m_e$: an error of 0.109% sounds acceptable, but CODATA 2022
+> knows this ratio to a relative uncertainty of $1.7\times10^{-11}$, so in units of
+> the measurement uncertainty the miss is $6.3\times10^{7}\sigma$.
+> Double precision was verified sufficient for this comparison (error
+> $8.4\times10^{-16}$ against an allowance of $1.7\times10^{-13}$, 100× margin), so
+> the disagreement is not a rounding artefact.
 
 ### Two-Formula Composition (Acceleration)
 
@@ -255,7 +289,7 @@ This suggests higher-order compositions could be a powerful acceleration techniq
 ## CLI Usage
 
 ```bash
-# Show all 75 constants + 21 predictions
+# Show all 70 constants + 21 predictions
 tri sacred
 
 # Standard search (20,412 combos, <1ms)
@@ -282,11 +316,18 @@ $$\text{Extended:}\quad k \in [-6,6],\; m \in [-4,4],\; p \in [-6,6],\; q \in [-
 
 | Metric | Standard | Extended |
 |--------|----------|----------|
-| Combinations | 20,412 | 123,201 |
+| Combinations | 20,412 (see note) | 123,201 |
 | Speed (Zig) | \<1ms | ~3ms |
-| EXACT fits | 20 | 35 (75% improvement) |
+| EXACT fits | 20 | 32 (60% improvement) |
 | Improvement | — | Up to **61x** better |
 | Random baseline error | 0.096% | 0.014% (7x better coverage) |
+
+> **Audit note (2026-08-13).** The standard-search bounds as stated above
+> ($n \in [1,9]$, $k \in [-6,6]$, $m \in [-3,0]$, $p \in [-6,6]$, $q \in [-4,4]$)
+> enumerate **54,756** combinations, not 20,412. Either the count or the bounds is
+> wrong; the extended count of 123,201 does match its stated bounds and is
+> confirmed. This matters because the multiple-comparison correction is driven by
+> the true search size.
 
 ---
 

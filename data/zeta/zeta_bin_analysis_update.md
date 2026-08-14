@@ -1,7 +1,7 @@
 # Height-Dependent Bin Analysis: K(T), p95(T), χ²(T)
 ## Supplement to Session 9: Riemann Hypothesis CF Analysis
 
-**Date:** 2026-03-08  
+**Date:** 2026-03-08 · **Corrected:** 2026-08-13  
 **Dataset:** 100,000 Odlyzko zeros divided into 10 height bins  
 **Height Range:** γ = 14.1 → 74,920.8
 
@@ -12,8 +12,15 @@
 | Metric | Mean ± Std | Expected Value | Deviation |
 |--------|-----------|----------------|-----------|
 | Khinchin K | 2.6201 ± 0.0293 | 2.685 | -0.065 (2.4%) |
-| p95 spacing | 1.7252 ± 0.0202 | 2.15 (GUE) | -0.425 (19.8%) |
-| χ²/dof | 2.67 ± 0.49 | ~1.0 (perfect fit) | +1.67 |
+| p95 spacing | 1.7186 ± 0.0045 | **1.7518** (GUE, computed) | **-0.033 (1.9%)** |
+| χ²/dof | 2.67 ± 0.49 | ~1.0 (perfect fit) | +1.67 — UNVERIFIED |
+
+**Correction 2026-08-13.** The expected p95 was given as 2.15 with no
+derivation. The Wigner surmise gives p95 = 1.7518 exactly (from
+F(s) = erf(2s/√π) − (4s/π)e^(−4s²/π); regenerate with
+`scripts/recompute_zeta_percentiles.py`). The deviation is therefore 1.9%,
+not 19.8%, and the "persistent light tails" reading below does not survive.
+Per-bin p95 recomputed with equal counts is 1.7186 ± 0.0045 — flat in height.
 
 ---
 
@@ -45,20 +52,36 @@
 - Trend: No clear convergence with height
 - Deviation from expected: **-2.4%** (systematic)
 
-**Interpretation**: This suggests either:
-1. Sample size effect (500 CF expansions per bin may be insufficient)
-2. Arithmetic structure in zeta spacings affecting CF statistics
-3. Need for larger sample or higher zeros
+**Interpretation**: not established — the estimator is unspecified, and the two
+plausible estimators bracket the observed value. Monte-Carlo control over
+uniform random reals (Khinchin-generic a.s.), 500 expansions per synthetic bin,
+`scripts/khinchin_finite_sample.py`:
 
-### 2. Spacing Distribution: Persistent Light Tails
+| estimator | m = 20 terms | m = 50 | m = 100 | K |
+|---|---|---|---|---|
+| mean of per-expansion geometric means | 2.755 ± 0.031 | 2.713 ± 0.018 | 2.697 ± 0.013 | 2.6854520 |
+| pooled geometric mean over all terms | 2.668 ± 0.029 | 2.677 ± 0.017 | 2.684 ± 0.013 | 2.6854520 |
 
-**p95 = 1.73 ± 0.02, consistently below GUE prediction of 2.15**
+The first estimator is biased **above** K, the second **below**. The observed
+2.6201 ± 0.0293 sits 1.6σ from the pooled control at m = 20 — i.e. consistent
+with finite-sample bias — and 4σ from the per-expansion control. Which applies
+depends on the estimator and on the number of partial quotients per expansion,
+neither of which this document records. Status: OPEN, not a finding. To close
+it, record the estimator and m, then compare against the matching control row.
 
-- All bins show p95 < 1.80
-- Standard deviation across bins: only 0.02 (very stable!)
-- Deviation from GUE: **-20%**
+### 2. Spacing Distribution: agrees with GUE to ~2%
 
-**Interpretation**: This confirms the finite-size correction effect (Forrester & Mays 2015). The lighter tails persist even at T ~ 75K.
+**p95 = 1.7186 ± 0.0045, against GUE 1.7518 → −1.9%**
+
+- All bins fall in 1.713–1.725; spread across bins is 0.005, not 0.02
+- Deviation from GUE: **−1.9%**, and flat in height
+
+**Interpretation**: consistent with the Wigner surmise at the level of accuracy
+the surmise itself has (it approximates the exact GUE gap law). The previous
+text read this as a −20% deficit and cited Forrester & Mays 2015 as confirming
+a finite-size correction. Both go: the −20% was the wrong reference column, and
+a 1.9% flat offset is not evidence for a finite-size trend. Forrester & Mays
+may still be relevant, but nothing in this table tests it.
 
 ### 3. GUE Fit: Improves with Height (with fluctuations)
 
@@ -97,9 +120,14 @@ plt.xlabel('Height T'); plt.ylabel('Khinchin K'); plt.legend()
 
 | Finding | This Work | Literature | Status |
 |---------|-----------|------------|--------|
-| Lighter tails (p95 < GUE) | 1.73 vs 2.15 | Odlyzko (1989) | ✅ Confirmed |
-| K < 2.685 | 2.62 ± 0.03 | Wolf (2010) | ⚠️ New observation |
-| Finite-size corrections | χ²/dof decreases with T | Forrester-Mays (2015) | ✅ Confirmed |
+| p95 vs GUE | 1.7186 vs 1.7518 (−1.9%) | — | ⚠️ Within surmise accuracy; not a finding |
+| Std vs GUE | 0.4009 vs 0.4220 (−5.0%) | — | ⚠️ Open — the one real deviation |
+| K < 2.685 | 2.62 ± 0.03 | Wolf (2010) | ⚠️ New observation, sample-size limited |
+| Finite-size corrections | no height trend in p95 | Forrester-Mays (2015) | ❌ Not tested here (was: "✅ Confirmed") |
+
+Withdrawn rows: "Lighter tails (p95 < GUE) 1.73 vs 2.15 — Odlyzko (1989)
+✅ Confirmed" and the Forrester-Mays ✅. Both attached a real citation to an
+artifact of the wrong reference column.
 
 ---
 
@@ -114,3 +142,23 @@ plt.xlabel('Height T'); plt.ylabel('Khinchin K'); plt.legend()
 
 *Analysis performed with Trinity V1.0.1 - Sacred Mathematics Module*
 *φ² + 1/φ² = 3 = TRINITY*
+
+## Обновление 2026-08-13 (второй тик аудита)
+
+Эталон пересчитан против **точного** закона зазоров GUE (детерминант Фредгольма
+с синус-ядром, `scripts/gue_exact_gap.py`), а не против surmise Вигнера:
+std 0.424258, p50 0.962807, p90 1.570136, p95 1.757099, p99 2.120406.
+Сам surmise отклоняется от точного закона на 0.3-0.5%.
+
+Наблюдение (100k нулей, развёртка через тэта-функцию Римана-Зигеля,
+`scripts/unfolding_test.py`): std -5.50%, p90 -2.11%, p95 -2.17%, p99 -2.47%,
+p50 +0.29%.
+
+Развёртка как причина ОТВЕРГНУТА: точная развёртка (θ(γ)/π) и ведущий член
+дают одно и то же с точностью 1e-5.
+
+Конечная высота — статус OPEN (`scripts/height_extrapolation.py`): при
+1/L ~ 0.107 поправка порядка 1/L ожидаема по величине, экстраполяция по
+корзинам даёт std +1.09%, p90 +0.09%, p99 +1.52%, но p95 -2.29% (тренда по
+высоте у p95 нет). Рычаг слишком короткий (1/L = 0.153..0.107). Закрывается
+нулями около 10^12 / 10^21, которых в репозитории нет.

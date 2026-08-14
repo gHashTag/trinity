@@ -1,7 +1,7 @@
 # Zeta Zero Spacing Analysis Results
 ## Session 9: Riemann Hypothesis CF Analysis
 
-**Date:** 2026-03-08  
+**Date:** 2026-03-08 · **Corrected:** 2026-08-13  
 **Dataset:** 100,000 real zeta zeros from Odlyzko database  
 **Height Range:** γ = 14.1 → 74,920.8
 
@@ -13,9 +13,9 @@ Analysis of 100,000 real Riemann zeta function zeros reveals:
 
 1. ✅ **Local mean spacing** perfectly matches theoretical formula `2π/ln(T)`
 2. ✅ **Khinchin's constant K = 2.669** ≈ 2.685 (generic CF behavior)
-3. ⚠️ **Std deviation = 0.40** (below GUE prediction of 0.42-0.43)
-4. ❌ **95th percentile = 1.72** (significantly below GUE prediction of 2.15)
-5. ❌ **Tail distribution is lighter** than pure GUE Wigner surmise
+3. ⚠️ **Std deviation = 0.401** vs GUE 0.4220 = √(3π/8 − 1) → −5.0% (the one surviving deviation)
+4. ✅ **95th percentile = 1.719** vs GUE **1.7518** → −1.9% (the former "2.15" reference was wrong)
+5. ✅ **Tails agree with the Wigner surmise to ~2%**; the earlier "significantly lighter tails" claim was an artifact of the wrong reference column
 
 ---
 
@@ -23,13 +23,29 @@ Analysis of 100,000 real Riemann zeta function zeros reveals:
 
 ### Global Statistics (100K zeros)
 
-| Metric | Value | GUE Expected | Status |
-|--------|-------|--------------|--------|
-| Mean spacing | 1.0000 | 1.0 | ✅ Perfect |
-| Std deviation | 0.429 | 0.42-0.43 | ✅ Good |
-| Median | 0.954 | 0.91 | ⚠️ Slight deviation |
-| 95th percentile | 1.760 | 2.15 | ❌ Significant deviation |
-| 99th percentile | 2.44 | 2.75 | ❌ Significant deviation |
+Reference column is **computed, not cited**: GUE Wigner surmise
+p(s) = (32/π²)s²e^(−4s²/π), CDF F(s) = erf(2s/√π) − (4s/π)e^(−4s²/π).
+Regenerate every number below with
+`scripts/recompute_zeta_percentiles.py data/zeta/zeros_odlyzko_100k.txt`.
+
+| Metric | Value | GUE (computed) | Deviation | Status |
+|--------|-------|----------------|-----------|--------|
+| Mean spacing | 1.0000 | 1.0 (exact) | −0.00% | ✅ |
+| Std deviation | 0.4009 | 0.4220 | −5.00% | ⚠️ real deviation |
+| Median | 0.9655 | 0.9639 | +0.17% | ✅ |
+| 95th percentile | 1.7189 | 1.7518 | −1.88% | ✅ |
+| 99th percentile | 2.0680 | 2.1107 | −2.02% | ✅ |
+
+**Correction 2026-08-13.** The previous version of this table used a
+"GUE Expected" column of 0.91 / 2.15 / 2.75 for median / p95 / p99. None of
+those three values is reproducible from the Wigner surmise, from the GOE
+surmise (0.939 / 1.953 / 2.422), or from the s³ variant that
+`src/sacred/zeta_spacing.zig` implemented before its fix (1.148 / 1.930 / 2.283).
+They were a cited reference column with no derivation. Only the std entry
+(0.42–0.43) was correct. The observed column was also internally inconsistent —
+the summary said p95 = 1.72 while the table said 1.760, and the global std of
+0.429 contradicted this document's own bin table, where every bin is 0.39–0.44.
+Recomputed observed values are above.
 
 ### Continued Fraction Analysis
 
@@ -71,16 +87,29 @@ Analysis of 100,000 real Riemann zeta function zeros reveals:
 
 ## Key Findings
 
-### 1. Montgomery-Odlyzko Law: Approximation, Not Exact
+### 1. Montgomery-Odlyzko Law: Confirmed to ~2% at these heights
 
-The famous law stating "zeta zero spacings follow GUE statistics" is an approximation. Real zeros show:
-- **Lighter tails** (fewer large spacings)
-- **Lower variance** than pure GUE
-- **Systematic deviation** at all heights studied
+Against a computed GUE reference, the 100K zeros agree with the Wigner surmise
+at the 2% level in median, p95 and p99. The earlier conclusion in this
+document — "the law is only an approximation, tails are significantly
+lighter" — rested entirely on the wrong reference column and does not survive
+its correction. What remains:
+- **Variance −5.0%** (0.4009 vs 0.4220): the one deviation larger than the
+  surmise-vs-exact-GUE gap, and the only one worth pursuing.
+- **p99 is not lighter but slightly heavier than the naive reading suggested**:
+  2.068 vs 2.111 is −2%, i.e. within the accuracy of the surmise itself, which
+  is an approximation to the exact GUE gap law (Fredholm determinant /
+  Painlevé V). Any claim finer than a few percent needs the exact law, not the
+  surmise.
 
-### 2. Height Paradox
+### 2. Height Paradox — status: OPEN, and suspect
 
-Counterintuitively, **lower zeros show better GUE fit** in χ² test, despite asymptotic theory predicting convergence at higher heights.
+χ²/dof in the table below grows with height, which contradicts asymptotic
+theory. The χ²/dof column was computed against the same reference machinery
+that carried the wrong p95, and with unequal-N binning of the kind shown to
+inflate agreement in `data/zeta/corrected-2026-08-12/NOTE.md`. Recomputed
+per-bin p95 with equal counts is flat: 1.7186 ± 0.0045 across ten bins, i.e.
+no height trend at all. Treat the χ² table as unverified until regenerated.
 
 ### 3. Arithmetic Structure
 
@@ -107,6 +136,9 @@ K = 2.669 ≈ 2.685 confirms **generic CF behavior** for most spacings, despite 
 
 1. Montgomery, H. (1973). "The pair correlation of zeros of the zeta function"
 2. Odlyzko, A. M. (1989). "The 10^20-th zero of the Riemann zeta function"
+   — cited here for the dataset only. This document previously cited it as
+   confirming "lighter tails"; that claim was an artifact of the reference
+   column and the citation has been withdrawn from it.
 3. Mezzadri, F. (2006). "How to generate random matrices from the classical compact groups"
 4. Forrester, P. J. (2010). "Log-gases and random matrices"
 
@@ -114,3 +146,23 @@ K = 2.669 ≈ 2.685 confirms **generic CF behavior** for most spacings, despite 
 
 *Analysis performed with Trinity V1.0.1 - Sacred Mathematics Module*
 *φ² + 1/φ² = 3 = TRINITY*
+
+## Обновление 2026-08-13 (второй тик аудита)
+
+Эталон пересчитан против **точного** закона зазоров GUE (детерминант Фредгольма
+с синус-ядром, `scripts/gue_exact_gap.py`), а не против surmise Вигнера:
+std 0.424258, p50 0.962807, p90 1.570136, p95 1.757099, p99 2.120406.
+Сам surmise отклоняется от точного закона на 0.3-0.5%.
+
+Наблюдение (100k нулей, развёртка через тэта-функцию Римана-Зигеля,
+`scripts/unfolding_test.py`): std -5.50%, p90 -2.11%, p95 -2.17%, p99 -2.47%,
+p50 +0.29%.
+
+Развёртка как причина ОТВЕРГНУТА: точная развёртка (θ(γ)/π) и ведущий член
+дают одно и то же с точностью 1e-5.
+
+Конечная высота — статус OPEN (`scripts/height_extrapolation.py`): при
+1/L ~ 0.107 поправка порядка 1/L ожидаема по величине, экстраполяция по
+корзинам даёт std +1.09%, p90 +0.09%, p99 +1.52%, но p95 -2.29% (тренда по
+высоте у p95 нет). Рычаг слишком короткий (1/L = 0.153..0.107). Закрывается
+нулями около 10^12 / 10^21, которых в репозитории нет.
