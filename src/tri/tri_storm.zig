@@ -5,7 +5,9 @@ const Allocator = std.mem.Allocator;
 const print = std.debug.print;
 
 // STORM Golden Chain module
-const golden_chain = @import("golden_chain");
+// src/tri/golden_chain.zig — это CLI-обёртка (runGoldenChainCommand).
+// Тип GoldenChain живёт в src/storm/golden_chain.zig — он и нужен здесь.
+const golden_chain = @import("storm_golden_chain");
 
 // ANSI colors
 const RESET = "\x1b[0m";

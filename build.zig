@@ -1394,6 +1394,15 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // server.zig делает @import("trinity_workspace"), но модуль никогда здесь не
+    // объявлялся — файл `src/trinity_workspace.zig` лежит в репозитории,
+    // просто не был проводом подведён к цели.
+    const trinity_workspace_mod = b.createModule(.{
+        .root_source_file = b.path("src/trinity_workspace.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const trinity_mcp = b.addExecutable(.{
         .name = "trinity-mcp",
         .root_module = b.createModule(.{
@@ -1405,6 +1414,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "vsa", .module = vsa_tri },
                 .{ .name = "treesitter_zig", .module = ts_zig_mod },
                 .{ .name = "tri_train", .module = tri_train_mod },
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
             },
         }),
     });
@@ -1648,59 +1658,33 @@ pub fn build(b: *std.Build) void {
     // HSLM — Platform Benchmark Suite (for arXiv paper)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    const hslm_bench = b.addExecutable(.{
-        .name = "hslm-bench",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/hslm/hslm_benchmark.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-        }),
-    });
-    b.installArtifact(hslm_bench);
-    const run_hslm_bench = b.addRunArtifact(hslm_bench);
-    const hslm_bench_step = b.step("hslm-bench", "Run HSLM inference platform benchmark");
-    hslm_bench_step.dependOn(&run_hslm_bench.step);
+    // `src/hslm/hslm_benchmark.zig` вынесен в gHashTag/trinity-training
+    // (36f38639c, "extract HSLM training to trinity-training repository"), а
+    // шаг сборки остался ссылаться на пустое место. Это одна из причин, по
+    // которой `zig build` не проходил с апреля. Шаг снят здесь, а не
+    // восстановлен файл: файл живёт в другом репозитории, и возвращать копию
+    // значило бы завести второй источник истины.
+    const hslm_bench_step = b.step("hslm-bench", "Перенесён в gHashTag/trinity-training");
+    hslm_bench_step.dependOn(&b.addFail("hslm-bench живёт в gHashTag/trinity-training (36f38639c)").step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // BPE Tokenizer Trainer
     // ═══════════════════════════════════════════════════════════════════════════
 
-    const bpe_train = b.addExecutable(.{
-        .name = "bpe-train",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/hslm/bpe_train.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-        }),
-    });
-    b.installArtifact(bpe_train);
-
-    const run_bpe_train = b.addRunArtifact(bpe_train);
-    if (b.args) |run_args| {
-        run_bpe_train.addArgs(run_args);
-    }
-    const bpe_step = b.step("bpe-train", "Train BPE tokenizer merge rules from corpus");
-    bpe_step.dependOn(&run_bpe_train.step);
+    // `src/hslm/bpe_train.zig` — там же, gHashTag/trinity-training (36f38639c).
+    const bpe_step = b.step("bpe-train", "Перенесён в gHashTag/trinity-training");
+    bpe_step.dependOn(&b.addFail("bpe-train живёт в gHashTag/trinity-training (36f38639c)").step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // HSLM Entrypoint — Pure Zig replacement for entrypoint-train.sh
     // ═══════════════════════════════════════════════════════════════════════════
 
-    const hslm_entrypoint = b.addExecutable(.{
-        .name = "hslm-entrypoint",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/cli/entrypoint_train.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-            .link_libc = true,
-        }),
-    });
-    b.installArtifact(hslm_entrypoint);
+    // `src/cli/entrypoint_train.zig` — там же, gHashTag/trinity-training
+    // (36f38639c). Railway-деплой обучения выполняется из того репозитория.
 
-    // train-deploy: build ONLY training binaries (for Railway Dockerfile — no raylib)
-    const train_deploy_step = b.step("train-deploy", "Build hslm-train + hslm-entrypoint for Railway deploy");
+    // train-deploy: собирает только тренировочные бинари (Railway Dockerfile, без raylib)
+    const train_deploy_step = b.step("train-deploy", "Build hslm-train for Railway deploy");
     train_deploy_step.dependOn(&hslm_train.step);
-    train_deploy_step.dependOn(&hslm_entrypoint.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Railway Redeploy Tool — Bypasses PreToolUse hook for Railway API
@@ -2027,6 +2011,91 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "bsd", .module = bsd_mod },
                 // P1.6: Registry module for commands export and MCP tools
                 .{ .name = "registry", .module = registry_mod },
+                // Научные подкоманды `tri`: файлы лежат в тематических каталогах,
+                // модулей с ожидаемыми именами в build.zig не было.
+                .{ .name = "kaggle", .module = b.createModule(.{
+                    .root_source_file = b.path("src/kaggle/kaggle.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "arrow_of_time", .module = b.createModule(.{
+                    .root_source_file = b.path("src/time/arrow_of_time.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "origin_of_life", .module = b.createModule(.{
+                    .root_source_file = b.path("src/biology/origin_of_life.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "quantum_gravity_full", .module = b.createModule(.{
+                    .root_source_file = b.path("src/gravity/quantum_gravity_full.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "measurement", .module = b.createModule(.{
+                    .root_source_file = b.path("src/quantum/measurement_problem.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "monopoles", .module = b.createModule(.{
+                    .root_source_file = b.path("src/monopoles/sacred_monopoles.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "superconductivity", .module = b.createModule(.{
+                    .root_source_file = b.path("src/superconductivity/room_temperature_superconductivity.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "gravity", .module = b.createModule(.{
+                    .root_source_file = b.path("src/gravity/black_hole_information.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "storm_golden_chain", .module = b.createModule(.{
+                    .root_source_file = b.path("src/storm/golden_chain.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                // Мозговые ядра: полные реализации лежат в src/brain/ (в src/tri/
+                // остались урезанные копии — src/tri/basal_ganglia.zig без поля
+                // Stats.active_claims). Объявляем модулями с корнем в src/brain/.
+                .{ .name = "basal_ganglia", .module = b.createModule(.{
+                    .root_source_file = b.path("src/brain/basal_ganglia.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "locus_coeruleus", .module = b.createModule(.{
+                    .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "reticular_formation", .module = b.createModule(.{
+                    .root_source_file = b.path("src/brain/reticular_formation.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                // DePIN: network/bootstrap/persistence ссылаются друг на друга,
+                // поэтому это ОДИН модуль с корнем src/depin/mod.zig.
+                .{ .name = "depin", .module = b.createModule(.{
+                    .root_source_file = b.path("src/depin/mod.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "firebird_slashing", .module = b.createModule(.{
+                    .root_source_file = b.path("src/firebird/slashing.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                // src/tri/main.zig роутит `tri tri27 <cmd>` через @import("tri27_cli"),
+                // но модуль не был объявлен. Файл есть: src/tri27/tri27_cli.zig
+                // (экспортирует runTri27Command).
+                .{ .name = "tri27_cli", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri27/tri27_cli.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
             },
         }),
     });
@@ -2249,10 +2318,15 @@ pub fn build(b: *std.Build) void {
         }),
     });
     trinity_canvas.linkSystemLibrary("raylib");
-    // v8.4: Add raygui include path and C implementation
-    trinity_canvas.addIncludePath(b.path("external/raygui/src"));
-    trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
-    // TEMP: Disable install until raygui.h is available
+    // raygui недоступен: `external/raygui/src` в репозитории нет (сторонний
+    // header-only пакет никогда не вендорился), а `src/vsa/raygui_impl.c`
+    // удалён в 42490a222 вместе с остальными миграциями. Установка артефакта
+    // уже была отключена по этой же причине — теперь отключены и две ссылки на
+    // отсутствующие пути, которые продолжали ломать `zig build` целиком.
+    // Чтобы вернуть: вендорить raygui в external/raygui и восстановить
+    // raygui_impl.c из 42490a222^.
+    // trinity_canvas.addIncludePath(b.path("external/raygui/src"));
+    // trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
     // b.installArtifact(trinity_canvas);
 
     const run_trinity_canvas = b.addRunArtifact(trinity_canvas);
@@ -2574,12 +2648,23 @@ pub fn build(b: *std.Build) void {
     // TRI-API — Direct Anthropic API Agent (Issue #60)
     // ═══════════════════════════════════════════════════════════════════════════════
 
+    // То же самое для `token_rotator`: `src/tri/token_rotator.zig` есть в репозитории,
+    // а main.zig его импортирует как модуль, который не объявлялся.
+    const token_rotator_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/token_rotator.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const tri_api = b.addExecutable(.{
         .name = "tri-api",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/tri-api/main.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "token_rotator", .module = token_rotator_mod },
+            },
         }),
     });
     b.installArtifact(tri_api);

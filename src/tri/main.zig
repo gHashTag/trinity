@@ -42,7 +42,9 @@ const faculty_board = @import("cortex.zig");
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
 const env_loader = @import("env_loader.zig");
-const golden_chain = @import("golden_chain");
+// runGoldenChainCommand объявлена в src/storm/golden_chain.zig, а не в
+// одноимённом файле рядом — берём модуль storm_golden_chain.
+const golden_chain = @import("storm_golden_chain");
 const tri_clara = @import("tri_clara.zig");
 const tri_sparc = @import("sparc/mod.zig");
 

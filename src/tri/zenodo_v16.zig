@@ -203,7 +203,7 @@ pub const ExperimentResultEnhanced = struct {
         const std_str = try std.fmt.allocPrint(allocator, "{d:.4}", .{self.std_dev});
         defer allocator.free(std_str);
 
-        return std.fmt.allocPrint(allocator, "{s} & {s:.3f} & {s:.3f}", .{ self.experiment_id, self.mean, self.std_dev });
+        return std.fmt.allocPrint(allocator, "{s} & {d:.3} & {d:.3}", .{ self.experiment_id, self.mean, self.std_dev });
     }
 };
 

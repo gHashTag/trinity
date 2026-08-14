@@ -28,9 +28,13 @@ const farm_accounts_mod = @import("farm_accounts.zig");
 const Account = farm_accounts_mod.Account;
 
 // DePIN modules for directed discovery (imported via build.zig)
-const depin_network = @import("depin_network");
-const depin_bootstrap = @import("depin_bootstrap");
-const depin_persistence = @import("depin_persistence");
+// Файлы никуда не пропали, их переименовали: src/depin/network.zig,
+// bootstrap.zig, persistence.zig и src/firebird/slashing.zig. Корень модуля —
+// src/tri/main.zig, поэтому «../» запрещён: модули объявлены в build.zig.
+const depin = @import("depin");
+const depin_network = depin.network;
+const depin_bootstrap = depin.bootstrap;
+const depin_persistence = depin.persistence;
 const firebird_slashing = @import("firebird_slashing");
 
 const print = std.debug.print;

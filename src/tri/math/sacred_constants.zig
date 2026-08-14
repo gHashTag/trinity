@@ -61,6 +61,15 @@ pub const LOG3_2: f64 = 0.6309297535714574;
 /// μ = 1/φ²/10 = 0.0382 (intelligence gain per fix)
 pub const MU: f64 = PHI_INV_SQ / 10.0;
 
+/// χ = 1/φ/10 ≈ 0.0618 (crossover rate) — эволюционная константа из φ
+pub const CHI: f64 = PHI_INV / 10.0;
+
+/// σ = φ ≈ 1.618 (selection pressure) — эволюционная константа из φ
+pub const SIGMA: f64 = PHI;
+
+/// ε = 1/3 ≈ 0.333 (elitism ratio) — доля от золотого тождества φ²+φ⁻²=3
+pub const EPSILON: f64 = 1.0 / 3.0;
+
 /// Lucas number L(10) = 123 (Trinity checksum)
 pub const LAMBDA_10: f64 = 123.0;
 

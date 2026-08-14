@@ -303,7 +303,7 @@ fn runBatchFit(allocator: Allocator, data_content: []const u8, options: SparcOpt
 
         if (options.verbose) {
             const status = if (is_good) colorize("GOOD", .green) else colorize("POOR", .red);
-            std.debug.print("{s} (χ²={:.3f})\n", .{ status, result.reduced_chi_squared });
+            std.debug.print("{s} (χ²={d:.3})\n", .{ status, result.reduced_chi_squared });
         } else {
             // Simple progress indicator
             if ((i + 1) % 10 == 0 or i + 1 == galaxies.len) {
@@ -336,9 +336,9 @@ fn runBatchFit(allocator: Allocator, data_content: []const u8, options: SparcOpt
     std.debug.print("{s}Batch Fit Summary{s}\n", .{ colorize("════════════════════════════════════════════════════════════", .cyan), colorize("", .reset) });
     std.debug.print("\n", .{});
     std.debug.print("  Total galaxies: {d}\n", .{results.items.len});
-    std.debug.print("  Good fits (χ² < 2.0): {d} ({:.1f}%)\n", .{ total_good, if (results.items.len > 0) @as(f64, @floatFromInt(total_good)) / @as(f64, @floatFromInt(results.items.len)) * 100 else 0 });
-    std.debug.print("  Mean reduced χ²: {:.3f}\n", .{mean_chi});
-    std.debug.print("  Median reduced χ²: {:.3f}\n", .{median_chi});
+    std.debug.print("  Good fits (χ² < 2.0): {d} ({d:.1}%)\n", .{ total_good, if (results.items.len > 0) @as(f64, @floatFromInt(total_good)) / @as(f64, @floatFromInt(results.items.len)) * 100 else 0 });
+    std.debug.print("  Mean reduced χ²: {d:.3}\n", .{mean_chi});
+    std.debug.print("  Median reduced χ²: {d:.3}\n", .{median_chi});
     std.debug.print("\n", .{});
 
     // Quality indicator
@@ -355,7 +355,7 @@ fn runBatchFit(allocator: Allocator, data_content: []const u8, options: SparcOpt
     else
         colorize("POOR", .red);
 
-    std.debug.print("  Overall quality: {s} ({:.1f}% good fits){s}\n\n", .{ status_str, success_rate * 100, colorize("", .reset) });
+    std.debug.print("  Overall quality: {s} ({d:.1}% good fits){s}\n\n", .{ status_str, success_rate * 100, colorize("", .reset) });
 
     // Output detailed results based on format
     switch (options.format) {
@@ -407,7 +407,7 @@ fn runBatchFit(allocator: Allocator, data_content: []const u8, options: SparcOpt
         },
         .csv => {
             std.debug.print("name,chi_squared,reduced_chi_squared,is_good_fit,num_points\n", .{});
-            for (results) |r| {
+            for (results.items) |r| {
                 const good_str = if (r.is_good) "true" else "false";
                 std.debug.print("{s},{e},{e},{s},{}\n", .{
                     r.name, r.chi_sq, r.reduced_chi_sq, good_str, r.num_points,
@@ -435,9 +435,9 @@ fn outputText(allocator: Allocator, result: mod.FitResult, options: SparcOptions
 
     std.debug.print("\n", .{});
     std.debug.print("{s}Fit Quality:{s}\n", .{ "  ", "" });
-    std.debug.print("{s}  χ²:         {:.6f}\n", .{ "  ", result.chi_squared });
+    std.debug.print("{s}  χ²:         {d:.6}\n", .{ "  ", result.chi_squared });
     std.debug.print("{s}  DOF:         {}\n", .{ "  ", result.dof });
-    std.debug.print("{s}  Reduced χ²: {:.6f}\n", .{ "  ", result.reduced_chi_squared });
+    std.debug.print("{s}  Reduced χ²: {d:.6}\n", .{ "  ", result.reduced_chi_squared });
 
     // Quality indicator
     const is_good = Fitting.isGoodFit(result);
@@ -513,7 +513,7 @@ fn outputCsv(allocator: Allocator, result: mod.FitResult, points: []const mod.Ga
         result.chi_squared,
         result.dof,
         result.reduced_chi_squared,
-    }) catch unreachable;
+    });
 
     // Data points header
     std.debug.print("\nradius_kpc,velocity_kms,velocity_err_kms\n", .{});
@@ -522,7 +522,7 @@ fn outputCsv(allocator: Allocator, result: mod.FitResult, points: []const mod.Ga
             point.radius,
             point.velocity,
             point.velocity_err,
-        }) catch unreachable;
+        });
     }
 }
 
@@ -563,7 +563,7 @@ fn runList(allocator: Allocator, options: SparcOptions) !void {
                 else
                     galaxy.name[0..12];
 
-                std.debug.print("{s: <12} {d: >6}  {:.1f}  {:.0f}  {:.0f}\n", .{
+                std.debug.print("{s: <12} {d: >6}  {d:.1}  {d:.0}  {d:.0}\n", .{
                     colorize(name_fmt, .blue),
                     galaxy.points.len,
                     galaxy.distance,
@@ -587,7 +587,7 @@ fn runList(allocator: Allocator, options: SparcOptions) !void {
                 try galaxy_obj.put("inclination_deg", json.Value{ .float = galaxy.inclination });
                 try galaxy_obj.put("position_angle_deg", json.Value{ .float = galaxy.position_angle });
 
-                try root.append(allocator, json.Value{ .object = galaxy_obj });
+                try root.append(json.Value{ .object = galaxy_obj });
             }
 
             {
@@ -666,7 +666,7 @@ fn runPlot(allocator: Allocator, options: SparcOptions) !void {
 
         // Y-axis label
         if (y % 5 == 0) {
-            std.debug.print("{:.0f} |", .{v_at_y});
+            std.debug.print("{d:.0} |", .{v_at_y});
         } else {
             std.debug.print("      |", .{});
         }
@@ -683,7 +683,7 @@ fn runPlot(allocator: Allocator, options: SparcOptions) !void {
                 const v_pos = PLOT_HEIGHT - 1 - @as(usize, @intFromFloat((p.velocity / max_v) * @as(f64, @floatFromInt(PLOT_HEIGHT - 1))));
 
                 if (x == x_pos and y == v_pos) {
-                    row_buffer[x] = '●'; // Data point
+                    row_buffer[x] = '*'; // Data point
                     break;
                 }
             }
@@ -691,7 +691,6 @@ fn runPlot(allocator: Allocator, options: SparcOptions) !void {
             // If no data point, check for model line
             if (row_buffer[x] == ' ') {
                 const model_v = Savchenko.totalVelocity(
-                    allocator,
                     r_at_x,
                     result.params.rho0,
                     result.params.r_mem,
@@ -708,17 +707,17 @@ fn runPlot(allocator: Allocator, options: SparcOptions) !void {
                 const model_y = PLOT_HEIGHT - 1 - @as(usize, @intFromFloat((model_v / max_v) * @as(f64, @floatFromInt(PLOT_HEIGHT - 1))));
 
                 if (y == model_y or (y + 1 == model_y and model_y < PLOT_HEIGHT)) {
-                    row_buffer[x] = '─'; // Model line
+                    row_buffer[x] = '-'; // Model line
                 }
             }
         }
 
         // Print row
         for (row_buffer) |c| {
-            if (c == '●') {
-                std.debug.print("{s}●{s}", .{ colorize("", .blue), colorize("", .reset) });
-            } else if (c == '─') {
-                std.debug.print("{s}─{s}", .{ colorize("", .green), colorize("", .reset) });
+            if (c == '*') {
+                std.debug.print("{s}*{s}", .{ colorize("", .blue), colorize("", .reset) });
+            } else if (c == '-') {
+                std.debug.print("{s}-{s}", .{ colorize("", .green), colorize("", .reset) });
             } else {
                 std.debug.print(" ", .{});
             }
@@ -735,7 +734,7 @@ fn runPlot(allocator: Allocator, options: SparcOptions) !void {
 
     // X-axis labels
     std.debug.print("     0.0", .{});
-    std.debug.print(" {:.1f} kpc (R)\n", .{max_r});
+    std.debug.print(" {d:.1} kpc (R)\n", .{max_r});
 
     // Print fit parameters below
     std.debug.print("\n{s}Fit Parameters:{s}\n", .{ colorize("", .magenta), colorize("", .reset) });
@@ -743,7 +742,7 @@ fn runPlot(allocator: Allocator, options: SparcOptions) !void {
     std.debug.print("  r_mem:   {e:.4} kpc\n", .{result.params.r_mem});
     std.debug.print("  r_core:  {e:.4} kpc\n", .{result.params.r_core});
     std.debug.print("  Υ_bul:   {e:.4}\n", .{result.params.upsilon_bul});
-    std.debug.print("  χ²:      {:.4f} (reduced: {:.4f})\n", .{result.chi_squared, result.reduced_chi_squared});
+    std.debug.print("  χ²:      {d:.4} (reduced: {d:.4})\n", .{result.chi_squared, result.reduced_chi_squared});
 }
 
 /// Argument parsing error set
