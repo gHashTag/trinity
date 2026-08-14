@@ -71,7 +71,7 @@ fn verifyBundle3Similarity() SotaMetric {
     var a = trinity.randomVector(DIM, 100);
     var b = trinity.randomVector(DIM, 200);
     var c = trinity.randomVector(DIM, 300);
-    var bundled = trinity.bundle3(&a, &b, &c, std.heap.page_allocator);
+    var bundled = trinity.bundle3(&a, &b, &c);
     const sim_a = trinity.cosineSimilarity(&bundled, &a);
     const sim_b = trinity.cosineSimilarity(&bundled, &b);
     const sim_c = trinity.cosineSimilarity(&bundled, &c);
@@ -94,7 +94,7 @@ fn verifyBundleNScaling() SotaMetric {
         vectors[i] = trinity.randomVector(DIM, @as(u32, @intCast(5000 + i)));
         ptrs[i] = &vectors[i];
     }
-    var bundled = trinity.bundleN(&ptrs, std.heap.page_allocator) catch unreachable;
+    var bundled = trinity.bundleN(&ptrs);
     const sim = trinity.cosineSimilarity(&bundled, ptrs[0]);
     return .{
         .name = "BundleN (5 vec)",
@@ -179,7 +179,7 @@ fn verifyAssociativeMemory() SotaMetric {
 
     var red_apple = trinity.bind(&apple, &red);
     var yellow_banana = trinity.bind(&banana, &yellow);
-    var memory = trinity.bundle2(&red_apple, &yellow_banana, std.heap.page_allocator);
+    var memory = trinity.bundle2(&red_apple, &yellow_banana);
 
     var query = trinity.unbind(&memory, &red);
     const sim_apple = trinity.cosineSimilarity(&query, &apple);

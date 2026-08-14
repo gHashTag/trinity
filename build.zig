@@ -32,6 +32,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod },
             .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
             .{ .name = "golden_float", .module = gf_mod },
         },
@@ -42,7 +43,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("deploy/trinity-nexus/lang/src/root.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     // Generated serve module — from .tri spec: specs/integration/full-serve-v1.tri
     // Links libc because full-serve-v1.zig uses std.c.getpid() for daemonize
@@ -51,7 +53,8 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     // Library artifact
     const lib = b.addLibrary(.{
@@ -77,7 +80,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/c_api.zig"),
         .target = target,
         .optimize = .ReleaseFast,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     // Shared library (.so / .dylib / .dll)
     const libvsa_shared = b.addLibrary(.{
@@ -96,6 +100,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/c_api.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     libvsa_static.linkLibC();
@@ -121,7 +126,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/queen_api.zig"),
         .target = target,
         .optimize = .ReleaseFast,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     const libqueen_shared = b.addLibrary(.{
         .name = "trinity-queen",
@@ -138,6 +144,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/queen_api.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     libqueen_static.linkLibC();
@@ -173,7 +180,8 @@ pub fn build(b: *std.Build) void {
                 .target = release_target,
                 .optimize = .ReleaseFast,
                 .link_libc = true,
-            }),
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        }),
         });
 
         const target_output = b.addInstallArtifact(release_lib, .{
@@ -237,6 +245,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/queen_api.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_queen_api_tests = b.addRunArtifact(queen_api_tests);
@@ -248,7 +257,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tests/benchmarks/benchmarks/benchmark_test.zig"),
             .target = target,
             .optimize = .ReleaseFast,
-            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "vsa", .module = trinity_mod }},
         }),
     });
     const run_bench_tests = b.addRunArtifact(bench_tests);
@@ -261,6 +270,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vm.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_vm_tests = b.addRunArtifact(vm_tests);
@@ -272,6 +282,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/e2e_test.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_e2e_tests = b.addRunArtifact(e2e_tests);
@@ -285,6 +296,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/c_api.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_c_api_tests = b.addRunArtifact(c_api_tests);
@@ -310,6 +322,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/igla/trace.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_trace_tests = b.addRunArtifact(trace_tests);
@@ -321,6 +334,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/agent_mu/swarm_collaboration.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_swarm_collab_tests = b.addRunArtifact(swarm_collab_tests);
@@ -331,6 +345,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/agent_mu/production_hardening_test.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_production_hardening_tests = b.addRunArtifact(production_hardening_tests);
@@ -341,6 +356,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/agent_mu/production_test.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_production_tests = b.addRunArtifact(production_tests);
@@ -353,6 +369,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_search.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(trinity_search);
@@ -371,6 +388,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/query_cli.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(trinity_query);
@@ -389,7 +407,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tests/benchmarks/benchmarks/bench_core.zig"),
             .target = target,
             .optimize = .ReleaseFast,
-            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "vsa", .module = trinity_mod }},
         }),
     });
     b.installArtifact(bench_core);
@@ -405,6 +423,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tests/benchmarks/benchmarks/bench_compression.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(bench_compress);
@@ -420,7 +439,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/memory.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod }},
         }),
     });
     b.installArtifact(example_memory);
@@ -431,7 +450,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/sequence.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod }},
         }),
     });
     b.installArtifact(example_sequence);
@@ -442,7 +461,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/vm.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod }},
         }),
     });
     b.installArtifact(example_vm);
@@ -464,7 +483,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/sota_report_demo.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "trinity", .module = trinity_mod }},
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod }},
         }),
     });
     b.installArtifact(sota_report);
@@ -480,6 +499,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/agent_mu/pas_demo.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(pas_demo);
@@ -495,6 +515,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/cli.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(firebird);
@@ -512,6 +533,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/b2t_integration.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_firebird_tests = b.addRunArtifact(firebird_tests);
@@ -523,6 +545,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/wasm_parser.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_wasm_tests = b.addRunArtifact(wasm_tests);
@@ -546,7 +569,8 @@ pub fn build(b: *std.Build) void {
                 .root_source_file = b.path("src/firebird/cli.zig"),
                 .target = release_target,
                 .optimize = .ReleaseFast,
-            }),
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        }),
         });
 
         const target_output = b.addInstallArtifact(release_exe, .{
@@ -572,6 +596,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/igla_local_chat.zig"),
             .target = release_target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         });
         const fluent_release_exe = b.addExecutable(.{
             .name = "fluent",
@@ -605,6 +630,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/extension_wasm.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_extension_tests = b.addRunArtifact(extension_tests);
@@ -616,6 +642,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/depin.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_depin_tests = b.addRunArtifact(depin_tests);
@@ -627,6 +654,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/depin/network.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_depin_network_tests = b.addRunArtifact(depin_network_tests);
@@ -638,6 +666,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/api/unified_server.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_api_tests = b.addRunArtifact(api_tests);
@@ -649,6 +678,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/file_encoder.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_file_encoder_tests = b.addRunArtifact(file_encoder_tests);
@@ -660,6 +690,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/protocol.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_protocol_tests = b.addRunArtifact(protocol_tests);
@@ -671,6 +702,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/storage.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_storage_tests = b.addRunArtifact(storage_tests);
@@ -682,6 +714,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/shard_manager.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_shard_manager_tests = b.addRunArtifact(shard_manager_tests);
@@ -693,6 +726,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/storage_discovery.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_storage_discovery_tests = b.addRunArtifact(storage_discovery_tests);
@@ -704,6 +738,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/remote_storage.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_remote_storage_tests = b.addRunArtifact(remote_storage_tests);
@@ -715,6 +750,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/crypto.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_crypto_tests = b.addRunArtifact(crypto_tests);
@@ -726,6 +762,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/galois.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_galois_tests = b.addRunArtifact(galois_tests);
@@ -737,6 +774,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/reed_solomon.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_reed_solomon_tests = b.addRunArtifact(reed_solomon_tests);
@@ -748,6 +786,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/connection_pool.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_connection_pool_tests = b.addRunArtifact(connection_pool_tests);
@@ -759,6 +798,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/manifest_dht.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_manifest_dht_tests = b.addRunArtifact(manifest_dht_tests);
@@ -770,6 +810,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/integration_test.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_integration_tests = b.addRunArtifact(integration_tests);
@@ -781,6 +822,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/proof_of_storage.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_pos_tests = b.addRunArtifact(pos_tests);
@@ -792,6 +834,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/shard_rebalancer.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_rebalancer_tests = b.addRunArtifact(rebalancer_tests);
@@ -803,6 +846,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/bandwidth_aggregator.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_bw_agg_tests = b.addRunArtifact(bw_agg_tests);
@@ -814,6 +858,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/shard_scrubber.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_scrubber_tests = b.addRunArtifact(scrubber_tests);
@@ -825,6 +870,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/node_reputation.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_reputation_tests = b.addRunArtifact(reputation_tests);
@@ -836,6 +882,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/graceful_shutdown.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_shutdown_tests = b.addRunArtifact(shutdown_tests);
@@ -847,6 +894,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/network_stats.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_netstats_tests = b.addRunArtifact(netstats_tests);
@@ -858,6 +906,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/auto_repair.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_auto_repair_tests = b.addRunArtifact(auto_repair_tests);
@@ -869,6 +918,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/incentive_slashing.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_slashing_tests = b.addRunArtifact(slashing_tests);
@@ -880,6 +930,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/prometheus_metrics.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_prometheus_tests = b.addRunArtifact(prometheus_tests);
@@ -891,6 +942,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/repair_rate_limiter.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_rate_limiter_tests = b.addRunArtifact(rate_limiter_tests);
@@ -902,6 +954,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/token_staking.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_token_staking_tests = b.addRunArtifact(token_staking_tests);
@@ -913,6 +966,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/peer_latency.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_peer_latency_tests = b.addRunArtifact(peer_latency_tests);
@@ -924,6 +978,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/rs_repair.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_rs_repair_tests = b.addRunArtifact(rs_repair_tests);
@@ -935,6 +990,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/metrics_http.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_metrics_http_tests = b.addRunArtifact(metrics_http_tests);
@@ -946,6 +1002,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/erasure_repair.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_erasure_repair_tests = b.addRunArtifact(erasure_repair_tests);
@@ -957,6 +1014,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/reputation_consensus.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_reputation_consensus_tests = b.addRunArtifact(reputation_consensus_tests);
@@ -968,6 +1026,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/stake_delegation.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_stake_delegation_tests = b.addRunArtifact(stake_delegation_tests);
@@ -979,6 +1038,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/region_topology.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_region_topology_tests = b.addRunArtifact(region_topology_tests);
@@ -990,6 +1050,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/slashing_escrow.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_slashing_escrow_tests = b.addRunArtifact(slashing_escrow_tests);
@@ -1001,6 +1062,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/prometheus_http.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_prometheus_http_tests = b.addRunArtifact(prometheus_http_tests);
@@ -1012,6 +1074,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/vsa_shard_encoder.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_vsa_shard_encoder_tests = b.addRunArtifact(vsa_shard_encoder_tests);
@@ -1023,6 +1086,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/semantic_index.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_semantic_index_tests = b.addRunArtifact(semantic_index_tests);
@@ -1034,6 +1098,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/cross_shard_tx.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_cross_shard_tx_tests = b.addRunArtifact(cross_shard_tx_tests);
@@ -1045,6 +1110,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/vsa_shard_locks.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_vsa_shard_locks_tests = b.addRunArtifact(vsa_shard_locks_tests);
@@ -1056,6 +1122,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/region_router.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_region_router_tests = b.addRunArtifact(region_router_tests);
@@ -1067,6 +1134,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/dynamic_erasure.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_dynamic_erasure_tests = b.addRunArtifact(dynamic_erasure_tests);
@@ -1078,6 +1146,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/saga_coordinator.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_saga_coordinator_tests = b.addRunArtifact(saga_coordinator_tests);
@@ -1089,6 +1158,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/transaction_wal.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_transaction_wal_tests = b.addRunArtifact(transaction_wal_tests);
@@ -1100,6 +1170,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/parallel_saga.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_parallel_saga_tests = b.addRunArtifact(parallel_saga_tests);
@@ -1111,6 +1182,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_node/wal_disk.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_wal_disk_tests = b.addRunArtifact(wal_disk_tests);
@@ -1123,6 +1195,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/b2t/b2t_cli.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(b2t);
@@ -1144,6 +1217,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/claude_ui.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(claude_ui);
@@ -1159,6 +1233,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/trinity_cli.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(trinity_cli);
@@ -1175,13 +1250,15 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/vibeec/igla_local_chat.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     const vibeec_fluent_chat = b.createModule(.{
         .root_source_file = b.path("src/vibeec/igla_fluent_chat_engine.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     // VSA module for TRI (needed by tvc_corpus_mod and fluent CLI), now the
     // migrated module rather than a path to a file that is not here.
@@ -1201,14 +1278,16 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/vibeec/igla_knowledge_graph.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     // LLM Triples Extractor module (SYM-002: pattern-based extraction) - defined early for fluent CLI
     const triples_parser_mod = b.createModule(.{
         .root_source_file = b.path("src/vibeec/triples_parser.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     // Fluent CLI - Local Chat with History Truncation (NO HANG!)
     const fluent_cli = b.addExecutable(.{
@@ -1245,7 +1324,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/agent_mu/agent_mu.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     const vibee = b.addExecutable(.{
         .name = "vibee",
@@ -1253,6 +1333,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/gen_cmd.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
 
@@ -1264,6 +1345,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         });
         ts_zig_mod.linkSystemLibrary("tree-sitter", .{});
         ts_zig_mod.link_libc = true;
@@ -1292,6 +1374,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/self_improver.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(self_improve);
@@ -1312,7 +1395,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     ts_zig_mod.link_libc = true;
     // Add stub include path for tree_sitter/api.h when library is not installed
     ts_zig_mod.addIncludePath(b.path("src/tvc/treesitter"));
@@ -1392,7 +1476,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/tri/metabolism.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     // server.zig делает @import("trinity_workspace"), но модуль никогда здесь не
     // объявлялся — файл `src/trinity_workspace.zig` лежит в репозитории,
@@ -1401,7 +1486,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/trinity_workspace.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     const trinity_mcp = b.addExecutable(.{
         .name = "trinity-mcp",
@@ -1433,6 +1519,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tools/mcp/trinity_mcp/agent/main.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(ralph_agent);
@@ -1448,7 +1535,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("tools/mcp/trinity_mcp/agent/telegram.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     const mu_agent = b.addExecutable(.{
         .name = "mu-agent",
         .root_module = b.createModule(.{
@@ -1496,6 +1584,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tools/mcp/trinity_mcp/agent/entrypoint.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(agent_entrypoint);
@@ -1512,6 +1601,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tools/mcp/trinity_mcp/agent/ralph_hook.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(ralph_hook);
@@ -1523,6 +1613,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tools/hooks/pipeline_guard.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(pipeline_guard);
@@ -1534,6 +1625,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tools/mcp/trinity_mcp/bot/main.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(tri_bot);
@@ -1551,6 +1643,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/phi_loop_cli.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(phi_loop);
@@ -1569,6 +1662,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/forge/main.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(forge);
@@ -1590,6 +1684,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/quantum/main.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(quantum);
@@ -1611,6 +1706,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/beal/main.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(beal);
@@ -1628,6 +1724,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/beal.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_beal_tests = b.addRunArtifact(beal_tests);
@@ -1643,6 +1740,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/hslm/cli.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(hslm_train);
@@ -1697,6 +1795,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(railway_redeploy);
@@ -1714,6 +1813,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(railway_update_service);
@@ -1731,6 +1831,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(railway_set_builder);
@@ -1748,6 +1849,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(railway_create_service);
@@ -1765,6 +1867,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(railway_set_startcmd);
@@ -1782,6 +1885,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(railway_trigger_redeploy);
@@ -1799,6 +1903,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(railway_set_dockerfile);
@@ -1818,6 +1923,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/cli/entrypoint_swe.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(swe_entrypoint);
@@ -1832,6 +1938,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("external/zig-hslm/src/root.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_hslm_tests = b.addRunArtifact(hslm_tests);
@@ -1854,12 +1961,14 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/vibeec/trinity_swe_agent.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     const vibeec_coder = b.createModule(.{
         .root_source_file = b.path("src/vibeec/igla_local_coder.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     // TVC Distributed module for TRI (file-based sharing)
     const tvc_distributed_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_distributed.zig"),
@@ -1905,19 +2014,22 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/agent_mu/pas_orchestrator.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     // Unified API Layer (Golden Chain #102)
     const api_mod = b.createModule(.{
         .root_source_file = b.path("src/api/unified_server.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     // TRI Utils module (Cycle 100: for testing)
     const tri_colors_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_colors.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     const tri_utils_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_utils.zig"),
         .target = target,
@@ -1956,7 +2068,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/sacred/const.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     const sacred_mod = b.createModule(.{
         .root_source_file = b.path("src/sacred/sacred.zig"),
         .target = target,
@@ -1981,7 +2094,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/bsd/scanner.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     const tri = b.addExecutable(.{
         .name = "tri",
@@ -2145,6 +2259,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri/tri_config.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_tri_config_tests = b.addRunArtifact(tri_config_tests);
@@ -2157,6 +2272,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri/tri_history.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_tri_history_tests = b.addRunArtifact(tri_history_tests);
@@ -2169,6 +2285,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri/tri_error.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_tri_error_tests = b.addRunArtifact(tri_error_tests);
@@ -2182,6 +2299,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/trinity_hybrid_local.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(hybrid_local);
@@ -2199,7 +2317,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/vibeec/gguf_model.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     // Trinity Node - Decentralized Inference Network
     const trinity_node = b.addExecutable(.{
@@ -2232,7 +2351,8 @@ pub fn build(b: *std.Build) void {
                 .root_source_file = b.path("src/trinity_node/main_gui.zig"),
                 .target = target,
                 .optimize = optimize,
-            }),
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        }),
         });
         trinity_node_gui.linkSystemLibrary("raylib");
         trinity_node_gui.linkLibC();
@@ -2253,7 +2373,8 @@ pub fn build(b: *std.Build) void {
                 .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_demo.zig"),
                 .target = target,
                 .optimize = optimize,
-            }),
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        }),
         });
         photon_demo.linkSystemLibrary("raylib");
         photon_demo.linkLibC();
@@ -2278,7 +2399,8 @@ pub fn build(b: *std.Build) void {
                 .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_immersive.zig"),
                 .target = target,
                 .optimize = optimize,
-            }),
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        }),
         });
         photon_immersive.linkSystemLibrary("raylib");
         photon_immersive.linkLibC();
@@ -2347,26 +2469,31 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/wasm_stubs/igla_chat_stub.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         });
         const wasm_fluent_chat = b.createModule(.{
             .root_source_file = b.path("src/wasm_stubs/igla_fluent_chat_stub.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         });
         const wasm_tvc_corpus = b.createModule(.{
             .root_source_file = b.path("src/wasm_stubs/tvc_corpus_stub.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         });
         const wasm_auto_shard = b.createModule(.{
             .root_source_file = b.path("src/wasm_stubs/auto_shard_stub.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         });
         const wasm_igla_kg = b.createModule(.{
             .root_source_file = b.path("src/wasm_stubs/igla_knowledge_graph_stub.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         });
         const wasm_hybrid_chat = b.createModule(.{
             .root_source_file = b.path("src/wasm_stubs/igla_hybrid_chat_stub.zig"),
@@ -2472,6 +2599,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_terminal.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(photon_terminal);
@@ -2493,6 +2621,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/triples_parser.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_triples_parser = b.addRunArtifact(triples_parser_tests);
@@ -2506,6 +2635,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/kg_pipeline.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_kg_pipeline = b.addRunArtifact(kg_pipeline_tests);
@@ -2519,6 +2649,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/kg_sync.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_kg_sync = b.addRunArtifact(kg_sync_tests);
@@ -2531,7 +2662,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/vibeec/kg_sync.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     const sym_005_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/sym_005_demo.zig"),
@@ -2553,7 +2685,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/vibeec/kv_cache.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
     const prefix_cache_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/prefix_cache_completion.zig"),
@@ -2654,7 +2787,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/tri/token_rotator.zig"),
         .target = target,
         .optimize = optimize,
-    });
+        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+        });
 
     const tri_api = b.addExecutable(.{
         .name = "tri-api",
@@ -2683,6 +2817,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/arena/main.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     b.installArtifact(arena_exe);
@@ -2697,6 +2832,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/arena/main.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
     const run_arena_tests = b.addRunArtifact(arena_tests);

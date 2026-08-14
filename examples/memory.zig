@@ -16,7 +16,7 @@ pub fn main() !void {
     var yellow_banana = trinity.bind(&banana, &yellow);
 
     // Bundle into memory
-    var memory = trinity.bundle2(&red_apple, &yellow_banana, std.heap.page_allocator);
+    var memory = trinity.bundle2(&red_apple, &yellow_banana);
 
     // Query: "What is red?"
     var query = trinity.bind(&memory, &red);

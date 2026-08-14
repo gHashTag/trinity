@@ -76,9 +76,8 @@ fn bipolarRandom(dim: usize, seed: u64) HybridBigInt {
     const random = rng.random();
 
     for (0..result.trit_len) |i| {
-        if (result.unpacked_cache) |cache| {
-            cache[i] = if (random.boolean()) @as(i8, 1) else @as(i8, -1);
-        }
+        // unpacked_cache в zig-hdc — не optional
+        result.unpacked_cache[i] = if (random.boolean()) @as(i8, 1) else @as(i8, -1);
     }
     return result;
 }
@@ -96,7 +95,7 @@ fn hvSimilarity(a: *HybridBigInt, b: *HybridBigInt) f64 {
 }
 
 fn hvBundle2(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
-    return vsa.bundle2(a, b, std.heap.page_allocator);
+    return vsa.bundle2(a, b);
 }
 
 fn treeBundleN(items: []HybridBigInt) HybridBigInt {
