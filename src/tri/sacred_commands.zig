@@ -20,13 +20,13 @@ const std = @import("std");
 /// Run Sacred ALU benchmark (Phase 6.3)
 /// Usage: tri sacred bench [--n=N] [--mode=ALL|gf16_add|...] [--output=csv|human]
 pub fn runSacredBenchCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    @import("sacred_bench").runSacredBenchCommand(allocator, args);
+    @import("sacred_bench.zig").runSacredBenchCommand(allocator, args);
 }
 
 /// Parse Yosys synthesis JSON and display resource statistics (Phase 6.4)
 /// Usage: tri sacred synth-report [--input=PATH] [--output=human|csv|json]
 pub fn runSacredSynthReportCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    @import("sacred_synth_report").runSacredSynthReportCommand(allocator, args);
+    @import("sacred_synth_report.zig").runSacredSynthReportCommand(allocator, args);
 }
 
 // =============================================================================

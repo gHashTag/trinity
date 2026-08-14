@@ -5,9 +5,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const bootstrap = @import("bootstrap");
-const persistence = @import("persistence");
-const metrics_mod = @import("metrics");
+// Соседние файлы в том же каталоге; как модули они нигде не объявлены,
+// поэтому импорт по имени не разрешался. Берём по относительному пути.
+const bootstrap = @import("bootstrap.zig");
+const persistence = @import("persistence.zig");
+const metrics_mod = @import("metrics.zig");
 
 // Forward decls for firebird types (will be imported by build.zig)
 pub const NodeStatus = enum {

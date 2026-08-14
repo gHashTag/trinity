@@ -26,6 +26,13 @@ pub const PI = sacred.PI;
 pub const E = sacred.E;
 pub const TAU = sacred.TAU;
 pub const TRANSCENDENTAL = sacred.PI * sacred.PHI;
+// Эволюционные константы: commands.zig печатает их в JSON (`mu`,`chi`,`sigma`,
+// `epsilon`), но реэкспорта здесь не было — цель `tri` не собиралась.
+pub const MU = sacred.MU;
+pub const CHI = sacred.CHI;
+pub const SIGMA = sacred.SIGMA;
+pub const EPSILON = sacred.EPSILON;
+
 
 pub const format = @import("format.zig");
 pub const constants = @import("constants.zig");

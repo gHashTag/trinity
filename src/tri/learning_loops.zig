@@ -20,7 +20,7 @@ const Allocator = std.mem.Allocator;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Constants imported from canonical source
-const sacred_constants = @import("sacred_constants");
+const sacred_constants = @import("sacred_constants.zig");
 pub const PHI = sacred_constants.SacredConstants.PHI;
 pub const PHI_INV = sacred_constants.SacredConstants.PHI_INVERSE;
 pub const PHI_SQ = sacred_constants.SacredConstants.PHI_SQ;

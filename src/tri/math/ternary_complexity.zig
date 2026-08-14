@@ -22,7 +22,7 @@
 //!
 //! ```
 //! const std = @import("std");
-//! const ternary = @import("ternary_complexity");
+//! const ternary = @import("ternary_complexity.zig");
 //!
 //! // Analyze fine structure constant
 //! const alpha_inv = 137.036;

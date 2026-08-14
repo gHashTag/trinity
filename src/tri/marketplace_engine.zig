@@ -17,7 +17,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 // Import canonical constants (NOT inline - anti-pattern!)
-const sacred_constants = @import("sacred_constants");
+const sacred_constants = @import("sacred_constants.zig");
 const PHI = sacred_constants.SacredConstants.PHI;
 const PHI_SQ = sacred_constants.SacredConstants.PHI_SQ;
 const PI = sacred_constants.SacredConstants.PI;

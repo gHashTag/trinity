@@ -16,7 +16,7 @@ const std = @import("std");
 const math = std.math;
 
 // Import canonical constants (NOT inline - anti-pattern!)
-const sacred_constants = @import("sacred_constants");
+const sacred_constants = @import("sacred_constants.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS (from canonical source)

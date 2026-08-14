@@ -18,7 +18,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const gematria_engine = @import("gematria.zig");
+// Файл импортировал сам себя; движок с numberToGlyphs лежит в src/tri/gematria.zig.
+const gematria_engine = @import("../gematria.zig");
 const sacred_formula = @import("formula.zig");
 
 // ANSI colors

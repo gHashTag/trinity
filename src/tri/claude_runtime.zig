@@ -218,7 +218,8 @@ fn runVersionCheck(allocator: Allocator) !void {
     const min_version_str = "2.1.80";
     const meets_min = try compareVersions(allocator, version, min_version_str);
     if (!meets_min) {
-        std.debug.print("{s}⚠ Channels requires Claude {s} or later{m}\n", .{ YELLOW, min_version_str, RESET });
+        // Было `{m}` — недопустимый спецификатор для строки, компиляция падала.
+        std.debug.print("{s}⚠ Channels requires Claude {s} or later{s}\n", .{ YELLOW, min_version_str, RESET });
     }
 }
 
