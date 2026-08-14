@@ -185,6 +185,15 @@ pub fn main() !void {
         return;
     }
 
+    // Blog namespace: route `tri blog <subcommand>` to blog_commands
+    if (std.mem.eql(u8, args[arg_idx], "blog")) {
+        const blog_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        const blog_commands = @import("blog_commands.zig");
+        logAgentCommand(args[arg_idx..]);
+        try blog_commands.runBlogCommand(allocator, blog_args, state.dry_run);
+        return;
+    }
+
     // TRI-27 namespace: route `tri tri27 <subcommand>` to tri27 commands
     if (std.mem.eql(u8, args[arg_idx], "tri27")) {
         const tri27_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
