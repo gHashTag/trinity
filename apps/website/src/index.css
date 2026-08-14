@@ -1106,27 +1106,61 @@ input:focus-visible {
   top: 0;
 }
 
-/* Карточка в списке блога: обложка слева, текст справа. Обложка — тот же
-   файл, что уходит в og:image, поэтому заголовок на ней повторяет заголовок
-   карточки; узкая колонка 240px превращает это повторение в иллюстрацию,
-   тогда как во всю ширину оно читалось как удвоенный заголовок. */
+/* Карточка в списке блога: обложка сверху во всю ширину, под ней текст.
+   Заголовок напечатан на обложке, поэтому текстовый заголовок в карточке
+   показывается только когда картинка не загрузилась — иначе он читался как
+   удвоенный. */
 .blog-card {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 20px;
-  align-items: start;
+  display: block;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.blog-card:hover,
+.blog-card:focus-visible {
+  border-color: var(--accent, #00ff88);
+  transform: translateY(-2px);
 }
 
 .blog-card-cover {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 8px;
   background: #000;
+  border-bottom: 1px solid var(--border, #2a2a2a);
 }
 
-@media (max-width: 640px) {
-  .blog-card {
-    grid-template-columns: 1fr;
-  }
+.blog-card-body {
+  padding: 20px 24px 24px;
+}
+
+/* Кнопка репоста: раньше ссылки шли обычным синим текстом в строку и не
+   читались как действие. */
+.share-pill {
+  display: inline-block;
+  padding: 5px 14px;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 999px;
+  color: var(--text, #e8e8e8);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.share-pill:hover,
+.share-pill:focus-visible {
+  border-color: var(--accent, #00ff88);
+  color: var(--accent, #00ff88);
+}
+
+/* Ссылки в блоге шли браузерным синим с подчёркиванием — на чёрном фоне это
+   читалось как чужой элемент. */
+.blog-link {
+  color: var(--accent, #00ff88);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.blog-link:hover,
+.blog-link:focus-visible {
+  border-bottom-color: var(--accent, #00ff88);
 }
