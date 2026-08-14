@@ -126,8 +126,26 @@ jobs:
             fi
           fi
 
+      # This step used to print, unconditionally:
+      #   ✅ llm_full_inference - 14 behaviors, 14 tests
+      #   ✅ vsa_swarm_agent  - 17 behaviors, 18 tests
+      # Both specs are absent from the repository. It was two `echo`s reporting
+      # green for files that do not exist, in a job whose other step measures
+      # coverage honestly and fails. Now it looks, and says what it finds.
       - name: Production Components Status
         run: |
           echo "=== Production Components (v5) ==="
-          echo "✅ llm_full_inference - 14 behaviors, 14 tests"
-          echo "✅ vsa_swarm_agent - 17 behaviors, 18 tests"
+          missing=0
+          for s in llm_full_inference vsa_swarm_agent; do
+            f="specs/tri/$s.vibee"
+            if [ -f "$f" ]; then
+              b=$(grep -cE "^  - name:" "$f" || true)
+              echo "present  $s — $b behaviours"
+            else
+              echo "MISSING  $s — $f is not in the repository"
+              missing=$((missing + 1))
+            fi
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "::warning::$missing production spec(s) named by this workflow do not exist"
+          fi
