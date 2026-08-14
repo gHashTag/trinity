@@ -67,7 +67,6 @@ const meta: React.CSSProperties = {
 }
 
 const card: React.CSSProperties = {
-  display: 'block',
   padding: '24px',
   border: '1px solid var(--border, #2a2a2a)',
   borderRadius: '10px',
@@ -316,14 +315,34 @@ export function BlogIndex() {
           </p>
         ) : (
           items.map((p) => (
-            <Link key={p.slug} to={`/blog/${p.slug}`} style={card}>
+            <Link key={p.slug} to={`/blog/${p.slug}`} style={card} className="blog-card">
+              {/* Та же обложка, что уходит в og:image: файл лежит рядом со SPA в
+                  корне сайта, поэтому путь абсолютный, а не через импорт. В dev
+                  и в локальном dist этих файлов нет — тогда картинка убирается,
+                  а не оставляет рамку с битым значком. */}
+              <img
+                src={`/og-blog-${p.slug}${lang === 'ru' ? '-ru' : ''}.png`}
+                alt=""
+                loading="lazy"
+                width={1200}
+                height={630}
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement
+                  img.style.display = 'none'
+                  // Иначе колонка 240px осталась бы пустой дырой слева.
+                  if (img.parentElement) img.parentElement.style.gridTemplateColumns = '1fr'
+                }}
+                className="blog-card-cover"
+              />
+              <div>
               <div style={meta}>
                 {p.date} · {p.readingMinutes} {t.min} · {p.tags.join(' · ')}
               </div>
-              <h2 style={{ margin: '10px 0 8px', fontSize: '1.25rem' }}>{p.title}</h2>
+              <h2 style={{ margin: '10px 0 8px', fontSize: '1.25rem', fontWeight: 800 }}>{p.title}</h2>
               <p style={{ margin: 0, lineHeight: 1.7, color: 'var(--text-dim, #8a8a8a)' }}>
                 {p.summary}
               </p>
+              </div>
             </Link>
           ))
         )}

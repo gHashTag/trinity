@@ -1105,3 +1105,28 @@ input:focus-visible {
 .skip-link:focus {
   top: 0;
 }
+
+/* Карточка в списке блога: обложка слева, текст справа. Обложка — тот же
+   файл, что уходит в og:image, поэтому заголовок на ней повторяет заголовок
+   карточки; узкая колонка 240px превращает это повторение в иллюстрацию,
+   тогда как во всю ширину оно читалось как удвоенный заголовок. */
+.blog-card {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.blog-card-cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: #000;
+}
+
+@media (max-width: 640px) {
+  .blog-card {
+    grid-template-columns: 1fr;
+  }
+}
