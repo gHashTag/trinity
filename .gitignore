@@ -327,7 +327,17 @@ fpga/tools/weight_pack_wide
 !.claude/skills/**
 
 # Docker files in root (use deploy/ subdirectory instead)
-Dockerfile*
+#
+# Anchored with a leading slash, because that is what the line above always
+# meant. Unanchored, `Dockerfile*` matches at any depth and so it also ignored
+# deploy/ — the very directory this comment tells you to use. The existing
+# deploy/Dockerfile* are tracked only because they predate the rule; every one
+# added since was silently untracked.
+#
+# deploy/Dockerfile.node is the case that surfaced it: the workflow referenced
+# it, `git log` showed it in no commit, and it looked deleted. It was never
+# committable.
+/Dockerfile*
 *.toml
 
 # Templates (tracked for agent orchestration)

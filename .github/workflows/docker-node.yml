@@ -25,6 +25,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The image is thin and copies a prebuilt binary, so the binary has to be
+      # built here — same shape as the CLI workflow, which is the only one of
+      # the two that has ever published anything.
+      - name: Install Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+
+      - name: Build Trinity Node
+        run: |
+          zig build -Dci=true -Doptimize=ReleaseFast
+          mkdir -p docker-artifacts
+          cp zig-out/bin/trinity-node docker-artifacts/trinity-node
+          chmod +x docker-artifacts/trinity-node
+          file docker-artifacts/trinity-node
+
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
@@ -37,7 +53,13 @@ jobs:
         with:
           context: .
           file: deploy/Dockerfile.node
-          platforms: linux/amd64,linux/arm64
+          # amd64 only, deliberately. The binary is built once by the runner,
+          # which is amd64, so an arm64 layer would carry an amd64 executable
+          # and fail at exec — worse than not publishing it. arm64 needs either
+          # a cross-compiled second binary (`zig build -Dtarget=aarch64-linux`)
+          # or a matrix build; both are real work and neither has ever run here,
+          # since this workflow has never produced an image at all.
+          platforms: linux/amd64
           push: true
           tags: |
             ghcr.io/ghashtag/trinity-node:latest
