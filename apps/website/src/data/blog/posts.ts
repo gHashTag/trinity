@@ -1678,7 +1678,126 @@ const discardedReturnValue: Post = {
   },
 }
 
-export const posts: Post[] = [searchSpaceErasedSignificance, discardedReturnValue, gateWithManualRemedy, pooledWindowsWereNotCheckpoints, eachHalfImportedTheOther, zeroOfSixHundredForty, repairDoesNotPropagate, greenCiUnusable, scaleFieldWidth, openGigabitEthernet]
+const halfTheBuildIsBitstream: Post = {
+  slug: 'half-the-build-is-bitstream-generation',
+  title: 'Half the build is bitstream generation, and the trivial design was the slow one',
+  summary:
+    'Fifteen openXC7 builds with stated boundaries: for small designs more time goes to turning FASM into a bitstream than to place-and-route, a blinky beaten by a GF multiplier, and 25% spread on byte-identical work.',
+  date: '2026-08-15',
+  readingMinutes: 7,
+  tags: ['FPGA', 'openXC7', 'Benchmarking', 'Measurement'],
+  receipts: [
+    { label: 'trinity-fpga — the workflow, with the boundaries stated in its header', href: 'https://github.com/gHashTag/trinity-fpga/blob/main/.github/workflows/openxc7-build-timing.yml' },
+    { label: 'run 31822095102 — 17/17 green, the fifteen measurements below', href: 'https://github.com/gHashTag/trinity-fpga/actions/runs/31822095102' },
+    { label: 'run 31820544225 — the first attempt, which lost five jobs to my error', href: 'https://github.com/gHashTag/trinity-fpga/actions/runs/31820544225' },
+  ],
+  openQuestions: [
+    'This is not a comparison. There is no Vivado column, because there is no Vivado here — no licence, no install. The three designs are plain Verilog + XDC on xc7a200tfbg484-2 so that anyone holding a licence can build the same three and put their numbers beside these.',
+    'One machine: a shared GitHub `ubuntu-latest` runner, 4 cores. The absolute seconds do not transfer to your workstation. The proportions between phases might; that is a hypothesis, not a result.',
+    'The seed is pinned at 1 in every run, so nothing here measures nextpnr’s seed sensitivity. Sweeping seeds would have mixed two sources of variance into one column.',
+    'Three designs, all ours, all one part. That is not a representative corpus — enough to show the shape, not enough to generalise the numbers.',
+    'n=5. The spread is reported raw, min to max. No confidence interval is claimed and none would be honest at that n.',
+    'Bitstream generation here means prjxray’s fasm2frames plus xc7frames2bit. A different backend would move that column, so the finding is about this toolchain rather than about open toolchains in general.',
+  ],
+  body: [
+    { kind: 'p', text: 'Everybody has an impression of how long the open Xilinx toolchain takes. I could not find a published number with a method attached — and the numbers in our own repository turned out to be estimates rather than measurements: three different designs recorded as taking identical time, which is how you can tell nobody ran a stopwatch. So we ran one.' },
+    { kind: 'h', text: 'What is measured, and what is not' },
+    { kind: 'p', text: 'The boundaries are the whole point, because they are where this kind of comparison usually cheats.' },
+    { kind: 'table', head: ['Measured', 'Not measured'], rows: [
+      ['yosys synthesis', 'docker pull'],
+      ['nextpnr-xilinx place and route', 'git checkout'],
+      ['fasm2frames + xc7frames2bit', 'chipdb generation'],
+    ] },
+    { kind: 'p', text: 'The chipdb is built once in its own job and handed to every measurement job as an artifact, so it is identical across runs and sits outside the timed window. It is a property of the part rather than of the design, and Vivado has no equivalent step — timing it would flatter neither tool honestly.' },
+    { kind: 'p', text: 'Five runs per design, seed pinned at 1. Machine: a shared GitHub ubuntu-latest runner, 4 cores. Part: xc7a200tfbg484-2.' },
+    { kind: 'h', text: 'The numbers' },
+    { kind: 'table', head: ['design', 'median', 'min', 'max', 'synth', 'p&r', 'bitstream'], rows: [
+      ['gf12_mul', '46.1s', '37.6s', '48.2s', '9.8s', '6.7s', '29.4s'],
+      ['blinky', '60.7s', '54.6s', '69.6s', '3.5s', '28.9s', '28.2s'],
+      ['gf128_mul', '533.2s', '521.5s', '662.6s', '163.1s', '253.7s', '122.3s'],
+    ] },
+    { kind: 'h', text: 'The trivial design was not the fast one' },
+    { kind: 'p', text: 'A blinking LED took 60.7 s. A GF(2^12) multiplier took 46.1 s. The multiplier is the larger design by any measure, and it finished a quarter faster.' },
+    { kind: 'p', text: 'The reason is not size. blinky is placed with the simulated-annealing placer against a 100 MHz constraint; the multiplier uses the analytic placer at 5 MHz. Place-and-route for blinky is 28.9 s against the multiplier’s 6.7 s — a factor of four, in the opposite direction to the design sizes. At this scale the placer and the frequency target decide the build time and the netlist barely participates.' },
+    { kind: 'p', text: 'That is worth knowing before quoting anybody’s blinky number, including ours.' },
+    { kind: 'h', text: 'Half the wall clock is the part nobody talks about' },
+    { kind: 'p', text: 'Bitstream generation — fasm2frames followed by xc7frames2bit — took 28.2 s for blinky and 29.4 s for the multiplier. That is 46% and 64% of their total build time, and it is close to constant: the two designs differ in every other respect and their bitstream stage differs by one second.' },
+    { kind: 'p', text: 'It behaves like a floor. For anything small, more time goes into turning FASM into frames and frames into a .bit than into placing and routing the design. Optimisation effort in this toolchain goes overwhelmingly to the placer and the router, which is where the interesting algorithms are; on small designs that is not where the seconds are.' },
+    { kind: 'p', text: 'The floor stops dominating once the design is big enough. At gf128_mul the bitstream stage is 122.3 s of 533.2 s — 23% — while place-and-route takes 253.7 s and synthesis 163.1 s. Both of those grow with the netlist; the bitstream stage grows much more slowly.' },
+    { kind: 'h', text: 'A single build time is not a measurement' },
+    { kind: 'p', text: 'Every run of a given design did byte-identical work: same sources, same constraints, same seed, same container image. The spread was still this:' },
+    { kind: 'table', head: ['design', 'min → max', 'spread vs median'], rows: [
+      ['blinky', '54.6s → 69.6s', '25%'],
+      ['gf12_mul', '37.6s → 48.2s', '23%'],
+      ['gf128_mul', '521.5s → 662.6s', '26%'],
+    ] },
+    { kind: 'p', text: 'About a quarter, consistently, across three designs spanning an elevenfold range in runtime. That is the machine — shared runners with noisy neighbours — and not the toolchain, because the toolchain was handed the same input every time.' },
+    { kind: 'p', text: 'The practical consequence: a build time from one run can sit a quarter away from the median, and nothing in that run tells you it does. Anyone publishing a single number for either toolchain is publishing a sample from a distribution they did not look at. That includes the number we would have published if we had run this once.' },
+    { kind: 'h', text: 'Two things I got wrong getting here' },
+    { kind: 'p', text: 'The first attempt lost all five jobs of one design at synthesis: its wrapper instantiates a decoder core that lives in a git submodule, and the job checked out without submodules. My error, and local to one design — the other two produced their measurements.' },
+    { kind: 'p', text: 'The fix was worse than the fault. Adding submodules to the checkout made that step itself fail, so the second run lost all fifteen jobs, including the two designs that had never needed a submodule and had passed cleanly an hour earlier. That submodule is not reachable from CI at all. The decoders left the set and a self-contained GF(2^128) multiplier took the slot, which is also why the size range in the table is as wide as it is.' },
+    { kind: 'p', text: 'The third mistake never reached a run. The workflow header said the five repeats were there because nextpnr is seed-sensitive. The seed is pinned, so that is not what the repeats measure — they measure the machine. Had it stood, this post would have opened with a claim about the placer that the data does not support.' },
+    { kind: 'h', text: 'What would make this a comparison' },
+    { kind: 'p', text: 'A Vivado column, run on the same three designs with the same boundaries, on a machine described as precisely as this one. We cannot produce it. The designs are ordinary Verilog and XDC and the workflow is public, so anyone who can run Vivado can add the other half — and if the two halves disagree in a way neither side can reproduce, that is the interesting outcome rather than a failure.' },
+  ],
+  published: true,
+  ru: {
+    title: 'Половина сборки — это генерация битстрима, а самым медленным оказался тривиальный дизайн',
+    summary:
+      'Пятнадцать сборок openXC7 с объявленными границами: у малых дизайнов на превращение FASM в битстрим уходит больше времени, чем на трассировку, blinky проиграл умножителю GF, а разброс на побайтово одинаковой работе — 25%.',
+    openQuestions: [
+      'Это не сравнение. Колонки Vivado нет, потому что здесь нет Vivado — ни лицензии, ни установки. Все три дизайна это обычный Verilog + XDC под xc7a200tfbg484-2, так что любой, у кого лицензия есть, может собрать те же три и положить свои числа рядом.',
+      'Одна машина: общий раннер GitHub ubuntu-latest, 4 ядра. Абсолютные секунды на вашу рабочую станцию не переносятся. Пропорции между фазами, возможно, переносятся — но это гипотеза, а не результат.',
+      'Сид зафиксирован на 1 во всех прогонах, поэтому здесь ничто не измеряет чувствительность nextpnr к сиду. Перебор сидов смешал бы два источника разброса в одной колонке.',
+      'Три дизайна, все наши, все на одном кристалле. Это не представительная выборка — её хватает, чтобы показать форму, и не хватает, чтобы обобщать числа.',
+      'n=5. Разброс приведён как есть, от min до max. Доверительный интервал не заявляется — при таком n он был бы нечестен.',
+      'Генерация битстрима здесь означает fasm2frames и xc7frames2bit из prjxray. Другой бэкенд сдвинул бы эту колонку, поэтому вывод касается этого тулчейна, а не открытых тулчейнов вообще.',
+    ],
+    body: [
+      { kind: 'p', text: 'У всех есть представление о том, сколько занимает открытый тулчейн для Xilinx. Опубликованного числа с приложенным методом я не нашёл — а числа в нашем собственном репозитории оказались оценками, а не измерениями: три разных дизайна с одинаковым временем, по чему и видно, что секундомер никто не включал. Поэтому мы включили.' },
+      { kind: 'h', text: 'Что измеряется, а что нет' },
+      { kind: 'p', text: 'Границы — это и есть суть, потому что именно на них такие сравнения обычно жульничают.' },
+      { kind: 'table', head: ['Измеряется', 'Не измеряется'], rows: [
+        ['синтез yosys', 'docker pull'],
+        ['размещение и трассировка nextpnr-xilinx', 'git checkout'],
+        ['fasm2frames + xc7frames2bit', 'генерация chipdb'],
+      ] },
+      { kind: 'p', text: 'chipdb собирается один раз отдельной задачей и раздаётся остальным артефактом — он одинаков во всех прогонах и лежит вне окна замера. Это свойство кристалла, а не дизайна, и у Vivado такого шага нет вообще; включать его значило бы соврать в чью-то пользу.' },
+      { kind: 'p', text: 'Пять прогонов на дизайн, сид зафиксирован на 1. Машина: общий раннер GitHub ubuntu-latest, 4 ядра. Кристалл: xc7a200tfbg484-2.' },
+      { kind: 'h', text: 'Числа' },
+      { kind: 'table', head: ['дизайн', 'медиана', 'min', 'max', 'синтез', 'P&R', 'битстрим'], rows: [
+        ['gf12_mul', '46.1с', '37.6с', '48.2с', '9.8с', '6.7с', '29.4с'],
+        ['blinky', '60.7с', '54.6с', '69.6с', '3.5с', '28.9с', '28.2с'],
+        ['gf128_mul', '533.2с', '521.5с', '662.6с', '163.1с', '253.7с', '122.3с'],
+      ] },
+      { kind: 'h', text: 'Тривиальный дизайн оказался не быстрым' },
+      { kind: 'p', text: 'Мигающий светодиод — 60.7 с. Умножитель GF(2^12) — 46.1 с. Умножитель крупнее по любой мерке и закончил на четверть быстрее.' },
+      { kind: 'p', text: 'Причина не в размере. blinky размещается плейсером отжига под ограничение 100 МГц, умножитель — аналитическим плейсером под 5 МГц. Трассировка blinky занимает 28.9 с против 6.7 с у умножителя — вчетверо, и в сторону, противоположную размерам. На этом масштабе время сборки решают плейсер и целевая частота, а нетлист почти не участвует.' },
+      { kind: 'p', text: 'Это стоит знать, прежде чем цитировать чей-либо результат на blinky, включая наш.' },
+      { kind: 'h', text: 'Половина времени уходит туда, о чём не говорят' },
+      { kind: 'p', text: 'Генерация битстрима — fasm2frames и следом xc7frames2bit — заняла 28.2 с у blinky и 29.4 с у умножителя. Это 46% и 64% полного времени сборки, и величина почти постоянна: дизайны различаются во всём остальном, а их битстрим-стадия расходится на секунду.' },
+      { kind: 'p', text: 'Она ведёт себя как пол. Для чего угодно малого больше времени уходит на превращение FASM во фреймы и фреймов в .bit, чем на размещение и трассировку. Усилия по оптимизации в этом тулчейне идут преимущественно в плейсер и роутер, где и находятся интересные алгоритмы; на малых дизайнах секунды лежат не там.' },
+      { kind: 'p', text: 'Пол перестаёт доминировать, когда дизайн достаточно велик. У gf128_mul битстрим — 122.3 с из 533.2 с, то есть 23%, тогда как трассировка занимает 253.7 с, а синтез 163.1 с. Эти две растут вместе с нетлистом, битстрим-стадия — гораздо медленнее.' },
+      { kind: 'h', text: 'Одно время сборки — это не измерение' },
+      { kind: 'p', text: 'Каждый прогон одного дизайна выполнял побайтово одинаковую работу: те же исходники, те же ограничения, тот же сид, тот же образ контейнера. Разброс всё равно такой:' },
+      { kind: 'table', head: ['дизайн', 'min → max', 'разброс к медиане'], rows: [
+        ['blinky', '54.6с → 69.6с', '25%'],
+        ['gf12_mul', '37.6с → 48.2с', '23%'],
+        ['gf128_mul', '521.5с → 662.6с', '26%'],
+      ] },
+      { kind: 'p', text: 'Около четверти, устойчиво, на трёх дизайнах с одиннадцатикратной разницей во времени. Это машина — общие раннеры с шумными соседями, — а не тулчейн, потому что тулчейну каждый раз давали один и тот же вход.' },
+      { kind: 'p', text: 'Практическое следствие: время из одного прогона может отстоять от медианы на четверть, и внутри этого прогона ничто об этом не скажет. Кто публикует одно число для любого из тулчейнов, публикует выборку из распределения, в которое не заглянул. Включая то число, которое опубликовали бы мы, запустив это один раз.' },
+      { kind: 'h', text: 'Две вещи, которые я сделал неправильно по дороге' },
+      { kind: 'p', text: 'Первая попытка потеряла все пять задач одного дизайна на синтезе: его обёртка инстанцирует ядро декодера из git-сабмодуля, а задача делала checkout без сабмодулей. Моя ошибка, локальная для одного дизайна — два других свои замеры выдали.' },
+      { kind: 'p', text: 'Исправление вышло хуже поломки. Добавленные сабмодули уронили сам шаг checkout, и второй прогон потерял все пятнадцать задач, включая два дизайна, которым сабмодуль был не нужен и которые часом раньше прошли чисто. Этот сабмодуль из CI недоступен вовсе. Декодеры выбыли из набора, их место занял самодостаточный умножитель GF(2^128) — поэтому диапазон размеров в таблице такой широкий.' },
+      { kind: 'p', text: 'Третья ошибка до прогона не дошла. В заголовке воркфлоу было написано, что пять повторов нужны из-за чувствительности nextpnr к сиду. Сид зафиксирован, значит повторы измеряют не это, а машину. Останься эта формулировка, пост открывался бы утверждением о плейсере, которого данные не подтверждают.' },
+      { kind: 'h', text: 'Что сделало бы это сравнением' },
+      { kind: 'p', text: 'Колонка Vivado, полученная на тех же трёх дизайнах с теми же границами, на машине, описанной так же точно. Мы её произвести не можем. Дизайны — обычные Verilog и XDC, воркфлоу открыт, так что вторую половину может добавить любой, у кого Vivado есть. А если половины разойдутся так, что ни одна сторона не воспроизведёт другую, — это и будет самым интересным исходом, а не провалом.' },
+    ],
+  },
+}
+
+export const posts: Post[] = [halfTheBuildIsBitstream, searchSpaceErasedSignificance, discardedReturnValue, gateWithManualRemedy, pooledWindowsWereNotCheckpoints, eachHalfImportedTheOther, zeroOfSixHundredForty, repairDoesNotPropagate, greenCiUnusable, scaleFieldWidth, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
