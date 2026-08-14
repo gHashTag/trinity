@@ -116,16 +116,46 @@ cd /Users/playom/trinity/apps/website && npm install && npm run build:ci
 TypeScript is the gate: a malformed `Block` or a missing required field fails
 the build. It must exit 0.
 
-Deploy is `.github/workflows/deploy-docs.yml`, **push to `main` only** — it
-builds `apps/website` into the site root and `docs/` into `/docs/`, then
-force-pushes `gh-pages`. Pushing a branch publishes nothing. Merging to `main`
-**is** the publication; treat it as outward-facing and confirm with the operator
-unless they have already said to publish.
+### Two Pages sites, and only one of them is the site
 
-Verify afterwards, do not trust the push. The SPA uses hash routing, so a bare
-`curl` of `/#/blog/<slug>` only ever fetches `index.html` and always returns
-200 — that is not evidence. Check that the slug is present in the built bundle,
-and open the page if you need certainty.
+This is the trap that wasted the most time, and it is documented in the
+publisher's own header: *"trinity's own Pages is https://t27.ai/trinity/ — a
+different URL that nobody visits. So for months 'merged, deploy green' and 'on
+the site' were two different things."*
+
+- **`gHashTag/trinity`** → `deploy-docs.yml` on push to `main` → serves
+  **`https://t27.ai/trinity/`**. Green here means nothing for readers.
+- **`gHashTag/ghashtag.github.io`** → holds the `CNAME` and serves the **apex,
+  `https://t27.ai/`**. Its `publish-website.yml` checks out `trinity`, builds
+  `apps/website`, and commits the bundle here — **on a `*/15 * * * *` cron**,
+  plus `workflow_dispatch`. It publishes only when the content-hashed entry
+  bundle actually changes.
+
+So merging to `main` starts the clock; the apex catches up within ~15 minutes on
+its own. Do not hand-copy a build into `ghashtag.github.io` — read its
+`PUBLISHING.md` first if you ever must, because concurrent publishes silently
+revert each other and that has already happened once.
+
+Merging to `main` **is** the publication. Treat it as outward-facing and confirm
+with the operator unless they have already said to publish.
+
+### Verifying, without fooling yourself
+
+Do not trust the push, and do not trust a page fetch. The SPA is hash-routed, so
+`curl https://t27.ai/#/blog/<slug>` only ever fetches `index.html` and returns
+200 no matter what — that is not evidence of anything.
+
+Resolve the real chunk and grep it:
+
+```bash
+idx=$(curl -sS https://t27.ai/ | grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' | head -1)
+blog=$(curl -sS "https://t27.ai/$idx" | grep -oE 'Blog-[A-Za-z0-9_-]+\.js' | head -1)
+curl -sS "https://t27.ai/assets/$blog" | grep -c '<your-slug>'
+```
+
+A `404` on the chunk, or a chunk whose hash differs from your local
+`dist/assets/Blog-*.js`, means the apex has not republished yet — wait for the
+next quarter-hour, do not start "fixing" it.
 
 ## Traps already paid for
 
