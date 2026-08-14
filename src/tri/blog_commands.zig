@@ -212,7 +212,12 @@ fn parseGithubRef(href: []const u8) ?Ref {
     const owner = it.next() orelse return null;
     const repo = it.next() orelse return null;
     const kind = it.next() orelse return null;
-    const number = it.next() orelse return null;
+    const tail = it.next() orelse return null;
+    // A comment permalink carries a fragment: .../pull/142#issuecomment-5268596254.
+    // Without cutting it the number is "142#issuecomment-5268596254" and the
+    // lookup 404s on a reference that is perfectly valid — found by citing a
+    // comment in a post and watching check report a state it could not read.
+    const number = if (std.mem.indexOfScalar(u8, tail, '#')) |h| tail[0..h] else tail;
     if (owner.len == 0 or repo.len == 0 or number.len == 0) return null;
     if (!std.mem.eql(u8, kind, "pull") and !std.mem.eql(u8, kind, "issues")) return null;
     return .{ .owner = owner, .repo = repo, .kind = kind, .number = number };
@@ -441,6 +446,15 @@ test "a github pull url splits into its parts" {
     try std.testing.expectEqualStrings("nextpnr-xilinx", ref.repo);
     try std.testing.expectEqualStrings("pull", ref.kind);
     try std.testing.expectEqualStrings("145", ref.number);
+}
+
+test "a comment permalink resolves to the pull request it lives in" {
+    const ref = parseGithubRef("https://github.com/openXC7/nextpnr-xilinx/pull/142#issuecomment-5268596254").?;
+    try std.testing.expectEqualStrings("142", ref.number);
+    try std.testing.expectEqualStrings("pull", ref.kind);
+
+    const iss = parseGithubRef("https://github.com/openXC7/nextpnr-xilinx/issues/134#issuecomment-1").?;
+    try std.testing.expectEqualStrings("134", iss.number);
 }
 
 test "an issue url is accepted and a blob url is not" {
