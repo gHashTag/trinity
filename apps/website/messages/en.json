@@ -14,7 +14,7 @@
     "Reproduce"
   ],
   "hero": {
-    "tag": "TNF · GFTernary — a reference pair for the ternary datapath",
+    "tag": "GFTernary · TNF — a reference pair for the ternary datapath",
     "headline": "r² = r + 1",
     "subheadline": "Where the weight is a code, the format is not a preference. GFTernary closes the weight, TNF closes the accumulator — and every hardware number here was measured on a binary FPGA, which is stated rather than smoothed.",
     "cta": "Read the claim",

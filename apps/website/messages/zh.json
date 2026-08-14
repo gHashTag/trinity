@@ -14,7 +14,7 @@
     "复现"
   ],
   "hero": {
-    "tag": "TNF · GFTernary — 三进制数据通路的参考格式对",
+    "tag": "GFTernary · TNF — 三进制数据通路的参考格式对",
     "headline": "r² = r + 1",
     "subheadline": "当权重本身就是编码时，格式便不再是偏好。GFTernary 封闭权重，TNF 封闭累加器——本页每个硬件数字都是在二进制 FPGA 上实测的，此点明示而非掩饰。",
     "cta": "阅读论点",
