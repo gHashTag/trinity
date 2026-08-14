@@ -44,17 +44,26 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
-    // Generated serve module — from .tri spec: specs/integration/full-serve-v1.tri
-    // Links libc because full-serve-v1.zig uses std.c.getpid() for daemonize
-    const serve_full_mod = b.createModule(.{
-        .root_source_file = b.path("trinity-nexus/output/lang/zig/full-serve-v1.zig"),
-        .target = target,
-        .optimize = optimize,
-        .link_libc = true,
-        .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    // The generated serve module used to be declared here, rooted at
+    // trinity-nexus/output/lang/zig/full-serve-v1.zig. That file is gitignored
+    // (.gitignore: `trinity-nexus/`), is tracked by nothing, and exists on no
+    // machine we can find; the spec it names as its source,
+    // specs/integration/full-serve-v1.tri, does not exist either and
+    // specs/integration/ is empty. So `zig build` could not compile `tri` from
+    // a clean clone by anybody, and failed with:
+    //
+    //     error: failed to check cache:
+    //       'trinity-nexus/output/lang/zig/full-serve-v1.zig' file_hash FileNotFound
+    //
+    // Nothing imported it. The only reference in the tree is a commented-out
+    // line in src/tri/tri_commands.zig:181, so removing the module costs no
+    // functionality at all — `tri serve` never used it.
+    //
+    // If the generator is restored, declare it again next to a build step that
+    // produces the file, rather than pointing at an artifact that has to arrive
+    // by other means.
 
     // Library artifact
     const lib = b.addLibrary(.{
@@ -81,7 +90,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = .ReleaseFast,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     // Shared library (.so / .dylib / .dll)
     const libvsa_shared = b.addLibrary(.{
@@ -127,7 +136,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = .ReleaseFast,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     const libqueen_shared = b.addLibrary(.{
         .name = "trinity-queen",
@@ -181,7 +190,7 @@ pub fn build(b: *std.Build) void {
                 .optimize = .ReleaseFast,
                 .link_libc = true,
                 .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        }),
+            }),
         });
 
         const target_output = b.addInstallArtifact(release_lib, .{
@@ -257,7 +266,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tests/benchmarks/benchmarks/benchmark_test.zig"),
             .target = target,
             .optimize = .ReleaseFast,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "vsa", .module = trinity_mod }},
+            .imports = &.{ .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "vsa", .module = trinity_mod } },
         }),
     });
     const run_bench_tests = b.addRunArtifact(bench_tests);
@@ -407,7 +416,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("tests/benchmarks/benchmarks/bench_core.zig"),
             .target = target,
             .optimize = .ReleaseFast,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "vsa", .module = trinity_mod }},
+            .imports = &.{ .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "vsa", .module = trinity_mod } },
         }),
     });
     b.installArtifact(bench_core);
@@ -439,7 +448,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/memory.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod }},
+            .imports = &.{ .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod } },
         }),
     });
     b.installArtifact(example_memory);
@@ -450,7 +459,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/sequence.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod }},
+            .imports = &.{ .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod } },
         }),
     });
     b.installArtifact(example_sequence);
@@ -461,7 +470,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("examples/vm.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod }},
+            .imports = &.{ .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod } },
         }),
     });
     b.installArtifact(example_vm);
@@ -483,7 +492,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/sota_report_demo.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod }},
+            .imports = &.{ .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }, .{ .name = "trinity", .module = trinity_mod } },
         }),
     });
     b.installArtifact(sota_report);
@@ -570,7 +579,7 @@ pub fn build(b: *std.Build) void {
                 .target = release_target,
                 .optimize = .ReleaseFast,
                 .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        }),
+            }),
         });
 
         const target_output = b.addInstallArtifact(release_exe, .{
@@ -1251,14 +1260,14 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     const vibeec_fluent_chat = b.createModule(.{
         .root_source_file = b.path("src/vibeec/igla_fluent_chat_engine.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     // VSA module for TRI (needed by tvc_corpus_mod and fluent CLI), now the
     // migrated module rather than a path to a file that is not here.
@@ -1279,7 +1288,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     // LLM Triples Extractor module (SYM-002: pattern-based extraction) - defined early for fluent CLI
     const triples_parser_mod = b.createModule(.{
@@ -1287,7 +1296,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     // Fluent CLI - Local Chat with History Truncation (NO HANG!)
     const fluent_cli = b.addExecutable(.{
@@ -1325,7 +1334,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     const vibee = b.addExecutable(.{
         .name = "vibee",
@@ -1396,7 +1405,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     ts_zig_mod.link_libc = true;
     // Add stub include path for tree_sitter/api.h when library is not installed
     ts_zig_mod.addIncludePath(b.path("src/tvc/treesitter"));
@@ -1477,7 +1486,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     // server.zig делает @import("trinity_workspace"), но модуль никогда здесь не
     // объявлялся — файл `src/trinity_workspace.zig` лежит в репозитории,
@@ -1487,7 +1496,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     const trinity_mcp = b.addExecutable(.{
         .name = "trinity-mcp",
@@ -1536,7 +1545,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     const mu_agent = b.addExecutable(.{
         .name = "mu-agent",
         .root_module = b.createModule(.{
@@ -1962,13 +1971,13 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     const vibeec_coder = b.createModule(.{
         .root_source_file = b.path("src/vibeec/igla_local_coder.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     // TVC Distributed module for TRI (file-based sharing)
     const tvc_distributed_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_distributed.zig"),
@@ -2015,21 +2024,21 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     // Unified API Layer (Golden Chain #102)
     const api_mod = b.createModule(.{
         .root_source_file = b.path("src/api/unified_server.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     // TRI Utils module (Cycle 100: for testing)
     const tri_colors_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_colors.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     const tri_utils_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_utils.zig"),
         .target = target,
@@ -2045,7 +2054,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "tri_colors", .module = tri_colors_mod },
-            .{ .name = "serve_full", .module = serve_full_mod },
         },
     });
 
@@ -2069,7 +2077,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     const sacred_mod = b.createModule(.{
         .root_source_file = b.path("src/sacred/sacred.zig"),
         .target = target,
@@ -2095,7 +2103,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     const tri = b.addExecutable(.{
         .name = "tri",
@@ -2117,8 +2125,6 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "api", .module = api_mod },
                 // Sacred modules (v6.0)
                 .{ .name = "sacred", .module = sacred_mod },
-                // Generated serve module (from .tri spec: specs/integration/full-serve-v1.tri)
-                .{ .name = "serve_full", .module = serve_full_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
                 // BSD Elliptic Curve Scanner module
@@ -2318,7 +2324,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     // Trinity Node - Decentralized Inference Network
     const trinity_node = b.addExecutable(.{
@@ -2352,7 +2358,7 @@ pub fn build(b: *std.Build) void {
                 .target = target,
                 .optimize = optimize,
                 .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        }),
+            }),
         });
         trinity_node_gui.linkSystemLibrary("raylib");
         trinity_node_gui.linkLibC();
@@ -2374,7 +2380,7 @@ pub fn build(b: *std.Build) void {
                 .target = target,
                 .optimize = optimize,
                 .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        }),
+            }),
         });
         photon_demo.linkSystemLibrary("raylib");
         photon_demo.linkLibC();
@@ -2400,7 +2406,7 @@ pub fn build(b: *std.Build) void {
                 .target = target,
                 .optimize = optimize,
                 .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        }),
+            }),
         });
         photon_immersive.linkSystemLibrary("raylib");
         photon_immersive.linkLibC();
@@ -2419,176 +2425,176 @@ pub fn build(b: *std.Build) void {
     // Chat/Code/Vision/Voice/Tools/Autonomous all in cosmic canvas
     // Skipped in CI mode (-Dci=true) since raylib is not available
     if (!ci_mode) {
-    const trinity_canvas = b.addExecutable(.{
-        .name = "trinity-canvas",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_trinity_canvas.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "igla_chat", .module = vibeec_chat },
-                .{ .name = "igla_fluent_chat", .module = vibeec_fluent_chat },
-                .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
-                .{ .name = "golden_chain", .module = golden_chain_mod },
-                .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
-                .{ .name = "auto_shard", .module = b.createModule(.{
-                    .root_source_file = b.path("src/trinity_node/auto_shard.zig"),
-                    .target = target,
-                    .optimize = optimize,
-                }) },
-            },
-        }),
-    });
-    trinity_canvas.linkSystemLibrary("raylib");
-    // raygui недоступен: `external/raygui/src` в репозитории нет (сторонний
-    // header-only пакет никогда не вендорился), а `src/vsa/raygui_impl.c`
-    // удалён в 42490a222 вместе с остальными миграциями. Установка артефакта
-    // уже была отключена по этой же причине — теперь отключены и две ссылки на
-    // отсутствующие пути, которые продолжали ломать `zig build` целиком.
-    // Чтобы вернуть: вендорить raygui в external/raygui и восстановить
-    // raygui_impl.c из 42490a222^.
-    // trinity_canvas.addIncludePath(b.path("external/raygui/src"));
-    // trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
-    // b.installArtifact(trinity_canvas);
-
-    const run_trinity_canvas = b.addRunArtifact(trinity_canvas);
-    if (b.args) |args| {
-        run_trinity_canvas.addArgs(args);
-    }
-    const trinity_canvas_step = b.step("trinity-canvas", "Run Trinity Cosmic Canvas (v1.9 Emergent Wave)");
-    trinity_canvas_step.dependOn(&run_trinity_canvas.step);
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Trinity Canvas WASM — compiles the same canvas for browsers via Emscripten
-    // Build: zig build trinity-canvas-wasm -Dtarget=wasm32-emscripten
-    // Output: zig-out/web/ (trinity-canvas.html, .js, .wasm, .data)
-    // ═══════════════════════════════════════════════════════════════════════════
-    {
-        // WASM stub modules (replace system-dependent chat/network/fs)
-        const wasm_igla_chat = b.createModule(.{
-            .root_source_file = b.path("src/wasm_stubs/igla_chat_stub.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
-        const wasm_fluent_chat = b.createModule(.{
-            .root_source_file = b.path("src/wasm_stubs/igla_fluent_chat_stub.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
-        const wasm_tvc_corpus = b.createModule(.{
-            .root_source_file = b.path("src/wasm_stubs/tvc_corpus_stub.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
-        const wasm_auto_shard = b.createModule(.{
-            .root_source_file = b.path("src/wasm_stubs/auto_shard_stub.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
-        const wasm_igla_kg = b.createModule(.{
-            .root_source_file = b.path("src/wasm_stubs/igla_knowledge_graph_stub.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
-        const wasm_hybrid_chat = b.createModule(.{
-            .root_source_file = b.path("src/wasm_stubs/igla_hybrid_chat_stub.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "igla_chat", .module = wasm_igla_chat },
-                .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
-                .{ .name = "igla_kg", .module = wasm_igla_kg },
-                .{ .name = "triples_parser", .module = triples_parser_mod },
-            },
-        });
-        const wasm_golden_chain = b.createModule(.{
-            .root_source_file = b.path("src/wasm_stubs/golden_chain_stub.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "igla_hybrid_chat", .module = wasm_hybrid_chat },
-            },
-        });
-
-        const wasm_root = b.createModule(.{
-            // ONE SOURCE OF TRUTH: same file as native build, with is_emscripten gates
-            .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_trinity_canvas.zig"),
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-            .imports = &.{
-                .{ .name = "igla_chat", .module = wasm_igla_chat },
-                .{ .name = "igla_fluent_chat", .module = wasm_fluent_chat },
-                .{ .name = "igla_hybrid_chat", .module = wasm_hybrid_chat },
-                .{ .name = "golden_chain", .module = wasm_golden_chain },
-                .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
-                .{ .name = "auto_shard", .module = wasm_auto_shard },
-            },
-        });
-
-        const wasm_step = b.step("trinity-canvas-wasm", "Build Trinity Canvas for Web (WASM via Emscripten)");
-
-        if (target.query.os_tag == .emscripten) {
-            // ── Emscripten WASM build (raylib-zig emsdk helpers) ──
-            const raylib_zig = @import("raylib");
-
-            // Get raylib C library compiled for emscripten
-            const raylib_dep = b.dependency("raylib", .{
+        const trinity_canvas = b.addExecutable(.{
+            .name = "trinity-canvas",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_trinity_canvas.zig"),
                 .target = target,
                 .optimize = optimize,
-            });
-            const raylib_artifact = raylib_dep.artifact("raylib");
+                .imports = &.{
+                    .{ .name = "igla_chat", .module = vibeec_chat },
+                    .{ .name = "igla_fluent_chat", .module = vibeec_fluent_chat },
+                    .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
+                    .{ .name = "golden_chain", .module = golden_chain_mod },
+                    .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
+                    .{ .name = "auto_shard", .module = b.createModule(.{
+                        .root_source_file = b.path("src/trinity_node/auto_shard.zig"),
+                        .target = target,
+                        .optimize = optimize,
+                    }) },
+                },
+            }),
+        });
+        trinity_canvas.linkSystemLibrary("raylib");
+        // raygui недоступен: `external/raygui/src` в репозитории нет (сторонний
+        // header-only пакет никогда не вендорился), а `src/vsa/raygui_impl.c`
+        // удалён в 42490a222 вместе с остальными миграциями. Установка артефакта
+        // уже была отключена по этой же причине — теперь отключены и две ссылки на
+        // отсутствующие пути, которые продолжали ломать `zig build` целиком.
+        // Чтобы вернуть: вендорить raygui в external/raygui и восстановить
+        // raygui_impl.c из 42490a222^.
+        // trinity_canvas.addIncludePath(b.path("external/raygui/src"));
+        // trinity_canvas.addCSourceFile(.{ .file = b.path("src/vsa/raygui_impl.c") });
+        // b.installArtifact(trinity_canvas);
 
-            // Link raylib C library and add its include path for @cImport("raylib.h")
-            wasm_root.linkLibrary(raylib_artifact);
-            wasm_root.addIncludePath(raylib_dep.path("src"));
-
-            const wasm = b.addLibrary(.{
-                .name = "trinity-canvas",
-                .root_module = wasm_root,
-                .linkage = .static,
-            });
-
-            const install_dir: std.Build.InstallDir = .{ .custom = "web" };
-            const emcc_flags = raylib_zig.emsdk.emccDefaultFlags(b.allocator, .{
-                .optimize = optimize,
-                .asyncify = true,
-            });
-            var emcc_settings = raylib_zig.emsdk.emccDefaultSettings(b.allocator, .{
-                .optimize = optimize,
-            });
-            // Trinity Canvas needs ~256MB for grid + fonts + particles
-            emcc_settings.put("ALLOW_MEMORY_GROWTH", "1") catch unreachable;
-            emcc_settings.put("INITIAL_MEMORY", "268435456") catch unreachable; // 256MB
-
-            const emcc_link = raylib_zig.emsdk.emccStep(b, raylib_artifact, wasm, .{
-                .optimize = optimize,
-                .flags = emcc_flags,
-                .settings = emcc_settings,
-                .shell_file_path = b.path("src/wasm_stubs/shell.html"),
-                .install_dir = install_dir,
-                .embed_paths = &.{.{ .src_path = b.pathFromRoot("assets/fonts"), .virtual_path = "assets/fonts" }},
-            });
-
-            wasm_step.dependOn(emcc_link);
-        } else {
-            // ── Native build (for compilation check without emsdk) ──
-            const wasm_canvas = b.addExecutable(.{
-                .name = "trinity-canvas-wasm-check",
-                .root_module = wasm_root,
-            });
-            wasm_canvas.linkSystemLibrary("raylib");
-            wasm_canvas.linkLibC();
-            // TEMP: Disable install until raygui.h is available
-            // b.installArtifact(wasm_canvas);
-            wasm_step.dependOn(b.getInstallStep());
+        const run_trinity_canvas = b.addRunArtifact(trinity_canvas);
+        if (b.args) |args| {
+            run_trinity_canvas.addArgs(args);
         }
-    }
+        const trinity_canvas_step = b.step("trinity-canvas", "Run Trinity Cosmic Canvas (v1.9 Emergent Wave)");
+        trinity_canvas_step.dependOn(&run_trinity_canvas.step);
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // Trinity Canvas WASM — compiles the same canvas for browsers via Emscripten
+        // Build: zig build trinity-canvas-wasm -Dtarget=wasm32-emscripten
+        // Output: zig-out/web/ (trinity-canvas.html, .js, .wasm, .data)
+        // ═══════════════════════════════════════════════════════════════════════════
+        {
+            // WASM stub modules (replace system-dependent chat/network/fs)
+            const wasm_igla_chat = b.createModule(.{
+                .root_source_file = b.path("src/wasm_stubs/igla_chat_stub.zig"),
+                .target = target,
+                .optimize = optimize,
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+            });
+            const wasm_fluent_chat = b.createModule(.{
+                .root_source_file = b.path("src/wasm_stubs/igla_fluent_chat_stub.zig"),
+                .target = target,
+                .optimize = optimize,
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+            });
+            const wasm_tvc_corpus = b.createModule(.{
+                .root_source_file = b.path("src/wasm_stubs/tvc_corpus_stub.zig"),
+                .target = target,
+                .optimize = optimize,
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+            });
+            const wasm_auto_shard = b.createModule(.{
+                .root_source_file = b.path("src/wasm_stubs/auto_shard_stub.zig"),
+                .target = target,
+                .optimize = optimize,
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+            });
+            const wasm_igla_kg = b.createModule(.{
+                .root_source_file = b.path("src/wasm_stubs/igla_knowledge_graph_stub.zig"),
+                .target = target,
+                .optimize = optimize,
+                .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+            });
+            const wasm_hybrid_chat = b.createModule(.{
+                .root_source_file = b.path("src/wasm_stubs/igla_hybrid_chat_stub.zig"),
+                .target = target,
+                .optimize = optimize,
+                .imports = &.{
+                    .{ .name = "igla_chat", .module = wasm_igla_chat },
+                    .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
+                    .{ .name = "igla_kg", .module = wasm_igla_kg },
+                    .{ .name = "triples_parser", .module = triples_parser_mod },
+                },
+            });
+            const wasm_golden_chain = b.createModule(.{
+                .root_source_file = b.path("src/wasm_stubs/golden_chain_stub.zig"),
+                .target = target,
+                .optimize = optimize,
+                .imports = &.{
+                    .{ .name = "igla_hybrid_chat", .module = wasm_hybrid_chat },
+                },
+            });
+
+            const wasm_root = b.createModule(.{
+                // ONE SOURCE OF TRUTH: same file as native build, with is_emscripten gates
+                .root_source_file = b.path("deploy/trinity-nexus/canvas/src/photon_trinity_canvas.zig"),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+                .imports = &.{
+                    .{ .name = "igla_chat", .module = wasm_igla_chat },
+                    .{ .name = "igla_fluent_chat", .module = wasm_fluent_chat },
+                    .{ .name = "igla_hybrid_chat", .module = wasm_hybrid_chat },
+                    .{ .name = "golden_chain", .module = wasm_golden_chain },
+                    .{ .name = "tvc_corpus", .module = wasm_tvc_corpus },
+                    .{ .name = "auto_shard", .module = wasm_auto_shard },
+                },
+            });
+
+            const wasm_step = b.step("trinity-canvas-wasm", "Build Trinity Canvas for Web (WASM via Emscripten)");
+
+            if (target.query.os_tag == .emscripten) {
+                // ── Emscripten WASM build (raylib-zig emsdk helpers) ──
+                const raylib_zig = @import("raylib");
+
+                // Get raylib C library compiled for emscripten
+                const raylib_dep = b.dependency("raylib", .{
+                    .target = target,
+                    .optimize = optimize,
+                });
+                const raylib_artifact = raylib_dep.artifact("raylib");
+
+                // Link raylib C library and add its include path for @cImport("raylib.h")
+                wasm_root.linkLibrary(raylib_artifact);
+                wasm_root.addIncludePath(raylib_dep.path("src"));
+
+                const wasm = b.addLibrary(.{
+                    .name = "trinity-canvas",
+                    .root_module = wasm_root,
+                    .linkage = .static,
+                });
+
+                const install_dir: std.Build.InstallDir = .{ .custom = "web" };
+                const emcc_flags = raylib_zig.emsdk.emccDefaultFlags(b.allocator, .{
+                    .optimize = optimize,
+                    .asyncify = true,
+                });
+                var emcc_settings = raylib_zig.emsdk.emccDefaultSettings(b.allocator, .{
+                    .optimize = optimize,
+                });
+                // Trinity Canvas needs ~256MB for grid + fonts + particles
+                emcc_settings.put("ALLOW_MEMORY_GROWTH", "1") catch unreachable;
+                emcc_settings.put("INITIAL_MEMORY", "268435456") catch unreachable; // 256MB
+
+                const emcc_link = raylib_zig.emsdk.emccStep(b, raylib_artifact, wasm, .{
+                    .optimize = optimize,
+                    .flags = emcc_flags,
+                    .settings = emcc_settings,
+                    .shell_file_path = b.path("src/wasm_stubs/shell.html"),
+                    .install_dir = install_dir,
+                    .embed_paths = &.{.{ .src_path = b.pathFromRoot("assets/fonts"), .virtual_path = "assets/fonts" }},
+                });
+
+                wasm_step.dependOn(emcc_link);
+            } else {
+                // ── Native build (for compilation check without emsdk) ──
+                const wasm_canvas = b.addExecutable(.{
+                    .name = "trinity-canvas-wasm-check",
+                    .root_module = wasm_root,
+                });
+                wasm_canvas.linkSystemLibrary("raylib");
+                wasm_canvas.linkLibC();
+                // TEMP: Disable install until raygui.h is available
+                // b.installArtifact(wasm_canvas);
+                wasm_step.dependOn(b.getInstallStep());
+            }
+        }
     } // end if (!ci_mode) — raylib canvas targets
 
     // Photon Terminal v1.0 - TERNARY EMERGENT TUI
@@ -2663,7 +2669,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     const sym_005_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/sym_005_demo.zig"),
@@ -2686,7 +2692,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
     const prefix_cache_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/vibeec/prefix_cache_completion.zig"),
@@ -2754,7 +2760,6 @@ pub fn build(b: *std.Build) void {
     // P1.5: Registry Export — Generate registry.json from CommandDef
     // ═══════════════════════════════════════════════════════════════════════════════
 
-
     const registry_export_exe = b.addExecutable(.{
         .name = "export-registry",
         .root_module = b.createModule(.{
@@ -2788,7 +2793,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
-        });
+    });
 
     const tri_api = b.addExecutable(.{
         .name = "tri-api",
@@ -2837,5 +2842,4 @@ pub fn build(b: *std.Build) void {
     });
     const run_arena_tests = b.addRunArtifact(arena_tests);
     test_step.dependOn(&run_arena_tests.step);
-
 }
