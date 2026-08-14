@@ -1,3 +1,15 @@
+# Is the published site actually serving the site?
+#
+# This gate ran every 15 minutes and judged health by a bare status code from
+#   https://ghashtag.github.io/trinity/
+# which, since the custom domain was configured, answers 301 -> https://t27.ai/trinity/.
+# 301 is not 200, so the check failed — 96 times a day, on a site that was up —
+# and each failure dispatched a full deploy-docs redeploy. 18 of those fired in
+# the day and a half before this was noticed. They are also why manual publishes
+# kept losing a push race: a redeploy could start at any minute.
+#
+# So: follow the redirect, judge the page that a reader actually receives, and
+# only redeploy when the evidence says the deploy is what is broken.
 name: Pages Health Check
 
 on:
@@ -16,43 +28,55 @@ jobs:
       - name: Check site health
         id: health
         run: |
+          URL=https://ghashtag.github.io/trinity/
           max_retries=3
           retry_count=0
+          code=""
 
           while [ $retry_count -lt $max_retries ]; do
-            response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://ghashtag.github.io/trinity/)
+            # -L, because the Pages origin 301s to the custom domain by design.
+            # The body is kept: a 200 is not health if the page is empty or is
+            # the 404 fallback, and that is the failure mode a redeploy fixes.
+            code=$(curl -sL -o page.html -w "%{http_code}" --max-time 30 "$URL" || echo "000")
+            final=$(curl -sL -o /dev/null -w "%{url_effective}" --max-time 30 "$URL" || echo "?")
+            bytes=$(wc -c < page.html | tr -d ' ')
 
-            if [ "$response" = "200" ]; then
-              echo "Site is healthy (200 OK)"
+            if [ "$code" = "200" ] && [ "$bytes" -gt 500 ] && grep -qi '<div id="root"\|<title' page.html; then
+              echo "healthy: $code, $bytes bytes, served from $final"
               echo "status=healthy" >> $GITHUB_OUTPUT
               exit 0
             fi
 
-            echo "Attempt $((retry_count + 1)): Site returned $response"
+            echo "Attempt $((retry_count + 1)): code=$code bytes=$bytes final=$final"
             retry_count=$((retry_count + 1))
-
-            if [ $retry_count -lt $max_retries ]; then
-              sleep 10
-            fi
+            [ $retry_count -lt $max_retries ] && sleep 10
           done
 
           echo "Site is unhealthy after $max_retries attempts"
           echo "status=unhealthy" >> $GITHUB_OUTPUT
-          echo "http_code=$response" >> $GITHUB_OUTPUT
+          echo "http_code=$code" >> $GITHUB_OUTPUT
+          head -c 400 page.html || true
+
+          # A redeploy fixes a bad deploy. It does not fix DNS, a GitHub
+          # outage, or a timeout, and firing one at those is how a health check
+          # turns into a deploy loop. Only 404 and 410 say "what is published is
+          # wrong"; everything else is reported and left alone.
+          case "$code" in
+            404|410) echo "redeploy=yes" >> $GITHUB_OUTPUT ;;
+            *)       echo "redeploy=no"  >> $GITHUB_OUTPUT ;;
+          esac
           exit 1
 
-      - name: Trigger redeploy on failure
-        if: failure()
+      - name: Trigger redeploy when the deploy is what is broken
+        if: failure() && steps.health.outputs.redeploy == 'yes'
         uses: actions/github-script@v7
         with:
           script: |
-            console.log('Site health check failed, triggering redeploy workflow...');
-
+            console.log('Published site returns 404/410 — redeploying.');
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'deploy-docs.yml',
               ref: 'main'
             });
-
-            console.log('Redeploy triggered successfully');
+            console.log('Redeploy triggered');
