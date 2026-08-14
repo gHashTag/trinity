@@ -51,9 +51,16 @@ jobs:
       - name: Format check
         run: |
           # Check core modules that compile (skip WIP/broken files)
-          # Exclude src/vsa/trinity_canvas/ — generated files with non-standard syntax
+          #
+          # `src/vsa/*.zig` and `src/vsa/agent/` used to be listed here and are
+          # gone -- there is no src/vsa/ directory at all, only src/vsa.zig. The
+          # step failed on them, not on formatting:
+          #     error: unable to format 'src/vsa/*.zig': FileNotFound
+          # A path that no longer exists makes the gate fail identically to real
+          # formatting debt, so it stops reporting either. Every remaining path
+          # here was checked and passes.
           zig fmt --check src/vsa.zig src/vm.zig src/hybrid.zig src/trinity.zig \
-            src/bsd/ src/hslm/ src/vsa/*.zig src/vsa/agent/ tools/mcp/
+            src/bsd/ src/hslm/ tools/mcp/
 
       # P0.4: Explicit leak check for critical modules
       - name: Leak check critical modules
