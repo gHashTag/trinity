@@ -31,7 +31,16 @@ jobs:
 
       - name: Build TRI CLI
         run: |
-          zig build -Doptimize=ReleaseFast
+          # -Dci=true skips the GUI targets, which linkSystemLibrary("raylib").
+          # Without it this step builds trinity-node-gui, photon-demo,
+          # photon-immersive and trinity-canvas as well, none of which the CLI
+          # needs, and dies with "unable to find dynamic system library
+          # 'raylib'" -- the runner has no raylib and no reason to.
+          #
+          # build.zig has had the flag since the option was added; this workflow
+          # never passed it, so the job has been red for as long as anyone has
+          # looked, and a genuine break in src/tri/ would have looked identical.
+          zig build -Dci=true -Doptimize=ReleaseFast
           ls -la zig-out/bin/tri
           mkdir -p docker-artifacts
           cp zig-out/bin/tri docker-artifacts/tri

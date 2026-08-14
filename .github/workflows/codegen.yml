@@ -19,13 +19,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # `brew install zig` installs whatever is current, which is 0.16, and this
+      # tree targets 0.15.2 -- the version the other 28 workflows pin. On 0.16
+      # build.zig itself fails to compile (linkLibC moved, and the vendored
+      # raylib package still calls std.mem.trimLeft and std.process.getEnvVarOwned,
+      # both removed), so the job died before reaching any codegen at all.
       - name: Install Zig
-        run: |
-          brew install zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Build Project
         run: |
-          zig build
+          # -Dci=true skips the GUI targets that linkSystemLibrary("raylib");
+          # the runner has no raylib and codegen validation does not need one.
+          zig build -Dci=true
 
       - name: Run Codegen Validation
         run: |
