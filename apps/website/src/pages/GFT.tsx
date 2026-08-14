@@ -296,9 +296,9 @@ value = (-1)^sign · (1 + M/2^9) · 2^e,   e = Σ tᵢ·3ⁱ  ∈ [−40, +40]`}
               </tbody>
             </table>
             <p style={{ fontSize: '0.78rem', opacity: 0.55, marginTop: '0.6rem', maxWidth: '64ch' }}>
-              The synthesis table above is reproduced from
-              <a href={LINKS.synth} target="_blank" rel="noopener noreferrer"> fpga/gft/README.md</a>,
-              which sits beside the Verilog it describes.
+              {c ? 'Таблица синтеза выше взята из файла' : 'The synthesis table above is reproduced from'}
+              <a href={LINKS.synth} target="_blank" rel="noopener noreferrer"> fpga/gft/README.md</a>
+              {c ? ', который лежит рядом с описанным в нём Verilog.' : ', which sits beside the Verilog it describes.'}
             </p>
           </div>
         </motion.div>

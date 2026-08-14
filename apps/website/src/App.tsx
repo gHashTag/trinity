@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react'
 import Navigation from './components/Navigation'
-import PhiStarfield from './components/PhiStarfield'
 import Footer from './components/Footer'
 import { TnfHero } from './components/sections/tnf'
 
@@ -43,7 +42,6 @@ const SectionFallback = () => (
 export default function App() {
   return (
     <main>
-      <PhiStarfield />
       <Navigation />
 
       <TnfHero />

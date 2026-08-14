@@ -107,12 +107,14 @@ const PRICING_NOTE = {
   ru: 'Ставки привязаны к публичным рыночным числам, а не назначены на глаз: независимый аудит стоит $3 500 за инженеро-день и $20–25k за инженеро-неделю; контрактный senior-верификатор — $75–90/час; один MPW-слот на SKY130 сам по себе — $14 950; площадь на 28 нм — €11 300/мм². На верификацию уходит 70–80% проекта. Первый модуль бесплатный, так что до результата вы ничего не должны.',
 }
 
-const PRICING_SOURCES: [string, string][] = [
-  ['$3 500 / инженеро-день · $20–25k / инженеро-неделя — независимый аудит', 'https://www.7blocklabs.com/blog/smart-contract-audit-cost-range-2026-and-trail-of-bits-smart-contract-audit-cost-benchmarks'],
-  ['$75–90 / час — контракт senior DV', 'https://www.dice.com/jobs/q-design+verification+engineer-jobs'],
-  ['$14 950 — один MPW-слот на SKY130', 'https://chipfoundry.io/faqs'],
-  ['70–80% проекта — доля верификации', 'https://anysilicon.com/the-ultimate-guide-to-asic-verification/'],
-  ['$85 000 / год — Arm Flexible Access, Standard Tier', 'https://www.arm.com/products/flexible-access'],
+/* Подписи ссылок двуязычные: раньше здесь стоял только русский текст, и в
+   английской локали под английским абзацем висели русские ярлыки. */
+const PRICING_SOURCES: [{ en: string; ru: string }, string][] = [
+  [{ en: '$3,500 / engineer-day · $20–25k / engineer-week — independent audit', ru: '$3 500 / инженеро-день · $20–25k / инженеро-неделя — независимый аудит' }, 'https://www.7blocklabs.com/blog/smart-contract-audit-cost-range-2026-and-trail-of-bits-smart-contract-audit-cost-benchmarks'],
+  [{ en: '$75–90 / hour — contract senior DV', ru: '$75–90 / час — контракт senior DV' }, 'https://www.dice.com/jobs/q-design+verification+engineer-jobs'],
+  [{ en: '$14,950 — one SKY130 MPW slot', ru: '$14 950 — один MPW-слот на SKY130' }, 'https://chipfoundry.io/faqs'],
+  [{ en: '70–80% of a project — the verification share', ru: '70–80% проекта — доля верификации' }, 'https://anysilicon.com/the-ultimate-guide-to-asic-verification/'],
+  [{ en: '$85,000 / year — Arm Flexible Access, Standard Tier', ru: '$85 000 / год — Arm Flexible Access, Standard Tier' }, 'https://www.arm.com/products/flexible-access'],
 ]
 
 const PROOF = [
@@ -318,16 +320,16 @@ function ScienceSection({ lang }: { lang: string }) {
         <div key={t.id} className="premium-card" style={{ textAlign: 'left', marginBottom: '0.9rem' }}>
           <div style={{ display: 'flex', gap: '0.7rem', alignItems: 'baseline' }}>
             <code style={{ color: 'var(--accent)', fontSize: '0.78rem', fontWeight: 700 }}>{t.id}</code>
-            <h3 style={{ margin: 0, fontSize: 'clamp(0.98rem, 2.6vw, 1.12rem)', lineHeight: 1.35 }}>{t.name}</h3>
+            <h3 style={{ margin: 0, fontSize: 'clamp(0.98rem, 2.6vw, 1.12rem)', lineHeight: 1.35 }}>{ru ? (t.nameRu ?? t.name) : t.name}</h3>
           </div>
-          <p style={{ fontSize: '0.9rem', lineHeight: 1.62, margin: '0.6rem 0 0' }}>{t.statement}</p>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.62, margin: '0.6rem 0 0' }}>{ru ? (t.statementRu ?? t.statement) : t.statement}</p>
           {t.worked && (
             <p style={{ fontSize: '0.88rem', lineHeight: 1.6, margin: '0.6rem 0 0', color: 'var(--accent)' }}>
-              {t.worked}
+              {ru ? (t.workedRu ?? t.worked) : t.worked}
             </p>
           )}
           <p style={{ fontSize: '0.85rem', lineHeight: 1.55, margin: '0.7rem 0 0', opacity: 0.8 }}>
-            <strong>{ru ? 'Не заявляет: ' : 'Does not claim: '}</strong>{t.doesNotClaim}
+            <strong>{ru ? 'Не заявляет: ' : 'Does not claim: '}</strong>{ru ? (t.doesNotClaimRu ?? t.doesNotClaim) : t.doesNotClaim}
           </p>
           <p style={{ fontSize: '0.78rem', margin: '0.6rem 0 0', opacity: 0.6 }}>
             {t.url ? <a href={t.url} target="_blank" rel="noopener noreferrer">{t.citation}</a> : t.citation}
@@ -577,7 +579,7 @@ export default function HardwareVerification() {
                 rel="noopener noreferrer"
                 style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}
               >
-                {label}
+                {ru ? label.ru : label.en}
               </a>
             ))}
           </div>
@@ -595,8 +597,7 @@ export default function HardwareVerification() {
         >
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>{c ? c.proofTitle : 'Why trust the numbers'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, marginTop: 0 }}>
-            This pipeline was built for my own research — a ternary floating-point format taken from
-            an arXiv paper all the way to a placed and routed Artix-7, verified bit-exact at every step.
+            {c ? c.proofLede : 'This pipeline was built for my own research — a ternary floating-point format taken from an arXiv paper all the way to a placed and routed Artix-7, verified bit-exact at every step.'}
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
             {(c ? c.proof : PROOF).map(([metric, note]) => (
@@ -673,7 +674,7 @@ export default function HardwareVerification() {
         >
           <h2 style={{ fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', marginTop: 0, marginBottom: '0.75rem' }}>{c ? c.limitsTitle : 'What this is not'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.9, marginTop: 0 }}>
-            A verification report is only worth something if its limits are stated as clearly as its results.
+            {c ? c.limitsLede : 'A verification report is only worth something if its limits are stated as clearly as its results.'}
           </p>
           <ul style={{ margin: '1rem 0 0', paddingLeft: '1.25rem', display: 'grid', gap: '0.7rem' }}>
             {(c ? c.limits : LIMITS).map((l) => (
@@ -694,11 +695,10 @@ export default function HardwareVerification() {
         >
           <h2 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.6rem)', marginTop: 0 }}>{c ? c.finalTitle : 'Have a design to verify?'}</h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.6, opacity: 0.9, maxWidth: '52ch', margin: '0 auto 1.5rem' }}>
-            Tell me what it does and what correct looks like. If it fits on an Artix-7, it can be measured.
+            {c ? c.finalLede : 'Tell me what it does and what correct looks like. If it fits on an Artix-7, it can be measured.'}
           </p>
           <p style={{ fontSize: '0.85rem', lineHeight: 1.6, opacity: 0.72, maxWidth: '52ch', margin: '0 auto 1.5rem' }}>
-            The email opens with four short questions already in it. Answer them and my first
-            reply can be a quote and a date rather than more questions. I answer within a day.
+            {c ? c.finalNote : 'The email opens with four short questions already in it. Answer them and my first reply can be a quote and a date rather than more questions. I answer within a day.'}
           </p>
           <motion.a
             href={mailto('Hardware verification request')}
