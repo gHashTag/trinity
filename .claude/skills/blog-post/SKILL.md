@@ -1,37 +1,95 @@
 ---
 name: blog-post
-description: Write and publish a post to the t27.ai blog. Covers where the site actually is, the provenance rules a post must meet before it ships, the build gate, and the traps that have already cost a session. Use for any blog writing, editing, or publishing on t27.ai.
+description: Write and publish a post to the t27.ai blog. Covers where the blog actually lives (not where it looks like it lives), the Post schema with its required receipts and openQuestions, the honesty rules the data file itself imposes, and the build gate. Use for any blog writing, editing, or publishing on t27.ai.
 ---
 
 # Writing for the t27.ai blog
 
 The blog exists to publish things that are **true and checkable**. A post that
-overstates is worse than no post, because the people who would catch it are the
-people we work with — the openXC7 maintainers read this.
+overstates is worse than no post: the people who would catch it are the people
+we work with, and the openXC7 maintainers read it.
 
-## Where the site is
+## Where the blog is — read this before anything else
 
-**`gHashTag/trinity` at `/Users/playom/trinity`.** Not `trinity-fpga`.
+**`apps/website/src/data/blog/posts.ts` in `gHashTag/trinity`
+(`/Users/playom/trinity`).**
 
-`trinity-fpga/docs` is a copy carrying the same `docusaurus.config.ts` (same
-`url: 'https://t27.ai'`), so it looks authoritative and is not deployed. Editing
-it changes nothing live. A whole article was once written into it before anyone
-noticed.
+Posts are **TypeScript objects**, not markdown files. They are rendered by
+`apps/website/src/pages/Blog.tsx` (a Vite + React SPA with hash routing) and
+served at `https://t27.ai/#/blog` and `https://t27.ai/#/blog/<slug>`.
 
-- Posts: `docs/blog/YYYY-MM-DD-<slug>.md`
-- Authors: `docs/blog/authors.yml` — every `authors:` key a post references must
-  exist here or the build fails
-- Live at `https://t27.ai/docs/blog/<slug>/`
-- Deploy: `.github/workflows/deploy-docs.yml`, **triggers only on push to
-  `main`**. Pushing a branch publishes nothing.
+Two decoys have already cost real time:
 
-## Before you write a sentence: the provenance rules
+- **`trinity-fpga/docs/`** — a copy of the Docusaurus site carrying the same
+  `url: 'https://t27.ai'`. Not deployed. Editing it changes nothing.
+- **`trinity/docs/`** — the real Docusaurus site, at `/docs/`. It is the
+  **documentation**, not the blog. Its blog plugin is deliberately `blog: false`.
 
-Every load-bearing claim needs a source you actually queried in this session.
+If you are writing markdown, you are in the wrong place.
 
-**Ages come from `git blame` of the specific line, never from the file's date.**
-A file with 59 commits tells you nothing about when one line was written. Use
-GitHub's GraphQL blame against the commit *before* the fix:
+## The schema
+
+```ts
+interface Post {
+  slug: string
+  title: string
+  summary: string          // one sentence; index + meta description
+  date: string             // YYYY-MM-DD
+  readingMinutes: number
+  tags: string[]
+  receipts: { label: string; href: string }[]   // at least one, required
+  openQuestions: string[]                        // required
+  body: Block[]
+  published: boolean       // false while the text still has gaps
+  ru?: { title; summary; openQuestions; body }   // all-or-nothing
+}
+
+type Block =
+  | { kind: 'p';     text: string }
+  | { kind: 'h';     text: string }
+  | { kind: 'ul';    items: string[] }
+  | { kind: 'ol';    items: string[] }
+  | { kind: 'quote'; text: string }
+  | { kind: 'code';  text: string }
+  | { kind: 'table'; head: string[]; rows: string[][] }
+```
+
+Register the post in the `posts` array at the bottom of the file, newest first.
+
+**`receipts` are artefacts a reader can open** — PR, issue, CI run, commit, file
+at a ref. Label them with state: `#145 — what it did · MERGED 2026-08-13`,
+`#134 — what is wrong · OPEN`.
+
+**`openQuestions` is what is NOT proven.** The file's own comment is blunt about
+it: *a post without this is marketing*. Put the real limits there — what was
+inferred rather than measured, what is still failing, what you did not test.
+
+**`ru` is all-or-nothing.** A Russian title over an English body is worse than
+an English title, because the reader commits and then cannot finish. Fill every
+field or omit `ru` entirely. A hedge that softens in translation —
+"submitted upstream" becoming "accepted", "inferred" becoming "measured" — is a
+false claim in a second language and harder to catch.
+
+## The honesty rules the file imposes
+
+They are written at the top of `posts.ts` and they bind every post:
+
+- **A pull request's state is named exactly.** Merged ones say merged, open ones
+  say "submitted upstream". Never a blanket claim over a mixed set. Re-check
+  immediately before publishing, because states move:
+
+  ```bash
+  gh api "repos/openXC7/nextpnr-xilinx/pulls?state=all&per_page=30" \
+    --jq '.[]|select(.user.login=="gHashTag")|"#\(.number) merged=\(.merged_at != null)"'
+  ```
+
+- **A design is not a fabricated chip.**
+- **Unsolved defects stay in the text.**
+- **No scale claims in titles.**
+
+Beyond those: ages come from `git blame` of the *specific line*, never a file's
+date — a file with 59 commits tells you nothing about when one line was written.
+Use GitHub's GraphQL blame against the commit before the fix:
 
 ```bash
 gh api graphql -f query='
@@ -40,76 +98,49 @@ gh api graphql -f query='
       blame(path:"path/to/file.cc") { ranges {
         startingLine endingLine
         commit { oid committedDate messageHeadline author { name } }
-      } } } } } }' --jq '.data.repository.object.blame.ranges[]
-        | select(.startingLine <= LINE and .endingLine >= LINE)'
+      } } } } } }'
 ```
 
-**Check the state of every issue and PR you mention.** "We fixed X" is false if
-X is still open. Confirm with `gh api repos/OWNER/REPO/issues/N --jq '{state}'`
-before writing that anything was closed, and read the body — an issue may say
-explicitly that the merged fix does *not* resolve it.
+And quote other people's caveats verbatim in a `quote` block rather than
+paraphrasing them into something weaker.
 
-**Quote maintainers, don't improve them.** When someone else's caveat bounds
-your claim, reproduce their words verbatim in a blockquote.
+## Building and publishing
 
-**Name what is still broken.** Every post about a fix should say what the fix
-does not cover. This is the difference between a report and a press release.
-
-**Include the mistake.** The most valuable paragraph is usually the one about
-what we got wrong and how we found out. Write it.
-
-## Publishing
-
-The blog is enabled in `docs/docusaurus.config.ts` under the classic preset
-(`blog: { path: 'blog', routeBasePath: 'blog', ... }`). With
-`docs.routeBasePath: '/'`, posts land under `/docs/blog/`.
-
-**Use npm. Never yarn.** The repo has `package-lock.json` only; running yarn
-creates a second lockfile that drifts. **Node ≥ 20** is required — the shell
-default here is 18 and npm refuses:
+**Node ≥ 20; the shell default here is 18 and npm refuses.**
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v20.19.0/bin:$PATH"
-cd /Users/playom/trinity/docs && npm install && npm run build
+cd /Users/playom/trinity/apps/website && npm install && npm run build:ci
 ```
 
-**The build is the gate.** It must exit 0 and generate
-`docs/build/blog/<slug>/index.html`. Then grep that HTML for the specific facts
-you claimed — if a fact was dropped, you want to know before it ships. Beware
-markdown emphasis when grepping: `does *not* fix it` renders as
-`does <em>not</em> fix it`, so a plain-string grep reports a false miss.
+TypeScript is the gate: a malformed `Block` or a missing required field fails
+the build. It must exit 0.
 
-**Branch off `origin/main`, never off whatever is checked out.** A branch cut
-from a feature branch drags that feature's commits into `main` on merge. Check
-before merging:
-
-```bash
-git rev-list --count origin/main..HEAD   # should equal your commit count
-git log --oneline origin/main..HEAD
-```
-
-If it is wrong, cherry-pick your commit onto a fresh branch from `origin/main`.
-
-Merging to `main` **is** the publication. It triggers the deploy and force-pushes
-`gh-pages`. Treat it as an outward-facing action and confirm with the operator
+Deploy is `.github/workflows/deploy-docs.yml`, **push to `main` only** — it
+builds `apps/website` into the site root and `docs/` into `/docs/`, then
+force-pushes `gh-pages`. Pushing a branch publishes nothing. Merging to `main`
+**is** the publication; treat it as outward-facing and confirm with the operator
 unless they have already said to publish.
+
+Verify afterwards, do not trust the push. The SPA uses hash routing, so a bare
+`curl` of `/#/blog/<slug>` only ever fetches `index.html` and always returns
+200 — that is not evidence. Check that the slug is present in the built bundle,
+and open the page if you need certainty.
 
 ## Traps already paid for
 
-- **`.gitignore` has a global `*.md`.** `main` now carries `!docs/**`, which
-  re-includes posts. If you ever see a post silently missing from `git status`,
-  this is why — check with `git check-ignore -v <file>`.
-- **`git push` succeeding does not mean the post is live.** Deploy is main-only.
-  Verify with `curl -o /dev/null -w '%{http_code}' https://t27.ai/docs/blog/<slug>/`.
-- **Exit codes lie when you pipe through `tail`.** `cmd | tail -5` reports
-  `tail`'s status. Capture the build log to a file and grep it, or check
-  `${PIPESTATUS[0]}`.
-- **A green build is not a correct post.** It only proves the markdown parsed.
-
-## Russian versions
-
-Docusaurus i18n is not configured, and turning it on restructures the whole
-site. Ship a Russian post as its own file with a `-ru` slug
-(`2026-08-14-<slug>-ru.md`, `slug: <slug>-ru`) and translate for sense, not
-word-for-word. Keep the same verified numbers — a translation must not soften a
-claim or drop a caveat.
+- **`.gitignore` has a global `*.md`.** `!docs/**` and `!.claude/skills/**` now
+  re-include what matters, but if a file is silently missing from `git status`,
+  check `git check-ignore -v <file>`.
+- **Branch off `origin/main`, never off whatever is checked out.** Verify with
+  `git log --oneline origin/main..HEAD` — it should list only your commits. A
+  branch cut from a feature branch drags that feature into `main` on merge.
+- **`origin/main` moves under you.** Before pushing, re-check the file count in
+  `git diff --stat origin/main..HEAD`. If it exceeds what you touched, you are
+  about to revert someone else's work; rebase instead.
+- **Exit codes lie through `tail`.** `cmd | tail -5` reports `tail`'s status.
+  Capture the log to a file and grep it, or check `${PIPESTATUS[0]}`.
+- **Dependabot drift breaks the docs build.** It bumps one package to an exact
+  version and leaves the sibling on a caret; `deploy-docs.yml` runs `npm install`
+  rather than `npm ci`, so the lockfile does not protect the deploy. Both
+  `@docusaurus/*` and `react`/`react-dom` have broken this way.
