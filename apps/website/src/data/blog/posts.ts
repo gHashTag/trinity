@@ -58,6 +58,173 @@ export interface Post {
   }
 }
 
+const searchSpaceErasedSignificance: Post = {
+  slug: 'the-search-space-erased-a-significance-claim',
+  title: 'The search space erased a significance claim',
+  summary:
+    'A merged audit of 67 targets withdraws a roughly 10-sigma reading after enumerating the search family that made near-matches likely by chance.',
+  date: '2026-08-14',
+  readingMinutes: 7,
+  tags: ['research', 'statistics', 'reproducibility', 'audit'],
+  receipts: [
+    {
+      label: 'gHashTag/trinity PR #738 — merged statistical audit',
+      href: 'https://github.com/gHashTag/trinity/pull/738',
+    },
+    {
+      label: 'Merged commit da2916c — corrected source and scripts',
+      href: 'https://github.com/gHashTag/trinity/commit/da2916cc1af1c35a6d9a356cc0f7ea35aefe4d56',
+    },
+    {
+      label: 'sacred-formulas.md — audited document',
+      href: 'https://github.com/gHashTag/trinity/blob/04430c0dc154ed3ec987704fe9b74bbcb40a3e9b/docs/docs/math-foundations/sacred-formulas.md',
+    },
+  ],
+  openQuestions: [
+    'The Šidák threshold of 5.06σ assumes independent family members; the dependence created by shared factors was not estimated, so the actual threshold may be lower.',
+    'The one-decade window used for local-density estimates was checked for stability, but it has no theoretical derivation in this audit.',
+    'The document still records a mismatch between an announced standard search size of 20,412 and bounds that enumerate 54,756 combinations; the PR flags the discrepancy instead of silently choosing one.',
+    'The corrected counts concern this document and its declared family of formulas; they do not establish a general statement about mathematical coincidences outside that family.',
+  ],
+  body: [
+    { kind: 'h', text: 'The claim changed when the search was counted' },
+    {
+      kind: 'p',
+      text:
+        'PR #738 is merged in gHashTag/trinity. It audits the statistical-significance section of sacred-formulas.md with a reproducible enumeration rather than accepting the probabilities printed in the document. The audit covers 67 factual targets and the family V = n · 3^k · π^m · φ^p · e^q around each one.',
+    },
+    {
+      kind: 'p',
+      text:
+        'The important correction is not that a few formulas moved in the last decimal place. It is that the size and local density of the search family determine how surprising a near-match can be. A narrow numerical band is not evidence by itself when the search produces many candidates for every target.',
+    },
+    { kind: 'h', text: 'Two enumerations, two corrected baselines' },
+    {
+      kind: 'table',
+      head: ['Enumeration', 'Combinations', 'Printed probability', 'Recomputed probability', 'Corrected reading'],
+      rows: [
+        ['Standard, m from −3 to 0', '54,756', '0.2%', '64.2% (minimum 33.2%)', 'near-matches are common'],
+        ['Extended', '123,201', '2.9%', 'near 100% (minimum 88.4%)', 'the search is highly permissive'],
+      ],
+    },
+    {
+      kind: 'p',
+      text:
+        'For the extended enumeration, a probability near 100% per target implies roughly 67 expected hits among 67 targets. The document listed 32. Being below that chance expectation does not establish significance in either direction; it means the reported matches are not informative at the stated precision.',
+    },
+    {
+      kind: 'p',
+      text:
+        'The audit therefore withdraws the earlier roughly 10-sigma and 3-sigma readings. For the extended family, a Šidák correction with M = 123,201 and α = 0.05 gives a threshold of 5.06σ, not 3σ. This threshold is a property of the declared multiplicity model, not a universal constant.',
+    },
+    { kind: 'h', text: 'The correction is reproducible and asymmetric in the right way' },
+    {
+      kind: 'p',
+      text:
+        'The merged change adds executable checks and replaces several trusted numbers with values recomputed from the underlying rows. It also corrects the count of established constants from 75 to 70 and the EXACT class from 35 to 32. These are not new measurements of nature; they are corrected readings of the repository data.',
+    },
+    {
+      kind: 'p',
+      text:
+        'One numerical comparison shows why arithmetic precision is not the main issue here. For the proton-to-electron mass ratio, the corrected target is 1836.152673426(32), while the document’s formula misses it by 6.3·10⁷σ when expressed in measurement-uncertainty units. The audit separately checks floating-point error and finds it far below the tolerance used by the calculation, so this discrepancy is not explained by rounding.',
+    },
+    {
+      kind: 'quote',
+      text:
+        'Before asking whether a match is surprising, enumerate what was allowed to match.',
+    },
+    { kind: 'h', text: 'What the merged PR leaves visible' },
+    {
+      kind: 'ul',
+      items: [
+        'The standard search bounds enumerate 54,756 combinations, while the document also prints 20,412; the inconsistency is flagged, not hidden.',
+        'The shared factors make family members dependent, so the Šidák threshold is a reference calculation until that dependence is modelled.',
+        'The width of the local-density window is supported by stability checks, not by a theorem.',
+        'The result is a negative finding about evidential value: the declared matches do not support the former significance claim at the stated precision.',
+      ],
+    },
+    {
+      kind: 'p',
+      text:
+        'That is a useful outcome for a codebase that wants its numerical claims to remain inspectable. The audit does not declare the coincidences false. It makes the stronger and narrower statement that this search procedure makes them too easy to obtain for the old significance language to survive.',
+    },
+  ],
+  published: true,
+  ru: {
+    title: 'Пространство поиска отменило заявление о значимости',
+    summary:
+      'Смерженный аудит 67 целей снимает трактовку около 10σ после перечисления семейства поиска, в котором близкие совпадения часто возникают случайно.',
+    openQuestions: [
+      'Порог Шидака 5,06σ предполагает независимость членов семейства; зависимость из-за общих множителей не оценивалась, поэтому настоящий порог может быть ниже.',
+      'Однодекадное окно для оценки локальной плотности проверено на устойчивость, но теоретического вывода для него в этом аудите нет.',
+      'В документе остаётся расхождение между заявленным размером стандартного перебора 20 412 и границами, которые дают 54 756 комбинаций; PR отмечает его, а не выбирает число молча.',
+      'Исправленные счётчики относятся к этому документу и заявленному семейству формул; они не доказывают общего тезиса о математических совпадениях вне этого семейства.',
+    ],
+    body: [
+      { kind: 'h', text: 'Утверждение изменилось после подсчёта поиска' },
+      {
+        kind: 'p',
+        text:
+          'PR #738 смержен в gHashTag/trinity. Он проверяет раздел о статистической значимости в sacred-formulas.md воспроизводимым перечислением, а не принимает напечатанные в документе вероятности. Аудит охватывает 67 фактических целей и семейство V = n · 3^k · π^m · φ^p · e^q вокруг каждой из них.',
+      },
+      {
+        kind: 'p',
+        text:
+          'Главная правка не в том, что несколько формул сдвинулись в последнем знаке. Размер и локальная плотность семейства поиска определяют, насколько удивительным может быть близкое совпадение. Узкая числовая полоса сама по себе не является доказательством, если для каждой цели перебирается много кандидатов.',
+      },
+      { kind: 'h', text: 'Два перебора, две пересчитанные базы' },
+      {
+        kind: 'table',
+        head: ['Перебор', 'Комбинаций', 'Напечатанная вероятность', 'Пересчитанная вероятность', 'Исправленное чтение'],
+        rows: [
+          ['Стандартный, m от −3 до 0', '54 756', '0,2%', '64,2% (минимум 33,2%)', 'близкие совпадения часты'],
+          ['Расширенный', '123 201', '2,9%', 'около 100% (минимум 88,4%)', 'перебор слишком разрешающий'],
+        ],
+      },
+      {
+        kind: 'p',
+        text:
+          'Для расширенного перебора вероятность около 100% на одну цель означает примерно 67 ожидаемых попаданий для 67 целей. В документе было перечислено 32. Значение ниже случайного ожидания не подтверждает значимость ни в одну сторону: оно означает, что совпадения неинформативны при заявленной точности.',
+      },
+      {
+        kind: 'p',
+        text:
+          'Поэтому аудит снимает прежние трактовки около 10σ и 3σ. Для расширенного семейства поправка Шидака при M = 123 201 и α = 0,05 даёт порог 5,06σ, а не 3σ. Этот порог — свойство заявленной модели множественных проверок, а не универсальная константа.',
+      },
+      { kind: 'h', text: 'Правка воспроизводима и правильно ограничивает вывод' },
+      {
+        kind: 'p',
+        text:
+          'Смерженное изменение добавляет исполняемые проверки и заменяет несколько доверенных чисел значениями, пересчитанными из исходных строк. Оно также исправляет число established constants с 75 до 70 и класс EXACT с 35 до 32. Это не новые измерения природы, а исправленное чтение данных репозитория.',
+      },
+      {
+        kind: 'p',
+        text:
+          'Один числовой пример показывает, почему проблема не в точности арифметики. Для отношения массы протона к массе электрона исправленная цель — 1836,152673426(32), а промах формулы документа в единицах экспериментальной погрешности составляет 6,3·10⁷σ. Аудит отдельно проверяет ошибку вычислений с плавающей точкой и находит её намного меньше допуска, использованного в расчёте, поэтому расхождение не объясняется округлением.',
+      },
+      {
+        kind: 'quote',
+        text: 'Прежде чем спрашивать, удивительно ли совпадение, перечислите, чему вообще разрешили совпасть.',
+      },
+      { kind: 'h', text: 'Что смерженный PR оставляет на виду' },
+      {
+        kind: 'ul',
+        items: [
+          'Границы стандартного перебора дают 54 756 комбинаций, тогда как документ также печатает 20 412; несогласованность отмечена, а не спрятана.',
+          'Общие множители делают члены семейства зависимыми, поэтому порог Шидака остаётся справочным расчётом, пока зависимость не смоделирована.',
+          'Ширина окна локальной плотности подтверждена проверками устойчивости, но не теоремой.',
+          'Результат отрицательный по своей доказательной силе: заявленные совпадения больше не поддерживают прежнее утверждение о значимости при указанной точности.',
+        ],
+      },
+      {
+        kind: 'p',
+        text:
+          'Это полезный итог для кодовой базы, которая хочет сохранять числовые заявления проверяемыми. Аудит не объявляет совпадения ложными. Он формулирует более узкий и сильный вывод: эта процедура поиска делает их слишком лёгкими для получения, поэтому прежний язык о значимости не выдерживает проверки.',
+      },
+    ],
+  },
+}
+
 const pooledWindowsWereNotCheckpoints: Post = {
   slug: 'eleven-verdicts-were-windows-not-checkpoints',
   title: 'Eleven verdicts were windows, not checkpoints',
@@ -1511,7 +1678,7 @@ const discardedReturnValue: Post = {
   },
 }
 
-export const posts: Post[] = [discardedReturnValue, gateWithManualRemedy, pooledWindowsWereNotCheckpoints, eachHalfImportedTheOther, zeroOfSixHundredForty, repairDoesNotPropagate, greenCiUnusable, scaleFieldWidth, openGigabitEthernet]
+export const posts: Post[] = [searchSpaceErasedSignificance, discardedReturnValue, gateWithManualRemedy, pooledWindowsWereNotCheckpoints, eachHalfImportedTheOther, zeroOfSixHundredForty, repairDoesNotPropagate, greenCiUnusable, scaleFieldWidth, openGigabitEthernet]
 
 export const publishedPosts = () => posts.filter((p) => p.published)
 
