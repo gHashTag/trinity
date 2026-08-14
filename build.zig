@@ -2111,6 +2111,15 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri/main.zig"),
             .target = target,
             .optimize = optimize,
+            // src/tri/env_loader.zig reaches for std.c, so `tri` needs libc. It
+            // used to arrive by accident: the serve_full module carried
+            // .link_libc = true and dragged it in. That module pointed at a
+            // file which exists nowhere and has been removed, which made the
+            // real dependency visible as
+            //   env_loader.zig:8:12: dependency on libc must be explicitly
+            //   specified in the build command
+            // Declared here, where it is actually needed.
+            .link_libc = true,
             .imports = &.{
                 .{ .name = "trinity_swe", .module = vibeec_swe },
                 .{ .name = "igla_chat", .module = vibeec_chat },
