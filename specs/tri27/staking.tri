@@ -1,0 +1,144 @@
+# TRI-27 Staking Module — Source of Truth
+# Issue: #443
+# phi^2 + 1/phi^2 = 3 | TRINITY
+
+name: staking
+version: "1.0.0"
+module: tri27.staking
+description: "Staking module for TRI-27 token system"
+
+types:
+  StakePosition:
+    description: "Individual stake position"
+    fields:
+      - name: index
+        type: u32
+        description: "Position index"
+      - name: amount
+        type: u128
+        description: "Staked amount"
+      - name: lock_time
+        type: i64
+        description: "When stake was created"
+      - name: unlock_time
+        type: i64
+        description: "When stake can be withdrawn"
+      - name: reward_debt
+        type: u128
+        description: "Reward debt at time of staking"
+
+  StakePool:
+    description: "Global staking pool state"
+    fields:
+      - name: total_staked
+        type: u128
+        description: "Total tokens staked across all stakers"
+      - name: reward_rate
+        type: u128
+        description: "Reward per second per staked token"
+      - name: last_update_time
+        type: i64
+        description: "Last time rewards were accumulated"
+      - name: reward_per_token_stored
+        type: u128
+        description: "Accumulated reward per token"
+
+constants:
+  MIN_STAKE:
+    type: u128
+    value: "1000000000000000000"
+    description: "Minimum 1 token to stake"
+
+  MAX_STAKE_POSITIONS:
+    type: u32
+    value: 27
+    description: "Max concurrent stake positions per user (one per register)"
+
+  EARLY_UNSTAKE_PENALTY:
+    type: u16
+    value: 1000
+    description: "10% penalty in basis points for early unstake"
+
+  REWARD_EMISSION_RATE:
+    type: u128
+    value: "3141592653589793"
+    description: "phi-aligned emission rate per second"
+
+functions:
+  stake:
+    description: "Create a new stake position"
+    params:
+      - name: staker
+        type: "[32]u8"
+      - name: amount
+        type: u128
+      - name: duration_seconds
+        type: i64
+    returns: StakePosition
+
+  unstake:
+    description: "Withdraw a mature stake position"
+    params:
+      - name: staker
+        type: "[32]u8"
+      - name: position_index
+        type: u32
+    returns: u128
+
+  claim_rewards:
+    description: "Claim accumulated staking rewards"
+    params:
+      - name: staker
+        type: "[32]u8"
+    returns: u128
+
+  pending_rewards:
+    description: "View pending unclaimed rewards"
+    params:
+      - name: staker
+        type: "[32]u8"
+    returns: u128
+
+  pool_info:
+    description: "Get global staking pool info"
+    params: []
+    returns: StakePool
+
+tests:
+  test_stake_creates_position:
+    description: "Staking creates a new position"
+    assertions:
+      - "stake(A, 1000, 86400).amount == 1000"
+
+  test_unstake_returns_principal_plus_reward:
+    description: "Mature unstake returns principal + rewards"
+    assertions:
+      - "unstake after unlock_time >= principal"
+
+  test_early_unstake_applies_penalty:
+    description: "Early unstake deducts penalty"
+    assertions:
+      - "unstake before unlock_time returns amount * (1 - EARLY_UNSTAKE_PENALTY/10000)"
+
+  test_max_27_positions:
+    description: "Cannot exceed 27 stake positions"
+    assertions:
+      - "stake beyond MAX_STAKE_POSITIONS fails"
+
+  test_reward_accumulates:
+    description: "Rewards accumulate over time"
+    assertions:
+      - "pending_rewards(A, t+1000) > pending_rewards(A, t)"
+
+invariants:
+  total_staked_conservation:
+    description: "Sum of all stakes equals pool total_staked"
+    expression: "sum(positions.amount) == pool.total_staked"
+
+  no_double_claim:
+    description: "Rewards can only be claimed once"
+    expression: "claim_rewards resets pending to 0"
+
+  stake_amount_positive:
+    description: "All stake amounts are positive"
+    expression: "forall p: StakePosition :: p.amount >= MIN_STAKE"

@@ -1,0 +1,63 @@
+# TRI-27 Staking Commands — Source of Truth
+# Issue: #446
+# phi^2 + 1/phi^2 = 3 | TRINITY
+
+name: staking_cli
+version: "1.0.0"
+module: tri27.cli.staking
+description: "CLI commands for TRI-27 staking operations"
+
+commands:
+  stake:
+    description: "Stake tokens with lock duration"
+    usage: "tri27 stake <amount> [--duration <seconds>]"
+    params:
+      - name: amount
+        type: u128
+      - name: duration
+        type: i64
+        default: 2592000
+    returns: StakePosition
+
+  unstake:
+    description: "Unstake a position"
+    usage: "tri27 unstake <position-index>"
+    params:
+      - name: position_index
+        type: u32
+    returns: u128
+
+  positions:
+    description: "List all stake positions"
+    usage: "tri27 stake positions [--address <addr>]"
+    params:
+      - name: address
+        type: "[32]u8"
+    returns: "[]StakePosition"
+
+  rewards:
+    description: "View pending rewards"
+    usage: "tri27 stake rewards [--address <addr>]"
+    params:
+      - name: address
+        type: "[32]u8"
+    returns: u128
+
+  pool:
+    description: "Show staking pool info"
+    usage: "tri27 stake pool"
+    params: []
+    returns: StakePool
+
+tests:
+  test_stake_creates_position:
+    assertions:
+      - "stake(1000) creates position with amount=1000"
+
+  test_positions_lists_all:
+    assertions:
+      - "positions() returns all active stakes"
+
+  test_rewards_shows_pending:
+    assertions:
+      - "rewards() returns pending_rewards value"

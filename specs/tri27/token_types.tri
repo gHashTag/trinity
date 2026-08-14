@@ -1,0 +1,211 @@
+# TRI-27 Token Types — Source of Truth
+# Issue: #441
+# phi^2 + 1/phi^2 = 3 | TRINITY
+
+name: token_types
+version: "1.0.0"
+module: tri27.token_types
+description: "Token types for TRI-27 staking and reward system"
+
+types:
+  TokenAccount:
+    description: "Account balance and allowance state"
+    fields:
+      - name: balance
+        type: u128
+        description: "Token balance with 18 decimal places"
+      - name: nonce
+        type: u64
+        description: "Transaction counter for replay protection"
+      - name: staked_amount
+        type: u128
+        description: "Currently staked tokens"
+
+  TokenStake:
+    description: "Staking position with lock period"
+    fields:
+      - name: staker
+        type: "[32]u8"
+        description: "Staker public key (ed25519)"
+      - name: amount
+        type: u128
+        description: "Staked token amount"
+      - name: lock_time
+        type: i64
+        description: "Unix timestamp when stake was created"
+      - name: unlock_time
+        type: i64
+        description: "Unix timestamp when stake unlocks"
+      - name: reward_debt
+        type: u128
+        description: "Accumulated reward debt for distribution"
+
+  TokenTransfer:
+    description: "Transfer event record"
+    fields:
+      - name: from_addr
+        type: "[32]u8"
+        description: "Sender address"
+      - name: to_addr
+        type: "[32]u8"
+        description: "Recipient address"
+      - name: amount
+        type: u128
+        description: "Transfer amount"
+      - name: nonce
+        type: u64
+        description: "Sender nonce at time of transfer"
+
+  TokenAllowance:
+    description: "Approved spending allowance"
+    fields:
+      - name: owner
+        type: "[32]u8"
+        description: "Token owner address"
+      - name: spender
+        type: "[32]u8"
+        description: "Approved spender address"
+      - name: amount
+        type: u128
+        description: "Maximum spendable amount"
+
+constants:
+  DECIMALS:
+    type: u8
+    value: 18
+    description: "Token decimal places"
+
+  MAX_SUPPLY:
+    type: u128
+    value: "270000000000000000000000000"
+    description: "Max supply: 270M tokens (27 * 10M * 10^18)"
+
+  MIN_STAKE_AMOUNT:
+    type: u128
+    value: "1000000000000000000"
+    description: "Minimum stake: 1 token"
+
+  DEFAULT_LOCK_DURATION:
+    type: i64
+    value: 2592000
+    description: "Default lock: 30 days in seconds"
+
+  TOTAL_COPTIC_REGISTERS:
+    type: u8
+    value: 27
+    description: "Total Coptic registers for token operations"
+
+functions:
+  token_balance_of:
+    description: "Get token balance for address"
+    params:
+      - name: account
+        type: "[32]u8"
+        description: "Account address"
+    returns: u128
+
+  token_transfer:
+    description: "Transfer tokens between addresses"
+    params:
+      - name: from
+        type: "[32]u8"
+      - name: to
+        type: "[32]u8"
+      - name: amount
+        type: u128
+    returns: bool
+
+  token_approve:
+    description: "Approve spender for allowance"
+    params:
+      - name: owner
+        type: "[32]u8"
+      - name: spender
+        type: "[32]u8"
+      - name: amount
+        type: u128
+    returns: bool
+
+  token_stake:
+    description: "Stake tokens with lock duration"
+    params:
+      - name: staker
+        type: "[32]u8"
+      - name: amount
+        type: u128
+      - name: lock_duration
+        type: i64
+    returns: TokenStake
+
+  token_unstake:
+    description: "Unstake after lock period expires"
+    params:
+      - name: staker
+        type: "[32]u8"
+      - name: stake_index
+        type: u32
+    returns: bool
+
+  token_reward_pending:
+    description: "Calculate pending reward for staker"
+    params:
+      - name: staker
+        type: "[32]u8"
+    returns: u128
+
+tests:
+  test_max_supply_is_27m:
+    description: "Verify max supply = 270M tokens"
+    assertions:
+      - "MAX_SUPPLY == 270_000_000 * 10^DECIMALS"
+
+  test_balance_starts_zero:
+    description: "New accounts have zero balance"
+    assertions:
+      - "token_balance_of(new_address) == 0"
+
+  test_transfer_reduces_sender:
+    description: "Transfer reduces sender balance"
+    assertions:
+      - "token_transfer(A, B, 100) implies balance(A) decreases by 100"
+
+  test_stake_locks_tokens:
+    description: "Staking locks tokens for duration"
+    assertions:
+      - "token_stake(A, 1000, 86400) implies balance(A) reduced by 1000"
+
+  test_cannot_unstake_before_unlock:
+    description: "Unstake fails before unlock time"
+    assertions:
+      - "token_unstake(A, 0) fails if now < stake.unlock_time"
+
+invariants:
+  supply_conservation:
+    description: "Total supply never exceeds MAX_SUPPLY"
+    expression: "sum(balances) + sum(staked) <= MAX_SUPPLY"
+
+  nonce_monotonic:
+    description: "Account nonce only increases"
+    expression: "forall tx: tx.nonce > previous_nonce(sender)"
+
+  stake_non_negative:
+    description: "Stake amounts are positive"
+    expression: "forall s: TokenStake :: s.amount > 0"
+
+  balance_non_negative:
+    description: "Balances cannot go negative"
+    expression: "forall a: TokenAccount :: a.balance >= 0"
+
+coptic_registers:
+  t18:
+    description: "Current token balance (read-only)"
+    type: u128
+    access: RO
+  t19:
+    description: "Pending staking rewards (read-only)"
+    type: u128
+    access: RO
+  t20:
+    description: "Currently staked amount (read-only)"
+    type: u128
+    access: RO

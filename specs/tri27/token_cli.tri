@@ -1,0 +1,67 @@
+# TRI-27 Token CLI Commands — Source of Truth
+# Issue: #445
+# phi^2 + 1/phi^2 = 3 | TRINITY
+
+name: token_cli
+version: "1.0.0"
+module: tri27.cli.token
+description: "CLI commands for TRI-27 token operations"
+
+commands:
+  balance:
+    description: "Check token balance"
+    usage: "tri27 token balance [--address <addr>]"
+    params:
+      - name: address
+        type: "[32]u8"
+        description: "Address to check (default: current)"
+    returns: u128
+
+  transfer:
+    description: "Transfer tokens"
+    usage: "tri27 token transfer <to> <amount>"
+    params:
+      - name: to
+        type: "[32]u8"
+      - name: amount
+        type: u128
+    returns: bool
+
+  approve:
+    description: "Approve spender allowance"
+    usage: "tri27 token approve <spender> <amount>"
+    params:
+      - name: spender
+        type: "[32]u8"
+      - name: amount
+        type: u128
+    returns: bool
+
+  allowance:
+    description: "Check approved allowance"
+    usage: "tri27 token allowance <owner> <spender>"
+    params:
+      - name: owner
+        type: "[32]u8"
+      - name: spender
+        type: "[32]u8"
+    returns: u128
+
+  total_supply:
+    description: "Get total token supply"
+    usage: "tri27 token supply"
+    params: []
+    returns: u128
+
+tests:
+  test_balance_shows_correct_amount:
+    assertions:
+      - "balance(addr) returns current balance"
+
+  test_transfer_requires_sufficient_balance:
+    assertions:
+      - "transfer with amount > balance fails"
+
+  test_approve_sets_allowance:
+    assertions:
+      - "approve(spender, 1000) sets allowance(spender) == 1000"

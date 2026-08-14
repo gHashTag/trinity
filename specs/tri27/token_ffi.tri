@@ -1,0 +1,85 @@
+# TRI-27 Token FFI — Source of Truth
+# Issue: #442
+# phi^2 + 1/phi^2 = 3 | TRINITY
+
+name: token_ffi
+version: "1.0.0"
+module: tri27.ffi.token
+description: "FFI bridge for TRI-27 token operations from external runtimes"
+
+ffi_functions:
+  tri27_token_balance:
+    description: "Get balance via FFI"
+    params:
+      - name: address_ptr
+        type: "*const u8"
+      - name: address_len
+        type: usize
+    returns: u128
+
+  tri27_token_transfer:
+    description: "Transfer via FFI"
+    params:
+      - name: from_ptr
+        type: "*const u8"
+      - name: from_len
+        type: usize
+      - name: to_ptr
+        type: "*const u8"
+      - name: to_len
+        type: usize
+      - name: amount
+        type: u128
+    returns: bool
+
+  tri27_token_stake:
+    description: "Stake via FFI"
+    params:
+      - name: staker_ptr
+        type: "*const u8"
+      - name: staker_len
+        type: usize
+      - name: amount
+        type: u128
+      - name: duration
+        type: i64
+    returns: u32
+
+  tri27_token_claim:
+    description: "Claim rewards via FFI"
+    params:
+      - name: staker_ptr
+        type: "*const u8"
+      - name: staker_len
+        type: usize
+    returns: u128
+
+  tri27_token_pending_rewards:
+    description: "Get pending rewards via FFI"
+    params:
+      - name: staker_ptr
+        type: "*const u8"
+      - name: staker_len
+        type: usize
+    returns: u128
+
+tests:
+  test_ffi_balance_null_safe:
+    description: "FFI returns 0 for null address"
+    assertions:
+      - "tri27_token_balance(null, 0) == 0"
+
+  test_ffi_transfer_returns_bool:
+    description: "FFI transfer returns success boolean"
+    assertions:
+      - "tri27_token_transfer returns true on success, false on failure"
+
+  test_ffi_stake_returns_index:
+    description: "FFI stake returns position index"
+    assertions:
+      - "tri27_token_stake returns valid position index >= 0"
+
+invariants:
+  ffi_null_safe:
+    description: "All FFI functions handle null pointers safely"
+    expression: "forall fn: ffi_function :: fn(null, 0) does not crash"

@@ -1,0 +1,61 @@
+# TRI-27 Claim Commands — Source of Truth
+# Issue: #447
+# phi^2 + 1/phi^2 = 3 | TRINITY
+
+name: claim_cli
+version: "1.0.0"
+module: tri27.cli.claim
+description: "CLI commands for TRI-27 reward claiming"
+
+commands:
+  claim:
+    description: "Claim accumulated staking rewards"
+    usage: "tri27 claim [--all]"
+    params:
+      - name: all
+        type: bool
+        default: false
+        description: "Claim from all positions"
+    returns: u128
+
+  claim_history:
+    description: "Show claim history"
+    usage: "tri27 claim history [--limit N]"
+    params:
+      - name: limit
+        type: u32
+        default: 10
+    returns: "[]ClaimRecord"
+
+  claim_estimate:
+    description: "Estimate future rewards"
+    usage: "tri27 claim estimate [--hours N]"
+    params:
+      - name: hours
+        type: u32
+        default: 24
+    returns: u128
+
+types:
+  ClaimRecord:
+    description: "Past claim record"
+    fields:
+      - name: amount
+        type: u128
+      - name: timestamp
+        type: i64
+      - name: epoch_id
+        type: u64
+
+tests:
+  test_claim_returns_amount:
+    assertions:
+      - "claim() returns claimed amount > 0 if rewards pending"
+
+  test_claim_resets_pending:
+    assertions:
+      - "claim() sets pending_rewards to 0"
+
+  test_claim_history_ordered:
+    assertions:
+      - "claim_history() returns records newest-first"
