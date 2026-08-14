@@ -5,6 +5,7 @@ import FormatSelection from './pages/FormatSelection'
 import './index.css'
 import App from './App.tsx'
 import { I18nProvider } from './i18n/context.tsx'
+import GlobalStarfield from './components/GlobalStarfield.tsx'
 
 // Only "/" is eager — it is the route every visitor lands on. The others were
 // static imports, which put all of them in the entry chunk (843 kB) and made the
@@ -42,6 +43,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
       <HashRouter>
+        {/* Звёзды монтируются один раз над Routes: слой fixed, ключа маршрута у
+            него нет, поэтому при переходе между страницами поле не пересоздаётся
+            и не мигает. */}
+        <GlobalStarfield />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<App />} />
