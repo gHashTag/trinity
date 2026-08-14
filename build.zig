@@ -213,6 +213,12 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity.zig"),
             .target = target,
             .optimize = optimize,
+            // Same reason as the `tri` executable below: something in this
+            // graph reaches std.c, so the test binary needs libc. It went
+            // unnoticed because `zig build test` never ran -- the Build step
+            // ahead of it had been failing, so CI Runner reported the build and
+            // never reached the tests to report this.
+            .link_libc = true,
             .imports = &.{
                 .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
                 .{ .name = "golden_float", .module = gf_mod },
