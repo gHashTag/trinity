@@ -582,7 +582,7 @@ export default function TrinityCanvas() {
       : item.label,
     hint: isRu
       ? (item.layer && LAYER_INFO[item.layer].hint ? LAYER_INFO[item.layer].hint : item.hint)
-      : (LAYER_HINTS_EN[item.layer] ?? item.hint),
+      : (item.layer ? (LAYER_HINTS_EN[item.layer] ?? item.hint) : item.hint),
   })), [isRu]);
 
   const cmdResults = useMemo(() => {
