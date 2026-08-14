@@ -56,7 +56,13 @@ const config: Config = {
           rehypePlugins: [rehypeKatex],
           routeBasePath: '/', // Docs at root of /docs/
         },
-        blog: false,
+        blog: {
+          path: 'blog',
+          routeBasePath: 'blog',
+          showReadingTime: true,
+          blogTitle: 'Trinity blog',
+          blogSidebarTitle: 'Recent posts',
+        },
         theme: {
           customCss: './src/css/custom.css',
         },
