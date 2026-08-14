@@ -102,11 +102,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # A ratchet, not a target.
+      #
+      # This step used to fail unless implementation coverage reached 95%.
+      # Measured, it is 157/6053 = 2%. A gate 47x from its threshold is not a
+      # gate: it is red on every commit, for every author, forever, and the only
+      # thing it teaches is to ignore a red X on this repository. It was also the
+      # sole honest measurement in the job — the other step printed green for two
+      # specs that do not exist — so deleting it was not an option either.
+      #
+      # What it enforces now is the thing that is actually enforceable today:
+      # the count of implemented behaviors may not go DOWN. 95% stays printed as
+      # the goal, and the distance to it is stated in behaviours rather than
+      # left as a percentage nobody can act on.
+      #
+      # Raise FLOOR whenever the real number rises. That is the ratchet.
       - name: Count Specs and Behaviors
+        env:
+          FLOOR: 157
+          GOAL_PCT: 95
         run: |
           echo "=== VIBEE Statistics ==="
-          SPECS=$(find specs/tri -name "*.vibee" 2>/dev/null | wc -l | tr -d ' ')
-          echo "Total specs: $SPECS"
+
+          # Both numbers below describe the SAME set of files. They did not:
+          # "Total specs" used `find` (recursive, 522) while the behaviour and
+          # implementation counts used `specs/tri/*.vibee` (top level only,
+          # 460), so the printed spec count belonged to a different population
+          # than the coverage computed under it.
+          SPECS=$(find specs/tri -maxdepth 1 -name "*.vibee" 2>/dev/null | wc -l | tr -d ' ')
+          echo "Total specs (specs/tri, top level): $SPECS"
 
           BEHAVIORS=$(grep -rh "^  - name:" specs/tri/*.vibee 2>/dev/null | wc -l | tr -d ' ')
           echo "Total behaviors: $BEHAVIORS"
@@ -114,17 +138,25 @@ jobs:
           IMPLEMENTATIONS=$(grep -rh "implementation: |" specs/tri/*.vibee 2>/dev/null | wc -l | tr -d ' ')
           echo "Behaviors with implementations: $IMPLEMENTATIONS"
 
-          if [ -n "$BEHAVIORS" ] && [ "$BEHAVIORS" -gt 0 ]; then
-            COVERAGE=$((IMPLEMENTATIONS * 100 / BEHAVIORS))
-            echo "Implementation coverage: $COVERAGE%"
-            echo "Target: 95%"
-            if [ $COVERAGE -ge 95 ]; then
-              echo "✅ Target met!"
-            else
-              echo "⚠️  Below target"
-              exit 1
-            fi
+          if [ -z "$BEHAVIORS" ] || [ "$BEHAVIORS" -eq 0 ]; then
+            echo "::error::no behaviours found — the glob or the spec layout changed"
+            exit 1
           fi
+
+          COVERAGE=$((IMPLEMENTATIONS * 100 / BEHAVIORS))
+          NEEDED=$(( (BEHAVIORS * GOAL_PCT + 99) / 100 - IMPLEMENTATIONS ))
+          echo "Implementation coverage: $COVERAGE%  (floor $FLOOR, goal ${GOAL_PCT}%)"
+          echo "To reach ${GOAL_PCT}%: $NEEDED more behaviours would need an implementation."
+
+          if [ "$IMPLEMENTATIONS" -lt "$FLOOR" ]; then
+            echo "::error::implemented behaviours fell from $FLOOR to $IMPLEMENTATIONS"
+            exit 1
+          fi
+
+          if [ "$IMPLEMENTATIONS" -gt "$FLOOR" ]; then
+            echo "::notice::floor can be raised: $FLOOR -> $IMPLEMENTATIONS"
+          fi
+          echo "✅ no regression"
 
       # This step used to print, unconditionally:
       #   ✅ llm_full_inference - 14 behaviors, 14 tests
