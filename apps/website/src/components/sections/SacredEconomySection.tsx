@@ -12,7 +12,9 @@ const MODES = [
   { key: 'stake', label: 'Stake' },
   { key: 'listing', label: 'Listing' },
   { key: 'metrics', label: 'Metrics' },
-];
+] as const;
+
+type Mode = (typeof MODES)[number]['key'];
 
 const DUKH_COLOR = '#aa66ff';
 
@@ -25,12 +27,12 @@ const glass = {
 
 export default function SacredEconomySection() {
   const { t } = useI18n();
-  const [mode, setMode] = useState<keyof typeof MODES[number] | ''>('connect');
+  const [mode, setMode] = useState<Mode | ''>('connect');
   const [data, setData] = useState<SacredEconomyWeb3Mode | null>(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(true);
 
-  const loadData = async (m: keyof typeof MODES[number]) => {
+  const loadData = async (m: Mode) => {
     setLoading(true);
     try {
       const result = await fetchSacredEconomyWeb3(m);
@@ -42,7 +44,7 @@ export default function SacredEconomySection() {
     }
   };
 
-  useEffect(() => { loadData(mode); }, [mode]);
+  useEffect(() => { if (mode) loadData(mode); }, [mode]);
 
   return (
     <Section
@@ -305,7 +307,7 @@ export default function SacredEconomySection() {
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: 10, color: 'rgba(255, 255, 255, 0.5)' }}>
             <span>$TRI Token</span>
             <span>•</span>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{(data?.data.tri_balance || 0).toFixed(4)}</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{data?.data.tri_balance?.toFixed(4) ?? '—'}</span>
             <span>•</span>
             <span>Web3 Bridge</span>
           </div>

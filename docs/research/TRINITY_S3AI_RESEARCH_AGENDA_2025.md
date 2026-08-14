@@ -77,14 +77,14 @@ test "VSA: cat vs dog similarity < 0.5" {
 ```zig
 pub const Author = struct {
     name: []const u8,
-    orcid: ?[]const u8, // "https://orcid.org/0000-0002-1825-0097"
+    orcid: ?[]const u8, // "https://orcid.org/0009-0008-4294-6159"
     affiliation: []const []const u8,
     email: ?[]const u8,
     corresponding: bool = false,
 };
 
 pub fn validateORCID(orcid: []const u8) bool {
-    // ORCID format: 0000-0002-1825-0097
+    // ORCID format: 0009-0008-4294-6159
     // Checksum validation per ISO 7064:1983.MOD 11-2
 }
 ```
@@ -100,7 +100,7 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: "Vasilev"
     given-names: "Dmitrii"
-    orcid: "https://orcid.org/0000-0002-1825-0097"
+    orcid: "https://orcid.org/0009-0008-4294-6159"
 title: "Trinity S³AI: Ternary Neural Networks v0.12.0"
 version: 0.12.0
 doi: 10.5281/zenodo.XXXXXX
@@ -269,7 +269,7 @@ arxiv: "arxiv:2503.XXXXX"
 keywords: ["ternary", "language-model", "FPGA", "neuromorphic"]
 authors:
   - name: "Vasilev, Dmitrii"
-    orcid: "https://orcid.org/0000-0002-1825-0097"
+    orcid: "https://orcid.org/0009-0008-4294-6159"
 ```
 
 ### 5.2 Accessible (A1-A2)

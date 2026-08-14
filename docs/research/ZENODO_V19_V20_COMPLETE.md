@@ -73,7 +73,7 @@ pub fn extractOrcidId(url: []const u8) ?[]const u8
 
 **Example**:
 ```zig
-const validation = zenodo_v19_orcid.validateOrcid("https://orcid.org/0000-0002-1825-0097");
+const validation = zenodo_v19_orcid.validateOrcid("https://orcid.org/0009-0008-4294-6159");
 // Returns: .{ .valid = true, .error_code = null }
 ```
 
@@ -105,7 +105,7 @@ url: "https://github.com/gHashTag/trinity"
 authors:
   - family-names: "Author"
     given-names: "Name"
-    orcid: "https://orcid.org/0000-0002-1825-0097"
+    orcid: "https://orcid.org/0009-0008-4294-6159"
 keywords:
   - "neural networks"
   - "ternary computing"

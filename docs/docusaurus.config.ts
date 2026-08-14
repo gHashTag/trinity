@@ -69,7 +69,9 @@ const config: Config = {
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: false,
-      respectPrefersColorScheme: true,
+      respectPrefersColorScheme: false,
+      // The site (t27.ai) has no light theme at all. Honouring the OS preference
+      // handed light-mode visitors a docs site that looked like a different product.
     },
     navbar: {
       title: 'Trinity',

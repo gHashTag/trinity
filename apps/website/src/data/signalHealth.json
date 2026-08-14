@@ -1,0 +1,54 @@
+{
+  "method": "gh run list per workflow, up to 200 completed runs; cancelled and skipped are dropped because counting them as passes shortens a red streak",
+  "measure": "self-information of the next red, -log2 P(red). At P = 1 it is 0 bits.",
+  "entries": [
+    {
+      "repo": "gHashTag/trinity",
+      "workflow": "ci.yml",
+      "note": "the repository this service is built in",
+      "window": 200,
+      "failures": 200,
+      "pRed": 1.0,
+      "streak": 200,
+      "streakIsLowerBound": true,
+      "bitsPerRed": null,
+      "lastGreen": null
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "workflow": "conformance-selftest.yml",
+      "note": "the conformance check's own self-test",
+      "window": 22,
+      "failures": 2,
+      "pRed": 0.0909,
+      "streak": 0,
+      "streakIsLowerBound": false,
+      "bitsPerRed": 3.459,
+      "lastGreen": "2026-08-13T11:09:48Z"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "workflow": "rtl-check-selftest.yml",
+      "note": "the structural check's own self-test",
+      "window": 21,
+      "failures": 5,
+      "pRed": 0.2381,
+      "streak": 0,
+      "streakIsLowerBound": false,
+      "bitsPerRed": 2.07,
+      "lastGreen": "2026-08-13T11:09:49Z"
+    },
+    {
+      "repo": "gHashTag/tt-trinity-corona",
+      "workflow": "ci.yml",
+      "note": "my chip, where the six-week red was",
+      "window": 128,
+      "failures": 11,
+      "pRed": 0.0859,
+      "streak": 0,
+      "streakIsLowerBound": false,
+      "bitsPerRed": 3.541,
+      "lastGreen": "2026-08-10T23:08:25Z"
+    }
+  ]
+}

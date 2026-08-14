@@ -192,23 +192,27 @@ diagnose_*.py
 verify_forward.py
 
 # Website static (deployed via gh-pages)
-.nojekyll
-404.html
-index.html
-!/apps/queen-web/index.html
-docs.html
-quantum-runtime.html
-assets/
-icons/
-img/
-!docs/static/img/
-favicon.ico
-manifest.json
-og-image.svg
-robots.txt
-sitemap.xml
-sw.js
-vite.svg
+# Anchored with a leading slash: these patterns describe the built dump that
+# lands in the repo ROOT. Unanchored, git matches them at any depth, so they
+# also swallowed the real sources under apps/website/ — index.html,
+# public/manifest.json and public/og-image.* could not be committed, and the
+# live site served 404s for the ones index.html references. The lone
+# !/apps/queen-web/index.html below was a symptom of the same thing.
+/.nojekyll
+/404.html
+/index.html
+/docs.html
+/quantum-runtime.html
+/assets/
+/icons/
+/img/
+/favicon.ico
+/manifest.json
+/og-image.svg
+/robots.txt
+/sitemap.xml
+/sw.js
+/vite.svg
 
 # Vibee client (separate project)
 vibee-client/
@@ -311,7 +315,12 @@ fpga/tools/weight_pack_wide
 *.md
 !CLAUDE.md
 !.github/
-!docs/
+!docs/**
+# Queen Trinity Orchestrator Law: every container MUST carry SOUL.md at
+# its root. The *.md rule above made that impossible to honour -- only
+# templates/SOUL.md was re-included, so a container's own soul could never
+# be committed without -f.
+!**/SOUL.md
 
 # Docker files in root (use deploy/ subdirectory instead)
 Dockerfile*
@@ -358,7 +367,9 @@ runtime/
 translator-app/
 tree-sitter-vibee/
 trinity-nexus/
-website/
+# website/ removed 2026-08-10: it matched apps/website at any depth and silently
+# excluded every NEW file in the site source, while already-tracked files kept working.
+# Build output is handled by apps/website/.gitignore (node_modules, dist).
 
 # SOUL bindings (tracked for orchestration)
 !.trinity/issue_bindings.json
@@ -368,7 +379,12 @@ website/
 # Junk archive (large, local only)
 archive/junk-*/
 fpga/openxc7-synth/synth_reports/hslm_full_top.json
+# Stray backup / merge artifacts (R2). Plain *.bak missed numbered variants
+# like foo.zig.bak3, so match those plus .orig/.rej too.
 *.bak
+*.bak[0-9]*
+*.orig
+*.rej
 
 # Swift build artifacts (Queen UI)
 apps/queen/*.d

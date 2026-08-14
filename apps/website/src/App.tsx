@@ -1,33 +1,41 @@
 import { lazy, Suspense } from 'react'
-import { HeroSection } from './components/sections'
 import Navigation from './components/Navigation'
-import QuantumBackground from './components/QuantumBackground'
+import PhiStarfield from './components/PhiStarfield'
 import Footer from './components/Footer'
+import { TnfHero } from './components/sections/tnf'
 
-// OPTIMIZED: 8 sections (Hero + Theorems + Publications + Solution + Benchmarks + Calculator + DePIN + Team + Invest)
-// TechTree moved to /tree, Sacred Intelligence widgets moved to /dashboard
-// Target: research-focused landing, not overwhelming
-const TheoremsSection = lazy(() => import('./components/sections/TheoremsSection'))
+// Главная страница построена под статьёй «Trinity S³AI: Ternary Network Floats»
+// (52 теоремы). Порядок разделов повторяет порядок аргумента:
+// что заявлено → чем именно заявлено → что измерено → что стоит бюджет →
+// на каких теоремах держится → где границы и что отозвано → кто ещё на этой
+// земле → откуда линия → как воспроизвести.
+//
+// Секции прежней главной (DePIN, ROI-калькулятор, Solution с прогнозными
+// множителями, Invest) с главной сняты: они несли прогнозы и категорические
+// формулировки рядом с измеренными числами, и научный читатель не мог отделить
+// одно от другого. Компоненты остались в репозитории и доступны на своих
+// страницах — снята только их роль первого экрана.
+const TnfClaim = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfClaim })))
+const TnfFormats = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFormats })))
+const TnfFrontier = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFrontier })))
+const TnfLadder = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLadder })))
+const TnfTheorems = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfTheorems })))
+const TnfLimits = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLimits })))
+const TnfLandscape = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLandscape })))
+const TnfDecision = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfDecision })))
+const TnfFaq = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFaq })))
+const TnfStart = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfStart })))
+const TnfCalculators = lazy(() => import('./components/sections/tnf/Calculators'))
+const TnfVisuals = lazy(() => import('./components/sections/tnf/PhiViz'))
+const TnfFindings = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFindings })))
+const TnfLineage = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLineage })))
+const TnfAuthor = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfAuthor })))
+const TnfInvest = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfInvest })))
+const TnfReproduce = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfReproduce })))
 const PublicationsSection = lazy(() => import('./components/sections/PublicationsSection'))
-const SolutionSection = lazy(() => import('./components/sections/SolutionSection'))
-const BenchmarksSection = lazy(() => import('./components/sections/BenchmarksSection'))
-const CalculatorSection = lazy(() => import('./components/sections/CalculatorSection'))
-const DePINSection = lazy(() => import('./components/sections/DePINSection'))
-const TeamSection = lazy(() => import('./components/sections/TeamSection'))
-const InvestSection = lazy(() => import('./components/sections/InvestSection'))
-
-// Sacred Intelligence & Advanced sections moved to /dashboard
-// const SacredIdentityWidget = lazy(() => import('./components/sections/SacredIdentityWidget'))
-// const SwarmStatusWidget = lazy(() => import('./components/sections/SwarmStatusWidget'))
-// const EvolutionMonitorWidget = lazy(() => import('./components/sections/EvolutionMonitorWidget'))
-// const GovernanceRulesWidget = lazy(() => import('./components/sections/GovernanceRulesWidget'))
-// const EternalLoopWidget = lazy(() => import('./components/sections/EternalLoopWidget'))
-// const MysticismSection = lazy(() => import('./components/sections/MysticismSection'))
-// const SacredFormulaSection = lazy(() => import('./components/sections/SacredFormulaSection'))
-// const SacredChemistryWidget = lazy(() => import('./components/sections/SacredChemistryWidget'))
 
 const SectionFallback = () => (
-  <div style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+  <div style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
     <div style={{ width: '40px', height: '40px', border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
   </div>
 )
@@ -35,38 +43,32 @@ const SectionFallback = () => (
 export default function App() {
   return (
     <main>
-      <QuantumBackground />
+      <PhiStarfield />
       <Navigation />
-      
-      {/* 1. HERO - Animated φ equation, dual CTA */}
-      <HeroSection />
-      
+
+      <TnfHero />
+
       <Suspense fallback={<SectionFallback />}>
-        {/* 2. THEOREMS - 4 cards with fade-in, credibility hook */}
-        <TheoremsSection />
-
-        {/* 3. PUBLICATIONS - 8 Zenodo bundles with DOI */}
+        <TnfClaim />
+        <TnfFormats />
+        <TnfFrontier />
+        <TnfVisuals />
+        <TnfLadder />
+        <TnfTheorems />
+        <TnfCalculators />
+        <TnfLimits />
+        <TnfDecision />
+        <TnfLandscape />
+        <TnfFindings />
+        <TnfLineage />
         <PublicationsSection />
-
-        {/* 4. SOLUTION - Merged Problem + Competition */}
-        <SolutionSection />
-        
-        {/* 5. BENCHMARKS - Animated comparison table */}
-        <BenchmarksSection />
-
-        {/* 6. CALCULATOR - ROI with GPU/mining options */}
-        <CalculatorSection />
-
-        {/* 7. DePIN - Earn $TRI by running a node */}
-        <DePINSection />
-
-        {/* 8. TEAM - Trust builder (3 members max) */}
-        <TeamSection />
-
-        {/* 9. INVEST - Final CTA */}
-        <InvestSection />
+        <TnfAuthor />
+        <TnfFaq />
+        <TnfStart />
+        <TnfInvest />
+        <TnfReproduce />
       </Suspense>
-      
+
       <Footer />
     </main>
   )

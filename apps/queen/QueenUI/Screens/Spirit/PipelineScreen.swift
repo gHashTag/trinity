@@ -244,13 +244,13 @@ struct PipelineScreen: View {
     }
 
     private func loadPipeline() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity/pipeline_state.json"
+        let path = "\(TrinityRuntimePaths.stateRoot)/pipeline_state.json"
         guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return }
         pipelineState = try? JSONDecoder().decode(PipelineState.self, from: data)
     }
 
     private func loadMetrics() {
-        let path = "\(FileManager.default.currentDirectoryPath)/.trinity/event_log.jsonl"
+        let path = "\(TrinityRuntimePaths.stateRoot)/event_log.jsonl"
         guard let content = try? String(contentsOfFile: path, encoding: .utf8) else { return }
 
         var pipelineEvents = 0

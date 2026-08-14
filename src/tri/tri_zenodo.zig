@@ -591,7 +591,7 @@ fn generateCFF(allocator: std.mem.Allocator, args: []const []const u8) !void {
 }
 
 fn validateORCID(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const input = if (args.len > 0) args[0] else "0000-0002-1825-0097";
+    const input = if (args.len > 0) args[0] else "0009-0008-4294-6159";
 
     // Extract ID from URL if full URL is provided
     const orcid_id = if (std.mem.startsWith(u8, input, "https://orcid.org/"))
@@ -1544,7 +1544,7 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     kw_pos += 1;
 
     const related_ids =
-        \\[{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"},{"identifier":"10.5281/zenodo.19020211","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020213","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020215","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020217","relation":"isRelatedTo","resource_type":"software"}]
+        \\[{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"},{"identifier":"10.5281/zenodo.19020270","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020275","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020280","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020282","relation":"isRelatedTo","resource_type":"software"}]
     ;
 
     const meta_body = try std.fmt.allocPrint(allocator,

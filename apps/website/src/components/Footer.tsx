@@ -3,8 +3,39 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 
+// Smooth scrolling is animation-driven, so it silently does nothing when
+// animations are not running — a hidden or backgrounded tab, or a reader who has
+// asked their system for reduced motion. Getting there instantly is always better
+// than not getting there at all.
+function scrollBehaviour(): ScrollBehavior {
+  const reduced = typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return reduced || document.hidden ? 'auto' : 'smooth'
+}
+
+// Under HashRouter a bare `#section` is read as a route, so these links used to
+// dump the reader on the homepage without scrolling to what they clicked. This
+// sends them home when needed and then finds the section once it exists.
+function goToSection(e: React.MouseEvent, id: string) {
+  e.preventDefault()
+  const hash = window.location.hash
+  const onHome = hash === '' || hash === '#' || hash === '#/'
+  if (!onHome) window.location.hash = '#/'
+  // Timer, not requestAnimationFrame: rAF does not fire in a hidden tab, and
+  // sections further down the homepage mount lazily.
+  let tries = 0
+  const tick = () => {
+    const el = document.getElementById(id)
+    if (el) { el.scrollIntoView({ behavior: scrollBehaviour() }); return }
+    if (++tries < 50) setTimeout(tick, 80)
+  }
+  tick()
+}
+
 export default function Footer() {
-  const { t } = useI18n()
+  /* lang нужен подписи «Инвестиции» в списке ссылок: ключа nav[9] в локалях
+     нет, и на русской странице там висело английское «Invest». */
+  const { t, lang } = useI18n()
 
   return (
     <footer
@@ -37,7 +68,7 @@ export default function Footer() {
               </motion.div>
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6 }}>
-              {t.footer?.tagline || 'Ternary Computing Revolution'}
+              {t.footer?.tagline || 'A catalogue of numeric formats and arithmetic cores'}
             </p>
             <div
               style={{
@@ -54,15 +85,22 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
+            <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.linksTitle || 'Links'}
-            </h4>
+            </h3>
             <nav aria-label="Footer navigation">
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <li><a href="#theorems" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Theorems section">{t.nav?.[1] || 'Theorems'}</a></li>
-                <li><a href="#solution" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Solution section">{t.nav?.[2] || 'Solution'}</a></li>
-                <li><a href="#benchmarks" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Benchmarks section">{t.nav?.[3] || 'Benchmarks'}</a></li>
-                <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Invest section">{t.nav?.[9] || 'Invest'}</a></li>
+                {/* Список ссылок сверен с фактическими id секций главной: #solution и
+    #benchmarks здесь висели после снятия старого лендинга и никуда не
+    вели, а подпись брала nav[1] («Тезис») для ссылки на теоремы. */}
+                <li><a href="#claim" onClick={(e) => goToSection(e, 'claim')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Thesis section">{t.nav?.[1] || 'Thesis'}</a></li>
+                <li><a href="#formats" onClick={(e) => goToSection(e, 'formats')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Formats section">{t.nav?.[2] || 'Formats'}</a></li>
+                <li><a href="#ladder" onClick={(e) => goToSection(e, 'ladder')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Ladder section">{t.nav?.[4] || 'Ladder'}</a></li>
+                <li><a href="#theorems" onClick={(e) => goToSection(e, 'theorems')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Theorems section">{t.nav?.[5] || 'Theorems'}</a></li>
+                <li><a href="#limits" onClick={(e) => goToSection(e, 'limits')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Limits section">{t.nav?.[6] || 'Limits'}</a></li>
+                <li><a href="#reproduce" onClick={(e) => goToSection(e, 'reproduce')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Reproduce section">{t.nav?.[8] || 'Reproduce'}</a></li>
+                <li><a href="#author" onClick={(e) => goToSection(e, 'author')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Author section">{lang === 'ru' ? 'Автор' : 'Author'}</a></li>
+                <li><a href="#invest" onClick={(e) => goToSection(e, 'invest')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Investment section">{lang === 'ru' ? 'Инвестиции' : 'Investment'}</a></li>
                 <li>
                   <a href="https://t27.ai/docs/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open documentation in new tab">
                     {t.footer?.docs || 'Documentation'}
@@ -74,9 +112,9 @@ export default function Footer() {
 
           {/* Quantum Lab */}
           <div>
-            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
+            <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.vizTitle || 'Quantum Lab'}
-            </h4>
+            </h3>
             <motion.div whileHover={{ scale: 1.02 }}>
               <Link
                 to="/quantum"
@@ -127,9 +165,9 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
+            <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', color: 'var(--muted)' }}>
               {t.footer?.contactTitle || 'Contact'}
-            </h4>
+            </h3>
             <nav aria-label="Contact links">
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <li>
@@ -157,9 +195,12 @@ export default function Footer() {
                     X (Twitter)
                   </a>
                 </li>
+                {/* One contact address, and the only one that can actually receive
+                    mail: t27.dev has no MX records at all, so every admin@t27.dev
+                    link on this site was undeliverable. */}
                 <li>
-                  <a href="mailto:raoffonom@icloud.com" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Send email to raoffonom@icloud.com">
-                    raoffonom@icloud.com
+                  <a href="mailto:admin@t27.ai" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.85 }} aria-label="Send email to admin@t27.ai">
+                    admin@t27.ai
                   </a>
                 </li>
               </ul>

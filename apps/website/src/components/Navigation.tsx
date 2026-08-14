@@ -2,15 +2,79 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-const sectionIds = ['hero', 'theorems', 'publications', 'solution', 'benchmarks', 'calculator', 'depin', 'team', 'invest']
+// Порядок повторяет порядок аргумента на главной, а не порядок продуктов.
+const sectionIds = ['hero', 'claim', 'formats', 'frontier', 'ladder', 'theorems', 'limits', 'landscape', 'reproduce']
 const BASE = import.meta.env.BASE_URL
 // Docs points to t27.ai/docs/ (custom domain)
 const DOCS_URL = 'https://t27.ai/docs/'
 
+// The locale files have no keys for the commercial pages yet, so the labels
+// live next to the links. Missing locales fall back to English.
+const PAGES_LABEL: Record<string, string> = {
+  ru: 'Страницы', de: 'Seiten', es: 'Páginas', zh: '页面',
+}
+
+type PageLink = { href: string; en: string; ru: string; note: string; noteRu: string; external?: boolean; color?: string }
+
+// Every link that leaves the one-page scroll. These outgrew the dock — a single
+// fixed-height row with no room left — so they live behind one disclosure
+// instead of pushing each other off the right edge.
+const PAGES: PageLink[] = [
+  // Прежняя подпись несла «2.84× и 5.53× точнее tekum16». Это заявление
+  // отозвано: оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных
+  // кодов идентично takum-оракулу, поэтому сравнение шло не с tekum.
+  { href: '#/gft', en: 'GF-T format', ru: 'Формат GF-T', note: 'A φ-derived static-split float family', noteRu: 'φ-производное семейство float со статическим разбиением' },
+  { href: '#/start', en: 'Start here', ru: 'С чего начать', note: 'Four checks you can run yourself, in order', noteRu: 'Четыре проверки, которые запускаете сами, по порядку' },
+  { href: '#/select', en: 'Choose a format', ru: 'Выбор формата', note: 'A task-by-format comparison matrix', noteRu: 'Матрица сравнения формата и задачи' },
+  { href: '#/verification', en: 'Verification', ru: 'Верификация', note: 'Send RTL, get it measured on a live FPGA board', noteRu: 'Присылаете RTL — измеряю на живой FPGA-плате' },
+  { href: '#/ip', en: 'Licensing', ru: 'Лицензирование', note: 'Arithmetic cores with RTL, reference model and vectors', noteRu: 'Ядра: RTL, эталонная модель и векторы' },
+  { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
+  { href: '#/cases', en: 'Case studies', ru: 'Работы', note: 'Verification runs on other people’s RTL', noteRu: 'Прогоны чужого RTL' },
+  { href: '#/course', en: 'Course', ru: 'Курс', note: 'Train a neural network on an FPGA', noteRu: 'Обучите нейросеть прямо на FPGA' },
+  { href: '#/about', en: 'About', ru: 'Об авторе', note: 'Background, papers, contact', noteRu: 'Биография, статьи, контакты' },
+  { href: '#/resources', en: 'Resources', ru: 'Материалы', note: 'Papers and datasets, each with a DOI', noteRu: 'Статьи и датасеты, у каждого DOI' },
+  { href: '#/blog', en: 'Blog', ru: 'Блог', note: 'Notes on the work as it happens', noteRu: 'Заметки по ходу работы' },
+  { href: '#/dashboard', en: 'Dashboard', ru: 'Панель', note: 'Project metrics', noteRu: 'Метрики проекта', color: '#00ccff' },
+  { href: '#/tree', en: 'Research Lab', ru: 'Исслед. лаб', note: 'Interactive visualisations', noteRu: 'Интерактивные визуализации', color: '#ffd700' },
+  { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'Full documentation', noteRu: 'Полная документация', external: true },
+]
+
+// Smooth scrolling is animation-driven, so it silently does nothing when
+// animations are not running — a hidden or backgrounded tab, or a reader who has
+// asked their system for reduced motion. Getting there instantly is always better
+// than not getting there at all.
+function scrollBehaviour(): ScrollBehavior {
+  const reduced = typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return reduced || document.hidden ? 'auto' : 'smooth'
+}
+
+// Find a section that may not have mounted yet, then scroll to it.
+//
+// Uses a timer rather than requestAnimationFrame on purpose: rAF is throttled to
+// zero in a background or hidden tab, so a correctness path built on it simply
+// never runs there. Sections further down the homepage are also lazily rendered,
+// so the window has to be generous — 4 seconds of 80ms polls, which stops as soon
+// as the element appears.
+function scrollToSectionWhenReady(id: string) {
+  let tries = 0
+  const tick = () => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: scrollBehaviour() })
+      return
+    }
+    if (++tries < 50) setTimeout(tick, 80)
+  }
+  tick()
+}
+
 export default memo(function Navigation() {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const [active, setActive] = useState('hero')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [pagesOpen, setPagesOpen] = useState(false)
+  const ru = lang === 'ru'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,23 +100,53 @@ export default memo(function Navigation() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
+  // These nine links point at sections of the one-page scroll, which do not
+  // exist on any routed page. Until now the handler called preventDefault and
+  // then scrollIntoView on null, so every one of them was silently dead on
+  // /verification, /proof, /ip, /course, /cases and /about — the whole header,
+  // on six pages. From a routed page it now goes home first and scrolls after
+  // the homepage has mounted.
   const scrollTo = useCallback((id: string) => {
     setMenuOpen(false)
-    setTimeout(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
+    setPagesOpen(false)
+    const hash = window.location.hash
+    const onHome = hash === '' || hash === '#' || hash === '#/'
+    if (!onHome) {
+      window.location.hash = '#/'
+      scrollToSectionWhenReady(id)
+      return
+    }
+    scrollToSectionWhenReady(id)
   }, [])
 
   // Handle escape key to close menu
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && menuOpen) {
-        setMenuOpen(false)
+      if (e.key === 'Escape') {
+        if (menuOpen) setMenuOpen(false)
+        if (pagesOpen) setPagesOpen(false)
       }
     }
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
-  }, [menuOpen])
+  }, [menuOpen, pagesOpen])
+
+  // A disclosure that stays open after you click past it is a trap; close it on
+  // any click outside and on scroll, since the dock is fixed and the page is not.
+  useEffect(() => {
+    if (!pagesOpen) return
+    const close = (e: Event) => {
+      const target = e.target as HTMLElement | null
+      if (target?.closest('.nav-pages-panel') || target?.closest('.nav-pages-toggle')) return
+      setPagesOpen(false)
+    }
+    window.addEventListener('click', close)
+    window.addEventListener('scroll', close, { passive: true })
+    return () => {
+      window.removeEventListener('click', close)
+      window.removeEventListener('scroll', close)
+    }
+  }, [pagesOpen])
 
   return (
     <>
@@ -70,31 +164,41 @@ export default memo(function Navigation() {
             {item}
           </a>
         ))}
-        <a
-          href="#/dashboard"
-          style={{ color: '#00ccff', fontWeight: 600 }}
-          aria-label="Go to Dashboard"
+        <button
+          type="button"
+          className={`nav-pages-toggle ${pagesOpen ? 'open' : ''}`}
+          onClick={() => setPagesOpen((v) => !v)}
+          aria-expanded={pagesOpen}
+          aria-haspopup="true"
+          aria-controls="nav-pages-panel"
         >
-          {t.navExtra?.dashboard || 'Dashboard'}
-        </a>
-        <a
-          href="#/tree"
-          style={{ color: '#ffd700', fontWeight: 600 }}
-          aria-label="Go to Research Lab"
-        >
-          {t.navExtra?.tree || 'Research Lab'}
-        </a>
-        <a
-          href={DOCS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--accent)', fontWeight: 600 }}
-          aria-label="Open documentation in new tab"
-        >
-          {t.navExtra?.docs || 'Docs'}
-        </a>
+          {PAGES_LABEL[lang] || 'Pages'}
+          <span className="nav-pages-caret" aria-hidden="true">▾</span>
+        </button>
         <LanguageSwitcher />
       </nav>
+
+      {/* Fixed rather than absolute: the dock scrolls horizontally, and a panel
+          positioned inside it would be clipped by that overflow. */}
+      {pagesOpen && (
+        <div className="nav-pages-panel" id="nav-pages-panel" role="menu" aria-label={PAGES_LABEL[lang] || 'Pages'}>
+          {PAGES.map((p) => (
+            <a
+              key={p.href}
+              href={p.href}
+              role="menuitem"
+              target={p.external ? '_blank' : undefined}
+              rel={p.external ? 'noopener noreferrer' : undefined}
+              onClick={() => setPagesOpen(false)}
+            >
+              <span className="nav-pages-name" style={p.color ? { color: p.color } : undefined}>
+                {ru ? p.ru : p.en}
+              </span>
+              <span className="nav-pages-note">{ru ? p.noteRu : p.note}</span>
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* Mobile hamburger button */}
       <button
@@ -119,6 +223,10 @@ export default memo(function Navigation() {
         >
           <div
             className="mobile-menu"
+            // The hamburger declares aria-controls="mobile-menu"; without this id
+            // that reference resolved to nothing, so a screen reader following it
+            // found no menu. Caught by an ARIA-driven sweep in render-check.
+            id="mobile-menu"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -140,32 +248,19 @@ export default memo(function Navigation() {
                   {item}
                 </a>
               ))}
-              <a
-                href={`${BASE}dashboard`}
-                style={{ color: '#00ccff' }}
-                onClick={() => setMenuOpen(false)}
-                aria-label="Go to Dashboard"
-              >
-                {t.navExtra?.dashboard || 'Dashboard'}
-              </a>
-              <a
-                href={`${BASE}tree`}
-                style={{ color: '#ffd700' }}
-                onClick={() => setMenuOpen(false)}
-                aria-label="Go to Research Lab"
-              >
-                {t.navExtra?.tree || 'Research Lab'}
-              </a>
-              <a
-                href={DOCS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: 'var(--accent)' }}
-                onClick={() => setMenuOpen(false)}
-                aria-label="Open documentation in new tab"
-              >
-                {t.navExtra?.docs || 'Docs'}
-              </a>
+              {/* Same source as the desktop disclosure, so the two can't drift apart */}
+              {PAGES.map((p) => (
+                <a
+                  key={p.href}
+                  href={p.href}
+                  target={p.external ? '_blank' : undefined}
+                  rel={p.external ? 'noopener noreferrer' : undefined}
+                  style={{ color: p.color || 'var(--accent)' }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {ru ? p.ru : p.en}
+                </a>
+              ))}
             </div>
             <div className="mobile-menu-footer">
               <LanguageSwitcher />

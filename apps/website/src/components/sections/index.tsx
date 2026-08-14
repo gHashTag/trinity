@@ -3,8 +3,6 @@
 export { default as HeroSection } from './HeroSection'
 export { default as TheoremsSection } from './TheoremsSection'
 export { default as PublicationsSection } from './PublicationsSection'
-export { default as ProblemSection } from './ProblemSection'
-export { default as SolutionSection } from './SolutionSection'
 
 // Cycle 98 Sacred Intelligence Widgets
 export { default as SacredIdentityWidget } from './SacredIdentityWidget'

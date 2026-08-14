@@ -91,7 +91,7 @@ struct GitScreen: View {
     }
 
     private var currentBranch: String {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let headPath = "\(cwd)/.git/HEAD"
         guard let content = try? String(contentsOfFile: headPath, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines) else {
             return "main"
@@ -105,7 +105,7 @@ struct GitScreen: View {
     }
 
     private var localBranches: [String] {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let refsPath = "\(cwd)/.git/refs/heads"
         guard let entries = try? FileManager.default.contentsOfDirectory(atPath: refsPath) else {
             return []

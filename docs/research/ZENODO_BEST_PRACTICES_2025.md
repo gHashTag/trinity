@@ -21,7 +21,7 @@ This guide synthesizes best practices for scientific publication on Zenodo, base
 | Field | Format | Example | Validation |
 |-------|--------|---------|------------|
 | **Title** | 5-100 words | "Trinity S³AI: Ternary Neural Networks" | `title.len >= 10 and title.len <= 200` |
-| **Authors** | Name + ORCID | "Vasilev, Dmitrii (https://orcid.org/0000-0002-1825-0097)" | `all authors have ORCID` |
+| **Authors** | Name + ORCID | "Vasilev, Dmitrii (https://orcid.org/0009-0008-4294-6159)" | `all authors have ORCID` |
 | **Description** | 50-500 words | Full abstract | `description.len >= 50` |
 | **Keywords** | 3-8 terms | "ternary neural networks, FPGA, balanced ternary" | `keywords.len >= 3` |
 | **License** | SPDX ID | "MIT", "Apache-2.0", "CC-BY-4.0" | Valid SPDX |
@@ -51,7 +51,7 @@ arxiv: "arxiv:2503.XXXXX"
 keywords: ["ternary", "language-model", "FPGA", "neuromorphic"]
 authors:
   - name: "Vasilev, Dmitrii"
-    orcid: "https://orcid.org/0000-0002-1825-0097"
+    orcid: "https://orcid.org/0009-0008-4294-6159"
 
 # ❌ Bad: Minimal metadata
 title: "model.zip"
@@ -270,7 +270,7 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: "Vasilev"
     given-names: "Dmitrii"
-    orcid: "https://orcid.org/0000-0002-1825-0097"
+    orcid: "https://orcid.org/0009-0008-4294-6159"
     affiliation: "Trinity Research Foundation"
 title: "Trinity S³AI: Ternary Neural Networks v0.11.0"
 version: 0.11.0

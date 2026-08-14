@@ -19,27 +19,27 @@ public enum V4Color {
 
     /// Primary window background - deepest layer
     public static var background: Color {
-        V1Theme.bgWindow
+        Color.black.opacity(QueenGlassTheme.shared.rootBlackOpacity)
     }
 
     /// Secondary background for panels and cards
     public static var surface: Color {
-        V1Theme.bgCard
+        Color.black.opacity(QueenGlassTheme.shared.surfaceBlackOpacity)
     }
 
     /// Elevated surface (third layer)
     public static var surfaceElevated: Color {
-        Color(white: 0.1, opacity: 1.0)
+        Color.black.opacity(QueenGlassTheme.shared.elevatedBlackOpacity)
     }
 
     /// Sidebar background
     public static var sidebar: Color {
-        V1Theme.bgSidebar
+        Color.black.opacity(QueenGlassTheme.shared.sidebarBlackOpacity)
     }
 
     /// Input background
     public static var input: Color {
-        Color(white: 0.1, opacity: 1.0)
+        Color.black.opacity(QueenGlassTheme.shared.elevatedBlackOpacity)
     }
 
     // MARK: - Text Colors
@@ -51,12 +51,12 @@ public enum V4Color {
 
     /// Secondary text - reduced contrast
     public static var textSecondary: Color {
-        V1Theme.textMuted
+        Color.white.opacity(QueenGlassTheme.shared.mutedTextWhiteOpacity)
     }
 
     /// Tertiary text - lowest contrast
     public static var textTertiary: Color {
-        Color(white: 0.4, opacity: 1.0)
+        Color.white.opacity(QueenGlassTheme.shared.dimTextWhiteOpacity)
     }
 
     /// Text on accent color (should be white)
@@ -203,22 +203,22 @@ public enum V4Color {
 
     /// Window background (matches TrinityTheme.bgWindow)
     public static var bgWindow: Color {
-        V1Theme.bgWindow
+        Color.black.opacity(QueenGlassTheme.shared.rootBlackOpacity)
     }
 
     /// Card background (matches TrinityTheme.bgCard)
     public static var bgCard: Color {
-        V1Theme.bgCard
+        Color.black.opacity(QueenGlassTheme.shared.surfaceBlackOpacity)
     }
 
     /// Sidebar background (matches TrinityTheme.bgSidebar)
     public static var bgSidebar: Color {
-        V1Theme.bgSidebar
+        Color.black.opacity(QueenGlassTheme.shared.sidebarBlackOpacity)
     }
 
     /// Card border (matches TrinityTheme.bgCardBorder)
     public static var bgCardBorder: Color {
-        V1Theme.bgCardBorder
+        Color.white.opacity(QueenGlassTheme.shared.borderWhiteOpacity)
     }
 
     // MARK: - Overlay Colors

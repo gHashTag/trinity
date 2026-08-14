@@ -1,0 +1,212 @@
+name: Verification request
+
+# Runs the automated stage of a verification request and posts the result back
+# into the issue, so a request needs no correspondence to get started.
+#
+# What this can decide on its own: whether the design elaborates, whether it
+# synthesises, whether it infers latches, what it costs in cells, and — where the
+# requester supplied a testbench — whether that passes. Those are the checks that
+# do not need a human, and they are also the ones that most often fail.
+#
+# What it deliberately does not do: write the independent reference model. That is
+# the part with the value in it, it has to be derived from the description of what
+# the design should do rather than from the design, and no bot can do it. The
+# comment says so plainly rather than implying the whole report is automatic.
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    if: contains(github.event.issue.labels.*.name, 'verification-request')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Acknowledge, so nobody is left wondering
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                '**Picked up.** The automated stage is running now: elaboration, synthesis,',
+                'a latch check and a cell count, plus your own testbench if the repository',
+                'has one. Results land in this issue in a few minutes.',
+                '',
+                'The part that follows is the part that matters and is not automated —',
+                'an independent reference model written from your description of what the',
+                'design should do, never from your RTL. A model derived from your code',
+                'would agree with your code, including where it is wrong.',
+              ].join('\n')
+            })
+
+      - name: Read the request
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || ''
+            // Issue-form bodies are "### Label\n\nvalue" blocks.
+            const field = (label) => {
+              const m = body.match(new RegExp('### ' + label + '\\s*\\n+([\\s\\S]*?)(?=\\n### |$)'))
+              const v = m ? m[1].trim() : ''
+              return v === '_No response_' ? '' : v
+            }
+            const repo = field('Where is the RTL\\?')
+            const top = field('Top module name')
+            core.setOutput('repo', repo)
+            core.setOutput('top', top)
+            // Only clone what is plainly a public GitHub URL. Anything else is
+            // left for a human rather than guessed at.
+            const ok = /^https:\/\/github\.com\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+\/?$/.test(repo)
+            core.setOutput('clonable', ok ? 'yes' : 'no')
+            // The top module name is interpolated into a yosys -p script, and
+            // yosys scripts have `exec`, which runs arbitrary programs. Without
+            // this test a top of `dut; exec -- sh -c ...` from any issue body
+            // executes in the runner, where GITHUB_TOKEN has write scope.
+            // Demonstrated locally before this was added: yosys printed
+            // `3. Executing command "echo INJECTED_COMMAND_RAN".`
+            // A Verilog identifier is the only thing this field may ever be.
+            const topOk = /^[A-Za-z_][A-Za-z0-9_$]*$/.test(top) && top.length <= 128
+            core.setOutput('topok', topOk ? 'yes' : 'no')
+
+      - name: Install the open toolchain
+        if: steps.parse.outputs.clonable == 'yes' && steps.parse.outputs.topok == 'yes'
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq yosys iverilog
+          yosys -V
+          iverilog -V | head -1
+
+      - name: Fetch the design
+        if: steps.parse.outputs.clonable == 'yes' && steps.parse.outputs.topok == 'yes'
+        env:
+          DESIGN_REPO: ${{ steps.parse.outputs.repo }}
+        run: |
+          set -euo pipefail
+          # Passed through the environment rather than interpolated into the
+          # shell, so an issue body cannot inject a command.
+          git clone --depth 1 "$DESIGN_REPO" design
+          find design -name '*.v' -o -name '*.sv' | head -40
+
+      - name: Check it
+        if: steps.parse.outputs.clonable == 'yes' && steps.parse.outputs.topok == 'yes'
+        id: check
+        continue-on-error: true
+        env:
+          TOP: ${{ steps.parse.outputs.top }}
+        run: |
+          set -uo pipefail
+          SRC=$(find design -name '*.v' -not -name '*_tb.v' -not -path '*/test/*' | tr '\n' ' ')
+          if [ -z "$SRC" ]; then
+            echo "verdict=no Verilog found" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "### Sources" > report.md
+          echo '```' >> report.md
+          echo "$SRC" | tr ' ' '\n' | sed '/^$/d' >> report.md
+          echo '```' >> report.md
+
+          echo "" >> report.md
+          echo "### Elaboration" >> report.md
+          if iverilog -g2012 -o /dev/null $SRC 2> elab.txt; then
+            echo "PASS — elaborates cleanly." >> report.md
+          else
+            echo "FAIL:" >> report.md
+            echo '```' >> report.md; head -25 elab.txt >> report.md; echo '```' >> report.md
+          fi
+
+          echo "" >> report.md
+          echo "### Latch check" >> report.md
+          if yosys -q -p "read_verilog $SRC; hierarchy -top $TOP; proc; opt; select -assert-none t:\$_DLATCH_* t:\$dlatch t:\$_DLATCHSR_*" 2> latch.txt; then
+            echo "PASS — no latches inferred." >> report.md
+          else
+            echo "FAIL — a latch was inferred. This is the classic bug that only shows up on silicon:" >> report.md
+            echo '```' >> report.md; head -20 latch.txt >> report.md; echo '```' >> report.md
+          fi
+
+          echo "" >> report.md
+          echo "### Synthesis, generic mapping" >> report.md
+          if yosys -q -p "read_verilog $SRC; synth -top $TOP; stat" > stat.txt 2>&1; then
+            echo '```' >> report.md
+            sed -n '/Printing statistics/,/^$/p' stat.txt | head -30 >> report.md
+            echo '```' >> report.md
+          else
+            echo "FAIL:" >> report.md
+            echo '```' >> report.md; tail -20 stat.txt >> report.md; echo '```' >> report.md
+          fi
+
+          echo "" >> report.md
+          echo "### Registers" >> report.md
+          POSEDGE=$(grep -rc "posedge" $SRC 2>/dev/null | awk -F: '{s+=$2} END {print s+0}')
+          if [ "$POSEDGE" = "0" ]; then
+            echo "This design holds no registers, so it has no clock domain and no achieved frequency can belong to it. For a combinational block the comparable figure is propagation delay, not a clock rate." >> report.md
+          else
+            echo "Sequential design — $POSEDGE clocked blocks. Achieved frequency is measurable and comes in the hardware stage." >> report.md
+          fi
+
+      - name: Post the result
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          CLONABLE: ${{ steps.parse.outputs.clonable }}
+          TOPOK: ${{ steps.parse.outputs.topok }}
+        with:
+          script: |
+            const fs = require('fs')
+            let body
+            if (process.env.TOPOK !== 'yes') {
+              body = [
+                '**The top module name was not a plain Verilog identifier, so nothing was run.**',
+                '',
+                'That field is pasted straight into a synthesis script, so it is restricted',
+                'to `[A-Za-z_][A-Za-z0-9_$]*` and nothing else. Edit the issue with just the',
+                'module name — `my_core`, not a path, a file name or a command — and the',
+                'checks will run on their own.',
+              ].join('\n')
+            } else if (process.env.CLONABLE !== 'yes') {
+              body = [
+                '**No public repository given, so the automated stage was skipped.**',
+                '',
+                'That is not a problem — it just means the run starts by hand. If the',
+                'sources are public, edit the issue with a plain',
+                '`https://github.com/owner/repo` URL and the checks will run on their own.',
+                'If the work is private, say so and an NDA comes first.',
+              ].join('\n')
+            } else {
+              let r = ''
+              try { r = fs.readFileSync('report.md', 'utf8') } catch (e) { r = '_The automated stage produced no report; picking this up by hand._' }
+              body = [
+                '## Automated stage',
+                '',
+                r,
+                '',
+                '---',
+                '',
+                '**What is still to come, and why it is not automated.** The checks above',
+                'tell you whether the design builds and whether it is structurally sound.',
+                'They cannot tell you whether it computes the right answer. That needs a',
+                'reference model written from your description of the operation rather than',
+                'from your RTL, known-answer vectors at each pipeline stage, and a replay',
+                'on the board — because agreement in simulation does not prove agreement',
+                'on silicon.',
+                '',
+                'Toolchain: `yosys`, `iverilog`. Every command above is in',
+                '`.github/workflows/verify-request.yml`, so you can re-run all of it.',
+              ].join('\n')
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            })

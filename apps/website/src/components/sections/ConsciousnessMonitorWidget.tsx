@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fetchConsciousnessMetrics, fetchConsciousnessTrend, fetchSacredFormulaValue, type ConsciousnessMetricsResponse, type TheoryMetrics } from '../../services/chatApi';
+import { SampleBadge } from '../SampleBadge';
 
 // Style constants
 const GOLDEN = '#ffd700';
@@ -272,13 +273,14 @@ function QuantumCollapseMetrics({ metrics }: { metrics: ConsciousnessMetricsResp
     <div style={{ fontSize: '10px', fontFamily: 'JetBrains Mono, monospace' }}>
       <div style={{ marginBottom: '0.5rem', color: '#aa66ff', fontWeight: 600 }}>
         Quantum Consciousness (5 Discoveries)
+        <SampleBadge of={metrics} />
       </div>
       <div style={{ display: 'grid', gap: '0.25rem' }}>
         {/* Discovery 1: Φ_γ Threshold */}
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ color: 'rgba(255,255,255,0.6)' }}>Φ_γ (threshold):</span>
           <span style={{ color: phiGammaColor }}>
-            {metrics.phi_gamma_threshold?.toFixed(3) || '0.618'}
+            {metrics.phi_gamma_threshold?.toFixed(3) ?? '—'}
           </span>
         </div>
 

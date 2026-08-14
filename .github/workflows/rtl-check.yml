@@ -1,0 +1,296 @@
+name: RTL structural check
+
+# Runs in YOUR repository, on YOUR runner. Your sources are never uploaded
+# anywhere and this workflow has no access to anything of mine.
+#
+# That is not a courtesy, it is the only shape that works. The closest
+# comparable service started as hosted CI and moved to on-premise because
+# chip designers will not upload RTL, and an intake that asks them to is
+# turning away the people it exists for. Running inside the customer's CI
+# also settles two problems that have no good answer otherwise: who pays for
+# the compute, and how you prove a requester is entitled to the repository —
+# only somebody with write access can add a workflow to it.
+#
+# Add to .github/workflows/rtl-check.yml in your repo:
+#
+#   name: RTL check
+#   on: [push, pull_request]
+#   jobs:
+#     check:
+#       uses: gHashTag/trinity/.github/workflows/rtl-check.yml@main
+#       with:
+#         top: my_top_module
+#
+# What it establishes is written at the end of the job summary, along with
+# what it does not. A pass here is not a proof of correctness: nothing in this
+# workflow compares your design against a specification.
+
+on:
+  workflow_call:
+    inputs:
+      top:
+        description: 'Top module name. A Verilog identifier, nothing else.'
+        required: true
+        type: string
+      sources:
+        description: 'Shell glob for the sources. Defaults to the Tiny Tapeout layout.'
+        required: false
+        default: 'src/*.v'
+        type: string
+      include_dir:
+        description: 'Directory for `include headers, relative to path.'
+        required: false
+        default: 'src'
+        type: string
+      expect:
+        description: >-
+          'pass' (default) or 'fail'. Only the self-test sets this: a job that
+          calls a reusable workflow cannot carry continue-on-error, so the
+          negative case cannot be a job that is allowed to fail. Instead the
+          check inverts its own verdict here, and the self-test asserts a
+          planted defect is caught by requiring a green job.
+        required: false
+        default: 'pass'
+        type: string
+      expect_flops:
+        description: >
+          Assert the netlist holds exactly this many flip-flops. Optional, and
+          used by the self-test: the flop count was wrong in production for
+          weeks because the self-test only ever asserted pass-or-fail, never a
+          value, so a regex that returned 0 for everything still went green.
+        required: false
+        default: ''
+        type: string
+      path:
+        description: >-
+          Directory holding info.yaml and src/, relative to the repository root.
+          Needed by anything that is not a single design at the root: my own
+          chips live at chips/<name> and could not have used this workflow
+          without it.
+        required: false
+        default: '.'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # The top module is pasted into a yosys script, and yosys scripts have
+      # `exec`, which runs arbitrary programs. Without this a top of
+      # `dut; exec -- sh -c ...` executes on the runner. Demonstrated before
+      # the check existed: yosys printed
+      #   3. Executing command "echo INJECTED_COMMAND_RAN".
+      # A Verilog identifier is the only thing this input may ever be.
+      - name: Check the top module name is an identifier
+        env:
+          TOP: ${{ inputs.top }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$TOP" | grep -Eq '^[A-Za-z_][A-Za-z0-9_$]{0,127}$'; then
+            echo "::error::top must match ^[A-Za-z_][A-Za-z0-9_\$]*\$ — got '$TOP'"
+            exit 1
+          fi
+
+      - name: Install the open toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq yosys iverilog
+          yosys -V
+          iverilog -V | head -1
+
+      - name: Check
+        id: check
+        env:
+          TOP: ${{ inputs.top }}
+          SRC_GLOB: ${{ inputs.sources }}
+          INC: ${{ inputs.include_dir }}
+          EXPECT: ${{ inputs.expect }}
+          EXPECT_FLOPS: ${{ inputs.expect_flops }}
+        working-directory: ${{ inputs.path }}
+        run: |
+          # set +e deliberately. GitHub invokes a run step as `bash -e {0}`, and
+          # `set -uo pipefail` does not clear an inherited -e. This script is
+          # built out of checks that are SUPPOSED to return non-zero -- a grep
+          # that finds nothing, an iverilog that rejects a design -- and under -e
+          # the first of them killed the step before any check reported.
+          # It failed in Actions with the sources line printed and nothing after
+          # it, which local testing could never reproduce because `bash script`
+          # does not set -e.
+          set +e
+          # -o pipefail only. -u was here and an unset variable under it exits
+          # the step immediately, which is indistinguishable in the log from the
+          # step simply stopping: the clean fixture died after printing the
+          # sources line with nothing after it, no error text at all.
+          set -o pipefail
+          # Prefer what info.yaml declares, because that is the list a Tiny
+          # Tapeout shuttle builds from — and because a declared file can sit in
+          # a subdirectory the glob never sees. Measured on a real submission:
+          # info.yaml named project.v and gen/fmul8.v, `src/*.v` found only the
+          # first, and elaboration failed on a design that is in fact fine.
+          SRC=""
+          if [ -f info.yaml ]; then
+            # Tiny Tapeout's own template says source files live in ./src and are
+            # listed by bare filename, and most submissions do that. Some list
+            # them with the src/ prefix already on, and prefixing again turned
+            # a real repository's one source file into src/src/... -- a failure
+            # about a path convention, wearing the clothes of a failure about
+            # their design. Found by reading somebody else's repository before
+            # offering them the check, which is the only way that class of
+            # defect ever gets found.
+            SRC=$(awk -v inc="$INC" '
+              /^[[:space:]]*source_files:/ {f=1; next}
+              f && /^[[:space:]]*-/ {
+                gsub(/^[[:space:]]*-[[:space:]]*"?|"?[[:space:]]*$/, "")
+                if ($0 ~ "^" inc "/") print $0; else print inc "/" $0
+                next
+              }
+              f {exit}
+            ' info.yaml | tr '\n' ' ')
+          fi
+          if [ -n "$SRC" ]; then
+            echo "sources: from info.yaml source_files"
+            MISSING=""
+            for f in $SRC; do [ -f "$f" ] || MISSING="$MISSING $f"; done
+            if [ -n "$MISSING" ]; then
+              echo "::error::info.yaml declares files that are not present:$MISSING"
+              say "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING"
+              exit 1
+            fi
+          else
+            echo "sources: no source_files in info.yaml, falling back to the glob"
+            # shellcheck disable=SC2086
+            SRC=$(ls $SRC_GLOB 2>/dev/null | grep -v '_tb\.v$' | tr '\n' ' ')
+          fi
+          if [ -z "$SRC" ]; then
+            echo "::error::no sources found: info.yaml declares none and '$SRC_GLOB' matched nothing"
+            exit 1
+          fi
+          # Every verdict goes to the log as well as the job summary. The
+          # summary is where a reader looks; the log is where a failure is
+          # diagnosed, and a check whose result appears only in the summary
+          # leaves a failing run saying nothing about what failed.
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          echo "phase: sources resolved -> $SRC"
+          echo "## RTL structural check" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Top: \`$TOP\` · $(echo "$SRC" | wc -w | tr -d ' ') source file(s)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          fails=0
+
+          echo "phase: elaborating"
+          # 1. Elaboration.
+          if iverilog -g2012 -t null -I "$INC" -s "$TOP" $SRC 2> elab.txt; then
+            say "- **PASS** elaborates — every module it instantiates is defined in the files given"
+          else
+            say "- **FAIL** elaborates"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"; head -20 elab.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+            fails=$((fails+1))
+          fi
+
+          # 2/3/4. One yosys pass: latch check, cell count, flop count.
+          # flatten before stat, because `stat -top` aborts with an uncaught
+          # std::out_of_range on some hierarchies in yosys 0.65, and per-module
+          # counts under-report anything hierarchical.
+          {
+            for f in $SRC; do echo "read_verilog -sv $f"; done
+            echo "hierarchy -top $TOP"
+            echo "proc; opt; fsm; opt; memory; opt"
+            echo "techmap; opt"
+            echo "flatten; opt"
+            echo "stat"
+            echo 'select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*'
+          } > check.ys
+          if yosys -s check.ys > yosys.txt 2>&1; then
+            say "- **PASS** no latch inferred by this flow"
+          else
+            say "- **FAIL** a latch was inferred, or synthesis stopped"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"; tail -20 yosys.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
+            fails=$((fails+1))
+          fi
+
+          echo "phase: parsing stat"
+          # Two stat formats, because this runs on whatever yosys the caller's
+          # runner has. 0.65 prints "  12 cells"; older builds, including the one
+          # apt installs on ubuntu-latest, print "Number of cells: 12". Matching
+          # only the newer form is how this reported "synthesis produced no cell
+          # count" and "purely combinational" for a design with 5 flip-flops --
+          # a false verdict from a regex, on somebody else's machine, which is
+          # the one place it could not be caught by testing here.
+          TAIL=$(sed -n '/Printing statistics/,$p' yosys.txt)
+          CELLS=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ cells$' | tail -1 | tr -dc '0-9')
+          [ -z "$CELLS" ] && CELLS=$(printf '%s' "$TAIL" | grep -Eo 'Number of cells: *[0-9]+' | tail -1 | tr -dc '0-9')
+          WIRES=$(printf '%s' "$TAIL" | grep -Eo '^ +[0-9]+ wires$' | tail -1 | tr -dc '0-9')
+          [ -z "$WIRES" ] && WIRES=$(printf '%s' "$TAIL" | grep -Eo 'Number of wires: *[0-9]+' | tail -1 | tr -dc '0-9')
+          # yosys prints the cell histogram in BOTH field orders depending on
+          # version: count-then-name ("4  $_DFFE_PN0P_") on the one installed
+          # here, name-then-count ("$_DFFE_PN0P_  16") on the one apt gives
+          # ubuntu-latest. Every pattern written for this before assumed
+          # count-then-name, so it was green on my machine and blind on the
+          # runner: a real cross-repo run called MINI and HOLO "purely
+          # combinational" when they hold 17 and 66 flip-flops.
+          #
+          # Two earlier attempts were checked against fixtures I typed out
+          # myself, in the order I assumed -- so the pattern and the fixture
+          # shared the same wrong assumption and agreed with each other. This
+          # one is checked against real yosys output in both orders, which is
+          # the only reason it can be trusted. Take whichever field is a number;
+          # any cell type containing "dff" is a flop.
+          FLOPS=$(printf '%s' "$TAIL" | awk 'tolower($0) ~ /\$_?[a-z0-9_]*dff/ {
+              if ($1 ~ /^[0-9]+$/) s += $1; else if ($2 ~ /^[0-9]+$/) s += $2
+            } END { print s+0 }')
+          # When a parse yields nothing, show the text it failed on. Otherwise a
+          # wrong verdict looks exactly like a right one: yosys output goes to a
+          # file, so nothing about it reaches the log.
+          if [ -z "$CELLS" ] || [ "${FLOPS:-0}" = "0" ]; then
+            echo "stat tail, for diagnosis:"
+            printf '%s\n' "$TAIL" | head -30
+          fi
+          if [ -n "$CELLS" ]; then
+            say "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened"
+          else
+            say "- **FAIL** synthesis produced no cell count"
+            fails=$((fails+1))
+          fi
+          if [ -n "$EXPECT_FLOPS" ]; then
+            if [ "${FLOPS:-0}" = "$EXPECT_FLOPS" ]; then
+              say "- **PASS** flip-flop count is $FLOPS, as asserted"
+            else
+              say "- **FAIL** flip-flop count is ${FLOPS:-0}, asserted $EXPECT_FLOPS"
+              fails=$((fails+1))
+            fi
+          fi
+          if [ "${FLOPS:-0}" -gt 0 ]; then
+            say "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question"
+          else
+            say "- **NOTE** purely combinational — no clock frequency can belong to it; the comparable figure is propagation delay"
+          fi
+
+          {
+            echo ""
+            echo "### What this does not establish"
+            echo "- A pass is not a proof of correctness. Nothing above compares the design against a specification."
+            echo "- Generic yosys cells are not silicon area, and not an ASIC estimate."
+            echo "- No frequency is claimed. The flip-flop count says the question is meaningful, not what the answer is."
+            echo "- Nothing ran on hardware."
+            echo ""
+            echo "Deeper tiers — conformance against an independent reference model, and place-and-route on a"
+            echo "named part — are at <https://t27.ai/verification/>."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${EXPECT:-pass}" = "fail" ]; then
+            if [ "$fails" -gt 0 ]; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "Expected to fail, and did ($fails check(s) red). Reported green so the self-test can assert it." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "::error::expected this design to fail a check and every check passed — the check is not catching what it is meant to"
+            exit 1
+          fi
+          exit $([ "$fails" -gt 0 ] && echo 1 || echo 0)

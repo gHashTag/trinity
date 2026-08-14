@@ -30,6 +30,7 @@ interface FPGASynthesisMetrics {
 
 export const FPGASynthesisWidget: React.FC = () => {
   const [metrics, setMetrics] = useState<FPGASynthesisMetrics | null>(null);
+  const [isLive, setIsLive] = useState(false);
   const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
@@ -40,13 +41,16 @@ export const FPGASynthesisWidget: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setMetrics(data);
+          setIsLive(true);
         } else {
           // Use mock data if API not available
           setMetrics(getMockMetrics());
+          setIsLive(false);
         }
       } catch {
         // Use mock data on error
         setMetrics(getMockMetrics());
+        setIsLive(false);
       }
     }, 382);
 
@@ -100,6 +104,17 @@ export const FPGASynthesisWidget: React.FC = () => {
       >
         <h3 className="font-bold text-sm" style={{ color: cyan }}>
           ⚡ FPGA SYNTHESIS (Consciousness-Guided)
+            {/* Every number below comes from getMockMetrics() whenever the fetch
+                fails, and on the deployed site it always fails. Unlabelled, a
+                literal like novelty: 0.342 reads as a measurement. */}
+            {!isLive && (
+              <span
+                title="No response from /api/fpga/synthesis — these are placeholder values, not measurements."
+                style={{ marginLeft: 8, fontWeight: 400, color: 'rgba(255,170,0,0.9)' }}
+              >
+                ● SAMPLE DATA
+              </span>
+            )}
         </h3>
         <span className="text-xs">{expanded ? '▼' : '▶'}</span>
       </div>

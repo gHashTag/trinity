@@ -1,0 +1,147 @@
+name: RTL conformance check
+
+# The tier above the structural one, and the first that says anything about
+# whether a design is CORRECT.
+#
+# Runs in YOUR repository, on YOUR runner, against YOUR checkout. Nothing is
+# uploaded anywhere and this workflow has no access to anything of mine. That is
+# not a courtesy — a chip designer will not upload RTL, and an intake that asks
+# them to is turning away the people it exists for.
+#
+# Add to .github/workflows/conformance.yml in your repo:
+#
+#   name: Conformance
+#   on: [push, pull_request]
+#   jobs:
+#     e5m2:
+#       uses: gHashTag/trinity/.github/workflows/conformance-check.yml@main
+#       with:
+#         module: fp8_e5m2_decode
+#         sources: src/rtl/fp8_e5m2_decode.v
+#         input_port: e5m2_in
+#         width: 8
+#         reference: float8_e5m2
+#
+# What makes the result worth having is two properties, both checkable:
+#
+#   * The reference is ml_dtypes, from the JAX project. You did not write it and
+#     neither did I, and it was not derived from your design. A model derived
+#     from the RTL agrees with the RTL including where it is wrong — T9 at
+#     <https://t27.ai/#/verification>, with a measured example behind it.
+#   * The input space is enumerated, not sampled. The disagreement count is over
+#     the whole format, so it is a count and not a bound — T11.
+#
+# What it does not establish is printed in the job summary, every run.
+
+on:
+  workflow_call:
+    inputs:
+      module:
+        description: 'Module name. A Verilog identifier, nothing else.'
+        required: true
+        type: string
+      sources:
+        description: 'Space-separated Verilog sources, relative to your repo root.'
+        required: true
+        type: string
+      input_port:
+        description: 'Name of the encoded input port.'
+        required: true
+        type: string
+      output_port:
+        description: 'Name of the fp32 output port.'
+        required: false
+        default: 'fp32_out'
+        type: string
+      width:
+        description: 'Width of the input port in bits. Every one of the 2^width code points is applied.'
+        required: true
+        type: number
+      reference:
+        description: 'An ml_dtypes name — float8_e5m2, float8_e4m3fn, float6_e3m2fn, float4_e2m1fn, bfloat16 …'
+        required: true
+        type: string
+      expect_mismatches:
+        description: >
+          Assert exactly this many disagreements. Normally left unset. The
+          self-test uses it because a checker whose verdict is the only thing
+          ever asserted can return the same answer for every design on earth and
+          stay green — which happened here, for weeks (T10).
+        required: false
+        default: ''
+        type: string
+      tool_ref:
+        description: 'Ref of gHashTag/trinity to take the checker from. Pin it if you want reproducibility.'
+        required: false
+        default: 'main'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout your sources
+        uses: actions/checkout@v4
+
+      # trinity is public, so this needs no token and grants this workflow no
+      # access to anything of yours beyond the checkout above.
+      - name: Checkout the checker
+        uses: actions/checkout@v4
+        with:
+          repository: gHashTag/trinity
+          ref: ${{ inputs.tool_ref }}
+          path: .conformance-tool
+
+      - name: Install the toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq iverilog
+          python3 -m pip install --quiet ml_dtypes numpy
+          iverilog -V | head -1
+
+      - name: Check
+        env:
+          MODULE: ${{ inputs.module }}
+          SOURCES: ${{ inputs.sources }}
+          INPORT: ${{ inputs.input_port }}
+          OUTPORT: ${{ inputs.output_port }}
+          WIDTH: ${{ inputs.width }}
+          REFERENCE: ${{ inputs.reference }}
+          EXPECT: ${{ inputs.expect_mismatches }}
+        run: |
+          set -uo pipefail
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          echo "## RTL conformance check" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          ARGS="--module $MODULE --sources $SOURCES --input-port $INPORT
+                --output-port $OUTPORT --width $WIDTH --reference $REFERENCE
+                --json result.json"
+          if [ -n "$EXPECT" ]; then ARGS="$ARGS --expect-mismatches $EXPECT"; fi
+
+          # shellcheck disable=SC2086
+          python3 .conformance-tool/tools/conformance_check.py $ARGS 2>&1 | tee out.txt
+          rc=${PIPESTATUS[0]}
+
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat out.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          {
+            echo ""
+            echo "### What this does not establish"
+            echo "- Anything about the design that instantiates this module, or about sequences of inputs."
+            echo "- That synthesis preserves the behaviour. This ran in simulation."
+            echo "- Anything about formats \`ml_dtypes\` does not implement."
+            echo "- Nothing ran on hardware."
+            echo ""
+            echo "What it does establish is a count over the whole input space rather than a"
+            echo "bound over a sample. The tiers are at <https://t27.ai/#/verification>."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit $rc

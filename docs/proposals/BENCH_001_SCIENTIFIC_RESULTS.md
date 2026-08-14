@@ -1,5 +1,14 @@
 # BENCH-001: Ternary vs Binary Format Efficiency
 
+> **⚠️ Superseded — claim-discipline correction.** This appendix reports MNIST
+> inference on **untrained random weights**, where every format sits at ~chance
+> accuracy; the "0.00% loss / perfect FP32 parity" figures below are therefore
+> **not a meaningful accuracy signal** and must not be cited as validation. The
+> live format comparison is the **IGLA RACE v2** training sweep (proposal §3.5):
+> GF16 within 0.031 bpb of f32 and beating bf16; GF8 = posit8. A separate
+> *trained* MNIST-MLP check shows GF16 at 97.67% (0.00% gap vs f32).
+
+
 ## DARPA CLARA Proposal — Scientific Appendix
 
 **Experiment**: BENCH-001 (Ternary vs FP16/BF16/GF16 on MNIST)

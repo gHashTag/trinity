@@ -1,0 +1,80 @@
+# The three checks that exist and never run.
+#
+# anomaly-register A48: this project does not fail by missing things. Its site
+# audit, its claim-guard and its five-label framework all caught the same
+# overclaims -- and every one of them failed at the step AFTER the finding. The
+# audit was written, then deleted, and the numbers stayed for six months.
+#
+# So these run on every PR that touches the site. Each was written the day its
+# failure was found and each has been run by hand since, which is another way
+# of saying each has been forgotten at least once.
+#
+#   typecheck:ratchet  errors may fall, never rise (A31: `npm run build` claimed
+#                      to typecheck, never ran in the deploy path, and 231
+#                      errors accrued unseen -- among them seven React branches
+#                      that were statically false, so four panels rendered
+#                      nothing in production)
+#   check:api          a field the UI formats that no server emits, and any
+#                      fallback not tagged with sample() (A36/A37: novelty:0.342
+#                      rendered as an FPGA measurement on a public route)
+#   check:render       real Chrome over CDP, every panel on all nine canvas
+#                      layers, fails on the first uncaught error (A39: vite
+#                      build was green through all of the above -- it proves
+#                      the bundler succeeded, not that the page renders)
+name: Website checks
+
+on:
+  pull_request:
+    paths: ['apps/website/**', '.github/workflows/website-checks.yml']
+  push:
+    branches: [main]
+    paths: ['apps/website/**']
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'   # render-check uses the WebSocket client built into 22
+          cache: npm
+          cache-dependency-path: apps/website/package-lock.json
+
+      - run: npm ci
+
+      # Every aria-controls / aria-labelledby / aria-describedby resolves to an
+      # id that is actually declared. A dangling aria-controls="mobile-menu" sat
+      # in the tree until this was written.
+      - name: ARIA references resolve
+        run: npm run check:aria
+
+      # Not a gate on the count, a gate on the DIRECTION, and per file: a scalar
+      # total passes when one file is fixed and another breaks by the same
+      # amount. --selftest first, so a gate nobody has watched fail is not
+      # trusted on the day it matters. 184 across 27 files today.
+      - name: the ratchet can fail
+        run: npm run typecheck:ratchet -- --selftest
+      - name: typecheck ratchet
+        run: npm run typecheck:ratchet
+
+      # Compares names only -- it cannot see units, which is why A34's five
+      # mappable fields stay unwired rather than relabelled as microseconds.
+      - name: API contract
+        run: npm run check:api
+
+      - name: Build
+        run: npx vite build
+
+      # Skips itself if no Chrome is found rather than failing: a missing
+      # browser is an environment fact, not a defect in the change.
+      - uses: browser-actions/setup-chrome@v1
+        id: chrome
+      - name: Render check
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:render -- --no-build

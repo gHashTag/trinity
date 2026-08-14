@@ -1,58 +1,49 @@
 import SwiftUI
 
 public struct MainView: View {
-    @State private var selectedScreen: Screen? = nil
+    @EnvironmentObject var watcher: StateWatcher
+    @StateObject private var navigationState = QueenNavigationState()
     @State private var keyMonitor: Any?
     @State private var showAgentStream = false
     @State private var showShortcuts = false
     @State private var isFirstLaunchShortcuts = false
     @AppStorage("hasSeenShortcuts") private var hasSeenShortcuts = false
+    private let hostedRoutesByPetal: [Int: QueenHostedRoute]
+    private let surfaceStyle: QueenSurfaceStyle
 
-    /// Cmd+0–9 keyboard shortcuts
-    private static let keyboardScreens: [Screen] = [
-        .chat, .sevoFarm, .arenaLLM, .faculty, .oracle,
-        .build, .deploy, .telegram, .settings,
-    ]
-
-    public init() {}
+    public init(
+        hostedRoutes: [QueenHostedRoute] = [],
+        surfaceStyle: QueenSurfaceStyle = .canonical
+    ) {
+        hostedRoutesByPetal = Dictionary(
+            uniqueKeysWithValues: hostedRoutes.map { ($0.petalIndex, $0) }
+        )
+        self.surfaceStyle = surfaceStyle
+    }
 
     public var body: some View {
         ZStack(alignment: .trailing) {
-            V4Color.background.ignoresSafeArea()
+            rootBackground
 
-            if let screen = selectedScreen {
+            if let petal = navigationState.selectedHostedPetal,
+               let route = hostedRoutesByPetal[petal] {
+                VStack(spacing: 0) {
+                    navigationHeader(
+                        title: route.title,
+                        systemImage: route.systemImage
+                    )
+                    route.content
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .transition(.opacity)
+            } else if let screen = navigationState.selectedScreen {
                 // Screen content with back button
                 VStack(spacing: 0) {
-                    // Top bar with back
-                    HStack {
-                        Button {
-                            selectedScreen = nil
-                        } label: {
-                            HStack(spacing: ParietalSpacing.xs) {
-                                Image(systemName: "chevron.left")
-                                Text("TRINITY")
-                                    .font(WernickeTypography.captionBold.monospaced())
-                            }
-                            .foregroundStyle(V4Color.accent)
-                            .padding(ParietalSpacing.xs)
-                        }
-                        .buttonStyle(.plain)
-                        .keyboardShortcut(.escape, modifiers: [])
-
-                        Spacer()
-
-                        Text("\(screen.icon) \(screen.rawValue)")
-                            .font(WernickeTypography.smallBold.monospaced())
-                            .foregroundStyle(.white)
-
-                        Spacer()
-                        // Balance spacer
-                        Color.clear.frame(width: ParietalSpacing.xLargeFrame)
-                    }
-                    .padding(.horizontal, ParietalSpacing.xs)
-                    .padding(.vertical, ParietalSpacing.xxs)
-                    .frame(maxHeight: 32)
-                    .background(V4Color.surface)
+                    navigationHeader(
+                        title: screen.rawValue,
+                        emoji: screen.icon,
+                        showsRefresh: true
+                    )
 
                     ScreenRouter(screen: screen)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -60,12 +51,17 @@ public struct MainView: View {
                 .transition(.opacity)
             } else {
                 // 27-petal logo as main menu
-                TriangleLogo(selectedScreen: $selectedScreen)
+                TriangleLogo(
+                    selectedScreen: $navigationState.selectedScreen,
+                    hostedRoutes: hostedRoutesByPetal,
+                    onSelect: selectPetal
+                )
             }
 
             // Agent Stream overlay (Cmd+J)
             if showAgentStream {
                 AgentStreamView()
+                    .environmentObject(watcher)
                     .frame(
                         minWidth: LayoutConstants.agentStreamMinWidth,
                         idealWidth: LayoutConstants.agentStreamIdealWidth,
@@ -82,7 +78,8 @@ public struct MainView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: selectedScreen)
+        .animation(.easeInOut(duration: 0.25), value: navigationState.selectedScreen)
+        .animation(.easeInOut(duration: 0.25), value: navigationState.selectedHostedPetal)
         .animation(.easeInOut(duration: 0.25), value: showAgentStream)
         .animation(.easeInOut(duration: 0.2), value: showShortcuts)
         .onAppear {
@@ -98,11 +95,134 @@ public struct MainView: View {
                 keyMonitor = nil
             }
         }
+        .onReceive(
+            NotificationCenter.default.publisher(for: QueenHostNavigation.request)
+        ) { notification in
+            guard let petal = notification.object as? Int else { return }
+            if petal < 0 {
+                returnToMenu()
+            } else {
+                selectPetal(petal)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var rootBackground: some View {
+        if surfaceStyle.usesTransparentBackground {
+            Color.clear
+                .ignoresSafeArea()
+        } else {
+            V4Color.background
+                .ignoresSafeArea()
+        }
+    }
+
+    private func navigationHeader(
+        title: String,
+        systemImage: String? = nil,
+        emoji: String? = nil,
+        showsRefresh: Bool = false
+    ) -> some View {
+        HStack {
+            Button(action: returnToMenu) {
+                HStack(spacing: ParietalSpacing.xs) {
+                    Image(systemName: "chevron.left")
+                    Text("TRINITY")
+                        .font(WernickeTypography.captionBold.monospaced())
+                }
+                .foregroundStyle(V4Color.accent)
+                .padding(ParietalSpacing.xs)
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.escape, modifiers: [])
+
+            Spacer()
+
+            HStack(spacing: ParietalSpacing.xs) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                } else if let emoji {
+                    Text(emoji)
+                }
+                Text(title)
+            }
+            .font(WernickeTypography.smallBold.monospaced())
+            .foregroundStyle(.white)
+
+            Spacer()
+            HStack {
+                if showsRefresh {
+                    Button {
+                        NotificationCenter.default.post(
+                            name: .queenWorkspaceRefresh,
+                            object: "header"
+                        )
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .font(WernickeTypography.captionBold)
+                            .foregroundStyle(V4Color.textSecondary)
+                            .frame(width: 24, height: 24)
+                            .background(V4Color.surfaceElevated)
+                            .clipShape(Circle())
+                            .overlay {
+                                Circle()
+                                    .stroke(V4Color.border, lineWidth: 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .help("Refresh workspace")
+                }
+            }
+            .frame(
+                width: ParietalSpacing.xLargeFrame,
+                alignment: .trailing
+            )
+        }
+        .padding(.horizontal, ParietalSpacing.xs)
+        .padding(.vertical, ParietalSpacing.xxs)
+        .frame(maxHeight: 32)
+        .background(
+            surfaceStyle.usesTransparentBackground
+                ? V4Color.surface.opacity(0.72)
+                : V4Color.surface
+        )
+    }
+
+    private func returnToMenu() {
+        navigationState.selectedHostedPetal = nil
+        navigationState.selectedScreen = nil
+    }
+
+    private func selectPetal(_ petalIndex: Int) {
+        if hostedRoutesByPetal[petalIndex] != nil {
+            navigationState.selectedScreen = nil
+            navigationState.selectedHostedPetal = petalIndex
+            NotificationCenter.default.post(
+                name: QueenHostNavigation.didOpen,
+                object: petalIndex
+            )
+        } else {
+            navigationState.selectedHostedPetal = nil
+            navigationState.selectedScreen = Screen.screenForBlock(petalIndex)
+        }
     }
 
     private func installKeyboardMonitor() {
         guard keyMonitor == nil else { return }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            let ch = event.charactersIgnoringModifiers?.first
+
+            if let digit = ch?.wholeNumberValue,
+               let petalIndex = QueenMenuShortcutPolicy.petalIndex(
+                   digit: digit,
+                   modifiers: event.modifierFlags,
+                   isMainMenuVisible: navigationState.isMainMenuVisible
+               ) {
+                selectPetal(petalIndex)
+                return nil
+            }
+
             // Non-modifier shortcuts: Escape, Up arrow in empty input
             if !event.modifierFlags.contains(.command) {
                 // Escape — stop streaming / clear input / close modal
@@ -124,10 +244,10 @@ public struct MainView: View {
                 return event
             }
 
-            guard let chars = event.charactersIgnoringModifiers, let ch = chars.first else { return event }
+            guard let ch else { return event }
 
             if ch == "0" {
-                selectedScreen = nil
+                returnToMenu()
                 return nil
             }
 
@@ -216,14 +336,6 @@ public struct MainView: View {
             if ch == "w" || ch == "W" {
                 // Let ChatScreen handle this via notification
                 return event
-            }
-
-            if let digit = ch.wholeNumberValue, digit >= 1, digit <= 9 {
-                let idx = digit - 1
-                if idx < Self.keyboardScreens.count {
-                    selectedScreen = Self.keyboardScreens[idx]
-                    return nil
-                }
             }
 
             return event

@@ -1,0 +1,152 @@
+name: conformance self-test
+
+# The conformance check is offered to other people to run on their own designs.
+# Before that is a reasonable thing to offer it has to be shown failing on a
+# design that deserves to fail, and shown reporting the right NUMBER — not
+# merely the right verdict.
+#
+# That second part is not pedantry. The structural check's flop counter returned
+# zero for every design on earth and stayed green for weeks, because the only
+# thing its self-test ever asserted was pass-or-fail and zero flops is not a
+# failure. Here every job asserts the count.
+
+on:
+  push:
+    paths:
+      - '.github/workflows/conformance-check.yml'
+      - '.github/workflows/conformance-selftest.yml'
+      - 'tools/conformance_check.py'
+      - 'tools/signal_health.py'
+      - 'tests/test_signal_health.py'
+      - 'tests/conformance-fixtures/**'
+  pull_request:
+    paths:
+      - '.github/workflows/conformance-check.yml'
+      - '.github/workflows/conformance-selftest.yml'
+      - 'tools/conformance_check.py'
+      - 'tools/signal_health.py'
+      - 'tests/test_signal_health.py'
+      - 'tests/conformance-fixtures/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-must-agree-on-every-code-point:
+    uses: ./.github/workflows/conformance-check.yml
+    with:
+      module: fixture_e5m2
+      sources: tests/conformance-fixtures/good/fixture_e5m2.v
+      input_port: e5m2_in
+      width: 8
+      reference: float8_e5m2
+      expect_mismatches: '0'
+      # The PR's own checker, not main's. Without this the self-test would be
+      # verifying a version of the tool the pull request does not contain.
+      tool_ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  planted-defect-must-be-caught-with-the-right-count:
+    uses: ./.github/workflows/conformance-check.yml
+    with:
+      module: fixture_e5m2_wrong
+      sources: tests/conformance-fixtures/wrong/fixture_e5m2_wrong.v
+      input_port: e5m2_in
+      width: 8
+      reference: float8_e5m2
+      # Subnormals flushed to zero: three mantissas, two signs, six code points.
+      # Asserting six rather than "some" is what makes this a measurement — a
+      # checker that flagged all 256 would also be "catching" the defect.
+      expect_mismatches: '6'
+      tool_ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  # The arithmetic behind the signal-health check, asserted against sequences
+  # whose answers are known rather than merely exercised.
+  signal-health-numbers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_signal_health.py
+
+  # The build-path check offered to other people, on fixtures whose answers are
+  # known. The broken one carries three planted faults of three different kinds
+  # and the counts are asserted, not the verdict.
+  build-paths-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # `set +e` on purpose. The runner hands every step `bash -e`, so an
+      # assignment from a command that is SUPPOSED to fail kills the step before
+      # anything can be asserted about why -- which is how this job failed the
+      # first time it ran, on the fixture whose whole job is to fail.
+      - name: The clean fixture must report nothing
+        run: |
+          set +e
+          out=$(python3 tools/check_build_paths.py --root tests/build-path-fixtures/clean \
+                  --import-roots src --min-files 1 --baseline /dev/null)
+          rc=$?
+          echo "$out"
+          if [ "$rc" -ne 0 ]; then echo "::error::clean fixture failed the check"; exit 1; fi
+          if ! echo "$out" | grep -q "PASS no new dangling build paths (0 known"; then
+            echo "::error::clean fixture did not report a clean tree"; exit 1
+          fi
+          if echo "$out" | grep -qE "LIKELY|EXPORTED|LATENT"; then
+            echo "::error::clean fixture produced a classification"; exit 1
+          fi
+          echo "clean: nothing reported, as asserted"
+
+      - name: The broken fixture must report exactly one dangling path and one LIKELY
+        run: |
+          set +e
+          out=$(python3 tools/check_build_paths.py --root tests/build-path-fixtures/broken \
+                  --import-roots src --min-files 1 --baseline /dev/null)
+          rc=$?
+          echo "$out"
+          if [ "$rc" -eq 0 ]; then echo "::error::broken fixture passed"; exit 1; fi
+          if ! echo "$out" | grep -q "LIKELY    (1)"; then
+            echo "::error::expected exactly one LIKELY"; exit 1
+          fi
+          if ! echo "$out" | grep -q "src/gone.zig"; then
+            echo "::error::expected src/gone.zig to be named"; exit 1
+          fi
+          echo "broken: one dangling path and one LIKELY, as asserted"
+
+      - name: Adopting on a broken tree writes a baseline that then passes
+        run: |
+          set +e
+          rm -f /tmp/adopt.txt
+          python3 tools/check_build_paths.py --root tests/build-path-fixtures/broken \
+            --import-roots src --min-files 1 --write-baseline /tmp/adopt.txt
+          rc=$?
+          if [ "$rc" -ne 0 ]; then echo "::error::writing a baseline should succeed"; exit 1; fi
+          if ! grep -q "^src/gone.zig$" /tmp/adopt.txt; then
+            echo "::error::baseline did not record the dangling path"; exit 1
+          fi
+          out=$(python3 tools/check_build_paths.py --root tests/build-path-fixtures/broken \
+                  --import-roots src --min-files 1 --baseline /tmp/adopt.txt)
+          rc=$?
+          echo "$out"
+          if [ "$rc" -ne 0 ]; then echo "::error::the tree should pass against its own baseline"; exit 1; fi
+          if ! echo "$out" | grep -q "1 known, all in the baseline"; then
+            echo "::error::expected exactly one known path"; exit 1
+          fi
+          echo "adoption: baseline written and honoured, as asserted"
+
+  # The front page must keep describing every check, and every check must keep
+  # showing a verdict. Both failure modes are absences, and an absence is what
+  # nobody notices.
+  start-page-invariants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_start_page.py
+
+  # A number written in prose beside a generated list drifts the moment the list
+  # grows, and nothing announces it. Twice the site told a reader something the
+  # same page disproved further down.
+  copy-matches-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_copy_matches_data.py

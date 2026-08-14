@@ -1781,7 +1781,7 @@ struct ChatScreen: View {
 
         // Task tracker
         if !taskItems.isEmpty {
-            TaskTrackerView(tasks: $taskItems)
+            TaskTrackerPanelView(tasks: $taskItems)
                 .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
                 .padding(.bottom, 4)
         }
@@ -1967,20 +1967,13 @@ struct ChatScreen: View {
 
     private var inputBarView: some View {
         HStack(spacing: ParietalSpacing.md) {
-            MultilineInput(
+            SimpleMultilineInput(
                 text: $input,
                 placeholder: placeholder,
                 isFocused: $focused,
-                onSubmit: { send() },
-                onImagePaste: { name, path in
-                    attachedFiles.append((name: name, content: "[Image: \(name)]"))
-                },
-                onMentionTrigger: { query in
-                    mentionQuery = query ?? ""
-                    showMentionPopup = query != nil
-                }
+                onSubmit: { send() }
             )
-            .frame(maxWidth: 600)  // FIXED: prevent oversized input width
+            .frame(maxWidth: 600)
             .layoutPriority(1)
 
             Button {
@@ -3186,6 +3179,9 @@ struct ConnectionStatusBar: View {
             .padding(.vertical, 2)
         }
         .onAppear { checkConnection() }
+        .onChange(of: modelManager.selectedModel.id) {
+            checkConnection()
+        }
         .onChange(of: client.failoverEvent) {
             withAnimation(.easeInOut(duration: 0.3)) { showFailover = true }
             // Auto-dismiss after 4s (8s for cloud-to-local fallback)
@@ -7134,7 +7130,7 @@ struct MCPStatusView: View {
 
     /// Probe .mcp.json to determine which MCP servers are configured
     static func loadServers() -> [(name: String, connected: Bool)] {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let mcpPath = "\(cwd)/.mcp.json"
         let names = ["trinity", "needle", "zig-docs", "railway"]
 
@@ -7713,5 +7709,40 @@ struct ThreadLoadingSkeleton: View {
             value: shimmer
         )
         .onAppear { shimmer = true }
+    }
+}
+
+struct SimpleMultilineInput: View {
+    @Binding var text: String
+    var placeholder: String
+    @FocusState.Binding var isFocused: Bool
+    var onSubmit: () -> Void
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundColor(.white.opacity(0.3))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 10)
+                    .allowsHitTesting(false)
+            }
+
+            TextEditor(text: $text)
+                .scrollContentBackground(.hidden)
+                .foregroundColor(.white)
+                .font(.system(size: 15))
+                .padding(.horizontal, 4)
+                .padding(.vertical, 4)
+                .focused($isFocused)
+                .onKeyPress(.return) {
+                    if NSEvent.modifierFlags.contains(.shift) {
+                        return .ignored
+                    }
+                    onSubmit()
+                    return .handled
+                }
+        }
+        .frame(minHeight: 40, maxHeight: 150)
     }
 }

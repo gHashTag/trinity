@@ -1,9 +1,16 @@
 import SwiftUI
 
+enum TriangleMenuPresentation {
+    static let showsRealmLabels = false
+    static let specialAnimatedPetal: Int? = nil
+    static let normalPetalOpacity = 0.22
+}
+
 struct TriangleLogo: View {
     @Binding var selectedScreen: Screen?
+    let hostedRoutes: [Int: QueenHostedRoute]
+    let onSelect: (Int) -> Void
     @State private var hoveredBlock: Int? = nil
-    @State private var ralphPulseTime: Double = 0
 
     // SVG viewBox constants from photon_trinity_canvas.zig
     static let svgWidth: CGFloat = 596
@@ -74,7 +81,7 @@ struct TriangleLogo: View {
         // RAZUM (0-8)
         ("CHAT", "phi = 1.618"),
         ("CODE", "pi*phi*e = 13.82"),
-        ("EXPLAIN", "L(10) = 123"),
+        ("LOGS", "L(10) = 123"),
         ("DEBUG", "1/a = 137.036"),
         ("REVIEW", "phi2 = phi+1 = 2.618"),
         ("TRANSLATE", "Feigenbaum d = 4.669"),
@@ -110,38 +117,25 @@ struct TriangleLogo: View {
         Color(red: 189.0/255.0, green: 147.0/255.0, blue: 249.0/255.0), // Purple (DUKH)
     ]
 
-    // Realm labels
-    static let realmLabels: [(name: String, symbol: String)] = [
-        ("RAZUM", "phi"),
-        ("MATERIYA", "pi"),
-        ("DUKH", "e"),
-    ]
-
     var body: some View {
         GeometryReader { geo in
             let scale = min(geo.size.width / Self.svgWidth, geo.size.height / Self.svgHeight) * 0.63
             let offsetX = geo.size.width / 2
             let offsetY = geo.size.height / 2
 
-            makeTimelineView(scale: scale, offsetX: offsetX, offsetY: offsetY)
+            makeContentView(scale: scale, offsetX: offsetX, offsetY: offsetY)
         }
     }
 
-    private func makeTimelineView(scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
-        LogoTimelineView { time in
-            makeContentView(time: time, scale: scale, offsetX: offsetX, offsetY: offsetY)
-        }
-    }
-
-    private func makeContentView(time: TimeInterval, scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
+    private func makeContentView(scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
         ZStack {
-            makePetalCanvas(time: time, scale: scale, offsetX: offsetX, offsetY: offsetY)
+            makePetalCanvas(scale: scale, offsetX: offsetX, offsetY: offsetY)
             makeRealmLabels(scale: scale, offsetX: offsetX, offsetY: offsetY)
             makeTooltipView(scale: scale, offsetX: offsetX, offsetY: offsetY)
         }
     }
 
-    private func makePetalCanvas(time: TimeInterval, scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
+    private func makePetalCanvas(scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
         Canvas { context, _ in
             for (idx, block) in Self.rawBlocks.enumerated() {
                 let path = petalPath(block, scale: scale, ox: offsetX, oy: offsetY)
@@ -149,18 +143,17 @@ struct TriangleLogo: View {
                 let isHovered = hoveredBlock == idx
                 let isSelected = selectedScreen == Screen.screenForBlock(idx)
 
-                // Fill: black (normal), white (hover), realm color (selected)
+                // Idle petals share one translucent fill so the host glass
+                // remains visible. Hover and selection retain clear feedback.
                 let fillColor: Color = {
                     if isSelected {
                         return Self.realmColors[realm]
                     } else if isHovered {
                         return .white
-                    } else if idx == 2 {
-                        // Ralph pulse: cyan with oscillating alpha sin(t*3)*40+80 → 40-120/255
-                        let alpha = sin(time * 3.0) * (40.0 / 255.0) + (80.0 / 255.0)
-                        return Color(red: 0, green: 0xCC / 255.0, blue: 1.0).opacity(alpha)
                     } else {
-                        return .black
+                        return Color.black.opacity(
+                            TriangleMenuPresentation.normalPetalOpacity
+                        )
                     }
                 }()
 
@@ -171,7 +164,7 @@ struct TriangleLogo: View {
         }
         .onTapGesture { location in
             if let idx = hitTest(location, scale: scale, ox: offsetX, oy: offsetY) {
-                selectedScreen = Screen.screenForBlock(idx)
+                onSelect(idx)
             }
         }
         .onContinuousHover { phase in
@@ -187,25 +180,46 @@ struct TriangleLogo: View {
     }
 
     private func makeRealmLabels(scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
-        ZStack {
-            realmLabel("RAZUM (phi)", color: Self.realmColors[0],
-                       x: offsetX + (100 - Self.svgCenterX) * scale,
-                       y: offsetY + (60 - Self.svgCenterY) * scale)
-            realmLabel("MATERIYA (pi)", color: Self.realmColors[1],
-                       x: offsetX + (490 - Self.svgCenterX) * scale,
-                       y: offsetY + (60 - Self.svgCenterY) * scale)
-            realmLabel("DUKH (e)", color: Self.realmColors[2],
-                       x: offsetX,
-                       y: offsetY + (520 - Self.svgCenterY) * scale)
+        Group {
+            if TriangleMenuPresentation.showsRealmLabels {
+                ZStack {
+                    realmLabel("RAZUM (phi)", color: Self.realmColors[0],
+                               x: offsetX + (100 - Self.svgCenterX) * scale,
+                               y: offsetY + (60 - Self.svgCenterY) * scale)
+                    realmLabel("MATERIYA (pi)", color: Self.realmColors[1],
+                               x: offsetX + (490 - Self.svgCenterX) * scale,
+                               y: offsetY + (60 - Self.svgCenterY) * scale)
+                    realmLabel("DUKH (e)", color: Self.realmColors[2],
+                               x: offsetX,
+                               y: offsetY + (520 - Self.svgCenterY) * scale)
+                }
+            }
         }
     }
 
     @ViewBuilder
     private func makeTooltipView(scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
         if let hov = hoveredBlock, hov >= 0, hov < Self.worlds.count {
-            let world = Self.worlds[hov]
-            let screen = Screen.screenForBlock(hov)
-            Text("\(screen.icon) \(world.name) — \(world.formula)")
+            let shortcut = QueenMenuShortcutPolicy.label(forPetalIndex: hov)
+            let label: String = {
+                if let route = hostedRoutes[hov] {
+                    return [
+                        "\(route.worldName) - \(route.formula)",
+                        shortcut,
+                    ]
+                    .compactMap { $0 }
+                    .joined(separator: "  ")
+                }
+                let world = Self.worlds[hov]
+                let screen = Screen.screenForBlock(hov)
+                return [
+                    "\(screen.icon) \(world.name) - \(world.formula)",
+                    shortcut,
+                ]
+                .compactMap { $0 }
+                .joined(separator: "  ")
+            }()
+            Text(label)
                 .font(WernickeTypography.smallSemiboldMono)
                 .foregroundStyle(.black)
                 .padding(.horizontal, ParietalSpacing.sm)
@@ -284,23 +298,3 @@ struct TriangleLogo: View {
             .allowsHitTesting(false)
     }
 }
-
-// MARK: - Logo Timeline View Helper
-
-struct LogoTimelineView<Content: View>: View {
-    let content: (TimeInterval) -> Content
-    @State private var timer: Timer?
-    @State private var startTime = Date()
-
-    init(@ViewBuilder content: @escaping (TimeInterval) -> Content) {
-        self.content = content
-    }
-
-    var body: some View {
-        content(Date().timeIntervalSince(startTime))
-            .onAppear {
-                startTime = Date()
-            }
-    }
-}
-

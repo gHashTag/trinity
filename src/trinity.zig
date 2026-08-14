@@ -9,13 +9,29 @@
 
 const std = @import("std");
 
-// Core modules
-pub const bigint = @import("bigint.zig");
-pub const packed_trit = @import("packed_trit.zig");
-pub const hybrid = @import("hybrid.zig");
-pub const vsa = @import("vsa/core.zig");
-pub const vsa_agent = @import("vsa/agent.zig");
+// Core modules.
+//
+// Four of these were files in this repository until 42490a22 moved them into
+// gHashTag/zig-hdc and gHashTag/zig-golden-float without moving the references,
+// which is one of the reasons this build failed from March. They come from
+// those packages now.
+//
+// The aliasing is decided by what each module CONTAINS, checked symbol by
+// symbol against the re-exports below, not by what it is called: golden-float
+// exports `bigint` and that name points at its ternary/hybrid.zig, while the
+// actual big-integer module is exported as `ternary_primitives`.
+const golden_float = @import("golden_float");
+
+pub const bigint = golden_float.ternary_primitives;
+pub const packed_trit = golden_float.packed_trit;
+pub const hybrid = golden_float.bigint;
+pub const vsa = @import("hdc_vsa");
 pub const vm = @import("vm.zig");
+
+// vsa/agent.zig is not re-exported. Its five parts have never been tracked in
+// this repository, and they are not in zig-hdc either -- the facade there was
+// withdrawn for the same reason. Nothing below referenced vsa_agent, so this
+// removes a name nobody could resolve rather than a capability anybody had.
 
 // SDK modules (high-level API)
 pub const sdk = @import("sdk.zig");

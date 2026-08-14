@@ -27,7 +27,7 @@ class TrinityContext: ObservableObject {
     private let trinityPath: String
 
     init() {
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         self.trinityPath = "\(cwd)/.trinity"
     }
 
@@ -144,7 +144,7 @@ class TrinityContext: ObservableObject {
         // Fallback: run tri build status
         let pipe = Pipe()
         let process = Process()
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let triPath = "\(cwd)/zig-out/bin/tri"
         guard FileManager.default.fileExists(atPath: triPath) else { return "tri binary not found" }
         process.executableURL = URL(fileURLWithPath: triPath)
@@ -166,7 +166,7 @@ class TrinityContext: ObservableObject {
     func openIssuesSummary() -> String {
         let pipe = Pipe()
         let process = Process()
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         let triPath = "\(cwd)/zig-out/bin/tri"
         guard FileManager.default.fileExists(atPath: triPath) else { return "" }
         process.executableURL = URL(fileURLWithPath: triPath)
@@ -185,7 +185,7 @@ class TrinityContext: ObservableObject {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
         process.arguments = ["diff", "HEAD"]
-        let cwd = FileManager.default.currentDirectoryPath
+        let cwd = TrinityRuntimePaths.projectRoot
         process.currentDirectoryURL = URL(fileURLWithPath: cwd)
         process.standardOutput = pipe
         process.standardError = pipe

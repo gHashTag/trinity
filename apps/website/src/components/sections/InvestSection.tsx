@@ -127,6 +127,11 @@ export default function InvestSection() {
       <div className="fade" style={{ marginTop: '4rem', marginBottom: 'clamp(4rem, 15vh, 8rem)' }}>
         <a href={inv?.contact?.github} className="btn secondary" target="_blank" rel="noopener">{inv.ctaGithub}</a>
       </div>
+      {inv.projectedNote && (
+        <p style={{ marginTop: '1.5rem', fontSize: '0.75rem', opacity: 0.5, textAlign: 'center' }}>
+          {inv.projectedNote}
+        </p>
+      )}
     </Section>
   )
 }

@@ -1,0 +1,16 @@
+# Same design as the clean fixture, listed the other way round.
+#
+# Tiny Tapeout's template says source files live in ./src and are listed by bare
+# filename. Some real submissions list them with the src/ prefix already on, and
+# the resolver used to prefix again -- turning one real repository's only source
+# file into src/src/... and failing about a path convention while looking like a
+# failure about their design.
+#
+# Found by reading somebody else's repository before offering them the check.
+project:
+  source_files:
+    - "src/fixture_prefixed.v"
+  top_module: "tt_um_fixture_prefixed"
+source_files:
+  - "src/fixture_prefixed.v"
+top_module: "tt_um_fixture_prefixed"

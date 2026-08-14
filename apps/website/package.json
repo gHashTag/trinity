@@ -5,10 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "build:ci": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc -b --pretty false",
+    "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
+    "check:api": "node scripts/api-contract-check.mjs",
+    "check:render": "node scripts/render-check.mjs",
+    "check:aria": "node scripts/aria-refs-check.mjs",
+    "typecheck:update": "node scripts/typecheck-ratchet.mjs --update"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

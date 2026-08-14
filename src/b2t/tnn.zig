@@ -358,9 +358,8 @@ pub const LayerGradients = struct {
 pub const TrainableTNN = struct {
     network: TernaryNetwork,
     gradients: std.ArrayList(LayerGradients),
-    // Cached activations for backward pass
-    activations: std.ArrayList([]f32),
-    // Float shadow weights for gradient accumulation
+    activations_in: std.ArrayList([]f32),
+    activations_out: std.ArrayList([]f32),
     shadow_weights: std.ArrayList([]f32),
     allocator: std.mem.Allocator,
 
@@ -368,10 +367,20 @@ pub const TrainableTNN = struct {
         return TrainableTNN{
             .network = TernaryNetwork.init(allocator),
             .gradients = std.ArrayList(LayerGradients).init(allocator),
-            .activations = std.ArrayList([]f32).init(allocator),
+            .activations_in = std.ArrayList([]f32).init(allocator),
+            .activations_out = std.ArrayList([]f32).init(allocator),
             .shadow_weights = std.ArrayList([]f32).init(allocator),
             .allocator = allocator,
         };
+    }
+
+    pub fn initWithLayers(allocator: std.mem.Allocator, layer_sizes: []const usize) !TrainableTNN {
+        var tnn = init(allocator);
+        errdefer tnn.deinit();
+        for (0..layer_sizes.len - 1) |i| {
+            try tnn.addLayer(layer_sizes[i], layer_sizes[i + 1]);
+        }
+        return tnn;
     }
 
     pub fn deinit(self: *TrainableTNN) void {
@@ -382,10 +391,15 @@ pub const TrainableTNN = struct {
         }
         self.gradients.deinit();
 
-        for (self.activations.items) |act| {
+        for (self.activations_in.items) |act| {
             self.allocator.free(act);
         }
-        self.activations.deinit();
+        self.activations_in.deinit();
+
+        for (self.activations_out.items) |act| {
+            self.allocator.free(act);
+        }
+        self.activations_out.deinit();
 
         for (self.shadow_weights.items) |sw| {
             self.allocator.free(sw);
@@ -400,10 +414,14 @@ pub const TrainableTNN = struct {
         const grads = try LayerGradients.init(self.allocator, input_size, output_size);
         try self.gradients.append(grads);
 
-        const activation = try self.allocator.alloc(f32, output_size);
-        try self.activations.append(activation);
+        const act_in = try self.allocator.alloc(f32, input_size);
+        @memset(act_in, 0.0);
+        try self.activations_in.append(act_in);
 
-        // Shadow weights for gradient descent
+        const act_out = try self.allocator.alloc(f32, output_size);
+        @memset(act_out, 0.0);
+        try self.activations_out.append(act_out);
+
         const shadow = try self.allocator.alloc(f32, input_size * output_size);
         @memset(shadow, 0.0);
         try self.shadow_weights.append(shadow);
@@ -413,15 +431,19 @@ pub const TrainableTNN = struct {
     pub fn forward(self: *TrainableTNN, input: []const f32, output: []f32) void {
         if (self.network.layers.items.len == 0) return;
 
+        for (self.activations_in.items[0..self.network.layers.items.len], 0..) |*act_in, i| {
+            const src = if (i == 0) input else self.activations_out.items[i - 1];
+            @memcpy(act_in[0..src.len], src[0..act_in.len]);
+        }
+
         var current_input = input;
 
         for (self.network.layers.items, 0..) |*layer, i| {
             const is_last = (i == self.network.layers.items.len - 1);
-            const out_buf = if (is_last) output else self.activations.items[i];
+            const out_buf = if (is_last) output else self.activations_out.items[i];
 
             layer.forward(current_input, out_buf);
 
-            // Apply ReLU to all but last layer
             if (!is_last) {
                 reluInPlace(out_buf);
             }
@@ -435,7 +457,6 @@ pub const TrainableTNN = struct {
     pub fn backward(self: *TrainableTNN, input: []const f32, output_grad: []const f32) void {
         if (self.network.layers.items.len == 0) return;
 
-        // Zero gradients
         for (self.gradients.items) |*grad| {
             grad.zero();
         }
@@ -443,7 +464,6 @@ pub const TrainableTNN = struct {
         var current_grad = output_grad;
         const num_layers = self.network.layers.items.len;
 
-        // Backward through layers (reverse order)
         var layer_idx: usize = num_layers;
         while (layer_idx > 0) {
             layer_idx -= 1;
@@ -451,13 +471,10 @@ pub const TrainableTNN = struct {
             const layer = &self.network.layers.items[layer_idx];
             const grads = &self.gradients.items[layer_idx];
 
-            // Get input to this layer
-            const layer_input = if (layer_idx == 0) input else self.activations.items[layer_idx - 1];
+            const layer_input = if (layer_idx == 0) input else self.activations_in.items[layer_idx];
 
-            // Compute gradients for this layer
             self.backwardLayer(layer, grads, layer_input, current_grad, layer_idx < num_layers - 1);
 
-            // Propagate gradient to previous layer
             current_grad = grads.input_grads;
         }
     }

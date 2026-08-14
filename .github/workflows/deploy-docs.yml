@@ -62,11 +62,23 @@ jobs:
 
       # Deploy to gh-pages branch directly
       - name: Deploy to gh-pages
+        env:
+          # Never interpolate a commit message straight into the shell: arbitrary
+          # text (parentheses, quotes, newlines) breaks the script — and worse,
+          # it is a command-injection vector. Pass it as an environment variable.
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           cd combined
-          git init
+          git init -q
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m 'Deploy: ${{ github.event.head_commit.message }}'
-          git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/gHashTag/trinity.git HEAD:gh-pages
+          git add -A
+          # Subject line stays deterministic; the source message goes in the body,
+          # quoted so it cannot be interpreted as shell.
+          git commit -q \
+            -m "Deploy ${GITHUB_SHA}" \
+            -m "${HEAD_COMMIT_MESSAGE:-manual dispatch}" \
+            || { echo "Nothing to deploy"; exit 0; }
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/gHashTag/trinity.git" HEAD:gh-pages

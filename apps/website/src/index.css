@@ -18,9 +18,21 @@
   box-sizing: border-box;
 }
 
+/* The page colour belongs to the root element, not to body.
+   The star layer sits at a negative z-index, which puts it behind its parent's
+   background box — and body's background was opaque black, so the field was
+   painted into its canvas and then covered by the very colour it was meant to
+   sit on. Measured before the fix: maximum luminance 0 across an empty 390x340
+   region. The root element's background is the page canvas and paints below
+   everything, including negative layers, so the colour moves here and body
+   stops being a lid. */
+html {
+  background-color: var(--bg);
+}
+
 body {
   font-family: var(--font);
-  background-color: var(--bg);
+  background-color: transparent;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -37,13 +49,37 @@ body {
   opacity: 0.35;
 }
 
+.phi-starfield {
+  position: fixed;
+  inset: 0;
+  z-index: -5;
+  pointer-events: none;
+}
+
+.phi-starfield canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* Typography Fluid Design */
+/* The page-title size, not a display size.
+   This was clamp(3rem, 15vw, 8rem) with -0.07em tracking — proportions meant for
+   the one-line identity in the hero. Applied to every h1 on the site it made a
+   sixty-character blog title 210px tall at a 1400px viewport: one word per line,
+   four lines before any prose.
+   The values below are not new. Six pages — Proof, Course, Licensing, GFT,
+   About, Verification — already wrote exactly this inline, so it was the house
+   standard everywhere except the pages that forgot to repeat it. Making it the
+   default means Blog, Resources and the dashboards match without restating it,
+   and the six that do restate it are unchanged.
+   The hero sets its own size inline and is unaffected. */
 h1 {
-  font-size: clamp(3rem, 15vw, 8rem);
+  font-size: clamp(1.9rem, 5.5vw, 2.8rem);
   font-weight: 600;
-  margin-bottom: 2rem;
-  letter-spacing: -0.07em;
-  line-height: 1;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 h2 {
@@ -81,11 +117,99 @@ section {
   min-height: 60vh;
 }
 
+/* A list is read down a common left edge; centring destroys that edge. The rule
+   above centres everything in a section, so any list that did not happen to sit
+   inside a left-aligned wrapper came out ragged — the marker pinned at the flex
+   start or the padding edge while each wrapped line found its own centre.
+   Most lists were saved by an ancestor setting text-align individually; this
+   makes it the default instead of a thing each new list has to remember. An
+   inline style on a specific list still wins. */
+section ul,
+section ol {
+  text-align: left;
+}
+
+/* Подстраницы используют три разных поверхности вместо ленты одинаковых
+   серых карточек. Правило действует только на длинные маршруты с классом
+   subpage-layout; у главной страницы остаётся собственная система разделов. */
+.subpage-layout > :not(.radial-glow):not(nav):not(.verification-anchor):not(.verification-toc) {
+  width: 100%;
+  margin-bottom: clamp(1.6rem, 3.5vw, 2.4rem);
+}
+
+.subpage-layout > :not(.radial-glow):not(nav):not(.verification-anchor):not(.verification-toc):nth-child(3n + 1) {
+  padding-block: clamp(0.4rem, 1.5vw, 0.9rem);
+  border-block: 1px solid var(--border);
+}
+
+.subpage-layout > :not(.radial-glow):not(nav):not(.verification-anchor):not(.verification-toc):nth-child(3n + 2) {
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+}
+
+.subpage-layout > :not(.radial-glow):not(nav):not(.verification-anchor):not(.verification-toc):nth-child(3n) {
+  padding: clamp(1rem, 2.6vw, 1.7rem) clamp(1.1rem, 3vw, 2rem);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  background: linear-gradient(90deg, rgba(0, 255, 136, 0.075), rgba(0, 255, 136, 0.012));
+}
+
+.subpage-layout > :last-child {
+  margin-bottom: 0;
+}
+
+.subpage-layout > .radial-glow {
+  width: auto;
+}
+
 .tight {
   max-width: var(--narrow-w);
   margin-left: auto;
   margin-right: auto;
   width: 100%;
+}
+
+.verification-anchor {
+  scroll-margin-top: 96px;
+}
+
+.verification-toc {
+  width: 100%;
+  margin: 0 0 2rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  text-align: left;
+}
+
+.verification-toc > strong {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: var(--text);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+
+.verification-toc__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.8rem;
+}
+
+.verification-toc__links a {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.verification-toc__links a:hover,
+.verification-toc__links a:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .grid {
@@ -221,11 +345,29 @@ section {
   align-items: center;
   max-width: 95vw;
   height: 38px;
+  /* The dock is a single row of pills; if a future link makes it wider than the
+     viewport it must scroll rather than silently clip its last item. */
+  overflow-x: auto;
+  scrollbar-width: none;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (max-width: 768px) {
+/* 1100px, not 768px: the dock is one non-wrapping row, and below the width its
+   content needs, `max-width: 95vw` + `overflow-x: auto` quietly scrolled the last
+   two items -- the Pages button and the language switcher -- out of sight, with
+   `scrollbar-width: none` hiding any hint that they existed and the hamburger
+   still 300px away from appearing. Measured content width per locale, after the
+   label went 10px -> 11.5px and the padding 14px -> 11px (2026-08-13):
+   en 895, de 948, es 920, ru 998 -> ru needs a 1051px viewport to fit at 95vw,
+   so the 1100px breakpoint still clears every locale. The same measurement read
+   en 919, de 923, es 965, ru 1023 before that change: the bigger label costs
+   less than the narrower padding saves.
+   So Russian was broken from 769px all the way to 1077px: half-screen windows,
+   1024x768 laptops, iPad landscape. Everything the dock holds is in the mobile
+   menu, language switcher included, so handing those widths to the hamburger
+   loses nothing. Re-measure this number if a nav label is added or retranslated. */
+@media (max-width: 1100px) {
   .nav-dock {
     display: none;
   }
@@ -235,10 +377,12 @@ section {
 .lang-toggle {
   color: var(--muted);
   text-decoration: none;
-  font-size: 10px;
+  /* 10 px читались как служебная мелочь, хотя это главная навигация.
+     Паддинг сужен, чтобы док не перерос свою точку перелома. */
+  font-size: 11.5px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 0 14px;
+  letter-spacing: 0.08em;
+  padding: 0 11px;
   height: 100%;
   border-radius: 999px;
   transition: all 0.2s;
@@ -249,6 +393,128 @@ section {
   display: flex;
   align-items: center;
   font-weight: 500;
+}
+
+.nav-dock::-webkit-scrollbar {
+  display: none;
+}
+
+/* The hint is only true while the diagram is actually wider than its container. */
+/* Content on these pages starts at opacity 0 and is revealed by a scroll-triggered
+   animation. That is fine when the animation runs — and invisible when it does not.
+   Anyone who has asked their system for less motion gets the content immediately
+   instead, at full opacity. The !important is needed because the animation library
+   writes opacity and transform as inline styles. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  section > div,
+  .premium-card,
+  section > div > figure {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.diagram-scroll-hint {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .diagram-scroll-hint {
+    display: block;
+  }
+}
+
+.nav-pages-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  padding: 0 11px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-pages-toggle:hover,
+.nav-pages-toggle.open {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-pages-caret {
+  font-size: 8px;
+  transition: transform 0.2s;
+}
+
+.nav-pages-toggle.open .nav-pages-caret {
+  transform: rotate(180deg);
+}
+
+.nav-pages-panel {
+  position: fixed;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  width: min(560px, 92vw);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 8px;
+  background: rgba(6, 10, 9, 0.94);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 768px) {
+  .nav-pages-panel {
+    display: none;
+  }
+}
+
+.nav-pages-panel a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.nav-pages-panel a:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.nav-pages-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.nav-pages-note {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
 }
 
 .nav-dock a:hover,
@@ -307,7 +573,9 @@ section {
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-@media (max-width: 768px) {
+/* Must stay in lockstep with the .nav-dock breakpoint above — between the two
+   values there would be no navigation on screen at all. */
+@media (max-width: 1100px) {
   .hamburger-btn {
     display: flex;
   }
@@ -361,10 +629,24 @@ section {
   background: rgba(255, 255, 255, 0.06);
 }
 
+/* Sticky, because this footer holds the only language control on narrow widths
+   and it was the last thing in a column taller than the screen: measured at
+   768px tall the button sat at y 1069 inside a 1121px menu, so a visitor opened
+   the menu, saw links, and never learned the language could be changed.
+   Pinning it to the bottom of the scroll container keeps it on screen while the
+   links scroll under it. The background is the menu's own, otherwise links
+   would show through as they pass beneath. */
 .mobile-menu-footer {
   padding-top: 16px;
   border-top: 1px solid var(--border);
-  margin-top: 16px;
+  margin-top: auto;
+  position: sticky;
+  /* -24px, not 0: sticky resolves against the scrollport's padding edge, so at
+     0 the footer stopped 24px short of the bottom and links scrolled visibly
+     through the strip underneath it. */
+  bottom: -24px;
+  background: rgb(10, 10, 15);
+  padding-bottom: 24px;
 }
 
 /* Language Switcher */
@@ -409,6 +691,20 @@ section {
   overflow: hidden;
   z-index: 1200;
   min-width: 100%;
+}
+
+/* In the mobile menu the switcher is the last thing in a scrolled column, so it
+   sits at the bottom edge — opening downward put the options past the fold
+   (measured: button at y 730, first option at y 1102 in a 768px viewport) and
+   the language looked unchangeable. Open upward there instead. */
+.mobile-menu .lang-dropdown {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 4px;
+  /* Opaque: at 0.95 the bright accent-coloured links underneath read straight
+     through the options. */
+  background: rgb(10, 10, 15);
 }
 
 .lang-option {
@@ -487,26 +783,58 @@ section {
   pointer-events: none;
 }
 
-/* Slider Fixes */
+/* Ползунки. Замером: сам элемент был высотой 4 px — это и есть вся область
+   попадания, притом что ползунок здесь основной способ читать калькуляторы и
+   чертёж. Элемент поднят до 24 px, видимая дорожка осталась тонкой; ручка
+   больше не выпадает из габарита. */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: var(--border);
+  background: transparent;
+  height: 24px;
+  width: 100%;
+  cursor: pointer;
+  margin: 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  width: 100%;
+  background: var(--border);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px; /* центрирует ручку 18 px на дорожке 4 px */
   background: #FFFFFF;
   border: 2px solid var(--accent);
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #FFFFFF;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 /* Form Styles */

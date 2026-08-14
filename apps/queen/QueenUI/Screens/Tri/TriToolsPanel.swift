@@ -13,12 +13,14 @@ public struct TriToolsPanel: View {
             VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Tri Tools")
                     .font(.caption.weight(.bold))
-                Text("Coming soon")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                ForEach(TriToolCommandCatalog.commands.prefix(3)) { command in
+                    Label(command.title, systemImage: command.systemImage)
+                        .font(.caption2)
+                        .foregroundStyle(V4Color.textSecondary)
+                }
             }
             .padding(ParietalSpacing.xs)
-            .background(Color(nsColor: .controlBackgroundColor))
+            .background(V4Color.surface)
         }
     }
 }
