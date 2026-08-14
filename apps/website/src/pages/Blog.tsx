@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
@@ -19,6 +20,10 @@ const UI = {
     allPosts: '← All posts',
     min: 'min',
     onlyEnglish: 'This post has not been translated yet, so it is shown in English.',
+    share: 'Share',
+    copyLink: 'Copy link',
+    copied: 'Copied',
+    feed: 'RSS',
   },
   ru: {
     blog: 'Блог',
@@ -32,6 +37,10 @@ const UI = {
     allPosts: '← Все посты',
     min: 'мин',
     onlyEnglish: 'Этот пост ещё не переведён и показан по-английски.',
+    share: 'Поделиться',
+    copyLink: 'Скопировать ссылку',
+    copied: 'Скопировано',
+    feed: 'RSS',
   },
 } as const
 
@@ -217,6 +226,70 @@ function Receipts({ post, lang }: { post: Post; lang: string }) {
   )
 }
 
+/** Canonical address of a post. Hash-routed, so this is the whole URL. */
+export function postUrl(slug: string) {
+  return `https://t27.ai/#/blog/${slug}`
+}
+
+/**
+ * Share links, as plain intent URLs.
+ *
+ * No embedded platform widgets on purpose: every one of them is a third-party
+ * script that reads the reader before they have decided to share anything. A
+ * link costs nothing and tracks nobody.
+ */
+function Share({ post, lang }: { post: Post; lang: string }) {
+  const t = ui(lang)
+  const [copied, setCopied] = useState(false)
+  const url = postUrl(post.slug)
+  const u = encodeURIComponent(url)
+  const title = encodeURIComponent(post.title)
+
+  const targets = [
+    { name: 'X', href: `https://twitter.com/intent/tweet?url=${u}&text=${title}` },
+    { name: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}` },
+    { name: 'Telegram', href: `https://t.me/share/url?url=${u}&text=${title}` },
+    { name: 'Hacker News', href: `https://news.ycombinator.com/submitlink?u=${u}&t=${title}` },
+    { name: 'Reddit', href: `https://www.reddit.com/submit?url=${u}&title=${title}` },
+  ]
+
+  return (
+    <section style={{ margin: '2.4em 0' }}>
+      <div style={{ ...meta, marginBottom: '10px' }}>{t.share}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+        {targets.map((s) => (
+          <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer">
+            {s.name}
+          </a>
+        ))}
+        <button
+          type="button"
+          onClick={() => {
+            navigator.clipboard?.writeText(url).then(
+              () => {
+                setCopied(true)
+                window.setTimeout(() => setCopied(false), 2000)
+              },
+              () => setCopied(false),
+            )
+          }}
+          style={{
+            background: 'none',
+            border: '1px solid var(--text-dim, #8a8a8a)',
+            borderRadius: '4px',
+            color: 'inherit',
+            cursor: 'pointer',
+            font: 'inherit',
+            padding: '2px 10px',
+          }}
+        >
+          {copied ? t.copied : t.copyLink}
+        </button>
+      </div>
+    </section>
+  )
+}
+
 export function BlogIndex() {
   const { lang } = useI18n()
   const t = ui(lang)
@@ -226,8 +299,15 @@ export function BlogIndex() {
       <Navigation />
       <div style={wrap}>
         <h1 style={{ marginBottom: '0.3em' }}>{t.blog}</h1>
-        <p style={{ color: 'var(--text-dim, #8a8a8a)', marginBottom: '2.4em', lineHeight: 1.7 }}>
+        <p style={{ color: 'var(--text-dim, #8a8a8a)', marginBottom: '1em', lineHeight: 1.7 }}>
           {t.lede}
+        </p>
+        {/* Absolute, not a router link: the feed is a static file beside the
+            SPA, and a hash route would never reach it. */}
+        <p style={{ marginBottom: '2.4em' }}>
+          <a href="https://t27.ai/rss.xml" target="_blank" rel="noopener noreferrer">
+            {t.feed}
+          </a>
         </p>
 
         {items.length === 0 ? (
@@ -291,6 +371,7 @@ export function BlogPost() {
         <OpenQuestions post={post} lang={lang} />
         {post.body.map(renderBlock)}
         <Receipts post={post} lang={lang} />
+        <Share post={post} lang={lang} />
 
         <p style={{ marginTop: '3em' }}>
           <Link to="/blog">{t.allPosts}</Link>
