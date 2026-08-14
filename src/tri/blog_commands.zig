@@ -51,6 +51,8 @@ pub fn runBlogCommand(allocator: std.mem.Allocator, args: []const []const u8, dr
         try cmdCheck(allocator, if (rest.len > 0) rest[0] else null);
     } else if (std.mem.eql(u8, sub, "build")) {
         try cmdBuild(allocator, dry_run);
+    } else if (std.mem.eql(u8, sub, "lint")) {
+        try cmdLint(allocator);
     } else if (std.mem.eql(u8, sub, "live")) {
         if (rest.len == 0) {
             std.debug.print("{s}usage: tri blog live <slug>{s}\n", .{ RED, RESET });
@@ -68,13 +70,14 @@ fn printHelp() void {
         \\
         \\  {s}list{s}            every post in posts.ts, with its published state
         \\  {s}check [slug]{s}    re-verify each receipt's PR/issue state against GitHub
+        \\  {s}lint{s}            published posts must carry receipts and name what is unproven
         \\  {s}build{s}           build the SPA that renders the blog
         \\  {s}live <slug>{s}     is the post actually being served at the apex?
         \\
         \\The blog is TypeScript Post objects in {s}, not markdown.
         \\Run `check` before publishing: states move after the text is written.
         \\
-    , .{ CYAN, RESET, GOLDEN, RESET, GOLDEN, RESET, GOLDEN, RESET, GOLDEN, RESET, POSTS_PATH });
+    , .{ CYAN, RESET, GOLDEN, RESET, GOLDEN, RESET, GOLDEN, RESET, GOLDEN, RESET, GOLDEN, RESET, POSTS_PATH });
 }
 
 // ── posts.ts scanning ────────────────────────────────────────────────────────
@@ -106,9 +109,56 @@ const PostHead = struct {
     date: []const u8,
     published: bool,
     has_ru: bool,
+    /// Receipts and openQuestions are required by the rules at the top of
+    /// posts.ts, but the TypeScript type allows both to be empty arrays. The
+    /// compiler will not catch a published post that claims nothing and admits
+    /// nothing, so `lint` does.
+    ///
+    /// receipts is a count, because `href:` is one clean marker per entry.
+    /// openQuestions is only ever asked whether it is empty: its entries are
+    /// prose in single quotes and prose contains apostrophes, so counting
+    /// quotes would be wrong on exactly the posts that say the most.
+    receipts: usize,
+    has_open_questions: bool,
     /// Index just past the slug, where scanning continues.
     end: usize,
 };
+
+/// Count the entries of an array-valued field inside `window`.
+///
+/// Counts the field's own opening bracket to its matching close, so a nested
+/// array in a table row cannot inflate the total.
+fn countEntries(window: []const u8, field: []const u8, entry: []const u8) usize {
+    const at = std.mem.indexOf(u8, window, field) orelse return 0;
+    var depth: usize = 0;
+    var i = at + field.len;
+    var start: ?usize = null;
+    while (i < window.len) : (i += 1) {
+        switch (window[i]) {
+            '[' => {
+                depth += 1;
+                if (start == null) start = i;
+            },
+            ']' => {
+                if (depth == 0) break;
+                depth -= 1;
+                if (depth == 0) break;
+            },
+            else => {},
+        }
+    }
+    const s = start orelse return 0;
+    if (i >= window.len) return 0;
+    const body = window[s .. i + 1];
+
+    var n: usize = 0;
+    var pos: usize = 0;
+    while (std.mem.indexOfPos(u8, body, pos, entry)) |hit| {
+        n += 1;
+        pos = hit + entry.len;
+    }
+    return n;
+}
 
 /// Next post at or after `pos`, or null at the end of the file.
 ///
@@ -133,6 +183,8 @@ fn nextPost(src: []const u8, pos: usize) ?PostHead {
         .date = date,
         .published = std.mem.indexOf(u8, window, "published: true") != null,
         .has_ru = std.mem.indexOf(u8, window, "\n  ru: {") != null,
+        .receipts = countEntries(window, "receipts:", "href:"),
+        .has_open_questions = countEntries(window, "openQuestions:", "',") > 0,
         .end = slug.end,
     };
 }
@@ -180,6 +232,46 @@ fn cmdList(allocator: std.mem.Allocator) !void {
     }
 
     std.debug.print("\n{d} post(s), {d} draft(s)\n", .{ total, drafts });
+}
+
+/// Enforce the rules posts.ts states in prose but its types cannot hold.
+///
+/// `receipts: []` and `openQuestions: []` both typecheck. A published post with
+/// either one empty is exactly the post the file's own comment calls marketing,
+/// and nothing in the build would ever say so.
+fn cmdLint(allocator: std.mem.Allocator) !void {
+    const src = try readPosts(allocator);
+    defer allocator.free(src);
+
+    std.debug.print("{s}linting published posts{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}A post needs at least one receipt a reader can open, and must say what is not proven.{s}\n\n", .{ DIM, RESET });
+
+    var pos: usize = 0;
+    var checked: usize = 0;
+    var bad: usize = 0;
+
+    while (nextPost(src, pos)) |post| {
+        pos = post.end;
+        if (!post.published) continue;
+        checked += 1;
+
+        var faults: usize = 0;
+        if (post.receipts == 0) {
+            if (faults == 0) std.debug.print("{s}{s}{s}\n", .{ GOLDEN, post.slug, RESET });
+            faults += 1;
+            std.debug.print("  {s}no receipts{s} — every claim in it is unopenable\n", .{ RED, RESET });
+        }
+        if (!post.has_open_questions) {
+            if (faults == 0) std.debug.print("{s}{s}{s}\n", .{ GOLDEN, post.slug, RESET });
+            faults += 1;
+            std.debug.print("  {s}no openQuestions{s} — a post that admits nothing is marketing\n", .{ RED, RESET });
+        }
+        if (faults > 0) bad += 1;
+    }
+
+    std.debug.print("\n{d} published post(s), {d} with faults\n", .{ checked, bad });
+    if (bad > 0) return error.PostFailsTheRules;
+    std.debug.print("{s}all published posts carry receipts and name what is unproven{s}\n", .{ GREEN, RESET });
 }
 
 // ── receipt verification ─────────────────────────────────────────────────────
@@ -446,6 +538,61 @@ test "a github pull url splits into its parts" {
     try std.testing.expectEqualStrings("nextpnr-xilinx", ref.repo);
     try std.testing.expectEqualStrings("pull", ref.kind);
     try std.testing.expectEqualStrings("145", ref.number);
+}
+
+test "a post's receipts are counted and its openQuestions detected" {
+    const good =
+        \\const a: Post = {
+        \\  slug: 'has-both',
+        \\  receipts: [
+        \\    { label: 'x', href: 'https://github.com/o/r/pull/1' },
+        \\    { label: 'y', href: 'https://github.com/o/r/issues/2' },
+        \\  ],
+        \\  openQuestions: [
+        \\    'we did not measure the other half',
+        \\  ],
+        \\  published: true,
+        \\}
+    ;
+    const p = nextPost(good, 0).?;
+    try std.testing.expectEqual(@as(usize, 2), p.receipts);
+    try std.testing.expect(p.has_open_questions);
+}
+
+test "an empty receipts or openQuestions array is what lint must catch" {
+    const empty =
+        \\const a: Post = {
+        \\  slug: 'says-nothing',
+        \\  receipts: [],
+        \\  openQuestions: [],
+        \\  published: true,
+        \\}
+    ;
+    const p = nextPost(empty, 0).?;
+    try std.testing.expectEqual(@as(usize, 0), p.receipts);
+    try std.testing.expect(!p.has_open_questions);
+}
+
+test "a table row inside the body does not inflate the receipt count" {
+    // countEntries stops at the field's own closing bracket, so the nested
+    // arrays of a table block are outside what it reads.
+    const withTable =
+        \\const a: Post = {
+        \\  slug: 'has-a-table',
+        \\  receipts: [
+        \\    { label: 'x', href: 'https://github.com/o/r/pull/1' },
+        \\  ],
+        \\  openQuestions: [
+        \\    'one',
+        \\  ],
+        \\  body: [
+        \\    { kind: 'table', head: ['a','b'], rows: [['1','2'],['3','4']] },
+        \\  ],
+        \\  published: true,
+        \\}
+    ;
+    const p = nextPost(withTable, 0).?;
+    try std.testing.expectEqual(@as(usize, 1), p.receipts);
 }
 
 test "a comment permalink resolves to the pull request it lives in" {
