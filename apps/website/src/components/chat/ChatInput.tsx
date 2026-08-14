@@ -3,9 +3,44 @@ import { useState, useRef, useEffect } from 'react';
 interface Props {
   onSend: (message: string, imagePath?: string, audioPath?: string) => void;
   disabled: boolean;
+  labels?: Labels;
 }
 
-export default function ChatInput({ onSend, disabled }: Props) {
+export interface Labels {
+  region: string;
+  attachmentOptions: string;
+  imagePlaceholder: string;
+  audioPlaceholder: string;
+  imageAria: string;
+  audioAria: string;
+  attachTitle: string;
+  hideAttachments: string;
+  showAttachments: string;
+  messagePlaceholder: string;
+  messageAria: string;
+  sendAria: string;
+  send: string;
+  instructions: string;
+}
+
+const DEFAULT_LABELS: Labels = {
+  region: 'Chat input',
+  attachmentOptions: 'Attachment options',
+  imagePlaceholder: 'image_path (optional)',
+  audioPlaceholder: 'audio_path (optional)',
+  imageAria: 'Image file path',
+  audioAria: 'Audio file path',
+  attachTitle: 'Attach image/audio path',
+  hideAttachments: 'Hide attachment options',
+  showAttachments: 'Show attachment options',
+  messagePlaceholder: 'Message Trinity...',
+  messageAria: 'Type your message',
+  sendAria: 'Send message',
+  send: 'SEND',
+  instructions: 'Press Enter to send, Shift+Enter for new line',
+};
+
+export default function ChatInput({ onSend, disabled, labels = DEFAULT_LABELS }: Props) {
   const [text, setText] = useState('');
   const [showAttach, setShowAttach] = useState(false);
   const [imagePath, setImagePath] = useState('');
@@ -48,7 +83,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
         border: '1px solid rgba(255,215,0,0.2)',
       }}
       role="region"
-      aria-label="Chat input"
+      aria-label={labels.region}
     >
       {showAttach && (
         <div
@@ -59,13 +94,13 @@ export default function ChatInput({ onSend, disabled }: Props) {
             borderBottom: '1px solid rgba(255,215,0,0.1)',
           }}
           role="group"
-          aria-label="Attachment options"
+          aria-label={labels.attachmentOptions}
         >
           <input
             type="text"
             value={imagePath}
             onChange={e => setImagePath(e.target.value)}
-            placeholder="image_path (optional)"
+            placeholder={labels.imagePlaceholder}
             disabled={disabled}
             style={{
               flex: 1,
@@ -78,14 +113,14 @@ export default function ChatInput({ onSend, disabled }: Props) {
               fontSize: 11,
               fontFamily: 'monospace',
             }}
-            aria-label="Image file path"
+            aria-label={labels.imageAria}
             id="chat-image-input"
           />
           <input
             type="text"
             value={audioPath}
             onChange={e => setAudioPath(e.target.value)}
-            placeholder="audio_path (optional)"
+            placeholder={labels.audioPlaceholder}
             disabled={disabled}
             style={{
               flex: 1,
@@ -98,7 +133,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
               fontSize: 11,
               fontFamily: 'monospace',
             }}
-            aria-label="Audio file path"
+            aria-label={labels.audioAria}
             id="chat-audio-input"
           />
         </div>
@@ -116,8 +151,8 @@ export default function ChatInput({ onSend, disabled }: Props) {
             fontFamily: 'monospace',
             fontSize: 14,
           }}
-          title="Attach image/audio path"
-          aria-label={showAttach ? 'Hide attachment options' : 'Show attachment options'}
+          title={labels.attachTitle}
+          aria-label={showAttach ? labels.hideAttachments : labels.showAttachments}
           aria-pressed={showAttach}
           aria-expanded={showAttach}
           aria-controls="chat-image-input chat-audio-input"
@@ -132,7 +167,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
           onChange={e => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          placeholder="Message Trinity..."
+          placeholder={labels.messagePlaceholder}
           style={{
             flex: 1,
             background: 'transparent',
@@ -142,7 +177,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
             fontSize: 14,
             fontFamily: 'monospace',
           }}
-          aria-label="Type your message"
+          aria-label={labels.messageAria}
           aria-describedby="chat-instructions"
           id="chat-input-field"
         />
@@ -160,15 +195,15 @@ export default function ChatInput({ onSend, disabled }: Props) {
             fontSize: 12,
             letterSpacing: 1,
           }}
-          aria-label="Send message"
+          aria-label={labels.sendAria}
           aria-describedby="chat-instructions"
           type="submit"
           id="chat-send-button"
         >
-          SEND
+          {labels.send}
         </button>
         <span id="chat-instructions" className="visually-hidden">
-          Press Enter to send, Shift+Enter for new line
+          {labels.instructions}
         </span>
       </div>
     </div>

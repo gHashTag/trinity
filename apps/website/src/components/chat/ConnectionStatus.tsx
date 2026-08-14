@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react';
 import { checkHealth } from '../../services/chatApi';
 
-export default function ConnectionStatus() {
+interface Labels {
+  connected: string;
+  offline: string;
+}
+
+interface Props {
+  labels?: Labels;
+}
+
+const DEFAULT_LABELS: Labels = { connected: 'CONNECTED', offline: 'OFFLINE' };
+
+export default function ConnectionStatus({ labels = DEFAULT_LABELS }: Props) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
@@ -19,7 +30,7 @@ export default function ConnectionStatus() {
         boxShadow: connected ? '0 0 6px #00e599' : '0 0 6px #ff4444',
       }} />
       <span style={{ color: connected ? '#00e599' : '#ff4444', fontFamily: 'monospace' }}>
-        {connected ? 'CONNECTED' : 'OFFLINE'}
+        {connected ? labels.connected : labels.offline}
       </span>
     </div>
   );

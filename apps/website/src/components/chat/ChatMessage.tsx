@@ -10,7 +10,26 @@ interface Props {
   tool_name?: string;
   reflection?: string;
   learned?: boolean;
+  labels?: Labels;
 }
+
+interface Labels {
+  yourMessage: string;
+  trinityResponse: string;
+  learned: string;
+  learnedAria: string;
+  filtered: string;
+  filteredAria: string;
+}
+
+const DEFAULT_LABELS: Labels = {
+  yourMessage: 'Your message',
+  trinityResponse: 'Trinity response',
+  learned: 'LEARNED',
+  learnedAria: 'This response was learned and saved to memory',
+  filtered: 'FILTERED',
+  filteredAria: 'Filtered',
+};
 
 const SOURCE_COLORS: Record<string, string> = {
   Tool: '#4488ff',
@@ -34,9 +53,9 @@ const SOURCE_LABELS: Record<string, string> = {
   Error: 'Error',
 };
 
-export default function ChatMessage({ role, content, source, confidence, latency_us, tool_name, reflection, learned }: Props) {
+export default function ChatMessage({ role, content, source, confidence, latency_us, tool_name, reflection, learned, labels = DEFAULT_LABELS }: Props) {
   const isUser = role === 'user';
-  const ariaLabel = isUser ? 'Your message' : 'Trinity response';
+  const ariaLabel = isUser ? labels.yourMessage : labels.trinityResponse;
 
   return (
     <motion.div
@@ -126,9 +145,9 @@ export default function ChatMessage({ role, content, source, confidence, latency
                   textShadow: '0 0 6px rgba(0,229,153,0.4)',
                   display: 'inline-block',
                 }}
-                aria-label="This response was learned and saved to memory"
+                aria-label={labels.learnedAria}
               >
-                LEARNED
+                {labels.learned}
               </motion.span>
             )}
             {reflection && reflection !== 'NotApplicable' && reflection !== 'Saved' && reflection !== 'Disabled' && (
@@ -140,9 +159,9 @@ export default function ChatMessage({ role, content, source, confidence, latency
                   border: '1px solid rgba(255,255,255,0.1)',
                   fontFamily: 'monospace', letterSpacing: 0.5,
                 }}
-                aria-label={`Filtered: ${reflection.replace('Filtered', '')}`}
+                aria-label={`${labels.filteredAria}: ${reflection.replace('Filtered', '')}`}
               >
-                FILTERED: {reflection.replace('Filtered', '')}
+                {labels.filtered}: {reflection.replace('Filtered', '')}
               </span>
             )}
           </div>
