@@ -35,7 +35,13 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri -Dci=true
+          # `zig build tri` is a RUN step -- build.zig declares it as
+          # "Run TRI - Unified Trinity CLI" -- so this launched the REPL with
+          # stdin closed and segfaulted, while the step called itself a build.
+          # `zig build` installs the binary without running it, which is what
+          # a step named "Build TRI Binary" should do.
+          zig build -Dci=true
+          ls -la zig-out/bin/tri
 
       - name: Run Brain Health Check
         id: health
@@ -133,7 +139,13 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri -Dci=true
+          # `zig build tri` is a RUN step -- build.zig declares it as
+          # "Run TRI - Unified Trinity CLI" -- so this launched the REPL with
+          # stdin closed and segfaulted, while the step called itself a build.
+          # `zig build` installs the binary without running it, which is what
+          # a step named "Build TRI Binary" should do.
+          zig build -Dci=true
+          ls -la zig-out/bin/tri
 
   # =========================================================================
   # Phase 2: Unit Tests — Individual Brain Regions
@@ -327,7 +339,13 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri -Dci=true
+          # `zig build tri` is a RUN step -- build.zig declares it as
+          # "Run TRI - Unified Trinity CLI" -- so this launched the REPL with
+          # stdin closed and segfaulted, while the step called itself a build.
+          # `zig build` installs the binary without running it, which is what
+          # a step named "Build TRI Binary" should do.
+          zig build -Dci=true
+          ls -la zig-out/bin/tri
 
       - name: CLI Commands Test
         run: |
@@ -366,7 +384,13 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri -Dci=true
+          # `zig build tri` is a RUN step -- build.zig declares it as
+          # "Run TRI - Unified Trinity CLI" -- so this launched the REPL with
+          # stdin closed and segfaulted, while the step called itself a build.
+          # `zig build` installs the binary without running it, which is what
+          # a step named "Build TRI Binary" should do.
+          zig build -Dci=true
+          ls -la zig-out/bin/tri
 
       - name: Export Metrics
         run: |
@@ -461,7 +485,13 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri -Dci=true
+          # `zig build tri` is a RUN step -- build.zig declares it as
+          # "Run TRI - Unified Trinity CLI" -- so this launched the REPL with
+          # stdin closed and segfaulted, while the step called itself a build.
+          # `zig build` installs the binary without running it, which is what
+          # a step named "Build TRI Binary" should do.
+          zig build -Dci=true
+          ls -la zig-out/bin/tri
 
       - name: Run Full Stress Test
         run: |
