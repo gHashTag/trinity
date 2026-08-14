@@ -346,13 +346,25 @@ pub const CLIState = struct {
             break :blk DEFAULT_MODEL_PATH;
         };
 
-        // Heap-allocate TVC corpus for self-learning (~26MB, must be on heap)
-        const corpus = try allocator.create(tvc.TVCCorpus);
-        corpus.initInPlace();
-        // Try loading existing corpus from disk (load into heap-allocated struct)
-        corpus.loadInto(TVC_CORPUS_PATH) catch |err| {
-            std.log.debug("corpus load: {s}", .{@errorName(err)});
-        };
+        // The TVC corpus is NOT allocated here. It used to be, and the comment
+        // beside it said "~26MB"; the struct's own doc comment says ~4 GB, and
+        // the struct is the one telling the truth --
+        // entries: [10_000]TVCEntry, each holding three HybridBigInt vectors.
+        //
+        // On a machine with room, allocator.create() of that succeeds and
+        // nothing looks wrong. On a constrained one the mapping is handed over
+        // by an optimistic kernel and the FIRST WRITE faults:
+        //
+        //     Segmentation fault at address 0x7f6c0ffee380
+        //     tvc_corpus.zig:145: self.count = 0;
+        //     tri_utils.zig:  corpus.initInPlace();
+        //     main.zig:       CLIState.init(allocator)
+        //
+        // That is `tri` failing to start at all -- every subcommand, not only
+        // chat -- and it is what killed three CI workflows. Nothing in
+        // CLIState ever reads the field: it was created, handed to the chat
+        // engine, and freed. So it is allocated on first use instead, by
+        // ensureCorpus() below, and startup costs nothing.
 
         // Codebase Context Manager (Cycle 92)
         const ctx_mgr = try allocator.create(tri_context.ContextManager);
@@ -375,8 +387,7 @@ pub const CLIState = struct {
         };
 
         // Initialize hybrid chat with TVC corpus
-        var chat = try igla_hybrid_chat.IglaHybridChat.initWithConfig(allocator, model_path, config);
-        chat.corpus = corpus;
+        const chat = try igla_hybrid_chat.IglaHybridChat.initWithConfig(allocator, model_path, config);
 
         return Self{
             .allocator = allocator,
@@ -388,9 +399,36 @@ pub const CLIState = struct {
             .verbose = true,
             .running = true,
             .stream_enabled = false,
-            .tvc_corpus = corpus,
+            .tvc_corpus = null,
             .context_mgr = ctx_mgr,
         };
+    }
+
+    /// Allocate and load the TVC corpus, once, on first use.
+    ///
+    /// Separate from init() because the struct is enormous — see the note
+    /// there. Callers that want the self-learning cache ask for it; everything
+    /// else in the CLI starts without paying for it, which is the difference
+    /// between `tri` running and `tri` dying with SIGSEGV before main().
+    ///
+    /// Returns null if the corpus cannot be allocated, rather than failing the
+    /// command: the chat engine already treats a null corpus as "no cache", so
+    /// a machine too small for it loses the cache and keeps the CLI.
+    pub fn ensureCorpus(self: *Self) ?*tvc.TVCCorpus {
+        if (self.tvc_corpus) |c| return c;
+
+        const corpus = self.allocator.create(tvc.TVCCorpus) catch |err| {
+            std.log.debug("tvc corpus alloc: {s}", .{@errorName(err)});
+            return null;
+        };
+        corpus.initInPlace();
+        corpus.loadInto(TVC_CORPUS_PATH) catch |err| {
+            std.log.debug("corpus load: {s}", .{@errorName(err)});
+        };
+
+        self.tvc_corpus = corpus;
+        self.chat_agent.corpus = corpus;
+        return corpus;
     }
 
     pub fn deinit(self: *Self) void {
@@ -1170,6 +1208,8 @@ pub fn processInput(state: *CLIState, input: []const u8) void {
     // Process based on mode
     switch (actual_mode) {
         .Chat => {
+            // The corpus is allocated on first chat rather than at startup.
+            _ = state.ensureCorpus();
             if (state.chat_agent.respond(trimmed)) |chat_response| {
                 std.debug.print("\n{s}{s}{s}\n\n", .{ WHITE, chat_response.response, RESET });
             } else |err| {
@@ -1639,6 +1679,9 @@ pub fn runChatCommand(state: *CLIState, args: []const []const u8) void {
         if (sacred_enabled) {
             std.debug.print("{s}[Sacred Intelligence: active]{s}\n", .{ GOLDEN, RESET });
         }
+
+        // Same as the REPL path: bring the cache up before the first response.
+        _ = state.ensureCorpus();
 
         // Route by modality (v2.1)
         if (voice_path) |vp| {
