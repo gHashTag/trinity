@@ -67,12 +67,54 @@ const meta: React.CSSProperties = {
 }
 
 const card: React.CSSProperties = {
-  padding: '24px',
   border: '1px solid var(--border, #2a2a2a)',
-  borderRadius: '10px',
-  marginBottom: '20px',
+  borderRadius: '12px',
+  marginBottom: '24px',
   textDecoration: 'none',
   color: 'inherit',
+  overflow: 'hidden',
+}
+
+/** Карточка поста в списке: обложка сверху, под ней мета и краткое содержание.
+ *
+ * Заголовок напечатан на самой обложке — том же файле, что уходит в og:image.
+ * Поэтому текстовый заголовок в карточке показывается ТОЛЬКО когда картинка не
+ * загрузилась: рядом с обложкой он читался как удвоенный заголовок, а без него
+ * пост остался бы без названия там, где картинки нет (dev, локальный dist,
+ * отключённые изображения). Для читалок заголовок есть всегда, скрытым.
+ */
+function BlogCard({ post, lang, minLabel }: { post: Post; lang: string; minLabel: string }) {
+  const [cover, setCover] = useState<'pending' | 'shown' | 'failed'>('pending')
+  return (
+    <Link to={`/blog/${post.slug}`} style={card} className="blog-card">
+      {cover !== 'failed' && (
+        <img
+          src={`/og-blog-${post.slug}${lang === 'ru' ? '-ru' : ''}.png`}
+          alt=""
+          loading="lazy"
+          width={1200}
+          height={630}
+          className="blog-card-cover"
+          onLoad={() => setCover('shown')}
+          onError={() => setCover('failed')}
+        />
+      )}
+      <div className="blog-card-body">
+        <div style={meta}>
+          {post.date} · {post.readingMinutes} {minLabel} · {post.tags.join(' · ')}
+        </div>
+        <h2
+          className={cover === 'shown' ? 'visually-hidden' : undefined}
+          style={cover === 'shown' ? undefined : { margin: '10px 0 8px', fontSize: '1.25rem', fontWeight: 800 }}
+        >
+          {post.title}
+        </h2>
+        <p style={{ margin: '10px 0 0', lineHeight: 1.7, color: 'var(--text-dim, #8a8a8a)' }}>
+          {post.summary}
+        </p>
+      </div>
+    </Link>
+  )
 }
 
 function renderBlock(b: Block, i: number) {
@@ -225,9 +267,19 @@ function Receipts({ post, lang }: { post: Post; lang: string }) {
   )
 }
 
-/** Canonical address of a post. Hash-routed, so this is the whole URL. */
-export function postUrl(slug: string) {
-  return `https://t27.ai/#/blog/${slug}`
+/**
+ * Адрес поста для репоста — статическая страница, НЕ hash-маршрут.
+ *
+ * Фрагмент после решётки браузер серверу не отправляет, поэтому бот любой
+ * площадки читает метатеги главной страницы: карточка предпросмотра либо не
+ * собирается вовсе, либо под каждым постом стоит один и тот же чужой
+ * заголовок. У статической страницы есть свои og:title, og:description и
+ * og:image, и она читается без JavaScript.
+ */
+export function postUrl(slug: string, lang = 'en') {
+  return lang === 'ru'
+    ? `https://t27.ai/ru/blog/${slug}/`
+    : `https://t27.ai/blog/${slug}/`
 }
 
 /**
@@ -240,7 +292,7 @@ export function postUrl(slug: string) {
 function Share({ post, lang }: { post: Post; lang: string }) {
   const t = ui(lang)
   const [copied, setCopied] = useState(false)
-  const url = postUrl(post.slug)
+  const url = postUrl(post.slug, lang)
   const u = encodeURIComponent(url)
   const title = encodeURIComponent(post.title)
 
@@ -257,7 +309,13 @@ function Share({ post, lang }: { post: Post; lang: string }) {
       <div style={{ ...meta, marginBottom: '10px' }}>{t.share}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
         {targets.map((s) => (
-          <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer">
+          <a
+            key={s.name}
+            href={s.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="share-pill"
+          >
             {s.name}
           </a>
         ))}
@@ -272,15 +330,8 @@ function Share({ post, lang }: { post: Post; lang: string }) {
               () => setCopied(false),
             )
           }}
-          style={{
-            background: 'none',
-            border: '1px solid var(--text-dim, #8a8a8a)',
-            borderRadius: '4px',
-            color: 'inherit',
-            cursor: 'pointer',
-            font: 'inherit',
-            padding: '2px 10px',
-          }}
+          className="share-pill"
+          style={{ background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
         >
           {copied ? t.copied : t.copyLink}
         </button>
@@ -304,7 +355,7 @@ export function BlogIndex() {
         {/* Absolute, not a router link: the feed is a static file beside the
             SPA, and a hash route would never reach it. */}
         <p style={{ marginBottom: '2.4em' }}>
-          <a href="https://t27.ai/rss.xml" target="_blank" rel="noopener noreferrer">
+          <a href="https://t27.ai/rss.xml" target="_blank" rel="noopener noreferrer" className="blog-link">
             {t.feed}
           </a>
         </p>
@@ -314,37 +365,7 @@ export function BlogIndex() {
             {t.empty}
           </p>
         ) : (
-          items.map((p) => (
-            <Link key={p.slug} to={`/blog/${p.slug}`} style={card} className="blog-card">
-              {/* Та же обложка, что уходит в og:image: файл лежит рядом со SPA в
-                  корне сайта, поэтому путь абсолютный, а не через импорт. В dev
-                  и в локальном dist этих файлов нет — тогда картинка убирается,
-                  а не оставляет рамку с битым значком. */}
-              <img
-                src={`/og-blog-${p.slug}${lang === 'ru' ? '-ru' : ''}.png`}
-                alt=""
-                loading="lazy"
-                width={1200}
-                height={630}
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement
-                  img.style.display = 'none'
-                  // Иначе колонка 240px осталась бы пустой дырой слева.
-                  if (img.parentElement) img.parentElement.style.gridTemplateColumns = '1fr'
-                }}
-                className="blog-card-cover"
-              />
-              <div>
-              <div style={meta}>
-                {p.date} · {p.readingMinutes} {t.min} · {p.tags.join(' · ')}
-              </div>
-              <h2 style={{ margin: '10px 0 8px', fontSize: '1.25rem', fontWeight: 800 }}>{p.title}</h2>
-              <p style={{ margin: 0, lineHeight: 1.7, color: 'var(--text-dim, #8a8a8a)' }}>
-                {p.summary}
-              </p>
-              </div>
-            </Link>
-          ))
+          items.map((p) => <BlogCard key={p.slug} post={p} lang={lang} minLabel={t.min} />)
         )}
       </div>
       <Footer />
@@ -393,7 +414,7 @@ export function BlogPost() {
         <Share post={post} lang={lang} />
 
         <p style={{ marginTop: '3em' }}>
-          <Link to="/blog">{t.allPosts}</Link>
+          <Link to="/blog" className="blog-link">{t.allPosts}</Link>
         </p>
       </article>
       <Footer />
