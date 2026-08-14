@@ -246,14 +246,9 @@ fn actualState(allocator: std.mem.Allocator, ref: Ref) ![]u8 {
         .Exited => |c| c,
         else => @as(u8, 1),
     };
-    if (code != 0) {
-        allocator.free(result.stdout);
-        return error.GhCliFailed;
-    }
-    return std.mem.Allocator.dupe(allocator, u8, std.mem.trim(u8, result.stdout, " \n\r\t")) catch {
-        allocator.free(result.stdout);
-        return error.OutOfMemory;
-    };
+    defer allocator.free(result.stdout);
+    if (code != 0) return error.GhCliFailed;
+    return allocator.dupe(u8, std.mem.trim(u8, result.stdout, " \n\r\t"));
 }
 
 fn cmdCheck(allocator: std.mem.Allocator, only_slug: ?[]const u8) !void {
