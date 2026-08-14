@@ -40,13 +40,22 @@ jobs:
           # the runner has no raylib and codegen validation does not need one.
           zig build -Dci=true
 
-      - name: Run Codegen Validation
-        run: |
-          bash scripts/validate_codegen.sh
+      # The "Run Codegen Validation" step that stood here called
+      # `bash scripts/validate_codegen.sh`, which exists in no commit of this
+      # repository -- `git log -- scripts/validate_codegen.sh` is empty, so it
+      # was never tracked, and the step could only ever exit 127. Removed rather
+      # than recreated: nobody knows what it checked, and inventing a gate and
+      # calling it the restored one would be worse than not having it. The step
+      # below is the real codegen validation and always was.
+      #
+      # A replacement belongs in `tri` rather than in a shell script, per the
+      # repository's no-shell-scripts rule, if a gap is found that this does not
+      # already cover.
 
       - name: Test E2E Specs
         run: |
-          # Core v4 specs
+          # Each spec is generated and the generated code is then tested.
+          # Failure of either half fails the job, which is the whole point.
           zig build vibee -- gen specs/tri/batch_processing.vibee
           zig test generated/batch_processing.zig
 
@@ -59,15 +68,15 @@ jobs:
           zig build vibee -- gen specs/tri/ternary_embeddings.vibee
           zig test generated/ternary_embeddings.zig
 
-          zig build vibee -- gen specs/tri/golden_chain.vibee
-          zig test generated/golden_chain.zig
-
-          # v5 Production Components
-          zig build vibee -- gen specs/tri/llm_full_inference.vibee
-          zig test generated/llm_full_inference.zig
-
-          zig build vibee -- gen specs/tri/vsa_swarm_agent.vibee
-          zig test generated/vsa_swarm_agent.zig
+          # NOT RUN, because the specs are absent from the repository:
+          #   specs/tri/golden_chain.vibee
+          #   specs/tri/llm_full_inference.vibee
+          #   specs/tri/vsa_swarm_agent.vibee
+          # They were listed here and generated from until someone removed them;
+          # the step has been failing on the first of them ever since, which was
+          # invisible while the job died earlier at the build. Left named rather
+          # than deleted so the gap stays legible: restore a spec, uncomment its
+          # two lines. Do not quietly shorten this list.
 
       - name: Run Full Tests
         run: |
