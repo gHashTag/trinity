@@ -25,6 +25,7 @@ const Licensing = lazy(() => import('./pages/Licensing.tsx'))
 const Proof = lazy(() => import('./pages/Proof.tsx'))
 const AboutAuthor = lazy(() => import('./pages/AboutAuthor.tsx'))
 const Resources = lazy(() => import('./pages/Resources.tsx'))
+const Queen = lazy(() => import('./pages/Queen.tsx'))
 // Blog exports two components rather than a default, so the module has to be
 // unwrapped into the shape lazy() expects.
 const BlogIndex = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogIndex })))
@@ -58,6 +59,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/queen" element={<Queen />} />
             <Route path="/canvas" element={<TrinityCanvas />} />
             <Route path="/quantum" element={<QuantumLab />} />
             <Route path="/lab" element={<QuantumLab />} />

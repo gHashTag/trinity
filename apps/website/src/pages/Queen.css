@@ -1,0 +1,162 @@
+/* Scoped under .queen-page on purpose. The queen came from a standalone app
+   whose stylesheet styled bare tags and generic names like .tab, .metric-card
+   and .loading. Dropping those into this site would have restyled pages that
+   have nothing to do with the queen. */
+
+.queen-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 5rem;
+  color: var(--text, #e8e8ea);
+}
+
+.queen-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.queen-header p {
+  margin: 0 0 2rem;
+  color: var(--text-muted, #9a9aa2);
+}
+
+.queen-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.queen-tabs button {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--border, #2a2a32);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.queen-tabs button:hover { border-color: var(--accent, #7c5cff); }
+
+.queen-tabs button.active {
+  border-color: var(--accent, #7c5cff);
+  background: color-mix(in srgb, var(--accent, #7c5cff) 14%, transparent);
+}
+
+.queen-offline {
+  border: 1px solid #ff9800;
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.75rem;
+  background: color-mix(in srgb, #ff9800 8%, transparent);
+}
+
+.queen-offline h3 { margin: 0 0 0.5rem; }
+.queen-offline p { margin: 0 0 0.55rem; line-height: 1.55; }
+.queen-offline code {
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.9em;
+}
+.queen-offline-detail { color: var(--text-muted, #9a9aa2); }
+.queen-offline-note { color: var(--text-muted, #9a9aa2); font-size: 0.92rem; margin-bottom: 0; }
+
+.queen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.queen-card {
+  border: 1px solid var(--border, #2a2a32);
+  border-radius: 10px;
+  padding: 1.25rem;
+  background: var(--surface, rgba(255, 255, 255, 0.02));
+}
+
+.queen-card h2 { margin: 0 0 0.75rem; font-size: 1.15rem; }
+.queen-sub { color: var(--text-muted, #9a9aa2); margin: 0 0 1rem; line-height: 1.55; }
+
+.queen-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.queen-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border, #2a2a32);
+  border-radius: 8px;
+}
+
+.queen-metric-label { font-size: 0.78rem; color: var(--text-muted, #9a9aa2); }
+.queen-metric-value { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+
+.queen-button {
+  padding: 0.65rem 1.15rem;
+  border: 1px solid var(--accent, #7c5cff);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent, #7c5cff) 18%, transparent);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.queen-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: var(--border, #2a2a32);
+  background: transparent;
+}
+
+.queen-result {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border, #2a2a32);
+  line-height: 1.5;
+}
+
+.queen-result.success { border-color: #4caf50; }
+.queen-result.failure { border-color: #e05252; }
+
+.queen-result-rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, #9a9aa2);
+}
+
+.queen-episodes { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.queen-episode {
+  border: 1px solid var(--border, #2a2a32);
+  border-left-width: 3px;
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+}
+
+.queen-episode.success { border-left-color: #4caf50; }
+.queen-episode.failure { border-left-color: #e05252; }
+
+.queen-episode header,
+.queen-episode footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted, #9a9aa2);
+}
+
+.queen-episode p { margin: 0.4rem 0; line-height: 1.5; }
+.queen-episode .ok { color: #4caf50; }
+.queen-episode .bad { color: #e05252; }
