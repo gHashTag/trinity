@@ -75,6 +75,13 @@ const RETRACTED = {
   b: 'Until August 2026 this page reported GF-T as 2.84× and 5.53× more accurate than tekum16 at range. That is withdrawn. The oracle labelled tekum decoded all 65,536 sixteen-bit codes identically to the takum oracle, so the numbers were a comparison with takum wearing the wrong name. Against takum the honest figures are 2.1× at sixteen bits and an exact 2.6× at thirty-two. A real comparison against tekum (arXiv:2512.10964) has not been made, and nothing here should be read as one.',
 }
 
+const markRetractedNumbers = (text: string) =>
+  text.split(/(2\.84×?|5\.53×?)/g).map((part, index) =>
+    /^(2\.84|5\.53)/.test(part)
+      ? <span className="retracted-number" key={`${part}-${index}`}>{part}</span>
+      : part,
+  )
+
 const LADDER: [string, string, string][] = [
   ['GF-T8', '50', '153.23 MHz'],
   ['GF-T16', '212', '131.73 MHz'],
@@ -212,8 +219,9 @@ export default function GFT() {
           <h2 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.4rem)', marginTop: 0, marginBottom: '0.7rem' }}>
             {c ? c.retractedH : RETRACTED.h}
           </h2>
+          <span className="retracted-label">{c ? 'Отозвано' : 'Withdrawn'}</span>
           <p style={{ fontSize: '0.92rem', lineHeight: 1.65, opacity: 0.9, maxWidth: '64ch', margin: 0 }}>
-            {c ? c.retractedB : RETRACTED.b}
+            {markRetractedNumbers(c ? c.retractedB : RETRACTED.b)}
           </p>
         </motion.div>
 

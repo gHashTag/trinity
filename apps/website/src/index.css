@@ -212,6 +212,27 @@ section ol {
   border-bottom-color: var(--accent);
 }
 
+.retracted-number {
+  color: var(--muted);
+  font-weight: 700;
+  text-decoration: line-through;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+
+.retracted-label {
+  display: inline-block;
+  padding: 0.18rem 0.45rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 .verification-theorem-groups {
   display: grid;
   gap: 0.75rem;
