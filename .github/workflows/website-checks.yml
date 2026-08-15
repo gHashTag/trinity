@@ -74,6 +74,26 @@ jobs:
       # browser is an environment fact, not a defect in the change.
       - uses: browser-actions/setup-chrome@v1
         id: chrome
+
+      # Проверяет все маршруты в обеих локалях. Скрипты имеют собственные
+      # самотесты и используют Chrome через CDP без новой зависимости npm.
+      - name: Language audits
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          npm run audit:en -- --selftest
+          npm run audit:ru -- --selftest
+          python3 -m http.server 4173 --directory dist >/tmp/t27-language-audit-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in 1 2 3 4 5; do
+            curl --fail --silent http://127.0.0.1:4173/index.html >/dev/null && break
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/index.html >/dev/null
+          AUDIT_BASE_URL='http://127.0.0.1:4173/index.html?lang=en' npm run audit:en
+          AUDIT_BASE_URL='http://127.0.0.1:4173/index.html?lang=ru' npm run audit:ru
+
       - name: Render check
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
