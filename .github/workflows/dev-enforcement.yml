@@ -48,11 +48,19 @@ jobs:
     name: CI Validation
     runs-on: ubuntu-latest
     steps:
-      # Depth 0 on a PR so every commit in it can be read, not just the tip.
-      # There was no checkout at all before, which is why `git log` failed.
+      # Full history, unconditionally. There was no checkout at all before,
+      # which is why `git log` failed.
+      #
+      # The first version wrote
+      #   fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
+      # which evaluates to 1 on a pull request, not 0: `true && 0` is `0`, `0`
+      # is falsy, so `|| 1` wins. The clone came out shallow and the job died
+      # with `fatal: Invalid revision range <base>..<head>` — a range error that
+      # reads as a bad SHA rather than as a missing object. The ternary idiom is
+      # only safe when the middle operand is truthy.
       - uses: actions/checkout@v4
         with:
-          fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
+          fetch-depth: 0
 
       - name: Commit subject format
         env:
