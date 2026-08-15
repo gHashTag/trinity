@@ -5,96 +5,108 @@ import { Link } from 'react-router-dom';
 import QuantumCanvas from '../components/QuantumCanvas';
 import type { VizMode } from '../components/QuantumCanvas';
 import TranslatorDemo from '../components/TranslatorDemo';
+import { useI18n } from '../i18n/context';
 
 const categories = [
   {
     name: 'TRINITY',
+    nameRu: 'ТРОИЦА',
     modes: [
-      { id: 'trinity-computer', icon: '🔮', title: 'TRINITY Computer', color: '#ffd700' },
-      { id: 'trinity', icon: '🔺', title: 'Trinity Core', color: '#0f8' },
-      { id: 'universal-translator', icon: '⚡', title: 'Universal Translator', color: '#00FF88' },
+      { id: 'trinity-computer', icon: '🔮', title: 'TRINITY Computer', titleRu: 'Компьютер Троицы', color: '#ffd700' },
+      { id: 'trinity', icon: '🔺', title: 'Trinity Core', titleRu: 'Ядро Троицы', color: '#0f8' },
+      { id: 'universal-translator', icon: '⚡', title: 'Universal Translator', titleRu: 'Универсальный транслятор', color: '#00FF88' },
     ]
   },
   {
     name: 'Quantum',
+    nameRu: 'Квантовая',
     modes: [
-      { id: 'quantum-field', icon: '⚛️', title: 'Quantum Field', color: '#00FF88' },
-      { id: 'wave-interference', icon: '🌊', title: 'Wave Interference', color: '#6f6' },
-      { id: 'entanglement', icon: '🔗', title: 'Entanglement', color: '#f6f' },
-      { id: 'supremacy', icon: '⚡', title: 'Supremacy', color: '#f44' },
-      { id: 'qec', icon: '🛡️', title: 'Error Correction', color: '#0af' },
+      { id: 'quantum-field', icon: '⚛️', title: 'Quantum Field', titleRu: 'Квантовое поле', color: '#00FF88' },
+      { id: 'wave-interference', icon: '🌊', title: 'Wave Interference', titleRu: 'Интерференция волн', color: '#6f6' },
+      { id: 'entanglement', icon: '🔗', title: 'Entanglement', titleRu: 'Запутанность', color: '#f6f' },
+      { id: 'supremacy', icon: '⚡', title: 'Supremacy', titleRu: 'Превосходство', color: '#f44' },
+      { id: 'qec', icon: '🛡️', title: 'Error Correction', titleRu: 'Исправление ошибок', color: '#0af' },
     ]
   },
   {
     name: 'Neural',
+    nameRu: 'Нейронные',
     modes: [
-      { id: 'neural-network', icon: '🧠', title: 'Neural Network', color: '#0af' },
-      { id: 'neuromorphic', icon: '🧬', title: 'Neuromorphic', color: '#c4f' },
-      { id: 'llm-architecture', icon: '🏗️', title: 'LLM Architecture', color: '#48f' },
+      { id: 'neural-network', icon: '🧠', title: 'Neural Network', titleRu: 'Нейронная сеть', color: '#0af' },
+      { id: 'neuromorphic', icon: '🧬', title: 'Neuromorphic', titleRu: 'Нейроморфная система', color: '#c4f' },
+      { id: 'llm-architecture', icon: '🏗️', title: 'LLM Architecture', titleRu: 'Архитектура LLM', color: '#48f' },
     ]
   },
   {
     name: 'Cosmic',
+    nameRu: 'Космические',
     modes: [
-      { id: 'vortex', icon: '🌀', title: 'Vortex', color: '#fa0' },
-      { id: 'multiverse', icon: '🌌', title: 'Multiverse', color: '#48f' },
-      { id: 'photon-beam', icon: '💫', title: 'Photon Beam', color: '#ff6' },
+      { id: 'vortex', icon: '🌀', title: 'Vortex', titleRu: 'Вихрь', color: '#fa0' },
+      { id: 'multiverse', icon: '🌌', title: 'Multiverse', titleRu: 'Мультивселенная', color: '#48f' },
+      { id: 'photon-beam', icon: '💫', title: 'Photon Beam', titleRu: 'Фотонный луч', color: '#ff6' },
     ]
   },
   {
     name: 'Mind',
+    nameRu: 'Разум',
     modes: [
-      { id: 'consciousness', icon: '👁️', title: 'Consciousness', color: '#a6f' },
-      { id: 'transcendence', icon: '✨', title: 'Transcendence', color: '#ff0' },
-      { id: 'beings', icon: '👾', title: 'Digital Beings', color: '#f4a' },
+      { id: 'consciousness', icon: '👁️', title: 'Consciousness', titleRu: 'Сознание', color: '#a6f' },
+      { id: 'transcendence', icon: '✨', title: 'Transcendence', titleRu: 'Трансцендентность', color: '#ff0' },
+      { id: 'beings', icon: '👾', title: 'Digital Beings', titleRu: 'Цифровые существа', color: '#f4a' },
     ]
   },
   {
     name: 'Life',
+    nameRu: 'Жизнь',
     modes: [
-      { id: 'living', icon: '🌱', title: 'Living Systems', color: '#4f4' },
-      { id: 'quantum-life', icon: '🦠', title: 'Quantum Life', color: '#0fa' },
-      { id: 'quantum-biology', icon: '🧬', title: 'Quantum Biology', color: '#0fa' },
+      { id: 'living', icon: '🌱', title: 'Living Systems', titleRu: 'Живые системы', color: '#4f4' },
+      { id: 'quantum-life', icon: '🦠', title: 'Quantum Life', titleRu: 'Квантовая жизнь', color: '#0fa' },
+      { id: 'quantum-biology', icon: '🧬', title: 'Quantum Biology', titleRu: 'Квантовая биология', color: '#0fa' },
     ]
   },
   {
     name: 'Security',
+    nameRu: 'Безопасность',
     modes: [
-      { id: 'encryption', icon: '🔐', title: 'Encryption', color: '#0cf' },
-      { id: 'obfuscation', icon: '🎭', title: 'Obfuscation', color: '#a4f' },
-      { id: 'secure', icon: '🔒', title: 'Secure Channel', color: '#0fa' },
+      { id: 'encryption', icon: '🔐', title: 'Encryption', titleRu: 'Шифрование', color: '#0cf' },
+      { id: 'obfuscation', icon: '🎭', title: 'Obfuscation', titleRu: 'Обфускация', color: '#a4f' },
+      { id: 'secure', icon: '🔒', title: 'Secure Channel', titleRu: 'Защищённый канал', color: '#0fa' },
     ]
   },
   {
     name: 'Russian',
+    nameRu: 'Русское',
     modes: [
-      { id: 'matryoshka', icon: '🪆', title: 'Matryoshka', color: '#e4a' },
-      { id: 'zhar-ptitsa', icon: '🔥', title: 'Zhar-Ptitsa', color: '#f80' },
-      { id: 'bogatyri', icon: '⚔️', title: 'Bogatyri 33', color: '#48f' },
+      { id: 'matryoshka', icon: '🪆', title: 'Matryoshka', titleRu: 'Матрёшка', color: '#e4a' },
+      { id: 'zhar-ptitsa', icon: '🔥', title: 'Zhar-Ptitsa', titleRu: 'Жар-птица', color: '#f80' },
+      { id: 'bogatyri', icon: '⚔️', title: 'Bogatyri 33', titleRu: 'Богатыри 33', color: '#48f' },
     ]
   },
   {
     name: 'Sacred Math',
+    nameRu: 'Священная математика',
     modes: [
-      { id: 'sacred-formula', icon: '🕉️', title: 'Sacred Formula', color: '#ffd700' },
-      { id: 'coptic-gematria', icon: '☥', title: 'Coptic Gematria', color: '#00ccff' },
-      { id: 'trinity-identity', icon: '🔺', title: 'Trinity Identity', color: '#aa66ff' },
+      { id: 'sacred-formula', icon: '🕉️', title: 'Sacred Formula', titleRu: 'Священная формула', color: '#ffd700' },
+      { id: 'coptic-gematria', icon: '☥', title: 'Coptic Gematria', titleRu: 'Коптская гематрия', color: '#00ccff' },
+      { id: 'trinity-identity', icon: '🔺', title: 'Trinity Identity', titleRu: 'Тождество Троицы', color: '#aa66ff' },
     ]
   },
   {
     name: 'DePIN',
+    nameRu: 'DePIN',
     modes: [
-      { id: 'node-network', icon: '🌐', title: 'Node Network', color: '#00e599' },
+      { id: 'node-network', icon: '🌐', title: 'Node Network', titleRu: 'Сеть узлов', color: '#00e599' },
     ]
   },
   {
     name: 'Other',
+    nameRu: 'Другое',
     modes: [
-      { id: 'tsp', icon: '🗺️', title: 'TSP Solver', color: '#4a4' },
-      { id: 'pas', icon: '📊', title: 'PAS Analysis', color: '#4a4' },
-      { id: 'spintronic', icon: '🔄', title: 'Spintronic', color: '#f4a' },
-      { id: 'quantum-agents', icon: '🤖', title: 'Quantum Agents', color: '#4af' },
-      { id: 'cinema4d', icon: '🎬', title: 'Cinema 4D', color: '#f4a' },
+      { id: 'tsp', icon: '🗺️', title: 'TSP Solver', titleRu: 'Решатель TSP', color: '#4a4' },
+      { id: 'pas', icon: '📊', title: 'PAS Analysis', titleRu: 'Анализ PAS', color: '#4a4' },
+      { id: 'spintronic', icon: '🔄', title: 'Spintronic', titleRu: 'Спинтроника', color: '#f4a' },
+      { id: 'quantum-agents', icon: '🤖', title: 'Quantum Agents', titleRu: 'Квантовые агенты', color: '#4af' },
+      { id: 'cinema4d', icon: '🎬', title: 'Cinema 4D', titleRu: 'Cinema 4D', color: '#f4a' },
     ]
   },
 ];
@@ -102,6 +114,9 @@ const categories = [
 const allModes = categories.flatMap(c => c.modes);
 
 export default function QuantumLab() {
+  const { lang } = useI18n();
+  const isRu = lang === 'ru';
+
   // Initialize mode from URL param or default
   const [currentMode, setCurrentMode] = useState<VizMode>(() => {
     if (typeof window !== 'undefined') {
@@ -116,6 +131,7 @@ export default function QuantumLab() {
   const [menuOpen, setMenuOpen] = useState(false);
   
   const current = allModes.find(m => m.id === currentMode) || allModes[0];
+  const currentTitle = isRu ? current.titleRu : current.title;
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
@@ -151,7 +167,7 @@ export default function QuantumLab() {
           borderRadius: '8px',
           border: '1px solid rgba(255,255,255,0.1)',
         }}>
-          ← TRINITY
+          ← {isRu ? 'ТРОИЦА' : 'TRINITY'}
         </Link>
       </motion.div>
 
@@ -181,7 +197,7 @@ export default function QuantumLab() {
           gap: '0.5rem'
         }}
       >
-        {menuOpen ? '✕ Close' : '☰ Modes'}
+        {menuOpen ? (isRu ? '✕ Закрыть' : '✕ Close') : (isRu ? '☰ Режимы' : '☰ Modes')}
       </motion.button>
 
       {/* Bottom Center - Current Mode Info */}
@@ -214,11 +230,11 @@ export default function QuantumLab() {
             {current.icon}
           </span>
           <h1 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.5rem)', fontWeight: 600, color: '#fff', margin: 0 }}>
-            {current.title}
+            {currentTitle}
           </h1>
         </div>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', margin: 0 }}>
-          Move cursor to interact • <span style={{ color: '#ffd700' }}>φ² + 1/φ² = 3</span>
+          {isRu ? 'Двигайте курсором для взаимодействия' : 'Move cursor to interact'} • <span style={{ color: '#ffd700' }}>φ² + 1/φ² = 3</span>
         </p>
       </motion.div>
 
@@ -246,7 +262,7 @@ export default function QuantumLab() {
             }}
           >
             <h2 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 600 }}>
-              Visualization Modes
+              {isRu ? 'Режимы визуализации' : 'Visualization Modes'}
             </h2>
             
             {categories.map(category => (
@@ -258,7 +274,7 @@ export default function QuantumLab() {
                   letterSpacing: '0.1em',
                   marginBottom: '0.75rem'
                 }}>
-                  {category.name}
+                  {isRu ? category.nameRu : category.name}
                 </h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {category.modes.map(mode => (
@@ -282,7 +298,7 @@ export default function QuantumLab() {
                       }}
                     >
                       <span>{mode.icon}</span>
-                      <span>{mode.title}</span>
+                      <span>{isRu ? mode.titleRu : mode.title}</span>
                     </motion.button>
                   ))}
                 </div>
