@@ -3,6 +3,59 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
+import { useI18n } from '../i18n/context';
+import { usePageMeta } from '../hooks/usePageMeta';
+
+const UI = {
+  en: {
+    compiler: 'Trinity HLS Compiler',
+    source: 'Source',
+    target: 'Target',
+    lexical: 'Lexical analysis',
+    parsing: 'Parsing AST',
+    semantic: 'Semantic analysis',
+    optimization: 'SU(3) optimization',
+    scheduling: 'Golden ratio scheduling',
+    resources: 'Resource allocation',
+    complete: 'Compilation complete',
+    starting: 'Starting compilation...',
+    playground: 'PLAYGROUND',
+    run: 'Run',
+    compiling: 'Compiling...',
+    back: 'Back',
+    sourcePanel: 'SOURCE',
+    compilerLogs: 'COMPILER LOGS',
+    hardwareOutput: 'HARDWARE OUTPUT',
+    line: 'Ln',
+    encoding: 'UTF-8',
+    metaTitle: 'Compiler playground',
+    metaDescription: 'An interactive Trinity HLS compiler playground for source-to-hardware examples.',
+  },
+  ru: {
+    compiler: 'Компилятор Trinity HLS',
+    source: 'Источник',
+    target: 'Цель',
+    lexical: 'Лексический анализ',
+    parsing: 'Разбор AST',
+    semantic: 'Семантический анализ',
+    optimization: 'Оптимизация SU(3)',
+    scheduling: 'Планирование по золотому сечению',
+    resources: 'Распределение ресурсов',
+    complete: 'Компиляция завершена',
+    starting: 'Запуск компиляции…',
+    playground: 'ПЕСОЧНИЦА',
+    run: 'Запустить',
+    compiling: 'Компиляция…',
+    back: 'Назад',
+    sourcePanel: 'ИСХОДНЫЙ КОД',
+    compilerLogs: 'ЛОГИ КОМПИЛЯТОРА',
+    hardwareOutput: 'ВЫВОД ДЛЯ ЖЕЛЕЗА',
+    line: 'Строка',
+    encoding: 'UTF-8',
+    metaTitle: 'Песочница компилятора',
+    metaDescription: 'Интерактивная песочница Trinity HLS для примеров преобразования исходного кода в аппаратный код.',
+  },
+} as const;
 
 // === LANGUAGES ===
 const LANGUAGES = [
@@ -104,21 +157,21 @@ int main() {
 };
 
 // === COMPILER OUTPUT GENERATOR ===
-function compile(source: string, sourceLang: string, targetLang: string) {
+function compile(source: string, sourceLang: string, targetLang: string, ui: typeof UI.en) {
   const timestamp = new Date().toISOString();
   const lines = source.split('\n').length;
   
   const logs = [
-    `[${timestamp}] Trinity HLS Compiler V5.0`,
-    `[INFO] Source: ${sourceLang.toUpperCase()} (${lines} lines)`,
-    `[INFO] Target: ${targetLang.toUpperCase()}`,
-    `[PASS] Lexical analysis... OK`,
-    `[PASS] Parsing AST... ${Math.floor(lines * 1.5)} nodes`,
-    `[PASS] Semantic analysis... OK`,
-    `[PASS] SU(3) optimization... 12 patterns applied`,
-    `[PASS] Golden ratio scheduling (φ = 1.618)`,
-    `[PASS] Resource allocation: 3 DSPs, 12 BRAMs`,
-    `[SUCCESS] Compilation complete`,
+    `[${timestamp}] ${ui.compiler} V5.0`,
+    `[INFO] ${ui.source}: ${sourceLang.toUpperCase()} (${lines} ${ui.source === 'Источник' ? 'строк' : 'lines'})`,
+    `[INFO] ${ui.target}: ${targetLang.toUpperCase()}`,
+    `[PASS] ${ui.lexical}... OK`,
+    `[PASS] ${ui.parsing}... ${Math.floor(lines * 1.5)} ${ui.source === 'Источник' ? 'узлов' : 'nodes'}`,
+    `[PASS] ${ui.semantic}... OK`,
+    `[PASS] ${ui.optimization}... ${ui.source === 'Источник' ? 'применено шаблонов: 12' : '12 patterns applied'}`,
+    `[PASS] ${ui.scheduling} (φ = 1.618)`,
+    `[PASS] ${ui.resources}: 3 DSPs, 12 BRAMs`,
+    `[SUCCESS] ${ui.complete}`,
   ];
   
   let output = '';
@@ -217,6 +270,8 @@ const getLang = (id: string) => {
 
 // === COMPONENT ===
 export default function Playground() {
+  const { lang } = useI18n();
+  const ui = lang === 'ru' ? UI.ru : UI.en;
   const [sourceLang, setSourceLang] = useState('vibee');
   const [targetLang, setTargetLang] = useState('verilog');
   const [code, setCode] = useState(SAMPLES['vibee']);
@@ -224,17 +279,19 @@ export default function Playground() {
   const [logs, setLogs] = useState<string[]>([]);
   const [isCompiling, setIsCompiling] = useState(false);
 
+  usePageMeta(ui.metaTitle, ui.metaDescription);
+
   const runCompile = useCallback(() => {
     setIsCompiling(true);
-    setLogs(['[INFO] Starting compilation...']);
+    setLogs([`[INFO] ${ui.starting}`]);
     
     setTimeout(() => {
-      const result = compile(code, sourceLang, targetLang);
+      const result = compile(code, sourceLang, targetLang, ui);
       setOutput(result.output);
       setLogs(result.logs);
       setIsCompiling(false);
     }, 400);
-  }, [code, sourceLang, targetLang]);
+  }, [code, sourceLang, targetLang, ui]);
 
   useEffect(() => {
     setCode(SAMPLES[sourceLang] || '// Enter code...');
@@ -266,7 +323,7 @@ export default function Playground() {
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
           <span style={{ fontSize: 24 }}>🔺</span>
           <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>TRINITY</span>
-          <span style={{ fontSize: 10, color: '#8b949e', background: '#21262d', padding: '2px 6px', borderRadius: 3 }}>PLAYGROUND</span>
+          <span style={{ fontSize: 10, color: '#8b949e', background: '#21262d', padding: '2px 6px', borderRadius: 3 }}>{ui.playground}</span>
         </Link>
         
         <div style={{ display: 'flex', gap: 8 }}>
@@ -279,12 +336,12 @@ export default function Playground() {
               borderRadius: 6, padding: '6px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer'
             }}
           >
-            ▶ {isCompiling ? 'Compiling...' : 'Run'}
+            ▶ {isCompiling ? ui.compiling : ui.run}
           </button>
           <Link to="/" style={{
             background: 'transparent', color: '#8b949e', border: '1px solid #30363d',
             borderRadius: 6, padding: '5px 12px', fontSize: 12, textDecoration: 'none'
-          }}>← Back</Link>
+          }}>{`← ${ui.back}`}</Link>
         </div>
       </header>
 
@@ -297,7 +354,7 @@ export default function Playground() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '8px 12px', background: '#161b22', borderBottom: '1px solid #30363d'
           }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#58a6ff' }}>📝 SOURCE</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#58a6ff' }}>📝 {ui.sourcePanel}</span>
             <select 
               value={sourceLang} 
               onChange={(e) => setSourceLang(e.target.value)}
@@ -331,11 +388,11 @@ export default function Playground() {
           <div style={{
             padding: '8px 12px', background: '#161b22', borderBottom: '1px solid #30363d'
           }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#f0883e' }}>📋 COMPILER LOGS</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#f0883e' }}>📋 {ui.compilerLogs}</span>
           </div>
           <div style={{ flex: 1, overflow: 'auto', padding: 12, fontSize: 11, lineHeight: 1.8 }}>
             {isCompiling ? (
-              <div style={{ color: '#58a6ff' }}>⏳ Compiling...</div>
+              <div style={{ color: '#58a6ff' }}>⏳ {ui.compiling}</div>
             ) : (
               logs.map((log, i) => (
                 <div key={i} style={{
@@ -360,7 +417,7 @@ export default function Playground() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '8px 12px', background: '#161b22', borderBottom: '1px solid #30363d'
           }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#7ee787' }}>🔧 HARDWARE OUTPUT</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#7ee787' }}>🔧 {ui.hardwareOutput}</span>
             <select 
               value={targetLang} 
               onChange={(e) => { setTargetLang(e.target.value); }}
@@ -395,7 +452,7 @@ export default function Playground() {
         display: 'flex', justifyContent: 'space-between', padding: '0 16px',
         height: 24, background: '#238636', color: '#fff', fontSize: 11, alignItems: 'center'
       }}>
-        <span>Ln {code.split('\n').length} | UTF-8</span>
+        <span>{ui.line} {code.split('\n').length} | {ui.encoding}</span>
         <span>VIBEE v0.9.99 | Trinity Core v5.0 | φ² + 1/φ² = 3</span>
       </footer>
     </div>
