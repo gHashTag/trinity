@@ -3,6 +3,50 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    "slug": "a-red-gate-was-missing-its-input",
+    "title": "A red gate was missing its input",
+    "summary": "A merged FPGA-repository audit shows how a missing checkout turned twelve unchecked disagreements into apparent fixes, while two other failures were ordinary runner plumbing.",
+    "date": "2026-08-15",
+    "readingMinutes": 6,
+    "tags": [
+      "CI",
+      "FPGA",
+      "Reproducibility",
+      "Tooling"
+    ],
+    "receipts": [
+      {
+        "label": "gHashTag/trinity-fpga PR #564 — merged CI-gate repair",
+        "href": "https://github.com/gHashTag/trinity-fpga/pull/564"
+      },
+      {
+        "label": "gHashTag/trinity-fpga commit 45ad2347 — merged implementation",
+        "href": "https://github.com/gHashTag/trinity-fpga/commit/45ad2347712e4d22d1edbae97c07ea9e758f4ae0"
+      },
+      {
+        "label": "artefact-agreement workflow changed by the PR",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/45ad2347712e4d22d1edbae97c07ea9e758f4ae0/.github/workflows/artefact-agreement.yml"
+      }
+    ],
+    "openQuestions": [
+      "The PR repairs the gate plumbing and reproduces the missing-input failure, but it does not establish that the underlying format discrepancies are correct or incorrect. The two content findings remain open.",
+      "The checkout fix is shown on the repository workflow; a fresh public run after the merge is not used here as a separate receipt.",
+      "The zsh installation keeps the repository shell scripts unchanged, but the workflow does not compare their output with a second shell implementation.",
+      "Treating an unreadable absolute document path as absent avoids a runner exception; it does not prove that the referenced document should exist in this repository."
+    ],
+    "published": true,
+    "ru": {
+      "title": "У красного гейта не было входных данных",
+      "summary": "Смерженный аудит FPGA-репозитория показывает, как отсутствующий checkout превратил двенадцать непроверенных расхождений в видимость исправлений, а ещё два отказа оказались обычной проблемой раннера.",
+      "openQuestions": [
+        "PR чинит инфраструктуру гейтов и воспроизводит отказ из-за отсутствующего входа, но не устанавливает, верны ли сами расхождения форматов. Два содержательных finding остаются открытыми.",
+        "Правка checkout показана на workflow репозитория; отдельный свежий публичный прогон после мержа здесь не используется как самостоятельная квитанция.",
+        "Установка zsh оставляет shell-скрипты репозитория без переписывания, но workflow не сравнивает их вывод с реализацией на другом shell.",
+        "Обработка недоступного абсолютного пути документа как отсутствующего убирает исключение раннера, но не доказывает, что этот документ должен находиться в репозитории."
+      ]
+    }
+  },
+  {
     "slug": "a-broken-reference-looks-exactly-like-broken-code",
     "title": "Eight broken gates in one day, and not one of them was broken code",
     "summary": "A flag, a version, a runner, a module, a script, three specs, two format paths, five submodule links and a step that ran what it claimed to build. Every one reported \"failure\", which is also what a real defect reports.",

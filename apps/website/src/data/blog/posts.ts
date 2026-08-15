@@ -1,6 +1,7 @@
 import { postsIndex } from './index'
 import type { Post, PostBody } from './types'
 import { body as body_a_broken_reference_looks_exactly_like_broken_code, ruBody as ruBody_a_broken_reference_looks_exactly_like_broken_code } from './bodies/a-broken-reference-looks-exactly-like-broken-code'
+import { body as body_a_red_gate_was_missing_its_input, ruBody as ruBody_a_red_gate_was_missing_its_input } from './bodies/a-red-gate-was-missing-its-input'
 import { body as body_five_reasons_the_build_was_red, ruBody as ruBody_five_reasons_the_build_was_red } from './bodies/five-reasons-the-build-was-red'
 import { body as body_the_generated_file_was_three_years_old, ruBody as ruBody_the_generated_file_was_three_years_old } from './bodies/the-generated-file-was-three-years-old'
 import { body as body_half_the_build_is_bitstream_generation, ruBody as ruBody_half_the_build_is_bitstream_generation } from './bodies/half-the-build-is-bitstream-generation'
@@ -17,6 +18,7 @@ import { body as body_open_gigabit_ethernet_artix7, ruBody as ruBody_open_gigabi
 
 const bodies: Record<string, PostBody> = {
   'a-broken-reference-looks-exactly-like-broken-code': { body: body_a_broken_reference_looks_exactly_like_broken_code, ruBody: ruBody_a_broken_reference_looks_exactly_like_broken_code },
+  'a-red-gate-was-missing-its-input': { body: body_a_red_gate_was_missing_its_input, ruBody: ruBody_a_red_gate_was_missing_its_input },
   'five-reasons-the-build-was-red': { body: body_five_reasons_the_build_was_red, ruBody: ruBody_five_reasons_the_build_was_red },
   'the-generated-file-was-three-years-old': { body: body_the_generated_file_was_three_years_old, ruBody: ruBody_the_generated_file_was_three_years_old },
   'half-the-build-is-bitstream-generation': { body: body_half_the_build_is_bitstream_generation, ruBody: ruBody_half_the_build_is_bitstream_generation },
