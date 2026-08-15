@@ -13,6 +13,51 @@ import ExampleReport from '../components/ExampleReport'
 import ConformanceEvidence from '../components/ConformanceEvidence'
 import SignalHealth from '../components/SignalHealth'
 
+const THEOREM_GROUPS = [
+  {
+    id: 'sampling',
+    title: { en: 'Sampling and statistical evidence', ru: 'Выборка и статистическое свидетельство' },
+    note: { en: 'How much a passing sample can establish', ru: 'Что может установить успешная выборка' },
+    theoremIds: ['T1', 'T2', 'T3', 'T4'],
+  },
+  {
+    id: 'coverage',
+    title: { en: 'Coverage and observability', ru: 'Покрытие и наблюдаемость' },
+    note: { en: 'Whether a test can reach and expose a fault', ru: 'Может ли тест добраться до отказа и выявить его' },
+    theoremIds: ['T5', 'T6', 'T7', 'T8'],
+  },
+  {
+    id: 'oracles',
+    title: { en: 'Oracles and exhaustive checks', ru: 'Оракулы и исчерпывающие проверки' },
+    note: { en: 'What the reference and the assertion actually compare', ru: 'Что именно сравнивают эталон и проверка' },
+    theoremIds: ['T9', 'T10', 'T11'],
+  },
+  {
+    id: 'gates',
+    title: { en: 'Failures and gates', ru: 'Отказы и гейты' },
+    note: { en: 'Why a green result needs a demonstrated failure path', ru: 'Почему зелёному результату нужен показанный путь отказа' },
+    theoremIds: ['T12', 'T13', 'T14'],
+  },
+  {
+    id: 'bias',
+    title: { en: 'Measurement bias', ru: 'Смещение измерения' },
+    note: { en: 'How filtering and proxies change the result', ru: 'Как фильтрация и прокси меняют результат' },
+    theoremIds: ['T15', 'T16', 'T17'],
+  },
+  {
+    id: 'delivery',
+    title: { en: 'Repair and delivery', ru: 'Исправление и доставка' },
+    note: { en: 'Whether the fix reaches the path being checked', ru: 'Доходит ли исправление до проверяемого пути' },
+    theoremIds: ['T18', 'T19', 'T20', 'T21'],
+  },
+  {
+    id: 'boundaries',
+    title: { en: 'Boundaries and reproducibility', ru: 'Границы и воспроизводимость' },
+    note: { en: 'The limits that decide whether a result is real', ru: 'Границы, от которых зависит реальность результата' },
+    theoremIds: ['T22', 'T23', 'T24', 'T25', 'T26', 'T27'],
+  },
+] as const
+
 const REQUEST_URL = 'https://github.com/gHashTag/trinity/issues/new?template=verification-request.yml'
 
 const CONTACT = {
@@ -316,26 +361,45 @@ function ScienceSection({ lang }: { lang: string }) {
       <p style={{ fontSize: '0.95rem', lineHeight: 1.65, opacity: 0.88, margin: '0 0 1.5rem', maxWidth: '64ch' }}>
         {ru ? SCIENCE_INTRO_RU : SCIENCE_INTRO_EN}
       </p>
-      {THEOREMS.map((t) => (
-        <div key={t.id} className="premium-card" style={{ textAlign: 'left', marginBottom: '0.9rem' }}>
-          <div style={{ display: 'flex', gap: '0.7rem', alignItems: 'baseline' }}>
-            <code style={{ color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 700 }}>{t.id}</code>
-            <h3 style={{ margin: 0, fontSize: 'clamp(0.98rem, 2.6vw, 1.12rem)', lineHeight: 1.35 }}>{ru ? (t.nameRu ?? t.name) : t.name}</h3>
-          </div>
-          <p style={{ fontSize: '0.9rem', lineHeight: 1.62, margin: '0.6rem 0 0' }}>{ru ? (t.statementRu ?? t.statement) : t.statement}</p>
-          {t.worked && (
-            <p style={{ fontSize: '0.88rem', lineHeight: 1.6, margin: '0.6rem 0 0', color: 'var(--accent)' }}>
-              {ru ? (t.workedRu ?? t.worked) : t.worked}
-            </p>
-          )}
-          <p style={{ fontSize: '0.85rem', lineHeight: 1.55, margin: '0.7rem 0 0', opacity: 0.8 }}>
-            <strong>{ru ? 'Не заявляет: ' : 'Does not claim: '}</strong>{ru ? (t.doesNotClaimRu ?? t.doesNotClaim) : t.doesNotClaim}
-          </p>
-          <p style={{ fontSize: '0.82rem', margin: '0.6rem 0 0', opacity: 0.6 }}>
-            {t.url ? <a href={t.url} target="_blank" rel="noopener noreferrer">{t.citation}</a> : t.citation}
-          </p>
-        </div>
-      ))}
+      <div className="verification-theorem-groups">
+        {THEOREM_GROUPS.map((group, groupIndex) => (
+          <details key={group.id} className="verification-theorem-group" open={groupIndex === 0}>
+            <summary>
+              <span>
+                <strong>{ru ? group.title.ru : group.title.en}</strong>
+                <small>{ru ? group.note.ru : group.note.en}</small>
+              </span>
+              <span className="verification-theorem-count">{group.theoremIds.length}</span>
+            </summary>
+            <div className="verification-theorem-group__items">
+              {group.theoremIds.map((theoremId) => {
+                const t = THEOREMS.find((item) => item.id === theoremId)
+                if (!t) return null
+                return (
+                  <div key={t.id} className="premium-card" style={{ textAlign: 'left', marginBottom: '0.9rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: '0.7rem', alignItems: 'baseline' }}>
+                      <code style={{ color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 700 }}>{t.id}</code>
+                      <h3 style={{ margin: 0, fontSize: 'clamp(0.98rem, 2.6vw, 1.12rem)', lineHeight: 1.35 }}>{ru ? (t.nameRu ?? t.name) : t.name}</h3>
+                    </div>
+                    <p style={{ fontSize: '0.9rem', lineHeight: 1.62, margin: '0.6rem 0 0' }}>{ru ? (t.statementRu ?? t.statement) : t.statement}</p>
+                    {t.worked && (
+                      <p style={{ fontSize: '0.88rem', lineHeight: 1.6, margin: '0.6rem 0 0', color: 'var(--accent)' }}>
+                        {ru ? (t.workedRu ?? t.worked) : t.worked}
+                      </p>
+                    )}
+                    <p style={{ fontSize: '0.85rem', lineHeight: 1.55, margin: '0.7rem 0 0', opacity: 0.8 }}>
+                      <strong>{ru ? 'Не заявляет: ' : 'Does not claim: '}</strong>{ru ? (t.doesNotClaimRu ?? t.doesNotClaim) : t.doesNotClaim}
+                    </p>
+                    <p style={{ fontSize: '0.82rem', margin: '0.6rem 0 0', opacity: 0.6 }}>
+                      {t.url ? <a href={t.url} target="_blank" rel="noopener noreferrer">{t.citation}</a> : t.citation}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </details>
+        ))}
+      </div>
     </div>
   )
 }
