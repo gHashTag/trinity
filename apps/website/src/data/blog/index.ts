@@ -1,0 +1,706 @@
+import type { PostMeta } from './types'
+
+/** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
+export const postsIndex: PostMeta[] = [
+  {
+    "slug": "a-broken-reference-looks-exactly-like-broken-code",
+    "title": "Eight broken gates in one day, and not one of them was broken code",
+    "summary": "A flag, a version, a runner, a module, a script, three specs, two format paths, five submodule links and a step that ran what it claimed to build. Every one reported \"failure\", which is also what a real defect reports.",
+    "date": "2026-08-15",
+    "readingMinutes": 9,
+    "tags": [
+      "CI",
+      "Tooling",
+      "Git",
+      "Zig"
+    ],
+    "receipts": [
+      {
+        "label": "trinity #758 — format check pointed at paths that no longer exist · MERGED",
+        "href": "https://github.com/gHashTag/trinity/pull/758"
+      },
+      {
+        "label": "trinity #760 — test binary needs libc; five submodule gitlinks with no url · MERGED",
+        "href": "https://github.com/gHashTag/trinity/pull/760"
+      },
+      {
+        "label": "trinity c768953 — the merge that first turned the CLI build green",
+        "href": "https://github.com/gHashTag/trinity/commit/c7689530274d706fb0876b41e3ec0671ae16960d"
+      },
+      {
+        "label": "run 31827529498 — Build & Push Trinity CLI, first success after 30+ red runs",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/31827529498"
+      }
+    ],
+    "openQuestions": [
+      "The segfault found at the end is not fixed. `zig build tri` builds the CLI and runs it; with stdin closed it dies with SIGSEGV, while the same binary from the same commit runs cleanly with no arguments inside the published container. The workflow no longer runs the REPL, which removes the symptom from CI and leaves the defect.",
+      "Two gates remain red on purpose. Implementation coverage is about 3% against a 95% target, and the gate that says so is the one thing in that job that was telling the truth all along. Lowering the threshold would be the failure it exists to catch.",
+      "`deploy/Dockerfile.node` is still missing and its workflow still publishes an image from it. Restoring the file or retiring the image is a product decision, not a repair.",
+      "Nothing here says the code is correct. Eight gates now measure what they claim to measure; what they measure has barely been examined.",
+      "The count of eight is this repository on this day, found while looking for something else. It is not a survey, and no claim is made that the rate is representative."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Восемь сломанных гейтов за день, и ни один — из-за сломанного кода",
+      "summary": "Флаг, версия, раннер, модуль, скрипт, три спеки, два пути форматирования, пять ссылок на сабмодули и шаг, который запускал то, что называл сборкой. Каждый сообщал «failure» — ровно как сообщил бы настоящий дефект.",
+      "openQuestions": [
+        "Найденный под конец сегфолт не исправлен. `zig build tri` собирает CLI и запускает его; с закрытым stdin он падает по SIGSEGV, тогда как тот же бинарь из того же коммита в опубликованном контейнере без аргументов отрабатывает чисто. Воркфлоу больше не запускает REPL — это убирает симптом из CI и оставляет дефект.",
+        "Два гейта остаются красными намеренно. Покрытие реализациями около 3% при цели 95%, и гейт, который об этом говорит, — единственное в той задаче, что всё это время не врало. Понизить порог значило бы совершить ошибку, ради поимки которой он существует.",
+        "`deploy/Dockerfile.node` по-прежнему отсутствует, а его воркфлоу продолжает публиковать из него образ. Восстановить файл или закрыть публикацию — решение продуктовое, а не ремонтное.",
+        "Ничто здесь не утверждает, что код корректен. Восемь гейтов теперь меряют то, что заявляют; что именно они меряют, почти не рассматривалось.",
+        "Число восемь — это один репозиторий за один день, найденное попутно. Это не обследование, и утверждать, что такова типичная частота, я не берусь."
+      ]
+    }
+  },
+  {
+    "slug": "five-reasons-the-build-was-red",
+    "title": "Five reasons the build was red, and the fifth was mine",
+    "summary": "Our CLI could not be installed by anyone, and the CI that should have said so had zero successes in thirty runs. Each cause hid the next; removing the fourth created the fifth.",
+    "date": "2026-08-15",
+    "readingMinutes": 7,
+    "tags": [
+      "CI",
+      "Zig",
+      "Build systems",
+      "Tooling"
+    ],
+    "receipts": [
+      {
+        "label": "trinity c768953 — the merge that turned the CLI build green",
+        "href": "https://github.com/gHashTag/trinity/commit/c7689530274d706fb0876b41e3ec0671ae16960d"
+      },
+      {
+        "label": "run 31827529498 — Build & Push Trinity CLI, first success after 30+ red runs",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/31827529498"
+      },
+      {
+        "label": "the image that run published, pinned by sha",
+        "href": "https://github.com/gHashTag/trinity/pkgs/container/trinity"
+      }
+    ],
+    "openQuestions": [
+      "Only the container image was exercised end to end. npm shows @playra/tri exists and the Homebrew tap repository resolves; neither was installed and run, so neither is claimed to work.",
+      "Three version numbers are in play for one tool: the README heading says v6.3.0, npm publishes 1.0.1, and the binary prints v5.1.0. Only the binary’s was measured. Which is authoritative is unresolved.",
+      "The codegen workflow is still red, at a later step: it calls scripts/validate_codegen.sh, which no longer exists. That is a different problem and it is not fixed.",
+      "The image is linux/amd64 only. It runs on Apple Silicon under emulation; no arm64 image is published and no timing on either was measured.",
+      "The build works. Whether the CLI is correct is a separate question this says nothing about — a green compile is not a passing test suite, and the test suites remain red."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Пять причин, по которым сборка была красной, и пятая — моя",
+      "summary": "Наш CLI не мог поставить никто, а CI, который должен был об этом сказать, имел ноль успехов из тридцати прогонов. Каждая причина прятала следующую; удаление четвёртой породило пятую.",
+      "openQuestions": [
+        "От начала до конца проверен только контейнер. npm показывает, что пакет @playra/tri существует, и репозиторий Homebrew-тапа отвечает; ни то, ни другое не устанавливалось и не запускалось, поэтому работоспособность не заявляется.",
+        "У одного инструмента три версии: заголовок README говорит v6.3.0, npm публикует 1.0.1, бинарь печатает v5.1.0. Измерена только последняя. Какая авторитетна — не решено.",
+        "Воркфлоу codegen по-прежнему красный, но на более позднем шаге: он зовёт scripts/validate_codegen.sh, которого больше нет. Это другая задача, и она не решена.",
+        "Образ собран только под linux/amd64. На Apple Silicon он идёт через эмуляцию; arm64-образа нет, и время работы ни там, ни там не измерялось.",
+        "Сборка работает. Корректен ли CLI — отдельный вопрос, о котором здесь не сказано ничего: зелёная компиляция не равна проходящим тестам, а тесты остаются красными."
+      ]
+    }
+  },
+  {
+    "slug": "the-generated-file-was-three-years-old",
+    "title": "We hand-patched a generated file that upstream had fixed five months earlier",
+    "summary": "A vendored Verilog artifact from April 2023 carried a defect its generator repaired in March 2026. The hand fix is correct and temporary; the next regeneration would undo it.",
+    "date": "2026-08-15",
+    "readingMinutes": 5,
+    "tags": [
+      "LiteX",
+      "openXC7",
+      "Vendoring",
+      "yosys"
+    ],
+    "receipts": [
+      {
+        "label": "demo-projects fbf72fc — the hand patch on the vendored file, 2026-08-14",
+        "href": "https://github.com/openXC7/demo-projects/commit/fbf72fc69db4971bd730a92667f27def30d6ba10"
+      },
+      {
+        "label": "litex b3a4c270 — \"S7HDMIPHY: Fix build with Yosys\", 2026-03-05",
+        "href": "https://github.com/enjoy-digital/litex/commit/b3a4c270"
+      },
+      {
+        "label": "litex/soc/cores/video.py — the emission, Open() on lines 1398-1399 today",
+        "href": "https://github.com/enjoy-digital/litex/blob/master/litex/soc/cores/video.py"
+      },
+      {
+        "label": "the finding, posted to the commit it concerns",
+        "href": "https://github.com/openXC7/demo-projects/commit/fbf72fc69db4971bd730a92667f27def30d6ba10#commitcomment-196278462"
+      }
+    ],
+    "openQuestions": [
+      "I did not regenerate the design. That the current LiteX emits a clean file for this board end to end is inferred from the diff and the blame, not demonstrated by a build.",
+      "Whether the other vendored designs in demo-projects carry the same staleness is unchecked. This is one file.",
+      "The slave’s SHIFTIN1/2 are still tied to 0 upstream, and that is fine — an unused input may take a constant. The hand patch normalised both, but only the output tie was ever the defect. I did not test whether yosys objects to anything else in this file.",
+      "I have not established why the demo carried a 2023 artifact rather than a regeneration step. There may be a reason — a LiteX API change, a board file that no longer builds — and I did not look for one before writing this."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Мы залатали руками сгенерированный файл, который апстрим починил пятью месяцами раньше",
+      "summary": "Вендоренный Verilog от апреля 2023 нёс дефект, который его генератор исправил в марте 2026. Ручная правка верна и временна: следующая регенерация её снесёт.",
+      "openQuestions": [
+        "Я не регенерировал дизайн. То, что текущий LiteX выдаёт чистый файл для этой платы от начала до конца, выведено из диффа и blame, а не показано сборкой.",
+        "Несут ли ту же залежалость другие вендоренные дизайны в demo-projects — не проверено. Это один файл.",
+        "SHIFTIN1/2 у ведомого в апстриме по-прежнему привязаны к 0, и это нормально: неиспользуемый вход может принимать константу. Ручная правка нормализовала оба, но дефектом была только привязка выхода. Возражает ли yosys на что-то ещё в этом файле, я не проверял.",
+        "Я не выяснил, почему демо несло артефакт 2023 года, а не шаг регенерации. Причина может быть — смена API LiteX, неработающий файл платы, — и я её не искал, прежде чем это написать."
+      ]
+    }
+  },
+  {
+    "slug": "half-the-build-is-bitstream-generation",
+    "title": "Half the build is bitstream generation, and the trivial design was the slow one",
+    "summary": "Fifteen openXC7 builds with stated boundaries: for small designs more time goes to turning FASM into a bitstream than to place-and-route, a blinky beaten by a GF multiplier, and 25% spread on byte-identical work.",
+    "date": "2026-08-15",
+    "readingMinutes": 7,
+    "tags": [
+      "FPGA",
+      "openXC7",
+      "Benchmarking",
+      "Measurement"
+    ],
+    "receipts": [
+      {
+        "label": "trinity-fpga — the workflow, with the boundaries stated in its header",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/.github/workflows/openxc7-build-timing.yml"
+      },
+      {
+        "label": "run 31822095102 — 17/17 green, the fifteen measurements below",
+        "href": "https://github.com/gHashTag/trinity-fpga/actions/runs/31822095102"
+      },
+      {
+        "label": "run 31820544225 — the first attempt, which lost five jobs to my error",
+        "href": "https://github.com/gHashTag/trinity-fpga/actions/runs/31820544225"
+      }
+    ],
+    "openQuestions": [
+      "This is not a comparison. There is no Vivado column, because there is no Vivado here — no licence, no install. The three designs are plain Verilog + XDC on xc7a200tfbg484-2 so that anyone holding a licence can build the same three and put their numbers beside these.",
+      "One machine: a shared GitHub `ubuntu-latest` runner, 4 cores. The absolute seconds do not transfer to your workstation. The proportions between phases might; that is a hypothesis, not a result.",
+      "The seed is pinned at 1 in every run, so nothing here measures nextpnr’s seed sensitivity. Sweeping seeds would have mixed two sources of variance into one column.",
+      "Three designs, all ours, all one part. That is not a representative corpus — enough to show the shape, not enough to generalise the numbers.",
+      "n=5. The spread is reported raw, min to max. No confidence interval is claimed and none would be honest at that n.",
+      "Bitstream generation here means prjxray’s fasm2frames plus xc7frames2bit. A different backend would move that column, so the finding is about this toolchain rather than about open toolchains in general."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Половина сборки — это генерация битстрима, а самым медленным оказался тривиальный дизайн",
+      "summary": "Пятнадцать сборок openXC7 с объявленными границами: у малых дизайнов на превращение FASM в битстрим уходит больше времени, чем на трассировку, blinky проиграл умножителю GF, а разброс на побайтово одинаковой работе — 25%.",
+      "openQuestions": [
+        "Это не сравнение. Колонки Vivado нет, потому что здесь нет Vivado — ни лицензии, ни установки. Все три дизайна это обычный Verilog + XDC под xc7a200tfbg484-2, так что любой, у кого лицензия есть, может собрать те же три и положить свои числа рядом.",
+        "Одна машина: общий раннер GitHub ubuntu-latest, 4 ядра. Абсолютные секунды на вашу рабочую станцию не переносятся. Пропорции между фазами, возможно, переносятся — но это гипотеза, а не результат.",
+        "Сид зафиксирован на 1 во всех прогонах, поэтому здесь ничто не измеряет чувствительность nextpnr к сиду. Перебор сидов смешал бы два источника разброса в одной колонке.",
+        "Три дизайна, все наши, все на одном кристалле. Это не представительная выборка — её хватает, чтобы показать форму, и не хватает, чтобы обобщать числа.",
+        "n=5. Разброс приведён как есть, от min до max. Доверительный интервал не заявляется — при таком n он был бы нечестен.",
+        "Генерация битстрима здесь означает fasm2frames и xc7frames2bit из prjxray. Другой бэкенд сдвинул бы эту колонку, поэтому вывод касается этого тулчейна, а не открытых тулчейнов вообще."
+      ]
+    }
+  },
+  {
+    "slug": "the-search-space-erased-a-significance-claim",
+    "title": "The search space erased a significance claim",
+    "summary": "A merged audit of 67 targets withdraws a roughly 10-sigma reading after enumerating the search family that made near-matches likely by chance.",
+    "date": "2026-08-14",
+    "readingMinutes": 7,
+    "tags": [
+      "research",
+      "statistics",
+      "reproducibility",
+      "audit"
+    ],
+    "receipts": [
+      {
+        "label": "gHashTag/trinity PR #738 — merged statistical audit",
+        "href": "https://github.com/gHashTag/trinity/pull/738"
+      },
+      {
+        "label": "Merged commit da2916c — corrected source and scripts",
+        "href": "https://github.com/gHashTag/trinity/commit/da2916cc1af1c35a6d9a356cc0f7ea35aefe4d56"
+      },
+      {
+        "label": "sacred-formulas.md — audited document",
+        "href": "https://github.com/gHashTag/trinity/blob/04430c0dc154ed3ec987704fe9b74bbcb40a3e9b/docs/docs/math-foundations/sacred-formulas.md"
+      }
+    ],
+    "openQuestions": [
+      "The Šidák threshold of 5.06σ assumes independent family members; the dependence created by shared factors was not estimated, so the actual threshold may be lower.",
+      "The one-decade window used for local-density estimates was checked for stability, but it has no theoretical derivation in this audit.",
+      "The document still records a mismatch between an announced standard search size of 20,412 and bounds that enumerate 54,756 combinations; the PR flags the discrepancy instead of silently choosing one.",
+      "The corrected counts concern this document and its declared family of formulas; they do not establish a general statement about mathematical coincidences outside that family."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Пространство поиска отменило заявление о значимости",
+      "summary": "Смерженный аудит 67 целей снимает трактовку около 10σ после перечисления семейства поиска, в котором близкие совпадения часто возникают случайно.",
+      "openQuestions": [
+        "Порог Шидака 5,06σ предполагает независимость членов семейства; зависимость из-за общих множителей не оценивалась, поэтому настоящий порог может быть ниже.",
+        "Однодекадное окно для оценки локальной плотности проверено на устойчивость, но теоретического вывода для него в этом аудите нет.",
+        "В документе остаётся расхождение между заявленным размером стандартного перебора 20 412 и границами, которые дают 54 756 комбинаций; PR отмечает его, а не выбирает число молча.",
+        "Исправленные счётчики относятся к этому документу и заявленному семейству формул; они не доказывают общего тезиса о математических совпадениях вне этого семейства."
+      ]
+    }
+  },
+  {
+    "slug": "six-and-a-half-years-in-a-discarded-return-value",
+    "title": "Six and a half years in one discarded return value",
+    "summary": "Four merged fixes turned the openXC7 demo CI green. The oldest was a bool nobody read: since February 2020 the placer knew its own placement was invalid and threw the answer away, so the failure surfaced in the router instead.",
+    "date": "2026-08-14",
+    "readingMinutes": 9,
+    "tags": [
+      "FPGA",
+      "openXC7",
+      "nextpnr",
+      "Place and route"
+    ],
+    "receipts": [
+      {
+        "label": "nextpnr-xilinx #145 — propagate placer1_refine failure out of placer_heap · MERGED 2026-08-13",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/145"
+      },
+      {
+        "label": "nextpnr-xilinx #146 — budget the per-position site exit in placement validity · MERGED 2026-08-14",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/146"
+      },
+      {
+        "label": "nextpnr-xilinx #142 — RAM256X1S mux tree belongs in its own slice half · MERGED 2026-08-13",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/142"
+      },
+      {
+        "label": "nextpnr-xilinx #144 — wire RAM128X1S scalar A0..A6 into the DRAM control set · MERGED 2026-08-13",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/144"
+      },
+      {
+        "label": "nextpnr-xilinx #134 — routed, timing-clean, dead on silicon · OPEN",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/issues/134"
+      },
+      {
+        "label": "demo-projects CI — every project builds",
+        "href": "https://github.com/openXC7/demo-projects/actions/runs/31778234320"
+      },
+      {
+        "label": "nextpnr-xilinx #142 — Carlos Venegas Arrabé on the second blind spot, added to this post after publication · MERGED 2026-08-13",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/142#issuecomment-5268596254"
+      },
+      {
+        "label": "nextpnr-xilinx #146 — the same author confirming the attribution was ours to correct · MERGED 2026-08-14",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/146#issuecomment-5284347345"
+      }
+    ],
+    "openQuestions": [
+      "A green CI proves the toolchain emits a bitstream without falling over. It does not prove the bitstream configures a chip. In the maintainer’s words: \"That does not mean that the bitstreams work.\"",
+      "#134 is open. A design that places, routes and meets timing still does nothing on the board — the relocated carry pass-through lanes drove S from a constant net, which has no physical realisation on xc7. #146 does not fix it.",
+      "The six-and-a-half-year figure is the age of the call site, dated by blame. It is not evidence that the discarded failure path was reachable for all of that time — the reverse is argued here: it became reachable when the LUTRAM packing work started producing placements that fail validity.",
+      "BUFR/BUFIO support in the bitstream database is still unverified. prjxray-db#1 was closed pending a fuzzer that can mint the rows with provenance; the eight proposed segbits rows are not confirmed.",
+      "litex-ddr-hdmi-stlv7325 still fails, and not on the toolchain: the generated Verilog ties SHIFTOUT1/2 of a slave OSERDESE2 to constants. Vivado warns and ignores; yosys refuses.",
+      "No build-time comparison against Vivado is claimed here. We have not measured it."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Шесть с половиной лет в одном отброшенном значении",
+      "summary": "Четыре влитых исправления сделали CI демо-проектов openXC7 зелёным. Самое старое — bool, который никто не читал: с февраля 2020 плейсер знал, что размещение невалидно, и выбрасывал ответ.",
+      "openQuestions": [
+        "Зелёный CI доказывает, что тулчейн выдаёт битстрим, не падая. Он не доказывает, что битстрим сконфигурирует кристалл. Словами мейнтейнера: \"That does not mean that the bitstreams work.\"",
+        "#134 открыт. Дизайн, который размещается, трассируется и укладывается в тайминги, на плате не работает: перенесённые сквозные полосы переноса получали S из константной цепи, чего на xc7 физически не существует. #146 его не закрывает.",
+        "Шесть с половиной лет — возраст места вызова по blame, а не доказательство, что ветка отказа была достижима всё это время. Здесь утверждается обратное: она стала достижимой, когда работа над упаковкой LUTRAM начала давать невалидные размещения.",
+        "Поддержка BUFR/BUFIO в базе битстримов не подтверждена. prjxray-db#1 закрыт в ожидании фаззера, который выведет эти строки с провенансом; восемь предложенных строк segbits не подтверждены.",
+        "litex-ddr-hdmi-stlv7325 по-прежнему падает, и не из-за тулчейна: сгенерированный Verilog привязывает SHIFTOUT1/2 подчинённого OSERDESE2 к константам. Vivado предупреждает и игнорирует, yosys отказывается.",
+        "Сравнение времени сборки с Vivado здесь не заявляется. Мы его не измеряли."
+      ]
+    }
+  },
+  {
+    "slug": "a-correct-gate-with-a-manual-remedy",
+    "title": "A correct gate with a manual remedy is an outage",
+    "summary": "Twelve consecutive publisher runs failed on a check that was right every time, and six merged pull requests spent sixteen hours invisible to readers.",
+    "date": "2026-08-14",
+    "readingMinutes": 7,
+    "tags": [
+      "delivery",
+      "ci",
+      "publishing",
+      "postmortem"
+    ],
+    "receipts": [
+      {
+        "label": "ghashtag.github.io run 31774839732 — the last of twelve failures",
+        "href": "https://github.com/gHashTag/ghashtag.github.io/actions/runs/31774839732"
+      },
+      {
+        "label": "ghashtag.github.io run 31780655887 — the first green run after the fix",
+        "href": "https://github.com/gHashTag/ghashtag.github.io/actions/runs/31780655887"
+      },
+      {
+        "label": "ghashtag.github.io cf8534f — the publisher now regenerates the blog itself",
+        "href": "https://github.com/gHashTag/ghashtag.github.io/commit/cf8534f450ef344be36eda90bff7e79ac316279d"
+      },
+      {
+        "label": "regen-blog.py — the script that owns the chain",
+        "href": "https://github.com/gHashTag/ghashtag.github.io/blob/main/regen-blog.py"
+      }
+    ],
+    "openQuestions": [
+      "The drift gate compares two lists of slugs. Nothing fetches a published page as a reader without JavaScript would, so a post can pass the gate and still be unreadable for a reason the gate does not model.",
+      "The workflow asks for a run every fifteen minutes; the observed spacing on 13-14 August was closer to an hour, because GitHub throttles scheduled workflows. The comment in the file claiming a fifteen-minute worst case is therefore wrong, and nothing on the site measures the real lag between a merge and a reader.",
+      "Cards for new posts are now drawn with Pillow in DejaVu, while the hand-made ones are set in Inter. That difference is visible and unmeasured — no platform preview has been checked against a generated card.",
+      "Only the blog was audited for this shape. Other generated surfaces in the same repository — the book under docs/, the result pages under r/ — have generators that are also invoked by hand, and nobody has checked whether any gate depends on them."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Верный гейт с ручным лечением — это простой",
+      "summary": "Двенадцать прогонов публикатора подряд упали на проверке, которая каждый раз была права, а шесть смерженных pull request просидели шестнадцать часов невидимыми для читателя.",
+      "openQuestions": [
+        "Гейт сравнивает два списка слагов. Ни одна проверка не запрашивает опубликованную страницу так, как её запросил бы читатель без JavaScript, — значит пост может пройти гейт и остаться нечитаемым по причине, которой в гейте нет.",
+        "Воркфлоу просит прогон каждые пятнадцать минут; наблюдаемый интервал 13–14 августа был около часа, потому что GitHub придерживает расписанные воркфлоу. Комментарий в файле про «худший случай пятнадцать минут» из-за этого неверен, и ничто на сайте не измеряет настоящую задержку между мержем и читателем.",
+        "Карточки новых постов теперь рисуются Pillow в DejaVu, а сделанные руками набраны в Inter. Разница видна и не измерена — ни один предпросмотр площадки на сгенерированной карточке не проверялся.",
+        "На эту форму отказа проверен только блог. В том же репозитории есть другие генерируемые поверхности — книга в docs/, страницы результатов в r/ — их генераторы тоже запускаются руками, и никто не проверял, зависит ли от них какой-нибудь гейт."
+      ]
+    }
+  },
+  {
+    "slug": "eleven-verdicts-were-windows-not-checkpoints",
+    "title": "Eleven verdicts were windows, not checkpoints",
+    "summary": "A merged research correction replaces 140 pooled windows with four model-level replicates and turns eleven apparent verdicts into ties.",
+    "date": "2026-08-13",
+    "readingMinutes": 8,
+    "tags": [
+      "research",
+      "statistics",
+      "quantization",
+      "reproducibility"
+    ],
+    "receipts": [
+      {
+        "label": "trinity-fpga PR #563 — merged research correction",
+        "href": "https://github.com/gHashTag/trinity-fpga/pull/563"
+      },
+      {
+        "label": "POOLED_VERDICTS_RESTATED_2026-08-12.md — merged analysis note",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/research/block/POOLED_VERDICTS_RESTATED_2026-08-12.md"
+      }
+    ],
+    "openQuestions": [
+      "This is a re-analysis of per-window NLL already on disk; no model was re-run and no new checkpoint was measured.",
+      "The one verdict that survives the correction, JK-asym-NEAR0 versus JOINT-KL, is tagged 3/4 in-sample, so it is not evidence about a new checkpoint.",
+      "The corrected rows do not establish a general advantage for any codebook; a model-level result on four checkpoints remains a narrow result, not a deployment claim."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Одиннадцать вердиктов оказались окнами, а не чекпоинтами",
+      "summary": "Смерженная исследовательская правка заменяет 140 объединённых окон четырьмя репликами уровня модели и превращает одиннадцать видимых вердиктов в ничьи.",
+      "openQuestions": [
+        "Это переанализ уже сохранённых значений NLL по окнам; ни одна модель не перезапускалась, новый чекпоинт не измерялся.",
+        "Сохранившийся после исправления вердикт, JK-asym-NEAR0 против JOINT-KL, помечен как 3/4 in-sample, поэтому он не свидетельствует о новом чекпоинте.",
+        "Исправленные строки не доказывают общего преимущества какого-либо кодбука; результат на уровне четырёх чекпоинтов остаётся узким и не является заявлением о применении."
+      ]
+    }
+  },
+  {
+    "slug": "each-half-imported-the-other",
+    "title": "Each half imported the other",
+    "summary": "One directory was split across two repositories and both kept flat imports of the other. Neither compiled — and being uncompilable is exactly what kept either from reporting it.",
+    "date": "2026-08-12",
+    "readingMinutes": 8,
+    "tags": [
+      "verification",
+      "zig",
+      "dependencies"
+    ],
+    "receipts": [
+      {
+        "label": "zig-knowledge-graph #2 — the near half, merged",
+        "href": "https://github.com/gHashTag/zig-knowledge-graph/pull/2"
+      },
+      {
+        "label": "zig-knowledge-graph #1 — the split, open",
+        "href": "https://github.com/gHashTag/zig-knowledge-graph/issues/1"
+      },
+      {
+        "label": "zig-knowledge-graph #3 — the two binaries, open",
+        "href": "https://github.com/gHashTag/zig-knowledge-graph/issues/3"
+      },
+      {
+        "label": "zig-golden-float #99 — the far half, merged",
+        "href": "https://github.com/gHashTag/zig-golden-float/pull/99"
+      },
+      {
+        "label": "trinity-training #2 — the self-invalidating pin, merged",
+        "href": "https://github.com/gHashTag/trinity-training/pull/2"
+      }
+    ],
+    "openQuestions": [
+      "Only the library was made to build. `kg_cli` and `kg_server` are a Zig 0.14 to 0.15 migration across roughly 1300 lines — filed as #3, not attempted here, and until it is done those two tools remain what they have always been: unrunnable.",
+      "I do not know how many other pairs in this fleet have the same shape. The one I found, I found by accident, while fixing something else.",
+      "The library builds and its seven tests pass. Seven is a small number for a graph store, and nothing here establishes that the seven cover anything in particular."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Каждая половина импортировала другую",
+      "summary": "Одну папку разделили на два репозитория, и обе сохранили плоские импорты друг друга. Не компилировалась ни одна — и именно невозможность собраться мешала любой из них сообщить о проблеме.",
+      "openQuestions": [
+        "Собрана только библиотека. `kg_cli` и `kg_server` — это миграция с Zig 0.14 на 0.15 примерно по 1300 строкам; заведена как #3, здесь не делалась, и до неё эти два инструмента остаются тем, чем были всегда: незапускаемыми.",
+        "Сколько ещё пар во флоте имеют ту же форму — я не знаю. Найденную нашёл случайно, чиня совсем другое.",
+        "Библиотека собирается, семь тестов проходят. Семь — немного для хранилища графа, и ничто здесь не говорит, что именно эти семь покрывают."
+      ]
+    }
+  },
+  {
+    "slug": "a-suite-that-runs-nothing-exits-zero",
+    "title": "Zero of six hundred and forty",
+    "summary": "A package declared 640 tests and ran none of them, and the exit code was 0. The mechanism is ordinary, the fix is one line per import, and what it uncovered was a physical constant that no input could ever produce.",
+    "date": "2026-08-12",
+    "readingMinutes": 9,
+    "tags": [
+      "verification",
+      "zig",
+      "vacuity"
+    ],
+    "receipts": [
+      {
+        "label": "zig-golden-float #98 — the unresolvable import, merged",
+        "href": "https://github.com/gHashTag/zig-golden-float/pull/98"
+      },
+      {
+        "label": "zig-golden-float #99 — export packed_vsa, submitted",
+        "href": "https://github.com/gHashTag/zig-golden-float/pull/99"
+      },
+      {
+        "label": "zig-physics #4 — 0 tests were running out of 640, submitted",
+        "href": "https://github.com/gHashTag/zig-physics/pull/4"
+      },
+      {
+        "label": "zig-physics #3 — the Barbero–Immirzi range, open",
+        "href": "https://github.com/gHashTag/zig-physics/issues/3"
+      },
+      {
+        "label": "trinity-training #1 — no test step existed, submitted",
+        "href": "https://github.com/gHashTag/trinity-training/pull/1"
+      }
+    ],
+    "openQuestions": [
+      "Coverage after the fix is partial and I have not measured how partial. In zig-physics 254 tests became reachable out of 640 declared; the remaining 386 live in files that no root reaches, and I have not established whether they would pass.",
+      "The Barbero–Immirzi projection is refuted, not repaired. Choosing a different mapping from E8 coordinates to γ is a physics decision, and any mapping I picked would be fitted to the assertion it had to satisfy.",
+      "trinity-training builds and its five module roots run tests on the target toolchain, but those roots do not reach all 104 files. I report the count CI produces, not the 672 declared.",
+      "One package, zig-knowledge-graph, is still unusable: three files importing four that do not exist. The four exist upstream; the shim is not written yet."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Ноль из шестисот сорока",
+      "summary": "Пакет объявлял 640 тестов и не выполнил ни одного, а код возврата был 0. Механизм самый обыкновенный, починка — одна строка на импорт, а под ней обнаружилась физическая константа, которую не даёт ни один вход.",
+      "openQuestions": [
+        "Покрытие после починки частичное, и насколько — я не измерял. В zig-physics стали досягаемы 254 теста из 640 объявленных; оставшиеся 386 лежат в файлах, до которых не дотягивается ни один корень, и прошли бы они — неизвестно.",
+        "Проекция Барберо–Иммирци опровергнута, а не исправлена. Выбор другого отображения координат E8 в γ — решение физическое, и любое, которое выбрал бы я, оказалось бы подогнано под то самое утверждение, которому обязано удовлетворять.",
+        "trinity-training собирается, и пять корней его модулей выполняют тесты на целевом тулчейне, но эти корни не покрывают все 104 файла. Я привожу число, которое выдаёт CI, а не 672 объявленных.",
+        "Один пакет, zig-knowledge-graph, по-прежнему непригоден: три файла импортируют четыре несуществующих. Все четыре есть в апстриме, прослойка ещё не написана."
+      ]
+    }
+  },
+  {
+    "slug": "a-repair-reaches-only-the-copy-it-lands-in",
+    "title": "Sixteen defects fixed, zero of them reached the consumer",
+    "summary": "Two repositories carried the same six files under the same names. Repairing one changed nothing downstream, and no instrument in either could report why — because each copy compiles entirely on its own.",
+    "date": "2026-08-12",
+    "readingMinutes": 7,
+    "tags": [
+      "Zig",
+      "Modularity",
+      "CI",
+      "Verification"
+    ],
+    "receipts": [
+      {
+        "label": "zig-golden-float #97 — 16 defects repaired · MERGED 2026-08-11",
+        "href": "https://github.com/gHashTag/zig-golden-float/pull/97"
+      },
+      {
+        "label": "zig-hdc #3 — one implementation, CI green · MERGED 2026-08-12",
+        "href": "https://github.com/gHashTag/zig-hdc/pull/3"
+      },
+      {
+        "label": "zig-hdc #2 — the earlier attempt, closed as superseded",
+        "href": "https://github.com/gHashTag/zig-hdc/pull/2"
+      }
+    ],
+    "openQuestions": [
+      "gHashTag/trinity, the consumer that started this, is still red. Its pin predates the repair and its own build has other causes, so nothing here claims that chain is finished.",
+      "Listing re-exported names one by one has a cost this post does not pretend away: a symbol added upstream does not appear downstream until somebody adds it. usingnamespace, which would have avoided that, was removed in Zig 0.15.",
+      "Whether the eighteen files that stayed behind should also live upstream was not decided. They have no counterpart there today; that is a fact about today, not an argument."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Шестнадцать дефектов исправлены, до потребителя не дошёл ни один",
+      "summary": "Два репозитория несли одни и те же шесть файлов под одними именами. Починка одного не изменила ничего внизу по цепочке, и ни один прибор не мог сказать почему — потому что каждая копия компилируется сама по себе.",
+      "openQuestions": [
+        "gHashTag/trinity, потребитель, с которого всё началось, всё ещё красный. Его закрепление старше починки, и у его сборки есть другие причины, так что ничто здесь не утверждает, что цепочка завершена.",
+        "Перечисление реэкспортируемых имён поимённо имеет цену, и этот пост её не прячет: символ, добавленный наверху, не появится внизу, пока его туда не добавят. usingnamespace, который избавил бы от этого, убран в Zig 0.15.",
+        "Должны ли восемнадцать оставшихся файлов тоже жить наверху — не решено. Сегодня у них там нет соответствия; это факт о сегодня, а не аргумент."
+      ]
+    }
+  },
+  {
+    "slug": "green-ci-does-not-mean-usable",
+    "title": "A green CI does not mean the library builds for you",
+    "summary": "A Zig package with passing CI could not be compiled by any consumer. Lazy analysis means a test run proves only what the tests happen to touch — one line exposed five hidden errors in one package, and sixteen in the package under it.",
+    "date": "2026-08-11",
+    "readingMinutes": 11,
+    "tags": [
+      "Zig",
+      "CI",
+      "Verification",
+      "Static analysis"
+    ],
+    "receipts": [
+      {
+        "label": "zig-golden-float #97 — 16 defects, CI green on 0.15.2 · MERGED 2026-08-11",
+        "href": "https://github.com/gHashTag/zig-golden-float/pull/97"
+      },
+      {
+        "label": "zig-hdc #2 — full-surface analysis, 5 drift errors · OPEN",
+        "href": "https://github.com/gHashTag/zig-hdc/pull/2"
+      },
+      {
+        "label": "trinity #701 — the consumer that surfaced it · OPEN",
+        "href": "https://github.com/gHashTag/trinity/pull/701"
+      }
+    ],
+    "openQuestions": [
+      "Which copy of src/vsa/* is canonical is undecided. The two packages carry their own and they have diverged, so repairing one does not repair the other.",
+      "zig-hdc is still red. Its five errors are in its own copy of files that were repaired in the package below it.",
+      "refAllDeclsRecursive forces analysis, not execution. It proves the surface compiles; it says nothing about whether any of it is correct.",
+      "Whether the same gap exists in other lazily-analysed languages was not tested. The claim here is about Zig, measured on Zig."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Зелёный CI не значит, что библиотека соберётся у вас",
+      "summary": "Пакет на Zig с проходящими тестами не мог собрать ни один потребитель. Ленивый анализ означает, что тесты доказывают лишь то, до чего дотянулись: одна строка вскрыла пять скрытых ошибок в одном пакете и шестнадцать в том, что под ним.",
+      "openQuestions": [
+        "Какая из копий src/vsa/* каноническая — не решено. Оба пакета несут свою, и они разошлись, поэтому починка одной не чинит другую.",
+        "zig-hdc всё ещё красный. Его пять ошибок — в собственных копиях файлов, исправленных в пакете уровнем ниже.",
+        "refAllDeclsRecursive заставляет анализировать, а не исполнять. Он доказывает, что поверхность компилируется, и ничего не говорит о том, верна ли она.",
+        "Есть ли тот же разрыв в других языках с ленивым анализом — не проверялось. Утверждение здесь про Zig и измерено на Zig."
+      ]
+    }
+  },
+  {
+    "slug": "scale-field-width-already-published",
+    "title": "The scale field does not need eight bits, and we were not the first to say so",
+    "summary": "Four bits cover the shared scale on every checkpoint measured -- bit-identical to E8M0, zero blocks truncated out of 20,462,464. The observation was published first by someone else; what is ours is the proof around it, and the constant does not survive contact with activations.",
+    "date": "2026-08-11",
+    "readingMinutes": 9,
+    "tags": [
+      "Number formats",
+      "MXFP4",
+      "Quantisation",
+      "Prior art"
+    ],
+    "receipts": [
+      {
+        "label": "Chhugani et al., Unveiling the Potential of Quantization with MXFP4 (arXiv:2603.08713), section 3.3 -- the prior publication of the 4-bit-suffices observation",
+        "href": "https://arxiv.org/abs/2603.08713"
+      },
+      {
+        "label": "Dettmers et al., QLoRA: Efficient Finetuning of Quantized LLMs (NeurIPS 2023) -- double quantisation, 0.5 to 0.127 bits per parameter",
+        "href": "https://arxiv.org/abs/2305.14314"
+      },
+      {
+        "label": "Rouhani et al., With Shared Microexponents, A Little Shifting Goes a Long Way (ISCA 2023) -- multi-level exponent splitting",
+        "href": "https://arxiv.org/abs/2302.08007"
+      },
+      {
+        "label": "OCP Microscaling Formats (MX) Specification v1.0 -- the E8M0 shared scale this measures against",
+        "href": "https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf"
+      }
+    ],
+    "openQuestions": [
+      "The observation that four bits suffice for the scale exponent is not ours: Chhugani et al. (arXiv:2603.08713, section 3.3) published it on larger models. What is presented here as new is the theory around it -- the sufficiency proof, the R < S < R+2 bound, and the separation of sufficiency from necessity.",
+      "Necessity was NOT established per tensor, only in the worst case. A counterexample exists in which a truncated scale field returns the same dequantised weights, so 'b_min bits are required' is false as a per-tensor statement.",
+      "Activation spans are sample-dependent and were still growing between measurement windows. The five-bit figure for activations is a lower bound on what a longer run would report, not a converged number.",
+      "The binade-grid phase ambiguity is worth one code either way and has not been eliminated: Pythia's R = 7.33 gives S = 8 at one phase and S = 9 at another.",
+      "The five checkpoints are small (SmolLM2, Qwen, Pythia, OPT, GPT-2). The prior work reports the same conclusion on Llama-3.1-8B and Qwen3-8B, so the direction agrees at scale, but nothing here was measured at that size."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Полю масштаба не нужны восемь бит, и сказали это не мы первыми",
+      "summary": "Четырёх бит хватает на общий масштаб во всех измеренных чекпоинтах — побитово идентично E8M0, ноль обрезанных блоков из 20 462 464. Наблюдение опубликовано раньше и не нами; нашим остаётся доказательство вокруг него, а константа не переживает встречи с активациями.",
+      "openQuestions": [
+        "Наблюдение, что четырёх бит достаточно для экспоненты масштаба, — не наше: Chhugani et al. (arXiv:2603.08713, раздел 3.3) опубликовали его на моделях крупнее. Новым здесь подаётся теория вокруг него — доказательство достаточности, граница R < S < R+2 и разделение достаточности и необходимости.",
+        "Необходимость НЕ установлена по тензорам, только в худшем случае. Существует контрпример, где обрезанное поле масштаба возвращает те же деквантованные веса, поэтому «требуется b_min бит» ложно как утверждение о каждом тензоре.",
+        "Спаны активаций зависят от выборки и продолжали расти между окнами измерения. Пятибитная цифра по активациям — нижняя оценка, а не сошедшееся значение.",
+        "Фазовая неоднозначность бинадной сетки стоит одного кода в любую сторону и не устранена: у Pythia R = 7.33 даёт S = 8 при одной фазе и S = 9 при другой.",
+        "Пять чекпоинтов невелики (SmolLM2, Qwen, Pythia, OPT, GPT-2). Предшествующая работа сообщает тот же вывод на Llama-3.1-8B и Qwen3-8B, то есть направление совпадает и на масштабе, но здесь на таком размере ничего не измерялось."
+      ]
+    }
+  },
+  {
+    "slug": "open-gigabit-ethernet-artix7",
+    "title": "Gigabit Ethernet on Artix-7 without a vendor toolchain",
+    "summary": "RGMII at gigabit through Yosys, nextpnr-xilinx and Project X-Ray with no vendor tools — the six blockers that had to be patched, the one still open, and what the workaround costs.",
+    "date": "2026-08-09",
+    "readingMinutes": 12,
+    "tags": [
+      "FPGA",
+      "Open source",
+      "Ethernet",
+      "Artix-7",
+      "openXC7"
+    ],
+    "receipts": [
+      {
+        "label": "openXC7/nextpnr-xilinx #109 — set_multicycle_path · MERGED 2026-08-09",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/109"
+      },
+      {
+        "label": "#110 — clock-buffer preplace BFS cap · MERGED 2026-08-09",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/110"
+      },
+      {
+        "label": "#111 — fabric-driven global buffers · MERGED 2026-08-10",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/111"
+      },
+      {
+        "label": "#112 — SDP BRAM unused-port width bit · MERGED 2026-08-10",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/112"
+      },
+      {
+        "label": "#113 — single-site configuration primitives · MERGED 2026-08-10",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/113"
+      },
+      {
+        "label": "#115 — IDDR IFF flop initialisation · MERGED 2026-08-09",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/115"
+      },
+      {
+        "label": "openXC7/nextpnr-xilinx issue #114 — IDDR captures nothing on silicon (A/B/A/B bitstream measurement, ALINX AX7203)",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/issues/114"
+      },
+      {
+        "label": "openXC7/nextpnr-xilinx issue #65 — SAME_EDGE_PIPELINED unsupported (janrinze, Mar 2025)",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/issues/65"
+      },
+      {
+        "label": "Shah, Hung, Wolf, Bazanski, Gisselquist, Milanović — Yosys+nextpnr: an Open Source Framework from Verilog to Bitstream for Commercial FPGAs (FCCM 2019), arXiv:1903.10407",
+        "href": "https://arxiv.org/abs/1903.10407"
+      }
+    ],
+    "openQuestions": [
+      "The link negotiates on 23 of 48 power-ups (48%, 95% interval 34-62%), independent of the RTL across four designs. Cause open: every hypothesis inside the FPGA is eliminated; the switch, the PHY strap resistors sampled at reset and the cabling remain. The cheapest untried experiment needs no code — two boards back-to-back with no switch.",
+      "All six patches are OPEN on openXC7/nextpnr-xilinx — submitted upstream, none merged as of 2026-08-09.",
+      "Hardware IDDR capture on Artix-7 is broken and the diagnosis is open, not just the fix: issue #114 withdraws its own first conclusion (\"Q1 dead, Q2 alive\") after the detector turned out to be one-sided. Both outputs are inert in every edge mode tried. The receive path uses fabric DDR capture as a workaround.",
+      "Sigma ~= 470 ps was never measured. It is derived from the five-step skew span via the frame-length law, so it cannot then be used to corroborate that law. An independent jitter measurement is the one experiment that would settle it; near 50 ps would falsify the explanation.",
+      "Frame-error rate was never measured directly, only inferred from whether the link came up. The three skew data points are right-censored at tap 31 and cannot discriminate between the candidate models."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Gigabit Ethernet на Artix-7 без вендорского тулчейна",
+      "summary": "RGMII на гигабите через Yosys, nextpnr-xilinx и Project X-Ray без вендорских инструментов — шесть блокеров, которые пришлось пропатчить, один оставшийся открытым, и во что обходится обходной путь.",
+      "openQuestions": [
+        "Линк поднимается на 23 включениях из 48 (48%, 95-процентный интервал 34-62%), независимо от RTL на четырёх разных дизайнах. Причина открыта: все гипотезы внутри FPGA исключены; остаются свитч, strap-резисторы PHY, читаемые в момент сброса, и кабель. Самый дешёвый непроведённый опыт не требует кода — две платы напрямую, без свитча.",
+        "Все шесть патчей на openXC7/nextpnr-xilinx OPEN — отправлены наверх, ни один не влит по состоянию на 2026-08-09.",
+        "Аппаратный захват IDDR на Artix-7 не работает, и открыт сам диагноз, а не только починка: issue #114 отзывает собственный первый вывод («Q1 мёртв, Q2 жив») после того, как детектор оказался односторонним. Оба выхода инертны во всех испробованных режимах фронта. Приёмный тракт использует захват DDR на фабрике как обходной путь.",
+        "Sigma ~= 470 пс никогда не измерялась. Она выведена из размаха перекоса в пять шагов через закон длины кадра, а значит не может служить подтверждением этого же закона. Независимое измерение джиттера — тот единственный опыт, который закрыл бы вопрос; значение около 50 пс опровергло бы объяснение.",
+        "Частота ошибок по кадрам не измерялась напрямую, а только выводилась из того, поднялся ли линк. Три точки по перекосу цензурированы справа на отсчёте 31 и не позволяют различить конкурирующие модели."
+      ]
+    }
+  }
+]
+
+export const publishedPosts = () => postsIndex.filter((p) => p.published)
+
+export const postBySlug = (slug: string) => postsIndex.find((p) => p.slug === slug)
