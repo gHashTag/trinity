@@ -79,6 +79,13 @@ const NOT_CLAIMS = [
   'This page previously reported 323 MHz and 41.2 GOPS for the GF16 matmul. Re-checking the RTL on 8 August 2026 showed the block holds no registers in any of its nine copies in my repositories, so it has no clock and no frequency can belong to it. The figure is withdrawn rather than explained away, and the synthesis numbers above replace it.',
 ]
 
+const markRetractedNumbers = (text: string) =>
+  text.split(/(2\.84×?|5\.53×?)/g).map((part, index) =>
+    /^(2\.84|5\.53)/.test(part)
+      ? <span className="retracted-number" key={`${part}-${index}`}>{part}</span>
+      : part,
+  )
+
 // Russian copy. Other locales fall back to English rather than showing gaps.
 const RU = {
   eyebrow: 'Измеренные доказательства',
@@ -179,7 +186,8 @@ export default function Proof() {
               <div key={r.title} className="premium-card" style={{ padding: '1.6rem' }}>
                 <p style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--accent)', margin: '0 0 0.4rem', fontVariantNumeric: 'tabular-nums' }}>{r.metric}</p>
                 <h3 style={{ fontSize: '1.05rem', margin: '0 0 0.55rem' }}>{r.title}</h3>
-                <p style={{ fontSize: '0.93rem', lineHeight: 1.6, margin: '0 0 0.7rem', opacity: 0.9 }}>{r.body}</p>
+                {r.body.includes('2.84') || r.body.includes('5.53') ? <span className="retracted-label">{c ? 'Отозвано' : 'Withdrawn'}</span> : null}
+                <p style={{ fontSize: '0.93rem', lineHeight: 1.6, margin: '0 0 0.7rem', opacity: 0.9 }}>{markRetractedNumbers(r.body)}</p>
                 <p style={{ fontSize: '0.85rem', lineHeight: 1.55, margin: 0, opacity: 0.75, borderLeft: '2px solid var(--accent)', paddingLeft: '0.85rem' }}>{r.how}</p>
               </div>
             ))}
