@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
-import { publishedPosts, postBySlug, type Block, type Post } from '../data/blog/posts'
+import { publishedPosts, postBySlug } from '../data/blog/index'
+import type { Block, Post, PostBody, PostMeta } from '../data/blog/types'
 import { useI18n } from '../i18n/context'
 
 // The blog was English-only whatever the language switcher said. These are the
@@ -24,6 +25,7 @@ const UI = {
     copyLink: 'Copy link',
     copied: 'Copied',
     feed: 'RSS',
+    loading: 'Loading post…',
   },
   ru: {
     blog: 'Блог',
@@ -41,12 +43,27 @@ const UI = {
     copyLink: 'Скопировать ссылку',
     copied: 'Скопировано',
     feed: 'RSS',
+    loading: 'Загрузка поста…',
   },
 } as const
 
 /** A post in the reader's language, or the English one when there is no translation. */
 function localise(post: Post, lang: string): Post {
   return lang === 'ru' && post.ru ? { ...post, ...post.ru } : post
+}
+
+function localiseMeta(post: PostMeta, lang: string): PostMeta {
+  return lang === 'ru' && post.ru ? { ...post, ...post.ru } : post
+}
+
+const bodyModules = import.meta.glob('../data/blog/bodies/*.ts') as Record<
+  string,
+  () => Promise<PostBody>
+>
+
+function loadPostBody(slug: string) {
+  const loader = bodyModules[`../data/blog/bodies/${slug}.ts`]
+  return loader ? loader() : Promise.resolve(undefined)
 }
 
 function ui(lang: string) {
@@ -83,7 +100,7 @@ const card: React.CSSProperties = {
  * пост остался бы без названия там, где картинки нет (dev, локальный dist,
  * отключённые изображения). Для читалок заголовок есть всегда, скрытым.
  */
-function BlogCard({ post, lang, minLabel }: { post: Post; lang: string; minLabel: string }) {
+function BlogCard({ post, lang, minLabel }: { post: PostMeta; lang: string; minLabel: string }) {
   const [cover, setCover] = useState<'pending' | 'shown' | 'failed'>('pending')
   return (
     <Link to={`/blog/${post.slug}`} style={card} className="blog-card">
@@ -225,7 +242,7 @@ function renderBlock(b: Block, i: number) {
 }
 
 /** Renders before the body on purpose: what is not proven comes first, not last. */
-function OpenQuestions({ post, lang }: { post: Post; lang: string }) {
+function OpenQuestions({ post, lang }: { post: PostMeta; lang: string }) {
   if (!post.openQuestions.length) return null
   return (
     <section
@@ -249,7 +266,7 @@ function OpenQuestions({ post, lang }: { post: Post; lang: string }) {
   )
 }
 
-function Receipts({ post, lang }: { post: Post; lang: string }) {
+function Receipts({ post, lang }: { post: PostMeta; lang: string }) {
   if (!post.receipts.length) return null
   return (
     <section style={{ margin: '2.4em 0' }}>
@@ -289,7 +306,7 @@ export function postUrl(slug: string, lang = 'en') {
  * script that reads the reader before they have decided to share anything. A
  * link costs nothing and tracks nobody.
  */
-function Share({ post, lang }: { post: Post; lang: string }) {
+function Share({ post, lang }: { post: PostMeta; lang: string }) {
   const t = ui(lang)
   const [copied, setCopied] = useState(false)
   const url = postUrl(post.slug, lang)
@@ -343,7 +360,7 @@ function Share({ post, lang }: { post: Post; lang: string }) {
 export function BlogIndex() {
   const { lang } = useI18n()
   const t = ui(lang)
-  const items = publishedPosts().map((p) => localise(p, lang))
+  const items = publishedPosts().map((p) => localiseMeta(p, lang))
   return (
     <main>
       <Navigation />
@@ -378,9 +395,22 @@ export function BlogPost() {
   const { lang } = useI18n()
   const t = ui(lang)
   const source = slug ? postBySlug(slug) : undefined
-  const post = source ? localise(source, lang) : undefined
+  const [body, setBody] = useState<PostBody>()
 
-  if (!post || !post.published) {
+  useEffect(() => {
+    let active = true
+    setBody(undefined)
+    if (source?.published) {
+      loadPostBody(source.slug).then((loaded) => {
+        if (active) setBody(loaded)
+      })
+    }
+    return () => {
+      active = false
+    }
+  }, [source?.slug, source?.published])
+
+  if (!source || !source.published) {
     return (
       <main>
         <Navigation />
@@ -395,6 +425,31 @@ export function BlogPost() {
       </main>
     )
   }
+
+  if (!body) {
+    return (
+      <main>
+        <Navigation />
+        <article style={wrap}>
+          <div style={meta}>
+            {source.date} · {source.readingMinutes} {t.min} · {source.tags.join(' · ')}
+          </div>
+          <h1 style={{ margin: '12px 0 16px', lineHeight: 1.25 }}>
+            {localiseMeta(source, lang).title}
+          </h1>
+          <p style={{ lineHeight: 1.7 }}>{t.loading}</p>
+        </article>
+        <Footer />
+      </main>
+    )
+  }
+
+  const fullPost: Post = {
+    ...source,
+    body: body.body,
+    ru: source.ru && body.ruBody ? { ...source.ru, body: body.ruBody } : undefined,
+  }
+  const post = localise(fullPost, lang)
 
   return (
     <main>
