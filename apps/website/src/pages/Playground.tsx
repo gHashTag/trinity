@@ -56,6 +56,7 @@ const UI = {
     metaDescription: 'Интерактивная песочница Trinity HLS для примеров преобразования исходного кода в аппаратный код.',
   },
 } as const;
+type PlaygroundUI = Record<keyof typeof UI.en, string>;
 
 // === LANGUAGES ===
 const LANGUAGES = [
@@ -157,18 +158,18 @@ int main() {
 };
 
 // === COMPILER OUTPUT GENERATOR ===
-function compile(source: string, sourceLang: string, targetLang: string, ui: typeof UI.en) {
+function compile(source: string, sourceLang: string, targetLang: string, ui: PlaygroundUI, ru: boolean) {
   const timestamp = new Date().toISOString();
   const lines = source.split('\n').length;
   
   const logs = [
     `[${timestamp}] ${ui.compiler} V5.0`,
-    `[INFO] ${ui.source}: ${sourceLang.toUpperCase()} (${lines} ${ui.source === 'Источник' ? 'строк' : 'lines'})`,
+    `[INFO] ${ui.source}: ${sourceLang.toUpperCase()} (${lines} ${ru ? 'строк' : 'lines'})`,
     `[INFO] ${ui.target}: ${targetLang.toUpperCase()}`,
     `[PASS] ${ui.lexical}... OK`,
-    `[PASS] ${ui.parsing}... ${Math.floor(lines * 1.5)} ${ui.source === 'Источник' ? 'узлов' : 'nodes'}`,
+    `[PASS] ${ui.parsing}... ${Math.floor(lines * 1.5)} ${ru ? 'узлов' : 'nodes'}`,
     `[PASS] ${ui.semantic}... OK`,
-    `[PASS] ${ui.optimization}... ${ui.source === 'Источник' ? 'применено шаблонов: 12' : '12 patterns applied'}`,
+    `[PASS] ${ui.optimization}... ${ru ? 'применено шаблонов: 12' : '12 patterns applied'}`,
     `[PASS] ${ui.scheduling} (φ = 1.618)`,
     `[PASS] ${ui.resources}: 3 DSPs, 12 BRAMs`,
     `[SUCCESS] ${ui.complete}`,
@@ -286,7 +287,7 @@ export default function Playground() {
     setLogs([`[INFO] ${ui.starting}`]);
     
     setTimeout(() => {
-      const result = compile(code, sourceLang, targetLang, ui);
+      const result = compile(code, sourceLang, targetLang, ui, lang === 'ru');
       setOutput(result.output);
       setLogs(result.logs);
       setIsCompiling(false);
