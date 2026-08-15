@@ -7,36 +7,36 @@
       "workflow": "ci.yml",
       "note": "the repository this service is built in",
       "window": 200,
-      "failures": 200,
-      "pRed": 1.0,
-      "streak": 200,
-      "streakIsLowerBound": true,
-      "bitsPerRed": null,
-      "lastGreen": null
+      "failures": 156,
+      "pRed": 0.78,
+      "streak": 0,
+      "streakIsLowerBound": false,
+      "bitsPerRed": 0.358,
+      "lastGreen": "2026-08-15T04:05:04Z"
     },
     {
       "repo": "gHashTag/trinity",
       "workflow": "conformance-selftest.yml",
       "note": "the conformance check's own self-test",
-      "window": 22,
+      "window": 25,
       "failures": 2,
-      "pRed": 0.0909,
+      "pRed": 0.08,
       "streak": 0,
       "streakIsLowerBound": false,
-      "bitsPerRed": 3.459,
-      "lastGreen": "2026-08-13T11:09:48Z"
+      "bitsPerRed": 3.644,
+      "lastGreen": "2026-08-14T11:49:50Z"
     },
     {
       "repo": "gHashTag/trinity",
       "workflow": "rtl-check-selftest.yml",
       "note": "the structural check's own self-test",
-      "window": 21,
+      "window": 24,
       "failures": 5,
-      "pRed": 0.2381,
+      "pRed": 0.2083,
       "streak": 0,
       "streakIsLowerBound": false,
-      "bitsPerRed": 2.07,
-      "lastGreen": "2026-08-13T11:09:49Z"
+      "bitsPerRed": 2.263,
+      "lastGreen": "2026-08-14T11:49:50Z"
     },
     {
       "repo": "gHashTag/tt-trinity-corona",
