@@ -136,7 +136,7 @@ export default function Footer() {
                   <div style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '1rem' }}>
                     {t.footer?.vizLaunch || 'Launch Quantum Lab'}
                   </div>
-                  <div style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>
+                  <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
                     {t.footer?.vizDesc || '29 interactive visualizations'}
                   </div>
                 </div>
@@ -218,10 +218,10 @@ export default function Footer() {
           flexWrap: 'wrap',
           gap: '1rem'
         }}>
-          <div style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>
+          <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
             © 2024-2026 TRINITY. {t.footer?.rights || 'All rights reserved.'}
           </div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'monospace' }}>
+          <div style={{ color: 'var(--muted)', fontSize: '0.82rem', fontFamily: 'monospace' }}>
             PHOENIX = 999
           </div>
         </div>

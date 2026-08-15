@@ -159,7 +159,7 @@ export default function TechDetails({ node, onClose }: TechDetailsProps) {
                   background: `${status.color}15`,
                   border: `1px solid ${status.color}44`,
                   borderRadius: '8px',
-                  fontSize: '0.75rem',
+                  fontSize: '0.82rem',
                   fontWeight: 700,
                   color: status.color
                 }}
@@ -251,7 +251,7 @@ export default function TechDetails({ node, onClose }: TechDetailsProps) {
                   />
                 </div>
                 <div style={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.82rem',
                   color: 'rgba(255, 255, 255, 0.3)',
                   marginTop: '0.5rem',
                   textAlign: 'right',
@@ -287,7 +287,7 @@ export default function TechDetails({ node, onClose }: TechDetailsProps) {
                           background: prereq.status === 'done' ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255, 255, 255, 0.03)',
                           border: `1px solid ${prereq.status === 'done' ? '#00FF8844' : 'rgba(255, 255, 255, 0.1)'}`,
                           borderRadius: '6px',
-                          fontSize: '0.75rem',
+                          fontSize: '0.82rem',
                           color: prereq.status === 'done' ? '#00FF88' : 'rgba(255, 255, 255, 0.4)',
                           fontWeight: 500
                         }}
@@ -325,7 +325,7 @@ export default function TechDetails({ node, onClose }: TechDetailsProps) {
                           background: `${branch?.color}11`,
                           border: `1px solid ${branch?.color}33`,
                           borderRadius: '6px',
-                          fontSize: '0.75rem',
+                          fontSize: '0.82rem',
                           color: branch?.color,
                           fontWeight: 500
                         }}
