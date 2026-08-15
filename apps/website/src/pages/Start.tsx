@@ -39,7 +39,7 @@ function Badge({ id, ru }: { id: string; ru: boolean }) {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
         padding: '3px 10px', borderRadius: '999px', textDecoration: 'none',
-        fontSize: '0.72rem', lineHeight: 1.6,
+        fontSize: '0.82rem', lineHeight: 1.6,
         color: ok ? 'var(--accent)' : '#ff8a6b',
         background: ok ? 'rgba(0,255,136,0.08)' : 'rgba(255,138,107,0.10)',
         border: `1px solid ${ok ? 'rgba(0,255,136,0.28)' : 'rgba(255,138,107,0.32)'}`,
@@ -71,7 +71,7 @@ function Snippet({ code }: { code: string }) {
           setCopied(true); setTimeout(() => setCopied(false), 2000)
         })}
         className="btn secondary"
-        style={{ position: 'absolute', top: '8px', right: '8px', padding: '5px 12px', fontSize: '0.72rem', zIndex: 2 }}
+        style={{ position: 'absolute', top: '8px', right: '8px', padding: '5px 12px', fontSize: '0.82rem', zIndex: 2 }}
       >
         {copied ? (lang === 'ru' ? 'Скопировано' : 'Copied') : (lang === 'ru' ? 'Скопировать' : 'Copy')}
       </button>

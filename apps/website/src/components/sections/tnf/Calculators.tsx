@@ -169,7 +169,7 @@ export default function TnfCalculators() {
               <strong style={{ fontSize: '0.96rem', fontWeight: 600 }}>{L(T.t1.h)}</strong>
               <Chip tag="derived" />
             </div>
-            <p className="tnf-mono" style={{ fontSize: '0.78rem', lineHeight: 1.6, opacity: 0.85, margin: '0 0 1.1rem', maxWidth: 'none' }}>{L(T.t1.stmt)}</p>
+            <p className="tnf-mono" style={{ fontSize: '0.82rem', lineHeight: 1.6, opacity: 0.85, margin: '0 0 1.1rem', maxWidth: 'none' }}>{L(T.t1.stmt)}</p>
 
             <Range label={L(T.t1.m)} min={1} max={23} step={1} value={M} onChange={setM} />
             <Range label={L(T.t1.es)} min={0.5} max={1} step={0.0001} value={Es} onChange={setEs} />
@@ -185,7 +185,7 @@ export default function TnfCalculators() {
               <strong style={{ fontSize: '0.96rem', fontWeight: 600 }}>{L(T.t23.h)}</strong>
               <Chip tag="proved" />
             </div>
-            <p className="tnf-mono" style={{ fontSize: '0.78rem', lineHeight: 1.6, opacity: 0.85, margin: '0 0 1.1rem', maxWidth: 'none' }}>{L(T.t23.stmt)}</p>
+            <p className="tnf-mono" style={{ fontSize: '0.82rem', lineHeight: 1.6, opacity: 0.85, margin: '0 0 1.1rem', maxWidth: 'none' }}>{L(T.t23.stmt)}</p>
 
             <Range label={L(T.t23.n)} min={4} max={32} step={1} value={N} onChange={setN} />
             <Range label={L(T.t23.b)} min={1} max={80} step={1} value={b} onChange={setB} />
@@ -204,7 +204,7 @@ export default function TnfCalculators() {
               <strong style={{ fontSize: '0.96rem', fontWeight: 600 }}>{L(T.t49.h)}</strong>
               <Chip tag="proved" />
             </div>
-            <p className="tnf-mono" style={{ fontSize: '0.78rem', lineHeight: 1.6, opacity: 0.85, margin: '0 0 1.1rem', maxWidth: 'none' }}>{L(T.t49.stmt)}</p>
+            <p className="tnf-mono" style={{ fontSize: '0.82rem', lineHeight: 1.6, opacity: 0.85, margin: '0 0 1.1rem', maxWidth: 'none' }}>{L(T.t49.stmt)}</p>
 
             <Range label={L(T.t49.et)} min={1} max={12} step={1} value={Et49} onChange={setEt49} />
 

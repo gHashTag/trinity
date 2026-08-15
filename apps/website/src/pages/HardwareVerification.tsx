@@ -290,7 +290,7 @@ function TierSection({ lang }: { lang: string }) {
                 </span>
               )}
             </h3>
-            <code style={{ fontSize: '0.76rem', opacity: 0.8 }}>{L(t.price)} · {L(t.turnaround)}</code>
+            <code style={{ fontSize: '0.82rem', opacity: 0.8 }}>{L(t.price)} · {L(t.turnaround)}</code>
           </div>
           <ul style={{ paddingLeft: '1.1rem', margin: '0.8rem 0 0' }}>
             {(ru ? t.delivers.ru : t.delivers.en).map((d) => (
@@ -319,7 +319,7 @@ function ScienceSection({ lang }: { lang: string }) {
       {THEOREMS.map((t) => (
         <div key={t.id} className="premium-card" style={{ textAlign: 'left', marginBottom: '0.9rem' }}>
           <div style={{ display: 'flex', gap: '0.7rem', alignItems: 'baseline' }}>
-            <code style={{ color: 'var(--accent)', fontSize: '0.78rem', fontWeight: 700 }}>{t.id}</code>
+            <code style={{ color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 700 }}>{t.id}</code>
             <h3 style={{ margin: 0, fontSize: 'clamp(0.98rem, 2.6vw, 1.12rem)', lineHeight: 1.35 }}>{ru ? (t.nameRu ?? t.name) : t.name}</h3>
           </div>
           <p style={{ fontSize: '0.9rem', lineHeight: 1.62, margin: '0.6rem 0 0' }}>{ru ? (t.statementRu ?? t.statement) : t.statement}</p>
@@ -331,7 +331,7 @@ function ScienceSection({ lang }: { lang: string }) {
           <p style={{ fontSize: '0.85rem', lineHeight: 1.55, margin: '0.7rem 0 0', opacity: 0.8 }}>
             <strong>{ru ? 'Не заявляет: ' : 'Does not claim: '}</strong>{ru ? (t.doesNotClaimRu ?? t.doesNotClaim) : t.doesNotClaim}
           </p>
-          <p style={{ fontSize: '0.78rem', margin: '0.6rem 0 0', opacity: 0.6 }}>
+          <p style={{ fontSize: '0.82rem', margin: '0.6rem 0 0', opacity: 0.6 }}>
             {t.url ? <a href={t.url} target="_blank" rel="noopener noreferrer">{t.citation}</a> : t.citation}
           </p>
         </div>
@@ -407,7 +407,7 @@ export default function HardwareVerification() {
             {(c ? c.signals : SIGNALS).map(([value, label]) => (
               <div key={label} style={{ textAlign: 'center', minWidth: '110px' }}>
                 <p style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
-                <p style={{ margin: 0, fontSize: '0.76rem', opacity: 0.72, lineHeight: 1.35 }}>{label}</p>
+                <p style={{ margin: 0, fontSize: '0.82rem', opacity: 0.72, lineHeight: 1.35 }}>{label}</p>
               </div>
             ))}
           </div>
@@ -560,7 +560,7 @@ export default function HardwareVerification() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
             {(c ? c.tiers : TIERS).map((t) => (
               <div key={t.name} className="premium-card" style={{ padding: '1.5rem' }}>
-                <p style={{ fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
+                <p style={{ fontSize: '0.82rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7, margin: '0 0 0.4rem' }}>{t.name}</p>
                 <p style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--accent)', margin: '0 0 0.6rem' }}>{t.price}</p>
                 <p style={{ fontSize: '0.9rem', lineHeight: 1.55, margin: 0, opacity: 0.88 }}>{t.body}</p>
               </div>
@@ -577,7 +577,7 @@ export default function HardwareVerification() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}
+                style={{ fontSize: '0.82rem', color: 'var(--muted)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}
               >
                 {ru ? label.ru : label.en}
               </a>
