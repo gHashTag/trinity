@@ -1,0 +1,47 @@
+{
+  "ru": {
+    "verification": [
+      "Hamlet & Taylor",
+      "Arcuri, Iqbal & Briand",
+      "Inozemtseva & Holmes",
+      "Tasiran & Keutzer",
+      "DeMillo, Lipton & Sayward",
+      "Goodenough & Gerhart",
+      "Shannon,",
+      "Campbell,",
+      "Wald,",
+      "Cousot & Cousot",
+      "Prentice,",
+      "Parnas,",
+      "Beer, Ben-David, Eisner & Rodeh",
+      "Zig Language Reference",
+      "Juergens, Deissenboeck, Hummel & Wagner",
+      "Dolstra, “The Purely Functional Software Deployment Model”",
+      "Beizer, “Software Testing Techniques”",
+      "Pillai, Chidambaram, Alagappan, Al-Kiswany",
+      "Avižienis, Laprie, Randell & Landwehr"
+    ],
+    "resources": [
+      "GoldenFloat: A Phi-Derived Static-Split Floating-Point Family",
+      "An 83-Format Numeric Catalog with Bit-Exact Conformance Vectors",
+      "GoldenFloat: φ-Optimal Floating-Point Formats",
+      "Trinity S³AI Framework — Complete Research Collection",
+      "gHashTag/trinity: Trinity v2.0.2",
+      "Trinity B001: Ternary Neural Networks",
+      "Trinity B002: Zero-DSP FPGA Architecture",
+      "Trinity B003: TRI-27 ISA",
+      "Trinity B004: Queen Lotus Cycle",
+      "Trinity B006: Sacred GF16/TF3",
+      "Trinity B007: VSA Operations",
+      "#110 — raise clock-buffer",
+      "#111 — preplace fabric-driven",
+      "#112 — don't emit a conflicting",
+      "#113 — preplace the single-site",
+      "#115 — initialise all four IFF"
+    ],
+    "about": [
+      "An 83-Format Numeric Catalog with Bit-Exact Conformance Vectors"
+    ]
+  },
+  "en": {}
+}
