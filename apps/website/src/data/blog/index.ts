@@ -3,6 +3,35 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    "slug": "a-health-snapshot-changed-its-denominator",
+    "title": "A health snapshot changed its numbers, not its contract",
+    "summary": "A fresh repository commit updates the CI health snapshot from 156 to 143 failures in a 200-run window and records the denominator and exclusions that give those numbers meaning.",
+    "date": "2026-08-16",
+    "readingMinutes": 4,
+    "tags": ["CI", "Measurement", "Reproducibility", "Dashboards"],
+    "receipts": [
+      { "label": "gHashTag/trinity commit 6227bed — signal health refresh", "href": "https://github.com/gHashTag/trinity/commit/6227bed26d3097e817455a5e5958deffd75b106c" },
+      { "label": "signalHealth.json at the committed revision", "href": "https://github.com/gHashTag/trinity/blob/6227bed26d3097e817455a5e5958deffd75b106c/apps/website/src/data/signalHealth.json" }
+    ],
+    "openQuestions": [
+      "The commit records a refreshed data file; this post does not independently re-run or audit the complete run history.",
+      "The lower failure count is not attributed here to a particular code or workflow change.",
+      "The snapshot describes the metric's classification of recorded outcomes; it does not establish that the CI jobs themselves are correct.",
+      "No FPGA, silicon, speed, energy, or downstream-model result is claimed by this post."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Снимок здоровья изменил числа, но не контракт",
+      "summary": "Свежий коммит обновляет снимок здоровья CI: со 156 до 143 отказов в окне из 200 прогонов, одновременно фиксируя знаменатель и правила исключения.",
+      "openQuestions": [
+        "Коммит записывает обновлённый data-файл; отдельный полный аудит истории прогонов в этом посте не выполнялся.",
+        "Меньшее число отказов здесь не приписывается конкретной правке кода или workflow.",
+        "Снимок описывает классификацию записанных исходов этой метрикой, но не устанавливает корректность самих CI-задач.",
+        "Этот пост не заявляет результата на FPGA, кремнии, по скорости, энергии или по downstream-модели."
+      ]
+    }
+  },
+  {
     "slug": "a-red-gate-was-missing-its-input",
     "title": "A red gate was missing its input",
     "summary": "A merged FPGA-repository audit shows how a missing checkout turned twelve unchecked disagreements into apparent fixes, while two other failures were ordinary runner plumbing.",
