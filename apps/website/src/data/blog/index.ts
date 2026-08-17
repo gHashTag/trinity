@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'a-gate-that-rejected-its-own-users',
+    title: 'A gate that rejected its own users',
+    summary: 'A floor I added asserted five report lines and failed three of the four normal design shapes; a workflow gated on a label that did not exist, so every "Start a run" button led nowhere. Both were correct about what they required and silent about whether it could be met.',
+    date: '2026-08-17',
+    readingMinutes: 7,
+    tags: ['Verification', 'CI', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/trinity PR #792 — count the checks that ran, not the lines that matched', href: 'https://github.com/gHashTag/trinity/pull/792' },
+      { label: 'gHashTag/trinity PR #791 — the floor this corrects', href: 'https://github.com/gHashTag/trinity/pull/791' },
+      { label: 'gHashTag/t27 issue #2176 — the CLI nothing built', href: 'https://github.com/gHashTag/t27/issues/2176' }
+    ],
+    openQuestions: [
+      'How long the missing label had been breaking the request path is not bounded: nothing recorded an attempt, so the cost is unknown rather than small.',
+      'The four fixtures cover the shapes I could think of. The failure this post describes is precisely that the author is badly placed to enumerate valid forms, so a fifth shape may still be rejected.',
+      'The new floor counts checks, and a check that runs but measures nothing would still increment it. It removes one way to be wrong, not the class.',
+      'No end-to-end request has yet been driven through the repaired issue path from a stranger\u2019s repository.'
+    ],
+    published: true,
+    ru: {
+      title: 'Гейт, который отверг собственных пользователей',
+      summary: 'Порог, который я добавил, требовал пять строк отчёта и валил три из четырёх нормальных форм дизайна; воркфлоу открывался по метке, которой не существовало, поэтому каждая кнопка «Start a run» вела в никуда. Обе проверки были правы в том, что требовали, и молчали о том, выполнимо ли требование.',
+      openQuestions: [
+        'Сколько времени отсутствующая метка ломала путь запроса — не ограничено: ни одна попытка не записывалась, поэтому цена неизвестна, а не мала.',
+        'Четыре образца покрывают те формы, которые я смог придумать. Ошибка, о которой пост, ровно в том, что автор плохо годится для перечисления допустимых форм, — пятая может отвергаться до сих пор.',
+        'Новый порог считает проверки, и проверка, которая выполнилась, но ничего не измерила, всё равно его увеличит. Убран один способ ошибиться, а не класс.',
+        'Сквозной запрос из чужого репозитория через починенный путь ещё не прогнан.'
+      ]
+    }
+  },
+  {
     slug: 'a-multiplicity-correction-changed-the-deployment-reading',
     title: 'A multiplicity correction changed the deployment reading',
     summary: 'A merged research note shows how a nine-placement selection by mean margin becomes a narrower claim after the selection family is included in the correction.',

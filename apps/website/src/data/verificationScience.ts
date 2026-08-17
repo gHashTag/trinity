@@ -523,6 +523,45 @@ export const THEOREMS: Theorem[] = [
     doesNotClaimRu:
       'Что внешний инструмент также непременно поймал бы это. Утверждается лишь, что никакой внутренний инструмент не мог, поэтому проверка репозитория должна начинаться с той, которая запускается до того, как запускается что-либо в нём.',
   },
+  {
+    id: 'T28',
+    name: 'A rule keyed on metadata another system must supply fails silently when that metadata cannot exist',
+    statement:
+      'When a gate fires on a label, tag or annotation that a second system is responsible for attaching, the gate has two failure modes, and only one of them is visible. If the condition is wrong, runs fail loudly. If the metadata can never be attached at all, the gate simply never fires: no error, no log line, no run. The second is indistinguishable from "nothing happened yet", which is also what success looks like before the first request arrives.',
+    worked:
+      'The issue template behind every "Start a run" button on this site declared `labels: ["verification-request"]`, and the workflow gated on exactly that name. The label did not exist in the repository. GitHub does not apply a template label that is missing and does not warn — so every visitor who followed the call to action opened an issue nothing ever picked up, while the template promised a reply "usually within the hour". One API call fixed it; nothing had reported it for as long as it had been wrong.',
+    citation:
+      'Xu, Jin, Zhang, Zhou et al., “Do Not Blame Users for Misconfigurations”, SOSP 2013',
+    url: 'https://doi.org/10.1145/2517349.2522727',
+    doesNotClaim:
+      'That the gate was wrong to require the label. The requirement is correct; what was missing is any assertion that the thing it requires can exist. A rule and its precondition are separate claims and need separate checks.',
+  },
+  {
+    id: 'T29',
+    name: 'A gate that counts representations rejects every valid form its author did not enumerate',
+    statement:
+      'Counting the textual shape of results instead of the events that produced them turns a completeness check into a pattern-match against the author\u2019s imagination. Every legitimate case whose output takes a form not in the pattern is failed, and the failure is attributed to the case rather than to the counter. The defect grows with the number of valid representations, which is exactly the set an author is worst placed to enumerate.',
+    worked:
+      'A floor added here asserted that five checks emit five summary lines matching PASS or FAIL. Two ordinary designs break that without touching what it measures: a purely combinational one emitted NOTE, and one with no declared source list emitted nothing on the glob path \u2014 the flow\u2019s own default. Measured one variable at a time, three of four legitimate configurations failed; the fourth was the shape the author happened to test. Counting checks executed instead of lines matched returns four of four, and still fails a declared-but-absent file and an inferred latch.',
+    citation:
+      'Manheim & Garrabrant, “Categorizing Variants of Goodhart’s Law”, arXiv:1803.04585, 2018',
+    url: 'https://arxiv.org/abs/1803.04585',
+    doesNotClaim:
+      'That counting events is sufficient. A counter can still be incremented by a check that did nothing. It removes one specific way to be wrong \u2014 confusing the description of a result with its occurrence \u2014 and leaves the rest.',
+  },
+  {
+    id: 'T30',
+    name: 'An artefact no automated process builds has no known state, and the absence of failures is not evidence',
+    statement:
+      'Defects are discovered by execution. Where nothing executes an artefact, the count of known defects is zero for reasons that have nothing to do with the artefact, and a reader who treats that zero as a measurement has inverted the evidence. This is the constructive half of "testing shows the presence of bugs, never their absence": with no testing at all, the observation carries no information in either direction.',
+    worked:
+      'A repository here holds 35 workflows and none of them built its command-line crate. `cargo build` on the default branch failed on a binary asset committed to a feature branch and never to the trunk, so the tool could not be built from a clean checkout at all — while an autonomous loop committed into it continuously. On another branch the same crate had ten undefined symbols, from functions written in three earlier commits and later deleted with their call sites left behind. Both states persisted because there was no signal that could be red.',
+    citation:
+      'Collberg & Proebsting, “Repeatability in Computer Systems Research”, CACM 59(3), 2016; cf. Dijkstra, “Notes on Structured Programming”, 1970',
+    url: 'https://doi.org/10.1145/2812803',
+    doesNotClaim:
+      'That building an artefact establishes it is correct. It moves the artefact from unknown to compiled, which is a much weaker statement — and the only one available before anything runs it.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
