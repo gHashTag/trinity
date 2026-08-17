@@ -205,7 +205,13 @@ jobs:
           else
             echo "sources: no source_files in info.yaml, falling back to the glob"
             # shellcheck disable=SC2086
-            SRC=$(ls $SRC_GLOB 2>/dev/null | grep -v '_tb\.v$' | tr '\n' ' ')
+            # `|| true` because both halves of this pipeline fail on a normal
+            # answer: `ls` when the glob matches nothing, `grep -v` when every
+            # file it sees is a testbench. Under the default `bash -e` with
+            # pipefail either one aborts the step — which means the careful
+            # "no sources found" error twelve lines below has never been
+            # reachable. A guard that cannot run is not a guard.
+            SRC=$(ls $SRC_GLOB 2>/dev/null | grep -v '_tb\.v$' | tr '\n' ' ' || true)
             # This path emitted no verdict at all, so a design with no
             # source_files list produced a four-line report — and the floor
             # below then failed it while every check above had passed. The
