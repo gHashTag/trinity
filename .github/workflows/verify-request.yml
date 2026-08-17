@@ -190,9 +190,16 @@ jobs:
           echo "### Synthesis, generic mapping" >> report.md
           if [ "${ELABORATED:-no}" != "yes" ]; then
             echo "NOT ESTABLISHED — the design did not elaborate." >> report.md
-          elif yosys -q -p "read_verilog -sv $VFLAGS $SRC; synth -top $TOP; stat" > stat.txt 2>&1; then
+          elif yosys -p "read_verilog -sv $VFLAGS $SRC; synth -top $TOP; stat" > stat.txt 2>&1; then
             echo '```' >> report.md
-            sed -n '/Printing statistics/,/^$/p' stat.txt | head -30 >> report.md
+            # -q suppressed everything including stat, so this printed an
+            # empty code fence and looked like a design with no cells.
+            STATBLOCK=$(sed -n '/Printing statistics/,/^$/p' stat.txt | head -30)
+            if [ -z "$STATBLOCK" ]; then
+              echo "NOT ESTABLISHED — synthesis produced no statistics block." >> report.md
+            else
+              printf '%s\n' "$STATBLOCK" >> report.md
+            fi
             echo '```' >> report.md
           else
             echo "FAIL:" >> report.md
