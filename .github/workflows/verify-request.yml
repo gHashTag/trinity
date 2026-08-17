@@ -204,6 +204,15 @@ jobs:
             # the blank-line placement differ between them. Anchor on the
             # counter lines instead, which both versions print, and fall back
             # to the tail of the file rather than to nothing.
+            # Four attempts at this extraction came back empty from CI, and
+            # every diagnosis was inferred from the RENDERED REPORT — the one
+            # artefact that does not contain the evidence. stat.txt goes to the
+            # log now. Observability before mutation; I spent four commits
+            # doing the reverse.
+            echo "stat.txt: $(wc -c < stat.txt) bytes, $(wc -l < stat.txt) lines"
+            echo "---- stat.txt (head) ----"; head -40 stat.txt
+            echo "---- stat.txt (tail) ----"; tail -20 stat.txt
+            echo "-------------------------"
             STATBLOCK=$(grep -E '^[[:space:]]*[0-9]+[[:space:]]+(wires|cells|public wires|wire bits|port bits|ports|memories|processes)([[:space:]]|$)|^[[:space:]]*[0-9]+[[:space:]]+\$' stat.txt | head -40)
             if [ -z "$STATBLOCK" ]; then
               STATBLOCK=$(grep -E 'Number of (wires|cells)' stat.txt | tail -6)
