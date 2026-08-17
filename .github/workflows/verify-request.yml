@@ -110,6 +110,7 @@ jobs:
         run: |
           set -uo pipefail
           SRC=$(find design -name '*.v' -not -name '*_tb.v' -not -path '*/test/*' | tr '\n' ' ')
+          ALL_V="$SRC"
           # Drop files that another source `include`s. Passing both the includer
           # and the included file defines every module twice, and yosys stops
           # with "Re-definition of module". That is how the second real run of
@@ -148,9 +149,10 @@ jobs:
 
           echo "" >> report.md
           echo "### Elaboration" >> report.md
-              ELABORATED=no
+          ELABORATED=no
           if iverilog -g2012 $IFLAGS -o /dev/null $SRC 2> elab.txt; then
             echo "PASS — elaborates cleanly." >> report.md
+            ELABORATED=yes
           else
             echo "FAIL:" >> report.md
             echo '```' >> report.md; head -25 elab.txt >> report.md; echo '```' >> report.md
@@ -199,7 +201,11 @@ jobs:
 
           echo "" >> report.md
           echo "### Registers" >> report.md
-          POSEDGE=$(grep -rc "posedge" $SRC 2>/dev/null | awk -F: '{s+=$2} END {print s+0}')
+          # Count over every source in the design, not the deduped list: the
+          # files dropped as `include`d are exactly where the registers live.
+          # Reading only the list said "this design holds no registers" about a
+          # six-stage pipeline.
+          POSEDGE=$(grep -rc "posedge" $ALL_V 2>/dev/null | awk -F: '{s+=$2} END {print s+0}')
           if [ "$POSEDGE" = "0" ]; then
             echo "This design holds no registers, so it has no clock domain and no achieved frequency can belong to it. For a combinational block the comparable figure is propagation delay, not a clock rate." >> report.md
           else
