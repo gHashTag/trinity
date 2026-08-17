@@ -3,6 +3,37 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'a-multiplicity-correction-changed-the-deployment-reading',
+    title: 'A multiplicity correction changed the deployment reading',
+    summary: 'A merged research note shows how a nine-placement selection by mean margin becomes a narrower claim after the selection family is included in the correction.',
+    date: '2026-08-17',
+    readingMinutes: 6,
+    tags: ['Measurement', 'Reproducibility', 'Statistics', 'Quantization'],
+    receipts: [
+      { label: 'gHashTag/trinity-fpga PR #566 — merged research note', href: 'https://github.com/gHashTag/trinity-fpga/pull/566' },
+      { label: 'merged commit 1900c36 — consistency and substrate notes', href: 'https://github.com/gHashTag/trinity-fpga/commit/1900c36a18c1b73560a94655c1a527f61d0a92d5' },
+      { label: 'CONSISTENCY_BEATS_MAGNITUDE_2026-08-12.md at the merged revision', href: 'https://github.com/gHashTag/trinity-fpga/blob/1900c36a18c1b73560a94655c1a527f61d0a92d5/research/block/CONSISTENCY_BEATS_MAGNITUDE_2026-08-12.md' },
+      { label: 'SUBSTRATE_IS_PERISHABLE_2026-08-12.md at the merged revision', href: 'https://github.com/gHashTag/trinity-fpga/blob/1900c36a18c1b73560a94655c1a527f61d0a92d5/research/block/SUBSTRATE_IS_PERISHABLE_2026-08-12.md' }
+    ],
+    openQuestions: [
+      'The post does not establish that MID is better than NEAR0; their paired comparison is a tie with p = 0.157 at n = 5.',
+      'Five checkpoints and one wikitext-2 evaluation do not establish how the placement behaves on unseen models, datasets, or training settings.',
+      'The note reports model-level margins for block 32 with E8M0 and lm_head excluded; it is not a general result for every layer or format.',
+      'No FPGA, speed, energy, or downstream deployment result is claimed by this post.'
+    ],
+    published: true,
+    ru: {
+      title: 'Поправка на множественные сравнения изменила чтение развёртывания',
+      summary: 'Смерженная исследовательская заметка показывает, как выбор из девяти placements по среднему отступу становится более узким утверждением после учёта семейства сравнения.',
+      openQuestions: [
+        'Пост не доказывает, что MID лучше NEAR0: их парное сравнение даёт ничью и p = 0,157 при n = 5.',
+        'Пять контрольных точек и одна проверка на wikitext-2 не доказывают поведение placement на новых моделях, датасетах или режимах обучения.',
+        'Заметка сообщает метрики на уровне модели для блока 32 с E8M0 и без lm_head; это не общий результат для каждого слоя или формата.',
+        'Пост не заявляет результата на FPGA, по скорости, энергии или в реальном развёртывании.'
+      ]
+    }
+  },
+  {
     "slug": "a-health-snapshot-changed-its-denominator",
     "title": "A health snapshot changed its numbers, not its contract",
     "summary": "A fresh repository commit updates the CI health snapshot from 156 to 143 failures in a 200-run window and records the denominator and exclusions that give those numbers meaning.",
