@@ -128,6 +128,15 @@ jobs:
             done
             SRC=$(echo $KEEP)
           fi
+          # Dropping included files from the list is only half of it — the
+          # tools still have to find them. Without -I, `include "top.v"` fails
+          # with "Include file top.v not found" and the design does not
+          # elaborate at all.
+          INCDIRS=$(for f in $SRC; do dirname "$f"; done | sort -u)
+          IFLAGS=""; VFLAGS=""
+          for d in $INCDIRS; do IFLAGS="$IFLAGS -I$d"; VFLAGS="$VFLAGS -I $d"; done
+          echo "sources: $SRC"
+          echo "include path:$IFLAGS"
           if [ -z "$SRC" ]; then
             echo "verdict=no Verilog found" >> "$GITHUB_OUTPUT"
             exit 0
@@ -139,7 +148,8 @@ jobs:
 
           echo "" >> report.md
           echo "### Elaboration" >> report.md
-          if iverilog -g2012 -o /dev/null $SRC 2> elab.txt; then
+              ELABORATED=no
+          if iverilog -g2012 $IFLAGS -o /dev/null $SRC 2> elab.txt; then
             echo "PASS — elaborates cleanly." >> report.md
           else
             echo "FAIL:" >> report.md
@@ -162,7 +172,9 @@ jobs:
           #    accuses a stranger's design of a defect the checker invented.
           #    Measured on the first real request: with -sv the same design and
           #    the same pass list exit 0. There was no latch.
-          if yosys -q -p "read_verilog -sv $SRC; hierarchy -top $TOP; proc; opt; select -assert-none t:\$_DLATCH_* t:\$dlatch t:\$_DLATCHSR_*" 2> latch.txt; then
+          if [ "${ELABORATED:-no}" != "yes" ]; then
+            echo "NOT ESTABLISHED — the design did not elaborate, so nothing below it was measured." >> report.md
+          elif yosys -q -p "read_verilog -sv $VFLAGS $SRC; hierarchy -top $TOP; proc; opt; select -assert-none t:\$_DLATCH_* t:\$dlatch t:\$_DLATCHSR_*" 2> latch.txt; then
             echo "PASS — no latches inferred." >> report.md
           elif grep -qiE "ERROR:|syntax error|is only supported in" latch.txt; then
             echo "NOT ESTABLISHED — the design did not get as far as the latch check, so nothing is claimed about latches:" >> report.md
@@ -174,7 +186,9 @@ jobs:
 
           echo "" >> report.md
           echo "### Synthesis, generic mapping" >> report.md
-          if yosys -q -p "read_verilog -sv $SRC; synth -top $TOP; stat" > stat.txt 2>&1; then
+          if [ "${ELABORATED:-no}" != "yes" ]; then
+            echo "NOT ESTABLISHED — the design did not elaborate." >> report.md
+          elif yosys -q -p "read_verilog -sv $VFLAGS $SRC; synth -top $TOP; stat" > stat.txt 2>&1; then
             echo '```' >> report.md
             sed -n '/Printing statistics/,/^$/p' stat.txt | head -30 >> report.md
             echo '```' >> report.md
