@@ -1,6 +1,7 @@
 import { postsIndex } from './index'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_a_gate_that_rejected_its_own_users, ruBody as ruBody_a_gate_that_rejected_its_own_users } from './bodies/a-gate-that-rejected-its-own-users'
 import { body as body_a_broken_reference_looks_exactly_like_broken_code, ruBody as ruBody_a_broken_reference_looks_exactly_like_broken_code } from './bodies/a-broken-reference-looks-exactly-like-broken-code'
 import { body as body_a_red_gate_was_missing_its_input, ruBody as ruBody_a_red_gate_was_missing_its_input } from './bodies/a-red-gate-was-missing-its-input'
 import { body as body_five_reasons_the_build_was_red, ruBody as ruBody_five_reasons_the_build_was_red } from './bodies/five-reasons-the-build-was-red'
@@ -19,6 +20,7 @@ import { body as body_open_gigabit_ethernet_artix7, ruBody as ruBody_open_gigabi
 import { body as body_a_multiplicity_correction_changed_the_deployment_reading, ruBody as ruBody_a_multiplicity_correction_changed_the_deployment_reading } from './bodies/a-multiplicity-correction-changed-the-deployment-reading'
 
 const bodies: Record<string, PostBody> = {
+  'a-gate-that-rejected-its-own-users': { body: body_a_gate_that_rejected_its_own_users, ruBody: ruBody_a_gate_that_rejected_its_own_users },
   'a-health-snapshot-changed-its-denominator': { body: body_a_health_snapshot_changed_its_denominator, ruBody: ruBody_a_health_snapshot_changed_its_denominator },
   'a-broken-reference-looks-exactly-like-broken-code': { body: body_a_broken_reference_looks_exactly_like_broken_code, ruBody: ruBody_a_broken_reference_looks_exactly_like_broken_code },
   'a-red-gate-was-missing-its-input': { body: body_a_red_gate_was_missing_its_input, ruBody: ruBody_a_red_gate_was_missing_its_input },
