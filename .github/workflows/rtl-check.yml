@@ -104,6 +104,13 @@ jobs:
           sudo apt-get install -y -qq yosys iverilog
           yosys -V
           iverilog -V | head -1
+          # The cell count depends on WHICH yosys this is, and apt is not pinned.
+          # Measured on one design with this exact script: yosys 0.33 reports 45
+          # cells where 0.65 reports 49, while wires (57) and flip-flops (17)
+          # agree exactly. This report tells the reader to re-run the command, so
+          # it has to say which tool produced the number, or re-running it
+          # disagrees for a reason nobody can see.
+          yosys -V | grep -oE 'Yosys [^ ]+' | head -1 > "$RUNNER_TEMP/yosys_version"
 
       - name: Check
         id: check
@@ -163,6 +170,11 @@ jobs:
               say "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING"
               exit 1
             fi
+            # Say so on the way through, too. This check used to speak only when
+            # it failed, so the report could not distinguish "checked and passed"
+            # from "never ran" — which is the exact complaint this service makes
+            # about everybody else's green builds.
+            say "- **PASS** sources resolve — every file info.yaml declares is present ($(printf '%s' "$SRC" | wc -w | tr -d ' ') of them)"
           else
             echo "sources: no source_files in info.yaml, falling back to the glob"
             # shellcheck disable=SC2086
@@ -253,7 +265,8 @@ jobs:
             printf '%s\n' "$TAIL" | head -30
           fi
           if [ -n "$CELLS" ]; then
-            say "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened"
+            YOSYS_V=$(cat "$RUNNER_TEMP/yosys_version" 2>/dev/null || echo "yosys, version unrecorded")
+            say "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened — $YOSYS_V"
           else
             say "- **FAIL** synthesis produced no cell count"
             fails=$((fails+1))
