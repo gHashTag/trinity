@@ -194,7 +194,13 @@ jobs:
             echo '```' >> report.md
             # -q suppressed everything including stat, so this printed an
             # empty code fence and looked like a design with no cells.
-            STATBLOCK=$(sed -n '/Printing statistics/,/^$/p' stat.txt | head -30)
+            # The range stopped at the first blank line, which falls right
+            # after the header — so the block was two "Printing statistics."
+            # lines and no numbers. yosys prints several stat passes; the last
+            # one is the design after synthesis. Take from there, and prefer
+            # the whole-design total over the per-module breakdown.
+            LAST=$(grep -n "Printing statistics" stat.txt | tail -1 | cut -d: -f1)
+            STATBLOCK=$(sed -n "${LAST},\$p" stat.txt | grep -vE '^[[:space:]]*$' | head -40)
             if [ -z "$STATBLOCK" ]; then
               echo "NOT ESTABLISHED — synthesis produced no statistics block." >> report.md
             else
