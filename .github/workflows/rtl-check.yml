@@ -142,6 +142,10 @@ jobs:
           # step runs without `set -e` on purpose, so an undefined function is
           # simply skipped. The report lost a line and every run stayed green.
           say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          # One per completed check, whatever the verdict. Counting this rather
+          # than the shape of the text is the whole point of the fix below.
+          checks_run=0
+          verdict() { checks_run=$((checks_run+1)); say "$1"; }
           # Prefer what info.yaml declares, because that is the list a Tiny
           # Tapeout shuttle builds from — and because a declared file can sit in
           # a subdirectory the glob never sees. Measured on a real submission:
@@ -173,18 +177,23 @@ jobs:
             for f in $SRC; do [ -f "$f" ] || MISSING="$MISSING $f"; done
             if [ -n "$MISSING" ]; then
               echo "::error::info.yaml declares files that are not present:$MISSING"
-              say "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING"
+              verdict "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING"
               exit 1
             fi
             # Say so on the way through, too. This check used to speak only when
             # it failed, so the report could not distinguish "checked and passed"
             # from "never ran" — which is the exact complaint this service makes
             # about everybody else's green builds.
-            say "- **PASS** sources resolve — every file info.yaml declares is present ($(printf '%s' "$SRC" | wc -w | tr -d ' ') of them)"
+            verdict "- **PASS** sources resolve — every file info.yaml declares is present ($(printf '%s' "$SRC" | wc -w | tr -d ' ') of them)"
           else
             echo "sources: no source_files in info.yaml, falling back to the glob"
             # shellcheck disable=SC2086
             SRC=$(ls $SRC_GLOB 2>/dev/null | grep -v '_tb\.v$' | tr '\n' ' ')
+            # This path emitted no verdict at all, so a design with no
+            # source_files list produced a four-line report — and the floor
+            # below then failed it while every check above had passed. The
+            # glob is the workflow's own documented default.
+            verdict "- **PASS** sources resolve — no source_files in info.yaml; the \`$SRC_GLOB\` default matched $(printf '%s' "$SRC" | wc -w | tr -d ' ') file(s)"
           fi
           if [ -z "$SRC" ]; then
             echo "::error::no sources found: info.yaml declares none and '$SRC_GLOB' matched nothing"
@@ -204,9 +213,9 @@ jobs:
           echo "phase: elaborating"
           # 1. Elaboration.
           if iverilog -g2012 -t null -I "$INC" -s "$TOP" $SRC 2> elab.txt; then
-            say "- **PASS** elaborates — every module it instantiates is defined in the files given"
+            verdict "- **PASS** elaborates — every module it instantiates is defined in the files given"
           else
-            say "- **FAIL** elaborates"
+            verdict "- **FAIL** elaborates"
             echo '```' >> "$GITHUB_STEP_SUMMARY"; head -20 elab.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
             fails=$((fails+1))
           fi
@@ -225,9 +234,9 @@ jobs:
             echo 'select -assert-none t:$_DLATCH_* t:$_DLATCHSR_*'
           } > check.ys
           if yosys -s check.ys > yosys.txt 2>&1; then
-            say "- **PASS** no latch inferred by this flow"
+            verdict "- **PASS** no latch inferred by this flow"
           else
-            say "- **FAIL** a latch was inferred, or synthesis stopped"
+            verdict "- **FAIL** a latch was inferred, or synthesis stopped"
             echo '```' >> "$GITHUB_STEP_SUMMARY"; tail -20 yosys.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
             fails=$((fails+1))
           fi
@@ -271,9 +280,9 @@ jobs:
           fi
           if [ -n "$CELLS" ]; then
             YOSYS_V=$(cat "$RUNNER_TEMP/yosys_version" 2>/dev/null || echo "yosys, version unrecorded")
-            say "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened — $YOSYS_V"
+            verdict "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened — $YOSYS_V"
           else
-            say "- **FAIL** synthesis produced no cell count"
+            verdict "- **FAIL** synthesis produced no cell count"
             fails=$((fails+1))
           fi
           if [ -n "$EXPECT_FLOPS" ]; then
@@ -285,9 +294,9 @@ jobs:
             fi
           fi
           if [ "${FLOPS:-0}" -gt 0 ]; then
-            say "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question"
+            verdict "- **PASS** has clocked logic — $FLOPS flip-flops, so a clock frequency is a meaningful question"
           else
-            say "- **NOTE** purely combinational — no clock frequency can belong to it; the comparable figure is propagation delay"
+            verdict "- **PASS** purely combinational — no flip-flops, so no clock frequency can belong to it; the comparable figure is propagation delay"
           fi
 
           {
@@ -311,15 +320,19 @@ jobs:
             echo "::error::expected this design to fail a check and every check passed — the check is not catching what it is meant to"
             exit 1
           fi
-          # The report is counted, not trusted. A `say` that never runs — an
-          # undefined function, a branch not taken — removes a line from the
-          # summary and changes nothing else, because this step has no `set -e`.
-          # Five checks each emit exactly one PASS or FAIL line.
-          LINES=$(grep -c '^- \*\*\(PASS\|FAIL\)\*\*' "$GITHUB_STEP_SUMMARY" || true)
-          if [ "${LINES:-0}" -lt 5 ]; then
-            echo "::error::the report carries only ${LINES:-0} verdict lines; five checks should each emit one"
+          # The report is counted, not trusted — but count the CHECKS THAT RAN,
+          # not the summary lines matching a PASS/FAIL pattern. The line count
+          # is a proxy, and two legitimate design shapes moved it without
+          # touching the thing it was meant to measure: a purely combinational
+          # design emitted NOTE rather than PASS, and a design with no
+          # source_files list emitted nothing on the glob path. Both produced a
+          # short report and were failed for it while every check had passed.
+          #
+          # `checks_run` is incremented once per check, whatever its verdict.
+          if [ "${checks_run:-0}" -ne 5 ]; then
+            echo "::error::$checks_run of 5 checks ran; the report is incomplete"
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "**FAIL** the report is incomplete: ${LINES:-0} verdict lines where five were expected." >> "$GITHUB_STEP_SUMMARY"
+            echo "**FAIL** only ${checks_run:-0} of 5 checks ran." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
