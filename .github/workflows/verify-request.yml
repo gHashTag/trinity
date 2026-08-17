@@ -84,6 +84,9 @@ jobs:
           set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y -qq yosys iverilog
+          # The cell count depends on which yosys this is and apt is unpinned;
+          # rtl-check.yml records the version and this path did not.
+          yosys -V | grep -oE 'Yosys [^ ]+' | head -1 > "$RUNNER_TEMP/yosys_version"
           yosys -V
           iverilog -V | head -1
 
@@ -127,8 +130,25 @@ jobs:
 
           echo "" >> report.md
           echo "### Latch check" >> report.md
-          if yosys -q -p "read_verilog $SRC; hierarchy -top $TOP; proc; opt; select -assert-none t:\$_DLATCH_* t:\$dlatch t:\$_DLATCHSR_*" 2> latch.txt; then
+          # Two things were wrong here and they compounded.
+          #
+          # 1. `read_verilog` without -sv reads SystemVerilog as Verilog. On a
+          #    real submission that produced "Static cast is only supported in
+          #    SystemVerilog mode", yosys exited non-zero, and this branch
+          #    reported it as an inferred latch. rtl-check.yml has read -sv all
+          #    along; the two paths disagreed about the language.
+          #
+          # 2. A non-zero exit here means "the assertion did not pass", which
+          #    includes "the file would not parse". Reporting that as "a latch
+          #    was inferred — the classic bug that only shows up on silicon"
+          #    accuses a stranger's design of a defect the checker invented.
+          #    Measured on the first real request: with -sv the same design and
+          #    the same pass list exit 0. There was no latch.
+          if yosys -q -p "read_verilog -sv $SRC; hierarchy -top $TOP; proc; opt; select -assert-none t:\$_DLATCH_* t:\$dlatch t:\$_DLATCHSR_*" 2> latch.txt; then
             echo "PASS — no latches inferred." >> report.md
+          elif grep -qiE "^[^ ]*ERROR|syntax error|is only supported in" latch.txt; then
+            echo "NOT ESTABLISHED — the design did not get as far as the latch check, so nothing is claimed about latches:" >> report.md
+            echo '```' >> report.md; head -20 latch.txt >> report.md; echo '```' >> report.md
           else
             echo "FAIL — a latch was inferred. This is the classic bug that only shows up on silicon:" >> report.md
             echo '```' >> report.md; head -20 latch.txt >> report.md; echo '```' >> report.md
@@ -136,7 +156,7 @@ jobs:
 
           echo "" >> report.md
           echo "### Synthesis, generic mapping" >> report.md
-          if yosys -q -p "read_verilog $SRC; synth -top $TOP; stat" > stat.txt 2>&1; then
+          if yosys -q -p "read_verilog -sv $SRC; synth -top $TOP; stat" > stat.txt 2>&1; then
             echo '```' >> report.md
             sed -n '/Printing statistics/,/^$/p' stat.txt | head -30 >> report.md
             echo '```' >> report.md
