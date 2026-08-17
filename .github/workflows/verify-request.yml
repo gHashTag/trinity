@@ -199,8 +199,18 @@ jobs:
             # lines and no numbers. yosys prints several stat passes; the last
             # one is the design after synthesis. Take from there, and prefer
             # the whole-design total over the per-module breakdown.
-            LAST=$(grep -n "Printing statistics" stat.txt | tail -1 | cut -d: -f1)
-            STATBLOCK=$(sed -n "${LAST},\$p" stat.txt | grep -vE '^[[:space:]]*$' | head -40)
+            # Tuned against local yosys 0.65 twice and it kept coming back
+            # empty from CI, which installs 0.33 from apt: the banner text and
+            # the blank-line placement differ between them. Anchor on the
+            # counter lines instead, which both versions print, and fall back
+            # to the tail of the file rather than to nothing.
+            STATBLOCK=$(grep -E '^[[:space:]]*[0-9]+[[:space:]]+(wires|cells|public wires|wire bits|port bits|ports|memories|processes)([[:space:]]|$)|^[[:space:]]*[0-9]+[[:space:]]+\$' stat.txt | head -40)
+            if [ -z "$STATBLOCK" ]; then
+              STATBLOCK=$(grep -E 'Number of (wires|cells)' stat.txt | tail -6)
+            fi
+            if [ -z "$STATBLOCK" ]; then
+              STATBLOCK=$(tail -25 stat.txt | grep -vE '^[[:space:]]*$')
+            fi
             if [ -z "$STATBLOCK" ]; then
               echo "NOT ESTABLISHED — synthesis produced no statistics block." >> report.md
             else
