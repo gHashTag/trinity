@@ -61,11 +61,15 @@ jobs:
           echo "## Site live gate" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
-          BUILT=$(grep -o 'assets/index-[A-Za-z0-9_-]*\.js' apps/website/dist/index.html | head -1)
+          # `|| true` because a build with no entry bundle is exactly the
+          # case the check below exists for, and without this the step aborts
+          # here instead — so "the build produced no entry bundle to compare"
+          # could never be printed.
+          BUILT=$(grep -o 'assets/index-[A-Za-z0-9_-]*\.js' apps/website/dist/index.html | head -1 || true)
           # Cache-bust: a stale edge copy would otherwise read as a real mismatch
           # long after the deploy landed, and the gate would cry wolf every time.
           LIVE=$(curl -fsS -H 'Cache-Control: no-cache' "https://t27.ai/?gate=${GITHUB_RUN_ID}" \
-                 | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | head -1)
+                 | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | head -1 || true)
 
           # An empty value is a failure, never a match. Both of these have
           # returned empty from a pattern bug before and been read as agreement.
