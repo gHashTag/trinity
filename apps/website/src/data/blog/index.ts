@@ -3,6 +3,37 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'an-inert-filter-is-safest-until-it-works',
+    title: 'An inert filter is safest until it works',
+    summary: 'The first request this service ever served came back telling a clean design it had a silicon bug. Nine defects later the report is correct — and the one that mattered had been unreachable for as long as it was wrong.',
+    date: '2026-08-17',
+    readingMinutes: 9,
+    tags: ['Verification', 'CI', 'Self-critique', 'Measurement'],
+    receipts: [
+      { label: 'gHashTag/trinity #796 — the request, its wrong report, and the nine fixes', href: 'https://github.com/gHashTag/trinity/issues/796' },
+      { label: 'gHashTag/trinity #797 — SystemVerilog read as Verilog, blamed on the design', href: 'https://github.com/gHashTag/trinity/pull/797' },
+      { label: 'gHashTag/trinity #807 — head closed the pipe and pipefail killed the step', href: 'https://github.com/gHashTag/trinity/pull/807' },
+      { label: 'gHashTag/trinity #810 — eighteen workflows, 8182 runs, zero green', href: 'https://github.com/gHashTag/trinity/issues/810' }
+    ],
+    openQuestions: [
+      'Nine defects were found on one submission. A design of a different shape — purely combinational, or multi-file without includes — has not been put through this path, and there is no reason to think the count would be zero.',
+      'The eighteen never-green workflows are measured and published but not triaged. Deciding fix, dispatch-only or delete across three repositories is not done.',
+      'The free tier still installs yosys unpinned, so its cell count depends on whichever version apt ships that week; wires and flip-flops were stable across the two tested.',
+      'No third-party design has been through the repaired issue path. The one measurement here is my own press of my own button.'
+    ],
+    published: true,
+    ru: {
+      title: 'Инертный фильтр безопасен, пока не заработает',
+      summary: 'Первый запрос, который этот сервис обслужил, сообщил чистому дизайну, что у него кремниевый баг. Девять дефектов спустя отчёт верен — а главный из них был недостижим ровно столько, сколько был неверен.',
+      openQuestions: [
+        'Девять дефектов найдены на одной заявке. Дизайн другой формы — чисто комбинационный или многофайловый без include — через этот путь не проходил, и нет оснований думать, что там ноль.',
+        'Восемнадцать никогда не зеленевших воркфлоу измерены и опубликованы, но не разобраны. Решение «починить, только по кнопке или удалить» по трём репозиториям не принято.',
+        'Бесплатный тир по-прежнему ставит yosys без закрепления версии, поэтому счёт ячеек зависит от того, что отгрузил apt; провода и триггеры на двух проверенных версиях совпадали.',
+        'Ни один чужой дизайн через починенный путь не прогонялся. Единственное измерение здесь — моё собственное нажатие моей собственной кнопки.'
+      ]
+    }
+  },
+  {
     slug: 'a-gate-that-rejected-its-own-users',
     title: 'A gate that rejected its own users',
     summary: 'A floor I added asserted five report lines and failed three of the four normal design shapes; a workflow gated on a label that did not exist, so every "Start a run" button led nowhere. Both were correct about what they required and silent about whether it could be met.',
