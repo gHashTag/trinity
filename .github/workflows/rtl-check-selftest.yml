@@ -50,6 +50,11 @@ jobs:
       top: fixture_latch
       path: tests/rtl-check-fixtures/latch
       expect: fail
+      # Name the check, not just "something went red". Without this, a fixture
+      # that stopped inferring a latch and failed for an unrelated reason would
+      # keep this job green while latch detection was broken — the negative
+      # control would be verdict-blind.
+      expect_fail: no latch inferred
 
   # The assertion itself needs a red before it can be trusted, for exactly the
   # reason it was added: the old self-test passed because nothing it checked

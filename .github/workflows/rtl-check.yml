@@ -42,6 +42,16 @@ on:
         required: false
         default: 'src'
         type: string
+      expect_fail:
+        description: >-
+          The name of the check that must be the one to fail, e.g.
+          'no latch inferred'. Without it, `expect: fail` asserts only that
+          SOMETHING went red — so a fixture that stops exhibiting its planted
+          defect and fails for an unrelated reason keeps the self-test green
+          while the detection it guards is broken.
+        required: false
+        type: string
+        default: ''
       expect:
         description: >-
           'pass' (default) or 'fail'. Only the self-test sets this: a job that
@@ -119,6 +129,7 @@ jobs:
           SRC_GLOB: ${{ inputs.sources }}
           INC: ${{ inputs.include_dir }}
           EXPECT: ${{ inputs.expect }}
+          EXPECT_FAIL: ${{ inputs.expect_fail }}
           EXPECT_FLOPS: ${{ inputs.expect_flops }}
         working-directory: ${{ inputs.path }}
         run: |
@@ -146,6 +157,11 @@ jobs:
           # than the shape of the text is the whole point of the fix below.
           checks_run=0
           verdict() { checks_run=$((checks_run+1)); say "$1"; }
+          # Which checks went red, by name. `expect: fail` used to assert only
+          # that the count was non-zero, which cannot tell a planted latch from
+          # an unrelated breakage in the same fixture.
+          failed_names=""
+          note_fail() { failed_names="$failed_names|$1"; }
           # Prefer what info.yaml declares, because that is the list a Tiny
           # Tapeout shuttle builds from — and because a declared file can sit in
           # a subdirectory the glob never sees. Measured on a real submission:
@@ -177,6 +193,7 @@ jobs:
             for f in $SRC; do [ -f "$f" ] || MISSING="$MISSING $f"; done
             if [ -n "$MISSING" ]; then
               echo "::error::info.yaml declares files that are not present:$MISSING"
+              note_fail "sources resolve"
               verdict "- **FAIL** sources resolve — info.yaml declares files that are not present:$MISSING"
               exit 1
             fi
@@ -215,6 +232,7 @@ jobs:
           if iverilog -g2012 -t null -I "$INC" -s "$TOP" $SRC 2> elab.txt; then
             verdict "- **PASS** elaborates — every module it instantiates is defined in the files given"
           else
+            note_fail "elaborates"
             verdict "- **FAIL** elaborates"
             echo '```' >> "$GITHUB_STEP_SUMMARY"; head -20 elab.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
             fails=$((fails+1))
@@ -236,6 +254,7 @@ jobs:
           if yosys -s check.ys > yosys.txt 2>&1; then
             verdict "- **PASS** no latch inferred by this flow"
           else
+            note_fail "no latch inferred"
             verdict "- **FAIL** a latch was inferred, or synthesis stopped"
             echo '```' >> "$GITHUB_STEP_SUMMARY"; tail -20 yosys.txt >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
             fails=$((fails+1))
@@ -282,6 +301,7 @@ jobs:
             YOSYS_V=$(cat "$RUNNER_TEMP/yosys_version" 2>/dev/null || echo "yosys, version unrecorded")
             verdict "- **PASS** synthesises — $CELLS cells, $WIRES wires, flattened — $YOSYS_V"
           else
+            note_fail "synthesises"
             verdict "- **FAIL** synthesis produced no cell count"
             fails=$((fails+1))
           fi
@@ -313,8 +333,22 @@ jobs:
 
           if [ "${EXPECT:-pass}" = "fail" ]; then
             if [ "$fails" -gt 0 ]; then
+              # Which check failed, not merely that one did. A fixture that
+              # stops exhibiting its planted defect and goes red for an
+              # unrelated reason would otherwise keep this green while the
+              # detection it exists to guard is broken.
+              if [ -n "${EXPECT_FAIL:-}" ]; then
+                case "$failed_names" in
+                  *"|$EXPECT_FAIL"*) : ;;
+                  *)
+                    echo "::error::expected '$EXPECT_FAIL' to fail; what failed was:${failed_names//|/, }"
+                    echo "" >> "$GITHUB_STEP_SUMMARY"
+                    echo "**FAIL** expected \`$EXPECT_FAIL\` to be the failing check; the failures were:${failed_names//|/, }" >> "$GITHUB_STEP_SUMMARY"
+                    exit 1 ;;
+                esac
+              fi
               echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo "Expected to fail, and did ($fails check(s) red). Reported green so the self-test can assert it." >> "$GITHUB_STEP_SUMMARY"
+              echo "Expected to fail, and did ($fails check(s) red:${failed_names//|/, }). Reported green so the self-test can assert it." >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
             echo "::error::expected this design to fail a check and every check passed — the check is not catching what it is meant to"
