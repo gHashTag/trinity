@@ -117,7 +117,7 @@ jobs:
           # this path failed: project.v `include`s five siblings, and the glob
           # handed yosys all six.
           INCLUDED=$(grep -rhoE '^[[:space:]]*`include[[:space:]]+"[^"]+"' $SRC 2>/dev/null \
-                     | sed -E 's/.*"([^"]+)".*/\1/' | sort -u)
+                     | sed -E 's/.*"([^"]+)".*/\1/' | sort -u || true)
           if [ -n "$INCLUDED" ]; then
             KEEP=""
             for f in $SRC; do
@@ -225,7 +225,7 @@ jobs:
             # counters actually take, across both yosys versions, and verified
             # against captured output containing all of them plus the lines
             # that must NOT match.
-            STATBLOCK=$(grep -E 'Number of [a-z ]+:[[:space:]]+[0-9]+|^[[:space:]]+\$[A-Za-z_][A-Za-z0-9_]*[[:space:]]+[0-9]+[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+(wires|wire bits|cells|public wires|ports|port bits|memories|processes)[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+\$[A-Za-z_]' stat.txt | tail -40)
+            STATBLOCK=$(grep -E 'Number of [a-z ]+:[[:space:]]+[0-9]+|^[[:space:]]+\$[A-Za-z_][A-Za-z0-9_]*[[:space:]]+[0-9]+[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+(wires|wire bits|cells|public wires|ports|port bits|memories|processes)[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+\$[A-Za-z_]' stat.txt | tail -40 || true)
             if [ -z "$STATBLOCK" ]; then
               STATBLOCK=$(tail -25 stat.txt | grep -vE '^[[:space:]]*$')
             fi
@@ -246,7 +246,12 @@ jobs:
           # files dropped as `include`d are exactly where the registers live.
           # Reading only the list said "this design holds no registers" about a
           # six-stage pipeline.
-          POSEDGE=$(grep -rc "posedge" $ALL_V 2>/dev/null | awk -F: '{s+=$2} END {print s+0}')
+          # All three of these are "grep found nothing", which is a normal
+          # answer — a design with no includes, no statistics, or no posedge.
+          # Under bash -e with pipefail that answer kills the step: the second
+          # smoke test, a design with no `include` at all, produced no report
+          # whatsoever because of this line's sibling above.
+          POSEDGE=$(grep -rc "posedge" $ALL_V 2>/dev/null | awk -F: '{s+=$2} END {print s+0}' || true)
           if [ "$POSEDGE" = "0" ]; then
             echo "This design holds no registers, so it has no clock domain and no achieved frequency can belong to it. For a combinational block the comparable figure is propagation delay, not a clock rate." >> report.md
           else
