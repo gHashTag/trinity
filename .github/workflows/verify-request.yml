@@ -247,6 +247,22 @@ jobs:
             echo "Sequential design — $POSEDGE clocked blocks. Achieved frequency is measurable and comes in the hardware stage." >> report.md
           fi
 
+      - name: Show the report that will be posted
+        if: always()
+        run: |
+          set -uo pipefail
+          # The rendered comment has been truncating after the synthesis fence
+          # and I have twice diagnosed that from the comment itself, which is
+          # downstream of everything. This prints what was actually written.
+          if [ -f report.md ]; then
+            echo "report.md: $(wc -c < report.md) bytes, $(wc -l < report.md) lines"
+            echo "---- report.md ----"
+            cat -A report.md | sed -n '1,120p'
+            echo "-------------------"
+          else
+            echo "report.md does not exist"
+          fi
+
       - name: Post the result
         if: always()
         uses: actions/github-script@v7
