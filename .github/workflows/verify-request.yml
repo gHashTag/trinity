@@ -110,6 +110,24 @@ jobs:
         run: |
           set -uo pipefail
           SRC=$(find design -name '*.v' -not -name '*_tb.v' -not -path '*/test/*' | tr '\n' ' ')
+          # Drop files that another source `include`s. Passing both the includer
+          # and the included file defines every module twice, and yosys stops
+          # with "Re-definition of module". That is how the second real run of
+          # this path failed: project.v `include`s five siblings, and the glob
+          # handed yosys all six.
+          INCLUDED=$(grep -rhoE '^[[:space:]]*`include[[:space:]]+"[^"]+"' $SRC 2>/dev/null \
+                     | sed -E 's/.*"([^"]+)".*/\1/' | sort -u)
+          if [ -n "$INCLUDED" ]; then
+            KEEP=""
+            for f in $SRC; do
+              b=$(basename "$f")
+              case "$INCLUDED" in
+                *"$b"*) echo "sources: $b is \`include\`d by another file; not passed separately" ;;
+                *) KEEP="$KEEP $f" ;;
+              esac
+            done
+            SRC=$(echo $KEEP)
+          fi
           if [ -z "$SRC" ]; then
             echo "verdict=no Verilog found" >> "$GITHUB_OUTPUT"
             exit 0
@@ -146,7 +164,7 @@ jobs:
           #    the same pass list exit 0. There was no latch.
           if yosys -q -p "read_verilog -sv $SRC; hierarchy -top $TOP; proc; opt; select -assert-none t:\$_DLATCH_* t:\$dlatch t:\$_DLATCHSR_*" 2> latch.txt; then
             echo "PASS — no latches inferred." >> report.md
-          elif grep -qiE "^[^ ]*ERROR|syntax error|is only supported in" latch.txt; then
+          elif grep -qiE "ERROR:|syntax error|is only supported in" latch.txt; then
             echo "NOT ESTABLISHED — the design did not get as far as the latch check, so nothing is claimed about latches:" >> report.md
             echo '```' >> report.md; head -20 latch.txt >> report.md; echo '```' >> report.md
           else
