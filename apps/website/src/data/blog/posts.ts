@@ -16,6 +16,7 @@ import { body as body_a_repair_reaches_only_the_copy_it_lands_in, ruBody as ruBo
 import { body as body_green_ci_does_not_mean_usable, ruBody as ruBody_green_ci_does_not_mean_usable } from './bodies/green-ci-does-not-mean-usable'
 import { body as body_scale_field_width_already_published, ruBody as ruBody_scale_field_width_already_published } from './bodies/scale-field-width-already-published'
 import { body as body_open_gigabit_ethernet_artix7, ruBody as ruBody_open_gigabit_ethernet_artix7 } from './bodies/open-gigabit-ethernet-artix7'
+import { body as body_a_multiplicity_correction_changed_the_deployment_reading, ruBody as ruBody_a_multiplicity_correction_changed_the_deployment_reading } from './bodies/a-multiplicity-correction-changed-the-deployment-reading'
 
 const bodies: Record<string, PostBody> = {
   'a-health-snapshot-changed-its-denominator': { body: body_a_health_snapshot_changed_its_denominator, ruBody: ruBody_a_health_snapshot_changed_its_denominator },
@@ -34,6 +35,7 @@ const bodies: Record<string, PostBody> = {
   'green-ci-does-not-mean-usable': { body: body_green_ci_does_not_mean_usable, ruBody: ruBody_green_ci_does_not_mean_usable },
   'scale-field-width-already-published': { body: body_scale_field_width_already_published, ruBody: ruBody_scale_field_width_already_published },
   'open-gigabit-ethernet-artix7': { body: body_open_gigabit_ethernet_artix7, ruBody: ruBody_open_gigabit_ethernet_artix7 },
+  'a-multiplicity-correction-changed-the-deployment-reading': { body: body_a_multiplicity_correction_changed_the_deployment_reading, ruBody: ruBody_a_multiplicity_correction_changed_the_deployment_reading },
 }
 
 export type { Block, Post } from './types'
