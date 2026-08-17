@@ -86,9 +86,9 @@ jobs:
           sudo apt-get install -y -qq yosys iverilog
           # The cell count depends on which yosys this is and apt is unpinned;
           # rtl-check.yml records the version and this path did not.
-          yosys -V | grep -oE 'Yosys [^ ]+' | head -1 > "$RUNNER_TEMP/yosys_version"
+          yosys -V | grep -oE 'Yosys [^ ]+' | awk 'NR<=1' > "$RUNNER_TEMP/yosys_version"
           yosys -V
-          iverilog -V | head -1
+          iverilog -V | awk 'NR<=1'
 
       - name: Fetch the design
         if: steps.parse.outputs.clonable == 'yes' && steps.parse.outputs.topok == 'yes'
@@ -99,7 +99,7 @@ jobs:
           # Passed through the environment rather than interpolated into the
           # shell, so an issue body cannot inject a command.
           git clone --depth 1 "$DESIGN_REPO" design
-          find design -name '*.v' -o -name '*.sv' | head -40
+          find design -name '*.v' -o -name '*.sv' | awk 'NR<=40'
 
       - name: Check it
         if: steps.parse.outputs.clonable == 'yes' && steps.parse.outputs.topok == 'yes'
@@ -219,7 +219,7 @@ jobs:
             # first. Every previous pattern here matched one format and was
             # written while looking at the other, which is why four attempts
             # came back empty from CI and passed locally.
-            STATBLOCK=$(grep -E '^[[:space:]]*(Number of )?[A-Za-z$_][^:]*:?[[:space:]]+[0-9]+[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+[A-Za-z$_]' stat.txt | head -40)
+            STATBLOCK=$(grep -E '^[[:space:]]*(Number of )?[A-Za-z$_][^:]*:?[[:space:]]+[0-9]+[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+[A-Za-z$_]' stat.txt | awk 'NR<=40')
             if [ -z "$STATBLOCK" ]; then
               STATBLOCK=$(tail -25 stat.txt | grep -vE '^[[:space:]]*$')
             fi
