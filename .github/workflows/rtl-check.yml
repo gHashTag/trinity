@@ -136,6 +136,12 @@ jobs:
           # step simply stopping: the clean fixture died after printing the
           # sources line with nothing after it, no error text at all.
           set -o pipefail
+
+          # Defined FIRST, before any caller. It used to be defined further down,
+          # and a `say` added above it produced no output and no error — this
+          # step runs without `set -e` on purpose, so an undefined function is
+          # simply skipped. The report lost a line and every run stayed green.
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
           # Prefer what info.yaml declares, because that is the list a Tiny
           # Tapeout shuttle builds from — and because a declared file can sit in
           # a subdirectory the glob never sees. Measured on a real submission:
@@ -188,7 +194,6 @@ jobs:
           # summary is where a reader looks; the log is where a failure is
           # diagnosed, and a check whose result appears only in the summary
           # leaves a failing run saying nothing about what failed.
-          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
           echo "phase: sources resolved -> $SRC"
           echo "## RTL structural check" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -306,4 +311,16 @@ jobs:
             echo "::error::expected this design to fail a check and every check passed — the check is not catching what it is meant to"
             exit 1
           fi
+          # The report is counted, not trusted. A `say` that never runs — an
+          # undefined function, a branch not taken — removes a line from the
+          # summary and changes nothing else, because this step has no `set -e`.
+          # Five checks each emit exactly one PASS or FAIL line.
+          LINES=$(grep -c '^- \*\*\(PASS\|FAIL\)\*\*' "$GITHUB_STEP_SUMMARY" || true)
+          if [ "${LINES:-0}" -lt 5 ]; then
+            echo "::error::the report carries only ${LINES:-0} verdict lines; five checks should each emit one"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**FAIL** the report is incomplete: ${LINES:-0} verdict lines where five were expected." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
           exit $([ "$fails" -gt 0 ] && echo 1 || echo 0)
