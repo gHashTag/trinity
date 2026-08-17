@@ -601,6 +601,19 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That status fields are useless. They correctly report the one thing they measure. The error is treating "finished" as evidence of "did the thing", which no exit code has ever claimed.',
   },
+  {
+    id: 'T34',
+    name: 'Defects are found per new input shape, not per input',
+    statement:
+      'A pipeline branches on the structure of its input, and each branch is exercised only by inputs of the corresponding shape. So the yield of a test campaign tracks the number of distinct shapes tried, not the number of runs: repeating a shape re-exercises code that has already been exercised, and a clean run says only that the shapes tried so far are covered. A count of successful runs is therefore not evidence of correctness, and a run that finds nothing is most informative about how new its input was.',
+    worked:
+      'Four submissions were put through the same path, each with a structure the previous ones did not have. The first — a top file that includes its siblings — surfaced nine defects. The second, multi-file with no includes, surfaced one: an assignment from a grep that finds nothing aborts the step under the default shell, so the include-handling fix had only ever worked on inputs shaped like the one it was written against. The third and fourth, generated sources in a subdirectory and a purely combinational block, surfaced none. Ten defects, every one of them from a shape the path had not seen, and the clean runs arrived exactly when the shapes stopped being new.',
+    citation:
+      'Chen, Leung & Mak, “Adaptive Random Testing”, ASIAN 2004 — on spreading test inputs across the space rather than repeating within it; cf. Ammann & Offutt, “Introduction to Software Testing”, 2nd ed., CUP 2016, on input-space partitioning',
+    url: 'https://doi.org/10.1007/978-3-540-30502-6_23',
+    doesNotClaim:
+      'That shape coverage is achievable or even enumerable. The partition is imposed by the code\u2019s own branching, which is exactly what is under test, so the set of shapes is unknown until a new one fails. The usable half is the reading of a clean run: it bounds nothing, and it is weakest precisely when the input resembled the last one.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
