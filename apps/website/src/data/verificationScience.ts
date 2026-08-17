@@ -128,7 +128,7 @@ export const THEOREMS: Theorem[] = [
     name: 'Mutation score measures observability, which coverage does not',
     nameRu: 'Мутационная оценка измеряет наблюдаемость, чего покрытие не измеряет',
     statement:
-      'Mutation analysis injects a single syntactic change and asks whether the checking apparatus notices. Passing a mutant means the harness reached the code and could see the difference — reachability plus observability, where coverage measures only the first.',
+      'Mutation analysis injects a single syntactic change and asks whether the checking apparatus notices. Killing a mutant means the harness reached the code and could see the difference — a mutant that passes has survived, which is the opposite — reachability plus observability, where coverage measures only the first.',
     statementRu:
       'Мутационный анализ вносит одно синтаксическое изменение и спрашивает, замечает ли его аппарат проверки. Прохождение мутанта означает, что тестовая обвязка достигла кода и могла увидеть различие, — достижимость плюс наблюдаемость, тогда как покрытие измеряет только достижимость.',
     citation: 'DeMillo, Lipton & Sayward, “Hints on Test Data Selection”, IEEE Computer 11(4), 1978',
@@ -161,7 +161,7 @@ export const THEOREMS: Theorem[] = [
     name: 'An oracle that shares the implementation’s assumption cannot detect a fault in that assumption',
     nameRu: 'Оракул, разделяющий предпосылку реализации, не может обнаружить отказ в этой предпосылке',
     statement:
-      'Detection requires the oracle and the implementation to disagree. If both are derived from the same premise, then on every input where that premise is false they are wrong together and therefore agree — so the probability of detecting a fault in the shared premise is exactly zero, whatever the number of test cases. Independence of a checker is not a property of who wrote it; it is a property of what it was derived from.',
+      'Detection requires the oracle and the implementation to disagree. If both are derived from the same premise, then on every input where that premise is false they are wrong in the same direction, and no number of test cases bounds the probability of detecting a fault in that premise away from zero — they may still differ in rounding or ordering, so agreement is likely rather than certain, whatever the number of test cases. Independence of a checker is not a property of who wrote it; it is a property of what it was derived from.',
     statementRu:
       'Для обнаружения оракул и реализация должны расходиться. Если оба выведены из одной предпосылки, то на каждом входе, где эта предпосылка ложна, они ошибаются вместе и потому совпадают — следовательно, вероятность обнаружить отказ в общей предпосылке в точности равна нулю, независимо от числа тестовых случаев. Независимость проверяющего не является свойством того, кто его написал; это свойство того, из чего он выведен.',
     worked:
@@ -357,7 +357,7 @@ export const THEOREMS: Theorem[] = [
     workedRu:
       'Пакет здесь объявлял 640 блоков тестов в 87 файлах. `zig build test` завершился с 0. Набор выполнил ноль из них, потому что каждый `pub const x = @import("x.zig")` не имел ссылок и поэтому никогда не анализировался. Код завершения был корректен и ничего не значил. Счётчик — «All 0 tests passed» — является независимой наблюдаемой величиной; после добавления по одной ссылки на импорт выполнились 254 теста, и один отказал.',
     citation:
-      'Beer, Ben-David, Eisner & Rodeh, “Efficient Detection of Vacuity in ACTL Formulas”, Formal Methods in System Design 18(2), 2001; Kupferman & Vardi, “Vacuity detection in temporal model checking”, STTT 4(2), 2003',
+      'Beer, Ben-David, Eisner & Rodeh, “Efficient Detection of Vacuity in Temporal Model Checking”, Formal Methods in System Design 18(2), 2001; Kupferman & Vardi, “Vacuity detection in temporal model checking”, STTT 4(2), 2003',
     url: 'https://doi.org/10.1023/A:1008779610539',
     doesNotClaim:
       'That a non-zero test count is sufficient. A suite that runs 254 tests can still be vacuous in the same sense if the assertions never discriminate. The count rules out one specific failure mode — the emptiest one — and no others.',
