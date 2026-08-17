@@ -562,6 +562,45 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That building an artefact establishes it is correct. It moves the artefact from unknown to compiled, which is a much weaker statement — and the only one available before anything runs it.',
   },
+  {
+    id: 'T31',
+    name: 'A default limit is a silent truncation, and it looks exactly like the end of the data',
+    statement:
+      'Interfaces that paginate, cap or head their output return a prefix by default, and a prefix is indistinguishable from a complete answer when you do not know the total. Every conclusion drawn from a defaulted query inherits an unstated "…of the first N", and the failure is invisible precisely because nothing is missing from what you can see.',
+    worked:
+      'Three consecutive readings said a report was still broken. It had been correct for hours. `gh api .../comments` returns 30 records by default and the newer ones were on page two; a section was judged by its first fourteen lines while the number sought was on line thirty; and the runs being polled had been *skipped*, so the artefact genuinely had not changed. None of the three produced an error. All three produced a confident wrong answer about work that was already finished.',
+    citation:
+      'Bainbridge, “Ironies of Automation”, Automatica 19(6), 1983 — on operators reasoning from displays that quietly omit',
+    url: 'https://doi.org/10.1016/0005-1098(83)90046-8',
+    doesNotClaim:
+      'That paginating is wrong. It is necessary. The claim is narrower: a total must be fetched or the query must be exhaustive before any conclusion is drawn from what came back, and neither is the default anywhere.',
+  },
+  {
+    id: 'T32',
+    name: 'A filter that matches nothing cannot fail, so an inert check is safest right up until it works',
+    statement:
+      'A pipeline stage whose selector matches no input exercises none of the code downstream of it. Bugs in that code are unreachable and therefore invisible, and the stage reports success. Repairing the selector does not introduce those bugs — it makes them reachable for the first time, so the repair is what appears to break the system.',
+    worked:
+      '`grep … | head -40` under `set -o pipefail` kills the step: head exits at its limit, grep receives EPIPE, the pipeline returns non-zero. It had been harmless for as long as the pattern matched nothing, because head never reached forty lines and never closed the pipe. Fixing the pattern is what killed the step — and the truncated report that resulted read exactly like a fifth failure of the extraction rather than the first success.',
+    citation:
+      'Leveson & Turner, “An Investigation of the Therac-25 Accidents”, IEEE Computer 26(7), 1993 — on latent faults exposed by removing an unrelated bottleneck',
+    url: 'https://doi.org/10.1109/MC.1993.274940',
+    doesNotClaim:
+      'That the repair caused the fault. It did not: the fault was already written and already wrong. What the repair changed is whether anything reached it — which is the only property that distinguishes a latent bug from no bug at all.',
+  },
+  {
+    id: 'T33',
+    name: 'A step that reports success without acting is the failure mode a status field cannot express',
+    statement:
+      'Exit status describes whether a step finished, not whether it did anything. A conditional that never fires, a write to a file nothing reads, a comment posted to a stale target: all of these complete successfully. The only way to distinguish acting from finishing is to measure the artefact the step was supposed to change, and to measure it after the step rather than inside it.',
+    worked:
+      'A verification run reported every step green while its posting step created nothing, its report file stopped mid-sentence, and a report line whose helper function was defined fourteen lines below its call printed nothing at all — the shell had no `set -e`, so an undefined function was skipped in silence. Each of these was green. What settled them was printing the artefact — `cat -A report.md` in the log — not reading any status.',
+    citation:
+      'Gunawi et al., “What Bugs Live in the Cloud? A Study of 3000+ Issues in Cloud Systems”, SoCC 2014, on silent failures and their detectability',
+    url: 'https://doi.org/10.1145/2670979.2670986',
+    doesNotClaim:
+      'That status fields are useless. They correctly report the one thing they measure. The error is treating "finished" as evidence of "did the thing", which no exit code has ever claimed.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
