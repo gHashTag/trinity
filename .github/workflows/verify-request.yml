@@ -213,10 +213,13 @@ jobs:
             echo "---- stat.txt (head) ----"; head -40 stat.txt
             echo "---- stat.txt (tail) ----"; tail -20 stat.txt
             echo "-------------------------"
-            STATBLOCK=$(grep -E '^[[:space:]]*[0-9]+[[:space:]]+(wires|cells|public wires|wire bits|port bits|ports|memories|processes)([[:space:]]|$)|^[[:space:]]*[0-9]+[[:space:]]+\$' stat.txt | head -40)
-            if [ -z "$STATBLOCK" ]; then
-              STATBLOCK=$(grep -E 'Number of (wires|cells)' stat.txt | tail -6)
-            fi
+            # Read from the log, not guessed at. yosys 0.33 (what apt gives
+            # the runner) prints "Number of cells:   14129" — noun first,
+            # count last. yosys 0.65 (my machine) prints "16 cells" — count
+            # first. Every previous pattern here matched one format and was
+            # written while looking at the other, which is why four attempts
+            # came back empty from CI and passed locally.
+            STATBLOCK=$(grep -E '^[[:space:]]*(Number of )?[A-Za-z$_][^:]*:?[[:space:]]+[0-9]+[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+[A-Za-z$_]' stat.txt | head -40)
             if [ -z "$STATBLOCK" ]; then
               STATBLOCK=$(tail -25 stat.txt | grep -vE '^[[:space:]]*$')
             fi
