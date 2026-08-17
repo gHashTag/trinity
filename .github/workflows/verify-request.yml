@@ -225,7 +225,7 @@ jobs:
             # counters actually take, across both yosys versions, and verified
             # against captured output containing all of them plus the lines
             # that must NOT match.
-            STATBLOCK=$(grep -E 'Number of [a-z ]+:[[:space:]]+[0-9]+|^[[:space:]]+\$[A-Za-z_][A-Za-z0-9_]*[[:space:]]+[0-9]+[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+(wires|wire bits|cells|public wires|ports|port bits|memories|processes)[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+\$[A-Za-z_]' stat.txt | awk 'NR<=40')
+            STATBLOCK=$(grep -E 'Number of [a-z ]+:[[:space:]]+[0-9]+|^[[:space:]]+\$[A-Za-z_][A-Za-z0-9_]*[[:space:]]+[0-9]+[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+(wires|wire bits|cells|public wires|ports|port bits|memories|processes)[[:space:]]*$|^[[:space:]]*[0-9]+[[:space:]]+\$[A-Za-z_]' stat.txt | tail -40)
             if [ -z "$STATBLOCK" ]; then
               STATBLOCK=$(tail -25 stat.txt | grep -vE '^[[:space:]]*$')
             fi
