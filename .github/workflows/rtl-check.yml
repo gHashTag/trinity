@@ -108,18 +108,24 @@ jobs:
           fi
 
       - name: Install the open toolchain
+        # PINNED. This used to be `apt-get install yosys`, which is whatever
+        # Ubuntu shipped that week — 0.33 on today's runners, while the cell
+        # counts published on the site were produced by 0.65. Measured on one
+        # design with an identical script: 45 cells against 49, about 9%,
+        # while wires and flip-flops agreed exactly. The page promises "the
+        # exact toolchain versions, so anyone can re-run the whole flow" and
+        # an unpinned apt makes that untrue for the number people quote.
+        uses: YosysHQ/setup-oss-cad-suite@v3
+        with:
+          osscadsuite-version: '2026-08-12'
+      
+      - name: Name the toolchain this run used
         run: |
           set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq yosys iverilog
           yosys -V
           iverilog -V | head -1
-          # The cell count depends on WHICH yosys this is, and apt is not pinned.
-          # Measured on one design with this exact script: yosys 0.33 reports 45
-          # cells where 0.65 reports 49, while wires (57) and flip-flops (17)
-          # agree exactly. This report tells the reader to re-run the command, so
-          # it has to say which tool produced the number, or re-running it
-          # disagrees for a reason nobody can see.
+          # The report prints this beside the cell count; a number without its
+          # instrument is not reproducible.
           yosys -V | grep -oE 'Yosys [^ ]+' | head -1 > "$RUNNER_TEMP/yosys_version"
 
       - name: Check
