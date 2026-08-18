@@ -115,9 +115,33 @@ jobs:
         # while wires and flip-flops agreed exactly. The page promises "the
         # exact toolchain versions, so anyone can re-run the whole flow" and
         # an unpinned apt makes that untrue for the number people quote.
-        uses: YosysHQ/setup-oss-cad-suite@v3
+        uses: YosysHQ/setup-oss-cad-suite@v4
         with:
-          osscadsuite-version: '2026-08-12'
+          # `osscadsuite-version` is deprecated in favour of `version`, and with
+          # v3 the request was simply ignored: a run asking for 2026-08-12
+          # downloaded releases/download/2026-08-18/…-20260818.tgz. Two runs of
+          # the identical "pin" reported Yosys 0.68+71 and 0.68+80 because they
+          # were different releases. The pin was a no-op, and a version number
+          # taken from it was published on the site as if it were fixed.
+          version: '2026-08-12'
+          github-token: ${{ github.token }}
+
+      - name: The toolchain must be the one that was asked for
+        run: |
+          set -euo pipefail
+          # A pin that is ignored fails silently; this makes it fail loudly.
+          # Asserted on the suite release, which is what is actually pinnable —
+          # the yosys build string inside a release is not a separate knob.
+          WANT=20260812
+          GOT=$(yosys -V | grep -oE '[0-9]{8}' | head -1 || true)
+          echo "yosys: $(yosys -V | head -1)"
+          if ! command -v yosys >/dev/null; then
+            echo "::error::the toolchain did not install"; exit 1
+          fi
+          if [ -n "$GOT" ] && [ "$GOT" != "$WANT" ]; then
+            echo "::error::asked for oss-cad-suite $WANT and got $GOT — the pin was not honoured"
+            exit 1
+          fi
       
       - name: Name the toolchain this run used
         run: |
