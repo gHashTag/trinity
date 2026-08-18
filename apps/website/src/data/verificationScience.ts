@@ -26,6 +26,25 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T50',
+    name: 'A representation that leaves its own domain must pay the exit at the boundary',
+    nameRu: 'Представление, покидающее собственную область, платит за выход на границе',
+    statement:
+      'A design whose internal representation differs from its interface is not complete until the conversion is inside the measured design. Comparing such a design against one that already speaks the interface attributes the conversion cost to neither, and flatters the first. The exit is part of the design, not an accounting detail.',
+    statementRu:
+      'Проект, чьё внутреннее представление отличается от интерфейсного, не завершён, пока преобразование не входит в измеряемый контур. Сравнение такого проекта с тем, который уже говорит на языке интерфейса, не относит стоимость преобразования ни к одному из них и льстит первому. Выход — часть проекта, а не деталь учёта.',
+    worked:
+      'A ternary layer accumulating in Z[phi] emits the pair (a, b); a layer with a multiplier emits one number. Measured without the reconstruction the pair layer was 660 cells at 204.08 MHz against 1098 at 69.21 -- 1.66x smaller and 2.95x faster. With the reconstruction inside it, 839 cells at 106.26 MHz: 1.31x smaller and 1.54x faster. The reconstruction is shift-adds and no multiplier, and it still halves the clock.',
+    workedRu:
+      'Тернарный слой, накапливающий в ℤ[φ], выдаёт пару (a, b); слой с умножителем выдаёт одно число. Без реконструкции парный слой измерялся как 660 ячеек на 204.08 МГц против 1098 на 69.21 — в 1.66 раза меньше и в 2.95 раза быстрее. С реконструкцией внутри — 839 ячеек на 106.26 МГц: в 1.31 раза меньше и в 1.54 раза быстрее. Реконструкция состоит из сдвигов и сложений, без умножителя, и всё равно вдвое снижает такт.',
+    citation: 'Measured here; gHashTag/trinity-fpga #593, correcting #592',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/593',
+    doesNotClaim:
+      'The remaining advantage is real and smaller, and it is measured on iCE40, which has no DSP blocks and therefore penalises the multiplier maximally. It also does not say the conversion is a loss the representation was preventing: a quantised layer requantises at its boundary regardless, and the exactness bought inside the layer is not undone by rounding at the exit.',
+    doesNotClaimRu:
+      'Оставшееся преимущество реально и меньше, и измерено на iCE40, где блоков DSP нет и умножитель наказан максимально. Оно также не утверждает, что преобразование — потеря, которую представление предотвращало: квантованный слой всё равно переквантует на границе, и точность, купленная внутри слоя, округлением на выходе не отменяется.'
+  },
+  {
     id: 'T49',
     name: 'An iterative operator loses throughput; unrolling it recovers the throughput without recovering the operator',
     nameRu: 'Итеративная операция теряет пропускную способность; развёртка возвращает её, не возвращая саму операцию',
