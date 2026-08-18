@@ -26,6 +26,25 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T47',
+    name: 'Removing a fixed-cost block saves a constant, not a ratio',
+    nameRu: 'Удаление блока постоянной стоимости экономит константу, а не кратность',
+    statement:
+      'If two designs differ by one block and share everything else, the area difference between them is that block, independent of how large the shared part is. The RATIO therefore falls as the shared part grows. A saving quoted as a multiple is a statement about the size of what surrounds it, and is only transferable to another design of the same size.',
+    statementRu:
+      'Если два проекта отличаются одним блоком и совпадают во всём остальном, разница по площади равна этому блоку и не зависит от размера общей части. Поэтому КРАТНОСТЬ падает по мере роста общей части. Экономия, названная во сколько-то раз, есть утверждение о размере окружения и переносима лишь на проект того же размера.',
+    worked:
+      'A ternary layer whose per-layer scale is a Fibonacci step against the same layer with a real multiplier, Yosys 0.65 on xc7: at fan-in 16, 4299 LUT against 6591; at fan-in 64, 19158 against 21405. The difference is about 2250 LUT at both — the multiplier — while the ratio falls from 1.53x to 1.12x. The scale block measured alone had shown 7.1x, which is the same saving divided by a much smaller surround.',
+    workedRu:
+      'Тернарный слой, где послойный масштаб — шаг Фибоначчи, против того же слоя с настоящим умножителем, Yosys 0.65 на xc7: при fan-in 16 — 4299 LUT против 6591; при fan-in 64 — 19158 против 21405. Разница около 2250 LUT в обоих случаях (это и есть умножитель), а кратность падает с 1.53x до 1.12x. Отдельно измеренный блок масштаба показывал 7.1x — та же экономия, делённая на много меньшее окружение.',
+    citation: 'Measured here; gHashTag/trinity-fpga #590',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/590',
+    doesNotClaim:
+      'Area only — no Fmax was measured, no board was programmed, and the layer has no weight or activation memory. It also says nothing about which arm is preferable: with DSP blocks available the multiplier arm is smaller in LUTs and pays three DSP48 for it, and that trade depends on what the rest of the device needs.',
+    doesNotClaimRu:
+      'Только площадь: Fmax не измерялась, плата не прошивалась, у слоя нет памяти весов и активаций. Оно также не говорит, какое плечо лучше: при доступных DSP плечо с умножителем меньше по LUT и платит за это тремя DSP48, а этот обмен зависит от того, что нужно остальной части кристалла.'
+  },
+  {
     id: 'T45',
     name: 'An exact accumulator does not remove quantisation error',
     nameRu: 'Точный аккумулятор не устраняет ошибку квантования',
