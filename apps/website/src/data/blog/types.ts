@@ -6,6 +6,7 @@ export type Block =
   | { kind: 'quote'; text: string }
   | { kind: 'code'; text: string }
   | { kind: 'table'; head: string[]; rows: string[][] }
+  | { kind: 'figure'; svg: string; caption: string }
 
 export interface PostRuMeta {
   title: string

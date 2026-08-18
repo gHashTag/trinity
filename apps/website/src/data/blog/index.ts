@@ -3,6 +3,38 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'phi-is-a-scale-not-information',
+    title: 'The golden ratio in this format is a scale factor, not information',
+    summary: 'A format with phi in its name. Measured: in the two-bit digit alphabet phi is not observable at all, and a dot product of GFTernary vectors is exactly phi-squared times the same codes read as balanced ternary. The prior art put phi where it does carry information — in 2002.',
+    date: '2026-08-18',
+    readingMinutes: 8,
+    tags: ['Number formats', 'Measurement', 'Self-critique', 'FPGA'],
+    receipts: [
+      { label: 'gHashTag/trinity-fpga #582 — the native phi check, mutation-tested', href: 'https://github.com/gHashTag/trinity-fpga/pull/582' },
+      { label: 'gHashTag/trinity-fpga #584 — 1654 cells against 13, and 16/16 equivalent', href: 'https://github.com/gHashTag/trinity-fpga/pull/584' },
+      { label: 'gHashTag/t27 #2177 — tri mutate, the command that found the third vacuous check', href: 'https://github.com/gHashTag/t27/pull/2177' },
+      { label: 'Stakhov, The Computer Journal 45(2):221-236 (2002) — phi in the positional weights', href: 'https://doi.org/10.1093/comjnl/45.2.221' },
+      { label: 'Bergman, Mathematics Magazine 31:98-110 (1957) — the base-phi system underneath it', href: 'https://doi.org/10.2307/3029218' }
+    ],
+    openQuestions: [
+      'The area comparison is one multiplier on Yosys 0.65. Whether a board-level synthesis folds the fp32 path or pays for it has not been measured, and that is the number that decides whether this matters in practice.',
+      'The RTL quantiser has an asymmetric dead zone (+0.25 against 0.5) where the oracle documents a pure sign rule. They agree on every reachable input today. Nothing checks that they still agree if the input set widens.',
+      'The mirror-symmetric prior art was reproduced for N = 0..12 by exhaustive search. No claim is made about larger N, and no adder was built.',
+      'Whether phi as an exponent base would beat base 2 on a real workload is untested. It is not used as a base anywhere in this codebase — the ladders are base 2, and one is base 3.'
+    ],
+    published: true,
+    ru: {
+      title: 'Золотое сечение в этом формате — масштаб, а не информация',
+      summary: 'Формат, у которого φ в названии. Измерено: в двухбитном алфавите цифр φ вообще не наблюдаем, а скалярное произведение векторов GFTernary точно равно φ² на те же коды, прочитанные как сбалансированная троичная. Предшествующая работа поставила φ туда, где он несёт информацию, ещё в 2002-м.',
+      openQuestions: [
+        'Сравнение площади — один умножитель на Yosys 0.65. Свернёт ли fp32-путь синтез на уровне платы или заплатит за него, не измерено, а именно это решает, важно ли всё на практике.',
+        'У квантователя RTL несимметричная мёртвая зона (+0.25 против 0.5), тогда как оракул документирует чистое правило знака. Сегодня они совпадают на всех достижимых входах. Ничто не проверяет, что они совпадут при расширении множества входов.',
+        'Зеркально-симметричная предшествующая система воспроизведена для N = 0..12 полным перебором. Про большие N ничего не утверждается, сумматор не построен.',
+        'Побьёт ли φ как основание экспоненты основание 2 на реальной нагрузке — не проверено. В этой кодовой базе φ основанием не используется нигде: лестницы на основании 2, одна на основании 3.'
+      ]
+    }
+  },
+  {
     slug: 'an-inert-filter-is-safest-until-it-works',
     title: 'An inert filter is safest until it works',
     summary: 'The first request this service ever served came back telling a clean design it had a silicon bug. Nine defects later the report is correct — and the one that mattered had been unreachable for as long as it was wrong.',
