@@ -19,7 +19,8 @@
       "Dolstra, “The Purely Functional Software Deployment Model”",
       "Beizer, “Software Testing Techniques”",
       "Pillai, Chidambaram, Alagappan, Al-Kiswany",
-      "Avižienis, Laprie, Randell & Landwehr"
+      "Avižienis, Laprie, Randell & Landwehr",
+      "sources resolve — every file info.yaml declares is present"
     ],
     "resources": [
       "GoldenFloat: A Phi-Derived Static-Split Floating-Point Family",
@@ -41,6 +42,9 @@
     ],
     "about": [
       "An 83-Format Numeric Catalog with Bit-Exact Conformance Vectors"
+    ],
+    "cases": [
+      "sources resolve — every file info.yaml declares is present"
     ]
   },
   "en": {}
