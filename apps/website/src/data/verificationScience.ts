@@ -26,6 +26,44 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T41',
+    name: 'Relative dot-product error cannot see a format destroying a tensor',
+    nameRu: 'Относительная ошибка скалярного произведения не видит, как формат разрушает тензор',
+    statement:
+      'When one term dominates a sum, the relative error of that sum is governed by that term alone. So a quantised format that flushes most of a tensor to zero can still score well on relative dot-product error, provided the surviving outlier carries the sum. Ranking formats on that metric alone systematically rewards mantissa bits and is blind to range loss.',
+    statementRu:
+      'Когда одно слагаемое доминирует в сумме, относительная ошибка этой суммы определяется им одним. Поэтому квантованный формат, обнуляющий бо́льшую часть тензора, может показывать хорошую относительную ошибку скалярного произведения — лишь бы уцелевший выброс нёс сумму. Ранжирование форматов по одной этой метрике систематически поощряет биты мантиссы и слепо к потере диапазона.',
+    worked:
+      'Measured at 8 bits with a per-tensor amax scale and one weight 4096x the rest: the e3m4 split scored BEST on relative error while zeroing 97.6% of the tensor; the e4m3 split lost 2.1% and scored worse. The first draft of this benchmark reported e3m4 as beating both OCP FP8 splits on that basis. Ranking is now gated at 1% of weights flushed.',
+    workedRu:
+      'Измерено на 8 битах с per-tensor amax-масштабом и одним весом в 4096 раз больше прочих: раскрой e3m4 показал ЛУЧШУЮ относительную ошибку, обнулив 97.6% тензора; раскрой e4m3 потерял 2.1% и оказался хуже по ошибке. Первая версия этого бенчмарка на таком основании отчиталась, что e3m4 обходит оба раскроя OCP FP8. Теперь ранжирование проходит через гейт в 1% обнулённых весов.',
+    citation: 'Measured here; gHashTag/trinity-fpga #587',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/587',
+    doesNotClaim:
+      'It does not say relative error is useless — it says it is insufficient alone, and needs a feasibility gate beside it. Nor does it measure task accuracy: no network was run.',
+    doesNotClaimRu:
+      'Оно не говорит, что относительная ошибка бесполезна, — оно говорит, что её одной недостаточно и рядом нужен гейт пригодности. И оно не измеряет точность задачи: сеть не запускалась.'
+  },
+  {
+    id: 'T42',
+    name: 'A per-tensor scale moves the optimal split toward narrower exponents',
+    nameRu: 'Per-tensor масштаб смещает оптимальный раскрой в сторону узкой экспоненты',
+    statement:
+      'Exponent bits exist to cover dynamic range. A per-tensor scale applied before encoding already covers the range between tensors, leaving the exponent responsible only for the spread WITHIN one tensor. Since that spread is far narrower than the range across a network, scaled quantisation shifts the optimal exponent width down — which is why deployed 8-bit formats carry four or five exponent bits rather than the eight a general-purpose float needs.',
+    statementRu:
+      'Биты экспоненты существуют, чтобы покрывать динамический диапазон. Per-tensor масштаб, применённый до кодирования, уже покрывает диапазон между тензорами, оставляя экспоненте только разброс ВНУТРИ одного тензора. Поскольку этот разброс много уже, чем диапазон по сети, масштабированное квантование смещает оптимальную ширину экспоненты вниз — поэтому в применяемых 8-битных форматах четыре-пять бит экспоненты, а не восемь, нужные универсальному float.',
+    worked:
+      'Same oracle, two workloads. Unscaled round-trip favours wide exponents; scaled dot products favour narrow ones. At 16 bits the golden rule e6m9 scores 2.0e-03 against 1.7e-04 for e3m12, an 11x gap; at 32 bits e12m19 scores 1.7e-06 against 8.1e-09 for e4m27, 207x. The ranking reverses between the two benchmarks, which is why both are kept.',
+    workedRu:
+      'Тот же оракул, две нагрузки. Немасштабированный round-trip благоволит широкой экспоненте; масштабированные скалярные произведения — узкой. На 16 битах золотое правило e6m9 даёт 2.0e-03 против 1.7e-04 у e3m12 — разрыв в 11 раз; на 32 битах e12m19 даёт 1.7e-06 против 8.1e-09 у e4m27 — в 207 раз. Ранжирование между двумя бенчмарками переворачивается, поэтому сохранены оба.',
+    citation: 'Micikevicius et al., FP8 Formats for Deep Learning, arXiv:2209.05433; measured here',
+    url: 'https://arxiv.org/abs/2209.05433',
+    doesNotClaim:
+      'The optimum found here is for WEIGHTS under amax scaling. Activations carry outliers around 100x typical where weights do not, and gradients wider still — which is what the extra exponent in E5M2 is for. Neither was measured.',
+    doesNotClaimRu:
+      'Найденный здесь оптимум относится к ВЕСАМ при amax-масштабировании. У активаций выбросы порядка 100× от типичного значения, чего нет у весов, а у градиентов диапазон ещё шире — ради этого и держат лишнюю экспоненту в E5M2. Ни то, ни другое не измерялось.'
+  },
+  {
     id: 'T39',
     name: 'A power-of-two pre-scale is exactly inert; any other constant is not',
     nameRu: 'Предмасштаб степенью двойки строго инертен; любая другая константа — нет',
