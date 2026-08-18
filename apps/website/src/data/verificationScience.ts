@@ -26,6 +26,25 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T53',
+    name: 'Freeing a resource is worth nothing until that resource is the one that binds',
+    nameRu: 'Освобождение ресурса не стоит ничего, пока связывает не он',
+    statement:
+      'A design that trades resource A for resource B improves the fit only if B was the binding constraint. Otherwise it consumes more of what was already scarce and fits fewer instances, whatever the saving in B. So the value of avoiding a resource is not a property of the design: it is a property of the surrounding design, and must be quoted with the occupancy at which it starts to hold.',
+    statementRu:
+      'Проект, меняющий ресурс A на ресурс B, улучшает размещение лишь тогда, когда связывал именно B. Иначе он тратит больше того, чего и так не хватало, и укладывается меньшим числом экземпляров, какой бы ни была экономия по B. Значит ценность отказа от ресурса — свойство не самого проекта, а окружающего, и называть её нужно вместе с загрузкой, при которой она начинает действовать.',
+    worked:
+      'A ternary layer avoiding DSP blocks against one using three of them, costs measured on xc7: 5133 LUT and 0 DSP against 3825 LUT and 3 DSP. Counting how many fit on real parts, the multiplier arm is LUT-bound on every one and fits MORE layers -- 5 against 4 on an XC7A35T, 35 against 26 on an XC7A200T. For DSPs to bind first, 86% to 90% of them must already be spent by something that uses DSPs without using LUTs.',
+    workedRu:
+      'Тернарный слой без блоков DSP против слоя с тремя, стоимости измерены на xc7: 5133 LUT и 0 DSP против 3825 LUT и 3 DSP. При подсчёте, сколько помещается на реальные кристаллы, плечо с умножителем на каждом ограничено по LUT и укладывается БОЛЬШИМ числом слоёв — 5 против 4 на XC7A35T, 35 против 26 на XC7A200T. Чтобы связывали DSP, 86–90% из них должны быть уже израсходованы чем-то, что тратит DSP, не тратя LUT.',
+    citation: 'Measured here; gHashTag/trinity-fpga #597',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/597',
+    doesNotClaim:
+      'The 86% figure is for one layer shape at one fan-in with one set of measured costs; a wider accumulator or a different scale exponent moves it, which is why the costs are constants in the tool rather than prose. It also says nothing about parts with no DSP blocks at all, where the condition is met by construction.',
+    doesNotClaimRu:
+      'Величина 86% относится к одной форме слоя при одном fan-in и одном наборе измеренных стоимостей; более широкий аккумулятор или другой показатель масштаба её сдвигают — поэтому стоимости заданы константами в инструменте, а не прозой. Оно также ничего не говорит о кристаллах, где блоков DSP нет вовсе: там условие выполнено по построению.'
+  },
+  {
     id: 'T52',
     name: 'An advantage measured against a weakened competitor is the weakening',
     nameRu: 'Преимущество, измеренное против ослабленного конкурента, есть само ослабление',
