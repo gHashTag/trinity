@@ -26,6 +26,25 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T52',
+    name: 'An advantage measured against a weakened competitor is the weakening',
+    nameRu: 'Преимущество, измеренное против ослабленного конкурента, есть само ослабление',
+    statement:
+      'A comparison reports the difference between two things as they were built. If the competitor was built without the resource its design assumes, or implemented in a way no careful engineer would choose, the reported margin is a measurement of that choice and not of the alternative. The test is whether the margin survives giving the competitor its normal footing.',
+    statementRu:
+      'Сравнение сообщает разницу между двумя вещами такими, какими они собраны. Если конкурент собран без ресурса, который его конструкция предполагает, или реализован способом, который никто аккуратный не выберет, то заявленный запас измеряет этот выбор, а не альтернативу. Проверка одна: выживает ли запас, если вернуть конкуренту его обычные условия.',
+    worked:
+      'Two instances, both measured on the same afternoon, both ending in a withdrawal. A ternary layer avoiding multipliers was 1.13x smaller than a multiplier arm on iCE40, a fabric with no DSP blocks; given Artix-7 and its DSPs the multiplier arm is 1308 to 1476 LUT SMALLER, and the golden arm is really trading 436 to 492 LUT per DSP freed against a device that carries 182 to 264. Separately, an exact Z[phi] accumulator beat fixed point by 1.9% at depth -- against a TRUNCATING implementation. Given round-to-nearest the competitor improves with depth and fp32 sits near 1e-7, and the margin is gone.',
+    workedRu:
+      'Два случая, оба измерены в один вечер, оба закончились снятием заявки. Тернарный слой без умножителей был в 1.13 раза меньше плеча с умножителем на iCE40 — кристалле без блоков DSP; на Artix-7 с его DSP плечо с умножителем МЕНЬШЕ на 1308–1476 LUT, а золотое плечо на деле меняет 436–492 LUT на один освобождённый DSP при собственной пропорции устройства 182–264. Отдельно: точный аккумулятор ℤ[φ] обгонял фиксированную точку на 1.9% на глубине — против реализации с УСЕЧЕНИЕМ. При округлении к ближайшему конкурент с глубиной улучшается, fp32 держится около 1e-7, и запас исчезает.',
+    citation: 'Measured here; gHashTag/trinity-fpga #595 and #596',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/596',
+    doesNotClaim:
+      'Neither withdrawal empties the alternative. The golden arm still needs zero DSP at any fan-in, which is the whole product on a part that has none or has spent them, and the lattice still accumulates without rounding, which is a property whether or not it pays here. What is withdrawn is the margin, not the mechanism.',
+    doesNotClaimRu:
+      'Ни одно из снятий не опустошает альтернативу. Золотое плечо по-прежнему не требует DSP ни при каком fan-in — а это и есть весь продукт на кристалле, где их нет или они израсходованы; решётка по-прежнему накапливает без округления, и это свойство остаётся, оплачивается оно здесь или нет. Снят запас, а не механизм.'
+  },
+  {
     id: 'T51',
     name: 'A ratio measured on a fragment converges downward as the design is completed',
     nameRu: 'Кратность, измеренная на фрагменте, сходится вниз по мере достройки проекта',
