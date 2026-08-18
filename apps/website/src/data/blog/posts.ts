@@ -20,8 +20,10 @@ import { body as body_green_ci_does_not_mean_usable, ruBody as ruBody_green_ci_d
 import { body as body_scale_field_width_already_published, ruBody as ruBody_scale_field_width_already_published } from './bodies/scale-field-width-already-published'
 import { body as body_open_gigabit_ethernet_artix7, ruBody as ruBody_open_gigabit_ethernet_artix7 } from './bodies/open-gigabit-ethernet-artix7'
 import { body as body_a_multiplicity_correction_changed_the_deployment_reading, ruBody as ruBody_a_multiplicity_correction_changed_the_deployment_reading } from './bodies/a-multiplicity-correction-changed-the-deployment-reading'
+import { body as body_the_full_adder_made_the_cost_claim_comparable, ruBody as ruBody_the_full_adder_made_the_cost_claim_comparable } from './bodies/the-full-adder-made-the-cost-claim-comparable'
 
 const bodies: Record<string, PostBody> = {
+  'the-full-adder-made-the-cost-claim-comparable': { body: body_the_full_adder_made_the_cost_claim_comparable, ruBody: ruBody_the_full_adder_made_the_cost_claim_comparable },
   'phi-is-a-scale-not-information': { body: body_phi_is_a_scale_not_information, ruBody: ruBody_phi_is_a_scale_not_information },
   'an-inert-filter-is-safest-until-it-works': { body: body_an_inert_filter_is_safest_until_it_works, ruBody: ruBody_an_inert_filter_is_safest_until_it_works },
   'a-gate-that-rejected-its-own-users': { body: body_a_gate_that_rejected_its_own_users, ruBody: ruBody_a_gate_that_rejected_its_own_users },
