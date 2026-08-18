@@ -413,7 +413,13 @@ def main() -> int:
         # The ratchet only turns one way. A repaired path must leave the
         # baseline, or the file slowly becomes a list of things that used to be
         # wrong and stops meaning anything.
-        print(f"  FAIL {len(fixed)} path(s) in the baseline now exist and must be removed from it:")
+        # "now exist" was wrong and cost an investigation: a path leaves the
+        # dangling set either because the file appeared OR because nothing
+        # imports it any more — including because the importing file was
+        # deleted. All four entries that triggered this were still 404 in the
+        # repository; what had gone was the code referencing them.
+        print(f"  FAIL {len(fixed)} path(s) in the baseline are no longer reported as dangling")
+        print(f"       (the file appeared, or nothing imports it any more) and must be removed:")
         for f in fixed:
             print(f"    {f}")
         return 1

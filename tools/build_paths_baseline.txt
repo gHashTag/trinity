@@ -27,7 +27,3 @@
 # This file only shrinks. A path repaired must be removed from here, and the
 # check fails if it is not: otherwise the baseline turns into a list of things
 # that used to be wrong and stops meaning anything.
-src/cli/entrypoint_train.zig
-src/hslm/bpe_train.zig
-src/hslm/hslm_benchmark.zig
-trinity-nexus/output/lang/zig/full-serve-v1.zig
