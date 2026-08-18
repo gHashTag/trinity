@@ -39,7 +39,7 @@ permissions:
 jobs:
   live-matches-main:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 22
     steps:
       - uses: actions/checkout@v4
 
@@ -85,6 +85,24 @@ jobs:
           say "- built from \`${GITHUB_SHA:0:8}\`: \`$BUILT\`"
           say "- served by t27.ai: \`$LIVE\`"
           echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # The publisher runs on a 15-minute cron, so between a merge here and
+          # the apex serving it there is a window in which a mismatch is normal
+          # operation rather than a defect. Firing inside that window makes this
+          # gate red after every merge — which is exactly how a watchdog teaches
+          # people to stop reading it. It went red at 22:16 and again at 03:35,
+          # both times minutes after a merge and both times with the publisher
+          # green.
+          #
+          # So: poll for as long as the publisher's own cadence, and fail only if
+          # the site never catches up.
+          DEADLINE=$(( $(date +%s) + 13*60 ))
+          while [ "$BUILT" != "$LIVE" ] && [ "$(date +%s)" -lt "$DEADLINE" ]; do
+            echo "not yet: built=$BUILT live=$LIVE — waiting for the publisher"
+            sleep 60
+            LIVE=$(curl -fsS -H 'Cache-Control: no-cache' "https://t27.ai/?gate=${GITHUB_RUN_ID}-$(date +%s)" \
+                   | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | head -1 || true)
+          done
 
           if [ "$BUILT" = "$LIVE" ]; then
             say "- **PASS** the apex serves what main builds"
