@@ -150,7 +150,6 @@ export const body: Block[] = [
   },
 ]
 
-import type { Block } from '../types'
 
 export const ruBody: Block[] = [
   {
