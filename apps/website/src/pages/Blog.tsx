@@ -201,6 +201,27 @@ function renderBlock(b: Block, i: number) {
           <code>{b.text}</code>
         </pre>
       )
+    case 'figure':
+      // The SVG here is authored in this repository's own data files, never
+      // supplied by a reader, so no untrusted markup reaches this path.
+      return (
+        <figure key={i} style={{ margin: '0 0 1.8em', overflowX: 'auto' }}>
+          <div
+            style={{ color: 'var(--fg, #e8e8e8)', width: '100%' }}
+            dangerouslySetInnerHTML={{ __html: b.svg }}
+          />
+          <figcaption
+            style={{
+              fontSize: '0.86rem',
+              opacity: 0.75,
+              marginTop: '10px',
+              lineHeight: 1.5,
+            }}
+          >
+            {b.caption}
+          </figcaption>
+        </figure>
+      )
     case 'table':
       return (
         <div key={i} style={{ overflowX: 'auto', marginBottom: '1.6em' }}>

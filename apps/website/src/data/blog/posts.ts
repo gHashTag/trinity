@@ -1,6 +1,7 @@
 import { postsIndex } from './index'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_phi_is_a_scale_not_information, ruBody as ruBody_phi_is_a_scale_not_information } from './bodies/phi-is-a-scale-not-information'
 import { body as body_an_inert_filter_is_safest_until_it_works, ruBody as ruBody_an_inert_filter_is_safest_until_it_works } from './bodies/an-inert-filter-is-safest-until-it-works'
 import { body as body_a_gate_that_rejected_its_own_users, ruBody as ruBody_a_gate_that_rejected_its_own_users } from './bodies/a-gate-that-rejected-its-own-users'
 import { body as body_a_broken_reference_looks_exactly_like_broken_code, ruBody as ruBody_a_broken_reference_looks_exactly_like_broken_code } from './bodies/a-broken-reference-looks-exactly-like-broken-code'
@@ -21,6 +22,7 @@ import { body as body_open_gigabit_ethernet_artix7, ruBody as ruBody_open_gigabi
 import { body as body_a_multiplicity_correction_changed_the_deployment_reading, ruBody as ruBody_a_multiplicity_correction_changed_the_deployment_reading } from './bodies/a-multiplicity-correction-changed-the-deployment-reading'
 
 const bodies: Record<string, PostBody> = {
+  'phi-is-a-scale-not-information': { body: body_phi_is_a_scale_not_information, ruBody: ruBody_phi_is_a_scale_not_information },
   'an-inert-filter-is-safest-until-it-works': { body: body_an_inert_filter_is_safest_until_it_works, ruBody: ruBody_an_inert_filter_is_safest_until_it_works },
   'a-gate-that-rejected-its-own-users': { body: body_a_gate_that_rejected_its_own_users, ruBody: ruBody_a_gate_that_rejected_its_own_users },
   'a-health-snapshot-changed-its-denominator': { body: body_a_health_snapshot_changed_its_denominator, ruBody: ruBody_a_health_snapshot_changed_its_denominator },
