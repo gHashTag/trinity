@@ -123,8 +123,22 @@ jobs:
           # with "Re-definition of module". That is how the second real run of
           # this path failed: project.v `include`s five siblings, and the glob
           # handed yosys all six.
-          INCLUDED=$(grep -rhoE '^[[:space:]]*`include[[:space:]]+"[^"]+"' $SRC 2>/dev/null \
-                     | sed -E 's/.*"([^"]+)".*/\1/' | sort -u || true)
+          # Only UNCONDITIONAL includes count. The fifth submission put its
+          # includes inside `ifdef TCPU_ENV_EMUL`, which is not defined in a
+          # normal build — so those files are not included at all and must be
+          # passed as separate sources. Dropping them left every module they
+          # define missing, and the report blamed the design.
+          #
+          # awk tracks preprocessor depth and collects includes only at depth 0.
+          INCLUDED=$(awk '
+            /^[[:space:]]*`ifdef/  { d++; next }
+            /^[[:space:]]*`ifndef/ { d++; next }
+            /^[[:space:]]*`endif/  { if (d > 0) d--; next }
+            /^[[:space:]]*`else/   { next }
+            d == 0 && /^[[:space:]]*`include[[:space:]]+"/ {
+              if (match($0, /"[^"]+"/)) print substr($0, RSTART+1, RLENGTH-2)
+            }
+          ' $SRC 2>/dev/null | sort -u || true)
           if [ -n "$INCLUDED" ]; then
             KEEP=""
             for f in $SRC; do
