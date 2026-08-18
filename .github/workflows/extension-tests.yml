@@ -4,6 +4,12 @@
 name: Extension Tests
 
 on:
+  # Added so this workflow's verdict can be refreshed. Without a manual
+  # trigger and behind a path filter, its status is whatever its last
+  # run concluded — here, 14 August — and there is no way to find out
+  # whether that is still true short of an unrelated commit that happens
+  # to touch its paths. A red that cannot be re-tested is not a signal.
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
