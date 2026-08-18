@@ -26,6 +26,44 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T39',
+    name: 'A power-of-two pre-scale is exactly inert; any other constant is not',
+    nameRu: 'Предмасштаб степенью двойки строго инертен; любая другая константа — нет',
+    statement:
+      'Encoding c·x into a binary floating-point format and dividing by c afterwards changes the round-trip relative error by nothing at all when c is a power of two: the scale shifts only the exponent field, leaving the mantissa and the rounding decision untouched. For any other c the values move to different positions inside their binades and the mean relative error moves with them — in either direction, by accident.',
+    statementRu:
+      'Кодирование c·x в двоичный формат с плавающей точкой и деление на c после round-trip не меняет относительную ошибку вообще, если c — степень двойки: масштаб сдвигает только поле экспоненты, не трогая мантиссу и решение об округлении. При любом другом c значения переходят в другие позиции внутри своих бинад, и средняя относительная ошибка смещается вместе с ними — в любую сторону, случайно.',
+    worked:
+      'Checked element-wise on the GF16 codec for c = 2^k, k in {-4,-2,-1,1,2,5}: 18,000 of 18,000 inputs have identical relative error with and without the scale. For non-powers of two over uniform(-1,1) the mean error rises 5-7%: phi^-2 gives 1.055, 1/e 1.063, 1/3 1.068, 0.40 1.051. The codebase shipped a phi^-2 pre-scale documented as being for better distribution; it is never better, and 0.40 beats it.',
+    workedRu:
+      'Проверено поэлементно на кодеке GF16 для c = 2^k, k из {-4,-2,-1,1,2,5}: 18 000 из 18 000 входов дают одинаковую относительную ошибку с масштабом и без. Для не-степеней двойки на uniform(-1,1) средняя ошибка растёт на 5-7%: φ⁻² даёт 1.055, 1/e — 1.063, 1/3 — 1.068, 0.40 — 1.051. В кодовой базе был предмасштаб на φ⁻², описанный как улучшающий распределение; он никогда не лучше, и 0.40 его обходит.',
+    citation: 'Measured here; gHashTag/zig-golden-float #100',
+    url: 'https://github.com/gHashTag/zig-golden-float/pull/100',
+    doesNotClaim:
+      'It says nothing about a FIXED-POINT grid, where the step is absolute rather than relative and a pre-scale genuinely changes what is representable. Nor about per-tensor scales chosen from the data, which are a different mechanism entirely.',
+    doesNotClaimRu:
+      'Оно ничего не говорит о сетке с фиксированной точкой, где шаг абсолютный, а не относительный, и предмасштаб действительно меняет представимое. И о per-tensor scale, выбираемом по данным, — это другой механизм.'
+  },
+  {
+    id: 'T40',
+    name: 'The golden-section bit split is optimal at one dynamic range per width',
+    nameRu: 'Золотой раскрой бит оптимален ровно на одном динамическом диапазоне для каждой ширины',
+    statement:
+      'Sizing a rung by e = round((N−1)/φ²) spends 0.382 of the bit budget on the exponent. Exponent bits buy dynamic range and cost precision one for one, so any fixed fraction is optimal only for the span where that trade balances. Because the range a given e covers grows doubly exponentially in e, the balancing span grows with N far faster than workloads do.',
+    statementRu:
+      'Раскрой яруса по правилу e = round((N−1)/φ²) отдаёт экспоненте 0.382 бюджета бит. Биты экспоненты покупают динамический диапазон и ровно настолько же теряют точность, поэтому любая фиксированная доля оптимальна лишь для того размаха, где этот обмен уравновешен. Поскольку диапазон, покрываемый данным e, растёт дважды экспоненциально по e, уравновешивающий размах растёт с N много быстрее, чем растут задачи.',
+    worked:
+      'Swept every split against the exact oracle: the rule is optimal at 1 of 5 spans tested for GF8, 1 of 7 for GF16, and 0 of 7 for GF32. At 32 bits against binary32 field widths it is 16x worse from 2 to 20 decades, equal at 40, and 59x better at 80 — beyond what binary32 itself covers.',
+    workedRu:
+      'Перебраны все раскрои против точного оракула: правило оптимально на 1 из 5 проверенных размахов для GF8, на 1 из 7 для GF16 и на 0 из 7 для GF32. На 32 битах против полей binary32 оно в 16 раз хуже от 2 до 20 декад, равно на 40 и в 59 раз лучше на 80 — за пределами того, что покрывает сам binary32.',
+    citation: 'Measured here; gHashTag/trinity-fpga #586',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/586',
+    doesNotClaim:
+      'Mean relative round-trip error on synthetic distributions is the objective here, and it is not the only one. A format can lose on it and win on a workload; no inference accuracy was measured. It also says nothing about TNF, whose exponent is ternary-coded and whose base is 2.',
+    doesNotClaimRu:
+      'Целевая функция здесь — средняя относительная ошибка round-trip на синтетических распределениях, и она не единственная. Формат может проиграть по ней и выиграть на реальной задаче; точность инференса не измерялась. Оно также ничего не говорит о TNF, где экспонента кодируется троично, а основание равно 2.'
+  },
+  {
     id: 'T36',
     name: 'A constant in the digit alphabet is a scale factor, not information',
     nameRu: 'Константа в алфавите цифр — масштаб, а не информация',
