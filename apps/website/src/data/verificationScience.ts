@@ -614,6 +614,19 @@ export const THEOREMS: Theorem[] = [
     doesNotClaim:
       'That shape coverage is achievable or even enumerable. The partition is imposed by the code\u2019s own branching, which is exactly what is under test, so the set of shapes is unknown until a new one fails. The usable half is the reading of a clean run: it bounds nothing, and it is weakest precisely when the input resembled the last one.',
   },
+  {
+    id: 'T35',
+    name: 'A check that has never passed and one that has stopped passing are different kinds of object',
+    statement:
+      'Both show red, and a dashboard counts them together. They are not comparable. A check with at least one green in its history has demonstrated that it can distinguish states, so its red is evidence about the system: something changed. A check that has never been green has demonstrated nothing, and its red is evidence about the check. The first is a regression to diagnose; the second is a measurement that has never occurred. Treating them as one population makes the count meaningless in both directions — it overstates how much is broken and hides which reds mean anything.',
+    worked:
+      'Twenty-seven failing checks on one default branch. Split by lifetime success count: seven had never been green at all, one of them across ninety-eight runs, and none had run in four months. Three others had succeeded thirty, twelve and four times before breaking. The seven were switched off, which lowered no bar because they had never established anything; the three were left alone, because a gate that used to pass and now does not is the only one of the two that is reporting on the system.',
+    citation:
+      'Kim, Whitehead & Zhang, “Classifying Software Changes: Clean or Buggy?”, IEEE TSE 34(2), 2008 — on the evidential value of a history of passing states',
+    url: 'https://doi.org/10.1109/TSE.2007.70773',
+    doesNotClaim:
+      'That a never-green check is worthless to fix. It may guard something important and simply have never worked. The claim is only about what its red currently proves — nothing — and therefore about what removing it costs: not a check, but the appearance of one.',
+  },
 ]
 
 export const SCIENCE_INTRO_EN =
