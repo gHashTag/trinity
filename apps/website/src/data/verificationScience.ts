@@ -26,6 +26,25 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T48',
+    name: 'A higher clock is not higher throughput when the cheaper operator needs more cycles',
+    nameRu: 'Более высокая частота — не более высокая пропускная способность, если дешёвая операция требует больше тактов',
+    statement:
+      'An operator replaced by an iterative one of depth 1 raises the achievable clock and multiplies the cycle count. Throughput per element is (1 + k) / f_iterative against (1 + 1) / f_direct, so the iterative form wins only while 1 + k < 2·f_iterative / f_direct. The break-even is a property of the pair of frequencies, and quoting either the area or the clock alone hides which side of it a deployment sits on.',
+    statementRu:
+      'Операция, заменённая итеративной глубины 1, поднимает достижимую частоту и умножает число тактов. Пропускная способность на элемент есть (1 + k) / f_итер против (1 + 1) / f_прям, поэтому итеративная форма выигрывает лишь пока 1 + k < 2·f_итер / f_прям. Точка равновесия — свойство пары частот, и указание одной только площади или одной только частоты скрывает, по какую сторону от неё находится развёртывание.',
+    worked:
+      'Real place-and-route, nextpnr-ice40 on hx8k, fan-in 8: a ternary layer whose scale is a Fibonacci step reaches 144.80 MHz in 425 logic cells; the same layer with a multiplier reaches 69.21 MHz in 1098. Smaller and twice the clock — and the break-even is k = 3.18. The deployed scale is alpha = mean|W| about 0.02, which is log_phi 0.02 = -8.13, so a real layer needs |k| = 8 and the MULTIPLIER is 2.15x faster per element.',
+    workedRu:
+      'Настоящая трассировка, nextpnr-ice40 на hx8k, fan-in 8: тернарный слой, где масштаб — шаг Фибоначчи, достигает 144.80 МГц на 425 логических ячейках; тот же слой с умножителем — 69.21 МГц на 1098. Меньше и вдвое быстрее по такту — а точка равновесия k = 3.18. Развёрнутый масштаб alpha = mean|W| около 0.02, то есть log_φ 0.02 = −8.13, поэтому реальному слою нужно |k| = 8, и УМНОЖИТЕЛЬ оказывается в 2.15 раза быстрее на элемент.',
+    citation: 'Measured here; gHashTag/trinity-fpga #591',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/591',
+    doesNotClaim:
+      'The fabric is iCE40, which has no DSP blocks at all, so the multiplier arm is maximally penalised; on a part with DSPs it is smaller in LUTs than the iterative arm. An unrolled or barrel variant of the iterative operator would trade the cycles back at more area and is not built, so the break-even quoted is for the built circuit only.',
+    doesNotClaimRu:
+      'Кристалл — iCE40, где блоков DSP нет вовсе, поэтому плечо с умножителем наказано максимально; на кристалле с DSP оно меньше итеративного по LUT. Развёрнутый или barrel-вариант итеративной операции вернул бы такты ценой площади и не построен, поэтому указанная точка равновесия относится только к собранной схеме.'
+  },
+  {
     id: 'T47',
     name: 'Removing a fixed-cost block saves a constant, not a ratio',
     nameRu: 'Удаление блока постоянной стоимости экономит константу, а не кратность',
