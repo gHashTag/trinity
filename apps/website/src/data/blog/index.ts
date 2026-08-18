@@ -3,6 +3,37 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'the-full-adder-made-the-cost-claim-comparable',
+    title: 'The full adder made the cost claim comparable',
+    summary: 'A merged FPGA-repository PR replaces a magnitude-only comparison with a full adder and reports 3000 oracle checks, 0 errors, and a 440-LUT post-synthesis result.',
+    date: '2026-08-18',
+    readingMinutes: 5,
+    tags: ['FPGA', 'Measurement', 'Arithmetic', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/trinity-fpga PR #605 — full adder and corrected cost comparison', href: 'https://github.com/gHashTag/trinity-fpga/pull/605' },
+      { label: 'merged commit e25bf05 — implementation and audit record', href: 'https://github.com/gHashTag/trinity-fpga/commit/e25bf05a368296331b22a38caea610e4fdc4d46b' },
+      { label: 'tef_add_full.v at the merged revision', href: 'https://github.com/gHashTag/trinity-fpga/blob/e25bf05a368296331b22a38caea610e4fdc4d46b/fpga/tef/tef_add_full.v' },
+      { label: 'FULL_ADDER.md at the merged revision', href: 'https://github.com/gHashTag/trinity-fpga/blob/e25bf05a368296331b22a38caea610e4fdc4d46b/fpga/tef/FULL_ADDER.md' }
+    ],
+    openQuestions: [
+      'The 1182-LUT opponent is an internal linear structural model, not the published takum format; the post does not claim a published-format comparison.',
+      'The counts are from Yosys 0.65 post-synthesis with synth_xilinx, xc7 family and DSP disabled. Place-and-route and AX7203 board measurement were not performed.',
+      'No throughput, energy, downstream workload, or accuracy result is established.',
+      'The 3000-pair check validates this RTL against the oracle encode; it does not prove the oracle’s broader numerical semantics.'
+    ],
+    published: true,
+    ru: {
+      title: 'Полный сумматор сделал сравнение цены сопоставимым',
+      summary: 'Смерженный PR в FPGA-репозитории заменяет сравнение только модулей полным сумматором и сообщает о 3000 проверках оракулом, 0 ошибках и результате 440 LUT после синтеза.',
+      openQuestions: [
+        'Оппонент на 1182 LUT — внутренняя линейная структурная модель, а не опубликованный формат takum; сравнение с опубликованным форматом не заявляется.',
+        'Числа получены после синтеза Yosys 0.65 с synth_xilinx для xc7 и отключёнными DSP. Place-and-route и замер на AX7203 не выполнялись.',
+        'Пропускная способность, энергия, реальная нагрузка и точность не измерялись.',
+        'Проверка 3000 пар подтверждает этот RTL против encode оракула, но не доказывает всю числовую семантику оракула.'
+      ]
+    }
+  },
+  {
     slug: 'phi-is-a-scale-not-information',
     title: 'The golden ratio in this format is a scale factor, not information',
     summary: 'A format with phi in its name. Measured: in the two-bit digit alphabet phi is not observable at all, and a dot product of GFTernary vectors is exactly phi-squared times the same codes read as balanced ternary. The prior art put phi where it does carry information — in 2002.',
