@@ -26,6 +26,25 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T51',
+    name: 'A ratio measured on a fragment converges downward as the design is completed',
+    nameRu: 'Кратность, измеренная на фрагменте, сходится вниз по мере достройки проекта',
+    statement:
+      'When two designs differ by one block, the advantage of the smaller is a fixed quantity. Every part of the surrounding design that is added to the measurement is shared by both arms, so it enters both numerator and denominator and moves the ratio toward one. A ratio quoted before the design is complete is therefore an upper bound, and the sequence of ratios as parts are added is monotone downward.',
+    statementRu:
+      'Когда два проекта отличаются одним блоком, преимущество меньшего есть фиксированная величина. Каждая часть окружающего проекта, добавляемая в измерение, общая для обоих плеч, поэтому входит и в числитель, и в знаменатель и сдвигает отношение к единице. Кратность, названная до завершения проекта, есть верхняя граница, а последовательность кратностей по мере достройки монотонно убывает.',
+    worked:
+      'The same golden-scale advantage, measured four times as more of the real design entered: the scale block alone 7.1x; a layer with operands on pins and a pair output 1.53x; the same with the scalar reconstruction inside 1.31x; the same with operands in on-chip memory 1.13x. The absolute saving barely moved -- about 270 logic cells, which is the multiplier. The frequency advantage, 2.09x at the block, is gone entirely at the layer with memory: the memory read is the critical path for both arms.',
+    workedRu:
+      'Одно и то же преимущество золотого масштаба, измеренное четырежды по мере вхождения реального проекта: блок масштаба отдельно — 7.1x; слой с операндами на пинах и парным выходом — 1.53x; он же с реконструкцией в скаляр внутри — 1.31x; он же с операндами в памяти на кристалле — 1.13x. Абсолютная экономия почти не изменилась: около 270 логических ячеек, то есть сам умножитель. Преимущество по частоте, 2.09x на блоке, при слое с памятью исчезает полностью: критическим путём у обоих плеч становится чтение памяти.',
+    citation: 'Measured here; gHashTag/trinity-fpga #594, extending #590',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/594',
+    doesNotClaim:
+      'Monotone convergence toward one is not convergence TO one: the constant saving remains, and here it is about 270 cells and three DSP blocks that the phi arm never needs at any fan-in. Nor does it say a fragment measurement is worthless — it says the number it produces is a bound, and must be quoted as one.',
+    doesNotClaimRu:
+      'Монотонная сходимость к единице не есть сходимость В единицу: постоянная экономия остаётся, и здесь это около 270 ячеек и три блока DSP, которые φ-плечу не нужны ни при каком fan-in. Оно также не говорит, что измерение фрагмента бесполезно, — оно говорит, что полученное число есть граница и называть его следует именно так.'
+  },
+  {
     id: 'T50',
     name: 'A representation that leaves its own domain must pay the exit at the boundary',
     nameRu: 'Представление, покидающее собственную область, платит за выход на границе',
