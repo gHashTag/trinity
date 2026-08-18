@@ -26,6 +26,44 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T43',
+    name: 'A proxy gate must yield to the task metric it stands in for',
+    nameRu: 'Гейт на прокси обязан уступать той метрике задачи, которую он заменяет',
+    statement:
+      'A feasibility threshold calibrated on a proxy is a hypothesis about the task metric, not a fact about it. When the task metric is finally measured and disagrees, the threshold is what changes — keeping both leaves two verdicts on the same question, and a repository that contains two answers has none.',
+    statementRu:
+      'Порог пригодности, откалиброванный на прокси, — это гипотеза о метрике задачи, а не факт о ней. Когда метрику задачи наконец измеряют и она расходится с порогом, меняется порог: оставить оба означает два вердикта по одному вопросу, а репозиторий, содержащий два ответа, не содержит ни одного.',
+    worked:
+      'A 1%-flushed gate was introduced to stop relative error from rewarding formats that zero a tensor. Measured on GPT-2, pythia-160m and opt-125m: the e3m4 split zeroes 1.75% of GPT-2 weights on average and gives the LOWEST perplexity of four candidates (1.003x fp32), while e2m5 zeroes 12.65% and costs 16%. Moderate flushing is cheap. The gate was retracted to a reported number; the rate stays because relative error cannot see it.',
+    workedRu:
+      'Гейт в 1% обнулённых весов вводился, чтобы относительная ошибка не поощряла форматы, разрушающие тензор. Измерено на GPT-2, pythia-160m и opt-125m: раскрой e3m4 обнуляет в среднем 1.75% весов GPT-2 и даёт НАИМЕНЬШУЮ перплексию из четырёх кандидатов (1.003x от fp32), тогда как e2m5 обнуляет 12.65% и стоит 16%. Умеренное обнуление дёшево. Гейт понижен до отчётного числа; сама доля остаётся, потому что относительная ошибка её не видит.',
+    citation: 'Measured here; gHashTag/trinity-fpga #588',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/588',
+    doesNotClaim:
+      'It does not say flushing is free — 12.65% cost 16% perplexity on the same model. It says the threshold between cheap and ruinous is an empirical quantity and was guessed. Three small models, weights only, one dataset.',
+    doesNotClaimRu:
+      'Оно не говорит, что обнуление бесплатно: 12.65% стоили 16% перплексии на той же модели. Оно говорит, что граница между дешёвым и разрушительным — величина эмпирическая, и она была угадана. Три небольшие модели, только веса, один датасет.'
+  },
+  {
+    id: 'T44',
+    name: 'At eight bits the golden-section split ties the deployed one; at wider widths it does not',
+    nameRu: 'На восьми битах золотой раскрой равен применяемому; на бо́льших ширинах — нет',
+    statement:
+      'The rule e = round((N−1)/φ²) picks e3m4 at 8 bits, e6m9 at 16 and e12m19 at 32. Measured by perplexity on three models, the 8-bit pick is within noise of the deployed e4m3 split and consistently ahead of e5m2. At 16 bits every candidate is lossless, so the rule is not distinguished. At 32 bits no task measurement exists and the proxies place it far from optimal.',
+    statementRu:
+      'Правило e = round((N−1)/φ²) выбирает e3m4 на 8 битах, e6m9 на 16 и e12m19 на 32. По перплексии на трёх моделях восьмибитный выбор лежит в пределах шума от применяемого раскроя e4m3 и стабильно опережает e5m2. На 16 битах все кандидаты работают без потерь, поэтому правило ничем не выделено. На 32 битах измерения задачи нет, а прокси помещают его далеко от оптимума.',
+    worked:
+      'Perplexity relative to fp32: e3m4 gives 1.003x on GPT-2, 1.021x on pythia-160m, 0.998x on opt-125m; e4m3 gives 1.009x, 1.020x, 1.005x. First on two models, second by 0.1% on the third — a tie. e5m2 gives 1.015x, 1.081x, 1.016x. The 0.998x is quantisation slightly beating the baseline, which is the noise floor these comparisons sit on.',
+    workedRu:
+      'Перплексия относительно fp32: e3m4 даёт 1.003x на GPT-2, 1.021x на pythia-160m, 0.998x на opt-125m; e4m3 — 1.009x, 1.020x, 1.005x. Первое место на двух моделях, второе с отставанием 0.1% на третьей: это ничья. e5m2 даёт 1.015x, 1.081x, 1.016x. Значение 0.998x — квантование, слегка обошедшее базовую линию, и это тот уровень шума, на котором стоят все эти сравнения.',
+    citation: 'Measured here; gHashTag/trinity-fpga #588, and Micikevicius et al., arXiv:2209.05433 for the deployed splits',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/588',
+    doesNotClaim:
+      'A tie is not a win, and three models under 500M parameters is not a survey. Weights only: activations carry outliers around 100x typical and gradients wider still, which is what E5M2 exists for and what this does not touch. No training was run.',
+    doesNotClaimRu:
+      'Ничья — не победа, а три модели меньше 500M параметров — не обзор. Только веса: у активаций выбросы порядка 100× от типичного, у градиентов диапазон ещё шире, ради чего и существует E5M2 и чего эта работа не касается. Обучение не проводилось.'
+  },
+  {
     id: 'T41',
     name: 'Relative dot-product error cannot see a format destroying a tensor',
     nameRu: 'Относительная ошибка скалярного произведения не видит, как формат разрушает тензор',
