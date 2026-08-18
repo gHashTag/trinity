@@ -26,6 +26,44 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T45',
+    name: 'An exact accumulator does not remove quantisation error',
+    nameRu: 'Точный аккумулятор не устраняет ошибку квантования',
+    statement:
+      'In the ring Z[φ] a value is an integer pair (a, b) meaning a + bφ; multiplying by φ is the Fibonacci step (a, b) → (b, a + b), addition is componentwise, and no operation rounds. That closure is real and it bounds accumulation error at exactly zero. It does not bound the error of the network, because the dominant rounding in a quantised pipeline happens when a real weight is ENCODED onto the format grid — before the accumulator ever sees it.',
+    statementRu:
+      'В кольце ℤ[φ] значение — целочисленная пара (a, b), означающая a + bφ; умножение на φ есть шаг Фибоначчи (a, b) → (b, a + b), сложение покомпонентно, и ни одна операция не округляет. Эта замкнутость реальна и обращает ошибку накопления ровно в ноль. Но она не ограничивает ошибку сети: доминирующее округление в квантованном конвейере происходит при КОДИРОВАНИИ вещественного веса на сетку формата — до того, как аккумулятор его увидит.',
+    worked:
+      'Measured on GPT-2: an ordinary fp32 accumulator over quantised weights costs 1.003x perplexity at the e3m4 split, and the whole of that comes from encoding — the accumulation itself contributes nothing detectable at this depth. What the lattice does buy is hardware: a per-layer scale φ^k synthesises to 171 LUT and 0 DSP against 1215 LUT or 2 DSP48 for a real multiplier, and it is DSP-invariant because there is no multiply to map.',
+    workedRu:
+      'Измерено на GPT-2: обычный fp32-аккумулятор над квантованными весами стоит 1.003x перплексии на раскрое e3m4, и вся эта величина приходится на кодирование — само накопление на такой глубине не даёт заметного вклада. Решётка покупает другое — железо: послойный масштаб φ^k синтезируется в 171 LUT и 0 DSP против 1215 LUT или 2 DSP48 у настоящего умножителя, и не зависит от наличия DSP, поскольку умножения нет.',
+    citation: 'Measured here; gHashTag/trinity-fpga #589 and fpga/phiscale/README.md',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/589',
+    doesNotClaim:
+      'It does not say exact accumulation is worthless — at greater depth, or in training where errors compound, an exact accumulator bounds something a float does not. It says the inference measurement here cannot see that benefit, and no training was run.',
+    doesNotClaimRu:
+      'Оно не говорит, что точное накопление бесполезно: на большей глубине или при обучении, где ошибки накапливаются, точный аккумулятор ограничивает то, чего float не ограничивает. Оно говорит, что измерение вывода здесь этой выгоды не видит, и обучение не проводилось.'
+  },
+  {
+    id: 'T46',
+    name: 'A finer logarithmic grid trades reach for rounding, and φ is the better trade above four bits',
+    nameRu: 'Более мелкая логарифмическая сетка меняет размах на округление, и выше четырёх бит φ выгоднее',
+    statement:
+      'A logarithmic grid of ratio r rounds any value to within a worst-case relative error that grows with r, and spans r^L for L levels. Halving the ratio halves the rounding and halves the reach. Since φ < 2, a φ grid rounds less per level and reaches less far than a power-of-two grid with the same level count, and which side wins is decided by whether the tensor still fits.',
+    statementRu:
+      'Логарифмическая сетка с отношением r округляет любое значение с наихудшей относительной ошибкой, растущей вместе с r, и покрывает r^L при L уровнях. Уменьшение отношения уменьшает и округление, и размах. Поскольку φ < 2, сетка φ округляет меньше и достаёт ближе, чем сетка степеней двойки с тем же числом уровней, а исход решает лишь то, помещается ли ещё тензор.',
+    worked:
+      'Scanned, not assumed: worst relative rounding is 23.61% for base φ and 33.33% for base 2. Measured on GPT-2 perplexity, weights quantised to powers of the base: at 5 bits and above φ costs 1.215x against 1.820x for base 2 — a third less damage, for one integer addition instead of a wire. At 4 bits φ collapses to 110x, because eight levels of φ reach only 29x and the tensor does not fit.',
+    workedRu:
+      'Просканировано, а не предположено: наихудшее относительное округление — 23.61% для основания φ и 33.33% для основания 2. Измерено по перплексии GPT-2 с весами, квантованными в степени основания: от 5 бит и выше φ стоит 1.215x против 1.820x у основания 2 — на треть меньше ущерба ценой одного целочисленного сложения вместо провода. На 4 битах φ обрушивается до 110x: восемь уровней φ достают лишь до 29x, и тензор не помещается.',
+    citation: 'Measured here; gHashTag/trinity-fpga #589',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/589',
+    doesNotClaim:
+      'Both logarithmic grids lose heavily to an ordinary 8-bit float at the same bit budget — e3m4 costs 1.003x where the best log grid costs 1.215x. Within-binade mantissa resolution is worth more than log-uniform spacing, so this ranks φ against base two and not against floating point.',
+    doesNotClaimRu:
+      'Обе логарифмические сетки сильно проигрывают обычному 8-битному float при том же бюджете бит: e3m4 стоит 1.003x там, где лучшая логарифмическая сетка стоит 1.215x. Разрешение мантиссы внутри бинады важнее логарифмически равномерного шага, поэтому здесь φ ранжирован против основания два, а не против плавающей точки.'
+  },
+  {
     id: 'T43',
     name: 'A proxy gate must yield to the task metric it stands in for',
     nameRu: 'Гейт на прокси обязан уступать той метрике задачи, которую он заменяет',
