@@ -26,6 +26,63 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T36',
+    name: 'A constant in the digit alphabet is a scale factor, not information',
+    nameRu: 'Константа в алфавите цифр — масштаб, а не информация',
+    statement:
+      'Let x, y be vectors over the alphabet {0, ±c} for any c > 0, and let x~, y~ be the same codes read over {0, ±1}. Then ⟨x, y⟩ = c²·⟨x~, y~⟩ exactly, because every product term is (c·t)(c·u) = c²·t·u and the sum is linear. The constant multiplies the whole result and never interacts with the data.',
+    statementRu:
+      'Пусть x, y — векторы над алфавитом {0, ±c} для любого c > 0, а x~, y~ — те же коды, прочитанные над {0, ±1}. Тогда ⟨x, y⟩ = c²·⟨x~, y~⟩ точно, поскольку каждое слагаемое равно (c·t)(c·u) = c²·t·u, а сумма линейна. Константа умножает результат целиком и не взаимодействует с данными.',
+    worked:
+      'For GFTernary, c = φ. Checked on 20,000 random dot products of length 1..199 as integer equality in Z[φ]: the accumulator is always (k, k), i.e. k·(1+φ) = k·φ². So φ² = 2.618034 is absorbable into the per-tensor scale every quantised pipeline already carries, and the fp32 constant implementing it costs 14 ulp at N = 4096 while buying no representational power.',
+    workedRu:
+      'Для GFTernary c = φ. Проверено на 20 000 случайных скалярных произведений длины 1..199 как целочисленное равенство в ℤ[φ]: аккумулятор всегда равен (k, k), то есть k·(1+φ) = k·φ². Значит φ² = 2.618034 поглощается per-tensor scale, который любой квантованный конвейер уже несёт, а реализующая его константа fp32 стоит 14 ulp при N = 4096 и не даёт представимости.',
+    citation: 'Measured here; conformance/phi_is_phi.py in gHashTag/trinity-fpga',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/582',
+    doesNotClaim:
+      'It says nothing about a constant in the positional WEIGHTS. Where the weights are powers of c the digit position changes its value and c cannot be factored out — that is a different format, and a load-bearing one.',
+    doesNotClaimRu:
+      'Оно ничего не говорит о константе в позиционных ВЕСАХ. Там, где веса — степени c, позиция цифры меняет её значение и вынести c нельзя: это другой формат, и в нём константа несущая.'
+  },
+  {
+    id: 'T37',
+    name: 'The golden ratio in the positional weights does carry information',
+    nameRu: 'Золотое сечение в позиционных весах информацию несёт',
+    statement:
+      'In Bergman’s base-φ system every non-negative integer has a terminating representation; Stakhov’s ternary mirror-symmetrical system writes integers as Σ aᵢ·φ^(2i) with aᵢ ∈ {−1, 0, +1}, and the resulting digit string is unchanged when read backwards. The symmetry is what makes the code self-checking: a fault breaks it.',
+    statementRu:
+      'В системе Бергмана с основанием φ каждое неотрицательное целое имеет конечное представление; тернарная зеркально-симметричная система Стахова записывает целые как Σ aᵢ·φ^(2i) с aᵢ ∈ {−1, 0, +1}, и полученная строка цифр не меняется при чтении задом наперёд. Именно эта симметрия делает код самопроверяющимся: сбой её ломает.',
+    worked:
+      'Reimplemented here and searched exhaustively in Z[φ] over i = −4..4: every integer 0..12 has at least one mirror-symmetric representation. N = 8, 9 and 10 have four representations each, of which two are symmetric.',
+    workedRu:
+      'Переписано здесь и проверено полным перебором в ℤ[φ] по i = −4..4: у каждого целого 0..12 есть хотя бы одно зеркально-симметричное представление. У N = 8, 9 и 10 по четыре представления, из них два симметричных.',
+    citation: 'Stakhov, “Brousentsov’s Ternary Principle, Bergman’s Number System and Ternary Mirror-symmetrical Arithmetic”, The Computer Journal 45(2):221–236, 2002',
+    url: 'https://doi.org/10.1093/comjnl/45.2.221',
+    doesNotClaim:
+      'Verified only for N = 0..12 within a nine-position window. Nothing here builds the pipeline adder that paper describes, and nothing measures it against a binary one.',
+    doesNotClaimRu:
+      'Проверено только для N = 0..12 в окне из девяти позиций. Здесь не построен конвейерный сумматор из той статьи и не измерен против двоичного.'
+  },
+  {
+    id: 'T38',
+    name: 'φⁿ + ψⁿ is always an integer, which is why three appears',
+    nameRu: 'φⁿ + ψⁿ всегда целое — поэтому и возникает тройка',
+    statement:
+      'φ and ψ = 1 − φ = −1/φ are the two roots of x² = x + 1, so their symmetric sums are integers: φⁿ + ψⁿ = Lₙ, the Lucas numbers 2, 1, 3, 4, 7, 11, 18, … The identity φ² + φ⁻² = 3 is the case n = 2, where the irrational parts cancel by construction.',
+    statementRu:
+      'φ и ψ = 1 − φ = −1/φ — два корня уравнения x² = x + 1, поэтому их симметрические суммы целые: φⁿ + ψⁿ = Lₙ, числа Лукаса 2, 1, 3, 4, 7, 11, 18, … Тождество φ² + φ⁻² = 3 — это случай n = 2, где иррациональные части сокращаются по построению.',
+    worked:
+      'Verified symbolically in Z[φ] for n = 0..10: the φ-coefficient is zero every time and the integer part matches Lₙ exactly. φ⁻¹ = φ − 1 and φ⁻² = 2 − φ, so the sum is (φ+1) + (2−φ) = 3.',
+    workedRu:
+      'Проверено символьно в ℤ[φ] для n = 0..10: коэффициент при φ каждый раз равен нулю, а целая часть точно совпадает с Lₙ. φ⁻¹ = φ − 1 и φ⁻² = 2 − φ, поэтому сумма равна (φ+1) + (2−φ) = 3.',
+    citation: 'Standard identity; the Lucas sequence is OEIS A000032',
+    url: 'https://oeis.org/A000032',
+    doesNotClaim:
+      'It is a fact about φ, not about any number format. It explains why 3 shows up beside the golden ratio; it does not make φ computationally load-bearing in an encoding, and no measurement here turns it into an engineering advantage.',
+    doesNotClaimRu:
+      'Это факт о φ, а не о каком-либо числовом формате. Он объясняет, почему рядом с золотым сечением возникает тройка, но не делает φ вычислительно несущим в кодировании, и ни одно измерение здесь не превращает его в инженерное преимущество.'
+  },
+  {
     id: 'T1',
     name: 'A passing run bounds the failure rate; it does not eliminate it',
     nameRu: 'Успешный прогон ограничивает частоту отказов, но не устраняет её',
