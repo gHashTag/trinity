@@ -3,6 +3,37 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'fourteen-rows-agreed-one-did-not',
+    title: 'Fourteen rows agreed; one did not',
+    summary: 'A post-route CI run gives fifteen instrumented FPGA frequency rows a sourced comparison: fourteen fall inside the flow’s measured noise band, while LNS16 remains an explicit exception and one design is still uninstrumented.',
+    date: '2026-08-19',
+    readingMinutes: 6,
+    tags: ['FPGA', 'CI', 'Measurement', 'Reproducibility', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/trinity-fpga PR #624 — merged G8 verdict', href: 'https://github.com/gHashTag/trinity-fpga/pull/624' },
+      { label: 'Public CI run 32263875250 — post-route measurement', href: 'https://github.com/gHashTag/trinity-fpga/actions/runs/32263875250' },
+      { label: 'docs/G8-VERDICT.md at the merged commit', href: 'https://github.com/gHashTag/trinity-fpga/blob/6f0d1882efdad37f2af8cd415a50d2cd4ac45828/docs/G8-VERDICT.md' },
+      { label: 'Merged commit 6f0d1882 — the published verdict', href: 'https://github.com/gHashTag/trinity-fpga/commit/6f0d1882efdad37f2af8cd415a50d2cd4ac45828' }
+    ],
+    openQuestions: [
+      'This is post-route CI evidence for the target part, not a UART or physical-board measurement on the ALINX AX7203.',
+      'The LNS16 mismatch has no diagnosed cause. An original log or an explicit supersession is still needed.',
+      'The plastic-16bit row remains uninstrumented; its published frequency is not validated by this run.',
+      'No throughput, energy, model-accuracy, or downstream-workload result is established by this audit.'
+    ],
+    published: true,
+    ru: {
+      title: 'Четырнадцать строк согласовались, одна — нет',
+      summary: 'Post-route CI-прогон дал пятнадцати инструментированным строкам FPGA-частот сравнение с источником: четырнадцать попали внутрь измеренного шума потока, а LNS16 осталось явным исключением и один дизайн по-прежнему не инструментирован.',
+      openQuestions: [
+        'Это post-route-свидетельство CI для целевой детали, а не UART- или физическое измерение на плате ALINX AX7203.',
+        'Причина расхождения LNS16 не установлена. Нужен исходный лог или явное указание, что опубликованная строка заменена.',
+        'Строка plastic-16bit остаётся без инструментирования; её опубликованная частота этим прогоном не подтверждена.',
+        'Этот аудит не устанавливает пропускную способность, энергию, точность модели или результат на downstream-нагрузке.'
+      ]
+    }
+  },
+  {
     slug: 'a-clean-merge-is-not-a-semantic-no-op',
     title: 'A clean merge is not a semantic no-op',
     summary: 'Two autonomous agents, one repository, a 643-commit wave merged mid-flight. The four textual conflicts were the safe part — three were comment-only and one was both sides fixing the same bug. The defect that reached master rode in on a hunk that merged cleanly: a device-default flip that a CI workflow relied on as an absence, which cannot conflict. It passed place-and-route on the wrong database and failed at the first step that looks a name up instead of trusting a path.',
