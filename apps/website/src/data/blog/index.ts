@@ -3,6 +3,38 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'the-tail-that-had-never-run',
+    title: 'The tail that had never run',
+    summary: 'A bitstream-generating CI job was red for eleven days. Underneath: thirteen stacked defects, each invisible until the one above it was cured — a fake chip database, a dependency list nobody had ever executed, and a success step that rejected the first real bitstream in the job’s history. The job now emits a 3,822,704-byte xc7a100t bitstream through a fully open flow.',
+    date: '2026-08-19',
+    readingMinutes: 9,
+    tags: ['CI', 'FPGA', 'openXC7', 'Debugging', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/t27 PR #2216 — the pull request carrying all thirteen layers', href: 'https://github.com/gHashTag/t27/pull/2216' },
+      { label: 'The first run to produce a real bitstream — fpga-bitstream job log', href: 'https://github.com/gHashTag/t27/actions/runs/32247529041' },
+      { label: 'Issue #2214 — the red-since-birth diagnosis across jobs', href: 'https://github.com/gHashTag/t27/issues/2214' },
+      { label: 'Issue #2215 — fpga-build: every job red, root causes enumerated', href: 'https://github.com/gHashTag/t27/issues/2215' },
+      { label: 'openXC7/nextpnr-xilinx — the fork that actually contains the xilinx architecture', href: 'https://github.com/openXC7/nextpnr-xilinx' }
+    ],
+    openQuestions: [
+      'The bitstream has never been loaded onto a board. The CI machine has no FPGA attached, so correctness beyond the toolchain’s own internal checks — including whether the design does anything at all on silicon — is unproven. Flashing on real hardware is the only test that counts, and it has not happened for this artifact.',
+      'Timing comes from nextpnr’s model, not from measurement. No Fmax claim is made and none should be inferred.',
+      'The flow builds the minimal profile only; the larger profiles have not been through the repaired pipeline.',
+      'The apt-mirror hangs that burned whole timeout ceilings are bounded, not fixed — a retry-with-timeout patch for the install steps exists but has not landed.'
+    ],
+    published: true,
+    ru: {
+      title: 'Хвост, который никогда не исполнялся',
+      summary: 'Собирающая битстрим CI-задача была красной одиннадцать дней. Под этим — тринадцать слоёв дефектов, каждый невидим, пока не вылечен верхний: фальшивая база кристалла, список зависимостей, который никто не исполнял, и шаг успеха, отвергнувший первый настоящий битстрим в истории задачи. Теперь задача выдаёт битстрим xc7a100t в 3 822 704 байта через полностью открытый поток.',
+      openQuestions: [
+        'Битстрим ни разу не загружался в плату: у CI-машины нет FPGA, и корректность за пределами внутренних проверок тулчейна не доказана. Единственный значимый тест — прошивка живого железа — для этого артефакта не проводился.',
+        'Тайминг — из модели nextpnr, а не из измерения. Никакого заявления о Fmax не делается.',
+        'Поток собирает только минимальный профиль; большие профили через починенный конвейер не проходили.',
+        'Зависания apt-зеркала, сжигавшие целые потолки времени, ограничены, но не устранены — патч с timeout+retry готов, но не влит.'
+      ]
+    }
+  },
+  {
     slug: 'receipts-and-seals-over-radio',
     title: 'Receipts and coverage seals over a radio mesh',
     summary: 'Bytes crossed two radio hops between four boards and arrived byte-exact, with one coverage seal recomputed independently at three points and agreeing at all three. What that proves, what it does not, what the thing is built on, and where the commercial radios are plainly ahead.',
