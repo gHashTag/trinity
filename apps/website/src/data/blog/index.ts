@@ -7,7 +7,7 @@ export const postsIndex: PostMeta[] = [
     title: 'Receipts and coverage seals over a radio mesh',
     summary: 'Bytes crossed two radio hops between four boards and arrived byte-exact, with one coverage seal recomputed independently at three points and agreeing at all three. What that proves, what it does not, what the thing is built on, and where the commercial radios are plainly ahead.',
     date: '2026-08-19',
-    readingMinutes: 17,
+    readingMinutes: 21,
     tags: ['Mesh', 'DePIN', 'Verifiable compute', 'Zynq', 'openXC7'],
     receipts: [
       { label: 'smoke/DEPIN_2HOP_RELAY_2026-07-18.md \u2014 two radio hops, seal 0x9DBE2510 identical at three points', href: 'https://github.com/gHashTag/tri-net/blob/main/smoke/DEPIN_2HOP_RELAY_2026-07-18.md' },
