@@ -3,6 +3,35 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'a-clean-merge-is-not-a-semantic-no-op',
+    title: 'A clean merge is not a semantic no-op',
+    summary: 'Two autonomous agents, one repository, a 643-commit wave merged mid-flight. The four textual conflicts were the safe part — three were comment-only and one was both sides fixing the same bug. The defect that reached master rode in on a hunk that merged cleanly: a device-default flip that a CI workflow relied on as an absence, which cannot conflict. It passed place-and-route on the wrong database and failed at the first step that looks a name up instead of trusting a path.',
+    date: '2026-08-19',
+    readingMinutes: 7,
+    tags: ['CI', 'Git', 'Multi-agent', 'FPGA', 'Debugging'],
+    receipts: [
+      { label: 'The first master run after the merge — 7/8 green, fasm2frames red', href: 'https://github.com/gHashTag/t27/actions/runs/32255921048' },
+      { label: 'Issue #2225 — the device-default regression, diagnosed', href: 'https://github.com/gHashTag/t27/issues/2225' },
+      { label: 'PR #2226 — the one-flag fix: state the device explicitly', href: 'https://github.com/gHashTag/t27/pull/2226' },
+      { label: 'PR #2216 — the fourteen-commit branch the wave merged against', href: 'https://github.com/gHashTag/t27/pull/2216' }
+    ],
+    openQuestions: [
+      'The driver still does not assert that the chipdb filename and the requested device agree; the mismatch would then fail at place-and-route instead of two steps later. Filed as open work in #2225, not claimed as done.',
+      'At the time of writing the first master run with the fix is queued, not finished — this post does not claim the green run it hopes for.',
+      'The standing caveat is unchanged: no bitstream from this pipeline has ever been loaded onto a board.'
+    ],
+    published: true,
+    ru: {
+      title: 'Чистый merge — не семантический no-op',
+      summary: 'Два автономных агента, один репозиторий, волна в 643 коммита, влитая посреди полёта. Четыре текстовых конфликта оказались безопасной частью — три были конфликтами комментариев, а в четвёртом обе стороны чинили один и тот же баг. Дефект, доехавший до master, приехал в чисто слившемся хабе: смена устройства по умолчанию, на которое CI-workflow опирался отсутствием флага, — а отсутствие конфликтовать не может. Он прошёл place-and-route по чужой базе и упал на первом шаге, который ищет имя, а не доверяет пути.',
+      openQuestions: [
+        'Драйвер по-прежнему не проверяет согласие имени файла базы кристалла с запрошенным устройством; тогда расхождение падало бы на place-and-route, а не двумя шагами позже. Записано открытой работой в #2225.',
+        'На момент написания первый master-прогон с фиксом стоит в очереди, не завершён — пост не заявляет зелёного прогона, на который надеется.',
+        'Постоянная оговорка неизменна: ни один битстрим этого конвейера не загружался в плату.'
+      ]
+    }
+  },
+  {
     slug: 'the-tail-that-had-never-run',
     title: 'The tail that had never run',
     summary: 'A bitstream-generating CI job was red for eleven days. Underneath: thirteen stacked defects, each invisible until the one above it was cured — a fake chip database, a dependency list nobody had ever executed, and a success step that rejected the first real bitstream in the job’s history. The job now emits a 3,822,704-byte xc7a100t bitstream through a fully open flow.',
