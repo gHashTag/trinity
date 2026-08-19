@@ -23,8 +23,10 @@ import { body as body_open_gigabit_ethernet_artix7, ruBody as ruBody_open_gigabi
 import { body as body_a_multiplicity_correction_changed_the_deployment_reading, ruBody as ruBody_a_multiplicity_correction_changed_the_deployment_reading } from './bodies/a-multiplicity-correction-changed-the-deployment-reading'
 import { body as body_the_full_adder_made_the_cost_claim_comparable, ruBody as ruBody_the_full_adder_made_the_cost_claim_comparable } from './bodies/the-full-adder-made-the-cost-claim-comparable'
 import { body as body_the_tail_that_had_never_run, ruBody as ruBody_the_tail_that_had_never_run } from './bodies/the-tail-that-had-never-run'
+import { body as body_a_clean_merge_is_not_a_semantic_no_op, ruBody as ruBody_a_clean_merge_is_not_a_semantic_no_op } from './bodies/a-clean-merge-is-not-a-semantic-no-op'
 
 const bodies: Record<string, PostBody> = {
+  'a-clean-merge-is-not-a-semantic-no-op': { body: body_a_clean_merge_is_not_a_semantic_no_op, ruBody: ruBody_a_clean_merge_is_not_a_semantic_no_op },
   'the-tail-that-had-never-run': { body: body_the_tail_that_had_never_run, ruBody: ruBody_the_tail_that_had_never_run },
   'the-full-adder-made-the-cost-claim-comparable': { body: body_the_full_adder_made_the_cost_claim_comparable, ruBody: ruBody_the_full_adder_made_the_cost_claim_comparable },
   'phi-is-a-scale-not-information': { body: body_phi_is_a_scale_not_information, ruBody: ruBody_phi_is_a_scale_not_information },
