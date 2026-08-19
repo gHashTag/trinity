@@ -26,6 +26,25 @@ export type Theorem = {
 
 export const THEOREMS: Theorem[] = [
   {
+    id: 'T54',
+    name: 'Completed honestly, the three-format comparison is a tie — and the differences that remain are hardware',
+    nameRu: 'Доведённое до честности сравнение трёх форматов — ничья, а оставшиеся различия — в железе',
+    statement:
+      'When a fixed-field ternary-exponent float, a tapered binary format and a tapered balanced-ternary format are compared at equal stored width, with correct oracles for all three and saturation counted separately from rounding, accumulation accuracy converges: no format wins by more than the width it gives up. What still separates them is decode hardware, because fixed fields are wire slices and anchored tapered trits are logic.',
+    statementRu:
+      'Когда float с фиксированными полями и троичной экспонентой, суженный двоичный формат и суженный балансно-троичный формат сравниваются при равной хранимой ширине, с корректными оракулами всех трёх и насыщением, посчитанным отдельно от округления, точность накопления сходится: ни один формат не выигрывает больше, чем отдаёт ширины. Разделяет их железо декодирования: фиксированные поля — срезы шин, а якорёные суженные триты — логика.',
+    worked:
+      'Measured after every oracle was corrected against its source. 16-bit class: tekum10 (15.85 bits) 8.56e-3, takum16 5.70e-3, TNF(4,8) 5.32e-3 — within 1.6x, and tekum gives up 0.15 bits. 32-bit class: tekum20 (31.70 bits) 1.43e-7, takum32 1.26e-7, TNF(4,24) 1.20e-7 — within 1.19x. Hardware: the TNF decode is 1 LUT; the tekum8 decode — anchor, trit extraction, tapered fields, base-3 ladder, verified exhaustively on all 6558 codes — is 542 LUT, more than TNF\'s entire full adder at 397.',
+    workedRu:
+      'Измерено после сверки каждого оракула с первоисточником. Класс 16 бит: tekum10 (15.85 бита) 8.56e-3, takum16 5.70e-3, TNF(4,8) 5.32e-3 — в пределах 1.6×, причём tekum отдаёт 0.15 бита. Класс 32 бита: tekum20 (31.70) 1.43e-7, takum32 1.26e-7, TNF(4,24) 1.20e-7 — в пределах 1.19×. Железо: декод TNF — 1 LUT; декод tekum8 — якорь, извлечение тритов, суженные поля, base-3 лестница, проверен исчерпывающе на всех 6558 кодах — 542 LUT, больше, чем весь полный сумматор TNF (397).',
+    citation: 'Measured here; gHashTag/trinity-fpga #610, #611, #614',
+    url: 'https://github.com/gHashTag/trinity-fpga/pull/614',
+    doesNotClaim:
+      'The tie is on accumulation over one band and one seed per class; no network was run through any of the three. The tekum decode cost is measured on a binary fabric, the only fabric that exists — on a ternary fabric its trit extraction would be wiring, exactly as TNF\'s fields are wiring here. takum\'s own hardware would carry regime-decode costs not measured in this row.',
+    doesNotClaimRu:
+      'Ничья — по накоплению на одной полосе и одном зерне на класс; ни одна сеть через эти форматы не прогонялась. Цена декода tekum измерена на двоичной ткани — единственной существующей; на троичной его извлечение тритов было бы разводкой, ровно как поля TNF здесь. Собственное железо takum несло бы цену декода regime, в этой строке не измеренную.'
+  },
+  {
     id: 'T53',
     name: 'Freeing a resource is worth nothing until that resource is the one that binds',
     nameRu: 'Освобождение ресурса не стоит ничего, пока связывает не он',
