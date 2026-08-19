@@ -1,6 +1,7 @@
 import { postsIndex } from './index'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_receipts_and_seals_over_radio, ruBody as ruBody_receipts_and_seals_over_radio } from './bodies/receipts-and-seals-over-radio'
 import { body as body_phi_is_a_scale_not_information, ruBody as ruBody_phi_is_a_scale_not_information } from './bodies/phi-is-a-scale-not-information'
 import { body as body_an_inert_filter_is_safest_until_it_works, ruBody as ruBody_an_inert_filter_is_safest_until_it_works } from './bodies/an-inert-filter-is-safest-until-it-works'
 import { body as body_a_gate_that_rejected_its_own_users, ruBody as ruBody_a_gate_that_rejected_its_own_users } from './bodies/a-gate-that-rejected-its-own-users'
@@ -42,6 +43,7 @@ const bodies: Record<string, PostBody> = {
   'a-repair-reaches-only-the-copy-it-lands-in': { body: body_a_repair_reaches_only_the_copy_it_lands_in, ruBody: ruBody_a_repair_reaches_only_the_copy_it_lands_in },
   'green-ci-does-not-mean-usable': { body: body_green_ci_does_not_mean_usable, ruBody: ruBody_green_ci_does_not_mean_usable },
   'scale-field-width-already-published': { body: body_scale_field_width_already_published, ruBody: ruBody_scale_field_width_already_published },
+  'receipts-and-seals-over-radio': { body: body_receipts_and_seals_over_radio, ruBody: ruBody_receipts_and_seals_over_radio },
   'open-gigabit-ethernet-artix7': { body: body_open_gigabit_ethernet_artix7, ruBody: ruBody_open_gigabit_ethernet_artix7 },
   'a-multiplicity-correction-changed-the-deployment-reading': { body: body_a_multiplicity_correction_changed_the_deployment_reading, ruBody: ruBody_a_multiplicity_correction_changed_the_deployment_reading },
 }

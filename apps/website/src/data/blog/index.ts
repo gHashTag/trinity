@@ -3,6 +3,43 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'receipts-and-seals-over-radio',
+    title: 'Receipts and coverage seals over a radio mesh',
+    summary: 'Bytes crossed two radio hops between four boards and arrived byte-exact, with one cryptographic seal identical at all three points. What that proves, what it does not, and why the interesting part is the audit trail rather than the radio.',
+    date: '2026-08-19',
+    readingMinutes: 11,
+    tags: ['Mesh', 'DePIN', 'Verifiable compute', 'Zynq', 'openXC7'],
+    receipts: [
+      { label: 'smoke/DEPIN_2HOP_RELAY_2026-07-18.md \u2014 two radio hops, seal 0x9DBE2510 identical at three points', href: 'https://github.com/gHashTag/tri-net/blob/main/smoke/DEPIN_2HOP_RELAY_2026-07-18.md' },
+      { label: 'smoke/DEPIN_STREAMING_4NODE_2026-07-18.md \u2014 four nodes, three independent witnesses, seal 0xCDB1F3B1', href: 'https://github.com/gHashTag/tri-net/blob/main/smoke/DEPIN_STREAMING_4NODE_2026-07-18.md' },
+      { label: 'smoke/DEPIN_OTA_CLOSED_2026-07-18.md \u2014 8 bytes over the air, corr_peak 1.000, BER 0/64, twice', href: 'https://github.com/gHashTag/tri-net/blob/main/smoke/DEPIN_OTA_CLOSED_2026-07-18.md' },
+      { label: 'docs/VERIFIABLE_COMPUTE.md \u2014 GF-T16 multiply 5/5 and dot2 3/3 bit-exact on Artix-7 over UART', href: 'https://github.com/gHashTag/tri-net/blob/main/docs/VERIFIABLE_COMPUTE.md' },
+      { label: '26 patches merged into openXC7/nextpnr-xilinx \u2014 the largest single contribution to that project', href: 'https://github.com/openXC7/nextpnr-xilinx/pulls?q=is%3Apr+author%3AgHashTag+is%3Amerged' },
+      { label: 'arXiv:2606.09686 \u2014 83-format numeric catalog with bit-exact conformance vectors', href: 'https://arxiv.org/abs/2606.09686' }
+    ],
+    openQuestions: [
+      'No throughput figure exists. Mesh capacity per hop has never been measured, and neither has the falloff across two to four hops \u2014 the axis on which a buyer actually chooses. For scale, the NASA report on Doodle Labs gives 37.9, 5.6, 1.2 and 0.3 Mbit/s at one to four hops. There is nothing to put beside it.',
+      'Demodulation is an offline batch, roughly three seconds per sixteen megabytes on the ARM core. The capture is continuous and loses no samples; the processing is not real time, and the four-node result should be read as provenance rather than as a live link.',
+      'Self-healing convergence time has never been measured on hardware. The target is under five seconds for a link, and no field run exists.',
+      'Power and SWaP are unmeasured; the budget is not finalised.',
+      'No silicon of our own exists. The TTSKY26b tape-out was withdrawn and there is no fabrication route, so every claim that depends on a Trinity die is open. The bit-exact compute results are on a commodity Artix-7, not on a custom part.',
+      'The band actually transmitted on is 2.4 GHz ISM, and the regulatory note in the repository covers 5.8 GHz only. That is a documentation gap rather than a measurement one, and it is being closed.'
+    ],
+    published: true,
+    ru: {
+      title: '\u041a\u0432\u0438\u0442\u0430\u043d\u0446\u0438\u0438 \u0438 \u043f\u0435\u0447\u0430\u0442\u0438 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u044f \u0447\u0435\u0440\u0435\u0437 \u0440\u0430\u0434\u0438\u043e\u0441\u0435\u0442\u044c',
+      summary: '\u0411\u0430\u0439\u0442\u044b \u043f\u0440\u043e\u0448\u043b\u0438 \u0434\u0432\u0430 \u0440\u0430\u0434\u0438\u043e\u0441\u043a\u0430\u0447\u043a\u0430 \u043c\u0435\u0436\u0434\u0443 \u0447\u0435\u0442\u044b\u0440\u044c\u043c\u044f \u043f\u043b\u0430\u0442\u0430\u043c\u0438 \u0438 \u043f\u0440\u0438\u0448\u043b\u0438 \u0431\u0430\u0439\u0442-\u0432-\u0431\u0430\u0439\u0442, \u0441 \u043e\u0434\u043d\u043e\u0439 \u043a\u0440\u0438\u043f\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u043f\u0435\u0447\u0430\u0442\u044c\u044e, \u0441\u043e\u0432\u043f\u0430\u0432\u0448\u0435\u0439 \u0432\u043e \u0432\u0441\u0435\u0445 \u0442\u0440\u0451\u0445 \u0442\u043e\u0447\u043a\u0430\u0445.',
+      openQuestions: [
+        '\u0427\u0438\u0441\u043b\u0430 \u043f\u0440\u043e\u043f\u0443\u0441\u043a\u043d\u043e\u0439 \u0441\u043f\u043e\u0441\u043e\u0431\u043d\u043e\u0441\u0442\u0438 \u043d\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442. \u0401\u043c\u043a\u043e\u0441\u0442\u044c \u043d\u0430 \u0441\u043a\u0430\u0447\u043e\u043a \u043d\u0435 \u0438\u0437\u043c\u0435\u0440\u044f\u043b\u0430\u0441\u044c \u043d\u0438 \u0440\u0430\u0437\u0443.',
+        '\u0414\u0435\u043c\u043e\u0434\u0443\u043b\u044f\u0446\u0438\u044f \u2014 \u043e\u0444\u043b\u0430\u0439\u043d\u043e\u0432\u044b\u0439 \u0431\u0430\u0442\u0447, \u043e\u043a\u043e\u043b\u043e \u0442\u0440\u0451\u0445 \u0441\u0435\u043a\u0443\u043d\u0434 \u043d\u0430 \u0448\u0435\u0441\u0442\u043d\u0430\u0434\u0446\u0430\u0442\u044c \u043c\u0435\u0433\u0430\u0431\u0430\u0439\u0442.',
+        '\u0412\u0440\u0435\u043c\u044f \u0441\u0430\u043c\u043e\u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f \u043d\u0430 \u0436\u0435\u043b\u0435\u0437\u0435 \u043d\u0435 \u0438\u0437\u043c\u0435\u0440\u044f\u043b\u043e\u0441\u044c.',
+        '\u042d\u043d\u0435\u0440\u0433\u043e\u043f\u043e\u0442\u0440\u0435\u0431\u043b\u0435\u043d\u0438\u0435 \u0438 SWaP \u043d\u0435 \u0438\u0437\u043c\u0435\u0440\u044f\u043b\u0438\u0441\u044c.',
+        '\u0421\u0432\u043e\u0435\u0433\u043e \u043a\u0440\u0438\u0441\u0442\u0430\u043b\u043b\u0430 \u043d\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442: \u0437\u0430\u044f\u0432\u043a\u0430 TTSKY26b \u043e\u0442\u043e\u0437\u0432\u0430\u043d\u0430.',
+        '\u041f\u043e\u043b\u043e\u0441\u0430 \u043f\u0435\u0440\u0435\u0434\u0430\u0447\u0438 \u2014 2,4 \u0413\u0413\u0446 ISM, \u0430 \u0440\u0435\u0433\u0443\u043b\u044f\u0442\u043e\u0440\u043d\u0430\u044f \u0437\u0430\u043f\u0438\u0441\u043a\u0430 \u043d\u0430\u043f\u0438\u0441\u0430\u043d\u0430 \u043f\u0440\u043e 5,8 \u0413\u0413\u0446.'
+      ]
+    }
+  },
+  {
     slug: 'the-full-adder-made-the-cost-claim-comparable',
     title: 'The full adder made the cost claim comparable',
     summary: 'A merged FPGA-repository PR replaces a magnitude-only comparison with a full adder and reports 3000 oracle checks, 0 errors, and a 440-LUT post-synthesis result.',
