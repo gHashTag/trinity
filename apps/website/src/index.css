@@ -1224,6 +1224,17 @@ input:focus-visible {
   padding: 20px 24px 24px;
 }
 
+/* Ведущая картинка статьи: та же обложка, что уходит в og:image. */
+.blog-lead-cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 0 28px;
+  background: #000;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 10px;
+}
+
 /* Кнопка репоста: раньше ссылки шли обычным синим текстом в строку и не
    читались как действие. */
 .share-pill {
