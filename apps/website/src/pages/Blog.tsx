@@ -92,38 +92,45 @@ const card: React.CSSProperties = {
   overflow: 'hidden',
 }
 
-/** Карточка поста в списке: обложка сверху, под ней мета и краткое содержание.
+/** Обложка поста: тот же файл, что уходит в og:image.
  *
- * Заголовок напечатан на самой обложке — том же файле, что уходит в og:image.
- * Поэтому текстовый заголовок в карточке показывается ТОЛЬКО когда картинка не
- * загрузилась: рядом с обложкой он читался как удвоенный заголовок, а без него
- * пост остался бы без названия там, где картинки нет (dev, локальный dist,
- * отключённые изображения). Для читалок заголовок есть всегда, скрытым.
+ * Отдельный компонент нужен потому, что файла может не быть: картинки
+ * лежат в репозитории статики, а не в сборке приложения, поэтому в dev и в
+ * локальном dist они отвечают 404. При ошибке загрузки место просто
+ * схлопывается, а не показывает битую картинку.
+ */
+function Cover({ slug, lang, className, priority }: { slug: string; lang: string; className: string; priority?: boolean }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) return null
+  return (
+    <img
+      src={`/og-blog-${slug}${lang === 'ru' ? '-ru' : ''}.png`}
+      alt=""
+      loading={priority ? 'eager' : 'lazy'}
+      width={1200}
+      height={630}
+      className={className}
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
+/** Карточка поста в списке: обложка сверху, под ней мета, заголовок и резюме.
+ *
+ * Заголовок показывается всегда. Раньше он скрывался при видимой обложке,
+ * потому что тогдашняя карточка печатала заголовок на картинке. Рисованная
+ * обложка несёт только названия трёх панелей и подвал, так что без текстового
+ * заголовка пост в списке остался бы безымянным.
  */
 function BlogCard({ post, lang, minLabel }: { post: PostMeta; lang: string; minLabel: string }) {
-  const [cover, setCover] = useState<'pending' | 'shown' | 'failed'>('pending')
   return (
     <Link to={`/blog/${post.slug}`} style={card} className="blog-card">
-      {cover !== 'failed' && (
-        <img
-          src={`/og-blog-${post.slug}${lang === 'ru' ? '-ru' : ''}.png`}
-          alt=""
-          loading="lazy"
-          width={1200}
-          height={630}
-          className="blog-card-cover"
-          onLoad={() => setCover('shown')}
-          onError={() => setCover('failed')}
-        />
-      )}
+      <Cover slug={post.slug} lang={lang} className="blog-card-cover" />
       <div className="blog-card-body">
         <div style={meta}>
           {post.date} · {post.readingMinutes} {minLabel} · {post.tags.join(' · ')}
         </div>
-        <h2
-          className={cover === 'shown' ? 'visually-hidden' : undefined}
-          style={cover === 'shown' ? undefined : { margin: '10px 0 8px', fontSize: '1.25rem', fontWeight: 800 }}
-        >
+        <h2 style={{ margin: '10px 0 8px', fontSize: '1.25rem', fontWeight: 800 }}>
           {post.title}
         </h2>
         <p style={{ margin: '10px 0 0', lineHeight: 1.7, color: 'var(--text-dim, #8a8a8a)' }}>
@@ -476,6 +483,7 @@ export function BlogPost() {
     <main>
       <Navigation />
       <article style={wrap}>
+        <Cover slug={post.slug} lang={lang} className="blog-lead-cover" priority />
         <div style={meta}>
           {post.date} · {post.readingMinutes} {t.min} · {post.tags.join(' · ')}
         </div>
