@@ -11,8 +11,40 @@ we work with, and the openXC7 maintainers read it.
 
 ## Where the blog is — read this before anything else
 
-**`apps/website/src/data/blog/posts.ts` in `gHashTag/trinity`
-(`/Users/playom/trinity`).**
+**`apps/website/src/data/blog/` in `gHashTag/trinity` (`~/trinity`).**
+
+**The layout changed and this section used to describe the old one.** On `main` a post is
+now three files, not one object:
+
+```
+apps/website/src/data/blog/
+  index.ts          postsIndex: PostMeta[]  - metadata only, newest first
+  bodies/<slug>.ts  exports `body` and `ruBody`
+  posts.ts          imports each body and joins it to the index
+```
+
+Adding an article is three edits: the body file, the `index.ts` entry, and BOTH the import
+line and the map line in `posts.ts`. A missing map line throws `Missing blog body: <slug>`
+at load; a missing index entry fails silently.
+
+**The migration trap.** The branch `fix/queen-deploy-railway-hook` is 199 commits ahead of
+`main` and still carries the old single 1944-line `posts.ts` with `const <camelCase>: Post`
+objects. An article written there does NOT transplant to `main` - a cherry-pick conflicts,
+because the two files are different designs rather than different versions. Check first:
+
+```bash
+wc -l ~/trinity/apps/website/src/data/blog/posts.ts   # ~58 current, ~1900 the old branch
+```
+
+Work in a worktree cut from `main`, never `git checkout` - the main tree normally holds the
+author's uncommitted work and switching under it fails or clobbers:
+
+```bash
+git worktree add -b blog/<slug> /tmp/wt-blog refs/remotes/origin/main
+```
+
+A fresh worktree has no `node_modules`, so `vite build` cannot run there. Check syntax per
+file instead: `npx esbuild src/data/blog/bodies/<slug>.ts --outfile=/dev/null`.
 
 Posts are **TypeScript objects**, not markdown files. They are rendered by
 `apps/website/src/pages/Blog.tsx` (a Vite + React SPA with hash routing) and
@@ -156,6 +188,29 @@ curl -sS "https://t27.ai/assets/$blog" | grep -c '<your-slug>'
 A `404` on the chunk, or a chunk whose hash differs from your local
 `dist/assets/Blog-*.js`, means the apex has not republished yet — wait for the
 next quarter-hour, do not start "fixing" it.
+
+## `tri blog` exists, and cannot currently be built
+
+`src/tri/blog_commands.zig` implements four subcommands that automate exactly the checks
+this file describes doing by hand:
+
+```
+tri blog list           every post with its published state
+tri blog check [slug]   re-verify each receipt's PR/issue state against GitHub
+tri blog build          build apps/website
+tri blog live <slug>    is the post actually served at the apex
+```
+
+Its own header says why those four: "each one automates a mistake that has already been
+made by hand".
+
+**It does not build.** `zig build` fails on `build.zig.zon`, which carries
+`.hash = "PLACEHOLDER"` for the `zig_hdc` dependency - on `main`, not only locally. Until
+that is fixed the four checks have to be done by hand, which is presumably why they keep
+being done by hand. Related: issue #737, Build & Test red on `main`.
+
+Fixing that placeholder is the highest-leverage small change in this area: it turns four
+manual checks into four commands.
 
 ## Traps already paid for
 
