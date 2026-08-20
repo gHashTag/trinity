@@ -1,6 +1,7 @@
 import { postsIndex } from './index'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_thirty_epochs_exposed_a_failure_rate_blind_spot, ruBody as ruBody_thirty_epochs_exposed_a_failure_rate_blind_spot } from './bodies/thirty-epochs-exposed-a-failure-rate-blind-spot'
 import { body as body_receipts_and_seals_over_radio, ruBody as ruBody_receipts_and_seals_over_radio } from './bodies/receipts-and-seals-over-radio'
 import { body as body_phi_is_a_scale_not_information, ruBody as ruBody_phi_is_a_scale_not_information } from './bodies/phi-is-a-scale-not-information'
 import { body as body_an_inert_filter_is_safest_until_it_works, ruBody as ruBody_an_inert_filter_is_safest_until_it_works } from './bodies/an-inert-filter-is-safest-until-it-works'
@@ -28,6 +29,7 @@ import { body as body_a_clean_merge_is_not_a_semantic_no_op, ruBody as ruBody_a_
 import { body as body_formal_was_green_and_had_never_run_a_solver, ruBody as ruBody_formal_was_green_and_had_never_run_a_solver } from './bodies/formal-was-green-and-had-never-run-a-solver'
 
 const bodies: Record<string, PostBody> = {
+  'thirty-epochs-exposed-a-failure-rate-blind-spot': { body: body_thirty_epochs_exposed_a_failure_rate_blind_spot, ruBody: ruBody_thirty_epochs_exposed_a_failure_rate_blind_spot },
   'formal-was-green-and-had-never-run-a-solver': { body: body_formal_was_green_and_had_never_run_a_solver, ruBody: ruBody_formal_was_green_and_had_never_run_a_solver },
   'fourteen-rows-agreed-one-did-not': { body: body_fourteen_rows_agreed_one_did_not, ruBody: ruBody_fourteen_rows_agreed_one_did_not },
   'a-clean-merge-is-not-a-semantic-no-op': { body: body_a_clean_merge_is_not_a_semantic_no_op, ruBody: ruBody_a_clean_merge_is_not_a_semantic_no_op },

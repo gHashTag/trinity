@@ -3,6 +3,51 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    "slug": "thirty-epochs-exposed-a-failure-rate-blind-spot",
+    "title": "Thirty epochs exposed a failure-rate blind spot",
+    "summary": "A 30-epoch MNIST sweep showed why a failure-rate threshold needs the per-seed values beside it: a passing count can coexist with non-overlapping runs.",
+    "date": "2026-08-20",
+    "readingMinutes": 6,
+    "tags": [
+      "FPGA",
+      "MNIST",
+      "Measurement",
+      "Reproducibility",
+      "Self-critique"
+    ],
+    "receipts": [
+      {
+        "label": "gHashTag/trinity-fpga PR #660 — merged experiment and blind-spot correction",
+        "href": "https://github.com/gHashTag/trinity-fpga/pull/660"
+      },
+      {
+        "label": "Thirty-epoch report at the merged commit",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/21c72a2bd066e3041f6577c35d3189f02041c30e/docs/THIRTY-EPOCHS.md"
+      },
+      {
+        "label": "Five-seed MNIST measurement JSON",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/21c72a2bd066e3041f6577c35d3189f02041c30e/research/arxiv_tnf/measurements/stability_mnist_30ep_2026-08-20.json"
+      }
+    ],
+    "openQuestions": [
+      "This is a measured MNIST training sweep, not a measurement on the ALINX AX7203 FPGA and not a silicon result.",
+      "It does not establish a universal accuracy or failure-rate ranking for TNF4, fp6 e2m3, or fp6 e3m2.",
+      "It does not show that a 60% threshold is the right threshold for another task, seed set, or training recipe.",
+      "The experiment does not establish transfer beyond this MNIST configuration; the per-seed list improves the audit trail but does not remove that scope limit."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Тридцать эпох выявили слепую зону доли отказов",
+      "summary": "Тридцатиэпоховый sweep на MNIST показал, почему рядом с порогом по доле отказов нужны значения по каждому seed: счёт «прошёл» может сосуществовать с неперекрывающимися прогонами.",
+      "openQuestions": [
+        "Это измеренный обучающий sweep на MNIST, а не измерение на FPGA ALINX AX7203 и не результат на кремнии.",
+        "Он не устанавливает универсальный рейтинг точности или доли отказов для TNF4, fp6 e2m3 или fp6 e3m2.",
+        "Он не показывает, что порог 60% подходит для другой задачи, набора seed или рецепта обучения.",
+        "Эксперимент не устанавливает переносимость за пределы этой конфигурации MNIST; список по seed улучшает аудит, но не снимает ограничение области."
+      ]
+    }
+  },
+  {
     slug: 'formal-was-green-and-had-never-run-a-solver',
     title: 'Formal was green and had never run a solver',
     summary: 'A formal verification job stayed green its whole life while three independent mechanisms each guaranteed it could never go red — pseudo-syntax configs, a pipe that tested tee instead of the tool, and continue-on-error over everything. Peeling it to the first genuine proof took seven named layers, including RTL four months older than the compiler under test and property files that never instantiated the DUT. It ends with the repository’s first real formal verdicts: fifo and mac, Status PASSED under z3.',
