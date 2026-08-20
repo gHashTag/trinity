@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'formal-was-green-and-had-never-run-a-solver',
+    title: 'Formal was green and had never run a solver',
+    summary: 'A formal verification job stayed green its whole life while three independent mechanisms each guaranteed it could never go red — pseudo-syntax configs, a pipe that tested tee instead of the tool, and continue-on-error over everything. Peeling it to the first genuine proof took seven named layers, including RTL four months older than the compiler under test and property files that never instantiated the DUT. It ends with the repository’s first real formal verdicts: fifo and mac, Status PASSED under z3.',
+    date: '2026-08-20',
+    readingMinutes: 8,
+    tags: ['CI', 'Formal', 'FPGA', 'Debugging', 'Self-critique'],
+    receipts: [
+      { label: 'The audit issue: three vacuous greens, each confirmed by two refuters', href: 'https://github.com/gHashTag/t27/issues/2239' },
+      { label: 'Layer 6 — formal tested April-vintage RTL shadowing the fresh artifact', href: 'https://github.com/gHashTag/t27/issues/2261' },
+      { label: 'Layer 7 — props never instantiated the DUT', href: 'https://github.com/gHashTag/t27/issues/2265' },
+      { label: 'The latch finding that parked the third module', href: 'https://github.com/gHashTag/t27/issues/2266' },
+      { label: 'The master run with the first green formal carrying real verdicts', href: 'https://github.com/gHashTag/t27/actions/runs/32315356476' }
+    ],
+    openQuestions: [
+      'The proven properties are thin: two of three modules currently expose no data ports, so their one provable invariant is a constant handshake line. The property sets are skeletons that grow with the ports — they are not a functional verification of FIFO or MAC semantics.',
+      'The third module (uart) is parked on a real design defect: a latch with combinational feedback inferred by the code generator. Its invariant is simulation-checked (256/256), not proven.',
+      'The conformance job remains honestly red: its vectors have never been executed against RTL, and its repair is a redesign, not a patch.'
+    ],
+    published: true,
+    ru: {
+      title: 'Формал был зелёным и ни разу не запускал солвер',
+      summary: 'Задача формальной верификации оставалась зелёной всю жизнь, пока три независимых механизма гарантировали, что красной она стать не может: псевдо-синтаксис конфигов, пайп, проверявший tee вместо инструмента, и continue-on-error поверх всего. Путь до первого настоящего доказательства занял семь именованных слоёв — включая RTL на четыре месяца старше тестируемого компилятора и property-файлы, никогда не инстанцировавшие DUT. Финал — первые настоящие формальные вердикты репозитория: fifo и mac, Status PASSED под z3.',
+      openQuestions: [
+        'Доказанные свойства тонкие: два модуля из трёх пока не выставляют data-портов, и их единственный доказуемый инвариант — константная линия хендшейка. Наборы свойств — скелеты, растущие вместе с портами, а не функциональная верификация семантики FIFO или MAC.',
+        'Третий модуль (uart) запаркован на настоящем дефекте дизайна: защёлка с комбинационной обратной связью, выведенная кодогенератором. Его инвариант проверен симуляцией (256/256), не доказан.',
+        'Conformance-job остаётся честно красным: его векторы никогда не исполнялись против RTL, и ремонт — редизайн, а не патч.'
+      ]
+    }
+  },
+  {
     slug: 'fourteen-rows-agreed-one-did-not',
     title: 'Fourteen rows agreed; one did not',
     summary: 'A post-route CI run gives fifteen instrumented FPGA frequency rows a sourced comparison: fourteen fall inside the flow’s measured noise band, while LNS16 remains an explicit exception and one design is still uninstrumented.',
