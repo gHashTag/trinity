@@ -25,8 +25,10 @@ import { body as body_the_full_adder_made_the_cost_claim_comparable, ruBody as r
 import { body as body_the_tail_that_had_never_run, ruBody as ruBody_the_tail_that_had_never_run } from './bodies/the-tail-that-had-never-run'
 import { body as body_fourteen_rows_agreed_one_did_not, ruBody as ruBody_fourteen_rows_agreed_one_did_not } from './bodies/fourteen-rows-agreed-one-did-not'
 import { body as body_a_clean_merge_is_not_a_semantic_no_op, ruBody as ruBody_a_clean_merge_is_not_a_semantic_no_op } from './bodies/a-clean-merge-is-not-a-semantic-no-op'
+import { body as body_formal_was_green_and_had_never_run_a_solver, ruBody as ruBody_formal_was_green_and_had_never_run_a_solver } from './bodies/formal-was-green-and-had-never-run-a-solver'
 
 const bodies: Record<string, PostBody> = {
+  'formal-was-green-and-had-never-run-a-solver': { body: body_formal_was_green_and_had_never_run_a_solver, ruBody: ruBody_formal_was_green_and_had_never_run_a_solver },
   'fourteen-rows-agreed-one-did-not': { body: body_fourteen_rows_agreed_one_did_not, ruBody: ruBody_fourteen_rows_agreed_one_did_not },
   'a-clean-merge-is-not-a-semantic-no-op': { body: body_a_clean_merge_is_not_a_semantic_no_op, ruBody: ruBody_a_clean_merge_is_not_a_semantic_no_op },
   'the-tail-that-had-never-run': { body: body_the_tail_that_had_never_run, ruBody: ruBody_the_tail_that_had_never_run },
