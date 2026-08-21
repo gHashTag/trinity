@@ -608,8 +608,8 @@ export const faq = {
     {
       q: { en: 'What exactly is the accuracy comparison against?', ru: 'С чем именно идёт сравнение по точности?' },
       a: {
-        en: 'Against takum: 2.1× at sixteen bits and 2.6× at thirty-two. The oracle labelled tekum decodes all 65 536 sixteen-bit codes identically to the takum oracle, so a direct comparison against tekum has not been made and is not claimed.',
-        ru: 'С takum: 2.1× на шестнадцати битах и 2.6× на тридцати двух. Оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных кодов идентично takum-оракулу, поэтому прямое сравнение с tekum не сделано и не заявляется.',
+        en: 'At equal stored width the result is a three-way tie: at sixteen bits TNF(4,8) 5.32e-3, takum16 5.70e-3, tekum10 8.56e-3; at thirty-two 1.20e-7, 1.26e-7, 1.43e-7. No format wins by more than the width it gives up. An earlier 2.1×/2.6× advantage is withdrawn: its oracle negated wrongly on every negative code, and the budget was nominal rather than equal stored width. The oracle labelled tekum decodes all 65 536 sixteen-bit codes identically to the takum oracle, so a direct comparison against tekum has not been made and is not claimed.',
+        ru: 'При равной ширине хранения — тройная ничья: на шестнадцати битах TNF(4,8) 5.32e-3, takum16 5.70e-3, tekum10 8.56e-3; на тридцати двух 1.20e-7, 1.26e-7, 1.43e-7. Ни один формат не выигрывает больше, чем отдаёт ширины. Прежний выигрыш 2.1×/2.6× отозван: его оракул неверно отрицал все отрицательные коды, а бюджет был номинальный, а не равная ширина хранения. Оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных кодов идентично takum-оракулу, поэтому прямое сравнение с tekum не сделано и не заявляется.',
       },
       tag: 'measured',
     },
@@ -709,7 +709,7 @@ export const limits = {
     },
     {
       h: { en: 'The comparison is against takum16, not tekum16', ru: 'Сравнение идёт против takum16, а не tekum16' },
-      b: { en: 'The oracle labelled tekum decodes all 65 536 sixteen-bit codes identically to the takum oracle, so the ground being compared is takum: 2.1× at 16 bits and 2.6× at 32. A comparison against tekum itself has not been made and is not claimed here.', ru: 'Оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных кодов идентично takum-оракулу, поэтому сравниваемая земля — takum: 2.1× на 16 битах и 2.6× на 32. Сравнение с самим tekum не сделано и здесь не заявляется.' },
+      b: { en: 'The oracle labelled tekum decodes all 65 536 sixteen-bit codes identically to the takum oracle, so the ground being compared is takum — and at equal stored width that comparison is a tie, not a win: TNF(4,8) 5.32e-3 against takum16 5.70e-3, TNF(4,24) 1.20e-7 against takum32 1.26e-7. The 2.1×/2.6× figure published here earlier is withdrawn. A comparison against tekum itself has not been made and is not claimed here.', ru: 'Оракул, помеченный tekum, декодирует все 65 536 шестнадцатибитных кодов идентично takum-оракулу, поэтому сравниваемая земля — takum, и при равной ширине хранения это ничья, а не выигрыш: TNF(4,8) 5.32e-3 против takum16 5.70e-3, TNF(4,24) 1.20e-7 против takum32 1.26e-7. Опубликованная здесь ранее цифра 2.1×/2.6× отозвана. Сравнение с самим tekum не сделано и здесь не заявляется.' },
       tag: 'measured' as Tag,
     },
     {
@@ -1115,8 +1115,10 @@ export const invest = {
     { v: '52', l: { en: 'theorems proved in the paper', ru: 'теоремы, доказанные в статье' }, tag: 'proved' },
     { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
     { v: '5 / 9', l: { en: 'ladder rungs standing in hardware', ru: 'ступеней лестницы стоят в железе' }, tag: 'measured' },
-    { v: '66 LUT', l: { en: 'GFTernary decoder at 974.66 MHz on XC7A200T', ru: 'декодер GFTernary на 974.66 МГц на XC7A200T' }, tag: 'measured' },
-    { v: '2.1× / 2.6×', l: { en: 'mean relative error against takum16 / takum32', ru: 'средней относительной ошибки против takum16 / takum32' }, tag: 'measured' },
+    { v: '66 LUT', l: { en: 'GFTernary decoder on XC7A200T, isolated — bare wire is 112 LUT', ru: 'декодер GFTernary на XC7A200T, изолированно — голый провод 112 LUT' }, tag: 'measured' },
+    { v: '38×', l: { en: 'fewer LUT: a full TNF(4,8) adder is 397 against tekum8’s 15 251, and TNF is the wider format', ru: 'меньше LUT: полный сумматор TNF(4,8) — 397 против 15 251 у tekum8, причём TNF шире' }, tag: 'measured' },
+    { v: 'a tie', l: { en: 'accuracy against takum at equal stored width — TNF(4,8) 5.32e-3 against takum16 5.70e-3', ru: 'точность против takum при равной ширине хранения — TNF(4,8) 5.32e-3 против takum16 5.70e-3' }, tag: 'measured' },
+    { v: '2.1× / 2.6×', l: { en: 'the earlier accuracy lead over takum — withdrawn, not reproduced at equal stored width', ru: 'прежний выигрыш по точности над takum — отозван, при равной ширине хранения не воспроизводится' }, tag: 'retracted' },
   ],
   moatTitle: { en: 'Defensibility, stated exactly', ru: 'Защищённость — точно как есть' },
   moat: [
@@ -1158,7 +1160,9 @@ export const invest = {
     ru: 'Теги здесь не украшение. Условия предложения — запрашиваемая позиция, а не измерение; распределение и транши — план, а не результат; внешние числа ведут ссылкой на страницу, откуда взяты. Инженерные цифры — те же, что измерены выше, с тем же происхождением.',
   },
   ctas: [
-    { label: { en: 'Investor — request the deck and the terms', ru: 'Инвестор — запросить деку и условия' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20investment' },
+    { label: { en: 'Deck in English — PDF, 11 pages', ru: 'Дека по-английски — PDF, 11 страниц' }, href: '/deck/trinity-s3ai-deck-en.pdf' },
+    { label: { en: 'Deck in Russian — PDF, 11 pages', ru: 'Дека по-русски — PDF, 11 страниц' }, href: '/deck/trinity-s3ai-deck-ru.pdf' },
+    { label: { en: 'Investor — request the terms', ru: 'Инвестор — запросить условия' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20investment' },
     { label: { en: 'Licence a core', ru: 'Лицензировать ядро' }, href: '#/ip' },
     { label: { en: 'Every measured number, and its limits', ru: 'Все измеренные числа и их границы' }, href: '#/proof' },
   ],
