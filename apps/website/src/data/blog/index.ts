@@ -3,6 +3,51 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    "slug": "equal-stored-width-removed-an-accuracy-lead",
+    "title": "Equal stored width removed an accuracy lead",
+    "summary": "A corrected equal-stored-width remeasurement withdrew an earlier 2.1×/2.6× lead over takum and records the oracle and budget defects that changed the reading.",
+    "date": "2026-08-21",
+    "readingMinutes": 6,
+    "tags": [
+      "Measurement",
+      "Reproducibility",
+      "Self-critique",
+      "FPGA",
+      "Accuracy"
+    ],
+    "receipts": [
+      {
+        "label": "gHashTag/trinity PR #857 — merged correction and retraction",
+        "href": "https://github.com/gHashTag/trinity/pull/857"
+      },
+      {
+        "label": "Merged commit 22cd9596 — the site correction",
+        "href": "https://github.com/gHashTag/trinity/commit/22cd9596b2688ba7eda68711a2b5be32b004d418"
+      },
+      {
+        "label": "Equal-stored-width measurement note",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/research/TEKUM_VS_TNF_LINE_2026-08-19.md"
+      }
+    ],
+    "openQuestions": [
+      "This is an equal-stored-width software/oracle remeasurement, not a measurement on the binary ALINX AX7203 FPGA and not a custom-silicon result.",
+      "It does not provide a head-to-head hardware comparison against takum.",
+      "It does not establish downstream model accuracy, throughput, energy, or area.",
+      "It does not establish a universal accuracy ranking for numerical formats; the corrected rows only replace one withdrawn claim."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Равная ширина хранения сняла выигрыш по точности",
+      "summary": "Повторное измерение при равной ширине хранения отозвало прежний выигрыш 2,1×/2,6× над takum и зафиксировало дефекты оракула и бюджета, изменившие интерпретацию.",
+      "openQuestions": [
+        "Это повторное измерение оракулов при равной ширине хранения, а не измерение на бинарной FPGA ALINX AX7203 и не результат на изготовленном кристалле.",
+        "Оно не даёт прямого аппаратного сравнения с takum.",
+        "Оно не устанавливает точность downstream-модели, пропускную способность, энергию или площадь.",
+        "Оно не устанавливает универсальный рейтинг точности числовых форматов; исправленные строки только заменяют одно отозванное утверждение."
+      ]
+    }
+  },
+  {
     "slug": "thirty-epochs-exposed-a-failure-rate-blind-spot",
     "title": "Thirty epochs exposed a failure-rate blind spot",
     "summary": "A 30-epoch MNIST sweep showed why a failure-rate threshold needs the per-seed values beside it: a passing count can coexist with non-overlapping runs.",
