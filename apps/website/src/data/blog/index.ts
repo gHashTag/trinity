@@ -3,6 +3,49 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'ternary-won-the-wire-not-the-gate',
+    title: 'Ternary won the wire; it did not win the gate',
+    summary: 'Base economy is a theorem, not a measurement: 5.66 percent in a 1950 vacuum-tube cost model, a win on the wire in USB4 v2 and GDDR7, and a loss at the gate on noise margin.',
+    date: '2026-08-22',
+    readingMinutes: 9,
+    tags: ['Number formats', 'Arithmetic', 'Signalling', 'History', 'Self-critique'],
+    receipts: [
+      { label: 'ERA, High-Speed Computing Devices (McGraw-Hill, 1950) — the cost model and its own caveat, pp. 84–87', href: 'https://archive.org/details/HighSpeedComputingDevices' },
+      { label: 'J. Steiner, Journal für die reine und angewandte Mathematik 40:208, 1850', href: 'https://www.digizeitschriften.de/download/PPN243919689_0040/PPN243919689_0040___log28.pdf' },
+      { label: 'Optimal radix choice — Wikipedia (averaged E(b,N) table)', href: 'https://en.wikipedia.org/wiki/Optimal_radix_choice' },
+      { label: 'Steve Weis — Revisiting Radix Economy', href: 'https://saweis.net/posts/Revisiting-Radix-Economy.html' },
+      { label: 'Brian Hayes, Third Base, American Scientist 89(6):490, 2001 — ferrite-core pair per trit, 50 machines', href: 'https://web.williams.edu/Mathematics/sjmiller/public_html/105Sp10/addcomments/Hayes_ThirdBase.htm' },
+      { label: 'МЦВМ «Сетунь» — Виртуальный компьютерный музей', href: 'https://www.computer-museum.ru/histussr/12-6.htm' },
+      { label: 'USB-IF — USB 80G PHY background (PAM-3, 11b/7t, margin table)', href: 'https://www.usb.org/sites/default/files/USB%2080G%20PHY%20background.pdf' },
+      { label: 'JEDEC JESD239 GDDR7 press release, 5 March 2024', href: 'https://www.jedec.org/news/pressreleases/jedec-publishes-gddr7-graphics-memory-standard' },
+      { label: 'IEEE 802.3bz TF, Souvignier/Feyh, May 2015 — 2.5G/5GBASE-T is PAM-16 / 128-DSQ, not PAM-3', href: 'https://www.ieee802.org/3/bz/public/may15/Souvignier_3bz_01_0515.pdf' },
+      { label: 'arXiv:2402.17764 — The Era of 1-bit LLMs (BitNet b1.58)', href: 'https://arxiv.org/abs/2402.17764' },
+      { label: 'arXiv:2504.12285 — BitNet b1.58 2B4T Technical Report', href: 'https://arxiv.org/abs/2504.12285' },
+      { label: 'arXiv:2207.04839 — Etiemble, ternary and quaternary CNTFET adders less efficient than binary for CPAs', href: 'https://arxiv.org/abs/2207.04839' },
+      { label: 'Takbiri, Faghih Mirzaee, Navi, CSSP 38(9):4280–4301, 2019 — overstated noise margins in MVL', href: 'https://link.springer.com/article/10.1007/s00034-019-01063-8' },
+      { label: 'The Register, 18 March 2026 — ternary CPU on FPGA (5500FP), two bits per trit', href: 'https://www.theregister.com/2026/03/18/ternary_cpu_on_fpga/' }
+    ],
+    openQuestions: [
+      'Nothing in this post is our measurement: it is a reading of sources, not an experiment on the ALINX AX7203 board and not a silicon result.',
+      'The circulating "8,487 values" count and the "40× transistors per trit" figure have no primary source and are not used.',
+      'A 2019 Nature Electronics fabricated ternary CNTFET inverter was not found; whether 46 or 50 Setun machines were built stays unresolved.',
+      'PAM-3 in mainstream FPGA transceivers is unconfirmed in the checked AMD Versal and Altera Agilex material.',
+      'It does not establish any FPGA or silicon cost comparison between ternary and binary arithmetic; the proposed adder experiment has not been run.'
+    ],
+    published: true,
+    ru: {
+      title: 'Троичность выиграла провод, но не вентиль',
+      summary: 'Экономичность основания — теорема, а не измерение: 5,66 процента в ламповой модели 1950 года, победа на проводе в USB4 v2 и GDDR7 и проигрыш на вентиле по запасу помехоустойчивости.',
+      openQuestions: [
+        'Ничего в посте не измерено нами: это чтение источников, а не эксперимент на плате ALINX AX7203 и не результат на кристалле.',
+        'Ходячее число «8 487 значений» и цифра «40 крат транзисторов на трит» — без первоисточника и не используются.',
+        'Публикация Nature Electronics 2019 с изготовленным троичным CNTFET-инвертором не найдена; 46 или 50 «Сетуней» — расхождение остаётся неразрешённым.',
+        'PAM-3 в трансиверах mainstream-FPGA не подтверждён в проверенных материалах AMD Versal и Altera Agilex.',
+        'Пост не устанавливает никакого сравнения стоимости троичной и двоичной арифметики на FPGA или в кремнии; предложенный замер сумматора не поставлен.'
+      ]
+    }
+  },
+  {
     slug: 'four-hundred-and-twelve-tests-that-were-sentences',
     title: 'Four hundred and twelve tests that were sentences',
     summary: 'Thirty-four conformance vector files, 512 cases, zero ever executed — and when counted, 412 of those cases carried no inputs and no expected values at all. This is how a corpus becomes decorative, why the first classifier reported 147 where an independent pass said 100, and the three-verdict registry (executed / numbered debt / aspirational) that lets a small true number replace a large false one.',
