@@ -3,6 +3,35 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'the-scanner-scored-what-it-could-not-see',
+    title: 'The scanner scored what it could not see',
+    summary: 'A mutation tool reported a gate as having no failure path. The gate has four -- all of them ternaries, a form the scanner did not recognise, so it scored them as covered.',
+    date: '2026-08-23',
+    readingMinutes: 7,
+    tags: ['CI', 'Mutation testing', 'Measurement', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/t27 #2470 -- the scanner fix, and the four unit tests including two negative directions', href: 'https://github.com/gHashTag/t27/pull/2470' },
+      { label: 'gHashTag/t27 #2468 -- the survivor the tool invented, and the corrected numbers', href: 'https://github.com/gHashTag/t27/issues/2468' },
+    ],
+    openQuestions: [
+      'Whether other syntactic forms of a failing exit are still invisible is not established: the scanner now knows three, and nothing enumerates the set.',
+      'The twenty surviving mutants are not shown to be defects. A survivor means nothing proves the gate will stay right, not that it is wrong today.',
+      'The mutation operator is a single one -- a verdict forced to zero. Inverting a condition is a different class this run does not cover.',
+      'A survivor can mean an unreachable site rather than an uncovered one, and the tool still does not separate the two.',
+    ],
+    published: true,
+    ru: {
+      title: 'Сканер засчитал то, чего не видел',
+      summary: 'Мутационный инструмент сообщил, что у гейта нет путей отказа. Их четыре — все тернарники, форма, которой сканер не знал, и потому засчитал их покрытыми.',
+      openQuestions: [
+        'Остались ли невидимыми другие синтаксические формы падающего выхода — не установлено: сканер знает три, и множество никем не перечислено.',
+        'Двадцать выживших мутантов не показаны дефектами. Выживший значит «ничто не доказывает, что гейт останется верным», а не «он неверен сейчас».',
+        'Мутационный оператор один — вердикт, принудительно обнулённый. Инвертирование условия это другой класс, и он здесь не покрыт.',
+        'Выживший может означать недостижимый сайт, а не непокрытый, и инструмент их по-прежнему не разделяет.',
+      ],
+    },
+  },
+  {
     slug: 'the-control-that-could-not-fail',
     title: 'The control that could not fail',
     summary: 'Four gates had never been seen red. Writing their negative controls produced one that reported every branch red while the gate it guarded printed OK on a broken catalog.',
