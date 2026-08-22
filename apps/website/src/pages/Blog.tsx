@@ -159,7 +159,11 @@ function inline(text: string): React.ReactNode[] {
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) out.push(text.slice(last, m.index))
     if (m[1] !== undefined) {
-      out.push(<strong key={k++}>{m[1]}</strong>)
+      // Bold RECURSES: one Russian paragraph is a code span inside a bold
+      // span, and a flat pass matches the bold first, swallows the backticks
+      // and shows them. Found on 1 page of 62 -- and only because the sweep
+      // covered BOTH locales. The English-only sweep before it read clean.
+      out.push(<strong key={k++}>{inline(m[1])}</strong>)
     } else {
       out.push(
         <code
