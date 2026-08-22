@@ -46,6 +46,36 @@ export const postsIndex: PostMeta[] = [
     }
   },
   {
+    slug: 'the-ratchet-counted-a-total-as-an-error',
+    title: 'The ratchet counted a total as an error',
+    summary: "A gate written to stop elaboration errors creeping back reported 186 of them; 25 were the compiler's own summary line saying how many errors it had found. The number had already reached commit messages and a status page. This is the proof that could not have come out any other way, the live emitter defect that was hiding inside the count, why fixing it made the number worse, and one fix that was built, measured, and thrown away.",
+    date: '2026-08-23',
+    readingMinutes: 8,
+    tags: ['CI', 'Measurement', 'Self-critique', 'FPGA', 'Compilers'],
+    receipts: [
+      { label: 'The phantom count, with the three quantities that agree on 25', href: 'https://github.com/gHashTag/t27/pull/2435' },
+      { label: 'The emitter defect that was hiding inside the number', href: 'https://github.com/gHashTag/t27/pull/2438' },
+      { label: 'The full classification of all 161 errors', href: 'https://github.com/gHashTag/t27/issues/2325' },
+      { label: 'The fix that was measured as a regression and discarded', href: 'https://github.com/gHashTag/t27/issues/2439' },
+      { label: 'The three lessons, written into the gate skill', href: 'https://github.com/gHashTag/t27/pull/2437' }
+    ],
+    openQuestions: [
+      'The count is instrument-relative: it is produced by one iverilog version, and an upgrade on the runner can move it without any compiler change. The baseline now records the version and names a mismatch instead of reporting it as a regression, but no cross-version measurement has been taken.',
+      'Two design decisions still own 64 of the 161 errors: what a string field means in generated hardware, and whether unsized array parameters should be rejected at typecheck. Both are filed with costs and a recommendation; neither is decided.',
+      'A separate seal-coverage gate has failed on master in every one of the last hundred runs, reporting 136 stale seals, while its own negative self-check passes. It is not a required check, so it blocks nothing — which is the more dangerous reading, not the milder one.'
+    ],
+    published: true,
+    ru: {
+      title: 'Храповик посчитал итог за ошибку',
+      summary: 'Гейт, написанный чтобы ошибки элаборации не возвращались, сообщил про 186 штук; 25 из них были собственной итоговой строкой компилятора о том, сколько ошибок он нашёл. Число уже успело уехать в коммиты и на страницу статуса. Доказательство, которое не могло получиться иначе, живой дефект эмиттера, прятавшийся внутри счёта, почему от починки число стало хуже, и одна починка, которую построили, измерили и выбросили.',
+      openQuestions: [
+        'Число зависит от прибора: его выдаёт одна версия iverilog, и обновление на раннере сдвинет его без единой правки компилятора. Baseline теперь хранит версию и называет расхождение вместо того, чтобы читать его как регрессию, но межверсионного замера никто не делал.',
+        'За 64 из 161 ошибки по-прежнему отвечают два решения: что значит строковое поле в сгенерированном железе и надо ли отвергать безразмерные массивы-параметры на typecheck. Оба заведены с ценой и рекомендацией; ни одно не принято.',
+        'Отдельный гейт печатей падает на master во всех ста последних прогонах, сообщая про 136 устаревших печатей, при этом его собственный негативный самоконтроль проходит. Он не обязателен и ничего не блокирует — и это более опасное чтение, а не более мягкое.'
+      ]
+    }
+  },
+  {
     slug: 'four-hundred-and-twelve-tests-that-were-sentences',
     title: 'Four hundred and twelve tests that were sentences',
     summary: 'Thirty-four conformance vector files, 512 cases, zero ever executed — and when counted, 412 of those cases carried no inputs and no expected values at all. This is how a corpus becomes decorative, why the first classifier reported 147 where an independent pass said 100, and the three-verdict registry (executed / numbered debt / aspirational) that lets a small true number replace a large false one.',
