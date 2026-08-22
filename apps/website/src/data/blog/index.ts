@@ -46,6 +46,35 @@ export const postsIndex: PostMeta[] = [
     }
   },
   {
+    slug: 'the-required-check-was-an-echo',
+    title: 'The required check was an echo',
+    summary: "One of four required status checks — the ones a branch ruleset will not let a merge past — was a shell command that prints a sentence. Twenty lines, no logic, green on every pull request, required for months. Meanwhile the test suite it was believed to be has never blocked a merge, and thirteen tests fail on the main branch indefinitely because nothing was waiting for them.",
+    date: '2026-08-23',
+    readingMinutes: 6,
+    tags: ['CI', 'Process', 'Measurement', 'Self-critique'],
+    receipts: [
+      { label: 'The finding, with the three repair options and their costs', href: 'https://github.com/gHashTag/t27/issues/2455' },
+      { label: 'The thirteen failing tests, filed long before this', href: 'https://github.com/gHashTag/t27/issues/2292' },
+      { label: 'The companion case: a gate that fires, and is merged past anyway', href: 'https://github.com/gHashTag/t27/pull/2450' },
+      { label: 'The audit that named the reach class this belongs to', href: 'https://github.com/gHashTag/t27/issues/2325' }
+    ],
+    openQuestions: [
+      'Whether the thirteen failures reproduce on the CI platform is NOT established. They were measured on a different one, and at least one is recorded in older notes as platform-specific. That question has to be answered before pointing the required check at the suite.',
+      'Both repairs are branch-ruleset changes, which are repository security settings. Filed with their costs; neither taken. Pointing `check` at the suite blocks every merge until the failures are resolved or ledgered; removing it from the required set costs nothing immediately and makes the list honest at three.',
+      'How long the placeholder has been required is not measured here — only that it predates the run window the API returns. The workflow comment says the logic will be added later, and gives no date.'
+    ],
+    published: true,
+    ru: {
+      title: 'Обязательная проверка оказалась эхом',
+      summary: 'Одна из четырёх обязательных проверок — тех, мимо которых правило ветки не пропустит мерж — оказалась командой оболочки, печатающей предложение. Двадцать строк, никакой логики, зелёная на каждом пул-реквесте, обязательна месяцами. При этом тестовый набор, за который её принимали, никогда не блокировал мерж, и тринадцать тестов падают на главной ветке бессрочно, потому что их никто не ждал.',
+      openQuestions: [
+        'Воспроизводятся ли те тринадцать падений на платформе CI — НЕ установлено. Мерились они на другой, и хотя бы одно записано в старых заметках как платформенно-специфичное. На этот вопрос нужно ответить прежде, чем направлять обязательную проверку на набор.',
+        'Обе починки — правки правила ветки, то есть настройки безопасности репозитория. Заведены с ценой каждой; ни одна не сделана. Направить `check` на набор — заблокировать каждый мерж до устранения или занесения падений в реестр; убрать из обязательного набора — не стоит ничего немедленно и делает список честным на трёх.',
+        'Как долго заглушка была обязательной — здесь не измерено; известно лишь, что дольше окна прогонов, которое отдаёт API. Комментарий в workflow обещает добавить логику позже и не называет даты.'
+      ]
+    }
+  },
+  {
     slug: 'the-gate-was-right-and-nothing-stopped',
     title: 'The gate was right and nothing stopped',
     summary: "A gate that guards against retracted numbers re-entering live documents caught a violation on the pull request that introduced it — right file, right lines, exit 1 — and the pull request merged anyway, because it is not a required check. It stayed red on main through two more merges. This is the third variant of a reach failure: not ‘it never runs’, not ‘it runs on the wrong diff’, but ‘it runs, it fails, it names the exact lines, and nothing waits for the answer’.",
