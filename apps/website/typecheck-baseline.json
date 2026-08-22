@@ -1,6 +1,6 @@
 {
   "note": "Pre-existing tsc errors per file. This file may only shrink. Run `npm run typecheck:update` after fixing some.",
-  "total": 184,
+  "total": 179,
   "files": {
     "src/components/AgentMuDashboard.tsx": 1,
     "src/components/AgentMuWidget.tsx": 1,
@@ -20,7 +20,6 @@
     "src/components/sections/MarketplaceSection.tsx": 11,
     "src/components/sections/NFTMarketplaceSection.tsx": 8,
     "src/components/sections/QuantumGravitySection.tsx": 12,
-    "src/components/sections/SacredChemistryWidget.tsx": 5,
     "src/components/sections/SacredEconomySection.tsx": 4,
     "src/components/sections/SelfImproverSection.tsx": 5,
     "src/data/neuralData.ts": 1,

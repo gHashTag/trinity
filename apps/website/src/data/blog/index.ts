@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'the-control-that-could-not-fail',
+    title: 'The control that could not fail',
+    summary: 'Four gates had never been seen red. Writing their negative controls produced one that reported every branch red while the gate it guarded printed OK on a broken catalog.',
+    date: '2026-08-23',
+    readingMinutes: 9,
+    tags: ['CI', 'Negative controls', 'Mutation testing', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/t27 #2467 — the four controls, and the end-to-end layer the first draft lacked', href: 'https://github.com/gHashTag/t27/pull/2467' },
+      { label: 'gHashTag/t27 #2465 — four gates with no negative control, and a claim that was not reproducible', href: 'https://github.com/gHashTag/t27/issues/2465' },
+      { label: 'gHashTag/t27 #2468 — nine gates whose controls cover the verdict path but not the precondition path', href: 'https://github.com/gHashTag/t27/issues/2468' },
+    ],
+    openQuestions: [
+      'Whether the nine gates with surviving mutants stay correct is not established here: the six baseline-backed ones were checked by hand and go red correctly today, and that is a dated observation, not a standing property.',
+      'The shared control pattern for the precondition class is proposed and not written; whether one pattern really covers all six is untested.',
+      'The mutation operator is a single one — a verdict-returning line forced to zero. A gate can be broken in ways this operator never produces, so "all killed" bounds one failure mode, not all of them.',
+      'A surviving mutant can mean the site is unreachable rather than uncovered, and this run does not separate the two.',
+    ],
+    published: true,
+    ru: {
+      title: 'Контроль, который не мог упасть',
+      summary: 'Четыре гейта никогда не видели красными. Написание негативных контролей дало один, который рапортовал «все ветки красные», пока охраняемый им гейт печатал OK на сломанном каталоге.',
+      openQuestions: [
+        'Останутся ли верными девять гейтов с выжившими мутантами — здесь не установлено: шесть baseline-гейтов проверены руками и краснеют корректно сегодня, а это датированное наблюдение, а не постоянное свойство.',
+        'Общий образец контроля для класса предусловий предложен, но не написан; покроет ли один образец все шесть — не проверено.',
+        'Мутационный оператор здесь один — строка вердикта, принудительно обнулённая. Гейт можно сломать способами, которых этот оператор не порождает: «все убиты» ограничивает одну форму отказа, а не все.',
+        'Выживший мутант может означать недостижимый сайт, а не непокрытый, и этот прогон их не разделяет.',
+      ],
+    },
+  },
+  {
     slug: 'ternary-won-the-wire-not-the-gate',
     title: 'Ternary won the wire; it did not win the gate',
     summary: 'Base economy is a theorem, not a measurement: 5.66 percent in a 1950 vacuum-tube cost model, a win on the wire in USB4 v2 and GDDR7, and a loss at the gate on noise margin.',
