@@ -119,6 +119,26 @@ export const body: Block[] = [
   },
   {
     "kind": "h",
+    "text": "Correction, one day later"
+  },
+  {
+    "kind": "p",
+    "text": "Two things above are wrong, and using the tool is what found them."
+  },
+  {
+    "kind": "p",
+    "text": "**One survivor was invented by the tool.** It ran the *first* control flag a gate declares, not all of them. One gate has two, and the one the tool picked does not reach that gate's main verdict at all — the other kills it in a line. So a report that said \"nine gates, twenty-one sites\" was overstated by one site, published before it was checked. That is the same error the post is about, committed by the instrument the post introduces."
+  },
+  {
+    "kind": "p",
+    "text": "**\"Six of the nine share that exact shape\" was a heuristic, not a reading.** I classified by whether a gate keeps a baseline file, rather than by reading what each surviving site actually guards. Reading all twenty: seven are preconditions, across six gates. The other thirteen are ordinary verdict branches whose controls do not reach them — including one gate's *main* verdict. Closing the precondition class does not fix those six gates, which is what the original sentence implied."
+  },
+  {
+    "kind": "p",
+    "text": "The shared control was still worth building, and it found a live defect on its first run: a gate that printed \"SKIP: iverilog or t27c missing\" and exited zero, greenlighting an unchecked tree while saying so out loud. Survivor sites are now thirteen, and the two remaining preconditions are named in a constant in the file rather than left to be inferred from a count."
+  },
+  {
+    "kind": "h",
     "text": "The check worth running on your own repository"
   },
   {
@@ -247,6 +267,26 @@ export const ruBody: Block[] = [
   {
     "kind": "p",
     "text": "Шесть из девяти имеют ровно эту форму — значит один образец контроля закрывает весь класс, а не шесть отдельных случаев."
+  },
+  {
+    "kind": "h",
+    "text": "Поправка, сутки спустя"
+  },
+  {
+    "kind": "p",
+    "text": "Две вещи выше неверны, и нашлись они при использовании самого инструмента."
+  },
+  {
+    "kind": "p",
+    "text": "**Одного выжившего инструмент выдумал.** Он запускал *первый* объявленный гейтом флаг контроля, а не все. У одного гейта их два, и тот, что выбрал инструмент, до главного вердикта этого гейта не доходит вовсе — второй убивает мутанта сразу. Отчёт «девять гейтов, двадцать один сайт» завышен на один сайт и был опубликован непроверенным. Это ровно та ошибка, о которой пост, совершённая прибором, который пост и вводит."
+  },
+  {
+    "kind": "p",
+    "text": "**«Шесть из девяти одной формы» — эвристика, а не чтение.** Я классифицировал по признаку «есть ли у гейта baseline-файл», вместо того чтобы прочитать, что охраняет каждый выживший сайт. Прочитал все двадцать: предусловий среди них семь, на шести гейтах. Остальные тринадцать — обычные ветки вердикта, до которых контроли не дотягиваются, включая **главный** вердикт одного из гейтов. Закрытие класса предусловий эти шесть гейтов не чинит, а исходная фраза это подразумевала."
+  },
+  {
+    "kind": "p",
+    "text": "Общий контроль всё равно стоило построить: на первом же прогоне он нашёл живой дефект — гейт, печатающий «SKIP: iverilog or t27c missing» и выходящий с нулём, то есть дающий зелёный непроверенному дереву и говорящий об этом вслух. Выживших сайтов теперь тринадцать, а два оставшихся предусловия названы константой в файле, а не оставлены на вычитание из счёта."
   },
   {
     "kind": "h",
