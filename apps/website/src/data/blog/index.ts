@@ -3,6 +3,35 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'four-hundred-and-twelve-tests-that-were-sentences',
+    title: 'Four hundred and twelve tests that were sentences',
+    summary: 'Thirty-four conformance vector files, 512 cases, zero ever executed — and when counted, 412 of those cases carried no inputs and no expected values at all. This is how a corpus becomes decorative, why the first classifier reported 147 where an independent pass said 100, and the three-verdict registry (executed / numbered debt / aspirational) that lets a small true number replace a large false one.',
+    date: '2026-08-22',
+    readingMinutes: 7,
+    tags: ['Testing', 'CI', 'FPGA', 'Measurement', 'Self-critique'],
+    receipts: [
+      { label: 'The lane where the corpus was first executed at all', href: 'https://github.com/gHashTag/t27/issues/2241' },
+      { label: 'The measurement, with the instrument contradiction disclosed', href: 'https://github.com/gHashTag/t27/pull/2421' },
+      { label: 'The ratchet: a new prose-only vector file now fails CI', href: 'https://github.com/gHashTag/t27/pull/2423' },
+      { label: 'Second module executed, and a self-correction on what was blocked', href: 'https://github.com/gHashTag/t27/pull/2422' }
+    ],
+    openQuestions: [
+      'What happens to the 24 prose-only files is an owner decision: give them data, move them somewhere that does not read as coverage, or delete them. The gate only stops the 25th.',
+      'Nine data-carrying files remain unexecuted; three of them are blocked by real elaboration errors, and the deepest blocker (slice parameters lowering to scalars) is a corpus-wide language decision affecting 2,313 occurrences across 237 specs.',
+      'Executed coverage today is 22 cases across two modules. That is the true number, not a target reached.'
+    ],
+    published: true,
+    ru: {
+      title: 'Четыреста двенадцать тестов, которые были предложениями',
+      summary: 'Тридцать четыре файла conformance-векторов, 512 кейсов, ни один никогда не исполнялся — а когда посчитали, 412 из них не несли ни входов, ни ожидаемых значений. Как корпус становится декоративным, почему первый классификатор дал 147 там, где независимый проход дал 100, и трёхвердиктный реестр (исполняется / именованный долг / аспирационное), позволяющий заменить большое ложное число маленьким истинным.',
+      openQuestions: [
+        'Судьба 24 описательных файлов — решение владельца: дать им данные, перенести туда, где они не читаются как покрытие, или удалить. Гейт лишь останавливает двадцать пятый.',
+        'Девять файлов с данными не исполняются; три заблокированы настоящими ошибками элаборации, а глубочайший блокер (слайс-параметры, опускающиеся в скаляры) — корпусное языковое решение: 2313 вхождений в 237 спеках.',
+        'Исполняемое покрытие сегодня — 22 кейса в двух модулях. Это истинное число, а не достигнутая цель.'
+      ]
+    }
+  },
+  {
     "slug": "equal-stored-width-removed-an-accuracy-lead",
     "title": "Equal stored width removed an accuracy lead",
     "summary": "A corrected equal-stored-width remeasurement withdrew an earlier 2.1×/2.6× lead over takum and records the oracle and budget defects that changed the reading.",

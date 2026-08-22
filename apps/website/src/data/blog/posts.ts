@@ -29,7 +29,10 @@ import { body as body_fourteen_rows_agreed_one_did_not, ruBody as ruBody_fourtee
 import { body as body_a_clean_merge_is_not_a_semantic_no_op, ruBody as ruBody_a_clean_merge_is_not_a_semantic_no_op } from './bodies/a-clean-merge-is-not-a-semantic-no-op'
 import { body as body_formal_was_green_and_had_never_run_a_solver, ruBody as ruBody_formal_was_green_and_had_never_run_a_solver } from './bodies/formal-was-green-and-had-never-run-a-solver'
 
+import { body as body_four_hundred_and_twelve_tests_that_were_sentences, ruBody as ruBody_four_hundred_and_twelve_tests_that_were_sentences } from './bodies/four-hundred-and-twelve-tests-that-were-sentences'
+
 const bodies: Record<string, PostBody> = {
+  'four-hundred-and-twelve-tests-that-were-sentences': { body: body_four_hundred_and_twelve_tests_that_were_sentences, ruBody: ruBody_four_hundred_and_twelve_tests_that_were_sentences },
   'equal-stored-width-removed-an-accuracy-lead': { body: body_equal_stored_width_removed_an_accuracy_lead, ruBody: ruBody_equal_stored_width_removed_an_accuracy_lead },
   'thirty-epochs-exposed-a-failure-rate-blind-spot': { body: body_thirty_epochs_exposed_a_failure_rate_blind_spot, ruBody: ruBody_thirty_epochs_exposed_a_failure_rate_blind_spot },
   'formal-was-green-and-had-never-run-a-solver': { body: body_formal_was_green_and_had_never_run_a_solver, ruBody: ruBody_formal_was_green_and_had_never_run_a_solver },
