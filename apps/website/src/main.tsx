@@ -23,6 +23,7 @@ const Licensing = lazy(() => import('./pages/Licensing.tsx'))
 const Proof = lazy(() => import('./pages/Proof.tsx'))
 const AboutAuthor = lazy(() => import('./pages/AboutAuthor.tsx'))
 const Resources = lazy(() => import('./pages/Resources.tsx'))
+const Foundry = lazy(() => import('./pages/Foundry.tsx'))
 // Blog exports two components rather than a default, so the module has to be
 // unwrapped into the shape lazy() expects.
 const BlogIndex = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogIndex })))
@@ -54,6 +55,9 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/resources" element={<Resources />} />
+            {/* Клуб. /club — короткий синоним для ссылок в рилсах и профиле. */}
+            <Route path="/foundry" element={<Foundry />} />
+            <Route path="/club" element={<Navigate to="/foundry" replace />} />
             <Route path="/canvas" element={<TrinityCanvas />} />
             <Route path="/quantum" element={<QuantumLab />} />
             <Route path="/lab" element={<QuantumLab />} />

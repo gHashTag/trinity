@@ -25,6 +25,7 @@ const PAGES: PageLink[] = [
   { href: '#/proof', en: 'Proof', ru: 'Доказательства', note: 'Every measured number, and its limits', noteRu: 'Все измеренные цифры и их границы' },
   { href: '#/cases', en: 'Case studies', ru: 'Работы', note: 'Verification runs on other people’s RTL', noteRu: 'Прогоны чужого RTL' },
   { href: '#/course', en: 'Course', ru: 'Курс', note: 'Train a neural network on an FPGA', noteRu: 'Обучите нейросеть прямо на FPGA' },
+  { href: '#/foundry', en: 'Golden Foundry', ru: 'Золотая Литейная', note: 'A club for people who build on silicon', noteRu: 'Клуб разработчиков на кремнии', color: '#C9A24B' },
   { href: '#/about', en: 'About', ru: 'Об авторе', note: 'Background, papers, contact', noteRu: 'Биография, статьи, контакты' },
   { href: '#/resources', en: 'Resources', ru: 'Материалы', note: 'Papers and datasets, each with a DOI', noteRu: 'Статьи и датасеты, у каждого DOI' },
   { href: '#/blog', en: 'Blog', ru: 'Блог', note: 'Notes on the work as it happens', noteRu: 'Заметки по ходу работы' },
