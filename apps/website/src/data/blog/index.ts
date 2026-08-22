@@ -3,6 +3,35 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'i-wrote-the-post-then-did-the-thing',
+    title: 'I wrote the post, then did the thing',
+    summary: 'Two posts in this series are about gates that fail without changing anyone behaviour. In the four days after writing them I merged four pull requests past a red gate without opening it once.',
+    date: '2026-08-23',
+    readingMinutes: 6,
+    tags: ['CI', 'Attention', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/t27 #2474 -- the measurement: same step, same six targets, four consecutive pull requests', href: 'https://github.com/gHashTag/t27/issues/2474' },
+      { label: 'gHashTag/t27 #2455 -- the required check that was a shell command printing a sentence', href: 'https://github.com/gHashTag/t27/issues/2455' },
+    ],
+    openQuestions: [
+      'Whether the gate failure is a code generation defect alone is not established here: six targets do not run, and what they would report if they did is unmeasured.',
+      'The last master run of this gate failed at a DIFFERENT step, three days earlier. Whether that failure is also live today is not shown.',
+      'The claim that no cost was incurred rests on the four pull requests being unable to affect a code generator. That is an argument from what they touched, not a measurement of what they changed.',
+      'No remedy is proposed and none should be read in: making these gates required, or moving them to manual dispatch, is a repository-settings decision.',
+    ],
+    published: true,
+    ru: {
+      title: 'Написал пост — и сделал то, о чём он',
+      summary: 'Два поста этой серии — про гейты, которые падают, ничьё поведение не меняя. За четверо суток после их написания я смержил четыре пул-реквеста мимо красного гейта, ни разу его не открыв.',
+      openQuestions: [
+        'Является ли отказ гейта дефектом одной лишь кодогенерации — здесь не установлено: шесть целей не запускаются, и что бы они сообщили, не измерено.',
+        'Последний прогон этого гейта на master падал на ДРУГОМ шаге, тремя днями раньше. Жив ли тот отказ сегодня — не показано.',
+        'Утверждение «это ничего не стоило» опирается на то, что четыре пул-реквеста не могли задеть кодогенератор. Это довод от того, что они трогали, а не измерение того, что они изменили.',
+        'Никакого лекарства не предлагается и не следует вычитывать: сделать эти гейты обязательными или перевести на ручной запуск — решение по настройкам репозитория.',
+      ],
+    },
+  },
+  {
     slug: 'the-scanner-scored-what-it-could-not-see',
     title: 'The scanner scored what it could not see',
     summary: 'A mutation tool reported a gate as having no failure path. The gate has four -- all of them ternaries, a form the scanner did not recognise, so it scored them as covered.',
