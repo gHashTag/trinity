@@ -39,7 +39,10 @@ import { body as body_the_control_that_could_not_fail, ruBody as ruBody_the_cont
 
 import { body as body_the_scanner_scored_what_it_could_not_see, ruBody as ruBody_the_scanner_scored_what_it_could_not_see } from './bodies/the-scanner-scored-what-it-could-not-see'
 
+import { body as body_i_wrote_the_post_then_did_the_thing, ruBody as ruBody_i_wrote_the_post_then_did_the_thing } from './bodies/i-wrote-the-post-then-did-the-thing'
+
 const bodies: Record<string, PostBody> = {
+  'i-wrote-the-post-then-did-the-thing': { body: body_i_wrote_the_post_then_did_the_thing, ruBody: ruBody_i_wrote_the_post_then_did_the_thing },
   'the-scanner-scored-what-it-could-not-see': { body: body_the_scanner_scored_what_it_could_not_see, ruBody: ruBody_the_scanner_scored_what_it_could_not_see },
   'the-control-that-could-not-fail': { body: body_the_control_that_could_not_fail, ruBody: ruBody_the_control_that_could_not_fail },
   'ternary-won-the-wire-not-the-gate': { body: body_ternary_won_the_wire_not_the_gate, ruBody: ruBody_ternary_won_the_wire_not_the_gate },
