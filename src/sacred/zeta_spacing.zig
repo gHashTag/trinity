@@ -218,14 +218,56 @@ pub fn compareVsGUE(spacings: *const Spacings, allocator: std.mem.Allocator) !GU
     };
 }
 
-/// Wigner surmise CDF for GUE spacing distribution
-fn wignerCDF(s: f64) f64 {
-    // P(S ≤ s) = 1 - exp(-4s²/π) * (1 + 4s²/π)
-    const x = 4.0 * s * s / std.math.pi;
-    return 1.0 - std.math.exp(-x) * (1.0 + x);
+/// CDF of the GUE Wigner surmise p(s) = (32/π²) s² exp(−4s²/π).
+///
+/// CORRECTED 2026-08-12. The previous body returned
+///     1 − exp(−x)·(1 + x),  x = 4s²/π
+/// which differentiates to (32/π²)·s³·exp(−4s²/π) — s CUBED, not squared. It is
+/// normalised, so it passed review, but its mean is 3π/8 = 1.1781 where an unfolded
+/// spacing law must have mean exactly 1. Against it the KS statistic came out 0.1729
+/// instead of 0.0192 — nine times too large — and compareVsGUE was hardwired to print
+/// "INCONSISTENT with GUE".
+///
+/// The GUE surmise CDF has no elementary closed form; it needs erf:
+///     F(s) = erf(2s/√π) − (4/π)·s·exp(−4s²/π)
+/// Verified against Simpson quadrature to 1e-14, and dF/ds reproduces the surmise.
+///
+/// erf is inlined below rather than imported from special.zig ON PURPOSE. The first
+/// version of this fix did `@import("special.zig")` and was verified only by extracting
+/// the function into a test harness — special.zig itself does not compile under zig
+/// 0.16 (10 errors), so the import would have traded a wrong answer for a broken build.
+/// A ten-line local copy has no such failure mode.
+fn erfLocal(x: f64) f64 {
+    // Abramowitz & Stegun 7.1.26, |error| ≤ 1.5e-7. That is 70x below the 1/n
+    // granularity of an empirical CDF at n = 1e5, so it is adequate for a KS test
+    // and nowhere near adequate for anything claiming more digits than that.
+    const sign: f64 = if (x < 0.0) -1.0 else 1.0;
+    const ax = @abs(x);
+    const a1 = 0.254829592;
+    const a2 = -0.284496736;
+    const a3 = 1.421413741;
+    const a4 = -1.453152027;
+    const a5 = 1.061405429;
+    const p = 0.3275911;
+    const t = 1.0 / (1.0 + p * ax);
+    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * std.math.exp(-ax * ax);
+    return sign * y;
 }
 
-/// Approximate p-value for KS statistic
+fn wignerCDF(s: f64) f64 {
+    if (s <= 0.0) return 0.0;
+    const x = 4.0 * s * s / std.math.pi;
+    return erfLocal(2.0 * s / @sqrt(std.math.pi)) - (4.0 / std.math.pi) * s * std.math.exp(-x);
+}
+
+/// Approximate p-value for KS statistic.
+///
+/// WARNING, 2026-08-12: at n ~ 1e5 this verdict is uninformative whatever the reference.
+/// The Wigner surmise is NOT exact GUE (which is a Fredholm determinant of the sine
+/// kernel), and the true separation between them is D ~ 0.019 on real zeta zeros. At
+/// n = 99,999 that alone gives p ~ 1.5e-32, so the test reports "INCONSISTENT with GUE"
+/// while measuring the surmise's own error, not the zeros. Either compare against the
+/// exact sine-kernel law, or report D and n and drop the verdict string.
 fn ksPValue(ks_stat: f64, n: usize) f64 {
     // Approximation: p ≈ 2 * exp(-2 * n * ks²)
     const n_f = @as(f64, @floatFromInt(n));
