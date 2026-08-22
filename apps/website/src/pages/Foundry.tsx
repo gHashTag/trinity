@@ -16,7 +16,8 @@ import QuantumBackground from '../components/QuantumBackground'
  * клуба (через var(--golden)).
  */
 
-const CONTACT = { email: 'admin@t27.ai', telegram: 'https://t.me/neuro_blogger_bot?start=foundry' }
+// Клубный бот — @t27ai_bot (выделен владельцем под клуб 2026-08-22)
+const CONTACT = { email: 'admin@t27.ai', telegram: 'https://t.me/t27ai_bot?start=foundry' }
 
 /**
  * УСЛОВИЯ НЕ ПОДТВЕРЖДЕНЫ ВЛАДЕЛЬЦЕМ.
