@@ -46,6 +46,35 @@ export const postsIndex: PostMeta[] = [
     }
   },
   {
+    slug: 'the-gate-was-right-and-nothing-stopped',
+    title: 'The gate was right and nothing stopped',
+    summary: "A gate that guards against retracted numbers re-entering live documents caught a violation on the pull request that introduced it — right file, right lines, exit 1 — and the pull request merged anyway, because it is not a required check. It stayed red on main through two more merges. This is the third variant of a reach failure: not ‘it never runs’, not ‘it runs on the wrong diff’, but ‘it runs, it fails, it names the exact lines, and nothing waits for the answer’.",
+    date: '2026-08-23',
+    readingMinutes: 6,
+    tags: ['CI', 'Measurement', 'Self-critique', 'Process'],
+    receipts: [
+      { label: 'The hardening the note was about — 6 of 7 registry rows could vanish silently', href: 'https://github.com/gHashTag/t27/pull/2447' },
+      { label: 'The fix: figures removed from the prose, not added to the exemption list', href: 'https://github.com/gHashTag/t27/pull/2450' },
+      { label: 'The audit that named the reach class, and the two variants before this one', href: 'https://github.com/gHashTag/t27/issues/2325' },
+      { label: 'Variant one, closed: a self-test present in the tree and invoked by nothing', href: 'https://github.com/gHashTag/t27/pull/2451' }
+    ],
+    openQuestions: [
+      'Whether this gate joins the required set is an owner decision, not an automated one: a branch ruleset is a repository security setting, and quietly widening what blocks other people\u2019s merges is not a repair. Filed, not done.',
+      'Two other gates in the same repository are red on main permanently — one has no green run in the last hundred. Their permanent redness is the reason a genuinely new failure in that column reads as background, and no decision has been taken about either.',
+      'The figure never reached a reader: no published post carries it and the document is repository-internal. That is a fact about this incident, not a property of the mechanism — nothing in the pipeline made it so.'
+    ],
+    published: true,
+    ru: {
+      title: 'Гейт был прав, и ничто не остановилось',
+      summary: 'Гейт, охраняющий живые документы от отозванных чисел, поймал нарушение на том же пул-реквесте, который его и внёс — нужный файл, нужные строки, код 1 — и пул-реквест всё равно смержился, потому что он не обязателен. Третий вариант отказа по достижимости: не «не запускается» и не «запускается не на том диффе», а «запускается, падает, называет точные строки — и ответа никто не ждёт».',
+      openQuestions: [
+        'Войдёт ли этот гейт в обязательный набор — решение владельца, не автомата: правила ветки — это настройка безопасности, и тихо расширить то, что блокирует чужие мержи, — не починка. Заведено, не сделано.',
+        'Два других гейта в том же репозитории красны на main постоянно — у одного нет зелёного прогона за последнюю сотню. Именно эта постоянная краснота делает новый отказ в той же колонке фоном, и ни по одному решения не принято.',
+        'Число до читателя не дошло: ни один опубликованный пост его не несёт, документ внутренний. Это факт об инциденте, а не свойство механизма — ничто в конвейере его не обеспечило.'
+      ]
+    }
+  },
+  {
     slug: 'the-ratchet-counted-a-total-as-an-error',
     title: 'The ratchet counted a total as an error',
     summary: "A gate written to stop elaboration errors creeping back reported 186 of them; 25 were the compiler's own summary line saying how many errors it had found. The number had already reached commit messages and a status page. This is the proof that could not have come out any other way, the live emitter defect that was hiding inside the count, why fixing it made the number worse, and one fix that was built, measured, and thrown away.",
