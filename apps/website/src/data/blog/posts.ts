@@ -37,7 +37,10 @@ import { body as body_ternary_won_the_wire_not_the_gate, ruBody as ruBody_ternar
 
 import { body as body_the_control_that_could_not_fail, ruBody as ruBody_the_control_that_could_not_fail } from './bodies/the-control-that-could-not-fail'
 
+import { body as body_the_scanner_scored_what_it_could_not_see, ruBody as ruBody_the_scanner_scored_what_it_could_not_see } from './bodies/the-scanner-scored-what-it-could-not-see'
+
 const bodies: Record<string, PostBody> = {
+  'the-scanner-scored-what-it-could-not-see': { body: body_the_scanner_scored_what_it_could_not_see, ruBody: ruBody_the_scanner_scored_what_it_could_not_see },
   'the-control-that-could-not-fail': { body: body_the_control_that_could_not_fail, ruBody: ruBody_the_control_that_could_not_fail },
   'ternary-won-the-wire-not-the-gate': { body: body_ternary_won_the_wire_not_the_gate, ruBody: ruBody_ternary_won_the_wire_not_the_gate },
   'the-required-check-was-an-echo': { body: body_the_required_check_was_an_echo, ruBody: ruBody_the_required_check_was_an_echo },
