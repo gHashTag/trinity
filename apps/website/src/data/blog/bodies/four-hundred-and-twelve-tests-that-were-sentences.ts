@@ -31,7 +31,7 @@ export const body: Block[] = [
   },
   {
     "kind": "code",
-    "text": "1 executed, 9 debt, 24 prose-only (34 files);\n512 cases, 100 carrying data (19%)."
+    "text": "$ tri vectors debt        # 2026-08-22, as first measured\n1 executed, 9 debt, 24 prose-only (34 files);\n512 cases, 100 carrying data (19%).\n\n$ tri vectors debt        # after spi joined the executed set\n2 executed, 8 debt, 24 prose-only (34 files);"
   },
   {
     "kind": "h",
@@ -67,7 +67,7 @@ export const body: Block[] = [
   },
   {
     "kind": "p",
-    "text": "Two modules now execute for real: nineteen cases across seven groups in one, three in another, each with a planted-fault control proving the check reacts. That is a small number and it is the true one, which is the only property that makes it worth having."
+    "text": "Two modules now execute for real: eighteen cases across seven groups in one, three in another, each with a planted-fault control proving the check reacts. That is a small number and it is the true one, which is the only property that makes it worth having. (This sentence first said nineteen. The runner prints eighteen; the correction is recorded here rather than made silently, because a post about counting things honestly has no business rounding its own.)"
   },
   {
     "kind": "h",
@@ -110,7 +110,7 @@ export const ruBody: Block[] = [
   },
   {
     "kind": "code",
-    "text": "1 executed, 9 debt, 24 prose-only (34 files);\n512 cases, 100 carrying data (19%)."
+    "text": "$ tri vectors debt        # 2026-08-22, as first measured\n1 executed, 9 debt, 24 prose-only (34 files);\n512 cases, 100 carrying data (19%).\n\n$ tri vectors debt        # after spi joined the executed set\n2 executed, 8 debt, 24 prose-only (34 files);"
   },
   {
     "kind": "h",
@@ -146,7 +146,7 @@ export const ruBody: Block[] = [
   },
   {
     "kind": "p",
-    "text": "Два модуля теперь исполняются по-настоящему: девятнадцать кейсов в семи группах у одного, три у другого, у каждого — контроль подсаженной поломкой, доказывающий, что проверка реагирует. Это небольшое число, и оно истинное — единственное свойство, ради которого его стоит иметь."
+    "text": "Два модуля теперь исполняются по-настоящему: восемнадцать кейсов в семи группах у одного, три у другого, у каждого — контроль подсаженной поломкой, доказывающий, что проверка реагирует. Это небольшое число, и оно истинное — единственное свойство, ради которого его стоит иметь. (Сначала здесь стояло «девятнадцать». Раннер печатает восемнадцать; поправка записана открыто, а не внесена молча: посту о честном счёте не пристало округлять собственный.)"
   },
   {
     "kind": "h",

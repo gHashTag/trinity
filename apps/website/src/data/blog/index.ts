@@ -61,7 +61,7 @@ export const postsIndex: PostMeta[] = [
     openQuestions: [
       'What happens to the 24 prose-only files is an owner decision: give them data, move them somewhere that does not read as coverage, or delete them. The gate only stops the 25th.',
       'Nine data-carrying files remain unexecuted; three of them are blocked by real elaboration errors, and the deepest blocker (slice parameters lowering to scalars) is a corpus-wide language decision affecting 2,313 occurrences across 237 specs.',
-      'Executed coverage today is 22 cases across two modules. That is the true number, not a target reached.'
+      'Executed coverage is 21 cases across two modules (18 + 3). The body of this post first said nineteen for the first module; the runner prints eighteen, and the correction is stated in place rather than made silently.'
     ],
     published: true,
     ru: {
@@ -70,7 +70,7 @@ export const postsIndex: PostMeta[] = [
       openQuestions: [
         'Судьба 24 описательных файлов — решение владельца: дать им данные, перенести туда, где они не читаются как покрытие, или удалить. Гейт лишь останавливает двадцать пятый.',
         'Девять файлов с данными не исполняются; три заблокированы настоящими ошибками элаборации, а глубочайший блокер (слайс-параметры, опускающиеся в скаляры) — корпусное языковое решение: 2313 вхождений в 237 спеках.',
-        'Исполняемое покрытие сегодня — 22 кейса в двух модулях. Это истинное число, а не достигнутая цель.'
+        'Исполняемое покрытие — 21 кейс в двух модулях (18 + 3). В теле поста сначала стояло «девятнадцать» для первого; раннер печатает восемнадцать, и поправка сделана на месте, а не молча.'
       ]
     }
   },
