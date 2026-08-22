@@ -141,6 +141,47 @@ function BlogCard({ post, lang, minLabel }: { post: PostMeta; lang: string; minL
   )
 }
 
+/** Inline markup the post bodies actually use, rendered instead of shown.
+ *
+ * Readers were seeing the source: `**Executed**` and `` `zig build` `` reached
+ * production with their delimiters intact, on 13 published pages across both
+ * the SPA and the static lineage. The bodies were measured before choosing a
+ * fix -- 31 bold spans, 123 code spans, and ZERO markdown links -- so two forms
+ * cover the corpus and a markdown dependency would be more machinery than the
+ * data needs. A `code` BLOCK is untouched: backticks inside one are literal.
+ */
+function inline(text: string): React.ReactNode[] {
+  const out: React.ReactNode[] = []
+  const re = /\*\*([^*]+)\*\*|`([^`]+)`/g
+  let last = 0
+  let k = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index))
+    if (m[1] !== undefined) {
+      out.push(<strong key={k++}>{m[1]}</strong>)
+    } else {
+      out.push(
+        <code
+          key={k++}
+          style={{
+            background: 'var(--bg-alt, #111)',
+            border: '1px solid var(--border, #2a2a2a)',
+            borderRadius: '4px',
+            padding: '0.05em 0.35em',
+            fontSize: '0.9em',
+          }}
+        >
+          {m[2]}
+        </code>,
+      )
+    }
+    last = m.index + m[0].length
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return out
+}
+
 function renderBlock(b: Block, i: number) {
   switch (b.kind) {
     case 'h':
@@ -152,7 +193,7 @@ function renderBlock(b: Block, i: number) {
     case 'p':
       return (
         <p key={i} style={{ lineHeight: 1.75, marginBottom: '1.1em' }}>
-          {b.text}
+          {inline(b.text)}
         </p>
       )
     case 'ul':
@@ -160,7 +201,7 @@ function renderBlock(b: Block, i: number) {
         <ul key={i} style={{ lineHeight: 1.75, marginBottom: '1.1em', paddingLeft: '1.2em' }}>
           {b.items.map((it, j) => (
             <li key={j} style={{ marginBottom: '0.5em' }}>
-              {it}
+              {inline(it)}
             </li>
           ))}
         </ul>
@@ -170,7 +211,7 @@ function renderBlock(b: Block, i: number) {
         <ol key={i} style={{ lineHeight: 1.75, marginBottom: '1.1em', paddingLeft: '1.2em' }}>
           {b.items.map((it, j) => (
             <li key={j} style={{ marginBottom: '0.5em' }}>
-              {it}
+              {inline(it)}
             </li>
           ))}
         </ol>
@@ -187,7 +228,7 @@ function renderBlock(b: Block, i: number) {
             lineHeight: 1.7,
           }}
         >
-          {b.text}
+          {inline(b.text)}
         </blockquote>
       )
     case 'code':
@@ -244,7 +285,7 @@ function renderBlock(b: Block, i: number) {
                       borderBottom: '1px solid var(--accent, #d4af37)',
                     }}
                   >
-                    {h}
+                    {inline(h)}
                   </th>
                 ))}
               </tr>
@@ -257,7 +298,7 @@ function renderBlock(b: Block, i: number) {
                       key={k}
                       style={{ padding: '10px 12px', borderBottom: '1px solid var(--border, #2a2a2a)' }}
                     >
-                      {c}
+                      {inline(c)}
                     </td>
                   ))}
                 </tr>
@@ -286,7 +327,7 @@ function OpenQuestions({ post, lang }: { post: PostMeta; lang: string }) {
       <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.7 }}>
         {post.openQuestions.map((q, i) => (
           <li key={i} style={{ marginBottom: '0.4em' }}>
-            {q}
+            {inline(q)}
           </li>
         ))}
       </ul>
