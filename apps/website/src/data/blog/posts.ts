@@ -35,7 +35,10 @@ import { body as body_the_ratchet_counted_a_total_as_an_error, ruBody as ruBody_
 import { body as body_four_hundred_and_twelve_tests_that_were_sentences, ruBody as ruBody_four_hundred_and_twelve_tests_that_were_sentences } from './bodies/four-hundred-and-twelve-tests-that-were-sentences'
 import { body as body_ternary_won_the_wire_not_the_gate, ruBody as ruBody_ternary_won_the_wire_not_the_gate } from './bodies/ternary-won-the-wire-not-the-gate'
 
+import { body as body_the_control_that_could_not_fail, ruBody as ruBody_the_control_that_could_not_fail } from './bodies/the-control-that-could-not-fail'
+
 const bodies: Record<string, PostBody> = {
+  'the-control-that-could-not-fail': { body: body_the_control_that_could_not_fail, ruBody: ruBody_the_control_that_could_not_fail },
   'ternary-won-the-wire-not-the-gate': { body: body_ternary_won_the_wire_not_the_gate, ruBody: ruBody_ternary_won_the_wire_not_the_gate },
   'the-required-check-was-an-echo': { body: body_the_required_check_was_an_echo, ruBody: ruBody_the_required_check_was_an_echo },
   'the-gate-was-right-and-nothing-stopped': { body: body_the_gate_was_right_and_nothing_stopped, ruBody: ruBody_the_gate_was_right_and_nothing_stopped },

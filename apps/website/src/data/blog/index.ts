@@ -3,6 +3,19 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'the-control-that-could-not-fail',
+    title: 'The control that could not fail',
+    summary: 'Four gates had never been seen red. Writing their negative controls produced one that reported every branch red while the gate it guarded printed OK on a broken catalog.',
+    date: '2026-08-23',
+    readingMinutes: 9,
+    tags: ['CI', 'Negative controls', 'Mutation testing', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/t27 #2467 — the four controls, and the end-to-end layer the first draft lacked', href: 'https://github.com/gHashTag/t27/pull/2467' },
+      { label: 'gHashTag/t27 #2465 — four gates with no negative control, and a claim that was not reproducible', href: 'https://github.com/gHashTag/t27/issues/2465' },
+      { label: 'gHashTag/t27 #2468 — nine gates whose controls cover the verdict path but not the precondition path', href: 'https://github.com/gHashTag/t27/issues/2468' },
+    ],
+  },
+  {
     slug: 'ternary-won-the-wire-not-the-gate',
     title: 'Ternary won the wire; it did not win the gate',
     summary: 'Base economy is a theorem, not a measurement: 5.66 percent in a 1950 vacuum-tube cost model, a win on the wire in USB4 v2 and GDDR7, and a loss at the gate on noise margin.',
