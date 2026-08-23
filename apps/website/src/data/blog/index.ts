@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'physical-width-changed-the-question',
+    title: 'Physical width changed the question',
+    summary: 'A committed-oracle comparison exposed a nominal-width error: TNF16 labelled as 16 bits occupies 19 physical bits, so the table now matches containers before comparing lattices.',
+    date: '2026-08-23',
+    readingMinutes: 7,
+    tags: ['Number formats', 'Conformance', 'Measurement', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/trinity-fpga PR #727 — W991/W992 merged', href: 'https://github.com/gHashTag/trinity-fpga/pull/727' },
+      { label: 'W991 committed measurement table', href: 'https://github.com/gHashTag/trinity-fpga/blob/main/research/arxiv_tnf/measurements/compare_w991.json' },
+      { label: 'Merge commit 78987a4', href: 'https://github.com/gHashTag/trinity-fpga/commit/78987a4e0757de47b4ab6e9a2a9d486180e688f4' },
+    ],
+    openQuestions: [
+      'Whether matching physical width changes a workload-level choice is not measured. W991 compares the representation lattice only.',
+      'No LUT, timing, energy, or board measurement follows from this table. Those are separate artifacts and remain open.',
+      'The local step at 1.0 does not summarize the extreme behaviour of a tapered format, so it must not be read as a whole-range accuracy claim.',
+      'The comparison is with posit for the committed lattice table; no accuracy comparison with takum is made here, and no claim about a preferred format is supported.'
+    ],
+    published: true,
+    ru: {
+      title: 'Физическая ширина изменила вопрос',
+      summary: 'Сравнение по зафиксированным оракулам обнаружило ошибку номинальной ширины: TNF16, помеченный как 16-битный, занимает 19 физических бит, поэтому сначала сопоставляются контейнеры, а потом решётки значений.',
+      openQuestions: [
+        'Изменит ли сопоставление по физической ширине выбор для реальной нагрузки — не измерено. W991 сравнивает только решётку представления.',
+        'Из этой таблицы не следуют замеры LUT, тайминга, энергии или платы. Это отдельные артефакты, и вопрос остаётся открытым.',
+        'Локальный шаг при 1.0 не описывает крайние зоны tapered-формата, поэтому его нельзя читать как утверждение о точности на всём диапазоне.',
+        'В таблице решётка сопоставлена с posit; сравнение точности с takum здесь не проводится, и предпочтительный формат не выбирается.'
+      ]
+    }
+  },
+  {
     slug: 'nobodys-example',
     title: "Nobody's example",
     summary: 'A gate\'s negative control is written by someone who plants the fault it is meant to catch. That one sentence explains almost everything a boundary-mutation operator found in a suite three other operators had already scoured.',

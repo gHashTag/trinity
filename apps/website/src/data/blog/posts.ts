@@ -1,6 +1,7 @@
 import { postsIndex } from './index'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_physical_width_changed_the_question, ruBody as ruBody_physical_width_changed_the_question } from './bodies/physical-width-changed-the-question'
 import { body as body_nobodys_example, ruBody as ruBody_nobodys_example } from './bodies/nobodys-example'
 import { body as body_the_silence_was_a_saturated_readout, ruBody as ruBody_the_silence_was_a_saturated_readout } from './bodies/the-silence-was-a-saturated-readout'
 import { body as body_twenty_merged_in_three_days, ruBody as ruBody_twenty_merged_in_three_days } from './bodies/twenty-merged-in-three-days'
@@ -55,6 +56,7 @@ import { body as body_the_scanner_scored_what_it_could_not_see, ruBody as ruBody
 import { body as body_i_wrote_the_post_then_did_the_thing, ruBody as ruBody_i_wrote_the_post_then_did_the_thing } from './bodies/i-wrote-the-post-then-did-the-thing'
 
 const bodies: Record<string, PostBody> = {
+  'physical-width-changed-the-question': { body: body_physical_width_changed_the_question, ruBody: ruBody_physical_width_changed_the_question },
   'nobodys-example': { body: body_nobodys_example, ruBody: ruBody_nobodys_example },
   'the-silence-was-a-saturated-readout': { body: body_the_silence_was_a_saturated_readout, ruBody: ruBody_the_silence_was_a_saturated_readout },
   'twenty-merged-in-three-days': { body: body_twenty_merged_in_three_days, ruBody: ruBody_twenty_merged_in_three_days },
