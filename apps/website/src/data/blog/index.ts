@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'nobodys-example',
+    title: "Nobody's example",
+    summary: 'A gate\'s negative control is written by someone who plants the fault it is meant to catch. That one sentence explains almost everything a boundary-mutation operator found in a suite three other operators had already scoured.',
+    date: '2026-08-23',
+    readingMinutes: 8,
+    tags: ['CI', 'Mutation testing', 'Test design', 'Measurement'],
+    receipts: [
+      { label: 'gHashTag/t27 #2503 -- the boundary operator, and the first number that counted docstrings', href: 'https://github.com/gHashTag/t27/pull/2503' },
+      { label: 'gHashTag/t27 #2504 -- three boundaries closed, one classification corrected', href: 'https://github.com/gHashTag/t27/pull/2504' },
+      { label: 'gHashTag/t27 #2507 -- the last six, and what they had in common', href: 'https://github.com/gHashTag/t27/pull/2507' },
+    ],
+    openQuestions: [
+      'Whether a fifth operator family finds more is not established. Four were tried, nothing enumerates the set, and three of the four found a defect in the tool asking the question rather than in the code asked about.',
+      'The claim that degeneracy explains the yield is an argument from six cases in one repository, not a measurement across projects. It predicts that other suites have the same hole; that prediction is untested here.',
+      'Two survivors are called proven equivalences on the strength of two enclosing guards. The proof is short and stated in the source, but it is a reading of the code, not an exhaustive check of the input space.',
+      '"No mutant survives" is not "the gates are correct". Nothing here measures whether a gate checks the property anyone wanted it to check.',
+    ],
+    published: true,
+    ru: {
+      title: 'Ничьи примеры',
+      summary: 'Негативный контроль гейта пишет тот, кто сажает дефект, который контроль должен поймать. Эта одна фраза объясняет почти всё, что граничный оператор мутаций нашёл в наборе, уже вычищенном тремя другими.',
+      openQuestions: [
+        'Найдёт ли что-нибудь пятое семейство операторов — не установлено. Испробованы четыре, множество ничем не перечислено, и три из четырёх нашли дефект в самом задающем вопрос инструменте, а не в коде, о котором спрашивали.',
+        'Утверждение, что вырожденность объясняет урожай, — довод от шести случаев в одном репозитории, а не измерение по проектам. Оно предсказывает такую же дыру в других наборах; это предсказание здесь не проверено.',
+        'Два выживших названы доказанными эквивалентностями на основании двух охранников. Доказательство коротко и записано в исходнике, но это чтение кода, а не исчерпывающая проверка пространства входов.',
+        '«Ни один мутант не выживает» — не то же, что «гейты верны». Ничто здесь не измеряет, проверяет ли гейт то свойство, которое от него хотели.',
+      ],
+    },
+  },
+  {
     "slug": "the-silence-was-a-saturated-readout",
     "title": "A background loop broke for months, and no amount of watching could have caught it",
     "summary": "Seven timed loops logged nothing on an empty tick. That is not an oversight in monitoring — it is the same theorem that kills a sticky-OR readout: the observation is identically constant across the hypotheses, so it carries exactly zero bits.",
