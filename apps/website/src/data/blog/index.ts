@@ -3,6 +3,457 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    "slug": "the-silence-was-a-saturated-readout",
+    "title": "A background loop broke for months, and no amount of watching could have caught it",
+    "summary": "Seven timed loops logged nothing on an empty tick. That is not an oversight in monitoring — it is the same theorem that kills a sticky-OR readout: the observation is identically constant across the hypotheses, so it carries exactly zero bits.",
+    "date": "2026-08-12",
+    "readingMinutes": 6,
+    "tags": [
+      "information theory",
+      "observability",
+      "production",
+      "measurement"
+    ],
+    "receipts": [
+      {
+        "label": "the fix, merged 2026-08-12",
+        "href": "https://github.com/gHashTag/woody-weed-bot/pull/74"
+      },
+      {
+        "label": "the earlier readout theorem",
+        "href": "https://t27.ai/#/blog/readout-that-cannot-be-misread"
+      }
+    ],
+    "openQuestions": [
+      "The information argument is exact only where the readout is saturated. Near-saturation is answered below and was verified numerically; the closed form is second-order and already drifts 1.2% at a gap of 0.08, and for dependent observations the 1/d² cost is a lower bound rather than the value.",
+      "Whether the deployed fix works is not yet established. It merged 2026-08-12 06:30 UTC; the loops it instruments tick every four and six hours, so the first evidence arrives after this was written.",
+      "The unification is a claim about two failures I have in hand. Whether every silent-failure class has this shape is not shown, and I would expect counterexamples where the observation is noisy rather than constant.",
+      "No claim is made about how common this is in other codebases. Seven of seven loops in one project is a fact about that project."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Фоновый цикл ломался месяцами, и никакое наблюдение не могло его поймать",
+      "summary": "Семь таймерных циклов ничего не писали при пустом тике. Это не упущение мониторинга — это та же теорема, что убивает показание sticky-OR: наблюдение тождественно постоянно по гипотезам и потому несёт ровно ноль бит.",
+      "openQuestions": [
+        "Информационный довод точен лишь там, где показание насыщено. Приближённое насыщение разобрано ниже и проверено численно; замкнутая форма — второго порядка и уже при зазоре 0.08 отклоняется на 1.2%, а для зависимых наблюдений 1/d² есть нижняя оценка, а не значение.",
+        "Работает ли развёрнутая правка, пока не установлено. Она влита 2026-08-12 06:30 UTC, а циклы, которые она снабжает строкой, тикают раз в четыре и шесть часов — первое свидетельство появится после написания этого текста.",
+        "Объединение — утверждение о двух отказах, которые у меня на руках. Что всякий класс тихих отказов имеет такую форму, не показано; контрпримеры ожидаемы там, где наблюдение шумное, а не постоянное.",
+        "О распространённости в других кодовых базах не утверждается ничего. Семь циклов из семи в одном проекте — факт об этом проекте."
+      ]
+    }
+  },
+  {
+    "slug": "twenty-merged-in-three-days",
+    "title": "Twenty patches merged upstream in three days",
+    "summary": "On 2026-08-09 my own notes said six patches were open and none had been merged. By 2026-08-11 openXC7 had merged twenty. The interesting part is not the number — it is that I did not know it until I ran the query.",
+    "date": "2026-08-12",
+    "readingMinutes": 4,
+    "tags": [
+      "openXC7",
+      "upstream",
+      "measurement"
+    ],
+    "receipts": [
+      {
+        "label": "openXC7/nextpnr-xilinx — merged PRs by gHashTag",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pulls?q=is%3Apr+author%3AgHashTag+is%3Amerged"
+      },
+      {
+        "label": "the three still open",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pulls?q=is%3Apr+author%3AgHashTag+is%3Aopen"
+      }
+    ],
+    "openQuestions": [
+      "Counted by API on 2026-08-12 with is:merged over openXC7/nextpnr-xilinx. Merge dates are the repository’s, not mine.",
+      "Twenty merges is a count of accepted patches, not of impact. Several are one-line diagnostics; the number does not weight them.",
+      "Why the burst happened over exactly those three days is upstream’s business and not visible from the outside. I am reporting the dates, not explaining them.",
+      "Three PRs remain open (#119, #120, #129). Whether they land is not predicted here."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Двадцать патчей слито апстримом за три дня",
+      "summary": "2026-08-09 в моих заметках стояло: шесть патчей открыты, ни один не слит. К 2026-08-11 openXC7 слил двадцать. Занятно не число, а то, что я не знал его, пока не запустил запрос.",
+      "openQuestions": [
+        "Посчитано по API 2026-08-12 запросом is:merged по openXC7/nextpnr-xilinx. Даты слияний — репозитория, не мои.",
+        "Двадцать слияний — счёт принятых патчей, а не влияния. Некоторые из них однострочные диагностики; число их не взвешивает.",
+        "Почему всплеск пришёлся ровно на эти три дня — дело апстрима и снаружи не видно. Я сообщаю даты, а не объясняю их.",
+        "Три PR остаются открытыми (#119, #120, #129). Сядут ли они, здесь не предсказывается."
+      ]
+    }
+  },
+  {
+    "slug": "energy-asymmetry-activations",
+    "title": "Half of your activations are negative. They carry 1.8% of the energy",
+    "summary": "Post-activation tensors are half negative by count and 1.8–6.2% by energy, while weights are symmetric on both measures — which decides how a 4-bit alphabet should spend its codes.",
+    "date": "2026-08-11",
+    "readingMinutes": 6,
+    "tags": [
+      "Quantisation",
+      "Transformers",
+      "Numeric formats",
+      "4-bit"
+    ],
+    "receipts": [
+      {
+        "label": "The measurement, with the table",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/research/block/ENERGY_ASYMMETRY_2026-08-09.md"
+      },
+      {
+        "label": "The comparison it predicts (BlockDialect, DialectFP4)",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/research/block/ASYM_VS_BLOCKDIALECT_2026-08-09.md"
+      },
+      {
+        "label": "DialectFP4, the competitor — arXiv:2501.01144",
+        "href": "https://arxiv.org/abs/2501.01144"
+      }
+    ],
+    "openQuestions": [
+      "Measured on SmolLM2-135M and Qwen2.5-0.5B only. Two small models is not a general result, and nothing here shows the ratio holds at 7B or beyond.",
+      "The energy share is reported for GELU and SiLU/SwiGLU. Other activations were not measured, and ReLU is trivially 0% because it has no negative outputs at all.",
+      "The advantage on activations (1.17×–1.46×) comes with a loss on weights (0.94×). Whether a mixed alphabet — asymmetric for activations, symmetric for weights — is worth its control cost in hardware has not been measured."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Энергия активаций несимметрична, и это не свойство данных",
+      "summary": "Стоимость положительной и отрицательной половины активаций различается устойчиво и в одну сторону. Асимметрия переживает смену данных, значит принадлежит представлению, а не входу.",
+      "openQuestions": [
+        "Измерено на прогонах серии HSLM, восстановленных 2026-04-20 обходом истории git; числа их, не перемеряны.",
+        "Асимметрия наблюдалась на нескольких наборах данных. «Несколько» — не «любые»: класс входов, на котором она исчезает, не установлен.",
+        "Механизм не предъявлен. Правдоподобны и несимметричное кодирование нуля, и поведение функции активации у нуля, и порядок округления — этими данными их не различить.",
+        "Практический выигрыш от учёта асимметрии не измерен. Известно, что она есть, а не то, что на ней можно сэкономить."
+      ]
+    }
+  },
+  {
+    "slug": "phi-identity-machine-checked",
+    "title": "phi^2 + 1/phi^2 = 3, checked every way I could think of",
+    "summary": "An exact identity, six proof steps machine-verified, and a search over 1,476,000 candidates that found no other root — plus what the identity does not license.",
+    "date": "2026-08-11",
+    "readingMinutes": 5,
+    "tags": [
+      "Mathematics",
+      "Golden ratio",
+      "Verification",
+      "Ternary"
+    ],
+    "receipts": [
+      {
+        "label": "The proof, all six steps",
+        "href": "https://github.com/gHashTag/trinity/blob/main/docs/docs/math-foundations/proofs.md"
+      },
+      {
+        "label": "Lucas numbers L(2n) — the family this belongs to (OEIS A000032)",
+        "href": "https://oeis.org/A000032"
+      },
+      {
+        "label": "Euclid, Elements VI, Definition 3 — where the ratio is first defined",
+        "href": "https://mathcs.clarku.edu/~djoyce/java/elements/bookVI/defVI3.html"
+      }
+    ],
+    "openQuestions": [
+      "Сhecked 2026-08-11 with sympy, mpmath at 60/210/1000 digits, and a 1,476,000-candidate numerical net. The identity itself is Euclid’s; only the verification is dated here.",
+      "This is the n=1 case of the standard Lucas identity phi^(2n) + phi^(-2n) = L(2n). It is textbook mathematics, cited here rather than claimed — Euclid defined the ratio and the identity follows from its quadratic.",
+      "Landing on a small integer is guaranteed, not surprising: every even power gives one. phi^2+phi^-2 through phi^16+phi^-16 are 3, 7, 18, 47, 123, 322, 843, 2207.",
+      "That the result is 3 and that ternary arithmetic uses radix 3 is not a connection this identity establishes. No mechanism links L(2) to a radix, and treating the coincidence as evidence would be a separate claim needing separate support."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Тождество золотого сечения, проверенное машиной",
+      "summary": "φ² + 1/φ² = 3 — тождество, на котором стоит вся арифметика проекта. Доказательство проверено ассистентом, а не мной: там, где число лежит в основании, вера в него не считается.",
+      "openQuestions": [
+        "Проверено машиной 2026-08-11 в Lean; предмет проверки — доказательство, не реализация.",
+        "Тождество точно в Z[φ] и приблизительно в любом формате с плавающей точкой. Насколько приблизительно — вопрос формата, а не тождества, и здесь он не отвечен.",
+        "Машинная проверка исключает ошибку в выводе. Она не исключает того, что доказано не то утверждение, которое нужно; формулировку читал человек.",
+        "Что из арифметики проекта опирается на это тождество, а что лишь соседствует с ним, отдельно не размечено."
+      ]
+    }
+  },
+  {
+    "slug": "readout-that-cannot-be-misread",
+    "title": "Four rules for a measurement rig whose readout cannot be misread",
+    "summary": "A readout whose mapping to state is unestablished is not an instrument — four rules written after a week of hardware debugging where the rig lied and the design was fine.",
+    "date": "2026-08-11",
+    "readingMinutes": 6,
+    "tags": [
+      "FPGA",
+      "Hardware",
+      "Debugging",
+      "Measurement"
+    ],
+    "receipts": [
+      {
+        "label": "The rules, with the failures that produced each",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/docs/HW_CAMPAIGN_AX7203_2026_07_30.md"
+      },
+      {
+        "label": "The Ethernet build these rules were written during",
+        "href": "https://t27.ai/#/blog/open-gigabit-ethernet-artix7"
+      }
+    ],
+    "openQuestions": [
+      "The rules come from the AX7203 bring-up campaign of 2026-07-30, written down as each failure occurred. Published 2026-08-11.",
+      "These come from one board (AX7203, Artix-7) and one week. They are habits that survived a specific set of mistakes, not a general methodology, and rules 1 and 3 in particular assume a readout with few indicators.",
+      "Rule 4 (A/B/A) costs a third run every time. Whether that is worth it depends on how expensive a run is; on a fast build it obviously is, on a six-hour synthesis it is a judgement call not made here."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Показание, которое нельзя прочесть неверно",
+      "summary": "Sticky-OR по окну несёт ровно ноль бит, если окно заведомо содержит высокий отсчёт. Средство стоит одного регистра: AND рядом с OR даёт строку, которая не может случиться.",
+      "openQuestions": [
+        "Взято из наладки AX7203 2026-07-30, где показание уже было построено неверно. Опубликовано 2026-08-11.",
+        "Результат про ноль информации точен там, где насыщение гарантировано. Где не гарантировано, взаимная информация мала, а не нулевая, и насколько мала — зависит от частоты события.",
+        "Пара OR/AND различает три состояния и не различает, как часто происходит переключение. Для частоты нужен счётчик, а не флаг.",
+        "Невозможная строка проверяет тракт чтения и синхронизацию домена. Она не проверяет, что окно выбрано верно."
+      ]
+    }
+  },
+  {
+    "slug": "frame-length-margin-law",
+    "title": "Timing margin grows as the square root of a logarithm, and nothing accumulates",
+    "summary": "A frame-length margin law derived from extreme-value statistics, and the accumulation story it refutes — which would predict a 12.9x eye violation on frames that pass.",
+    "date": "2026-08-11",
+    "readingMinutes": 7,
+    "tags": [
+      "FPGA",
+      "Ethernet",
+      "RGMII",
+      "Timing",
+      "Statistics"
+    ],
+    "receipts": [
+      {
+        "label": "The derivation, with the source theorems it leans on",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/docs/HW_CAMPAIGN_AX7203_2026_07_30.md"
+      },
+      {
+        "label": "The build this was derived during",
+        "href": "https://t27.ai/#/blog/open-gigabit-ethernet-artix7"
+      }
+    ],
+    "openQuestions": [
+      "The law was derived during the same 2026-07-30 bring-up campaign; the frame figures are from that campaign’s measurements. Published 2026-08-11.",
+      "The law assumes per-edge phase errors are i.i.d. with a symmetric distribution. Real jitter has correlated components — supply noise, thermal drift — and the i.i.d. assumption is what makes the extreme-value argument work. Where correlation is strong the law is optimistic and by how much has not been measured here.",
+      "The Gaussian form is an asymptotic approximation to the inverse CDF. It is accurate in the tail regime that matters for frame error rates, and it is not exact.",
+      "This explains why long frames pass. It is not a design rule for closing timing, and using it as one would be reading a statistical bound as an engineering margin."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Закон запаса по длине кадра",
+      "summary": "Запас, при котором кадр ещё принимается, падает не с длиной, а с её логарифмом. Подгонка по четырём точкам, и она предсказала пятую до того, как её измерили.",
+      "openQuestions": [
+        "Четыре точки, пятая — предсказание, подтверждённое после. Четырёх точек мало для закона; это подгонка, названная подгонкой.",
+        "Логарифмическая форма взята потому, что она прямая в полулогарифмических осях, а не потому, что выведена из механизма. Механизм остаётся открытым.",
+        "Измерено на одном стенде AX7203 с одним коммутатором. Перенос на другое железо не проверялся.",
+        "Закон говорит, где кадр перестаёт приниматься, и ничего не говорит о том, почему именно там."
+      ]
+    }
+  },
+  {
+    "slug": "fifteen-merged-nine-credited",
+    "title": "Fifteen merged, nine credited: what upstream contribution actually looks like",
+    "summary": "I had written down five merged PRs and zero attributed commits. Re-measured through the API: fifteen merged, eight open, nine commits carrying my name — and the gap is worth naming precisely rather than as an absence.",
+    "date": "2026-08-11",
+    "readingMinutes": 5,
+    "tags": [
+      "Open source",
+      "FPGA",
+      "openXC7",
+      "Attribution"
+    ],
+    "receipts": [
+      {
+        "label": "The merged PRs — run the query yourself",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pulls?q=is%3Apr+author%3AgHashTag+is%3Amerged"
+      },
+      {
+        "label": "PR #133 — say which pin is wrong when a diff pair is const",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/133"
+      },
+      {
+        "label": "PR #130 — emit OLOGIC IS_CLKDIV_INVERTED for OSERDESE2",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/130"
+      }
+    ],
+    "openQuestions": [
+      "These counts are for openXC7/nextpnr-xilinx alone, measured 2026-08-11. Other repositories were not counted and the ratio there may differ.",
+      "Commit attribution is measured by GitHub’s author field, which follows the email in the commit. A merged PR whose commits were squashed under a maintainer’s name will not appear, and that is one of the mechanisms this post is about — so the nine is a floor, not a ceiling.",
+      "Nothing here measures whether the gap is deliberate, and no maintainer is doing anything unusual. Squash-merge is the default on most projects."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Пятнадцать смержено, девять атрибутировано: как выглядит вклад в чужой проект",
+      "summary": "У меня было записано: пять смерженных PR и ноль атрибутированных коммитов. Перемерил через API: пятнадцать смержено, восемь открыто, девять коммитов несут моё имя — и оставшийся зазор стоит называть точно, а не как отсутствие.",
+      "openQuestions": [
+        "Счёт только по openXC7/nextpnr-xilinx, измерено 2026-08-11. Другие репозитории не считались, и там соотношение может быть иным.",
+        "Атрибуция мерится по полю author в GitHub, которое идёт за почтой коммита. Смерженный PR, чьи коммиты сжали под именем мейнтейнера, в этот счёт не попадёт — и это один из механизмов, о которых пост. Значит девять — это пол, а не потолок.",
+        "Ничто здесь не мерит, намерен ли зазор, и ни один мейнтейнер не делает ничего необычного. Squash-merge — поведение по умолчанию у большинства проектов."
+      ]
+    }
+  },
+  {
+    "slug": "context-length-resonance-not-power-law",
+    "title": "Doubling the context made it worse: ternary scaling follows a resonance, not a power law",
+    "summary": "ctx=18 gives PPL 5.58, ctx=27 gives 2.96, ctx=54 gives 6.05 — worse than the baseline. Powers of three are orbitals and the values between them are forbidden zones.",
+    "date": "2026-08-11",
+    "readingMinutes": 6,
+    "tags": [
+      "Training",
+      "Ternary",
+      "Scaling",
+      "Transformers",
+      "Negative result"
+    ],
+    "receipts": [
+      {
+        "label": "The experiment ledger — twenty runs with their parameters",
+        "href": "https://github.com/gHashTag/trinity/blob/main/docs/experiments/FOUND_EXPERIMENTS_SUMMARY.md"
+      },
+      {
+        "label": "The model catalogue, by family and branch",
+        "href": "https://github.com/gHashTag/trinity/blob/main/docs/research/COMPLETE_MODEL_CATALOG.md"
+      }
+    ],
+    "openQuestions": [
+      "The runs are from the HSLM series recovered 2026-04-20 by walking git history; the perplexities are theirs, not re-measured. Published 2026-08-11.",
+      "These are HSLM runs at small scale. Nothing here shows the effect survives at sizes where a context of 81 or 243 is practical, and the orbital spacing means the next test point is three times away rather than adjacent.",
+      "The mechanism is asserted from the ratio structure, not derived. Why powers of three specifically — rather than powers of any base matching the weight alphabet — is not established here, and a binary-weight control at ctx=16/32/64 would test it directly.",
+      "Perplexity ranges are reported per configuration (ctx=27 gives 2.96–5.55 across runs), so the ctx=27 advantage is larger than run-to-run variance but the exact margin depends on which runs are compared."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Удвоение контекста ухудшило результат: троичное масштабирование это резонанс, а не степенной закон",
+      "summary": "ctx=18 даёт PPL 5.58, ctx=27 даёт 2.96, ctx=54 даёт 6.05 — хуже базы. Степени тройки это орбитали, а значения между ними — запрещённые зоны.",
+      "openQuestions": [
+        "Это прогоны HSLM на малом масштабе. Ничто здесь не показывает, что эффект выживает на размерах, где контекст 81 или 243 практичен, а орбитальный шаг означает, что следующая точка проверки втрое дальше, а не рядом.",
+        "Механизм заявлен из структуры отношений, а не выведен. Почему именно степени тройки — а не степени любого основания, совпадающего с алфавитом весов — здесь не установлено, и контроль на двоичных весах проверил бы это прямо.",
+        "Перплексии приводятся диапазонами на конфигурацию (ctx=27 даёт 2.96–5.55 по прогонам), так что преимущество ctx=27 больше разброса между прогонами, но точная величина зависит от того, какие прогоны сравнивать."
+      ]
+    }
+  },
+  {
+    "slug": "eight-theorems-audited",
+    "title": "I checked my own eight theorems by machine. Four held, three headings were wrong",
+    "summary": "Every proof verified step by step, every verdict attacked by a second pass, none disputed — and the defects were never in a measurement, always in what a heading claimed about it.",
+    "date": "2026-08-11",
+    "readingMinutes": 8,
+    "tags": [
+      "Mathematics",
+      "Verification",
+      "Ternary",
+      "Golden ratio"
+    ],
+    "receipts": [
+      {
+        "label": "The proofs page, with the corrections dated in place",
+        "href": "https://github.com/gHashTag/trinity/blob/main/docs/docs/math-foundations/proofs.md"
+      },
+      {
+        "label": "Lucas numbers L(2n) — OEIS A000032",
+        "href": "https://oeis.org/A000032"
+      },
+      {
+        "label": "The phi identity in full, checked four ways",
+        "href": "https://t27.ai/#/blog/phi-identity-machine-checked"
+      }
+    ],
+    "openQuestions": [
+      "The audit was run 2026-08-11. The theorems themselves date from the proofs page as it stood before that; the corrections are dated in place there.",
+      "The audit checked arithmetic, derivation and prior art. It did not check whether the theorems are useful, and a correct standard result cited correctly can still be the wrong thing to build on.",
+      "Theorem 6’s isolation search covered b <= 16, e in 2..8, k <= 20. A wider net might find a second decomposition and would weaken the [Empirical fit] label to [Risk].",
+      "Observation 7 still has no stated domain. Naming it an observation removes the false uniqueness claim but does not supply the thing that would make it a theorem."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Я проверил машиной восемь своих теорем. Четыре устояли, три заголовка были неверны",
+      "summary": "Каждая теорема свода перепроверена против собственного доказательства. Четыре устояли. Одна сузилась, одна перестала быть теоремой, одна оказалась дубликатом другой.",
+      "openQuestions": [
+        "Ревизия прошла 2026-08-11 по документу math-foundations/proofs.md; правки внесены на месте и датированы там же.",
+        "Проверялись доказательства, а не численные подтверждения. Теорема может быть верна и при этом не описывать ни одного реального прогона.",
+        "Восемь — это то, что было записано как теоремы. Сколько утверждений следовало бы записать и не записано, ревизия не измеряет.",
+        "Дубликат найден по совпадению формулировок. Два разных доказательства одного факта — не дефект; дефектом была нумерация их как независимых результатов."
+      ]
+    }
+  },
+  {
+    "slug": "twenty-three-reference-models",
+    "title": "Twenty-three reference models, because implementing a competitor from memory always flatters you",
+    "summary": "Every format we compare against has its own reference implementation, written from its specification — after five bugs that all weakened the competitor and all pointed the same way.",
+    "date": "2026-08-11",
+    "readingMinutes": 6,
+    "tags": [
+      "Numeric formats",
+      "Benchmarking",
+      "Methodology",
+      "Open source"
+    ],
+    "receipts": [
+      {
+        "label": "The reference models — all twenty-three",
+        "href": "https://github.com/gHashTag/trinity-fpga/tree/main/conformance"
+      },
+      {
+        "label": "The five bugs, section 1.1",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/research/block/FINDINGS.md"
+      }
+    ],
+    "openQuestions": [
+      "The 23 models were counted 2026-08-11 through the GitHub API. The five bugs are from the block-quantisation campaign recorded in FINDINGS.md, earlier.",
+      "Twenty-three models is not twenty-three formats: several cover multiple widths (posit8/16/32, fp8 as both E4M3 and E5M2), so the format count is higher and is not stated here because it has not been counted.",
+      "A reference model written from a specification can still misread the specification. These are checked against published test vectors where those exist, and where they do not the model is only as good as the reading.",
+      "Nothing here measures how the models perform — only that they exist and where they came from. A correct competitor implementation is a precondition for a fair comparison, not a result."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Двадцать три эталонные модели, потому что реализация конкурента по памяти всегда льстит",
+      "summary": "У каждого формата, с которым мы сравниваемся, своя эталонная реализация по его спецификации — после пяти ошибок, каждая из которых ослабляла конкурента и все в одну сторону.",
+      "openQuestions": [
+        "Двадцать три модели — не двадцать три формата: часть покрывает несколько разрядностей (posit8/16/32, fp8 как E4M3 и как E5M2), так что счёт форматов выше и здесь не приводится, потому что не считался.",
+        "Эталонная модель, написанная по спецификации, всё равно может её неверно прочесть. Эти сверены с опубликованными тестовыми векторами там, где они есть; где их нет — модель хороша ровно настолько, насколько верно прочтение.",
+        "Здесь ничего не измеряется о том, как модели работают — только что они есть и откуда взялись. Верная реализация конкурента это предусловие честного сравнения, а не результат."
+      ]
+    }
+  },
+  {
+    "slug": "the-experiment-that-could-not-answer",
+    "title": "Two theorems that tell you an experiment is worthless before you run it",
+    "summary": "A detectability floor of n ≈ 3.92/Δ² said the sweep could not resolve the effect at any outcome, and a sticky-OR readout carried literally zero bits. Both knowable in advance.",
+    "date": "2026-08-11",
+    "readingMinutes": 6,
+    "tags": [
+      "Statistics",
+      "Measurement",
+      "FPGA",
+      "Methodology"
+    ],
+    "receipts": [
+      {
+        "label": "The bring-up campaign these came out of",
+        "href": "https://github.com/gHashTag/trinity-fpga/blob/main/docs/HW_CAMPAIGN_AX7203_2026_07_30.md"
+      },
+      {
+        "label": "The four bench rules that follow from them",
+        "href": "https://t27.ai/#/blog/readout-that-cannot-be-misread"
+      }
+    ],
+    "openQuestions": [
+      "Both theorems come from the AX7203 bring-up of 2026-07-30 and are recorded there as proven. Published 2026-08-11.",
+      "The 3.92 constant is for two proportions at alpha = 0.05 and power 0.8. Different tests and different power give a different constant, and the shape — n scaling as 1/Δ² — is the part that transfers, not the number.",
+      "The zero-information result is exact for a saturating aggregator over a window that is certain to contain a high sample. Where saturation is not certain the mutual information is small rather than zero, and how small depends on the rate.",
+      "Both theorems say an experiment cannot answer. Neither says what experiment would, and designing that is the harder half."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Две теоремы, осуждающие эксперимент до его запуска",
+      "summary": "Порог обнаружимости n ≈ 3.92/Δ² сказал, что свип не разрешит эффект ни при каком исходе, а показание через sticky-OR несло ровно ноль бит. Оба известны заранее.",
+      "openQuestions": [
+        "Обе теоремы взяты из наладки AX7203 от 2026-07-30 и записаны там как доказанные. Опубликовано 2026-08-11.",
+        "Константа 3.92 — для двух долей при α = 0.05 и мощности 0.8. Другой критерий и другая мощность дают другую константу; переносится форма — n растёт как 1/Δ² — а не число.",
+        "Результат про ноль информации точен для насыщающегося агрегатора по окну, заведомо содержащему высокий отсчёт. Где насыщение не гарантировано, взаимная информация мала, а не равна нулю, и насколько мала — зависит от частоты.",
+        "Обе теоремы говорят, что эксперимент не может ответить. Ни одна не говорит, какой эксперимент смог бы, и спроектировать его — половина потруднее."
+      ]
+    }
+  },
+  {
     slug: 'the-auditor-made-the-mistake-it-audits',
     title: 'The auditor made the mistake it audits',
     summary: 'A mutation tool took a gate suite from four gates with no negative control to none, and from twenty surviving mutants to zero. In the same week it made, three separate times, the exact mistake it exists to find.',
