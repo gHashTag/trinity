@@ -1,6 +1,17 @@
 import { postsIndex } from './index'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_the_silence_was_a_saturated_readout, ruBody as ruBody_the_silence_was_a_saturated_readout } from './bodies/the-silence-was-a-saturated-readout'
+import { body as body_twenty_merged_in_three_days, ruBody as ruBody_twenty_merged_in_three_days } from './bodies/twenty-merged-in-three-days'
+import { body as body_energy_asymmetry_activations, ruBody as ruBody_energy_asymmetry_activations } from './bodies/energy-asymmetry-activations'
+import { body as body_phi_identity_machine_checked, ruBody as ruBody_phi_identity_machine_checked } from './bodies/phi-identity-machine-checked'
+import { body as body_readout_that_cannot_be_misread, ruBody as ruBody_readout_that_cannot_be_misread } from './bodies/readout-that-cannot-be-misread'
+import { body as body_frame_length_margin_law, ruBody as ruBody_frame_length_margin_law } from './bodies/frame-length-margin-law'
+import { body as body_fifteen_merged_nine_credited, ruBody as ruBody_fifteen_merged_nine_credited } from './bodies/fifteen-merged-nine-credited'
+import { body as body_context_length_resonance_not_power_law, ruBody as ruBody_context_length_resonance_not_power_law } from './bodies/context-length-resonance-not-power-law'
+import { body as body_eight_theorems_audited, ruBody as ruBody_eight_theorems_audited } from './bodies/eight-theorems-audited'
+import { body as body_twenty_three_reference_models, ruBody as ruBody_twenty_three_reference_models } from './bodies/twenty-three-reference-models'
+import { body as body_the_experiment_that_could_not_answer, ruBody as ruBody_the_experiment_that_could_not_answer } from './bodies/the-experiment-that-could-not-answer'
 import { body as body_the_auditor_made_the_mistake_it_audits, ruBody as ruBody_the_auditor_made_the_mistake_it_audits } from './bodies/the-auditor-made-the-mistake-it-audits'
 import { body as body_equal_stored_width_removed_an_accuracy_lead, ruBody as ruBody_equal_stored_width_removed_an_accuracy_lead } from './bodies/equal-stored-width-removed-an-accuracy-lead'
 import { body as body_thirty_epochs_exposed_a_failure_rate_blind_spot, ruBody as ruBody_thirty_epochs_exposed_a_failure_rate_blind_spot } from './bodies/thirty-epochs-exposed-a-failure-rate-blind-spot'
@@ -43,6 +54,17 @@ import { body as body_the_scanner_scored_what_it_could_not_see, ruBody as ruBody
 import { body as body_i_wrote_the_post_then_did_the_thing, ruBody as ruBody_i_wrote_the_post_then_did_the_thing } from './bodies/i-wrote-the-post-then-did-the-thing'
 
 const bodies: Record<string, PostBody> = {
+  'the-silence-was-a-saturated-readout': { body: body_the_silence_was_a_saturated_readout, ruBody: ruBody_the_silence_was_a_saturated_readout },
+  'twenty-merged-in-three-days': { body: body_twenty_merged_in_three_days, ruBody: ruBody_twenty_merged_in_three_days },
+  'energy-asymmetry-activations': { body: body_energy_asymmetry_activations, ruBody: ruBody_energy_asymmetry_activations },
+  'phi-identity-machine-checked': { body: body_phi_identity_machine_checked, ruBody: ruBody_phi_identity_machine_checked },
+  'readout-that-cannot-be-misread': { body: body_readout_that_cannot_be_misread, ruBody: ruBody_readout_that_cannot_be_misread },
+  'frame-length-margin-law': { body: body_frame_length_margin_law, ruBody: ruBody_frame_length_margin_law },
+  'fifteen-merged-nine-credited': { body: body_fifteen_merged_nine_credited, ruBody: ruBody_fifteen_merged_nine_credited },
+  'context-length-resonance-not-power-law': { body: body_context_length_resonance_not_power_law, ruBody: ruBody_context_length_resonance_not_power_law },
+  'eight-theorems-audited': { body: body_eight_theorems_audited, ruBody: ruBody_eight_theorems_audited },
+  'twenty-three-reference-models': { body: body_twenty_three_reference_models, ruBody: ruBody_twenty_three_reference_models },
+  'the-experiment-that-could-not-answer': { body: body_the_experiment_that_could_not_answer, ruBody: ruBody_the_experiment_that_could_not_answer },
   'the-auditor-made-the-mistake-it-audits': { body: body_the_auditor_made_the_mistake_it_audits, ruBody: ruBody_the_auditor_made_the_mistake_it_audits },
   'i-wrote-the-post-then-did-the-thing': { body: body_i_wrote_the_post_then_did_the_thing, ruBody: ruBody_i_wrote_the_post_then_did_the_thing },
   'the-scanner-scored-what-it-could-not-see': { body: body_the_scanner_scored_what_it_could_not_see, ruBody: ruBody_the_scanner_scored_what_it_could_not_see },
