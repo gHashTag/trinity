@@ -3,6 +3,37 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'the-auditor-made-the-mistake-it-audits',
+    title: 'The auditor made the mistake it audits',
+    summary: 'A mutation tool took a gate suite from four gates with no negative control to none, and from twenty surviving mutants to zero. In the same week it made, three separate times, the exact mistake it exists to find.',
+    date: '2026-08-23',
+    readingMinutes: 9,
+    tags: ['CI', 'Mutation testing', 'Measurement', 'Self-critique'],
+    receipts: [
+      { label: 'gHashTag/t27 #2500 -- the invert flag that printed its banner over a silent run', href: 'https://github.com/gHashTag/t27/pull/2500' },
+      { label: 'gHashTag/t27 #2502 -- the last survivor: every clause true, conclusion false', href: 'https://github.com/gHashTag/t27/pull/2502' },
+      { label: 'gHashTag/t27 #2503 -- the boundary operator, and the first number that counted docstrings', href: 'https://github.com/gHashTag/t27/pull/2503' },
+      { label: 'gHashTag/t27 #2504 -- three boundaries closed, one classification corrected', href: 'https://github.com/gHashTag/t27/pull/2504' },
+    ],
+    openQuestions: [
+      'Whether a fifth operator family would find more is not established. Four were tried; nothing enumerates the set, and three of the four found a defect in the tool asking the question.',
+      'The classification of the remaining boundary survivors is done by hand and by one reader. Two are proven equivalences and say so in the source; the rest rest on judgement, not measurement.',
+      'The counts cover the gate scripts under tools/ in one repository. Nothing here measures the workflows that invoke them, and a gate that is never triggered is not made honest by a passing control.',
+      '"No mutant survives" is not "the gates are correct". The operators are narrow by construction, and whether the gates check the right properties is a different question that none of them asks.',
+    ],
+    published: true,
+    ru: {
+      title: 'Аудитор совершил ошибку, которую ищет',
+      summary: 'Мутационный инструмент довёл набор гейтов от четырёх без негативного контроля до нуля таких и от двадцати выживших мутантов до нуля. За ту же неделю он трижды совершил ровно ту ошибку, ради поиска которой написан.',
+      openQuestions: [
+        'Найдёт ли что-нибудь пятое семейство операторов — не установлено. Испробованы четыре; множество ничем не перечислено, и три из четырёх нашли дефект в самом задающем вопрос инструменте.',
+        'Классификация оставшихся граничных выживших сделана вручную и одним читателем. Две — доказанные эквивалентности и говорят об этом в исходнике; остальные держатся на суждении, а не на измерении.',
+        'Счёт покрывает скрипты гейтов в tools/ одного репозитория. Ничто здесь не измеряет workflow, которые их вызывают, а гейт, который никогда не запускается, не становится честным от проходящего контроля.',
+        '«Ни один мутант не выживает» — не то же, что «гейты верны». Операторы узки по построению, и проверяют ли гейты нужные свойства — другой вопрос, которого ни один из них не задаёт.',
+      ],
+    },
+  },
+  {
     slug: 'i-wrote-the-post-then-did-the-thing',
     title: 'I wrote the post, then did the thing',
     summary: 'Two posts in this series are about gates that fail without changing anyone behaviour. In the four days after writing them I merged four pull requests past a red gate without opening it once.',

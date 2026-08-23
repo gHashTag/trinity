@@ -1,6 +1,7 @@
 import { postsIndex } from './index'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_the_auditor_made_the_mistake_it_audits, ruBody as ruBody_the_auditor_made_the_mistake_it_audits } from './bodies/the-auditor-made-the-mistake-it-audits'
 import { body as body_equal_stored_width_removed_an_accuracy_lead, ruBody as ruBody_equal_stored_width_removed_an_accuracy_lead } from './bodies/equal-stored-width-removed-an-accuracy-lead'
 import { body as body_thirty_epochs_exposed_a_failure_rate_blind_spot, ruBody as ruBody_thirty_epochs_exposed_a_failure_rate_blind_spot } from './bodies/thirty-epochs-exposed-a-failure-rate-blind-spot'
 import { body as body_receipts_and_seals_over_radio, ruBody as ruBody_receipts_and_seals_over_radio } from './bodies/receipts-and-seals-over-radio'
@@ -42,6 +43,7 @@ import { body as body_the_scanner_scored_what_it_could_not_see, ruBody as ruBody
 import { body as body_i_wrote_the_post_then_did_the_thing, ruBody as ruBody_i_wrote_the_post_then_did_the_thing } from './bodies/i-wrote-the-post-then-did-the-thing'
 
 const bodies: Record<string, PostBody> = {
+  'the-auditor-made-the-mistake-it-audits': { body: body_the_auditor_made_the_mistake_it_audits, ruBody: ruBody_the_auditor_made_the_mistake_it_audits },
   'i-wrote-the-post-then-did-the-thing': { body: body_i_wrote_the_post_then_did_the_thing, ruBody: ruBody_i_wrote_the_post_then_did_the_thing },
   'the-scanner-scored-what-it-could-not-see': { body: body_the_scanner_scored_what_it_could_not_see, ruBody: ruBody_the_scanner_scored_what_it_could_not_see },
   'the-control-that-could-not-fail': { body: body_the_control_that_could_not_fail, ruBody: ruBody_the_control_that_could_not_fail },
