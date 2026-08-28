@@ -70,6 +70,108 @@ function ui(lang: string) {
   return lang === 'ru' ? UI.ru : UI.en
 }
 
+type WorkTrack = 'verification' | 'arithmetic' | 'engineering' | 'training'
+
+const WORK = {
+  en: {
+    eyebrow: 'Work with me',
+    primary: 'Discuss your project',
+    servicesLabel: 'Services',
+    tracks: {
+      verification: {
+        title: 'Want this kind of check on your own design?',
+        body: 'I audit RTL and build independent, bit-exact models, then take the result through synthesis and, when useful, onto an Artix-7 board. The first conformance module is free.',
+        detail: 'See the verification service',
+        href: '/verification/',
+      },
+      arithmetic: {
+        title: 'Need arithmetic built for your constraints?',
+        body: 'I design low-precision and ternary formats, synthesizable RTL, independent reference models and bit-exact vectors. Existing measured cores can also be licensed.',
+        detail: 'See IP and custom arithmetic',
+        href: '/ip/',
+      },
+      engineering: {
+        title: 'Need an FPGA/RTL problem taken to measured hardware?',
+        body: 'I work contract and part-time on hardware-AI, FPGA/RTL and ML systems — from specification and open toolchains to reproducible measurements.',
+        detail: 'See how I work',
+        href: '/about/',
+      },
+      training: {
+        title: 'Want your team to build and verify this themselves?',
+        body: 'I run a self-paced FPGA course, a four-week cohort and two-day team workshops built around a problem your engineers actually have.',
+        detail: 'See courses and workshops',
+        href: '/course/',
+      },
+    },
+    services: [
+      ['Verification', '/verification/'],
+      ['IP licensing', '/ip/'],
+      ['Courses and workshops', '/course/'],
+      ['Contract work', '/about/'],
+    ],
+  },
+  ru: {
+    eyebrow: 'Поработаем вместе',
+    primary: 'Обсудить задачу',
+    servicesLabel: 'Услуги',
+    tracks: {
+      verification: {
+        title: 'Хотите так же проверить собственный дизайн?',
+        body: 'Я аудирую RTL и строю независимые побитово точные модели, затем провожу результат через синтез и, когда это полезно, проверяю на плате Artix-7. Первый модуль проверки — бесплатно.',
+        detail: 'Услуга верификации',
+        href: '/ru/verification/',
+      },
+      arithmetic: {
+        title: 'Нужна арифметика под ваши ограничения?',
+        body: 'Я проектирую форматы низкой разрядности и троичную арифметику, синтезируемый RTL, независимые референсные модели и побитовые тест-векторы. Готовые измеренные ядра можно лицензировать.',
+        detail: 'IP и заказная арифметика',
+        href: '/ru/ip/',
+      },
+      engineering: {
+        title: 'Нужно довести FPGA/RTL-задачу до замеров на железе?',
+        body: 'Работаю по контракту и part-time с hardware-AI, FPGA/RTL и ML-системами — от спецификации и открытого тулчейна до воспроизводимых измерений.',
+        detail: 'Как я работаю',
+        href: '/ru/about/',
+      },
+      training: {
+        title: 'Хотите, чтобы команда умела строить и проверять это сама?',
+        body: 'Провожу самостоятельный FPGA-курс, четырёхнедельный поток и двухдневные воркшопы вокруг реальной задачи вашей команды.',
+        detail: 'Курсы и воркшопы',
+        href: '/ru/course/',
+      },
+    },
+    services: [
+      ['Верификация', '/ru/verification/'],
+      ['Лицензирование IP', '/ru/ip/'],
+      ['Курсы и воркшопы', '/ru/course/'],
+      ['Контрактная работа', '/ru/about/'],
+    ],
+  },
+} as const
+
+const verificationTags = new Set([
+  'audit', 'ci', 'conformance', 'formal', 'methodology', 'mutation testing',
+  'reproducibility', 'static analysis', 'test design', 'testing', 'verification',
+])
+const arithmeticTags = new Set([
+  '4-bit', 'accuracy', 'arithmetic', 'attention', 'golden ratio', 'mxfp4',
+  'number formats', 'numeric formats', 'quantisation', 'quantization', 'scaling',
+  'ternary', 'transformers',
+])
+const engineeringTags = new Set([
+  'artix-7', 'ethernet', 'fpga', 'hardware', 'litex', 'nextpnr', 'open source',
+  'openxc7', 'place and route', 'rgmii', 'timing', 'tooling', 'yosys', 'zynq',
+])
+
+function workTrack(post: PostMeta): WorkTrack {
+  const tags = post.tags.map((tag) => tag.toLowerCase())
+  if (tags.includes('training')) return 'training'
+  if (tags.some((tag) => verificationTags.has(tag))) return 'verification'
+  if (tags.some((tag) => arithmeticTags.has(tag))) return 'arithmetic'
+  if (tags.some((tag) => engineeringTags.has(tag))) return 'engineering'
+  return 'engineering'
+}
+
 const wrap: React.CSSProperties = {
   maxWidth: '760px',
   margin: '0 auto',
@@ -430,6 +532,57 @@ function Share({ post, lang }: { post: PostMeta; lang: string }) {
   )
 }
 
+function WorkOffer({ post, lang }: { post: PostMeta; lang: string }) {
+  const locale = lang === 'ru' ? 'ru' : 'en'
+  const t = WORK[locale]
+  const track = t.tracks[workTrack(post)]
+  const subject = locale === 'ru'
+    ? `Задача для T27 — ${post.title}`
+    : `Project for T27 — ${post.title}`
+  const message = locale === 'ru'
+    ? `Здравствуйте, Дмитрий! Я прочитал(а) статью «${post.title}»: ${postUrl(post.slug, locale)}\n\nНаша задача:`
+    : `Hi Dmitrii, I read “${post.title}”: ${postUrl(post.slug, locale)}\n\nOur project:`
+  const mailto = `mailto:admin@t27.ai?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`
+
+  return (
+    <section
+      aria-labelledby="blog-work-offer-title"
+      className="blog-work-offer"
+      style={{
+        border: '1px solid var(--border, #2a2a2a)',
+        borderLeft: '3px solid var(--accent, #d4af37)',
+        borderRadius: '12px',
+        padding: 'clamp(20px, 4vw, 30px)',
+        margin: '3em 0 0',
+        background: 'var(--bg-alt, #111)',
+      }}
+    >
+      <div style={{ ...meta, color: 'var(--accent, #d4af37)', marginBottom: '10px' }}>
+        {t.eyebrow}
+      </div>
+      <h2 id="blog-work-offer-title" style={{ margin: '0 0 12px', fontSize: '1.45rem' }}>
+        {track.title}
+      </h2>
+      <p style={{ lineHeight: 1.7, margin: '0 0 18px', color: 'var(--text-dim, #aaa)' }}>
+        {track.body}
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+        <a className="btn" href={mailto}>{t.primary}</a>
+        <a className="btn secondary" href={track.href}>{track.detail}</a>
+      </div>
+      <nav
+        aria-label={t.servicesLabel}
+        style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: '20px', fontSize: '0.9rem' }}
+      >
+        <span style={{ color: 'var(--text-dim, #8a8a8a)' }}>{t.servicesLabel}:</span>
+        {t.services.map(([label, href]) => (
+          <a key={href} href={href} className="blog-link">{label}</a>
+        ))}
+      </nav>
+    </section>
+  )
+}
+
 export function BlogIndex() {
   const { lang } = useI18n()
   const t = ui(lang)
@@ -545,6 +698,7 @@ export function BlogPost() {
         <p style={{ marginTop: '3em' }}>
           <Link to="/blog" className="blog-link">{t.allPosts}</Link>
         </p>
+        <WorkOffer post={post} lang={lang} />
       </article>
       <Footer />
     </main>
