@@ -221,12 +221,18 @@ const card: React.CSSProperties = {
  * локальном dist они отвечают 404. При ошибке загрузки место просто
  * схлопывается, а не показывает битую картинку.
  */
+const BLOG_COVER_VERSIONS: Record<string, string> = {
+  'tri-claw-an-agent-you-can-audit': '972e0bab',
+}
+
 function Cover({ slug, lang, className, priority }: { slug: string; lang: string; className: string; priority?: boolean }) {
   const [failed, setFailed] = useState(false)
+  const coverVersion = BLOG_COVER_VERSIONS[slug]
+  const coverSrc = `/og-blog-${slug}${lang === 'ru' ? '-ru' : ''}.png${coverVersion ? `?v=${coverVersion}` : ''}`
   if (failed) return null
   return (
     <img
-      src={`/og-blog-${slug}${lang === 'ru' ? '-ru' : ''}.png`}
+      src={coverSrc}
       alt=""
       loading={priority ? 'eager' : 'lazy'}
       width={1200}
