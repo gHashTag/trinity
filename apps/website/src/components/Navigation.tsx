@@ -7,16 +7,6 @@ const sectionIds = ['hero', 'claim', 'formats', 'frontier', 'ladder', 'theorems'
 const BASE = import.meta.env.BASE_URL
 // Docs points to t27.ai/docs/ (custom domain)
 const DOCS_URL = 'https://t27.ai/docs/'
-// Leela is served from this domain but built in another repository: it is
-// gHashTag/leela's project Pages site, sitting under this CNAME. So it is an
-// absolute link like DOCS_URL rather than a "#/" route, and it cannot be a
-// route -- nothing in this bundle renders it.
-//
-// One URL for every language, deliberately. The board carries all twenty-two
-// of its locales in one bundle and picks by the visitor's Telegram or browser
-// language, so there is no per-language variant to point at and none is
-// wanted: a Russian reader clicking "Лила" gets a Russian board.
-const LEELA_URL = 'https://t27.ai/leela/'
 
 // The locale files have no keys for the commercial pages yet, so the labels
 // live next to the links. Missing locales fall back to English.
@@ -51,7 +41,6 @@ const PAGES: PageLink[] = [
   { href: '#/blog', en: 'Blog', ru: 'Блог', note: 'Notes on the work as it happens', noteRu: 'Заметки по ходу работы' },
   { href: '#/dashboard', en: 'Dashboard', ru: 'Панель', note: 'Project metrics', noteRu: 'Метрики проекта', color: '#00ccff' },
   { href: '#/tree', en: 'Research Lab', ru: 'Исслед. лаб', note: 'Interactive visualisations', noteRu: 'Интерактивные визуализации', color: '#ffd700' },
-  { href: LEELA_URL, en: 'Leela', ru: 'Лила', note: 'The 72-plan board of self-knowledge, in 22 languages', noteRu: 'Доска самопознания на 72 плана, на 22 языках', external: true },
   { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'Full documentation', noteRu: 'Полная документация', external: true },
 ]
 
