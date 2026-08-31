@@ -689,6 +689,7 @@ export function BlogPost() {
       <main>
         <Navigation />
         <article style={wrap} className="blog-article">
+          <Cover slug={source.slug} lang={lang} className="blog-lead-cover" priority />
           <div style={meta}>
             {source.date} · {source.readingMinutes} {t.min} · <span className="blog-hashtag">{hashtagLine(source.tags)}</span>
           </div>
