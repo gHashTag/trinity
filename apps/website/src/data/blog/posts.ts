@@ -54,8 +54,10 @@ import { body as body_the_control_that_could_not_fail, ruBody as ruBody_the_cont
 import { body as body_the_scanner_scored_what_it_could_not_see, ruBody as ruBody_the_scanner_scored_what_it_could_not_see } from './bodies/the-scanner-scored-what-it-could-not-see'
 
 import { body as body_i_wrote_the_post_then_did_the_thing, ruBody as ruBody_i_wrote_the_post_then_did_the_thing } from './bodies/i-wrote-the-post-then-did-the-thing'
+import { body as body_real_value_in_integer_container, ruBody as ruBody_real_value_in_integer_container } from './bodies/real-value-in-integer-container'
 
 const bodies: Record<string, PostBody> = {
+  'real-value-in-integer-container': { body: body_real_value_in_integer_container, ruBody: ruBody_real_value_in_integer_container },
   'physical-width-changed-the-question': { body: body_physical_width_changed_the_question, ruBody: ruBody_physical_width_changed_the_question },
   'nobodys-example': { body: body_nobodys_example, ruBody: ruBody_nobodys_example },
   'the-silence-was-a-saturated-readout': { body: body_the_silence_was_a_saturated_readout, ruBody: ruBody_the_silence_was_a_saturated_readout },

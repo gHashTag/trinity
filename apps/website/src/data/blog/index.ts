@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'real-value-in-integer-container',
+    title: 'A real value must not travel in an integer container',
+    summary: 'A merged Verilog-emitter fix moved one simulation case from 5 PASSED / 6 FAILED to 11 PASSED while syntax acceptance stayed at 380 files, showing why form and numerical-meaning gates must be separate.',
+    date: '2026-08-31',
+    readingMinutes: 7,
+    tags: ['Verilog', 'Simulation', 'Compiler', 'Testing'],
+    receipts: [
+      { label: 'gHashTag/t27 PR #2991 — merged fix for real values in integer containers', href: 'https://github.com/gHashTag/t27/pull/2991' },
+      { label: 'Merge commit 9adbb691', href: 'https://github.com/gHashTag/t27/commit/9adbb69109bd9a72f74ff17e610cb9bf55c24930' },
+      { label: 'The targeted Verilog simulation test', href: 'https://github.com/gHashTag/t27/blob/9adbb69109bd9a72f74ff17e610cb9bf55c24930/bootstrap/tests/verilog_real_arithmetic.rs' },
+    ],
+    openQuestions: [
+      'Correctness of all real-valued operations, all specifications, and every backend was not established.',
+      'The result does not measure speed, FPGA area, energy, or downstream model quality.',
+      'Verilog real is simulation-only; this icarus-simulate result is not a synthesis result.',
+      'The five killed mutations show that the selected tests catch these variants, not that unseen variants cannot survive.',
+    ],
+    published: true,
+    ru: {
+      title: 'Вещественное значение не должно проходить через целочисленный контейнер',
+      summary: 'Смерженная правка генератора Verilog перевела один симуляционный сценарий с 5 PASSED / 6 FAILED на 11 PASSED, а синтаксическая приемка осталась на 380 файлах — поэтому гейты формы и численного смысла должны быть раздельными.',
+      openQuestions: [
+        'Корректность всех вещественных операций, всех спецификаций и каждого бэкенда не установлена.',
+        'Скорость, площадь FPGA, энергия и качество модели после квантования не измерялись.',
+        'Тип Verilog real предназначен только для симуляции; результат icarus-simulate не является результатом синтеза.',
+        'Пять убитых мутаций показывают, что выбранные тесты ловят эти варианты, но не доказывают, что невидимые варианты не выживут.',
+      ],
+    },
+  },
+  {
     slug: 'physical-width-changed-the-question',
     title: 'Physical width changed the question',
     summary: 'A committed-oracle comparison exposed a nominal-width error: TNF16 labelled as 16 bits occupies 19 physical bits, so the table now matches containers before comparing lattices.',
