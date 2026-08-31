@@ -251,19 +251,34 @@ export function TnfHero() {
           </a>
         </motion.div>
 
-        {/* Анонс продукта. Слово «концепт» обязательно: измеренных ток/с на
-            целевом кристалле ещё нет, и пост говорит это первым. */}
-        <motion.div {...fade} style={{ marginTop: 'var(--sp2)' }}>
+        {/* Продуктовая линейка. Слова «курс»/«концепт» обязательны: измеренных
+            ток/с на целевом кристалле ещё нет, и пост говорит это первым.
+            Флагман зафиксирован владельцем 31.08.2026. */}
+        <motion.div {...fade} style={{ marginTop: 'var(--sp2)', display: 'flex', flexDirection: 'column', gap: 'var(--sp0)' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap',
+            border: '1px solid var(--golden)', borderRadius: '8px',
+            padding: 'var(--sp0) var(--sp2)',
+          }}>
+            <span className="tnf-badge" style={{ color: 'var(--golden)' }}>TRI PHONE</span>
+            <span style={{ color: 'var(--text)', fontSize: 'var(--f-1)' }}>
+              {key === 'ru'
+                ? 'флагман-курс: тернарный FPGA-карманник — и одноплатный компьютер — с TRIOS и агентом TRI CLAW; связь — mesh, не сотовая'
+                : 'flagship course: a ternary FPGA pocket computer — and an SBC — running TRIOS with the TRI CLAW agent; mesh connectivity, not cellular'}
+            </span>
+          </div>
           <a href="#/blog/tri-claw-an-agent-you-can-audit" style={{
             display: 'inline-flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap',
             border: '1px solid var(--border)', borderRadius: '8px',
             padding: 'var(--sp0) var(--sp2)', textDecoration: 'none',
           }}>
-            <span className="tnf-badge" style={{ color: 'var(--golden)' }}>TRI CLAW</span>
+            <span className="tnf-badge" style={{ color: 'var(--accent)' }}>
+              {key === 'ru' ? 'ступень v0 — строится' : 'rung v0 — in progress'}
+            </span>
             <span style={{ color: 'var(--text)', fontSize: 'var(--f-1)' }}>
               {key === 'ru'
-                ? 'агент, которого можно проверить: три недоехавших кристалла как гейтвер на 7-й серии — концепт'
-                : 'an agent you can audit: three unfabricated dies as 7-series gateware — a concept'}
+                ? 'TRI CLAW: агент, которого можно проверить — три недоехавших кристалла как гейтвер на 7-й серии, концепт'
+                : 'TRI CLAW: an agent you can audit — three unfabricated dies as 7-series gateware, a concept'}
             </span>
             <span style={{ color: 'var(--accent)', fontSize: 'var(--f-1)' }}>
               {key === 'ru' ? 'пост →' : 'the post →'}
