@@ -26,6 +26,8 @@ const UI = {
     copied: 'Copied',
     feed: 'RSS',
     loading: 'Loading post…',
+    loadFailed: 'The interactive version could not load this post.',
+    readStatic: 'Read the complete static version',
   },
   ru: {
     blog: 'Блог',
@@ -44,6 +46,8 @@ const UI = {
     copied: 'Скопировано',
     feed: 'RSS',
     loading: 'Загрузка поста…',
+    loadFailed: 'Интерактивная версия не смогла загрузить этот пост.',
+    readStatic: 'Открыть полную статическую версию',
   },
 } as const
 
@@ -641,14 +645,22 @@ export function BlogPost() {
   const t = ui(lang)
   const source = slug ? postBySlug(slug) : undefined
   const [body, setBody] = useState<PostBody>()
+  const [bodyFailed, setBodyFailed] = useState(false)
 
   useEffect(() => {
     let active = true
     setBody(undefined)
+    setBodyFailed(false)
     if (source?.published) {
-      loadPostBody(source.slug).then((loaded) => {
-        if (active) setBody(loaded)
-      })
+      loadPostBody(source.slug)
+        .then((loaded) => {
+          if (!active) return
+          if (loaded) setBody(loaded)
+          else setBodyFailed(true)
+        })
+        .catch(() => {
+          if (active) setBodyFailed(true)
+        })
     }
     return () => {
       active = false
@@ -672,6 +684,7 @@ export function BlogPost() {
   }
 
   if (!body) {
+    const staticPostHref = `${lang === 'ru' ? '/ru' : ''}/blog/${source.slug}/`
     return (
       <main>
         <Navigation />
@@ -682,7 +695,14 @@ export function BlogPost() {
           <h1 style={{ margin: '12px 0 16px', lineHeight: 1.25 }}>
             {localiseMeta(source, lang).title}
           </h1>
-          <p style={{ lineHeight: 1.7 }}>{t.loading}</p>
+          {bodyFailed ? (
+            <p style={{ lineHeight: 1.7 }}>
+              {t.loadFailed}{' '}
+              <a href={staticPostHref} className="blog-link">{t.readStatic}</a>.
+            </p>
+          ) : (
+            <p style={{ lineHeight: 1.7 }}>{t.loading}</p>
+          )}
         </article>
         <Footer />
       </main>
