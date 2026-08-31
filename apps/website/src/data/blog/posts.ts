@@ -1,4 +1,5 @@
 import { postsIndex } from './index'
+import { body as body_tri_claw_an_agent_you_can_audit, ruBody as ruBody_tri_claw_an_agent_you_can_audit } from './bodies/tri-claw-an-agent-you-can-audit'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
 import { body as body_physical_width_changed_the_question, ruBody as ruBody_physical_width_changed_the_question } from './bodies/physical-width-changed-the-question'
@@ -105,6 +106,7 @@ const bodies: Record<string, PostBody> = {
   'a-repair-reaches-only-the-copy-it-lands-in': { body: body_a_repair_reaches_only_the_copy_it_lands_in, ruBody: ruBody_a_repair_reaches_only_the_copy_it_lands_in },
   'green-ci-does-not-mean-usable': { body: body_green_ci_does_not_mean_usable, ruBody: ruBody_green_ci_does_not_mean_usable },
   'scale-field-width-already-published': { body: body_scale_field_width_already_published, ruBody: ruBody_scale_field_width_already_published },
+  'tri-claw-an-agent-you-can-audit': { body: body_tri_claw_an_agent_you_can_audit, ruBody: ruBody_tri_claw_an_agent_you_can_audit },
   'receipts-and-seals-over-radio': { body: body_receipts_and_seals_over_radio, ruBody: ruBody_receipts_and_seals_over_radio },
   'open-gigabit-ethernet-artix7': { body: body_open_gigabit_ethernet_artix7, ruBody: ruBody_open_gigabit_ethernet_artix7 },
   'a-multiplicity-correction-changed-the-deployment-reading': { body: body_a_multiplicity_correction_changed_the_deployment_reading, ruBody: ruBody_a_multiplicity_correction_changed_the_deployment_reading },

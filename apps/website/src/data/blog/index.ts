@@ -3,6 +3,42 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'tri-claw-an-agent-you-can-audit',
+    title: 'TRI CLAW: an agent you can audit',
+    summary: 'Three dies that never reached the foundry become three gateware layers on the most-studied FPGA family: attestation at boot, a BLAKE3 receipt per action, a ternary engine with an empty DSP column. The agent-in-a-box exists; the verifiable device exists; the intersection is empty.',
+    date: '2026-08-31',
+    readingMinutes: 8,
+    tags: ['TRI CLAW', 'Product', 'FPGA', 'Ternary', 'Verification', 'Self-critique'],
+    receipts: [
+      { label: 'TeLLMe — ternary LLM accelerator on edge FPGAs (arXiv:2504.16266)', href: 'https://arxiv.org/abs/2504.16266' },
+      { label: 'TerEffic — highly efficient ternary LLM inference on FPGA (arXiv:2502.16473)', href: 'https://arxiv.org/abs/2502.16473' },
+      { label: 'Hummingbird+ — FPGA 2026, from research prototype to edge product', href: 'https://dl.acm.org/doi/10.1145/3748173.3779189' },
+      { label: 'BitNet b1.58 2B4T technical report (arXiv:2504.12285)', href: 'https://arxiv.org/abs/2504.12285' },
+      { label: 'Precursor on Crowd Supply — the verifiable-device precedent', href: 'https://www.crowdsupply.com/sutajio-kosagi/precursor' },
+      { label: 'tt-trinity-phi / euler / gamma — the three dies, RTL and GDS CI', href: 'https://github.com/gHashTag/tt-trinity-phi' },
+      { label: 'TRI-NET triad deposition — DOI 10.5281/zenodo.19227877', href: 'https://doi.org/10.5281/zenodo.19227877' },
+    ],
+    openQuestions: [
+      'No measured tokens-per-second on the target Artix-7 200T yet; every published edge number is from other parts and transfers to nothing.',
+      'A 2B ternary model does not fit on-chip (~475 MB of weights); v1 targets 0.1-0.7B and the DDR-bound decode path is unmeasured.',
+      'The agent loop needs a host core; its shape (softcore vs companion) is undecided.',
+      'The triad silicon does not exist; the product is gateware on a stock board.',
+      'The "claw" name space is crowded and the trademark question is unchecked.',
+    ],
+    published: true,
+    ru: {
+      title: 'TRI CLAW: агент, которого можно проверить',
+      summary: 'Три кристалла, не доехавшие до фабрики, становятся тремя слоями гейтвера на самом изученном семействе FPGA: аттестация при загрузке, BLAKE3-квитанция на каждое действие, тернарный двигатель с пустой колонкой DSP. Агент-в-коробке существует; проверяемое устройство существует; пересечение пусто.',
+      openQuestions: [
+        'Измеренных токенов-в-секунду на целевом Artix-7 200T нет; опубликованные edge-числа сняты на других кристаллах и не переносятся.',
+        'Тернарная модель 2B не помещается on-chip (~475 МБ весов); v1 целится в 0.1-0.7B, тракт декода через DDR не измерен.',
+        'Агентному циклу нужно хост-ядро; его форма (softcore или компаньон) не выбрана.',
+        'Кремния триады не существует; продукт — гейтвер на серийной плате.',
+        'Пространство имён «claw» занято, товарный знак не проверен.',
+      ],
+    },
+  },
+  {
     slug: 'real-value-in-integer-container',
     title: 'A real value must not travel in an integer container',
     summary: 'A merged Verilog-emitter fix moved one simulation case from 5 PASSED / 6 FAILED to 11 PASSED while syntax acceptance stayed at 380 files, showing why form and numerical-meaning gates must be separate.',
