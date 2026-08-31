@@ -3,6 +3,44 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'features-that-change-no-bits',
+    title: '179 features that change no bits, and one routing choice that did',
+    summary: 'A parity report between two Xilinx place-and-route trees ranked its own work items backwards: the 179 missing BRAM features were zero-codepoints, and the blocker that kept a bitstream off a board produced no feature-count delta at all.',
+    date: '2026-08-31',
+    readingMinutes: 7,
+    tags: ['openXC7', 'FPGA', 'Bitstream', 'Upstream', 'Measurement'],
+    receipts: [
+      { label: 'openXC7/nextpnr-xilinx #165 — the parity report itself · OPEN', href: 'https://github.com/openXC7/nextpnr-xilinx/issues/165' },
+      { label: 'openXC7/nextpnr-xilinx #165 — the retraction of the BRAM item, 2026-08-28', href: 'https://github.com/openXC7/nextpnr-xilinx/issues/165#issuecomment-5456497915' },
+      { label: 'openXC7/nextpnr-xilinx #165 — the Sonata board results, 2026-08-30', href: 'https://github.com/openXC7/nextpnr-xilinx/issues/165#issuecomment-5471151263' },
+      { label: 'openXC7/nextpnr #1 — a route through the BUFR datapath obliges a BUFR · MERGED 2026-08-29', href: 'https://github.com/openXC7/nextpnr/pull/1' },
+      { label: 'openXC7/prjxray-db #7 — artix7 HCLK_IOI3 rows and the DMUX default position · MERGED 2026-08-26', href: 'https://github.com/openXC7/prjxray-db/pull/7' },
+      { label: 'openXC7/nextpnr-xilinx #168 — place a pad-fed BUFIO on a site its pad can reach · OPEN', href: 'https://github.com/openXC7/nextpnr-xilinx/pull/168' },
+      { label: 'openXC7/nextpnr-xilinx #149 — BUFIO is not packed, HCLK_L enables never emitted · OPEN', href: 'https://github.com/openXC7/nextpnr-xilinx/issues/149' },
+    ],
+    openQuestions: [
+      'Not one measurement in this post is mine. The parity table and both corrections are cavearr’s work in #165; the board run is jrrk2’s, on his own Sonata. I opened and read the artefacts; I reproduced nothing in them.',
+      'One board, one die (xc7a50tcsg324), one design class. A blinky says the clock arrives and the fabric toggles. It says nothing about whether a himbaechel LiteX DDR3 bitstream runs on silicon, and nobody has tried.',
+      'The hold-analysis policy is unchanged: the port still exits 1 on hold violations computed from a single DEFAULT speed grade with combinational-only cell timing, after writing the FASM. Whether it should warn instead is an open question in the thread, not a decision.',
+      'fmax remains incomparable across the two trees. A one-LUT, one-FF design reports 2865 MHz on 0.9.3 and 1044 MHz on the port, so no quality-of-result claim between them is supported by anything published so far.',
+      'The BRAM address cascade the port does emit and 0.9.3 never does (CASCOUT_ARD_ACTIVE ×34, CASCOUT_BWR_ACTIVE ×19 in the LiteX design) is legal and accepted by fasm2frames, but has not been checked against a Vivado golden and has not been seen on silicon.',
+      'The regional clock path was routed around, not fixed. #168 and #149 are open, and a pad-fed BUFIO still cannot be placed on a site its pad can reach.',
+    ],
+    published: true,
+    ru: {
+      title: '179 фич, которые не меняют ни бита, и одно решение маршрутизации, которое меняло',
+      summary: 'Отчёт о паритете двух деревьев place-and-route для Xilinx отранжировал собственные задачи наоборот: 179 недостающих фич BRAM оказались нулевыми кодовыми точками, а блокер, не пускавший битстрим на плату, не давал в счётчиках фич никакой разницы.',
+      openQuestions: [
+        'Ни одно измерение в этом посте не моё. Таблица паритета и обе поправки — работа cavearr в #165; прогон на плате — jrrk2, на его собственной Sonata. Я открыл и прочитал артефакты; я ничего в них не воспроизвёл.',
+        'Одна плата, один кристалл (xc7a50tcsg324), один класс дизайна. Blinky говорит, что клок доходит и фабрика переключается. Он ничего не говорит о том, работает ли на кремнии битстрим LiteX DDR3 от порта, — этого никто не пробовал.',
+        'Политика анализа hold не изменилась: порт по-прежнему завершается с кодом 1 при нарушениях hold, посчитанных по единственному скоростному градусу DEFAULT и чисто комбинационным задержкам ячеек, уже после записи FASM. Должен ли он вместо этого предупреждать — открытый вопрос в треде, а не решение.',
+        'fmax по-прежнему несопоставим между двумя деревьями. Дизайн из одного LUT и одного триггера показывает 2865 МГц на 0.9.3 и 1044 МГц на порте, так что ни одно утверждение о качестве результата между ними опубликованным пока не подкреплено.',
+        'Каскад адресов BRAM, который порт выдаёт, а 0.9.3 не выдаёт никогда (CASCOUT_ARD_ACTIVE ×34, CASCOUT_BWR_ACTIVE ×19 в дизайне LiteX), легален и принимается fasm2frames, но не сверялся с эталоном Vivado и не проверялся на кремнии.',
+        'Региональный путь клока обошли, а не починили. #168 и #149 открыты, и BUFIO, питаемый падом, по-прежнему нельзя поставить на сайт, до которого этот пад дотягивается.',
+      ],
+    },
+  },
+  {
     slug: 'physical-width-changed-the-question',
     title: 'Physical width changed the question',
     summary: 'A committed-oracle comparison exposed a nominal-width error: TNF16 labelled as 16 bits occupies 19 physical bits, so the table now matches containers before comparing lattices.',
