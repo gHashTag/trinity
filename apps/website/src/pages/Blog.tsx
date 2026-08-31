@@ -70,6 +70,22 @@ function ui(lang: string) {
   return lang === 'ru' ? UI.ru : UI.en
 }
 
+/** Turn taxonomy labels into share-safe, visible hashtags without changing
+ * the source tags used by feeds and publishing APIs. */
+export function blogHashtag(tag: string) {
+  const words = tag.replace(/^#+/, '').match(/[\p{L}\p{N}]+/gu) ?? []
+  if (!words.length) throw new Error(`Invalid empty blog tag: ${tag}`)
+  return `#${words.map((word) => {
+    if (words.length === 1 || /^[A-Z0-9]+$/.test(word)) return word
+    return word[0].toUpperCase() + word.slice(1)
+  }).join('')}`
+}
+
+function hashtagLine(tags: string[]) {
+  if (!tags.length) throw new Error('Every blog post must have at least one tag')
+  return tags.map(blogHashtag).join(' · ')
+}
+
 type WorkTrack = 'verification' | 'arithmetic' | 'engineering' | 'training'
 
 const WORK = {
@@ -230,7 +246,7 @@ function BlogCard({ post, lang, minLabel }: { post: PostMeta; lang: string; minL
       <Cover slug={post.slug} lang={lang} className="blog-card-cover" />
       <div className="blog-card-body">
         <div style={meta}>
-          {post.date} · {post.readingMinutes} {minLabel} · {post.tags.join(' · ')}
+          {post.date} · {post.readingMinutes} {minLabel} · <span className="blog-hashtag">{hashtagLine(post.tags)}</span>
         </div>
         <h2 style={{ margin: '10px 0 8px', fontSize: '1.25rem', fontWeight: 800 }}>
           {post.title}
@@ -487,11 +503,14 @@ function Share({ post, lang }: { post: PostMeta; lang: string }) {
   const url = postUrl(post.slug, lang)
   const u = encodeURIComponent(url)
   const title = encodeURIComponent(post.title)
+  const hashtags = post.tags.map(blogHashtag)
+  const xHashtag = encodeURIComponent(hashtags[0].slice(1))
+  const telegramText = encodeURIComponent(`${post.title}\n\n${hashtags.slice(0, 3).join(' ')}`)
 
   const targets = [
-    { name: 'X', href: `https://twitter.com/intent/tweet?url=${u}&text=${title}` },
+    { name: 'X', href: `https://twitter.com/intent/tweet?url=${u}&text=${title}&hashtags=${xHashtag}` },
     { name: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}` },
-    { name: 'Telegram', href: `https://t.me/share/url?url=${u}&text=${title}` },
+    { name: 'Telegram', href: `https://t.me/share/url?url=${u}&text=${telegramText}` },
     { name: 'Hacker News', href: `https://news.ycombinator.com/submitlink?u=${u}&t=${title}` },
     { name: 'Reddit', href: `https://www.reddit.com/submit?url=${u}&title=${title}` },
   ]
@@ -656,9 +675,9 @@ export function BlogPost() {
     return (
       <main>
         <Navigation />
-        <article style={wrap}>
+        <article style={wrap} className="blog-article">
           <div style={meta}>
-            {source.date} · {source.readingMinutes} {t.min} · {source.tags.join(' · ')}
+            {source.date} · {source.readingMinutes} {t.min} · <span className="blog-hashtag">{hashtagLine(source.tags)}</span>
           </div>
           <h1 style={{ margin: '12px 0 16px', lineHeight: 1.25 }}>
             {localiseMeta(source, lang).title}
@@ -680,10 +699,10 @@ export function BlogPost() {
   return (
     <main>
       <Navigation />
-      <article style={wrap}>
+      <article style={wrap} className="blog-article">
         <Cover slug={post.slug} lang={lang} className="blog-lead-cover" priority />
         <div style={meta}>
-          {post.date} · {post.readingMinutes} {t.min} · {post.tags.join(' · ')}
+          {post.date} · {post.readingMinutes} {t.min} · <span className="blog-hashtag">{hashtagLine(post.tags)}</span>
         </div>
         <h1 style={{ margin: '12px 0 16px', lineHeight: 1.25 }}>{post.title}</h1>
         <p style={{ fontSize: '1.05rem', lineHeight: 1.75, color: 'var(--text-dim, #8a8a8a)' }}>

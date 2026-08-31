@@ -1208,7 +1208,7 @@ input:focus-visible {
 
 .blog-card:hover,
 .blog-card:focus-visible {
-  border-color: var(--accent, #00ff88);
+  border-color: #8f7a50;
   transform: translateY(-2px);
 }
 
@@ -1250,19 +1250,28 @@ input:focus-visible {
 
 .share-pill:hover,
 .share-pill:focus-visible {
-  border-color: var(--accent, #00ff88);
-  color: var(--accent, #00ff88);
+  border-color: #d8bc7a;
+  color: #f0d79a;
 }
 
-/* Ссылки в блоге шли браузерным синим с подчёркиванием — на чёрном фоне это
-   читалось как чужой элемент. */
+/* Blog links use warm parchment: neither browser-blue nor the site's green
+   accent, while retaining strong contrast against the black background. */
+.blog-article a:not(.share-pill),
 .blog-link {
-  color: var(--accent, #00ff88);
+  color: #d8bc7a;
   text-decoration: none;
   border-bottom: 1px solid transparent;
 }
 
+.blog-article a:not(.share-pill):hover,
+.blog-article a:not(.share-pill):focus-visible,
 .blog-link:hover,
 .blog-link:focus-visible {
-  border-bottom-color: var(--accent, #00ff88);
+  color: #f0d79a;
+  border-bottom-color: #d8bc7a;
+}
+
+.blog-hashtag {
+  color: #d8bc7a;
+  text-transform: none;
 }

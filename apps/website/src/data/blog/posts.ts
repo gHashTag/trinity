@@ -111,6 +111,7 @@ const bodies: Record<string, PostBody> = {
 export type { Block, Post } from './types'
 
 export const posts: Post[] = postsIndex.map((meta) => {
+  if (!meta.tags.length) throw new Error(`Missing mandatory blog tags: ${meta.slug}`)
   const body = bodies[meta.slug]
   if (!body) throw new Error(`Missing blog body: ${meta.slug}`)
   return { ...meta, body: body.body, ru: meta.ru && body.ruBody ? { ...meta.ru, body: body.ruBody } : undefined }
