@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { TrinityLogo } from "../components/TrinityLogo";
@@ -370,14 +370,14 @@ function useQueenActivity(): {
 } {
   const [data, setData] = useState<QueenActivity | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const cursor = useRef(Date.now() - 24 * 60 * 60 * 1_000);
 
   useEffect(() => {
     let active = true;
     const read = async () => {
       try {
-        const since = Date.now() - 15 * 60 * 1_000;
         const response = await fetch(
-          `${QUEEN_API}/queen/public-activity?since=${since}`,
+          `${QUEEN_API}/queen/public-activity?since=${cursor.current}`,
           {
             headers: { Accept: "application/json" },
             cache: "no-store",
@@ -386,7 +386,24 @@ function useQueenActivity(): {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const next = (await response.json()) as QueenActivity;
         if (active) {
-          setData(next);
+          cursor.current = next.cursor - ACTIVITY_POLL_MS;
+          setData((previous) => {
+            const byId = new Map(
+              [...(previous?.events ?? []), ...next.events].map((event) => [
+                event.id,
+                event,
+              ]),
+            );
+            return {
+              cursor: next.cursor,
+              events: [...byId.values()]
+                .sort(
+                  (left, right) =>
+                    new Date(right.at).getTime() - new Date(left.at).getTime(),
+                )
+                .slice(0, 120),
+            };
+          });
           setError(null);
         }
       } catch (nextError) {
