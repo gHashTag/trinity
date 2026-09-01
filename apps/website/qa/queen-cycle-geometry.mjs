@@ -36,6 +36,25 @@ assert.match(
   "the canonical logo must use the same full-square center as every ring",
 );
 
+// The original 27-petal mark is intentionally asymmetric: the centroid of its
+// innermost black triangle is above the centre of the square viewBox. Keep the
+// real logo, but align that optical core with the orbit centre. At 72 CSS px the
+// 480-unit viewBox scale turns the 37.97-unit delta into 5.70 px.
+const viewBoxCenterY = 300 + 440 / 2;
+const coreCenterY = (474.893 + 474.865 + 496.337) / 3;
+const opticalOffset = (viewBoxCenterY - coreCenterY) * (72 / 480);
+assert.equal(opticalOffset.toFixed(1), "5.7");
+assert.match(
+  css,
+  /--queen27-cycle-optical-y:\s*5\.7px;/,
+  "the cycle must declare the geometry-derived optical offset",
+);
+assert.match(
+  css,
+  /\.queen27-cycle-brand svg\s*\{[\s\S]*?transform:\s*translateY\(var\(--queen27-cycle-optical-y\)\);[\s\S]*?\}/,
+  "the original logo core must be translated onto the orbit centre",
+);
+
 console.log(
-  "Queen cycle identity: canonical TrinityLogo centered inside three concentric orbit rings",
+  "Queen cycle identity: canonical TrinityLogo optically centered inside three concentric orbit rings",
 );
