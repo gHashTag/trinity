@@ -259,6 +259,7 @@
 }
 
 .queen27-cycle-brand {
+  --queen27-cycle-optical-y: 5.7px;
   position: absolute;
   z-index: 2;
   display: grid;
@@ -270,6 +271,7 @@
 .queen27-cycle-brand svg {
   display: block;
   max-width: 72px;
+  transform: translateY(var(--queen27-cycle-optical-y));
 }
 
 .queen27-queen-core > div:nth-of-type(2) {
