@@ -3,6 +3,66 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    "slug": "two-bitstreams-one-bit-apart",
+    "title": "Two bitstreams, one bit apart",
+    "summary": "A proposed row in the Xilinx bitstream database had been unverifiable for eighteen months. Two 22.7 MB bitstreams differing in a single bit settle it on silicon: with the bit an LED blinks, without it the counter is frozen.",
+    "date": "2026-09-01",
+    "readingMinutes": 8,
+    "tags": [
+      "FPGA",
+      "openXC7",
+      "Project X-Ray",
+      "Hardware"
+    ],
+    "receipts": [
+      {
+        "label": "nextpnr-xilinx #149 — the measurement, with the failed attempts · OPEN",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/issues/149#issuecomment-5494347759"
+      },
+      {
+        "label": "nextpnr-xilinx #149 — the divide ladder, four points · OPEN",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/issues/149#issuecomment-5496565529"
+      },
+      {
+        "label": "nextpnr-xilinx #170 — pad-fed BUFR to its dedicated site · OPEN, submitted upstream, CI green 3/3",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/170"
+      },
+      {
+        "label": "nextpnr-xilinx #171 — regional buffer sinks kept in their clock region · OPEN, submitted upstream, CI green 3/3",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/pull/171"
+      },
+      {
+        "label": "nextpnr-xilinx #172 — MMCM-fed buffers cannot be assembled: PERFCLK rows missing · OPEN",
+        "href": "https://github.com/openXC7/nextpnr-xilinx/issues/172"
+      },
+      {
+        "label": "prjxray-db #1 — the eight candidate rows, by AdamLee7 · CLOSED 2026-08-14",
+        "href": "https://github.com/openXC7/prjxray-db/pull/1"
+      }
+    ],
+    "openQuestions": [
+      "One row of the eight is measured. BUFRCLK0 (00_23), BUFRCLK1 (01_23) and BUFRCLK3 (01_31) rest on a frame-pattern argument and nothing else. The index follows which BUFR site the clock pad maps to, and this board has exactly one clock-capable oscillator, so varying it is not possible here.",
+      "Both patches are OPEN, not merged. CI is green and no maintainer has reviewed them yet. Nothing in this post should be read as upstream acceptance.",
+      "#170 may be the wrong patch. A fork has fixed the same bug with one line since April 2025, and I measured identical placement from it. I disclosed that on the pull request and offered to close mine; the maintainers have not chosen.",
+      "An LED separates divide ratios of 2, 4 and 8. It would not separate 8 from 7. D1, D3, D5, D6 and D7 were never tested — the doubling steps were picked precisely because an eye can call them without argument.",
+      "MMCM-fed regional buffers still cannot be assembled at all: two mux legs have no segbits, and the cause is a specimen gap needing Vivado runs on someone else's bench, not a fix I can make.",
+      "Nothing here is independently replicated. One board, one operator reading an LED, one evening. The method is cheap enough that a second party could check it in about half an hour per bit, and until someone does that is the standing of it."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Две прошивки, различие в один бит",
+      "summary": "Предложенная строка в базе прошивок Xilinx полтора года оставалась непроверяемой. Две прошивки по 22.7 МБ, различающиеся одним битом, закрывают вопрос на кремнии: с битом светодиод мигает, без него счётчик стоит.",
+      "openQuestions": [
+        "Проверена одна строка из восьми. BUFRCLK0 (00_23), BUFRCLK1 (01_23) и BUFRCLK3 (01_31) держатся на узоре кадров и больше ни на чём. Индекс определяется тем, на какой site BUFR выводит тактовый пад, а тактовый генератор на этой плате ровно один, так что менять индекс здесь нечем.",
+        "Обе правки ОТКРЫТЫ, не слиты. CI зелёный, но ни один сопровождающий их пока не смотрел. Ничто в этом тексте не следует читать как принятие в проект.",
+        "Правка #170 может оказаться лишней. Форк чинит ту же ошибку одной строкой с апреля 2025 года, и я измерил, что размещение выходит то же. Я написал об этом в запросе и предложил закрыть свой; сопровождающие ещё не выбрали.",
+        "Светодиод различает деление на 2, 4 и 8. Деление на 8 от деления на 7 он бы не отличил. Ступени D1, D3, D5, D6 и D7 не проверялись — удваивающиеся выбраны именно потому, что их глаз называет без спора.",
+        "Региональные буферы, питаемые от MMCM, по-прежнему не собираются в прошивку вовсе: у двух ножек мультиплексора нет битов в базе, а причина — нехватка образцов, требующая прогонов Vivado на чужом стенде, а не правки, которую могу сделать я.",
+        "Ничто здесь не воспроизведено независимо. Одна плата, один человек, смотрящий на светодиод, один вечер. Метод достаточно дёшев, чтобы вторая сторона проверила его примерно за полчаса на бит, и до тех пор таково его положение."
+      ]
+    }
+  },
+  {
     slug: 'one-commit-nine-workflow-outcomes',
     title: 'One commit, nine workflow outcomes',
     summary: 'A public GitHub Actions snapshot for commit 442bcda8bc50fe555de9d463bfd34b247c5995a5 records 9 runs: 8 push-triggered runs split into 4 successes and 4 failures, plus 1 issue-triggered failure; job evidence shows distinct stopping points rather than a shared cause.',

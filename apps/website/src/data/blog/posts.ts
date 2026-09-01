@@ -37,6 +37,7 @@ import { body as body_a_repair_reaches_only_the_copy_it_lands_in, ruBody as ruBo
 import { body as body_green_ci_does_not_mean_usable, ruBody as ruBody_green_ci_does_not_mean_usable } from './bodies/green-ci-does-not-mean-usable'
 import { body as body_scale_field_width_already_published, ruBody as ruBody_scale_field_width_already_published } from './bodies/scale-field-width-already-published'
 import { body as body_open_gigabit_ethernet_artix7, ruBody as ruBody_open_gigabit_ethernet_artix7 } from './bodies/open-gigabit-ethernet-artix7'
+import { body as body_two_bitstreams_one_bit_apart, ruBody as ruBody_two_bitstreams_one_bit_apart } from './bodies/two-bitstreams-one-bit-apart'
 import { body as body_a_multiplicity_correction_changed_the_deployment_reading, ruBody as ruBody_a_multiplicity_correction_changed_the_deployment_reading } from './bodies/a-multiplicity-correction-changed-the-deployment-reading'
 import { body as body_the_full_adder_made_the_cost_claim_comparable, ruBody as ruBody_the_full_adder_made_the_cost_claim_comparable } from './bodies/the-full-adder-made-the-cost-claim-comparable'
 import { body as body_the_tail_that_had_never_run, ruBody as ruBody_the_tail_that_had_never_run } from './bodies/the-tail-that-had-never-run'
@@ -111,6 +112,7 @@ const bodies: Record<string, PostBody> = {
   'tri-claw-an-agent-you-can-audit': { body: body_tri_claw_an_agent_you_can_audit, ruBody: ruBody_tri_claw_an_agent_you_can_audit },
   'receipts-and-seals-over-radio': { body: body_receipts_and_seals_over_radio, ruBody: ruBody_receipts_and_seals_over_radio },
   'open-gigabit-ethernet-artix7': { body: body_open_gigabit_ethernet_artix7, ruBody: ruBody_open_gigabit_ethernet_artix7 },
+  'two-bitstreams-one-bit-apart': { body: body_two_bitstreams_one_bit_apart, ruBody: ruBody_two_bitstreams_one_bit_apart },
   'a-multiplicity-correction-changed-the-deployment-reading': { body: body_a_multiplicity_correction_changed_the_deployment_reading, ruBody: ruBody_a_multiplicity_correction_changed_the_deployment_reading },
 }
 
