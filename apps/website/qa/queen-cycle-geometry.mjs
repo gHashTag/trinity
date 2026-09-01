@@ -3,51 +3,39 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const glyphPath = `${root}/src/components/QueenCycleGlyph.tsx`;
 const queenPath = `${root}/src/pages/Queen.tsx`;
-const glyph = readFileSync(glyphPath, "utf8");
+const cssPath = `${root}/src/pages/Queen.css`;
 const queen = readFileSync(queenPath, "utf8");
+const css = readFileSync(cssPath, "utf8");
 
-assert.match(glyph, /viewBox="0 0 240 240"/);
-assert.match(glyph, /shapeRendering="geometricPrecision"/);
+assert.match(
+  queen,
+  /<div className="queen27-core-orbit" aria-hidden="true">[\s\S]*?<TrinityLogo withLabel=\{false\} height="72px" \/>[\s\S]*?<\/div>/,
+  "the Queen cycle must render the canonical 27-petal TrinityLogo",
+);
+assert.doesNotMatch(
+  queen,
+  /QueenCycleGlyph/,
+  "the simplified replacement glyph must not be wired into Queen",
+);
 
-const circles = [...glyph.matchAll(/<circle\s+[^>]*data-role="orbit"[^>]*>/g)];
-assert.equal(circles.length, 3, "the cycle mark must contain three orbit circles");
-
-const attr = (tag, name) => {
-  const match = tag.match(new RegExp(`${name}="([^"]+)"`));
-  assert.ok(match, `missing ${name} on ${tag}`);
-  return Number(match[1]);
-};
-
-for (const [match, expectedRadius] of circles.map((entry, index) => [entry[0], [118, 92, 58][index]])) {
-  assert.equal(attr(match, "cx"), 120);
-  assert.equal(attr(match, "cy"), 120);
-  assert.equal(attr(match, "r"), expectedRadius);
-}
-
-const primary = glyph.match(/<polygon\s+[^>]*data-role="primary-triangle"[^>]*>/)?.[0];
-assert.ok(primary, "the cycle mark must contain one primary triangle");
-const points = primary
-  .match(/points="([^"]+)"/)?.[1]
-  .trim()
-  .split(/\s+/)
-  .map((point) => point.split(",").map(Number));
-assert.equal(points?.length, 3);
-
-const [a, b, c] = points;
-const centroid = [
-  (a[0] + b[0] + c[0]) / 3,
-  (a[1] + b[1] + c[1]) / 3,
+const orbitMarkup = [
+  ...queen.matchAll(/<span\s+data-role="orbit"\s+className="queen27-cycle-ring[^>]*\/>/g),
 ];
-assert.ok(Math.abs(centroid[0] - 120) < 0.01);
-assert.ok(Math.abs(centroid[1] - 120) < 0.01);
+assert.equal(orbitMarkup.length, 3, "the cycle mark must contain three orbit rings");
 
-const distance = (left, right) => Math.hypot(left[0] - right[0], left[1] - right[1]);
-const sides = [distance(a, b), distance(b, c), distance(c, a)];
-assert.ok(Math.max(...sides) - Math.min(...sides) < 0.01, "the primary triangle must be equilateral");
+assert.match(
+  css,
+  /\.queen27-cycle-ring\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?border-radius:\s*50%;[\s\S]*?\}/,
+  "every orbit ring must be an absolute circle inside the shared square",
+);
 
-assert.match(queen, /import \{ QueenCycleGlyph \} from "\.\.\/components\/QueenCycleGlyph";/);
-assert.match(queen, /<QueenCycleGlyph \/>/);
+assert.match(
+  css,
+  /\.queen27-cycle-brand\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?inset:\s*0;[\s\S]*?place-items:\s*center;[\s\S]*?\}/,
+  "the canonical logo must use the same full-square center as every ring",
+);
 
-console.log("Queen cycle geometry: 3 concentric circles, centered equilateral triangle, live component wiring");
+console.log(
+  "Queen cycle identity: canonical TrinityLogo centered inside three concentric orbit rings",
+);

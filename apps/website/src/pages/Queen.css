@@ -237,54 +237,39 @@
   place-items: center;
 }
 
-.queen27-cycle-glyph {
+.queen27-cycle-ring {
+  position: absolute;
+  border: 1px solid rgba(0, 255, 136, 0.36);
+  border-radius: 50%;
+}
+
+.queen27-cycle-ring-outer {
+  inset: 1px;
+}
+
+.queen27-cycle-ring-dashed {
+  inset: 25px;
+  border-color: rgba(255, 215, 0, 0.52);
+  border-style: dashed;
+}
+
+.queen27-cycle-ring-inner {
+  inset: 52px;
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.queen27-cycle-brand {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  inset: 0;
+  place-items: center;
+  pointer-events: none;
+}
+
+.queen27-cycle-brand svg {
   display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.queen27-cycle-orbit {
-  vector-effect: non-scaling-stroke;
-  stroke-width: 1.35;
-}
-
-.queen27-cycle-orbit-outer {
-  stroke: rgba(0, 255, 136, 0.36);
-}
-
-.queen27-cycle-orbit-dashed {
-  stroke: rgba(255, 215, 0, 0.52);
-  stroke-dasharray: 5 4;
-}
-
-.queen27-cycle-orbit-inner {
-  stroke: rgba(255, 255, 255, 0.24);
-}
-
-.queen27-cycle-triangles {
-  fill: rgba(255, 255, 255, 0.06);
-  stroke: rgba(255, 255, 255, 0.92);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.15;
-  vector-effect: non-scaling-stroke;
-}
-
-.queen27-cycle-triangles polygon:first-child {
-  fill: rgba(255, 255, 255, 0.12);
-  stroke-width: 1.65;
-}
-
-.queen27-cycle-triangles path {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.58);
-  stroke-width: 0.8;
-}
-
-.queen27-cycle-core {
-  fill: var(--q-green);
-  filter: drop-shadow(0 0 7px rgba(0, 255, 136, 0.8));
+  max-width: 72px;
 }
 
 .queen27-queen-core > div:nth-of-type(2) {
@@ -1718,14 +1703,12 @@
     animation: queen27-signal 1.7s ease-in-out infinite;
   }
 
-  .queen27-cycle-orbit-dashed {
+  .queen27-cycle-ring-dashed {
     animation: queen27-orbit 11s linear infinite reverse;
-    transform-box: fill-box;
     transform-origin: center;
   }
 
-  .queen27-cycle-orbit-inner,
-  .queen27-cycle-core {
+  .queen27-cycle-ring-inner {
     animation: queen27-signal 2.4s ease-in-out infinite;
   }
 
