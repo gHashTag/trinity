@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { QueenFactory } from "../components/QueenFactory";
 import { TrinityLogo } from "../components/TrinityLogo";
 import { useI18n } from "../i18n/context";
 import "./Queen.css";
@@ -180,8 +181,22 @@ const COPY = {
       "Public GitHub work mapped to the Queen’s own states. Operational secrets stay private.",
     kanbanView: "KANBAN",
     mapView: "MISSION MAP",
+    factoryView: "FACTORY",
     kanbanHint: "Operational columns",
     mapHint: "Strategic lifecycle sectors",
+    factoryHint: "Live engineering production",
+    factoryFlow: "ISSUE → SPEC → BEE → REVIEW → EVIDENCE",
+    factoryThroughput: "Live utilization",
+    factoryQueueDensity: "queue density peak",
+    factoryWorkerBays: "Bee hangars",
+    factoryIdle: "idle",
+    factoryStation: "station",
+    factoryModules: "modules",
+    factoryOffline: "factory telemetry offline",
+    factoryOpenIssue: "OPEN REAL MODULE",
+    factorySelectedModule: "SELECTED PRODUCTION MODULE",
+    factoryLiveContract:
+      "Every station, module and Bee bay below is backed by the live Queen ledger.",
     mapLegend:
       "The routes show Queen lifecycle movement; only the Technology Tree below claims prerequisite links.",
     sector: "sector",
@@ -283,8 +298,22 @@ const COPY = {
       "Публичные GitHub-задачи в реальных состояниях Queen. Внутренние данные остаются закрытыми.",
     kanbanView: "КАНБАН",
     mapView: "КАРТА МИССИЙ",
+    factoryView: "ФАБРИКА",
     kanbanHint: "Операционные колонки",
     mapHint: "Стратегические сектора цикла",
+    factoryHint: "Живое инженерное производство",
+    factoryFlow: "ISSUE → SPEC → BEE → REVIEW → EVIDENCE",
+    factoryThroughput: "Живая загрузка",
+    factoryQueueDensity: "пик плотности очереди",
+    factoryWorkerBays: "Ангары Bees",
+    factoryIdle: "свободно",
+    factoryStation: "станция",
+    factoryModules: "модулей",
+    factoryOffline: "телеметрия фабрики недоступна",
+    factoryOpenIssue: "ОТКРЫТЬ РЕАЛЬНЫЙ МОДУЛЬ",
+    factorySelectedModule: "ВЫБРАННЫЙ ПРОИЗВОДСТВЕННЫЙ МОДУЛЬ",
+    factoryLiveContract:
+      "Каждая станция, модуль и ангар Bee ниже подтверждены живым реестром Queen.",
     mapLegend:
       "Маршруты показывают движение по циклу Queen; реальные зависимости есть только в Дереве технологий ниже.",
     sector: "сектор",
@@ -1009,7 +1038,9 @@ export default function Queen() {
   const boardState = useQueenBoard();
   const activityState = useQueenActivity();
   const researchState = useQueenResearch();
-  const [boardView, setBoardView] = useState<"kanban" | "map">("kanban");
+  const [boardView, setBoardView] = useState<
+    "kanban" | "map" | "factory"
+  >("kanban");
   const now = useNow();
   const data = state.data;
   const isLive = state.kind === "ready";
@@ -1283,6 +1314,18 @@ export default function Queen() {
               <small>{c.mapHint}</small>
             </span>
           </button>
+          <button
+            type="button"
+            className={boardView === "factory" ? "is-active" : ""}
+            aria-pressed={boardView === "factory"}
+            onClick={() => setBoardView("factory")}
+          >
+            <i aria-hidden="true">⚙</i>
+            <span>
+              <b>{c.factoryView}</b>
+              <small>{c.factoryHint}</small>
+            </span>
+          </button>
         </div>
 
         {boardView === "kanban" ? (
@@ -1359,7 +1402,7 @@ export default function Queen() {
               );
             })}
           </motion.div>
-        ) : (
+        ) : boardView === "map" ? (
           <motion.div
             className="queen27-mission-map"
             role="region"
@@ -1422,6 +1465,32 @@ export default function Queen() {
             </div>
             <p>{c.mapLegend}</p>
           </motion.div>
+        ) : (
+          <QueenFactory
+            columns={boardColumns}
+            cards={boardState.data?.cards ?? []}
+            repo={boardState.data?.repo ?? null}
+            workers={researchState.data?.workers ?? null}
+            error={boardState.error ?? researchState.error}
+            labels={{
+              aria: c.factoryView,
+              flow: c.factoryFlow,
+              throughput: c.factoryThroughput,
+              queueDensity: c.factoryQueueDensity,
+              workerBays: c.factoryWorkerBays,
+              active: c.executing,
+              idle: c.factoryIdle,
+              station: c.factoryStation,
+              modules: c.factoryModules,
+              empty: c.empty,
+              offline: c.factoryOffline,
+              criteria: c.criteria,
+              missing: c.missing,
+              openIssue: c.factoryOpenIssue,
+              selectedModule: c.factorySelectedModule,
+              liveContract: c.factoryLiveContract,
+            }}
+          />
         )}
       </section>
 
