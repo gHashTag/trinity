@@ -79,47 +79,16 @@
   font-size: clamp(1rem, 2vw, 1.25rem);
 }
 
-.queen27-sigil {
-  position: relative;
-  width: min(26vw, 300px);
-  aspect-ratio: 1;
+.queen27-logo {
+  display: flex;
+  width: min(28vw, 320px);
+  justify-content: center;
   justify-self: center;
 }
 
-.queen27-sigil i {
-  position: absolute;
-  inset: 0;
-  clip-path: polygon(50% 100%, 0 12%, 100% 12%);
-  border: 1px solid transparent;
-  background: var(--text);
-}
-
-.queen27-sigil i::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  clip-path: inherit;
-  background: #000;
-}
-
-.queen27-sigil i:nth-child(2) {
-  inset: 17%;
-  opacity: 0.75;
-}
-.queen27-sigil i:nth-child(3) {
-  inset: 34%;
-  opacity: 0.5;
-}
-
-.queen27-sigil b {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: var(--q-green);
-  font-size: clamp(1.6rem, 4vw, 3.2rem);
-  font-weight: 500;
-  z-index: 2;
+.queen27-logo svg {
+  display: block;
+  max-width: 100%;
 }
 
 .queen27-live {
@@ -482,8 +451,8 @@
   .queen27-hero-grid {
     grid-template-columns: 1fr;
   }
-  .queen27-sigil {
-    width: min(58vw, 240px);
+  .queen27-logo {
+    width: min(64vw, 260px);
     order: -1;
   }
   .queen27-hero h1 {
@@ -558,22 +527,5 @@
   }
   .queen27-footer {
     flex-direction: column;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .queen27-sigil {
-    animation: queen27-breathe 7s ease-in-out infinite;
-  }
-  @keyframes queen27-breathe {
-    0%,
-    100% {
-      transform: scale(0.985);
-      opacity: 0.86;
-    }
-    50% {
-      transform: scale(1);
-      opacity: 1;
-    }
   }
 }

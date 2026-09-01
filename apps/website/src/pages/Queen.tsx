@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { TrinityLogo } from "../components/TrinityLogo";
 import { useI18n } from "../i18n/context";
 import "./Queen.css";
 
@@ -293,11 +294,8 @@ export default function Queen() {
             <h1>{c.title}</h1>
             <p>{c.lede}</p>
           </div>
-          <div className="queen27-sigil" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-            <b>Q</b>
+          <div className="queen27-logo">
+            <TrinityLogo withLabel={false} height="clamp(180px, 24vw, 300px)" />
           </div>
         </div>
         <div
