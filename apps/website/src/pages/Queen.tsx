@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { TrinityLogo } from "../components/TrinityLogo";
+import {
+  techBranches,
+  type TechNode,
+} from "../components/TechTree/techTreeData";
 import { useI18n } from "../i18n/context";
 import "./Queen.css";
 
@@ -9,6 +14,9 @@ const DEFAULT_QUEEN_API =
 const QUEEN_API = (
   (import.meta.env.VITE_QUEEN_API as string | undefined) ?? DEFAULT_QUEEN_API
 ).replace(/\/+$/, "");
+const LIVE_POLL_MS = 5_000;
+const TECH_NODES = techBranches.flatMap((branch) => branch.nodes);
+const TECH_BY_ID = new Map(TECH_NODES.map((node) => [node.id, node]));
 
 interface QueenStatus {
   status: "ok";
@@ -92,7 +100,7 @@ const COPY = {
     outcome: "Outcome",
     finished: "Finished",
     provenance: "LIVE / RAILWAY / POSTGRES / QUEEND",
-    refresh: "refreshes every 15 seconds",
+    refresh: "refreshes every 5 seconds",
     source: "Open operational view",
     board: "REALTIME KANBAN",
     boardTitle: "The whole swarm, in one place.",
@@ -104,6 +112,40 @@ const COPY = {
     empty: "Nothing here",
     criteria: "criteria",
     missing: "needs",
+    command: "LIVE COMMAND ROOM",
+    commandTitle: "Queen reviews the swarm herself.",
+    commandCopy:
+      "The screen follows the real supervisor cycle: selection, isolated execution, self-review, Queen verdict and acceptance.",
+    nextRound: "next Queen round",
+    reviewing: "waiting for Queen review",
+    executing: "executing now",
+    noBees:
+      "No Bee is executing right now. Queen remains online and keeps the queue under policy.",
+    reviewQueue: "Queen review queue",
+    synchronized: "synced every 5 seconds",
+    selfReview: "SELF-REVIEW",
+    selfReviewCopy:
+      "The Bee runs checks and inspects its own diff before handoff.",
+    verdict: "QUEEN VERDICT",
+    verdictCopy:
+      "Queen judges the evidence, rejects weak work and accepts only a passing result.",
+    merge: "ACCEPT / MERGE",
+    mergeCopy: "Approved work enters the repository with an auditable trail.",
+    tech: "TECHNOLOGY TREE",
+    techTitle: "Research opens the next capabilities.",
+    techCopy:
+      "This is the existing TRINITY research graph. Select a technology to see its prerequisites and what it unlocks next.",
+    researched: "researched",
+    researching: "researching",
+    available: "available next",
+    locked: "locked",
+    prerequisites: "Prerequisites",
+    unlocks: "Unlocks next",
+    noPrerequisites: "Available from the start",
+    terminalNode: "Final technology in this branch",
+    overallResearch: "overall research",
+    activeResearch: "active research",
+    nextAvailable: "available next",
   },
   ru: {
     back: "TRINITY",
@@ -137,7 +179,7 @@ const COPY = {
     outcome: "Исход",
     finished: "Завершено",
     provenance: "LIVE / RAILWAY / POSTGRES / QUEEND",
-    refresh: "обновление каждые 15 секунд",
+    refresh: "обновление каждые 5 секунд",
     source: "Открытый operational view",
     board: "REALTIME KANBAN",
     boardTitle: "Весь рой — в одном месте.",
@@ -149,6 +191,41 @@ const COPY = {
     empty: "Здесь пусто",
     criteria: "критерия",
     missing: "нужно",
+    command: "ЖИВОЙ КОМАНДНЫЙ ЦЕНТР",
+    commandTitle: "Королева сама ревьюит работу роя.",
+    commandCopy:
+      "Экран следует реальному циклу надзирателя: выбор, изолированное выполнение, саморевью, вердикт Королевы и приёмка.",
+    nextRound: "следующий цикл Queen",
+    reviewing: "ждут ревью Королевы",
+    executing: "выполняются сейчас",
+    noBees:
+      "Сейчас ни одна Bee не выполняет задачу. Queen остаётся онлайн и контролирует очередь по политике.",
+    reviewQueue: "очередь ревью Queen",
+    synchronized: "синхронизация каждые 5 секунд",
+    selfReview: "САМОРЕВЬЮ",
+    selfReviewCopy:
+      "Bee запускает проверки и изучает собственный diff до передачи результата.",
+    verdict: "ВЕРДИКТ QUEEN",
+    verdictCopy:
+      "Королева судит доказательства, отклоняет слабую работу и принимает только прошедший результат.",
+    merge: "ПРИЁМКА / MERGE",
+    mergeCopy:
+      "Одобренная работа попадает в репозиторий с полным следом доказательств.",
+    tech: "ДЕРЕВО ТЕХНОЛОГИЙ",
+    techTitle: "Исследования открывают следующие возможности.",
+    techCopy:
+      "Это существующий граф исследований TRINITY. Выберите технологию, чтобы увидеть зависимости и что она откроет дальше.",
+    researched: "исследовано",
+    researching: "изучается",
+    available: "доступно дальше",
+    locked: "заблокировано",
+    prerequisites: "Зависимости",
+    unlocks: "Откроет дальше",
+    noPrerequisites: "Доступно с начала",
+    terminalNode: "Финальная технология ветки",
+    overallResearch: "исследовано всего",
+    activeResearch: "активных исследований",
+    nextAvailable: "доступно дальше",
   },
 } as const;
 
@@ -181,7 +258,7 @@ function useQueenStatus(): LoadState {
     };
 
     void read();
-    const timer = window.setInterval(read, 15_000);
+    const timer = window.setInterval(read, LIVE_POLL_MS);
     return () => {
       active = false;
       window.clearInterval(timer);
@@ -191,9 +268,14 @@ function useQueenStatus(): LoadState {
   return state;
 }
 
-function useQueenBoard(): { data: QueenBoard | null; error: string | null } {
+function useQueenBoard(): {
+  data: QueenBoard | null;
+  error: string | null;
+  syncedAt: Date | null;
+} {
   const [data, setData] = useState<QueenBoard | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [syncedAt, setSyncedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -208,6 +290,7 @@ function useQueenBoard(): { data: QueenBoard | null; error: string | null } {
         if (active) {
           setData(next);
           setError(null);
+          setSyncedAt(new Date());
         }
       } catch (nextError) {
         if (active) {
@@ -219,14 +302,25 @@ function useQueenBoard(): { data: QueenBoard | null; error: string | null } {
     };
 
     void read();
-    const timer = window.setInterval(read, 15_000);
+    const timer = window.setInterval(read, LIVE_POLL_MS);
     return () => {
       active = false;
       window.clearInterval(timer);
     };
   }, []);
 
-  return { data, error };
+  return { data, error, syncedAt };
+}
+
+function useNow() {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return now;
 }
 
 function formatInterval(seconds: number, lang: string) {
@@ -248,6 +342,168 @@ function formatMoment(value: string | null | undefined, lang: string) {
     minute: "2-digit",
     timeZoneName: "short",
   }).format(date);
+}
+
+function formatCountdown(seconds: number) {
+  const safe = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const remainder = safe % 60;
+  return [hours, minutes, remainder]
+    .map((value) => String(value).padStart(2, "0"))
+    .join(":");
+}
+
+type TechState = "done" | "researching" | "available" | "locked";
+
+function getTechState(node: TechNode): TechState {
+  if (node.status === "done") return "done";
+  if (node.status === "in_progress") return "researching";
+  const isAvailable = node.prerequisites.every(
+    (id) => TECH_BY_ID.get(id)?.status === "done",
+  );
+  return isAvailable ? "available" : "locked";
+}
+
+function TechnologyTree({
+  c,
+}: {
+  c: (typeof COPY)["ru"] | (typeof COPY)["en"];
+}) {
+  const initialNode =
+    TECH_NODES.find((node) => node.status === "in_progress") ?? TECH_NODES[0];
+  const [selectedId, setSelectedId] = useState(initialNode.id);
+  const selected = TECH_BY_ID.get(selectedId) ?? initialNode;
+  const selectedState = getTechState(selected);
+  const completed = TECH_NODES.filter((node) => node.status === "done").length;
+  const researching = TECH_NODES.filter(
+    (node) => node.status === "in_progress",
+  ).length;
+  const available = TECH_NODES.filter(
+    (node) => getTechState(node) === "available",
+  ).length;
+  const stateLabel = {
+    done: c.researched,
+    researching: c.researching,
+    available: c.available,
+    locked: c.locked,
+  } satisfies Record<TechState, string>;
+  const prerequisiteNames = selected.prerequisites.map(
+    (id) => TECH_BY_ID.get(id)?.name ?? id,
+  );
+  const unlockNames = selected.unlocks.map(
+    (id) => TECH_BY_ID.get(id)?.name ?? id,
+  );
+
+  return (
+    <section className="queen27-tech" aria-labelledby="queen-tech-title">
+      <div className="queen27-tech-head">
+        <div>
+          <span className="queen27-section-label" id="queen-tech-title">
+            {c.tech}
+          </span>
+          <h2>{c.techTitle}</h2>
+          <p>{c.techCopy}</p>
+        </div>
+        <div className="queen27-tech-score" aria-label={c.overallResearch}>
+          <strong>{Math.round((completed / TECH_NODES.length) * 100)}%</strong>
+          <span>{c.overallResearch}</span>
+        </div>
+      </div>
+
+      <div className="queen27-tech-stats">
+        <span>
+          <b>{completed}</b> {c.researched}
+        </span>
+        <span>
+          <b>{researching}</b> {c.activeResearch}
+        </span>
+        <span>
+          <b>{available}</b> {c.nextAvailable}
+        </span>
+      </div>
+
+      <div className="queen27-tech-console">
+        <div
+          className="queen27-tech-map"
+          role="region"
+          aria-label={c.tech}
+          tabIndex={0}
+        >
+          {techBranches.map((branch) => (
+            <div
+              className="queen27-tech-lane"
+              key={branch.id}
+              style={{ "--tech-color": branch.color } as CSSProperties}
+            >
+              <header>
+                <span aria-hidden="true">{branch.icon}</span>
+                <b>{branch.name}</b>
+              </header>
+              <div className="queen27-tech-nodes">
+                {branch.nodes.map((node) => {
+                  const techState = getTechState(node);
+                  const isSelected = selected.id === node.id;
+                  return (
+                    <motion.button
+                      type="button"
+                      className={`queen27-tech-node is-${techState}${isSelected ? " is-selected" : ""}`}
+                      key={node.id}
+                      onClick={() => setSelectedId(node.id)}
+                      whileHover={{ y: -3 }}
+                      whileTap={{ scale: 0.98 }}
+                      aria-pressed={isSelected}
+                    >
+                      <small>{stateLabel[techState]}</small>
+                      <strong>{node.name}</strong>
+                      {node.metrics && <span>{node.metrics}</span>}
+                      {techState === "researching" && (
+                        <i>
+                          <span style={{ width: `${node.progress ?? 0}%` }} />
+                        </i>
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <motion.aside
+          className={`queen27-tech-details is-${selectedState}`}
+          key={selected.id}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <span>{stateLabel[selectedState]}</span>
+          <h3>{selected.name}</h3>
+          <p>{selected.description}</p>
+          {typeof selected.progress === "number" && (
+            <strong>{selected.progress}%</strong>
+          )}
+          <dl>
+            <div>
+              <dt>{c.prerequisites}</dt>
+              <dd>
+                {prerequisiteNames.length > 0
+                  ? prerequisiteNames.join(" · ")
+                  : c.noPrerequisites}
+              </dd>
+            </div>
+            <div>
+              <dt>{c.unlocks}</dt>
+              <dd>
+                {unlockNames.length > 0
+                  ? unlockNames.join(" · ")
+                  : c.terminalNode}
+              </dd>
+            </div>
+          </dl>
+        </motion.aside>
+      </div>
+    </section>
+  );
 }
 
 function Metric({
@@ -273,10 +529,31 @@ export default function Queen() {
   const c = lang === "ru" ? COPY.ru : COPY.en;
   const state = useQueenStatus();
   const boardState = useQueenBoard();
+  const now = useNow();
   const data = state.data;
   const isLive = state.kind === "ready";
   const latest = data?.dispatches.latest;
   const decision = data?.lastTick;
+  const runningCards =
+    boardState.data?.cards.filter((card) => card.column === "running") ?? [];
+  const reviewCards =
+    boardState.data?.cards.filter((card) => card.column === "review") ?? [];
+  const roundSeconds =
+    boardState.data?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
+  const lastRoundAt =
+    boardState.data?.pulse.lastRoundAt ?? decision?.decidedAt ?? null;
+  const elapsedSeconds = lastRoundAt
+    ? Math.max(0, (now - new Date(lastRoundAt).getTime()) / 1000)
+    : 0;
+  const roundRemaining = roundSeconds
+    ? Math.max(0, roundSeconds - elapsedSeconds)
+    : 0;
+  const roundProgress = roundSeconds
+    ? Math.min(100, (elapsedSeconds / roundSeconds) * 100)
+    : 0;
+  const syncLabel = boardState.syncedAt
+    ? boardState.syncedAt.toLocaleTimeString(lang === "ru" ? "ru-RU" : "en-GB")
+    : "—";
 
   return (
     <main className="queen27-page">
@@ -342,6 +619,84 @@ export default function Queen() {
         <Metric label={c.active} value={data?.dispatches.running ?? "—"} />
       </section>
 
+      <section
+        className="queen27-command"
+        aria-labelledby="queen-command-title"
+      >
+        <div className="queen27-command-head">
+          <span className="queen27-section-label" id="queen-command-title">
+            {c.command}
+          </span>
+          <h2>{c.commandTitle}</h2>
+          <p>{c.commandCopy}</p>
+        </div>
+
+        <div className="queen27-command-grid">
+          <article className="queen27-queen-core">
+            <div className="queen27-core-orbit" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <TrinityLogo withLabel={false} height="72px" />
+            </div>
+            <div>
+              <span>{c.nextRound}</span>
+              <strong>{formatCountdown(roundRemaining)}</strong>
+              <small>
+                {c.synchronized} · {syncLabel}
+              </small>
+            </div>
+            <i aria-hidden="true">
+              <span style={{ width: `${roundProgress}%` }} />
+            </i>
+          </article>
+
+          <article className="queen27-swarm-live">
+            <header>
+              <span>
+                <b>{runningCards.length}</b> {c.executing}
+              </span>
+              <span>
+                <b>{reviewCards.length}</b> {c.reviewing}
+              </span>
+            </header>
+            {runningCards.length > 0 ? (
+              <div className="queen27-bee-list">
+                {runningCards.slice(0, 4).map((card) => (
+                  <a
+                    href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={card.number}
+                  >
+                    <i aria-hidden="true">◆</i>
+                    <span>Bee #{card.number}</span>
+                    <strong>{card.title}</strong>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p>{c.noBees}</p>
+            )}
+            <div className="queen27-review-queue">
+              <small>{c.reviewQueue}</small>
+              {reviewCards.slice(0, 3).map((card, index) => (
+                <a
+                  href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  key={card.number}
+                >
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <b>#{card.number}</b>
+                  <strong>{card.title}</strong>
+                </a>
+              ))}
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section className="queen27-board" aria-labelledby="queen-board-title">
         <div className="queen27-board-head">
           <div>
@@ -390,9 +745,10 @@ export default function Queen() {
                 (card) => card.column === column.key,
               ) ?? [];
             return (
-              <article
+              <motion.article
                 className={`queen27-column is-${column.key}`}
                 key={column.key}
+                layout
               >
                 <header>
                   <h3>{column.title}</h3>
@@ -401,14 +757,32 @@ export default function Queen() {
                 <small>{column.blurb}</small>
                 <div className="queen27-cards">
                   {cards.map((card) => (
-                    <a
+                    <motion.a
                       className="queen27-card"
                       href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
                       target="_blank"
                       rel="noreferrer"
                       key={card.number}
+                      layout
+                      layoutId={`queen-card-${card.number}`}
+                      transition={{
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 30,
+                      }}
                     >
-                      <b>#{card.number}</b>
+                      <div className="queen27-card-topline">
+                        <b>#{card.number}</b>
+                        {(column.key === "running" ||
+                          column.key === "review") && (
+                          <span className="queen27-card-signal">
+                            <i />
+                            {column.key === "running"
+                              ? c.executing
+                              : c.reviewing}
+                          </span>
+                        )}
+                      </div>
                       <strong>{card.title}</strong>
                       {typeof card.criteria === "number" && (
                         <span>
@@ -420,11 +794,11 @@ export default function Queen() {
                           {c.missing}: {card.needs.join(", ")}
                         </span>
                       )}
-                    </a>
+                    </motion.a>
                   ))}
                   {cards.length === 0 && <em>{boardState.error ?? c.empty}</em>}
                 </div>
-              </article>
+              </motion.article>
             );
           })}
         </div>
@@ -481,8 +855,25 @@ export default function Queen() {
             <h3>{c.bee}</h3>
             <p>{c.beeCopy}</p>
           </article>
+          <article className="is-active">
+            <b>04</b>
+            <h3>{c.selfReview}</h3>
+            <p>{c.selfReviewCopy}</p>
+          </article>
+          <article className="is-queen">
+            <b>05</b>
+            <h3>{c.verdict}</h3>
+            <p>{c.verdictCopy}</p>
+          </article>
+          <article>
+            <b>06</b>
+            <h3>{c.merge}</h3>
+            <p>{c.mergeCopy}</p>
+          </article>
         </div>
       </section>
+
+      <TechnologyTree c={c} />
 
       <section className="queen27-latest" aria-labelledby="queen-latest-title">
         <span className="queen27-section-label" id="queen-latest-title">
