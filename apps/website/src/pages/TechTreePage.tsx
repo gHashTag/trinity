@@ -1,12 +1,7 @@
-"use client";
-
-import { useI18n } from '../i18n/context'
-import TechTree from '../components/TechTree/TechTree'
+import { Navigate } from 'react-router-dom'
 
 export default function TechTreePage() {
-  const { lang } = useI18n()
-
-  // Пересоздаём дерево при смене языка: дочерние карточки и панель
-  // подробностей получают новый словарь без изменения порядка узлов.
-  return <TechTree key={lang} />
+  // The research graph has one authority and one operational home. Keeping the
+  // old static page reachable made two trees disagree about status and unlocks.
+  return <Navigate to="/queen" replace />
 }

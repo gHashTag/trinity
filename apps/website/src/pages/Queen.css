@@ -1080,22 +1080,243 @@
   font-size: 1rem;
 }
 
+.queen27-agent-connect {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  gap: 1px;
+  margin-top: 2rem;
+  border: 1px solid rgba(0, 255, 136, 0.48);
+  background: rgba(0, 255, 136, 0.48);
+  box-shadow: 0 0 42px rgba(0, 255, 136, 0.08);
+}
+
+.queen27-agent-connect > div {
+  padding: clamp(1.4rem, 4vw, 2.25rem);
+  background: #030503;
+}
+
+.queen27-agent-connect > div > span,
+.queen27-worker-pool > div > span {
+  color: var(--q-green);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+}
+
+.queen27-agent-connect h3 {
+  max-width: 780px;
+  margin: 0.65rem 0;
+  font-size: clamp(1.45rem, 3vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.queen27-agent-connect p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.queen27-agent-connect button {
+  display: grid;
+  min-height: 176px;
+  place-content: center;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 1.5rem;
+  border: 0;
+  color: #00150a;
+  background: var(--q-green);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+  transition: filter 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.queen27-agent-connect button:hover {
+  filter: brightness(1.12);
+  box-shadow: inset 0 0 0 1px #fff, 0 0 38px rgba(0, 255, 136, 0.38);
+  transform: translateY(-2px);
+}
+
+.queen27-agent-connect button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -7px;
+}
+
+.queen27-agent-connect button i {
+  font-size: 1.6rem;
+  font-style: normal;
+}
+
+.queen27-agent-connect button strong {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.queen27-agent-connect button small {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+}
+
+.queen27-worker-pool {
+  display: grid;
+  grid-template-columns: auto minmax(220px, 0.7fr) minmax(320px, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  background: #050505;
+}
+
+.queen27-worker-pool > div:first-child {
+  display: grid;
+}
+
+.queen27-worker-pool > div > strong {
+  color: var(--q-green);
+  font-size: 2.25rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.queen27-worker-pool > div > small,
+.queen27-worker-pool > p {
+  color: var(--muted);
+  font-size: 0.62rem;
+  line-height: 1.5;
+}
+
+.queen27-worker-pool > p {
+  margin: 0;
+}
+
+.queen27-worker-slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(68px, 1fr));
+  gap: 0.55rem;
+}
+
+.queen27-worker-slots span {
+  display: flex;
+  gap: 0.38rem;
+  align-items: center;
+  padding: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+}
+
+.queen27-worker-slots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #383838;
+}
+
+.queen27-worker-slots .is-busy {
+  border-color: rgba(0, 255, 136, 0.52);
+  color: var(--q-green);
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.queen27-worker-slots .is-busy i {
+  background: var(--q-green);
+  box-shadow: 0 0 12px var(--q-green);
+  animation: queen27-pulse 1.2s ease-in-out infinite;
+}
+
 .queen27-tech-console {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(270px, 0.34fr);
-  min-height: 620px;
+  min-height: 720px;
   border: 1px solid var(--border);
   background: var(--border);
   gap: 1px;
 }
 
 .queen27-tech-map {
+  position: relative;
   min-width: 0;
+  max-height: 780px;
   overflow: auto;
-  padding: 1rem;
-  background: #020302;
+  padding: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.055), transparent 42%),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    #020302;
+  background-size: auto, 32px 32px, 32px 32px, auto;
   scrollbar-color: var(--q-green) #080808;
   scrollbar-width: thin;
+}
+
+.queen27-tech-canvas {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.queen27-tech-layer {
+  position: absolute;
+  top: 24px;
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--tech-color) 46%, transparent);
+  color: var(--tech-color);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.queen27-tech-edges {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.queen27-tech-edges path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
+.queen27-tech-edges path.is-open {
+  stroke: rgba(0, 255, 136, 0.68);
+  stroke-width: 1.8;
+  filter: drop-shadow(0 0 4px rgba(0, 255, 136, 0.42));
+}
+
+.queen27-tech-loading {
+  display: grid;
+  min-height: 720px;
+  place-content: center;
+  justify-items: center;
+  gap: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.queen27-tech-loading i {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--q-green);
+  border-radius: 50%;
+  animation: queen27-spin 800ms linear infinite;
+}
+
+@keyframes queen27-spin {
+  to { transform: rotate(360deg); }
 }
 
 .queen27-tech-lane {
@@ -1132,9 +1353,8 @@
 }
 
 .queen27-tech-node {
-  position: relative;
+  position: absolute;
   display: grid;
-  min-height: 108px;
   gap: 0.45rem;
   align-content: center;
   padding: 0.8rem;
@@ -1142,18 +1362,13 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text);
   text-align: left;
-  background: rgba(255, 255, 255, 0.018);
+  background: rgba(3, 5, 3, 0.96);
   cursor: pointer;
+  z-index: 2;
 }
 
 .queen27-tech-node::after {
-  position: absolute;
-  top: 50%;
-  right: -0.72rem;
-  width: 0.72rem;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.18);
-  content: "";
+  display: none;
 }
 
 .queen27-tech-node:last-child::after {
@@ -1190,12 +1405,12 @@
   background: var(--q-gold);
 }
 
-.queen27-tech-node.is-done {
+.queen27-tech-node.is-researched {
   border-color: color-mix(in srgb, var(--tech-color) 55%, transparent);
   background: color-mix(in srgb, var(--tech-color) 8%, #020202);
 }
 
-.queen27-tech-node.is-done small {
+.queen27-tech-node.is-researched small {
   color: var(--tech-color);
 }
 
@@ -1238,7 +1453,7 @@
   text-transform: uppercase;
 }
 
-.queen27-tech-details.is-done > span {
+.queen27-tech-details.is-researched > span {
   color: var(--q-green);
 }
 
@@ -1286,6 +1501,13 @@
 
 .queen27-tech-details dd {
   margin: 0;
+}
+
+.queen27-tech-evidence {
+  overflow-wrap: anywhere;
+  color: #a7b4ac !important;
+  font-family: var(--mono);
+  font-size: 0.66rem !important;
 }
 
 .queen27-latest-grid {
@@ -1424,6 +1646,19 @@
     overflow-x: auto;
     padding-bottom: 0.5rem;
     white-space: nowrap;
+  }
+  .queen27-agent-connect {
+    grid-template-columns: 1fr;
+  }
+  .queen27-agent-connect button {
+    min-height: 150px;
+  }
+  .queen27-worker-pool {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+  .queen27-worker-slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .queen27-tech-console {
     grid-template-columns: 1fr;

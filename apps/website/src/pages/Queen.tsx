@@ -1,11 +1,7 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { TrinityLogo } from "../components/TrinityLogo";
-import {
-  techBranches,
-  type TechNode,
-} from "../components/TechTree/techTreeData";
 import { useI18n } from "../i18n/context";
 import "./Queen.css";
 
@@ -16,8 +12,52 @@ const QUEEN_API = (
 ).replace(/\/+$/, "");
 const LIVE_POLL_MS = 5_000;
 const ACTIVITY_POLL_MS = 2_000;
-const TECH_NODES = techBranches.flatMap((branch) => branch.nodes);
-const TECH_BY_ID = new Map(TECH_NODES.map((node) => [node.id, node]));
+
+type ResearchState = "researched" | "researching" | "available" | "locked";
+
+interface ResearchNode {
+  id: string;
+  label: string;
+  layer: string;
+  maturity: "shipped" | "partial" | "blocked" | "planned" | "unknown";
+  state: ResearchState;
+  evidence: string;
+  blockedBy?: string;
+  note?: string;
+  prerequisites: string[];
+  unlocks: string[];
+}
+
+interface ResearchGraph {
+  nodes: ResearchNode[];
+  edges: Array<{ from: string; to: string }>;
+  layers: string[];
+  summary: {
+    total: number;
+    researched: number;
+    researching: number;
+    available: number;
+    locked: number;
+    percentage: number;
+  };
+  runtime: { status: "live" | "offline" };
+  workers: {
+    capacity: number;
+    active: number;
+    idle: number;
+    utilization: number;
+    slots: Array<{ slot: number; state: "busy" | "idle" }>;
+  };
+  agentBootstrap: {
+    version: string;
+    mode: string;
+    protocol: string;
+    endpoints: Record<string, string>;
+    repositories: string[];
+    skills: string[];
+    adaptation: { read: string[]; write: string };
+  };
+}
 
 interface QueenStatus {
   status: "ok";
@@ -188,6 +228,20 @@ const COPY = {
     overallResearch: "overall research",
     activeResearch: "active research",
     nextAvailable: "available next",
+    evidence: "Evidence",
+    graphLive: "LIVE EVIDENCE GRAPH",
+    graphOffline: "RESEARCH GRAPH OFFLINE",
+    graphLoading: "Synchronizing the canonical TRINITY graph…",
+    workerPool: "A2A RESEARCH WORKERS",
+    workerPoolCopy: "Each paid slot can carry one isolated Bee without sharing a rate limit.",
+    slotsBusy: "slots busy",
+    copyAgent: "COPY TO AGENT",
+    copiedAgent: "BOOTSTRAP COPIED",
+    copyAgentTitle: "Connect an agent to TRINITY research and development.",
+    copyAgentCopy:
+      "Copies the public A2A bootstrap, graph endpoints, repositories, evidence skills and adaptation rules. No secret or mutation authority is included.",
+    copyFailed: "COPY FAILED",
+    nodeMaturity: "Repository maturity",
   },
   ru: {
     back: "TRINITY",
@@ -278,6 +332,21 @@ const COPY = {
     overallResearch: "исследовано всего",
     activeResearch: "активных исследований",
     nextAvailable: "доступно дальше",
+    evidence: "Доказательство",
+    graphLive: "ЖИВОЙ ГРАФ ДОКАЗАТЕЛЬСТВ",
+    graphOffline: "ГРАФ ИССЛЕДОВАНИЙ НЕДОСТУПЕН",
+    graphLoading: "Синхронизирую канонический граф TRINITY…",
+    workerPool: "A2A ВОРКЕРЫ ИССЛЕДОВАНИЙ",
+    workerPoolCopy:
+      "Каждый оплаченный слот несёт одну изолированную Bee и не делит rate limit с соседями.",
+    slotsBusy: "слотов занято",
+    copyAgent: "COPY TO AGENT",
+    copiedAgent: "BOOTSTRAP СКОПИРОВАН",
+    copyAgentTitle: "Подключить агента к исследованиям и разработке TRINITY.",
+    copyAgentCopy:
+      "Копирует публичный A2A-bootstrap, адреса графа, репозитории, evidence-скиллы и правила адаптации. Секреты и права на изменения не копируются.",
+    copyFailed: "НЕ УДАЛОСЬ СКОПИРОВАТЬ",
+    nodeMaturity: "Зрелость в репозитории",
   },
 } as const;
 
@@ -426,6 +495,47 @@ function useQueenActivity(): {
   return { data, error };
 }
 
+function useQueenResearch(): {
+  data: ResearchGraph | null;
+  error: string | null;
+} {
+  const [data, setData] = useState<ResearchGraph | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const read = async () => {
+      try {
+        const response = await fetch(`${QUEEN_API}/queen/public-research`, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const next = (await response.json()) as ResearchGraph;
+        if (active) {
+          setData(next);
+          setError(null);
+        }
+      } catch (nextError) {
+        if (active) {
+          setError(
+            nextError instanceof Error ? nextError.message : String(nextError),
+          );
+        }
+      }
+    };
+
+    void read();
+    const timer = window.setInterval(read, LIVE_POLL_MS);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return { data, error };
+}
+
 function useNow() {
   const [now, setNow] = useState(() => Date.now());
 
@@ -494,46 +604,162 @@ function activityLabel(event: QueenActivityEvent, lang: string) {
   return labels[event.kind] ?? labels.progress;
 }
 
-type TechState = "done" | "researching" | "available" | "locked";
+const LAYER_DESIGN: Record<string, { color: string; icon: string }> = {
+  seed: { color: "#00ff88", icon: "◆" },
+  ring: { color: "#7dffbf", icon: "◎" },
+  silicon: { color: "#ffd700", icon: "▰" },
+  runtime: { color: "#29d7ff", icon: "◈" },
+  supervisor: { color: "#ff4fb8", icon: "♛" },
+  interface: { color: "#b69cff", icon: "▦" },
+};
 
-function getTechState(node: TechNode): TechState {
-  if (node.status === "done") return "done";
-  if (node.status === "in_progress") return "researching";
-  const isAvailable = node.prerequisites.every(
-    (id) => TECH_BY_ID.get(id)?.status === "done",
-  );
-  return isAvailable ? "available" : "locked";
+function fallbackBootstrap(): ResearchGraph["agentBootstrap"] {
+  return {
+    version: "trinity-research-a2a/v1",
+    mode: "public-read-only",
+    protocol: "A2A",
+    endpoints: {
+      research: `${QUEEN_API}/queen/public-research`,
+      board: `${QUEEN_API}/queen/public-board`,
+      activity: `${QUEEN_API}/queen/public-activity`,
+    },
+    repositories: [
+      "https://github.com/gHashTag/trinity",
+      "https://github.com/gHashTag/BrowserOS/tree/feat/queen-supervisor/trios",
+    ],
+    skills: [
+      "spec-first acceptance criteria",
+      "OBSERVED / CLAIM / INFERENCE / TARGET / UNKNOWN evidence labels",
+      "dependency-aware research",
+      "adversarial review",
+      "append-only experience and checkpoints",
+    ],
+    adaptation: {
+      read: ["research graph", "public board", "public activity"],
+      write:
+        "Use a scoped repository issue or authenticated A2A session. Public endpoints grant no mutation authority.",
+    },
+  };
+}
+
+function agentBootstrapText(
+  bootstrap: ResearchGraph["agentBootstrap"],
+  lang: string,
+) {
+  const mission =
+    lang === "ru"
+      ? "Подключись к исследованиям и разработке TRINITY. Сначала прочитай граф зависимостей, выбери только доступный узел, зафиксируй проверяемый контракт, работай в изоляции и верни доказательства для adversarial review. Не считай публичный read-only доступ правом на изменения."
+      : "Join TRINITY research and development. Read the dependency graph first, choose only an available node, write an observable contract, work in isolation, and return evidence for adversarial review. Public read-only access is never mutation authority.";
+  return [
+    "# TRINITY RESEARCH · A2A BOOTSTRAP",
+    mission,
+    "",
+    JSON.stringify(bootstrap, null, 2),
+  ].join("\n");
+}
+
+async function copyToClipboard(value: string) {
+  // Prefer the synchronous user-gesture path. Some embedded browsers expose
+  // navigator.clipboard but leave writeText pending behind a permission bridge,
+  // which made a very visible button appear to do nothing forever.
+  const area = document.createElement("textarea");
+  area.value = value;
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.select();
+  const copied = document.execCommand("copy");
+  area.remove();
+  if (copied) return;
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  throw new Error("Clipboard is unavailable");
 }
 
 function TechnologyTree({
   c,
+  graph,
+  error,
+  lang,
 }: {
   c: (typeof COPY)["ru"] | (typeof COPY)["en"];
+  graph: ResearchGraph | null;
+  error: string | null;
+  lang: string;
 }) {
-  const initialNode =
-    TECH_NODES.find((node) => node.status === "in_progress") ?? TECH_NODES[0];
-  const [selectedId, setSelectedId] = useState(initialNode.id);
-  const selected = TECH_BY_ID.get(selectedId) ?? initialNode;
-  const selectedState = getTechState(selected);
-  const completed = TECH_NODES.filter((node) => node.status === "done").length;
-  const researching = TECH_NODES.filter(
-    (node) => node.status === "in_progress",
-  ).length;
-  const available = TECH_NODES.filter(
-    (node) => getTechState(node) === "available",
-  ).length;
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
+    "idle",
+  );
+  const nodesById = useMemo(
+    () => new Map((graph?.nodes ?? []).map((node) => [node.id, node])),
+    [graph],
+  );
+  const selected =
+    (selectedId ? nodesById.get(selectedId) : undefined) ??
+    graph?.nodes.find((node) => node.state === "researching") ??
+    graph?.nodes.find((node) => node.state === "available") ??
+    graph?.nodes[0] ??
+    null;
   const stateLabel = {
-    done: c.researched,
+    researched: c.researched,
     researching: c.researching,
     available: c.available,
     locked: c.locked,
-  } satisfies Record<TechState, string>;
-  const prerequisiteNames = selected.prerequisites.map(
-    (id) => TECH_BY_ID.get(id)?.name ?? id,
-  );
-  const unlockNames = selected.unlocks.map(
-    (id) => TECH_BY_ID.get(id)?.name ?? id,
-  );
+  } satisfies Record<ResearchState, string>;
+
+  const geometry = useMemo(() => {
+    if (!graph) return null;
+    const nodeWidth = 210;
+    const nodeHeight = 100;
+    const gapX = 92;
+    const gapY = 28;
+    const padX = 52;
+    const padY = 82;
+    const grouped = new Map(
+      graph.layers.map((layer) => [
+        layer,
+        graph.nodes.filter((node) => node.layer === layer),
+      ]),
+    );
+    const maxInLayer = Math.max(
+      1,
+      ...[...grouped.values()].map((nodes) => nodes.length),
+    );
+    const width =
+      padX * 2 + graph.layers.length * nodeWidth + (graph.layers.length - 1) * gapX;
+    const height = padY * 2 + maxInLayer * nodeHeight + (maxInLayer - 1) * gapY;
+    const positions = new Map<string, { x: number; y: number }>();
+    graph.layers.forEach((layer, layerIndex) => {
+      const layerNodes = grouped.get(layer) ?? [];
+      const offsetY = ((maxInLayer - layerNodes.length) * (nodeHeight + gapY)) / 2;
+      layerNodes.forEach((node, nodeIndex) => {
+        positions.set(node.id, {
+          x: padX + layerIndex * (nodeWidth + gapX),
+          y: padY + offsetY + nodeIndex * (nodeHeight + gapY),
+        });
+      });
+    });
+    return { nodeWidth, nodeHeight, width, height, positions };
+  }, [graph]);
+
+  const bootstrap = graph?.agentBootstrap ?? fallbackBootstrap();
+  const copyBootstrap = async () => {
+    try {
+      await copyToClipboard(agentBootstrapText(bootstrap, lang));
+      setCopyState("copied");
+      window.setTimeout(() => setCopyState("idle"), 2_500);
+    } catch {
+      setCopyState("error");
+    }
+  };
+
+  const prerequisiteNames =
+    selected?.prerequisites.map((id) => nodesById.get(id)?.label ?? id) ?? [];
+  const unlockNames =
+    selected?.unlocks.map((id) => nodesById.get(id)?.label ?? id) ?? [];
 
   return (
     <section className="queen27-tech" aria-labelledby="queen-tech-title">
@@ -546,21 +772,58 @@ function TechnologyTree({
           <p>{c.techCopy}</p>
         </div>
         <div className="queen27-tech-score" aria-label={c.overallResearch}>
-          <strong>{Math.round((completed / TECH_NODES.length) * 100)}%</strong>
+          <strong>{graph ? `${graph.summary.percentage}%` : "—"}</strong>
           <span>{c.overallResearch}</span>
         </div>
       </div>
 
+      <div className="queen27-agent-connect">
+        <div>
+          <span>A2A / SKILLS / ADAPTATION</span>
+          <h3>{c.copyAgentTitle}</h3>
+          <p>{c.copyAgentCopy}</p>
+        </div>
+        <button type="button" onClick={copyBootstrap}>
+          <i aria-hidden="true">⌘</i>
+          <strong>
+            {copyState === "copied"
+              ? c.copiedAgent
+              : copyState === "error"
+                ? c.copyFailed
+                : c.copyAgent}
+          </strong>
+          <small>{bootstrap.protocol} · {bootstrap.version}</small>
+        </button>
+      </div>
+
       <div className="queen27-tech-stats">
         <span>
-          <b>{completed}</b> {c.researched}
+          <b>{graph?.summary.researched ?? "—"}</b> {c.researched}
         </span>
         <span>
-          <b>{researching}</b> {c.activeResearch}
+          <b>{graph?.summary.researching ?? "—"}</b> {c.activeResearch}
         </span>
         <span>
-          <b>{available}</b> {c.nextAvailable}
+          <b>{graph?.summary.available ?? "—"}</b> {c.nextAvailable}
         </span>
+      </div>
+
+      <div className="queen27-worker-pool">
+        <div>
+          <span>{c.workerPool}</span>
+          <strong>
+            {graph ? `${graph.workers.active}/${graph.workers.capacity}` : "—"}
+          </strong>
+          <small>{c.slotsBusy}</small>
+        </div>
+        <p>{c.workerPoolCopy}</p>
+        <div className="queen27-worker-slots">
+          {(graph?.workers.slots ?? []).map((slot) => (
+            <span className={`is-${slot.state}`} key={slot.slot}>
+              <i /> SLOT {String(slot.slot).padStart(2, "0")}
+            </span>
+          ))}
+        </div>
       </div>
 
       <div className="queen27-tech-console">
@@ -570,77 +833,152 @@ function TechnologyTree({
           aria-label={c.tech}
           tabIndex={0}
         >
-          {techBranches.map((branch) => (
+          {!graph || !geometry ? (
+            <div className="queen27-tech-loading">
+              <i />
+              <strong>{error ? c.graphOffline : c.graphLoading}</strong>
+              {error && <small>{error}</small>}
+            </div>
+          ) : (
             <div
-              className="queen27-tech-lane"
-              key={branch.id}
-              style={{ "--tech-color": branch.color } as CSSProperties}
+              className="queen27-tech-canvas"
+              style={{ width: geometry.width, height: geometry.height }}
             >
-              <header>
-                <span aria-hidden="true">{branch.icon}</span>
-                <b>{branch.name}</b>
-              </header>
-              <div className="queen27-tech-nodes">
-                {branch.nodes.map((node) => {
-                  const techState = getTechState(node);
-                  const isSelected = selected.id === node.id;
+              {graph.layers.map((layer) => {
+                const layerIndex = graph.layers.indexOf(layer);
+                const design = LAYER_DESIGN[layer] ?? {
+                  color: "#ffffff",
+                  icon: "◇",
+                };
+                return (
+                  <div
+                    className="queen27-tech-layer"
+                    key={layer}
+                    style={{
+                      left: 52 + layerIndex * (geometry.nodeWidth + 92),
+                      width: geometry.nodeWidth,
+                      "--tech-color": design.color,
+                    } as CSSProperties}
+                  >
+                    <span aria-hidden="true">{design.icon}</span>
+                    <b>{layer}</b>
+                  </div>
+                );
+              })}
+              <svg
+                className="queen27-tech-edges"
+                width={geometry.width}
+                height={geometry.height}
+                aria-hidden="true"
+              >
+                {graph.edges.map((edge) => {
+                  const from = geometry.positions.get(edge.from);
+                  const to = geometry.positions.get(edge.to);
+                  const fromNode = nodesById.get(edge.from);
+                  if (!from || !to || !fromNode) return null;
+                  const x1 = from.x + geometry.nodeWidth;
+                  const y1 = from.y + geometry.nodeHeight / 2;
+                  const x2 = to.x;
+                  const y2 = to.y + geometry.nodeHeight / 2;
+                  const bend = Math.max(32, Math.abs(x2 - x1) * 0.45);
+                  const reverse = x2 <= x1;
+                  const d = reverse
+                    ? `M ${x1} ${y1} C ${x1 + 28} ${y1}, ${x2 - 28} ${y2}, ${x2} ${y2}`
+                    : `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
                   return (
-                    <motion.button
-                      type="button"
-                      className={`queen27-tech-node is-${techState}${isSelected ? " is-selected" : ""}`}
-                      key={node.id}
-                      onClick={() => setSelectedId(node.id)}
-                      whileHover={{ y: -3 }}
-                      whileTap={{ scale: 0.98 }}
-                      aria-pressed={isSelected}
-                    >
-                      <small>{stateLabel[techState]}</small>
-                      <strong>{node.name}</strong>
-                      {node.metrics && <span>{node.metrics}</span>}
-                      {techState === "researching" && (
-                        <i>
-                          <span style={{ width: `${node.progress ?? 0}%` }} />
-                        </i>
-                      )}
-                    </motion.button>
+                    <path
+                      d={d}
+                      key={`${edge.from}-${edge.to}`}
+                      className={
+                        fromNode.state === "researched" ? "is-open" : ""
+                      }
+                    />
                   );
                 })}
-              </div>
+              </svg>
+              {graph.nodes.map((node) => {
+                const position = geometry.positions.get(node.id);
+                if (!position) return null;
+                const design = LAYER_DESIGN[node.layer] ?? {
+                  color: "#ffffff",
+                  icon: "◇",
+                };
+                const isSelected = selected?.id === node.id;
+                return (
+                  <motion.button
+                    type="button"
+                    className={`queen27-tech-node is-${node.state}${isSelected ? " is-selected" : ""}`}
+                    key={node.id}
+                    onClick={() => setSelectedId(node.id)}
+                    whileHover={{ y: -3 }}
+                    whileTap={{ scale: 0.98 }}
+                    aria-pressed={isSelected}
+                    style={{
+                      left: position.x,
+                      top: position.y,
+                      width: geometry.nodeWidth,
+                      height: geometry.nodeHeight,
+                      "--tech-color": design.color,
+                    } as CSSProperties}
+                  >
+                    <small>{stateLabel[node.state]}</small>
+                    <strong>{node.label}</strong>
+                    <span>{node.id}</span>
+                  </motion.button>
+                );
+              })}
             </div>
-          ))}
+          )}
         </div>
 
-        <motion.aside
-          className={`queen27-tech-details is-${selectedState}`}
-          key={selected.id}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <span>{stateLabel[selectedState]}</span>
-          <h3>{selected.name}</h3>
-          <p>{selected.description}</p>
-          {typeof selected.progress === "number" && (
-            <strong>{selected.progress}%</strong>
-          )}
-          <dl>
-            <div>
-              <dt>{c.prerequisites}</dt>
-              <dd>
-                {prerequisiteNames.length > 0
-                  ? prerequisiteNames.join(" · ")
-                  : c.noPrerequisites}
-              </dd>
-            </div>
-            <div>
-              <dt>{c.unlocks}</dt>
-              <dd>
-                {unlockNames.length > 0
-                  ? unlockNames.join(" · ")
-                  : c.terminalNode}
-              </dd>
-            </div>
-          </dl>
-        </motion.aside>
+        {selected ? (
+          <motion.aside
+            className={`queen27-tech-details is-${selected.state}`}
+            key={selected.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <span>{stateLabel[selected.state]}</span>
+            <h3>{selected.label}</h3>
+            {selected.note && <p>{selected.note}</p>}
+            <dl>
+              <div>
+                <dt>{c.evidence}</dt>
+                <dd className="queen27-tech-evidence">{selected.evidence}</dd>
+              </div>
+              <div>
+                <dt>{c.prerequisites}</dt>
+                <dd>
+                  {prerequisiteNames.length > 0
+                    ? prerequisiteNames.join(" · ")
+                    : c.noPrerequisites}
+                </dd>
+              </div>
+              <div>
+                <dt>{c.unlocks}</dt>
+                <dd>
+                  {unlockNames.length > 0
+                    ? unlockNames.join(" · ")
+                    : c.terminalNode}
+                </dd>
+              </div>
+              <div>
+                <dt>{c.nodeMaturity}</dt>
+                <dd>{selected.maturity}</dd>
+              </div>
+              {selected.blockedBy && (
+                <div>
+                  <dt>{c.locked}</dt>
+                  <dd>{selected.blockedBy}</dd>
+                </div>
+              )}
+            </dl>
+          </motion.aside>
+        ) : (
+          <aside className="queen27-tech-details">
+            <span>{error ? c.graphOffline : c.graphLoading}</span>
+          </aside>
+        )}
       </div>
     </section>
   );
@@ -670,6 +1008,7 @@ export default function Queen() {
   const state = useQueenStatus();
   const boardState = useQueenBoard();
   const activityState = useQueenActivity();
+  const researchState = useQueenResearch();
   const [boardView, setBoardView] = useState<"kanban" | "map">("kanban");
   const now = useNow();
   const data = state.data;
@@ -1144,7 +1483,12 @@ export default function Queen() {
         </div>
       </section>
 
-      <TechnologyTree c={c} />
+      <TechnologyTree
+        c={c}
+        graph={researchState.data}
+        error={researchState.error}
+        lang={lang}
+      />
 
       <section className="queen27-latest" aria-labelledby="queen-latest-title">
         <span className="queen27-section-label" id="queen-latest-title">
