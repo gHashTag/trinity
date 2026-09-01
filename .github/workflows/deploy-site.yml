@@ -63,6 +63,7 @@ jobs:
           cp -R apps/website/dist/assets/. ghio/assets/
           cp apps/website/dist/index.html ghio/index.html
           cp apps/website/dist/manifest.json ghio/manifest.json
+          cp apps/website/dist/cv.pdf ghio/cv.pdf
           node - <<'EOF'
           const {readFileSync, readdirSync, unlinkSync} = require('node:fs');
           const {join} = require('node:path');
