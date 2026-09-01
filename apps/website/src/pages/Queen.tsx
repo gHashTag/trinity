@@ -15,6 +15,7 @@ const QUEEN_API = (
   (import.meta.env.VITE_QUEEN_API as string | undefined) ?? DEFAULT_QUEEN_API
 ).replace(/\/+$/, "");
 const LIVE_POLL_MS = 5_000;
+const ACTIVITY_POLL_MS = 2_000;
 const TECH_NODES = techBranches.flatMap((branch) => branch.nodes);
 const TECH_BY_ID = new Map(TECH_NODES.map((node) => [node.id, node]));
 
@@ -62,6 +63,37 @@ interface QueenBoard {
   };
 }
 
+const FALLBACK_COLUMNS = [
+  { key: "backlog", title: "backlog", blurb: "" },
+  { key: "blocked", title: "blocked", blurb: "" },
+  { key: "running", title: "running", blurb: "" },
+  { key: "review", title: "in review", blurb: "" },
+  { key: "done", title: "done", blurb: "" },
+  { key: "dropped", title: "dropped", blurb: "" },
+];
+
+interface QueenActivityEvent {
+  id: string;
+  kind:
+    | "dispatch"
+    | "progress"
+    | "tool"
+    | "result"
+    | "usage"
+    | "error"
+    | "finished"
+    | "review";
+  issue: number | null;
+  title: string;
+  at: string;
+  state: string | null;
+}
+
+interface QueenActivity {
+  cursor: number;
+  events: QueenActivityEvent[];
+}
+
 type LoadState =
   | { kind: "loading"; data: null; error: null }
   | { kind: "ready"; data: QueenStatus; error: null }
@@ -106,6 +138,13 @@ const COPY = {
     boardTitle: "The whole swarm, in one place.",
     boardCopy:
       "Public GitHub work mapped to the Queen’s own states. Operational secrets stay private.",
+    kanbanView: "KANBAN",
+    mapView: "MISSION MAP",
+    kanbanHint: "Operational columns",
+    mapHint: "Strategic lifecycle sectors",
+    mapLegend:
+      "The routes show Queen lifecycle movement; only the Technology Tree below claims prerequisite links.",
+    sector: "sector",
     rounds: "rounds / 24h",
     beesStarted: "Bees started",
     verdicts: "verdicts",
@@ -122,6 +161,9 @@ const COPY = {
     noBees:
       "No Bee is executing right now. Queen remains online and keeps the queue under policy.",
     reviewQueue: "Queen review queue",
+    activity: "LIVE BEE ACTIVITY",
+    activityRate: "2 second pulse",
+    noActivity: "Waiting for the next recorded Bee event.",
     synchronized: "synced every 5 seconds",
     selfReview: "SELF-REVIEW",
     selfReviewCopy:
@@ -185,6 +227,13 @@ const COPY = {
     boardTitle: "Весь рой — в одном месте.",
     boardCopy:
       "Публичные GitHub-задачи в реальных состояниях Queen. Внутренние данные остаются закрытыми.",
+    kanbanView: "КАНБАН",
+    mapView: "КАРТА МИССИЙ",
+    kanbanHint: "Операционные колонки",
+    mapHint: "Стратегические сектора цикла",
+    mapLegend:
+      "Маршруты показывают движение по циклу Queen; реальные зависимости есть только в Дереве технологий ниже.",
+    sector: "сектор",
     rounds: "циклов / 24ч",
     beesStarted: "Bees запущено",
     verdicts: "вердиктов",
@@ -201,6 +250,9 @@ const COPY = {
     noBees:
       "Сейчас ни одна Bee не выполняет задачу. Queen остаётся онлайн и контролирует очередь по политике.",
     reviewQueue: "очередь ревью Queen",
+    activity: "ЖИВЫЕ СОБЫТИЯ BEES",
+    activityRate: "пульс каждые 2 секунды",
+    noActivity: "Ждём следующее записанное событие Bee.",
     synchronized: "синхронизация каждые 5 секунд",
     selfReview: "САМОРЕВЬЮ",
     selfReviewCopy:
@@ -312,6 +364,51 @@ function useQueenBoard(): {
   return { data, error, syncedAt };
 }
 
+function useQueenActivity(): {
+  data: QueenActivity | null;
+  error: string | null;
+} {
+  const [data, setData] = useState<QueenActivity | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const read = async () => {
+      try {
+        const since = Date.now() - 15 * 60 * 1_000;
+        const response = await fetch(
+          `${QUEEN_API}/queen/public-activity?since=${since}`,
+          {
+            headers: { Accept: "application/json" },
+            cache: "no-store",
+          },
+        );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const next = (await response.json()) as QueenActivity;
+        if (active) {
+          setData(next);
+          setError(null);
+        }
+      } catch (nextError) {
+        if (active) {
+          setError(
+            nextError instanceof Error ? nextError.message : String(nextError),
+          );
+        }
+      }
+    };
+
+    void read();
+    const timer = window.setInterval(read, ACTIVITY_POLL_MS);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return { data, error };
+}
+
 function useNow() {
   const [now, setNow] = useState(() => Date.now());
 
@@ -352,6 +449,32 @@ function formatCountdown(seconds: number) {
   return [hours, minutes, remainder]
     .map((value) => String(value).padStart(2, "0"))
     .join(":");
+}
+
+function activityLabel(event: QueenActivityEvent, lang: string) {
+  const labels =
+    lang === "ru"
+      ? {
+          dispatch: "Queen делегировала",
+          progress: "Bee сообщает прогресс",
+          tool: "Bee использует инструмент",
+          result: "Bee получила результат",
+          usage: "Bee обновила метрики",
+          error: "Bee встретила ошибку",
+          finished: "Bee завершила работу",
+          review: "Queen вынесла вердикт",
+        }
+      : {
+          dispatch: "Queen delegated",
+          progress: "Bee reported progress",
+          tool: "Bee used a tool",
+          result: "Bee received a result",
+          usage: "Bee updated metrics",
+          error: "Bee hit an error",
+          finished: "Bee finished work",
+          review: "Queen issued a verdict",
+        };
+  return labels[event.kind] ?? labels.progress;
 }
 
 type TechState = "done" | "researching" | "available" | "locked";
@@ -529,6 +652,8 @@ export default function Queen() {
   const c = lang === "ru" ? COPY.ru : COPY.en;
   const state = useQueenStatus();
   const boardState = useQueenBoard();
+  const activityState = useQueenActivity();
+  const [boardView, setBoardView] = useState<"kanban" | "map">("kanban");
   const now = useNow();
   const data = state.data;
   const isLive = state.kind === "ready";
@@ -554,6 +679,7 @@ export default function Queen() {
   const syncLabel = boardState.syncedAt
     ? boardState.syncedAt.toLocaleTimeString(lang === "ru" ? "ru-RU" : "en-GB")
     : "—";
+  const boardColumns = boardState.data?.columns ?? FALLBACK_COLUMNS;
 
   return (
     <main className="queen27-page">
@@ -693,6 +819,47 @@ export default function Queen() {
                 </a>
               ))}
             </div>
+            <div className="queen27-activity-stream">
+              <div>
+                <small>{c.activity}</small>
+                <span className={activityState.error ? "is-offline" : ""}>
+                  {c.activityRate}
+                </span>
+              </div>
+              {activityState.data?.events.length ? (
+                <motion.ol layout>
+                  {activityState.data.events.slice(0, 6).map((event) => (
+                    <motion.li
+                      layout
+                      initial={{ opacity: 0, x: 12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      key={event.id}
+                    >
+                      <time dateTime={event.at}>
+                        {new Date(event.at).toLocaleTimeString(
+                          lang === "ru" ? "ru-RU" : "en-GB",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          },
+                        )}
+                      </time>
+                      <i className={`is-${event.kind}`} aria-hidden="true" />
+                      <span>
+                        <b>
+                          {activityLabel(event, lang)}
+                          {event.issue ? ` · #${event.issue}` : ""}
+                        </b>
+                        <strong>{event.title}</strong>
+                      </span>
+                    </motion.li>
+                  ))}
+                </motion.ol>
+              ) : (
+                <p>{c.noActivity}</p>
+              )}
+            </div>
           </article>
         </div>
       </section>
@@ -724,84 +891,171 @@ export default function Queen() {
             </span>
           </div>
         </div>
-        <div
-          className="queen27-kanban"
-          role="region"
-          aria-label={c.board}
-          tabIndex={0}
-        >
-          {(
-            boardState.data?.columns ?? [
-              { key: "backlog", title: "backlog", blurb: "" },
-              { key: "blocked", title: "blocked", blurb: "" },
-              { key: "running", title: "running", blurb: "" },
-              { key: "review", title: "in review", blurb: "" },
-              { key: "done", title: "done", blurb: "" },
-              { key: "dropped", title: "dropped", blurb: "" },
-            ]
-          ).map((column) => {
-            const cards =
-              boardState.data?.cards.filter(
-                (card) => card.column === column.key,
-              ) ?? [];
-            return (
-              <motion.article
-                className={`queen27-column is-${column.key}`}
-                key={column.key}
-                layout
-              >
-                <header>
-                  <h3>{column.title}</h3>
-                  <span>{cards.length}</span>
-                </header>
-                <small>{column.blurb}</small>
-                <div className="queen27-cards">
-                  {cards.map((card) => (
-                    <motion.a
-                      className="queen27-card"
-                      href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      key={card.number}
-                      layout
-                      layoutId={`queen-card-${card.number}`}
-                      transition={{
-                        type: "spring",
-                        stiffness: 320,
-                        damping: 30,
-                      }}
-                    >
-                      <div className="queen27-card-topline">
-                        <b>#{card.number}</b>
-                        {(column.key === "running" ||
-                          column.key === "review") && (
-                          <span className="queen27-card-signal">
-                            <i />
-                            {column.key === "running"
-                              ? c.executing
-                              : c.reviewing}
+        <div className="queen27-view-switch" role="group" aria-label={c.board}>
+          <button
+            type="button"
+            className={boardView === "kanban" ? "is-active" : ""}
+            aria-pressed={boardView === "kanban"}
+            onClick={() => setBoardView("kanban")}
+          >
+            <i aria-hidden="true">▦</i>
+            <span>
+              <b>{c.kanbanView}</b>
+              <small>{c.kanbanHint}</small>
+            </span>
+          </button>
+          <button
+            type="button"
+            className={boardView === "map" ? "is-active" : ""}
+            aria-pressed={boardView === "map"}
+            onClick={() => setBoardView("map")}
+          >
+            <i aria-hidden="true">⌘</i>
+            <span>
+              <b>{c.mapView}</b>
+              <small>{c.mapHint}</small>
+            </span>
+          </button>
+        </div>
+
+        {boardView === "kanban" ? (
+          <motion.div
+            className="queen27-kanban"
+            role="region"
+            aria-label={c.kanbanView}
+            tabIndex={0}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {boardColumns.map((column) => {
+              const cards =
+                boardState.data?.cards.filter(
+                  (card) => card.column === column.key,
+                ) ?? [];
+              return (
+                <motion.article
+                  className={`queen27-column is-${column.key}`}
+                  key={column.key}
+                  layout
+                >
+                  <header>
+                    <h3>{column.title}</h3>
+                    <span>{cards.length}</span>
+                  </header>
+                  <small>{column.blurb}</small>
+                  <div className="queen27-cards">
+                    {cards.map((card) => (
+                      <motion.a
+                        className="queen27-card"
+                        href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        key={card.number}
+                        layout
+                        layoutId={`queen-card-${card.number}`}
+                        transition={{
+                          type: "spring",
+                          stiffness: 320,
+                          damping: 30,
+                        }}
+                      >
+                        <div className="queen27-card-topline">
+                          <b>#{card.number}</b>
+                          {(column.key === "running" ||
+                            column.key === "review") && (
+                            <span className="queen27-card-signal">
+                              <i />
+                              {column.key === "running"
+                                ? c.executing
+                                : c.reviewing}
+                            </span>
+                          )}
+                        </div>
+                        <strong>{card.title}</strong>
+                        {typeof card.criteria === "number" && (
+                          <span>
+                            {card.criteria} {c.criteria}
                           </span>
                         )}
-                      </div>
-                      <strong>{card.title}</strong>
-                      {typeof card.criteria === "number" && (
-                        <span>
-                          {card.criteria} {c.criteria}
-                        </span>
+                        {card.needs && card.needs.length > 0 && (
+                          <span>
+                            {c.missing}: {card.needs.join(", ")}
+                          </span>
+                        )}
+                      </motion.a>
+                    ))}
+                    {cards.length === 0 && (
+                      <em>{boardState.error ?? c.empty}</em>
+                    )}
+                  </div>
+                </motion.article>
+              );
+            })}
+          </motion.div>
+        ) : (
+          <motion.div
+            className="queen27-mission-map"
+            role="region"
+            aria-label={c.mapView}
+            tabIndex={0}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="queen27-map-stars" aria-hidden="true" />
+            <div className="queen27-map-route" aria-hidden="true" />
+            <div className="queen27-map-sectors">
+              {boardColumns.map((column, sectorIndex) => {
+                const cards =
+                  boardState.data?.cards.filter(
+                    (card) => card.column === column.key,
+                  ) ?? [];
+                return (
+                  <motion.section
+                    className={`queen27-map-sector is-${column.key}`}
+                    key={column.key}
+                    layout
+                  >
+                    <header>
+                      <small>
+                        {c.sector} {String(sectorIndex + 1).padStart(2, "0")}
+                      </small>
+                      <h3>{column.title}</h3>
+                      <b>{cards.length}</b>
+                    </header>
+                    <div className="queen27-map-nodes">
+                      {cards.map((card, cardIndex) => (
+                        <motion.a
+                          href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          key={card.number}
+                          layout
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{
+                            delay: Math.min(cardIndex * 0.025, 0.3),
+                          }}
+                          title={card.title}
+                        >
+                          <i aria-hidden="true" />
+                          <span>#{card.number}</span>
+                          <strong>{card.title}</strong>
+                          {typeof card.criteria === "number" && (
+                            <small>{card.criteria} CR</small>
+                          )}
+                        </motion.a>
+                      ))}
+                      {cards.length === 0 && (
+                        <em>{boardState.error ?? c.empty}</em>
                       )}
-                      {card.needs && card.needs.length > 0 && (
-                        <span>
-                          {c.missing}: {card.needs.join(", ")}
-                        </span>
-                      )}
-                    </motion.a>
-                  ))}
-                  {cards.length === 0 && <em>{boardState.error ?? c.empty}</em>}
-                </div>
-              </motion.article>
-            );
-          })}
-        </div>
+                    </div>
+                  </motion.section>
+                );
+              })}
+            </div>
+            <p>{c.mapLegend}</p>
+          </motion.div>
+        )}
       </section>
 
       <section
