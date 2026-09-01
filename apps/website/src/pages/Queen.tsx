@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { QueenCycleGlyph } from "../components/QueenCycleGlyph";
 import { TrinityLogo } from "../components/TrinityLogo";
 import { useI18n } from "../i18n/context";
 import "./Queen.css";
@@ -1116,10 +1117,7 @@ export default function Queen() {
         <div className="queen27-command-grid">
           <article className="queen27-queen-core">
             <div className="queen27-core-orbit" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <TrinityLogo withLabel={false} height="72px" />
+              <QueenCycleGlyph />
             </div>
             <div>
               <span>{c.nextRound}</span>
