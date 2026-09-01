@@ -1,361 +1,516 @@
-import { useEffect, useState } from 'react'
-import { useI18n } from '../i18n/context'
-import './Queen.css'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useI18n } from "../i18n/context";
+import "./Queen.css";
 
-// The queen's panels read a backend that this site does not contain. t27.ai is
-// static hosting; there is no /health and no /api here. The original app in
-// apps/queen-web assumed same-origin and called res.json() on whatever came
-// back, so on static hosting every panel silently rendered '...' forever -- a
-// dashboard that looks alive and reports nothing.
-//
-// So the base URL is explicit, and "no backend" is a state the page SHOWS
-// rather than a state it hides:
-//   - VITE_QUEEN_API set at build time  -> that origin
-//   - localhost                         -> http://localhost:8080
-//   - anything else                     -> unset, and the page says so
-const ENV_API = (import.meta.env.VITE_QUEEN_API as string | undefined)?.replace(/\/+$/, '')
-const IS_LOCAL = typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
-const QUEEN_API = ENV_API ?? (IS_LOCAL ? 'http://localhost:8080' : null)
+const DEFAULT_QUEEN_API =
+  "https://trios-agent-server-production.up.railway.app";
+const QUEEN_API = (
+  (import.meta.env.VITE_QUEEN_API as string | undefined) ?? DEFAULT_QUEEN_API
+).replace(/\/+$/, "");
 
-const RU = {
-  brainOfflineTitle: 'Мозг не подключён',
-  offlineP1: 'Эта страница — лицо королевы. Её мозг — отдельный сервис, который отвечает на',
-  offlineP2: 'Этот сайт размещён как статический и не обслуживает ни один из этих эндпоинтов.',
-  tried: 'Проверен адрес',
-  noAddress: 'Адрес не настроен. Соберите страницу с',
-  noAddressEnd: ', чтобы направить её к работающему мозгу.',
-  offlineNote: 'Ничто ниже не работает в реальном времени. Пустые панели выглядели бы так же, как у исправной королевы, которой нечего сообщить, поэтому страница прямо указывает, какой это случай.',
-  liveness: 'Доступность',
-  brain: 'Мозг',
-  address: 'Адрес',
-  notConfigured: 'не настроен',
-  healthP: ' — единственный эндпоинт, на который мозг отвечает без токена, и он возвращает только признак доступности — без счётчиков и времени работы. Любая более конкретная информация здесь была бы выдумана, а не измерена.',
-  selfImprovement: 'Самоулучшение',
-  improvementP1: 'Исходная панель королевы запускала цикл через',
-  improvementP2: '. Мозг не реализует этот маршрут, поэтому элемент управления не показан: он всегда возвращал бы ошибку.',
-  improvementP3: 'Чтобы восстановить его, нужно добавить маршрут в',
-  improvementP4: '; это изменение мозга, а не этой страницы.',
-  loading: 'Загрузка',
-  containers: 'Контейнеры',
-  containersGenitive: 'контейнеров',
-  sessions: 'Сессии',
-  sessionsGenitive: 'сессий',
-  requiresToken: 'Требуется токен.',
-  requiresTokenEnd: ' требует аутентификации — эта страница не хранит учётных данных и не запрашивает их.',
-  no: 'Нет',
-  noBackendError: 'серверная часть не настроена',
-  failedFetch: 'не удалось выполнить запрос',
-  expectedJson: 'ожидался JSON, получен ',
-  kingdomBrain: '🧠 Мозг (ветвь I)',
-  kingdomBody: '💪 Тело (ветвь II)',
-  kingdomSpirit: '🔮 Дух (ветвь III)',
-  title: '👑 Queen Trinity',
-  subtitle: 'Самоулучшающийся контейнер · φ² + 1/φ² = 3',
-  body: '💪 Тело',
-  bodyP: 'Телесная ветвь — это аппаратная ветвь: бинарная FPGA ALINX AX7203 (Xilinx Artix-7 XC7A200T). У неё пока нет эндпоинта в мозге королевы, поэтому здесь нечего читать.',
-  spirit: '🔮 Дух',
-  spiritP: 'Духовная ветвь — это корпус и его утверждения. У неё пока нет эндпоинта в мозге королевы, поэтому здесь нечего читать.',
+interface QueenStatus {
+  status: "ok";
+  scheduler: {
+    enabled: boolean;
+    intervalSeconds: number;
+  };
+  lastTick: {
+    decidedAt: string;
+    allowed: boolean;
+    refusal: string | null;
+    skippedCount: number;
+  } | null;
+  dispatches: {
+    total: number;
+    finished: number;
+    running: number;
+    latest: {
+      issue: number;
+      dispatchedAt: string;
+      finishedAt: string | null;
+      outcome: string | null;
+    } | null;
+  };
 }
 
-type ProbeState = 'loading' | 'ok' | 'unreachable'
-
-interface Probe<T> {
-  state: ProbeState
-  data: T | null
-  error: string | null
+interface QueenBoard {
+  repo: string;
+  columns: Array<{ key: string; title: string; blurb: string }>;
+  cards: Array<{
+    number: number;
+    title: string;
+    column: string;
+    criteria?: number;
+    needs?: string[];
+  }>;
+  pulse: {
+    rounds: number;
+    bees: number;
+    verdicts: number;
+    lastRoundAt: string | null;
+    roundSeconds: number | null;
+  };
 }
 
-/** Fetch that reports what actually happened instead of throwing it away. */
-async function readJson<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!QUEEN_API) throw new Error('no backend configured')
-  const res = await fetch(QUEEN_API + path, init)
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  // A static host answers /api/status with an HTML 200 for its SPA fallback.
-  // Parsing that as JSON throws a syntax error that reads like a bug in the
-  // queen; checking the type first names the real cause.
-  const type = res.headers.get('content-type') ?? ''
-  if (!type.includes('json')) throw new Error(`expected JSON, got ${type.split(';')[0] || 'nothing'}`)
-  return res.json() as Promise<T>
-}
+type LoadState =
+  | { kind: "loading"; data: null; error: null }
+  | { kind: "ready"; data: QueenStatus; error: null }
+  | { kind: "error"; data: QueenStatus | null; error: string };
 
-function useProbe<T>(path: string, intervalMs: number): Probe<T> {
-  const [probe, setProbe] = useState<Probe<T>>({ state: 'loading', data: null, error: null })
+const COPY = {
+  en: {
+    back: "TRINITY",
+    eyebrow: "AUTONOMOUS SUPERVISOR / PRODUCTION",
+    title: "Queen turns specifications into verified work.",
+    lede: "One decision-maker. Isolated Bees. Every refusal and completion leaves evidence.",
+    live: "LIVE BACKEND",
+    unavailable: "BACKEND UNAVAILABLE",
+    checking: "CHECKING BACKEND",
+    scheduler: "Scheduler",
+    every: "every",
+    lastDecision: "Last decision",
+    dispatches: "Completed Bees",
+    active: "Running now",
+    decision: "LATEST QUEEN DECISION",
+    chose: "A new Bee may start.",
+    stoodDown: "No Bee started — policy stood down.",
+    noDecision: "No recorded decision yet.",
+    reasons: "explicit skip reasons",
+    queueMeaning:
+      "The supervisor is alive. The current queue has no eligible specification.",
+    path: "FROM INTENT TO EVIDENCE",
+    spec: "SPEC",
+    specCopy: "Boundary, scenarios, requirements and success criteria.",
+    queen: "QUEEN",
+    queenCopy: "Checks collisions, state and policy before delegation.",
+    bee: "BEE",
+    beeCopy: "Works in isolation and returns a reviewable result.",
+    latest: "LATEST COMPLETED DISPATCH",
+    issue: "Issue",
+    outcome: "Outcome",
+    finished: "Finished",
+    provenance: "LIVE / RAILWAY / POSTGRES / QUEEND",
+    refresh: "refreshes every 15 seconds",
+    source: "Open operational view",
+    board: "REALTIME KANBAN",
+    boardTitle: "The whole swarm, in one place.",
+    boardCopy:
+      "Public GitHub work mapped to the Queen’s own states. Operational secrets stay private.",
+    rounds: "rounds / 24h",
+    beesStarted: "Bees started",
+    verdicts: "verdicts",
+    empty: "Nothing here",
+    criteria: "criteria",
+    missing: "needs",
+  },
+  ru: {
+    back: "TRINITY",
+    eyebrow: "АВТОНОМНЫЙ НАДЗОР / PRODUCTION",
+    title: "Queen превращает спецификации в проверяемую работу.",
+    lede: "Один центр решений. Изолированные Bees. Каждый отказ и завершение оставляют доказательства.",
+    live: "BACKEND РАБОТАЕТ",
+    unavailable: "BACKEND НЕДОСТУПЕН",
+    checking: "ПРОВЕРЯЮ BACKEND",
+    scheduler: "Планировщик",
+    every: "каждые",
+    lastDecision: "Последнее решение",
+    dispatches: "Завершено Bees",
+    active: "Сейчас работают",
+    decision: "ПОСЛЕДНЕЕ РЕШЕНИЕ QUEEN",
+    chose: "Новая Bee может быть запущена.",
+    stoodDown: "Bee не запущена — политика остановила делегирование.",
+    noDecision: "Решений пока не записано.",
+    reasons: "явных причин пропуска",
+    queueMeaning:
+      "Королева работает. В текущей очереди нет допустимой спецификации.",
+    path: "ОТ НАМЕРЕНИЯ К ДОКАЗАТЕЛЬСТВУ",
+    spec: "SPEC",
+    specCopy: "Граница, сценарии, требования и критерии успеха.",
+    queen: "QUEEN",
+    queenCopy: "Проверяет конфликты, состояние и политику до делегирования.",
+    bee: "BEE",
+    beeCopy: "Работает изолированно и возвращает результат на проверку.",
+    latest: "ПОСЛЕДНИЙ ЗАВЕРШЁННЫЙ DISPATCH",
+    issue: "Задача",
+    outcome: "Исход",
+    finished: "Завершено",
+    provenance: "LIVE / RAILWAY / POSTGRES / QUEEND",
+    refresh: "обновление каждые 15 секунд",
+    source: "Открытый operational view",
+    board: "REALTIME KANBAN",
+    boardTitle: "Весь рой — в одном месте.",
+    boardCopy:
+      "Публичные GitHub-задачи в реальных состояниях Queen. Внутренние данные остаются закрытыми.",
+    rounds: "циклов / 24ч",
+    beesStarted: "Bees запущено",
+    verdicts: "вердиктов",
+    empty: "Здесь пусто",
+    criteria: "критерия",
+    missing: "нужно",
+  },
+} as const;
+
+function useQueenStatus(): LoadState {
+  const [state, setState] = useState<LoadState>({
+    kind: "loading",
+    data: null,
+    error: null,
+  });
 
   useEffect(() => {
-    if (!QUEEN_API) {
-      setProbe({ state: 'unreachable', data: null, error: 'no backend configured' })
-      return
-    }
-    let alive = true
-    const tick = async () => {
+    let active = true;
+    const read = async () => {
       try {
-        const data = await readJson<T>(path)
-        if (alive) setProbe({ state: 'ok', data, error: null })
-      } catch (e) {
-        if (alive) setProbe({ state: 'unreachable', data: null, error: (e as Error).message })
+        const response = await fetch(`${QUEEN_API}/queen/status`, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = (await response.json()) as QueenStatus;
+        if (active) setState({ kind: "ready", data, error: null });
+      } catch (error) {
+        if (!active) return;
+        setState((previous) => ({
+          kind: "error",
+          data: previous.data,
+          error: error instanceof Error ? error.message : String(error),
+        }));
       }
-    }
-    void tick()
-    const id = setInterval(tick, intervalMs)
-    return () => { alive = false; clearInterval(id) }
-  }, [path, intervalMs])
+    };
 
-  return probe
+    void read();
+    const timer = window.setInterval(read, 15_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return state;
 }
 
-// These are the shapes the brain ACTUALLY returns, read off
-// src/background_agent/server.zig rather than assumed.
-//
-// The version of this page in apps/queen-web rendered five metrics --
-// trinity_signature, improve_cycles, uptime_seconds, env_status, swarm_active --
-// and called /api/status, /api/episodes, /api/improve and /api/pipeline. The
-// brain serves NONE of those. /health returns exactly {"status":"ok"}, and the
-// only /api routes that exist are /api/containers and /api/sessions.
-//
-// So those five metrics could never be filled, by any deployment, ever. A panel
-// whose value is structurally unobtainable is worse than a missing panel: it
-// reads as "not yet" when the truth is "not ever".
+function useQueenBoard(): { data: QueenBoard | null; error: string | null } {
+  const [data, setData] = useState<QueenBoard | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-interface HealthResponse {
-  status: string
+  useEffect(() => {
+    let active = true;
+    const read = async () => {
+      try {
+        const response = await fetch(`${QUEEN_API}/queen/public-board`, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const next = (await response.json()) as QueenBoard;
+        if (active) {
+          setData(next);
+          setError(null);
+        }
+      } catch (nextError) {
+        if (active) {
+          setError(
+            nextError instanceof Error ? nextError.message : String(nextError),
+          );
+        }
+      }
+    };
+
+    void read();
+    const timer = window.setInterval(read, 15_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return { data, error };
 }
 
-interface Container {
-  id: string
-  name: string
-  status: string
-  railway_service_id?: string
-}
-
-interface Session {
-  id: string
-  name?: string
-  status?: string
-}
-
-function translatedProbeError(error: string | null, c: typeof RU | null) {
-  if (!c || !error) return error
-  if (error === 'no backend configured') return c.noBackendError
-  if (error === 'Failed to fetch') return c.failedFetch
-  if (error.startsWith('expected JSON, got ')) return `${c.expectedJson}${error.slice('expected JSON, got '.length)}`
-  return error
-}
-
-function BrainOffline({ reason }: { reason: string | null }) {
-  const { lang } = useI18n()
-  const c = lang === 'ru' ? RU : null
-  const displayReason = translatedProbeError(reason, c)
-
-  return (
-    <div className="queen-offline">
-      <h3>{c ? c.brainOfflineTitle : 'The brain is not connected'}</h3>
-      <p>
-        {c ? c.offlineP1 : "This page is the queen's face. Her brain is a separate service that answers"}{' '}
-        <code>/health</code>, <code>/api/containers</code> {c ? 'и' : 'and'} <code>/api/sessions</code>.{' '}
-        {c ? c.offlineP2 : 'This site is static hosting and serves none of them.'}
-      </p>
-      <p className="queen-offline-detail">
-        {QUEEN_API
-          ? <>{c ? c.tried : 'Tried'} <code>{QUEEN_API}</code> — {displayReason}</>
-          : <>{c ? c.noAddress : 'No address configured. Build with'} <code>VITE_QUEEN_API=https://your-brain.example</code>{c ? c.noAddressEnd : ' to point this page at a running brain.'}</>}
-      </p>
-      <p className="queen-offline-note">
-        {c ? c.offlineNote : 'Nothing below is live. Empty panels would have looked the same as a healthy queen with nothing to report, so the page says which one it is.'}
-      </p>
-    </div>
-  )
-}
-
-function MetricCard({ label, value, status }: { label: string; value: string | number; status?: string }) {
-  const colour = status === 'active' ? '#4caf50' : status === 'degraded' ? '#ff9800' : undefined
-  return (
-    <div className="queen-metric" style={colour ? { borderColor: colour } : undefined}>
-      <span className="queen-metric-label">{label}</span>
-      <span className="queen-metric-value">{value}</span>
-    </div>
-  )
-}
-
-function StatusDashboard({ health }: { health: Probe<HealthResponse> }) {
-  const { lang } = useI18n()
-  const c = lang === 'ru' ? RU : null
-  const dash = '—'
-  return (
-    <section className="queen-card">
-      <h2>{c ? `👑 ${c.liveness}` : '👑 Liveness'}</h2>
-      <div className="queen-metrics">
-        <MetricCard
-          label={c ? c.brain : 'Brain'}
-          value={health.state === 'ok' ? (health.data?.status ?? 'ok') : dash}
-          status={health.state === 'ok' ? 'active' : undefined}
-        />
-        <MetricCard label={c ? c.address : 'Address'} value={QUEEN_API ?? (c ? c.notConfigured : 'not configured')} />
-      </div>
-      <p className="queen-sub" style={{ marginTop: '1rem', marginBottom: 0 }}>
-        <code>/health</code>{c ? c.healthP : ' is the only endpoint the brain answers without a token, and it returns liveness alone — no counters, no uptime. Anything more specific here would be invented rather than measured.'}
-      </p>
-    </section>
-  )
-}
-
-function ImprovementPanel() {
-  const { lang } = useI18n()
-  const c = lang === 'ru' ? RU : null
-
-  // The button used to POST /api/improve. That route does not exist in
-  // src/background_agent/server.zig -- the brain's whole surface is /health,
-  // /api/containers and /api/sessions. A button that always fails is worse
-  // than no button, so this states the gap instead of pretending at it.
-  return (
-    <section className="queen-card">
-      <h2>{c ? `🔄 ${c.selfImprovement}` : '🔄 Self-improvement'}</h2>
-      <p className="queen-sub">
-        {c ? c.improvementP1 : "The queen's original panel triggered a cycle through"}{' '}<code>POST /api/improve</code>{c ? c.improvementP2 : '. The brain does not implement that route, so the control is not shown: it could only ever have returned an error.'}
-      </p>
-      <p className="queen-sub" style={{ marginBottom: 0 }}>
-        {c ? c.improvementP3 : 'Restoring it means adding the route to'} <code>src/background_agent/server.zig</code>{c ? c.improvementP4 : ', which is a change to the brain rather than to this page.'}
-      </p>
-    </section>
-  )
-}
-
-/** The two collections the brain really exposes. Both sit behind a token. */
-function BrainInventory() {
-  const { lang } = useI18n()
-  const c = lang === 'ru' ? RU : null
-  const containers = useProbe<Container[]>('/api/containers', 20000)
-  const sessions = useProbe<Session[]>('/api/sessions', 20000)
-
-  // The original called episodes?.slice(0, 10) on whatever came back; an object
-  // rather than an array crashed the page on that line. Shape is checked first.
-  const asList = <T,>(p: Probe<T[]>) => (Array.isArray(p.data) ? p.data : [])
-
-  const renderState = (p: Probe<unknown>, what: string) => {
-    const noun = what === 'containers' ? c?.containersGenitive : c?.sessionsGenitive
-    const error = translatedProbeError(p.error, c)
-    if (p.state === 'loading') return <p className="queen-sub">{c ? `${c.loading} ${noun}…` : `Loading ${what}…`}</p>
-    if (p.state === 'unreachable') {
-      const locked = p.error === 'HTTP 401'
-      return (
-        <p className="queen-sub">
-          {locked
-            ? <>{c ? c.requiresToken : 'Requires a token.'} <code>/api/{what}</code>{c ? c.requiresTokenEnd : ' is authenticated — this page holds no credentials and does not ask for any.'}</>
-            : <>{c ? `${c.no} ${noun}:` : `No ${what}:`} {error}</>}
-        </p>
-      )
-    }
-    return null
+function formatInterval(seconds: number, lang: string) {
+  if (seconds > 0 && seconds % 60 === 0) {
+    const minutes = seconds / 60;
+    return lang === "ru" ? `${minutes} мин` : `${minutes} min`;
   }
-
-  return (
-    <>
-      <section className="queen-card">
-        <h2>{c ? `📦 ${c.containers}` : '📦 Containers'}</h2>
-        {renderState(containers, 'containers')}
-        <div className="queen-episodes">
-          {asList(containers).slice(0, 10).map(c => (
-            <article key={c.id} className={`queen-episode ${c.status === 'ACTIVE' ? 'success' : 'failure'}`}>
-              <header>
-                <code>{c.id.slice(0, 8)}</code>
-                <span>{c.status}</span>
-              </header>
-              <p><strong>{c.name}</strong></p>
-              {c.railway_service_id && <footer><span>railway: {c.railway_service_id.slice(0, 8)}</span></footer>}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="queen-card" style={{ marginTop: '1.25rem' }}>
-        <h2>{c ? `🧵 ${c.sessions}` : '🧵 Sessions'}</h2>
-        {renderState(sessions, 'sessions')}
-        <div className="queen-episodes">
-          {asList(sessions).slice(0, 10).map(s => (
-            <article key={s.id} className="queen-episode">
-              <header>
-                <code>{s.id.slice(0, 8)}</code>
-                <span>{s.status ?? ''}</span>
-              </header>
-              {s.name && <p><strong>{s.name}</strong></p>}
-            </article>
-          ))}
-        </div>
-      </section>
-    </>
-  )
+  return lang === "ru" ? `${seconds} сек` : `${seconds} sec`;
 }
 
-type Kingdom = 'brain' | 'body' | 'spirit'
+function formatMoment(value: string | null | undefined, lang: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat(lang === "ru" ? "ru-RU" : "en-GB", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(date);
+}
 
-const KINGDOMS: { key: Kingdom; label: string }[] = [
-  { key: 'brain', label: '🧠 Brain (Strand I)' },
-  { key: 'body', label: '💪 Body (Strand II)' },
-  { key: 'spirit', label: '🔮 Spirit (Strand III)' },
-]
+function Metric({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string | number;
+  note?: string;
+}) {
+  return (
+    <article className="queen27-metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {note && <small>{note}</small>}
+    </article>
+  );
+}
 
 export default function Queen() {
-  const { lang } = useI18n()
-  const c = lang === 'ru' ? RU : null
-
-  // In the original these three tabs were <Link to="?kingdom=…"> and the state
-  // setter was never called, so the highlight sat on "brain" whatever you
-  // clicked and nothing read the query string. They are buttons now, and the
-  // selection is the thing the page actually renders from.
-  const [kingdom, setKingdom] = useState<Kingdom>('brain')
-  const health = useProbe<HealthResponse>('/health', 15000)
-  const connected = health.state === 'ok'
+  const { lang } = useI18n();
+  const c = lang === "ru" ? COPY.ru : COPY.en;
+  const state = useQueenStatus();
+  const boardState = useQueenBoard();
+  const data = state.data;
+  const isLive = state.kind === "ready";
+  const latest = data?.dispatches.latest;
+  const decision = data?.lastTick;
 
   return (
-    <div className="queen-page">
-      <header className="queen-header">
-        <h1>{c ? c.title : '👑 Queen Trinity'}</h1>
-        <p>{c ? c.subtitle : 'Self-improving container · φ² + 1/φ² = 3'}</p>
-      </header>
-
-      <nav className="queen-tabs">
-        {KINGDOMS.map(k => (
-          <button
-            key={k.key}
-            onClick={() => setKingdom(k.key)}
-            className={kingdom === k.key ? 'active' : ''}
-            aria-pressed={kingdom === k.key}
-          >
-            {c
-              ? (k.key === 'brain' ? c.kingdomBrain : k.key === 'body' ? c.kingdomBody : c.kingdomSpirit)
-              : k.label}
-          </button>
-        ))}
+    <main className="queen27-page">
+      <nav className="queen27-nav" aria-label="Queen page navigation">
+        <Link to="/" className="queen27-brand">
+          {c.back}
+        </Link>
+        <span className="queen27-formula">φ² + 1/φ² = 3</span>
       </nav>
 
-      {!connected && <BrainOffline reason={health.error} />}
-
-      {kingdom === 'brain' && (
-        <>
-          <div className="queen-grid">
-            <StatusDashboard health={health} />
-            <ImprovementPanel />
+      <header className="queen27-hero">
+        <div className="queen27-kicker">{c.eyebrow}</div>
+        <div className="queen27-hero-grid">
+          <div>
+            <h1>{c.title}</h1>
+            <p>{c.lede}</p>
           </div>
-          <BrainInventory />
-        </>
-      )}
+          <div className="queen27-sigil" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <b>Q</b>
+          </div>
+        </div>
+        <div
+          className={`queen27-live ${isLive ? "is-live" : state.kind === "error" ? "is-error" : ""}`}
+        >
+          <span className="queen27-live-dot" />
+          <strong>
+            {isLive
+              ? c.live
+              : state.kind === "error"
+                ? c.unavailable
+                : c.checking}
+          </strong>
+          <span>{c.provenance}</span>
+        </div>
+      </header>
 
-      {kingdom === 'body' && (
-        <section className="queen-card">
-          <h2>{c ? c.body : '💪 Body'}</h2>
-          <p className="queen-sub">
-            {c ? c.bodyP : 'The body is the hardware strand — binary FPGA ALINX AX7203 (Xilinx Artix-7 XC7A200T). It has no endpoint on the queen’s brain yet, so there is nothing here to read.'}
-          </p>
-        </section>
-      )}
+      <section className="queen27-metrics" aria-label="Queen runtime metrics">
+        <Metric
+          label={c.scheduler}
+          value={
+            data?.scheduler.enabled
+              ? "ON"
+              : state.kind === "loading"
+                ? "…"
+                : "OFF"
+          }
+          note={
+            data
+              ? `${c.every} ${formatInterval(data.scheduler.intervalSeconds, lang)}`
+              : undefined
+          }
+        />
+        <Metric
+          label={c.lastDecision}
+          value={formatMoment(decision?.decidedAt, lang)}
+        />
+        <Metric
+          label={c.dispatches}
+          value={
+            data ? `${data.dispatches.finished}/${data.dispatches.total}` : "—"
+          }
+        />
+        <Metric label={c.active} value={data?.dispatches.running ?? "—"} />
+      </section>
 
-      {kingdom === 'spirit' && (
-        <section className="queen-card">
-          <h2>{c ? c.spirit : '🔮 Spirit'}</h2>
-          <p className="queen-sub">
-            {c ? c.spiritP : "The spirit strand is the corpus and its claims. It has no endpoint on the queen’s brain yet, so there is nothing here to read."}
-          </p>
-        </section>
-      )}
-    </div>
-  )
+      <section className="queen27-board" aria-labelledby="queen-board-title">
+        <div className="queen27-board-head">
+          <div>
+            <span className="queen27-section-label" id="queen-board-title">
+              {c.board}
+            </span>
+            <h2>{c.boardTitle}</h2>
+            <p>{c.boardCopy}</p>
+          </div>
+          <div
+            className="queen27-board-pulse"
+            aria-label="Queen activity in the last 24 hours"
+          >
+            <span>
+              <b>{boardState.data?.pulse.rounds ?? "—"}</b>
+              {c.rounds}
+            </span>
+            <span>
+              <b>{boardState.data?.pulse.bees ?? "—"}</b>
+              {c.beesStarted}
+            </span>
+            <span>
+              <b>{boardState.data?.pulse.verdicts ?? "—"}</b>
+              {c.verdicts}
+            </span>
+          </div>
+        </div>
+        <div
+          className="queen27-kanban"
+          role="region"
+          aria-label={c.board}
+          tabIndex={0}
+        >
+          {(
+            boardState.data?.columns ?? [
+              { key: "backlog", title: "backlog", blurb: "" },
+              { key: "blocked", title: "blocked", blurb: "" },
+              { key: "running", title: "running", blurb: "" },
+              { key: "review", title: "in review", blurb: "" },
+              { key: "done", title: "done", blurb: "" },
+              { key: "dropped", title: "dropped", blurb: "" },
+            ]
+          ).map((column) => {
+            const cards =
+              boardState.data?.cards.filter(
+                (card) => card.column === column.key,
+              ) ?? [];
+            return (
+              <article
+                className={`queen27-column is-${column.key}`}
+                key={column.key}
+              >
+                <header>
+                  <h3>{column.title}</h3>
+                  <span>{cards.length}</span>
+                </header>
+                <small>{column.blurb}</small>
+                <div className="queen27-cards">
+                  {cards.map((card) => (
+                    <a
+                      className="queen27-card"
+                      href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      key={card.number}
+                    >
+                      <b>#{card.number}</b>
+                      <strong>{card.title}</strong>
+                      {typeof card.criteria === "number" && (
+                        <span>
+                          {card.criteria} {c.criteria}
+                        </span>
+                      )}
+                      {card.needs && card.needs.length > 0 && (
+                        <span>
+                          {c.missing}: {card.needs.join(", ")}
+                        </span>
+                      )}
+                    </a>
+                  ))}
+                  {cards.length === 0 && <em>{boardState.error ?? c.empty}</em>}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section
+        className="queen27-decision"
+        aria-labelledby="queen-decision-title"
+      >
+        <div>
+          <span className="queen27-section-label" id="queen-decision-title">
+            {c.decision}
+          </span>
+          <h2>
+            {decision
+              ? decision.allowed
+                ? c.chose
+                : c.stoodDown
+              : c.noDecision}
+          </h2>
+          {decision && (
+            <p>
+              {decision.refusal ?? c.queueMeaning} · {decision.skippedCount}{" "}
+              {c.reasons}.
+            </p>
+          )}
+        </div>
+        <div
+          className="queen27-verdict"
+          aria-label={decision?.allowed ? "allowed" : "stood down"}
+        >
+          <span>{decision?.allowed ? "1" : "0"}</span>
+          <small>{decision?.allowed ? "ALLOW" : "REFUSE"}</small>
+        </div>
+      </section>
+
+      <section className="queen27-flow" aria-labelledby="queen-flow-title">
+        <span className="queen27-section-label" id="queen-flow-title">
+          {c.path}
+        </span>
+        <div className="queen27-flow-grid">
+          <article>
+            <b>01</b>
+            <h3>{c.spec}</h3>
+            <p>{c.specCopy}</p>
+          </article>
+          <article className="is-queen">
+            <b>02</b>
+            <h3>{c.queen}</h3>
+            <p>{c.queenCopy}</p>
+          </article>
+          <article>
+            <b>03</b>
+            <h3>{c.bee}</h3>
+            <p>{c.beeCopy}</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="queen27-latest" aria-labelledby="queen-latest-title">
+        <span className="queen27-section-label" id="queen-latest-title">
+          {c.latest}
+        </span>
+        {latest ? (
+          <div className="queen27-latest-grid">
+            <Metric label={c.issue} value={`#${latest.issue}`} />
+            <Metric
+              label={c.outcome}
+              value={(latest.outcome ?? "—").toUpperCase()}
+            />
+            <Metric
+              label={c.finished}
+              value={formatMoment(latest.finishedAt, lang)}
+            />
+          </div>
+        ) : (
+          <p>—</p>
+        )}
+      </section>
+
+      <footer className="queen27-footer">
+        <span>{c.source}</span>
+        <span>{state.kind === "error" ? state.error : c.refresh}</span>
+      </footer>
+    </main>
+  );
 }
