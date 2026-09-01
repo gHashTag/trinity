@@ -1,4 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
+import { QueenResearchCity } from "./QueenResearchCity";
 
 interface FactoryColumn {
   key: string;
@@ -22,6 +23,15 @@ interface FactoryWorkers {
   slots: Array<{ slot: number; state: "busy" | "idle" }>;
 }
 
+interface FactoryResearchNode {
+  id: string;
+  label: string;
+  layer: string;
+  maturity: "shipped" | "partial" | "blocked" | "planned" | "unknown";
+  state: "researched" | "researching" | "available" | "locked";
+  evidence: string;
+}
+
 interface FactoryLabels {
   aria: string;
   flow: string;
@@ -39,6 +49,13 @@ interface FactoryLabels {
   openIssue: string;
   selectedModule: string;
   liveContract: string;
+  cityTitle: string;
+  cityCopy: string;
+  cityDistricts: string;
+  cityLaboratories: string;
+  citySelected: string;
+  cityEvidence: string;
+  cityOffline: string;
 }
 
 interface QueenFactoryProps {
@@ -46,6 +63,10 @@ interface QueenFactoryProps {
   cards: FactoryCard[];
   repo: string | null;
   workers: FactoryWorkers | null;
+  researchNodes: FactoryResearchNode[];
+  researchEdges: Array<{ from: string; to: string }>;
+  researchLayers: string[];
+  researchError: string | null;
   error: string | null;
   labels: FactoryLabels;
 }
@@ -68,9 +89,14 @@ export function QueenFactory({
   cards,
   repo,
   workers,
+  researchNodes,
+  researchEdges,
+  researchLayers,
+  researchError,
   error,
   labels,
 }: QueenFactoryProps) {
+  const effectiveWorkers = researchError ? null : workers;
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const selected = useMemo(
     () => cards.find((card) => card.number === selectedNumber) ?? null,
@@ -85,7 +111,7 @@ export function QueenFactory({
     <section
       className="queen27-factory"
       aria-label={labels.aria}
-      data-worker-state={workers ? "live" : "offline"}
+      data-worker-state={effectiveWorkers ? "live" : "offline"}
     >
       <header className="queen27-factory-command">
         <div>
@@ -95,15 +121,15 @@ export function QueenFactory({
         <dl aria-label={labels.throughput}>
           <div>
             <dt>{labels.active}</dt>
-            <dd>{workers?.active ?? "—"}</dd>
+            <dd>{effectiveWorkers?.active ?? "—"}</dd>
           </div>
           <div>
             <dt>{labels.idle}</dt>
-            <dd>{workers?.idle ?? "—"}</dd>
+            <dd>{effectiveWorkers?.idle ?? "—"}</dd>
           </div>
           <div>
             <dt>{labels.throughput}</dt>
-            <dd>{workers ? `${workers.utilization}%` : "—"}</dd>
+            <dd>{effectiveWorkers ? `${effectiveWorkers.utilization}%` : "—"}</dd>
           </div>
         </dl>
       </header>
@@ -112,12 +138,14 @@ export function QueenFactory({
         <div>
           <span>{labels.workerBays}</span>
           <b>
-            {workers ? `${workers.active}/${workers.capacity}` : labels.offline}
+            {effectiveWorkers
+              ? `${effectiveWorkers.active}/${effectiveWorkers.capacity}`
+              : labels.offline}
           </b>
         </div>
         <ol>
-          {workers ? (
-            workers.slots.map((slot) => (
+          {effectiveWorkers ? (
+            effectiveWorkers.slots.map((slot) => (
               <li className={`is-${slot.state}`} key={slot.slot}>
                 <i aria-hidden="true" />
                 <span>Bee {String(slot.slot).padStart(2, "0")}</span>
@@ -126,11 +154,30 @@ export function QueenFactory({
             ))
           ) : (
             <li className="is-offline">
-              <span>{error ?? labels.offline}</span>
+              <span>{researchError ?? error ?? labels.offline}</span>
             </li>
           )}
         </ol>
       </div>
+
+      <QueenResearchCity
+        researchNodes={researchNodes}
+        researchEdges={researchEdges}
+        researchLayers={researchLayers}
+        workers={effectiveWorkers}
+        error={researchError}
+        labels={{
+          aria: labels.cityTitle,
+          title: labels.cityTitle,
+          copy: labels.cityCopy,
+          districts: labels.cityDistricts,
+          laboratories: labels.cityLaboratories,
+          selected: labels.citySelected,
+          evidence: labels.cityEvidence,
+          offline: labels.cityOffline,
+          workers: labels.workerBays,
+        }}
+      />
 
       <div className="queen27-factory-viewport" tabIndex={0}>
         <div

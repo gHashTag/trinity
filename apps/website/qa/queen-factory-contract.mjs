@@ -47,8 +47,13 @@ if (!existsSync(factoryPath)) {
   )
   requirePattern(
     factory,
-    /workers\.slots\.map\(/,
+    /effectiveWorkers\.slots\.map\(/,
     'Factory hangars must come from the public worker slots',
+  )
+  requirePattern(
+    factory,
+    /const effectiveWorkers = researchError \? null : workers/,
+    'Factory must suppress stale worker slots when research telemetry fails',
   )
   requirePattern(
     factory,

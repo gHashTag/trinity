@@ -197,6 +197,14 @@ const COPY = {
     factorySelectedModule: "SELECTED PRODUCTION MODULE",
     factoryLiveContract:
       "Every station, module and Bee bay below is backed by the live Queen ledger.",
+    cityTitle: "RESEARCH CITADEL",
+    cityCopy:
+      "A living city compiled from the canonical technology graph. Laboratories are research nodes; energy routes are dependencies.",
+    cityDistricts: "research districts",
+    cityLaboratories: "real laboratories",
+    citySelected: "SELECTED LABORATORY",
+    cityEvidence: "Evidence",
+    cityOffline: "Research graph unavailable — no city was synthesized.",
     mapLegend:
       "The routes show Queen lifecycle movement; only the Technology Tree below claims prerequisite links.",
     sector: "sector",
@@ -314,6 +322,14 @@ const COPY = {
     factorySelectedModule: "ВЫБРАННЫЙ ПРОИЗВОДСТВЕННЫЙ МОДУЛЬ",
     factoryLiveContract:
       "Каждая станция, модуль и ангар Bee ниже подтверждены живым реестром Queen.",
+    cityTitle: "ИССЛЕДОВАТЕЛЬСКАЯ ЦИТАДЕЛЬ",
+    cityCopy:
+      "Живой город собран из канонического графа технологий. Лаборатории — узлы исследований, энергомаршруты — зависимости.",
+    cityDistricts: "районов исследований",
+    cityLaboratories: "реальных лабораторий",
+    citySelected: "ВЫБРАННАЯ ЛАБОРАТОРИЯ",
+    cityEvidence: "Доказательство",
+    cityOffline: "Граф исследований недоступен — город не синтезирован.",
     mapLegend:
       "Маршруты показывают движение по циклу Queen; реальные зависимости есть только в Дереве технологий ниже.",
     sector: "сектор",
@@ -1471,6 +1487,10 @@ export default function Queen() {
             cards={boardState.data?.cards ?? []}
             repo={boardState.data?.repo ?? null}
             workers={researchState.data?.workers ?? null}
+            researchNodes={researchState.data?.nodes ?? []}
+            researchEdges={researchState.data?.edges ?? []}
+            researchLayers={researchState.data?.layers ?? []}
+            researchError={researchState.error}
             error={boardState.error ?? researchState.error}
             labels={{
               aria: c.factoryView,
@@ -1489,6 +1509,13 @@ export default function Queen() {
               openIssue: c.factoryOpenIssue,
               selectedModule: c.factorySelectedModule,
               liveContract: c.factoryLiveContract,
+              cityTitle: c.cityTitle,
+              cityCopy: c.cityCopy,
+              cityDistricts: c.cityDistricts,
+              cityLaboratories: c.cityLaboratories,
+              citySelected: c.citySelected,
+              cityEvidence: c.cityEvidence,
+              cityOffline: c.cityOffline,
             }}
           />
         )}
