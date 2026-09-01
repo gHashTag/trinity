@@ -56,6 +56,12 @@ interface FactoryLabels {
   citySelected: string;
   cityEvidence: string;
   cityOffline: string;
+  cityBuildTitle: string;
+  cityComplete: string;
+  cityAssembling: string;
+  cityBlueprint: string;
+  citySealed: string;
+  cityDependencies: string;
 }
 
 interface QueenFactoryProps {
@@ -176,6 +182,12 @@ export function QueenFactory({
           evidence: labels.cityEvidence,
           offline: labels.cityOffline,
           workers: labels.workerBays,
+          buildTitle: labels.cityBuildTitle,
+          complete: labels.cityComplete,
+          assembling: labels.cityAssembling,
+          blueprint: labels.cityBlueprint,
+          sealed: labels.citySealed,
+          dependencies: labels.cityDependencies,
         }}
       />
 

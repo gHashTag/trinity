@@ -1,6 +1,23 @@
 import { Line, OrbitControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { useEffect, useMemo, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import {
+  Object3D,
+  type Group,
+  type InstancedMesh,
+} from "three";
+import {
+  buildConstructionPlan,
+  type ConstructionPlan,
+  type ConstructionStage,
+} from "./queenConstructionModel";
 import {
   buildResearchCityModel,
   motionModeFromPreference,
@@ -27,6 +44,12 @@ interface ResearchCityLabels {
   evidence: string;
   offline: string;
   workers: string;
+  buildTitle: string;
+  complete: string;
+  assembling: string;
+  blueprint: string;
+  sealed: string;
+  dependencies: string;
 }
 
 interface QueenResearchCityProps {
@@ -43,6 +66,15 @@ const STATE_COLORS: Record<ResearchState, string> = {
   researching: "#64dcff",
   available: "#ffd45a",
   locked: "#263a32",
+};
+
+const CONSTRUCTION_FPS = 12;
+
+const CONSTRUCTION_COLORS: Record<ConstructionStage, string> = {
+  complete: "#00f5a0",
+  assembling: "#64dcff",
+  blueprint: "#ffd45a",
+  sealed: "#263a32",
 };
 
 // react-use-measure waits for the first ResizeObserver delivery before R3F
@@ -88,18 +120,73 @@ function useReducedMotion() {
   return reduced;
 }
 
+function ConstructionClock({ enabled }: { enabled: boolean }) {
+  const invalidate = useThree((state) => state.invalidate);
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+    const timer = window.setInterval(invalidate, 1_000 / CONSTRUCTION_FPS);
+    return () => window.clearInterval(timer);
+  }, [enabled, invalidate]);
+
+  return null;
+}
+
+function InstancedLaboratoryFoundations({ model }: { model: ResearchCityModel }) {
+  const mesh = useRef<InstancedMesh>(null);
+  const transform = useMemo(() => new Object3D(), []);
+
+  useLayoutEffect(() => {
+    if (!mesh.current) return;
+    [...model.positions.values()].forEach((position, index) => {
+      transform.position.set(position.x, 0.12, position.z);
+      transform.rotation.set(0, 0, 0);
+      transform.scale.set(1, 1, 1);
+      transform.updateMatrix();
+      mesh.current?.setMatrixAt(index, transform.matrix);
+    });
+    mesh.current.instanceMatrix.needsUpdate = true;
+  }, [model.positions, transform]);
+
+  return (
+    <instancedMesh
+      ref={mesh}
+      args={[undefined, undefined, model.positions.size]}
+      frustumCulled
+    >
+      <cylinderGeometry args={[0.7, 0.92, 0.24, 8]} />
+      <meshStandardMaterial color="#6f5725" metalness={0.9} roughness={0.28} />
+    </instancedMesh>
+  );
+}
+
 function ResearchLaboratory({
   node,
   position,
+  stage,
+  motionMode,
   selected,
   onSelect,
 }: {
   node: CityResearchNode;
   position: CityPosition;
+  stage: ConstructionStage;
+  motionMode: "static" | "interactive";
   selected: boolean;
   onSelect: (id: string) => void;
 }) {
   const color = STATE_COLORS[node.state];
+  const construction = useRef<Group>(null);
+
+  useFrame((state) => {
+    if (
+      construction.current &&
+      stage === "assembling" &&
+      motionMode === "interactive"
+    ) {
+      construction.current.rotation.y = state.clock.elapsedTime * 0.55;
+    }
+  });
 
   return (
     <group
@@ -109,13 +196,16 @@ function ResearchLaboratory({
         onSelect(node.id);
       }}
     >
-      <mesh position={[0, 0.12, 0]}>
-        <cylinderGeometry args={[0.7, 0.92, 0.24, 8]} />
-        <meshStandardMaterial color="#6f5725" metalness={0.9} roughness={0.28} />
-      </mesh>
       <mesh position={[0, position.height / 2 + 0.2, 0]}>
         <cylinderGeometry args={[0.13, 0.52, position.height, 6]} />
-        <meshStandardMaterial color="#9a792d" metalness={0.92} roughness={0.22} />
+        <meshStandardMaterial
+          color={stage === "blueprint" ? "#4b442c" : "#9a792d"}
+          metalness={0.92}
+          roughness={0.22}
+          wireframe={stage === "blueprint" || stage === "sealed"}
+          transparent={stage === "blueprint" || stage === "sealed"}
+          opacity={stage === "sealed" ? 0.28 : stage === "blueprint" ? 0.62 : 1}
+        />
       </mesh>
       <mesh position={[0, position.height + 0.38, 0]} scale={selected ? 0.52 : 0.4}>
         <octahedronGeometry args={[0.62, 0]} />
@@ -131,6 +221,20 @@ function ResearchLaboratory({
         <torusGeometry args={[selected ? 0.88 : 0.76, 0.035, 8, 32]} />
         <meshBasicMaterial color={color} transparent opacity={selected ? 1 : 0.5} />
       </mesh>
+      {stage === "assembling" && (
+        <group ref={construction} position={[0, position.height * 0.55, 0]}>
+          {[0.52, 0.76, 1].map((scale, index) => (
+            <mesh
+              key={scale}
+              position={[0, index * 0.48 - 0.42, 0]}
+              rotation={[Math.PI / 2, index * 0.45, 0]}
+            >
+              <torusGeometry args={[scale, 0.026, 6, 24]} />
+              <meshBasicMaterial color="#64dcff" transparent opacity={0.82} />
+            </mesh>
+          ))}
+        </group>
+      )}
     </group>
   );
 }
@@ -191,6 +295,7 @@ function CommandSpire({ workers }: { workers: CityWorkers | null }) {
 function ResearchCityScene({
   researchNodes,
   model,
+  constructionPlan,
   workers,
   selectedId,
   onSelect,
@@ -198,13 +303,33 @@ function ResearchCityScene({
 }: {
   researchNodes: CityResearchNode[];
   model: ResearchCityModel;
+  constructionPlan: ConstructionPlan;
   workers: CityWorkers | null;
   selectedId: string;
   onSelect: (id: string) => void;
   motionMode: "static" | "interactive";
 }) {
+  const constructionById = useMemo(
+    () =>
+      new Map(constructionPlan.structures.map((structure) => [structure.id, structure])),
+    [constructionPlan.structures],
+  );
+  const routeState = useMemo(
+    () =>
+      new Map(
+        constructionPlan.routes.map((route) => [
+          `${route.from}-${route.to}`,
+          route.state,
+        ]),
+      ),
+    [constructionPlan.routes],
+  );
+  const constructionActive =
+    motionMode === "interactive" && constructionPlan.summary.assembling > 0;
+
   return (
     <>
+      <ConstructionClock enabled={constructionActive} />
       <color attach="background" args={["#010706"]} />
       <fog attach="fog" args={["#010706", 18, 42]} />
       <ambientLight intensity={0.7} />
@@ -223,29 +348,42 @@ function ResearchCityScene({
         </mesh>
       ))}
 
-      {model.routes.map(({ edge, from, to }) => (
-        <Line
-          key={`${edge.from}-${edge.to}`}
-          points={[
-            [from.x, 0.14, from.z],
-            [to.x, 0.14, to.z],
-          ]}
-          color="#45c9a0"
-          lineWidth={0.6}
-          transparent
-          opacity={0.24}
-        />
-      ))}
+      {model.routes.map(({ edge, from, to }) => {
+        const state = routeState.get(`${edge.from}-${edge.to}`) ?? "dormant";
+        return (
+          <Line
+            key={`${edge.from}-${edge.to}`}
+            points={[
+              [from.x, 0.14, from.z],
+              [to.x, 0.14, to.z],
+            ]}
+            color={
+              state === "energized"
+                ? "#00f5a0"
+                : state === "assembling"
+                  ? "#64dcff"
+                  : "#263a32"
+            }
+            lineWidth={state === "dormant" ? 0.35 : 0.72}
+            transparent
+            opacity={state === "dormant" ? 0.15 : 0.42}
+          />
+        );
+      })}
 
       <CommandSpire workers={workers} />
+      <InstancedLaboratoryFoundations model={model} />
       {researchNodes.map((node) => {
         const position = model.positions.get(node.id);
-        if (!position) return null;
+        const structure = constructionById.get(node.id);
+        if (!position || !structure) return null;
         return (
           <ResearchLaboratory
             key={node.id}
             node={node}
             position={position}
+            stage={structure.stage}
+            motionMode={motionMode}
             selected={node.id === selectedId}
             onSelect={onSelect}
           />
@@ -286,6 +424,10 @@ export function QueenResearchCity({
       ),
     [error, researchEdges, researchLayers, researchNodes],
   );
+  const constructionPlan = useMemo(
+    () => buildConstructionPlan(researchNodes, researchEdges, error),
+    [error, researchEdges, researchNodes],
+  );
   const defaultNode =
     researchNodes.find((node) => node.state === "researching") ??
     researchNodes.find((node) => node.state === "available") ??
@@ -294,8 +436,11 @@ export function QueenResearchCity({
   const [selectedId, setSelectedId] = useState(defaultNode?.id ?? "");
   const selectedNode =
     researchNodes.find((node) => node.id === selectedId) ?? defaultNode;
+  const selectedStructure = constructionPlan.structures.find(
+    (structure) => structure.id === selectedNode?.id,
+  );
 
-  if (!cityModel.available) {
+  if (!cityModel.available || !constructionPlan.available) {
     return (
       <section className="queen27-city is-offline" aria-label={labels.aria}>
         <div>
@@ -333,6 +478,56 @@ export function QueenResearchCity({
         </dl>
       </header>
 
+      <section
+        className="queen27-city-build-queue"
+        aria-label={labels.buildTitle}
+      >
+        <header>
+          <div>
+            <small>{labels.buildTitle}</small>
+            <strong>
+              {constructionPlan.summary.complete} {labels.complete} ·{" "}
+              {constructionPlan.summary.assembling} {labels.assembling}
+            </strong>
+          </div>
+          <dl>
+            {(
+              ["complete", "assembling", "blueprint", "sealed"] as const
+            ).map((stage) => (
+              <div className={`is-${stage}`} key={stage}>
+                <dt>{labels[stage]}</dt>
+                <dd>{constructionPlan.summary[stage]}</dd>
+              </div>
+            ))}
+          </dl>
+        </header>
+        <ol>
+          {constructionPlan.structures.map((structure) => (
+            <li key={structure.id}>
+              <button
+                type="button"
+                className={`is-${structure.stage}`}
+                aria-pressed={selectedNode?.id === structure.id}
+                onClick={() => setSelectedId(structure.id)}
+              >
+                <i
+                  aria-hidden="true"
+                  style={{
+                    "--construction-color": CONSTRUCTION_COLORS[structure.stage],
+                  } as CSSProperties}
+                />
+                <span>{structure.layer}</span>
+                <strong>{structure.label}</strong>
+                <small>
+                  {labels[structure.stage]} · {labels.dependencies}{" "}
+                  {structure.dependenciesReady}/{structure.dependenciesTotal}
+                </small>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <div className="queen27-city-stage">
         <div className="queen27-city-canvas" aria-hidden="true">
           <Canvas
@@ -347,6 +542,7 @@ export function QueenResearchCity({
             <ResearchCityScene
               researchNodes={researchNodes}
               model={cityModel}
+              constructionPlan={constructionPlan}
               workers={workers}
               selectedId={selectedNode?.id ?? ""}
               onSelect={setSelectedId}
@@ -364,6 +560,13 @@ export function QueenResearchCity({
               <small className={`is-${selectedNode.state}`}>
                 {selectedNode.state} · {selectedNode.maturity}
               </small>
+              {selectedStructure && (
+                <small className={`is-${selectedStructure.stage}`}>
+                  {labels[selectedStructure.stage]} · {labels.dependencies}{" "}
+                  {selectedStructure.dependenciesReady}/
+                  {selectedStructure.dependenciesTotal}
+                </small>
+              )}
               <p>
                 <span>{labels.evidence}</span>
                 {selectedNode.evidence}

@@ -205,6 +205,12 @@ const COPY = {
     citySelected: "SELECTED LABORATORY",
     cityEvidence: "Evidence",
     cityOffline: "Research graph unavailable — no city was synthesized.",
+    cityBuildTitle: "CONSTRUCTION PROTOCOL",
+    cityComplete: "complete",
+    cityAssembling: "assembling",
+    cityBlueprint: "blueprints",
+    citySealed: "sealed",
+    cityDependencies: "dependencies ready",
     mapLegend:
       "The routes show Queen lifecycle movement; only the Technology Tree below claims prerequisite links.",
     sector: "sector",
@@ -330,6 +336,12 @@ const COPY = {
     citySelected: "ВЫБРАННАЯ ЛАБОРАТОРИЯ",
     cityEvidence: "Доказательство",
     cityOffline: "Граф исследований недоступен — город не синтезирован.",
+    cityBuildTitle: "ПРОТОКОЛ СТРОИТЕЛЬСТВА",
+    cityComplete: "построено",
+    cityAssembling: "строится",
+    cityBlueprint: "чертежи",
+    citySealed: "запечатано",
+    cityDependencies: "зависимостей готово",
     mapLegend:
       "Маршруты показывают движение по циклу Queen; реальные зависимости есть только в Дереве технологий ниже.",
     sector: "сектор",
@@ -1516,6 +1528,12 @@ export default function Queen() {
               citySelected: c.citySelected,
               cityEvidence: c.cityEvidence,
               cityOffline: c.cityOffline,
+              cityBuildTitle: c.cityBuildTitle,
+              cityComplete: c.cityComplete,
+              cityAssembling: c.cityAssembling,
+              cityBlueprint: c.cityBlueprint,
+              citySealed: c.citySealed,
+              cityDependencies: c.cityDependencies,
             }}
           />
         )}

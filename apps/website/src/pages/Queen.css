@@ -1165,6 +1165,138 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+.queen27-city-build-queue {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 212, 90, 0.14);
+  background:
+    linear-gradient(90deg, rgba(255, 212, 90, 0.045), transparent 52%),
+    #010706;
+}
+
+.queen27-city-build-queue > header {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.queen27-city-build-queue > header small,
+.queen27-city-build-queue > header strong {
+  display: block;
+}
+
+.queen27-city-build-queue > header small {
+  color: var(--q-gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+}
+
+.queen27-city-build-queue > header strong {
+  margin-top: 0.16rem;
+  color: var(--muted);
+  font-size: 0.6rem;
+  font-weight: 400;
+}
+
+.queen27-city-build-queue dl {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.queen27-city-build-queue dl > div {
+  min-width: 74px;
+  padding: 0.36rem 0.48rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.queen27-city-build-queue dt {
+  color: var(--muted);
+  font-size: 0.43rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.queen27-city-build-queue dd {
+  margin: 0.12rem 0 0;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+}
+
+.queen27-city-build-queue ol {
+  display: flex;
+  gap: 0.38rem;
+  margin: 0;
+  padding: 0 0 0.2rem;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-color: var(--q-gold) #020806;
+  scrollbar-width: thin;
+}
+
+.queen27-city-build-queue li {
+  flex: 0 0 190px;
+}
+
+.queen27-city-build-queue button {
+  display: grid;
+  width: 100%;
+  min-height: 72px;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 0.12rem 0.45rem;
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.queen27-city-build-queue button:hover,
+.queen27-city-build-queue button:focus-visible,
+.queen27-city-build-queue button[aria-pressed="true"] {
+  border-color: var(--construction-color, #64dcff);
+  outline: 0;
+  color: var(--text);
+  background: rgba(100, 220, 255, 0.055);
+}
+
+.queen27-city-build-queue button > i {
+  width: 8px;
+  height: 8px;
+  grid-row: 1 / 4;
+  align-self: center;
+  border: 1px solid var(--construction-color, #64dcff);
+  background: color-mix(in srgb, var(--construction-color, #64dcff) 38%, transparent);
+  transform: rotate(45deg);
+}
+
+.queen27-city-build-queue button > span {
+  color: var(--q-gold);
+  font-size: 0.43rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.queen27-city-build-queue button > strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.56rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-city-build-queue button > small {
+  color: var(--muted);
+  font-size: 0.45rem;
+}
+
 .queen27-city-stage {
   display: grid;
   width: 100%;
@@ -1334,6 +1466,15 @@
   }
 
   .queen27-city-head dl {
+    overflow-x: auto;
+  }
+
+  .queen27-city-build-queue > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .queen27-city-build-queue dl {
     overflow-x: auto;
   }
 
