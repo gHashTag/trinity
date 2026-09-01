@@ -1,0 +1,29 @@
+commit-msg:
+  commands:
+    english-only:
+      run: |
+        msg=$(head -1 {1})
+        if LC_ALL=C printf '%s' "$msg" | grep -q '[^ -~]'; then
+          echo "Commit subjects must be English ASCII."
+          exit 1
+        fi
+
+pre-commit:
+  commands:
+    queen-bilingual-contract:
+      root: "apps/website/"
+      run: npm run check:queen-languages
+
+pre-push:
+  commands:
+    branch-name:
+      run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        if [[ "$branch" == "main" || "$branch" == "master" ]]; then
+          exit 0
+        fi
+        if [[ ! "$branch" =~ ^(feat|fix|docs|refactor|test|chore)/[a-z0-9-]+$ ]]; then
+          echo "Branch name '$branch' does not match the required format."
+          echo "Use: <type>/<short-description>"
+          exit 1
+        fi

@@ -18,7 +18,8 @@
     "check:service-entry": "node scripts/service-entry-check.mjs",
     "typecheck:update": "node scripts/typecheck-ratchet.mjs --update",
     "audit:en": "node qa/lang_audit.mjs",
-    "audit:ru": "node qa/ru_audit.mjs"
+    "audit:ru": "node qa/ru_audit.mjs",
+    "check:queen-languages": "node qa/queen-language-contract.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

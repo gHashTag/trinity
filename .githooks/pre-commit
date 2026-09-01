@@ -109,4 +109,6 @@ echo ""
 echo -e "${CYAN}φ² + 1/φ² = 3 = TRINITY${RESET}"
 echo ""
 
+lefthook run pre-commit
+
 exit 0
