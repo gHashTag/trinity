@@ -3,6 +3,37 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'one-commit-nine-workflow-outcomes',
+    title: 'One commit, nine workflow outcomes',
+    summary: 'A public GitHub Actions snapshot for commit 442bcda8bc50fe555de9d463bfd34b247c5995a5 records 9 runs: 8 push-triggered runs split into 4 successes and 4 failures, plus 1 issue-triggered failure; job evidence shows distinct stopping points rather than a shared cause.',
+    date: '2026-09-01',
+    readingMinutes: 6,
+    tags: ['CI', 'GitHub Actions', 'Testing', 'Self-critique'],
+    receipts: [
+      { label: 'Public GitHub Actions run list for gHashTag/trinity', href: 'https://api.github.com/repos/gHashTag/trinity/actions/runs?per_page=20' },
+      { label: 'Shared head commit 442bcda8bc50fe555de9d463bfd34b247c5995a5', href: 'https://github.com/gHashTag/trinity/commit/442bcda8bc50fe555de9d463bfd34b247c5995a5' },
+      { label: 'Website checks run 33514093916 and Jobs API', href: 'https://github.com/gHashTag/trinity/actions/runs/33514093916' },
+      { label: 'KOSCHEI Production Deploy run 33514093804 and Jobs API', href: 'https://github.com/gHashTag/trinity/actions/runs/33514093804' },
+      { label: 'S³AI Brain CI run 33514093881 and Jobs API', href: 'https://github.com/gHashTag/trinity/actions/runs/33514093881' },
+      { label: 'Dev-enforcement run 33514092205 and its public Jobs API', href: 'https://github.com/gHashTag/trinity/actions/runs/33514092205' },
+    ],
+    openQuestions: [
+      'The 4 push failures and the issue-triggered failure do not have an established common cause; the shared head commit is not causal evidence.',
+      'A successful Site live gate does not prove that Website checks, the whole pipeline, or production is healthy.',
+      'Skipped is not a successful execution, and 0 jobs does not expose an internal stopping step.',
+    ],
+    published: true,
+    ru: {
+      title: 'Один коммит, девять исходов workflow',
+      summary: 'Публичный срез GitHub Actions для коммита 442bcda8bc50fe555de9d463bfd34b247c5995a5 фиксирует 9 запусков: 8 запусков push разделились на 4 success и 4 failure, ещё 1 отказ был вызван событием issue; Jobs API показывает разные точки остановки, а не общую причину.',
+      openQuestions: [
+        'Для 4 отказов push и отказа workflow, вызванного issue, общая причина не установлена; общий head-коммит не является причинным доказательством.',
+        'Успешный Site live gate не доказывает исправность Website checks, всего конвейера или production.',
+        'Skipped не означает успешное выполнение, а 0 job не раскрывает внутренний шаг остановки.',
+      ],
+    },
+  },
+  {
     slug: 'tri-claw-an-agent-you-can-audit',
     title: 'TRI CLAW: an agent you can audit',
     summary: 'Three dies that never reached the foundry become three gateware layers on the most-studied FPGA family: attestation at boot, a BLAKE3 receipt per action, a ternary engine with an empty DSP column. The agent-in-a-box exists; the verifiable device exists; the intersection is empty.',
