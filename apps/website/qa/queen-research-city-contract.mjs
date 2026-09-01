@@ -57,9 +57,11 @@ if (!existsSync(cityPath)) {
   if (/Math\.random|SAMPLE|FAKE|mock node|demo node/i.test(city)) {
     errors.push('City must not invent random, sample, fake, mock, or demo nodes')
   }
-  if (/fpga.{0,20}(online|connected)|device.{0,20}(online|connected)/i.test(city)) {
-    errors.push('City must not claim connected hardware without a hardware registry')
-  }
+  requirePattern(
+    city,
+    /if\s*\(!hardware\)\s*return null/,
+    'City must render zero hardware structures without a verified registry',
+  )
 }
 
 if (!existsSync(modelPath)) {

@@ -18,6 +18,10 @@ import {
   type ConstructionPlan,
   type ConstructionStage,
 } from "./queenConstructionModel";
+import type {
+  HardwareState,
+  VerifiedHardwareRegistry,
+} from "./queenHardwareRegistry";
 import {
   buildResearchCityModel,
   motionModeFromPreference,
@@ -50,6 +54,13 @@ interface ResearchCityLabels {
   blueprint: string;
   sealed: string;
   dependencies: string;
+  foundryTitle: string;
+  foundryVerified: string;
+  foundryUnavailable: string;
+  foundryTotal: string;
+  foundryOnline: string;
+  foundryProgrammed: string;
+  foundryKey: string;
 }
 
 interface QueenResearchCityProps {
@@ -58,6 +69,8 @@ interface QueenResearchCityProps {
   researchLayers: string[];
   workers: CityWorkers | null;
   error: string | null;
+  hardware: VerifiedHardwareRegistry | null;
+  hardwareError: string | null;
   labels: ResearchCityLabels;
 }
 
@@ -75,6 +88,13 @@ const CONSTRUCTION_COLORS: Record<ConstructionStage, string> = {
   assembling: "#64dcff",
   blueprint: "#ffd45a",
   sealed: "#263a32",
+};
+
+const HARDWARE_COLORS: Record<HardwareState, string> = {
+  registered: "#47534e",
+  synthesised: "#64dcff",
+  programmed: "#ffd45a",
+  online: "#00f5a0",
 };
 
 // react-use-measure waits for the first ResizeObserver delivery before R3F
@@ -292,10 +312,76 @@ function CommandSpire({ workers }: { workers: CityWorkers | null }) {
   );
 }
 
+function HardwareFoundry({
+  hardware,
+}: {
+  hardware: VerifiedHardwareRegistry | null;
+}) {
+  if (!hardware) return null;
+
+  return (
+    <group name="HardwareFoundry">
+      {hardware.devices.map((device, index) => {
+        const angle = (index / Math.max(1, hardware.devices.length)) * Math.PI * 2;
+        const radius = 14.7 + (index % 2) * 1.4;
+        const color = HARDWARE_COLORS[device.state];
+        const active = device.state === "online";
+        return (
+          <group
+            key={device.id}
+            name={`fpga-${device.id}`}
+            position={[Math.cos(angle) * radius, 0, Math.sin(angle) * radius]}
+            rotation={[0, -angle + Math.PI / 2, 0]}
+          >
+            <mesh position={[0, 0.18, 0]}>
+              <cylinderGeometry args={[1.45, 1.8, 0.36, 8]} />
+              <meshStandardMaterial color="#6f5725" metalness={0.94} roughness={0.2} />
+            </mesh>
+            <mesh position={[0, 0.52, 0]}>
+              <boxGeometry args={[1.65, 0.34, 1.2]} />
+              <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={active ? 1.15 : device.state === "programmed" ? 0.5 : 0.2}
+                metalness={0.72}
+                roughness={0.2}
+                wireframe={device.state === "synthesised"}
+              />
+            </mesh>
+            {[-0.58, 0.58].flatMap((x) =>
+              [-0.42, 0.42].map((z) => (
+                <group key={`${x}-${z}`} position={[x, 1.2, z]}>
+                  <mesh>
+                    <cylinderGeometry args={[0.08, 0.18, 1.35, 5]} />
+                    <meshStandardMaterial color="#9a792d" metalness={0.92} roughness={0.18} />
+                  </mesh>
+                  <mesh position={[0, 0.82, 0]}>
+                    <octahedronGeometry args={[0.18, 0]} />
+                    <meshStandardMaterial
+                      color={color}
+                      emissive={color}
+                      emissiveIntensity={active ? 1.4 : 0.42}
+                    />
+                  </mesh>
+                </group>
+              )),
+            )}
+            <mesh position={[0, 0.42, 0]} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[2.05, 0.035, 8, 56]} />
+              <meshBasicMaterial color={color} transparent opacity={active ? 0.88 : 0.42} />
+            </mesh>
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
 function ResearchCityScene({
   researchNodes,
   model,
   constructionPlan,
+  hardware,
   workers,
   selectedId,
   onSelect,
@@ -304,6 +390,7 @@ function ResearchCityScene({
   researchNodes: CityResearchNode[];
   model: ResearchCityModel;
   constructionPlan: ConstructionPlan;
+  hardware: VerifiedHardwareRegistry | null;
   workers: CityWorkers | null;
   selectedId: string;
   onSelect: (id: string) => void;
@@ -372,6 +459,7 @@ function ResearchCityScene({
       })}
 
       <CommandSpire workers={workers} />
+      <HardwareFoundry hardware={hardware} />
       <InstancedLaboratoryFoundations model={model} />
       {researchNodes.map((node) => {
         const position = model.positions.get(node.id);
@@ -410,6 +498,8 @@ export function QueenResearchCity({
   researchLayers,
   workers,
   error,
+  hardware,
+  hardwareError,
   labels,
 }: QueenResearchCityProps) {
   const reducedMotion = useReducedMotion();
@@ -528,6 +618,56 @@ export function QueenResearchCity({
         </ol>
       </section>
 
+      <section
+        className={`queen27-hardware-foundry${hardware ? " is-verified" : " is-unavailable"}`}
+        aria-label={labels.foundryTitle}
+        data-hardware-verified={hardware ? "true" : "false"}
+        data-hardware-error={hardwareError ? "true" : "false"}
+      >
+        <header>
+          <div>
+            <small>{labels.foundryTitle}</small>
+            <strong>
+              {hardware ? labels.foundryVerified : labels.foundryUnavailable}
+            </strong>
+          </div>
+          <dl>
+            <div>
+              <dt>{labels.foundryTotal}</dt>
+              <dd>{hardware?.summary.total ?? 0}</dd>
+            </div>
+            <div>
+              <dt>{labels.foundryProgrammed}</dt>
+              <dd>{hardware?.summary.programmed ?? 0}</dd>
+            </div>
+            <div>
+              <dt>{labels.foundryOnline}</dt>
+              <dd>{hardware?.summary.online ?? 0}</dd>
+            </div>
+            <div>
+              <dt>{labels.foundryKey}</dt>
+              <dd>{hardware?.keyId ?? "—"}</dd>
+            </div>
+          </dl>
+        </header>
+        {hardware ? (
+          <ol>
+            {hardware.devices.map((device) => (
+              <li className={`is-${device.state}`} key={device.id}>
+                <i aria-hidden="true" />
+                <span>{device.state}</span>
+                <strong>{device.family}</strong>
+                <a href={device.evidence} target="_blank" rel="noreferrer">
+                  {labels.evidence}
+                </a>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p>{labels.foundryUnavailable}</p>
+        )}
+      </section>
+
       <div className="queen27-city-stage">
         <div className="queen27-city-canvas" aria-hidden="true">
           <Canvas
@@ -543,6 +683,7 @@ export function QueenResearchCity({
               researchNodes={researchNodes}
               model={cityModel}
               constructionPlan={constructionPlan}
+              hardware={hardware}
               workers={workers}
               selectedId={selectedNode?.id ?? ""}
               onSelect={setSelectedId}

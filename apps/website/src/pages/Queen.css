@@ -1297,6 +1297,157 @@
   font-size: 0.45rem;
 }
 
+.queen27-hardware-foundry {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(255, 212, 90, 0.18);
+  background:
+    linear-gradient(90deg, rgba(255, 212, 90, 0.065), transparent 62%),
+    #020806;
+}
+
+.queen27-hardware-foundry.is-verified {
+  box-shadow: inset 3px 0 #ffd45a;
+}
+
+.queen27-hardware-foundry.is-unavailable {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: #030605;
+  box-shadow: inset 3px 0 #39463f;
+}
+
+.queen27-hardware-foundry > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.queen27-hardware-foundry > header small,
+.queen27-hardware-foundry > header strong {
+  display: block;
+}
+
+.queen27-hardware-foundry > header small {
+  color: var(--q-gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.15em;
+}
+
+.queen27-hardware-foundry > header strong,
+.queen27-hardware-foundry > p {
+  max-width: 760px;
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.queen27-hardware-foundry dl {
+  display: flex;
+  gap: 1px;
+  margin: 0;
+  background: rgba(255, 212, 90, 0.16);
+}
+
+.queen27-hardware-foundry dl > div {
+  min-width: 88px;
+  max-width: 180px;
+  padding: 0.44rem 0.58rem;
+  overflow: hidden;
+  background: #030a07;
+}
+
+.queen27-hardware-foundry dt {
+  color: var(--muted);
+  font-size: 0.42rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.queen27-hardware-foundry dd {
+  margin: 0.13rem 0 0;
+  overflow: hidden;
+  color: var(--q-gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-hardware-foundry ol {
+  display: flex;
+  gap: 0.42rem;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+}
+
+.queen27-hardware-foundry li {
+  display: grid;
+  min-width: 245px;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  gap: 0.12rem 0.5rem;
+  align-items: center;
+  padding: 0.52rem 0.62rem;
+  border: 1px solid rgba(255, 212, 90, 0.2);
+  background: rgba(255, 212, 90, 0.025);
+}
+
+.queen27-hardware-foundry li > i {
+  width: 8px;
+  height: 8px;
+  grid-row: 1 / 3;
+  border: 1px solid #ffd45a;
+  background: rgba(255, 212, 90, 0.3);
+  transform: rotate(45deg);
+}
+
+.queen27-hardware-foundry li.is-online > i {
+  border-color: var(--q-green);
+  background: rgba(0, 245, 160, 0.45);
+  box-shadow: 0 0 12px rgba(0, 245, 160, 0.7);
+}
+
+.queen27-hardware-foundry li > span {
+  color: var(--q-gold);
+  font-size: 0.44rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.queen27-hardware-foundry li > strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.58rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-hardware-foundry li > a {
+  grid-row: 1 / 3;
+  grid-column: 3;
+  padding: 0.32rem 0.44rem;
+  border: 1px solid rgba(100, 220, 255, 0.42);
+  color: #64dcff;
+  font-size: 0.46rem;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.queen27-hardware-foundry li > a:hover,
+.queen27-hardware-foundry li > a:focus-visible {
+  color: #00110b;
+  outline: 0;
+  background: #64dcff;
+}
+
 .queen27-city-stage {
   display: grid;
   width: 100%;
@@ -1475,6 +1626,14 @@
   }
 
   .queen27-city-build-queue dl {
+    overflow-x: auto;
+  }
+
+  .queen27-hardware-foundry > header {
+    grid-template-columns: 1fr;
+  }
+
+  .queen27-hardware-foundry dl {
     overflow-x: auto;
   }
 

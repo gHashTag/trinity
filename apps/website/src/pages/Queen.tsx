@@ -2,6 +2,10 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { QueenFactory } from "../components/QueenFactory";
+import {
+  verifyHardwareEnvelope,
+  type VerifiedHardwareRegistry,
+} from "../components/queenHardwareRegistry";
 import { TrinityLogo } from "../components/TrinityLogo";
 import { useI18n } from "../i18n/context";
 import "./Queen.css";
@@ -13,6 +17,8 @@ const QUEEN_API = (
 ).replace(/\/+$/, "");
 const LIVE_POLL_MS = 5_000;
 const ACTIVITY_POLL_MS = 2_000;
+const PINNED_QUEEN_HARDWARE_PUBLIC_KEY =
+  "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/K7txBmCOUwA3k3L03lHlM77TH45r7qfw7XscBGNXmQ=\n-----END PUBLIC KEY-----\n";
 
 type ResearchState = "researched" | "researching" | "available" | "locked";
 
@@ -211,6 +217,13 @@ const COPY = {
     cityBlueprint: "blueprints",
     citySealed: "sealed",
     cityDependencies: "dependencies ready",
+    foundryTitle: "SIGNED FPGA FOUNDRY",
+    foundryVerified: "Registry signature verified. Structures below represent signed public evidence.",
+    foundryUnavailable: "Hardware registry unavailable — no FPGA structures rendered.",
+    foundryTotal: "verified devices",
+    foundryOnline: "online now",
+    foundryProgrammed: "programmed",
+    foundryKey: "signing key",
     mapLegend:
       "The routes show Queen lifecycle movement; only the Technology Tree below claims prerequisite links.",
     sector: "sector",
@@ -342,6 +355,13 @@ const COPY = {
     cityBlueprint: "чертежи",
     citySealed: "запечатано",
     cityDependencies: "зависимостей готово",
+    foundryTitle: "ПОДПИСАННАЯ FPGA-ВЕРФЬ",
+    foundryVerified: "Подпись реестра проверена. Сооружения показывают только подписанные публичные факты.",
+    foundryUnavailable: "Реестр оборудования недоступен — FPGA-сооружения не отображаются.",
+    foundryTotal: "проверено устройств",
+    foundryOnline: "онлайн сейчас",
+    foundryProgrammed: "запрограммировано",
+    foundryKey: "ключ подписи",
     mapLegend:
       "Маршруты показывают движение по циклу Queen; реальные зависимости есть только в Дереве технологий ниже.",
     sector: "сектор",
@@ -575,6 +595,53 @@ function useQueenResearch(): {
         }
       } catch (nextError) {
         if (active) {
+          setError(
+            nextError instanceof Error ? nextError.message : String(nextError),
+          );
+        }
+      }
+    };
+
+    void read();
+    const timer = window.setInterval(read, LIVE_POLL_MS);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return { data, error };
+}
+
+function useQueenHardware(): {
+  data: VerifiedHardwareRegistry | null;
+  error: string | null;
+} {
+  const [data, setData] = useState<VerifiedHardwareRegistry | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const read = async () => {
+      try {
+        const response = await fetch(`${QUEEN_API}/queen/public-hardware`, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const envelope: unknown = await response.json();
+        const verified = await verifyHardwareEnvelope(
+          envelope,
+          PINNED_QUEEN_HARDWARE_PUBLIC_KEY,
+        );
+        if (!verified) throw new Error("hardware signature verification failed");
+        if (active) {
+          setData(verified);
+          setError(null);
+        }
+      } catch (nextError) {
+        if (active) {
+          setData(null);
           setError(
             nextError instanceof Error ? nextError.message : String(nextError),
           );
@@ -1066,6 +1133,7 @@ export default function Queen() {
   const boardState = useQueenBoard();
   const activityState = useQueenActivity();
   const researchState = useQueenResearch();
+  const hardwareState = useQueenHardware();
   const [boardView, setBoardView] = useState<
     "kanban" | "map" | "factory"
   >("kanban");
@@ -1503,6 +1571,8 @@ export default function Queen() {
             researchEdges={researchState.data?.edges ?? []}
             researchLayers={researchState.data?.layers ?? []}
             researchError={researchState.error}
+            hardware={hardwareState.data}
+            hardwareError={hardwareState.error}
             error={boardState.error ?? researchState.error}
             labels={{
               aria: c.factoryView,
@@ -1534,6 +1604,13 @@ export default function Queen() {
               cityBlueprint: c.cityBlueprint,
               citySealed: c.citySealed,
               cityDependencies: c.cityDependencies,
+              foundryTitle: c.foundryTitle,
+              foundryVerified: c.foundryVerified,
+              foundryUnavailable: c.foundryUnavailable,
+              foundryTotal: c.foundryTotal,
+              foundryOnline: c.foundryOnline,
+              foundryProgrammed: c.foundryProgrammed,
+              foundryKey: c.foundryKey,
             }}
           />
         )}

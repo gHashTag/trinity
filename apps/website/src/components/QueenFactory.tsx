@@ -1,5 +1,6 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { QueenResearchCity } from "./QueenResearchCity";
+import type { VerifiedHardwareRegistry } from "./queenHardwareRegistry";
 
 interface FactoryColumn {
   key: string;
@@ -62,6 +63,13 @@ interface FactoryLabels {
   cityBlueprint: string;
   citySealed: string;
   cityDependencies: string;
+  foundryTitle: string;
+  foundryVerified: string;
+  foundryUnavailable: string;
+  foundryTotal: string;
+  foundryOnline: string;
+  foundryProgrammed: string;
+  foundryKey: string;
 }
 
 interface QueenFactoryProps {
@@ -73,6 +81,8 @@ interface QueenFactoryProps {
   researchEdges: Array<{ from: string; to: string }>;
   researchLayers: string[];
   researchError: string | null;
+  hardware: VerifiedHardwareRegistry | null;
+  hardwareError: string | null;
   error: string | null;
   labels: FactoryLabels;
 }
@@ -99,6 +109,8 @@ export function QueenFactory({
   researchEdges,
   researchLayers,
   researchError,
+  hardware,
+  hardwareError,
   error,
   labels,
 }: QueenFactoryProps) {
@@ -172,6 +184,8 @@ export function QueenFactory({
         researchLayers={researchLayers}
         workers={effectiveWorkers}
         error={researchError}
+        hardware={hardware}
+        hardwareError={hardwareError}
         labels={{
           aria: labels.cityTitle,
           title: labels.cityTitle,
@@ -188,6 +202,13 @@ export function QueenFactory({
           blueprint: labels.cityBlueprint,
           sealed: labels.citySealed,
           dependencies: labels.cityDependencies,
+          foundryTitle: labels.foundryTitle,
+          foundryVerified: labels.foundryVerified,
+          foundryUnavailable: labels.foundryUnavailable,
+          foundryTotal: labels.foundryTotal,
+          foundryOnline: labels.foundryOnline,
+          foundryProgrammed: labels.foundryProgrammed,
+          foundryKey: labels.foundryKey,
         }}
       />
 
