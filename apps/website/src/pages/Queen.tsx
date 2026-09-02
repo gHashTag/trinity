@@ -8,6 +8,12 @@ import {
 } from "../components/queenHardwareRegistry";
 import { TrinityLogo } from "../components/TrinityLogo";
 import { useI18n } from "../i18n/context";
+import {
+  REVIEW_STATES,
+  reviewCounts,
+  reviewStateOf,
+  type QueenReviewState,
+} from "./queenReviewLifecycle";
 import "./Queen.css";
 
 const DEFAULT_QUEEN_API =
@@ -100,7 +106,9 @@ interface QueenBoard {
     column: string;
     criteria?: number;
     needs?: string[];
+    reviewState?: QueenReviewState;
   }>;
+  reviewQueues?: Record<QueenReviewState, number>;
   pulse: {
     rounds: number;
     bees: number;
@@ -109,6 +117,8 @@ interface QueenBoard {
     roundSeconds: number | null;
   };
 }
+
+type QueenCard = QueenBoard["cards"][number];
 
 const FALLBACK_COLUMNS = [
   { key: "backlog", title: "backlog", blurb: "" },
@@ -239,6 +249,10 @@ const COPY = {
       "The screen follows the real supervisor cycle: selection, isolated execution, self-review, Queen verdict and acceptance.",
     nextRound: "next Queen round",
     reviewing: "waiting for Queen review",
+    queenReviewPending: "Queen review pending",
+    changesRequested: "Changes requested",
+    humanEscalation: "Human escalation",
+    reconciliationAnomaly: "Ledger anomaly",
     executing: "executing now",
     noBees:
       "No Bee is executing right now. Queen remains online and keeps the queue under policy.",
@@ -377,6 +391,10 @@ const COPY = {
       "Экран следует реальному циклу надзирателя: выбор, изолированное выполнение, саморевью, вердикт Королевы и приёмка.",
     nextRound: "следующий цикл Queen",
     reviewing: "ждут ревью Королевы",
+    queenReviewPending: "Ревью Queen",
+    changesRequested: "Нужны изменения",
+    humanEscalation: "Решение человека",
+    reconciliationAnomaly: "Аномалия реестра",
     executing: "выполняются сейчас",
     noBees:
       "Сейчас ни одна Bee не выполняет задачу. Queen остаётся онлайн и контролирует очередь по политике.",
@@ -1146,6 +1164,7 @@ export default function Queen() {
     boardState.data?.cards.filter((card) => card.column === "running") ?? [];
   const reviewCards =
     boardState.data?.cards.filter((card) => card.column === "review") ?? [];
+  const reviewQueueCounts = reviewCounts(boardState.data);
   const roundSeconds =
     boardState.data?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
   const lastRoundAt =
@@ -1277,7 +1296,8 @@ export default function Queen() {
                 <b>{runningCards.length}</b> {c.executing}
               </span>
               <span>
-                <b>{reviewCards.length}</b> {c.reviewing}
+                <b>{reviewQueueCounts.queenReviewPending}</b>{" "}
+                {c.queenReviewPending}
               </span>
             </header>
             {runningCards.length > 0 ? (
@@ -1300,18 +1320,31 @@ export default function Queen() {
             )}
             <div className="queen27-review-queue">
               <small>{c.reviewQueue}</small>
-              {reviewCards.slice(0, 3).map((card, index) => (
-                <a
-                  href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  key={card.number}
-                >
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <b>#{card.number}</b>
-                  <strong>{card.title}</strong>
-                </a>
-              ))}
+              <div className="queen27-review-summary">
+                {REVIEW_STATES.map((reviewState) => (
+                  <span className={`is-${reviewState}`} key={reviewState}>
+                    <b>{reviewQueueCounts[reviewState]}</b>
+                    {c[reviewState]}
+                  </span>
+                ))}
+              </div>
+              {reviewCards.slice(0, 8).map((card, index) => {
+                const reviewState = reviewStateOf(card);
+                return (
+                  <a
+                    className={`is-${reviewState}`}
+                    href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={card.number}
+                  >
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <b>#{card.number}</b>
+                    <strong>{card.title}</strong>
+                    <em>{c[reviewState]}</em>
+                  </a>
+                );
+              })}
             </div>
             <div className="queen27-activity-stream">
               <div>
@@ -1473,7 +1506,7 @@ export default function Queen() {
                               <i />
                               {column.key === "running"
                                 ? c.executing
-                                : c.reviewing}
+                                : c[reviewStateOf(card)]}
                             </span>
                           )}
                         </div>
