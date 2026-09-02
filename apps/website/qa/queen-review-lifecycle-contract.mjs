@@ -116,6 +116,15 @@ if (lifecycle.publicIssueTitle('English issue title', 42, 'en') !== 'English iss
 if (!/[А-Яа-яЁё]/.test(lifecycle.publicIssueTitle('A long English-only issue title from GitHub', 42, 'ru'))) {
   errors.push('Russian mode must fail closed with a Russian linked placeholder')
 }
+if (!/[А-Яа-яЁё]/.test(lifecycle.publicResearchText('English research title', 'core-1', 'ru', 'label'))) {
+  errors.push('Russian mode must fail closed on English-only research labels')
+}
+if (/[А-Яа-яЁё]/.test(lifecycle.publicResearchText('Русское описание', 'core-1', 'en'))) {
+  errors.push('English mode must fail closed on Russian research details')
+}
+if (lifecycle.publicResearchText('Русская технология', 'core-1', 'ru', 'label') !== 'Русская технология') {
+  errors.push('Russian mode must preserve localized research labels')
+}
 
 if (errors.length) {
   errors.forEach((error) => console.error(`Queen review lifecycle: ${error}`))

@@ -11,6 +11,7 @@ import { useI18n } from "../i18n/context";
 import {
   REVIEW_STATES,
   publicIssueTitle,
+  publicResearchText,
   reviewCounts,
   reviewStateOf,
   type QueenReviewState,
@@ -900,9 +901,13 @@ function TechnologyTree({
   };
 
   const prerequisiteNames =
-    selected?.prerequisites.map((id) => nodesById.get(id)?.label ?? id) ?? [];
+    selected?.prerequisites.map((id) =>
+      publicResearchText(nodesById.get(id)?.label ?? id, id, lang, "label"),
+    ) ?? [];
   const unlockNames =
-    selected?.unlocks.map((id) => nodesById.get(id)?.label ?? id) ?? [];
+    selected?.unlocks.map((id) =>
+      publicResearchText(nodesById.get(id)?.label ?? id, id, lang, "label"),
+    ) ?? [];
 
   return (
     <section className="queen27-tech" aria-labelledby="queen-tech-title">
@@ -1065,7 +1070,9 @@ function TechnologyTree({
                     } as CSSProperties}
                   >
                     <small>{stateLabel[node.state]}</small>
-                    <strong>{node.label}</strong>
+                    <strong>
+                      {publicResearchText(node.label, node.id, lang, "label")}
+                    </strong>
                     <span>{node.id}</span>
                   </motion.button>
                 );
@@ -1082,12 +1089,18 @@ function TechnologyTree({
             animate={{ opacity: 1, y: 0 }}
           >
             <span>{stateLabel[selected.state]}</span>
-            <h3>{selected.label}</h3>
-            {selected.note && <p>{selected.note}</p>}
+            <h3>
+              {publicResearchText(selected.label, selected.id, lang, "label")}
+            </h3>
+            {selected.note && (
+              <p>{publicResearchText(selected.note, selected.id, lang)}</p>
+            )}
             <dl>
               <div>
                 <dt>{c.evidence}</dt>
-                <dd className="queen27-tech-evidence">{selected.evidence}</dd>
+                <dd className="queen27-tech-evidence">
+                  {publicResearchText(selected.evidence, selected.id, lang)}
+                </dd>
               </div>
               <div>
                 <dt>{c.prerequisites}</dt>
@@ -1107,12 +1120,28 @@ function TechnologyTree({
               </div>
               <div>
                 <dt>{c.nodeMaturity}</dt>
-                <dd>{selected.maturity}</dd>
+                <dd>
+                  {lang === "ru"
+                    ? {
+                        shipped: "выпущено",
+                        partial: "частично",
+                        blocked: "заблокировано",
+                        planned: "запланировано",
+                        unknown: "неизвестно",
+                      }[selected.maturity]
+                    : selected.maturity}
+                </dd>
               </div>
               {selected.blockedBy && (
                 <div>
                   <dt>{c.locked}</dt>
-                  <dd>{selected.blockedBy}</dd>
+                  <dd>
+                    {publicResearchText(
+                      selected.blockedBy,
+                      selected.id,
+                      lang,
+                    )}
+                  </dd>
                 </div>
               )}
             </dl>

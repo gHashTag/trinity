@@ -66,3 +66,22 @@ export function publicIssueTitle(
   }
   return title;
 }
+
+export function publicResearchText(
+  text: string,
+  nodeId: string,
+  lang: string,
+  kind: "label" | "detail" = "detail",
+): string {
+  const hasCyrillic = /[А-Яа-яЁё]/.test(text);
+  const wrongLanguage = lang === "en" ? hasCyrillic : !hasCyrillic;
+  if (!wrongLanguage) return text;
+  if (lang === "ru") {
+    return kind === "label"
+      ? `Технология ${nodeId}`
+      : `Публичные данные узла ${nodeId} доступны по его идентификатору.`;
+  }
+  return kind === "label"
+    ? `Technology ${nodeId}`
+    : `Public data for node ${nodeId} is available by its identifier.`;
+}
