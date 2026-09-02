@@ -3,6 +3,41 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'queen-review-lifecycle-queues',
+    title: 'PR #888 made review ownership explicit',
+    summary: 'Merged PR #888 adds four explicit review states in a 5-file diff, while separate CI receipts show that merge state and delivery status are different facts.',
+    date: '2026-09-02',
+    readingMinutes: 5,
+    tags: ['Review', 'CI', 'GitHub Actions', 'Queen'],
+    receipts: [
+      { label: 'PR #888 — merged review lifecycle change', href: 'https://github.com/gHashTag/trinity/pull/888' },
+      { label: 'Merge commit 6a4d6fb0', href: 'https://github.com/gHashTag/trinity/commit/6a4d6fb07670f99f16e4ffb67a12dee42caac3df' },
+      { label: 'Executable review lifecycle model', href: 'https://github.com/gHashTag/trinity/blob/main/apps/website/src/pages/queenReviewLifecycle.ts' },
+      { label: 'Queen review lifecycle contract', href: 'https://github.com/gHashTag/trinity/blob/main/apps/website/qa/queen-review-lifecycle-contract.mjs' },
+      { label: 'CI on the merge SHA', href: 'https://github.com/gHashTag/trinity/actions/runs/33596673499' },
+      { label: 'Codegen Validation on the merge SHA', href: 'https://github.com/gHashTag/trinity/actions/runs/33596672649' },
+      { label: 'Website checks on the merge SHA', href: 'https://github.com/gHashTag/trinity/actions/runs/33596670941' },
+      { label: 'Site live gate on the merge SHA', href: 'https://github.com/gHashTag/trinity/actions/runs/33596669091' },
+    ],
+    openQuestions: [
+      'Delivery of PR #888 to the live site is not proven: the Site live gate and manual deploy stopped separately.',
+      'The causes of the KOSCHEI and S³AI Brain stops are not established beyond the named steps.',
+      'Correctness of every Queen route, the user-facing behavior of all queues, and the completeness of the public ledger are not established.',
+      'This is a repository and CI result, not a measurement of FPGA hardware, a crystal, speed, energy, or downstream model quality.',
+    ],
+    published: true,
+    ru: {
+      title: 'PR #888 сделал владение ревью явным',
+      summary: 'Смерженный PR #888 добавляет четыре явных состояния ревью в диффе на 5 файлов, а отдельные свидетельства CI показывают, что состояние merge и доставка — разные факты.',
+      openQuestions: [
+        'Доставка PR #888 на живой сайт не доказана: Site live gate и ручной deploy остановились по отдельности.',
+        'Причины остановок KOSCHEI и S³AI Brain за пределами названных шагов не установлены.',
+        'Корректность каждого маршрута Queen, поведение всех очередей для пользователя и полнота публичного реестра не установлены.',
+        'Это результат репозитория и CI, а не измерение FPGA, кристалла, скорости, энергии или качества модели после квантования.',
+      ],
+    },
+  },
+  {
     "slug": "two-bitstreams-one-bit-apart",
     "title": "Two bitstreams, one bit apart",
     "summary": "A proposed row in the Xilinx bitstream database had been unverifiable for eighteen months. Two 22.7 MB bitstreams differing in a single bit settle it on silicon: with the bit an LED blinks, without it the counter is frozen.",
