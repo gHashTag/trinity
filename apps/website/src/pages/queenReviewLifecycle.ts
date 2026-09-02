@@ -48,3 +48,18 @@ export function reviewCounts(
   }
   return counts;
 }
+
+export function publicIssueTitle(
+  title: string,
+  issue: number,
+  lang: string,
+): string {
+  // GitHub tasks are English by policy now, but the public ledger still has
+  // historical titles from before that gate. Do not make the English shell
+  // silently violate its own language contract; keep the canonical title in
+  // Russian mode and provide a truthful, linked identifier in English mode.
+  if (lang === "en" && /[А-Яа-яЁё]/.test(title)) {
+    return `Issue #${issue} — legacy title hidden by English-only GitHub policy`;
+  }
+  return title;
+}

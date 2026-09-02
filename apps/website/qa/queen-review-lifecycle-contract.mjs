@@ -103,6 +103,17 @@ if (fromLedger !== published) {
   errors.push('the additive backend reviewQueues ledger must remain authoritative')
 }
 
+const legacyRussianTitle = 'Старый issue до языковой политики'
+if (/[А-Яа-яЁё]/.test(lifecycle.publicIssueTitle(legacyRussianTitle, 42, 'en'))) {
+  errors.push('English mode must fail closed on a legacy non-English GitHub title')
+}
+if (lifecycle.publicIssueTitle(legacyRussianTitle, 42, 'ru') !== legacyRussianTitle) {
+  errors.push('Russian mode must preserve the canonical legacy GitHub title')
+}
+if (lifecycle.publicIssueTitle('English issue title', 42, 'en') !== 'English issue title') {
+  errors.push('English mode must preserve a compliant GitHub title')
+}
+
 if (errors.length) {
   errors.forEach((error) => console.error(`Queen review lifecycle: ${error}`))
   process.exitCode = 1

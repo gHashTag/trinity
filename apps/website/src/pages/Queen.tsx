@@ -10,6 +10,7 @@ import { TrinityLogo } from "../components/TrinityLogo";
 import { useI18n } from "../i18n/context";
 import {
   REVIEW_STATES,
+  publicIssueTitle,
   reviewCounts,
   reviewStateOf,
   type QueenReviewState,
@@ -1311,7 +1312,7 @@ export default function Queen() {
                   >
                     <i aria-hidden="true">◆</i>
                     <span>Bee #{card.number}</span>
-                    <strong>{card.title}</strong>
+                    <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
                   </a>
                 ))}
               </div>
@@ -1340,7 +1341,7 @@ export default function Queen() {
                   >
                     <span>{String(index + 1).padStart(2, "0")}</span>
                     <b>#{card.number}</b>
-                    <strong>{card.title}</strong>
+                    <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
                     <em>{c[reviewState]}</em>
                   </a>
                 );
@@ -1378,7 +1379,9 @@ export default function Queen() {
                           {activityLabel(event, lang)}
                           {event.issue ? ` · #${event.issue}` : ""}
                         </b>
-                        <strong>{event.title}</strong>
+                        <strong>
+                          {publicIssueTitle(event.title, event.issue ?? 0, lang)}
+                        </strong>
                       </span>
                     </motion.li>
                   ))}
@@ -1510,7 +1513,7 @@ export default function Queen() {
                             </span>
                           )}
                         </div>
-                        <strong>{card.title}</strong>
+                        <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
                         {typeof card.criteria === "number" && (
                           <span>
                             {card.criteria} {c.criteria}
@@ -1574,11 +1577,11 @@ export default function Queen() {
                           transition={{
                             delay: Math.min(cardIndex * 0.025, 0.3),
                           }}
-                          title={card.title}
+                          title={publicIssueTitle(card.title, card.number, lang)}
                         >
                           <i aria-hidden="true" />
                           <span>#{card.number}</span>
-                          <strong>{card.title}</strong>
+                          <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
                           {typeof card.criteria === "number" && (
                             <small>{card.criteria} CR</small>
                           )}
