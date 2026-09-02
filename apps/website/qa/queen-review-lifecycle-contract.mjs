@@ -113,6 +113,9 @@ if (lifecycle.publicIssueTitle(legacyRussianTitle, 42, 'ru') !== legacyRussianTi
 if (lifecycle.publicIssueTitle('English issue title', 42, 'en') !== 'English issue title') {
   errors.push('English mode must preserve a compliant GitHub title')
 }
+if (!/[А-Яа-яЁё]/.test(lifecycle.publicIssueTitle('A long English-only issue title from GitHub', 42, 'ru'))) {
+  errors.push('Russian mode must fail closed with a Russian linked placeholder')
+}
 
 if (errors.length) {
   errors.forEach((error) => console.error(`Queen review lifecycle: ${error}`))

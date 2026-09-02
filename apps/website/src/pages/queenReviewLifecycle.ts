@@ -61,5 +61,8 @@ export function publicIssueTitle(
   if (lang === "en" && /[А-Яа-яЁё]/.test(title)) {
     return `Issue #${issue} — legacy title hidden by English-only GitHub policy`;
   }
+  if (lang === "ru" && !/[А-Яа-яЁё]/.test(title)) {
+    return `Задача #${issue} — оригинальное название доступно по ссылке`;
+  }
   return title;
 }
