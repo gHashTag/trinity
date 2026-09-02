@@ -8,6 +8,14 @@ import {
 } from "../components/queenHardwareRegistry";
 import { TrinityLogo } from "../components/TrinityLogo";
 import { useI18n } from "../i18n/context";
+import {
+  REVIEW_STATES,
+  publicIssueTitle,
+  publicResearchText,
+  reviewCounts,
+  reviewStateOf,
+  type QueenReviewState,
+} from "./queenReviewLifecycle";
 import "./Queen.css";
 
 const DEFAULT_QUEEN_API =
@@ -100,7 +108,9 @@ interface QueenBoard {
     column: string;
     criteria?: number;
     needs?: string[];
+    reviewState?: QueenReviewState;
   }>;
+  reviewQueues?: Record<QueenReviewState, number>;
   pulse: {
     rounds: number;
     bees: number;
@@ -109,6 +119,8 @@ interface QueenBoard {
     roundSeconds: number | null;
   };
 }
+
+type QueenCard = QueenBoard["cards"][number];
 
 const FALLBACK_COLUMNS = [
   { key: "backlog", title: "backlog", blurb: "" },
@@ -239,6 +251,10 @@ const COPY = {
       "The screen follows the real supervisor cycle: selection, isolated execution, self-review, Queen verdict and acceptance.",
     nextRound: "next Queen round",
     reviewing: "waiting for Queen review",
+    queenReviewPending: "Queen review pending",
+    changesRequested: "Changes requested",
+    humanEscalation: "Human escalation",
+    reconciliationAnomaly: "Ledger anomaly",
     executing: "executing now",
     noBees:
       "No Bee is executing right now. Queen remains online and keeps the queue under policy.",
@@ -377,6 +393,10 @@ const COPY = {
       "Экран следует реальному циклу надзирателя: выбор, изолированное выполнение, саморевью, вердикт Королевы и приёмка.",
     nextRound: "следующий цикл Queen",
     reviewing: "ждут ревью Королевы",
+    queenReviewPending: "Ревью Queen",
+    changesRequested: "Нужны изменения",
+    humanEscalation: "Решение человека",
+    reconciliationAnomaly: "Аномалия реестра",
     executing: "выполняются сейчас",
     noBees:
       "Сейчас ни одна Bee не выполняет задачу. Queen остаётся онлайн и контролирует очередь по политике.",
@@ -881,9 +901,13 @@ function TechnologyTree({
   };
 
   const prerequisiteNames =
-    selected?.prerequisites.map((id) => nodesById.get(id)?.label ?? id) ?? [];
+    selected?.prerequisites.map((id) =>
+      publicResearchText(nodesById.get(id)?.label ?? id, id, lang, "label"),
+    ) ?? [];
   const unlockNames =
-    selected?.unlocks.map((id) => nodesById.get(id)?.label ?? id) ?? [];
+    selected?.unlocks.map((id) =>
+      publicResearchText(nodesById.get(id)?.label ?? id, id, lang, "label"),
+    ) ?? [];
 
   return (
     <section className="queen27-tech" aria-labelledby="queen-tech-title">
@@ -1046,7 +1070,9 @@ function TechnologyTree({
                     } as CSSProperties}
                   >
                     <small>{stateLabel[node.state]}</small>
-                    <strong>{node.label}</strong>
+                    <strong>
+                      {publicResearchText(node.label, node.id, lang, "label")}
+                    </strong>
                     <span>{node.id}</span>
                   </motion.button>
                 );
@@ -1063,12 +1089,18 @@ function TechnologyTree({
             animate={{ opacity: 1, y: 0 }}
           >
             <span>{stateLabel[selected.state]}</span>
-            <h3>{selected.label}</h3>
-            {selected.note && <p>{selected.note}</p>}
+            <h3>
+              {publicResearchText(selected.label, selected.id, lang, "label")}
+            </h3>
+            {selected.note && (
+              <p>{publicResearchText(selected.note, selected.id, lang)}</p>
+            )}
             <dl>
               <div>
                 <dt>{c.evidence}</dt>
-                <dd className="queen27-tech-evidence">{selected.evidence}</dd>
+                <dd className="queen27-tech-evidence">
+                  {publicResearchText(selected.evidence, selected.id, lang)}
+                </dd>
               </div>
               <div>
                 <dt>{c.prerequisites}</dt>
@@ -1088,12 +1120,28 @@ function TechnologyTree({
               </div>
               <div>
                 <dt>{c.nodeMaturity}</dt>
-                <dd>{selected.maturity}</dd>
+                <dd>
+                  {lang === "ru"
+                    ? {
+                        shipped: "выпущено",
+                        partial: "частично",
+                        blocked: "заблокировано",
+                        planned: "запланировано",
+                        unknown: "неизвестно",
+                      }[selected.maturity]
+                    : selected.maturity}
+                </dd>
               </div>
               {selected.blockedBy && (
                 <div>
                   <dt>{c.locked}</dt>
-                  <dd>{selected.blockedBy}</dd>
+                  <dd>
+                    {publicResearchText(
+                      selected.blockedBy,
+                      selected.id,
+                      lang,
+                    )}
+                  </dd>
                 </div>
               )}
             </dl>
@@ -1146,6 +1194,7 @@ export default function Queen() {
     boardState.data?.cards.filter((card) => card.column === "running") ?? [];
   const reviewCards =
     boardState.data?.cards.filter((card) => card.column === "review") ?? [];
+  const reviewQueueCounts = reviewCounts(boardState.data);
   const roundSeconds =
     boardState.data?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
   const lastRoundAt =
@@ -1277,7 +1326,8 @@ export default function Queen() {
                 <b>{runningCards.length}</b> {c.executing}
               </span>
               <span>
-                <b>{reviewCards.length}</b> {c.reviewing}
+                <b>{reviewQueueCounts.queenReviewPending}</b>{" "}
+                {c.queenReviewPending}
               </span>
             </header>
             {runningCards.length > 0 ? (
@@ -1291,7 +1341,7 @@ export default function Queen() {
                   >
                     <i aria-hidden="true">◆</i>
                     <span>Bee #{card.number}</span>
-                    <strong>{card.title}</strong>
+                    <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
                   </a>
                 ))}
               </div>
@@ -1300,18 +1350,31 @@ export default function Queen() {
             )}
             <div className="queen27-review-queue">
               <small>{c.reviewQueue}</small>
-              {reviewCards.slice(0, 3).map((card, index) => (
-                <a
-                  href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  key={card.number}
-                >
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <b>#{card.number}</b>
-                  <strong>{card.title}</strong>
-                </a>
-              ))}
+              <div className="queen27-review-summary">
+                {REVIEW_STATES.map((reviewState) => (
+                  <span className={`is-${reviewState}`} key={reviewState}>
+                    <b>{reviewQueueCounts[reviewState]}</b>
+                    {c[reviewState]}
+                  </span>
+                ))}
+              </div>
+              {reviewCards.slice(0, 8).map((card, index) => {
+                const reviewState = reviewStateOf(card);
+                return (
+                  <a
+                    className={`is-${reviewState}`}
+                    href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={card.number}
+                  >
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <b>#{card.number}</b>
+                    <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
+                    <em>{c[reviewState]}</em>
+                  </a>
+                );
+              })}
             </div>
             <div className="queen27-activity-stream">
               <div>
@@ -1345,7 +1408,9 @@ export default function Queen() {
                           {activityLabel(event, lang)}
                           {event.issue ? ` · #${event.issue}` : ""}
                         </b>
-                        <strong>{event.title}</strong>
+                        <strong>
+                          {publicIssueTitle(event.title, event.issue ?? 0, lang)}
+                        </strong>
                       </span>
                     </motion.li>
                   ))}
@@ -1473,11 +1538,11 @@ export default function Queen() {
                               <i />
                               {column.key === "running"
                                 ? c.executing
-                                : c.reviewing}
+                                : c[reviewStateOf(card)]}
                             </span>
                           )}
                         </div>
-                        <strong>{card.title}</strong>
+                        <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
                         {typeof card.criteria === "number" && (
                           <span>
                             {card.criteria} {c.criteria}
@@ -1541,11 +1606,11 @@ export default function Queen() {
                           transition={{
                             delay: Math.min(cardIndex * 0.025, 0.3),
                           }}
-                          title={card.title}
+                          title={publicIssueTitle(card.title, card.number, lang)}
                         >
                           <i aria-hidden="true" />
                           <span>#{card.number}</span>
-                          <strong>{card.title}</strong>
+                          <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
                           {typeof card.criteria === "number" && (
                             <small>{card.criteria} CR</small>
                           )}

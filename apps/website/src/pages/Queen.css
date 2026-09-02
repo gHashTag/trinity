@@ -360,7 +360,7 @@
 .queen27-bee-list a,
 .queen27-review-queue a {
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   gap: 0.7rem;
   align-items: center;
   padding: 0.75rem;
@@ -401,6 +401,55 @@
   font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.queen27-review-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-bottom: 0.35rem;
+  background: var(--border);
+}
+
+.queen27-review-summary > span {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.65rem;
+  color: var(--muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #050505;
+}
+
+.queen27-review-summary b {
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.queen27-review-queue a > em {
+  padding: 0.2rem 0.4rem;
+  border: 1px solid currentcolor;
+  color: var(--q-gold);
+  font-size: 0.56rem;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-review-queue .is-queenReviewPending > em,
+.queen27-review-summary .is-queenReviewPending b {
+  color: var(--q-green);
+}
+
+.queen27-review-queue .is-humanEscalation > em,
+.queen27-review-queue .is-reconciliationAnomaly > em,
+.queen27-review-summary .is-humanEscalation b,
+.queen27-review-summary .is-reconciliationAnomaly b {
+  color: #ff6b6b;
 }
 
 .queen27-activity-stream {
@@ -2675,6 +2724,16 @@
   }
   .queen27-swarm-live > header {
     flex-wrap: wrap;
+  }
+  .queen27-review-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .queen27-review-queue a {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+  .queen27-review-queue a > em {
+    grid-column: 2 / -1;
+    justify-self: start;
   }
   .queen27-board-head {
     grid-template-columns: 1fr;
