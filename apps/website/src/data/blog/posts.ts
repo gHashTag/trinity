@@ -2,6 +2,7 @@ import { postsIndex } from './index'
 import { body as body_tri_claw_an_agent_you_can_audit, ruBody as ruBody_tri_claw_an_agent_you_can_audit } from './bodies/tri-claw-an-agent-you-can-audit'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_queen_review_lifecycle_queues, ruBody as ruBody_queen_review_lifecycle_queues } from './bodies/queen-review-lifecycle-queues'
 import { body as body_physical_width_changed_the_question, ruBody as ruBody_physical_width_changed_the_question } from './bodies/physical-width-changed-the-question'
 import { body as body_nobodys_example, ruBody as ruBody_nobodys_example } from './bodies/nobodys-example'
 import { body as body_the_silence_was_a_saturated_readout, ruBody as ruBody_the_silence_was_a_saturated_readout } from './bodies/the-silence-was-a-saturated-readout'
@@ -60,6 +61,7 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'queen-review-lifecycle-queues': { body: body_queen_review_lifecycle_queues, ruBody: ruBody_queen_review_lifecycle_queues },
   'one-commit-nine-workflow-outcomes': { body: body_one_commit_nine_workflow_outcomes, ruBody: ruBody_one_commit_nine_workflow_outcomes },
   'real-value-in-integer-container': { body: body_real_value_in_integer_container, ruBody: ruBody_real_value_in_integer_container },
   'physical-width-changed-the-question': { body: body_physical_width_changed_the_question, ruBody: ruBody_physical_width_changed_the_question },
