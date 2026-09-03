@@ -26,7 +26,7 @@ const QUEEN_API = (
 const LIVE_POLL_MS = 5_000;
 const ACTIVITY_POLL_MS = 2_000;
 const PINNED_QUEEN_HARDWARE_PUBLIC_KEY =
-  "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/K7txBmCOUwA3k3L03lHlM77TH45r7qfw7XscBGNXmQ=\n-----END PUBLIC KEY-----\n";
+  "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA5+HsGhhkVkICuwo5Qa2pWhfVhT3/wLOLWutK4VKYulw=\n-----END PUBLIC KEY-----\n";
 
 type ResearchState = "researched" | "researching" | "available" | "locked";
 
