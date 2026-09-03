@@ -3,6 +3,34 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'clara-proposal-submitted-not-reviewed',
+    title: 'CLARA: submitted, non-conforming, and not reviewed on the merits',
+    summary: '[measured] Merged PR #892 changed one README file with two additions and two deletions, correcting the project record from “never submitted” to submitted, administratively non-conforming, and not reviewed on the merits.',
+    date: '2026-09-03',
+    readingMinutes: 4,
+    tags: ['Documentation', 'Reproducibility', 'Self-critique', 'CLARA'],
+    receipts: [
+      { label: 'Merged PR #892 — corrected CLARA submission status', href: 'https://github.com/gHashTag/trinity/pull/892' },
+      { label: 'Merge commit 67fd7e26 — README diff', href: 'https://github.com/gHashTag/trinity/commit/67fd7e26a8613937a926b68ee32de887aa393350' },
+      { label: 'README at the merge commit', href: 'https://github.com/gHashTag/trinity/blob/67fd7e26a8613937a926b68ee32de887aa393350/README.md' },
+    ],
+    openQuestions: [
+      'GitHub is not an independent DARPA registry; the repository record does not independently verify an external receipt or agency decision.',
+      'The diff does not establish an award, funding, endorsement, merits review, or ongoing engagement.',
+      'The correction is documentation only and does not establish performance, assurance, hardware, speed, energy, or downstream-model results.',
+    ],
+    published: true,
+    ru: {
+      title: 'CLARA: заявка подана, но не прошла административное соответствие',
+      summary: '[измерено] Смерженный PR #892 изменил один README: добавил две строки и удалил две, исправив запись с «никогда не подан» на «подан, не соответствует административным требованиям и не рассмотрен по существу».',
+      openQuestions: [
+        'GitHub не является независимым реестром DARPA; запись репозитория сама по себе не подтверждает внешнюю квитанцию или решение ведомства.',
+        'Дифф не устанавливает награду, финансирование, одобрение, рассмотрение по существу или продолжающееся взаимодействие.',
+        'Правка относится только к документации и не устанавливает результатов по производительности, assurance, железу, скорости, энергии или качеству модели после квантования.',
+      ],
+    },
+  },
+  {
     slug: 'queen-review-lifecycle-queues',
     title: 'PR #888 made review ownership explicit',
     summary: 'Merged PR #888 adds four explicit review states in a 5-file diff, while separate CI receipts show that merge state and delivery status are different facts.',
