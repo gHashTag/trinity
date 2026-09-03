@@ -251,7 +251,7 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 
 The public DARPA CLARA solicitation (PA-25-07-02, Compositional Learning-And-Reasoning for AI Complex Systems Engineering) describes ten assurance requirements for compositional learning-and-reasoning systems. We used that public document as a **specification target** for our own reasoning pipeline, because it is the most precise published statement of what auditable AI reasoning has to do.
 
-Trinity has no DARPA award, no DARPA funding and no engagement with DARPA. Nothing here has been submitted to, endorsed by, or reviewed by DARPA.
+A proposal based on this work was submitted in May 2026 through a partner organization (Wisdom Traditions Center LLC) and was ruled non-conforming on administrative grounds (missing required cost and current-and-pending forms); it was not reviewed, endorsed, or funded. Trinity has no DARPA award, no DARPA funding and no ongoing engagement with DARPA.
 
 ### CLARA Alignment
 
@@ -290,7 +290,7 @@ This demonstrates:
 - NN+VSA polynomial-time composition
 
 **Resources:**
-- [CLARA proposal draft — never submitted](docs/proposals/DARPA_CLARA_PROPOSAL.md)
+- [CLARA proposal (submitted May 2026; ruled non-conforming, not reviewed)](docs/proposals/DARPA_CLARA_PROPOSAL.md)
 - [Complexity Analysis](docs/proposals/CLARA_COMPLEXITY_ANALYSIS.md)
 - [Verification Tests](src/tri/clara/verification.zig)
 
