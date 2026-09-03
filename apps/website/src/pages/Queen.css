@@ -621,7 +621,7 @@
 
 .queen27-view-switch {
   display: inline-grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   margin-bottom: 1rem;
   border: 1px solid var(--border);
   background: #020202;
@@ -2949,5 +2949,171 @@
   }
   50% {
     transform: translateY(2px);
+  }
+}
+
+
+/* ---- the comb view: a canvas field beside a one-card inspector ---------- */
+.queen27-comb {
+  display: grid;
+  grid-template-rows: minmax(420px, 62vh) auto;
+  border: 1px solid var(--border);
+  background: #020806;
+}
+
+.queen27-comb-viewport {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.queen27-comb-field {
+  position: relative;
+  min-height: 0;
+}
+
+.queen27-comb-viewport canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.queen27-comb-viewport canvas:active {
+  cursor: grabbing;
+}
+
+.queen27-comb-legend {
+  display: flex;
+  gap: 0.9rem;
+  justify-content: flex-end;
+  padding: 0.5rem 0.8rem 0.35rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.queen27-comb-legend b {
+  color: var(--q-gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.queen27-comb-hint {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.8rem;
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.queen27-comb-inspector {
+  display: grid;
+  grid-template-columns: 88px auto minmax(0, 1fr);
+  gap: 0.2rem 1rem;
+  align-items: center;
+  min-height: 108px;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.045), transparent 44%), #030403;
+}
+
+.queen27-comb-portrait {
+  grid-row: 1 / 3;
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+}
+
+.queen27-comb-portrait.is-empty {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 16px;
+  border: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+.queen27-comb-name {
+  color: var(--q-gold);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.queen27-comb-stage {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.queen27-comb-card {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.queen27-comb-card span {
+  color: var(--q-gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+}
+
+.queen27-comb-card strong {
+  overflow: hidden;
+  font-weight: 500;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.queen27-comb-card em {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.queen27-comb-empty,
+.queen27-comb-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.queen27-comb-error {
+  color: #ff8a6b;
+}
+
+@media (max-width: 720px) {
+  .queen27-comb {
+    grid-template-rows: minmax(320px, 52vh) auto;
+  }
+
+  .queen27-comb-inspector {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .queen27-comb-card {
+    grid-column: 1 / -1;
+    grid-row: auto;
   }
 }
