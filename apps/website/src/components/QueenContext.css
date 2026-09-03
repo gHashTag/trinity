@@ -1,0 +1,207 @@
+/* CONTEXT DETAILS: the floating unit/queue card over the centre viewport. */
+
+.queen27-context,
+.queen27-context-chip {
+  --ctx-line: var(--hud-line, rgba(0, 255, 136, 0.22));
+  --ctx-line-strong: var(--hud-line-strong, rgba(0, 255, 136, 0.5));
+  --ctx-muted: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  --ctx-green: var(--hud-green, #00ff88);
+  --ctx-gold: var(--hud-gold, #ffd700);
+  --ctx-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  position: absolute;
+  bottom: 16px;
+  left: 20px;
+  z-index: 3;
+  border: 1px solid var(--ctx-line-strong);
+  background: var(--hud-panel, rgba(2, 8, 6, 0.86));
+}
+
+.queen27-context {
+  right: 20px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-height: 46%;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  color: var(--text, #e8e8f0);
+}
+
+.queen27-context-chip {
+  padding: 0.4rem 0.75rem;
+  color: var(--ctx-green);
+  font: inherit;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  cursor: pointer;
+}
+
+.queen27-context-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.8rem 0.35rem 1rem;
+  border-bottom: 1px solid var(--ctx-line);
+  color: var(--ctx-muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.queen27-context-head button {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 1px solid var(--ctx-line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.queen27-context-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 0;
+  min-height: 0;
+}
+
+.queen27-context-col { min-height: 0; padding: 0.6rem 0.8rem; overflow-y: auto; }
+.queen27-context-selected { border-left: 1px solid var(--ctx-line); }
+
+.queen27-context-heading {
+  margin: 0 0 0.45rem;
+  color: var(--ctx-green);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.queen27-context-empty { margin: 0 0 0.6rem; color: var(--ctx-muted); font-size: 0.68rem; }
+
+.queen27-context-last {
+  display: block;
+  margin-top: 0.6rem;
+  color: var(--ctx-muted);
+  font-family: var(--ctx-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+}
+
+.queen27-context-rows { display: grid; gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
+
+.queen27-context-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--ctx-line);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.queen27-context-row:hover { border-color: var(--ctx-line-strong); }
+.queen27-context-row > i { font-style: normal; font-size: 0.7rem; }
+.queen27-context-row.is-running > i { color: var(--hud-cyan, #64dcff); }
+.queen27-context-row.is-review > i { color: var(--ctx-gold); }
+.queen27-context-row > b { color: var(--ctx-gold); }
+
+.queen27-context-row > b,
+.queen27-context-row > small,
+.queen27-context-stats > dd {
+  font-family: var(--ctx-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.66rem;
+}
+
+.queen27-context-row > strong,
+.queen27-context-row > small,
+.queen27-context-unit-text > small,
+.queen27-context-stats > dd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-context-row > strong { font-size: 0.74rem; font-weight: 500; }
+.queen27-context-row > small { max-width: 14rem; color: var(--ctx-muted); text-align: right; }
+
+.queen27-context-unit {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.queen27-context-portrait {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--ctx-line-strong);
+  background: var(--hud-ground, #020806);
+  overflow: hidden;
+}
+
+.queen27-context-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.queen27-context-unit-text { display: grid; gap: 0.25rem; min-width: 0; }
+.queen27-context-unit-text > b { font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.queen27-context-unit-text > small { color: var(--ctx-muted); font-size: 0.66rem; }
+
+.queen27-context-stats {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 0.8rem;
+  margin: 0;
+}
+
+.queen27-context-stats > dt {
+  color: var(--ctx-muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.queen27-context-stats > dd { margin: 0; font-size: 0.7rem; text-align: right; }
+.queen27-context-stats > dd.is-green,
+.queen27-context-stats > dd.is-held { color: var(--ctx-green); }
+.queen27-context-stats > dd.is-cold { color: var(--hud-cold, #ff6b6b); }
+.queen27-context-stats > dd.is-neutral { color: var(--ctx-gold); }
+.queen27-context-stats > dd.is-fog { color: var(--ctx-muted); }
+
+.queen27-context-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; }
+
+.queen27-context-actions > a,
+.queen27-context-actions > button {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--ctx-line-strong);
+  background: transparent;
+  color: var(--ctx-green);
+  font: inherit;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.queen27-context-chip:hover,
+.queen27-context-head button:hover,
+.queen27-context-actions > a:hover,
+.queen27-context-actions > button:hover:not(:disabled) { background: rgba(0, 255, 136, 0.1); }
+
+.queen27-context-actions > button:disabled { opacity: 0.4; cursor: default; }
+.queen27-context-actions > button.is-copied { border-color: var(--ctx-gold); color: var(--ctx-gold); }
+
+@media (max-width: 900px) {
+  .queen27-context { max-height: 56%; }
+  .queen27-context-body { grid-template-columns: minmax(0, 1fr); }
+  .queen27-context-selected { border-top: 1px solid var(--ctx-line); border-left: 0; }
+}
