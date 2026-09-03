@@ -25,7 +25,8 @@
     "check:queen-city": "node qa/queen-research-city-contract.mjs",
     "check:queen-construction": "node qa/queen-construction-game-contract.mjs",
     "check:queen-hardware": "node qa/queen-hardware-foundry-contract.mjs",
-    "check:queen-review": "node qa/queen-review-lifecycle-contract.mjs"
+    "check:queen-review": "node qa/queen-review-lifecycle-contract.mjs",
+    "check:queen-viewport": "node qa/queen-viewport-contract.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

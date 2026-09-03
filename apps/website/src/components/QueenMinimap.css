@@ -1,0 +1,39 @@
+/* ---- the comb inside the HUD viewport: field only, host-sized ------------ */
+.queen27-comb.is-embedded {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+}
+
+.queen27-comb.is-embedded .queen27-comb-field {
+  height: 100%;
+}
+
+/* The full-page comb styles its canvas through .queen27-comb-viewport, which
+   the embedded field does not have; give it the same box and cursor here. */
+.queen27-comb.is-embedded canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.queen27-comb.is-embedded canvas:active {
+  cursor: grabbing;
+}
+
+/* ---- the overview minimap ------------------------------------------------ */
+.queen27-minimap {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  background: var(--hud-ground, #020806);
+}
+
+.queen27-minimap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}

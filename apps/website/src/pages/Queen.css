@@ -3117,3 +3117,1440 @@
     grid-row: auto;
   }
 }
+
+/* ---- single-screen HUD (WAVE: one screen) ---- */
+/* Every selector below is scoped to body.queen-shell or .queen27-page.is-shell:
+   removing the class restores the long page byte-identically. The height chain
+   follows tabs-at-height §3.3: html → body → #root → the shell, each one a
+   definite height with overflow hidden, so the only things that scroll are the
+   named inner scrollers (feed, sectors, cards, rails, popovers). */
+html:has(body.queen-shell) {
+  height: 100%;
+}
+
+body.queen-shell {
+  height: 100%;
+  padding-bottom: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.queen-shell > #root {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* /queen is mounted without the site chrome (main.tsx); if it ever gains it,
+   the dock and the hamburger would sit over the top bar. */
+body.queen-shell .nav-dock,
+body.queen-shell .hamburger-btn,
+body.queen-shell .sticky-cta {
+  display: none;
+}
+
+.queen27-page.is-shell {
+  --hud-gold: #ffd700;
+  --hud-green: #00ff88;
+  --hud-cyan: #64dcff;
+  --hud-cold: #ff6b6b;
+  --hud-muted: rgba(255, 255, 255, 0.55);
+  --hud-line: rgba(0, 255, 136, 0.22);
+  --hud-line-strong: rgba(0, 255, 136, 0.5);
+  --hud-panel: rgba(2, 8, 6, 0.86);
+  --hud-ground: #020806;
+  --hud-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --hud-notch: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  /* one screen of the viewport body: what a deep panel's block is allowed to take */
+  --hud-screen: max(320px, calc(100vh - 258px));
+  --hud-screen: max(320px, calc(100dvh - 258px));
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  grid-template-rows: 64px minmax(0, 1fr) 124px;
+  grid-template-columns: 232px minmax(0, 1fr) 336px;
+  gap: 10px;
+  margin: 0;
+  padding: 10px;
+  overflow: hidden;
+  color: var(--text, #fff);
+}
+
+.queen27-page.is-shell.is-command-collapsed {
+  grid-template-columns: 64px minmax(0, 1fr) 336px;
+}
+
+/* The global `section` rule from index.css (0,0,1), undone only inside the
+   shell. Specificity (0,0,2): `main` plus `section`, the shell's classes
+   zeroed by :where. Beats index.css whatever the bundle order, and loses to
+   every `.queen27-*` panel rule, so a panel that pads itself (the mission-map
+   sectors, the build queue, the foundry) keeps its padding. */
+main:where(.queen27-page.is-shell) section {
+  min-height: 0;
+  max-width: none;
+  align-items: stretch;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.queen27-page.is-shell .queen27-flow-grid,
+.queen27-page.is-shell .queen27-factory-viewport {
+  min-width: 0;
+}
+
+/* the offline city is a section with its own 180px floor; the viewport
+   contract wants every section in the shell at min-height 0 */
+.queen27-page.is-shell .queen27-city.is-offline {
+  min-height: 0;
+}
+
+/* ---- panels ------------------------------------------------------------- */
+.queen27-page.is-shell .queen27-hud-panel,
+.queen27-page.is-shell .queen27-hud-command,
+.queen27-page.is-shell .queen27-hud-viewport,
+.queen27-page.is-shell .queen27-hud-sector,
+.queen27-page.is-shell .queen27-hud-commands {
+  border: 1px solid var(--hud-line);
+  background: var(--hud-panel);
+  clip-path: var(--hud-notch);
+}
+
+.queen27-page.is-shell .queen27-hud-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-panel-head > span:last-child:not(:first-child) {
+  overflow: hidden;
+  color: var(--hud-gold);
+  font-family: var(--hud-mono);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+}
+
+/* ---- top bar ------------------------------------------------------------ */
+.queen27-page.is-shell .queen27-hud-top {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  grid-row: 1;
+  grid-column: 1 / -1;
+  /* the clock cell is content-sized so the countdown never ellipsises */
+  grid-template-columns: auto repeat(5, minmax(0, 1fr)) auto auto auto;
+  min-width: 0;
+  border: 1px solid var(--hud-line);
+  background: var(--hud-panel);
+}
+
+.queen27-page.is-shell .queen27-hud-res {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "glyph label"
+    "glyph value"
+    "glyph sub";
+  align-content: center;
+  column-gap: 0.55rem;
+  padding: 0 0.8rem;
+  border-left: 1px solid var(--hud-line);
+}
+
+.queen27-page.is-shell .queen27-hud-res:first-child {
+  border-left: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-res > i {
+  grid-area: glyph;
+  align-self: center;
+  color: var(--hud-green);
+  font-size: 1rem;
+  font-style: normal;
+}
+
+.queen27-page.is-shell .queen27-hud-res > small {
+  grid-area: label;
+  color: var(--hud-muted);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-res > strong {
+  grid-area: value;
+  overflow: hidden;
+  color: var(--text, #fff);
+  font-family: var(--hud-mono);
+  font-size: 1.05rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-res > span {
+  grid-area: sub;
+  overflow: hidden;
+  color: var(--hud-muted);
+  font-size: 0.58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-res-round > strong {
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-hud-res-round > span {
+  max-width: 160px;
+}
+
+.queen27-page.is-shell .queen27-hud-brand {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0 0.9rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.queen27-page.is-shell .queen27-hud-brand svg {
+  display: block;
+  flex: none;
+}
+
+.queen27-page.is-shell .queen27-hud-brand-text {
+  display: grid;
+  min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-brand-text > strong {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-brand-text > span {
+  overflow: hidden;
+  color: var(--hud-green);
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-bell {
+  display: grid;
+  padding: 0 0.3rem;
+}
+
+.queen27-page.is-shell .queen27-hud-bell > button {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.1rem;
+  min-width: 3.4rem;
+  padding: 0 0.4rem;
+  border: 0;
+  color: var(--hud-muted);
+  font: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.queen27-page.is-shell .queen27-hud-bell > button > i {
+  color: var(--hud-green);
+  font-size: 1.1rem;
+  font-style: normal;
+}
+
+.queen27-page.is-shell .queen27-hud-bell > button > strong {
+  font-family: var(--hud-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.queen27-page.is-shell .queen27-hud-bell > button > strong.is-alert {
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--hud-cold);
+  color: var(--hud-cold);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
+}
+
+.queen27-page.is-shell .queen27-hud-bell > button > small {
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.queen27-page.is-shell .queen27-hud-bell > button[aria-pressed="true"] {
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-hud-status {
+  position: relative;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0 0.8rem;
+}
+
+.queen27-page.is-shell .queen27-hud-pill {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-pill > i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+  box-shadow: 0 0 8px currentcolor;
+}
+
+.queen27-page.is-shell .queen27-hud-pill.is-live {
+  border-color: var(--hud-line-strong);
+  color: var(--hud-green);
+}
+
+.queen27-page.is-shell .queen27-hud-pill.is-cold {
+  border-color: rgba(255, 107, 107, 0.5);
+  color: var(--hud-cold);
+}
+
+.queen27-page.is-shell .queen27-hud-menu-btn,
+.queen27-page.is-shell .queen27-hud-vp-tools button,
+.queen27-page.is-shell .queen27-hud-drawer-close {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  font: inherit;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: transparent;
+  cursor: pointer;
+}
+
+.queen27-page.is-shell .queen27-hud-menu-btn:hover,
+.queen27-page.is-shell .queen27-hud-vp-tools button:hover,
+.queen27-page.is-shell .queen27-hud-drawer-close:hover,
+.queen27-page.is-shell .queen27-hud-menu-btn[aria-expanded="true"] {
+  border-color: var(--hud-line-strong);
+  color: var(--hud-green);
+}
+
+.queen27-page.is-shell .queen27-hud-menu {
+  position: absolute;
+  z-index: 9;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 340px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100vh - 100px);
+  max-height: calc(100dvh - 100px);
+  margin: 0;
+  padding: 0.35rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  border: 1px solid var(--hud-line-strong);
+  background: var(--hud-panel);
+  backdrop-filter: blur(8px);
+  text-align: left;
+}
+
+.queen27-page.is-shell .queen27-hud-menu > li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.queen27-page.is-shell .queen27-hud-menu > li:last-child {
+  border-bottom: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-menu > li > button,
+.queen27-page.is-shell .queen27-hud-menu > li > a {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  color: var(--text, #fff);
+  font: inherit;
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  background: transparent;
+  cursor: pointer;
+}
+
+.queen27-page.is-shell .queen27-hud-menu > li > button:hover,
+.queen27-page.is-shell .queen27-hud-menu > li > a:hover {
+  background: rgba(0, 255, 136, 0.06);
+}
+
+.queen27-page.is-shell .queen27-hud-menu > li > button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.queen27-page.is-shell .queen27-hud-menu > li > button > b,
+.queen27-page.is-shell .queen27-hud-menu > li > a > b {
+  overflow: hidden;
+  color: var(--hud-gold);
+  font-family: var(--hud-mono);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-menu-note {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.queen27-page.is-shell .queen27-hud-menu-note > span {
+  color: var(--hud-muted);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.queen27-page.is-shell .queen27-hud-menu-note > b {
+  color: var(--text, #fff);
+  font-family: var(--hud-mono);
+  font-size: 0.66rem;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.queen27-page.is-shell .queen27-hud-menu .queen27-review-summary {
+  margin: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-doctrine {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0 0 0.4rem;
+  list-style: none;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.queen27-page.is-shell .queen27-hud-doctrine > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.15rem 0.7rem;
+  padding: 0.5rem 0.7rem;
+  background: var(--hud-ground);
+}
+
+.queen27-page.is-shell .queen27-hud-doctrine > li.is-queen {
+  background: linear-gradient(90deg, rgba(0, 255, 136, 0.08), var(--hud-ground) 60%);
+}
+
+.queen27-page.is-shell .queen27-hud-doctrine > li.is-active {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08), var(--hud-ground) 60%);
+}
+
+.queen27-page.is-shell .queen27-hud-doctrine > li > b {
+  grid-row: 1 / 3;
+  color: var(--hud-gold);
+  font-family: Georgia, serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.queen27-page.is-shell .queen27-hud-doctrine > li > strong {
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+}
+
+.queen27-page.is-shell .queen27-hud-doctrine > li > p {
+  color: var(--hud-muted);
+  font-size: 0.62rem;
+  line-height: 1.4;
+}
+
+/* ---- command panel ----------------------------------------------------- */
+.queen27-page.is-shell .queen27-hud-command {
+  display: grid;
+  grid-row: 2;
+  grid-column: 1;
+  grid-template-rows: repeat(5, auto) minmax(0, 1fr) auto;
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.queen27-page.is-shell .queen27-hud-cmd,
+.queen27-page.is-shell .queen27-hud-cmd-collapse {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  font: inherit;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+.queen27-page.is-shell .queen27-hud-cmd > i,
+.queen27-page.is-shell .queen27-hud-cmd-collapse > i {
+  color: currentcolor;
+  font-family: var(--hud-mono);
+  font-size: 1.1rem;
+  font-style: normal;
+}
+
+.queen27-page.is-shell .queen27-hud-cmd > span {
+  display: grid;
+  min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-cmd b {
+  overflow: hidden;
+  color: var(--text, #fff);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-cmd small {
+  overflow: hidden;
+  color: var(--hud-muted);
+  font-size: 0.56rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-cmd kbd {
+  padding: 0 0.3rem;
+  border: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.54rem;
+}
+
+.queen27-page.is-shell .queen27-hud-cmd:hover,
+.queen27-page.is-shell .queen27-hud-cmd-collapse:hover {
+  border-color: var(--hud-line-strong);
+  color: var(--hud-green);
+}
+
+.queen27-page.is-shell .queen27-hud-cmd.is-active {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+  background: rgba(255, 215, 0, 0.05);
+  box-shadow: inset 0 0 18px rgba(255, 215, 0, 0.09);
+}
+
+.queen27-page.is-shell .queen27-hud-cmd.is-active b,
+.queen27-page.is-shell .queen27-hud-cmd.is-active kbd {
+  border-color: rgba(255, 215, 0, 0.5);
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-hud-cmd-collapse {
+  grid-row: 7;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.queen27-page.is-shell .queen27-hud-command.is-collapsed .queen27-hud-cmd,
+.queen27-page.is-shell .queen27-hud-command.is-collapsed .queen27-hud-cmd-collapse {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  padding: 0.6rem 0.2rem;
+}
+
+.queen27-page.is-shell .queen27-hud-command.is-collapsed .queen27-hud-cmd > span,
+.queen27-page.is-shell .queen27-hud-command.is-collapsed .queen27-hud-cmd > kbd,
+.queen27-page.is-shell .queen27-hud-command.is-collapsed .queen27-hud-cmd-collapse > span {
+  display: none;
+}
+
+/* ---- centre viewport ---------------------------------------------------- */
+.queen27-page.is-shell .queen27-hud-viewport {
+  position: relative;
+  display: grid;
+  grid-row: 2;
+  grid-column: 2;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--hud-ground);
+}
+
+.queen27-page.is-shell .queen27-hud-viewport:fullscreen {
+  clip-path: none;
+  border: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.4rem 0.8rem;
+  border-bottom: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-title {
+  overflow: hidden;
+  color: var(--hud-green);
+  text-overflow: ellipsis;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-sep {
+  color: var(--hud-line-strong);
+}
+
+.queen27-page.is-shell .queen27-hud-vp-view {
+  overflow: hidden;
+  color: var(--hud-gold);
+  text-overflow: ellipsis;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-tools {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-tools button[aria-pressed="true"] {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-hud-vp-body {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-body > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* the views, each filling the body; every scroll owner is named here */
+.queen27-page.is-shell .queen27-kanban {
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 0;
+  overscroll-behavior: contain;
+}
+
+.queen27-page.is-shell .queen27-column {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-cards {
+  align-content: start;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hud-line-strong) transparent;
+}
+
+.queen27-page.is-shell .queen27-mission-map {
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  overscroll-behavior: contain;
+}
+
+.queen27-page.is-shell .queen27-comb.is-embedded {
+  height: 100%;
+}
+
+/* the factory is the one deep panel: it scrolls vertically inside the
+   viewport, its own rails scroll horizontally, and each block fits one screen.
+   display:block, not the global flex column: a flex column with height:100%
+   shrinks the city and the floor to a fraction of their content. */
+.queen27-page.is-shell .queen27-factory {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 0;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hud-line-strong) transparent;
+}
+
+.queen27-page.is-shell .queen27-factory-viewport {
+  height: var(--hud-screen);
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-factory-floor {
+  box-sizing: border-box;
+  height: 100%;
+  min-width: 1480px;
+  min-height: 0;
+  max-height: none;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.queen27-page.is-shell .queen27-city-stage {
+  height: var(--hud-screen);
+  min-height: 0;
+  max-height: none;
+}
+
+.queen27-page.is-shell .queen27-city-canvas,
+.queen27-page.is-shell .queen27-city-console {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+}
+
+.queen27-page.is-shell .queen27-tech {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+}
+
+.queen27-page.is-shell .queen27-tech-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+  align-items: center;
+  padding: 0.45rem 0.8rem;
+  border-bottom: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.queen27-page.is-shell .queen27-tech-strip > span > b {
+  color: var(--hud-gold);
+  font-family: var(--hud-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.queen27-page.is-shell .queen27-tech-strip .queen27-worker-slots {
+  display: flex;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.queen27-page.is-shell .queen27-tech-strip .queen27-worker-slots span {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.52rem;
+}
+
+.queen27-page.is-shell .queen27-tech-console {
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  border: 0;
+}
+
+.queen27-page.is-shell .queen27-tech-map {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  overscroll-behavior: contain;
+}
+
+.queen27-page.is-shell .queen27-tech-loading {
+  height: 100%;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-tech-details {
+  min-height: 0;
+  padding: 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hud-line-strong) transparent;
+}
+
+.queen27-page.is-shell .queen27-tech-details h3 {
+  margin: 0.5rem 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.queen27-page.is-shell .queen27-tech-details dl {
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+
+.queen27-page.is-shell .queen27-tech-details dl > div {
+  padding-top: 0.6rem;
+}
+
+.queen27-page.is-shell .queen27-tech-details p,
+.queen27-page.is-shell .queen27-tech-details dd {
+  font-size: 0.7rem;
+}
+
+/* ---- intel column ------------------------------------------------------- */
+.queen27-page.is-shell .queen27-hud-intel {
+  display: grid;
+  grid-row: 2;
+  grid-column: 3;
+  /* the feed takes what the six sector rows and the minimap leave; when the
+     screen is too short for six rows the sectors list scrolls, not the page */
+  grid-template-rows: minmax(0, 0.9fr) 140px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-intel.is-expanded {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.queen27-page.is-shell .queen27-hud-minimap {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-minimap-body {
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-intel.is-drawer {
+  position: absolute;
+  z-index: 7;
+  /* auto placement: an absolutely positioned grid child with a named column
+     takes that column's area as its containing block, which past the last
+     column is a zero-width line and made the drawer 0px wide */
+  grid-area: auto;
+  top: 74px;
+  right: 10px;
+  bottom: 134px;
+  width: 340px;
+  max-width: calc(100% - 20px);
+  background: var(--hud-ground);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.55);
+}
+
+.queen27-page.is-shell .queen27-hud-drawer-close {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  right: 4px;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+  background: var(--hud-ground);
+}
+
+.queen27-page.is-shell .queen27-hud-intel.is-drawer .queen27-intel-head {
+  padding-right: 2.2rem;
+}
+
+/* ---- bottom bar --------------------------------------------------------- */
+.queen27-page.is-shell .queen27-hud-bottom {
+  display: grid;
+  grid-row: 3;
+  grid-column: 1 / -1;
+  grid-template-columns: 340px minmax(0, 1fr) 300px;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-bottom > section {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-body {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: center;
+  min-height: 0;
+  padding: 0.4rem 0.7rem;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-mark {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--hud-line-strong);
+  background: rgba(0, 255, 136, 0.04);
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text > strong {
+  overflow: hidden;
+  font-family: var(--hud-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text > small,
+.queen27-page.is-shell .queen27-hud-sector-text > em {
+  overflow: hidden;
+  color: var(--hud-muted);
+  font-size: 0.52rem;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text > em {
+  color: var(--hud-cyan);
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text > dl {
+  /* two by two: four stats never fight for one 300px line */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 0.6rem;
+  margin: 0.1rem 0;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text > dl > div {
+  display: flex;
+  gap: 0.3rem;
+  align-items: baseline;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text > dl > div > dd {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text dt {
+  color: var(--hud-muted);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text dd {
+  margin: 0;
+  color: var(--hud-gold);
+  font-family: var(--hud-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text dd.is-green {
+  color: var(--hud-green);
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text dd.is-cold {
+  color: var(--hud-cold);
+}
+
+.queen27-page.is-shell .queen27-hud-sector-text dd.is-muted {
+  color: var(--hud-muted);
+}
+
+.queen27-page.is-shell .queen27-hud-tiles {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  min-height: 0;
+  padding: 6px;
+}
+
+.queen27-page.is-shell .queen27-hud-tile {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+  min-height: 0;
+  padding: 0.3rem;
+  border: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  font: inherit;
+  text-align: center;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+.queen27-page.is-shell .queen27-hud-tile > i {
+  color: var(--hud-green);
+  font-family: var(--hud-mono);
+  font-size: 1.1rem;
+  font-style: normal;
+}
+
+.queen27-page.is-shell .queen27-hud-tile > b {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.54rem;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.queen27-page.is-shell .queen27-hud-tile:hover:not(:disabled) {
+  border-color: var(--hud-line-strong);
+  color: var(--hud-green);
+}
+
+.queen27-page.is-shell .queen27-hud-tile:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.queen27-page.is-shell .queen27-hud-tile.is-gold,
+.queen27-page.is-shell .queen27-hud-tile[aria-pressed="true"] {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-hud-tile.is-gold > i,
+.queen27-page.is-shell .queen27-hud-tile[aria-pressed="true"] > i {
+  color: var(--hud-gold);
+}
+
+/* the NEXT ROUND clock: a countdown to the Queen's next tick, never an action */
+.queen27-page.is-shell .queen27-hud-round-cell {
+  position: relative;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.queen27-page.is-shell .queen27-hud-round {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  border: 2px solid var(--hud-gold);
+  background:
+    linear-gradient(135deg, rgba(255, 215, 0, 0.14), rgba(255, 215, 0, 0.02) 60%),
+    var(--hud-panel);
+  box-shadow:
+    0 0 26px rgba(255, 215, 0, 0.2),
+    inset 0 0 26px rgba(255, 215, 0, 0.06);
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+
+/* the 220px orbit scaled to 64px from its top-left corner: the wrapper is a
+   scroll container, and a centred item that overflows a scroll container is
+   laid out at its start edge, which put the scaled mark outside the clip */
+.queen27-page.is-shell .queen27-hud-orbit {
+  display: block;
+  grid-row: 1;
+  grid-column: 1;
+  width: 64px;
+  height: 64px;
+  align-self: center;
+  justify-self: center;
+  margin-left: 8px;
+  overflow: hidden;
+}
+
+.queen27-page.is-shell .queen27-hud-orbit .queen27-core-orbit {
+  transform: scale(calc(64 / 220));
+  transform-origin: 0 0;
+}
+
+.queen27-page.is-shell .queen27-hud-round-btn {
+  z-index: 1;
+  display: grid;
+  grid-row: 1;
+  grid-column: 1 / -1;
+  align-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.4rem 0.8rem 0.4rem 84px;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.queen27-page.is-shell .queen27-hud-round-btn > small,
+.queen27-page.is-shell .queen27-hud-round-mini > small {
+  color: var(--hud-gold);
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.queen27-page.is-shell .queen27-hud-countdown {
+  color: var(--hud-gold);
+  font-family: var(--hud-mono);
+  font-size: 1.7rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  text-shadow: 0 0 18px rgba(255, 215, 0, 0.45);
+}
+
+.queen27-page.is-shell .queen27-hud-round-btn > i {
+  display: block;
+  height: 2px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.queen27-page.is-shell .queen27-hud-round-btn > i > span {
+  display: block;
+  height: 100%;
+  background: var(--hud-gold);
+  box-shadow: 0 0 10px var(--hud-gold);
+  transition: width 1s linear;
+}
+
+.queen27-page.is-shell .queen27-hud-round-btn > em {
+  overflow: hidden;
+  color: var(--hud-muted);
+  font-size: 0.58rem;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-round-pop {
+  position: absolute;
+  z-index: 8;
+  right: 0;
+  bottom: calc(100% + 8px);
+  width: 380px;
+  max-width: calc(100vw - 20px);
+  max-height: 60vh;
+  max-height: 60dvh;
+  padding: 0.8rem 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--hud-gold);
+  background: var(--hud-panel);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.14);
+}
+
+.queen27-page.is-shell .queen27-hud-round-pop-grid {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  margin-top: 0.6rem;
+}
+
+.queen27-page.is-shell .queen27-hud-round-pop .queen27-verdict {
+  width: 64px;
+}
+
+.queen27-page.is-shell .queen27-hud-round-pop .queen27-verdict span {
+  font-size: 1.6rem;
+}
+
+.queen27-page.is-shell .queen27-hud-round-pop .queen27-verdict small {
+  font-size: 0.48rem;
+}
+
+.queen27-page.is-shell .queen27-hud-round-pop strong {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.queen27-page.is-shell .queen27-hud-round-pop p {
+  margin-top: 0.4rem;
+  color: var(--hud-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.queen27-page.is-shell .queen27-hud-round-pop small {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.58rem;
+}
+
+.queen27-page.is-shell .queen27-hud-skips {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.64rem;
+}
+
+.queen27-page.is-shell .queen27-hud-skips b {
+  margin-right: 0.4rem;
+  color: var(--hud-gold);
+  font-family: var(--hud-mono);
+}
+
+.queen27-page.is-shell .queen27-hud-round-mini {
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  height: 100%;
+  padding: 0.3rem 0.7rem;
+  border: 2px solid var(--hud-gold);
+  color: inherit;
+  font: inherit;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.14), rgba(255, 215, 0, 0.02)), var(--hud-panel);
+  cursor: pointer;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+.queen27-page.is-shell .queen27-hud-round-mini .queen27-hud-countdown {
+  font-size: 1.1rem;
+}
+
+/* ---- breakpoints -------------------------------------------------------- */
+@media (max-width: 1280px) {
+  .queen27-page.is-shell {
+    grid-template-columns: 200px minmax(0, 1fr) 300px;
+  }
+
+  .queen27-page.is-shell.is-command-collapsed {
+    grid-template-columns: 64px minmax(0, 1fr) 300px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-bottom {
+    grid-template-columns: 270px minmax(0, 1fr) 280px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-brand-text > span {
+    display: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .queen27-page.is-shell {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .queen27-page.is-shell.is-command-collapsed {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .queen27-page.is-shell .queen27-hud-intel:not(.is-drawer) {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-res > span:not(.queen27-hud-pill) {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .queen27-page.is-shell,
+  .queen27-page.is-shell.is-command-collapsed {
+    grid-template-rows: 56px minmax(0, 1fr) calc(62px + env(safe-area-inset-bottom));
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-top {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-res {
+    flex: 0 0 auto;
+    padding: 0 0.6rem;
+  }
+
+  .queen27-page.is-shell .queen27-hud-brand {
+    order: 0;
+  }
+
+  .queen27-page.is-shell .queen27-hud-res-round {
+    order: 1;
+  }
+
+  .queen27-page.is-shell .queen27-hud-res-bees {
+    order: 2;
+  }
+
+  .queen27-page.is-shell .queen27-hud-status {
+    order: 3;
+  }
+
+  .queen27-page.is-shell .queen27-hud-res:not(.queen27-hud-brand):not(.queen27-hud-res-round):not(.queen27-hud-res-bees):not(.queen27-hud-status) {
+    order: 4;
+  }
+
+  .queen27-page.is-shell .queen27-hud-brand-text {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-res-round > span {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-menu {
+    position: fixed;
+    top: 66px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    max-width: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport {
+    grid-column: 1;
+  }
+
+  .queen27-page.is-shell .queen27-hud-intel.is-drawer {
+    top: 64px;
+    right: 8px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    width: min(340px, calc(100% - 16px));
+  }
+
+  .queen27-page.is-shell .queen27-hud-bottom {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact {
+    display: flex;
+    grid-row: auto;
+    grid-column: auto;
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd {
+    flex: 1 1 0;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding: 0.3rem 0.2rem;
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd > span,
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd > kbd {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-round-cell.is-mini {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .queen27-page.is-shell .queen27-hud-round-pop {
+    right: 0;
+    width: calc(100vw - 16px);
+  }
+
+  .queen27-page.is-shell {
+    --hud-screen: max(280px, calc(100vh - 180px));
+    --hud-screen: max(280px, calc(100dvh - 180px));
+  }
+
+  /* the phone rails: tracks wider than the rail's own min-width overflowed it */
+  .queen27-page.is-shell .queen27-map-sectors {
+    width: max-content;
+    min-width: 0;
+    grid-template-columns: repeat(3, 270px);
+  }
+
+  .queen27-page.is-shell .queen27-city-stage {
+    grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+}

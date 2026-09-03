@@ -1,4 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import type { Ref } from "react";
+import {
+  territoryOf,
+  type BeeLine,
+  type CombCellSummary,
+  type CombHandle,
+  type HudPick,
+  type Territory,
+} from "./queenHud";
+import "./QueenMinimap.css";
 
 // The comb: the board drawn as a triangular tiling in which every cell IS the
 // Trinity mark. Proven in six dependency-free prototypes under
@@ -7,6 +17,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 // are recorded there. Nothing here is a second data model: cells are the
 // board's cards, bees are the research endpoint's worker slots, the same
 // props QueenFactory already receives.
+//
+// Inside the single-screen HUD the comb is the centre viewport: `embedded`
+// drops the legend, hint and inspector, `onPick` reports the clicked cell to
+// the shell, `pickIndex` lets the minimap pick a cell from outside, and
+// `handleRef` exposes the camera (zoom in / zoom out / fit).
 
 interface CombColumn {
   key: string;
@@ -48,6 +63,20 @@ interface QueenCombProps {
   workers: CombWorkers | null;
   error: string | null;
   labels: CombLabels;
+  /** Field only: no legend, hint or inspector. The host decides the height. */
+  embedded?: boolean;
+  /** The clicked cell, or null when an existing pick fell off a shrunken field. */
+  onPick?: (pick: HudPick | null) => void;
+  /** Camera controls for the shell's viewport buttons. */
+  handleRef?: Ref<CombHandle>;
+  /** A pick made outside the canvas (the minimap). Applied whenever it changes. */
+  pickIndex?: number | null;
+  /**
+   * Fraction (0..1) of the host's height covered at the bottom by an overlay
+   * (the shell's context panel). The field is fitted and centred in the band
+   * above it until the user zooms by hand; FIT VIEW restores the fit.
+   */
+  fitInset?: number;
 }
 
 // ---- the mark, parsed once at module load ---------------------------------
@@ -157,10 +186,10 @@ const NODES: Array<{ x: number; y: number; ring: number }> = [];
 }
 
 // ---- field geometry ----------------------------------------------------------
-const S = 150;
-const HH = (S * Math.sqrt(3)) / 2;
-
-type Territory = "held" | "neutral" | "fog";
+// Cell side and strip height. Exported so the minimap lays its triangles out
+// with the very same numbers instead of a copy of them.
+export const S = 150;
+export const HH = (S * Math.sqrt(3)) / 2;
 
 interface Cell {
   x: number;
@@ -179,18 +208,13 @@ interface Bee {
   to: number;
   t: number;
   speed: number;
-  line: "scribe" | "wright" | "lapidary";
+  line: BeeLine;
 }
 
-// Which column means which ground. done/running: the swarm holds it. backlog
-// and review: reachable, unclaimed. blocked/dropped: fog - nothing to scout.
-function territoryOf(column: string): Territory {
-  if (column === "done" || column === "running") return "held";
-  if (column === "blocked" || column === "dropped") return "fog";
-  return "neutral";
-}
+// Which column means which ground lives in queenHud.territoryOf: done/running
+// held, blocked/dropped fog, everything else neutral.
 
-const LINES = ["scribe", "wright", "lapidary"] as const;
+const LINES: readonly BeeLine[] = ["scribe", "wright", "lapidary"];
 
 function corners(c: Cell): [Pt, Pt, Pt] {
   const yB = c.yTop + HH;
@@ -236,6 +260,30 @@ function buildCells(cards: CombCard[]): Cell[] {
     }
   }
   return cells;
+}
+
+/**
+ * The field as the minimap sees it: the same cells buildCells lays out, minus
+ * the flight phase and with the card reduced to its number. Because both
+ * views derive from one function, the minimap can never draw a different
+ * field from the one the comb shows.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- geometry stays with the cells that own it
+export function summariseCells(cards: CombCard[]): CombCellSummary[] {
+  return buildCells(cards).map((cell) => ({
+    x: cell.x,
+    y: cell.y,
+    yTop: cell.yTop,
+    up: cell.up,
+    own: cell.own,
+    cardNumber: cell.card ? cell.card.number : null,
+  }));
+}
+
+/** The Queen sits on the centre cell of the field. */
+// eslint-disable-next-line react-refresh/only-export-components -- geometry stays with the cells that own it
+export function queenIndexOf(cellCount: number): number {
+  return Math.floor(cellCount / 2);
 }
 
 function buildBees(workers: CombWorkers | null, cellCount: number): Bee[] {
@@ -317,10 +365,27 @@ export function QueenComb({
   workers,
   error,
   labels,
+  embedded = false,
+  onPick,
+  handleRef,
+  pickIndex,
+  fitInset = 0,
 }: QueenCombProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
-  const [picked, setPicked] = useState<number | null>(null);
+  // Seeded from the prop: the minimap may pick a cell while another view is
+  // showing, and the comb then mounts with that pick already in `pickIndex`.
+  const [picked, setPicked] = useState<number | null>(pickIndex ?? null);
+
+  // A pick made outside the canvas (the minimap) is applied whenever the
+  // prop changes; a later click inside the canvas may replace it.
+  // Adjusting state on a prop change during render is the documented pattern
+  // for this - no effect, no extra commit with the stale pick.
+  const [seenPickIndex, setSeenPickIndex] = useState(pickIndex);
+  if (pickIndex !== seenPickIndex) {
+    setSeenPickIndex(pickIndex);
+    setPicked(pickIndex ?? null);
+  }
 
   // Everything the frame loop reads lives in refs so the loop is created once
   // and never closes over stale props; React state only holds what the DOM
@@ -339,14 +404,87 @@ export function QueenComb({
   const beesRef = useRef<Bee[]>(bees);
   const hoverRef = useRef(-1);
   const pickedRef = useRef(-1);
-  const cameraRef = useRef({ yaw: 0, pitch: 0.62, dist: 420, auto: true });
+  // `manual` is set by any zoom the user makes; until then the camera keeps
+  // refitting the whole field into the visible band (see fitToBox). ox/oy
+  // shift the projection origin so the field centres in that band.
+  // `dist` is perspective (how much the far rows shrink); `scale` is zoom.
+  // They are separate on purpose: at the minimum dist this field is still
+  // 1030 px wide, so distance alone can never fit it into a band - measured
+  // in Node on the real 189-cell field before this was written.
+  const cameraRef = useRef({
+    yaw: 0,
+    pitch: 0.62,
+    dist: 420,
+    scale: 1,
+    auto: true,
+    manual: false,
+    ox: 0,
+    oy: 0,
+  });
+  const insetRef = useRef(fitInset);
+  // The fitter lives inside the mount effect (it needs the host's size and
+  // the projection); the effects outside reach it through this ref.
+  const refitRef = useRef<(() => void) | null>(null);
+  // The shell's callback, kept current for the handlers the mount effect
+  // binds once and for the field-shrink check below.
+  const onPickRef = useRef(onPick);
+
+  useEffect(() => {
+    insetRef.current = fitInset;
+    if (!cameraRef.current.manual) refitRef.current?.();
+  }, [fitInset]);
+
+  useEffect(() => {
+    onPickRef.current = onPick;
+  }, [onPick]);
+
+  // The frame loop's copy of the pick. Mirrors the state so a pick that came
+  // in through `pickIndex` reaches the canvas the same way a click does. Not
+  // clamped here: the field effect below runs after this one in the same
+  // commit and clamps against the field the loop is about to draw.
+  useEffect(() => {
+    pickedRef.current = picked ?? -1;
+  }, [picked]);
 
   useEffect(() => {
     cellsRef.current = cells;
     beesRef.current = bees;
-    // the loop's copy of the pick is a ref; keep it inside the new field
-    if (pickedRef.current >= cells.length) pickedRef.current = -1;
+    // the loop's copy of the pick is a ref; keep it inside the new field, and
+    // tell the shell the pick it may be showing no longer names a cell.
+    if (pickedRef.current >= cells.length) {
+      pickedRef.current = -1;
+      onPickRef.current?.(null);
+    }
+    // a board that grew a row changes the field's extent
+    if (!cameraRef.current.manual) refitRef.current?.();
   }, [cells, bees]);
+
+  useImperativeHandle(
+    handleRef,
+    () => ({
+      zoomIn() {
+        const camera = cameraRef.current;
+        camera.manual = true;
+        camera.scale = Math.min(8, camera.scale * 1.25);
+      },
+      zoomOut() {
+        const camera = cameraRef.current;
+        camera.manual = true;
+        camera.scale = Math.max(0.05, camera.scale * 0.8);
+      },
+      fit() {
+        const camera = cameraRef.current;
+        camera.yaw = 0;
+        camera.pitch = 0.62;
+        camera.auto = true;
+        camera.manual = false;
+        // dist, ox and oy come from the fitter, measured against the host
+        camera.dist = 420;
+        refitRef.current?.();
+      },
+    }),
+    [],
+  );
 
   // A pick that outlives the field it was made on (the board shrank under it)
   // is invalid, and is treated as no pick at read time rather than being
@@ -376,6 +514,8 @@ export function QueenComb({
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // a new box needs a new fit, unless the user has taken the zoom
+      if (!cameraRef.current.manual) refitRef.current?.();
     };
     resize();
     const observer = new ResizeObserver(resize);
@@ -391,9 +531,55 @@ export function QueenComb({
       const Y2 = -x * sy + y * cy;
       const Y = Y2 * cp - z * sp;
       const Z = Y2 * sp + z * cp;
-      const f = camera.dist / (camera.dist + Z + 430);
-      return [width / 2 + X * f, height / 2 + Y * f, Z, f] as const;
+      const f = (camera.dist / (camera.dist + Z + 430)) * camera.scale;
+      return [width / 2 + X * f + camera.ox, height / 2 + Y * f + camera.oy, Z, f] as const;
     };
+
+    // Fit the whole field into the band above the overlay: bisect the zoom
+    // until the projected bounding box of every cell corner fits, then shift
+    // the origin so the box is centred in the band. Size is linear in scale,
+    // so bisection is exact. Measured cost: 24 iterations x (cells x 3)
+    // projections, once per resize/fit - nothing per frame.
+    const fitToBox = () => {
+      const cells = cellsRef.current;
+      if (cells.length === 0 || width < 20 || height < 20) return;
+      const inset = Math.min(0.9, Math.max(0, insetRef.current));
+      const band = height * (1 - inset);
+      const targetW = width * 0.9;
+      const targetH = band * 0.86;
+      camera.ox = 0;
+      camera.oy = 0;
+      const measure = () => {
+        let minX = Number.POSITIVE_INFINITY;
+        let maxX = Number.NEGATIVE_INFINITY;
+        let minY = Number.POSITIVE_INFINITY;
+        let maxY = Number.NEGATIVE_INFINITY;
+        for (const c of cells) {
+          for (const [px, py] of corners(c)) {
+            const p = project(px, py, 0);
+            if (p[0] < minX) minX = p[0];
+            if (p[0] > maxX) maxX = p[0];
+            if (p[1] < minY) minY = p[1];
+            if (p[1] > maxY) maxY = p[1];
+          }
+        }
+        return { w: maxX - minX, h: maxY - minY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+      };
+      let lo = 0.05;
+      let hi = 8;
+      for (let i = 0; i < 24; i += 1) {
+        camera.scale = (lo + hi) / 2;
+        const m = measure();
+        if (m.w > targetW || m.h > targetH) hi = camera.scale;
+        else lo = camera.scale;
+      }
+      camera.scale = lo;
+      const m = measure();
+      camera.ox = width / 2 - m.cx;
+      camera.oy = band / 2 - m.cy;
+    };
+    refitRef.current = fitToBox;
+    if (!camera.manual) fitToBox();
 
     let drag: { x: number; y: number } | null = null;
     const local = (e: PointerEvent | MouseEvent) => {
@@ -431,14 +617,28 @@ export function QueenComb({
       drag = null;
     };
     const onClick = () => {
-      if (hoverRef.current >= 0) {
-        pickedRef.current = hoverRef.current;
-        setPicked(hoverRef.current);
-      }
+      const index = hoverRef.current;
+      if (index < 0) return;
+      pickedRef.current = index;
+      setPicked(index);
+      const cell = cellsRef.current[index];
+      if (!cell) return;
+      // the bee standing on this cell: its current cell is `from` on the way
+      // out and `to` on the way in, the same rule the inspector uses
+      const bee = beesRef.current.find((b) => (b.t < 0.5 ? b.from : b.to) === index);
+      onPickRef.current?.({
+        index,
+        isQueen: index === queenIndexOf(cellsRef.current.length),
+        territory: cell.own,
+        card: cell.card,
+        bee: bee ? { slot: bee.slot, line: bee.line, busy: bee.busy } : null,
+      });
     };
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      camera.dist = Math.max(150, Math.min(6000, camera.dist * (1 + e.deltaY * 0.0012)));
+      camera.manual = true;
+      // wheel up zooms in, wheel down zooms out - the map convention
+      camera.scale = Math.max(0.05, Math.min(8, camera.scale * (1 - e.deltaY * 0.0012)));
     };
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
@@ -578,7 +778,7 @@ export function QueenComb({
       ctx.globalCompositeOperation = "source-over";
 
       // THE QUEEN on the centre cell.
-      const queenIndex = Math.floor(cells.length / 2);
+      const queenIndex = queenIndexOf(cells.length);
       const q = cells[queenIndex];
       const queenSprite = SPRITES.queen;
       if (q && ready(queenSprite)) {
@@ -639,6 +839,7 @@ export function QueenComb({
     return () => {
       window.cancelAnimationFrame(raf);
       observer.disconnect();
+      refitRef.current = null;
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
@@ -647,10 +848,20 @@ export function QueenComb({
     };
   }, []);
 
+  if (embedded) {
+    return (
+      <div className="queen27-comb is-embedded">
+        <div className="queen27-comb-field" ref={hostRef}>
+          <canvas ref={canvasRef} />
+        </div>
+      </div>
+    );
+  }
+
   const held = cells.filter((c) => c.own === "held").length;
   const neutral = cells.filter((c) => c.own === "neutral").length;
   const fog = cells.filter((c) => c.own === "fog").length;
-  const queenIndex = Math.floor(cells.length / 2);
+  const queenIndex = queenIndexOf(cells.length);
   const pickedCell = validPicked !== null ? cells[validPicked] : null;
   const beeHere =
     validPicked !== null

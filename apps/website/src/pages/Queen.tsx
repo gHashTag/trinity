@@ -1,8 +1,33 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type RefObject,
+} from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { QueenComb } from "../components/QueenComb";
+import { QueenComb, queenIndexOf, summariseCells } from "../components/QueenComb";
+import { QueenCommandPanel } from "../components/QueenCommand";
+import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
+import { QueenIntelFeed, QueenSectors } from "../components/QueenIntel";
+import { QueenMinimap } from "../components/QueenMinimap";
+import {
+  ALERT_WINDOW_MS,
+  HUD_VIEWS,
+  alertCount,
+  isAlertKind,
+  latestEventFor,
+  sectorRows,
+  type CombHandle,
+  type HudEvent,
+  type HudPick,
+  type HudView,
+} from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
   type VerifiedHardwareRegistry,
@@ -86,11 +111,13 @@ interface QueenStatus {
     allowed: boolean;
     refusal: string | null;
     skippedCount: number;
+    skipSummary?: Record<string, number>;
   } | null;
   dispatches: {
     total: number;
     finished: number;
     running: number;
+    unreviewed?: number;
     latest: {
       issue: number;
       dispatchedAt: string;
@@ -122,6 +149,7 @@ interface QueenBoard {
 }
 
 type QueenCard = QueenBoard["cards"][number];
+type QueenColumn = QueenBoard["columns"][number];
 
 const FALLBACK_COLUMNS = [
   { key: "backlog", title: "backlog", blurb: "" },
@@ -152,6 +180,12 @@ interface QueenActivityEvent {
 interface QueenActivity {
   cursor: number;
   events: QueenActivityEvent[];
+}
+
+/** The activity hook's state: the wire's newest events, plus the alert-kind
+ *  events kept for the bell - evicted by age, not by count. */
+interface ActivityBuffer extends QueenActivity {
+  alerts: QueenActivityEvent[];
 }
 
 type LoadState =
@@ -187,7 +221,7 @@ const COPY = {
     queenCopy: "Checks collisions, state and policy before delegation.",
     bee: "BEE",
     beeCopy: "Works in isolation and returns a reviewable result.",
-    latest: "LATEST COMPLETED DISPATCH",
+    latest: "LATEST DISPATCH",
     issue: "Issue",
     outcome: "Outcome",
     finished: "Finished",
@@ -312,6 +346,70 @@ const COPY = {
       "Copies the public A2A bootstrap, graph endpoints, repositories, evidence skills and adaptation rules. No secret or mutation authority is included.",
     copyFailed: "COPY FAILED",
     nodeMaturity: "Repository maturity",
+    // ---- single-screen HUD ----
+    hudBrand: "TRINITY QUEEN",
+    hudBees: "BEES",
+    hudAccepted: "ACCEPTED",
+    hudVerdicts: "VERDICTS",
+    hudResearch: "RESEARCH",
+    hudFoundry: "FOUNDRY",
+    hudNextRound: "NEXT ROUND",
+    hudAlerts: "ALERTS",
+    hudMenu: "MENU",
+    hudLanguage: "EN / RU",
+    hudViews: "VIEWS",
+    hudIntel: "INTEL FEED",
+    hudLive: "LIVE",
+    hudOffline: "OFFLINE",
+    hudViewAll: "VIEW ALL",
+    hudCollapseFeed: "COLLAPSE",
+    hudOverview: "OVERVIEW",
+    hudSectors: "SECTORS",
+    hudContext: "CONTEXT DETAILS",
+    hudQueue: "BEE QUEUE",
+    hudQueueEmpty: "No Bee is running. The Queen holds the queue under policy.",
+    hudReviewQueue: "REVIEW QUEUE",
+    hudLast: "LAST",
+    hudSelected: "SELECTED",
+    hudTheQueen: "THE QUEEN",
+    hudQueenRole: "Supervisor. Chooses, delegates, judges.",
+    hudBackend: "BACKEND",
+    hudTerritory: "TERRITORY",
+    hudNeeds: "NEEDS",
+    hudNoBee: "NO BEE",
+    hudSlot: "SLOT",
+    hudBusy: "BUSY",
+    hudCell: "CELL",
+    hudAllow: "ALLOW",
+    hudRefuse: "REFUSE",
+    hudSchedulerOff: "SCHEDULER OFF",
+    hudOverdue: "OVERDUE",
+    hudDispatched: "dispatched",
+    hudOpenIssue: "OPEN ISSUE",
+    hudCopyLink: "COPY LINK",
+    hudLinkCopied: "LINK COPIED",
+    hudClose: "Close",
+    hudOpenPanel: "CONTEXT",
+    hudActiveSector: "ACTIVE SECTOR",
+    hudProduction: "PRODUCTION",
+    hudCards: "CARDS",
+    hudHeld: "HELD",
+    hudSlots: "SLOTS",
+    hudSignature: "SIGNATURE",
+    hudVerified: "VERIFIED",
+    hudUnverified: "UNVERIFIED",
+    hudDevice: "DEVICE",
+    hudCommands: "QUICK COMMANDS",
+    hudOpenRepo: "OPEN REPO",
+    hudFitView: "FIT VIEW",
+    hudZoomIn: "ZOOM IN",
+    hudZoomOut: "ZOOM OUT",
+    hudFullscreen: "FULLSCREEN",
+    hudExitFullscreen: "EXIT FULLSCREEN",
+    hudCollapse: "COLLAPSE",
+    hudExpand: "EXPAND",
+    hudNoEvents: "No recorded Bee event yet.",
+    researchHint: "Canonical evidence graph",
   },
   ru: {
     back: "TRINITY",
@@ -340,7 +438,7 @@ const COPY = {
     queenCopy: "Проверяет конфликты, состояние и политику до делегирования.",
     bee: "BEE",
     beeCopy: "Работает изолированно и возвращает результат на проверку.",
-    latest: "ПОСЛЕДНИЙ ЗАВЕРШЁННЫЙ DISPATCH",
+    latest: "ПОСЛЕДНИЙ DISPATCH",
     issue: "Задача",
     outcome: "Исход",
     finished: "Завершено",
@@ -467,8 +565,74 @@ const COPY = {
       "Копирует публичный A2A-bootstrap, адреса графа, репозитории, evidence-скиллы и правила адаптации. Секреты и права на изменения не копируются.",
     copyFailed: "НЕ УДАЛОСЬ СКОПИРОВАТЬ",
     nodeMaturity: "Зрелость в репозитории",
+    // ---- single-screen HUD ----
+    hudBrand: "TRINITY QUEEN",
+    hudBees: "ПЧЁЛЫ",
+    hudAccepted: "ПРИНЯТО",
+    hudVerdicts: "ВЕРДИКТЫ",
+    hudResearch: "ИССЛЕДОВАНИЯ",
+    hudFoundry: "ВЕРФЬ",
+    hudNextRound: "СЛЕДУЮЩИЙ ЦИКЛ",
+    hudAlerts: "СИГНАЛЫ",
+    hudMenu: "МЕНЮ",
+    hudLanguage: "EN / RU",
+    hudViews: "ВИДЫ",
+    hudIntel: "ЛЕНТА РАЗВЕДКИ",
+    hudLive: "В СЕТИ",
+    hudOffline: "НЕ В СЕТИ",
+    hudViewAll: "ПОКАЗАТЬ ВСЁ",
+    hudCollapseFeed: "СВЕРНУТЬ",
+    hudOverview: "ОБЗОР",
+    hudSectors: "СЕКТОРА",
+    hudContext: "ДЕТАЛИ КОНТЕКСТА",
+    hudQueue: "ОЧЕРЕДЬ ПЧЁЛ",
+    hudQueueEmpty: "Ни одна Bee не работает. Королева держит очередь по политике.",
+    hudReviewQueue: "ОЧЕРЕДЬ РЕВЬЮ",
+    hudLast: "ПОСЛЕДНИЙ",
+    hudSelected: "ВЫБРАНО",
+    hudTheQueen: "КОРОЛЕВА",
+    hudQueenRole: "Надзиратель. Выбирает, делегирует, судит.",
+    hudBackend: "BACKEND",
+    hudTerritory: "ТЕРРИТОРИЯ",
+    hudNeeds: "НУЖНО",
+    hudNoBee: "ПЧЕЛЫ НЕТ",
+    hudSlot: "СЛОТ",
+    hudBusy: "ЗАНЯТ",
+    hudCell: "ЯЧЕЙКА",
+    hudAllow: "РАЗРЕШЕНО",
+    hudRefuse: "ОТКАЗ",
+    hudSchedulerOff: "ПЛАНИРОВЩИК ВЫКЛЮЧЕН",
+    hudOverdue: "ПРОСРОЧЕН",
+    hudDispatched: "запущен",
+    hudOpenIssue: "ОТКРЫТЬ ЗАДАЧУ",
+    hudCopyLink: "КОПИРОВАТЬ ССЫЛКУ",
+    hudLinkCopied: "ССЫЛКА СКОПИРОВАНА",
+    hudClose: "Закрыть",
+    hudOpenPanel: "КОНТЕКСТ",
+    hudActiveSector: "АКТИВНЫЙ СЕКТОР",
+    hudProduction: "PRODUCTION",
+    hudCards: "КАРТОЧЕК",
+    hudHeld: "ЗАНЯТО",
+    hudSlots: "СЛОТОВ",
+    hudSignature: "ПОДПИСЬ",
+    hudVerified: "ПРОВЕРЕНА",
+    hudUnverified: "НЕ ПРОВЕРЕНА",
+    hudDevice: "УСТРОЙСТВО",
+    hudCommands: "БЫСТРЫЕ КОМАНДЫ",
+    hudOpenRepo: "ОТКРЫТЬ РЕПО",
+    hudFitView: "ВПИСАТЬ",
+    hudZoomIn: "ПРИБЛИЗИТЬ",
+    hudZoomOut: "ОТДАЛИТЬ",
+    hudFullscreen: "ВО ВЕСЬ ЭКРАН",
+    hudExitFullscreen: "ВЫЙТИ ИЗ ПОЛНОГО ЭКРАНА",
+    hudCollapse: "СВЕРНУТЬ",
+    hudExpand: "РАЗВЕРНУТЬ",
+    hudNoEvents: "Записанных событий Bee пока нет.",
+    researchHint: "Канонический граф доказательств",
   },
 } as const;
+
+type Copy = (typeof COPY)["ru"] | (typeof COPY)["en"];
 
 function useQueenStatus(): LoadState {
   const [state, setState] = useState<LoadState>({
@@ -554,10 +718,10 @@ function useQueenBoard(): {
 }
 
 function useQueenActivity(): {
-  data: QueenActivity | null;
+  data: ActivityBuffer | null;
   error: string | null;
 } {
-  const [data, setData] = useState<QueenActivity | null>(null);
+  const [data, setData] = useState<ActivityBuffer | null>(null);
   const [error, setError] = useState<string | null>(null);
   const cursor = useRef(Date.now() - 24 * 60 * 60 * 1_000);
 
@@ -583,6 +747,20 @@ function useQueenActivity(): {
                 event,
               ]),
             );
+            // The bell's buffer. The 120-event cap below holds under a
+            // minute of a busy swarm, which would evict a ten-minute-old
+            // verdict the bell still owes the reader; alert kinds are kept
+            // here for the whole window instead.
+            const seenAt = Date.now();
+            const alertsById = new Map(
+              [...(previous?.alerts ?? []), ...next.events]
+                .filter((event) => {
+                  if (!isAlertKind(event.kind)) return false;
+                  const at = new Date(event.at).getTime();
+                  return Number.isFinite(at) && seenAt - at <= ALERT_WINDOW_MS;
+                })
+                .map((event) => [event.id, event]),
+            );
             return {
               cursor: next.cursor,
               events: [...byId.values()]
@@ -591,6 +769,7 @@ function useQueenActivity(): {
                     new Date(right.at).getTime() - new Date(left.at).getTime(),
                 )
                 .slice(0, 120),
+              alerts: [...alertsById.values()],
             };
           });
           setError(null);
@@ -712,6 +891,44 @@ function useNow() {
   }, []);
 
   return now;
+}
+
+/** A CSS media query as React state; the subscription is the query's own listener. */
+function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const list = window.matchMedia(query);
+      list.addEventListener("change", onChange);
+      return () => list.removeEventListener("change", onChange);
+    },
+    [query],
+  );
+  const read = useCallback(() => window.matchMedia(query).matches, [query]);
+  return useSyncExternalStore(subscribe, read, () => false);
+}
+
+/** Close a popover on Escape or on a pointer-down outside its element. */
+function useDismiss(
+  open: boolean,
+  ref: RefObject<HTMLElement | null>,
+  onClose: () => void,
+) {
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (event: MouseEvent) => {
+      const host = ref.current;
+      if (host && !host.contains(event.target as Node)) onClose();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, ref, onClose]);
 }
 
 function formatInterval(seconds: number, lang: string) {
@@ -850,11 +1067,14 @@ function TechnologyTree({
   graph,
   error,
   lang,
+  embedded = false,
 }: {
-  c: (typeof COPY)["ru"] | (typeof COPY)["en"];
+  c: Copy;
   graph: ResearchGraph | null;
   error: string | null;
   lang: string;
+  /** Inside the HUD viewport: a one-line strip instead of the page head. */
+  embedded?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
@@ -933,69 +1153,101 @@ function TechnologyTree({
     ) ?? [];
 
   return (
-    <section className="queen27-tech" aria-labelledby="queen-tech-title">
-      <div className="queen27-tech-head">
-        <div>
+    <section
+      className={`queen27-tech${embedded ? " is-embedded" : ""}`}
+      aria-labelledby="queen-tech-title"
+    >
+      {embedded ? (
+        <div className="queen27-tech-strip">
           <span className="queen27-section-label" id="queen-tech-title">
             {c.tech}
           </span>
-          <h2>{c.techTitle}</h2>
-          <p>{c.techCopy}</p>
+          <span>
+            <b>{graph ? `${graph.summary.percentage}%` : "—"}</b> {c.overallResearch}
+          </span>
+          <span>
+            <b>{graph?.summary.researched ?? "—"}</b> {c.researched}
+          </span>
+          <span>
+            <b>{graph?.summary.researching ?? "—"}</b> {c.activeResearch}
+          </span>
+          <span>
+            <b>{graph?.summary.available ?? "—"}</b> {c.nextAvailable}
+          </span>
+          <span className="queen27-worker-slots">
+            {(graph?.workers.slots ?? []).map((slot) => (
+              <span className={`is-${slot.state}`} key={slot.slot}>
+                <i /> {String(slot.slot).padStart(2, "0")}
+              </span>
+            ))}
+          </span>
         </div>
-        <div className="queen27-tech-score" aria-label={c.overallResearch}>
-          <strong>{graph ? `${graph.summary.percentage}%` : "—"}</strong>
-          <span>{c.overallResearch}</span>
-        </div>
-      </div>
+      ) : (
+        <>
+          <div className="queen27-tech-head">
+            <div>
+              <span className="queen27-section-label" id="queen-tech-title">
+                {c.tech}
+              </span>
+              <h2>{c.techTitle}</h2>
+              <p>{c.techCopy}</p>
+            </div>
+            <div className="queen27-tech-score" aria-label={c.overallResearch}>
+              <strong>{graph ? `${graph.summary.percentage}%` : "—"}</strong>
+              <span>{c.overallResearch}</span>
+            </div>
+          </div>
 
-      <div className="queen27-agent-connect">
-        <div>
-          <span>A2A / SKILLS / ADAPTATION</span>
-          <h3>{c.copyAgentTitle}</h3>
-          <p>{c.copyAgentCopy}</p>
-        </div>
-        <button type="button" onClick={copyBootstrap}>
-          <i aria-hidden="true">⌘</i>
-          <strong>
-            {copyState === "copied"
-              ? c.copiedAgent
-              : copyState === "error"
-                ? c.copyFailed
-                : c.copyAgent}
-          </strong>
-          <small>{bootstrap.protocol} · {bootstrap.version}</small>
-        </button>
-      </div>
+          <div className="queen27-agent-connect">
+            <div>
+              <span>A2A / SKILLS / ADAPTATION</span>
+              <h3>{c.copyAgentTitle}</h3>
+              <p>{c.copyAgentCopy}</p>
+            </div>
+            <button type="button" onClick={copyBootstrap}>
+              <i aria-hidden="true">⌘</i>
+              <strong>
+                {copyState === "copied"
+                  ? c.copiedAgent
+                  : copyState === "error"
+                    ? c.copyFailed
+                    : c.copyAgent}
+              </strong>
+              <small>{bootstrap.protocol} · {bootstrap.version}</small>
+            </button>
+          </div>
 
-      <div className="queen27-tech-stats">
-        <span>
-          <b>{graph?.summary.researched ?? "—"}</b> {c.researched}
-        </span>
-        <span>
-          <b>{graph?.summary.researching ?? "—"}</b> {c.activeResearch}
-        </span>
-        <span>
-          <b>{graph?.summary.available ?? "—"}</b> {c.nextAvailable}
-        </span>
-      </div>
-
-      <div className="queen27-worker-pool">
-        <div>
-          <span>{c.workerPool}</span>
-          <strong>
-            {graph ? `${graph.workers.active}/${graph.workers.capacity}` : "—"}
-          </strong>
-          <small>{c.slotsBusy}</small>
-        </div>
-        <p>{c.workerPoolCopy}</p>
-        <div className="queen27-worker-slots">
-          {(graph?.workers.slots ?? []).map((slot) => (
-            <span className={`is-${slot.state}`} key={slot.slot}>
-              <i /> SLOT {String(slot.slot).padStart(2, "0")}
+          <div className="queen27-tech-stats">
+            <span>
+              <b>{graph?.summary.researched ?? "—"}</b> {c.researched}
             </span>
-          ))}
-        </div>
-      </div>
+            <span>
+              <b>{graph?.summary.researching ?? "—"}</b> {c.activeResearch}
+            </span>
+            <span>
+              <b>{graph?.summary.available ?? "—"}</b> {c.nextAvailable}
+            </span>
+          </div>
+
+          <div className="queen27-worker-pool">
+            <div>
+              <span>{c.workerPool}</span>
+              <strong>
+                {graph ? `${graph.workers.active}/${graph.workers.capacity}` : "—"}
+              </strong>
+              <small>{c.slotsBusy}</small>
+            </div>
+            <p>{c.workerPoolCopy}</p>
+            <div className="queen27-worker-slots">
+              {(graph?.workers.slots ?? []).map((slot) => (
+                <span className={`is-${slot.state}`} key={slot.slot}>
+                  <i /> SLOT {String(slot.slot).padStart(2, "0")}
+                </span>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="queen27-tech-console">
         <div
@@ -1179,26 +1431,180 @@ function TechnologyTree({
   );
 }
 
-function Metric({
-  label,
-  value,
-  note,
+// The kanban and the mission map, byte-identical in markup to the board views
+// the page rendered before the HUD; they now live inside the viewport.
+function KanbanView({
+  columns,
+  cards,
+  repo,
+  error,
+  c,
+  lang,
 }: {
-  label: string;
-  value: string | number;
-  note?: string;
+  columns: QueenColumn[];
+  cards: QueenCard[];
+  repo: string | null;
+  error: string | null;
+  c: Copy;
+  lang: string;
 }) {
   return (
-    <article className="queen27-metric">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      {note && <small>{note}</small>}
-    </article>
+    <motion.div
+      className="queen27-kanban"
+      role="region"
+      aria-label={c.kanbanView}
+      tabIndex={0}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      {columns.map((column) => {
+        const columnCards = cards.filter((card) => card.column === column.key);
+        return (
+          <motion.article
+            className={`queen27-column is-${column.key}`}
+            key={column.key}
+            layout
+          >
+            <header>
+              <h3>{column.title}</h3>
+              <span>{columnCards.length}</span>
+            </header>
+            <small>{column.blurb}</small>
+            <div className="queen27-cards">
+              {columnCards.map((card) => (
+                <motion.a
+                  className="queen27-card"
+                  href={`https://github.com/${repo}/issues/${card.number}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  key={card.number}
+                  layout
+                  layoutId={`queen-card-${card.number}`}
+                  transition={{
+                    type: "spring",
+                    stiffness: 320,
+                    damping: 30,
+                  }}
+                >
+                  <div className="queen27-card-topline">
+                    <b>#{card.number}</b>
+                    {(column.key === "running" ||
+                      column.key === "review") && (
+                      <span className="queen27-card-signal">
+                        <i />
+                        {column.key === "running"
+                          ? c.executing
+                          : c[reviewStateOf(card)]}
+                      </span>
+                    )}
+                  </div>
+                  <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
+                  {typeof card.criteria === "number" && (
+                    <span>
+                      {card.criteria} {c.criteria}
+                    </span>
+                  )}
+                  {card.needs && card.needs.length > 0 && (
+                    <span>
+                      {c.missing}: {card.needs.join(", ")}
+                    </span>
+                  )}
+                </motion.a>
+              ))}
+              {columnCards.length === 0 && <em>{error ?? c.empty}</em>}
+            </div>
+          </motion.article>
+        );
+      })}
+    </motion.div>
   );
 }
 
+function MissionMapView({
+  columns,
+  cards,
+  repo,
+  error,
+  c,
+  lang,
+}: {
+  columns: QueenColumn[];
+  cards: QueenCard[];
+  repo: string | null;
+  error: string | null;
+  c: Copy;
+  lang: string;
+}) {
+  return (
+    <motion.div
+      className="queen27-mission-map"
+      role="region"
+      aria-label={c.mapView}
+      tabIndex={0}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <div className="queen27-map-stars" aria-hidden="true" />
+      <div className="queen27-map-route" aria-hidden="true" />
+      <div className="queen27-map-sectors">
+        {columns.map((column, sectorIndex) => {
+          const columnCards = cards.filter(
+            (card) => card.column === column.key,
+          );
+          return (
+            <motion.section
+              className={`queen27-map-sector is-${column.key}`}
+              key={column.key}
+              layout
+            >
+              <header>
+                <small>
+                  {c.sector} {String(sectorIndex + 1).padStart(2, "0")}
+                </small>
+                <h3>{column.title}</h3>
+                <b>{columnCards.length}</b>
+              </header>
+              <div className="queen27-map-nodes">
+                {columnCards.map((card, cardIndex) => (
+                  <motion.a
+                    href={`https://github.com/${repo}/issues/${card.number}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={card.number}
+                    layout
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                      delay: Math.min(cardIndex * 0.025, 0.3),
+                    }}
+                    title={publicIssueTitle(card.title, card.number, lang)}
+                  >
+                    <i aria-hidden="true" />
+                    <span>#{card.number}</span>
+                    <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
+                    {typeof card.criteria === "number" && (
+                      <small>
+                        {card.criteria} {c.criteria}
+                      </small>
+                    )}
+                  </motion.a>
+                ))}
+                {columnCards.length === 0 && <em>{error ?? c.empty}</em>}
+              </div>
+            </motion.section>
+          );
+        })}
+      </div>
+      <p>{c.mapLegend}</p>
+    </motion.div>
+  );
+}
+
+const EMPTY_CARDS: QueenCard[] = [];
+const EMPTY_EVENTS: QueenActivityEvent[] = [];
+
 export default function Queen() {
-  const { lang } = useI18n();
+  const { lang, setLang } = useI18n();
   const c = lang === "ru" ? COPY.ru : COPY.en;
   const state = useQueenStatus();
   const boardState = useQueenBoard();
@@ -1206,637 +1612,1014 @@ export default function Queen() {
   const researchState = useQueenResearch();
   const hardwareState = useQueenHardware();
   const [boardView, setBoardView] = useState<
-    "kanban" | "map" | "factory" | "comb"
-  >("kanban");
+    "kanban" | "map" | "factory" | "comb" | "research"
+  >("comb");
+  const view: HudView = boardView;
   const now = useNow();
+  const isNarrow = useMediaQuery("(max-width: 1100px)");
+  const isPhone = useMediaQuery("(max-width: 900px)");
+
+  // ---- HUD state: which panel is open, what is picked. Nothing here acts on
+  // the Queen; there is no public write endpoint to act with.
+  const [commandCollapsed, setCommandCollapsed] = useState(false);
+  const [intelExpanded, setIntelExpanded] = useState(false);
+  const [intelOpen, setIntelOpen] = useState(false);
+  // The context panel belongs to the comb: it opens with the field (on a
+  // desktop) and steps aside for the views that need the whole viewport.
+  const [contextOpen, setContextOpen] = useState(!isPhone);
+  const setView = useCallback(
+    (next: HudView) => {
+      setBoardView(next);
+      setContextOpen(next === "comb" && !isPhone);
+    },
+    [isPhone],
+  );
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [doctrineOpen, setDoctrineOpen] = useState(false);
+  const [roundOpen, setRoundOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeSector, setActiveSector] = useState<string | null>(null);
+  const [pick, setPick] = useState<HudPick | null>(null);
+  const [pickIndex, setPickIndex] = useState<number | null>(null);
+  const [agentCopy, setAgentCopy] = useState<"idle" | "copied" | "error">(
+    "idle",
+  );
+  const combRef = useRef<CombHandle>(null);
+  const viewportRef = useRef<HTMLElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const roundRef = useRef<HTMLElement>(null);
+  const agentCopyTimer = useRef<number | null>(null);
+
   const data = state.data;
   const isLive = state.kind === "ready";
   const latest = data?.dispatches.latest;
   const decision = data?.lastTick;
-  const runningCards =
-    boardState.data?.cards.filter((card) => card.column === "running") ?? [];
-  const reviewCards =
-    boardState.data?.cards.filter((card) => card.column === "review") ?? [];
-  const reviewQueueCounts = reviewCounts(boardState.data);
+  const board = boardState.data;
+  const repo = board?.repo ?? null;
+  const pulse = board?.pulse;
+  const research = researchState.data;
+  const workers = research?.workers ?? null;
+  const hardware = hardwareState.data;
+  const cards = board?.cards ?? EMPTY_CARDS;
+  const events: HudEvent[] = activityState.data?.events ?? EMPTY_EVENTS;
+  const boardColumns = board?.columns ?? FALLBACK_COLUMNS;
+  const runningCards = useMemo(
+    () => cards.filter((card) => card.column === "running"),
+    [cards],
+  );
+  const reviewCards = useMemo(
+    () => cards.filter((card) => card.column === "review"),
+    [cards],
+  );
+  const doneCount = useMemo(
+    () => cards.filter((card) => card.column === "done").length,
+    [cards],
+  );
+  const reviewQueueCounts = reviewCounts(board);
+  const reviewColumnTitle =
+    boardColumns.find((column) => column.key === "review")?.title ?? "review";
   const roundSeconds =
-    boardState.data?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
-  const lastRoundAt =
-    boardState.data?.pulse.lastRoundAt ?? decision?.decidedAt ?? null;
+    board?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
+  const lastRoundAt = board?.pulse.lastRoundAt ?? decision?.decidedAt ?? null;
   const elapsedSeconds = lastRoundAt
     ? Math.max(0, (now - new Date(lastRoundAt).getTime()) / 1000)
     : 0;
-  const roundRemaining = roundSeconds
-    ? Math.max(0, roundSeconds - elapsedSeconds)
-    : 0;
-  const roundProgress = roundSeconds
-    ? Math.min(100, (elapsedSeconds / roundSeconds) * 100)
-    : 0;
+  // The clock is only as real as its two inputs, a round length and the
+  // moment the last round happened: without both it reads "—", never a
+  // fabricated 00:00:00. A disabled scheduler has no next round to count
+  // down to; past the round length the clock counts up as overdue.
+  const schedulerOff = data ? !data.scheduler.enabled : false;
+  const roundKnown = roundSeconds > 0 && lastRoundAt !== null;
+  const roundOverdue = roundKnown && elapsedSeconds > roundSeconds;
+  const roundProgress =
+    roundKnown && !schedulerOff
+      ? Math.min(100, (elapsedSeconds / roundSeconds) * 100)
+      : 0;
   const syncLabel = boardState.syncedAt
     ? boardState.syncedAt.toLocaleTimeString(lang === "ru" ? "ru-RU" : "en-GB")
     : "—";
-  const boardColumns = boardState.data?.columns ?? FALLBACK_COLUMNS;
+  const countdown =
+    schedulerOff || !roundKnown
+      ? "—"
+      : roundOverdue
+        ? `+${formatCountdown(elapsedSeconds - roundSeconds)}`
+        : formatCountdown(roundSeconds - elapsedSeconds);
+  const roundLabel = schedulerOff
+    ? c.hudSchedulerOff
+    : roundOverdue
+      ? c.hudOverdue
+      : c.hudNextRound;
+  const roundHeading = schedulerOff
+    ? c.hudSchedulerOff
+    : roundOverdue
+      ? c.hudOverdue
+      : c.nextRound;
+  const alertEvents: HudEvent[] = activityState.data?.alerts ?? EMPTY_EVENTS;
+  const alerts = useMemo(() => alertCount(alertEvents, now), [alertEvents, now]);
+  const cellSummaries = useMemo(() => summariseCells(cards), [cards]);
+  const sectors = useMemo(
+    () => sectorRows(boardColumns, cards),
+    [boardColumns, cards],
+  );
+  const queue = useMemo(
+    () =>
+      runningCards.map((card) => ({
+        card,
+        latest: latestEventFor(events, card.number),
+      })),
+    [runningCards, events],
+  );
+  const reviewQueue = useMemo(() => reviewCards.slice(0, 4), [reviewCards]);
+  const describe = useCallback(
+    (event: HudEvent) => activityLabel(event, lang),
+    [lang],
+  );
+  const pickedCard = pick?.card ?? null;
+  const pickedIssueUrl =
+    pickedCard && repo
+      ? `https://github.com/${repo}/issues/${pickedCard.number}`
+      : null;
+  const decisionLine = decision
+    ? `${decision.allowed ? c.chose : c.stoodDown} · ${decision.refusal ?? c.queueMeaning}`
+    : c.noDecision;
+  const heldCount = doneCount + runningCards.length;
+  const device = hardware?.devices[0] ?? null;
 
-  return (
-    <main className="queen27-page">
-      <nav className="queen27-nav" aria-label="Queen page navigation">
-        <Link to="/" className="queen27-brand">
-          {c.back}
-        </Link>
-        <span className="queen27-formula">φ² + 1/φ² = 3</span>
-      </nav>
+  // ---- the shell owns the document while mounted: the body class scopes the
+  // height chain in Queen.css and is removed on unmount.
+  useEffect(() => {
+    document.body.classList.add("queen-shell");
+    return () => document.body.classList.remove("queen-shell");
+  }, []);
 
-      <header className="queen27-hero">
-        <div className="queen27-kicker">{c.eyebrow}</div>
-        <div className="queen27-hero-grid">
-          <div>
-            <h1>{c.title}</h1>
-            <p>{c.lede}</p>
-          </div>
-          <div className="queen27-logo">
-            <TrinityLogo withLabel={false} height="clamp(180px, 24vw, 300px)" />
-          </div>
-        </div>
-        <div
-          className={`queen27-live ${isLive ? "is-live" : state.kind === "error" ? "is-error" : ""}`}
-        >
-          <span className="queen27-live-dot" />
-          <strong>
-            {isLive
-              ? c.live
-              : state.kind === "error"
-                ? c.unavailable
-                : c.checking}
-          </strong>
-          <span>{c.provenance}</span>
-        </div>
-      </header>
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      const digit = Number.parseInt(event.key, 10);
+      if (digit >= 1 && digit <= HUD_VIEWS.length) setView(HUD_VIEWS[digit - 1]);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [setView]);
 
-      <section className="queen27-metrics" aria-label="Queen runtime metrics">
-        <Metric
-          label={c.scheduler}
-          value={
-            data?.scheduler.enabled
-              ? "ON"
-              : state.kind === "loading"
-                ? "…"
-                : "OFF"
-          }
-          note={
-            data
-              ? `${c.every} ${formatInterval(data.scheduler.intervalSeconds, lang)}`
-              : undefined
-          }
-        />
-        <Metric
-          label={c.lastDecision}
-          value={formatMoment(decision?.decidedAt, lang)}
-        />
-        <Metric
-          label={c.dispatches}
-          value={
-            data ? `${data.dispatches.finished}/${data.dispatches.total}` : "—"
-          }
-        />
-        <Metric label={c.active} value={data?.dispatches.running ?? "—"} />
-      </section>
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
 
-      <section
-        className="queen27-command"
-        aria-labelledby="queen-command-title"
-      >
-        <div className="queen27-command-head">
-          <span className="queen27-section-label" id="queen-command-title">
-            {c.command}
-          </span>
-          <h2>{c.commandTitle}</h2>
-          <p>{c.commandCopy}</p>
-        </div>
+  useEffect(
+    () => () => {
+      if (agentCopyTimer.current !== null) {
+        window.clearTimeout(agentCopyTimer.current);
+      }
+    },
+    [],
+  );
 
-        <div className="queen27-command-grid">
-          <article className="queen27-queen-core">
-            <div className="queen27-core-orbit" aria-hidden="true">
-              <span
-                data-role="orbit"
-                className="queen27-cycle-ring queen27-cycle-ring-outer"
-              />
-              <span
-                data-role="orbit"
-                className="queen27-cycle-ring queen27-cycle-ring-dashed"
-              />
-              <span
-                data-role="orbit"
-                className="queen27-cycle-ring queen27-cycle-ring-inner"
-              />
-              <div className="queen27-cycle-brand">
-                <TrinityLogo withLabel={false} height="72px" />
-              </div>
-            </div>
-            <div>
-              <span>{c.nextRound}</span>
-              <strong>{formatCountdown(roundRemaining)}</strong>
-              <small>
-                {c.synchronized} · {syncLabel}
-              </small>
-            </div>
-            <i aria-hidden="true">
-              <span style={{ width: `${roundProgress}%` }} />
-            </i>
-          </article>
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const closeRound = useCallback(() => setRoundOpen(false), []);
+  useDismiss(menuOpen, menuRef, closeMenu);
+  useDismiss(roundOpen, roundRef, closeRound);
 
-          <article className="queen27-swarm-live">
-            <header>
-              <span>
-                <b>{runningCards.length}</b> {c.executing}
-              </span>
-              <span>
-                <b>{reviewQueueCounts.queenReviewPending}</b>{" "}
-                {c.queenReviewPending}
-              </span>
+  const handlePick = useCallback((next: HudPick | null) => {
+    setPick(next);
+    setPickIndex(next?.index ?? null);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else {
+      void viewportRef.current?.requestFullscreen?.();
+    }
+  };
+
+  const toggleLang = () => setLang(lang === "ru" ? "en" : "ru");
+
+  const copyAgent = async () => {
+    if (agentCopyTimer.current !== null) {
+      window.clearTimeout(agentCopyTimer.current);
+    }
+    try {
+      await copyToClipboard(
+        agentBootstrapText(research?.agentBootstrap ?? fallbackBootstrap(), lang),
+      );
+      setAgentCopy("copied");
+      agentCopyTimer.current = window.setTimeout(() => {
+        agentCopyTimer.current = null;
+        setAgentCopy("idle");
+      }, 2_500);
+    } catch {
+      setAgentCopy("error");
+    }
+  };
+
+  const onBell = () => {
+    if (isNarrow) setIntelOpen((open) => !open);
+    else setIntelExpanded((expanded) => !expanded);
+  };
+
+  const commandItems = [
+    { view: "comb" as const, glyph: "▽", label: c.combView, hint: c.combHint },
+    { view: "kanban" as const, glyph: "▦", label: c.kanbanView, hint: c.kanbanHint },
+    { view: "map" as const, glyph: "⌘", label: c.mapView, hint: c.mapHint },
+    { view: "factory" as const, glyph: "⚙", label: c.factoryView, hint: c.factoryHint },
+    { view: "research" as const, glyph: "◈", label: c.tech, hint: c.researchHint },
+  ];
+  const viewLabel =
+    commandItems.find((item) => item.view === view)?.label ?? c.combView;
+  const doctrine = [
+    { n: "01", title: c.spec, copy: c.specCopy, tone: "" },
+    { n: "02", title: c.queen, copy: c.queenCopy, tone: "is-queen" },
+    { n: "03", title: c.bee, copy: c.beeCopy, tone: "" },
+    { n: "04", title: c.selfReview, copy: c.selfReviewCopy, tone: "is-active" },
+    { n: "05", title: c.verdict, copy: c.verdictCopy, tone: "is-queen" },
+    { n: "06", title: c.merge, copy: c.mergeCopy, tone: "" },
+  ];
+  const statusText = isLive
+    ? c.live
+    : state.kind === "error"
+      ? c.unavailable
+      : c.checking;
+  const statusTone = isLive ? "is-live" : state.kind === "error" ? "is-cold" : "is-muted";
+  const skipEntries = Object.entries(decision?.skipSummary ?? {});
+
+  const intelContent = (
+    <>
+      <QueenIntelFeed
+        events={events}
+        error={activityState.error}
+        lang={lang}
+        repo={repo}
+        expanded={intelExpanded}
+        onToggle={() => setIntelExpanded((expanded) => !expanded)}
+        describe={describe}
+        labels={{
+          title: c.hudIntel,
+          live: c.hudLive,
+          offline: c.hudOffline,
+          empty: c.hudNoEvents,
+          viewAll: c.hudViewAll,
+          collapse: c.hudCollapseFeed,
+        }}
+      />
+      {!intelExpanded && (
+        <>
+          <section className="queen27-hud-panel queen27-hud-minimap" aria-label={c.hudOverview}>
+            <header className="queen27-hud-panel-head">
+              <span>{c.hudOverview}</span>
+              <span>{board ? cards.length : "—"} {c.hudCards}</span>
             </header>
-            {runningCards.length > 0 ? (
-              <div className="queen27-bee-list">
-                {runningCards.slice(0, 4).map((card) => (
-                  <a
-                    href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    key={card.number}
-                  >
-                    <i aria-hidden="true">◆</i>
-                    <span>Bee #{card.number}</span>
-                    <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
-                  </a>
-                ))}
-              </div>
-            ) : (
-              <p>{c.noBees}</p>
-            )}
-            <div className="queen27-review-queue">
-              <small>{c.reviewQueue}</small>
-              <div className="queen27-review-summary">
-                {REVIEW_STATES.map((reviewState) => (
-                  <span className={`is-${reviewState}`} key={reviewState}>
-                    <b>{reviewQueueCounts[reviewState]}</b>
-                    {c[reviewState]}
-                  </span>
-                ))}
-              </div>
-              {reviewCards.slice(0, 8).map((card, index) => {
-                const reviewState = reviewStateOf(card);
-                return (
-                  <a
-                    className={`is-${reviewState}`}
-                    href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    key={card.number}
-                  >
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <b>#{card.number}</b>
-                    <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
-                    <em>{c[reviewState]}</em>
-                  </a>
-                );
-              })}
+            <div className="queen27-hud-minimap-body">
+              <QueenMinimap
+                cards={cards}
+                picked={pickIndex}
+                onPick={(index) => {
+                  // The same cell the comb would name: summariseCells is
+                  // the comb's own layout. No bee: the sprites' positions
+                  // are the comb's flight animation, not a fact.
+                  const cell = cellSummaries[index];
+                  handlePick(
+                    cell
+                      ? {
+                          index,
+                          isQueen: index === queenIndexOf(cellSummaries.length),
+                          territory: cell.own,
+                          card:
+                            cell.cardNumber === null
+                              ? null
+                              : (cards.find((card) => card.number === cell.cardNumber) ?? null),
+                          bee: null,
+                        }
+                      : null,
+                  );
+                  setView("comb");
+                }}
+                labels={{ aria: c.hudOverview }}
+              />
             </div>
-            <div className="queen27-activity-stream">
-              <div>
-                <small>{c.activity}</small>
-                <span className={activityState.error ? "is-offline" : ""}>
-                  {c.activityRate}
-                </span>
-              </div>
-              {activityState.data?.events.length ? (
-                <motion.ol layout>
-                  {activityState.data.events.slice(0, 6).map((event) => (
-                    <motion.li
-                      layout
-                      initial={{ opacity: 0, x: 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      key={event.id}
-                    >
-                      <time dateTime={event.at}>
-                        {new Date(event.at).toLocaleTimeString(
-                          lang === "ru" ? "ru-RU" : "en-GB",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          },
-                        )}
-                      </time>
-                      <i className={`is-${event.kind}`} aria-hidden="true" />
-                      <span>
-                        <b>
-                          {activityLabel(event, lang)}
-                          {event.issue ? ` · #${event.issue}` : ""}
-                        </b>
-                        <strong>
-                          {publicIssueTitle(event.title, event.issue ?? 0, lang)}
-                        </strong>
-                      </span>
-                    </motion.li>
-                  ))}
-                </motion.ol>
-              ) : (
-                <p>{c.noActivity}</p>
-              )}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section className="queen27-board" aria-labelledby="queen-board-title">
-        <div className="queen27-board-head">
-          <div>
-            <span className="queen27-section-label" id="queen-board-title">
-              {c.board}
-            </span>
-            <h2>{c.boardTitle}</h2>
-            <p>{c.boardCopy}</p>
-          </div>
-          <div
-            className="queen27-board-pulse"
-            aria-label="Queen activity in the last 24 hours"
-          >
-            <span>
-              <b>{boardState.data?.pulse.rounds ?? "—"}</b>
-              {c.rounds}
-            </span>
-            <span>
-              <b>{boardState.data?.pulse.bees ?? "—"}</b>
-              {c.beesStarted}
-            </span>
-            <span>
-              <b>{boardState.data?.pulse.verdicts ?? "—"}</b>
-              {c.verdicts}
-            </span>
-          </div>
-        </div>
-        <div className="queen27-view-switch" role="group" aria-label={c.board}>
-          <button
-            type="button"
-            className={boardView === "kanban" ? "is-active" : ""}
-            aria-pressed={boardView === "kanban"}
-            onClick={() => setBoardView("kanban")}
-          >
-            <i aria-hidden="true">▦</i>
-            <span>
-              <b>{c.kanbanView}</b>
-              <small>{c.kanbanHint}</small>
-            </span>
-          </button>
-          <button
-            type="button"
-            className={boardView === "map" ? "is-active" : ""}
-            aria-pressed={boardView === "map"}
-            onClick={() => setBoardView("map")}
-          >
-            <i aria-hidden="true">⌘</i>
-            <span>
-              <b>{c.mapView}</b>
-              <small>{c.mapHint}</small>
-            </span>
-          </button>
-          <button
-            type="button"
-            className={boardView === "factory" ? "is-active" : ""}
-            aria-pressed={boardView === "factory"}
-            onClick={() => setBoardView("factory")}
-          >
-            <i aria-hidden="true">⚙</i>
-            <span>
-              <b>{c.factoryView}</b>
-              <small>{c.factoryHint}</small>
-            </span>
-          </button>
-          <button
-            type="button"
-            className={boardView === "comb" ? "is-active" : ""}
-            aria-pressed={boardView === "comb"}
-            onClick={() => setBoardView("comb")}
-          >
-            <i aria-hidden="true">▽</i>
-            <span>
-              <b>{c.combView}</b>
-              <small>{c.combHint}</small>
-            </span>
-          </button>
-        </div>
-
-        {boardView === "kanban" ? (
-          <motion.div
-            className="queen27-kanban"
-            role="region"
-            aria-label={c.kanbanView}
-            tabIndex={0}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {boardColumns.map((column) => {
-              const cards =
-                boardState.data?.cards.filter(
-                  (card) => card.column === column.key,
-                ) ?? [];
-              return (
-                <motion.article
-                  className={`queen27-column is-${column.key}`}
-                  key={column.key}
-                  layout
-                >
-                  <header>
-                    <h3>{column.title}</h3>
-                    <span>{cards.length}</span>
-                  </header>
-                  <small>{column.blurb}</small>
-                  <div className="queen27-cards">
-                    {cards.map((card) => (
-                      <motion.a
-                        className="queen27-card"
-                        href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        key={card.number}
-                        layout
-                        layoutId={`queen-card-${card.number}`}
-                        transition={{
-                          type: "spring",
-                          stiffness: 320,
-                          damping: 30,
-                        }}
-                      >
-                        <div className="queen27-card-topline">
-                          <b>#{card.number}</b>
-                          {(column.key === "running" ||
-                            column.key === "review") && (
-                            <span className="queen27-card-signal">
-                              <i />
-                              {column.key === "running"
-                                ? c.executing
-                                : c[reviewStateOf(card)]}
-                            </span>
-                          )}
-                        </div>
-                        <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
-                        {typeof card.criteria === "number" && (
-                          <span>
-                            {card.criteria} {c.criteria}
-                          </span>
-                        )}
-                        {card.needs && card.needs.length > 0 && (
-                          <span>
-                            {c.missing}: {card.needs.join(", ")}
-                          </span>
-                        )}
-                      </motion.a>
-                    ))}
-                    {cards.length === 0 && (
-                      <em>{boardState.error ?? c.empty}</em>
-                    )}
-                  </div>
-                </motion.article>
-              );
-            })}
-          </motion.div>
-        ) : boardView === "map" ? (
-          <motion.div
-            className="queen27-mission-map"
-            role="region"
-            aria-label={c.mapView}
-            tabIndex={0}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="queen27-map-stars" aria-hidden="true" />
-            <div className="queen27-map-route" aria-hidden="true" />
-            <div className="queen27-map-sectors">
-              {boardColumns.map((column, sectorIndex) => {
-                const cards =
-                  boardState.data?.cards.filter(
-                    (card) => card.column === column.key,
-                  ) ?? [];
-                return (
-                  <motion.section
-                    className={`queen27-map-sector is-${column.key}`}
-                    key={column.key}
-                    layout
-                  >
-                    <header>
-                      <small>
-                        {c.sector} {String(sectorIndex + 1).padStart(2, "0")}
-                      </small>
-                      <h3>{column.title}</h3>
-                      <b>{cards.length}</b>
-                    </header>
-                    <div className="queen27-map-nodes">
-                      {cards.map((card, cardIndex) => (
-                        <motion.a
-                          href={`https://github.com/${boardState.data?.repo}/issues/${card.number}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          key={card.number}
-                          layout
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{
-                            delay: Math.min(cardIndex * 0.025, 0.3),
-                          }}
-                          title={publicIssueTitle(card.title, card.number, lang)}
-                        >
-                          <i aria-hidden="true" />
-                          <span>#{card.number}</span>
-                          <strong>{publicIssueTitle(card.title, card.number, lang)}</strong>
-                          {typeof card.criteria === "number" && (
-                            <small>{card.criteria} CR</small>
-                          )}
-                        </motion.a>
-                      ))}
-                      {cards.length === 0 && (
-                        <em>{boardState.error ?? c.empty}</em>
-                      )}
-                    </div>
-                  </motion.section>
-                );
-              })}
-            </div>
-            <p>{c.mapLegend}</p>
-          </motion.div>
-        ) : boardView === "comb" ? (
-          <QueenComb
-            columns={boardColumns}
-            cards={boardState.data?.cards ?? []}
-            repo={boardState.data?.repo ?? null}
-            workers={researchState.data?.workers ?? null}
-            error={boardState.error ?? researchState.error}
+          </section>
+          <QueenSectors
+            rows={sectors}
+            active={activeSector}
+            onSelect={(key) => {
+              setActiveSector(key);
+              setView("kanban");
+            }}
             labels={{
-              aria: c.combView,
+              title: c.hudSectors,
               held: c.combHeld,
               neutral: c.combNeutral,
               fog: c.combFog,
-              bees: c.combBees,
-              queen: c.combQueen,
-              queenCell: c.combQueenCell,
-              noBee: c.combNoBee,
-              pick: c.combPick,
-              hint: c.combHint2,
-              offline: c.factoryOffline,
+              cards: c.hudCards,
             }}
           />
-        ) : (
-          <QueenFactory
-            columns={boardColumns}
-            cards={boardState.data?.cards ?? []}
-            repo={boardState.data?.repo ?? null}
-            workers={researchState.data?.workers ?? null}
-            researchNodes={researchState.data?.nodes ?? []}
-            researchEdges={researchState.data?.edges ?? []}
-            researchLayers={researchState.data?.layers ?? []}
-            researchError={researchState.error}
-            hardware={hardwareState.data}
-            hardwareError={hardwareState.error}
-            error={boardState.error ?? researchState.error}
-            labels={{
-              aria: c.factoryView,
-              flow: c.factoryFlow,
-              throughput: c.factoryThroughput,
-              queueDensity: c.factoryQueueDensity,
-              workerBays: c.factoryWorkerBays,
-              active: c.executing,
-              idle: c.factoryIdle,
-              station: c.factoryStation,
-              modules: c.factoryModules,
-              empty: c.empty,
-              offline: c.factoryOffline,
-              criteria: c.criteria,
-              missing: c.missing,
-              openIssue: c.factoryOpenIssue,
-              selectedModule: c.factorySelectedModule,
-              liveContract: c.factoryLiveContract,
-              cityTitle: c.cityTitle,
-              cityCopy: c.cityCopy,
-              cityDistricts: c.cityDistricts,
-              cityLaboratories: c.cityLaboratories,
-              citySelected: c.citySelected,
-              cityEvidence: c.cityEvidence,
-              cityOffline: c.cityOffline,
-              cityBuildTitle: c.cityBuildTitle,
-              cityComplete: c.cityComplete,
-              cityAssembling: c.cityAssembling,
-              cityBlueprint: c.cityBlueprint,
-              citySealed: c.citySealed,
-              cityDependencies: c.cityDependencies,
-              foundryTitle: c.foundryTitle,
-              foundryVerified: c.foundryVerified,
-              foundryUnavailable: c.foundryUnavailable,
-              foundryTotal: c.foundryTotal,
-              foundryOnline: c.foundryOnline,
-              foundryProgrammed: c.foundryProgrammed,
-              foundryKey: c.foundryKey,
-            }}
-          />
-        )}
-      </section>
+        </>
+      )}
+    </>
+  );
 
-      <section
-        className="queen27-decision"
-        aria-labelledby="queen-decision-title"
-      >
+  const roundPopover = roundOpen && (
+    <div
+      className="queen27-hud-round-pop"
+      id="queen-round-pop"
+      role="dialog"
+      aria-label={c.decision}
+    >
+      <span className="queen27-section-label">{c.decision}</span>
+      <div className="queen27-hud-round-pop-grid">
+        <div
+          className="queen27-verdict"
+          aria-label={
+            decision ? (decision.allowed ? c.hudAllow : c.hudRefuse) : c.noDecision
+          }
+        >
+          <span>{decision ? (decision.allowed ? "1" : "0") : "—"}</span>
+          <small>{decision ? (decision.allowed ? c.hudAllow : c.hudRefuse) : "—"}</small>
+        </div>
         <div>
-          <span className="queen27-section-label" id="queen-decision-title">
-            {c.decision}
-          </span>
-          <h2>
+          <strong>
             {decision
               ? decision.allowed
                 ? c.chose
                 : c.stoodDown
               : c.noDecision}
-          </h2>
+          </strong>
           {decision && (
             <p>
               {decision.refusal ?? c.queueMeaning} · {decision.skippedCount}{" "}
               {c.reasons}.
             </p>
           )}
+          {skipEntries.length > 0 && (
+            <ul className="queen27-hud-skips">
+              {skipEntries.map(([reason, count]) => (
+                <li key={reason}>
+                  <b>{count}</b> {reason}
+                </li>
+              ))}
+            </ul>
+          )}
+          <small>
+            {c.lastDecision}: {formatMoment(decision?.decidedAt, lang)} ·{" "}
+            {c.synchronized} · {syncLabel}
+          </small>
         </div>
-        <div
-          className="queen27-verdict"
-          aria-label={decision?.allowed ? "allowed" : "stood down"}
-        >
-          <span>{decision?.allowed ? "1" : "0"}</span>
-          <small>{decision?.allowed ? "ALLOW" : "REFUSE"}</small>
+      </div>
+    </div>
+  );
+
+  return (
+    <main
+      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}`}
+      data-view={view}
+    >
+      <header className="queen27-hud-top">
+        <Link to="/" className="queen27-hud-res queen27-hud-brand">
+          <TrinityLogo withLabel={false} height="34px" />
+          <span className="queen27-hud-brand-text">
+            <strong>{c.hudBrand}</strong>
+            <span>{c.eyebrow}</span>
+          </span>
+        </Link>
+
+        <div className="queen27-hud-res queen27-hud-res-bees">
+          <i aria-hidden="true">◆</i>
+          <small>{c.hudBees}</small>
+          <strong id="stat-bees">
+            {data ? data.dispatches.running : "—"}/{workers?.capacity ?? "—"}
+          </strong>
+          <span>
+            {workers?.idle ?? "—"} {c.factoryIdle}
+          </span>
         </div>
-      </section>
 
-      <section className="queen27-flow" aria-labelledby="queen-flow-title">
-        <span className="queen27-section-label" id="queen-flow-title">
-          {c.path}
-        </span>
-        <div className="queen27-flow-grid">
-          <article>
-            <b>01</b>
-            <h3>{c.spec}</h3>
-            <p>{c.specCopy}</p>
-          </article>
-          <article className="is-queen">
-            <b>02</b>
-            <h3>{c.queen}</h3>
-            <p>{c.queenCopy}</p>
-          </article>
-          <article>
-            <b>03</b>
-            <h3>{c.bee}</h3>
-            <p>{c.beeCopy}</p>
-          </article>
-          <article className="is-active">
-            <b>04</b>
-            <h3>{c.selfReview}</h3>
-            <p>{c.selfReviewCopy}</p>
-          </article>
-          <article className="is-queen">
-            <b>05</b>
-            <h3>{c.verdict}</h3>
-            <p>{c.verdictCopy}</p>
-          </article>
-          <article>
-            <b>06</b>
-            <h3>{c.merge}</h3>
-            <p>{c.mergeCopy}</p>
-          </article>
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">✓</i>
+          <small>{c.hudAccepted}</small>
+          <strong id="stat-accepted">{board ? doneCount : "—"}</strong>
+          <span>
+            +{pulse?.bees ?? "—"} {c.beesStarted}
+          </span>
         </div>
-      </section>
 
-      <TechnologyTree
-        c={c}
-        graph={researchState.data}
-        error={researchState.error}
-        lang={lang}
-      />
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">▲</i>
+          <small>{c.hudVerdicts}</small>
+          <strong id="stat-verdicts">{pulse?.verdicts ?? "—"}</strong>
+          <span>
+            {board ? `${reviewCards.length} ${reviewColumnTitle}` : "—"}
+          </span>
+        </div>
 
-      <section className="queen27-latest" aria-labelledby="queen-latest-title">
-        <span className="queen27-section-label" id="queen-latest-title">
-          {c.latest}
-        </span>
-        {latest ? (
-          <div className="queen27-latest-grid">
-            <Metric label={c.issue} value={`#${latest.issue}`} />
-            <Metric
-              label={c.outcome}
-              value={(latest.outcome ?? "—").toUpperCase()}
-            />
-            <Metric
-              label={c.finished}
-              value={formatMoment(latest.finishedAt, lang)}
-            />
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">◈</i>
+          <small>{c.hudResearch}</small>
+          <strong id="stat-research">
+            {research ? `${research.summary.percentage}%` : "—"}
+          </strong>
+          <span>
+            {research
+              ? `${research.summary.researched}/${research.summary.total}`
+              : researchState.error
+                ? c.graphOffline
+                : c.graphLoading}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">▰</i>
+          <small>{c.hudFoundry}</small>
+          <strong id="stat-foundry">
+            {hardware
+              ? `${hardware.summary.programmed}/${hardware.summary.total}`
+              : "—"}
+          </strong>
+          <span title={hardware ? hardware.keyId : hardwareState.error ?? undefined}>
+            {hardware
+              ? hardware.keyId
+              : hardwareState.error
+                ? c.foundryUnavailable
+                : c.checking}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res queen27-hud-res-round">
+          <i aria-hidden="true">◎</i>
+          <small>{roundLabel}</small>
+          <strong id="stat-round">{countdown}</strong>
+          <span>
+            {data
+              ? `${c.every} ${formatInterval(data.scheduler.intervalSeconds, lang)} · ${formatMoment(decision?.decidedAt, lang)}`
+              : "—"}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res queen27-hud-bell">
+          <button
+            type="button"
+            onClick={onBell}
+            aria-pressed={isNarrow ? intelOpen : intelExpanded}
+            title={c.hudAlerts}
+          >
+            <i aria-hidden="true">◉</i>
+            <strong
+              id="stat-alerts"
+              className={activityState.data && alerts > 0 ? "is-alert" : ""}
+            >
+              {activityState.data ? alerts : "—"}
+            </strong>
+            <small>{c.hudAlerts}</small>
+          </button>
+        </div>
+
+        <div className="queen27-hud-res queen27-hud-status" ref={menuRef}>
+          <span
+            className={`queen27-hud-pill ${statusTone}`}
+            id="stat-status"
+            title={state.kind === "error" ? state.error : c.provenance}
+          >
+            <i aria-hidden="true" />
+            {statusText}
+          </span>
+          <button
+            type="button"
+            className="queen27-hud-menu-btn"
+            aria-expanded={menuOpen}
+            aria-controls="queen-hud-menu"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {c.hudMenu} ▾
+          </button>
+          {menuOpen && (
+            <ul className="queen27-hud-menu" id="queen-hud-menu">
+              <li>
+                <button type="button" onClick={toggleLang}>
+                  <span>{c.hudLanguage}</span>
+                  <b>{lang.toUpperCase()}</b>
+                </button>
+              </li>
+              <li>
+                {repo ? (
+                  <a href={`https://github.com/${repo}`} target="_blank" rel="noreferrer">
+                    <span>{c.hudOpenRepo}</span>
+                    <b>{repo}</b>
+                  </a>
+                ) : (
+                  <button type="button" disabled>
+                    <span>{c.hudOpenRepo}</span>
+                    <b>—</b>
+                  </button>
+                )}
+              </li>
+              <li>
+                <button
+                  type="button"
+                  aria-expanded={doctrineOpen}
+                  onClick={() => setDoctrineOpen((open) => !open)}
+                >
+                  <span>{c.path}</span>
+                  <b>{doctrineOpen ? "▴" : "▾"}</b>
+                </button>
+                {doctrineOpen && (
+                  <ol className="queen27-hud-doctrine">
+                    {doctrine.map((step) => (
+                      <li key={step.n} className={step.tone}>
+                        <b>{step.n}</b>
+                        <strong>{step.title}</strong>
+                        <p>{step.copy}</p>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </li>
+              <li className="queen27-hud-menu-note">
+                <span>{c.latest}</span>
+                <b>
+                  {latest
+                    ? latest.finishedAt
+                      ? `#${latest.issue} · ${(latest.outcome ?? "—").toUpperCase()} · ${formatMoment(latest.finishedAt, lang)}`
+                      : `#${latest.issue} · ${c.hudDispatched} ${formatMoment(latest.dispatchedAt, lang)}`
+                    : "—"}
+                </b>
+              </li>
+              <li className="queen27-hud-menu-note">
+                <span>{c.reviewQueue}</span>
+                <div className="queen27-review-summary">
+                  {REVIEW_STATES.map((reviewState) => (
+                    <span className={`is-${reviewState}`} key={reviewState}>
+                      <b>{reviewQueueCounts[reviewState]}</b>
+                      {c[reviewState]}
+                    </span>
+                  ))}
+                </div>
+              </li>
+              <li className="queen27-hud-menu-note">
+                <span>{c.source}</span>
+                <b>{state.kind === "error" ? state.error : c.refresh}</b>
+              </li>
+            </ul>
+          )}
+        </div>
+      </header>
+
+      {!isPhone && (
+        <QueenCommandPanel
+          items={commandItems}
+          view={view}
+          onSelect={setView}
+          collapsed={commandCollapsed}
+          onToggleCollapsed={() => setCommandCollapsed((collapsed) => !collapsed)}
+          labels={{ aria: c.hudViews, collapse: c.hudCollapse, expand: c.hudExpand }}
+        />
+      )}
+
+      <section className="queen27-hud-viewport" ref={viewportRef} aria-label={viewLabel}>
+        <header className="queen27-hud-vp-head">
+          <span className="queen27-hud-vp-title">
+            {c.sector.toUpperCase()}: {repo ?? "—"}
+          </span>
+          <span className="queen27-hud-vp-sep" aria-hidden="true">
+            ///
+          </span>
+          <span className="queen27-hud-vp-view">{viewLabel}</span>
+          <div className="queen27-hud-vp-tools">
+            {view === "comb" && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => combRef.current?.fit()}
+                  title={c.hudFitView}
+                >
+                  {c.hudFitView}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => combRef.current?.zoomOut()}
+                  aria-label={c.hudZoomOut}
+                  title={c.hudZoomOut}
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  onClick={() => combRef.current?.zoomIn()}
+                  aria-label={c.hudZoomIn}
+                  title={c.hudZoomIn}
+                >
+                  +
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-pressed={isFullscreen}
+              title={isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
+            >
+              {isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
+            </button>
           </div>
-        ) : (
-          <p>—</p>
-        )}
+        </header>
+
+        <div className="queen27-hud-vp-body">
+          {boardView === "kanban" ? (
+            <KanbanView
+              columns={boardColumns}
+              cards={cards}
+              repo={repo}
+              error={boardState.error}
+              c={c}
+              lang={lang}
+            />
+          ) : boardView === "map" ? (
+            <MissionMapView
+              columns={boardColumns}
+              cards={cards}
+              repo={repo}
+              error={boardState.error}
+              c={c}
+              lang={lang}
+            />
+          ) : boardView === "comb" ? (
+            <QueenComb
+              embedded
+              handleRef={combRef}
+              onPick={handlePick}
+              pickIndex={pickIndex}
+              fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
+              columns={boardColumns}
+              cards={cards}
+              repo={repo}
+              workers={workers}
+              error={boardState.error ?? researchState.error}
+              labels={{
+                aria: c.combView,
+                held: c.combHeld,
+                neutral: c.combNeutral,
+                fog: c.combFog,
+                bees: c.combBees,
+                queen: c.combQueen,
+                queenCell: c.combQueenCell,
+                noBee: c.combNoBee,
+                pick: c.combPick,
+                hint: c.combHint2,
+                offline: c.factoryOffline,
+              }}
+            />
+          ) : boardView === "research" ? (
+            <TechnologyTree
+              c={c}
+              graph={researchState.data}
+              error={researchState.error}
+              lang={lang}
+              embedded
+            />
+          ) : (
+            <QueenFactory
+              columns={boardColumns}
+              cards={boardState.data?.cards ?? []}
+              repo={boardState.data?.repo ?? null}
+              workers={researchState.data?.workers ?? null}
+              researchNodes={researchState.data?.nodes ?? []}
+              researchEdges={researchState.data?.edges ?? []}
+              researchLayers={researchState.data?.layers ?? []}
+              researchError={researchState.error}
+              hardware={hardwareState.data}
+              hardwareError={hardwareState.error}
+              error={boardState.error ?? researchState.error}
+              labels={{
+                aria: c.factoryView,
+                flow: c.factoryFlow,
+                throughput: c.factoryThroughput,
+                queueDensity: c.factoryQueueDensity,
+                workerBays: c.factoryWorkerBays,
+                active: c.executing,
+                idle: c.factoryIdle,
+                station: c.factoryStation,
+                modules: c.factoryModules,
+                empty: c.empty,
+                offline: c.factoryOffline,
+                criteria: c.criteria,
+                missing: c.missing,
+                openIssue: c.factoryOpenIssue,
+                selectedModule: c.factorySelectedModule,
+                liveContract: c.factoryLiveContract,
+                cityTitle: c.cityTitle,
+                cityCopy: c.cityCopy,
+                cityDistricts: c.cityDistricts,
+                cityLaboratories: c.cityLaboratories,
+                citySelected: c.citySelected,
+                cityEvidence: c.cityEvidence,
+                cityOffline: c.cityOffline,
+                cityBuildTitle: c.cityBuildTitle,
+                cityComplete: c.cityComplete,
+                cityAssembling: c.cityAssembling,
+                cityBlueprint: c.cityBlueprint,
+                citySealed: c.citySealed,
+                cityDependencies: c.cityDependencies,
+                foundryTitle: c.foundryTitle,
+                foundryVerified: c.foundryVerified,
+                foundryUnavailable: c.foundryUnavailable,
+                foundryTotal: c.foundryTotal,
+                foundryOnline: c.foundryOnline,
+                foundryProgrammed: c.foundryProgrammed,
+                foundryKey: c.foundryKey,
+              }}
+            />
+          )}
+        </div>
+
+        <QueenContext
+          open={contextOpen}
+          onClose={() => setContextOpen(false)}
+          onOpen={() => setContextOpen(true)}
+          lang={lang}
+          repo={repo}
+          columns={boardColumns}
+          queue={board ? queue : null}
+          reviewQueue={reviewQueue}
+          latestDispatch={latest ?? null}
+          pick={pick}
+          queenStats={{
+            backendLive: isLive,
+            accepted: board ? doneCount : null,
+            verdicts: pulse?.verdicts ?? null,
+            running: data?.dispatches.running ?? null,
+            capacity: workers?.capacity ?? null,
+            rounds: pulse?.rounds ?? null,
+            beesStarted: pulse?.bees ?? null,
+          }}
+          describe={describe}
+          labels={{
+            title: c.hudContext,
+            queue: c.hudQueue,
+            queueEmpty: c.hudQueueEmpty,
+            reviewQueue: c.hudReviewQueue,
+            last: c.hudLast,
+            selected: c.hudSelected,
+            theQueen: c.hudTheQueen,
+            queenRole: c.hudQueenRole,
+            backend: c.hudBackend,
+            live: c.hudLive,
+            offline: c.hudOffline,
+            accepted: c.hudAccepted,
+            verdicts: c.verdicts,
+            bees: c.hudBees,
+            rounds: c.rounds,
+            beesStarted: c.beesStarted,
+            sector: c.sector,
+            territory: c.hudTerritory,
+            held: c.combHeld,
+            neutral: c.combNeutral,
+            fog: c.combFog,
+            criteria: c.criteria,
+            needs: c.hudNeeds,
+            noBee: c.hudNoBee,
+            slot: c.hudSlot,
+            busy: c.hudBusy,
+            idle: c.factoryIdle,
+            cell: c.hudCell,
+            dispatched: c.hudDispatched,
+            openIssue: c.hudOpenIssue,
+            copyLink: c.hudCopyLink,
+            linkCopied: c.hudLinkCopied,
+            close: c.hudClose,
+            openPanel: c.hudOpenPanel,
+          }}
+        />
       </section>
 
-      <footer className="queen27-footer">
-        <span>{c.source}</span>
-        <span>{state.kind === "error" ? state.error : c.refresh}</span>
+      {isNarrow ? (
+        intelOpen && (
+          <aside
+            className={`queen27-hud-intel is-drawer${intelExpanded ? " is-expanded" : ""}`}
+            aria-label={c.hudIntel}
+          >
+            <button
+              type="button"
+              className="queen27-hud-drawer-close"
+              onClick={() => setIntelOpen(false)}
+              aria-label={c.hudClose}
+            >
+              ×
+            </button>
+            {intelContent}
+          </aside>
+        )
+      ) : (
+        <aside
+          className={`queen27-hud-intel${intelExpanded ? " is-expanded" : ""}`}
+          aria-label={c.hudIntel}
+        >
+          {intelContent}
+        </aside>
+      )}
+
+      <footer className="queen27-hud-bottom">
+        {isPhone ? (
+          <>
+            <QueenCommandPanel
+              items={commandItems}
+              view={view}
+              onSelect={setView}
+              collapsed={false}
+              onToggleCollapsed={() => undefined}
+              compact
+              labels={{ aria: c.hudViews, collapse: c.hudCollapse, expand: c.hudExpand }}
+            />
+            <section className="queen27-hud-round-cell is-mini" ref={roundRef} aria-label={c.hudNextRound}>
+              <button
+                type="button"
+                className="queen27-hud-round-mini"
+                aria-expanded={roundOpen}
+                aria-controls="queen-round-pop"
+                onClick={() => setRoundOpen((open) => !open)}
+              >
+                <small>{roundLabel}</small>
+                <strong className="queen27-hud-countdown">{countdown}</strong>
+              </button>
+              {roundPopover}
+            </section>
+          </>
+        ) : (
+          <>
+            <section className="queen27-hud-sector" aria-label={c.hudActiveSector}>
+              <header className="queen27-hud-panel-head">
+                <span>{c.hudActiveSector}</span>
+              </header>
+              <div className="queen27-hud-sector-body">
+                <span className="queen27-hud-sector-mark" aria-hidden="true">
+                  <TrinityLogo withLabel={false} height="40px" />
+                </span>
+                <div className="queen27-hud-sector-text">
+                  <strong>{repo ?? "—"}</strong>
+                  <small>{c.hudProduction}</small>
+                  <dl>
+                    <div>
+                      <dt>{c.hudCards}</dt>
+                      <dd>{board ? cards.length : "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>{c.hudHeld}</dt>
+                      <dd>{board ? heldCount : "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>{c.hudSlots}</dt>
+                      <dd>{workers?.capacity ?? "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>{c.hudSignature}</dt>
+                      <dd
+                        className={
+                          hardware ? "is-green" : hardwareState.error ? "is-cold" : "is-muted"
+                        }
+                        title={hardware ? hardware.keyId : hardwareState.error ?? undefined}
+                      >
+                        {hardware
+                          ? c.hudVerified
+                          : hardwareState.error
+                            ? c.hudUnverified
+                            : c.checking}
+                      </dd>
+                    </div>
+                  </dl>
+                  <em title={c.hudDevice}>
+                    {device ? `${device.id} · ${device.state}` : "—"}
+                  </em>
+                </div>
+              </div>
+            </section>
+
+            <section className="queen27-hud-commands" aria-label={c.hudCommands}>
+              <header className="queen27-hud-panel-head">
+                <span>{c.hudCommands}</span>
+              </header>
+              <div className="queen27-hud-tiles">
+                <button
+                  type="button"
+                  className={`queen27-hud-tile${agentCopy === "copied" ? " is-gold" : ""}`}
+                  onClick={copyAgent}
+                >
+                  <i aria-hidden="true">⌘</i>
+                  <b>
+                    {agentCopy === "copied"
+                      ? c.copiedAgent
+                      : agentCopy === "error"
+                        ? c.copyFailed
+                        : c.copyAgent}
+                  </b>
+                </button>
+                {repo ? (
+                  <a
+                    className="queen27-hud-tile"
+                    href={`https://github.com/${repo}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <i aria-hidden="true">◇</i>
+                    <b>{c.hudOpenRepo}</b>
+                  </a>
+                ) : (
+                  <button type="button" className="queen27-hud-tile" disabled>
+                    <i aria-hidden="true">◇</i>
+                    <b>{c.hudOpenRepo}</b>
+                  </button>
+                )}
+                {pickedIssueUrl ? (
+                  <a
+                    className="queen27-hud-tile"
+                    href={pickedIssueUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <i aria-hidden="true">#</i>
+                    <b>{c.hudOpenIssue}</b>
+                  </a>
+                ) : (
+                  <button type="button" className="queen27-hud-tile" disabled>
+                    <i aria-hidden="true">#</i>
+                    <b>{c.hudOpenIssue}</b>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="queen27-hud-tile"
+                  onClick={() => {
+                    setView("comb");
+                    combRef.current?.fit();
+                  }}
+                >
+                  <i aria-hidden="true">▽</i>
+                  <b>{c.hudFitView}</b>
+                </button>
+                <button
+                  type="button"
+                  className="queen27-hud-tile"
+                  onClick={toggleFullscreen}
+                  aria-pressed={isFullscreen}
+                >
+                  <i aria-hidden="true">⤢</i>
+                  <b>{isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}</b>
+                </button>
+                <button type="button" className="queen27-hud-tile" onClick={toggleLang}>
+                  <i aria-hidden="true">⟲</i>
+                  <b>{c.hudLanguage}</b>
+                </button>
+              </div>
+            </section>
+
+            <section className="queen27-hud-round-cell" ref={roundRef} aria-label={c.hudNextRound}>
+              <div className="queen27-hud-round">
+                <div className="queen27-hud-orbit" aria-hidden="true">
+                  <div className="queen27-core-orbit" aria-hidden="true">
+                    <span
+                      data-role="orbit"
+                      className="queen27-cycle-ring queen27-cycle-ring-outer"
+                    />
+                    <span
+                      data-role="orbit"
+                      className="queen27-cycle-ring queen27-cycle-ring-dashed"
+                    />
+                    <span
+                      data-role="orbit"
+                      className="queen27-cycle-ring queen27-cycle-ring-inner"
+                    />
+                    <div className="queen27-cycle-brand">
+                      <TrinityLogo withLabel={false} height="72px" />
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="queen27-hud-round-btn"
+                  aria-expanded={roundOpen}
+                  aria-controls="queen-round-pop"
+                  onClick={() => setRoundOpen((open) => !open)}
+                >
+                  <small>{roundHeading}</small>
+                  <strong className="queen27-hud-countdown">{countdown}</strong>
+                  <i aria-hidden="true">
+                    <span style={{ width: `${roundProgress}%` }} />
+                  </i>
+                  <em>{decisionLine}</em>
+                </button>
+              </div>
+              {roundPopover}
+            </section>
+          </>
+        )}
       </footer>
     </main>
   );
