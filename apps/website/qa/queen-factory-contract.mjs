@@ -14,7 +14,7 @@ function requirePattern(source, pattern, message) {
 
 requirePattern(
   queen,
-  /useState<\s*"kanban"\s*\|\s*"map"\s*\|\s*"factory"\s*>/,
+  /useState<\s*"kanban"\s*\|\s*"map"\s*\|\s*"factory"(\s*\|\s*"[a-z]+")*\s*>/,
   'Queen board modes must include factory',
 )
 requirePattern(queen, /factoryView:\s*"FACTORY"/, 'English Factory label is missing')

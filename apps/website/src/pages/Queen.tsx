@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { QueenComb } from "../components/QueenComb";
 import { QueenFactory } from "../components/QueenFactory";
 import {
   verifyHardwareEnvelope,
@@ -203,6 +204,17 @@ const COPY = {
     kanbanHint: "Operational columns",
     mapHint: "Strategic lifecycle sectors",
     factoryHint: "Live engineering production",
+    combView: "COMB",
+    combHint: "The board as a field of marks",
+    combHeld: "held",
+    combNeutral: "neutral",
+    combFog: "fog",
+    combBees: "bees",
+    combQueen: "THE QUEEN",
+    combQueenCell: "centre cell",
+    combNoBee: "no bee here",
+    combPick: "Click a cell. A bee on it, or the Queen's own cell, shows a portrait; every cell is one card of the board.",
+    combHint2: "drag to orbit · wheel to zoom · click a cell",
     factoryFlow: "ISSUE → SPEC → BEE → REVIEW → EVIDENCE",
     factoryThroughput: "Live utilization",
     factoryQueueDensity: "queue density peak",
@@ -345,6 +357,17 @@ const COPY = {
     kanbanHint: "Операционные колонки",
     mapHint: "Стратегические сектора цикла",
     factoryHint: "Живое инженерное производство",
+    combView: "СОТЫ",
+    combHint: "Доска как поле из меток",
+    combHeld: "занято",
+    combNeutral: "нейтрально",
+    combFog: "туман",
+    combBees: "пчёлы",
+    combQueen: "КОРОЛЕВА",
+    combQueenCell: "центральная ячейка",
+    combNoBee: "пчелы здесь нет",
+    combPick: "Нажмите на ячейку. Пчела на ней или ячейка Королевы покажет портрет; каждая ячейка — одна карточка доски.",
+    combHint2: "тяните — вращать · колесо — масштаб · клик — выбрать",
     factoryFlow: "ISSUE → SPEC → BEE → REVIEW → EVIDENCE",
     factoryThroughput: "Живая загрузка",
     factoryQueueDensity: "пик плотности очереди",
@@ -1183,7 +1206,7 @@ export default function Queen() {
   const researchState = useQueenResearch();
   const hardwareState = useQueenHardware();
   const [boardView, setBoardView] = useState<
-    "kanban" | "map" | "factory"
+    "kanban" | "map" | "factory" | "comb"
   >("kanban");
   const now = useNow();
   const data = state.data;
@@ -1487,6 +1510,18 @@ export default function Queen() {
               <small>{c.factoryHint}</small>
             </span>
           </button>
+          <button
+            type="button"
+            className={boardView === "comb" ? "is-active" : ""}
+            aria-pressed={boardView === "comb"}
+            onClick={() => setBoardView("comb")}
+          >
+            <i aria-hidden="true">▽</i>
+            <span>
+              <b>{c.combView}</b>
+              <small>{c.combHint}</small>
+            </span>
+          </button>
         </div>
 
         {boardView === "kanban" ? (
@@ -1626,6 +1661,27 @@ export default function Queen() {
             </div>
             <p>{c.mapLegend}</p>
           </motion.div>
+        ) : boardView === "comb" ? (
+          <QueenComb
+            columns={boardColumns}
+            cards={boardState.data?.cards ?? []}
+            repo={boardState.data?.repo ?? null}
+            workers={researchState.data?.workers ?? null}
+            error={boardState.error ?? researchState.error}
+            labels={{
+              aria: c.combView,
+              held: c.combHeld,
+              neutral: c.combNeutral,
+              fog: c.combFog,
+              bees: c.combBees,
+              queen: c.combQueen,
+              queenCell: c.combQueenCell,
+              noBee: c.combNoBee,
+              pick: c.combPick,
+              hint: c.combHint2,
+              offline: c.factoryOffline,
+            }}
+          />
         ) : (
           <QueenFactory
             columns={boardColumns}
