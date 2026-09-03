@@ -1,4 +1,5 @@
 import { postsIndex } from './index'
+import { body as body_clara_proposal_submitted_not_reviewed, ruBody as ruBody_clara_proposal_submitted_not_reviewed } from './bodies/clara-proposal-submitted-not-reviewed'
 import { body as body_tri_claw_an_agent_you_can_audit, ruBody as ruBody_tri_claw_an_agent_you_can_audit } from './bodies/tri-claw-an-agent-you-can-audit'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
@@ -61,6 +62,7 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'clara-proposal-submitted-not-reviewed': { body: body_clara_proposal_submitted_not_reviewed, ruBody: ruBody_clara_proposal_submitted_not_reviewed },
   'queen-review-lifecycle-queues': { body: body_queen_review_lifecycle_queues, ruBody: ruBody_queen_review_lifecycle_queues },
   'one-commit-nine-workflow-outcomes': { body: body_one_commit_nine_workflow_outcomes, ruBody: ruBody_one_commit_nine_workflow_outcomes },
   'real-value-in-integer-container': { body: body_real_value_in_integer_container, ruBody: ruBody_real_value_in_integer_container },
