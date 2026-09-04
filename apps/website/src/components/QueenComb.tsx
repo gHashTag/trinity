@@ -1,8 +1,11 @@
 import { useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import type { Ref } from "react";
 import {
+  eventTone,
   territoryOf,
   type BeeLine,
+  type HudEvent,
+  type Tone,
   type CombCellSummary,
   type CombHandle,
   type HudPick,
@@ -77,6 +80,8 @@ interface QueenCombProps {
    * above it until the user zooms by hand; FIT VIEW restores the fit.
    */
   fitInset?: number;
+  /** The public activity feed; each event glints on the cell of its issue. */
+  events?: HudEvent[];
 }
 
 // ---- the mark, parsed once at module load ---------------------------------
@@ -204,10 +209,14 @@ interface Cell {
 interface Bee {
   slot: number;
   busy: boolean;
+  /** busy AND paired with a running card (see the pairing rule in the effect) */
+  work: boolean;
   from: number;
   to: number;
   t: number;
   speed: number;
+  /** phase offset of the hover loop, so four bees never move in lockstep */
+  hover: number;
   line: BeeLine;
 }
 
@@ -286,17 +295,35 @@ export function queenIndexOf(cellCount: number): number {
   return Math.floor(cellCount / 2);
 }
 
-function buildBees(workers: CombWorkers | null, cellCount: number): Bee[] {
-  if (!workers) return [];
-  return workers.slots.map((slot, i) => ({
-    slot: slot.slot,
-    busy: slot.state === "busy",
-    from: (i * 7) % cellCount,
-    to: (i * 7 + 4) % cellCount,
-    t: (i % 5) / 5,
-    speed: slot.state === "busy" ? 0.1 + 0.05 * (i % 3) : 0,
+const EMPTY_EVENTS: HudEvent[] = [];
+
+// One bee per worker slot, born at home (the Queen's cell) and idle. Which
+// slots are busy, and where each bee flies, is decided by the reconcile
+// effect on every poll - not here, so a poll never resets a flight.
+function buildBees(slotIds: string, home: number): Bee[] {
+  if (!slotIds) return [];
+  return slotIds.split(",").map((raw, i) => ({
+    slot: Number(raw),
+    busy: false,
+    work: false,
+    from: home,
+    to: home,
+    t: 1,
+    speed: 0,
+    hover: i * 1.7,
     line: LINES[i % 3],
   }));
+}
+
+// The k-th nearest cell to home, excluding home: where the k-th larva sits.
+function ringCell(cells: Cell[], home: number, rank: number): number {
+  const h = cells[home];
+  if (!h || cells.length < 2) return home;
+  const order = cells
+    .map((c, i) => ({ i, d: (c.x - h.x) ** 2 + (c.y - h.y) ** 2 }))
+    .filter((entry) => entry.i !== home)
+    .sort((a, b) => a.d - b.d);
+  return order[rank % order.length].i;
 }
 
 // ---- sprites, loaded once per page ----------------------------------------
@@ -370,6 +397,7 @@ export function QueenComb({
   handleRef,
   pickIndex,
   fitInset = 0,
+  events = EMPTY_EVENTS,
 }: QueenCombProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -399,11 +427,30 @@ export function QueenComb({
   // bees are derived too: one per worker slot. The frame loop mutates their
   // flight fields in place, and the inspector reads the same objects, so a
   // memo is both the derivation and the shared identity - no state to sync.
-  const bees = useMemo(() => buildBees(workers, cells.length), [workers, cells.length]);
+  // Bee objects live as long as their slot does: the slot SET keys the memo,
+  // and a poll that only flips busy/idle updates the same objects in place
+  // (in the reconcile effect), so a bee's flight survives the 5 s refresh.
+  const slotIds = workers ? workers.slots.map((slot) => slot.slot).join(",") : "";
+  const homeIndex = queenIndexOf(cells.length);
+  const bees = useMemo(() => buildBees(slotIds, homeIndex), [slotIds, homeIndex]);
   const cellsRef = useRef<Cell[]>(cells);
   const beesRef = useRef<Bee[]>(bees);
   const hoverRef = useRef(-1);
   const pickedRef = useRef(-1);
+  // Event glints and territory flips: short-lived, drawn by the loop.
+  const effectsRef = useRef<Array<{ index: number; tone: Tone; start: number; flip: boolean }>>([]);
+  const seenEventsRef = useRef<Set<string>>(new Set());
+  const eventsPrimedRef = useRef(false);
+  const ownByNumberRef = useRef<Map<number, Territory>>(new Map());
+  const indexByNumberRef = useRef<Map<number, number>>(new Map());
+  // The bee pairing inputs, refreshed by the reconcile effect and applied by
+  // the frame loop, which is the one place that may move a bee.
+  const pairingRef = useRef<{
+    version: number;
+    home: number;
+    running: number[];
+    slots: Map<number, "busy" | "idle">;
+  }>({ version: 0, home: 0, running: [], slots: new Map() });
   // `manual` is set by any zoom the user makes; until then the camera keeps
   // refitting the whole field into the visible band (see fitToBox). ox/oy
   // shift the projection origin so the field centres in that band.
@@ -458,6 +505,79 @@ export function QueenComb({
     // a board that grew a row changes the field's extent
     if (!cameraRef.current.manual) refitRef.current?.();
   }, [cells, bees]);
+
+  // Reconcile bees with the board and the worker slots on every poll. The
+  // bee objects are reached through the ref, never through the memo value:
+  // the frame loop owns their mutable flight fields and this effect only
+  // re-aims them.
+  useEffect(() => {
+    // Card number -> cell index, for events and for bee targets; and the
+    // territory each card held last time, so a card that changed column
+    // flashes its cell once.
+    const indexByNumber = new Map<number, number>();
+    const ownByNumber = new Map<number, Territory>();
+    const previous = ownByNumberRef.current;
+    const primed = previous.size > 0;
+    const stamp = performance.now();
+    cells.forEach((cell, index) => {
+      if (!cell.card) return;
+      indexByNumber.set(cell.card.number, index);
+      ownByNumber.set(cell.card.number, cell.own);
+      const before = previous.get(cell.card.number);
+      if (primed && before !== undefined && before !== cell.own) {
+        effectsRef.current.push({
+          index,
+          tone: cell.own === "held" ? "green" : cell.own === "fog" ? "cold" : "cyan",
+          start: stamp,
+          flip: true,
+        });
+      }
+    });
+    indexByNumberRef.current = indexByNumber;
+    ownByNumberRef.current = ownByNumber;
+
+    // Busy bees and running cards come from two endpoints that carry no
+    // slot-to-issue link, so the pairing is positional: the k-th busy slot
+    // sits on the k-th running card. A busy bee with no card hovers at home;
+    // an idle bee is a larva on the ring around the Queen's cell. The loop
+    // applies this; here only the inputs are refreshed.
+    const running: number[] = [];
+    cells.forEach((cell, index) => {
+      if (cell.card && cell.card.column === "running") running.push(index);
+    });
+    const slotStates = new Map<number, "busy" | "idle">();
+    for (const slot of workers?.slots ?? []) slotStates.set(slot.slot, slot.state);
+    pairingRef.current = {
+      version: pairingRef.current.version + 1,
+      home: queenIndexOf(cells.length),
+      running,
+      slots: slotStates,
+    };
+  }, [cells, workers]);
+
+  // Every event the feed carries names an issue; the cell that holds that
+  // card glints once per new event, in the kind's colour. The first batch
+  // is history, not news: only its last 30 seconds glint.
+  useEffect(() => {
+    const seen = seenEventsRef.current;
+    const primed = eventsPrimedRef.current;
+    const stamp = performance.now();
+    const wall = Date.now();
+    for (const event of events) {
+      if (seen.has(event.id)) continue;
+      seen.add(event.id);
+      if (!primed && wall - new Date(event.at).getTime() > 30_000) continue;
+      const index =
+        event.issue !== null ? indexByNumberRef.current.get(event.issue) : undefined;
+      if (index === undefined) continue;
+      effectsRef.current.push({ index, tone: eventTone(event.kind), start: stamp, flip: false });
+    }
+    eventsPrimedRef.current = true;
+    if (seen.size > 2000) {
+      // the feed is a 120-event ring; the set only needs to outlive it
+      seenEventsRef.current = new Set(events.map((event) => event.id));
+    }
+  }, [events]);
 
   useImperativeHandle(
     handleRef,
@@ -649,6 +769,8 @@ export function QueenComb({
     let raf = 0;
     const t0 = performance.now();
     let last = t0;
+    let appliedVersion = -1;
+    let appliedBees: Bee[] | null = null;
     const GROUND: Record<Territory, string> = {
       held: "#0a1a12",
       neutral: "#090c0f",
@@ -792,23 +914,97 @@ export function QueenComb({
         ctx.drawImage(queenSprite, c[0] - qs, c[1] - qs * 1.15, qs * 2, qs * 2);
       }
 
-      // BEES: one per worker slot. Busy slots fly; idle slots sit as larvae.
-      for (const b of bees) {
-        if (b.busy) {
-          b.t += (b.speed * dt) / 1000;
-          if (b.t >= 1) {
-            b.t = 0;
-            b.from = b.to;
-            b.to = (b.to + 3 + ((b.from * 7) % 5)) % cells.length;
+      // EFFECTS: event glints (a ring that grows and fades on the cell of
+      // the issue) and territory flips (a fill that fades). Expired effects
+      // are compacted out in place; nothing here allocates per frame.
+      const effects = effectsRef.current;
+      if (effects.length > 0) {
+        const TONE: Record<Tone, string> = {
+          gold: "255,212,90",
+          cold: "255,107,107",
+          green: "0,255,136",
+          cyan: "100,220,255",
+          muted: "255,255,255",
+        };
+        let write = 0;
+        for (let i = 0; i < effects.length; i += 1) {
+          const fx = effects[i];
+          const cell = cells[fx.index];
+          const life = fx.flip ? 900 : 1300;
+          const age = now - fx.start;
+          if (!cell || age > life) continue;
+          effects[write] = fx;
+          write += 1;
+          const u = age / life;
+          if (fx.flip) {
+            const k = corners(cell).map(([px, py]) => project(px, py, 0));
+            ctx.beginPath();
+            ctx.moveTo(k[0][0], k[0][1]);
+            ctx.lineTo(k[1][0], k[1][1]);
+            ctx.lineTo(k[2][0], k[2][1]);
+            ctx.closePath();
+            ctx.fillStyle = `rgba(${TONE[fx.tone]},${(0.55 * (1 - u)).toFixed(3)})`;
+            ctx.fill();
+          } else {
+            const c = project(cell.x, cell.y, 0);
+            const r = S * c[3] * (0.12 + 0.5 * u);
+            ctx.strokeStyle = `rgba(${TONE[fx.tone]},${(0.9 * (1 - u)).toFixed(3)})`;
+            ctx.lineWidth = Math.max(1, 2.5 * (1 - u));
+            ctx.beginPath();
+            ctx.ellipse(c[0], c[1], r, Math.max(1, r * Math.cos(camera.pitch)), 0, 0, Math.PI * 2);
+            ctx.stroke();
           }
         }
+        effects.length = write;
+      }
+
+      // PAIRING: re-aim the bees whenever the inputs changed or the bee
+      // objects were rebuilt (a slot appeared or vanished).
+      const pairing = pairingRef.current;
+      if (pairing.version !== appliedVersion || bees !== appliedBees) {
+        appliedVersion = pairing.version;
+        appliedBees = bees;
+        let busyRank = 0;
+        let idleRank = 0;
+        for (const b of bees) {
+          b.busy = pairing.slots.get(b.slot) === "busy";
+          let target = pairing.home;
+          if (b.busy) {
+            target = pairing.running[busyRank] ?? pairing.home;
+            b.work = pairing.running[busyRank] !== undefined;
+            busyRank += 1;
+          } else {
+            b.work = false;
+            target = ringCell(cells, pairing.home, idleRank);
+            idleRank += 1;
+          }
+          if (b.to !== target) {
+            // leave from wherever the bee is now, not from its old origin
+            b.from = b.t < 0.5 ? b.from : b.to;
+            b.to = target;
+            b.t = 0;
+            b.speed = b.busy ? 0.55 : 0.35;
+          }
+        }
+      }
+
+      // BEES: one per worker slot. A busy bee flies to its running card and
+      // hovers there; a larva sits on its ring cell by the Queen.
+      for (const b of bees) {
+        if (b.t < 1) b.t = Math.min(1, b.t + (b.speed * dt) / 1000);
         const A = cells[b.from];
         const B = cells[b.to];
         if (!A || !B) continue;
         const e = b.t < 0.5 ? 2 * b.t * b.t : 1 - 2 * (1 - b.t) * (1 - b.t);
-        const x = A.x + (B.x - A.x) * e;
-        const y = A.y + (B.y - A.y) * e;
-        const arc = b.busy ? Math.sin(Math.PI * b.t) * 46 : 2;
+        let x = A.x + (B.x - A.x) * e;
+        let y = A.y + (B.y - A.y) * e;
+        let arc = b.busy ? Math.sin(Math.PI * b.t) * 46 : 2;
+        if (b.t >= 1 && b.busy) {
+          const ph = now / 700 + b.hover;
+          x = B.x + Math.cos(ph) * S * 0.14;
+          y = B.y + Math.sin(ph * 1.3) * S * 0.08;
+          arc = 18 + Math.sin(ph * 2) * 5;
+        }
         const c = project(x, y, arc);
         const sz = Math.max(7, S * 0.38 * c[3]);
         const sh = project(x, y, 0);
