@@ -126,6 +126,10 @@ check(seenFrom.observedFrom === "2026-09-04T20:41:00Z" && mergeActivity(seenFrom
 const spanEarly = alertSpan("2026-09-04T20:41:00Z", Date.parse("2026-09-04T20:55:00Z"));
 const spanFull = alertSpan("2026-09-04T19:00:00Z", Date.parse("2026-09-04T20:55:00Z"));
 check(spanEarly && spanEarly.clipped && spanEarly.seconds === 14 * 60 && spanFull && !spanFull.clipped && spanFull.seconds === 3600 && alertSpan(null, 0) === null, "a wire that began 14 min ago yields a 14-min span; an older one yields the hour; no wire yet yields nothing");
+// the round tile reads one endpoint and labels its interval as a bound (P1-29)
+check(/const roundSeconds = board\?\.pulse\.roundSeconds \?\? 0;/.test(src) && /const lastRoundAt = board\?\.pulse\.lastRoundAt \?\? null;/.test(src), "the round tile's two inputs come from public-board's pulse only; no fallback to the status interval or the last decision");
+check(/`\$\{c\.hudSince\} \$\{formatMoment\(lastRoundAt, lang\)\} · ≤ \$\{formatCountdown\(roundSeconds\)\}`/.test(src) && /hudSince:\s*"since"/.test(src) && /hudSince:\s*"с"/.test(src), "the sub-line names the last round's moment and the interval as a bound (≤) in both languages");
+check(/schedulerOff \|\| !roundKnown \? "—" : `\+\$\{formatCountdown\(elapsedSeconds\)\}`/.test(src), "the value counts up since the last round; no countdown promises the next round at a second");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
