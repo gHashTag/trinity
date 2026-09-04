@@ -33,6 +33,12 @@ import {
   fieldShape,
   placeCards,
   staleAge,
+  cellGeometry,
+  moduleCard,
+  moduleFor,
+  pathInTitle,
+  ringOrder,
+  type HudModule,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -73,6 +79,7 @@ const QUEEN_API = (
   (import.meta.env.VITE_QUEEN_API as string | undefined) ?? DEFAULT_QUEEN_API
 ).replace(/\/+$/, "");
 const LIVE_POLL_MS = 5_000;
+const MODULES_POLL_MS = 15_000;
 const ACTIVITY_POLL_MS = 2_000;
 const PINNED_QUEEN_HARDWARE_PUBLIC_KEY =
   "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA5+HsGhhkVkICuwo5Qa2pWhfVhT3/wLOLWutK4VKYulw=\n-----END PUBLIC KEY-----\n";
@@ -700,6 +707,30 @@ function useQueenStatus(): LoadState {
   }, []);
 
   return state;
+}
+
+/**
+ * The repository's modules (M-2): public/queen/modules.json, a scan stamped
+ * with its commit, until /queen/public-modules exists on the server (M-1).
+ */
+function useQueenModules(): { data: { commit: string | null; generatedAt: string; modules: HudModule[] } | null; error: string | null } {
+  const [data, setData] = useState<{ commit: string | null; generatedAt: string; modules: HudModule[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    const read = () =>
+      fetch("./queen/modules.json", { headers: { Accept: "application/json" }, cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const next = (await response.json()) as { commit: string | null; generatedAt: string; modules: HudModule[] };
+          if (active) { setData(next); setError(null); }
+        })
+        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
+    void read();
+    const timer = window.setInterval(read, MODULES_POLL_MS);
+    return () => { active = false; window.clearInterval(timer); };
+  }, []);
+  return { data, error };
 }
 
 function useQueenBoard(): {
@@ -1647,6 +1678,7 @@ function MissionMapView({
 }
 
 const EMPTY_CARDS: QueenCard[] = [];
+const EMPTY_MODULES: HudModule[] = [];
 const EMPTY_EVENTS: QueenActivityEvent[] = [];
 
 export default function Queen() {
@@ -1706,6 +1738,15 @@ export default function Queen() {
   const workers = research?.workers ?? null;
   const hardware = hardwareState.data;
   const cards = board?.cards ?? EMPTY_CARDS;
+  // The field's cells are the repository's MODULES (M-2); the board's cards
+  // stay the issues, which are the bees. A module stands in a column derived
+  // from facts (an issue in progress on it, an open issue, recently touched,
+  // dormant), so territories and the buildings' kinds follow.
+  const modulesState = useQueenModules();
+  const modules = modulesState.data?.modules ?? EMPTY_MODULES;
+  const runningIssues = useMemo(() => new Set(cards.filter((c) => c.column === "running").map((c) => c.number)), [cards]);
+  const moduleCards = useMemo<QueenCard[]>(() => modules.map((m) => moduleCard(m, now, runningIssues) as QueenCard), [modules, runningIssues, now]);
+  const modulesById = useMemo(() => { const map = new Map<number, HudModule>(); moduleCards.forEach((c, i) => map.set(c.number, modules[i])); return map; }, [moduleCards, modules]);
   // Placement ledger (P1-20): the board arrives in wire order on every poll,
   // so a positional layout moved every structure and every bee whenever an
   // issue was inserted at the head. Known cards keep their cells across
@@ -1716,12 +1757,14 @@ export default function Queen() {
     cards: QueenCard[];
     placed: (QueenCard | null)[];
     ledger: Map<number, number>;
-  }>(() => ({ cards, ...placeCards(new Map(), cards, fieldShape(cards.length).cellCount) }));
+  }>(() => ({ cards: moduleCards, ...placeCards(new Map(), moduleCards, fieldShape(moduleCards.length).cellCount, ringOrder(cellGeometry(moduleCards.length), queenIndexOf(fieldShape(moduleCards.length).cellCount))) }));
   let placedCards = placement.placed;
-  if (placement.cards !== cards) {
-    const next = placeCards(placement.ledger, cards, fieldShape(cards.length).cellCount);
+  if (placement.cards !== moduleCards) {
+    // rings from the centre: free cells are taken nearest the Queen first
+    const shape = fieldShape(moduleCards.length);
+    const next = placeCards(placement.ledger, moduleCards, shape.cellCount, ringOrder(cellGeometry(moduleCards.length), queenIndexOf(shape.cellCount)));
     placedCards = next.placed;
-    setPlacement({ cards, placed: next.placed, ledger: next.ledger });
+    setPlacement({ cards: moduleCards, placed: next.placed, ledger: next.ledger });
   }
   const events: HudEvent[] = activityState.data?.events ?? EMPTY_EVENTS;
   const boardColumns = board?.columns ?? FALLBACK_COLUMNS;
@@ -1821,6 +1864,16 @@ export default function Queen() {
   const alertEvents: HudEvent[] = activityState.data?.alerts ?? EMPTY_EVENTS;
   const alerts = useMemo(() => alertCount(alertEvents, now), [alertEvents, now]);
   const cellSummaries = useMemo(() => summariseCells(placedCards), [placedCards]);
+  // Bees are the issues in progress: each walks to the module its title names.
+  const beeTargets = useMemo<Array<number | null>>(() => {
+    const byNumber = new Map<number, number>();
+    cellSummaries.forEach((cell, i) => { if (cell.cardNumber !== null) byNumber.set(cell.cardNumber, i); });
+    return cards.filter((c) => c.column === "running").map((c) => {
+      const path = pathInTitle(c.title);
+      const m = path ? moduleFor(path, modules) : null;
+      return m ? (byNumber.get(moduleCard(m, now, runningIssues).number) ?? null) : null;
+    });
+  }, [cellSummaries, cards, modules, now, runningIssues]);
   const sectors = useMemo(
     () => sectorRows(boardColumns, cards),
     [boardColumns, cards],
@@ -1852,11 +1905,12 @@ export default function Queen() {
     return {
       ...pick,
       index,
-      card: cards.find((card) => card.number === number) ?? pick.card,
+      card: moduleCards.find((card) => card.number === number) ?? pick.card,
+      module: modulesById.get(number) ?? null,
       territory: cellSummaries[index].own,
       isQueen: index === queenIndexOf(cellSummaries.length),
     };
-  }, [pick, cellSummaries, cards]);
+  }, [pick, cellSummaries, moduleCards, modulesById]);
   const pickIndex = livePick?.index ?? null;
   const pickedCard = livePick?.card ?? null;
   const pickedIssueUrl =
@@ -2334,6 +2388,8 @@ export default function Queen() {
               data-pick-index={pickIndex ?? undefined}
         data-pick-number={pickedCard?.number ?? undefined}
         data-pick-territory={livePick?.territory ?? undefined}
+        data-pick-module={livePick?.module?.path ?? undefined}
+        data-modules={modulesState.data ? `${modules.length}@${modulesState.data.commit ?? "?"}` : undefined}
       >
         <header className="queen27-hud-vp-head">
           <span className="queen27-hud-vp-title">
@@ -2417,6 +2473,8 @@ export default function Queen() {
               <Suspense fallback={null}>
                 <QueenCombBabylon
                   cards={placedCards}
+                  modules={modulesById}
+                  beeTargets={beeTargets}
                   workers={workers}
                   devices={hardware?.devices ?? null}
                   onPick={handlePick}

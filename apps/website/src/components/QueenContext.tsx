@@ -316,6 +316,15 @@ export function QueenContext({
                   <b>T27: {labels.theQueen}</b>
                   <small>{labels.queenRole}</small>
                 </>
+              ) : pick.module ? (
+                <>
+                  <b>{pick.module.path}</b>
+                  <small>
+                    {pick.module.language} · {pick.module.files} files · {pick.module.lines} lines · {pick.module.functions} fn
+                    {pick.module.openIssues.length > 0 ? ` · ${pick.module.openIssues.map((n) => `#${n}`).join(" ")}` : ""}
+                  </small>
+                  <small>{unitName}</small>
+                </>
               ) : (
                 <b>{unitName}</b>
               )}
