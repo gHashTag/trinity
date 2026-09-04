@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/trios",
- "commit": "c4c502b2e",
- "generatedAt": "2026-09-04T14:08:10Z",
+ "commit": "3dca32702",
+ "generatedAt": "2026-09-04T17:38:24Z",
  "source": "local scan by the loop (M-1 replaces it with /queen/public-modules)",
  "totalModules": 114,
  "droppedSmallest": 0,
@@ -20,7 +20,7 @@
    "functions": 48,
    "imports": 11,
    "exports": 85,
-   "lastTouched": "2026-09-04T16:05:54+07:00",
+   "lastTouched": "2026-09-04T23:48:50+07:00",
    "openIssues": []
   },
   {
@@ -38,14 +38,21 @@
    "functions": 30,
    "imports": 7,
    "exports": 28,
-   "lastTouched": "2026-09-03T18:19:58+07:00",
+   "lastTouched": "2026-09-04T23:48:50+07:00",
    "openIssues": [
     1427,
     1429,
     1430,
-    1446,
-    1447,
-    1448
+    1463,
+    1471,
+    1476,
+    1478,
+    1479,
+    1480,
+    1481,
+    1482,
+    1483,
+    1484
    ]
   },
   {
@@ -122,14 +129,20 @@
    "functions": 29,
    "imports": 11,
    "exports": 1,
-   "lastTouched": "2026-09-03T18:19:58+07:00",
+   "lastTouched": "2026-09-04T23:48:50+07:00",
    "openIssues": [
     1427,
     1429,
     1430,
-    1446,
-    1447,
-    1448
+    1471,
+    1476,
+    1478,
+    1479,
+    1480,
+    1481,
+    1482,
+    1483,
+    1484
    ]
   },
   {
@@ -267,7 +280,11 @@
    "imports": 11,
    "exports": 4,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1471,
+    1476,
+    1478
+   ]
   },
   {
    "path": "agent-server/apps/cli",
@@ -314,7 +331,9 @@
    "imports": 12,
    "exports": 6,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1463
+   ]
   },
   {
    "path": "agent-server/scripts/dev",
@@ -406,7 +425,11 @@
    "imports": 25,
    "exports": 7,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1471,
+    1476,
+    1478
+   ]
   },
   {
    "path": "agent-server/apps/agent/lib",
@@ -526,14 +549,16 @@
    "functions": 41,
    "imports": 37,
    "exports": 10,
-   "lastTouched": "2026-09-03T18:19:58+07:00",
+   "lastTouched": "2026-09-04T23:48:50+07:00",
    "openIssues": [
     1427,
     1429,
     1430,
-    1446,
-    1447,
-    1448
+    1479,
+    1480,
+    1481,
+    1482,
+    1483
    ]
   },
   {
@@ -548,8 +573,10 @@
    "functions": 37,
    "imports": 61,
    "exports": 0,
-   "lastTouched": "2026-09-03T18:19:58+07:00",
-   "openIssues": []
+   "lastTouched": "2026-09-04T23:48:50+07:00",
+   "openIssues": [
+    1484
+   ]
   },
   {
    "path": "agent-server/apps/trios-mcp-bridge/src",
@@ -894,7 +921,11 @@
    "imports": 1062,
    "exports": 289,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1471,
+    1476,
+    1478
+   ]
   },
   {
    "path": "agent-server/apps/agent/entrypoints/newtab",
@@ -1427,18 +1458,17 @@
    "depth": 5,
    "language": "typescript",
    "languages": {
-    "typescript": 23558
+    "typescript": 23876
    },
-   "files": 85,
-   "lines": 23558,
-   "functions": 1155,
-   "imports": 431,
-   "exports": 318,
-   "lastTouched": "2026-09-03T18:19:58+07:00",
+   "files": 86,
+   "lines": 23876,
+   "functions": 1172,
+   "imports": 437,
+   "exports": 322,
+   "lastTouched": "2026-09-04T23:48:50+07:00",
    "openIssues": [
     1430,
-    1447,
-    1448
+    1483
    ]
   },
   {
@@ -1472,7 +1502,9 @@
    "openIssues": [
     1427,
     1429,
-    1446
+    1480,
+    1481,
+    1482
    ]
   },
   {
@@ -1518,7 +1550,9 @@
    "imports": 175,
    "exports": 153,
    "lastTouched": "2026-09-03T09:20:05+07:00",
-   "openIssues": []
+   "openIssues": [
+    1479
+   ]
   },
   {
    "path": "agent-server/apps/server/tests/__fixtures__",
@@ -1549,7 +1583,9 @@
    "imports": 43,
    "exports": 38,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1484
+   ]
   },
   {
    "path": "agent-server/apps/server/tests/agent",
@@ -1571,14 +1607,14 @@
    "depth": 5,
    "language": "typescript",
    "languages": {
-    "typescript": 14582
+    "typescript": 14659
    },
-   "files": 46,
-   "lines": 14582,
-   "functions": 333,
-   "imports": 185,
+   "files": 47,
+   "lines": 14659,
+   "functions": 335,
+   "imports": 190,
    "exports": 1,
-   "lastTouched": "2026-09-03T18:19:58+07:00",
+   "lastTouched": "2026-09-04T23:48:50+07:00",
    "openIssues": []
   },
   {
@@ -1714,7 +1750,9 @@
    "imports": 1,
    "exports": 40,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1463
+   ]
   },
   {
    "path": "agent-server/packages/shared/src/schemas",
