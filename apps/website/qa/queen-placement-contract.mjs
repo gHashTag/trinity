@@ -1,9 +1,12 @@
-// Queen pick contract: the pick is a card number, not a cell index. The field
+// Queen placement contract: the pick is a card number, not a cell index. The field
 // is rebuilt from the card list on every poll, so after a poll that reorders
 // the board the outline, the SELECTED panel and OPEN ISSUE must still name the
 // same card. Headless Chrome; /queen/public-board is intercepted with CDP
 // Fetch: the first answer is the live board, every later answer is the same
-// board with its cards rotated by seven. Written before the fix; shown to fail.
+// board with a new card inserted at the head and the rest rotated by seven.
+// Placement contract (P1-20): a picked card keeps its CELL, not only its
+// number, so structures and bees never re-flight on a head insert. Written
+// before the fix; shown to fail on the positional layout.
 import { spawn, execSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { existsSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
@@ -20,7 +23,7 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 const server = createServer((req, res) => { let f = join(DIST, decodeURIComponent(new URL(req.url, 'http://x').pathname)); if (!existsSync(f) || statSync(f).isDirectory()) f = join(DIST, 'index.html'); res.writeHead(200, { 'Content-Type': MIME[extname(f)] || 'application/octet-stream' }); res.end(readFileSync(f)); }).listen(0, '127.0.0.1');
 await new Promise(r => server.once('listening', r));
 const ORIGIN = `http://127.0.0.1:${server.address().port}`;
-const profile = mkdtempSync(join(tmpdir(), 'pick-'));
+const profile = mkdtempSync(join(tmpdir(), 'placement-'));
 const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--disable-extensions', '--mute-audio', '--window-size=1440,900', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
 const browserWs = await new Promise((resolve, reject) => { const t = setTimeout(() => reject(new Error('no port')), 30000); let buf = ''; chrome.stderr.on('data', d => { buf += d; const m = buf.match(/DevTools listening on (ws:\/\/\S+)/); if (m) { clearTimeout(t); resolve(m[1]); } }); });
 const ws = new WebSocket(browserWs); await new Promise(r => ws.addEventListener('open', r));
@@ -45,16 +48,16 @@ listeners.push(async msg => {
   const text = got.base64Encoded ? Buffer.from(got.body, 'base64').toString('utf8') : got.body;
   if (boardText === null) boardText = text;
   let out = boardText;
-  if (rotate) { const d = JSON.parse(boardText); d.cards = [...d.cards.slice(7), ...d.cards.slice(0, 7)]; out = JSON.stringify(d); }
+  if (rotate) { const d = JSON.parse(boardText); d.cards = [{ number: 999999, title: 'placement probe', column: 'backlog', criteria: 0 }, ...d.cards.slice(7), ...d.cards.slice(0, 7)]; out = JSON.stringify(d); }
   await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(out).toString('base64') });
 });
 await call('Page.enable');
 await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/public-board*', requestStage: 'Response' }] });
 await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
-await call('Page.navigate', { url: `${ORIGIN}/?pick=1#/queen` });
+await call('Page.navigate', { url: `${ORIGIN}/?placement=1#/queen` });
 let ready = false;
 for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-sectors-row').length === 6 && !!document.querySelector('.queen27-comb-field canvas') && !!document.querySelector('.queen27-hud-viewport')`); }
-if (!ready) { console.log('  Queen pick contract: FAIL (page never became ready)'); cleanup(); process.exit(1); }
+if (!ready) { console.log('  Queen placement contract: FAIL (page never became ready)'); cleanup(); process.exit(1); }
 await wait(1500);
 const state = () => evaluate(`(() => { const v = document.querySelector('.queen27-hud-viewport'); const u = document.querySelector('.queen27-context-selected'); return { number: v ? v.getAttribute('data-pick-number') : null, index: v ? v.getAttribute('data-pick-index') : null, unit: ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 160) }; })()`);
 // pick a card by sweeping clicks until the panel names one
@@ -67,7 +70,7 @@ outer: for (let gy = 0; gy < 6; gy++) for (let gx = 0; gx < 10; gx++) {
   const s = await state();
   if (s.number && s.unit.includes('#' + s.number)) { picked = s; break outer; }
 }
-if (!picked) { console.log('  Queen pick contract: FAIL (no card could be picked; data-pick-number never set)'); cleanup(); process.exit(1); }
+if (!picked) { console.log('  Queen placement contract: FAIL (no card could be picked; data-pick-number never set)'); cleanup(); process.exit(1); }
 rotate = true;
 const before = served;
 for (let i = 0; i < 40 && served < before + 2; i++) await wait(250);
@@ -76,7 +79,7 @@ const after = await state();
 cleanup();
 const fails = [];
 if (after.number !== picked.number) fails.push(`the pick changed card: #${picked.number} -> #${after.number}`);
-// The index may move (positional layout) or stay (placement ledger, P1-20); the fact under test is the number.
+if (after.index !== picked.index) fails.push(`the picked card moved cell on a head insert: index ${picked.index} -> ${after.index}`);
 if (!after.unit.includes('#' + picked.number)) fails.push(`SELECTED reads "${after.unit}", not #${picked.number}`);
-if (fails.length) { for (const f of fails) console.log('  ✗ ' + f); console.log(`  Queen pick contract: FAIL (${fails.length})`); process.exit(1); }
-console.log(`  Queen pick contract: PASS (#${picked.number} stayed picked across a rotated board: index ${picked.index} -> ${after.index})`);
+if (fails.length) { for (const f of fails) console.log('  ✗ ' + f); console.log(`  Queen placement contract: FAIL (${fails.length})`); process.exit(1); }
+console.log(`  Queen placement contract: PASS (#${picked.number} kept its cell across a head insert and rotation: index ${picked.index} -> ${after.index})`);

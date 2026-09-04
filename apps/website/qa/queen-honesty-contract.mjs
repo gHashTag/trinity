@@ -3,10 +3,11 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { decisionDetail, rewriteEndpoints, roundStrip, skipReasonWords } from "../src/components/queenHud.ts";
+import { decisionDetail, fieldShape, placeCards, rewriteEndpoints, roundStrip, skipReasonWords } from "../src/components/queenHud.ts";
 
 const fails = [];
-const check = (cond, msg) => { if (!cond) fails.push(msg); };
+let checks = 0;
+const check = (cond, msg) => { checks += 1; if (!cond) fails.push(msg); };
 const L = { queueMeaning: "QUEUE-MEANING", executing: "executing now" };
 
 check(decisionDetail({ allowed: true, refusal: null }, 4, 1386, L) === "4 executing now · #1386", "allow: running + latest");
@@ -40,7 +41,15 @@ check(skipReasonWords("missingBoundary") === "missing boundary" && skipReasonWor
 check(/skipReasonWords\(reason\)/.test(src) && /roundStrip\(/.test(src), "the page uses the strip and the spaced reasons");
 
 // self-test: the contract must be able to fail
+const A = [{ number: 5 }, { number: 4 }, { number: 3 }];
+const pa = placeCards(new Map(), A, fieldShape(A.length).cellCount);
+check(pa.placed.slice(0, 3).map((c) => c && c.number).join(",") === "5,4,3" && pa.placed.length === fieldShape(3).cellCount, "first placement is wire order on a field of the right size");
+const pb = placeCards(pa.ledger, [{ number: 6 }, ...A], fieldShape(4).cellCount);
+check(pb.placed[0]?.number === 5 && pb.placed[1]?.number === 4 && pb.placed[2]?.number === 3 && pb.placed[3]?.number === 6, "a head insert leaves every known card on its cell; the new card takes the first free cell");
+const pc = placeCards(pb.ledger, [{ number: 6 }, { number: 3 }, { number: 5 }], fieldShape(3).cellCount);
+check(pc.placed[0]?.number === 5 && pc.placed[1] === null && pc.placed[2]?.number === 3 && pc.placed[3]?.number === 6 && pa.ledger.size === 3, "a departed card frees its cell, nobody moves, the input ledger is untouched");
+check(placeCards(new Map([[7, 500]]), [{ number: 7 }], 27).placed[0]?.number === 7, "an index outside the field is re-placed");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
-console.log("Queen honesty contract: PASS (18 checks)");
+console.log(`Queen honesty contract: PASS (${checks} checks)`);
