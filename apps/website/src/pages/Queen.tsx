@@ -39,8 +39,8 @@ import {
   type VerifiedHardwareRegistry,
 } from "../components/queenHardwareRegistry";
 import { TrinityLogo } from "../components/TrinityLogo";
-// SPIKE (cycle 011): the Babylon comb is loaded only behind ?engine=babylon so
-// the engine question can be measured on this scene; the default path is untouched.
+// The comb is Babylon.js (the user's decision, 2026-09-04). ?engine=canvas keeps
+// the canvas2D comb for one release, for anyone comparing; then it goes.
 const QueenCombBabylon = lazy(() =>
   import("../components/QueenCombBabylon").then((m) => ({ default: m.QueenCombBabylon })),
 );
@@ -2412,7 +2412,7 @@ export default function Queen() {
               lang={lang}
             />
           ) : boardView === "comb" ? (
-            ENGINE_FLAG === "babylon" ? (
+            ENGINE_FLAG !== "canvas" ? (
               <Suspense fallback={null}>
                 <QueenCombBabylon
                   cards={placedCards}
