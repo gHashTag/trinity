@@ -172,7 +172,7 @@ export function QueenFactory({
             ))
           ) : (
             <li className="is-offline">
-              <span>{researchError ?? error ?? labels.offline}</span>
+              <span title={researchError ?? error ?? undefined}>{labels.offline}</span>
             </li>
           )}
         </ol>
@@ -284,7 +284,7 @@ export function QueenFactory({
                     );
                   })}
                   {stationCards.length === 0 && (
-                    <em>{error ?? labels.empty}</em>
+                    <em title={error ?? undefined}>{labels.empty}</em>
                   )}
                 </div>
               </article>
@@ -319,7 +319,7 @@ export function QueenFactory({
             )}
           </div>
         ) : (
-          <p>{error ?? labels.empty}</p>
+          <p title={error ?? undefined}>{labels.empty}</p>
         )}
       </footer>
     </section>
