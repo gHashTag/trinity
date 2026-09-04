@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/trios",
- "commit": "3dca32702",
- "generatedAt": "2026-09-04T17:38:24Z",
+ "commit": "c5bc03f53",
+ "generatedAt": "2026-09-04T18:36:54Z",
  "source": "local scan by the loop (M-1 replaces it with /queen/public-modules)",
  "totalModules": 114,
  "droppedSmallest": 0,
@@ -20,7 +20,7 @@
    "functions": 48,
    "imports": 11,
    "exports": 85,
-   "lastTouched": "2026-09-04T23:48:50+07:00",
+   "lastTouched": "2026-09-05T01:11:49+07:00",
    "openIssues": []
   },
   {
@@ -38,21 +38,16 @@
    "functions": 30,
    "imports": 7,
    "exports": 28,
-   "lastTouched": "2026-09-04T23:48:50+07:00",
+   "lastTouched": "2026-09-05T01:11:49+07:00",
    "openIssues": [
     1427,
     1429,
     1430,
-    1463,
     1471,
     1476,
     1478,
-    1479,
     1480,
-    1481,
-    1482,
-    1483,
-    1484
+    1490
    ]
   },
   {
@@ -129,7 +124,7 @@
    "functions": 29,
    "imports": 11,
    "exports": 1,
-   "lastTouched": "2026-09-04T23:48:50+07:00",
+   "lastTouched": "2026-09-05T01:11:49+07:00",
    "openIssues": [
     1427,
     1429,
@@ -137,12 +132,8 @@
     1471,
     1476,
     1478,
-    1479,
     1480,
-    1481,
-    1482,
-    1483,
-    1484
+    1490
    ]
   },
   {
@@ -283,7 +274,8 @@
    "openIssues": [
     1471,
     1476,
-    1478
+    1478,
+    1490
    ]
   },
   {
@@ -331,9 +323,7 @@
    "imports": 12,
    "exports": 6,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": [
-    1463
-   ]
+   "openIssues": []
   },
   {
    "path": "agent-server/scripts/dev",
@@ -428,7 +418,8 @@
    "openIssues": [
     1471,
     1476,
-    1478
+    1478,
+    1490
    ]
   },
   {
@@ -549,16 +540,12 @@
    "functions": 41,
    "imports": 37,
    "exports": 10,
-   "lastTouched": "2026-09-04T23:48:50+07:00",
+   "lastTouched": "2026-09-05T01:11:49+07:00",
    "openIssues": [
     1427,
     1429,
     1430,
-    1479,
-    1480,
-    1481,
-    1482,
-    1483
+    1480
    ]
   },
   {
@@ -573,10 +560,8 @@
    "functions": 37,
    "imports": 61,
    "exports": 0,
-   "lastTouched": "2026-09-04T23:48:50+07:00",
-   "openIssues": [
-    1484
-   ]
+   "lastTouched": "2026-09-05T01:11:49+07:00",
+   "openIssues": []
   },
   {
    "path": "agent-server/apps/trios-mcp-bridge/src",
@@ -924,7 +909,8 @@
    "openIssues": [
     1471,
     1476,
-    1478
+    1478,
+    1490
    ]
   },
   {
@@ -1458,17 +1444,16 @@
    "depth": 5,
    "language": "typescript",
    "languages": {
-    "typescript": 23876
+    "typescript": 23880
    },
    "files": 86,
-   "lines": 23876,
+   "lines": 23880,
    "functions": 1172,
    "imports": 437,
    "exports": 322,
-   "lastTouched": "2026-09-04T23:48:50+07:00",
+   "lastTouched": "2026-09-05T01:11:49+07:00",
    "openIssues": [
-    1430,
-    1483
+    1430
    ]
   },
   {
@@ -1502,9 +1487,7 @@
    "openIssues": [
     1427,
     1429,
-    1480,
-    1481,
-    1482
+    1480
    ]
   },
   {
@@ -1550,9 +1533,7 @@
    "imports": 175,
    "exports": 153,
    "lastTouched": "2026-09-03T09:20:05+07:00",
-   "openIssues": [
-    1479
-   ]
+   "openIssues": []
   },
   {
    "path": "agent-server/apps/server/tests/__fixtures__",
@@ -1583,9 +1564,7 @@
    "imports": 43,
    "exports": 38,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": [
-    1484
-   ]
+   "openIssues": []
   },
   {
    "path": "agent-server/apps/server/tests/agent",
@@ -1607,14 +1586,14 @@
    "depth": 5,
    "language": "typescript",
    "languages": {
-    "typescript": 14659
+    "typescript": 14688
    },
-   "files": 47,
-   "lines": 14659,
+   "files": 48,
+   "lines": 14688,
    "functions": 335,
-   "imports": 190,
+   "imports": 193,
    "exports": 1,
-   "lastTouched": "2026-09-04T23:48:50+07:00",
+   "lastTouched": "2026-09-05T01:11:49+07:00",
    "openIssues": []
   },
   {
@@ -1750,9 +1729,7 @@
    "imports": 1,
    "exports": 40,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": [
-    1463
-   ]
+   "openIssues": []
   },
   {
    "path": "agent-server/packages/shared/src/schemas",

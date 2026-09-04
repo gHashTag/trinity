@@ -16,14 +16,12 @@ import { QueenFactory } from "../components/QueenFactory";
 import { QueenIntelFeed, QueenSectors } from "../components/QueenIntel";
 import { QueenMinimap } from "../components/QueenMinimap";
 import {
-  ALERT_WINDOW_MS,
   HUD_VIEWS,
   alertCount,
   decisionDetail,
   rewriteEndpoints,
   roundStrip,
   skipReasonWords,
-  isAlertKind,
   latestEventFor,
   sectorRows,
   type CombHandle,
@@ -42,6 +40,7 @@ import {
   withOpenIssues,
   countdownFor,
   serverOffsetMs,
+  mergeActivity,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -815,38 +814,9 @@ function useQueenActivity(): {
         const next = (await response.json()) as QueenActivity;
         if (active) {
           cursor.current = next.cursor - ACTIVITY_POLL_MS;
-          setData((previous) => {
-            const byId = new Map(
-              [...(previous?.events ?? []), ...next.events].map((event) => [
-                event.id,
-                event,
-              ]),
-            );
-            // The bell's buffer. The 120-event cap below holds under a
-            // minute of a busy swarm, which would evict a ten-minute-old
-            // verdict the bell still owes the reader; alert kinds are kept
-            // here for the whole window instead.
-            const seenAt = Date.now();
-            const alertsById = new Map(
-              [...(previous?.alerts ?? []), ...next.events]
-                .filter((event) => {
-                  if (!isAlertKind(event.kind)) return false;
-                  const at = new Date(event.at).getTime();
-                  return Number.isFinite(at) && seenAt - at <= ALERT_WINDOW_MS;
-                })
-                .map((event) => [event.id, event]),
-            );
-            return {
-              cursor: next.cursor,
-              events: [...byId.values()]
-                .sort(
-                  (left, right) =>
-                    new Date(right.at).getTime() - new Date(left.at).getTime(),
-                )
-                .slice(0, 120),
-              alerts: [...alertsById.values()],
-            };
-          });
+          // the merge is pure (P0-9): same-second ties keep the newest
+          // poll's wire order, the bell's alerts age out by the window
+          setData((previous) => mergeActivity(previous, next, Date.now()));
           setError(null);
         }
       } catch (nextError) {
