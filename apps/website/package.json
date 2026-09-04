@@ -28,7 +28,8 @@
     "check:queen-review": "node qa/queen-review-lifecycle-contract.mjs",
     "check:queen-viewport": "node qa/queen-viewport-contract.mjs",
     "check:queen-honesty": "node --experimental-strip-types qa/queen-honesty-contract.mjs",
-    "check:queen-dead-api": "node qa/queen-viewport-contract.mjs --dead-api"
+    "check:queen-dead-api": "node qa/queen-viewport-contract.mjs --dead-api",
+    "check:queen-touch": "node qa/queen-touch-contract.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
