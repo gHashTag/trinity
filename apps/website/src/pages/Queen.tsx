@@ -2333,6 +2333,7 @@ export default function Queen() {
         data-errors-as="title"
               data-pick-index={pickIndex ?? undefined}
         data-pick-number={pickedCard?.number ?? undefined}
+        data-pick-territory={livePick?.territory ?? undefined}
       >
         <header className="queen27-hud-vp-head">
           <span className="queen27-hud-vp-title">

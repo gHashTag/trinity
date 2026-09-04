@@ -318,3 +318,15 @@ export function staleAge(nowMs: number, syncedAt: Date | null, error: string | n
   if (error === null || syncedAt === null) return null;
   return Math.max(0, Math.floor((nowMs - syncedAt.getTime()) / 1000));
 }
+
+/**
+ * The ring colour of a territory, RTS style: the hover ring and the
+ * selection flare are coloured by whose ground it is (StarCraft II colours
+ * its hover and selection circles by allegiance). Held is the swarm's green,
+ * neutral the HUD's cyan, fog the cold red the feed uses for errors.
+ */
+export function ringTone(territory: Territory): string {
+  if (territory === "held") return "#00FF88";
+  if (territory === "fog") return "#FF6B6B";
+  return "#64DCFF";
+}

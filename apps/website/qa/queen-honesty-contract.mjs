@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { decisionDetail, fieldShape, placeCards, rewriteEndpoints, roundStrip, skipReasonWords, staleAge } from "../src/components/queenHud.ts";
+import { decisionDetail, fieldShape, placeCards, rewriteEndpoints, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -52,6 +52,9 @@ check(placeCards(new Map([[7, 500]]), [{ number: 7 }], 27).placed[0]?.number ===
 const t0 = Date.parse("2026-09-04T09:00:00Z");
 check(staleAge(t0 + 42_000, new Date(t0), "Failed to fetch") === 42, "stale age is seconds since the last success once a poll fails");
 check(staleAge(t0 + 42_000, new Date(t0), null) === null && staleAge(t0, null, "Failed to fetch") === null, "no badge while polls succeed or before the first success");
+check(ringTone("held") === "#00FF88" && ringTone("fog") === "#FF6B6B" && ringTone("neutral") === "#64DCFF", "ring colours follow the territory (held green, fog cold, neutral cyan)");
+check(ringTone(territoryOf("running")) === "#00FF88" && ringTone(territoryOf("blocked")) === "#FF6B6B" && ringTone(territoryOf("review")) === "#64DCFF", "a column's ring colour is its territory's");
+check(/data-pick-territory=\{livePick\?\.territory/.test(src), "the viewport section names the picked territory for probes");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
