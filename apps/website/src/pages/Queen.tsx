@@ -1656,7 +1656,6 @@ export default function Queen() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeSector, setActiveSector] = useState<string | null>(null);
   const [pick, setPick] = useState<HudPick | null>(null);
-  const [pickIndex, setPickIndex] = useState<number | null>(null);
   const [agentCopy, setAgentCopy] = useState<"idle" | "copied" | "error">(
     "idle",
   );
@@ -1784,7 +1783,27 @@ export default function Queen() {
     (event: HudEvent) => activityLabel(event, lang),
     [lang],
   );
-  const pickedCard = pick?.card ?? null;
+  // The pick is a card number, not a cell index: the field is rebuilt from
+  // the card list on every poll, so an index would drift to a stranger's
+  // cell. A pick with a card follows its number and re-reads the card; a pick
+  // without one (the Queen's cell, an empty cell) keeps its index; a card that
+  // left the board clears the pick. Derived, never stored.
+  const livePick = useMemo<HudPick | null>(() => {
+    if (!pick) return null;
+    if (!pick.card) return pick.index < cellSummaries.length ? pick : null;
+    const number = pick.card.number;
+    const index = cellSummaries.findIndex((cell) => cell.cardNumber === number);
+    if (index < 0) return null;
+    return {
+      ...pick,
+      index,
+      card: cards.find((card) => card.number === number) ?? pick.card,
+      territory: cellSummaries[index].own,
+      isQueen: index === queenIndexOf(cellSummaries.length),
+    };
+  }, [pick, cellSummaries, cards]);
+  const pickIndex = livePick?.index ?? null;
+  const pickedCard = livePick?.card ?? null;
   const pickedIssueUrl =
     pickedCard && repo
       ? `https://github.com/${repo}/issues/${pickedCard.number}`
@@ -1848,7 +1867,6 @@ export default function Queen() {
 
   const handlePick = useCallback((next: HudPick | null) => {
     setPick(next);
-    setPickIndex(next?.index ?? null);
   }, []);
 
   const toggleFullscreen = () => {
@@ -2245,7 +2263,13 @@ export default function Queen() {
         />
       )}
 
-      <section className="queen27-hud-viewport" ref={viewportRef} aria-label={viewLabel}>
+      <section
+        className="queen27-hud-viewport"
+        ref={viewportRef}
+        aria-label={viewLabel}
+        data-pick-index={pickIndex ?? undefined}
+        data-pick-number={pickedCard?.number ?? undefined}
+      >
         <header className="queen27-hud-vp-head">
           <span className="queen27-hud-vp-title">
             {c.sector.toUpperCase()}: {repo ?? "—"}
@@ -2415,7 +2439,7 @@ export default function Queen() {
           queue={board ? queue : null}
           reviewQueue={reviewQueue}
           latestDispatch={latest ?? null}
-          pick={pick}
+          pick={livePick}
           queenStats={{
             backendLive: isLive,
             accepted: board ? doneCount : null,
