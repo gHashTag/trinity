@@ -42,7 +42,7 @@ import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
 import { S, HH, EDGES, summariseCells, queenIndexOf } from "./QueenComb";
-import { crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudPick, type Tone } from "./queenHud";
+import { crystalOf, eventTone, moduleId, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone } from "./queenHud";
 
 interface SpikeCard {
   number: number;
@@ -65,7 +65,13 @@ interface QueenCombBabylonProps {
   fitInset?: number;
   /** The activity feed: every event names an issue; its cell glints once per new event. */
   events?: HudEvent[];
+  /** The code modules by card id (M-2): the building is generated from the signature. */
+  modules?: ReadonlyMap<number, HudModule>;
+  /** Per issue in progress: the cell of the module its title names, or null (the hub). */
+  beeTargets?: ReadonlyArray<number | null>;
 }
+// the building a language gets; an open issue adds the red fence
+const BY_LANGUAGE: Record<string, ModelKey> = { typescript: "done", javascript: "doneDepot", swift: "doneDepot", rust: "doneSilo", zig: "running", python: "review", shell: "backlog", go: "doneSilo" };
 
 type Territory = "held" | "neutral" | "fog";
 const LINES: readonly BeeLine[] = ["scribe", "wright", "lapidary"];
@@ -185,7 +191,7 @@ async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; 
   }
 }
 
-export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS }: QueenCombBabylonProps) {
+export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets }: QueenCombBabylonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onPickRef = useRef(onPick);
@@ -209,11 +215,15 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
   const cardsRef = useRef(cards);
   const workersRef = useRef(workers);
   const devicesRef = useRef(devices);
+  const modulesRef = useRef(modules);
+  const targetsRef = useRef(beeTargets);
   useEffect(() => {
     cardsRef.current = cards;
     workersRef.current = workers;
     devicesRef.current = devices;
-  }, [cards, workers, devices]);
+    modulesRef.current = modules;
+    targetsRef.current = beeTargets;
+  }, [cards, workers, devices, modules, beeTargets]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -340,58 +350,70 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const steel = mat("steel", "#8a93a3"), dark = mat("dark", "#3a4150"), glass = mat("glass", "#1d3a4a", "#0e5a7a");
     const green = mat("green", "#1e4d3a", "#00ff88"), gold = mat("gold", "#5a4a1e", "#ffd45a"), red = mat("red", "#4d1e1e", "#ff6b6b"), cyan = mat("cyan", "#1e3f4d", "#64dcff"), ruin = mat("ruin", "#2a2d33");
     const u = S * 0.4;
-    interface Template { parts: Mesh[]; matrices: number[] }
+    interface Template { parts: Mesh[]; matrices: number[]; scales: number[]; turns: number[] }
+    const mods = modulesRef.current;
+    // the signature's part of the visual (M-3, first step): footprint from
+    // lines on a log scale, a quarter turn from the path's hash
+    const sizeOf = (card: SpikeCard | null) => { const m = card && mods?.get(card.number); if (!m) return 1; return 0.85 + 0.55 * Math.min(1, Math.log10(Math.max(1, m.lines)) / 4.5); };
+    const turnOf = (card: SpikeCard | null) => (card ? (moduleId(card.title) % 4) * (Math.PI / 2) : 0);
     const templates: Record<Column, Template> = {} as Record<Column, Template>;
     const part = (m: Mesh, material: StandardMaterial, y: number, x = 0, z = 0) => { m.material = material; m.position.set(x, y, z); m.isPickable = false; m.isVisible = false; shadows.addShadowCaster(m); return m; };
     templates.backlog = { parts: [
       part(CreateBox("bl-slab", { width: u, depth: u, height: 5 }, scene), dark, 2.5),
       ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([px, pz], k) => part(CreateBox(`bl-post-${k}`, { width: 4, depth: 4, height: 16 }, scene), steel, 8, px * u * 0.42, pz * u * 0.42)),
-    ], matrices: [] };
+    ], matrices: [], scales: [], turns: [] };
     templates.running = { parts: [
       part(CreateBox("ru-body", { width: u * 0.8, depth: u * 0.8, height: u * 0.55 }, scene), steel, u * 0.275),
       part(CreateBox("ru-band", { width: u * 0.84, depth: u * 0.84, height: 4 }, scene), cyan, u * 0.3),
       part(CreateCylinder("ru-mast", { diameter: 3, height: u * 0.6 }, scene), steel, u * 0.85, u * 0.25, u * 0.25),
       part(CreateSphere("ru-lamp", { diameter: 8 }, scene), cyan, u * 1.15, u * 0.25, u * 0.25),
-    ], matrices: [] };
+    ], matrices: [], scales: [], turns: [] };
     templates.review = { parts: [
       part(CreateCylinder("rv-base", { diameter: u * 0.9, height: u * 0.3, tessellation: 12 }, scene), steel, u * 0.15),
       part(CreateSphere("rv-dome", { diameter: u * 0.7, slice: 0.5, segments: 12 }, scene), glass, u * 0.3),
       part(CreateTorus("rv-ring", { diameter: u * 0.72, thickness: 3, tessellation: 24 }, scene), gold, u * 0.31),
-    ], matrices: [] };
+    ], matrices: [], scales: [], turns: [] };
     templates.done = { parts: [
       part(CreateBox("dn-tower", { width: u * 0.6, depth: u * 0.6, height: u * 1.1 }, scene), steel, u * 0.55),
       part(CreateBox("dn-win1", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.35),
       part(CreateBox("dn-win2", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.7),
       part(CreateBox("dn-cap", { width: u * 0.7, depth: u * 0.7, height: 6 }, scene), dark, u * 1.13),
-    ], matrices: [] };
+    ], matrices: [], scales: [], turns: [] };
     // two more silhouettes for done cards, chosen by card number, so a hundred
     // finished tasks read as a base and not as a grid of one tower
     const doneDepot: Template = { parts: [
       part(CreateBox("dd-body", { width: u * 0.95, depth: u * 0.7, height: u * 0.35 }, scene), steel, u * 0.175),
       part(CreateBox("dd-roof", { width: u * 1.0, depth: u * 0.75, height: 4 }, scene), dark, u * 0.37),
       part(CreateBox("dd-strip", { width: u * 0.97, depth: u * 0.72, height: 2.5 }, scene), green, u * 0.2),
-    ], matrices: [] };
+    ], matrices: [], scales: [], turns: [] };
     const doneSilo: Template = { parts: [
       part(CreateCylinder("ds-body", { diameter: u * 0.6, height: u * 0.8, tessellation: 14 }, scene), steel, u * 0.4),
       part(CreateSphere("ds-top", { diameter: u * 0.6, slice: 0.5, segments: 12 }, scene), dark, u * 0.8),
       part(CreateTorus("ds-band", { diameter: u * 0.62, thickness: 2.5, tessellation: 24 }, scene), green, u * 0.5),
-    ], matrices: [] };
+    ], matrices: [], scales: [], turns: [] };
     templates.blocked = { parts: [
       part(CreateBox("bk-body", { width: u * 0.7, depth: u * 0.7, height: u * 0.4 }, scene), dark, u * 0.2),
       part(CreateTorus("bk-fence", { diameter: u * 0.95, thickness: 2.5, tessellation: 6 }, scene), red, 8),
       part(CreateBox("bk-light", { width: u * 0.72, depth: u * 0.72, height: 3 }, scene), red, u * 0.42),
-    ], matrices: [] };
+    ], matrices: [], scales: [], turns: [] };
     templates.dropped = { parts: [
       part(CreateBox("dr-a", { width: u * 0.5, depth: u * 0.4, height: u * 0.18 }, scene), ruin, u * 0.09, -u * 0.12, u * 0.05),
       part(CreateBox("dr-b", { width: u * 0.3, depth: u * 0.3, height: u * 0.3 }, scene), ruin, u * 0.15, u * 0.2, -u * 0.15),
-    ], matrices: [] };
+    ], matrices: [], scales: [], turns: [] };
     cells.forEach((c, i) => {
       if (i === home) return;
       const card = cards[i];
       if (!card) return;
       const col = (COLUMNS as readonly string[]).includes(card.column) ? (card.column as Column) : "backlog";
-      const target = col === "done" ? [templates.done, doneDepot, doneSilo][card.number % 3] : templates[col];
-      target.matrices.push(...Matrix.Translation(c.x, 0, c.y).toArray());
+      const m = mods?.get(card.number);
+      // a module's building comes from its language; a card's from its column
+      const key: ModelKey | Column = m ? (BY_LANGUAGE[m.language] ?? "dropped") : col === "done" ? (["done", "doneDepot", "doneSilo"] as const)[card.number % 3] : col;
+      const target = key === "doneDepot" ? doneDepot : key === "doneSilo" ? doneSilo : templates[key as Column];
+      const k = sizeOf(card), turn = turnOf(card);
+      target.matrices.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.RotationAxis(Vector3.Up(), turn), new Vector3(c.x, 0, c.y)).toArray());
+      target.scales.push(k); target.turns.push(turn);
+      // an open issue on a module fences it in red (the blocked template's fence)
+      if (m && m.openIssues.length > 0 && key !== "blocked") { templates.blocked.matrices.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.Identity(), new Vector3(c.x, 0, c.y)).toArray()); templates.blocked.scales.push(k); templates.blocked.turns.push(0); }
     });
     for (const t of [...COLUMNS.map((col) => templates[col]), doneDepot, doneSilo]) {
       const count = t.matrices.length / 16;
@@ -474,10 +496,11 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const slots = new Map<number, "busy" | "idle">();
       for (const slot of workersRef.current?.slots ?? []) slots.set(slot.slot, slot.state);
       let busyRank = 0, idleRank = 0;
+      const issueTargets = targetsRef.current;
       for (const b of bees) {
         b.busy = slots.get(b.slot) === "busy";
         let target = home;
-        if (b.busy) { target = running[busyRank] ?? home; b.work = running[busyRank] !== undefined; busyRank += 1; }
+        if (b.busy) { const byIssue = issueTargets ? issueTargets[busyRank] : undefined; target = byIssue ?? running[busyRank] ?? home; b.work = (byIssue !== undefined && byIssue !== null) || running[busyRank] !== undefined; busyRank += 1; }
         else { b.work = false; target = ringCell(idleRank); idleRank += 1; }
         if (b.to !== target) { b.from = b.t < 0.5 ? b.from : b.to; b.to = target; b.t = 0; b.speed = b.busy ? 0.55 : 0.35; }
       }
@@ -487,17 +510,24 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const flightLines = bees.map((b) => { const m = CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 1)], dashSize: 6, gapSize: 4, dashNb: 40, updatable: true }, scene); m.color = Color3.FromHexString("#64DCFF"); m.alpha = 0.55; m.isPickable = false; m.isVisible = false; return m; });
     const unitRings = bees.map((b) => { const m = CreateTorus(`unit-ring-${b.slot}`, { diameter: b.body.width * 0.8, thickness: 1.6, tessellation: 20 }, scene); m.material = green; m.isPickable = false; m.isVisible = false; return m; });
 
+    // The glTF loader creates PBR materials, and a PBR material's first use
+    // schedules the environment BRDF lookup texture, generated asynchronously
+    // through executeWhenCompiled; when the view switches mid-load that
+    // callback ran on a disposed engine (TypeError: reading 'program'). The
+    // models become StandardMaterials anyway, so the scene gets a 2x2 stand-in
+    // BRDF texture up front and nothing is ever generated.
+    if (!scene.environmentBRDFTexture) scene.environmentBRDFTexture = new DynamicTexture("brdf-none", 2, scene, false);
     // ---- the Kenney models replace the procedural templates as they load;
     //      a model that fails to load leaves its procedural stand-in --------
     let disposed = false;
     const modelInstances = new Map<ModelKey, { mesh: Mesh; footprint: number; base: number; height: number }>();
-    const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, parts: Mesh[]) => {
+    const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, parts: Mesh[], scales: number[] = [], turns: number[] = []) => {
       if (disposed || scene.isDisposed || matrices.length === 0) return;
-      const k = target / t.footprint;
       const out: number[] = [];
-      for (let i = 0; i < matrices.length; i += 16) {
+      for (let i = 0, j = 0; i < matrices.length; i += 16, j += 1) {
         const tx = matrices[i + 12], tz = matrices[i + 14];
-        out.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.Identity(), new Vector3(tx, -t.base * k, tz)).toArray());
+        const k = (target / t.footprint) * (scales[j] ?? 1);
+        out.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.RotationAxis(Vector3.Up(), turns[j] ?? 0), new Vector3(tx, -t.base * k, tz)).toArray());
       }
       t.mesh.thinInstanceSetBuffer("matrix", new Float32Array(out), 16, true);
       t.mesh.isVisible = true;
@@ -510,7 +540,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
       for (const [key, t] of loaded) if (t) modelInstances.set(key, t);
-      const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts); };
+      const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns); };
       // a building takes about half a cell, so the roads between them still show
       bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
       bind("done", templates.done, u * 1.35); bind("doneDepot", doneDepot, u * 1.35); bind("doneSilo", doneSilo, u * 1.25);

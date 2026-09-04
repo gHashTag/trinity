@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { decisionDetail, fieldShape, placeCards, rewriteEndpoints, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf } from "../src/components/queenHud.ts";
+import { cellGeometry, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -55,6 +55,25 @@ check(staleAge(t0 + 42_000, new Date(t0), null) === null && staleAge(t0, null, "
 check(ringTone("held") === "#00FF88" && ringTone("fog") === "#FF6B6B" && ringTone("neutral") === "#64DCFF", "ring colours follow the territory (held green, fog cold, neutral cyan)");
 check(ringTone(territoryOf("running")) === "#00FF88" && ringTone(territoryOf("blocked")) === "#FF6B6B" && ringTone(territoryOf("review")) === "#64DCFF", "a column's ring colour is its territory's");
 check(/data-pick-territory=\{livePick\?\.territory/.test(src), "the viewport section names the picked territory for probes");
+// modules as the unit of place (M-2)
+check(moduleId("agent-server/apps/server/src") === moduleId("agent-server/apps/server/src") && moduleId("a") !== moduleId("b") && moduleId("x") > 0, "a module id is a stable positive hash of its path");
+const M = (over) => ({ path: "p", depth: 1, language: "typescript", files: 1, lines: 1, functions: 1, imports: 0, exports: 0, lastTouched: null, openIssues: [], ...over });
+const T = Date.parse("2026-09-04T09:00:00Z");
+check(moduleColumn(M({ openIssues: [5] }), T, new Set([5])) === "running" && moduleColumn(M({ openIssues: [5] }), T, new Set()) === "review", "an issue in progress makes a module running; an open one, review");
+check(moduleColumn(M({ lastTouched: "2026-09-01T00:00:00Z" }), T, new Set()) === "done" && moduleColumn(M({ lastTouched: "2026-01-01T00:00:00Z" }), T, new Set()) === "dropped" && moduleColumn(M({ lastTouched: "2026-06-01T00:00:00Z" }), T, new Set()) === "backlog", "touched within 30 days is alive, 180 days dormant, between is backlog");
+check(moduleFor("trios/agent-server/apps/server/src/lib/agents/x.ts", [M({ path: "agent-server" }), M({ path: "agent-server/apps/server/src" })])?.path === "agent-server/apps/server/src" && moduleFor("nowhere/x.ts", [M({ path: "agent-server" })]) === null, "a file belongs to the longest module path that prefixes it");
+check(pathInTitle("trios/agent-server/apps/server/src/api/x.ts breaks L3") === "trios/agent-server/apps/server/src/api/x.ts" && pathInTitle("no path here") === null, "the first path in a title, or none");
+const geo = cellGeometry(114);
+check(geo.length === fieldShape(114).cellCount, "cell geometry has one centre per cell of the field's shape");
+const order = ringOrder(geo, Math.floor(geo.length / 2));
+check(order[0] === Math.floor(geo.length / 2) && order.length === geo.length && new Set(order).size === geo.length, "ring order starts at home and visits every cell once");
+const d = (i) => (geo[i].x - geo[order[0]].x) ** 2 + (geo[i].y - geo[order[0]].y) ** 2;
+check(order.every((i, k) => k === 0 || d(i) >= d(order[k - 1])), "ring order never moves inward");
+const shape3 = fieldShape(3);
+const home3 = Math.floor(shape3.cellCount / 2);
+const ringed = placeCards(new Map(), [{ number: 1 }, { number: 2 }, { number: 3 }], shape3.cellCount, ringOrder(cellGeometry(3), home3));
+check(ringed.ledger.get(1) === home3 && ringed.placed[home3]?.number === 1, "with a ring order the first card takes the home cell");
+check(fieldShape(165).cellCount === 189 && fieldShape(114).cellCount === 138, "the field's cell count is the comb's (189 for 165 cards, not 195)");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

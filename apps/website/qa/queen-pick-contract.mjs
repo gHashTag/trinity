@@ -38,25 +38,25 @@ let boardText = null; let served = 0; let rotate = false;
 listeners.push(async msg => {
   if (msg.sessionId !== sessionId || msg.method !== 'Fetch.requestPaused') return;
   const { requestId, request, responseStatusCode } = msg.params;
-  if (!/\/queen\/public-board/.test(request.url)) { await call('Fetch.continueRequest', { requestId }); return; }
+  if (!/queen\/modules\.json/.test(request.url)) { await call('Fetch.continueRequest', { requestId }); return; }
   if (responseStatusCode === undefined) { await call('Fetch.continueRequest', { requestId }); return; }
   served += 1;
   const got = await call('Fetch.getResponseBody', { requestId });
   const text = got.base64Encoded ? Buffer.from(got.body, 'base64').toString('utf8') : got.body;
   if (boardText === null) boardText = text;
   let out = boardText;
-  if (rotate) { const d = JSON.parse(boardText); d.cards = [...d.cards.slice(7), ...d.cards.slice(0, 7)]; out = JSON.stringify(d); }
+  if (rotate) { const d = JSON.parse(boardText); d.modules = [...d.modules.slice(7), ...d.modules.slice(0, 7)]; out = JSON.stringify(d); }
   await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(out).toString('base64') });
 });
 await call('Page.enable');
-await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/public-board*', requestStage: 'Response' }] });
+await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/modules.json*', requestStage: 'Response' }] });
 await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 await call('Page.navigate', { url: `${ORIGIN}/?pick=1${process.env.QUEEN_ENGINE ? '&engine=' + process.env.QUEEN_ENGINE : ''}#/queen` });
 let ready = false;
 for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-sectors-row').length === 6 && !!document.querySelector('.queen27-comb-field canvas') && !!document.querySelector('.queen27-hud-viewport')`); }
 if (!ready) { console.log('  Queen pick contract: FAIL (page never became ready)'); cleanup(); process.exit(1); }
 await wait(1500);
-const state = () => evaluate(`(() => { const v = document.querySelector('.queen27-hud-viewport'); const u = document.querySelector('.queen27-context-selected'); return { number: v ? v.getAttribute('data-pick-number') : null, index: v ? v.getAttribute('data-pick-index') : null, unit: ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 160) }; })()`);
+const state = () => evaluate(`(() => { const v = document.querySelector('.queen27-hud-viewport'); const u = document.querySelector('.queen27-context-selected'); return { number: v ? v.getAttribute('data-pick-number') : null, module: v ? v.getAttribute('data-pick-module') : null, index: v ? v.getAttribute('data-pick-index') : null, unit: ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 160) }; })()`);
 // pick a card by sweeping clicks until the panel names one
 const rect = await evaluate(`(() => { const r = document.querySelector('.queen27-comb-field canvas').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })()`);
 let picked = null;
@@ -65,18 +65,20 @@ outer: for (let gy = 0; gy < 6; gy++) for (let gx = 0; gx < 10; gx++) {
   await evaluate(`(() => { const cv = document.querySelector('.queen27-comb-field canvas'); cv.dispatchEvent(new PointerEvent('pointermove', { clientX: ${x}, clientY: ${y}, bubbles: true, pointerId: 1 })); cv.dispatchEvent(new MouseEvent('click', { clientX: ${x}, clientY: ${y}, bubbles: true })); })()`);
   await wait(60);
   const s = await state();
-  if (s.number && s.unit.includes('#' + s.number)) { picked = s; break outer; }
+  if (s.module && s.unit.includes(s.module)) { picked = s; break outer; }
 }
 if (!picked) { console.log('  Queen pick contract: FAIL (no card could be picked; data-pick-number never set)'); cleanup(); process.exit(1); }
 rotate = true;
+// modules.json is polled every 15 s; the rotated (or grown) file arrives on the next poll
 const before = served;
-for (let i = 0; i < 40 && served < before + 2; i++) await wait(250);
-await wait(600);
+for (let i = 0; i < 100 && served < before + 1; i++) await wait(250);
+await wait(900);
 const after = await state();
 cleanup();
 const fails = [];
 if (after.number !== picked.number) fails.push(`the pick changed card: #${picked.number} -> #${after.number}`);
 // The index may move (positional layout) or stay (placement ledger, P1-20); the fact under test is the number.
-if (!after.unit.includes('#' + picked.number)) fails.push(`SELECTED reads "${after.unit}", not #${picked.number}`);
+if (after.module !== picked.module) fails.push(`the pick changed module: ${picked.module} -> ${after.module}`);
+if (!after.unit.includes(picked.module)) fails.push(`SELECTED reads "${after.unit}", not ${picked.module}`);
 if (fails.length) { for (const f of fails) console.log('  ✗ ' + f); console.log(`  Queen pick contract: FAIL (${fails.length})`); process.exit(1); }
-console.log(`  Queen pick contract: PASS (#${picked.number} stayed picked across a rotated board: index ${picked.index} -> ${after.index})`);
+console.log(`  Queen pick contract: PASS (${picked.module} stayed picked across a rotated modules file: index ${picked.index} -> ${after.index})`);

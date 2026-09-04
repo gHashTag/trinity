@@ -68,6 +68,8 @@ export interface HudPick {
   territory: Territory;
   card: HudCard | null;
   bee: { slot: number; line: BeeLine; busy: boolean } | null;
+  /** The code module on the cell, when the field shows modules (M-2). */
+  module?: HudModule | null;
 }
 
 /** Imperative handle the shell uses to drive the comb's camera. */
@@ -269,7 +271,10 @@ export function fieldShape(cardCount: number): { rows: number; cols: number; cel
   const count = Math.max(27, cardCount);
   const rows = Math.max(3, Math.ceil(Math.sqrt(count / 1.1)));
   const cols = rows + 2;
-  return { rows, cols, cellCount: rows * cols };
+  // buildCells keeps only the down cells: an even row holds cols of them, an
+  // odd row one fewer. rows * cols overstated the count by floor(rows / 2)
+  // and left that many placed slots with no cell (found by the ring order).
+  return { rows, cols, cellCount: rows * cols - Math.floor(rows / 2) };
 }
 
 /**
@@ -284,6 +289,7 @@ export function placeCards<T extends { number: number }>(
   previous: ReadonlyMap<number, number>,
   cards: T[],
   cellCount: number,
+  order?: readonly number[],
 ): { placed: (T | null)[]; ledger: Map<number, number> } {
   const placed: (T | null)[] = new Array<T | null>(cellCount).fill(null);
   const ledger = new Map<number, number>();
@@ -297,12 +303,14 @@ export function placeCards<T extends { number: number }>(
       pending.push(card);
     }
   }
+  const seq = order && order.length === cellCount ? order : null;
   let free = 0;
   for (const card of pending) {
-    while (free < cellCount && placed[free] !== null) free += 1;
+    while (free < cellCount && placed[seq ? seq[free] : free] !== null) free += 1;
     if (free >= cellCount) break;
-    placed[free] = card;
-    ledger.set(card.number, free);
+    const slot = seq ? seq[free] : free;
+    placed[slot] = card;
+    ledger.set(card.number, slot);
   }
   return { placed, ledger };
 }
@@ -329,4 +337,110 @@ export function ringTone(territory: Territory): string {
   if (territory === "held") return "#00FF88";
   if (territory === "fog") return "#FF6B6B";
   return "#64DCFF";
+}
+
+/**
+ * A code module of the repository the Queen supervises: the unit of place
+ * on the field (the user, 2026-09-04: "modules in rings from the centre;
+ * bees are the issues"). The signature is what the visual is generated from.
+ * Until /queen/public-modules exists (M-1) the rows come from
+ * public/queen/modules.json, a scan of the repo stamped with its commit.
+ */
+export interface HudModule {
+  path: string;
+  depth: number;
+  language: string;
+  files: number;
+  lines: number;
+  functions: number;
+  imports: number;
+  exports: number;
+  lastTouched: string | null;
+  openIssues: number[];
+}
+
+/** FNV-1a over the path: a stable positive id, so a module can be a card. */
+export function moduleId(path: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < path.length; i += 1) {
+    h ^= path.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return (h % 2147483646) + 1;
+}
+
+const DAY = 86_400_000;
+
+/**
+ * The column a module stands in, from facts: an open issue in progress on
+ * it makes it "running"; any open issue "review"; touched within 30 days
+ * "done" (alive); untouched for 180 days "dropped" (dormant); else backlog.
+ * Territory then follows territoryOf as for a card.
+ */
+export function moduleColumn(m: HudModule, nowMs: number, running: ReadonlySet<number>): string {
+  if (m.openIssues.some((n) => running.has(n))) return "running";
+  if (m.openIssues.length > 0) return "review";
+  const touched = m.lastTouched ? Date.parse(m.lastTouched) : NaN;
+  if (Number.isFinite(touched)) {
+    const age = nowMs - touched;
+    if (age <= 30 * DAY) return "done";
+    if (age >= 180 * DAY) return "dropped";
+  }
+  return "backlog";
+}
+
+export function moduleCard(m: HudModule, nowMs: number, running: ReadonlySet<number>): HudCard {
+  return { number: moduleId(m.path), title: m.path, column: moduleColumn(m, nowMs, running), criteria: m.files };
+}
+
+/** The module a file path belongs to: the longest module path that prefixes it. */
+export function moduleFor(filePath: string, modules: readonly HudModule[]): HudModule | null {
+  const rel = filePath.startsWith("trios/") ? filePath.slice(6) : filePath;
+  let best: HudModule | null = null;
+  for (const m of modules) {
+    if (m.path === "." || rel === m.path || rel.startsWith(m.path + "/")) {
+      if (!best || m.path.length > best.path.length) best = m;
+    }
+  }
+  return best;
+}
+
+/** The first path-like token in a title, if any (issue titles name files). */
+export function pathInTitle(title: string): string | null {
+  const m = /(?<![\w.])((?:[A-Za-z0-9_.-]+\/){1,}[A-Za-z0-9_.-]+)/.exec(title);
+  return m ? m[1] : null;
+}
+
+/**
+ * The same layout buildCells uses (rows of down cells, cols per row): cell
+ * centres for a card count, so a ring order can be computed before anything
+ * is placed. Kept in step with QueenComb's buildCells by the honesty contract.
+ */
+export function cellGeometry(cardCount: number): Array<{ x: number; y: number }> {
+  const { rows, cols } = fieldShape(cardCount);
+  const S = 150;
+  const HH = (S * Math.sqrt(3)) / 2;
+  const out: Array<{ x: number; y: number }> = [];
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols * 2 - 1; c += 1) {
+      if (((c + r) & 1) === 1) continue;
+      out.push({ x: (c - (cols * 2 - 2) / 2) * (S / 2), y: (r - rows / 2) * HH + HH / 3 });
+    }
+  }
+  return out;
+}
+
+/**
+ * Rings from the centre (the Flower of Life): cell indices by distance from
+ * the home cell, home first. The placement ledger takes free cells in this
+ * order, so the first modules stand nearest the Queen and later ones grow
+ * the base outward.
+ */
+export function ringOrder(cells: ReadonlyArray<{ x: number; y: number }>, home: number): number[] {
+  const h = cells[home];
+  if (!h) return cells.map((_, i) => i);
+  return cells
+    .map((c, i) => ({ i, d: (c.x - h.x) ** 2 + (c.y - h.y) ** 2 }))
+    .sort((a, b) => a.d - b.d || a.i - b.i)
+    .map((e) => e.i);
 }
