@@ -31,6 +31,8 @@ import {
   type HudEvent,
   type HudPick,
   type HudView,
+  fieldShape,
+  placeCards,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -1692,6 +1694,23 @@ export default function Queen() {
   const workers = research?.workers ?? null;
   const hardware = hardwareState.data;
   const cards = board?.cards ?? EMPTY_CARDS;
+  // Placement ledger (P1-20): the board arrives in wire order on every poll,
+  // so a positional layout moved every structure and every bee whenever an
+  // issue was inserted at the head. Known cards keep their cells across
+  // polls; the ledger is adjusted during render when the card list changes
+  // (React's derived-state pattern), never in an effect, so the comb, the
+  // minimap and the pick all see the same placement in the same frame.
+  const [placement, setPlacement] = useState<{
+    cards: QueenCard[];
+    placed: (QueenCard | null)[];
+    ledger: Map<number, number>;
+  }>(() => ({ cards, ...placeCards(new Map(), cards, fieldShape(cards.length).cellCount) }));
+  let placedCards = placement.placed;
+  if (placement.cards !== cards) {
+    const next = placeCards(placement.ledger, cards, fieldShape(cards.length).cellCount);
+    placedCards = next.placed;
+    setPlacement({ cards, placed: next.placed, ledger: next.ledger });
+  }
   const events: HudEvent[] = activityState.data?.events ?? EMPTY_EVENTS;
   const boardColumns = board?.columns ?? FALLBACK_COLUMNS;
   const runningCards = useMemo(
@@ -1782,7 +1801,7 @@ export default function Queen() {
       : null;
   const alertEvents: HudEvent[] = activityState.data?.alerts ?? EMPTY_EVENTS;
   const alerts = useMemo(() => alertCount(alertEvents, now), [alertEvents, now]);
-  const cellSummaries = useMemo(() => summariseCells(cards), [cards]);
+  const cellSummaries = useMemo(() => summariseCells(placedCards), [placedCards]);
   const sectors = useMemo(
     () => sectorRows(boardColumns, cards),
     [boardColumns, cards],
@@ -1972,7 +1991,7 @@ export default function Queen() {
             </header>
             <div className="queen27-hud-minimap-body">
               <QueenMinimap
-                cards={cards}
+                cards={placedCards}
                 picked={pickIndex}
                 onPick={(index) => {
                   // The same cell the comb would name: summariseCells is
@@ -2374,7 +2393,7 @@ export default function Queen() {
               events={events}
               devices={hardware?.devices ?? null}
               columns={boardColumns}
-              cards={cards}
+              cards={placedCards}
               repo={repo}
               workers={workers}
               error={boardState.error ?? researchState.error}

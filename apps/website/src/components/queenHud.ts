@@ -259,3 +259,50 @@ export function crystalOf(family: string): "cpu" | "fpga" | "gpu" {
   if (/gpu|cuda|rtx|radeon|tensor core|h100|a100/.test(f)) return "gpu";
   return "cpu";
 }
+
+/**
+ * The field's shape for a card count: rows of down-pointing marks, cols per
+ * row. One function, so the comb, the minimap and the placement ledger agree
+ * on how many cells exist (P1-20).
+ */
+export function fieldShape(cardCount: number): { rows: number; cols: number; cellCount: number } {
+  const count = Math.max(27, cardCount);
+  const rows = Math.max(3, Math.ceil(Math.sqrt(count / 1.1)));
+  const cols = rows + 2;
+  return { rows, cols, cellCount: rows * cols };
+}
+
+/**
+ * Placement ledger keyed by card number. The public board is rebuilt in wire
+ * order on every poll, so a positional layout moved every structure and every
+ * bee whenever an issue was inserted at the head. Here a known card keeps the
+ * cell it had; a card that left frees its cell; a new card takes the first
+ * free cell; a cell index that no longer fits the field is re-placed. Pure:
+ * the ledger passed in is never mutated, the next one is returned.
+ */
+export function placeCards<T extends { number: number }>(
+  previous: ReadonlyMap<number, number>,
+  cards: T[],
+  cellCount: number,
+): { placed: (T | null)[]; ledger: Map<number, number> } {
+  const placed: (T | null)[] = new Array<T | null>(cellCount).fill(null);
+  const ledger = new Map<number, number>();
+  const pending: T[] = [];
+  for (const card of cards) {
+    const index = previous.get(card.number);
+    if (index !== undefined && index < cellCount && placed[index] === null && !ledger.has(card.number)) {
+      placed[index] = card;
+      ledger.set(card.number, index);
+    } else if (!ledger.has(card.number)) {
+      pending.push(card);
+    }
+  }
+  let free = 0;
+  for (const card of pending) {
+    while (free < cellCount && placed[free] !== null) free += 1;
+    if (free >= cellCount) break;
+    placed[free] = card;
+    ledger.set(card.number, free);
+  }
+  return { placed, ledger };
+}

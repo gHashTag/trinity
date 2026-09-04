@@ -11,6 +11,7 @@ import {
   type CombHandle,
   type HudPick,
   type Territory,
+  fieldShape,
 } from "./queenHud";
 import "./QueenMinimap.css";
 
@@ -62,7 +63,8 @@ interface CombLabels {
 
 interface QueenCombProps {
   columns: CombColumn[];
-  cards: CombCard[];
+  /** Cards already placed on cells by the host's ledger (null = empty cell). */
+  cards: (CombCard | null)[];
   repo: string | null;
   workers: CombWorkers | null;
   error: string | null;
@@ -252,10 +254,12 @@ function corners(c: Cell): [Pt, Pt, Pt] {
 // the mark alone, point down, touching its neighbours at vertices only -
 // islands in weightlessness, each one the field of one unit with its 27
 // cells. A row holds ~cols marks, so rows*cols must cover the cards.
-function buildCells(cards: CombCard[]): Cell[] {
-  const count = Math.max(27, cards.length);
-  const rows = Math.max(3, Math.ceil(Math.sqrt(count / 1.1)));
-  const cols = rows + 2;
+function buildCells(cards: (CombCard | null)[]): Cell[] {
+  // The shape follows the number of cards, not the number of cells the host
+  // placed them on, so the field neither grows nor shrinks with the ledger.
+  let cardCount = 0;
+  for (const card of cards) if (card) cardCount += 1;
+  const { rows, cols } = fieldShape(cardCount);
   const cells: Cell[] = [];
   for (let r = 0; r < rows; r += 1) {
     for (let c = 0; c < cols * 2 - 1; c += 1) {
@@ -287,7 +291,7 @@ function buildCells(cards: CombCard[]): Cell[] {
  * field from the one the comb shows.
  */
 // eslint-disable-next-line react-refresh/only-export-components -- geometry stays with the cells that own it
-export function summariseCells(cards: CombCard[]): CombCellSummary[] {
+export function summariseCells(cards: (CombCard | null)[]): CombCellSummary[] {
   return buildCells(cards).map((cell) => ({
     x: cell.x,
     y: cell.y,

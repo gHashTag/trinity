@@ -11,7 +11,7 @@ import "./QueenMinimap.css";
 // `pickIndex`. Static: no frame loop, one redraw per data, pick or size change.
 
 interface QueenMinimapProps {
-  cards: HudCard[];
+  cards: (HudCard | null)[];
   picked: number | null;
   onPick?: (index: number) => void;
   labels: { aria: string };
