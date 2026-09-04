@@ -32,7 +32,8 @@
     "check:queen-touch": "node qa/queen-touch-contract.mjs",
     "check:queen-round": "node qa/queen-round-contract.mjs",
     "check:queen-pick": "node qa/queen-pick-contract.mjs",
-    "check:queen-placement": "node qa/queen-placement-contract.mjs"
+    "check:queen-placement": "node qa/queen-placement-contract.mjs",
+    "check:queen-stale": "node qa/queen-stale-contract.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
