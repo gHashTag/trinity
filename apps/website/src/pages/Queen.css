@@ -3318,6 +3318,18 @@ main:where(.queen27-page.is-shell) section {
   white-space: nowrap;
 }
 
+/* The window under a value is a wire field: it wraps to a second line
+   before it is ever cut (P1-18; measured 2026-09-04 at 1440x900: "+119 Bees
+   started / 24h" needed 93 px in 82). The pill keeps its single line. */
+.queen27-page.is-shell .queen27-hud-res > span:not(.queen27-hud-pill) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .queen27-page.is-shell .queen27-hud-res-round > strong {
   color: var(--hud-gold);
 }

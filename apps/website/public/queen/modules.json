@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/trios",
  "commit": "c5bc03f53",
- "generatedAt": "2026-09-04T20:17:31Z",
+ "generatedAt": "2026-09-04T20:46:23Z",
  "source": "local scan by the loop (M-1 replaces it with /queen/public-modules)",
  "totalModules": 114,
  "droppedSmallest": 0,
@@ -42,7 +42,11 @@
    "openIssues": [
     1471,
     1476,
-    1490
+    1490,
+    1494,
+    1495,
+    1496,
+    1498
    ]
   },
   {
@@ -123,7 +127,11 @@
    "openIssues": [
     1471,
     1476,
-    1490
+    1490,
+    1494,
+    1495,
+    1496,
+    1498
    ]
   },
   {
@@ -264,7 +272,10 @@
    "openIssues": [
     1471,
     1476,
-    1490
+    1490,
+    1494,
+    1495,
+    1498
    ]
   },
   {
@@ -407,7 +418,10 @@
    "openIssues": [
     1471,
     1476,
-    1490
+    1490,
+    1494,
+    1495,
+    1498
    ]
   },
   {
@@ -499,7 +513,9 @@
    "imports": 19,
    "exports": 46,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1496
+   ]
   },
   {
    "path": "agent-server/apps/eval/tests",
@@ -892,7 +908,9 @@
    "openIssues": [
     1471,
     1476,
-    1490
+    1490,
+    1495,
+    1498
    ]
   },
   {
@@ -908,7 +926,9 @@
    "imports": 141,
    "exports": 42,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1494
+   ]
   },
   {
    "path": "agent-server/apps/agent/entrypoints/onboarding",
@@ -1223,7 +1243,9 @@
    "imports": 82,
    "exports": 68,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1496
+   ]
   },
   {
    "path": "agent-server/apps/eval/src/capture",
