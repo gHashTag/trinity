@@ -42,7 +42,7 @@ import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
 import { S, HH, EDGES, summariseCells, queenIndexOf } from "./QueenComb";
-import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone } from "./queenHud";
+import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity } from "./queenHud";
 
 interface SpikeCard {
   number: number;
@@ -604,15 +604,17 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const primed = eventsPrimedRef.current;
       const wall = Date.now();
       for (const event of list) {
-        if (seen.has(event.id)) continue;
-        seen.add(event.id);
+        // a verdict re-stamped by the tick is the same verdict: no new glint (P0-10)
+        const identity = eventIdentity(event);
+        if (seen.has(identity)) continue;
+        seen.add(identity);
         if (!primed && wall - new Date(event.at).getTime() > 30_000) continue;
         const index = event.issue !== null ? indexByNumber.get(event.issue) : undefined;
         if (index === undefined) continue;
         effects.push({ index, tone: eventTone(event.kind), start: stamp, flip: false });
       }
       eventsPrimedRef.current = true;
-      if (seen.size > 2000) seenEventsRef.current = new Set(list.map((event) => event.id));
+      if (seen.size > 2000) seenEventsRef.current = new Set(list.map(eventIdentity));
     };
 
     // ---- picking and hover ---------------------------------------------------
