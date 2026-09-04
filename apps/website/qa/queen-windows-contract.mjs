@@ -74,6 +74,7 @@ for (const lang of LANGS) for (const [w, h] of SIZES) {
     };
     document.querySelectorAll('.queen27-hud-res').forEach((tile, i) => check(tile.querySelector(':scope > span'), 'tile ' + i + ' (' + ((tile.querySelector('small') || {}).textContent || '').trim() + ')'));
     check(document.querySelector('.queen27-hud-round-strip'), 'round strip');
+    check(document.querySelector('.queen27-hud-bell > button > small'), 'bell label + span');
     const em = [...document.querySelectorAll('em')].find(e => e.closest('.queen27-hud-round, .queen27-hud-next, .queen27-hud-command-round, .queen27-hud-round-block') || /·/.test(e.textContent || ''));
     check(em, 'round detail');
     return out;

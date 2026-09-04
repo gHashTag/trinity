@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { alertCount, buildingPlan, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { alertCount, alertSpan, buildingPlan, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -120,6 +120,12 @@ check(eventIdentity(rv("review-1471-1788552916000-0", "2026-09-04T20:15:16Z")) =
 const restamped = mergeActivity({ events: [rv("review-1471-1788552916000-0", "2026-09-04T20:15:16Z")], alerts: [rv("review-1471-1788552916000-0", "2026-09-04T20:15:16Z")] }, { cursor: 2, events: [rv("review-1471-1788553216000-0", "2026-09-04T20:20:16Z")] }, Date.parse("2026-09-04T20:20:30Z"));
 check(restamped.events.length === 1 && restamped.events[0].id === "review-1471-1788553216000-0" && restamped.alerts.length === 1, "a re-stamped verdict replaces its older feed row and alert instead of adding one");
 check(alertCount([rv("review-1471-1788552916000-0", "2026-09-04T20:15:16Z"), rv("review-1471-1788553216000-0", "2026-09-04T20:20:16Z"), rv("review-1471-1788553216000-1", "2026-09-04T20:20:16Z", "accepted")], Date.parse("2026-09-04T20:21:00Z")) === 2, "the bell counts identities: one pending verdict re-stamped twice plus its acceptance is two, not three");
+// the bell names the span it observed, not the hour its window implies (P0-11)
+const seenFrom = mergeActivity(null, { cursor: 1, events: [evAt("s1", "2026-09-04T20:41:00Z"), evAt("s2", "2026-09-04T20:50:00Z")] }, Date.parse("2026-09-04T20:55:00Z"));
+check(seenFrom.observedFrom === "2026-09-04T20:41:00Z" && mergeActivity(seenFrom, { cursor: 2, events: [evAt("s3", "2026-09-04T20:56:00Z")] }, Date.parse("2026-09-04T20:57:00Z")).observedFrom === "2026-09-04T20:41:00Z", "observedFrom is the oldest moment any poll showed and never moves later");
+const spanEarly = alertSpan("2026-09-04T20:41:00Z", Date.parse("2026-09-04T20:55:00Z"));
+const spanFull = alertSpan("2026-09-04T19:00:00Z", Date.parse("2026-09-04T20:55:00Z"));
+check(spanEarly && spanEarly.clipped && spanEarly.seconds === 14 * 60 && spanFull && !spanFull.clipped && spanFull.seconds === 3600 && alertSpan(null, 0) === null, "a wire that began 14 min ago yields a 14-min span; an older one yields the hour; no wire yet yields nothing");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

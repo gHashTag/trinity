@@ -592,12 +592,12 @@ export function countdownFor(clientNowMs: number, offsetMs: number | null, lastR
  * against `nowMs` (no clock is read here).
  */
 export function mergeActivity<E extends { id: string; kind: HudEventKind; at: string; issue: number | null; state: string | null }>(
-  previous: { events: E[]; alerts: E[] } | null,
+  previous: { events: E[]; alerts: E[]; observedFrom?: string | null } | null,
   next: { cursor: number; events: E[] },
   nowMs: number,
   cap = 120,
   windowMs = ALERT_WINDOW_MS,
-): { cursor: number; events: E[]; alerts: E[] } {
+): { cursor: number; events: E[]; alerts: E[]; observedFrom: string | null } {
   const time = (event: E) => {
     const t = Date.parse(event.at);
     return Number.isFinite(t) ? t : Number.NEGATIVE_INFINITY;
@@ -615,5 +615,27 @@ export function mergeActivity<E extends { id: string; kind: HudEventKind; at: st
     .filter((event) => isAlertKind(event.kind) && nowMs - time(event) <= windowMs)
     .filter((event) => (seenAlerts.has(eventIdentity(event)) ? false : (seenAlerts.add(eventIdentity(event)), true)))
     .sort((left, right) => time(right) - time(left));
-  return { cursor: next.cursor, events, alerts };
+  // the oldest moment the wire ever showed this page (P0-11): the bell can
+  // only vouch for alerts since then, whatever its window says
+  let observedFrom = previous?.observedFrom ?? null;
+  for (const event of next.events) {
+    const t = time(event);
+    if (t !== Number.NEGATIVE_INFINITY && (observedFrom === null || t < Date.parse(observedFrom))) observedFrom = event.at;
+  }
+  return { cursor: next.cursor, events, alerts, observedFrom };
+}
+
+/**
+ * The span the bell actually observed (P0-11): the window, clipped to the
+ * moment the wire's first answer began. The server hands the newest 120
+ * events, so a busy swarm's first answer may begin minutes ago, not an hour;
+ * the bell then names those minutes instead of implying the hour. Null
+ * until the wire has answered once.
+ */
+export function alertSpan(observedFrom: string | null, nowMs: number, windowMs = ALERT_WINDOW_MS): { seconds: number; clipped: boolean } | null {
+  if (observedFrom === null) return null;
+  const from = Date.parse(observedFrom);
+  if (!Number.isFinite(from)) return null;
+  const observed = Math.max(0, nowMs - from);
+  return observed < windowMs ? { seconds: Math.round(observed / 1000), clipped: true } : { seconds: Math.round(windowMs / 1000), clipped: false };
 }

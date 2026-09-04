@@ -3413,6 +3413,23 @@ main:where(.queen27-page.is-shell) section {
   box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
 }
 
+/* The span the bell vouches for (P0-11) rides on the label line: the bar's
+   row is 62 px and a fourth line overflowed it (measured 70 in 62). */
+.queen27-page.is-shell .queen27-hud-bell > button > small > span {
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+/* Under 1500 px the nine Russian tiles already sit at 42-49 px; the span on
+   the label line squeezed two of them to three lines (measured 1440x900,
+   ru). There the span lives in the bell's title and data attributes only. */
+@media (max-width: 1499px) {
+  .queen27-page.is-shell .queen27-hud-bell > button > small > span {
+    display: none;
+  }
+}
+
 .queen27-page.is-shell .queen27-hud-bell > button > small {
   font-size: 0.5rem;
   letter-spacing: 0.14em;
@@ -4460,7 +4477,8 @@ main:where(.queen27-page.is-shell) section {
     display: none;
   }
 
-  .queen27-page.is-shell .queen27-hud-res > span:not(.queen27-hud-pill) {
+  .queen27-page.is-shell .queen27-hud-res > span:not(.queen27-hud-pill),
+  .queen27-page.is-shell .queen27-hud-bell > button > small > span {
     display: none;
   }
 }

@@ -41,6 +41,7 @@ import {
   countdownFor,
   serverOffsetMs,
   mergeActivity,
+  alertSpan,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -218,6 +219,8 @@ interface QueenActivity {
  *  events kept for the bell - evicted by age, not by count. */
 interface ActivityBuffer extends QueenActivity {
   alerts: QueenActivityEvent[];
+  /** The oldest moment the wire has shown this page: the bell's span (P0-11). */
+  observedFrom: string | null;
 }
 
 type LoadState =
@@ -389,6 +392,7 @@ const COPY = {
     hudFoundry: "FOUNDRY",
     hudNextRound: "NEXT ROUND",
     hudAlerts: "ALERTS",
+    hudAlertsSeen: "seen /",
     hudMenu: "MENU",
     hudLanguage: "EN / RU",
     hudViews: "VIEWS",
@@ -611,6 +615,7 @@ const COPY = {
     hudFoundry: "ВЕРФЬ",
     hudNextRound: "СЛЕДУЮЩИЙ ЦИКЛ",
     hudAlerts: "СИГНАЛЫ",
+    hudAlertsSeen: "за",
     hudMenu: "МЕНЮ",
     hudLanguage: "EN / RU",
     hudViews: "ВИДЫ",
@@ -1851,6 +1856,10 @@ export default function Queen() {
       : null;
   const alertEvents: HudEvent[] = activityState.data?.alerts ?? EMPTY_EVENTS;
   const alerts = useMemo(() => alertCount(alertEvents, now), [alertEvents, now]);
+  // the span the bell can vouch for: its window, or less when the wire's
+  // first answer began later than an hour ago (P0-11)
+  const bellSpan = useMemo(() => alertSpan(activityState.data?.observedFrom ?? null, now), [activityState.data?.observedFrom, now]);
+  const bellSpanText = bellSpan ? formatInterval(bellSpan.seconds, lang) : null;
   const cellSummaries = useMemo(() => summariseCells(placedCards), [placedCards]);
   // Bees are the issues in progress: each walks to the module its title names.
   const beeTargets = useMemo<Array<number | null>>(() => {
@@ -2246,7 +2255,9 @@ export default function Queen() {
             type="button"
             onClick={onBell}
             aria-pressed={isNarrow ? intelOpen : intelExpanded}
-            title={c.hudAlerts}
+            title={bellSpanText ? `${c.hudAlerts} · ${c.hudAlertsSeen} ${bellSpanText}` : c.hudAlerts}
+            data-span-seconds={bellSpan ? bellSpan.seconds : undefined}
+            data-span-clipped={bellSpan ? String(bellSpan.clipped) : undefined}
           >
             <i aria-hidden="true">◉</i>
             <strong
@@ -2255,7 +2266,10 @@ export default function Queen() {
             >
               {activityState.data ? alerts : "—"}
             </strong>
-            <small>{c.hudAlerts}</small>
+            <small>
+              {c.hudAlerts}
+              {bellSpanText ? <span> · {bellSpanText}</span> : null}
+            </small>
           </button>
         </div>
 
