@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@babylonjs/core": "^9.25.0",
+    "@babylonjs/loaders": "^9.25.0",
     "@monaco-editor/react": "^4.7.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",

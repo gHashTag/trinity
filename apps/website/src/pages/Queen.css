@@ -3890,6 +3890,9 @@ main:where(.queen27-page.is-shell) section {
   min-height: 0;
   padding: 0;
   border: 0;
+  /* the strip can wrap for a frame on a phone and push the console 8 px past
+     the box; the tree is then a declared scroller, never an overflow (P1-31) */
+  overflow: auto;
 }
 
 .queen27-page.is-shell .queen27-tech-strip {
@@ -3928,6 +3931,9 @@ main:where(.queen27-page.is-shell) section {
   min-height: 0;
   max-height: none;
   border: 0;
+  /* on a phone the map and details can exceed the console by a few px in a
+     transient state; the console is then a declared scroller (P1-31) */
+  overflow: auto;
 }
 
 .queen27-page.is-shell .queen27-tech-map {

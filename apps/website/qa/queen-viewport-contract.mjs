@@ -136,7 +136,7 @@ listeners.push(msg => {
   if (msg.sessionId !== sessionId) return;
   if (msg.method === 'Runtime.exceptionThrown') {
     const d = msg.params.exceptionDetails;
-    errors.push(d.exception?.description || d.text || 'uncaught exception');
+    errors.push((d.exception?.description || d.text || 'uncaught exception') + (d.stackTrace ? ' @ ' + d.stackTrace.callFrames.slice(0, 4).map(f => (f.url || '').split('/').pop() + ':' + f.lineNumber + ':' + f.columnNumber + (f.functionName ? ' ' + f.functionName : '')).join(' < ') : ''));
   }
 });
 
@@ -173,7 +173,7 @@ const DECLARED = [
   // the views
   '.queen27-cards', '.queen27-kanban', '.queen27-mission-map',
   '.queen27-factory', '.queen27-factory-viewport', '.queen27-factory-bays ol', '.queen27-factory-modules',
-  '.queen27-tech-map', '.queen27-tech-details',
+  '.queen27-tech', '.queen27-tech-console', '.queen27-tech-map', '.queen27-tech-details',
   '.queen27-city-build-queue ol', '.queen27-hardware-foundry ol', '.queen27-city-console ol',
   '.queen27-city-head dl', '.queen27-city-build-queue dl', '.queen27-hardware-foundry dl', '.queen27-factory-command dl',
   '.queen27-activity-stream ol', '.queen27-flow-grid',
