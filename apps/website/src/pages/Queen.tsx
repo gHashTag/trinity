@@ -2259,6 +2259,7 @@ export default function Queen() {
               onPick={handlePick}
               pickIndex={pickIndex}
               fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
+              events={events}
               columns={boardColumns}
               cards={cards}
               repo={repo}
