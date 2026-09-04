@@ -45,9 +45,18 @@ if (!CHROME) {
   process.exit(0);
 }
 
+// --dead-api: build against an address that refuses every connection, then
+// assert that no tile, count or stat renders a bare number while its endpoint
+// is silent (data-honesty: absent reads as a dash, never 0), and that the
+// status pill never reads LIVE. Only the sizes with the most counts run.
+const DEAD = process.argv.includes('--dead-api');
 if (!process.argv.includes('--no-build')) {
-  console.log('  building…');
-  execSync('npx vite build', { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] });
+  console.log(DEAD ? '  building against a dead API…' : '  building…');
+  execSync('npx vite build', {
+    cwd: ROOT,
+    stdio: ['ignore', 'ignore', 'inherit'],
+    env: { ...process.env, ...(DEAD ? { VITE_QUEEN_API: 'http://127.0.0.1:1' } : {}) },
+  });
 }
 if (!existsSync(join(DIST, 'index.html'))) {
   console.error('  dist/index.html missing — nothing to open.');
@@ -256,7 +265,18 @@ const PROBE = (phone) => `(() => {
     sectors: shell.querySelectorAll('.queen27-sectors-row').length,
     view: views.length,
   };
-  return { fail, counts, round: (document.getElementById('stat-round') || {}).textContent || '' };
+  // 9. Bare numbers where the feeding endpoint may be silent. Asserted only in
+  // --dead-api mode; collected always so a live run can print them.
+  const ZERO_SEL = '#stat-bees,#stat-accepted,#stat-verdicts,#stat-research,#stat-foundry,#stat-alerts,' +
+    '.queen27-sectors-count,.queen27-column > header > span,.queen27-map-sector header b,' +
+    '.queen27-hud-sector-text dd,.queen27-context-stats dd,.queen27-hud-minimap .queen27-hud-panel-head span:last-child';
+  const zeros = [];
+  for (const n of document.querySelectorAll(ZERO_SEL)) {
+    const text = (n.textContent || '').replace(/\\s+/g, ' ').trim();
+    if (/^[0-9]+(\\s*\\/\\s*[0-9]+)?(\\s*%|\\s*cards|\\s*карточ\\S*)?$/i.test(text)) zeros.push((n.id ? '#' + n.id : n.className || n.tagName) + '=' + text);
+  }
+  const live = !!document.querySelector('#stat-status.is-live');
+  return { fail, counts, zeros, live, round: (document.getElementById('stat-round') || {}).textContent || '' };
 })()`;
 
 const CLICK = (view) => `(() => {
@@ -267,7 +287,7 @@ const CLICK = (view) => `(() => {
 })()`;
 
 let failures = 0;
-for (const [w, h] of SIZES) {
+for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SIZES)) {
   const phone = w < 600;
   await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: phone });
   // A distinct query string forces a full load at every size rather than a
@@ -287,8 +307,10 @@ for (const [w, h] of SIZES) {
       const n = document.getElementById('stat-round');
       const round = !!n && (n.textContent || '').trim().length > 0;
       const live = !!document.querySelector('#stat-status.is-live');
+      const dead = !!document.querySelector('#stat-status.is-cold');
       const rows = document.querySelectorAll('.queen27-sectors-row').length;
-      return round && (live || rows === 6) && document.querySelectorAll('.queen27-hud-cmd').length === 5;
+      const data = ${DEAD} ? dead : (live || rows === 6);
+      return round && data && document.querySelectorAll('.queen27-hud-cmd').length === 5;
     })()`);
     if (ready) break;
     await wait(250);
@@ -316,12 +338,15 @@ for (const [w, h] of SIZES) {
     if (counts.shell !== 1) zero.push('shell');
     if (counts.commands !== 5) zero.push(`commands=${counts.commands}`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
-    if (!phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
+    if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
+    if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);
+    if (DEAD && result.live) fail.push('status pill reads LIVE with a dead API');
+    if (DEAD) for (const z of result.zeros) fail.push('BARE ZERO ' + z);
     if (counts.view !== 1) zero.push(`views=${counts.view}`);
     const problems = [...fail, ...zero.map(z => 'COUNT ' + z)];
     if (view === 'comb' || (w === 1440 && h === 900)) {
       const shot = await call('Page.captureScreenshot', { format: 'png' });
-      writeFileSync(join(SHOTS, `${w}x${h}-${view}.png`), Buffer.from(shot.data, 'base64'));
+      writeFileSync(join(SHOTS, `${DEAD ? 'dead-' : ''}${w}x${h}-${view}.png`), Buffer.from(shot.data, 'base64'));
     }
     if (problems.length) {
       failures++;

@@ -164,6 +164,8 @@ a.queen27-intel-link:focus-visible { background: rgba(0, 255, 136, 0.06); outlin
 .queen27-sectors-row[data-territory="neutral"] :is(.queen27-sectors-glyph, .queen27-sectors-territory, .queen27-sectors-bar > span) { color: var(--hud-cyan, #64dcff); }
 .queen27-sectors-row[data-territory="fog"] :is(.queen27-sectors-glyph, .queen27-sectors-territory, .queen27-sectors-bar > span) { color: var(--hud-cold, #ff6b6b); }
 
+.queen27-sectors-empty { padding: 0.6rem 0.7rem; color: var(--hud-muted, rgba(255, 255, 255, 0.55)); }
+
 /* ---- motion ------------------------------------------------------------- */
 
 @keyframes queen27-intel-in {
