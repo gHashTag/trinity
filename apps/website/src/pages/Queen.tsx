@@ -2322,6 +2322,7 @@ export default function Queen() {
               pickIndex={pickIndex}
               fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
               events={events}
+              devices={hardware?.devices ?? null}
               columns={boardColumns}
               cards={cards}
               repo={repo}
