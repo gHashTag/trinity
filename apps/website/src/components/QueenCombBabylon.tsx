@@ -463,6 +463,11 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     engine.runRenderLoop(() => {
       const nowMs = performance.now();
       const dt = Math.min(nowMs - lastMs, 32); lastMs = nowMs;
+      // The box can change while no frame runs (a hidden pane, fullscreen,
+      // a pane resized before it is shown); a ResizeObserver alone missed
+      // that and left the field clipped to the old canvas. Check every frame.
+      const cw = canvas.clientWidth, ch = canvas.clientHeight;
+      if ((cw > 0 && ch > 0) && (canvas.width !== cw || canvas.height !== ch)) { engine.resize(); fit(); }
       if (insetRef.current !== appliedInset) fit();
       aimBees();
       bees.forEach((b, k) => {
@@ -512,7 +517,14 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     });
     const ro = new ResizeObserver(() => { engine.resize(); fit(); });
     ro.observe(host);
-    return () => { ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose(); };
+    const onVisible = () => { engine.resize(); fit(); };
+    document.addEventListener("visibilitychange", onVisible);
+    document.addEventListener("fullscreenchange", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      document.removeEventListener("fullscreenchange", onVisible);
+      ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose();
+    };
   }, [signature]);
 
   return (
