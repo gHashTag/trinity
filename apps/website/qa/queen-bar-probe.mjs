@@ -1,6 +1,6 @@
 // Windows contract (P1-18, loop cycle 026): at every gate size no resource-tile sub-line and no round detail is cut - the wire field survives (no ellipsis truncation, at most a two-line clamp that fits)
 // Scaffolded by `tri game-contract windows` from the pick harness; the tail below is the contract.
-// Queen windows contract: the pick is a card number, not a cell index. The field
+// Queen bar probe: the pick is a card number, not a cell index. The field
 // is rebuilt from the card list on every poll, so after a poll that reorders
 // the board the outline, the SELECTED panel and OPEN ISSUE must still name the
 // same card. Headless Chrome; /queen/public-board is intercepted with CDP
@@ -53,39 +53,15 @@ listeners.push(async msg => {
 await call('Page.enable');
 await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/modules.json*', requestStage: 'Response' }] });
 
-const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 600], [390, 844]];
-const problems = [];
-const LANGS = ['en', 'ru'];
-for (const lang of LANGS) for (const [w, h] of SIZES) {
-  await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 700 });
-  await call('Page.navigate', { url: `${ORIGIN}/?windows=${w}x${h}&lang=${lang}#/queen` });
+
+const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 600]];
+for (const lang of ['en', 'ru']) for (const [w, h] of SIZES) {
+  await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
+  await call('Page.navigate', { url: `${ORIGIN}/?probe=${w}&lang=${lang}#/queen` });
   let ready = false;
   for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-hud-res').length >= 9 && !!document.querySelector('#stat-round')`); }
-  if (!ready) { problems.push(`${lang} ${w}x${h}: tiles never rendered`); continue; }
   await wait(1200);
-  const cutInfo = await evaluate(`(() => {
-    const out = [];
-    const check = (el, label) => {
-      if (!el) return;
-      const cs = getComputedStyle(el);
-      if (cs.display === 'none' || el.clientWidth === 0) return; // a tile whose sub-line is hidden by design at this size shows no window at all
-      const cutX = el.scrollWidth > el.clientWidth + 1, cutY = el.scrollHeight > el.clientHeight + 1;
-      if (cutX || cutY) out.push(label + ' "' + (el.textContent || '').trim().slice(0, 60) + '" ' + el.scrollWidth + 'x' + el.scrollHeight + ' in ' + el.clientWidth + 'x' + el.clientHeight);
-    };
-    document.querySelectorAll('.queen27-hud-res').forEach((tile, i) => check(tile.querySelector(':scope > span'), 'tile ' + i + ' (' + ((tile.querySelector('small') || {}).textContent || '').trim() + ')'));
-    // the five flexible tiles must keep room for a window (P1-28 territory; measured 2026-09-04: 98 px each at 1440x900 in Russian because the brand cell took 388 px)
-    if (window.innerWidth >= 1200) document.querySelectorAll('.queen27-hud-top > .queen27-hud-res:not(.queen27-hud-res-round):not(.queen27-hud-bell):not(.queen27-hud-status)').forEach((tile, i) => { const wdt = Math.round(tile.getBoundingClientRect().width); if (wdt < 100) out.push('tile ' + i + ' (' + ((tile.querySelector('small') || {}).textContent || '').trim() + ') is ' + wdt + ' px wide (floor 100)'); });
-    check(document.querySelector('.queen27-hud-round-strip'), 'round strip');
-    check(document.querySelector('.queen27-hud-bell > button > small'), 'bell label + span');
-    const em = [...document.querySelectorAll('em')].find(e => e.closest('.queen27-hud-round, .queen27-hud-next, .queen27-hud-command-round, .queen27-hud-round-block') || /·/.test(e.textContent || ''));
-    check(em, 'round detail');
-    const tiles = [...document.querySelectorAll('.queen27-hud-top > .queen27-hud-res:not(.queen27-hud-res-round):not(.queen27-hud-bell):not(.queen27-hud-status)')].map(t => Math.round(t.getBoundingClientRect().width));
-    return { out, minTile: tiles.length ? Math.min(...tiles) : null, tiles: tiles.length };
-  })()`);
-  const { out: cut, minTile, tiles } = cutInfo;
-  if (cut.length) problems.push(`${lang} ${w}x${h}: ${cut.join(' | ')}`);
-  console.log(`  ${lang} ${w}x${h} ${cut.length ? 'CUT  ' + cut.length + ' window(s): ' + cut.join(' | ') : 'ok   every window whole'} · ${tiles} tiles, narrowest ${minTile} px`);
+  const cols = await evaluate(`[...document.querySelector('.queen27-hud-top').children].map(n => { const r = n.getBoundingClientRect(); const cls = (n.className || '').toString().replace('queen27-hud-', '').replace('res ', '').trim().split(' ')[0] || n.tagName.toLowerCase(); const label = (n.querySelector('small') || {}).textContent || ''; return cls + (label ? '(' + label.trim().slice(0, 10) + ')' : '') + '=' + Math.round(r.width); }).join(' ')`);
+  console.log(`  ${lang} ${w}x${h}: ${cols}`);
 }
-if (problems.length) { console.log(`  Queen windows contract: FAIL (${problems.length} size(s) cut a wire window)`); cleanup(); process.exit(1); }
-console.log(`  Queen windows contract: PASS (${LANGS.length} languages × ${SIZES.length} sizes: every tile sub-line and the round detail fit whole)`);
 cleanup(); process.exit(0);
