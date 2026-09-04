@@ -24,7 +24,7 @@ import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
 import { S, HH, EDGES, NODES, NINE, summariseCells, queenIndexOf } from "./QueenComb";
-import { crystalOf, type HudPick } from "./queenHud";
+import { crystalOf, eventTone, type BeeLine, type HudEvent, type HudPick, type Tone } from "./queenHud";
 
 interface SpikeCard {
   number: number;
@@ -45,7 +45,14 @@ interface QueenCombBabylonProps {
   pickIndex?: number | null;
   /** Fraction (0..1) of the host's height covered at the bottom by the context panel. */
   fitInset?: number;
+  /** The activity feed: every event names an issue; its cell glints once per new event. */
+  events?: HudEvent[];
 }
+
+const LINES: readonly BeeLine[] = ["scribe", "wright", "lapidary"];
+const TONE_HEX: Record<Tone, string> = { gold: "#FFD45A", cold: "#FF6B6B", green: "#00FF88", cyan: "#64DCFF", muted: "#FFFFFF" };
+const EMPTY_EVENTS: HudEvent[] = [];
+const RING_POOL = 24;
 
 type Territory = "held" | "neutral" | "fog";
 const TEX_ALPHA: Record<Territory, number> = { held: 0.85, neutral: 0.7, fog: 0.35 };
@@ -86,17 +93,23 @@ function glintSheet(): { url: string; cell: number; count: number } {
   return { url: canvas.toDataURL("image/png"), cell, count: keys.length };
 }
 
-export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0 }: QueenCombBabylonProps) {
+export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS }: QueenCombBabylonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onPickRef = useRef(onPick);
   const pickRef = useRef<number | null>(pickIndex);
   const insetRef = useRef(fitInset);
+  const eventsRef = useRef(events);
+  // Which events already glinted, across scene rebuilds: the feed is a
+  // 120-event ring, and the first batch is history (only its last 30 s glint).
+  const seenEventsRef = useRef<Set<string>>(new Set());
+  const eventsPrimedRef = useRef(false);
   useEffect(() => {
     onPickRef.current = onPick;
     pickRef.current = pickIndex;
     insetRef.current = fitInset;
-  }, [onPick, pickIndex, fitInset]);
+    eventsRef.current = events;
+  }, [onPick, pickIndex, fitInset, events]);
 
   // The pollers hand over new arrays every 5 s; the scene is rebuilt only
   // when what they carry changes (cell -> card number/column, slot states,
@@ -340,11 +353,71 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       .filter((e) => e.i !== home)
       .sort((a, b) => a.d - b.d);
     (devices ?? []).forEach((d, k) => { const r = ring[k]; if (r) put(`crystal-${crystalOf(d.family)}`, r.i, S * 0.45, 0, 64); });
+    // ---- bees: one per worker slot. Busy bees and running cards come from
+    //      two endpoints with no slot-to-issue link, so the pairing is
+    //      positional (the k-th busy slot sits on the k-th running card); a
+    //      busy bee with no card hovers at home, an idle bee is a larva on
+    //      the ring around the Queen. The same rule and the same flight as
+    //      the canvas comb. ------------------------------------------------
     const running = cells.map((c, i) => ({ c, i })).filter(({ i }) => cards[i]?.column === "running").map(({ i }) => i);
-    (workers?.slots ?? []).forEach((slot, k) => {
-      if (slot.state === "busy" && running[k] !== undefined) put("wright", running[k], S * 0.5, S * 0.35, 16);
-      else { const r = ring[(devices?.length ?? 0) + k]; if (r) put("larva", r.i, S * 0.35, 0, 16); }
+    const indexByNumber = new Map<number, number>();
+    cells.forEach((c, i) => { if (c.cardNumber !== null) indexByNumber.set(c.cardNumber, i); });
+    interface Bee { slot: number; busy: boolean; work: boolean; from: number; to: number; t: number; speed: number; hover: number; line: BeeLine; body: Sprite; larva: Sprite }
+    const bees: Bee[] = (workers?.slots ?? []).map((slot, k) => {
+      const line = LINES[k % LINES.length];
+      const body = new Sprite(`bee-${slot.slot}`, manager(line, 16));
+      const larva = new Sprite(`larva-${slot.slot}`, manager("larva", 16));
+      body.width = S * 0.38 * 2 * 0.5; body.height = body.width; body.isVisible = false;
+      larva.width = S * 0.35; larva.height = larva.width; larva.isVisible = false;
+      return { slot: slot.slot, busy: false, work: false, from: home, to: home, t: 1, speed: 0, hover: k * 1.7, line, body, larva };
     });
+    const ringCell = (rank: number) => { const r = ring[(devices?.length ?? 0) + rank]; return r ? r.i : home; };
+    const aimBees = () => {
+      const slots = new Map<number, "busy" | "idle">();
+      for (const slot of workersRef.current?.slots ?? []) slots.set(slot.slot, slot.state);
+      let busyRank = 0, idleRank = 0;
+      for (const b of bees) {
+        b.busy = slots.get(b.slot) === "busy";
+        let target = home;
+        if (b.busy) { target = running[busyRank] ?? home; b.work = running[busyRank] !== undefined; busyRank += 1; }
+        else { b.work = false; target = ringCell(idleRank); idleRank += 1; }
+        if (b.to !== target) { b.from = b.t < 0.5 ? b.from : b.to; b.to = target; b.t = 0; b.speed = b.busy ? 0.55 : 0.35; }
+      }
+    };
+    aimBees();
+    const beeAt = (index: number) => bees.find((b) => (b.t < 0.5 ? b.from : b.to) === index) ?? null;
+
+    // ---- event glints: a ring that grows and fades on the issue's cell;
+    //      a pool of line circles, one per live effect ----------------------
+    interface Effect { index: number; tone: Tone; start: number; flip: boolean }
+    const effects: Effect[] = [];
+    const rings: LinesMesh[] = [];
+    for (let k = 0; k < RING_POOL; k += 1) {
+      const pts: Vector3[] = [];
+      for (let a = 0; a <= 16; a += 1) pts.push(new Vector3(Math.cos((a / 16) * Math.PI * 2), 0, Math.sin((a / 16) * Math.PI * 2)));
+      const m = CreateLineSystem(`fx-${k}`, { lines: [pts], updatable: false }, scene);
+      m.isPickable = false; m.isVisible = false;
+      rings.push(m);
+    }
+    let lastEvents: HudEvent[] | null = null;
+    const ingestEvents = (stamp: number) => {
+      const list = eventsRef.current;
+      if (list === lastEvents) return;
+      lastEvents = list;
+      const seen = seenEventsRef.current;
+      const primed = eventsPrimedRef.current;
+      const wall = Date.now();
+      for (const event of list) {
+        if (seen.has(event.id)) continue;
+        seen.add(event.id);
+        if (!primed && wall - new Date(event.at).getTime() > 30_000) continue;
+        const index = event.issue !== null ? indexByNumber.get(event.issue) : undefined;
+        if (index === undefined) continue;
+        effects.push({ index, tone: eventTone(event.kind), start: stamp, flip: false });
+      }
+      eventsPrimedRef.current = true;
+      if (seen.size > 2000) seenEventsRef.current = new Set(list.map((event) => event.id));
+    };
 
     // ---- picking and hover ---------------------------------------------------
     const cellUnder = (x: number, y: number) => {
@@ -373,13 +446,15 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const index = cellUnder(e.clientX - rect.left, e.clientY - rect.top);
       if (index < 0) return;
       const card = cards[index];
-      onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: null } as HudPick);
+      const b = beeAt(index);
+      onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: b ? { slot: b.slot, line: b.line, busy: b.busy } : null } as HudPick);
     });
     canvas.addEventListener("pointerleave", () => { hover = -1; });
 
     // ---- frame loop ---------------------------------------------------------
     const t0 = performance.now();
     let frames = 0;
+    let lastMs = t0;
     engine.runRenderLoop(() => {
       const t = (performance.now() - t0) / 1000;
       if (insetRef.current !== appliedInset) fit();
@@ -405,6 +480,44 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
         g.sprite.color.a = [0.3, 0.58, 0.9][g.tier === 0 ? bright : Math.min(bright, 1)];
       }
       for (const s of standing) s.sprite.position.y = s.lift + bob(s.cell, t);
+      // bees
+      const nowMs = performance.now();
+      const dt = Math.min(nowMs - lastMs, 32); lastMs = nowMs;
+      aimBees();
+      for (const b of bees) {
+        if (b.t < 1) b.t = Math.min(1, b.t + (b.speed * dt) / 1000);
+        const A = cells[b.from], B = cells[b.to];
+        if (!A || !B) continue;
+        const e = b.t < 0.5 ? 2 * b.t * b.t : 1 - 2 * (1 - b.t) * (1 - b.t);
+        let x = A.x + (B.x - A.x) * e, z = A.y + (B.y - A.y) * e;
+        let arc = b.busy ? Math.sin(Math.PI * b.t) * 46 : 2;
+        if (b.t >= 1 && b.busy) { const ph = nowMs / 700 + b.hover; x = B.x + Math.cos(ph) * S * 0.14; z = B.y + Math.sin(ph * 1.3) * S * 0.08; arc = 18 + Math.sin(ph * 2) * 5; }
+        const sprite = b.busy ? b.body : b.larva;
+        b.body.isVisible = b.busy; b.larva.isVisible = !b.busy;
+        sprite.position.x = x; sprite.position.z = z;
+        sprite.position.y = bob(b.to, t) + arc + sprite.height / 2 + (b.busy ? Math.sin(nowMs / 90 + b.from) * sprite.height * 0.04 : 0);
+        sprite.invertU = B.x - A.x < 0;
+      }
+      // effects
+      ingestEvents(nowMs);
+      let write = 0;
+      for (let i = 0; i < effects.length; i += 1) {
+        const fx = effects[i]; const cell = cells[fx.index]; const life = fx.flip ? 900 : 1300; const age = nowMs - fx.start;
+        if (!cell || age > life) continue;
+        effects[write] = fx; write += 1;
+      }
+      effects.length = Math.min(write, RING_POOL);
+      for (let k = 0; k < RING_POOL; k += 1) {
+        const fx = effects[k]; const ring = rings[k];
+        if (!fx) { ring.isVisible = false; continue; }
+        const cell = cells[fx.index]; const u = (nowMs - fx.start) / (fx.flip ? 900 : 1300);
+        const r = S * (0.12 + 0.5 * u);
+        ring.position.set(cell.x, bob(fx.index, t) + 1.5, cell.y);
+        ring.scaling.set(r, 1, r);
+        ring.color = Color3.FromHexString(TONE_HEX[fx.tone]);
+        ring.alpha = 0.9 * (1 - u);
+        ring.isVisible = true;
+      }
       const p = pickRef.current;
       if (p !== null && cells[p]) placeRing(picked, p, bob(p, t) + 1); else picked.isVisible = false;
       if (hover >= 0 && hover !== p && cells[hover]) placeRing(hovered, hover, bob(hover, t) + 1); else hovered.isVisible = false;
