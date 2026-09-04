@@ -44,8 +44,18 @@ import {
   publicResearchText,
   reviewCounts,
   reviewStateOf,
+  reviewUnclassified,
   type QueenReviewState,
 } from "./queenReviewLifecycle";
+
+// A review card names its queue only when the wire stated one; an absent
+// field is a dash, never a label (P0-8).
+function reviewSignalLabel(
+  state: QueenReviewState | null,
+  copy: Record<QueenReviewState, string>,
+): string {
+  return state ? copy[state] : "—";
+}
 import "./Queen.css";
 
 const DEFAULT_QUEEN_API =
@@ -305,6 +315,7 @@ const COPY = {
     changesRequested: "Changes requested",
     humanEscalation: "Human escalation",
     reconciliationAnomaly: "Ledger anomaly",
+    hudReviewUnclassified: "no state on the wire",
     executing: "executing now",
     noBees:
       "No Bee is executing right now. Queen remains online and keeps the queue under policy.",
@@ -523,6 +534,7 @@ const COPY = {
     changesRequested: "Нужны изменения",
     humanEscalation: "Решение человека",
     reconciliationAnomaly: "Аномалия реестра",
+    hudReviewUnclassified: "состояние не пришло",
     executing: "выполняются сейчас",
     noBees:
       "Сейчас ни одна Bee не выполняет задачу. Queen остаётся онлайн и контролирует очередь по политике.",
@@ -1507,7 +1519,7 @@ function KanbanView({
                         <i />
                         {column.key === "running"
                           ? c.executing
-                          : c[reviewStateOf(card)]}
+                          : reviewSignalLabel(reviewStateOf(card), c)}
                       </span>
                     )}
                   </div>
@@ -1691,6 +1703,7 @@ export default function Queen() {
     [cards],
   );
   const reviewQueueCounts = reviewCounts(board);
+  const reviewUnclassifiedCount = reviewUnclassified(board);
   const reviewColumnTitle =
     boardColumns.find((column) => column.key === "review")?.title ?? "review";
   // The tile is named by the column the number comes from - the wire's own
@@ -2237,10 +2250,16 @@ export default function Queen() {
                 <div className="queen27-review-summary">
                   {REVIEW_STATES.map((reviewState) => (
                     <span className={`is-${reviewState}`} key={reviewState}>
-                      <b>{reviewQueueCounts[reviewState]}</b>
+                      <b>{reviewQueueCounts[reviewState] ?? "—"}</b>
                       {c[reviewState]}
                     </span>
                   ))}
+                  {reviewUnclassifiedCount !== null && reviewUnclassifiedCount > 0 && (
+                    <span className="is-unclassified">
+                      <b>{reviewUnclassifiedCount}</b>
+                      {c.hudReviewUnclassified}
+                    </span>
+                  )}
                 </div>
               </li>
               <li className="queen27-hud-menu-note">

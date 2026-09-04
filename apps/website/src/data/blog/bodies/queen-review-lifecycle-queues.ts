@@ -19,7 +19,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: '[proven] When the public ledger supplies reviewQueues, those counts remain authoritative. For a legacy review card without reviewState, the model returns reconciliationAnomaly; an unclassified card is therefore visible as an anomaly rather than silently added to a different queue.',
+    text: '[proven] When the public ledger supplies reviewQueues, those counts remain authoritative. For a review card without reviewState, the model returns null: the card reads a dash, the queues read a dash while no review card states its queue, and the menu carries the unclassified total. An absent field is never printed as a ledger anomaly the wire did not state (changed 2026-09-04; until then it read reconciliationAnomaly).',
   },
   {
     kind: 'h',
@@ -80,7 +80,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: '[доказано] Если публичный реестр поставляет reviewQueues, эти значения остаются авторитетными. У старой карточки review без reviewState модель возвращает reconciliationAnomaly: неразмеченная карточка становится видимой аномалией, а не молча попадает в другую очередь.',
+    text: '[доказано] Если публичный реестр поставляет reviewQueues, эти значения остаются авторитетными. У карточки review без reviewState модель возвращает null: карточка читается прочерком, очереди читаются прочерком, пока ни одна карточка не назвала свою очередь, а меню несёт число неразмеченных. Отсутствующее поле никогда не печатается как аномалия реестра, которую провод не сообщал (изменено 2026-09-04; до этого читалось reconciliationAnomaly).',
   },
   {
     kind: 'h',
