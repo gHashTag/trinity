@@ -215,3 +215,34 @@ export function rewriteEndpoints(
   }
   return out;
 }
+
+/**
+ * The one-line resolution of a round, shown for a few seconds when
+ * lastTick.decidedAt changes: the clock of the tick, the verdict, what it did
+ * (decisionDetail) and how many candidates it skipped. Every part is a status
+ * field or a COPY key.
+ */
+export function roundStrip(
+  decision: { decidedAt: string; allowed: boolean; refusal: string | null; skippedCount: number },
+  running: number | null,
+  latestIssue: number | null,
+  labels: { allow: string; refuse: string; executing: string; queueMeaning: string; reasons: string },
+  lang: string,
+): string {
+  const at = new Date(decision.decidedAt);
+  const clock = Number.isNaN(at.getTime())
+    ? "—"
+    : at.toLocaleTimeString(lang === "ru" ? "ru-RU" : "en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const verdict = decision.allowed ? labels.allow : labels.refuse;
+  const detail = decisionDetail(decision, running, latestIssue, labels);
+  return `${clock} · ${verdict} · ${detail} · ${decision.skippedCount} ${labels.reasons}`;
+}
+
+/**
+ * A skip-reason key as words. The wire sends camelCase identifiers and no
+ * meaning (backlog P3-8 asks the server for one); the page spaces the words
+ * and adds nothing.
+ */
+export function skipReasonWords(key: string): string {
+  return key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
+}

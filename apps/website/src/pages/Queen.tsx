@@ -22,6 +22,8 @@ import {
   alertCount,
   decisionDetail,
   rewriteEndpoints,
+  roundStrip,
+  skipReasonWords,
   isAlertKind,
   latestEventFor,
   sectorRows,
@@ -1733,6 +1735,35 @@ export default function Queen() {
     : roundOverdue
       ? c.hudOverdue
       : c.nextRound;
+  // A round's resolution moment: when decidedAt changes, the round tile and
+  // the gold block flash for six seconds and carry the strip. The change is
+  // detected during render (state adjusted from a prop, the documented
+  // pattern) and the expiry is read off the 1 Hz clock, so no timer and no
+  // effect. The first decidedAt seen after load is history, not news.
+  const decidedAt = decision?.decidedAt ?? null;
+  const [seenDecidedAt, setSeenDecidedAt] = useState<string | null>(null);
+  const [flashUntil, setFlashUntil] = useState(0);
+  if (decidedAt !== seenDecidedAt) {
+    setSeenDecidedAt(decidedAt);
+    if (seenDecidedAt !== null && decidedAt !== null) setFlashUntil(now + 6_000);
+  }
+  const roundResolved = flashUntil > now;
+  const strip =
+    roundResolved && decision
+      ? roundStrip(
+          decision,
+          data?.dispatches.running ?? null,
+          latest?.issue ?? null,
+          {
+            allow: c.hudAllow,
+            refuse: c.hudRefuse,
+            executing: c.executing,
+            queueMeaning: c.queueMeaning,
+            reasons: c.reasons,
+          },
+          lang,
+        )
+      : null;
   const alertEvents: HudEvent[] = activityState.data?.alerts ?? EMPTY_EVENTS;
   const alerts = useMemo(() => alertCount(alertEvents, now), [alertEvents, now]);
   const cellSummaries = useMemo(() => summariseCells(cards), [cards]);
@@ -1989,7 +2020,7 @@ export default function Queen() {
             <ul className="queen27-hud-skips">
               {skipEntries.map(([reason, count]) => (
                 <li key={reason}>
-                  <b>{count}</b> {reason}
+                  <b>{count}</b> {skipReasonWords(reason)}
                 </li>
               ))}
             </ul>
@@ -2078,14 +2109,20 @@ export default function Queen() {
           </span>
         </div>
 
-        <div className="queen27-hud-res queen27-hud-res-round">
+        <div
+          className={`queen27-hud-res queen27-hud-res-round${roundResolved ? " is-resolved" : ""}`}
+        >
           <i aria-hidden="true">◎</i>
           <small>{roundLabel}</small>
           <strong id="stat-round">{countdown}</strong>
           <span>
-            {data
-              ? `${c.every} ${formatInterval(data.scheduler.intervalSeconds, lang)} · ${formatMoment(decision?.decidedAt, lang)}`
-              : "—"}
+            {strip ? (
+              <b className="queen27-hud-round-strip">{strip}</b>
+            ) : data ? (
+              `${c.every} ${formatInterval(data.scheduler.intervalSeconds, lang)} · ${formatMoment(decision?.decidedAt, lang)}`
+            ) : (
+              "—"
+            )}
           </span>
         </div>
 
@@ -2609,7 +2646,7 @@ export default function Queen() {
             </section>
 
             <section className="queen27-hud-round-cell" ref={roundRef} aria-label={c.hudNextRound}>
-              <div className="queen27-hud-round">
+              <div className={`queen27-hud-round${roundResolved ? " is-resolved" : ""}`}>
                 <div className="queen27-hud-orbit" aria-hidden="true">
                   <div className="queen27-core-orbit" aria-hidden="true">
                     <span
@@ -2641,7 +2678,7 @@ export default function Queen() {
                   <i aria-hidden="true">
                     <span style={{ width: `${roundProgress}%` }} />
                   </i>
-                  <em>{decisionLine}</em>
+                  <em>{strip ?? decisionLine}</em>
                 </button>
               </div>
               {roundPopover}
