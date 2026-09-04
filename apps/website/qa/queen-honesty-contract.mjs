@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { cellGeometry, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf } from "../src/components/queenHud.ts";
+import { buildingPlan, cellGeometry, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -74,6 +74,14 @@ const home3 = Math.floor(shape3.cellCount / 2);
 const ringed = placeCards(new Map(), [{ number: 1 }, { number: 2 }, { number: 3 }], shape3.cellCount, ringOrder(cellGeometry(3), home3));
 check(ringed.ledger.get(1) === home3 && ringed.placed[home3]?.number === 1, "with a ring order the first card takes the home cell");
 check(fieldShape(165).cellCount === 189 && fieldShape(114).cellCount === 138, "the field's cell count is the comb's (189 for 165 cards, not 195)");
+// the shape grammar (M-3): the building is a pure function of the signature
+const sig = M({ path: "agent-server/apps/server/src", language: "typescript", lines: 12000, functions: 900, imports: 60, exports: 40 });
+check(planHash(buildingPlan(sig)) === planHash(buildingPlan({ ...sig })), "the same signature yields the same building");
+check(planHash(buildingPlan(sig)) !== planHash(buildingPlan(M({ ...sig, lines: 200 }))), "a different size yields a different building");
+check(buildingPlan(sig).parts.filter((p) => p.model === "annex").length === 2 && buildingPlan(M({ ...sig, exports: 0 })).parts.filter((p) => p.model === "annex").length === 0, "wings follow the export bands");
+check(buildingPlan(sig).parts.filter((p) => p.model === "antenna").length === 2 && buildingPlan(M({ ...sig, imports: 200 })).parts.filter((p) => p.model === "antenna").length === 3, "antennae follow the import bands, capped at three");
+check(buildingPlan(M({ ...sig, functions: 3000 })).parts[0].height > buildingPlan(M({ ...sig, functions: 30 })).parts[0].height && buildingPlan(M({ ...sig, functions: 30000 })).parts[0].height <= 1.6, "height follows function density, capped at 1.6");
+check(buildingPlan(M({ language: "rust" })).core === "doneSilo" && buildingPlan(M({ language: "klingon" })).core === "dropped", "the core follows the language, unknown languages a ruin");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

@@ -42,7 +42,7 @@ import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
 import { S, HH, EDGES, summariseCells, queenIndexOf } from "./QueenComb";
-import { crystalOf, eventTone, moduleId, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone } from "./queenHud";
+import { buildingPlan, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone } from "./queenHud";
 
 interface SpikeCard {
   number: number;
@@ -70,8 +70,9 @@ interface QueenCombBabylonProps {
   /** Per issue in progress: the cell of the module its title names, or null (the hub). */
   beeTargets?: ReadonlyArray<number | null>;
 }
-// the building a language gets; an open issue adds the red fence
-const BY_LANGUAGE: Record<string, ModelKey> = { typescript: "done", javascript: "doneDepot", swift: "doneDepot", rust: "doneSilo", zig: "running", python: "review", shell: "backlog", go: "doneSilo" };
+// the plan's part kinds map to models the field loads: annexes are the
+// platform, antennae the dish; the core is the plan's own key
+const PART_MODEL: Record<"annex" | "antenna", ModelKey> = { annex: "backlog", antenna: "review" };
 
 type Territory = "held" | "neutral" | "fog";
 const LINES: readonly BeeLine[] = ["scribe", "wright", "lapidary"];
@@ -350,70 +351,78 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const steel = mat("steel", "#8a93a3"), dark = mat("dark", "#3a4150"), glass = mat("glass", "#1d3a4a", "#0e5a7a");
     const green = mat("green", "#1e4d3a", "#00ff88"), gold = mat("gold", "#5a4a1e", "#ffd45a"), red = mat("red", "#4d1e1e", "#ff6b6b"), cyan = mat("cyan", "#1e3f4d", "#64dcff"), ruin = mat("ruin", "#2a2d33");
     const u = S * 0.4;
-    interface Template { parts: Mesh[]; matrices: number[]; scales: number[]; turns: number[] }
+    interface Template { parts: Mesh[]; matrices: number[]; scales: number[]; turns: number[]; heights: number[] }
     const mods = modulesRef.current;
-    // the signature's part of the visual (M-3, first step): footprint from
-    // lines on a log scale, a quarter turn from the path's hash
-    const sizeOf = (card: SpikeCard | null) => { const m = card && mods?.get(card.number); if (!m) return 1; return 0.85 + 0.55 * Math.min(1, Math.log10(Math.max(1, m.lines)) / 4.5); };
-    const turnOf = (card: SpikeCard | null) => (card ? (moduleId(card.title) % 4) * (Math.PI / 2) : 0);
     const templates: Record<Column, Template> = {} as Record<Column, Template>;
     const part = (m: Mesh, material: StandardMaterial, y: number, x = 0, z = 0) => { m.material = material; m.position.set(x, y, z); m.isPickable = false; m.isVisible = false; shadows.addShadowCaster(m); return m; };
     templates.backlog = { parts: [
       part(CreateBox("bl-slab", { width: u, depth: u, height: 5 }, scene), dark, 2.5),
       ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([px, pz], k) => part(CreateBox(`bl-post-${k}`, { width: 4, depth: 4, height: 16 }, scene), steel, 8, px * u * 0.42, pz * u * 0.42)),
-    ], matrices: [], scales: [], turns: [] };
+    ], matrices: [], scales: [], turns: [], heights: [] };
     templates.running = { parts: [
       part(CreateBox("ru-body", { width: u * 0.8, depth: u * 0.8, height: u * 0.55 }, scene), steel, u * 0.275),
       part(CreateBox("ru-band", { width: u * 0.84, depth: u * 0.84, height: 4 }, scene), cyan, u * 0.3),
       part(CreateCylinder("ru-mast", { diameter: 3, height: u * 0.6 }, scene), steel, u * 0.85, u * 0.25, u * 0.25),
       part(CreateSphere("ru-lamp", { diameter: 8 }, scene), cyan, u * 1.15, u * 0.25, u * 0.25),
-    ], matrices: [], scales: [], turns: [] };
+    ], matrices: [], scales: [], turns: [], heights: [] };
     templates.review = { parts: [
       part(CreateCylinder("rv-base", { diameter: u * 0.9, height: u * 0.3, tessellation: 12 }, scene), steel, u * 0.15),
       part(CreateSphere("rv-dome", { diameter: u * 0.7, slice: 0.5, segments: 12 }, scene), glass, u * 0.3),
       part(CreateTorus("rv-ring", { diameter: u * 0.72, thickness: 3, tessellation: 24 }, scene), gold, u * 0.31),
-    ], matrices: [], scales: [], turns: [] };
+    ], matrices: [], scales: [], turns: [], heights: [] };
     templates.done = { parts: [
       part(CreateBox("dn-tower", { width: u * 0.6, depth: u * 0.6, height: u * 1.1 }, scene), steel, u * 0.55),
       part(CreateBox("dn-win1", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.35),
       part(CreateBox("dn-win2", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.7),
       part(CreateBox("dn-cap", { width: u * 0.7, depth: u * 0.7, height: 6 }, scene), dark, u * 1.13),
-    ], matrices: [], scales: [], turns: [] };
+    ], matrices: [], scales: [], turns: [], heights: [] };
     // two more silhouettes for done cards, chosen by card number, so a hundred
     // finished tasks read as a base and not as a grid of one tower
     const doneDepot: Template = { parts: [
       part(CreateBox("dd-body", { width: u * 0.95, depth: u * 0.7, height: u * 0.35 }, scene), steel, u * 0.175),
       part(CreateBox("dd-roof", { width: u * 1.0, depth: u * 0.75, height: 4 }, scene), dark, u * 0.37),
       part(CreateBox("dd-strip", { width: u * 0.97, depth: u * 0.72, height: 2.5 }, scene), green, u * 0.2),
-    ], matrices: [], scales: [], turns: [] };
+    ], matrices: [], scales: [], turns: [], heights: [] };
     const doneSilo: Template = { parts: [
       part(CreateCylinder("ds-body", { diameter: u * 0.6, height: u * 0.8, tessellation: 14 }, scene), steel, u * 0.4),
       part(CreateSphere("ds-top", { diameter: u * 0.6, slice: 0.5, segments: 12 }, scene), dark, u * 0.8),
       part(CreateTorus("ds-band", { diameter: u * 0.62, thickness: 2.5, tessellation: 24 }, scene), green, u * 0.5),
-    ], matrices: [], scales: [], turns: [] };
+    ], matrices: [], scales: [], turns: [], heights: [] };
     templates.blocked = { parts: [
       part(CreateBox("bk-body", { width: u * 0.7, depth: u * 0.7, height: u * 0.4 }, scene), dark, u * 0.2),
       part(CreateTorus("bk-fence", { diameter: u * 0.95, thickness: 2.5, tessellation: 6 }, scene), red, 8),
       part(CreateBox("bk-light", { width: u * 0.72, depth: u * 0.72, height: 3 }, scene), red, u * 0.42),
-    ], matrices: [], scales: [], turns: [] };
+    ], matrices: [], scales: [], turns: [], heights: [] };
     templates.dropped = { parts: [
       part(CreateBox("dr-a", { width: u * 0.5, depth: u * 0.4, height: u * 0.18 }, scene), ruin, u * 0.09, -u * 0.12, u * 0.05),
       part(CreateBox("dr-b", { width: u * 0.3, depth: u * 0.3, height: u * 0.3 }, scene), ruin, u * 0.15, u * 0.2, -u * 0.15),
-    ], matrices: [], scales: [], turns: [] };
+    ], matrices: [], scales: [], turns: [], heights: [] };
     cells.forEach((c, i) => {
       if (i === home) return;
       const card = cards[i];
       if (!card) return;
       const col = (COLUMNS as readonly string[]).includes(card.column) ? (card.column as Column) : "backlog";
       const m = mods?.get(card.number);
-      // a module's building comes from its language; a card's from its column
-      const key: ModelKey | Column = m ? (BY_LANGUAGE[m.language] ?? "dropped") : col === "done" ? (["done", "doneDepot", "doneSilo"] as const)[card.number % 3] : col;
-      const target = key === "doneDepot" ? doneDepot : key === "doneSilo" ? doneSilo : templates[key as Column];
-      const k = sizeOf(card), turn = turnOf(card);
-      target.matrices.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.RotationAxis(Vector3.Up(), turn), new Vector3(c.x, 0, c.y)).toArray());
-      target.scales.push(k); target.turns.push(turn);
-      // an open issue on a module fences it in red (the blocked template's fence)
-      if (m && m.openIssues.length > 0 && key !== "blocked") { templates.blocked.matrices.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.Identity(), new Vector3(c.x, 0, c.y)).toArray()); templates.blocked.scales.push(k); templates.blocked.turns.push(0); }
+      const templateOf = (key: string) => (key === "doneDepot" ? doneDepot : key === "doneSilo" ? doneSilo : templates[(key in templates ? key : "backlog") as Column]);
+      const push = (t: Template, x: number, z: number, k: number, h: number, turn: number) => {
+        t.matrices.push(...Matrix.Compose(new Vector3(k, k * h, k), Quaternion.RotationAxis(Vector3.Up(), turn), new Vector3(x, 0, z)).toArray());
+        t.scales.push(k); t.turns.push(turn); t.heights.push(h);
+      };
+      if (m) {
+        // the shape grammar: the building is the plan's parts, in the core's frame
+        const plan = buildingPlan(m);
+        const cos = Math.cos(plan.turn), sin = Math.sin(plan.turn);
+        for (const part of plan.parts) {
+          const key = part.model === "core" ? plan.core : PART_MODEL[part.model];
+          const x = c.x + (part.dx * cos - part.dz * sin) * u * 2, z = c.y + (part.dx * sin + part.dz * cos) * u * 2;
+          push(templateOf(key), x, z, part.scale, part.height, plan.turn);
+        }
+        // an open issue on a module fences it in red (the blocked template's fence)
+        if (m.openIssues.length > 0 && plan.core !== "blocked") push(templates.blocked, c.x, c.y, plan.parts[0].scale, 1, 0);
+      } else {
+        const key = col === "done" ? (["done", "doneDepot", "doneSilo"] as const)[card.number % 3] : col;
+        push(templateOf(key), c.x, c.y, 1, 1, 0);
+      }
     });
     for (const t of [...COLUMNS.map((col) => templates[col]), doneDepot, doneSilo]) {
       const count = t.matrices.length / 16;
@@ -521,13 +530,13 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     //      a model that fails to load leaves its procedural stand-in --------
     let disposed = false;
     const modelInstances = new Map<ModelKey, { mesh: Mesh; footprint: number; base: number; height: number }>();
-    const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, parts: Mesh[], scales: number[] = [], turns: number[] = []) => {
+    const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, parts: Mesh[], scales: number[] = [], turns: number[] = [], heights: number[] = []) => {
       if (disposed || scene.isDisposed || matrices.length === 0) return;
       const out: number[] = [];
       for (let i = 0, j = 0; i < matrices.length; i += 16, j += 1) {
         const tx = matrices[i + 12], tz = matrices[i + 14];
-        const k = (target / t.footprint) * (scales[j] ?? 1);
-        out.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.RotationAxis(Vector3.Up(), turns[j] ?? 0), new Vector3(tx, -t.base * k, tz)).toArray());
+        const k = (target / t.footprint) * (scales[j] ?? 1), h = heights[j] ?? 1;
+        out.push(...Matrix.Compose(new Vector3(k, k * h, k), Quaternion.RotationAxis(Vector3.Up(), turns[j] ?? 0), new Vector3(tx, -t.base * k * h, tz)).toArray());
       }
       t.mesh.thinInstanceSetBuffer("matrix", new Float32Array(out), 16, true);
       t.mesh.isVisible = true;
@@ -540,7 +549,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
       for (const [key, t] of loaded) if (t) modelInstances.set(key, t);
-      const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns); };
+      const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns, tpl.heights); };
       // a building takes about half a cell, so the roads between them still show
       bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
       bind("done", templates.done, u * 1.35); bind("doneDepot", doneDepot, u * 1.35); bind("doneSilo", doneSilo, u * 1.25);
