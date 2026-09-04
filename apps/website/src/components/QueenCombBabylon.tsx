@@ -11,7 +11,7 @@ import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import { Camera } from "@babylonjs/core/Cameras/camera";
-import { Vector3, Matrix } from "@babylonjs/core/Maths/math.vector";
+import { Vector3, Matrix, Quaternion } from "@babylonjs/core/Maths/math.vector";
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { VertexBuffer } from "@babylonjs/core/Buffers/buffer";
@@ -29,7 +29,15 @@ import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
+import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
+import "@babylonjs/core/Layers/effectLayerSceneComponent";
 import "@babylonjs/core/Meshes/thinInstanceMesh";
+import { LoadAssetContainerAsync } from "@babylonjs/core/Loading/sceneLoader";
+import "@babylonjs/loaders/glTF";
+import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
+import type { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
+import type { BaseTexture } from "@babylonjs/core/Materials/Textures/baseTexture";
+import type { InstancedMesh } from "@babylonjs/core/Meshes/instancedMesh";
 import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
@@ -66,6 +74,16 @@ const EMPTY_EVENTS: HudEvent[] = [];
 const RING_POOL = 24;
 const COLUMNS = ["backlog", "running", "review", "done", "blocked", "dropped"] as const;
 type Column = (typeof COLUMNS)[number];
+// Kenney Space Kit (CC0, kenney.nl), the user's "download it yourself, open
+// source": one model per building state, three for done cards, the Queen's
+// hangar, crystals, and units. Served from public/queen/models.
+const MODELS = {
+  backlog: "platform_small", running: "machine_generatorLarge", review: "satelliteDish_large",
+  done: "hangar_smallA", doneDepot: "hangar_roundA", doneSilo: "structure_closed",
+  blocked: "gate_complex", dropped: "crater", hub: "hangar_largeA", crystal: "rock_crystalsLargeA",
+  scribe: "astronautA", wright: "rover", lapidary: "astronautB", larva: "alien",
+} as const;
+type ModelKey = keyof typeof MODELS;
 const MARGIN = S * 1.2;
 
 /** Point-in-down-triangle for the cell under a world point (x, z). */
@@ -116,6 +134,57 @@ function drawTiles(ctx: CanvasRenderingContext2D, size: number, per: number) {
   }
 }
 
+/**
+ * Load a Kenney GLB and merge it into one mesh with a multi-material, so it
+ * can be thin-instanced like the procedural templates. Returns the mesh and
+ * its footprint (max of width and depth) and base (min y), both in model
+ * units, so the caller can scale it to a cell and stand it on the ground.
+ */
+async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; footprint: number; base: number; height: number } | null> {
+  try {
+    if (scene.isDisposed) return null;
+    const container = await LoadAssetContainerAsync(`./queen/models/${MODELS[key]}.glb`, scene);
+    // the view may have switched while the file was in flight: a disposed
+    // scene has no engine program to compile materials on
+    if (scene.isDisposed) { container.dispose(); return null; }
+    const parts = container.meshes.filter((m): m is Mesh => m instanceof Mesh && m.getTotalVertices() > 0);
+    if (parts.length === 0) return null;
+    // Kenney's models are flat palette colours: a StandardMaterial carries
+    // them as well as the glTF PBR one, lights like the rest of the field,
+    // and needs no BRDF lookup texture - the async generation of that texture
+    // ran its callback on a disposed engine when the view switched mid-load
+    // (TypeError: reading 'program' in bindSamplers), which the viewport gate
+    // counted as a failure.
+    for (const m of parts) {
+      const src = m.material as (PBRMaterial & { albedoTexture?: BaseTexture | null; albedoColor?: Color3 }) | null;
+      if (src && src.getClassName() === "PBRMaterial") {
+        const flat = new StandardMaterial(`${src.name}-flat`, scene);
+        if (src.albedoTexture) flat.diffuseTexture = src.albedoTexture;
+        if (src.albedoColor) flat.diffuseColor = src.albedoColor.clone();
+        flat.specularColor = new Color3(0.12, 0.12, 0.14);
+        flat.specularPower = 32;
+        m.material = flat;
+        src.dispose(false, false);
+      }
+    }
+    // bake the glTF root transform (right-handed -> left-handed flip) into the vertices
+    for (const m of parts) { m.computeWorldMatrix(true); m.bakeCurrentTransformIntoVertices(); }
+    const merged = parts.length === 1 ? parts[0] : Mesh.MergeMeshes(parts, true, true, undefined, false, true);
+    if (!merged) return null;
+    merged.setParent(null);
+    merged.position.set(0, 0, 0); merged.rotationQuaternion = null; merged.rotation.set(0, 0, 0); merged.scaling.set(1, 1, 1);
+    merged.computeWorldMatrix(true);
+    const b = merged.getBoundingInfo().boundingBox;
+    const footprint = Math.max(b.maximum.x - b.minimum.x, b.maximum.z - b.minimum.z) || 1;
+    merged.isVisible = false; merged.isPickable = false;
+    scene.addMesh(merged);
+    for (const m of container.meshes) if (m !== merged && !(m as AbstractMesh).isDisposed()) m.dispose();
+    return { mesh: merged, footprint, base: b.minimum.y, height: b.maximum.y - b.minimum.y };
+  } catch {
+    return null;
+  }
+}
+
 export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS }: QueenCombBabylonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -159,6 +228,20 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const scene = new Scene(engine);
     scene.clearColor = new Color4(2 / 255, 8 / 255, 6 / 255, 1);
     scene.skipPointerMovePicking = true;
+    // the rendered look: tone mapping with a little contrast and a vignette,
+    // depth fog into the void, and a glow on every emissive part (windows,
+    // lamps, bands, rings) - what a game's post pass gives a low-poly scene
+    const ipc = scene.imageProcessingConfiguration;
+    ipc.toneMappingEnabled = true;
+    ipc.contrast = 1.22;
+    ipc.exposure = 1.08;
+    ipc.vignetteEnabled = true;
+    ipc.vignetteWeight = 1.6;
+    ipc.vignetteColor = new Color4(0, 0.02, 0.01, 0);
+    scene.fogMode = Scene.FOGMODE_LINEAR;
+    scene.fogColor = new Color3(2 / 255, 8 / 255, 6 / 255);
+    const glow = new GlowLayer("glow", scene, { blurKernelSize: 24 });
+    glow.intensity = 0.55;
 
     // ---- extents and the RTS camera: fixed angle, zoom, no idle sway ------
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
@@ -168,6 +251,9 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     }
     const centre = new Vector3((minX + maxX) / 2, 0, (minZ + maxZ) / 2);
     const camera = new ArcRotateCamera("cam", Math.PI / 2 + 0.55, 0.95, 4000, centre.clone(), scene);
+    const depth = Math.max(maxX - minX, maxZ - minZ);
+    scene.fogStart = 4000 - depth * 0.1;
+    scene.fogEnd = 4000 + depth * 1.4;
     camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
     camera.lowerBetaLimit = 0.95; camera.upperBetaLimit = 0.95;
     camera.lowerAlphaLimit = camera.alpha; camera.upperAlphaLimit = camera.alpha;
@@ -214,7 +300,9 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     tex.vScale = groundH / (S * 4);
     const groundMat = new StandardMaterial("ground", scene);
     groundMat.diffuseTexture = tex;
-    groundMat.specularColor = new Color3(0.08, 0.08, 0.1);
+    groundMat.specularTexture = tex;
+    groundMat.specularColor = new Color3(0.18, 0.19, 0.22);
+    groundMat.specularPower = 48;
     const ground = CreateGround("ground", { width: groundW, height: groundH }, scene);
     ground.position = new Vector3(centre.x, 0, centre.z);
     ground.material = groundMat;
@@ -318,6 +406,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const hubDome = part(CreateSphere("hub-dome", { diameter: S * 0.5, slice: 0.5, segments: 16 }, scene), gold, 10, cells[home].x, cells[home].y);
     hubDome.isVisible = true;
 
+
     // ---- rings: picked (gold), hover (dashed, territory colour) ---------
     const ring4 = () => [[new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0)]];
     const picked = CreateLineSystem("picked", { lines: ring4(), updatable: true }, scene);
@@ -364,17 +453,19 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       .map((c, i) => ({ i, d: (c.x - cells[home].x) ** 2 + (c.y - cells[home].y) ** 2 }))
       .filter((e) => e.i !== home)
       .sort((a, b) => a.d - b.d);
-    (devices ?? []).forEach((d, k) => { const r = ring[k]; if (r) put(`crystal-${crystalOf(d.family)}`, r.i, S * 0.4, 0, 64); });
+    const crystalSprites: Sprite[] = [];
+    (devices ?? []).forEach((d, k) => { const r = ring[k]; if (r) { const sp = put(`crystal-${crystalOf(d.family)}`, r.i, S * 0.4, 0, 64); if (sp) crystalSprites.push(sp); } });
 
     const running = cells.map((c, i) => ({ c, i })).filter(({ i }) => cards[i]?.column === "running").map(({ i }) => i);
     const indexByNumber = new Map<number, number>();
     cells.forEach((c, i) => { if (c.cardNumber !== null) indexByNumber.set(c.cardNumber, i); });
-    interface Bee { slot: number; busy: boolean; work: boolean; from: number; to: number; t: number; speed: number; hover: number; line: BeeLine; body: Sprite; larva: Sprite }
+    interface Bee { slot: number; busy: boolean; work: boolean; from: number; to: number; t: number; speed: number; hover: number; line: BeeLine; body: Sprite; larva: Sprite; bodyModel?: InstancedMesh; bodyK?: number; bodyBase?: number; larvaModel?: InstancedMesh; larvaK?: number; larvaBase?: number }
     const bees: Bee[] = (workers?.slots ?? []).map((slot, k) => {
       const line = LINES[k % LINES.length];
       const body = new Sprite(`bee-${slot.slot}`, manager(line, 16));
       const larva = new Sprite(`larva-${slot.slot}`, manager("larva", 16));
-      body.width = S * 0.34; body.height = body.width; body.isVisible = false;
+      const size = line === "scribe" ? S * 0.28 : line === "wright" ? S * 0.34 : S * 0.4;
+      body.width = size; body.height = size; body.isVisible = false;
       larva.width = S * 0.3; larva.height = larva.width; larva.isVisible = false;
       return { slot: slot.slot, busy: false, work: false, from: home, to: home, t: 1, speed: 0, hover: k * 1.7, line, body, larva };
     });
@@ -394,7 +485,52 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     aimBees();
     const beeAt = (index: number) => bees.find((b) => (b.t < 0.5 ? b.from : b.to) === index) ?? null;
     const flightLines = bees.map((b) => { const m = CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 1)], dashSize: 6, gapSize: 4, dashNb: 40, updatable: true }, scene); m.color = Color3.FromHexString("#64DCFF"); m.alpha = 0.55; m.isPickable = false; m.isVisible = false; return m; });
-    const unitRings = bees.map((b) => { const m = CreateTorus(`unit-ring-${b.slot}`, { diameter: S * 0.26, thickness: 1.6, tessellation: 20 }, scene); m.material = green; m.isPickable = false; m.isVisible = false; return m; });
+    const unitRings = bees.map((b) => { const m = CreateTorus(`unit-ring-${b.slot}`, { diameter: b.body.width * 0.8, thickness: 1.6, tessellation: 20 }, scene); m.material = green; m.isPickable = false; m.isVisible = false; return m; });
+
+    // ---- the Kenney models replace the procedural templates as they load;
+    //      a model that fails to load leaves its procedural stand-in --------
+    let disposed = false;
+    const modelInstances = new Map<ModelKey, { mesh: Mesh; footprint: number; base: number; height: number }>();
+    const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, parts: Mesh[]) => {
+      if (disposed || scene.isDisposed || matrices.length === 0) return;
+      const k = target / t.footprint;
+      const out: number[] = [];
+      for (let i = 0; i < matrices.length; i += 16) {
+        const tx = matrices[i + 12], tz = matrices[i + 14];
+        out.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.Identity(), new Vector3(tx, -t.base * k, tz)).toArray());
+      }
+      t.mesh.thinInstanceSetBuffer("matrix", new Float32Array(out), 16, true);
+      t.mesh.isVisible = true;
+      shadows.addShadowCaster(t.mesh);
+      for (const p of parts) p.dispose();
+    };
+    const unitInstances: Array<{ key: ModelKey; node: InstancedMesh; k: number; base: number }> = [];
+    void (async () => {
+      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva"];
+      const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
+      if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
+      for (const [key, t] of loaded) if (t) modelInstances.set(key, t);
+      const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts); };
+      // a building takes about half a cell, so the roads between them still show
+      bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
+      bind("done", templates.done, u * 1.35); bind("doneDepot", doneDepot, u * 1.35); bind("doneSilo", doneSilo, u * 1.25);
+      bind("blocked", templates.blocked, u * 1.3); bind("dropped", templates.dropped, u * 1.2);
+      const hubT = modelInstances.get("hub");
+      if (hubT) { placeModel(hubT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.25, [hub, hubDome]); }
+      const crystalT = modelInstances.get("crystal");
+      if (crystalT) {
+        const mats: number[] = [];
+        (devices ?? []).forEach((_, k2) => { const r = ring[k2]; if (r) mats.push(...Matrix.Translation(cells[r.i].x, 0, cells[r.i].y).toArray()); });
+        placeModel(crystalT, mats, u * 1.0, []);
+        for (const sp of crystalSprites) sp.dispose();
+      }
+      // units: one instance per bee (walking model) and one per larva (the alien)
+      bees.forEach((b) => {
+        const walk = modelInstances.get(b.line); const idle = modelInstances.get("larva");
+        if (walk) { const k = (S * 0.3) / walk.footprint; const inst = walk.mesh.createInstance(`unit-${b.slot}`); inst.scaling.set(k, k, k); inst.isPickable = false; inst.isVisible = false; unitInstances.push({ key: b.line, node: inst, k, base: walk.base }); b.bodyModel = inst; b.bodyK = k; b.bodyBase = walk.base; b.body.isVisible = false; b.body.dispose(); }
+        if (idle) { const k = (S * 0.26) / idle.footprint; const inst = idle.mesh.createInstance(`larva-${b.slot}`); inst.scaling.set(k, k, k); inst.isPickable = false; inst.isVisible = false; b.larvaModel = inst; b.larvaK = k; b.larvaBase = idle.base; b.larva.dispose(); }
+      });
+    })();
 
     // ---- event glints: a ring that grows and fades on the issue's cell ----
     interface Effect { index: number; tone: Tone; start: number; flip: boolean; flare?: string }
@@ -477,11 +613,22 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
         const e = b.t < 0.5 ? 2 * b.t * b.t : 1 - 2 * (1 - b.t) * (1 - b.t);
         let x = A.x + (B.x - A.x) * e, z = A.y + (B.y - A.y) * e;
         if (b.t >= 1 && b.busy) { const ph = nowMs / 700 + b.hover; x = B.x + Math.cos(ph) * S * 0.12; z = B.y + Math.sin(ph * 1.3) * S * 0.08; }
-        const sprite = b.busy ? b.body : b.larva;
-        b.body.isVisible = b.busy; b.larva.isVisible = !b.busy;
-        sprite.position.x = x; sprite.position.z = z;
-        sprite.position.y = sprite.height / 2 + (b.busy ? 2 + Math.abs(Math.sin(nowMs / 140 + k)) * 3 : 1);
-        sprite.invertU = B.x - A.x < 0;
+        const model = b.busy ? b.bodyModel : b.larvaModel;
+        const other = b.busy ? b.larvaModel : b.bodyModel;
+        if (other) other.isVisible = false;
+        if (model) {
+          const mk = (b.busy ? b.bodyK : b.larvaK) ?? 1, mb = (b.busy ? b.bodyBase : b.larvaBase) ?? 0;
+          model.isVisible = true;
+          model.position.set(x, -mb * mk + (b.busy ? Math.abs(Math.sin(nowMs / 140 + k)) * 2 : 0), z);
+          if (b.t < 1) model.rotation.y = Math.atan2(B.x - A.x, B.y - A.y);
+          b.body.isVisible = false; b.larva.isVisible = false;
+        } else {
+          const sprite = b.busy ? b.body : b.larva;
+          b.body.isVisible = b.busy; b.larva.isVisible = !b.busy;
+          sprite.position.x = x; sprite.position.z = z;
+          sprite.position.y = sprite.height / 2 + (b.busy ? 2 + Math.abs(Math.sin(nowMs / 140 + k)) * 3 : 1);
+          sprite.invertU = B.x - A.x < 0;
+        }
         const ur = unitRings[k]; ur.position.set(x, 1.2, z); ur.isVisible = true;
         const line = flightLines[k];
         if (b.busy && b.t < 1) { CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(A.x, 2, A.y), new Vector3(B.x, 2, B.y)], dashSize: 6, gapSize: 4, dashNb: 40, instance: line }, scene); line.isVisible = true; }
@@ -521,6 +668,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     document.addEventListener("visibilitychange", onVisible);
     document.addEventListener("fullscreenchange", onVisible);
     return () => {
+      disposed = true;
       document.removeEventListener("visibilitychange", onVisible);
       document.removeEventListener("fullscreenchange", onVisible);
       ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose();
