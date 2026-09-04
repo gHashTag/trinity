@@ -444,3 +444,50 @@ export function ringOrder(cells: ReadonlyArray<{ x: number; y: number }>, home: 
     .sort((a, b) => a.d - b.d || a.i - b.i)
     .map((e) => e.i);
 }
+
+/**
+ * The shape grammar (M-3): a module's building as a list of parts, a pure
+ * function of its signature, so the same code always yields the same
+ * building and a different module a different one. Parts are Kenney models
+ * the field already loads, placed around the core in the core's frame:
+ * - core: by language; footprint by lines (log scale); height by function
+ *   density (functions per hundred lines), stretched up to 1.6x;
+ * - wings: one annex platform per export band (0..3), on the core's sides;
+ * - antennae: one dish per import band (0..3), on the core's corners;
+ * - the whole building turned a quarter per the path's hash;
+ * - an open issue adds the red fence (drawn by the field, not a part).
+ */
+export interface BuildingPart {
+  model: "core" | "annex" | "antenna";
+  dx: number;
+  dz: number;
+  scale: number;
+  height: number;
+}
+export interface BuildingPlan {
+  core: string;
+  turn: number;
+  parts: BuildingPart[];
+}
+const CORE_BY_LANGUAGE: Record<string, string> = { typescript: "done", javascript: "doneDepot", swift: "doneDepot", rust: "doneSilo", zig: "running", python: "review", shell: "backlog", go: "doneSilo" };
+const band = (n: number, steps: number[]) => steps.filter((t) => n >= t).length;
+
+export function buildingPlan(m: HudModule): BuildingPlan {
+  const scale = 0.85 + 0.55 * Math.min(1, Math.log10(Math.max(1, m.lines)) / 4.5);
+  const density = m.lines > 0 ? (m.functions / m.lines) * 100 : 0;
+  const height = 1 + Math.min(0.6, density / 12);
+  const wings = band(m.exports, [8, 30, 90]);
+  const antennae = band(m.imports, [10, 40, 120]);
+  const parts: BuildingPart[] = [{ model: "core", dx: 0, dz: 0, scale, height }];
+  const sides: Array<[number, number]> = [[1, 0], [-1, 0], [0, 1]];
+  for (let i = 0; i < wings; i += 1) parts.push({ model: "annex", dx: sides[i][0] * 0.62, dz: sides[i][1] * 0.62, scale: scale * 0.45, height: 1 });
+  const corners: Array<[number, number]> = [[0.55, -0.55], [-0.55, -0.55], [0.55, 0.55]];
+  for (let i = 0; i < antennae; i += 1) parts.push({ model: "antenna", dx: corners[i][0], dz: corners[i][1], scale: scale * 0.3, height: 1 });
+  return { core: CORE_BY_LANGUAGE[m.language] ?? "dropped", turn: (moduleId(m.path) % 4) * (Math.PI / 2), parts };
+}
+
+/** A stable hash of a plan: the contract that the same signature yields the same building. */
+export function planHash(plan: BuildingPlan): number {
+  const text = plan.core + "|" + plan.turn.toFixed(4) + "|" + plan.parts.map((p) => `${p.model}:${p.dx.toFixed(3)},${p.dz.toFixed(3)},${p.scale.toFixed(4)},${p.height.toFixed(4)}`).join(";");
+  return moduleId(text);
+}
