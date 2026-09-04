@@ -30,7 +30,8 @@
     "check:queen-honesty": "node --experimental-strip-types qa/queen-honesty-contract.mjs",
     "check:queen-dead-api": "node qa/queen-viewport-contract.mjs --dead-api",
     "check:queen-touch": "node qa/queen-touch-contract.mjs",
-    "check:queen-round": "node qa/queen-round-contract.mjs"
+    "check:queen-round": "node qa/queen-round-contract.mjs",
+    "check:queen-pick": "node qa/queen-pick-contract.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
