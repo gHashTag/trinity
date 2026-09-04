@@ -534,3 +534,36 @@ export function withOpenIssues(modules: readonly HudModule[], cards: ReadonlyArr
   }
   return modules.map((m) => ({ ...m, openIssues: (open.get(m.path) ?? []).slice().sort((a, b) => a - b) }));
 }
+
+/**
+ * The server's clock, from the Date header of a status answer (RFC 7231:
+ * whole seconds, the moment the response was generated). offset = server -
+ * client at receipt, so serverNow = clientNow + offset. A client whose clock
+ * runs two minutes fast would otherwise read every round as OVERDUE two
+ * minutes early (P1-30). Null when the header is absent or unparsable: the
+ * countdown then trusts the client clock, as before, and says nothing false.
+ * Whole-second resolution and a no-store answer (Date is generation time,
+ * not delivery time) are the header's limits; the clock shows whole seconds.
+ */
+export function serverOffsetMs(dateHeader: string | null, sentAtMs: number, receivedAtMs: number = sentAtMs): number | null {
+  if (!dateHeader) return null;
+  const t = Date.parse(dateHeader);
+  if (!Number.isFinite(t)) return null;
+  // NTP's estimate: the server stamped the answer about half a round trip
+  // after the request left, so the client's matching instant is the midpoint
+  return t - (sentAtMs + receivedAtMs) / 2;
+}
+
+/**
+ * The round clock, server-relative: seconds elapsed since the last round as
+ * the server would count them. `known` is false without a round length or
+ * a last round; `overdue` when the round length has passed.
+ */
+export function countdownFor(clientNowMs: number, offsetMs: number | null, lastRoundAt: string | null, roundSeconds: number): { known: boolean; elapsed: number; overdue: boolean; remaining: number } {
+  if (!lastRoundAt || !(roundSeconds > 0)) return { known: false, elapsed: 0, overdue: false, remaining: 0 };
+  const last = Date.parse(lastRoundAt);
+  if (!Number.isFinite(last)) return { known: false, elapsed: 0, overdue: false, remaining: 0 };
+  const serverNow = clientNowMs + (offsetMs ?? 0);
+  const elapsed = Math.max(0, (serverNow - last) / 1000);
+  return { known: true, elapsed, overdue: elapsed > roundSeconds, remaining: Math.max(0, roundSeconds - elapsed) };
+}

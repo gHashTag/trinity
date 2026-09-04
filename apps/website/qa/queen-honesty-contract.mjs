@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { buildingPlan, buildingTint, cellGeometry, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { buildingPlan, buildingTint, cellGeometry, countdownFor, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -96,6 +96,15 @@ const enriched = withOpenIssues([M({ path: "agent-server" }), M({ path: "agent-s
   { number: 10, title: "no path at all", column: "running" },
 ]);
 check(enriched[1].openIssues.join(",") === "7" && enriched[0].openIssues.join(",") === "9", "an open issue lands on the longest module its path names; done cards and pathless titles do not");
+// the round clock follows the server's Date header, not the client's clock (P1-30)
+const srv = Date.parse("2026-09-04T18:00:00Z");
+check(serverOffsetMs("Thu, 04 Sep 2026 18:00:00 GMT", srv + 120_000) === -120_000 && serverOffsetMs("Thu, 04 Sep 2026 18:00:00 GMT", srv + 119_900, srv + 120_100) === -120_000 && serverOffsetMs(null, srv) === null && serverOffsetMs("not a date", srv) === null, "the offset is server minus the request's midpoint (NTP); absent or bad headers give null");
+const fastClient = srv + 120_000; // the client runs two minutes fast
+const withOffset = countdownFor(fastClient, -120_000, "2026-09-04T17:56:00Z", 300);
+const noOffset = countdownFor(fastClient, null, "2026-09-04T17:56:00Z", 300);
+check(withOffset.known && !withOffset.overdue && Math.round(withOffset.remaining) === 60, "a client two minutes fast still reads the server's 60 s remaining");
+check(noOffset.known && noOffset.overdue, "without the header the same client would read OVERDUE (the defect P1-30 removes)");
+check(!countdownFor(srv, 0, null, 300).known && !countdownFor(srv, 0, "2026-09-04T17:56:00Z", 0).known, "no round length or no last round: unknown, never a fabricated clock");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
