@@ -20,6 +20,8 @@ import {
   ALERT_WINDOW_MS,
   HUD_VIEWS,
   alertCount,
+  decisionDetail,
+  rewriteEndpoints,
   isAlertKind,
   latestEventFor,
   sectorRows,
@@ -286,7 +288,7 @@ const COPY = {
       "The routes show Queen lifecycle movement; only the Technology Tree below claims prerequisite links.",
     sector: "sector",
     rounds: "rounds / 24h",
-    beesStarted: "Bees started",
+    beesStarted: "Bees started / 24h",
     verdicts: "verdicts",
     empty: "Nothing here",
     criteria: "criteria",
@@ -349,8 +351,9 @@ const COPY = {
     // ---- single-screen HUD ----
     hudBrand: "TRINITY QUEEN",
     hudBees: "BEES",
-    hudAccepted: "ACCEPTED",
+    hudDone: "DONE",
     hudVerdicts: "VERDICTS",
+    hud24h: "24h",
     hudResearch: "RESEARCH",
     hudFoundry: "FOUNDRY",
     hudNextRound: "NEXT ROUND",
@@ -503,7 +506,7 @@ const COPY = {
       "Маршруты показывают движение по циклу Queen; реальные зависимости есть только в Дереве технологий ниже.",
     sector: "сектор",
     rounds: "циклов / 24ч",
-    beesStarted: "Bees запущено",
+    beesStarted: "Bees запущено / 24ч",
     verdicts: "вердиктов",
     empty: "Здесь пусто",
     criteria: "критерия",
@@ -568,8 +571,9 @@ const COPY = {
     // ---- single-screen HUD ----
     hudBrand: "TRINITY QUEEN",
     hudBees: "ПЧЁЛЫ",
-    hudAccepted: "ПРИНЯТО",
+    hudDone: "ГОТОВО",
     hudVerdicts: "ВЕРДИКТЫ",
+    hud24h: "24ч",
     hudResearch: "ИССЛЕДОВАНИЯ",
     hudFoundry: "ВЕРФЬ",
     hudNextRound: "СЛЕДУЮЩИЙ ЦИКЛ",
@@ -1038,7 +1042,11 @@ function agentBootstrapText(
     "# TRINITY RESEARCH · A2A BOOTSTRAP",
     mission,
     "",
-    JSON.stringify(bootstrap, null, 2),
+    JSON.stringify(
+      { ...bootstrap, endpoints: rewriteEndpoints(bootstrap.endpoints, QUEEN_API) },
+      null,
+      2,
+    ),
   ].join("\n");
 }
 
@@ -1678,6 +1686,11 @@ export default function Queen() {
   const reviewQueueCounts = reviewCounts(board);
   const reviewColumnTitle =
     boardColumns.find((column) => column.key === "review")?.title ?? "review";
+  // The tile is named by the column the number comes from - the wire's own
+  // title - not by a word ("accepted") no endpoint carries.
+  const doneColumnTitle = (
+    boardColumns.find((column) => column.key === "done")?.title ?? c.hudDone
+  ).toUpperCase();
   const roundSeconds =
     board?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
   const lastRoundAt = board?.pulse.lastRoundAt ?? decision?.decidedAt ?? null;
@@ -1739,8 +1752,12 @@ export default function Queen() {
     pickedCard && repo
       ? `https://github.com/${repo}/issues/${pickedCard.number}`
       : null;
+  // On ALLOW the detail is what the round did; on a refusal it is the refusal.
+  const decisionInfo = decision
+    ? decisionDetail(decision, data?.dispatches.running ?? null, latest?.issue ?? null, c)
+    : null;
   const decisionLine = decision
-    ? `${decision.allowed ? c.chose : c.stoodDown} · ${decision.refusal ?? c.queueMeaning}`
+    ? `${decision.allowed ? c.chose : c.stoodDown} · ${decisionInfo}`
     : c.noDecision;
   const heldCount = doneCount + runningCards.length;
   const device = hardware?.devices[0] ?? null;
@@ -1958,7 +1975,7 @@ export default function Queen() {
           </strong>
           {decision && (
             <p>
-              {decision.refusal ?? c.queueMeaning} · {decision.skippedCount}{" "}
+              {decisionInfo} · {decision.skippedCount}{" "}
               {c.reasons}.
             </p>
           )}
@@ -2007,7 +2024,7 @@ export default function Queen() {
 
         <div className="queen27-hud-res">
           <i aria-hidden="true">✓</i>
-          <small>{c.hudAccepted}</small>
+          <small>{doneColumnTitle}</small>
           <strong id="stat-accepted">{board ? doneCount : "—"}</strong>
           <span>
             +{pulse?.bees ?? "—"} {c.beesStarted}
@@ -2019,7 +2036,7 @@ export default function Queen() {
           <small>{c.hudVerdicts}</small>
           <strong id="stat-verdicts">{pulse?.verdicts ?? "—"}</strong>
           <span>
-            {board ? `${reviewCards.length} ${reviewColumnTitle}` : "—"}
+            {c.hud24h} · {board ? `${reviewCards.length} ${reviewColumnTitle}` : "—"}
           </span>
         </div>
 
@@ -2043,12 +2060,12 @@ export default function Queen() {
           <small>{c.hudFoundry}</small>
           <strong id="stat-foundry">
             {hardware
-              ? `${hardware.summary.programmed}/${hardware.summary.total}`
+              ? `${hardware.summary.online}/${hardware.summary.total}`
               : "—"}
           </strong>
           <span title={hardware ? hardware.keyId : hardwareState.error ?? undefined}>
             {hardware
-              ? hardware.keyId
+              ? `${hardware.summary.programmed} ${c.foundryProgrammed} · ${hardware.keyId}`
               : hardwareState.error
                 ? c.foundryUnavailable
                 : c.checking}
@@ -2359,7 +2376,9 @@ export default function Queen() {
             verdicts: pulse?.verdicts ?? null,
             running: data?.dispatches.running ?? null,
             capacity: workers?.capacity ?? null,
-            rounds: pulse?.rounds ?? null,
+            // pulse.rounds counts the rows of a one-row lease table (0 or 1); a
+            // dash until the server counts real rounds (backlog P3-2).
+            rounds: null,
             beesStarted: pulse?.bees ?? null,
           }}
           describe={describe}
@@ -2375,7 +2394,7 @@ export default function Queen() {
             backend: c.hudBackend,
             live: c.hudLive,
             offline: c.hudOffline,
-            accepted: c.hudAccepted,
+            accepted: doneColumnTitle,
             verdicts: c.verdicts,
             bees: c.hudBees,
             rounds: c.rounds,

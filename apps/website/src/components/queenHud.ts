@@ -173,3 +173,45 @@ export function latestEventFor(events: HudEvent[], issue: number): HudEvent | nu
   }
   return best;
 }
+
+/**
+ * The detail under the round clock. On ALLOW the refusal is by definition
+ * absent, so say what the round did - how many Bees run and the latest
+ * dispatch - instead of printing the "no eligible specification" fallback
+ * that only means anything on a refusal. Measured 2026-09-04 01:39Z: an
+ * allowed tick (4 dispatched) rendered the refusal explanation.
+ */
+export function decisionDetail(
+  decision: { allowed: boolean; refusal: string | null },
+  running: number | null,
+  latestIssue: number | null,
+  labels: { queueMeaning: string; executing: string },
+): string {
+  if (decision.allowed) {
+    const tail = latestIssue !== null ? ` · #${latestIssue}` : "";
+    return `${running ?? "—"} ${labels.executing}${tail}`;
+  }
+  return decision.refusal ?? labels.queueMeaning;
+}
+
+/**
+ * The A2A bootstrap names its endpoints on api.t27.ai, an origin that fails
+ * TLS and 404s (measured 2026-09-04). The page itself reads from QUEEN_API,
+ * so the copy hands out that origin with each endpoint's own path and query.
+ */
+export function rewriteEndpoints(
+  endpoints: Record<string, string>,
+  origin: string,
+): Record<string, string> {
+  const base = origin.replace(/\/+$/, "");
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(endpoints)) {
+    try {
+      const url = new URL(value);
+      out[key] = `${base}${url.pathname}${url.search}`;
+    } catch {
+      out[key] = value;
+    }
+  }
+  return out;
+}
