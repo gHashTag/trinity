@@ -458,11 +458,13 @@ export function ringOrder(cells: ReadonlyArray<{ x: number; y: number }>, home: 
  * - an open issue adds the red fence (drawn by the field, not a part).
  */
 export interface BuildingPart {
-  model: "core" | "annex" | "antenna";
+  model: "core" | "annex" | "antenna" | "band";
   dx: number;
   dz: number;
   scale: number;
   height: number;
+  /** for a window band: its level up the core, 1..3 */
+  level?: number;
 }
 export interface BuildingPlan {
   core: string;
@@ -483,7 +485,29 @@ export function buildingPlan(m: HudModule): BuildingPlan {
   for (let i = 0; i < wings; i += 1) parts.push({ model: "annex", dx: sides[i][0] * 0.62, dz: sides[i][1] * 0.62, scale: scale * 0.45, height: 1 });
   const corners: Array<[number, number]> = [[0.55, -0.55], [-0.55, -0.55], [0.55, 0.55]];
   for (let i = 0; i < antennae; i += 1) parts.push({ model: "antenna", dx: corners[i][0], dz: corners[i][1], scale: scale * 0.3, height: 1 });
+  // lit window bands up the core: one per function band (0..3), so a module
+  // with many functions reads as a busy building at night
+  const bands = band(m.functions, [40, 160, 500]);
+  for (let i = 0; i < bands; i += 1) parts.push({ model: "band", dx: 0, dz: 0, scale: scale * 0.72, height, level: i + 1 });
   return { core: CORE_BY_LANGUAGE[m.language] ?? "dropped", turn: (moduleId(m.path) % 4) * (Math.PI / 2), parts };
+}
+
+/**
+ * The per-instance tint (M-4): the material reads it per building, so no
+ * two modules of one language and size look alike. Recency warms and
+ * brightens (touched within a week: warm white; within a month: neutral;
+ * dormant half a year: cold and dim); every open issue wears the paint down
+ * a step. RGBA in 0..1, multiplied onto the model's palette.
+ */
+export function buildingTint(m: HudModule, nowMs: number): [number, number, number, number] {
+  const touched = m.lastTouched ? Date.parse(m.lastTouched) : NaN;
+  const age = Number.isFinite(touched) ? (nowMs - touched) / DAY : 365;
+  let r = 0.62, g = 0.66, b = 0.78;
+  if (age <= 7) { r = 1.0; g = 0.96; b = 0.86; }
+  else if (age <= 30) { r = 0.9; g = 0.9; b = 0.9; }
+  else if (age <= 180) { r = 0.76; g = 0.78; b = 0.84; }
+  const wear = Math.max(0.55, 1 - 0.12 * Math.min(3, m.openIssues.length));
+  return [r * wear, g * wear, b * wear, 1];
 }
 
 /** A stable hash of a plan: the contract that the same signature yields the same building. */
