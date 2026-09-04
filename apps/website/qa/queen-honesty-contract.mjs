@@ -27,7 +27,7 @@ check(rewritten.odd === "not a url", "a non-URL is left alone");
 const src = readFileSync(new URL("../src/pages/Queen.tsx", import.meta.url), "utf8");
 check(/rounds:\s*null,/.test(src), "rounds / 24h is a dash (pulse.rounds is a lease-row count)");
 check(!/c\.hudAccepted\b/.test(src), "no tile is labelled ACCEPTED");
-check(/stat-verdicts[\s\S]{0,260}c\.hud24h/.test(src) && /beesStarted:\s*"Bees started \/ 24h"/.test(src), "24h figures name their window");
+check(/stat-verdicts[\s\S]{0,260}c\.hud24h/.test(src) && /beesStarted:\s*"[^"]*\/ 24h"/.test(src) && /beesStarted:\s*"[^"]*\/ 24ч"/.test(src), "24h figures name their window (in both languages; the wording may shorten, the window may not)");
 check(/summary\.online\}\/\$\{hardware\.summary\.total\}/.test(src), "FOUNDRY tile is online/total");
 check(/rewriteEndpoints\(bootstrap\.endpoints, QUEEN_API\)/.test(src), "the copied bootstrap names the page's own origin");
 

@@ -318,7 +318,7 @@ const COPY = {
       "The routes show Queen lifecycle movement; only the Technology Tree below claims prerequisite links.",
     sector: "sector",
     rounds: "rounds / 24h",
-    beesStarted: "Bees started / 24h",
+    beesStarted: "started / 24h",
     verdicts: "verdicts",
     empty: "Nothing here",
     criteria: "criteria",
@@ -368,7 +368,7 @@ const COPY = {
     evidence: "Evidence",
     graphLive: "LIVE EVIDENCE GRAPH",
     graphOffline: "RESEARCH GRAPH OFFLINE",
-    graphLoading: "Synchronizing the canonical TRINITY graph…",
+    graphLoading: "Syncing the TRINITY graph…",
     workerPool: "A2A RESEARCH WORKERS",
     workerPoolCopy: "Each paid slot can carry one isolated Bee without sharing a rate limit.",
     slotsBusy: "slots busy",
@@ -532,13 +532,13 @@ const COPY = {
     foundryUnavailable: "Реестр оборудования недоступен — FPGA-сооружения не отображаются.",
     foundryTotal: "проверено устройств",
     foundryOnline: "онлайн сейчас",
-    foundryProgrammed: "запрограммировано",
+    foundryProgrammed: "прошито",
     foundryKey: "ключ подписи",
     mapLegend:
       "Маршруты показывают движение по циклу Queen; реальные зависимости есть только в Дереве технологий ниже.",
     sector: "сектор",
     rounds: "циклов / 24ч",
-    beesStarted: "Bees запущено / 24ч",
+    beesStarted: "старт / 24ч",
     verdicts: "вердиктов",
     empty: "Здесь пусто",
     criteria: "критерия",
@@ -589,7 +589,7 @@ const COPY = {
     evidence: "Доказательство",
     graphLive: "ЖИВОЙ ГРАФ ДОКАЗАТЕЛЬСТВ",
     graphOffline: "ГРАФ ИССЛЕДОВАНИЙ НЕДОСТУПЕН",
-    graphLoading: "Синхронизирую канонический граф TRINITY…",
+    graphLoading: "Загрузка графа…",
     workerPool: "A2A ВОРКЕРЫ ИССЛЕДОВАНИЙ",
     workerPoolCopy:
       "Каждый оплаченный слот несёт одну изолированную Bee и не делит rate limit с соседями.",
@@ -2217,7 +2217,7 @@ export default function Queen() {
           </strong>
           <span title={hardware ? hardware.keyId : hardwareState.error ?? undefined}>
             {hardware
-              ? `${hardware.summary.programmed} ${c.foundryProgrammed} · ${hardware.keyId}`
+              ? `${hardware.summary.programmed} ${c.foundryProgrammed}`
               : hardwareState.error
                 ? c.foundryUnavailable
                 : c.checking}
