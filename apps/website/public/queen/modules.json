@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/trios",
  "commit": "c5bc03f53",
- "generatedAt": "2026-09-04T18:36:54Z",
+ "generatedAt": "2026-09-04T19:06:35Z",
  "source": "local scan by the loop (M-1 replaces it with /queen/public-modules)",
  "totalModules": 114,
  "droppedSmallest": 0,
@@ -40,13 +40,8 @@
    "exports": 28,
    "lastTouched": "2026-09-05T01:11:49+07:00",
    "openIssues": [
-    1427,
-    1429,
-    1430,
     1471,
     1476,
-    1478,
-    1480,
     1490
    ]
   },
@@ -126,13 +121,8 @@
    "exports": 1,
    "lastTouched": "2026-09-05T01:11:49+07:00",
    "openIssues": [
-    1427,
-    1429,
-    1430,
     1471,
     1476,
-    1478,
-    1480,
     1490
    ]
   },
@@ -274,7 +264,6 @@
    "openIssues": [
     1471,
     1476,
-    1478,
     1490
    ]
   },
@@ -418,7 +407,6 @@
    "openIssues": [
     1471,
     1476,
-    1478,
     1490
    ]
   },
@@ -541,12 +529,7 @@
    "imports": 37,
    "exports": 10,
    "lastTouched": "2026-09-05T01:11:49+07:00",
-   "openIssues": [
-    1427,
-    1429,
-    1430,
-    1480
-   ]
+   "openIssues": []
   },
   {
    "path": "agent-server/apps/server/tests",
@@ -909,7 +892,6 @@
    "openIssues": [
     1471,
     1476,
-    1478,
     1490
    ]
   },
@@ -1452,9 +1434,7 @@
    "imports": 437,
    "exports": 322,
    "lastTouched": "2026-09-05T01:11:49+07:00",
-   "openIssues": [
-    1430
-   ]
+   "openIssues": []
   },
   {
    "path": "agent-server/apps/server/src/browser",
@@ -1484,11 +1464,7 @@
    "imports": 267,
    "exports": 360,
    "lastTouched": "2026-08-31T22:45:16+07:00",
-   "openIssues": [
-    1427,
-    1429,
-    1480
-   ]
+   "openIssues": []
   },
   {
    "path": "agent-server/apps/server/src/monitoring",
