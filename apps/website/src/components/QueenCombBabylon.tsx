@@ -178,7 +178,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const w = host.clientWidth || 1, h = host.clientHeight || 1;
       const inset = insetRef.current;
       const band = h * (1 - inset);
-      const fieldW = (maxX - minX + S) * 1.02, fieldH = (maxZ - minZ + S) * Math.cos(camera.beta) * 1.02 + S * 0.6;
+      const fieldW = (maxX - minX + S) * 1.02, fieldH = (maxZ - minZ + S) * Math.cos(camera.beta) * 1.02 + S * 1.3;
       const aspect = w / band;
       let halfW = fieldW / 2, halfH = halfW / aspect;
       if (halfH < fieldH / 2) { halfH = fieldH / 2; halfW = halfH * aspect; }
@@ -207,11 +207,11 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     // ---- the ground: one plate of steel tiles ----------------------------
     const tex = new DynamicTexture("tiles", 1024, scene, true);
     const tctx = tex.getContext() as CanvasRenderingContext2D;
-    drawTiles(tctx, 1024, 8);
+    drawTiles(tctx, 1024, 4);
     tex.update(false);
     const groundW = maxX - minX + MARGIN * 2, groundH = maxZ - minZ + MARGIN * 2;
-    tex.uScale = groundW / (S * 0.5 * 8);
-    tex.vScale = groundH / (S * 0.5 * 8);
+    tex.uScale = groundW / (S * 4);
+    tex.vScale = groundH / (S * 4);
     const groundMat = new StandardMaterial("ground", scene);
     groundMat.diffuseTexture = tex;
     groundMat.specularColor = new Color3(0.08, 0.08, 0.1);
@@ -226,6 +226,20 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     rimMat.diffuseColor = new Color3(0.08, 0.09, 0.12);
     rim.material = rimMat;
     rim.isPickable = false;
+    // hazard stripes along the platform edge (the reference's yellow-black rails)
+    const stripes = new DynamicTexture("stripes", { width: 256, height: 32 }, scene, false);
+    const sctx = stripes.getContext() as CanvasRenderingContext2D;
+    for (let i = 0; i < 16; i += 1) { sctx.fillStyle = i % 2 ? "#d9b230" : "#1a1a1a"; sctx.beginPath(); sctx.moveTo(i * 16, 0); sctx.lineTo(i * 16 + 16, 0); sctx.lineTo(i * 16 + 8, 32); sctx.lineTo(i * 16 - 8, 32); sctx.closePath(); sctx.fill(); }
+    stripes.update(false);
+    const stripeMat = new StandardMaterial("stripes", scene);
+    stripeMat.diffuseTexture = stripes; stripeMat.emissiveColor = new Color3(0.35, 0.3, 0.1); stripeMat.specularColor = Color3.Black();
+    for (const [w, d, x, z, rep] of [[groundW, 6, centre.x, centre.z - groundH / 2 + 3, groundW / 40], [groundW, 6, centre.x, centre.z + groundH / 2 - 3, groundW / 40], [6, groundH, centre.x - groundW / 2 + 3, centre.z, groundH / 40], [6, groundH, centre.x + groundW / 2 - 3, centre.z, groundH / 40]] as const) {
+      const rail = CreateBox(`rail-${x}-${z}`, { width: w, depth: d, height: 3 }, scene);
+      rail.position = new Vector3(x, 1.5, z);
+      const m = stripeMat.clone(`stripes-${x}-${z}`);
+      const t = stripes.clone(); t.uScale = w > d ? rep : 1; t.vScale = w > d ? 1 : rep; m.diffuseTexture = t;
+      rail.material = m; rail.isPickable = false;
+    }
 
     // ---- buildings: one low-poly template per column, thin-instanced ------
     const mat = (name: string, diffuse: string, emissive = "#000000") => {
@@ -237,7 +251,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     };
     const steel = mat("steel", "#8a93a3"), dark = mat("dark", "#3a4150"), glass = mat("glass", "#1d3a4a", "#0e5a7a");
     const green = mat("green", "#1e4d3a", "#00ff88"), gold = mat("gold", "#5a4a1e", "#ffd45a"), red = mat("red", "#4d1e1e", "#ff6b6b"), cyan = mat("cyan", "#1e3f4d", "#64dcff"), ruin = mat("ruin", "#2a2d33");
-    const u = S * 0.5;
+    const u = S * 0.4;
     interface Template { parts: Mesh[]; matrices: number[] }
     const templates: Record<Column, Template> = {} as Record<Column, Template>;
     const part = (m: Mesh, material: StandardMaterial, y: number, x = 0, z = 0) => { m.material = material; m.position.set(x, y, z); m.isPickable = false; m.isVisible = false; shadows.addShadowCaster(m); return m; };
@@ -262,6 +276,18 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       part(CreateBox("dn-win2", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.7),
       part(CreateBox("dn-cap", { width: u * 0.7, depth: u * 0.7, height: 6 }, scene), dark, u * 1.13),
     ], matrices: [] };
+    // two more silhouettes for done cards, chosen by card number, so a hundred
+    // finished tasks read as a base and not as a grid of one tower
+    const doneDepot: Template = { parts: [
+      part(CreateBox("dd-body", { width: u * 0.95, depth: u * 0.7, height: u * 0.35 }, scene), steel, u * 0.175),
+      part(CreateBox("dd-roof", { width: u * 1.0, depth: u * 0.75, height: 4 }, scene), dark, u * 0.37),
+      part(CreateBox("dd-strip", { width: u * 0.97, depth: u * 0.72, height: 2.5 }, scene), green, u * 0.2),
+    ], matrices: [] };
+    const doneSilo: Template = { parts: [
+      part(CreateCylinder("ds-body", { diameter: u * 0.6, height: u * 0.8, tessellation: 14 }, scene), steel, u * 0.4),
+      part(CreateSphere("ds-top", { diameter: u * 0.6, slice: 0.5, segments: 12 }, scene), dark, u * 0.8),
+      part(CreateTorus("ds-band", { diameter: u * 0.62, thickness: 2.5, tessellation: 24 }, scene), green, u * 0.5),
+    ], matrices: [] };
     templates.blocked = { parts: [
       part(CreateBox("bk-body", { width: u * 0.7, depth: u * 0.7, height: u * 0.4 }, scene), dark, u * 0.2),
       part(CreateTorus("bk-fence", { diameter: u * 0.95, thickness: 2.5, tessellation: 6 }, scene), red, 8),
@@ -276,10 +302,10 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const card = cards[i];
       if (!card) return;
       const col = (COLUMNS as readonly string[]).includes(card.column) ? (card.column as Column) : "backlog";
-      templates[col].matrices.push(...Matrix.Translation(c.x, 0, c.y).toArray());
+      const target = col === "done" ? [templates.done, doneDepot, doneSilo][card.number % 3] : templates[col];
+      target.matrices.push(...Matrix.Translation(c.x, 0, c.y).toArray());
     });
-    for (const col of COLUMNS) {
-      const t = templates[col];
+    for (const t of [...COLUMNS.map((col) => templates[col]), doneDepot, doneSilo]) {
       const count = t.matrices.length / 16;
       for (const p of t.parts) {
         if (count === 0) { p.dispose(); continue; }
