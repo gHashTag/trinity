@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { buildingPlan, buildingTint, cellGeometry, countdownFor, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { alertCount, buildingPlan, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -114,6 +114,12 @@ check(merged.events.map((e) => e.id).join(",") === "n1,n2,p1,p2", "same-second t
 check(merged.events.find((e) => e.id === "p1")?.kind === "review" && merged.events.length === 4, "an event in both polls keeps the newest copy, once");
 check(merged.alerts.map((e) => e.id).join(",") === "p1" && merged.cursor === 9, "the bell keeps alert kinds inside the window and drops the hour-old one; the cursor is the wire's");
 check(mergeActivity(null, { cursor: 1, events: Array.from({ length: 130 }, (_, i) => evAt(`e${i}`, new Date(Date.parse(TIE) - i * 1000).toISOString())) }, Date.parse(TIE)).events.length === 120, "the feed keeps 120 by count, newest first");
+// a review verdict's identity is (issue, state): the tick re-stamps it every round (P0-10)
+const rv = (id, at, state = "wait", kind = "review") => ({ id, kind, at, issue: 1471, title: "t", state });
+check(eventIdentity(rv("review-1471-1788552916000-0", "2026-09-04T20:15:16Z")) === eventIdentity(rv("review-1471-1788553216000-0", "2026-09-04T20:20:16Z")) && eventIdentity(rv("a", "x", "accepted")) !== eventIdentity(rv("b", "x", "wait")) && eventIdentity({ id: "tool-1", kind: "tool", issue: 1471, state: null }) === "tool-1", "same issue and state is one identity across stamps; a state change is a new one; other kinds keep their id");
+const restamped = mergeActivity({ events: [rv("review-1471-1788552916000-0", "2026-09-04T20:15:16Z")], alerts: [rv("review-1471-1788552916000-0", "2026-09-04T20:15:16Z")] }, { cursor: 2, events: [rv("review-1471-1788553216000-0", "2026-09-04T20:20:16Z")] }, Date.parse("2026-09-04T20:20:30Z"));
+check(restamped.events.length === 1 && restamped.events[0].id === "review-1471-1788553216000-0" && restamped.alerts.length === 1, "a re-stamped verdict replaces its older feed row and alert instead of adding one");
+check(alertCount([rv("review-1471-1788552916000-0", "2026-09-04T20:15:16Z"), rv("review-1471-1788553216000-0", "2026-09-04T20:20:16Z"), rv("review-1471-1788553216000-1", "2026-09-04T20:20:16Z", "accepted")], Date.parse("2026-09-04T20:21:00Z")) === 2, "the bell counts identities: one pending verdict re-stamped twice plus its acceptance is two, not three");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

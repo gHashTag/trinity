@@ -153,17 +153,30 @@ export function isAlertKind(kind: HudEventKind): boolean {
   return kind === "review" || kind === "error" || kind === "finished";
 }
 
+/**
+ * An event's identity (P0-10). The wire stamps a review verdict anew every
+ * round it stays pending (`review-<issue>-<tick stamp>-<n>`), so by id the
+ * same verdict is a fresh alert, feed row and glint every five minutes. A
+ * verdict is the pair (issue, state): the identity changes only when the
+ * state does. Every other kind keeps its wire id.
+ */
+export function eventIdentity(event: { id: string; kind: HudEventKind; issue: number | null; state: string | null }): string {
+  return event.kind === "review" && event.issue !== null ? `review:${event.issue}:${event.state ?? ""}` : event.id;
+}
+
 /** Events in the last window whose kind deserves the bell. */
 export function alertCount(
   events: HudEvent[],
   now: number,
   windowMs = ALERT_WINDOW_MS,
 ): number {
-  return events.filter((event) => {
-    if (!isAlertKind(event.kind)) return false;
+  const identities = new Set<string>();
+  for (const event of events) {
+    if (!isAlertKind(event.kind)) continue;
     const at = new Date(event.at).getTime();
-    return Number.isFinite(at) && now - at <= windowMs;
-  }).length;
+    if (Number.isFinite(at) && now - at <= windowMs) identities.add(eventIdentity(event));
+  }
+  return identities.size;
 }
 
 /** The latest event recorded for an issue, or null. */
@@ -573,11 +586,12 @@ export function countdownFor(clientNowMs: number, offsetMs: number | null, lastR
  * first in the wire's own order, then the events only the previous buffer
  * held; a stable sort by time, newest first, so same-second ties keep the
  * newest poll's order (Array.prototype.sort is stable) instead of letting the
- * older copy win; an event present in both keeps the newest copy; the feed
+ * older copy win; an event present in both (by identity, see eventIdentity)
+ * keeps the newest copy; the feed
  * keeps `cap` events by count, the bell's alerts keep the window by age
  * against `nowMs` (no clock is read here).
  */
-export function mergeActivity<E extends { id: string; kind: HudEventKind; at: string }>(
+export function mergeActivity<E extends { id: string; kind: HudEventKind; at: string; issue: number | null; state: string | null }>(
   previous: { events: E[]; alerts: E[] } | null,
   next: { cursor: number; events: E[] },
   nowMs: number,
@@ -588,17 +602,18 @@ export function mergeActivity<E extends { id: string; kind: HudEventKind; at: st
     const t = Date.parse(event.at);
     return Number.isFinite(t) ? t : Number.NEGATIVE_INFINITY;
   };
-  const newest = new Set(next.events.map((event) => event.id));
-  const ordered = [...next.events, ...(previous?.events ?? []).filter((event) => !newest.has(event.id))];
+  // identity, not id: a verdict re-stamped by the tick replaces its older row (P0-10)
+  const newest = new Set(next.events.map(eventIdentity));
+  const ordered = [...next.events, ...(previous?.events ?? []).filter((event) => !newest.has(eventIdentity(event)))];
   const seen = new Set<string>();
   const events = ordered
-    .filter((event) => (seen.has(event.id) ? false : (seen.add(event.id), true)))
+    .filter((event) => (seen.has(eventIdentity(event)) ? false : (seen.add(eventIdentity(event)), true)))
     .sort((left, right) => time(right) - time(left))
     .slice(0, cap);
   const seenAlerts = new Set<string>();
-  const alerts = [...next.events, ...(previous?.alerts ?? []).filter((event) => !newest.has(event.id))]
+  const alerts = [...next.events, ...(previous?.alerts ?? []).filter((event) => !newest.has(eventIdentity(event)))]
     .filter((event) => isAlertKind(event.kind) && nowMs - time(event) <= windowMs)
-    .filter((event) => (seenAlerts.has(event.id) ? false : (seenAlerts.add(event.id), true)))
+    .filter((event) => (seenAlerts.has(eventIdentity(event)) ? false : (seenAlerts.add(eventIdentity(event)), true)))
     .sort((left, right) => time(right) - time(left));
   return { cursor: next.cursor, events, alerts };
 }
