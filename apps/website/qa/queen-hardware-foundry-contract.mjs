@@ -97,8 +97,12 @@ if (!existsSync(modelPath)) {
 
 if (existsSync(cityPath)) {
   const city = readFileSync(cityPath, 'utf8')
-  requirePattern(city, /HardwareFoundry/, 'Research City must render a native hardware foundry')
-  requirePattern(city, /hardware\.devices/, 'Hardware structures must derive from verified devices')
+  // the foundry is drawn by the Babylon scene beside the component (B-4)
+  const scenePath = `${root}/src/components/queenResearchCityScene.ts`
+  const sceneSource = existsSync(scenePath) ? readFileSync(scenePath, 'utf8') : ''
+  requirePattern(sceneSource, /fpga-pad-\$\{device\.id\}/, 'Research City must render a native hardware foundry')
+  requirePattern(sceneSource, /hardware\?\.devices/, 'Hardware structures must derive from verified devices')
+  requirePattern(city, /hardware=\{hardware\}|hardware,/, 'The city must pass the verified registry to its scene')
 }
 
 if (existsSync(queenPath)) {

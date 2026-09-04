@@ -1,36 +1,16 @@
-import { Line, OrbitControls } from "@react-three/drei";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
-import {
-  Object3D,
-  type Group,
-  type InstancedMesh,
-} from "three";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   buildConstructionPlan,
-  type ConstructionPlan,
   type ConstructionStage,
 } from "./queenConstructionModel";
-import type {
-  HardwareState,
-  VerifiedHardwareRegistry,
-} from "./queenHardwareRegistry";
+import type { VerifiedHardwareRegistry } from "./queenHardwareRegistry";
 import {
   buildResearchCityModel,
   motionModeFromPreference,
-  type CityPosition,
   type CityResearchEdge,
   type CityResearchNode,
-  type ResearchCityModel,
-  type ResearchState,
 } from "./queenResearchCityModel";
+import { mountResearchCity, type ResearchCitySceneHandle, type ResearchCitySceneInput } from "./queenResearchCityScene";
 
 interface CityWorkers {
   capacity: number;
@@ -74,14 +54,7 @@ interface QueenResearchCityProps {
   labels: ResearchCityLabels;
 }
 
-const STATE_COLORS: Record<ResearchState, string> = {
-  researched: "#00f5a0",
-  researching: "#64dcff",
-  available: "#ffd45a",
-  locked: "#263a32",
-};
 
-const CONSTRUCTION_FPS = 12;
 
 const CONSTRUCTION_COLORS: Record<ConstructionStage, string> = {
   complete: "#00f5a0",
@@ -90,40 +63,6 @@ const CONSTRUCTION_COLORS: Record<ConstructionStage, string> = {
   sealed: "#263a32",
 };
 
-const HARDWARE_COLORS: Record<HardwareState, string> = {
-  registered: "#47534e",
-  synthesised: "#64dcff",
-  programmed: "#ffd45a",
-  online: "#00f5a0",
-};
-
-// react-use-measure waits for the first ResizeObserver delivery before R3F
-// creates a renderer. Background strategy tabs may throttle that delivery,
-// leaving the canvas at the browser's 300x150 default until it becomes active.
-// Deliver one measured frame immediately and keep the native observer for all
-// subsequent responsive changes.
-class ImmediateResizeObserver {
-  private readonly callback: ResizeObserverCallback;
-  private readonly observer: ResizeObserver;
-
-  constructor(callback: ResizeObserverCallback) {
-    this.callback = callback;
-    this.observer = new ResizeObserver(callback);
-  }
-
-  observe(target: Element, options?: ResizeObserverOptions) {
-    this.observer.observe(target, options);
-    queueMicrotask(() => this.callback([], this as unknown as ResizeObserver));
-  }
-
-  unobserve(target: Element) {
-    this.observer.unobserve(target);
-  }
-
-  disconnect() {
-    this.observer.disconnect();
-  }
-}
 
 function useReducedMotion() {
   const query = "(prefers-reduced-motion: reduce)";
@@ -138,358 +77,6 @@ function useReducedMotion() {
   }, []);
 
   return reduced;
-}
-
-function ConstructionClock({ enabled }: { enabled: boolean }) {
-  const invalidate = useThree((state) => state.invalidate);
-
-  useEffect(() => {
-    if (!enabled) return undefined;
-    const timer = window.setInterval(invalidate, 1_000 / CONSTRUCTION_FPS);
-    return () => window.clearInterval(timer);
-  }, [enabled, invalidate]);
-
-  return null;
-}
-
-function InstancedLaboratoryFoundations({ model }: { model: ResearchCityModel }) {
-  const mesh = useRef<InstancedMesh>(null);
-  const transform = useMemo(() => new Object3D(), []);
-
-  useLayoutEffect(() => {
-    if (!mesh.current) return;
-    [...model.positions.values()].forEach((position, index) => {
-      transform.position.set(position.x, 0.12, position.z);
-      transform.rotation.set(0, 0, 0);
-      transform.scale.set(1, 1, 1);
-      transform.updateMatrix();
-      mesh.current?.setMatrixAt(index, transform.matrix);
-    });
-    mesh.current.instanceMatrix.needsUpdate = true;
-  }, [model.positions, transform]);
-
-  return (
-    <instancedMesh
-      ref={mesh}
-      args={[undefined, undefined, model.positions.size]}
-      frustumCulled
-    >
-      <cylinderGeometry args={[0.7, 0.92, 0.24, 8]} />
-      <meshStandardMaterial color="#6f5725" metalness={0.9} roughness={0.28} />
-    </instancedMesh>
-  );
-}
-
-function ResearchLaboratory({
-  node,
-  position,
-  stage,
-  motionMode,
-  selected,
-  onSelect,
-}: {
-  node: CityResearchNode;
-  position: CityPosition;
-  stage: ConstructionStage;
-  motionMode: "static" | "interactive";
-  selected: boolean;
-  onSelect: (id: string) => void;
-}) {
-  const color = STATE_COLORS[node.state];
-  const construction = useRef<Group>(null);
-
-  useFrame((state) => {
-    if (
-      construction.current &&
-      stage === "assembling" &&
-      motionMode === "interactive"
-    ) {
-      construction.current.rotation.y = state.clock.elapsedTime * 0.55;
-    }
-  });
-
-  return (
-    <group
-      position={[position.x, 0, position.z]}
-      onClick={(event) => {
-        event.stopPropagation();
-        onSelect(node.id);
-      }}
-    >
-      <mesh position={[0, position.height / 2 + 0.2, 0]}>
-        <cylinderGeometry args={[0.13, 0.52, position.height, 6]} />
-        <meshStandardMaterial
-          color={stage === "blueprint" ? "#4b442c" : "#9a792d"}
-          metalness={0.92}
-          roughness={0.22}
-          wireframe={stage === "blueprint" || stage === "sealed"}
-          transparent={stage === "blueprint" || stage === "sealed"}
-          opacity={stage === "sealed" ? 0.28 : stage === "blueprint" ? 0.62 : 1}
-        />
-      </mesh>
-      <mesh position={[0, position.height + 0.38, 0]} scale={selected ? 0.52 : 0.4}>
-        <octahedronGeometry args={[0.62, 0]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={node.state === "locked" ? 0.08 : selected ? 1.6 : 0.72}
-          metalness={0.35}
-          roughness={0.18}
-        />
-      </mesh>
-      <mesh position={[0, 0.24, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[selected ? 0.88 : 0.76, 0.035, 8, 32]} />
-        <meshBasicMaterial color={color} transparent opacity={selected ? 1 : 0.5} />
-      </mesh>
-      {stage === "assembling" && (
-        <group ref={construction} position={[0, position.height * 0.55, 0]}>
-          {[0.52, 0.76, 1].map((scale, index) => (
-            <mesh
-              key={scale}
-              position={[0, index * 0.48 - 0.42, 0]}
-              rotation={[Math.PI / 2, index * 0.45, 0]}
-            >
-              <torusGeometry args={[scale, 0.026, 6, 24]} />
-              <meshBasicMaterial color="#64dcff" transparent opacity={0.82} />
-            </mesh>
-          ))}
-        </group>
-      )}
-    </group>
-  );
-}
-
-function CommandSpire({ workers }: { workers: CityWorkers | null }) {
-  const liveColor = workers?.active ? "#64dcff" : "#53635c";
-
-  return (
-    <group>
-      <mesh position={[0, 0.18, 0]}>
-        <cylinderGeometry args={[1.55, 2.2, 0.36, 12]} />
-        <meshStandardMaterial color="#6f5725" metalness={0.95} roughness={0.22} />
-      </mesh>
-      <mesh position={[0, 2.4, 0]}>
-        <cylinderGeometry args={[0.16, 1.05, 4.5, 6]} />
-        <meshStandardMaterial color="#a98735" metalness={0.92} roughness={0.2} />
-      </mesh>
-      <mesh position={[0, 4.95, 0]} rotation={[0, Math.PI / 4, 0]}>
-        <octahedronGeometry args={[0.82, 0]} />
-        <meshStandardMaterial
-          color={liveColor}
-          emissive={liveColor}
-          emissiveIntensity={workers?.active ? 1.45 : 0.18}
-          metalness={0.35}
-          roughness={0.14}
-        />
-      </mesh>
-      {[1.7, 2.25].map((radius) => (
-        <mesh key={radius} position={[0, 0.42, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[radius, 0.055, 10, 64]} />
-          <meshBasicMaterial color="#ffd45a" transparent opacity={0.72} />
-        </mesh>
-      ))}
-      {workers?.slots.map((slot, index) => {
-        const angle = (index / Math.max(1, workers.capacity)) * Math.PI * 2;
-        const color = slot.state === "busy" ? "#00f5a0" : "#34483f";
-        return (
-          <mesh
-            key={slot.slot}
-            position={[Math.cos(angle) * 2.7, 0.32, Math.sin(angle) * 2.7]}
-            rotation={[0, -angle, Math.PI / 4]}
-          >
-            <boxGeometry args={[0.34, 0.34, 0.34]} />
-            <meshStandardMaterial
-              color={color}
-              emissive={color}
-              emissiveIntensity={slot.state === "busy" ? 1 : 0.08}
-              metalness={0.7}
-              roughness={0.2}
-            />
-          </mesh>
-        );
-      })}
-    </group>
-  );
-}
-
-function HardwareFoundry({
-  hardware,
-}: {
-  hardware: VerifiedHardwareRegistry | null;
-}) {
-  if (!hardware) return null;
-
-  return (
-    <group name="HardwareFoundry">
-      {hardware.devices.map((device, index) => {
-        const angle = (index / Math.max(1, hardware.devices.length)) * Math.PI * 2;
-        const radius = 14.7 + (index % 2) * 1.4;
-        const color = HARDWARE_COLORS[device.state];
-        const active = device.state === "online";
-        return (
-          <group
-            key={device.id}
-            name={`fpga-${device.id}`}
-            position={[Math.cos(angle) * radius, 0, Math.sin(angle) * radius]}
-            rotation={[0, -angle + Math.PI / 2, 0]}
-          >
-            <mesh position={[0, 0.18, 0]}>
-              <cylinderGeometry args={[1.45, 1.8, 0.36, 8]} />
-              <meshStandardMaterial color="#6f5725" metalness={0.94} roughness={0.2} />
-            </mesh>
-            <mesh position={[0, 0.52, 0]}>
-              <boxGeometry args={[1.65, 0.34, 1.2]} />
-              <meshStandardMaterial
-                color={color}
-                emissive={color}
-                emissiveIntensity={active ? 1.15 : device.state === "programmed" ? 0.5 : 0.2}
-                metalness={0.72}
-                roughness={0.2}
-                wireframe={device.state === "synthesised"}
-              />
-            </mesh>
-            {[-0.58, 0.58].flatMap((x) =>
-              [-0.42, 0.42].map((z) => (
-                <group key={`${x}-${z}`} position={[x, 1.2, z]}>
-                  <mesh>
-                    <cylinderGeometry args={[0.08, 0.18, 1.35, 5]} />
-                    <meshStandardMaterial color="#9a792d" metalness={0.92} roughness={0.18} />
-                  </mesh>
-                  <mesh position={[0, 0.82, 0]}>
-                    <octahedronGeometry args={[0.18, 0]} />
-                    <meshStandardMaterial
-                      color={color}
-                      emissive={color}
-                      emissiveIntensity={active ? 1.4 : 0.42}
-                    />
-                  </mesh>
-                </group>
-              )),
-            )}
-            <mesh position={[0, 0.42, 0]} rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[2.05, 0.035, 8, 56]} />
-              <meshBasicMaterial color={color} transparent opacity={active ? 0.88 : 0.42} />
-            </mesh>
-          </group>
-        );
-      })}
-    </group>
-  );
-}
-
-function ResearchCityScene({
-  researchNodes,
-  model,
-  constructionPlan,
-  hardware,
-  workers,
-  selectedId,
-  onSelect,
-  motionMode,
-}: {
-  researchNodes: CityResearchNode[];
-  model: ResearchCityModel;
-  constructionPlan: ConstructionPlan;
-  hardware: VerifiedHardwareRegistry | null;
-  workers: CityWorkers | null;
-  selectedId: string;
-  onSelect: (id: string) => void;
-  motionMode: "static" | "interactive";
-}) {
-  const constructionById = useMemo(
-    () =>
-      new Map(constructionPlan.structures.map((structure) => [structure.id, structure])),
-    [constructionPlan.structures],
-  );
-  const routeState = useMemo(
-    () =>
-      new Map(
-        constructionPlan.routes.map((route) => [
-          `${route.from}-${route.to}`,
-          route.state,
-        ]),
-      ),
-    [constructionPlan.routes],
-  );
-  const constructionActive =
-    motionMode === "interactive" && constructionPlan.summary.assembling > 0;
-
-  return (
-    <>
-      <ConstructionClock enabled={constructionActive} />
-      <color attach="background" args={["#010706"]} />
-      <fog attach="fog" args={["#010706", 18, 42]} />
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[8, 14, 6]} intensity={2.2} color="#fff0bf" />
-      <pointLight position={[0, 7, 0]} intensity={55} distance={24} color="#64dcff" />
-
-      <gridHelper args={[48, 48, "#174c3a", "#09251d"]} position={[0, -0.01, 0]} />
-      {model.layers.map((layer, layerIndex) => (
-        <mesh
-          key={layer}
-          position={[0, 0.02, 0]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <torusGeometry args={[3.4 + layerIndex * 2.15, 0.018, 6, 128]} />
-          <meshBasicMaterial color="#3b9b78" transparent opacity={0.25} />
-        </mesh>
-      ))}
-
-      {model.routes.map(({ edge, from, to }) => {
-        const state = routeState.get(`${edge.from}-${edge.to}`) ?? "dormant";
-        return (
-          <Line
-            key={`${edge.from}-${edge.to}`}
-            points={[
-              [from.x, 0.14, from.z],
-              [to.x, 0.14, to.z],
-            ]}
-            color={
-              state === "energized"
-                ? "#00f5a0"
-                : state === "assembling"
-                  ? "#64dcff"
-                  : "#263a32"
-            }
-            lineWidth={state === "dormant" ? 0.35 : 0.72}
-            transparent
-            opacity={state === "dormant" ? 0.15 : 0.42}
-          />
-        );
-      })}
-
-      <CommandSpire workers={workers} />
-      <HardwareFoundry hardware={hardware} />
-      <InstancedLaboratoryFoundations model={model} />
-      {researchNodes.map((node) => {
-        const position = model.positions.get(node.id);
-        const structure = constructionById.get(node.id);
-        if (!position || !structure) return null;
-        return (
-          <ResearchLaboratory
-            key={node.id}
-            node={node}
-            position={position}
-            stage={structure.stage}
-            motionMode={motionMode}
-            selected={node.id === selectedId}
-            onSelect={onSelect}
-          />
-        );
-      })}
-
-      <OrbitControls
-        makeDefault
-        enableDamping={motionMode === "interactive"}
-        enablePan={false}
-        minDistance={10}
-        maxDistance={34}
-        minPolarAngle={0.4}
-        maxPolarAngle={1.35}
-        target={[0, 1.2, 0]}
-      />
-    </>
-  );
 }
 
 export function QueenResearchCity({
@@ -529,6 +116,40 @@ export function QueenResearchCity({
   const selectedStructure = constructionPlan.structures.find(
     (structure) => structure.id === selectedNode?.id,
   );
+
+  // The 3D city is a Babylon scene (B-4) behind a plain canvas: mounted once,
+  // updated on every change of its inputs, rendering on demand. The DOM
+  // around it (queue, foundry, console, laboratories) is React as before.
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sceneRef = useRef<ResearchCitySceneHandle | null>(null);
+  const available = cityModel.available && constructionPlan.available;
+  const sceneInput = useMemo<ResearchCitySceneInput>(
+    () => ({
+      researchNodes,
+      model: cityModel,
+      constructionPlan,
+      hardware,
+      workers,
+      selectedId: selectedNode?.id ?? "",
+      motionMode,
+    }),
+    [researchNodes, cityModel, constructionPlan, hardware, workers, selectedNode, motionMode],
+  );
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !available) return;
+    const handle = mountResearchCity(canvas, sceneInput, setSelectedId);
+    sceneRef.current = handle;
+    return () => {
+      handle.dispose();
+      sceneRef.current = null;
+    };
+    // mounted once per canvas; updates flow through the effect below
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [available]);
+  useEffect(() => {
+    sceneRef.current?.update(sceneInput);
+  }, [sceneInput]);
 
   if (!cityModel.available || !constructionPlan.available) {
     return (
@@ -670,26 +291,7 @@ export function QueenResearchCity({
 
       <div className="queen27-city-stage">
         <div className="queen27-city-canvas" aria-hidden="true">
-          <Canvas
-            frameloop="demand"
-            dpr={[1, 1.5]}
-            resize={{
-              polyfill: ImmediateResizeObserver as unknown as typeof ResizeObserver,
-            }}
-            camera={{ position: [0, 15, 22], fov: 42, near: 0.1, far: 80 }}
-            gl={{ antialias: true, powerPreference: "high-performance" }}
-          >
-            <ResearchCityScene
-              researchNodes={researchNodes}
-              model={cityModel}
-              constructionPlan={constructionPlan}
-              hardware={hardware}
-              workers={workers}
-              selectedId={selectedNode?.id ?? ""}
-              onSelect={setSelectedId}
-              motionMode={motionMode}
-            />
-          </Canvas>
+          <canvas ref={canvasRef} />
         </div>
 
         <aside className="queen27-city-console">

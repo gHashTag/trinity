@@ -41,15 +41,19 @@ if (!existsSync(cityPath)) {
   errors.push('src/components/QueenResearchCity.tsx is missing')
 } else {
   const city = readFileSync(cityPath, 'utf8')
-  requirePattern(city, /from\s+["']@react-three\/fiber["']/, 'City must use React Three Fiber')
-  requirePattern(city, /frameloop=["']demand["']/, 'City canvas must render on demand')
-  requirePattern(city, /dpr=\{\[1,\s*1\.5\]\}/, 'City canvas DPR must be capped at 1.5')
+  const scenePath = `${root}/src/components/queenResearchCityScene.ts`
+  const sceneSource = existsSync(scenePath) ? readFileSync(scenePath, 'utf8') : ''
+  requirePattern(sceneSource, /from\s+["']@babylonjs\/core\//, 'City scene must draw with Babylon.js (the comb\'s engine); three.js left the Queen page')
+  requirePattern(city, /mountResearchCity\(/, 'City must mount the Babylon scene')
+  requirePattern(sceneSource, /const requestRender = /, 'City scene must render on demand (one frame per change), never an idle loop')
+  if (/runRenderLoop\(/.test(sceneSource)) errors.push('City scene must not run an idle render loop')
+  requirePattern(sceneSource, /DPR_CAP\s*=\s*1\.5/, 'City canvas DPR must be capped at 1.5')
   requirePattern(city, /buildResearchCityModel\(/, 'City must use the executable live-graph model')
   requirePattern(city, /useReducedMotion\(/, 'City must read the reduced-motion preference')
   requirePattern(city, /data-motion=\{motionMode\}/, 'City must expose its effective motion mode')
   requirePattern(
-    city,
-    /enableDamping=\{motionMode\s*===\s*["']interactive["']\}/,
+    sceneSource,
+    /camera\.inertia = input\.motionMode === "interactive" \? 0\.9 : 0/,
     'Reduced-motion mode must disable inertial camera damping',
   )
   requirePattern(city, /aria-pressed=/, 'City needs keyboard-operable DOM research controls')
@@ -58,8 +62,8 @@ if (!existsSync(cityPath)) {
     errors.push('City must not invent random, sample, fake, mock, or demo nodes')
   }
   requirePattern(
-    city,
-    /if\s*\(!hardware\)\s*return null/,
+    sceneSource,
+    /\(hardware\?\.devices \?\? \[\]\)\.forEach/,
     'City must render zero hardware structures without a verified registry',
   )
 }

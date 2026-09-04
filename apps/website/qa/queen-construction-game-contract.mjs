@@ -68,11 +68,13 @@ if (!existsSync(cityPath)) {
   errors.push('Research City component is missing')
 } else {
   const city = readFileSync(cityPath, 'utf8')
-  requirePattern(city, /<instancedMesh\b/, 'Laboratory foundations must use instanced rendering')
+  const scenePath = `${root}/src/components/queenResearchCityScene.ts`
+  const sceneSource = existsSync(scenePath) ? readFileSync(scenePath, 'utf8') : ''
+  requirePattern(sceneSource, /thinInstanceSetBuffer\(/, 'Laboratory foundations must use instanced rendering')
   requirePattern(city, /buildConstructionPlan\(/, 'City must consume the executable construction plan')
   requirePattern(city, /queen27-city-build-queue/, 'City must expose a native construction queue')
   requirePattern(city, /aria-pressed=/, 'Construction selection must be keyboard operable')
-  requirePattern(city, /CONSTRUCTION_FPS\s*=\s*12/, 'Interactive construction rendering must be capped at 12 FPS')
+  requirePattern(sceneSource, /CONSTRUCTION_FPS\s*=\s*12/, 'Interactive construction rendering must be capped at 12 FPS')
   if (/Math\.random|fictional resource|ore count/i.test(city)) {
     errors.push('Construction UI must not invent resources or random progress')
   }
