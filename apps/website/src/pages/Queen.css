@@ -3766,6 +3766,16 @@ main:where(.queen27-page.is-shell) section {
   text-overflow: ellipsis;
 }
 
+.queen27-page.is-shell .queen27-hud-vp-stale {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border: 1px solid #ff9f43;
+  color: #ff9f43;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
 .queen27-page.is-shell .queen27-hud-vp-tools {
   display: flex;
   gap: 4px;

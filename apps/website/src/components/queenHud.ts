@@ -306,3 +306,15 @@ export function placeCards<T extends { number: number }>(
   }
   return { placed, ledger };
 }
+
+/**
+ * Seconds since the last successful poll, but only once a poll has FAILED
+ * after a first success: that is the moment the numbers on screen stop being
+ * the wire's and the reader must be told (P1-12). Before the first success
+ * there is nothing stale (the tiles read dashes); while polls succeed there is
+ * nothing stale either. Null means "no badge".
+ */
+export function staleAge(nowMs: number, syncedAt: Date | null, error: string | null): number | null {
+  if (error === null || syncedAt === null) return null;
+  return Math.max(0, Math.floor((nowMs - syncedAt.getTime()) / 1000));
+}

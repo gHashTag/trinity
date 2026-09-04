@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { decisionDetail, fieldShape, placeCards, rewriteEndpoints, roundStrip, skipReasonWords } from "../src/components/queenHud.ts";
+import { decisionDetail, fieldShape, placeCards, rewriteEndpoints, roundStrip, skipReasonWords, staleAge } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -49,6 +49,9 @@ check(pb.placed[0]?.number === 5 && pb.placed[1]?.number === 4 && pb.placed[2]?.
 const pc = placeCards(pb.ledger, [{ number: 6 }, { number: 3 }, { number: 5 }], fieldShape(3).cellCount);
 check(pc.placed[0]?.number === 5 && pc.placed[1] === null && pc.placed[2]?.number === 3 && pc.placed[3]?.number === 6 && pa.ledger.size === 3, "a departed card frees its cell, nobody moves, the input ledger is untouched");
 check(placeCards(new Map([[7, 500]]), [{ number: 7 }], 27).placed[0]?.number === 7, "an index outside the field is re-placed");
+const t0 = Date.parse("2026-09-04T09:00:00Z");
+check(staleAge(t0 + 42_000, new Date(t0), "Failed to fetch") === 42, "stale age is seconds since the last success once a poll fails");
+check(staleAge(t0 + 42_000, new Date(t0), null) === null && staleAge(t0, null, "Failed to fetch") === null, "no badge while polls succeed or before the first success");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

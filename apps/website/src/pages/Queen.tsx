@@ -33,6 +33,7 @@ import {
   type HudView,
   fieldShape,
   placeCards,
+  staleAge,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -402,6 +403,7 @@ const COPY = {
     hudRefuse: "REFUSE",
     hudSchedulerOff: "SCHEDULER OFF",
     hudOverdue: "OVERDUE",
+    hudStale: "STALE",
     hudDispatched: "dispatched",
     hudOpenIssue: "OPEN ISSUE",
     hudCopyLink: "COPY LINK",
@@ -623,6 +625,7 @@ const COPY = {
     hudRefuse: "ОТКАЗ",
     hudSchedulerOff: "ПЛАНИРОВЩИК ВЫКЛЮЧЕН",
     hudOverdue: "ПРОСРОЧЕН",
+    hudStale: "УСТАРЕЛО",
     hudDispatched: "запущен",
     hudOpenIssue: "ОТКРЫТЬ ЗАДАЧУ",
     hudCopyLink: "КОПИРОВАТЬ ССЫЛКУ",
@@ -817,9 +820,11 @@ function useQueenActivity(): {
 function useQueenResearch(): {
   data: ResearchGraph | null;
   error: string | null;
+  syncedAt: Date | null;
 } {
   const [data, setData] = useState<ResearchGraph | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [syncedAt, setSyncedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -834,6 +839,7 @@ function useQueenResearch(): {
         if (active) {
           setData(next);
           setError(null);
+          setSyncedAt(new Date());
         }
       } catch (nextError) {
         if (active) {
@@ -852,7 +858,7 @@ function useQueenResearch(): {
     };
   }, []);
 
-  return { data, error };
+  return { data, error, syncedAt };
 }
 
 function useQueenHardware(): {
@@ -1734,6 +1740,13 @@ export default function Queen() {
   const doneColumnTitle = (
     boardColumns.find((column) => column.key === "done")?.title ?? c.hudDone
   ).toUpperCase();
+  // STALE badge (P1-12): a poll failed after a first success, so the board or
+  // the research numbers on screen are older than the wire. The age is the
+  // older of the two; the raw error lives in the badge's title.
+  const boardStale = staleAge(now, boardState.syncedAt, boardState.error);
+  const researchStale = staleAge(now, researchState.syncedAt, researchState.error);
+  const staleSeconds =
+    boardStale === null ? researchStale : researchStale === null ? boardStale : Math.max(boardStale, researchStale);
   const roundSeconds =
     board?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
   const lastRoundAt = board?.pulse.lastRoundAt ?? decision?.decidedAt ?? null;
@@ -2323,6 +2336,15 @@ export default function Queen() {
             ///
           </span>
           <span className="queen27-hud-vp-view">{viewLabel}</span>
+          {staleSeconds !== null && (
+            <span
+              className="queen27-hud-vp-stale"
+              data-stale={staleSeconds}
+              title={boardState.error ?? researchState.error ?? undefined}
+            >
+              {c.hudStale} · {formatCountdown(staleSeconds)}
+            </span>
+          )}
           <div className="queen27-hud-vp-tools">
             {view === "comb" && (
               <>
