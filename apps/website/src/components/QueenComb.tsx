@@ -176,8 +176,10 @@ const PETALS: Pt[][] = PETAL_PATHS.map((d) =>
   ]),
 );
 
-const EDGES: Array<[number, number, number, number]> = [];
-const NODES: Array<{ x: number; y: number; ring: number }> = [];
+// eslint-disable-next-line react-refresh/only-export-components -- the mark's geometry is shared with the Babylon comb
+export const EDGES: Array<[number, number, number, number]> = [];
+// eslint-disable-next-line react-refresh/only-export-components -- the mark's geometry is shared with the Babylon comb
+export const NODES: Array<{ x: number; y: number; ring: number }> = [];
 {
   const seen = new Map<string, { x: number; y: number; ring: number; deg: number }>();
   PETALS.forEach((poly, petalIndex) => {
@@ -379,7 +381,8 @@ function ready(image: HTMLImageElement | undefined): image is HTMLImageElement {
 }
 
 const GLINT: Record<string, HTMLCanvasElement> = {};
-const NINE = [
+// eslint-disable-next-line react-refresh/only-export-components -- the mark's geometry is shared with the Babylon comb
+export const NINE = [
   ["#FFD45A", "#00FF88", "#64DCFF"],
   ["#d4af37", "#00e599", "#3f9fc4"],
   ["#FF6B6B", "#ff66aa", "#7c5cff"],

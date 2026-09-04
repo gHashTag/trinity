@@ -44,7 +44,7 @@ const cleanup = () => { try { ws.close(); } catch {} chrome.kill(); server.close
 await call('Page.enable');
 await call('Emulation.setDeviceMetricsOverride', { width: 1272, height: 806, deviceScaleFactor: 1, mobile: true });
 await call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
-await call('Page.navigate', { url: `${ORIGIN}/?touch=1#/queen` });
+await call('Page.navigate', { url: `${ORIGIN}/?touch=1${process.env.QUEEN_ENGINE ? '&engine=' + process.env.QUEEN_ENGINE : ''}#/queen` });
 let ready = false;
 for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-sectors-row').length === 6 && !!document.querySelector('.queen27-comb-field canvas') && !!document.querySelector('.queen27-context-unit-text')`); }
 if (!ready) { console.log('  Queen touch contract: FAIL (page never became ready - board or comb missing)'); cleanup(); process.exit(1); }

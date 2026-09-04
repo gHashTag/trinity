@@ -6,8 +6,7 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
-  type RefObject,
-} from "react";
+  type RefObject, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { QueenComb, queenIndexOf, summariseCells } from "../components/QueenComb";
@@ -40,6 +39,13 @@ import {
   type VerifiedHardwareRegistry,
 } from "../components/queenHardwareRegistry";
 import { TrinityLogo } from "../components/TrinityLogo";
+// The comb is Babylon.js (the user's decision, 2026-09-04). ?engine=canvas keeps
+// the canvas2D comb for one release, for anyone comparing; then it goes.
+const QueenCombBabylon = lazy(() =>
+  import("../components/QueenCombBabylon").then((m) => ({ default: m.QueenCombBabylon })),
+);
+const ENGINE_FLAG =
+  typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("engine") : null;
 import { useI18n } from "../i18n/context";
 import {
   REVIEW_STATES,
@@ -2406,33 +2412,47 @@ export default function Queen() {
               lang={lang}
             />
           ) : boardView === "comb" ? (
-            <QueenComb
-              embedded
-              handleRef={combRef}
-              onPick={handlePick}
-              pickIndex={pickIndex}
-              fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
-              events={events}
-              devices={hardware?.devices ?? null}
-              columns={boardColumns}
-              cards={placedCards}
-              repo={repo}
-              workers={workers}
-              error={boardState.error ?? researchState.error}
-              labels={{
-                aria: c.combView,
-                held: c.combHeld,
-                neutral: c.combNeutral,
-                fog: c.combFog,
-                bees: c.combBees,
-                queen: c.combQueen,
-                queenCell: c.combQueenCell,
-                noBee: c.combNoBee,
-                pick: c.combPick,
-                hint: c.combHint2,
-                offline: c.factoryOffline,
-              }}
-            />
+            ENGINE_FLAG !== "canvas" ? (
+              <Suspense fallback={null}>
+                <QueenCombBabylon
+                  cards={placedCards}
+                  workers={workers}
+                  devices={hardware?.devices ?? null}
+                  onPick={handlePick}
+                  pickIndex={pickIndex}
+                  fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
+                  events={events}
+                />
+              </Suspense>
+            ) : (
+              <QueenComb
+                embedded
+                handleRef={combRef}
+                onPick={handlePick}
+                pickIndex={pickIndex}
+                fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
+                events={events}
+                devices={hardware?.devices ?? null}
+                columns={boardColumns}
+                cards={placedCards}
+                repo={repo}
+                workers={workers}
+                error={boardState.error ?? researchState.error}
+                labels={{
+                  aria: c.combView,
+                  held: c.combHeld,
+                  neutral: c.combNeutral,
+                  fog: c.combFog,
+                  bees: c.combBees,
+                  queen: c.combQueen,
+                  queenCell: c.combQueenCell,
+                  noBee: c.combNoBee,
+                  pick: c.combPick,
+                  hint: c.combHint2,
+                  offline: c.factoryOffline,
+                }}
+              />
+            )
           ) : boardView === "research" ? (
             <TechnologyTree
               c={c}

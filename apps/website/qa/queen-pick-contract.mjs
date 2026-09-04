@@ -51,7 +51,7 @@ listeners.push(async msg => {
 await call('Page.enable');
 await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/public-board*', requestStage: 'Response' }] });
 await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
-await call('Page.navigate', { url: `${ORIGIN}/?pick=1#/queen` });
+await call('Page.navigate', { url: `${ORIGIN}/?pick=1${process.env.QUEEN_ENGINE ? '&engine=' + process.env.QUEEN_ENGINE : ''}#/queen` });
 let ready = false;
 for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-sectors-row').length === 6 && !!document.querySelector('.queen27-comb-field canvas') && !!document.querySelector('.queen27-hud-viewport')`); }
 if (!ready) { console.log('  Queen pick contract: FAIL (page never became ready)'); cleanup(); process.exit(1); }
