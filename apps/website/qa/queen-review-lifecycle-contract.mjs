@@ -85,13 +85,46 @@ if (
   derived.queenReviewPending !== 1 ||
   derived.changesRequested !== 1 ||
   derived.humanEscalation !== 1 ||
-  derived.reconciliationAnomaly !== 2
+  derived.reconciliationAnomaly !== 1
 ) {
-  errors.push(`derived queue counts are wrong: ${JSON.stringify(derived)}`)
+  errors.push(`derived queue counts are wrong (an absent field is not an anomaly): ${JSON.stringify(derived)}`)
 }
-if (lifecycle.reviewStateOf({ column: 'review' }) !== 'reconciliationAnomaly') {
-  errors.push('a legacy ownerless review card must fail visibly to anomaly')
+const unclassifiedOf = (board) => (typeof lifecycle.reviewUnclassified === 'function' ? lifecycle.reviewUnclassified(board) : NaN)
+if (unclassifiedOf({ cards }) !== 1) {
+  errors.push('one review card without reviewState must count as unclassified')
 }
+if (lifecycle.reviewStateOf({ column: 'review' }) !== null) {
+  errors.push('an ownerless review card reads absent (null), never an anomaly the wire did not state')
+}
+if (lifecycle.reviewStateOf({ column: 'review', reviewState: 'not-a-state' }) !== null) {
+  errors.push('an unknown wire state reads absent, never a label')
+}
+// The live ledger on 2026-09-04: every review card lacks the field. No
+// queue may then read 0 - that is the false counter this screen exists to
+// avoid - so every count is null and the unclassified total carries the fact.
+const absent = { cards: [{ column: 'review' }, { column: 'review' }, { column: 'done' }] }
+const absentCounts = lifecycle.reviewCounts(absent)
+if (Object.values(absentCounts).some((count) => count !== null)) {
+  errors.push(`when no review card carries reviewState every queue is null: ${JSON.stringify(absentCounts)}`)
+}
+if (unclassifiedOf(absent) !== 2) {
+  errors.push('the unclassified total is the number of review cards without the field')
+}
+if (Object.values(lifecycle.reviewCounts(null)).some((count) => count !== null)) {
+  errors.push('a missing board reads null in every queue, not 0')
+}
+const emptyColumn = lifecycle.reviewCounts({ cards: [{ column: 'done' }] })
+if (Object.values(emptyColumn).some((count) => count !== 0)) {
+  errors.push('an empty review column is an honest 0 in every queue')
+}
+requirePattern(
+  /reviewQueueCounts\[reviewState\] \?\? "—"/,
+  'the REVIEW QUEUE menu prints a dash for a null queue count',
+)
+requirePattern(
+  /reviewUnclassified\(board\)/,
+  'the REVIEW QUEUE menu carries the unclassified total',
+)
 const published = {
   queenReviewPending: 4,
   changesRequested: 3,

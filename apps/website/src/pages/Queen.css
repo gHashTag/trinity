@@ -405,7 +405,7 @@
 
 .queen27-review-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 1px;
   margin-bottom: 0.35rem;
   background: var(--border);
@@ -450,6 +450,10 @@
 .queen27-review-summary .is-humanEscalation b,
 .queen27-review-summary .is-reconciliationAnomaly b {
   color: #ff6b6b;
+}
+
+.queen27-review-summary .is-unclassified b {
+  color: var(--muted);
 }
 
 .queen27-activity-stream {

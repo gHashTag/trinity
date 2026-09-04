@@ -30,21 +30,58 @@ export function emptyReviewCounts(): Record<QueenReviewState, number> {
   };
 }
 
-export function reviewStateOf(card: ReviewCard): QueenReviewState {
-  // Old public ledgers supplied only `column: review`. Treating an unknown
-  // owner as Queen debt recreates the false counter this screen is fixing, so
-  // legacy/unclassified cards are anomalies until the additive field arrives.
-  return card.reviewState ?? "reconciliationAnomaly";
+export function reviewStateOf(card: ReviewCard): QueenReviewState | null {
+  // The public ledger supplies `column: review` and, additively, a
+  // `reviewState`. On 2026-09-04 no review card carried the field. An absent
+  // field is absent: it reads as a dash on the card and as null in the
+  // queues. Naming it "reconciliationAnomaly" would print a ledger failure
+  // nobody measured, and defaulting it to Queen debt would recreate the
+  // false counter this model exists to avoid.
+  const state = card.reviewState;
+  return state && REVIEW_STATES.includes(state) ? state : null;
+}
+
+export function reviewUnclassified(board: ReviewLedger | null): number | null {
+  if (!board) return null;
+  let count = 0;
+  for (const card of board.cards) {
+    if (card.column === "review" && reviewStateOf(card) === null) count += 1;
+  }
+  return count;
 }
 
 export function reviewCounts(
   board: ReviewLedger | null,
-): Record<QueenReviewState, number> {
-  const counts = emptyReviewCounts();
-  if (!board) return counts;
+): Record<QueenReviewState, number | null> {
+  if (!board) {
+    return {
+      queenReviewPending: null,
+      changesRequested: null,
+      humanEscalation: null,
+      reconciliationAnomaly: null,
+    };
+  }
   if (board.reviewQueues) return board.reviewQueues;
+  const counts = emptyReviewCounts();
+  let stated = 0;
+  let inReview = 0;
   for (const card of board.cards) {
-    if (card.column === "review") counts[reviewStateOf(card)] += 1;
+    if (card.column !== "review") continue;
+    inReview += 1;
+    const state = reviewStateOf(card);
+    if (state === null) continue;
+    stated += 1;
+    counts[state] += 1;
+  }
+  // Cards sit in review but none says which queue it is in: the wire has not
+  // stated the fact, so no queue may read 0. An empty column is an honest 0.
+  if (inReview > 0 && stated === 0) {
+    return {
+      queenReviewPending: null,
+      changesRequested: null,
+      humanEscalation: null,
+      reconciliationAnomaly: null,
+    };
   }
   return counts;
 }
