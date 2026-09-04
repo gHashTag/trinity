@@ -39,6 +39,7 @@ import {
   pathInTitle,
   ringOrder,
   type HudModule,
+  withOpenIssues,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -713,18 +714,24 @@ function useQueenStatus(): LoadState {
  * The repository's modules (M-2): public/queen/modules.json, a scan stamped
  * with its commit, until /queen/public-modules exists on the server (M-1).
  */
-function useQueenModules(): { data: { commit: string | null; generatedAt: string; modules: HudModule[] } | null; error: string | null } {
-  const [data, setData] = useState<{ commit: string | null; generatedAt: string; modules: HudModule[] } | null>(null);
+function useQueenModules(): { data: { commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null; error: string | null } {
+  const [data, setData] = useState<{ commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
+    // The server's scan first (/queen/public-modules, M-1); the loop's
+    // snapshot in public/queen/modules.json only when the wire has none.
+    const readFrom = async (url: string, source: "wire" | "file") => {
+      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const next = (await response.json()) as { commit: string | null; generatedAt: string; modules: HudModule[] };
+      if (!Array.isArray(next.modules) || next.modules.length === 0) throw new Error("no modules");
+      return { ...next, source };
+    };
     const read = () =>
-      fetch("./queen/modules.json", { headers: { Accept: "application/json" }, cache: "no-store" })
-        .then(async (response) => {
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const next = (await response.json()) as { commit: string | null; generatedAt: string; modules: HudModule[] };
-          if (active) { setData(next); setError(null); }
-        })
+      readFrom(`${QUEEN_API}/queen/public-modules`, "wire")
+        .catch(() => readFrom("./queen/modules.json", "file"))
+        .then((next) => { if (active) { setData(next); setError(null); } })
         .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
     void read();
     const timer = window.setInterval(read, MODULES_POLL_MS);
@@ -1743,7 +1750,9 @@ export default function Queen() {
   // from facts (an issue in progress on it, an open issue, recently touched,
   // dormant), so territories and the buildings' kinds follow.
   const modulesState = useQueenModules();
-  const modules = modulesState.data?.modules ?? EMPTY_MODULES;
+  const rawModules = modulesState.data?.modules ?? EMPTY_MODULES;
+  // the board knows the issues; every row gets its open issues from the cards
+  const modules = useMemo(() => withOpenIssues(rawModules, cards), [rawModules, cards]);
   const runningIssues = useMemo(() => new Set(cards.filter((c) => c.column === "running").map((c) => c.number)), [cards]);
   const moduleCards = useMemo<QueenCard[]>(() => modules.map((m) => moduleCard(m, now, runningIssues) as QueenCard), [modules, runningIssues, now]);
   const modulesById = useMemo(() => { const map = new Map<number, HudModule>(); moduleCards.forEach((c, i) => map.set(c.number, modules[i])); return map; }, [moduleCards, modules]);
@@ -2389,7 +2398,7 @@ export default function Queen() {
         data-pick-number={pickedCard?.number ?? undefined}
         data-pick-territory={livePick?.territory ?? undefined}
         data-pick-module={livePick?.module?.path ?? undefined}
-        data-modules={modulesState.data ? `${modules.length}@${modulesState.data.commit ?? "?"}` : undefined}
+        data-modules={modulesState.data ? `${modules.length}@${modulesState.data.commit ?? "?"}:${modulesState.data.source}` : undefined}
       >
         <header className="queen27-hud-vp-head">
           <span className="queen27-hud-vp-title">

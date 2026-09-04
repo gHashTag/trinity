@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { buildingPlan, buildingTint, cellGeometry, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash } from "../src/components/queenHud.ts";
+import { buildingPlan, buildingTint, cellGeometry, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -88,6 +88,14 @@ const fresh = buildingTint(M({ lastTouched: "2026-09-03T00:00:00Z" }), T2), old 
 check(fresh[0] > old[0] && fresh[2] > old[2] && old[2] > old[0], "a fresh module is warm and bright, a dormant one cold and dim");
 check(buildingTint(M({ lastTouched: "2026-09-03T00:00:00Z", openIssues: [1, 2] }), T2)[0] < fresh[0] && buildingTint(M({ lastTouched: "2026-09-03T00:00:00Z", openIssues: [1, 2, 3, 4, 5] }), T2)[0] >= 0.5, "open issues wear the paint down, never below a floor");
 check(buildingPlan(M({ functions: 700, lines: 5000 })).parts.filter((p) => p.model === "band").length === 3 && buildingPlan(M({ functions: 10, lines: 100 })).parts.filter((p) => p.model === "band").length === 0, "window bands follow the function bands, capped at three");
+// open issues come from the board, for the wire's rows and the snapshot alike (M-1)
+const enriched = withOpenIssues([M({ path: "agent-server" }), M({ path: "agent-server/apps/server/src" })], [
+  { number: 7, title: "trios/agent-server/apps/server/src/lib/x.ts breaks L3", column: "review" },
+  { number: 8, title: "trios/agent-server/apps/server/src/lib/x.ts again", column: "done" },
+  { number: 9, title: "agent-server/README.md is stale", column: "backlog" },
+  { number: 10, title: "no path at all", column: "running" },
+]);
+check(enriched[1].openIssues.join(",") === "7" && enriched[0].openIssues.join(",") === "9", "an open issue lands on the longest module its path names; done cards and pathless titles do not");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
