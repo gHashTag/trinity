@@ -21,10 +21,13 @@ type Pt = [number, number];
 
 // Fill by territory, from the shell's palette: green held, cyan neutral, cold fog.
 const FILL: Record<Territory, string> = {
-  held: "rgba(0,255,136,.5)",
-  neutral: "rgba(100,220,255,.32)",
-  fog: "rgba(255,107,107,.14)",
+  held: "rgba(0,255,136,.85)",
+  neutral: "rgba(100,220,255,.75)",
+  fog: "rgba(255,107,107,.6)",
 };
+// the platform under the buildings, and its rim (the comb's steel plate)
+const PLATE = "#3a4150";
+const PLATE_RIM = "#12161d";
 const EDGE = "rgba(255,255,255,.12)";
 const GOLD_FALLBACK = "#ffd700";
 const PAD = 6;
@@ -102,13 +105,31 @@ function draw(
 
   ctx.clearRect(0, 0, width, height);
   ctx.lineJoin = "round";
-  ctx.strokeStyle = EDGE;
-  ctx.lineWidth = 1;
+  // The map of the base (the user's StarCraft reference): the platform as a
+  // plate, one square per building coloured by its territory, nothing on a
+  // cell without a card. The cells keep their triangles for hit-testing.
+  if (cells.length > 0) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const c of cells) {
+      const k = corners(c);
+      for (const [px, py] of k) { minX = Math.min(minX, px); maxX = Math.max(maxX, px); minY = Math.min(minY, py); maxY = Math.max(maxY, py); }
+    }
+    const [ax, ay] = toCanvas([minX - S * 0.6, minY - S * 0.6]);
+    const [bx, by] = toCanvas([maxX + S * 0.6, maxY + S * 0.6]);
+    ctx.fillStyle = PLATE_RIM;
+    ctx.fillRect(ax - 2, ay - 2, bx - ax + 4, by - ay + 4);
+    ctx.fillStyle = PLATE;
+    ctx.fillRect(ax, ay, bx - ax, by - ay);
+    ctx.strokeStyle = EDGE;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(ax + 0.5, ay + 0.5, bx - ax - 1, by - ay - 1);
+  }
+  const foot = Math.max(2, S * 0.36 * scale);
   for (const c of cells) {
-    trace(c);
+    if (c.cardNumber === null) continue;
+    const [cx, cy] = toCanvas([c.x, c.y]);
     ctx.fillStyle = FILL[c.own];
-    ctx.fill();
-    ctx.stroke();
+    ctx.fillRect(cx - foot / 2, cy - foot / 2, foot, foot);
   }
 
   if (picked !== null && picked >= 0 && picked < cells.length) {
