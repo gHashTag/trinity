@@ -567,3 +567,38 @@ export function countdownFor(clientNowMs: number, offsetMs: number | null, lastR
   const elapsed = Math.max(0, (serverNow - last) / 1000);
   return { known: true, elapsed, overdue: elapsed > roundSeconds, remaining: Math.max(0, roundSeconds - elapsed) };
 }
+
+/**
+ * The activity buffer after a poll (P0-9). Pure: the newest poll's events
+ * first in the wire's own order, then the events only the previous buffer
+ * held; a stable sort by time, newest first, so same-second ties keep the
+ * newest poll's order (Array.prototype.sort is stable) instead of letting the
+ * older copy win; an event present in both keeps the newest copy; the feed
+ * keeps `cap` events by count, the bell's alerts keep the window by age
+ * against `nowMs` (no clock is read here).
+ */
+export function mergeActivity<E extends { id: string; kind: HudEventKind; at: string }>(
+  previous: { events: E[]; alerts: E[] } | null,
+  next: { cursor: number; events: E[] },
+  nowMs: number,
+  cap = 120,
+  windowMs = ALERT_WINDOW_MS,
+): { cursor: number; events: E[]; alerts: E[] } {
+  const time = (event: E) => {
+    const t = Date.parse(event.at);
+    return Number.isFinite(t) ? t : Number.NEGATIVE_INFINITY;
+  };
+  const newest = new Set(next.events.map((event) => event.id));
+  const ordered = [...next.events, ...(previous?.events ?? []).filter((event) => !newest.has(event.id))];
+  const seen = new Set<string>();
+  const events = ordered
+    .filter((event) => (seen.has(event.id) ? false : (seen.add(event.id), true)))
+    .sort((left, right) => time(right) - time(left))
+    .slice(0, cap);
+  const seenAlerts = new Set<string>();
+  const alerts = [...next.events, ...(previous?.alerts ?? []).filter((event) => !newest.has(event.id))]
+    .filter((event) => isAlertKind(event.kind) && nowMs - time(event) <= windowMs)
+    .filter((event) => (seenAlerts.has(event.id) ? false : (seenAlerts.add(event.id), true)))
+    .sort((left, right) => time(right) - time(left));
+  return { cursor: next.cursor, events, alerts };
+}

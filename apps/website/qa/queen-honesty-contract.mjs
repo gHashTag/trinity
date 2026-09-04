@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { buildingPlan, buildingTint, cellGeometry, countdownFor, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { buildingPlan, buildingTint, cellGeometry, countdownFor, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -105,6 +105,15 @@ const noOffset = countdownFor(fastClient, null, "2026-09-04T17:56:00Z", 300);
 check(withOffset.known && !withOffset.overdue && Math.round(withOffset.remaining) === 60, "a client two minutes fast still reads the server's 60 s remaining");
 check(noOffset.known && noOffset.overdue, "without the header the same client would read OVERDUE (the defect P1-30 removes)");
 check(!countdownFor(srv, 0, null, 300).known && !countdownFor(srv, 0, "2026-09-04T17:56:00Z", 0).known, "no round length or no last round: unknown, never a fabricated clock");
+// the activity merge is pure and the newest poll's wire order wins same-second ties (P0-9)
+const TIE = "2026-09-04T18:00:00.000Z";
+const evAt = (id, at = TIE, kind = "tool") => ({ id, kind, at, issue: null, title: id, state: null });
+const prevBuf = { events: [evAt("p1"), evAt("p2", "2026-09-04T17:59:00.000Z")], alerts: [evAt("a-old", "2026-09-04T16:30:00.000Z", "error")] };
+const merged = mergeActivity(prevBuf, { cursor: 9, events: [evAt("n1"), evAt("n2"), evAt("p1", TIE, "review")] }, Date.parse("2026-09-04T18:00:30.000Z"));
+check(merged.events.map((e) => e.id).join(",") === "n1,n2,p1,p2", "same-second ties keep the newest poll's wire order, then the older buffer, then by time");
+check(merged.events.find((e) => e.id === "p1")?.kind === "review" && merged.events.length === 4, "an event in both polls keeps the newest copy, once");
+check(merged.alerts.map((e) => e.id).join(",") === "p1" && merged.cursor === 9, "the bell keeps alert kinds inside the window and drops the hour-old one; the cursor is the wire's");
+check(mergeActivity(null, { cursor: 1, events: Array.from({ length: 130 }, (_, i) => evAt(`e${i}`, new Date(Date.parse(TIE) - i * 1000).toISOString())) }, Date.parse(TIE)).events.length === 120, "the feed keeps 120 by count, newest first");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
