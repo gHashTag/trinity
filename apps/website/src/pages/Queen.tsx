@@ -238,7 +238,7 @@ const COPY = {
     unavailable: "BACKEND UNAVAILABLE",
     checking: "CHECKING BACKEND",
     scheduler: "Scheduler",
-    every: "every",
+    hudSince: "since",
     lastDecision: "Last decision",
     dispatches: "Completed Bees",
     active: "Running now",
@@ -390,7 +390,7 @@ const COPY = {
     hud24h: "24h",
     hudResearch: "RESEARCH",
     hudFoundry: "FOUNDRY",
-    hudNextRound: "NEXT ROUND",
+    hudNextRound: "SINCE ROUND",
     hudAlerts: "ALERTS",
     hudAlertsSeen: "seen /",
     hudMenu: "MENU",
@@ -459,7 +459,7 @@ const COPY = {
     unavailable: "BACKEND НЕДОСТУПЕН",
     checking: "ПРОВЕРЯЮ BACKEND",
     scheduler: "Планировщик",
-    every: "каждые",
+    hudSince: "с",
     lastDecision: "Последнее решение",
     dispatches: "Завершено Bees",
     active: "Сейчас работают",
@@ -613,7 +613,7 @@ const COPY = {
     hud24h: "24ч",
     hudResearch: "ИССЛЕДОВАНИЯ",
     hudFoundry: "ВЕРФЬ",
-    hudNextRound: "СЛЕДУЮЩИЙ ЦИКЛ",
+    hudNextRound: "С ПРОШЛОГО ЦИКЛА",
     hudAlerts: "СИГНАЛЫ",
     hudAlertsSeen: "за",
     hudMenu: "МЕНЮ",
@@ -1788,9 +1788,11 @@ export default function Queen() {
   const researchStale = staleAge(now, researchState.syncedAt, researchState.error);
   const staleSeconds =
     boardStale === null ? researchStale : researchStale === null ? boardStale : Math.max(boardStale, researchStale);
-  const roundSeconds =
-    board?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
-  const lastRoundAt = board?.pulse.lastRoundAt ?? decision?.decidedAt ?? null;
+  // one endpoint (P1-29): the round tile reads public-board's pulse and
+  // nothing else; without the board it reads a dash, never a value assembled
+  // from the status endpoint's interval and the last decision's moment
+  const roundSeconds = board?.pulse.roundSeconds ?? 0;
+  const lastRoundAt = board?.pulse.lastRoundAt ?? null;
   // server-relative: the client clock plus the offset the status answer
   // carried, so a fast or slow client never invents an OVERDUE (P1-30)
   const roundClock = countdownFor(now, state.offsetMs, lastRoundAt, roundSeconds);
@@ -1809,12 +1811,15 @@ export default function Queen() {
   const syncLabel = boardState.syncedAt
     ? boardState.syncedAt.toLocaleTimeString(lang === "ru" ? "ru-RU" : "en-GB")
     : "—";
+  // the value is the time since the last round (a fact); the interval is a
+  // bound the scheduler works under, printed on the sub-line as "≤ 05:00",
+  // never a countdown that promises the next round at a second (P1-29)
   const countdown =
+    schedulerOff || !roundKnown ? "—" : `+${formatCountdown(elapsedSeconds)}`;
+  const roundWindow =
     schedulerOff || !roundKnown
-      ? "—"
-      : roundOverdue
-        ? `+${formatCountdown(elapsedSeconds - roundSeconds)}`
-        : formatCountdown(roundSeconds - elapsedSeconds);
+      ? null
+      : `${c.hudSince} ${formatMoment(lastRoundAt, lang)} · ≤ ${formatCountdown(roundSeconds)}`;
   const roundLabel = schedulerOff
     ? c.hudSchedulerOff
     : roundOverdue
@@ -2242,8 +2247,8 @@ export default function Queen() {
           <span>
             {strip ? (
               <b className="queen27-hud-round-strip">{strip}</b>
-            ) : data ? (
-              `${c.every} ${formatInterval(data.scheduler.intervalSeconds, lang)} · ${formatMoment(decision?.decidedAt, lang)}`
+            ) : roundWindow ? (
+              roundWindow
             ) : (
               "—"
             )}
