@@ -515,3 +515,22 @@ export function planHash(plan: BuildingPlan): number {
   const text = plan.core + "|" + plan.turn.toFixed(4) + "|" + plan.parts.map((p) => `${p.model}:${p.dx.toFixed(3)},${p.dz.toFixed(3)},${p.scale.toFixed(4)},${p.height.toFixed(4)}`).join(";");
   return moduleId(text);
 }
+
+/**
+ * The server does not know issues; the board does. A module's open issues
+ * are the cards (not done, not dropped) whose title names a path inside it,
+ * so the wire's rows and the loop's snapshot carry the same field (M-1).
+ */
+export function withOpenIssues(modules: readonly HudModule[], cards: ReadonlyArray<{ number: number; title: string; column: string }>): HudModule[] {
+  const open = new Map<string, number[]>();
+  for (const card of cards) {
+    if (card.column === "done" || card.column === "dropped") continue;
+    const p = pathInTitle(card.title);
+    const m = p ? moduleFor(p, modules) : null;
+    if (!m) continue;
+    const list = open.get(m.path) ?? [];
+    if (!list.includes(card.number)) list.push(card.number);
+    open.set(m.path, list);
+  }
+  return modules.map((m) => ({ ...m, openIssues: (open.get(m.path) ?? []).slice().sort((a, b) => a - b) }));
+}
