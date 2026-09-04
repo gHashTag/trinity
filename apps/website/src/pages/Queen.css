@@ -4554,3 +4554,34 @@ main:where(.queen27-page.is-shell) section {
     grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr);
   }
 }
+
+/* ---- a round's resolution moment (loop cycle 004, P1-1) ------------------- */
+.queen27-page.is-shell .queen27-hud-res-round.is-resolved,
+.queen27-page.is-shell .queen27-hud-round.is-resolved {
+  animation: queen27-round-flash 6s ease-out 1;
+}
+
+.queen27-page.is-shell .queen27-hud-res-round.is-resolved > span {
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-hud-round-strip {
+  font-weight: 600;
+}
+
+@keyframes queen27-round-flash {
+  0% {
+    box-shadow: inset 0 0 0 2px var(--hud-gold), 0 0 32px rgba(255, 215, 0, 0.55);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .queen27-page.is-shell .queen27-hud-res-round.is-resolved,
+  .queen27-page.is-shell .queen27-hud-round.is-resolved {
+    animation: none;
+    box-shadow: inset 0 0 0 2px var(--hud-gold);
+  }
+}
