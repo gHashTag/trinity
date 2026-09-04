@@ -4446,6 +4446,16 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* ---- breakpoints -------------------------------------------------------- */
+/* The brand's eyebrow sentence cost the five stat tiles 200 px at 1440
+   (measured 2026-09-04: brand 388-400 px, tiles 98-109 px, Russian windows
+   at three lines). From 1499 px down the brand is the mark and the name;
+   the sentence returns from 1500 px, where the tiles have 187 px each. */
+@media (max-width: 1499px) {
+  .queen27-page.is-shell .queen27-hud-brand-text > span {
+    display: none;
+  }
+}
+
 @media (max-width: 1280px) {
   .queen27-page.is-shell {
     grid-template-columns: 200px minmax(0, 1fr) 300px;
