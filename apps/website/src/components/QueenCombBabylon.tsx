@@ -1,10 +1,10 @@
-// SPIKE (loop cycle 011, not a product decision): the same 189-island field
-// as QueenComb, drawn by Babylon.js instead of canvas2D, so the engine
-// question the user re-opened on 2026-09-04 can be answered with numbers on
-// this repo's own scene: brotli delta, frame p95/p99 at the gate sizes under
-// swiftshader, first frame. Mounted only behind `?engine=babylon`; the
-// default comb is untouched. Selective imports on purpose - the UMD bundle
-// is 6.2x larger than what this file pulls in.
+// The comb in Babylon.js (the user's decision, 2026-09-04 09:52Z: "Babylon").
+// Behind `?engine=babylon` until it passes the pick, placement and touch
+// contracts (check:queen-babylon) at visual parity with the canvas comb; the
+// default then flips. Same field: summariseCells lays the islands, the
+// mark's 135 edges and 27 nodes come from QueenComb's tables, the sprites
+// are the same PNGs. Selective imports on purpose - the UMD bundle is 6.2x
+// larger than what this file pulls in.
 import { useEffect, useRef } from "react";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
@@ -20,9 +20,10 @@ import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import { SpriteManager } from "@babylonjs/core/Sprites/spriteManager";
 import { Sprite } from "@babylonjs/core/Sprites/sprite";
 import { CreateLineSystem } from "@babylonjs/core/Meshes/Builders/linesBuilder";
+import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
-import { S, HH, summariseCells, queenIndexOf } from "./QueenComb";
+import { S, HH, EDGES, NODES, NINE, summariseCells, queenIndexOf } from "./QueenComb";
 import { crystalOf, type HudPick } from "./queenHud";
 
 interface SpikeCard {
@@ -42,11 +43,15 @@ interface QueenCombBabylonProps {
   devices: Array<{ family: string }> | null;
   onPick?: (pick: HudPick | null) => void;
   pickIndex?: number | null;
+  /** Fraction (0..1) of the host's height covered at the bottom by the context panel. */
+  fitInset?: number;
 }
 
 type Territory = "held" | "neutral" | "fog";
 const TEX_ALPHA: Record<Territory, number> = { held: 0.85, neutral: 0.7, fog: 0.35 };
+const GROUND: Record<Territory, string> = { held: "#0a1a12", neutral: "#090c0f", fog: "#040504" };
 const DEPTH = 9;
+const TERRITORIES: Territory[] = ["held", "neutral", "fog"];
 
 /** Point-in-down-triangle for the cell under a world point (x, z). */
 function cellAtWorld(cells: ReturnType<typeof summariseCells>, wx: number, wz: number): number {
@@ -65,20 +70,58 @@ function cellAtWorld(cells: ReturnType<typeof summariseCells>, wx: number, wz: n
   return -1;
 }
 
-export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null }: QueenCombBabylonProps) {
+/** The glint sprite sheet: one radial glint per (tier, ring) cell, 32 px each, as a data URL. */
+function glintSheet(): { url: string; cell: number; count: number } {
+  const cell = 32, r = 16;
+  const keys: string[] = [];
+  NINE.forEach((row) => row.forEach((color) => keys.push(color)));
+  const canvas = document.createElement("canvas");
+  canvas.width = cell * keys.length; canvas.height = cell;
+  const ctx = canvas.getContext("2d");
+  if (ctx) keys.forEach((color, k) => {
+    const g = ctx.createRadialGradient(k * cell + r, r, 0, k * cell + r, r, r);
+    g.addColorStop(0, "#fff"); g.addColorStop(0.22, color); g.addColorStop(0.55, `${color}55`); g.addColorStop(1, `${color}00`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(k * cell + r, r, r, 0, Math.PI * 2); ctx.fill();
+  });
+  return { url: canvas.toDataURL("image/png"), cell, count: keys.length };
+}
+
+export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0 }: QueenCombBabylonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onPickRef = useRef(onPick);
   const pickRef = useRef<number | null>(pickIndex);
+  const insetRef = useRef(fitInset);
   useEffect(() => {
     onPickRef.current = onPick;
     pickRef.current = pickIndex;
-  }, [onPick, pickIndex]);
+    insetRef.current = fitInset;
+  }, [onPick, pickIndex, fitInset]);
+
+  // The pollers hand over new arrays every 5 s; the scene is rebuilt only
+  // when what they carry changes (cell -> card number/column, slot states,
+  // device families). Fine-grained updates without a rebuild are B-3.
+  const signature = JSON.stringify([
+    cards.map((c) => (c ? [c.number, c.column] : null)),
+    workers?.slots.map((s) => [s.slot, s.state]) ?? null,
+    devices?.map((d) => d.family) ?? null,
+  ]);
+  const cardsRef = useRef(cards);
+  const workersRef = useRef(workers);
+  const devicesRef = useRef(devices);
+  useEffect(() => {
+    cardsRef.current = cards;
+    workersRef.current = workers;
+    devicesRef.current = devices;
+  }, [cards, workers, devices]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const host = hostRef.current;
     if (!canvas || !host) return;
+    const cards = cardsRef.current;
+    const workers = workersRef.current;
+    const devices = devicesRef.current;
     const cells = summariseCells(cards);
     const home = queenIndexOf(cells.length);
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
@@ -93,33 +136,50 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       minZ = Math.min(minZ, c.yTop); maxZ = Math.max(maxZ, c.yTop + HH);
     }
     const centre = new Vector3((minX + maxX) / 2, 0, (minZ + maxZ) / 2);
-    const camera = new ArcRotateCamera("cam", Math.PI / 2, Math.PI / 2 - 0.62, 3000, centre, scene);
+    const camera = new ArcRotateCamera("cam", Math.PI / 2, Math.PI / 2 - 0.62, 3000, centre.clone(), scene);
     camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
     camera.lowerBetaLimit = 0.35;
     camera.upperBetaLimit = 1.35;
     camera.panningSensibility = 0;
     let zoom = 1;
     let manual = false;
+    let appliedInset = -1;
+    // The field is fitted into the band above the context panel and centred
+    // there: the ortho window is asymmetric by the inset, which shifts the
+    // field up by half the covered height in screen space.
     const fit = () => {
       const w = host.clientWidth || 1, h = host.clientHeight || 1;
-      const fieldW = (maxX - minX) * 1.05, fieldH = (maxZ - minZ) * 1.05;
-      const aspect = w / h;
-      // width-limited or height-limited, whichever holds the whole field
+      const inset = insetRef.current;
+      const band = h * (1 - inset);
+      const fieldW = (maxX - minX) * 1.05, fieldH = (maxZ - minZ) * Math.cos(camera.beta) * 1.05 + DEPTH;
+      const aspect = w / band;
       let halfW = fieldW / 2, halfH = halfW / aspect;
       if (halfH < fieldH / 2) { halfH = fieldH / 2; halfW = halfH * aspect; }
       halfW /= zoom; halfH /= zoom;
+      const unitsPerPx = (halfH * 2) / band;
+      const shift = (h - band) * unitsPerPx; // world units of screen height covered by the panel
       camera.orthoLeft = -halfW; camera.orthoRight = halfW;
-      camera.orthoTop = halfH; camera.orthoBottom = -halfH;
+      camera.orthoTop = halfH; camera.orthoBottom = -halfH - shift;
+      appliedInset = inset;
     };
     fit();
     camera.attachControl(canvas, true);
     canvas.addEventListener("wheel", (e) => { e.preventDefault(); manual = true; zoom = Math.min(8, Math.max(0.4, zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); fit(); }, { passive: false });
     camera.onViewMatrixChangedObservable.add(() => { if (camera.inertialAlphaOffset !== 0) manual = true; });
 
-    // ---- ground: one mesh per territory (top) and one for sides + underside
-    const texOf: Record<Territory, StandardMaterial> = {} as Record<Territory, StandardMaterial>;
-    for (const own of ["held", "neutral", "fog"] as Territory[]) {
-      const m = new StandardMaterial(`top-${own}`, scene);
+    // ---- materials ----------------------------------------------------------
+    const flat = (name: string, hex: string, alpha = 1) => {
+      const m = new StandardMaterial(name, scene);
+      m.emissiveColor = Color3.FromHexString(hex);
+      m.disableLighting = true;
+      m.backFaceCulling = false;
+      m.alpha = alpha;
+      return m;
+    };
+    const plateMat: Record<Territory, StandardMaterial> = { held: flat("plate-held", GROUND.held), neutral: flat("plate-neutral", GROUND.neutral), fog: flat("plate-fog", GROUND.fog) };
+    const soilMat: Record<Territory, StandardMaterial> = {} as Record<Territory, StandardMaterial>;
+    for (const own of TERRITORIES) {
+      const m = new StandardMaterial(`soil-${own}`, scene);
       const t = new Texture(`./queen/ground-${own}-256.png`, scene, false, true);
       t.hasAlpha = true;
       m.diffuseTexture = t;
@@ -128,54 +188,54 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       m.useAlphaFromDiffuseTexture = true;
       m.alpha = TEX_ALPHA[own];
       m.backFaceCulling = false;
-      texOf[own] = m;
+      soilMat[own] = m;
     }
-    const sideMat = new StandardMaterial("side", scene);
-    sideMat.emissiveColor = Color3.FromHexString("#06100c");
-    sideMat.disableLighting = true;
-    sideMat.backFaceCulling = false;
+    const sideMat = flat("side", "#06100c");
 
     const byTerritory: Record<Territory, number[]> = { held: [], neutral: [], fog: [] };
     cells.forEach((c, i) => byTerritory[c.own as Territory].push(i));
     const phase = (i: number) => i * 0.37;
     const bob = (i: number, t: number) => 6 + Math.sin(t * 0.6 + phase(i) * 1.7) * 4;
+    const tri = (i: number): [number, number][] => { const c = cells[i]; return [[c.x - S / 2, c.yTop], [c.x + S / 2, c.yTop], [c.x, c.yTop + HH]]; };
 
-    interface Batch { mesh: Mesh; base: Float32Array; owners: number[] }
-    const tops: Batch[] = [];
-    const makeTop = (own: Territory, idx: number[]) => {
+    // ---- ground: plate (opaque fill) + soil (textured, translucent) per territory,
+    //      sides + undersides in one mesh; every vertex remembers its island so
+    //      the bob moves an island as one body ----------------------------------
+    interface Batch { mesh: Mesh; base: Float32Array; owners: number[]; lift: number }
+    const batches: Batch[] = [];
+    const topMesh = (name: string, idx: number[], material: StandardMaterial, lift: number, pickable: boolean) => {
       const positions: number[] = [], indices: number[] = [], uvs: number[] = [], owners: number[] = [];
       idx.forEach((i) => {
         const c = cells[i];
         const v = positions.length / 3;
-        const pts: [number, number][] = [[c.x - S / 2, c.yTop], [c.x + S / 2, c.yTop], [c.x, c.yTop + HH]];
-        for (const [px, pz] of pts) {
-          positions.push(px, 0, pz);
+        for (const [px, pz] of tri(i)) {
+          positions.push(px, lift, pz);
           uvs.push((px - (c.x - S / 2)) / S, 1 - (pz - c.yTop) / HH);
           owners.push(i);
         }
         indices.push(v, v + 2, v + 1);
       });
-      const mesh = new Mesh(`top-${own}`, scene);
+      const mesh = new Mesh(name, scene);
       const vd = new VertexData();
       vd.positions = positions; vd.indices = indices; vd.uvs = uvs;
       vd.applyToMesh(mesh, true);
-      mesh.material = texOf[own];
-      mesh.isPickable = true;
-      tops.push({ mesh, base: Float32Array.from(positions), owners });
+      mesh.material = material;
+      mesh.isPickable = pickable;
+      batches.push({ mesh, base: Float32Array.from(positions), owners, lift });
     };
-    (Object.keys(byTerritory) as Territory[]).forEach((own) => { if (byTerritory[own].length) makeTop(own, byTerritory[own]); });
-
-    // sides + underside in one mesh
+    for (const own of TERRITORIES) {
+      if (!byTerritory[own].length) continue;
+      topMesh(`plate-${own}`, byTerritory[own], plateMat[own], 0, true);
+      topMesh(`soil-${own}`, byTerritory[own], soilMat[own], 0.4, false);
+    }
     {
       const positions: number[] = [], indices: number[] = [], owners: number[] = [];
       cells.forEach((c, i) => {
-        const pts: [number, number][] = [[c.x - S / 2, c.yTop], [c.x + S / 2, c.yTop], [c.x, c.yTop + HH]];
+        const pts = tri(i);
         const v = positions.length / 3;
         for (const [px, pz] of pts) { positions.push(px, 0, pz); owners.push(i); }
         for (const [px, pz] of pts) { positions.push(px, -DEPTH, pz); owners.push(i); }
-        // underside
         indices.push(v + 3, v + 4, v + 5);
-        // three side quads
         for (let e = 0; e < 3; e += 1) {
           const a = v + e, b = v + ((e + 1) % 3);
           indices.push(a, b, b + 3, a, b + 3, a + 3);
@@ -187,25 +247,68 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       vd.applyToMesh(mesh, true);
       mesh.material = sideMat;
       mesh.isPickable = false;
-      tops.push({ mesh, base: Float32Array.from(positions), owners });
+      batches.push({ mesh, base: Float32Array.from(positions), owners, lift: 0 });
     }
 
-    // the mark's edges over the soil (the walls pass, reduced to the outline)
-    const edgeLines = cells.map((c) => [
-      new Vector3(c.x - S / 2, 0.5, c.yTop), new Vector3(c.x + S / 2, 0.5, c.yTop), new Vector3(c.x, 0.5, c.yTop + HH), new Vector3(c.x - S / 2, 0.5, c.yTop),
-    ]);
-    const edges = CreateLineSystem("edges", { lines: edgeLines, updatable: true }, scene);
-    edges.color = new Color3(232 / 255, 232 / 255, 240 / 255);
-    edges.alpha = 0.3;
-    edges.isPickable = false;
-    const edgeBase = Float32Array.from(edges.getVerticesData(VertexBuffer.PositionKind) ?? []);
+    // ---- line work: rim per territory, the mark's 135 edges (lit / fog),
+    //      held outline; each line system remembers its island per vertex ---
+    interface LineBatch { mesh: LinesMesh; base: Float32Array; owners: number[] }
+    const lineBatches: LineBatch[] = [];
+    const lineSystem = (name: string, idx: number[], segs: (i: number) => Vector3[][], color: string, alpha: number, lift: number) => {
+      if (!idx.length) return;
+      const lines: Vector3[][] = [];
+      const owners: number[] = [];
+      idx.forEach((i) => { for (const seg of segs(i)) { lines.push(seg.map((p) => new Vector3(p.x, lift, p.z))); for (let k = 0; k < seg.length; k += 1) owners.push(i); } });
+      const mesh = CreateLineSystem(name, { lines, updatable: true }, scene);
+      mesh.color = Color3.FromHexString(color);
+      mesh.alpha = alpha;
+      mesh.isPickable = false;
+      lineBatches.push({ mesh, base: Float32Array.from(mesh.getVerticesData(VertexBuffer.PositionKind) ?? []), owners });
+    };
+    const outlineOf = (i: number) => { const p = tri(i); return [[new Vector3(p[0][0], 0, p[0][1]), new Vector3(p[1][0], 0, p[1][1]), new Vector3(p[2][0], 0, p[2][1]), new Vector3(p[0][0], 0, p[0][1])]]; };
+    const edgesOf = (i: number) => { const c = cells[i]; return EDGES.map(([ax, ay, bx, by]) => [new Vector3(c.x + ax * S, 0, c.y + ay * S), new Vector3(c.x + bx * S, 0, c.y + by * S)]); };
+    const lit = cells.map((_, i) => i).filter((i) => cells[i].own !== "fog");
+    const fog = cells.map((_, i) => i).filter((i) => cells[i].own === "fog");
+    lineSystem("rim-lit", lit, outlineOf, "#e8e8f0", 0.3, 0.6);
+    lineSystem("rim-fog", fog, outlineOf, "#e8e8f0", 0.1, 0.6);
+    lineSystem("walls-lit", lit, edgesOf, "#e8e8f0", 0.52, 0.7);
+    lineSystem("walls-fog", fog, edgesOf, "#e8e8f0", 0.06, 0.7);
+    lineSystem("held", byTerritory.held, outlineOf, "#00ff88", 0.55, 0.8);
 
-    // picked outline
-    const outline = CreateLineSystem("picked", { lines: [[new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0)]], updatable: true }, scene);
-    outline.color = Color3.FromHexString("#00ff9c");
-    outline.isPickable = false;
+    // picked (gold) and hover outlines
+    const ring4 = () => [[new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0)]];
+    const picked = CreateLineSystem("picked", { lines: ring4(), updatable: true }, scene);
+    picked.color = Color3.FromHexString("#FFD45A"); picked.isPickable = false;
+    const hovered = CreateLineSystem("hover", { lines: ring4(), updatable: true }, scene);
+    hovered.color = Color3.FromHexString("#e8e8f0"); hovered.alpha = 0.6; hovered.isPickable = false;
+    const placeRing = (mesh: LinesMesh, i: number, y: number) => {
+      const p = tri(i); const pts = [p[0], p[1], p[2], p[0]];
+      const buf = mesh.getVerticesData(VertexBuffer.PositionKind);
+      if (!buf) return;
+      pts.forEach(([px, pz], k) => { buf[k * 3] = px; buf[k * 3 + 1] = y; buf[k * 3 + 2] = pz; });
+      mesh.updateVerticesData(VertexBuffer.PositionKind, buf);
+      mesh.isVisible = true;
+    };
 
-    // ---- sprites: one manager per texture, one draw call each ------------
+    // ---- nodes: 27 glints per lit cell, pulsing (the canvas NODES pass) ----
+    const sheet = glintSheet();
+    const glints = new SpriteManager("glints", sheet.url, lit.length * NODES.length + 1, { width: sheet.cell, height: sheet.cell }, scene);
+    glints.isPickable = false;
+    interface Glint { sprite: Sprite; cell: number; vi: number; tier: number; ring: number; x: number; z: number }
+    const glintList: Glint[] = [];
+    lit.forEach((i) => {
+      const c = cells[i];
+      const tier = c.own === "held" ? 0 : 1;
+      NODES.forEach((v, vi) => {
+        const s = new Sprite("g", glints);
+        s.cellIndex = tier * 3 + v.ring;
+        s.width = 1; s.height = 1;
+        s.position = new Vector3(c.x + v.x * S, 2, c.y + v.y * S);
+        glintList.push({ sprite: s, cell: i, vi, tier, ring: v.ring, x: c.x + v.x * S, z: c.y + v.y * S });
+      });
+    });
+
+    // ---- structures, crystals, the Queen, larvae, bees ---------------------
     const managers = new Map<string, SpriteManager>();
     const manager = (name: string, capacity: number) => {
       let m = managers.get(name);
@@ -243,47 +346,68 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       else { const r = ring[(devices?.length ?? 0) + k]; if (r) put("larva", r.i, S * 0.35, 0, 16); }
     });
 
-    // ---- picking ------------------------------------------------------------
-    const pickAt = (x: number, y: number) => {
+    // ---- picking and hover ---------------------------------------------------
+    const cellUnder = (x: number, y: number) => {
       const hit = scene.pick(x, y, (m) => m.isPickable);
-      if (!hit?.hit || !hit.pickedPoint) return;
-      const index = cellAtWorld(cells, hit.pickedPoint.x, hit.pickedPoint.z);
+      if (!hit?.hit || !hit.pickedPoint) return -1;
+      return cellAtWorld(cells, hit.pickedPoint.x, hit.pickedPoint.z);
+    };
+    let hover = -1;
+    let downAt: [number, number] | null = null;
+    let travelled = 0;
+    scene.onPointerObservable.add((info) => {
+      if (info.type === PointerEventTypes.POINTERDOWN) { downAt = [scene.pointerX, scene.pointerY]; travelled = 0; }
+      if (info.type === PointerEventTypes.POINTERMOVE) {
+        if (downAt) { travelled += Math.abs(scene.pointerX - downAt[0]) + Math.abs(scene.pointerY - downAt[1]); downAt = [scene.pointerX, scene.pointerY]; }
+        else hover = cellUnder(scene.pointerX, scene.pointerY);
+      }
+      if (info.type === PointerEventTypes.POINTERUP) downAt = null;
+    });
+    // The pick is the click, as in the canvas comb: a drag (travelled > 6 px
+    // between pointerdown and pointerup) never picks; a tap or a synthetic
+    // click does. Coordinates are the event's own, so a contract's dispatched
+    // MouseEvent lands where it says.
+    canvas.addEventListener("click", (e) => {
+      if (travelled > 6) { travelled = 0; return; }
+      const rect = canvas.getBoundingClientRect();
+      const index = cellUnder(e.clientX - rect.left, e.clientY - rect.top);
       if (index < 0) return;
       const card = cards[index];
       onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: null } as HudPick);
-    };
-    let downAt: [number, number] | null = null;
-    scene.onPointerObservable.add((info) => {
-      if (info.type === PointerEventTypes.POINTERDOWN) downAt = [scene.pointerX, scene.pointerY];
-      if (info.type === PointerEventTypes.POINTERUP && downAt) {
-        const dx = scene.pointerX - downAt[0], dy = scene.pointerY - downAt[1];
-        if (dx * dx + dy * dy <= 36) pickAt(scene.pointerX, scene.pointerY);
-        downAt = null;
-      }
     });
+    canvas.addEventListener("pointerleave", () => { hover = -1; });
 
-    // ---- frame loop: the islands bob, sprites ride them, auto yaw ---------
+    // ---- frame loop ---------------------------------------------------------
     const t0 = performance.now();
     let frames = 0;
     engine.runRenderLoop(() => {
       const t = (performance.now() - t0) / 1000;
+      if (insetRef.current !== appliedInset) fit();
       if (!manual) camera.alpha = Math.PI / 2 + Math.sin(t / 9) * 0.35;
-      for (const b of tops) {
+      for (const b of batches) {
         const pos = b.mesh.getVerticesData(VertexBuffer.PositionKind);
         if (!pos) continue;
         for (let v = 0; v < b.owners.length; v += 1) pos[v * 3 + 1] = b.base[v * 3 + 1] + bob(b.owners[v], t);
         b.mesh.updateVerticesData(VertexBuffer.PositionKind, pos);
       }
-      const ep = edges.getVerticesData(VertexBuffer.PositionKind);
-      if (ep) { for (let v = 0; v < ep.length / 3; v += 1) ep[v * 3 + 1] = edgeBase[v * 3 + 1] + bob(Math.floor(v / 4), t); edges.updateVerticesData(VertexBuffer.PositionKind, ep); }
+      for (const b of lineBatches) {
+        const pos = b.mesh.getVerticesData(VertexBuffer.PositionKind);
+        if (!pos) continue;
+        for (let v = 0; v < b.owners.length; v += 1) pos[v * 3 + 1] = b.base[v * 3 + 1] + bob(b.owners[v], t);
+        b.mesh.updateVerticesData(VertexBuffer.PositionKind, pos);
+      }
+      for (const g of glintList) {
+        const pulse = 0.55 + 0.45 * Math.sin(t * 1.6 + phase(g.cell) + g.vi * 0.21);
+        const size = (g.tier === 0 ? 7 : 5) * (0.75 + 0.5 * pulse) * 0.5;
+        g.sprite.width = size; g.sprite.height = size;
+        g.sprite.position.y = bob(g.cell, t) + 2;
+        const bright = pulse > 0.78 ? 2 : pulse > 0.5 ? 1 : 0;
+        g.sprite.color.a = [0.3, 0.58, 0.9][g.tier === 0 ? bright : Math.min(bright, 1)];
+      }
       for (const s of standing) s.sprite.position.y = s.lift + bob(s.cell, t);
       const p = pickRef.current;
-      if (p !== null && cells[p]) {
-        const c = cells[p]; const y = bob(p, t) + 1;
-        const op = outline.getVerticesData(VertexBuffer.PositionKind);
-        if (op) { const pts = [[c.x - S / 2, c.yTop], [c.x + S / 2, c.yTop], [c.x, c.yTop + HH], [c.x - S / 2, c.yTop]]; pts.forEach(([px, pz], k) => { op[k * 3] = px; op[k * 3 + 1] = y; op[k * 3 + 2] = pz; }); outline.updateVerticesData(VertexBuffer.PositionKind, op); }
-        outline.isVisible = true;
-      } else outline.isVisible = false;
+      if (p !== null && cells[p]) placeRing(picked, p, bob(p, t) + 1); else picked.isVisible = false;
+      if (hover >= 0 && hover !== p && cells[hover]) placeRing(hovered, hover, bob(hover, t) + 1); else hovered.isVisible = false;
       scene.render();
       frames += 1;
       if (frames === 1) host.setAttribute("data-first-frame-ms", String(Math.round(performance.now() - t0)));
@@ -292,11 +416,13 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const ro = new ResizeObserver(() => { engine.resize(); fit(); });
     ro.observe(host);
     return () => { ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose(); };
-  }, [cards, workers, devices]);
+  }, [signature]);
 
   return (
-    <div className="queen27-comb-field is-babylon" ref={hostRef} data-engine="babylon" style={{ position: "absolute", inset: 0 }}>
-      <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", touchAction: "none", outline: "none" }} />
+    <div className="queen27-comb is-embedded is-babylon">
+      <div className="queen27-comb-field" ref={hostRef} data-engine="babylon">
+        <canvas ref={canvasRef} style={{ touchAction: "none", outline: "none" }} />
+      </div>
     </div>
   );
 }

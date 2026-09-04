@@ -2420,6 +2420,7 @@ export default function Queen() {
                   devices={hardware?.devices ?? null}
                   onPick={handlePick}
                   pickIndex={pickIndex}
+                  fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
                 />
               </Suspense>
             ) : (
