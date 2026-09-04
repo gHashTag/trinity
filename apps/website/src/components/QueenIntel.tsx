@@ -226,7 +226,8 @@ export interface SectorLabels {
 }
 
 export interface QueenSectorsProps {
-  rows: SectorRow[];
+  /** null until the board has answered once: the panel reads a dash, never six zeros */
+  rows: SectorRow[] | null;
   active: string | null;
   onSelect?: (key: string) => void;
   labels: SectorLabels;
@@ -250,7 +251,9 @@ export function QueenSectors({ rows, active, onSelect, labels }: QueenSectorsPro
         <span>{labels.title}</span>
       </header>
       <ul className="queen27-sectors-list">
-        {rows.map((row) => {
+        {rows === null ? (
+          <li className="queen27-sectors-empty">—</li>
+        ) : rows.map((row) => {
           const share = Math.min(1, Math.max(0, row.share));
           return (
             <li key={row.key}>

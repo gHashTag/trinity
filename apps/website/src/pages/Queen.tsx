@@ -1446,6 +1446,7 @@ function KanbanView({
   cards,
   repo,
   error,
+  loaded,
   c,
   lang,
 }: {
@@ -1453,6 +1454,8 @@ function KanbanView({
   cards: QueenCard[];
   repo: string | null;
   error: string | null;
+  /** false until /queen/public-board has answered once: counts read a dash, not 0 */
+  loaded: boolean;
   c: Copy;
   lang: string;
 }) {
@@ -1475,7 +1478,7 @@ function KanbanView({
           >
             <header>
               <h3>{column.title}</h3>
-              <span>{columnCards.length}</span>
+              <span>{loaded ? columnCards.length : "—"}</span>
             </header>
             <small>{column.blurb}</small>
             <div className="queen27-cards">
@@ -1519,7 +1522,7 @@ function KanbanView({
                   )}
                 </motion.a>
               ))}
-              {columnCards.length === 0 && <em>{error ?? c.empty}</em>}
+              {columnCards.length === 0 && <em>{error ?? (loaded ? c.empty : "—")}</em>}
             </div>
           </motion.article>
         );
@@ -1533,6 +1536,7 @@ function MissionMapView({
   cards,
   repo,
   error,
+  loaded,
   c,
   lang,
 }: {
@@ -1540,6 +1544,8 @@ function MissionMapView({
   cards: QueenCard[];
   repo: string | null;
   error: string | null;
+  /** false until /queen/public-board has answered once: counts read a dash, not 0 */
+  loaded: boolean;
   c: Copy;
   lang: string;
 }) {
@@ -1570,7 +1576,7 @@ function MissionMapView({
                   {c.sector} {String(sectorIndex + 1).padStart(2, "0")}
                 </small>
                 <h3>{column.title}</h3>
-                <b>{columnCards.length}</b>
+                <b>{loaded ? columnCards.length : "—"}</b>
               </header>
               <div className="queen27-map-nodes">
                 {columnCards.map((card, cardIndex) => (
@@ -1597,7 +1603,7 @@ function MissionMapView({
                     )}
                   </motion.a>
                 ))}
-                {columnCards.length === 0 && <em>{error ?? c.empty}</em>}
+                {columnCards.length === 0 && <em>{error ?? (loaded ? c.empty : "—")}</em>}
               </div>
             </motion.section>
           );
@@ -1928,7 +1934,7 @@ export default function Queen() {
             </div>
           </section>
           <QueenSectors
-            rows={sectors}
+            rows={board ? sectors : null}
             active={activeSector}
             onSelect={(key) => {
               setActiveSector(key);
@@ -2257,6 +2263,7 @@ export default function Queen() {
               cards={cards}
               repo={repo}
               error={boardState.error}
+              loaded={board !== null}
               c={c}
               lang={lang}
             />
@@ -2266,6 +2273,7 @@ export default function Queen() {
               cards={cards}
               repo={repo}
               error={boardState.error}
+              loaded={board !== null}
               c={c}
               lang={lang}
             />
