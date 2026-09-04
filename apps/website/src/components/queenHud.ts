@@ -246,3 +246,16 @@ export function roundStrip(
 export function skipReasonWords(key: string): string {
   return key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
 }
+
+/**
+ * A hardware device's family string -> the crystal hue on the comb: gold for
+ * CPU (the default), cyan for FPGA, green for GPU - the ring colours of the
+ * mark as CONTEXT.md assigns them. Only the signed registry's devices are
+ * drawn; nothing is invented.
+ */
+export function crystalOf(family: string): "cpu" | "fpga" | "gpu" {
+  const f = family.toLowerCase();
+  if (/fpga|xc7|artix|kintex|zynq|lattice|ice40|ecp5|wukong|nexus/.test(f)) return "fpga";
+  if (/gpu|cuda|rtx|radeon|tensor core|h100|a100/.test(f)) return "gpu";
+  return "cpu";
+}

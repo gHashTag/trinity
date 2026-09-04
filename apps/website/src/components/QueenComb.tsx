@@ -1,6 +1,7 @@
 import { useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import type { Ref } from "react";
 import {
+  crystalOf,
   eventTone,
   territoryOf,
   type BeeLine,
@@ -82,6 +83,8 @@ interface QueenCombProps {
   fitInset?: number;
   /** The public activity feed; each event glints on the cell of its issue. */
   events?: HudEvent[];
+  /** The signed hardware registry's devices: one crystal each, on the ring around the Queen. */
+  devices?: Array<{ id: string; family: string; state: string }> | null;
 }
 
 // ---- the mark, parsed once at module load ---------------------------------
@@ -244,14 +247,20 @@ function corners(c: Cell): [Pt, Pt, Pt] {
 // down-cell has its base on the strip's top line, an up-cell the reverse.
 // Alternating orientation on (c+r) makes every interior vertex the meeting
 // point of exactly six cells. Verified on a 6x14 field before this was written.
+// Only the marks. The triangular tiling alternates up and down cells; the
+// user's decision (2026-09-04): remove the up-pointing ones. What is left is
+// the mark alone, point down, touching its neighbours at vertices only -
+// islands in weightlessness, each one the field of one unit with its 27
+// cells. A row holds ~cols marks, so rows*cols must cover the cards.
 function buildCells(cards: CombCard[]): Cell[] {
   const count = Math.max(27, cards.length);
-  const rows = Math.max(3, Math.ceil(Math.sqrt(count / 2)));
+  const rows = Math.max(3, Math.ceil(Math.sqrt(count / 1.1)));
   const cols = rows + 2;
   const cells: Cell[] = [];
   for (let r = 0; r < rows; r += 1) {
     for (let c = 0; c < cols * 2 - 1; c += 1) {
       const up = ((c + r) & 1) === 1;
+      if (up) continue;
       const x = (c - (cols * 2 - 2) / 2) * (S / 2);
       const yTop = (r - rows / 2) * HH;
       const cy = yTop + (up ? (HH * 2) / 3 : HH / 3);
@@ -337,7 +346,19 @@ const SPRITE_NAMES = [
   "ground-held",
   "ground-neutral",
   "ground-fog",
+  // the city: one structure per card, by the column it stands in
+  "structure-backlog",
+  "structure-blocked",
+  "structure-running",
+  "structure-review",
+  "structure-done",
+  "structure-dropped",
+  // compute crystals: one per verified hardware device, by family
+  "crystal-cpu",
+  "crystal-fpga",
+  "crystal-gpu",
 ];
+
 
 function spriteImage(name: string): HTMLImageElement {
   let image = SPRITES[name];
@@ -398,6 +419,7 @@ export function QueenComb({
   pickIndex,
   fitInset = 0,
   events = EMPTY_EVENTS,
+  devices = null,
 }: QueenCombProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -475,6 +497,10 @@ export function QueenComb({
   // The shell's callback, kept current for the handlers the mount effect
   // binds once and for the field-shrink check below.
   const onPickRef = useRef(onPick);
+  const devicesRef = useRef(devices);
+  useEffect(() => {
+    devicesRef.current = devices;
+  }, [devices]);
 
   useEffect(() => {
     insetRef.current = fitInset;
@@ -783,6 +809,7 @@ export function QueenComb({
     let raf = 0;
     const t0 = performance.now();
     let last = t0;
+    const drawOrder: Array<{ y: number; x: number; f: number; image: HTMLImageElement; size: number }> = [];
     let appliedVersion = -1;
     let appliedBees: Bee[] | null = null;
     const GROUND: Record<Territory, string> = {
@@ -790,11 +817,22 @@ export function QueenComb({
       neutral: "#090c0f",
       fog: "#040504",
     };
-    const TEX_ALPHA: Record<Territory, number> = { held: 0.55, neutral: 0.38, fog: 0.2 };
+    // the soil: dense enough to read as a plate, light enough for the mark's
+    // line-work to show through it (the user's words, 2026-09-04)
+    const TEX_ALPHA: Record<Territory, number> = { held: 0.85, neutral: 0.7, fog: 0.35 };
+    const SIDE = "#06100c";
+    const UNDER = "#03080a";
 
+    // The islands float: a slow bob on each cell's own phase, applied to the
+    // ground, walls, nodes, structures, effects and the shadows of what stands
+    // on them, so a whole island moves as one body. Hover and fit ignore it
+    // (a few world units against a cell side of 150).
+    const zc = (c: Cell) => 6 + Math.sin(tRef * 0.6 + c.phase * 1.7) * 4;
+    let tRef = 0;
     const render = (now: number) => {
       const dt = Math.min(now - last, 32);
       last = now;
+      tRef = (now - t0) / 1000;
       if (camera.auto) camera.yaw = Math.sin((now - t0) / 9000) * 0.35;
       const t = (now - t0) / 1000;
       const cells = cellsRef.current;
@@ -805,10 +843,38 @@ export function QueenComb({
       ctx.fillStyle = "#020806";
       ctx.fillRect(0, 0, width, height);
 
-      // GROUND: flat colour by territory, then the engraved plate clipped in.
+      // GROUND: each island is a slab of engraved soil floating in the void -
+      // a dark underside and three side faces nine units below, the plate on
+      // top with the engraved texture clipped in, then a lit rim. The mark's
+      // line-work is drawn OVER the soil by the walls pass, so the drawing
+      // shows through the ground. Cells are generated far row first, so a
+      // nearer plate covers the side of the one behind it.
       for (let i = 0; i < cells.length; i += 1) {
         const c = cells[i];
-        const k = corners(c).map(([px, py]) => project(px, py, 0));
+        const z = zc(c);
+        const k = corners(c).map(([px, py]) => project(px, py, z));
+        const kk = corners(c).map(([px, py]) => project(px, py, z - 9));
+        ctx.fillStyle = UNDER;
+        ctx.beginPath();
+        ctx.moveTo(kk[0][0], kk[0][1]);
+        ctx.lineTo(kk[1][0], kk[1][1]);
+        ctx.lineTo(kk[2][0], kk[2][1]);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = SIDE;
+        for (let e = 0; e < 3; e += 1) {
+          const a = k[e];
+          const b = k[(e + 1) % 3];
+          const a2 = kk[e];
+          const b2 = kk[(e + 1) % 3];
+          ctx.beginPath();
+          ctx.moveTo(a[0], a[1]);
+          ctx.lineTo(b[0], b[1]);
+          ctx.lineTo(b2[0], b2[1]);
+          ctx.lineTo(a2[0], a2[1]);
+          ctx.closePath();
+          ctx.fill();
+        }
         ctx.beginPath();
         ctx.moveTo(k[0][0], k[0][1]);
         ctx.lineTo(k[1][0], k[1][1]);
@@ -838,20 +904,29 @@ export function QueenComb({
             ctx.restore();
           }
         }
+        // the rim of the plate
+        ctx.strokeStyle = c.own === "fog" ? "rgba(232,232,240,.10)" : "rgba(232,232,240,.30)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(k[0][0], k[0][1]);
+        ctx.lineTo(k[1][0], k[1][1]);
+        ctx.lineTo(k[2][0], k[2][1]);
+        ctx.closePath();
+        ctx.stroke();
       }
 
       // WALLS: the mark's 135 edges per cell. Fog keeps its walls at a tenth
       // of the weight - fog of war dims a place, it does not delete it.
       for (const [which, stroke] of [
         ["fog", "rgba(232,232,240,.06)"],
-        ["lit", "rgba(232,232,240,.46)"],
+        ["lit", "rgba(232,232,240,.52)"],
       ] as const) {
         ctx.strokeStyle = stroke;
         ctx.lineWidth = 0.7;
         ctx.beginPath();
         for (const c of cells) {
           if ((c.own === "fog") !== (which === "fog")) continue;
-          const o = project(c.x, c.y, 0);
+          const o = project(c.x, c.y, zc(c));
           const sc = S * o[3];
           const m = c.up ? -1 : 1;
           if (sc < 8) continue;
@@ -875,7 +950,7 @@ export function QueenComb({
       }
       ctx.stroke();
       if (pickedIndex >= 0 && cells[pickedIndex]) {
-        const k = corners(cells[pickedIndex]).map(([px, py]) => project(px, py, 0));
+        const k = corners(cells[pickedIndex]).map(([px, py]) => project(px, py, zc(cells[pickedIndex])));
         ctx.strokeStyle = "#FFD45A";
         ctx.lineWidth = 1.8;
         ctx.beginPath();
@@ -892,7 +967,7 @@ export function QueenComb({
       ctx.globalCompositeOperation = "lighter";
       for (const c of cells) {
         if (c.own === "fog") continue;
-        const o = project(c.x, c.y, 0);
+        const o = project(c.x, c.y, zc(c));
         const sc = S * o[3];
         const m = c.up ? -1 : 1;
         if (sc < 8) continue;
@@ -913,14 +988,49 @@ export function QueenComb({
       }
       ctx.globalCompositeOperation = "source-over";
 
+      // STRUCTURES: the city on the comb. One sprite per card cell by its
+      // column, and one crystal per verified hardware device on the ring
+      // around the Queen; painter-sorted by projected depth so a near
+      // building covers a far one. A sprite that has not loaded draws nothing.
+      const home = queenIndexOf(cells.length);
+      drawOrder.length = 0;
+      for (let i = 0; i < cells.length; i += 1) {
+        const c = cells[i];
+        if (!c.card || i === home) continue;
+        const image = SPRITES[`structure-${c.card.column}`];
+        if (!ready(image)) continue;
+        const p = project(c.x, c.y, zc(c));
+        drawOrder.push({ y: p[1], x: p[0], f: p[3], image, size: 0.5 });
+      }
+      const devs = devicesRef.current;
+      if (devs) {
+        for (let k = 0; k < devs.length; k += 1) {
+          const image = SPRITES[`crystal-${crystalOf(devs[k].family)}`];
+          if (!ready(image)) continue;
+          const cell = cells[ringCell(cells, home, k)];
+          if (!cell) continue;
+          const p = project(cell.x, cell.y, zc(cell));
+          drawOrder.push({ y: p[1], x: p[0], f: p[3], image, size: 0.45 });
+        }
+      }
+      drawOrder.sort((a, b) => a.y - b.y);
+      for (const d of drawOrder) {
+        const s = Math.max(6, S * d.size * d.f);
+        ctx.fillStyle = "rgba(0,0,0,.45)";
+        ctx.beginPath();
+        ctx.ellipse(d.x, d.y, s * 0.55, s * 0.18, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.drawImage(d.image, d.x - s, d.y - s * 1.55, s * 2, s * 2);
+      }
+
       // THE QUEEN on the centre cell.
       const queenIndex = queenIndexOf(cells.length);
       const q = cells[queenIndex];
       const queenSprite = SPRITES.queen;
       if (q && ready(queenSprite)) {
-        const c = project(q.x, q.y, 18);
+        const c = project(q.x, q.y, 18 + zc(q));
         const qs = Math.max(20, S * 0.85 * c[3]);
-        const sh = project(q.x, q.y, 0);
+        const sh = project(q.x, q.y, zc(q));
         ctx.fillStyle = "rgba(0,0,0,.6)";
         ctx.beginPath();
         ctx.ellipse(sh[0], sh[1], qs * 0.5, qs * 0.18, 0, 0, Math.PI * 2);
@@ -951,7 +1061,7 @@ export function QueenComb({
           write += 1;
           const u = age / life;
           if (fx.flip) {
-            const k = corners(cell).map(([px, py]) => project(px, py, 0));
+            const k = corners(cell).map(([px, py]) => project(px, py, zc(cell)));
             ctx.beginPath();
             ctx.moveTo(k[0][0], k[0][1]);
             ctx.lineTo(k[1][0], k[1][1]);
@@ -960,7 +1070,7 @@ export function QueenComb({
             ctx.fillStyle = `rgba(${TONE[fx.tone]},${(0.55 * (1 - u)).toFixed(3)})`;
             ctx.fill();
           } else {
-            const c = project(cell.x, cell.y, 0);
+            const c = project(cell.x, cell.y, zc(cell));
             const r = S * c[3] * (0.12 + 0.5 * u);
             ctx.strokeStyle = `rgba(${TONE[fx.tone]},${(0.9 * (1 - u)).toFixed(3)})`;
             ctx.lineWidth = Math.max(1, 2.5 * (1 - u));
@@ -1019,9 +1129,10 @@ export function QueenComb({
           y = B.y + Math.sin(ph * 1.3) * S * 0.08;
           arc = 18 + Math.sin(ph * 2) * 5;
         }
-        const c = project(x, y, arc);
+        const zB = zc(B);
+        const c = project(x, y, arc + zB);
         const sz = Math.max(7, S * 0.38 * c[3]);
-        const sh = project(x, y, 0);
+        const sh = project(x, y, zB);
         ctx.fillStyle = "rgba(0,0,0,.55)";
         ctx.beginPath();
         ctx.ellipse(sh[0], sh[1], sz * 0.55, sz * 0.2, 0, 0, Math.PI * 2);

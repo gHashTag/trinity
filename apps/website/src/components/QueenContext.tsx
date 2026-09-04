@@ -199,6 +199,8 @@ export function QueenContext({
     if (showQueen) return "./queen/portrait-queen-256.png";
     if (pick.bee && pick.bee.busy) return `./queen/portrait-${pick.bee.line}-256.png`;
     if (pick.bee) return "./queen/larva-256.png";
+    // a card's cell shows its structure - the city's building for that column
+    if (pick.card) return `./queen/structure-${pick.card.column}-256.png`;
     return `./queen/ground-${pick.territory}-256.png`;
   }, [showQueen, pick]);
 
