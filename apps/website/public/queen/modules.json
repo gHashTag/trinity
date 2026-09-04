@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/trios",
- "commit": "c5bc03f53",
- "generatedAt": "2026-09-04T20:46:23Z",
+ "commit": "03da79c1a",
+ "generatedAt": "2026-09-04T21:40:32Z",
  "source": "local scan by the loop (M-1 replaces it with /queen/public-modules)",
  "totalModules": 114,
  "droppedSmallest": 0,
@@ -20,7 +20,7 @@
    "functions": 48,
    "imports": 11,
    "exports": 85,
-   "lastTouched": "2026-09-05T01:11:49+07:00",
+   "lastTouched": "2026-09-05T04:37:39+07:00",
    "openIssues": []
   },
   {
@@ -46,7 +46,16 @@
     1494,
     1495,
     1496,
-    1498
+    1498,
+    1503,
+    1504,
+    1505,
+    1506,
+    1507,
+    1508,
+    1509,
+    1510,
+    1511
    ]
   },
   {
@@ -131,7 +140,16 @@
     1494,
     1495,
     1496,
-    1498
+    1498,
+    1503,
+    1504,
+    1505,
+    1506,
+    1507,
+    1508,
+    1509,
+    1510,
+    1511
    ]
   },
   {
@@ -275,7 +293,12 @@
     1490,
     1494,
     1495,
-    1498
+    1498,
+    1503,
+    1504,
+    1505,
+    1506,
+    1507
    ]
   },
   {
@@ -421,7 +444,11 @@
     1490,
     1494,
     1495,
-    1498
+    1498,
+    1503,
+    1504,
+    1506,
+    1507
    ]
   },
   {
@@ -437,7 +464,9 @@
    "imports": 46,
    "exports": 87,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1505
+   ]
   },
   {
    "path": "agent-server/apps/cli/cmd",
@@ -514,7 +543,8 @@
    "exports": 46,
    "lastTouched": "2026-07-30T17:07:27+07:00",
    "openIssues": [
-    1496
+    1496,
+    1508
    ]
   },
   {
@@ -545,7 +575,10 @@
    "imports": 37,
    "exports": 10,
    "lastTouched": "2026-09-05T01:11:49+07:00",
-   "openIssues": []
+   "openIssues": [
+    1509,
+    1510
+   ]
   },
   {
    "path": "agent-server/apps/server/tests",
@@ -575,7 +608,9 @@
    "imports": 25,
    "exports": 25,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1511
+   ]
   },
   {
    "path": "agent-server/queen-core/Sources/QueenCore",
@@ -910,7 +945,9 @@
     1476,
     1490,
     1495,
-    1498
+    1498,
+    1503,
+    1504
    ]
   },
   {
@@ -943,7 +980,9 @@
    "imports": 115,
    "exports": 17,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1507
+   ]
   },
   {
    "path": "agent-server/apps/agent/entrypoints/sidepanel",
@@ -958,7 +997,9 @@
    "imports": 273,
    "exports": 68,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1506
+   ]
   },
   {
    "path": "agent-server/apps/agent/generated/graphql",
@@ -1033,7 +1074,9 @@
    "imports": 13,
    "exports": 35,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1505
+   ]
   },
   {
    "path": "agent-server/apps/agent/lib/changelog",
@@ -1336,7 +1379,9 @@
    "imports": 25,
    "exports": 17,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1508
+   ]
   },
   {
    "path": "agent-server/apps/eval/src/suites",
@@ -1441,7 +1486,9 @@
    "imports": 86,
    "exports": 59,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1509
+   ]
   },
   {
    "path": "agent-server/apps/server/src/api",
@@ -1471,7 +1518,9 @@
    "imports": 38,
    "exports": 59,
    "lastTouched": "2026-07-30T17:07:27+07:00",
-   "openIssues": []
+   "openIssues": [
+    1510
+   ]
   },
   {
    "path": "agent-server/apps/server/src/lib",
