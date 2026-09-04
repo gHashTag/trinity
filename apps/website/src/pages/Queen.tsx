@@ -1490,7 +1490,7 @@ function KanbanView({
             key={column.key}
             layout
           >
-            <header>
+            <header title={error ?? undefined}>
               <h3>{column.title}</h3>
               <span>{loaded ? columnCards.length : "—"}</span>
             </header>
@@ -1536,7 +1536,9 @@ function KanbanView({
                   )}
                 </motion.a>
               ))}
-              {columnCards.length === 0 && <em>{error ?? (loaded ? c.empty : "—")}</em>}
+              {columnCards.length === 0 && (
+                <em title={error ?? undefined}>{loaded ? c.empty : "—"}</em>
+              )}
             </div>
           </motion.article>
         );
@@ -1585,7 +1587,7 @@ function MissionMapView({
               key={column.key}
               layout
             >
-              <header>
+              <header title={error ?? undefined}>
                 <small>
                   {c.sector} {String(sectorIndex + 1).padStart(2, "0")}
                 </small>
@@ -1617,7 +1619,9 @@ function MissionMapView({
                     )}
                   </motion.a>
                 ))}
-                {columnCards.length === 0 && <em>{error ?? (loaded ? c.empty : "—")}</em>}
+                {columnCards.length === 0 && (
+                <em title={error ?? undefined}>{loaded ? c.empty : "—"}</em>
+              )}
               </div>
             </motion.section>
           );
@@ -2264,7 +2268,9 @@ export default function Queen() {
               </li>
               <li className="queen27-hud-menu-note">
                 <span>{c.source}</span>
-                <b>{state.kind === "error" ? state.error : c.refresh}</b>
+                <b title={state.kind === "error" ? state.error : undefined}>
+                  {state.kind === "error" ? c.hudOffline : c.refresh}
+                </b>
               </li>
             </ul>
           )}
@@ -2286,7 +2292,8 @@ export default function Queen() {
         className="queen27-hud-viewport"
         ref={viewportRef}
         aria-label={viewLabel}
-        data-pick-index={pickIndex ?? undefined}
+        data-errors-as="title"
+              data-pick-index={pickIndex ?? undefined}
         data-pick-number={pickedCard?.number ?? undefined}
       >
         <header className="queen27-hud-vp-head">

@@ -276,7 +276,17 @@ const PROBE = (phone) => `(() => {
     if (/^[0-9]+(\\s*\\/\\s*[0-9]+)?(\\s*%|\\s*cards|\\s*карточ\\S*)?$/i.test(text)) zeros.push((n.id ? '#' + n.id : n.className || n.tagName) + '=' + text);
   }
   const live = !!document.querySelector('#stat-status.is-live');
-  return { fail, counts, zeros, live, round: (document.getElementById('stat-round') || {}).textContent || '' };
+  // 10. Raw fetch error strings in content slots. "Failed to fetch" is the
+  // engine's English string; it must never be a column's, tile's or note's
+  // text (it may live in a title attribute). Asserted in --dead-api mode.
+  const RAW_SEL = '.queen27-cards em,.queen27-column em,.queen27-map-sector em,.queen27-hud-menu-note b,' +
+    '.queen27-factory em,.queen27-factory p,.queen27-factory span,.queen27-hud-res span,.queen27-hud-res strong';
+  const rawErrors = [];
+  for (const n of document.querySelectorAll(RAW_SEL)) {
+    const text = (n.textContent || '').replace(/\\s+/g, ' ').trim();
+    if (/fetch|http[s ]|TypeError|NetworkError|Load failed|ECONN|status \\d{3}/i.test(text)) rawErrors.push((n.className || n.tagName) + '=' + text.slice(0, 60));
+  }
+  return { fail, counts, zeros, live, rawErrors, round: (document.getElementById('stat-round') || {}).textContent || '' };
 })()`;
 
 const CLICK = (view) => `(() => {
@@ -342,6 +352,7 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);
     if (DEAD && result.live) fail.push('status pill reads LIVE with a dead API');
     if (DEAD) for (const z of result.zeros) fail.push('BARE ZERO ' + z);
+    if (DEAD) for (const r of result.rawErrors || []) fail.push('RAW ERROR AS CONTENT ' + r);
     if (counts.view !== 1) zero.push(`views=${counts.view}`);
     const problems = [...fail, ...zero.map(z => 'COUNT ' + z)];
     if (view === 'comb' || (w === 1440 && h === 900)) {
