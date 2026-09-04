@@ -40,6 +40,8 @@ import {
   ringOrder,
   type HudModule,
   withOpenIssues,
+  countdownFor,
+  serverOffsetMs,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -220,9 +222,9 @@ interface ActivityBuffer extends QueenActivity {
 }
 
 type LoadState =
-  | { kind: "loading"; data: null; error: null }
-  | { kind: "ready"; data: QueenStatus; error: null }
-  | { kind: "error"; data: QueenStatus | null; error: string };
+  | { kind: "loading"; data: null; error: null; offsetMs: null }
+  | { kind: "ready"; data: QueenStatus; error: null; offsetMs: number | null }
+  | { kind: "error"; data: QueenStatus | null; error: string; offsetMs: number | null };
 
 const COPY = {
   en: {
@@ -676,25 +678,31 @@ function useQueenStatus(): LoadState {
     kind: "loading",
     data: null,
     error: null,
+    offsetMs: null,
   });
 
   useEffect(() => {
     let active = true;
     const read = async () => {
       try {
+        const sentAt = Date.now();
         const response = await fetch(`${QUEEN_API}/queen/status`, {
           headers: { Accept: "application/json" },
           cache: "no-store",
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        // the server's clock rides on the Date header (P1-30); absent (not
+        // exposed across origins) it stays null and the client clock is used
+        const offsetMs = serverOffsetMs(response.headers.get("Date"), sentAt, Date.now());
         const data = (await response.json()) as QueenStatus;
-        if (active) setState({ kind: "ready", data, error: null });
+        if (active) setState({ kind: "ready", data, error: null, offsetMs });
       } catch (error) {
         if (!active) return;
         setState((previous) => ({
           kind: "error",
           data: previous.data,
           error: error instanceof Error ? error.message : String(error),
+          offsetMs: previous.offsetMs,
         }));
       }
     };
@@ -1808,9 +1816,10 @@ export default function Queen() {
   const roundSeconds =
     board?.pulse.roundSeconds ?? data?.scheduler.intervalSeconds ?? 0;
   const lastRoundAt = board?.pulse.lastRoundAt ?? decision?.decidedAt ?? null;
-  const elapsedSeconds = lastRoundAt
-    ? Math.max(0, (now - new Date(lastRoundAt).getTime()) / 1000)
-    : 0;
+  // server-relative: the client clock plus the offset the status answer
+  // carried, so a fast or slow client never invents an OVERDUE (P1-30)
+  const roundClock = countdownFor(now, state.offsetMs, lastRoundAt, roundSeconds);
+  const elapsedSeconds = roundClock.elapsed;
   // The clock is only as real as its two inputs, a round length and the
   // moment the last round happened: without both it reads "—", never a
   // fabricated 00:00:00. A disabled scheduler has no next round to count
@@ -2250,7 +2259,7 @@ export default function Queen() {
         >
           <i aria-hidden="true">◎</i>
           <small>{roundLabel}</small>
-          <strong id="stat-round">{countdown}</strong>
+          <strong id="stat-round" data-clock={state.offsetMs === null ? "client" : "server"}>{countdown}</strong>
           <span>
             {strip ? (
               <b className="queen27-hud-round-strip">{strip}</b>
