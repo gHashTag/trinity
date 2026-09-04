@@ -13,6 +13,8 @@
 /* The full-page comb styles its canvas through .queen27-comb-viewport, which
    the embedded field does not have; give it the same box and cursor here. */
 .queen27-comb.is-embedded canvas {
+  /* a touch drag orbits the field; without this the browser scrolls or zooms the page instead */
+  touch-action: none;
   display: block;
   width: 100%;
   height: 100%;

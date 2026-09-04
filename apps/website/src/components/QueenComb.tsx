@@ -702,24 +702,18 @@ export function QueenComb({
     if (!camera.manual) fitToBox();
 
     let drag: { x: number; y: number } | null = null;
+    // How far the pointer travelled since it went down. A tap is a click; a
+    // drag is an orbit and must never end in a pick. Before this, a mouse drag
+    // ended by picking whatever was hovered before it, and a touch tap picked
+    // nothing at all: touch fires no pointermove before pointerdown, so the
+    // hover the click relied on was never computed.
+    let travelled = 0;
     const local = (e: PointerEvent | MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       return [e.clientX - rect.left, e.clientY - rect.top] as const;
     };
-    const onDown = (e: PointerEvent) => {
-      const [x, y] = local(e);
-      drag = { x, y };
-      camera.auto = false;
-      canvas.setPointerCapture(e.pointerId);
-    };
-    const onMove = (e: PointerEvent) => {
-      const [x, y] = local(e);
-      if (drag) {
-        camera.yaw += (x - drag.x) * 0.006;
-        camera.pitch = Math.max(0, Math.min(1.5, camera.pitch + (y - drag.y) * 0.005));
-        drag = { x, y };
-        return;
-      }
+    // The cell under a screen point, or -1 when none is within a third of a cell.
+    const cellAt = (x: number, y: number) => {
       let best = -1;
       let bestDist = Number.POSITIVE_INFINITY;
       const cells = cellsRef.current;
@@ -731,13 +725,33 @@ export function QueenComb({
           best = i;
         }
       }
-      hoverRef.current = bestDist < (S * 0.3) ** 2 ? best : -1;
+      return bestDist < (S * 0.3) ** 2 ? best : -1;
+    };
+    const onDown = (e: PointerEvent) => {
+      const [x, y] = local(e);
+      drag = { x, y };
+      travelled = 0;
+      camera.auto = false;
+      canvas.setPointerCapture(e.pointerId);
+    };
+    const onMove = (e: PointerEvent) => {
+      const [x, y] = local(e);
+      if (drag) {
+        travelled += Math.hypot(x - drag.x, y - drag.y);
+        camera.yaw += (x - drag.x) * 0.006;
+        camera.pitch = Math.max(0, Math.min(1.5, camera.pitch + (y - drag.y) * 0.005));
+        drag = { x, y };
+        return;
+      }
+      hoverRef.current = cellAt(x, y);
     };
     const onUp = () => {
       drag = null;
     };
-    const onClick = () => {
-      const index = hoverRef.current;
+    const onClick = (e: MouseEvent) => {
+      if (travelled > 6) return;
+      const [x, y] = local(e);
+      const index = cellAt(x, y);
       if (index < 0) return;
       pickedRef.current = index;
       setPicked(index);
