@@ -636,8 +636,12 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       if (travelled > 6) { travelled = 0; return; }
       const rect = canvas.getBoundingClientRect();
       const index = cellUnder(e.clientX - rect.left, e.clientY - rect.top);
-      if (index < 0) return;
+      if (index < 0) { host.setAttribute("data-hit", "off"); return; }
       const card = cards[index];
+      // a cell with no module is empty ground (P1-10): the click clears the
+      // selection, as on an RTS map, and never picks a cardless cell
+      if (!card && index !== home) { host.setAttribute("data-hit", "void"); onPickRef.current?.(null); return; }
+      host.setAttribute("data-hit", index === home ? "queen" : "module");
       const b = beeAt(index);
       onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: b ? { slot: b.slot, line: b.line, busy: b.busy } : null } as HudPick);
     });
@@ -707,7 +711,8 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const p = pickRef.current;
       if (p !== null && cells[p]) placeRing(picked, p, 1.4); else picked.isVisible = false;
       if (p !== flaredPick) { flaredPick = p; if (p !== null && cells[p] && effects.length < RING_POOL) effects.push({ index: p, tone: "muted", start: nowMs, flip: false, flare: ringTone(cells[p].own as Territory) }); }
-      if (hover >= 0 && hover !== p && cells[hover]) placeDashed(hover, 1.4); else hovered.isVisible = false;
+      // no hover ring on empty ground (P1-10): only modules and the Queen's hub answer the pointer
+      if (hover >= 0 && hover !== p && cells[hover] && (cards[hover] || hover === home)) placeDashed(hover, 1.4); else hovered.isVisible = false;
       scene.render();
       frames += 1;
       if (frames === 1) host.setAttribute("data-first-frame-ms", String(Math.round(nowMs - t0)));

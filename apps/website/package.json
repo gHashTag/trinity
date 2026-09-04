@@ -34,6 +34,7 @@
     "check:queen-pick": "node qa/queen-pick-contract.mjs",
     "check:queen-placement": "node qa/queen-placement-contract.mjs",
     "check:queen-stale": "node qa/queen-stale-contract.mjs",
+    "check:queen-void": "node qa/queen-void-contract.mjs",
     "check:queen-babylon": "npx vite build && QUEEN_ENGINE=babylon node qa/queen-pick-contract.mjs --no-build && QUEEN_ENGINE=babylon node qa/queen-placement-contract.mjs --no-build && QUEEN_ENGINE=babylon node qa/queen-touch-contract.mjs --no-build"
   },
   "dependencies": {
