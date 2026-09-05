@@ -11,21 +11,26 @@
 // came from, and avoids Monaco's CDN fetch on a page that already loads a
 // 477 KB wasm module.
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { SpecCodeView } from '../components/SpecCodeView'
+import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
   analyze,
   loadManifest,
   loadSpecSource,
+  type Health,
   type SpecEntry,
   type SpecManifest,
   type T27Analysis,
   type T27Node,
 } from '../lib/t27Compiler'
+
+/** Shape as well as colour, so status survives a colour-blind reader. */
+const HEALTH_GLYPH: Record<Health, string> = { ok: '✓', warn: '⚠', fail: '✕' }
 
 const UI = {
   en: {
@@ -80,6 +85,18 @@ const UI = {
     copied: 'Copied',
     highlightNote: 'Coloured from the compiler’s own token stream',
     generated: 'generated',
+    working: 'Working',
+    warnings: 'Warnings',
+    broken: 'Broken',
+    all: 'All',
+    healthOk: 'Clean through every layer',
+    healthWarn: 'Compiles, but the compiler flagged or dropped something',
+    healthFail: 'A backend refused this spec outright',
+    corpusHealth: 'corpus health',
+    startHere: 'START HERE',
+    noneInGroup: 'Nothing in this group.',
+    droppedItems: 'dropped',
+    typeErrs: 'type errors',
   },
   ru: {
     title: 'Обозреватель спек',
@@ -133,6 +150,18 @@ const UI = {
     copied: 'Скопировано',
     highlightNote: 'Раскрашено по собственному потоку токенов компилятора',
     generated: 'сгенерировано',
+    working: 'Рабочие',
+    warnings: 'С замечаниями',
+    broken: 'Сломанные',
+    all: 'Все',
+    healthOk: 'Чисто на всех слоях',
+    healthWarn: 'Компилируется, но компилятор что-то отбросил или пометил',
+    healthFail: 'Бэкенд отказался обрабатывать эту спеку',
+    corpusHealth: 'здоровье корпуса',
+    startHere: 'НАЧНИТЕ ЗДЕСЬ',
+    noneInGroup: 'В этой группе пусто.',
+    droppedItems: 'отброшено',
+    typeErrs: 'ошибок типов',
   },
 } as const
 
@@ -289,6 +318,9 @@ export default function SpecExplorer() {
   const [manifest, setManifest] = useState<SpecManifest | null>(null)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('')
+  // Healthy specs first, by default: this is a catalogue to browse, not a
+  // triage queue. The problem groups are one click away and carry their counts.
+  const [healthFilter, setHealthFilter] = useState<Health | 'all'>('ok')
   const [selected, setSelected] = useState<SpecEntry | null>(null)
   const [source, setSource] = useState('')
   const [result, setResult] = useState<T27Analysis | null>(null)
@@ -300,9 +332,20 @@ export default function SpecExplorer() {
   const [kindFilter, setKindFilter] = useState('')
   const [tokenLimit, setTokenLimit] = useState(400)
   const [ms, setMs] = useState<number | null>(null)
+  // `pick` is defined below but needed by the mount effect above; a ref keeps
+  // the ordering honest without hoisting the callback out of the component.
+  const pickRef = useRef<((s: SpecEntry) => Promise<void>) | null>(null)
 
   useEffect(() => {
-    loadManifest().then(setManifest).catch((e) => setErr(String(e)))
+    loadManifest()
+      .then((m) => {
+        setManifest(m)
+        // Open the teaching spec straight away: an empty pane teaches nothing,
+        // and this one is small enough to read end to end.
+        const first = m.specs.find((s) => s.featured) ?? m.specs[0]
+        if (first) void pickRef.current?.(first)
+      })
+      .catch((e) => setErr(String(e)))
   }, [])
 
   // Inline styles cannot carry media queries, and the header has three pieces
@@ -320,15 +363,17 @@ export default function SpecExplorer() {
     if (!manifest) return []
     const q = query.trim().toLowerCase()
     return manifest.specs.filter((s) => {
+      if (healthFilter !== 'all' && s.health !== healthFilter) return false
       if (category && s.category !== category) return false
       if (!q) return true
       return (
         s.path.toLowerCase().includes(q) ||
         s.name.toLowerCase().includes(q) ||
-        (s.module ? s.module.toLowerCase().includes(q) : false)
+        (s.module ? s.module.toLowerCase().includes(q) : false) ||
+        (s.description ? s.description.toLowerCase().includes(q) : false)
       )
     })
-  }, [manifest, query, category])
+  }, [manifest, query, category, healthFilter])
 
   const pick = useCallback(async (spec: SpecEntry) => {
     setSelected(spec)
@@ -354,6 +399,8 @@ export default function SpecExplorer() {
       setBusy(false)
     }
   }, [])
+
+  pickRef.current = pick
 
   const toggle = useCallback((path: string) => {
     setOpen((prev) => {
@@ -549,6 +596,50 @@ export default function SpecExplorer() {
                   </option>
                 ))}
             </select>
+            {/* Counts live inside the filter, so the summary and the
+                navigation are one control rather than two that can disagree.
+                Every spec is counted once, at its worst stage, so these sum
+                to the corpus total. */}
+            {manifest && (
+              <>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                  {([
+                    ['ok', ui.working, manifest.health.ok],
+                    ['warn', ui.warnings, manifest.health.warn],
+                    ['fail', ui.broken, manifest.health.fail],
+                    ['all', ui.all, manifest.specCount],
+                  ] as [Health | 'all', string, number][]).map(([k, label, n]) => {
+                    const on = healthFilter === k
+                    const col = k === 'all' ? C.muted : HEALTH_COLOR[k]
+                    return (
+                      <button
+                        key={k}
+                        onClick={() => setHealthFilter(k)}
+                        aria-pressed={on}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          background: on ? 'rgba(255,255,255,0.07)' : 'transparent',
+                          border: `1px solid ${on ? col : C.border}`,
+                          borderRadius: 999,
+                          color: on ? col : C.muted,
+                          padding: '2px 9px',
+                          cursor: 'pointer',
+                          fontSize: 11,
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        {k !== 'all' && <span aria-hidden="true">{HEALTH_GLYPH[k]}</span>}
+                        <span>{label}</span>
+                        <span style={{ fontFamily: C.mono, opacity: 0.8 }}>{n}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <HealthBar health={manifest.health} total={manifest.specCount} />
+              </>
+            )}
             <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>
               {filtered.length} {ui.specs}
             </div>
@@ -556,38 +647,100 @@ export default function SpecExplorer() {
 
           <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
             {filtered.length === 0 && manifest && (
-              <div style={{ padding: 14, fontSize: 12.5, color: C.muted }}>{ui.noResults}</div>
+              <div style={{ padding: 14, fontSize: 12.5, color: C.muted }}>
+                {query || category ? ui.noResults : ui.noneInGroup}
+              </div>
             )}
             {filtered.map((s) => {
               const active = selected?.path === s.path
+              const dir = s.path.slice(0, s.path.lastIndexOf('/') + 1)
               return (
                 <button
                   key={s.path}
                   onClick={() => pick(s)}
-                  // The visible label is two nested divs, which leaves the
-                  // button with no accessible name -- spell it out.
-                  aria-label={`${s.module || s.name} — ${s.path}, ${s.lines} ${ui.lines}`}
+                  // The visible label is nested divs, which leaves the button
+                  // with no accessible name -- spell it out.
+                  aria-label={`${s.module || s.name} — ${s.path}, ${s.lines} ${ui.lines}, ${s.health}`}
                   aria-current={active ? 'true' : undefined}
                   style={{
-                    display: 'block',
+                    display: 'flex',
+                    gap: 8,
                     width: '100%',
                     textAlign: 'left',
                     background: active ? 'rgba(0,255,136,0.10)' : 'transparent',
                     border: 'none',
                     borderLeft: `2px solid ${active ? C.accent : 'transparent'}`,
                     color: active ? C.accent : C.text,
-                    padding: '6px 10px',
+                    padding: '7px 10px',
                     cursor: 'pointer',
                     fontFamily: C.mono,
                     fontSize: 12,
+                    alignItems: 'flex-start',
                   }}
                 >
-                  <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {s.module || s.name}
-                  </div>
-                  <div style={{ color: C.muted, fontSize: 10.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {s.path} · {s.lines}
-                  </div>
+                  <span style={{ paddingTop: 2 }}>
+                    <HealthDot health={s.health} />
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 600 }}>
+                        {s.module || s.name}
+                      </span>
+                      {s.featured && (
+                        <span
+                          style={{
+                            fontSize: 8.5,
+                            letterSpacing: 0.5,
+                            color: C.golden,
+                            border: `1px solid ${C.golden}`,
+                            borderRadius: 3,
+                            padding: '0 4px',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {ui.startHere}
+                        </span>
+                      )}
+                    </span>
+                    {/* Dim the directory, keep the basename readable. */}
+                    <span
+                      style={{
+                        display: 'block',
+                        fontSize: 10,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        color: C.muted,
+                      }}
+                    >
+                      <span style={{ opacity: 0.55 }}>{dir}</span>
+                      {s.path.slice(dir.length)} · {s.lines}
+                    </span>
+                    {s.description && (
+                      <span
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          fontFamily: "'Outfit', system-ui, sans-serif",
+                          fontSize: 11,
+                          lineHeight: 1.4,
+                          color: '#9aa0a6',
+                          marginTop: 2,
+                        }}
+                      >
+                        {s.description}
+                      </span>
+                    )}
+                    {s.health !== 'ok' && (
+                      <span style={{ display: 'block', fontSize: 10, color: HEALTH_COLOR[s.health], marginTop: 2 }}>
+                        {s.failedBackends.length > 0 && `${s.failedBackends.join(', ')} ✕ `}
+                        {s.loss > 0 && `${s.loss} ${ui.droppedItems} `}
+                        {s.tcErrors > 0 && `${s.tcErrors} ${ui.typeErrs}`}
+                      </span>
+                    )}
+                  </span>
                 </button>
               )
             })}
@@ -623,6 +776,9 @@ export default function SpecExplorer() {
                   color: C.muted,
                 }}
               >
+                <span style={{ color: HEALTH_COLOR[selected.health] }} title={ui[selected.health === 'ok' ? 'healthOk' : selected.health === 'warn' ? 'healthWarn' : 'healthFail']}>
+                  {HEALTH_GLYPH[selected.health]}
+                </span>
                 <span style={{ color: C.golden, fontWeight: 600 }}>{selected.path}</span>
                 {busy && <span style={{ color: C.accent }}>{ui.compiling}</span>}
                 {result && (
@@ -636,6 +792,36 @@ export default function SpecExplorer() {
                   </>
                 )}
               </div>
+
+              {/* description + pipeline: what this spec is, and where it dies */}
+              {(selected.description || result) && (
+                <div
+                  style={{
+                    flexShrink: 0,
+                    padding: '10px 14px 0',
+                    display: 'flex',
+                    gap: 18,
+                    alignItems: 'flex-start',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {selected.description && (
+                    <p style={{ margin: 0, flex: '1 1 320px', minWidth: 0, fontSize: 12.5, lineHeight: 1.55, color: '#b9bfc6', maxWidth: 'none' }}>
+                      {selected.description}
+                    </p>
+                  )}
+                  {result && (
+                    <div style={{ flex: '0 1 340px', minWidth: 220 }}>
+                      <PipelineRibbon
+                        result={result}
+                        active={layer}
+                        onPick={(id) => setLayer(id as LayerId)}
+                        labels={LAYER_LABEL}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* loss banner -- the honest bit */}
               {result && lossCount > 0 && (

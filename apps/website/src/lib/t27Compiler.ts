@@ -55,6 +55,8 @@ export interface T27Analysis {
   error?: string
 }
 
+export type Health = 'ok' | 'warn' | 'fail'
+
 export interface SpecEntry {
   path: string
   category: string
@@ -62,6 +64,20 @@ export interface SpecEntry {
   module: string | null
   lines: number
   bytes: number
+  /** Leading comment block of the spec, boilerplate stripped. */
+  description: string | null
+  /** Precomputed at sync time by running this same compiler over the corpus. */
+  health: Health
+  tokens: number
+  nodes: number
+  depth: number
+  /** Declarations + constructs + characters the compiler dropped. */
+  loss: number
+  tcErrors: number
+  failedBackends: string[]
+  outBytes: Record<string, number | null>
+  /** The spec the page opens on. */
+  featured?: boolean
 }
 
 export interface SpecManifest {
@@ -70,6 +86,10 @@ export interface SpecManifest {
   specCount: number
   totalLines: number
   categories: Record<string, number>
+  health: Record<Health, number>
+  backendFailures: Record<string, number>
+  featured: string
+  totals: { tokens: number; nodes: number; lossAffected: number; tcAffected: number }
   specs: SpecEntry[]
 }
 
