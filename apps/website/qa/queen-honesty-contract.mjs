@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { alertCount, alertSpan, beeSilence, buildingPlan, feedCoverage, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { alertCount, alertSpan, beeSilence, buildingPlan, feedCoverage, foundationCells, foundationOrder, hexCellCount, hexCentres, hexCorners, hexField, hexIndexAt, hexRing, hexRingStart, hexToWorld, honeyTone, layersFromSearch, spiralAxial, spiralIndex, spiralOrder, HEX_R, S_CELL, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -42,11 +42,11 @@ check(/skipReasonWords\(reason\)/.test(src) && /roundStrip\(/.test(src), "the pa
 
 // self-test: the contract must be able to fail
 const A = [{ number: 5 }, { number: 4 }, { number: 3 }];
-const pa = placeCards(new Map(), A, fieldShape(A.length).cellCount);
-check(pa.placed.slice(0, 3).map((c) => c && c.number).join(",") === "5,4,3" && pa.placed.length === fieldShape(3).cellCount, "first placement is wire order on a field of the right size");
-const pb = placeCards(pa.ledger, [{ number: 6 }, ...A], fieldShape(4).cellCount);
+const pa = placeCards(new Map(), A, hexField(A.length).cellCount);
+check(pa.placed.slice(0, 3).map((c) => c && c.number).join(",") === "5,4,3" && pa.placed.length === hexField(3).cellCount, "first placement is wire order on a field of the right size");
+const pb = placeCards(pa.ledger, [{ number: 6 }, ...A], hexField(4).cellCount);
 check(pb.placed[0]?.number === 5 && pb.placed[1]?.number === 4 && pb.placed[2]?.number === 3 && pb.placed[3]?.number === 6, "a head insert leaves every known card on its cell; the new card takes the first free cell");
-const pc = placeCards(pb.ledger, [{ number: 6 }, { number: 3 }, { number: 5 }], fieldShape(3).cellCount);
+const pc = placeCards(pb.ledger, [{ number: 6 }, { number: 3 }, { number: 5 }], hexField(3).cellCount);
 check(pc.placed[0]?.number === 5 && pc.placed[1] === null && pc.placed[2]?.number === 3 && pc.placed[3]?.number === 6 && pa.ledger.size === 3, "a departed card frees its cell, nobody moves, the input ledger is untouched");
 check(placeCards(new Map([[7, 500]]), [{ number: 7 }], 27).placed[0]?.number === 7, "an index outside the field is re-placed");
 const t0 = Date.parse("2026-09-04T09:00:00Z");
@@ -63,17 +63,27 @@ check(moduleColumn(M({ openIssues: [5] }), T, new Set([5])) === "running" && mod
 check(moduleColumn(M({ lastTouched: "2026-09-01T00:00:00Z" }), T, new Set()) === "done" && moduleColumn(M({ lastTouched: "2026-01-01T00:00:00Z" }), T, new Set()) === "dropped" && moduleColumn(M({ lastTouched: "2026-06-01T00:00:00Z" }), T, new Set()) === "backlog", "touched within 30 days is alive, 180 days dormant, between is backlog");
 check(moduleFor("trios/agent-server/apps/server/src/lib/agents/x.ts", [M({ path: "agent-server" }), M({ path: "agent-server/apps/server/src" })])?.path === "agent-server/apps/server/src" && moduleFor("nowhere/x.ts", [M({ path: "agent-server" })]) === null, "a file belongs to the longest module path that prefixes it");
 check(pathInTitle("trios/agent-server/apps/server/src/api/x.ts breaks L3") === "trios/agent-server/apps/server/src/api/x.ts" && pathInTitle("no path here") === null, "the first path in a title, or none");
-const geo = cellGeometry(114);
-check(geo.length === fieldShape(114).cellCount, "cell geometry has one centre per cell of the field's shape");
-const order = ringOrder(geo, Math.floor(geo.length / 2));
-check(order[0] === Math.floor(geo.length / 2) && order.length === geo.length && new Set(order).size === geo.length, "ring order starts at home and visits every cell once");
-const d = (i) => (geo[i].x - geo[order[0]].x) ** 2 + (geo[i].y - geo[order[0]].y) ** 2;
-check(order.every((i, k) => k === 0 || d(i) >= d(order[k - 1])), "ring order never moves inward");
-const shape3 = fieldShape(3);
-const home3 = Math.floor(shape3.cellCount / 2);
-const ringed = placeCards(new Map(), [{ number: 1 }, { number: 2 }, { number: 3 }], shape3.cellCount, ringOrder(cellGeometry(3), home3));
-check(ringed.ledger.get(1) === home3 && ringed.placed[home3]?.number === 1, "with a ring order the first card takes the home cell");
-check(fieldShape(165).cellCount === 189 && fieldShape(114).cellCount === 138, "the field's cell count is the comb's (189 for 165 cards, not 195)");
+// the hex spiral (the honeycomb foundation, 2026-09-05): pointy-top, cell 0 is the hub, ring k holds 6k cells
+check(hexCellCount(18) === 1027 && hexField(1010).rings === 18 && hexField(1010).cellCount === 1027 && hexField(165).rings === 7 && hexField(165).cellCount === 169 && hexField(114).cellCount === 127 && hexField(3).cellCount === 37, "1009 closed issues plus the hub fill 18 rings of 1027 cells; 165 cards 7 rings; 114 cards 6 rings; the smallest field has 37 cells");
+const anchors = [[1, 1, 0], [6, 0, 1], [7, 2, 0], [18, 1, 1], [19, 3, 0], [1026, 17, 1]];
+check(anchors.every(([i, q, r]) => spiralAxial(i).q === q && spiralAxial(i).r === r) && spiralAxial(0).q === 0 && spiralAxial(0).r === 0, "the spiral's anchors: cell 1 due east, each ring starts due east, the last cell of ring 18 is (17,1)");
+check(Array.from({ length: 1027 }, (_, i) => i).every((i) => spiralIndex(spiralAxial(i)) === i), "spiral index and spiral axial are inverses for every cell of 18 rings");
+check(Array.from({ length: 1027 }, (_, i) => hexRing(spiralAxial(i))).every((k, i, a) => i === 0 || k >= a[i - 1]) && Array.from({ length: 18 }, (_, k) => k + 1).every((k) => hexRing(spiralAxial(hexRingStart(k))) === k), "the spiral never moves inward and ring k begins at 3k(k-1)+1");
+check(Math.abs(hexToWorld({ q: 1, r: 0 }).x - S_CELL) < 1e-9 && Math.abs(HEX_R * Math.sqrt(3) - S_CELL) < 1e-9, "neighbours stand 150 apart, today's cell side, so every building scale holds");
+check(Array.from({ length: 1027 }, (_, i) => i).every((i) => { const w = hexToWorld(spiralAxial(i)); return hexIndexAt(w.x, w.y, 1027) === i; }), "a world point at a cell's centre reads back as that cell, for all 1027");
+const c31 = hexToWorld({ q: 3, r: -1 }), c41 = hexToWorld({ q: 4, r: -1 });
+check(hexIndexAt(c31.x + (c41.x - c31.x) * 0.4, c31.y, 1027) === spiralIndex({ q: 3, r: -1 }) && hexIndexAt(c31.x + (c41.x - c31.x) * 0.6, c31.y, 1027) === spiralIndex({ q: 4, r: -1 }), "a point four tenths of the way to the neighbour still reads its own cell; six tenths reads the neighbour");
+check(hexIndexAt(hexToWorld({ q: 19, r: 0 }).x, 0, 1027) === -1 && hexCorners({ q: 0, r: 0 }).length === 6 && hexCorners({ q: 0, r: 0 }).every((p) => Math.abs(Math.hypot(p.x, p.y) - HEX_R) < 1e-9), "a point beyond the last ring reads no cell; a hex has six corners at the circumradius");
+check(hexCentres(127).length === 127 && spiralOrder(37).length === 36 && spiralOrder(37)[0] === 1 && !spiralOrder(37).includes(0) && new Set(spiralOrder(37)).size === 36, "one centre per cell; the spiral order visits every cell but the hub, cell 1 first");
+const ringed = placeCards(new Map(), [{ number: 1 }, { number: 2 }, { number: 3 }], 37, spiralOrder(37));
+check(ringed.ledger.get(1) === 1 && ringed.placed[0] === null && ringed.placed[1]?.number === 1 && ringed.placed[2]?.number === 2, "with the spiral order the first card takes cell 1; cell 0 is the hub and never a card's");
+check(placeCards(new Map(), [{ number: 8 }, { number: 9 }], 37, [5, 6]).ledger.size === 2 && placeCards(new Map(), [{ number: 8 }, { number: 9 }], 37, [5, 6]).placed[6]?.number === 9, "an order shorter than the field is honoured as far as it goes");
+// the foundation: one cell per closed issue, in closed_at order, from a dated snapshot
+const fdIssues = [{ number: 5, title: "b", closedAt: "2026-09-05T00:00:02Z", labels: [], epicRefs: [] }, { number: 4, title: "a", closedAt: "2026-09-05T00:00:01Z", labels: [], epicRefs: [] }, { number: 9, title: "c", closedAt: "not a date", labels: [], epicRefs: [] }];
+check(foundationOrder(fdIssues).map((i) => i.number).join(",") === "4,5,9" && foundationCells(fdIssues, 37)[0] === null && foundationCells(fdIssues, 37)[1]?.number === 4 && foundationCells(fdIssues, 37)[2]?.number === 5, "closed_at ascending, an undatable close last; index i+1 holds the i-th; the hub holds nothing");
+const fdNow = Date.parse("2026-09-05T12:00:00Z");
+check(honeyTone("2026-09-05T11:00:00Z", fdNow)[0] > honeyTone("2026-09-01T00:00:00Z", fdNow)[0] && honeyTone("2026-09-01T00:00:00Z", fdNow)[0] > honeyTone("2026-05-01T00:00:00Z", fdNow)[0] && honeyTone("bad", fdNow)[3] === 1, "fresh honey is brightest, a week old warmer than a season old; an undatable close still reads as honey");
+check(layersFromSearch("").foundation && layersFromSearch("").castle && layersFromSearch("").code && layersFromSearch("?layers=castle").castle && !layersFromSearch("?layers=castle").foundation && !layersFromSearch("?layers=none").code && layersFromSearch("?layers=bogus,code").code, "no parameter: every layer on; a list: exactly those; none: none; unknown names ignored");
 // the shape grammar (M-3): the building is a pure function of the signature
 const sig = M({ path: "agent-server/apps/server/src", language: "typescript", lines: 12000, functions: 900, imports: 60, exports: 40 });
 check(planHash(buildingPlan(sig)) === planHash(buildingPlan({ ...sig })), "the same signature yields the same building");
