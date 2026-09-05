@@ -101,6 +101,9 @@ const MODELS = {
   scribe: "astronautA", wright: "rover", lapidary: "astronautB", larva: "alien",
   // the honeycomb foundation (Kenney Hexagon Kit, CC0): one flat terrain hex per closed issue
   tile: "hex-sand",
+  // the castle of the rings (K-0): a plinth per ring directory on spiral ring 7, towers by epic stage
+  plinth: "hex-stone", wall: "hex-building-wall", walls: "hex-building-walls", tower: "hex-building-tower",
+  wizardTower: "hex-building-wizard-tower", keep: "hex-building-castle", unitTower: "hex-unit-tower",
 } as const;
 type ModelKey = keyof typeof MODELS;
 const MARGIN = S * 2;

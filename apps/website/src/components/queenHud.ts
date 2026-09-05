@@ -461,6 +461,78 @@ export function spiralOrder(cellCount: number, from = 1): number[] {
   return Array.from({ length: Math.max(0, cellCount - from) }, (_, i) => from + i);
 }
 
+/**
+ * THE CASTLE OF THE RINGS (K-1). The 21 ring directories of the repository
+ * stand on spiral ring 7: a plinth on every other cell in name order, a wall
+ * piece on the cell between. A place is a convention, never a claim, so it
+ * never moves when data changes. An epic binds to a ring by the ring:<NAME>
+ * label first, then by a directory name in its title, else it is unassigned
+ * and stands at the keep. A tower's stage follows its children on GitHub.
+ */
+export const CASTLE_RING = 7;
+export type RingFamily = "RUST" | "SR" | "T27" | "other";
+export function ringFamily(ring: string): RingFamily {
+  if (ring.startsWith("RUST-")) return "RUST";
+  if (ring.startsWith("SR-")) return "SR";
+  if (ring.startsWith("T27-")) return "T27";
+  return "other";
+}
+/** The mark's three colours per family (gold, cyan, green), grey for the rest. */
+export function familyTint(family: RingFamily): [number, number, number, number] {
+  if (family === "RUST") return [1, 0.83, 0.35, 1];
+  if (family === "SR") return [0.39, 0.86, 1, 1];
+  if (family === "T27") return [0, 1, 0.53, 1];
+  return [0.6, 0.6, 0.6, 1];
+}
+export interface CastlePlace { ring: string; plinth: number; wall: number }
+/** Plinths on the odd cells of ring 7 in name order, walls on the even ones between; independent of the input's order. */
+export function castlePlaces(rings: readonly string[]): CastlePlace[] {
+  const cells = hexRingCells(CASTLE_RING);
+  return [...new Set(rings)].sort().map((ring, i) => ({ ring, plinth: cells[(2 * i) % cells.length], wall: cells[(2 * i + 1) % cells.length] }));
+}
+export interface EpicChild { number: number; title: string; state: string; closedAt: string | null }
+export interface EpicRecord { number: number; title: string; state: string; closedAt: string | null; labels: string[]; ring?: string | null; ringBy?: string | null; children: EpicChild[] }
+const RING_NAME = /\b(RUST-\d{2}|SR-\d{2}|T27-\d{2})\b/;
+/** Which ring an epic builds: its ring:<NAME> label, else a directory name in its title, else none. */
+export function ringOfEpic(epic: EpicRecord, rings: readonly string[]): { ring: string | null; by: "label" | "title" | null } {
+  const known = new Set(rings);
+  for (const label of epic.labels) {
+    const m = /^ring:(.+)$/.exec(label);
+    if (m && known.has(m[1])) return { ring: m[1], by: "label" };
+  }
+  const t = RING_NAME.exec(epic.title);
+  if (t && known.has(t[1])) return { ring: t[1], by: "title" };
+  return { ring: null, by: null };
+}
+/** Closed children over all children; no children means no ratio, never 0. */
+export function epicProgress(epic: EpicRecord): { closed: number; total: number; ratio: number | null } {
+  const total = epic.children.length;
+  const closed = epic.children.filter((c) => c.state === "closed").length;
+  return { closed, total, ratio: total > 0 ? closed / total : null };
+}
+export type TowerStage = "plinth" | "walls" | "tower" | "wizardTower";
+/** No children: a plinth. A closed child: walls. Half closed: a tower. The epic closed with every child closed: the wizard tower. */
+export function towerStage(epic: EpicRecord): TowerStage {
+  const p = epicProgress(epic);
+  if (p.total === 0 || p.ratio === null) return "plinth";
+  if (epic.state === "closed" && p.closed === p.total) return "wizardTower";
+  if (p.ratio >= 0.5) return "tower";
+  if (p.closed > 0) return "walls";
+  return "plinth";
+}
+/** A ring's epics and their children, counted only for the epics bound to it. */
+export function ringSummary(ring: string, epics: readonly EpicRecord[], rings: readonly string[]): { epics: number; closed: number; total: number; ratio: number | null } {
+  const mine = epics.filter((e) => ringOfEpic(e, rings).ring === ring);
+  const closed = mine.reduce((n, e) => n + epicProgress(e).closed, 0);
+  const total = mine.reduce((n, e) => n + epicProgress(e).total, 0);
+  return { epics: mine.length, closed, total, ratio: total > 0 ? closed / total : null };
+}
+/** A wall rises only between two rings whose every epic is a keep. */
+export function wallBetween(a: readonly EpicRecord[], b: readonly EpicRecord[]): boolean {
+  const done = (list: readonly EpicRecord[]) => list.length > 0 && list.every((e) => towerStage(e) === "wizardTower");
+  return done(a) && done(b);
+}
+
 /** A closed GitHub issue as the loop's snapshot records it (foundation.json). */
 export interface FoundationIssue {
   number: number;
