@@ -29,7 +29,7 @@ const ROUTE = '#/queen';
 const SHOTS = '/tmp/hud-shots';
 const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 600], [390, 844]];
 const VIEWS = ['comb', 'kanban', 'map', 'factory', 'research'];
-const DATA_WAIT_MS = 8000;
+const DATA_WAIT_MS = 60000; // under the gate chain's load the sectors rows render late (the "sectors=0" readiness flake, cycles 015 and 035): a minute, like the windows gate
 const SETTLE_MS = 700;
 
 const CHROMES = [
