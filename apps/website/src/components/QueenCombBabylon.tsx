@@ -89,6 +89,8 @@ const MODELS = {
   done: "hangar_smallA", doneDepot: "hangar_roundA", doneSilo: "structure_closed",
   blocked: "gate_complex", dropped: "crater", hub: "hangar_largeA", crystal: "rock_crystalsLargeA",
   scribe: "astronautA", wright: "rover", lapidary: "astronautB", larva: "alien",
+  // the honeycomb foundation (Kenney Hexagon Kit, CC0): one flat terrain hex per closed issue
+  tile: "hex-sand",
 } as const;
 type ModelKey = keyof typeof MODELS;
 const MARGIN = S * 1.2;
