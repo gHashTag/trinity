@@ -7,7 +7,7 @@
 // derivable from these types, the number does not exist yet and the panel
 // must say so rather than invent it.
 
-export type HudView = "comb" | "kanban" | "map" | "factory" | "research";
+export type HudView = "comb" | "kanban" | "map" | "factory" | "research" | "specs";
 export const HUD_VIEWS: readonly HudView[] = [
   "comb",
   "kanban",
