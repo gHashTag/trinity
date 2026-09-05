@@ -57,13 +57,13 @@ export const papers: Resource[] = [
     title:
       'Golden Ruler: A Numeric Format Catalog with Bit-Exact Conformance Vectors for FP8, BF16, MXFP4, and Microscaling Formats',
     href: 'https://arxiv.org/abs/2606.09686',
-    id: 'arXiv:2606.09686v3',
+    id: 'arXiv:2606.09686',
     verified: '2026-09-05',
     status: 'live',
     note:
-      'v3 submitted 4 Sep 2026, announces Mon 7 Sep 2026, 19 pp; until then arXiv shows the v2 title ("An 83-Format Numeric Catalog…"). The format count is a catalog invariant that grows with each version (109 formats in 12 clusters at v3; 83 at v2) — do not hard-code it. The 84-format title of v1 is historical.',
+      'cs.AR primary. v3 (new title, 19 pp) submitted 4 Sep 2026, announces Mon 7 Sep 2026; before the announcement the arXiv page still carries the v2 title, and the versioned v3 identifier does not resolve until then. The format count is a catalog invariant that grows with each version (109 formats in 12 clusters at v3; 83 at v2) — do not hard-code it. The 84-format title of v1 is historical.',
     noteRu:
-      'v3 подана 4 сентября 2026 года, анонс в понедельник 7 сентября 2026 года, 19 страниц; до этого arXiv показывает заголовок v2 («An 83-Format Numeric Catalog…»). Число форматов в каталоге растёт от версии к версии (109 форматов в 12 кластерах в v3; 83 в v2) — не зашивать его в тексты. Заголовок v1 про 84 формата — историческая запись.',
+      'Основная рубрика cs.AR. v3 (новый заголовок, 19 страниц) подана 4 сентября 2026 года, анонс в понедельник 7 сентября 2026 года; до анонса страница arXiv ещё несёт заголовок v2, а версионный идентификатор v3 до этого не открывается. Число форматов в каталоге растёт от версии к версии (109 форматов в 12 кластерах в v3; 83 в v2) — не зашивать его в тексты. Заголовок v1 про 84 формата — историческая запись.',
   },
   {
     kind: 'paper',
@@ -350,11 +350,11 @@ export const channels: Resource[] = [
     kind: 'channel',
     title: 'X — @trinity_cli',
     href: 'https://twitter.com/trinity_cli',
-    verified: '2026-08-09',
-    status: 'unverified',
+    verified: '2026-09-05',
+    status: 'broken',
     note:
-      'A third X handle, found only in the r/t27ai sidebar. X is now split three ways: @t27_dev (118 followers, the real history), @t27_lang (site footer), @trinity_cli (subreddit).',
-    noteRu: "Третий хэндл X, найденный только в боковой панели r/t27ai. Сейчас присутствуют три адреса: @t27_dev (118 подписчиков, основная история), @t27_lang (подвал сайта) и @trinity_cli (сабреддит).",
+      'Opened 2026-09-05: twitter.com/trinity_cli and x.com/trinity_cli both return 404 (controls x.com/t27_dev and x.com/t27_lang return 200). A third X handle, found only in the r/t27ai sidebar. X is now split three ways: @t27_dev (118 followers, the real history), @t27_lang (site footer), @trinity_cli (subreddit).',
+    noteRu: "Проверено 5 сентября 2026 года: twitter.com/trinity_cli и x.com/trinity_cli отвечают 404 (контрольные x.com/t27_dev и x.com/t27_lang — 200). Третий хэндл X, найденный только в боковой панели r/t27ai. Сейчас присутствуют три адреса: @t27_dev (118 подписчиков, основная история), @t27_lang (подвал сайта) и @trinity_cli (сабреддит).",
   },
   {
     kind: 'channel',

@@ -1237,7 +1237,7 @@ export const postsIndex: PostMeta[] = [
       { label: 'smoke/DEPIN_OTA_CLOSED_2026-07-18.md \u2014 8 bytes over the air, corr_peak 1.000, BER 0/64, twice', href: 'https://github.com/gHashTag/tri-net/blob/main/smoke/DEPIN_OTA_CLOSED_2026-07-18.md' },
       { label: 'docs/VERIFIABLE_COMPUTE.md \u2014 GF-T16 multiply 5/5 and dot2 3/3 bit-exact on Artix-7 over UART', href: 'https://github.com/gHashTag/tri-net/blob/main/docs/VERIFIABLE_COMPUTE.md' },
       { label: '26 patches merged into openXC7/nextpnr-xilinx \u2014 the largest single contribution to that project', href: 'https://github.com/openXC7/nextpnr-xilinx/pulls?q=is%3Apr+author%3AgHashTag+is%3Amerged' },
-      { label: 'arXiv:2606.09686 \u2014 83-format numeric catalog with bit-exact conformance vectors', href: 'https://arxiv.org/abs/2606.09686' }
+      { label: 'arXiv:2606.09686 \u2014 Golden Ruler: numeric format catalog with bit-exact conformance vectors (title from v3, announced 7 Sep 2026)', href: 'https://arxiv.org/abs/2606.09686' }
     ],
     openQuestions: [
       'No throughput figure exists. Mesh capacity per hop has never been measured, and neither has the falloff across two to four hops \u2014 the axis on which a buyer actually chooses. For scale, the NASA report on Doodle Labs gives 37.9, 5.6, 1.2 and 0.3 Mbit/s at one to four hops. There is nothing to put beside it.',
