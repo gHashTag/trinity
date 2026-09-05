@@ -316,16 +316,170 @@ export function placeCards<T extends { number: number }>(
       pending.push(card);
     }
   }
-  const seq = order && order.length === cellCount ? order : null;
+  // an order may be shorter than the field (the spiral order skips the hub,
+  // cell 0): it is honoured as far as it goes, never padded
+  const seq = order && order.length > 0 && order.length <= cellCount ? order : null;
+  const limit = seq ? seq.length : cellCount;
   let free = 0;
   for (const card of pending) {
-    while (free < cellCount && placed[seq ? seq[free] : free] !== null) free += 1;
-    if (free >= cellCount) break;
+    while (free < limit && placed[seq ? seq[free] : free] !== null) free += 1;
+    if (free >= limit) break;
     const slot = seq ? seq[free] : free;
     placed[slot] = card;
     ledger.set(card.number, slot);
   }
   return { placed, ledger };
+}
+
+/**
+ * THE HONEYCOMB (2026-09-05): a pointy-top hex spiral from the Queen's hub.
+ * Cell 0 is the hub and never a card's; ring k holds 6k cells starting at
+ * 3k(k-1)+1 and the whole field of n rings holds 3n(n+1)+1. Every closed
+ * GitHub issue takes the next cell in closed_at order (the foundation), the
+ * repository's modules take cells by the placement ledger from cell 1 (the
+ * CODE layer), the castle stands on ring 7. Neighbours stand S_CELL apart,
+ * today's triangle side, so every building scale holds. All of it is pure
+ * and pinned by the honesty contract; the comb, the minimap and the field
+ * read the same functions.
+ */
+export const S_CELL = 150;
+export const HEX_R = S_CELL / Math.sqrt(3);
+export const HEX_HOME = 0;
+export interface Axial { q: number; r: number }
+export const HEX_DIRS: readonly Axial[] = [
+  { q: 1, r: 0 }, { q: 1, r: -1 }, { q: 0, r: -1 }, { q: -1, r: 0 }, { q: -1, r: 1 }, { q: 0, r: 1 },
+];
+
+export function hexRing(a: Axial): number {
+  return Math.max(Math.abs(a.q), Math.abs(a.r), Math.abs(a.q + a.r));
+}
+export function hexCellCount(rings: number): number {
+  return 3 * rings * (rings + 1) + 1;
+}
+export function hexRingsFor(count: number): number {
+  let n = 3;
+  while (hexCellCount(n) < count) n += 1;
+  return n;
+}
+/** The field for a count of things that need cells (the hub included). */
+export function hexField(count: number): { rings: number; cellCount: number } {
+  const rings = hexRingsFor(Math.max(1, count));
+  return { rings, cellCount: hexCellCount(rings) };
+}
+export function hexRingStart(k: number): number {
+  return k <= 0 ? 0 : 3 * k * (k - 1) + 1;
+}
+export function hexRingCells(k: number): number[] {
+  if (k <= 0) return [0];
+  const start = hexRingStart(k);
+  return Array.from({ length: 6 * k }, (_, i) => start + i);
+}
+/** Spiral index -> axial: ring k, side j (six sides, each k steps), step t. */
+export function spiralAxial(i: number): Axial {
+  if (i <= 0) return { q: 0, r: 0 };
+  const k = Math.floor((3 + Math.sqrt(12 * i - 3)) / 6);
+  const p = i - hexRingStart(k);
+  const j = Math.floor(p / k);
+  const t = p - j * k;
+  const c = HEX_DIRS[j];
+  const d = HEX_DIRS[(j + 2) % 6];
+  return { q: c.q * k + d.q * t, r: c.r * k + d.r * t };
+}
+/** Axial -> spiral index, the inverse of spiralAxial. */
+export function spiralIndex(a: Axial): number {
+  const k = hexRing(a);
+  if (k === 0) return 0;
+  for (let j = 0; j < 6; j += 1) {
+    const c = { q: HEX_DIRS[j].q * k, r: HEX_DIRS[j].r * k };
+    const d = HEX_DIRS[(j + 2) % 6];
+    const t = d.q !== 0 ? (a.q - c.q) / d.q : (a.r - c.r) / d.r;
+    if (Number.isInteger(t) && t >= 0 && t < k && c.q + d.q * t === a.q && c.r + d.r * t === a.r) return hexRingStart(k) + j * k + t;
+  }
+  return -1;
+}
+/** Axial -> world (x east, y south in the field's plane; the comb's "y" is the scene's z). */
+export function hexToWorld(a: Axial, R = HEX_R): { x: number; y: number } {
+  return { x: R * (Math.sqrt(3) * a.q + (Math.sqrt(3) / 2) * a.r), y: R * 1.5 * a.r };
+}
+/** World -> axial by cube rounding: O(1), no search over the cells. */
+export function worldToHex(x: number, y: number, R = HEX_R): Axial {
+  const q = ((Math.sqrt(3) / 3) * x - y / 3) / R;
+  const r = ((2 / 3) * y) / R;
+  const sv = -q - r;
+  let rq = Math.round(q);
+  let rr = Math.round(r);
+  const rs = Math.round(sv);
+  const dq = Math.abs(rq - q);
+  const dr = Math.abs(rr - r);
+  const ds = Math.abs(rs - sv);
+  if (dq > dr && dq > ds) rq = -rr - rs;
+  else if (dr > ds) rr = -rq - rs;
+  return { q: rq, r: rr };
+}
+/** The cell under a world point, or -1 beyond the field. */
+export function hexIndexAt(x: number, y: number, cellCount: number, R = HEX_R): number {
+  const i = spiralIndex(worldToHex(x, y, R));
+  return i >= 0 && i < cellCount ? i : -1;
+}
+/** Six corners around the cell's centre, the first at 30 degrees (pointy top). */
+export function hexCorners(a: Axial, R = HEX_R, inset = 0): Array<{ x: number; y: number }> {
+  const c = hexToWorld(a, R);
+  return Array.from({ length: 6 }, (_, k) => {
+    const ang = (Math.PI / 6) + (Math.PI / 3) * k;
+    return { x: c.x + (R - inset) * Math.cos(ang), y: c.y + (R - inset) * Math.sin(ang) };
+  });
+}
+/** One centre per cell, spiral order (replaces cellGeometry for the hex field). */
+export function hexCentres(cellCount: number, R = HEX_R): Array<{ x: number; y: number }> {
+  return Array.from({ length: cellCount }, (_, i) => hexToWorld(spiralAxial(i), R));
+}
+/** The placement order: every cell but the hub, nearest ring first (replaces ringOrder). */
+export function spiralOrder(cellCount: number, from = 1): number[] {
+  return Array.from({ length: Math.max(0, cellCount - from) }, (_, i) => from + i);
+}
+
+/** A closed GitHub issue as the loop's snapshot records it (foundation.json). */
+export interface FoundationIssue {
+  number: number;
+  title: string;
+  closedAt: string;
+  labels: string[];
+  epicRefs: number[];
+  stateReason?: string | null;
+}
+/** closed_at ascending, undatable closes last, ties by number: the pour order. */
+export function foundationOrder<T extends FoundationIssue>(issues: readonly T[]): T[] {
+  const key = (i: T) => {
+    const t = Date.parse(i.closedAt);
+    return Number.isFinite(t) ? t : Number.POSITIVE_INFINITY;
+  };
+  return [...issues].sort((a, b) => key(a) - key(b) || a.number - b.number);
+}
+/** Index i+1 holds the i-th closed issue; the hub (0) holds nothing. */
+export function foundationCells<T extends FoundationIssue>(issues: readonly T[], cellCount: number): (T | null)[] {
+  const out: (T | null)[] = new Array<T | null>(cellCount).fill(null);
+  foundationOrder(issues).forEach((issue, i) => {
+    if (i + 1 < cellCount) out[i + 1] = issue;
+  });
+  return out;
+}
+/** The honey's gold by the age of the close: fresh, this week, older. Always honey. */
+export function honeyTone(closedAt: string, nowMs: number): [number, number, number, number] {
+  const t = Date.parse(closedAt);
+  const age = Number.isFinite(t) ? nowMs - t : Number.POSITIVE_INFINITY;
+  if (age <= 24 * 3600 * 1000) return [1, 0.85, 0.35, 1];
+  if (age <= 7 * 24 * 3600 * 1000) return [0.95, 0.72, 0.22, 1];
+  return [0.85, 0.6, 0.15, 1];
+}
+export type FieldLayer = "foundation" | "castle" | "code";
+export const FIELD_LAYERS: readonly FieldLayer[] = ["foundation", "castle", "code"];
+/** ?layers=a,b -> exactly those; ?layers=none -> none; absent -> all on; unknown names ignored. */
+export function layersFromSearch(search: string): Record<FieldLayer, boolean> {
+  const all: Record<FieldLayer, boolean> = { foundation: true, castle: true, code: true };
+  const raw = new URLSearchParams(search.startsWith("?") ? search : `?${search}`).get("layers");
+  if (raw === null) return all;
+  const on = new Set(raw.split(",").map((s) => s.trim()).filter((s): s is FieldLayer => (FIELD_LAYERS as readonly string[]).includes(s)));
+  return { foundation: on.has("foundation"), castle: on.has("castle"), code: on.has("code") };
 }
 
 /**
