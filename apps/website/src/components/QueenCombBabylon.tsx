@@ -42,7 +42,8 @@ import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
 import { S, EDGES } from "./QueenComb";
-import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R } from "./queenHud";
+import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, honeyTone, spiralAxial, S_CELL, type FoundationIssue,
+} from "./queenHud";
 
 interface SpikeCard {
   number: number;
@@ -69,6 +70,8 @@ interface QueenCombBabylonProps {
   modules?: ReadonlyMap<number, HudModule>;
   /** Per issue in progress: the cell of the module its title names, or null (the hub). */
   beeTargets?: ReadonlyArray<number | null>;
+  /** The honeycomb foundation: the loop's snapshot of closed GitHub issues, one honey hex each. */
+  foundation?: { issues: FoundationIssue[]; generatedAt: string; source: "wire" | "file" } | null;
 }
 // the plan's part kinds map to models the field loads: annexes are the
 // platform, antennae the dish; the core is the plan's own key
@@ -93,7 +96,7 @@ const MODELS = {
   tile: "hex-sand",
 } as const;
 type ModelKey = keyof typeof MODELS;
-const MARGIN = S * 1.2;
+const MARGIN = S * 2;
 
 /** Point-in-down-triangle for the cell under a world point (x, z). */
 
@@ -134,7 +137,7 @@ function drawTiles(ctx: CanvasRenderingContext2D, size: number, per: number) {
  * its footprint (max of width and depth) and base (min y), both in model
  * units, so the caller can scale it to a cell and stand it on the ground.
  */
-async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; footprint: number; base: number; height: number } | null> {
+async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; footprint: number; base: number; height: number; width: number; depth: number } | null> {
   try {
     if (scene.isDisposed) return null;
     const container = await LoadAssetContainerAsync(`./queen/models/${MODELS[key]}.glb`, scene);
@@ -173,13 +176,13 @@ async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; 
     merged.isVisible = false; merged.isPickable = false;
     scene.addMesh(merged);
     for (const m of container.meshes) if (m !== merged && !(m as AbstractMesh).isDisposed()) m.dispose();
-    return { mesh: merged, footprint, base: b.minimum.y, height: b.maximum.y - b.minimum.y };
+    return { mesh: merged, footprint, base: b.minimum.y, height: b.maximum.y - b.minimum.y, width: b.maximum.x - b.minimum.x, depth: b.maximum.z - b.minimum.z };
   } catch {
     return null;
   }
 }
 
-export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets }: QueenCombBabylonProps) {
+export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null }: QueenCombBabylonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onPickRef = useRef(onPick);
@@ -199,18 +202,22 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     cards.map((c) => (c ? [c.number, c.column] : null)),
     workers?.slots.map((s) => [s.slot, s.state]) ?? null,
     devices?.map((d) => d.family) ?? null,
+    // a new snapshot of the foundation rebuilds the honey like a modules change rebuilds the city
+    foundation ? [foundation.generatedAt, foundation.issues.length] : null,
   ]);
   const cardsRef = useRef(cards);
   const workersRef = useRef(workers);
   const devicesRef = useRef(devices);
   const modulesRef = useRef(modules);
   const targetsRef = useRef(beeTargets);
+  const foundationRef = useRef(foundation);
   useEffect(() => {
     cardsRef.current = cards;
     workersRef.current = workers;
     devicesRef.current = devices;
     modulesRef.current = modules;
     targetsRef.current = beeTargets;
+    foundationRef.current = foundation;
   }, [cards, workers, devices, modules, beeTargets]);
 
   useEffect(() => {
@@ -527,7 +534,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     // ---- the Kenney models replace the procedural templates as they load;
     //      a model that fails to load leaves its procedural stand-in --------
     let disposed = false;
-    const modelInstances = new Map<ModelKey, { mesh: Mesh; footprint: number; base: number; height: number }>();
+    const modelInstances = new Map<ModelKey, { mesh: Mesh; footprint: number; base: number; height: number; width: number; depth: number }>();
     const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, parts: Mesh[], scales: number[] = [], turns: number[] = [], heights: number[] = [], colors: number[] = []) => {
       if (disposed || scene.isDisposed || matrices.length === 0) return;
       const out: number[] = [];
@@ -545,7 +552,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     };
     const unitInstances: Array<{ key: ModelKey; node: InstancedMesh; k: number; base: number }> = [];
     void (async () => {
-      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva"];
+      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "tile"];
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
       for (const [key, t] of loaded) if (t) modelInstances.set(key, t);
@@ -554,6 +561,60 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
       bind("done", templates.done, u * 1.35); bind("doneDepot", doneDepot, u * 1.35); bind("doneSilo", doneSilo, u * 1.25);
       bind("blocked", templates.blocked, u * 1.3); bind("dropped", templates.dropped, u * 1.2);
+      // ---- the foundation: one Kenney hex under every cell but the hub, honey on the resolved ones ----
+      const tileT = modelInstances.get("tile");
+      const fd = foundationRef.current;
+      host.setAttribute("data-tile", tileT ? "loaded" : "missing");
+      try {
+      if (tileT && cells.length > 1) {
+        // the tile obeys the math: pointy-top. A flat-top model (corners on x, wider than deep) turns a sixth of a turn.
+        const flatTop = tileT.width > tileT.depth;
+        const turn = flatTop ? Math.PI / 6 : 0;
+        const k = S_CELL / Math.min(tileT.width, tileT.depth);
+        host.setAttribute("data-hex-orient", flatTop ? "pointy-by-turn" : "pointy");
+        host.setAttribute("data-hex-ratio", (tileT.width / tileT.depth).toFixed(3));
+        const fCells = fd ? foundationCells(fd.issues, cells.length) : null;
+        const mats: number[] = []; const cols: number[] = [];
+        for (let i = 1; i < cells.length; i += 1) {
+          mats.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.RotationAxis(Vector3.Up(), turn), new Vector3(cells[i].x, -tileT.base * k, cells[i].y)).toArray());
+          cols.push(...(fCells?.[i] ? [0.62, 0.48, 0.2, 1] : [0.22, 0.16, 0.08, 1]));
+        }
+        tileT.mesh.thinInstanceSetBuffer("matrix", new Float32Array(mats), 16, true);
+        tileT.mesh.thinInstanceSetBuffer("color", new Float32Array(cols), 4, true);
+        tileT.mesh.isVisible = true; tileT.mesh.isPickable = false; tileT.mesh.receiveShadows = true;
+        tileT.mesh.freezeWorldMatrix();
+        if (fCells) {
+          // honey: a hexagonal disc a little inside the tile, emissive amber through the instance colour, lit by the glow layer
+          const honey = CreateCylinder("honey", { tessellation: 6, diameter: 2 * HEX_R * 0.9, height: 3 }, scene);
+          const hb = honey.getBoundingInfo().boundingBox;
+          if (hb.maximum.x - hb.minimum.x > hb.maximum.z - hb.minimum.z) { honey.rotation.y = Math.PI / 6; honey.bakeCurrentTransformIntoVertices(); }
+          const honeyMat = new StandardMaterial("honey", scene);
+          // the disc glows through the instance colour (honeyTone): a modest base emissive so the age bands read and the city above stays visible
+          honeyMat.diffuseColor = new Color3(0.45, 0.3, 0.08); honeyMat.emissiveColor = new Color3(0.55, 0.38, 0.12); honeyMat.specularColor = new Color3(0.35, 0.28, 0.1); honeyMat.specularPower = 24;
+          honey.material = honeyMat; honey.isPickable = false;
+          const hm: number[] = []; const hc: number[] = []; let count = 0; let first: string | null = null; let last: string | null = null;
+          const top = tileT.height * k - tileT.base * k;
+          for (let i = 1; i < cells.length; i += 1) {
+            const issue = fCells[i]; if (!issue) continue;
+            hm.push(...Matrix.Translation(cells[i].x, top + 1.5, cells[i].y).toArray());
+            hc.push(...honeyTone(issue.closedAt, nowWall));
+            const a = spiralAxial(i); const tag = `${issue.number}@${a.q},${a.r}`; if (first === null) first = tag; last = tag; count += 1;
+          }
+          if (count > 0) {
+            honey.thinInstanceSetBuffer("matrix", new Float32Array(hm), 16, true);
+            honey.thinInstanceSetBuffer("color", new Float32Array(hc), 4, true);
+            glow.referenceMeshToUseItsOwnMaterial(honey);
+          } else honey.dispose();
+          host.setAttribute("data-foundation-cells", String(count));
+          host.setAttribute("data-foundation-shown", String(count));
+          if (first) host.setAttribute("data-foundation-first", first);
+          if (last) host.setAttribute("data-foundation-last", last);
+        }
+      }
+      } catch (e) {
+        // the field reports its own failure instead of drawing nothing silently
+        host.setAttribute("data-foundation-error", e instanceof Error ? e.message : String(e));
+      }
       const hubT = modelInstances.get("hub");
       if (hubT) { placeModel(hubT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.25, [hub, hubDome]); }
       const crystalT = modelInstances.get("crystal");
