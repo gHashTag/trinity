@@ -42,7 +42,8 @@ function SpecCodeViewImpl({ lines, activeLine, onHoverLine, raw, copyLabel, copi
   const gutter = String(lines.length).length
 
   return (
-    <div style={{ position: 'relative', minHeight: '100%' }}>
+    // data-lang-exempt: generated code and quoted source, not UI copy.
+    <div data-lang-exempt="source" style={{ position: 'relative', minHeight: '100%' }}>
       <div
         style={{
           position: 'sticky',

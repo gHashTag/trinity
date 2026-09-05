@@ -55,7 +55,9 @@ function SpecEditorImpl({ value, onChange, lines, onRun, ariaLabel }: Props) {
   useLayoutEffect(sync, [value, sync])
 
   return (
-    <div style={{ position: 'relative', minHeight: 'calc(100dvh - 330px)', display: 'flex' }}>
+    // data-lang-exempt: this renders .t27 source verbatim, in whatever
+    // language its author wrote. The RU audit skips marked subtrees.
+    <div data-lang-exempt="source" style={{ position: 'relative', minHeight: 'calc(100dvh - 330px)', display: 'flex' }}>
       {/* The colour. aria-hidden: the textarea already carries the text for
           assistive tech, and announcing it twice would be worse than silent. */}
       <pre
