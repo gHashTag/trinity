@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import type { HudEvent, HudEventKind, SectorRow, Territory } from "./queenHud";
-import { eventTone } from "./queenHud";
+import { eventTone , feedCoverage } from "./queenHud";
 import { publicIssueTitle } from "../pages/queenReviewLifecycle";
 import "./QueenIntel.css";
 
@@ -21,6 +21,12 @@ export interface IntelLabels {
   empty: string;
   viewAll: string;
   collapse: string;
+  /** the header's own count and span words (P1-27) */
+  rows: string;
+  unitS: string;
+  unitMin: string;
+  unitH: string;
+  spanTitle: string;
 }
 
 export interface QueenIntelFeedProps {
@@ -146,6 +152,16 @@ export function QueenIntelFeed({
 }: QueenIntelFeedProps) {
   const listRef = useRef<HTMLOListElement | null>(null);
   const anchorRef = useRef<ScrollAnchor | null>(null);
+  // the header states what the list holds, from the rows themselves (P1-27)
+  const coverage = useMemo(() => feedCoverage(events), [events]);
+  const spanText =
+    coverage.spanSeconds === null
+      ? null
+      : coverage.spanSeconds < 60
+        ? `${coverage.spanSeconds} ${labels.unitS}`
+        : coverage.spanSeconds < 3600
+          ? `${Math.round(coverage.spanSeconds / 60)} ${labels.unitMin}`
+          : `${Math.floor(coverage.spanSeconds / 3600)} ${labels.unitH} ${Math.round((coverage.spanSeconds % 3600) / 60)} ${labels.unitMin}`;
 
   const clock = useMemo(
     () =>
@@ -157,6 +173,10 @@ export function QueenIntelFeed({
       }),
     [lang],
   );
+  const coverageTitle =
+    coverage.oldestAt && coverage.newestAt && coverage.spanSeconds !== null
+      ? `${labels.spanTitle} ${clock.format(new Date(coverage.oldestAt))} – ${clock.format(new Date(coverage.newestAt))}`
+      : null;
 
   // Before paint of a commit that changed the list: put the anchored row
   // back where the reader left it, then re-anchor for the next commit. The
@@ -174,14 +194,22 @@ export function QueenIntelFeed({
 
   return (
     <section className="queen27-intel" aria-label={labels.title}>
-      <header className="queen27-intel-head">
+      <header
+        className="queen27-intel-head"
+        data-rows={coverage.rows}
+        data-span-seconds={coverage.spanSeconds ?? undefined}
+      >
         <span>{labels.title}</span>
         {error ? (
           <span className="queen27-intel-live is-offline" title={error}>
             {labels.offline}
           </span>
         ) : (
-          <span className="queen27-intel-live">{labels.live}</span>
+          <span className="queen27-intel-live" title={coverageTitle ?? undefined}>
+            {labels.live}
+            {coverage.rows > 0 ? ` · ${coverage.rows} ${labels.rows}` : ""}
+            {coverage.spanSeconds !== null ? ` · ${spanText}` : ""}
+          </span>
         )}
       </header>
       {events.length === 0 ? (
