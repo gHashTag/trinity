@@ -29,7 +29,9 @@ const SPECS_SRC = join(T27, 'specs')
 const WASM_SRC = join(T27, 'bindings/wasm-explorer/target/wasm32-unknown-unknown/release/t27_wasm_explorer.wasm')
 
 const OUT_DIR = join(WEBSITE, 'public/t27')
-const SPECS_OUT = join(OUT_DIR, 'specs')
+// `files/`, not `specs/`: paths inside are repo-root-relative now, so a spec
+// from specs/demos/ would otherwise land at specs/specs/demos/.
+const SPECS_OUT = join(OUT_DIR, 'files')
 
 function fail(msg) {
   console.error(`sync-t27-specs: ${msg}`)
@@ -41,11 +43,19 @@ if (!existsSync(WASM_SRC)) fail(`wasm bridge not built.\n  cd ${T27}/bindings/wa
 
 const sha = execFileSync('git', ['-C', T27, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 const shortSha = sha.slice(0, 9)
-const dirty = execFileSync('git', ['-C', T27, 'status', '--porcelain', '--', 'specs', 'bootstrap/src/compiler.rs'], { encoding: 'utf8' }).trim()
+const dirty = execFileSync('git', ['-C', T27, 'status', '--porcelain', '--', 'specs', 'chips', 'compiler', 'bootstrap/src/compiler.rs'], { encoding: 'utf8' }).trim()
 
-// Walk without a dependency -- `find` is already required by nothing else here.
-const files = execFileSync('find', [SPECS_SRC, '-name', '*.t27', '-type', 'f'], { encoding: 'utf8' })
-  .split('\n').filter(Boolean).sort()
+// Every .t27 in the repo, not just specs/ -- `chips/` alone holds ~147 real
+// specs, and a corpus that quietly stops at specs/ cannot show a problem living
+// outside it. Two exclusions, both duplicates rather than judgement calls:
+//   .git/     -- object store
+//   .claude/  -- git worktrees, i.e. second checkouts of files already counted
+//                (the same compiler/ast.t27 appears in every worktree)
+const files = execFileSync('find', [
+  T27, '-name', '*.t27', '-type', 'f',
+  '-not', '-path', `${T27}/.git/*`,
+  '-not', '-path', `${T27}/.claude/*`,
+], { encoding: 'utf8' }).split('\n').filter(Boolean).sort()
 
 if (!files.length) fail('no .t27 files found')
 
@@ -54,19 +64,25 @@ mkdirSync(SPECS_OUT, { recursive: true })
 
 const entries = []
 for (const abs of files) {
-  const rel = relative(SPECS_SRC, abs)
+  // Paths are now relative to the repo root, so a spec's real home (specs/,
+  // chips/, compiler/…) stays visible in the UI rather than being flattened.
+  const rel = relative(T27, abs)
   const text = readFileSync(abs, 'utf8')
   const dest = join(SPECS_OUT, rel)
   mkdirSync(dirname(dest), { recursive: true })
   writeFileSync(dest, text)
 
   const parts = rel.split('/')
+  // Two segments, not one: with the corpus widened past specs/, a single
+  // segment would lump all 497 specs under "specs" and all 147 chip specs
+  // under "chips", throwing away the grouping that makes the list navigable.
+  const category = parts.length > 2 ? `${parts[0]}/${parts[1]}` : parts.length > 1 ? parts[0] : 'root'
   // A spec's `module X {` line is a better label than its filename when the two
   // disagree, which they often do.
-  const moduleMatch = text.match(/^\s*module\s+([A-Za-z0-9_]+)/m)
+  const moduleMatch = text.match(/^\s*module\s+([A-Za-z0-9_-]+)/m)
   entries.push({
     path: rel,
-    category: parts.length > 1 ? parts[0] : 'root',
+    category,
     name: parts[parts.length - 1].replace(/\.t27$/, ''),
     module: moduleMatch ? moduleMatch[1] : null,
     lines: text.split('\n').length,

@@ -11,10 +11,12 @@
 // came from, and avoids Monaco's CDN fetch on a page that already loads a
 // 477 KB wasm module.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { SpecCodeView } from '../components/SpecCodeView'
+import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
   analyze,
   loadManifest,
@@ -74,6 +76,10 @@ const UI = {
     filterKind: 'Filter by node kind',
     clear: 'Clear',
     matchedNodes: 'matching nodes',
+    copy: 'Copy',
+    copied: 'Copied',
+    highlightNote: 'Coloured from the compiler’s own token stream',
+    generated: 'generated',
   },
   ru: {
     title: 'Обозреватель спек',
@@ -123,6 +129,10 @@ const UI = {
     filterKind: 'Фильтр по типу узла',
     clear: 'Сбросить',
     matchedNodes: 'подходящих узлов',
+    copy: 'Копировать',
+    copied: 'Скопировано',
+    highlightNote: 'Раскрашено по собственному потоку токенов компилятора',
+    generated: 'сгенерировано',
   },
 } as const
 
@@ -141,6 +151,11 @@ const C = {
   bad: '#f85149',
   warn: '#f0a020',
   mono: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+}
+
+function fmtBytes(n: number): string {
+  if (n < 1024) return `${n}B`
+  return `${(n / 1024).toFixed(1)}K`
 }
 
 /** Colour a node by its family so structure reads at a glance. */
@@ -285,10 +300,20 @@ export default function SpecExplorer() {
   const [kindFilter, setKindFilter] = useState('')
   const [tokenLimit, setTokenLimit] = useState(400)
   const [ms, setMs] = useState<number | null>(null)
-  const sourceRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadManifest().then(setManifest).catch((e) => setErr(String(e)))
+  }, [])
+
+  // Inline styles cannot carry media queries, and the header has three pieces
+  // of text that will happily overlap rather than wrap. Track the width and
+  // drop the optional ones instead.
+  const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
+  useEffect(() => {
+    const onResize = () => setNarrow(window.innerWidth < 1100)
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   const filtered = useMemo(() => {
@@ -361,14 +386,24 @@ export default function SpecExplorer() {
     return [...counts.entries()].sort((a, b) => b[1] - a[1])
   }, [result])
 
-  const sourceLines = useMemo(() => source.split('\n'), [source])
+  // Highlight the source from the compiler's own tokens -- see lib/highlight.ts.
+  const sourceSpans: Span[][] = useMemo(
+    () => (result ? highlightSource(source, result.tokens) : source.split('\n').map((l) => [{ text: l, cls: 'plain' as const }])),
+    [source, result],
+  )
 
-  useEffect(() => {
-    if (hoverLine && sourceRef.current && layer === 'source') {
-      const el = sourceRef.current.querySelector(`[data-line="${hoverLine}"]`)
-      el?.scrollIntoView({ block: 'nearest' })
+  const activeTarget = LAYERS.find((l) => l.id === layer)?.kind === 'target' ? result?.targets?.[layer] : undefined
+
+  const codeSpans: Span[][] | null = useMemo(() => {
+    if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, 'verilog')
+    if (activeTarget?.ok && activeTarget.code) {
+      const langOf: Record<string, string> = {
+        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust',
+      }
+      return highlightCode(activeTarget.code, langOf[layer] || 'plain')
     }
-  }, [hoverLine, layer])
+    return null
+  }, [layer, result, activeTarget])
 
   const lossCount =
     (result?.discarded.length || 0) + (result?.swallowed.length || 0) + (result?.lexerDiscarded.length || 0)
@@ -392,28 +427,64 @@ export default function SpecExplorer() {
       }}
     >
       {/* header */}
+      {/* Everything after the title is allowed to shrink and then clip: on a
+          narrow window the provenance line would otherwise wrap under the
+          heading and overlap it. */}
       <header
         style={{
-          height: 52,
+          minHeight: 52,
           flexShrink: 0,
           borderBottom: `1px solid ${C.border}`,
           display: 'flex',
           alignItems: 'center',
           gap: 16,
           padding: '0 16px',
+          overflow: 'hidden',
         }}
       >
-        <Link to="/" style={{ color: C.muted, textDecoration: 'none', fontSize: 13 }}>
+        <Link to="/" style={{ color: C.muted, textDecoration: 'none', fontSize: 13, flexShrink: 0 }}>
           {ui.back}
         </Link>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: C.golden }}>{ui.title}</span>
-          <span style={{ fontSize: 12, color: C.muted, whiteSpace: 'nowrap' }}>{ui.subtitle}</span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0, flexShrink: 0 }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: C.golden, whiteSpace: 'nowrap' }}>{ui.title}</span>
+          {!narrow && (
+            <span
+              style={{
+                fontSize: 12,
+                color: C.muted,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {ui.subtitle}
+            </span>
+          )}
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14, fontSize: 11, color: C.muted }}>
-          <span style={{ color: C.accent }}>◆ {ui.wasmNote}</span>
+        <div
+          style={{
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            fontSize: 11,
+            color: C.muted,
+            minWidth: 0,
+            overflow: 'hidden',
+          }}
+        >
+          {!narrow && <span style={{ color: C.accent, whiteSpace: 'nowrap', flexShrink: 0 }}>◆ {ui.wasmNote}</span>}
           {manifest && (
-            <span style={{ fontFamily: C.mono }}>
+            <span
+              style={{
+                fontFamily: C.mono,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                minWidth: 0,
+              }}
+              title={`${manifest.generatedFrom.repo}@${manifest.generatedFrom.commit}`}
+            >
               {ui.provenance} {manifest.generatedFrom.repo}@{manifest.generatedFrom.shortCommit}
               {manifest.generatedFrom.specsOrCompilerDirty ? ` (${ui.snapshotDirty})` : ''}
             </span>
@@ -426,7 +497,10 @@ export default function SpecExplorer() {
         <aside
           style={{
             width: 300,
-            flexShrink: 0,
+            // Allowed to shrink on a narrow window rather than pushing the
+            // layer panes off-screen entirely.
+            minWidth: 180,
+            flexShrink: 1,
             borderRight: `1px solid ${C.border}`,
             display: 'flex',
             flexDirection: 'column',
@@ -599,11 +673,25 @@ export default function SpecExplorer() {
                   const t = l.kind === 'target' ? result?.targets?.[l.id] : null
                   const failed = l.kind === 'target' && result && t && !t.ok
                   const active = layer === l.id
+                  // A size on the tab makes the backends comparable at a glance
+                  // without opening each one.
+                  let badge = ''
+                  if (result) {
+                    if (l.id === 'tokens') badge = String(result.tokenCount)
+                    else if (l.id === 'ast') badge = String(result.nodeCount ?? '')
+                    else if (l.id === 'typecheck') badge = String(result.typecheck?.errorCount ?? 0)
+                    else if (l.id === 'hir') badge = result.hir.ok ? fmtBytes(result.hir.text?.length ?? 0) : '—'
+                    else if (t?.ok) badge = fmtBytes(t.bytes ?? 0)
+                  }
                   return (
                     <button
                       key={l.id}
                       onClick={() => setLayer(l.id)}
+                      aria-current={active ? 'true' : undefined}
                       style={{
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: 6,
                         background: active ? C.raised : 'transparent',
                         border: `1px solid ${active ? C.borderBright : 'transparent'}`,
                         borderBottom: active ? `1px solid ${C.bg}` : `1px solid ${C.border}`,
@@ -616,8 +704,12 @@ export default function SpecExplorer() {
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {LAYER_LABEL[l.id]}
-                      {failed ? ' ✕' : ''}
+                      <span>{LAYER_LABEL[l.id]}</span>
+                      {failed ? (
+                        <span aria-hidden="true">✕</span>
+                      ) : badge ? (
+                        <span style={{ fontSize: 10, fontFamily: C.mono, opacity: 0.65 }}>{badge}</span>
+                      ) : null}
                     </button>
                   )
                 })}
@@ -628,33 +720,15 @@ export default function SpecExplorer() {
                 <div style={{ ...box, flex: 1, minHeight: 0, overflow: 'auto', borderTopLeftRadius: 0 }}>
                   {/* source */}
                   {layer === 'source' && (
-                    <div ref={sourceRef} style={{ fontFamily: C.mono, fontSize: 12.5, lineHeight: 1.6 }}>
-                      {sourceLines.map((l, i) => (
-                        <div
-                          key={i}
-                          data-line={i + 1}
-                          style={{
-                            display: 'flex',
-                            background: hoverLine === i + 1 ? 'rgba(255,215,0,0.13)' : 'transparent',
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: 46,
-                              flexShrink: 0,
-                              textAlign: 'right',
-                              paddingRight: 12,
-                              color: C.muted,
-                              opacity: 0.45,
-                              userSelect: 'none',
-                            }}
-                          >
-                            {i + 1}
-                          </span>
-                          <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{l || ' '}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <SpecCodeView
+                      lines={sourceSpans}
+                      activeLine={hoverLine}
+                      onHoverLine={setHoverLine}
+                      raw={source}
+                      copyLabel={ui.copy}
+                      copiedLabel={ui.copied}
+                      meta={`${result?.sourceBytes ?? source.length} ${ui.bytes} · ${ui.highlightNote}`}
+                    />
                   )}
 
                   {/* tokens */}
@@ -822,28 +896,40 @@ export default function SpecExplorer() {
 
                   {/* hir */}
                   {layer === 'hir' && result && (
-                    <pre style={preStyle}>
-                      {result.hir.ok ? result.hir.text || ui.noHir : `${ui.targetFailed}\n\n${result.hir.error}`}
-                    </pre>
+                    result.hir.ok ? (
+                      codeSpans ? (
+                        <SpecCodeView
+                          lines={codeSpans}
+                          raw={result.hir.text || ''}
+                          copyLabel={ui.copy}
+                          copiedLabel={ui.copied}
+                          meta={`${result.hir.text?.length ?? 0} ${ui.bytes} · ${ui.generated}`}
+                        />
+                      ) : (
+                        <div style={{ padding: 14, color: C.muted, fontSize: 13 }}>{ui.noHir}</div>
+                      )
+                    ) : (
+                      <pre style={{ ...preStyle, color: C.bad }}>{`${ui.targetFailed}\n\n${result.hir.error}`}</pre>
+                    )
                   )}
 
                   {/* codegen targets */}
                   {LAYERS.find((l) => l.id === layer)?.kind === 'target' && result && (
-                    <>
-                      {(() => {
-                        const t = result.targets[layer]
-                        if (!t) return <div style={{ padding: 14, color: C.muted }}>{ui.emptyOut}</div>
-                        if (!t.ok)
-                          return (
-                            <pre style={{ ...preStyle, color: C.bad }}>
-                              {ui.targetFailed}
-                              {'\n\n'}
-                              {t.error}
-                            </pre>
-                          )
-                        return <pre style={preStyle}>{t.code || ui.emptyOut}</pre>
-                      })()}
-                    </>
+                    !activeTarget ? (
+                      <div style={{ padding: 14, color: C.muted }}>{ui.emptyOut}</div>
+                    ) : !activeTarget.ok ? (
+                      <pre style={{ ...preStyle, color: C.bad }}>{`${ui.targetFailed}\n\n${activeTarget.error}`}</pre>
+                    ) : codeSpans ? (
+                      <SpecCodeView
+                        lines={codeSpans}
+                        raw={activeTarget.code || ''}
+                        copyLabel={ui.copy}
+                        copiedLabel={ui.copied}
+                        meta={`${activeTarget.bytes ?? 0} ${ui.bytes} · ${ui.generated}`}
+                      />
+                    ) : (
+                      <div style={{ padding: 14, color: C.muted }}>{ui.emptyOut}</div>
+                    )
                   )}
                 </div>
               </div>

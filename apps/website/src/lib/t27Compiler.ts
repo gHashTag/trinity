@@ -121,7 +121,7 @@ export async function loadManifest(): Promise<SpecManifest> {
 }
 
 export async function loadSpecSource(path: string): Promise<string> {
-  const res = await fetch(`t27/specs/${path}`)
+  const res = await fetch(`t27/files/${path}`)
   if (!res.ok) throw new Error(`could not fetch spec ${path} (${res.status})`)
   return res.text()
 }
