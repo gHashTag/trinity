@@ -49,6 +49,8 @@ import {
   layersFromSearch,
   type FieldLayer,
   foundationCells,
+  hexCellCount,
+  CASTLE_RING,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -1880,20 +1882,23 @@ export default function Queen() {
   // polls; the ledger is adjusted during render when the card list changes
   // (React's derived-state pattern), never in an effect, so the comb, the
   // minimap and the pick all see the same placement in the same frame.
+  // the field is as large as the honey needs (the hub plus modules or closed issues) and, when the
+  // snapshot names ring directories, at least the castle's ring 7 with its plinths
+  const fieldNeed = Math.max(moduleCards.length + 1, closedCount + 1, (foundationState.data?.rings.length ?? 0) > 0 ? hexCellCount(CASTLE_RING) + 1 : 0);
   const [placement, setPlacement] = useState<{
     cards: QueenCard[];
     placed: (QueenCard | null)[];
     ledger: Map<number, number>;
   }>(() => {
     // the honeycomb: the hub plus one cell per module and per closed issue, rings from the centre
-    const shape0 = hexField(Math.max(moduleCards.length + 1, closedCount + 1));
+    const shape0 = hexField(fieldNeed);
     return { cards: moduleCards, ...placeCards(new Map(), moduleCards, shape0.cellCount, spiralOrder(shape0.cellCount)) };
   });
   let placedCards = placement.placed;
-  if (placement.cards !== moduleCards || placement.placed.length !== hexField(Math.max(moduleCards.length + 1, closedCount + 1)).cellCount) {
+  if (placement.cards !== moduleCards || placement.placed.length !== hexField(fieldNeed).cellCount) {
     // rings from the centre: free cells are taken along the spiral, nearest the Queen first;
-    // the field is as large as the honey needs, the modules keep their inner cells
-    const shape = hexField(Math.max(moduleCards.length + 1, closedCount + 1));
+    // the field is as large as the honey and the castle need, the modules keep their inner cells
+    const shape = hexField(fieldNeed);
     const next = placeCards(placement.ledger, moduleCards, shape.cellCount, spiralOrder(shape.cellCount));
     placedCards = next.placed;
     setPlacement({ cards: moduleCards, placed: next.placed, ledger: next.ledger });
@@ -2694,7 +2699,7 @@ export default function Queen() {
                   cards={placedCards}
                   modules={modulesById}
                   beeTargets={beeTargets}
-                  foundation={foundationState.data ? { issues: foundationState.data.closedIssues, generatedAt: foundationState.data.generatedAt, source: foundationState.data.source } : null}
+                  foundation={foundationState.data ? { issues: foundationState.data.closedIssues, generatedAt: foundationState.data.generatedAt, source: foundationState.data.source, rings: foundationState.data.rings, epics: foundationState.data.epics, releases: foundationState.data.releases } : null}
                   layers={layers}
                   handleRef={combRef}
                   workers={workers}

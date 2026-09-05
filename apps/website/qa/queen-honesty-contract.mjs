@@ -24,6 +24,7 @@ check(rewritten.research === "https://trios-agent-server-production.up.railway.a
 check(rewritten.board === "https://trios-agent-server-production.up.railway.app/queen/public-board?x=1", "query kept");
 check(rewritten.odd === "not a url", "a non-URL is left alone");
 
+const combSrc = readFileSync(new URL('../src/components/QueenCombBabylon.tsx', import.meta.url), 'utf8');
 const src = readFileSync(new URL("../src/pages/Queen.tsx", import.meta.url), "utf8");
 check(/rounds:\s*null,/.test(src), "rounds / 24h is a dash (pulse.rounds is a lease-row count)");
 check(!/c\.hudAccepted\b/.test(src), "no tile is labelled ACCEPTED");
@@ -156,7 +157,7 @@ const nowB = Date.parse("2026-09-05T02:05:00Z");
 check(beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.seconds === 42 && beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.cold === false && beeSilence("2026-09-05T01:59:59Z", nowB, 300)?.cold === true, "42 s of silence under a 300 s round is warm; 301 s is cold");
 check(beeSilence("2026-09-05T01:00:00Z", nowB, null)?.cold === false && beeSilence(null, nowB, 300) === null && beeSilence("bad", nowB, 300) === null, "no round length: never cold; no last word or an undatable one: no age at all");
 check(/\$\{QUEEN_API\}\/queen\/public-foundation/.test(src) && /"\.\/queen\/foundation\.json"/.test(src) && /data-foundation=\{foundationState\.data \?/.test(src), "the honeycomb's GitHub facts come from the server's route first and the loop's dated snapshot second, named on the viewport (H-C1)");
-check((src.match(/hexField\(Math\.max\(moduleCards\.length \+ 1, closedCount \+ 1\)\)/g) || []).length >= 2, "the field is as large as the honey needs (the hub plus modules or closed issues), the modules keep their inner cells (H-C2)");
+check((src.match(/hexField\(fieldNeed\)/g) || []).length >= 2 && /const fieldNeed = Math\.max\(moduleCards\.length \+ 1, closedCount \+ 1, \(foundationState\.data\?\.rings\.length \?\? 0\) > 0 \? hexCellCount\(CASTLE_RING\) \+ 1 : 0\)/.test(src), "the field is as large as the honey and the castle need (the hub plus modules or closed issues, at least ring 7 when rings exist), the modules keep their inner cells (H-C2, K-2)");
 check(/data-pick-kind=\{livePick\?\.kind/.test(src) && /data-pick-issue=\{livePick\?\.kind === "issue"/.test(src) && /if \(pick\.kind === "issue" && pick\.issue\)/.test(src), "a pick is (kind, number): an issue pick follows its number through the snapshot, the viewport names the kind and the issue (H-E)");
 // the castle of the rings (K-1): places on spiral ring 7, epics to rings, towers by stage
 const ksRings = ["SR-00", "RUST-13", "T27-00", "RUST-04"];
@@ -172,6 +173,7 @@ check(towerStage(ksEpic({})) === "plinth" && towerStage(ksEpic({ children: ksKid
 const ksSummary = ringSummary("SR-00", [ksEpic({ children: ksKids(3, 2) }), ksEpic({ number: 9002, labels: ["ring:RUST-13"], children: ksKids(0, 1) })], ksRings);
 check(ksSummary.epics === 1 && ksSummary.closed === 3 && ksSummary.total === 5 && ringSummary("T27-00", [], ksRings).epics === 0 && ringSummary("T27-00", [], ksRings).ratio === null, "a ring's summary counts only the epics bound to it; a ring with no epic has no ratio");
 check(wallBetween([ksEpic({ state: "closed", closedAt: "x", children: ksKids(2, 0) })], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === true && wallBetween([ksEpic({ children: ksKids(3, 2) })], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === false && wallBetween([], [ksEpic({ state: "closed", closedAt: "x", children: ksKids(1, 0) })]) === false, "a wall rises only between two rings whose every epic is a keep");
+check(/host\.setAttribute\("data-castle-source", fdNow \? fdNow\.source : "none"\)/.test(combSrc) && /data-castle-stages/.test(combSrc) && /data-castle-unassigned/.test(combSrc), "the castle's testimony on the host comes from the snapshot's source, never a guess; stages and unassigned epics are named (K-2)");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

@@ -46,6 +46,7 @@ import "@babylonjs/core/Culling/ray";
 import { S, EDGES } from "./QueenComb";
 import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, honeyTone, spiralAxial, S_CELL, type FoundationIssue,
  FIELD_LAYERS, type FieldLayer, type CombHandle,
+ castlePlaces, ringOfEpic, towerStage, ringSummary, ringFamily, familyTint, hexRingStart, CASTLE_RING, type TowerStage, type EpicRecord,
 } from "./queenHud";
 
 interface SpikeCard {
@@ -74,7 +75,7 @@ interface QueenCombBabylonProps {
   /** Per issue in progress: the cell of the module its title names, or null (the hub). */
   beeTargets?: ReadonlyArray<number | null>;
   /** The honeycomb foundation: the loop's snapshot of closed GitHub issues, one honey hex each. */
-  foundation?: { issues: FoundationIssue[]; generatedAt: string; source: "wire" | "file" } | null;
+  foundation?: { issues: FoundationIssue[]; generatedAt: string; source: "wire" | "file"; rings?: string[]; epics?: EpicRecord[]; releases?: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }> } | null;
   /** Which layers draw: FOUNDATION (tiles and honey), CASTLE (the rings' towers), CODE (the module buildings). Bees always. */
   layers?: Record<FieldLayer, boolean>;
   /** The toolbar's zoom and fit, the same handle the canvas comb exposes. */
@@ -252,6 +253,9 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     // the honey under the cells (H-C2): the same map the click reads (H-E)
     const fdNow = foundationRef.current;
     const fCells = fdNow ? foundationCells(fdNow.issues, cells.length) : null;
+    // the castle's testimony starts honest: no snapshot, no castle facts
+    host.setAttribute("data-castle-source", fdNow ? fdNow.source : "none");
+    if (!fdNow) { host.removeAttribute("data-castle-stages"); host.removeAttribute("data-castle-rings"); host.removeAttribute("data-castle-unassigned"); host.removeAttribute("data-castle-releases"); }
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
     const scene = new Scene(engine);
     scene.clearColor = new Color4(2 / 255, 8 / 255, 6 / 255, 1);
@@ -585,10 +589,10 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     };
     const unitInstances: Array<{ key: ModelKey; node: InstancedMesh; k: number; base: number }> = [];
     void (async () => {
-      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "tile"];
+      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "tile", "plinth", "walls", "tower", "wizardTower"];
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
-      for (const [key, t] of loaded) if (t) { modelInstances.set(key, t); if (key === "tile") t.mesh.parent = layerNodes.foundation; else if (!["hub", "crystal", "scribe", "wright", "lapidary", "larva"].includes(key)) t.mesh.parent = layerNodes.code; }
+      for (const [key, t] of loaded) if (t) { modelInstances.set(key, t); if (key === "tile") t.mesh.parent = layerNodes.foundation; else if (["plinth", "wall", "walls", "tower", "wizardTower", "keep", "unitTower"].includes(key)) t.mesh.parent = layerNodes.castle; else if (!["hub", "crystal", "scribe", "wright", "lapidary", "larva"].includes(key)) t.mesh.parent = layerNodes.code; }
       const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns, tpl.heights, tpl.colors); };
       // a building takes about half a cell, so the roads between them still show
       bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
@@ -645,6 +649,60 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       } catch (e) {
         // the field reports its own failure instead of drawing nothing silently
         host.setAttribute("data-foundation-error", e instanceof Error ? e.message : String(e));
+      }
+      // ---- the castle of the rings (K-2/K-3): a plinth per ring directory on spiral ring 7, a tower by the stage of its epics ----
+      try {
+        const plinthT = modelInstances.get("plinth");
+        const rings = fdNow?.rings ?? [];
+        if (fdNow && plinthT && rings.length > 0 && cells.length > hexRingStart(CASTLE_RING)) {
+          const places = castlePlaces(rings).filter((pl) => pl.plinth < cells.length);
+          const epics = fdNow.epics ?? [];
+          const flatTopP = plinthT.width > plinthT.depth;
+          const kp = (S_CELL * 0.92) / Math.min(plinthT.width, plinthT.depth);
+          const lift = tileT ? tileT.height * (S_CELL / Math.min(tileT.width, tileT.depth)) - tileT.base * (S_CELL / Math.min(tileT.width, tileT.depth)) + 2 : 2;
+          const pm: number[] = []; const pc: number[] = [];
+          const stageOf = (ring: string): TowerStage => {
+            const order: TowerStage[] = ["plinth", "walls", "tower", "wizardTower"];
+            let best: TowerStage = "plinth";
+            for (const e of epics) if (ringOfEpic(e, rings).ring === ring) { const st = towerStage(e); if (order.indexOf(st) > order.indexOf(best)) best = st; }
+            return best;
+          };
+          const towerMats = new Map<TowerStage, number[]>();
+          const stages: string[] = [];
+          for (const pl of places) {
+            const c = cells[pl.plinth];
+            pm.push(...Matrix.Compose(new Vector3(kp, kp, kp), Quaternion.RotationAxis(Vector3.Up(), flatTopP ? Math.PI / 6 : 0), new Vector3(c.x, lift - plinthT.base * kp, c.y)).toArray());
+            pc.push(...familyTint(ringFamily(pl.ring)));
+            const st = stageOf(pl.ring);
+            stages.push(`${pl.ring}:${st}`);
+            if (st !== "plinth") {
+              const summary = ringSummary(pl.ring, epics, rings);
+              const h = 0.6 + 1.4 * (summary.ratio ?? 0);
+              const list = towerMats.get(st) ?? [];
+              list.push(...Matrix.Compose(new Vector3(1, h, 1), Quaternion.RotationAxis(Vector3.Up(), 0), new Vector3(c.x, lift + plinthT.height * kp, c.y)).toArray());
+              towerMats.set(st, list);
+            }
+          }
+          plinthT.mesh.parent = layerNodes.castle;
+          placeModel(plinthT, pm, S_CELL * 0.92, [], places.map(() => 1), places.map(() => (flatTopP ? Math.PI / 6 : 0)), places.map(() => 1), pc);
+          plinthT.mesh.position.y = lift; // placeModel lifts by -base*k; the plinth stands above the tile
+          for (const [st, mats] of towerMats) {
+            const key: ModelKey = st === "walls" ? "walls" : st === "tower" ? "tower" : "wizardTower";
+            const t = modelInstances.get(key);
+            if (!t) continue;
+            t.mesh.parent = layerNodes.castle;
+            const hs = Array.from({ length: mats.length / 16 }, (_, j) => mats[j * 16 + 5]);
+            placeModel(t, mats, S_CELL * 0.6, [], hs.map(() => 1), hs.map(() => 0), hs, hs.flatMap(() => [1, 1, 1, 1]));
+            t.mesh.position.y = lift + plinthT.height * kp;
+          }
+          const unassigned = epics.filter((e) => ringOfEpic(e, rings).ring === null).length;
+          host.setAttribute("data-castle-rings", String(places.length));
+          host.setAttribute("data-castle-stages", stages.sort().join(";"));
+          host.setAttribute("data-castle-unassigned", String(unassigned));
+          host.setAttribute("data-castle-releases", String((fdNow.releases ?? []).length));
+        }
+      } catch (e) {
+        host.setAttribute("data-castle-error", e instanceof Error ? e.message : String(e));
       }
       const hubT = modelInstances.get("hub");
       if (hubT) { placeModel(hubT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.25, [hub, hubDome]); }
