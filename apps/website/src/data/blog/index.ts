@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'queen-foundation-snapshot-contract',
+    title: 'The Queen foundation snapshot now has a source contract',
+    summary: '[measured] Merged PR #937 adds a dated foundation snapshot and a fixture-backed contract that keeps the page source visible.',
+    date: '2026-09-05',
+    readingMinutes: 5,
+    tags: ['Queen', 'Reproducibility', 'Web', 'GitHub'],
+    receipts: [
+      { label: 'Merged PR #937 — Queen foundation snapshot and contract', href: 'https://github.com/gHashTag/trinity/pull/937' },
+      { label: 'Merge commit d12883f0 — page wiring and snapshot', href: 'https://github.com/gHashTag/trinity/commit/d12883f03324b99ca7206db38e49f1a299073ced' },
+      { label: 'Foundation snapshot JSON at the merge commit', href: 'https://raw.githubusercontent.com/gHashTag/trinity/d12883f03324b99ca7206db38e49f1a299073ced/apps/website/public/queen/foundation.json' },
+      { label: 'Executable foundation contract at the merge commit', href: 'https://raw.githubusercontent.com/gHashTag/trinity/d12883f03324b99ca7206db38e49f1a299073ced/apps/website/qa/queen-foundation-contract.mjs' },
+      { label: 'CI run on the merge commit', href: 'https://github.com/gHashTag/trinity/actions/runs/33972650656' },
+    ],
+    openQuestions: [
+      'The server route /queen/public-foundation is not established as live by this merge; the contract records a route 404 as a wire-stage condition and uses the file fallback.',
+      'A dated repository snapshot does not independently prove that the underlying GitHub ledger is complete or current.',
+      'The change does not establish a deployed honeycomb interaction, production deployment, performance, FPGA hardware, a crystal, speed, energy, or downstream-model result.',
+    ],
+    published: true,
+    ru: {
+      title: 'Снимок основания Queen получил контракт источника',
+      summary: '[измерено] Смерженный PR #937 добавляет датированный снимок основания и контракт с фикстурой, который делает источник данных страницы видимым.',
+      openQuestions: [
+        'Работа серверного маршрута /queen/public-foundation не установлена этим merge; контракт записывает 404 маршрута как состояние wire-этапа и использует резервный файл.',
+        'Датированный снимок репозитория сам по себе не доказывает полноту или актуальность исходного журнала GitHub.',
+        'Изменение не устанавливает развёрнутую интерактивность honeycomb, production deploy, производительность, FPGA-железо, кристалл, скорость, энергию или результат для модели.',
+      ],
+    },
+  },
+  {
     slug: 'clara-proposal-submitted-not-reviewed',
     title: 'CLARA: submitted, non-conforming, and not reviewed on the merits',
     summary: '[measured] Merged PR #892 changed one README file with two additions and two deletions, correcting the project record from “never submitted” to submitted, administratively non-conforming, and not reviewed on the merits.',

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { MouseEvent } from "react";
 import type { CombCellSummary, HudCard, Territory } from "./queenHud";
-import { HH, S, queenIndexOf, summariseCells } from "./QueenComb";
+import { S } from "./QueenComb";
+import { HEX_HOME, HEX_R, hexCellSummaries, hexCornersAt, hexIndexAt } from "./queenHud";
 import "./QueenMinimap.css";
 
 // The overview minimap of the HUD: the comb's field seen flat from above.
-// It draws exactly the cells the comb draws - summariseCells is the comb's
-// own buildCells with the flight state stripped - so a click here names the
+// It draws exactly the cells the field draws - hexCellSummaries is the one
+// layout every view shares - so a click here names the
 // same index the comb would name, and the shell hands it back to the comb as
 // `pickIndex`. Static: no frame loop, one redraw per data, pick or size change.
 
@@ -32,21 +33,9 @@ const EDGE = "rgba(255,255,255,.12)";
 const GOLD_FALLBACK = "#ffd700";
 const PAD = 6;
 
-// The same corners the comb computes: an up cell has its base on the strip's
-// bottom line (yTop + HH) and its apex at yTop; a down cell the reverse.
-function corners(c: CombCellSummary): [Pt, Pt, Pt] {
-  const yB = c.yTop + HH;
-  return c.up
-    ? [
-        [c.x - S / 2, yB],
-        [c.x + S / 2, yB],
-        [c.x, c.yTop],
-      ]
-    : [
-        [c.x - S / 2, c.yTop],
-        [c.x + S / 2, c.yTop],
-        [c.x, yB],
-      ];
+// The same corners the field computes: the cell's hexagon around its centre.
+function corners(c: CombCellSummary): Pt[] {
+  return hexCornersAt(c.x, c.y, HEX_R).map((p) => [p.x, p.y]);
 }
 
 /** Field-space to canvas-space: uniform scale, centred. */
@@ -67,8 +56,8 @@ function layoutFor(cells: CombCellSummary[], width: number, height: number): Lay
   for (const c of cells) {
     minX = Math.min(minX, c.x - S / 2);
     maxX = Math.max(maxX, c.x + S / 2);
-    minY = Math.min(minY, c.yTop);
-    maxY = Math.max(maxY, c.yTop + HH);
+    minY = Math.min(minY, c.y - HEX_R);
+    maxY = Math.max(maxY, c.y + HEX_R);
   }
   const fieldW = Math.max(maxX - minX, 1);
   const fieldH = Math.max(maxY - minY, 1);
@@ -98,8 +87,7 @@ function draw(
     const k = corners(c).map(toCanvas);
     ctx.beginPath();
     ctx.moveTo(k[0][0], k[0][1]);
-    ctx.lineTo(k[1][0], k[1][1]);
-    ctx.lineTo(k[2][0], k[2][1]);
+    for (let i = 1; i < k.length; i += 1) ctx.lineTo(k[i][0], k[i][1]);
     ctx.closePath();
   };
 
@@ -139,10 +127,9 @@ function draw(
     ctx.stroke();
   }
 
-  const queen = cells[queenIndexOf(cells.length)];
+  const queen = cells[HEX_HOME];
   if (queen) {
-    // the centroid of either triangle is (x, y): y sits a third of the way
-    // from the base, which is how buildCells placed it
+    // the hub is the spiral's first cell, the centre of the honeycomb
     const [qx, qy] = toCanvas([queen.x, queen.y]);
     ctx.fillStyle = gold;
     ctx.beginPath();
@@ -158,7 +145,7 @@ export function QueenMinimap({ cards, picked, onPick, labels }: QueenMinimapProp
   // Written by the draw effect, read by the click handler; never during render.
   const layoutRef = useRef<Layout>({ scale: 1, offsetX: 0, offsetY: 0 });
 
-  const cells = useMemo(() => summariseCells(cards), [cards]);
+  const cells = useMemo(() => hexCellSummaries(cards), [cards]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -195,18 +182,9 @@ export function QueenMinimap({ cards, picked, onPick, labels }: QueenMinimapProp
     if (scale <= 0) return;
     const fx = (event.clientX - rect.left - offsetX) / scale;
     const fy = (event.clientY - rect.top - offsetY) / scale;
-    let best = -1;
-    let bestDist = Number.POSITIVE_INFINITY;
-    for (let i = 0; i < cells.length; i += 1) {
-      const d = (cells[i].x - fx) ** 2 + (cells[i].y - fy) ** 2;
-      if (d < bestDist) {
-        bestDist = d;
-        best = i;
-      }
-    }
-    // within one cell: no point inside a triangle is farther than its
-    // circumradius (S / sqrt 3 = 0.577 S) from the centroid
-    if (best >= 0 && bestDist <= (S * 0.6) ** 2) onPick(best);
+    // the same O(1) hit-test the field uses: cube rounding to the hex under the point
+    const best = hexIndexAt(fx, fy, cells.length);
+    if (best >= 0) onPick(best);
   };
 
   return (

@@ -10,7 +10,7 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
-import { QueenComb, queenIndexOf, summariseCells } from "../components/QueenComb";
+import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
@@ -29,20 +29,22 @@ import {
   type HudEvent,
   type HudPick,
   type HudView,
-  fieldShape,
   placeCards,
   staleAge,
-  cellGeometry,
   moduleCard,
   moduleFor,
   pathInTitle,
-  ringOrder,
   type HudModule,
   withOpenIssues,
   countdownFor,
   serverOffsetMs,
   mergeActivity,
   alertSpan,
+  hexField,
+  spiralOrder,
+  hexCellSummaries,
+  HEX_HOME,
+  type FoundationIssue,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -83,6 +85,7 @@ const QUEEN_API = (
   (import.meta.env.VITE_QUEEN_API as string | undefined) ?? DEFAULT_QUEEN_API
 ).replace(/\/+$/, "");
 const LIVE_POLL_MS = 5_000;
+const FOUNDATION_POLL_MS = 60_000;
 const MODULES_POLL_MS = 15_000;
 const ACTIVITY_POLL_MS = 2_000;
 const PINNED_QUEEN_HARDWARE_PUBLIC_KEY =
@@ -806,6 +809,47 @@ function useQueenModules(): { data: { commit: string | null; generatedAt: string
         .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
     void read();
     const timer = window.setInterval(read, MODULES_POLL_MS);
+    return () => { active = false; window.clearInterval(timer); };
+  }, []);
+  return { data, error };
+}
+
+/** The loop's GitHub snapshot: closed issues (the foundation), epics (the castle), rings, releases. */
+interface FoundationSnapshot {
+  generatedAt: string;
+  repo: string;
+  rings: string[];
+  closedIssues: FoundationIssue[];
+  epics: Array<{ number: number; title: string; state: string; closedAt: string | null; labels: string[]; ring: string | null; ringBy: string | null; children: Array<{ number: number; title: string; state: string; closedAt: string | null }> }>;
+  releases: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }>;
+}
+
+/**
+ * The honeycomb's facts from GitHub: the server's route first
+ * (/queen/public-foundation, when it exists), the loop's dated snapshot in
+ * public/queen/foundation.json otherwise. The wire carries no closed_at,
+ * labels or epics, so this is the only honest source; absent, the layers
+ * read a dash and draw nothing.
+ */
+function useQueenFoundation(): { data: (FoundationSnapshot & { source: "wire" | "file" }) | null; error: string | null } {
+  const [data, setData] = useState<(FoundationSnapshot & { source: "wire" | "file" }) | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    const readFrom = async (url: string, source: "wire" | "file") => {
+      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-cache" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const next = (await response.json()) as FoundationSnapshot;
+      if (!Array.isArray(next.closedIssues) || typeof next.generatedAt !== "string") throw new Error("no snapshot");
+      return { ...next, rings: Array.isArray(next.rings) ? next.rings : [], epics: Array.isArray(next.epics) ? next.epics : [], releases: Array.isArray(next.releases) ? next.releases : [], source };
+    };
+    const read = () =>
+      readFrom(`${QUEEN_API}/queen/public-foundation`, "wire")
+        .catch(() => readFrom("./queen/foundation.json", "file"))
+        .then((next) => { if (active) { setData(next); setError(null); } })
+        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
+    void read();
+    const timer = window.setInterval(read, FOUNDATION_POLL_MS);
     return () => { active = false; window.clearInterval(timer); };
   }, []);
   return { data, error };
@@ -1796,6 +1840,7 @@ export default function Queen() {
   // from facts (an issue in progress on it, an open issue, recently touched,
   // dormant), so territories and the buildings' kinds follow.
   const modulesState = useQueenModules();
+  const foundationState = useQueenFoundation();
   const rawModules = modulesState.data?.modules ?? EMPTY_MODULES;
   // the board knows the issues; every row gets its open issues from the cards
   const modules = useMemo(() => withOpenIssues(rawModules, cards), [rawModules, cards]);
@@ -1812,12 +1857,16 @@ export default function Queen() {
     cards: QueenCard[];
     placed: (QueenCard | null)[];
     ledger: Map<number, number>;
-  }>(() => ({ cards: moduleCards, ...placeCards(new Map(), moduleCards, fieldShape(moduleCards.length).cellCount, ringOrder(cellGeometry(moduleCards.length), queenIndexOf(fieldShape(moduleCards.length).cellCount))) }));
+  }>(() => {
+    // the honeycomb: the hub plus one cell per module, rings from the centre
+    const shape0 = hexField(moduleCards.length + 1);
+    return { cards: moduleCards, ...placeCards(new Map(), moduleCards, shape0.cellCount, spiralOrder(shape0.cellCount)) };
+  });
   let placedCards = placement.placed;
   if (placement.cards !== moduleCards) {
-    // rings from the centre: free cells are taken nearest the Queen first
-    const shape = fieldShape(moduleCards.length);
-    const next = placeCards(placement.ledger, moduleCards, shape.cellCount, ringOrder(cellGeometry(moduleCards.length), queenIndexOf(shape.cellCount)));
+    // rings from the centre: free cells are taken along the spiral, nearest the Queen first
+    const shape = hexField(moduleCards.length + 1);
+    const next = placeCards(placement.ledger, moduleCards, shape.cellCount, spiralOrder(shape.cellCount));
     placedCards = next.placed;
     setPlacement({ cards: moduleCards, placed: next.placed, ledger: next.ledger });
   }
@@ -1928,7 +1977,7 @@ export default function Queen() {
   // first answer began later than an hour ago (P0-11)
   const bellSpan = useMemo(() => alertSpan(activityState.data?.observedFrom ?? null, now), [activityState.data?.observedFrom, now]);
   const bellSpanText = bellSpan ? formatInterval(bellSpan.seconds, lang) : null;
-  const cellSummaries = useMemo(() => summariseCells(placedCards), [placedCards]);
+  const cellSummaries = useMemo(() => hexCellSummaries(placedCards), [placedCards]);
   // Bees are the issues in progress: each walks to the module its title names.
   const beeTargets = useMemo<Array<number | null>>(() => {
     const byNumber = new Map<number, number>();
@@ -1973,7 +2022,7 @@ export default function Queen() {
       card: moduleCards.find((card) => card.number === number) ?? pick.card,
       module: modulesById.get(number) ?? null,
       territory: cellSummaries[index].own,
-      isQueen: index === queenIndexOf(cellSummaries.length),
+      isQueen: index === HEX_HOME,
     };
   }, [pick, cellSummaries, moduleCards, modulesById]);
   const pickIndex = livePick?.index ?? null;
@@ -2163,12 +2212,15 @@ export default function Queen() {
                     cell
                       ? {
                           index,
-                          isQueen: index === queenIndexOf(cellSummaries.length),
+                          isQueen: index === HEX_HOME,
                           territory: cell.own,
+                          // the cells carry MODULE numbers (M-2): resolve against the
+                          // module cards, not the board's issues
                           card:
                             cell.cardNumber === null
                               ? null
-                              : (cards.find((card) => card.number === cell.cardNumber) ?? null),
+                              : (moduleCards.find((card) => card.number === cell.cardNumber) ?? null),
+                          module: cell.cardNumber === null ? null : (modulesById.get(cell.cardNumber) ?? null),
                           bee: null,
                         }
                       : null,
@@ -2484,6 +2536,7 @@ export default function Queen() {
         data-pick-territory={livePick?.territory ?? undefined}
         data-pick-module={livePick?.module?.path ?? undefined}
         data-modules={modulesState.data ? `${modules.length}@${modulesState.data.commit ?? "?"}:${modulesState.data.source}` : undefined}
+        data-foundation={foundationState.data ? `${foundationState.data.closedIssues.length}@${foundationState.data.generatedAt}:${foundationState.data.source}` : undefined}
       >
         <header className="queen27-hud-vp-head">
           <span className="queen27-hud-vp-title">
