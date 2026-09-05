@@ -361,9 +361,11 @@ export default function SpecExplorer() {
   const [manifest, setManifest] = useState<SpecManifest | null>(null)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('')
-  // Healthy specs first, by default: this is a catalogue to browse, not a
-  // triage queue. The problem groups are one click away and carry their counts.
-  const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course'>('ok')
+  // The course first, by default. Someone arriving here has no way to know
+  // which of 760 specs to open, and "Working 522" is still 522 unordered
+  // files; the eight lessons are the one path through this that starts
+  // somewhere. Every other group is one click away and carries its count.
+  const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course'>('course')
   // Multi-select, AND across selections: picking domain/fpga + has/tests means
   // "FPGA specs that have tests", which is the question people actually ask.
   const [tagSel, setTagSel] = useState<string[]>([])
@@ -409,8 +411,10 @@ export default function SpecExplorer() {
           || m.specs.find((s) => s.featured)
           || m.specs[0]
         if (target) {
-          // A deep-linked spec is usually outside the default Working filter.
-          if (target.health !== 'ok') setHealthFilter('all')
+          // A deep-linked spec is usually outside the course, and landing on a
+          // filter that excludes the very spec the link named would show an
+          // empty list next to an open file.
+          if (!target.tutorial) setHealthFilter('all')
           void pickRef.current?.(target)
         }
       })
