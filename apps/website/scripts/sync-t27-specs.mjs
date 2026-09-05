@@ -17,10 +17,12 @@
 //   cd /Users/playom/t27/bindings/wasm-explorer
 //   cargo build --target wasm32-unknown-unknown --release
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, mkdtempSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { join, relative, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { tmpdir } from 'node:os'
+import { createHash } from 'node:crypto'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WEBSITE = join(HERE, '..')
@@ -51,13 +53,58 @@ const dirty = execFileSync('git', ['-C', T27, 'status', '--porcelain', '--', 'sp
 //   .git/     -- object store
 //   .claude/  -- git worktrees, i.e. second checkouts of files already counted
 //                (the same compiler/ast.t27 appears in every worktree)
-const files = execFileSync('find', [
+const localFiles = execFileSync('find', [
   T27, '-name', '*.t27', '-type', 'f',
   '-not', '-path', `${T27}/.git/*`,
   '-not', '-path', `${T27}/.claude/*`,
 ], { encoding: 'utf8' }).split('\n').filter(Boolean).sort()
 
-if (!files.length) fail('no .t27 files found')
+if (!localFiles.length) fail('no .t27 files found')
+
+// ---------------------------------------------------------------------------
+// Other repositories
+//
+// The corpus is spread across several repos. They are pulled as tarballs
+// rather than cloned: one request each, no working copies to keep in sync, and
+// nothing writable left behind.
+//
+// `chips/{euler,gamma,phi}` inside t27 are byte-identical to the
+// tt-trinity-{euler,gamma,phi} repos (verified by blob SHA), so content-hash
+// dedup below keeps them from appearing twice. A knowledge library full of
+// duplicates is worse than a smaller honest one.
+// ---------------------------------------------------------------------------
+const EXTRA_REPOS = (process.env.T27_SKIP_REMOTE ? [] : [
+  'tri-net',
+  'trinity-fpga',
+  'trinity',
+  'tt-trinity-corona',
+])
+
+const sources = [{ repo: 't27', root: T27, files: localFiles, commit: null }]
+
+for (const repo of EXTRA_REPOS) {
+  let branch
+  try {
+    branch = execFileSync('gh', ['api', `repos/gHashTag/${repo}`, '--jq', '.default_branch'], { encoding: 'utf8' }).trim()
+  } catch {
+    console.log(`  warning: ${repo} unreachable, skipped`)
+    continue
+  }
+  const sha = execFileSync('gh', ['api', `repos/gHashTag/${repo}/commits/${branch}`, '--jq', '.sha'], { encoding: 'utf8' }).trim()
+  const dir = mkdtempSync(join(tmpdir(), `t27-${repo}-`))
+  try {
+    execFileSync('sh', ['-c',
+      `gh api "repos/gHashTag/${repo}/tarball/${branch}" > "${dir}/a.tar.gz" && tar -xzf "${dir}/a.tar.gz" -C "${dir}"`,
+    ], { stdio: 'ignore' })
+  } catch {
+    console.log(`  warning: ${repo} tarball failed, skipped`)
+    continue
+  }
+  const inner = execFileSync('sh', ['-c', `ls -d "${dir}"/*/ | head -1`], { encoding: 'utf8' }).trim()
+  const found = execFileSync('find', [inner, '-name', '*.t27', '-type', 'f'], { encoding: 'utf8' })
+    .split('\n').filter(Boolean).sort()
+  sources.push({ repo, root: inner.replace(/\/$/, ''), files: found, commit: sha, tmp: dir })
+}
 
 rmSync(OUT_DIR, { recursive: true, force: true })
 mkdirSync(SPECS_OUT, { recursive: true })
@@ -107,11 +154,24 @@ function describe(text) {
 }
 
 const entries = []
-for (const abs of files) {
-  // Paths are now relative to the repo root, so a spec's real home (specs/,
-  // chips/, compiler/…) stays visible in the UI rather than being flattened.
-  const rel = relative(T27, abs)
+const seenContent = new Map() // content hash -> path already kept
+let duplicates = 0
+
+for (const src of sources) {
+for (const abs of src.files) {
+  // Namespaced by repo, then the path inside it, so a spec's real home stays
+  // visible instead of being flattened into one bucket.
+  const inRepo = relative(src.root, abs)
+  const rel = src.repo === 't27' ? inRepo : `${src.repo}/${inRepo}`
   const text = readFileSync(abs, 'utf8')
+
+  // Same bytes as something already taken? Skip it. t27 vendors three whole
+  // chip repos, so without this the library would carry 147 phantom entries.
+  const hash = createHash('sha256').update(text).digest('hex')
+  const already = seenContent.get(hash)
+  if (already) { duplicates++; continue }
+  seenContent.set(hash, rel)
+
   const dest = join(SPECS_OUT, rel)
   mkdirSync(dirname(dest), { recursive: true })
   writeFileSync(dest, text)
@@ -152,8 +212,13 @@ for (const abs of files) {
     // Output size per backend, so the library can show what a spec actually
     // produces without re-running the compiler.
     outBytes: a ? Object.fromEntries(Object.entries(a.targets).map(([k, v]) => [k, v.ok ? v.bytes : null])) : {},
+    repo: src.repo,
   })
 }
+}
+
+// Tarballs were extracted to temp dirs; nothing should outlive this run.
+for (const s of sources) if (s.tmp) rmSync(s.tmp, { recursive: true, force: true })
 
 cpSync(WASM_SRC, join(OUT_DIR, 't27_compiler.wasm'))
 const wasmBytes = readFileSync(WASM_SRC).length
@@ -199,6 +264,8 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
   specCount: entries.length,
   totalLines: entries.reduce((a, e) => a + e.lines, 0),
   categories: Object.fromEntries(Object.entries(byCategory).sort((a, b) => b[1] - a[1])),
+  repos: sources.map((s) => ({ repo: s.repo, commit: s.commit ?? sha, specs: entries.filter((e) => e.repo === s.repo).length })),
+  duplicatesSkipped: duplicates,
   health,
   backendFailures,
   featured: FEATURED,
@@ -212,6 +279,7 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
 }, null, 0))
 
 console.log(`sync-t27-specs: ${entries.length} specs, ${Object.keys(byCategory).length} categories`)
+console.log(`  sources: ${sources.map((s) => s.repo).join(', ')}  (${duplicates} duplicate files skipped by content hash)`)
 console.log(`  health: ${health.ok} ok · ${health.warn} warn · ${health.fail} fail`)
 if (Object.keys(backendFailures).length) console.log(`  backend failures: ${JSON.stringify(backendFailures)}`)
 console.log(`  t27 @ ${shortSha}${dirty ? ' (DIRTY -- snapshot includes uncommitted spec/compiler changes)' : ''}`)

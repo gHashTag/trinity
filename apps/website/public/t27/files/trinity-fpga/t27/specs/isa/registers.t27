@@ -1,0 +1,9 @@
+# isa/registers — 27-register ISA for Trinity compute cores
+# Status: stub (pending full spec)
+# 27 registers = Coptic alphabet mapping
+module isa_registers {
+    export R0: Reg  # Aleph
+    export R1: Reg  # Beth
+    # ... through R26 (Ti)
+    export total_registers: u5 = 27
+}
