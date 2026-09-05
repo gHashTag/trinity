@@ -84,6 +84,8 @@ export interface SpecEntry {
   lesson?: number
   /** Derived at sync time from path, AST node kinds and backend results. */
   tags: string[]
+  /** Written-out description built from the measured compile. */
+  summary: string
   /** AST node-kind histogram. */
   kinds: Record<string, number>
   repo: string

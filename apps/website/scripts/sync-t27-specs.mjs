@@ -226,6 +226,64 @@ function deriveTags(rel, repo, kinds, entry) {
   return [...tags].sort()
 }
 
+/**
+ * A written-out description of what a spec actually is.
+ *
+ * The header comment alone is whatever its author felt like typing -- often
+ * good, sometimes one word, missing on 42 of them. This adds a second sentence
+ * built from measured facts: what the spec declares, what the compiler makes of
+ * it, and what it emits. Every number here came from running the compiler, so
+ * the prose cannot drift from the artifact the way a hand-written blurb would.
+ */
+function summarise(kinds, entry, health) {
+  const parts = []
+
+  const decl = []
+  if (kinds.FnDecl) decl.push(`${kinds.FnDecl} function${kinds.FnDecl > 1 ? 's' : ''}`)
+  if (kinds.StructDecl) decl.push(`${kinds.StructDecl} struct${kinds.StructDecl > 1 ? 's' : ''}`)
+  if (kinds.EnumDecl) decl.push(`${kinds.EnumDecl} enum${kinds.EnumDecl > 1 ? 's' : ''}`)
+  if (kinds.ConstDecl) decl.push(`${kinds.ConstDecl} constant${kinds.ConstDecl > 1 ? 's' : ''}`)
+  parts.push(decl.length ? `Declares ${listy(decl)}.` : 'Declares no top-level items.')
+
+  const claims = []
+  if (kinds.TestBlock) claims.push(`${kinds.TestBlock} test${kinds.TestBlock > 1 ? 's' : ''}`)
+  if (kinds.InvariantBlock) claims.push(`${kinds.InvariantBlock} invariant${kinds.InvariantBlock > 1 ? 's' : ''}`)
+  if (kinds.BenchBlock) claims.push(`${kinds.BenchBlock} bench${kinds.BenchBlock > 1 ? 'es' : ''}`)
+  if (claims.length) parts.push(`Carries ${listy(claims)}.`)
+
+  parts.push(`${entry.lines} lines compile to ${entry.tokens.toLocaleString()} tokens and ${entry.nodes.toLocaleString()} AST nodes, depth ${entry.depth}.`)
+
+  const emitted = Object.entries(entry.outBytes).filter(([, v]) => v !== null && v > 0)
+  if (emitted.length) {
+    const biggest = emitted.sort((a, b) => b[1] - a[1])[0]
+    parts.push(`Emits ${emitted.length} of 5 backends; largest is ${TARGET_LABEL[biggest[0]] || biggest[0]} at ${fmtBytes(biggest[1])}.`)
+  }
+
+  if (health === 'fail') {
+    parts.push(`Rejected by ${listy(entry.failedBackends.map((b) => TARGET_LABEL[b] || b))}.`)
+  } else if (health === 'warn') {
+    const w = []
+    if (entry.loss > 0) w.push(`${entry.loss} item${entry.loss > 1 ? 's' : ''} dropped by error recovery`)
+    if (entry.tcErrors > 0) w.push(`${entry.tcErrors} type error${entry.tcErrors > 1 ? 's' : ''}`)
+    parts.push(`Compiles with ${listy(w)}.`)
+  } else {
+    parts.push('Clean through every layer.')
+  }
+
+  return parts.join(' ')
+}
+
+const TARGET_LABEL = { zig: 'Zig', verilog: 'Verilog', verilog_hir: 'Verilog (HIR)', c: 'C', rust: 'Rust' }
+
+function listy(a) {
+  if (a.length <= 1) return a[0] || ''
+  return `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`
+}
+
+function fmtBytes(n) {
+  return n >= 1024 ? `${(n / 1024).toFixed(1)} KB` : `${n} B`
+}
+
 const entries = []
 const seenContent = new Map() // content hash -> path already kept
 let duplicates = 0
@@ -297,6 +355,7 @@ for (const abs of src.files) {
   })
   const e = entries[entries.length - 1]
   e.tags = deriveTags(rel, src.repo, kinds, e)
+  e.summary = summarise(kinds, e, health)
 }
 }
 

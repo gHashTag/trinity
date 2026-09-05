@@ -18,6 +18,8 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { SpecCodeView } from '../components/SpecCodeView'
 import { SpecEditor } from '../components/SpecEditor'
 import { SpecMetrics } from '../components/SpecMetrics'
+import { SpecShare } from '../components/SpecShare'
+import { SpecContribute } from '../components/SpecContribute'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
@@ -103,6 +105,11 @@ const UI = {
     noneInGroup: 'Nothing in this group.',
     lesson: 'LESSON',
     tags: 'Tags',
+    share: 'Share',
+    copyLink: 'Copy link',
+    contribute: 'Contribute',
+    propose: 'Propose a fix →',
+    report: 'Report',
     edit: 'Edit',
     reset: 'Reset',
     editing: 'Editing — not the shipped spec',
@@ -179,6 +186,11 @@ const UI = {
     noneInGroup: 'В этой группе пусто.',
     lesson: 'УРОК',
     tags: 'Теги',
+    share: 'Поделиться',
+    copyLink: 'Копировать ссылку',
+    contribute: 'Внести вклад',
+    propose: 'Предложить правку →',
+    report: 'Сообщить',
     edit: 'Правка',
     reset: 'Сброс',
     editing: 'Редактирование — это уже не исходная спека',
@@ -389,10 +401,18 @@ export default function SpecExplorer() {
     loadManifest()
       .then((m) => {
         setManifest(m)
-        // Open the teaching spec straight away: an empty pane teaches nothing,
-        // and this one is small enough to read end to end.
-        const first = m.specs.find((s) => s.featured) ?? m.specs[0]
-        if (first) void pickRef.current?.(first)
+        // A shared link names its spec; honour it before falling back to the
+        // teaching spec. Without this a share would only ever say "the
+        // explorer, go find it yourself".
+        const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
+        const target = (wanted && m.specs.find((s) => s.path === wanted))
+          || m.specs.find((s) => s.featured)
+          || m.specs[0]
+        if (target) {
+          // A deep-linked spec is usually outside the default Working filter.
+          if (target.health !== 'ok') setHealthFilter('all')
+          void pickRef.current?.(target)
+        }
       })
       .catch((e) => setErr(String(e)))
   }, [])
@@ -475,6 +495,10 @@ export default function SpecExplorer() {
     // A draft belongs to the spec it was typed against.
     setBaseline(null)
     setDirty(false)
+    // Keep the address bar on the selected spec so the link is always
+    // shareable, without pushing 676 history entries as someone browses.
+    const base = window.location.hash.split('?')[0] || '#/specs'
+    window.history.replaceState(null, '', `${base}?spec=${encodeURIComponent(spec.path)}`)
     const warm = cachedAnalysis(spec.path)
     setBusy(!warm)
     try {
@@ -1132,11 +1156,34 @@ export default function SpecExplorer() {
                     flexWrap: 'wrap',
                   }}
                 >
-                  {selected.description && (
-                    <p style={{ margin: 0, flex: '1 1 320px', minWidth: 0, fontSize: 12.5, lineHeight: 1.55, color: '#b9bfc6', maxWidth: 'none' }}>
-                      {selected.description}
-                    </p>
-                  )}
+                  <div style={{ flex: '1 1 320px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {selected.description && (
+                      <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.55, color: '#b9bfc6', maxWidth: 'none' }}>
+                        {selected.description}
+                      </p>
+                    )}
+                    {/* Derived from the compile, not written by hand -- so it
+                        cannot drift from the artifact it describes. */}
+                    {selected.summary && (
+                      <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.5, color: C.muted, maxWidth: 'none' }}>
+                        {selected.summary}
+                      </p>
+                    )}
+                    <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                      {selected.tags.map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => { if (!tagSel.includes(t)) toggleTag(t); setTagsOpen(true) }}
+                          title={`Filter by ${t}`}
+                          style={tagChip(tagSel.includes(t), false)}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                    <SpecShare spec={selected} labels={{ share: ui.share, copy: ui.copyLink, copied: ui.copied }} />
+                    <SpecContribute spec={selected} result={result} edited={edited} labels={{ contribute: ui.contribute, propose: ui.propose, report: ui.report }} />
+                  </div>
                   {result && (
                     <div style={{ flex: '0 1 340px', minWidth: 220 }}>
                       <PipelineRibbon
