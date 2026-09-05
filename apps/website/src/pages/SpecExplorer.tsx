@@ -98,6 +98,9 @@ const UI = {
     corpusHealth: 'corpus health',
     startHere: 'START HERE',
     noneInGroup: 'Nothing in this group.',
+    lesson: 'LESSON',
+    course: 'Course',
+    courseNote: 'Eight lessons, in order, each one clean through every layer.',
     droppedItems: 'dropped',
     typeErrs: 'type errors',
   },
@@ -163,6 +166,9 @@ const UI = {
     corpusHealth: 'здоровье корпуса',
     startHere: 'НАЧНИТЕ ЗДЕСЬ',
     noneInGroup: 'В этой группе пусто.',
+    lesson: 'УРОК',
+    course: 'Курс',
+    courseNote: 'Восемь уроков по порядку, каждый чист на всех слоях.',
     droppedItems: 'отброшено',
     typeErrs: 'ошибок типов',
   },
@@ -170,14 +176,17 @@ const UI = {
 
 type Ui = Record<keyof typeof UI.en, string>
 
+// The site's tokens (index.css :root) rather than a stock editor palette.
+// Panels sit a step above pure black: on OLED, white text on #000 smears
+// during scroll, and this list scrolls a lot.
 const C = {
   bg: '#000000',
-  panel: '#0a0a0a',
-  raised: '#111111',
-  border: 'rgba(255,255,255,0.10)',
-  borderBright: 'rgba(255,255,255,0.20)',
+  panel: '#0b0d0c',
+  raised: '#121614',
+  border: 'rgba(0,255,136,0.10)',
+  borderBright: 'rgba(0,255,136,0.34)',
   text: '#FFFFFF',
-  muted: '#888888',
+  muted: '#8b9490',
   accent: '#00FF88',
   golden: '#FFD700',
   bad: '#f85149',
@@ -323,7 +332,7 @@ export default function SpecExplorer() {
   const [category, setCategory] = useState<string>('')
   // Healthy specs first, by default: this is a catalogue to browse, not a
   // triage queue. The problem groups are one click away and carry their counts.
-  const [healthFilter, setHealthFilter] = useState<Health | 'all'>('ok')
+  const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course'>('ok')
   const [selected, setSelected] = useState<SpecEntry | null>(null)
   const [source, setSource] = useState('')
   const [result, setResult] = useState<T27Analysis | null>(null)
@@ -370,7 +379,9 @@ export default function SpecExplorer() {
     if (!manifest) return []
     const q = query.trim().toLowerCase()
     return manifest.specs.filter((s) => {
-      if (healthFilter !== 'all' && s.health !== healthFilter) return false
+      if (healthFilter === 'course') {
+        if (!s.tutorial) return false
+      } else if (healthFilter !== 'all' && s.health !== healthFilter) return false
       if (category && s.category !== category) return false
       if (!q) return true
       return (
@@ -615,13 +626,14 @@ export default function SpecExplorer() {
               <>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {([
+                    ['course', ui.course, manifest.specs.filter((s) => s.tutorial).length],
                     ['ok', ui.working, manifest.health.ok],
                     ['warn', ui.warnings, manifest.health.warn],
                     ['fail', ui.broken, manifest.health.fail],
                     ['all', ui.all, manifest.specCount],
-                  ] as [Health | 'all', string, number][]).map(([k, label, n]) => {
+                  ] as [Health | 'all' | 'course', string, number][]).map(([k, label, n]) => {
                     const on = healthFilter === k
-                    const col = k === 'all' ? C.muted : HEALTH_COLOR[k]
+                    const col = k === 'all' ? C.muted : k === 'course' ? C.golden : HEALTH_COLOR[k]
                     return (
                       <button
                         key={k}
@@ -641,7 +653,11 @@ export default function SpecExplorer() {
                           fontFamily: 'inherit',
                         }}
                       >
-                        {k !== 'all' && <span aria-hidden="true">{HEALTH_GLYPH[k]}</span>}
+                        {k === 'course' ? (
+                          <span aria-hidden="true">◆</span>
+                        ) : k !== 'all' ? (
+                          <span aria-hidden="true">{HEALTH_GLYPH[k]}</span>
+                        ) : null}
                         <span>{label}</span>
                         <span style={{ fontFamily: C.mono, opacity: 0.8 }}>{n}</span>
                       </button>
@@ -701,7 +717,7 @@ export default function SpecExplorer() {
                       <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 600 }}>
                         {s.module || s.name}
                       </span>
-                      {s.featured && (
+                      {s.featured ? (
                         <span
                           style={{
                             fontSize: 8.5,
@@ -715,7 +731,20 @@ export default function SpecExplorer() {
                         >
                           {ui.startHere}
                         </span>
-                      )}
+                      ) : s.tutorial ? (
+                        <span
+                          style={{
+                            fontSize: 8.5,
+                            letterSpacing: 0.5,
+                            color: C.golden,
+                            opacity: 0.75,
+                            flexShrink: 0,
+                            fontFamily: C.mono,
+                          }}
+                        >
+                          {ui.lesson} {s.lesson}
+                        </span>
+                      ) : null}
                     </span>
                     {/* Dim the directory, keep the basename readable. */}
                     <span

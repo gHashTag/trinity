@@ -78,6 +78,10 @@ export interface SpecEntry {
   outBytes: Record<string, number | null>
   /** The spec the page opens on. */
   featured?: boolean
+  /** Part of the ordered course that heads the library. */
+  tutorial?: boolean
+  /** Reading order within the course; 0 is the overview. */
+  lesson?: number
 }
 
 export interface SpecManifest {

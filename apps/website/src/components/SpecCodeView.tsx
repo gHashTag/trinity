@@ -52,11 +52,11 @@ function SpecCodeViewImpl({ lines, activeLine, onHoverLine, raw, copyLabel, copi
           alignItems: 'center',
           gap: 10,
           padding: '6px 10px',
-          background: 'rgba(10,10,10,0.94)',
+          background: 'rgba(11,13,12,0.94)',
           backdropFilter: 'blur(6px)',
-          borderBottom: '1px solid rgba(255,255,255,0.10)',
+          borderBottom: '1px solid rgba(0,255,136,0.10)',
           fontSize: 11,
-          color: '#888888',
+          color: '#8b9490',
           fontFamily: MONO,
         }}
       >
@@ -66,9 +66,9 @@ function SpecCodeViewImpl({ lines, activeLine, onHoverLine, raw, copyLabel, copi
           style={{
             marginLeft: 'auto',
             background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.14)',
+            border: '1px solid rgba(0,255,136,0.18)',
             borderRadius: 4,
-            color: copied ? '#00FF88' : '#888888',
+            color: copied ? '#00FF88' : '#8b9490',
             padding: '3px 10px',
             cursor: 'pointer',
             fontSize: 11,
@@ -101,7 +101,7 @@ function SpecCodeViewImpl({ lines, activeLine, onHoverLine, raw, copyLabel, copi
                   flexShrink: 0,
                   textAlign: 'right',
                   paddingRight: 12,
-                  color: '#6e7681',
+                  color: '#5f6b64',
                   userSelect: 'none',
                 }}
               >

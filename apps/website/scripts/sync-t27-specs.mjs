@@ -158,20 +158,27 @@ for (const abs of files) {
 cpSync(WASM_SRC, join(OUT_DIR, 't27_compiler.wasm'))
 const wasmBytes = readFileSync(WASM_SRC).length
 
-// The spec the page opens on: a deliberately small file that exercises every
-// part of the language, so the first thing a visitor sees teaches the syntax
-// rather than dropping them into a 1600-line FPGA spec.
+// The course comes first, in reading order, and the page opens on its first
+// lesson. Everything else keeps its path order behind them.
+//
+// `hello_world` sits at the head as the five-minute overview; the numbered
+// lessons then take each construct in turn. Sorting is by filename, which is
+// why they are numbered rather than named.
 const FEATURED = 'specs/demos/hello_world.t27'
-const featuredIdx = entries.findIndex((e) => e.path === FEATURED)
-if (featuredIdx > 0) {
-  const [f] = entries.splice(featuredIdx, 1)
-  f.featured = true
-  entries.unshift(f)
-} else if (featuredIdx === 0) {
-  entries[0].featured = true
-} else {
-  console.log(`  warning: featured spec ${FEATURED} not found -- page will open on the first entry`)
-}
+const tutorial = entries
+  .filter((e) => e.path.startsWith('specs/tutorial/') || e.path === FEATURED)
+  .sort((a, b) => (a.path === FEATURED ? -1 : b.path === FEATURED ? 1 : a.path.localeCompare(b.path)))
+const rest = entries.filter((e) => !tutorial.includes(e))
+
+tutorial.forEach((e, i) => {
+  e.tutorial = true
+  e.lesson = i // 0 = hello_world, then 1..N in reading order
+})
+if (tutorial.length) tutorial[0].featured = true
+else console.log(`  warning: no tutorial specs found -- page will open on the first entry`)
+
+entries.length = 0
+entries.push(...tutorial, ...rest)
 
 const byCategory = {}
 for (const e of entries) byCategory[e.category] = (byCategory[e.category] || 0) + 1
