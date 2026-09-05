@@ -94,6 +94,9 @@ const castle = async () => evaluate(`(() => { const f = document.querySelector('
 let c = null;
 for (let i = 0; i < 60 && !(c && c.source); i++) { await wait(500); c = await castle(); }
 if (!c || !c.source) { console.log('  Queen castle contract: FAIL (the field never reported data-castle-source: no castle drawn)'); cleanup(); process.exit(1); }
+// K-4: the keep at the hub, a nameplate per plinth, a banner per release
+const k4 = await evaluate(`(() => { const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); return { keep: f.getAttribute('data-castle-keep'), plates: f.getAttribute('data-castle-plates'), banners: f.getAttribute('data-castle-banners') }; })()`);
+if (k4.keep !== '1' || k4.plates !== '2' || k4.banners !== '1') { console.log(`  Queen castle contract: FAIL (keep=${k4.keep} plates=${k4.plates} banners=${k4.banners}; expected the keep, 2 nameplates, 1 banner)`); cleanup(); process.exit(1); }
 if (c.source !== 'file' || c.rings !== '2' || c.stages !== 'RUST-13:plinth;SR-00:tower' || c.unassigned !== '1' || c.releases !== '1') { console.log(`  Queen castle contract: FAIL (source=${c.source} rings=${c.rings} stages=${c.stages} unassigned=${c.unassigned} releases=${c.releases}; expected file, 2, RUST-13:plinth;SR-00:tower, 1, 1)`); cleanup(); process.exit(1); }
 // a missing snapshot: plinths with dashes, the source says none, no stages
 castleMode = 'missing';
