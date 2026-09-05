@@ -61,9 +61,9 @@ export const papers: Resource[] = [
     verified: '2026-09-05',
     status: 'live',
     note:
-      'cs.AR primary. v3 (new title, 19 pp) submitted 4 Sep 2026, announces Mon 7 Sep 2026; before the announcement the arXiv page still carries the v2 title, and the versioned v3 identifier does not resolve until then. The format count is a catalog invariant that grows with each version (109 formats in 12 clusters at v3; 83 at v2) — do not hard-code it. The 84-format title of v1 is historical.',
+      'cs.AR primary. v3 (new title, 19 pp) submitted 4 Sep 2026, announces Mon 7 Sep 2026; before the announcement the arXiv page still carries the v2 title, and the versioned v3 identifier does not resolve until then. The format count is a catalog invariant that grows with each version (109 formats at v3; 83 at v2) — do not hard-code it. The 84-format title of v1 is historical.',
     noteRu:
-      'Основная рубрика cs.AR. v3 (новый заголовок, 19 страниц) подана 4 сентября 2026 года, анонс в понедельник 7 сентября 2026 года; до анонса страница arXiv ещё несёт заголовок v2, а версионный идентификатор v3 до этого не открывается. Число форматов в каталоге растёт от версии к версии (109 форматов в 12 кластерах в v3; 83 в v2) — не зашивать его в тексты. Заголовок v1 про 84 формата — историческая запись.',
+      'Основная рубрика cs.AR. v3 (новый заголовок, 19 страниц) подана 4 сентября 2026 года, анонс в понедельник 7 сентября 2026 года; до анонса страница arXiv ещё несёт заголовок v2, а версионный идентификатор v3 до этого не открывается. Число форматов в каталоге растёт от версии к версии (109 форматов в v3; 83 в v2) — не зашивать его в тексты. Заголовок v1 про 84 формата — историческая запись.',
   },
   {
     kind: 'paper',
