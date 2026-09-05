@@ -6,7 +6,9 @@
 // summariseCells, so placement, picking, the pairing of bees to running cards
 // and the event glints keep their rules; only the picture changed. Buildings
 // are procedural until the user names an asset pack (B-5).
-import { useEffect, useRef } from "react";
+import { useEffect, useRef , useImperativeHandle } from "react";
+import type { Ref } from "react";
+import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
@@ -43,6 +45,7 @@ import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
 import { S, EDGES } from "./QueenComb";
 import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, honeyTone, spiralAxial, S_CELL, type FoundationIssue,
+ FIELD_LAYERS, type FieldLayer, type CombHandle,
 } from "./queenHud";
 
 interface SpikeCard {
@@ -72,6 +75,10 @@ interface QueenCombBabylonProps {
   beeTargets?: ReadonlyArray<number | null>;
   /** The honeycomb foundation: the loop's snapshot of closed GitHub issues, one honey hex each. */
   foundation?: { issues: FoundationIssue[]; generatedAt: string; source: "wire" | "file" } | null;
+  /** Which layers draw: FOUNDATION (tiles and honey), CASTLE (the rings' towers), CODE (the module buildings). Bees always. */
+  layers?: Record<FieldLayer, boolean>;
+  /** The toolbar's zoom and fit, the same handle the canvas comb exposes. */
+  handleRef?: Ref<CombHandle>;
 }
 // the plan's part kinds map to models the field loads: annexes are the
 // platform, antennae the dish; the core is the plan's own key
@@ -182,7 +189,9 @@ async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; 
   }
 }
 
-export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null }: QueenCombBabylonProps) {
+const ALL_LAYERS: Record<FieldLayer, boolean> = { foundation: true, castle: true, code: true };
+
+export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null, layers = ALL_LAYERS, handleRef }: QueenCombBabylonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onPickRef = useRef(onPick);
@@ -211,6 +220,8 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
   const modulesRef = useRef(modules);
   const targetsRef = useRef(beeTargets);
   const foundationRef = useRef(foundation);
+  const layersRef = useRef(layers);
+  const cameraRef = useRef<CombHandle | null>(null);
   useEffect(() => {
     cardsRef.current = cards;
     workersRef.current = workers;
@@ -218,8 +229,14 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     modulesRef.current = modules;
     targetsRef.current = beeTargets;
     foundationRef.current = foundation;
-  }, [cards, workers, devices, modules, beeTargets]);
+    layersRef.current = layers;
+  }, [cards, workers, devices, modules, beeTargets, foundation, layers]);
 
+  useImperativeHandle(handleRef, () => ({
+    zoomIn: () => cameraRef.current?.zoomIn(),
+    zoomOut: () => cameraRef.current?.zoomOut(),
+    fit: () => cameraRef.current?.fit(),
+  }), []);
   useEffect(() => {
     const canvas = canvasRef.current;
     const host = hostRef.current;
@@ -265,6 +282,8 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     camera.panningSensibility = 0;
     let zoom = 1;
     let appliedInset = -1;
+    // three transform nodes carry the layers: a disabled parent hides its thin-instanced children without touching a buffer
+    const layerNodes: Record<FieldLayer, TransformNode> = { foundation: new TransformNode("layer-foundation", scene), castle: new TransformNode("layer-castle", scene), code: new TransformNode("layer-code", scene) };
     const fit = () => {
       const w = host.clientWidth || 1, h = host.clientHeight || 1;
       const inset = insetRef.current;
@@ -279,9 +298,16 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       camera.orthoLeft = -halfW; camera.orthoRight = halfW;
       camera.orthoTop = halfH; camera.orthoBottom = -halfH - shift;
       appliedInset = inset;
+      host.setAttribute("data-zoom", zoom.toFixed(2));
     };
     fit();
     canvas.addEventListener("wheel", (e) => { e.preventDefault(); zoom = Math.min(8, Math.max(0.5, zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); fit(); }, { passive: false });
+    // the toolbar's FIT VIEW / - / + reach the scene through the same handle the canvas comb exposes
+    cameraRef.current = {
+      zoomIn: () => { zoom = Math.min(8, zoom * 1.25); fit(); },
+      zoomOut: () => { zoom = Math.max(0.5, zoom / 1.25); fit(); },
+      fit: () => { zoom = 1; fit(); },
+    };
 
     // ---- light: a sun from the upper left and a soft sky, shadows on -----
     const sky = new HemisphericLight("sky", new Vector3(0.2, 1, 0.1), scene);
@@ -431,6 +457,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const count = t.matrices.length / 16;
       for (const p of t.parts) {
         if (count === 0) { p.dispose(); continue; }
+        p.parent = layerNodes.code;
         p.isVisible = true;
         p.thinInstanceSetBuffer("matrix", new Float32Array(t.matrices), 16, true);
         if (t.colors.length === count * 4) p.thinInstanceSetBuffer("color", new Float32Array(t.colors), 4, true);
@@ -555,7 +582,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "tile"];
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
-      for (const [key, t] of loaded) if (t) modelInstances.set(key, t);
+      for (const [key, t] of loaded) if (t) { modelInstances.set(key, t); if (key === "tile") t.mesh.parent = layerNodes.foundation; else if (!["hub", "crystal", "scribe", "wright", "lapidary", "larva"].includes(key)) t.mesh.parent = layerNodes.code; }
       const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns, tpl.heights, tpl.colors); };
       // a building takes about half a cell, so the roads between them still show
       bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
@@ -591,7 +618,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
           const honeyMat = new StandardMaterial("honey", scene);
           // the disc glows through the instance colour (honeyTone): a modest base emissive so the age bands read and the city above stays visible
           honeyMat.diffuseColor = new Color3(0.45, 0.3, 0.08); honeyMat.emissiveColor = new Color3(0.55, 0.38, 0.12); honeyMat.specularColor = new Color3(0.35, 0.28, 0.1); honeyMat.specularPower = 24;
-          honey.material = honeyMat; honey.isPickable = false;
+          honey.material = honeyMat; honey.isPickable = false; honey.parent = layerNodes.foundation;
           const hm: number[] = []; const hc: number[] = []; let count = 0; let first: string | null = null; let last: string | null = null;
           const top = tileT.height * k - tileT.base * k;
           for (let i = 1; i < cells.length; i += 1) {
@@ -606,7 +633,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
             glow.referenceMeshToUseItsOwnMaterial(honey);
           } else honey.dispose();
           host.setAttribute("data-foundation-cells", String(count));
-          host.setAttribute("data-foundation-shown", String(count));
+          host.setAttribute("data-foundation-shown", layersRef.current.foundation ? String(count) : "0");
           if (first) host.setAttribute("data-foundation-first", first);
           if (last) host.setAttribute("data-foundation-last", last);
         }
@@ -711,6 +738,11 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const cw = canvas.clientWidth, ch = canvas.clientHeight;
       if ((cw > 0 && ch > 0) && (canvas.width !== cw || canvas.height !== ch)) { engine.resize(); fit(); }
       if (insetRef.current !== appliedInset) fit();
+      // the layers: applied on change, no rebuild; the host mirrors the applied state
+      const want = layersRef.current;
+      let changed = false;
+      for (const k of FIELD_LAYERS) { if (layerNodes[k].isEnabled(false) !== want[k]) { layerNodes[k].setEnabled(want[k]); changed = true; } }
+      if (changed || frames === 0) { host.setAttribute("data-layers", FIELD_LAYERS.filter((k) => want[k]).join(",") || "none"); const fc = host.getAttribute("data-foundation-cells"); if (fc !== null) host.setAttribute("data-foundation-shown", want.foundation ? fc : "0"); }
       aimBees();
       bees.forEach((b, k) => {
         if (b.t < 1) b.t = Math.min(1, b.t + (b.speed * dt) / 1000);
