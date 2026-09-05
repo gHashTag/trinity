@@ -1,21 +1,11 @@
 {
   "repo": "gHashTag/trinity-fpga",
   "workflow": "rtl-check.yml",
-  "runUrl": "https://github.com/gHashTag/trinity-fpga/actions/runs/32097873684",
-  "sha": "dd410def",
-  "at": "2026-08-18T04:05:56Z",
+  "runUrl": "https://github.com/gHashTag/trinity-fpga/actions/runs/33952930585",
+  "sha": "30248bb3",
+  "at": "2026-09-05T07:34:25Z",
   "note": "Extracted from the run's own log, not written by hand. A sample written by hand drifts from what the tool says; this cannot.",
   "jobs": [
-    {
-      "name": "mini / check",
-      "lines": [
-        "- **PASS** sources resolve — every file info.yaml declares is present (1 of them)",
-        "- **PASS** elaborates — every module it instantiates is defined in the files given",
-        "- **PASS** no latch inferred by this flow",
-        "- **PASS** synthesises — 49 cells, 57 wires, flattened — Yosys 0.68+50",
-        "- **PASS** has clocked logic — 17 flip-flops, so a clock frequency is a meaningful question"
-      ]
-    },
     {
       "name": "holo / check",
       "lines": [
@@ -24,6 +14,16 @@
         "- **PASS** no latch inferred by this flow",
         "- **PASS** synthesises — 128 cells, 193 wires, flattened — Yosys 0.68+50",
         "- **PASS** has clocked logic — 66 flip-flops, so a clock frequency is a meaningful question"
+      ]
+    },
+    {
+      "name": "mini / check",
+      "lines": [
+        "- **PASS** sources resolve — every file info.yaml declares is present (1 of them)",
+        "- **PASS** elaborates — every module it instantiates is defined in the files given",
+        "- **PASS** no latch inferred by this flow",
+        "- **PASS** synthesises — 49 cells, 57 wires, flattened — Yosys 0.68+50",
+        "- **PASS** has clocked logic — 17 flip-flops, so a clock frequency is a meaningful question"
       ]
     }
   ]
