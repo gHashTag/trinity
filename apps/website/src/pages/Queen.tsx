@@ -1804,6 +1804,7 @@ export default function Queen() {
   // dormant), so territories and the buildings' kinds follow.
   const modulesState = useQueenModules();
   const foundationState = useQueenFoundation();
+  const closedCount = foundationState.data?.closedIssues.length ?? 0;
   const rawModules = modulesState.data?.modules ?? EMPTY_MODULES;
   // the board knows the issues; every row gets its open issues from the cards
   const modules = useMemo(() => withOpenIssues(rawModules, cards), [rawModules, cards]);
@@ -1821,14 +1822,15 @@ export default function Queen() {
     placed: (QueenCard | null)[];
     ledger: Map<number, number>;
   }>(() => {
-    // the honeycomb: the hub plus one cell per module, rings from the centre
-    const shape0 = hexField(moduleCards.length + 1);
+    // the honeycomb: the hub plus one cell per module and per closed issue, rings from the centre
+    const shape0 = hexField(Math.max(moduleCards.length + 1, closedCount + 1));
     return { cards: moduleCards, ...placeCards(new Map(), moduleCards, shape0.cellCount, spiralOrder(shape0.cellCount)) };
   });
   let placedCards = placement.placed;
-  if (placement.cards !== moduleCards) {
-    // rings from the centre: free cells are taken along the spiral, nearest the Queen first
-    const shape = hexField(moduleCards.length + 1);
+  if (placement.cards !== moduleCards || placement.placed.length !== hexField(Math.max(moduleCards.length + 1, closedCount + 1)).cellCount) {
+    // rings from the centre: free cells are taken along the spiral, nearest the Queen first;
+    // the field is as large as the honey needs, the modules keep their inner cells
+    const shape = hexField(Math.max(moduleCards.length + 1, closedCount + 1));
     const next = placeCards(placement.ledger, moduleCards, shape.cellCount, spiralOrder(shape.cellCount));
     placedCards = next.placed;
     setPlacement({ cards: moduleCards, placed: next.placed, ledger: next.ledger });
@@ -2582,6 +2584,7 @@ export default function Queen() {
                   cards={placedCards}
                   modules={modulesById}
                   beeTargets={beeTargets}
+                  foundation={foundationState.data ? { issues: foundationState.data.closedIssues, generatedAt: foundationState.data.generatedAt, source: foundationState.data.source } : null}
                   workers={workers}
                   devices={hardware?.devices ?? null}
                   onPick={handlePick}

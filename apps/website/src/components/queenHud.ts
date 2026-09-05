@@ -486,9 +486,9 @@ export function foundationCells<T extends FoundationIssue>(issues: readonly T[],
 export function honeyTone(closedAt: string, nowMs: number): [number, number, number, number] {
   const t = Date.parse(closedAt);
   const age = Number.isFinite(t) ? nowMs - t : Number.POSITIVE_INFINITY;
-  if (age <= 24 * 3600 * 1000) return [1, 0.85, 0.35, 1];
-  if (age <= 7 * 24 * 3600 * 1000) return [0.95, 0.72, 0.22, 1];
-  return [0.85, 0.6, 0.15, 1];
+  if (age <= 24 * 3600 * 1000) return [1, 0.88, 0.42, 1];
+  if (age <= 7 * 24 * 3600 * 1000) return [0.86, 0.64, 0.22, 1];
+  return [0.62, 0.44, 0.13, 1];
 }
 export type FieldLayer = "foundation" | "castle" | "code";
 export const FIELD_LAYERS: readonly FieldLayer[] = ["foundation", "castle", "code"];
