@@ -73,8 +73,9 @@ for (const lang of LANGS) for (const [w, h] of SIZES) {
   await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 700 });
   await call('Page.navigate', { url: `${ORIGIN}/?windows=${w}x${h}&lang=${lang}#/queen` });
   let ready = false;
-  for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-hud-res').length >= 9 && !!document.querySelector('#stat-round')`); }
-  if (!ready) { problems.push(`${lang} ${w}x${h}: tiles never rendered`); continue; }
+  // 120 x 500 ms: inside the gate chain the page renders slower than standalone (cycle 033: one size timed out at 30 s and read as a cut)
+  for (let i = 0; i < 120 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-hud-res').length >= 9 && !!document.querySelector('#stat-round')`); }
+  if (!ready) { problems.push(`${lang} ${w}x${h}: tiles never rendered within 60 s`); console.log(`  ${lang} ${w}x${h} NOT READY within 60 s`); continue; }
   await wait(1200);
   // the round strip replaces the decision line for six seconds after a decision moment; measure the line, not the strip
   for (let i = 0; i < 20; i++) { const showing = await evaluate(`(() => { const e = document.querySelector('.queen27-hud-round-btn > em'); return e ? /no eligible specification|no eligible/.test(e.textContent || '') || !document.querySelector('.queen27-hud-round-strip') : true; })()`); if (showing) break; await wait(500); }
@@ -103,6 +104,6 @@ for (const lang of LANGS) for (const [w, h] of SIZES) {
   if (cut.length) problems.push(`${lang} ${w}x${h}: ${cut.join(' | ')}`);
   console.log(`  ${lang} ${w}x${h} ${cut.length ? 'CUT  ' + cut.length + ' window(s): ' + cut.join(' | ') : 'ok   every window whole'} · ${tiles} tiles, narrowest ${minTile} px`);
 }
-if (problems.length) { console.log(`  Queen windows contract: FAIL (${problems.length} size(s) cut a wire window)`); cleanup(); process.exit(1); }
+if (problems.length) { console.log(`  Queen windows contract: FAIL (${problems.length} problem(s)): ${problems.join(' || ')}`); cleanup(); process.exit(1); }
 console.log(`  Queen windows contract: PASS (${LANGS.length} languages × ${SIZES.length} sizes: every tile sub-line and the round detail fit whole)`);
 cleanup(); process.exit(0);

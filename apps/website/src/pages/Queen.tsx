@@ -2637,6 +2637,8 @@ export default function Queen() {
           repo={repo}
           columns={boardColumns}
           queue={board ? queue : null}
+          now={now}
+          roundSeconds={roundSeconds > 0 ? roundSeconds : null}
           reviewQueue={reviewQueue}
           latestDispatch={latest ?? null}
           pick={livePick}
@@ -2657,6 +2659,9 @@ export default function Queen() {
             queue: c.hudQueue,
             queueEmpty: c.hudQueueEmpty,
             reviewQueue: c.hudReviewQueue,
+            unitS: c.unitS,
+            unitMin: c.unitMin,
+            unitH: c.unitH,
             last: c.hudLast,
             selected: c.hudSelected,
             theQueen: c.hudTheQueen,

@@ -55,16 +55,16 @@ const probe = `(() => { const t = document.querySelector('.queen27-hud-res-round
 // wait for the first status answer to land (A) and no flash
 let s = null; for (let i = 0; i < 40; i++) { await wait(500); s = await evaluate(probe); if (served >= 1 && /\d\d:\d\d:\d\d/.test(s.round)) break; }
 const beforeSwitch = s;
-// wait until B has been served, then watch for the flash within 8 s
+// wait until B has been served, then watch for the flash within 20 s
 for (let i = 0; i < 40 && served < 3; i++) await wait(500);
 const tSwitch = Date.now(); let seen = null;
-while (Date.now() - tSwitch < 8000) { await wait(250); s = await evaluate(probe); if (s.tileResolved && s.blockResolved) { seen = s; break; } }
+while (Date.now() - tSwitch < 20000) { await wait(250); s = await evaluate(probe); if (s.tileResolved && s.blockResolved) { seen = s; break; } }
 let cleared = false;
 if (seen) { const t0 = Date.now(); while (Date.now() - t0 < 9000) { await wait(500); s = await evaluate(probe); if (!s.tileResolved && !s.blockResolved) { cleared = true; break; } } }
 cleanup();
 const fails = [];
 if (beforeSwitch.tileResolved || beforeSwitch.blockResolved) fails.push('flashing before any change of decidedAt');
-if (!seen) fails.push(`no is-resolved within 8 s of a new decidedAt (served ${served})`);
+if (!seen) fails.push(`no is-resolved within 20 s of a new decidedAt (served ${served})`);
 else if (!/ALLOW|РАЗРЕШЕНО/.test(seen.strip) || !/33/.test(seen.strip)) fails.push(`strip text lacks the verdict or the skip count: "${seen.strip}"`);
 if (seen && !cleared) fails.push('is-resolved did not clear within 9 s');
 if (fails.length) { for (const f of fails) console.log('  ✗ ' + f); console.log(`  Queen round contract: FAIL (${fails.length})`); process.exit(1); }

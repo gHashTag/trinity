@@ -1,3 +1,4 @@
+import { beeSilence } from "./queenHud";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { publicIssueTitle } from "../pages/queenReviewLifecycle";
 import type { HudCard, HudColumn, HudEvent, HudPick } from "./queenHud";
@@ -15,6 +16,10 @@ export interface QueenContextLabels {
   queue: string;
   queueEmpty: string;
   reviewQueue: string;
+  /** unit words for a bee's silence (P1-23) */
+  unitS: string;
+  unitMin: string;
+  unitH: string;
   last: string;
   selected: string;
   theQueen: string;
@@ -85,6 +90,9 @@ export interface QueenContextProps {
   queenStats: QueenContextQueenStats;
   describe: (event: HudEvent) => string;
   labels: QueenContextLabels;
+  /** the page's clock and the round length: a bee's silence is measured against both (P1-23) */
+  now: number;
+  roundSeconds: number | null;
 }
 
 type CopyState = "idle" | "copied" | "error";
@@ -162,6 +170,8 @@ function IssueRow({
 }
 
 export function QueenContext({
+  now,
+  roundSeconds,
   open,
   onClose,
   onOpen,
@@ -256,21 +266,33 @@ export function QueenContext({
             <p className="queen27-context-empty">—</p>
           ) : queue.length > 0 ? (
             <ul className="queen27-context-rows">
-              {queue.map(({ card: item, latest }) => (
-                <li key={item.number}>
-                  <IssueRow
-                    href={issueUrl(repo, item.number)}
-                    className="queen27-context-row is-running"
-                  >
-                    <i aria-hidden="true">◆</i>
-                    <b>#{item.number}</b>
-                    <strong>{publicIssueTitle(item.title, item.number, lang)}</strong>
-                    <small>
-                      {latest ? `${describe(latest)} · ${clock(latest.at, lang)}` : "—"}
-                    </small>
-                  </IssueRow>
-                </li>
-              ))}
+              {queue.map(({ card: item, latest }) => {
+                // the age of the bee's last word; cold after one round of silence (P1-23)
+                const silence = beeSilence(latest?.at, now, roundSeconds);
+                const age =
+                  silence === null
+                    ? null
+                    : silence.seconds < 60
+                      ? `${silence.seconds} ${labels.unitS}`
+                      : silence.seconds < 3600
+                        ? `${Math.round(silence.seconds / 60)} ${labels.unitMin}`
+                        : `${Math.floor(silence.seconds / 3600)} ${labels.unitH} ${Math.round((silence.seconds % 3600) / 60)} ${labels.unitMin}`;
+                return (
+                  <li key={item.number} data-silence-seconds={silence ? silence.seconds : undefined}>
+                    <IssueRow
+                      href={issueUrl(repo, item.number)}
+                      className={`queen27-context-row is-running${silence?.cold ? " is-cold" : ""}`}
+                    >
+                      <i aria-hidden="true">◆</i>
+                      <b>#{item.number}</b>
+                      <strong>{publicIssueTitle(item.title, item.number, lang)}</strong>
+                      <small>
+                        {latest ? `${describe(latest)} · ${clock(latest.at, lang)}${age ? ` · ${age}` : ""}` : "—"}
+                      </small>
+                    </IssueRow>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <>

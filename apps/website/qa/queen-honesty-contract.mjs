@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { alertCount, alertSpan, buildingPlan, feedCoverage, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { alertCount, alertSpan, beeSilence, buildingPlan, feedCoverage, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -141,6 +141,10 @@ check(cov.rows === 3 && cov.spanSeconds === 62 && cov.oldestAt === "2026-09-05T0
 check(feedCoverage([{ at: "2026-09-05T00:40:00Z" }]).spanSeconds === null && feedCoverage([]).rows === 0 && feedCoverage([{ at: "bad" }, { at: "2026-09-05T00:40:00Z" }]).spanSeconds === null, "one row, no rows or an undatable row: no span is printed, never a fabricated 0 s");
 // review and finished rows print their wire state after the kind word (P1-24)
 check(/return \(event\.kind === "review" \|\| event\.kind === "finished"\) && event\.state && event\.state !== event\.kind \? `\$\{word\} · \$\{event\.state\}` : word;/.test(src), "a verdict or a finish carries its wire state after the kind word; no state or a state equal to the kind (finished · finished) adds no suffix");
+// a bee's silence is measured against the round (P1-23)
+const nowB = Date.parse("2026-09-05T02:05:00Z");
+check(beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.seconds === 42 && beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.cold === false && beeSilence("2026-09-05T01:59:59Z", nowB, 300)?.cold === true, "42 s of silence under a 300 s round is warm; 301 s is cold");
+check(beeSilence("2026-09-05T01:00:00Z", nowB, null)?.cold === false && beeSilence(null, nowB, 300) === null && beeSilence("bad", nowB, 300) === null, "no round length: never cold; no last word or an undatable one: no age at all");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
