@@ -134,6 +134,45 @@ export async function analyze(source: string): Promise<T27Analysis> {
   return JSON.parse(json) as T27Analysis
 }
 
+/**
+ * Compile results, keyed by spec path.
+ *
+ * Re-selecting a spec, or coming back to one after wandering the library, must
+ * be free -- and a cached hit deliberately skips the pending treatment
+ * entirely, because there is nothing to wait for.
+ */
+const cache = new Map<string, T27Analysis>()
+const CACHE_MAX = 24
+
+export function cachedAnalysis(path: string): T27Analysis | undefined {
+  return cache.get(path)
+}
+
+export async function analyzeCached(path: string, source: string): Promise<T27Analysis> {
+  const hit = cache.get(path)
+  if (hit) return hit
+  const r = await analyze(source)
+  // Plain FIFO eviction: these are a few hundred KB each at worst and the
+  // access pattern here has no reuse structure worth modelling.
+  if (cache.size >= CACHE_MAX) {
+    const oldest = cache.keys().next().value
+    if (oldest !== undefined) cache.delete(oldest)
+  }
+  cache.set(path, r)
+  return r
+}
+
+/** Compile ahead of a click. Users hover 80-150ms before selecting. */
+export async function prefetchSpec(path: string): Promise<void> {
+  if (cache.has(path)) return
+  try {
+    const src = await loadSpecSource(path)
+    await analyzeCached(path, src)
+  } catch {
+    // A failed prefetch must stay silent: the click path will surface it.
+  }
+}
+
 export async function loadManifest(): Promise<SpecManifest> {
   const res = await fetch('t27/manifest.json')
   if (!res.ok) throw new Error(`could not fetch spec manifest (${res.status})`)

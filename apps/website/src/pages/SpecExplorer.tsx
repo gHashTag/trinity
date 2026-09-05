@@ -19,9 +19,12 @@ import { SpecCodeView } from '../components/SpecCodeView'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
-  analyze,
+  analyzeCached,
+  cachedAnalysis,
+  loadCompiler,
   loadManifest,
   loadSpecSource,
+  prefetchSpec,
   type Health,
   type SpecEntry,
   type SpecManifest,
@@ -337,6 +340,10 @@ export default function SpecExplorer() {
   const pickRef = useRef<((s: SpecEntry) => Promise<void>) | null>(null)
 
   useEffect(() => {
+    // Instantiate the compiler at mount, not at first click: instantiation
+    // dominates a cold compile, and paying it here makes the first selection
+    // as fast as every later one.
+    void loadCompiler()
     loadManifest()
       .then((m) => {
         setManifest(m)
@@ -376,17 +383,20 @@ export default function SpecExplorer() {
   }, [manifest, query, category, healthFilter])
 
   const pick = useCallback(async (spec: SpecEntry) => {
+    // Selection paints immediately -- that sub-100ms response IS the feedback.
+    // The previous result deliberately stays on screen while the new one
+    // compiles: blanking it would trade real content for a flash of nothing.
     setSelected(spec)
-    setBusy(true)
     setErr(null)
-    setResult(null)
     setTokenLimit(400)
+    const warm = cachedAnalysis(spec.path)
+    setBusy(!warm)
     try {
       const text = await loadSpecSource(spec.path)
       setSource(text)
       const t0 = performance.now()
-      const r = await analyze(text)
-      setMs(performance.now() - t0)
+      const r = await analyzeCached(spec.path, text)
+      setMs(warm ? 0 : performance.now() - t0)
       setResult(r)
       // Open the root and its immediate children: enough to show the shape of
       // the module without rendering thousands of rows on a large spec.
@@ -463,6 +473,7 @@ export default function SpecExplorer() {
 
   return (
     <div
+      className="spec-x"
       style={{
         height: '100dvh',
         display: 'flex',
@@ -658,6 +669,10 @@ export default function SpecExplorer() {
                 <button
                   key={s.path}
                   onClick={() => pick(s)}
+                  // Users hover 80-150ms before clicking; that is half the
+                  // compile budget, free.
+                  onPointerEnter={() => void prefetchSpec(s.path)}
+                  onFocus={() => void prefetchSpec(s.path)}
                   // The visible label is nested divs, which leaves the button
                   // with no accessible name -- spell it out.
                   aria-label={`${s.module || s.name} — ${s.path}, ${s.lines} ${ui.lines}, ${s.health}`}
@@ -826,6 +841,7 @@ export default function SpecExplorer() {
               {/* loss banner -- the honest bit */}
               {result && lossCount > 0 && (
                 <div
+                  className="spec-x-banner"
                   style={{
                     flexShrink: 0,
                     margin: '10px 14px 0',
@@ -871,7 +887,10 @@ export default function SpecExplorer() {
                   }
                   return (
                     <button
-                      key={l.id}
+                      // Keyed by spec too, so the one-shot failure flash
+                      // re-fires when a different spec fails the same backend.
+                      key={`${l.id}:${selected.path}`}
+                      className={failed ? 'spec-x-flag' : undefined}
                       onClick={() => setLayer(l.id)}
                       aria-current={active ? 'true' : undefined}
                       style={{
@@ -903,7 +922,14 @@ export default function SpecExplorer() {
 
               {/* layer body */}
               <div style={{ flex: 1, minHeight: 0, padding: '0 14px 14px', display: 'flex' }}>
-                <div style={{ ...box, flex: 1, minHeight: 0, overflow: 'auto', borderTopLeftRadius: 0 }}>
+                <div
+                  className="spec-x-pane spec-x-scroll"
+                  data-pending={busy ? 'true' : 'false'}
+                  style={{ ...box, flex: 1, minHeight: 0, borderTopLeftRadius: 0 }}
+                >
+                  {/* Keyed on spec+layer so switching either replays the
+                      90ms enter; the AST tree inside is never animated. */}
+                  <div className="spec-x-swap" key={`${selected.path}:${layer}`}>
                   {/* source */}
                   {layer === 'source' && (
                     <SpecCodeView
@@ -1117,6 +1143,7 @@ export default function SpecExplorer() {
                       <div style={{ padding: 14, color: C.muted }}>{ui.emptyOut}</div>
                     )
                   )}
+                  </div>
                 </div>
               </div>
             </>
