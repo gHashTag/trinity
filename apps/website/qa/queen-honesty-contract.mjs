@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { alertCount, alertSpan, buildingPlan, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
+import { alertCount, alertSpan, buildingPlan, feedCoverage, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -135,6 +135,10 @@ check(/data\?\.swarmState === "working"[\s\S]{0,40}c\.swarmWorking[\s\S]{0,120}c
 check(/swarmWorking:\s*"WORKING"/.test(src) && /swarmWorking:\s*"РАБОТАЕТ"/.test(src) && /hudReady:\s*"ready"/.test(src) && /hudReady:\s*"готово"/.test(src), "the four swarm words and the ready word exist in both languages");
 check(/typeof data\?\.dispatches\.unreviewed === "number" \? ` · \$\{data\.dispatches\.unreviewed\} \$\{c\.hudReady\}` : ""/.test(src), "the VERDICTS sub-line prints the unreviewed count only when the wire carries the field, never 0 for an absent one");
 check(/`\$\{decisionInfo\} · \$\{decision\.allowed \? c\.chose : c\.stoodDown\}`/.test(src), "the gold block's decision line leads with the wire field (the refusal or what the round did), the verb follows");
+// the INTEL FEED header states what it holds, from its rows (P1-27)
+const cov = feedCoverage([{ at: "2026-09-05T00:40:00Z" }, { at: "2026-09-05T00:41:02Z" }, { at: "2026-09-05T00:40:30Z" }]);
+check(cov.rows === 3 && cov.spanSeconds === 62 && cov.oldestAt === "2026-09-05T00:40:00Z" && cov.newestAt === "2026-09-05T00:41:02Z", "three rows over 62 s: the header says 3 rows · 62 s from the rows themselves");
+check(feedCoverage([{ at: "2026-09-05T00:40:00Z" }]).spanSeconds === null && feedCoverage([]).rows === 0 && feedCoverage([{ at: "bad" }, { at: "2026-09-05T00:40:00Z" }]).spanSeconds === null, "one row, no rows or an undatable row: no span is printed, never a fabricated 0 s");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }

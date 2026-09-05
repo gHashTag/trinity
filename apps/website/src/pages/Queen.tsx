@@ -251,7 +251,7 @@ const COPY = {
     active: "Running now",
     decision: "LATEST QUEEN DECISION",
     chose: "A new Bee may start.",
-    stoodDown: "No Bee started — policy stood down.",
+    stoodDown: "policy stood down, no Bee started",
     noDecision: "No recorded decision yet.",
     reasons: "explicit skip reasons",
     queueMeaning:
@@ -405,6 +405,11 @@ const COPY = {
     hudViews: "VIEWS",
     hudIntel: "INTEL FEED",
     hudLive: "LIVE",
+    hudRows: "rows",
+    unitS: "s",
+    unitMin: "min",
+    unitH: "h",
+    hudSpanTitle: "rows from",
     hudOffline: "OFFLINE",
     hudViewAll: "VIEW ALL",
     hudCollapseFeed: "COLLAPSE",
@@ -477,7 +482,7 @@ const COPY = {
     active: "Сейчас работают",
     decision: "ПОСЛЕДНЕЕ РЕШЕНИЕ QUEEN",
     chose: "Новая Bee может быть запущена.",
-    stoodDown: "Bee не запущена — политика остановила делегирование.",
+    stoodDown: "политика остановила, Bee не запущена",
     noDecision: "Решений пока не записано.",
     reasons: "явных причин пропуска",
     queueMeaning:
@@ -633,6 +638,11 @@ const COPY = {
     hudViews: "ВИДЫ",
     hudIntel: "ЛЕНТА РАЗВЕДКИ",
     hudLive: "В СЕТИ",
+    hudRows: "строк",
+    unitS: "с",
+    unitMin: "мин",
+    unitH: "ч",
+    hudSpanTitle: "строки с",
     hudOffline: "НЕ В СЕТИ",
     hudViewAll: "ПОКАЗАТЬ ВСЁ",
     hudCollapseFeed: "СВЕРНУТЬ",
@@ -2082,6 +2092,11 @@ export default function Queen() {
           empty: c.hudNoEvents,
           viewAll: c.hudViewAll,
           collapse: c.hudCollapseFeed,
+          rows: c.hudRows,
+          unitS: c.unitS,
+          unitMin: c.unitMin,
+          unitH: c.unitH,
+          spanTitle: c.hudSpanTitle,
         }}
       />
       {!intelExpanded && (

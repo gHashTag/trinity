@@ -639,3 +639,24 @@ export function alertSpan(observedFrom: string | null, nowMs: number, windowMs =
   const observed = Math.max(0, nowMs - from);
   return observed < windowMs ? { seconds: Math.round(observed / 1000), clipped: true } : { seconds: Math.round(windowMs / 1000), clipped: false };
 }
+
+/**
+ * What the feed holds (P1-27): its row count and the span between its
+ * oldest and newest rows, from the rows themselves. The span is null with
+ * fewer than two datable rows; the header then prints the count alone and
+ * never a fabricated "0 s".
+ */
+export function feedCoverage(events: Array<{ at: string }>): { rows: number; spanSeconds: number | null; oldestAt: string | null; newestAt: string | null } {
+  let oldest: number | null = null;
+  let newest: number | null = null;
+  let oldestAt: string | null = null;
+  let newestAt: string | null = null;
+  for (const event of events) {
+    const t = Date.parse(event.at);
+    if (!Number.isFinite(t)) continue;
+    if (oldest === null || t < oldest) { oldest = t; oldestAt = event.at; }
+    if (newest === null || t > newest) { newest = t; newestAt = event.at; }
+  }
+  const spanSeconds = oldest !== null && newest !== null && oldestAt !== newestAt ? Math.round((newest - oldest) / 1000) : null;
+  return { rows: events.length, spanSeconds, oldestAt, newestAt };
+}
