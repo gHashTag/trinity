@@ -153,6 +153,79 @@ function describe(text) {
   return out.join(' ').replace(/\s+/g, ' ').trim() || null
 }
 
+/**
+ * Tags, derived from what a spec actually is rather than hand-applied.
+ *
+ * 760 specs cannot be tagged by hand and stay correct, so every tag here comes
+ * from a signal already in the file: its path, the node kinds its AST really
+ * contains, and what the backends produced. Nothing is inferred from the
+ * filename alone, and nothing is invented.
+ *
+ * Three families, kept deliberately separate so combining them means something:
+ *   domain/    what the spec is about        (fpga, ml, numeric …)
+ *   has/       what it structurally contains (tests, structs, functions …)
+ *   size/, src/, plus a bare health tag.
+ */
+const DOMAIN_BY_SEGMENT = {
+  fpga: 'fpga', boards: 'fpga', testbench: 'fpga', pins: 'fpga',
+  ml: 'ml', nn: 'ml', layers: 'ml', activation: 'ml', transformer: 'ml',
+  recurrent: 'ml', rl: 'ml', loss: 'ml', optimizer: 'ml', hslm: 'ml',
+  numeric: 'numeric', math: 'math', physics: 'physics', sacred: 'sacred',
+  isa: 'isa', compiler: 'compiler', parser: 'compiler', codegen: 'compiler',
+  lsp: 'compiler', vm: 'compiler', jit: 'compiler', runtime: 'compiler',
+  crypto: 'crypto', vsa: 'vsa', brain: 'brain', agent: 'agent',
+  net: 'network', server: 'network', api: 'network', interop: 'network',
+  storage: 'storage', memory: 'storage', file: 'storage', io: 'storage',
+  collections: 'collections', trees: 'collections', sort: 'collections',
+  search: 'collections', graph: 'graph',
+  test_framework: 'testing', conformance: 'testing', benchmarks: 'testing',
+  tutorial: 'tutorial', demos: 'tutorial', examples: 'tutorial',
+  github: 'tools', git: 'tools', tools: 'tools', shell: 'tools', cli: 'tools',
+  encoding: 'encoding', ternary: 'ternary', tri27: 'ternary',
+  // Added after checking what actually landed in domain/other: these five
+  // segments accounted for most of it.
+  utils: 'utils', pipeline: 'pipeline', ar: 'reasoning', base: 'base',
+  sandbox: 'tools', config: 'tools', provider: 'network', account: 'network',
+  auth: 'network', queen: 'agent', bus: 'network', sync: 'network',
+  enrichment: 'tools', contrib: 'other',
+}
+
+function deriveTags(rel, repo, kinds, entry) {
+  const tags = new Set()
+  const segs = rel.split('/').slice(0, -1)
+
+  for (const s of segs) {
+    const d = DOMAIN_BY_SEGMENT[s.toLowerCase()]
+    if (d) tags.add(`domain/${d}`)
+  }
+  // A spec with no recognised segment is still a spec; say so rather than
+  // leaving it untagged and unfindable.
+  if (![...tags].some((t) => t.startsWith('domain/'))) tags.add('domain/other')
+
+  // Structure, straight from the tree the compiler produced.
+  if (kinds.TestBlock) tags.add('has/tests')
+  if (kinds.InvariantBlock) tags.add('has/invariants')
+  if (kinds.BenchBlock) tags.add('has/benches')
+  if (kinds.StructDecl) tags.add('has/structs')
+  if (kinds.EnumDecl) tags.add('has/enums')
+  if (kinds.FnDecl) tags.add('has/functions')
+  if (kinds.UseDecl) tags.add('has/imports')
+  if (kinds.ConstDecl && !kinds.FnDecl) tags.add('has/constants-only')
+  if (kinds.StmtWhile || kinds.StmtFor) tags.add('has/loops')
+  if (kinds.ExprSwitch) tags.add('has/switch')
+
+  const lines = entry.lines
+  tags.add(lines < 50 ? 'size/tiny' : lines < 150 ? 'size/small' : lines < 400 ? 'size/medium' : 'size/large')
+
+  tags.add(`src/${repo}`)
+  tags.add(`health/${entry.health}`)
+  if (entry.loss > 0) tags.add('issue/dropped-content')
+  if (entry.tcErrors > 0) tags.add('issue/type-errors')
+  if (entry.failedBackends.length) tags.add('issue/backend-rejected')
+
+  return [...tags].sort()
+}
+
 const entries = []
 const seenContent = new Map() // content hash -> path already kept
 let duplicates = 0
@@ -178,6 +251,13 @@ for (const abs of src.files) {
 
   let a = null
   try { a = analyze(text) } catch { a = null }
+
+  // Count node kinds once; tags and the UI histogram both read from this.
+  const kinds = {}
+  if (a?.ast) {
+    const walk = (n) => { kinds[n.kind] = (kinds[n.kind] || 0) + 1; n.children.forEach(walk) }
+    walk(a.ast)
+  }
   const failedBackends = a ? Object.entries(a.targets).filter(([, v]) => !v.ok).map(([k]) => k) : []
   const loss = a ? a.discarded.length + a.swallowed.length + a.lexerDiscarded.length : 0
   const tcErrors = a?.typecheck?.errorCount ?? 0
@@ -213,12 +293,42 @@ for (const abs of src.files) {
     // produces without re-running the compiler.
     outBytes: a ? Object.fromEntries(Object.entries(a.targets).map(([k, v]) => [k, v.ok ? v.bytes : null])) : {},
     repo: src.repo,
+    kinds,
   })
+  const e = entries[entries.length - 1]
+  e.tags = deriveTags(rel, src.repo, kinds, e)
 }
 }
 
 // Tarballs were extracted to temp dirs; nothing should outlive this run.
 for (const s of sources) if (s.tmp) rmSync(s.tmp, { recursive: true, force: true })
+
+// ---------------------------------------------------------------------------
+// Language-audit exceptions
+//
+// `qa/ru_audit.mjs` fails the build on any English sentence over 45 characters
+// that renders under ?lang=ru. That gate is right, and it should stay strict:
+// it exists to catch untranslated UI.
+//
+// Spec descriptions are not UI. They are comments quoted verbatim out of 760
+// source files, in the language their authors wrote them in. Translating them
+// would misrepresent the files; hiding them would gut the page. So they are
+// registered as exceptions -- the same treatment the site already gives
+// bibliography entries and code samples.
+//
+// Generated here rather than hand-maintained, so the list cannot drift from
+// what the page actually renders.
+const EXC_PATH = join(WEBSITE, 'qa/language-exceptions.json')
+if (existsSync(EXC_PATH)) {
+  const exc = JSON.parse(readFileSync(EXC_PATH, 'utf8'))
+  exc.ru = exc.ru || {}
+  const descs = [...new Set(entries.map((e) => e.description).filter(Boolean))]
+  // Only the ones the audit would actually flag; anything shorter passes on
+  // its own and does not belong in an exception list.
+  exc.ru.specs = descs.filter((d) => d.length > 45).sort()
+  writeFileSync(EXC_PATH, JSON.stringify(exc, null, 2) + '\n')
+  console.log(`  qa exceptions: ${exc.ru.specs.length} spec descriptions registered for the RU audit`)
+}
 
 cpSync(WASM_SRC, join(OUT_DIR, 't27_compiler.wasm'))
 const wasmBytes = readFileSync(WASM_SRC).length
@@ -266,6 +376,16 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
   categories: Object.fromEntries(Object.entries(byCategory).sort((a, b) => b[1] - a[1])),
   repos: sources.map((s) => ({ repo: s.repo, commit: s.commit ?? sha, specs: entries.filter((e) => e.repo === s.repo).length })),
   duplicatesSkipped: duplicates,
+  // Every tag with its count, so the UI can render facets without walking 760
+  // entries on each keystroke.
+  tags: Object.fromEntries(
+    Object.entries(
+      entries.reduce((acc, e) => {
+        for (const t of e.tags) acc[t] = (acc[t] || 0) + 1
+        return acc
+      }, {}),
+    ).sort((a, b) => (a[0] === b[0] ? 0 : b[1] - a[1] || a[0].localeCompare(b[0]))),
+  ),
   health,
   backendFailures,
   featured: FEATURED,

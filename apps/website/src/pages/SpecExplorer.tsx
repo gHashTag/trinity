@@ -16,10 +16,13 @@ import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { SpecCodeView } from '../components/SpecCodeView'
+import { SpecEditor } from '../components/SpecEditor'
+import { SpecMetrics } from '../components/SpecMetrics'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
   analyzeCached,
+  analyzeEdited,
   cachedAnalysis,
   loadCompiler,
   loadManifest,
@@ -99,6 +102,14 @@ const UI = {
     startHere: 'START HERE',
     noneInGroup: 'Nothing in this group.',
     lesson: 'LESSON',
+    tags: 'Tags',
+    edit: 'Edit',
+    reset: 'Reset',
+    editing: 'Editing — not the shipped spec',
+    unrun: 'not compiled yet',
+    runHint: 'GO or ⌘⏎ to compile',
+    brokeIt: 'broke',
+    fixedIt: 'fixed',
     course: 'Course',
     courseNote: 'Eight lessons, in order, each one clean through every layer.',
     droppedItems: 'dropped',
@@ -167,6 +178,14 @@ const UI = {
     startHere: 'НАЧНИТЕ ЗДЕСЬ',
     noneInGroup: 'В этой группе пусто.',
     lesson: 'УРОК',
+    tags: 'Теги',
+    edit: 'Правка',
+    reset: 'Сброс',
+    editing: 'Редактирование — это уже не исходная спека',
+    unrun: 'ещё не скомпилировано',
+    runHint: 'GO или ⌘⏎ для компиляции',
+    brokeIt: 'сломал',
+    fixedIt: 'починил',
     course: 'Курс',
     courseNote: 'Восемь уроков по порядку, каждый чист на всех слоях.',
     droppedItems: 'отброшено',
@@ -333,12 +352,18 @@ export default function SpecExplorer() {
   // Healthy specs first, by default: this is a catalogue to browse, not a
   // triage queue. The problem groups are one click away and carry their counts.
   const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course'>('ok')
+  // Multi-select, AND across selections: picking domain/fpga + has/tests means
+  // "FPGA specs that have tests", which is the question people actually ask.
+  const [tagSel, setTagSel] = useState<string[]>([])
+  const [tagsOpen, setTagsOpen] = useState(false)
   const [selected, setSelected] = useState<SpecEntry | null>(null)
   const [source, setSource] = useState('')
   const [result, setResult] = useState<T27Analysis | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [layer, setLayer] = useState<LayerId>('ast')
+  // Source first: the page is an input surface, so what loads is the thing you
+  // can type into. Every other layer is one click away and already computed.
+  const [layer, setLayer] = useState<LayerId>('source')
   const [open, setOpen] = useState<Set<string>>(new Set())
   const [hoverLine, setHoverLine] = useState<number | null>(null)
   const [kindFilter, setKindFilter] = useState('')
@@ -347,6 +372,14 @@ export default function SpecExplorer() {
   // `pick` is defined below but needed by the mount effect above; a ref keeps
   // the ordering honest without hoisting the callback out of the component.
   const pickRef = useRef<((s: SpecEntry) => Promise<void>) | null>(null)
+  // Live editing. `draft` is null until the source is touched; once it is set,
+  // `baseline` holds the shipped spec's result so every metric can be shown as
+  // a delta rather than a bare number.
+  const [draft, setDraft] = useState<string | null>(null)
+  const [baseline, setBaseline] = useState<T27Analysis | null>(null)
+  const [dirty, setDirty] = useState(false)
+  /** The exact text the current `result` was produced from. */
+  const [lastCompiled, setLastCompiled] = useState('')
 
   useEffect(() => {
     // Instantiate the compiler at mount, not at first click: instantiation
@@ -382,6 +415,7 @@ export default function SpecExplorer() {
       if (healthFilter === 'course') {
         if (!s.tutorial) return false
       } else if (healthFilter !== 'all' && s.health !== healthFilter) return false
+      if (tagSel.length && !tagSel.every((t) => s.tags.includes(t))) return false
       if (category && s.category !== category) return false
       if (!q) return true
       return (
@@ -391,7 +425,45 @@ export default function SpecExplorer() {
         (s.description ? s.description.toLowerCase().includes(q) : false)
       )
     })
-  }, [manifest, query, category, healthFilter])
+  }, [manifest, query, category, healthFilter, tagSel])
+
+  /**
+   * Counts for each tag *given the rest of the filter*, so a facet never
+   * promises results it cannot deliver. A tag that would yield nothing on top
+   * of the current selection reads 0 and is disabled rather than being a dead
+   * click. Selected tags are excluded from their own narrowing so their count
+   * stays meaningful.
+   */
+  const tagCounts = useMemo(() => {
+    if (!manifest) return {}
+    const q = query.trim().toLowerCase()
+    const base = manifest.specs.filter((s) => {
+      if (healthFilter === 'course') { if (!s.tutorial) return false }
+      else if (healthFilter !== 'all' && s.health !== healthFilter) return false
+      if (category && s.category !== category) return false
+      if (q && !(s.path.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) ||
+        (s.module ? s.module.toLowerCase().includes(q) : false) ||
+        (s.description ? s.description.toLowerCase().includes(q) : false))) return false
+      return true
+    })
+    const out: Record<string, number> = {}
+    for (const s of base) {
+      const othersMatch = tagSel.every((t) => s.tags.includes(t))
+      for (const t of s.tags) {
+        // For an unselected tag, only count rows that already satisfy every
+        // selected tag -- that is what clicking it would actually give you.
+        const rest = tagSel.filter((x) => x !== t)
+        if (tagSel.includes(t) ? rest.every((x) => s.tags.includes(x)) : othersMatch) {
+          out[t] = (out[t] || 0) + 1
+        }
+      }
+    }
+    return out
+  }, [manifest, query, category, healthFilter, tagSel])
+
+  const toggleTag = useCallback((t: string) => {
+    setTagSel((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))
+  }, [])
 
   const pick = useCallback(async (spec: SpecEntry) => {
     // Selection paints immediately -- that sub-100ms response IS the feedback.
@@ -400,15 +472,22 @@ export default function SpecExplorer() {
     setSelected(spec)
     setErr(null)
     setTokenLimit(400)
+    // A draft belongs to the spec it was typed against.
+    setBaseline(null)
+    setDirty(false)
     const warm = cachedAnalysis(spec.path)
     setBusy(!warm)
     try {
       const text = await loadSpecSource(spec.path)
       setSource(text)
+      // The source pane is editable from the moment it loads -- no mode to
+      // enter, nothing to click first.
+      setDraft(text)
       const t0 = performance.now()
       const r = await analyzeCached(spec.path, text)
       setMs(warm ? 0 : performance.now() - t0)
       setResult(r)
+      setLastCompiled(text)
       // Open the root and its immediate children: enough to show the shape of
       // the module without rendering thousands of rows on a large spec.
       const seed = new Set<string>(['0'])
@@ -422,6 +501,67 @@ export default function SpecExplorer() {
   }, [])
 
   pickRef.current = pick
+
+  /** Run the real compiler over the edited source. */
+  const run = useCallback(async () => {
+    if (draft === null) return
+    setBusy(true)
+    setErr(null)
+    try {
+      // Keep the shipped spec's result as the comparison point, computed once.
+      if (!baseline && result) setBaseline(result)
+      const t0 = performance.now()
+      const r = await analyzeEdited(draft)
+      setMs(performance.now() - t0)
+      setResult(r)
+      setLastCompiled(draft)
+      setDirty(false)
+      const seed = new Set<string>(['0'])
+      r.ast?.children.forEach((_, i) => seed.add(`0.${i}`))
+      setOpen(seed)
+    } catch (e) {
+      setErr(String(e))
+    } finally {
+      setBusy(false)
+    }
+  }, [draft, baseline, result])
+
+  /**
+   * Compile as you type.
+   *
+   * A compile is 5-70ms, well inside the budget where a person perceives the
+   * result as immediate, so there is no reason to make them ask for it. 200ms
+   * of quiet is the trigger: long enough not to fire mid-word, short enough
+   * that the pause before you look up is already over.
+   *
+   * GO stays, and stays useful -- it runs without waiting for the debounce,
+   * and it is the affordance that tells you this page compiles at all.
+   */
+  // `run` is reachable through a ref so it is not an effect dependency:
+  // otherwise every render hands the effect a new function, the cleanup
+  // cancels the pending timer, and the 200ms never actually elapses.
+  const runRef = useRef(run)
+  runRef.current = run
+
+  useEffect(() => {
+    if (draft === null || draft === lastCompiled) return
+    const id = window.setTimeout(() => { void runRef.current() }, 200)
+    return () => window.clearTimeout(id)
+  }, [draft, lastCompiled])
+
+  /** Discard the edit and put the shipped spec back. */
+  const reset = useCallback(() => {
+    if (!selected) return
+    setDraft(null)
+    setDirty(false)
+    setDraft(source)
+    if (baseline) {
+      setResult(baseline)
+      setLastCompiled(source)
+      setBaseline(null)
+      setMs(0)
+    }
+  }, [selected, baseline, source])
 
   const toggle = useCallback((path: string) => {
     setOpen((prev) => {
@@ -454,11 +594,34 @@ export default function SpecExplorer() {
     return [...counts.entries()].sort((a, b) => b[1] - a[1])
   }, [result])
 
-  // Highlight the source from the compiler's own tokens -- see lib/highlight.ts.
-  const sourceSpans: Span[][] = useMemo(
-    () => (result ? highlightSource(source, result.tokens) : source.split('\n').map((l) => [{ text: l, cls: 'plain' as const }])),
-    [source, result],
-  )
+  const editorText = draft ?? source
+
+  // Highlight from the compiler's own token stream -- see lib/highlight.ts.
+  //
+  // The tokens must belong to the text on screen, or the colours land on the
+  // wrong characters. That is what the live compile below guarantees: by the
+  // time you have stopped typing for 200ms, `result.tokens` describes exactly
+  // this text. In the gap, the previous spans are close enough to read and are
+  // corrected within a frame of the next compile.
+  // Declared before the memo that reads it: useMemo runs its callback during
+  // this call, so a ref declared afterwards would still be in its temporal
+  // dead zone and throw.
+  const highlightRef = useRef<{ text: string; spans: Span[][] }>({ text: '', spans: [] })
+
+  const sourceSpans: Span[][] = useMemo(() => {
+    if (result && editorText === lastCompiled) {
+      const spans = highlightSource(editorText, result.tokens)
+      highlightRef.current = { text: editorText, spans }
+      return spans
+    }
+    if (highlightRef.current.text === editorText) return highlightRef.current.spans
+    // Nothing authoritative for this exact text: keep the shape, drop the
+    // colour, rather than paint one revision's tokens onto another's.
+    return editorText.split('\n').map((l) => [{ text: l, cls: 'plain' as const }])
+  }, [editorText, result, lastCompiled])
+
+  /** True once the draft diverges from the file as shipped. */
+  const edited = draft !== null && draft !== source
 
   const activeTarget = LAYERS.find((l) => l.id === layer)?.kind === 'target' ? result?.targets?.[layer] : undefined
 
@@ -667,6 +830,96 @@ export default function SpecExplorer() {
                 <HealthBar health={manifest.health} total={manifest.specCount} />
               </>
             )}
+            {/* Tag facets, grouped by family. Collapsed by default: 40-odd
+                chips above a list is noise until you want them. */}
+            {manifest && (
+              <div>
+                <button
+                  onClick={() => setTagsOpen((v) => !v)}
+                  aria-expanded={tagsOpen}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    width: '100%',
+                    background: 'transparent',
+                    border: 'none',
+                    color: tagSel.length ? C.accent : C.muted,
+                    padding: '2px 0',
+                    cursor: 'pointer',
+                    fontSize: 11.5,
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <span aria-hidden="true" style={{ fontSize: 9 }}>{tagsOpen ? '▾' : '▸'}</span>
+                  <span>{ui.tags}</span>
+                  {tagSel.length > 0 && (
+                    <span style={{ fontFamily: C.mono }}>{tagSel.length}</span>
+                  )}
+                  {tagSel.length > 0 && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => { e.stopPropagation(); setTagSel([]) }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); setTagSel([]) } }}
+                      style={{ marginLeft: 'auto', color: C.muted, textDecoration: 'underline', cursor: 'pointer' }}
+                    >
+                      {ui.clear}
+                    </span>
+                  )}
+                </button>
+
+                {/* Selected tags stay visible when the panel is shut, so the
+                    filter is never invisibly active. */}
+                {!tagsOpen && tagSel.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
+                    {tagSel.map((t) => (
+                      <button key={t} onClick={() => toggleTag(t)} style={tagChip(true, false)}>
+                        {t} ✕
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {tagsOpen && (
+                  <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {TAG_FAMILIES.map((fam) => {
+                      const inFam = Object.keys(manifest.tags)
+                        .filter((t) => (fam.prefix === '' ? !t.includes('/') : t.startsWith(fam.prefix)))
+                        .sort((a, b) => (tagCounts[b] ?? 0) - (tagCounts[a] ?? 0) || a.localeCompare(b))
+                      if (!inFam.length) return null
+                      return (
+                        <div key={fam.prefix}>
+                          <div style={{ fontSize: 9.5, letterSpacing: 0.6, color: C.muted, opacity: 0.7, marginBottom: 3 }}>
+                            {fam.label.toUpperCase()}
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                            {inFam.map((t) => {
+                              const on = tagSel.includes(t)
+                              const n = tagCounts[t] ?? 0
+                              const dead = n === 0 && !on
+                              return (
+                                <button
+                                  key={t}
+                                  onClick={() => !dead && toggleTag(t)}
+                                  disabled={dead}
+                                  aria-pressed={on}
+                                  title={t}
+                                  style={tagChip(on, dead)}
+                                >
+                                  {t.includes('/') ? t.slice(t.indexOf('/') + 1) : t}
+                                  <span style={{ opacity: 0.6, marginLeft: 4 }}>{n}</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
             <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>
               {filtered.length} {ui.specs}
             </div>
@@ -835,6 +1088,36 @@ export default function SpecExplorer() {
                     {ms !== null && <span style={{ opacity: 0.7 }}>{ui.took} {ms.toFixed(0)}ms</span>}
                   </>
                 )}
+
+                {/* Edit / GO / Reset. GO is the loud one on purpose -- it is
+                    the action the whole page exists to make cheap. */}
+                <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {/* Reset only appears once there is something to reset. */}
+                  {edited && <button onClick={reset} style={ctrlBtn}>{ui.reset}</button>}
+                  <button
+                    onClick={() => void run()}
+                    disabled={busy}
+                    title={ui.runHint}
+                    style={{
+                      // Filled once the text differs from what was last
+                      // compiled: the button tells you there is work pending
+                      // rather than looking identical either way.
+                      background: dirty ? C.accent : 'transparent',
+                      color: dirty ? '#04150c' : C.accent,
+                      border: `1px solid ${C.accent}`,
+                      borderRadius: 4,
+                      padding: '3px 16px',
+                      cursor: busy ? 'default' : 'pointer',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: 0.5,
+                      fontFamily: 'inherit',
+                      opacity: busy ? 0.6 : 1,
+                    }}
+                  >
+                    {busy ? ui.compiling : 'GO'}
+                  </button>
+                </span>
               </div>
 
               {/* description + pipeline: what this spec is, and where it dies */}
@@ -861,6 +1144,19 @@ export default function SpecExplorer() {
                         active={layer}
                         onPick={(id) => setLayer(id as LayerId)}
                         labels={LAYER_LABEL}
+                      />
+                    </div>
+                  )}
+                  {/* Full metrics only while editing: on an unedited spec the
+                      stats bar and ribbon already say everything, and a second
+                      copy would be noise. */}
+                  {result && draft !== null && (
+                    <div style={{ flexBasis: '100%', marginTop: 4 }}>
+                      <SpecMetrics
+                        result={result}
+                        baseline={baseline}
+                        ms={ms}
+                        labels={{ ...LAYER_LABEL, tokens: ui.tokens, nodes: ui.nodes, depth: ui.depth, typeErrs: ui.typeErrs, droppedItems: ui.droppedItems, brokeIt: ui.brokeIt, fixedIt: ui.fixedIt }}
                       />
                     </div>
                   )}
@@ -959,17 +1255,45 @@ export default function SpecExplorer() {
                   {/* Keyed on spec+layer so switching either replays the
                       90ms enter; the AST tree inside is never animated. */}
                   <div className="spec-x-swap" key={`${selected.path}:${layer}`}>
-                  {/* source */}
+                  {/* source -- read-only until edited, then a plain textarea.
+                      A textarea rather than a contenteditable overlay: the
+                      whole point is that what you type is exactly what the
+                      compiler receives, with no DOM in between. */}
                   {layer === 'source' && (
-                    <SpecCodeView
-                      lines={sourceSpans}
-                      activeLine={hoverLine}
-                      onHoverLine={setHoverLine}
-                      raw={source}
-                      copyLabel={ui.copy}
-                      copiedLabel={ui.copied}
-                      meta={`${result?.sourceBytes ?? source.length} ${ui.bytes} · ${ui.highlightNote}`}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div
+                        style={{
+                          position: 'sticky',
+                          top: 0,
+                          zIndex: 3,
+                          background: C.panel,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '6px 10px',
+                          borderBottom: `1px solid ${C.border}`,
+                          fontFamily: C.mono,
+                          fontSize: 11,
+                          color: C.muted,
+                        }}
+                      >
+                        <span>{editorText.length} {ui.bytes}</span>
+                        {edited && <span style={{ color: C.golden }}>{ui.editing}</span>}
+                        {dirty ? (
+                          <span style={{ color: C.warn }}>{ui.unrun}</span>
+                        ) : (
+                          <span style={{ opacity: 0.75 }}>{ui.highlightNote}</span>
+                        )}
+                        <span style={{ marginLeft: 'auto', opacity: 0.7 }}>{ui.runHint}</span>
+                      </div>
+                      <SpecEditor
+                        value={editorText}
+                        onChange={(v) => { setDraft(v); setDirty(v !== lastCompiled) }}
+                        lines={sourceSpans}
+                        onRun={() => void run()}
+                        ariaLabel={ui.source}
+                      />
+                    </div>
                   )}
 
                   {/* tokens */}
@@ -1181,6 +1505,29 @@ export default function SpecExplorer() {
       </div>
     </div>
   )
+}
+
+/** Ordered so the two families people filter by most sit at the top. */
+const TAG_FAMILIES = [
+  { prefix: 'domain/', label: 'domain' },
+  { prefix: 'has/', label: 'contains' },
+  { prefix: 'issue/', label: 'problems' },
+  { prefix: 'size/', label: 'size' },
+  { prefix: 'src/', label: 'repository' },
+  { prefix: 'health/', label: 'health' },
+]
+
+function tagChip(on: boolean, dead: boolean): React.CSSProperties {
+  return {
+    background: on ? 'rgba(0,255,136,0.14)' : 'transparent',
+    border: `1px solid ${on ? C.accent : C.border}`,
+    borderRadius: 999,
+    color: dead ? 'rgba(139,148,144,0.35)' : on ? C.accent : C.muted,
+    padding: '1px 7px',
+    cursor: dead ? 'default' : 'pointer',
+    fontSize: 10.5,
+    fontFamily: C.mono,
+  }
 }
 
 const ctrlBtn: React.CSSProperties = {

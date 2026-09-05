@@ -82,6 +82,11 @@ export interface SpecEntry {
   tutorial?: boolean
   /** Reading order within the course; 0 is the overview. */
   lesson?: number
+  /** Derived at sync time from path, AST node kinds and backend results. */
+  tags: string[]
+  /** AST node-kind histogram. */
+  kinds: Record<string, number>
+  repo: string
 }
 
 export interface SpecManifest {
@@ -94,6 +99,10 @@ export interface SpecManifest {
   backendFailures: Record<string, number>
   featured: string
   totals: { tokens: number; nodes: number; lossAffected: number; tcAffected: number }
+  /** Every tag with its corpus-wide count, highest first. */
+  tags: Record<string, number>
+  repos: { repo: string; commit: string; specs: number }[]
+  duplicatesSkipped: number
   specs: SpecEntry[]
 }
 
@@ -164,6 +173,16 @@ export async function analyzeCached(path: string, source: string): Promise<T27An
   }
   cache.set(path, r)
   return r
+}
+
+/**
+ * Compile edited source, bypassing the cache.
+ *
+ * The cache is keyed by spec path, and edited text is not that spec any more --
+ * caching it would serve a stale tree the moment someone typed.
+ */
+export async function analyzeEdited(source: string): Promise<T27Analysis> {
+  return analyze(source)
 }
 
 /** Compile ahead of a click. Users hover 80-150ms before selecting. */
