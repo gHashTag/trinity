@@ -4,6 +4,7 @@ import { body as body_clara_proposal_submitted_not_reviewed, ruBody as ruBody_cl
 import { body as body_tri_claw_an_agent_you_can_audit, ruBody as ruBody_tri_claw_an_agent_you_can_audit } from './bodies/tri-claw-an-agent-you-can-audit'
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import type { Post, PostBody } from './types'
+import { body as body_the_only_stable_speed_belonged_to_the_tool, ruBody as ruBody_the_only_stable_speed_belonged_to_the_tool } from './bodies/the-only-stable-speed-belonged-to-the-tool'
 import { body as body_queen_review_lifecycle_queues, ruBody as ruBody_queen_review_lifecycle_queues } from './bodies/queen-review-lifecycle-queues'
 import { body as body_physical_width_changed_the_question, ruBody as ruBody_physical_width_changed_the_question } from './bodies/physical-width-changed-the-question'
 import { body as body_nobodys_example, ruBody as ruBody_nobodys_example } from './bodies/nobodys-example'
@@ -120,6 +121,7 @@ const bodies: Record<string, PostBody> = {
   'open-gigabit-ethernet-artix7': { body: body_open_gigabit_ethernet_artix7, ruBody: ruBody_open_gigabit_ethernet_artix7 },
   'two-bitstreams-one-bit-apart': { body: body_two_bitstreams_one_bit_apart, ruBody: ruBody_two_bitstreams_one_bit_apart },
   'a-multiplicity-correction-changed-the-deployment-reading': { body: body_a_multiplicity_correction_changed_the_deployment_reading, ruBody: ruBody_a_multiplicity_correction_changed_the_deployment_reading },
+  'the-only-stable-speed-belonged-to-the-tool': { body: body_the_only_stable_speed_belonged_to_the_tool, ruBody: ruBody_the_only_stable_speed_belonged_to_the_tool },
 }
 
 export type { Block, Post } from './types'

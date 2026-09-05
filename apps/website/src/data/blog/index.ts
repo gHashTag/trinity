@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'the-only-stable-speed-belonged-to-the-tool',
+    title: 'The only stable speed belonged to the tool, not the cable',
+    summary: '[measured] A note recorded 100 kHz as the only stable JTAG clock for this cable. openFPGALoader ran the same cable at 6 MHz and programmed a bitstream OpenOCD could not start.',
+    date: '2026-09-05',
+    readingMinutes: 4,
+    tags: ['FPGA', 'openXC7', 'Toolchain', 'Reproducibility'],
+    receipts: [
+      { label: 'Commit 67d06623 -- constraint file added, cable-speed note corrected', href: 'https://github.com/gHashTag/trinity-fpga/commit/67d06623' },
+      { label: 'The corrected note at that commit', href: 'https://github.com/gHashTag/trinity-fpga/blob/67d06623/fpga/experience/2026-09-05-ax7203-openfpgaloader-vs-openocd.trinity.md' },
+      { label: 'The constraint file the June recipe referenced and the tree lacked', href: 'https://github.com/gHashTag/trinity-fpga/blob/67d06623/fpga/constraints/ax7203.xdc' },
+      { label: 'The June note that recorded 100 kHz', href: 'https://github.com/gHashTag/trinity-fpga/blob/67d06623/fpga/experience/2026-06-24-ax7203-blinky-openxc7.trinity.md' },
+      { label: 'The OpenOCD configuration whose layout is byte-identical to stock', href: 'https://github.com/gHashTag/trinity-fpga/blob/67d06623/fpga/openxc7-synth/ax7203_al321.cfg' },
+    ],
+    openQuestions: [
+      'DONE asserted means the device accepted a configuration; no LED state was observed and the design loaded was a counter, not a datapath under test.',
+      'One cable, one host, one session: this does not establish that OpenOCD fails on other hosts, cables or transports.',
+      'No silicon is involved. The part is an Artix-7 FPGA on a carrier board.',
+    ],
+    published: true,
+    ru: {
+      title: 'Единственная стабильная скорость принадлежала инструменту, а не кабелю',
+      summary: '[измерено] Заметка фиксировала 100 кГц как единственную стабильную частоту JTAG для этого кабеля. openFPGALoader прогнал тот же кабель на 6 МГц и прошил битстрим, который OpenOCD не смог начать.',
+      openQuestions: [
+        'Выставленный DONE означает, что устройство приняло конфигурацию; состояние светодиодов не наблюдалось, а загруженный дизайн был счётчиком, а не проверяемым датапутём.',
+        'Один кабель, один хост, одна сессия: это не устанавливает отказ OpenOCD на других хостах, кабелях или транспортах.',
+        'Кремния здесь нет. Кристалл — Artix-7 на несущей плате.',
+      ],
+    },
+  },
+  {
     slug: 'queen-foundation-snapshot-contract',
     title: 'The Queen foundation snapshot now has a source contract',
     summary: '[measured] Merged PR #937 adds a dated foundation snapshot and a fixture-backed contract that keeps the page source visible.',
