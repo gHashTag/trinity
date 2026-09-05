@@ -24,7 +24,7 @@
     ],
     "resources": [
       "GoldenFloat: A Phi-Derived Static-Split Floating-Point Family",
-      "An 83-Format Numeric Catalog with Bit-Exact Conformance Vectors",
+      "Golden Ruler: A Numeric Format Catalog with Bit-Exact Conformance Vectors",
       "GoldenFloat: φ-Optimal Floating-Point Formats",
       "Trinity S³AI Framework — Complete Research Collection",
       "gHashTag/trinity: Trinity v2.0.2",
@@ -41,7 +41,7 @@
       "#115 — initialise all four IFF"
     ],
     "about": [
-      "An 83-Format Numeric Catalog with Bit-Exact Conformance Vectors"
+      "Golden Ruler: A Numeric Format Catalog with Bit-Exact Conformance Vectors"
     ],
     "cases": [
       "sources resolve — every file info.yaml declares is present"

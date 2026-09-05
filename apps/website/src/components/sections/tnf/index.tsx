@@ -228,7 +228,7 @@ export function TnfHero() {
 
         <motion.div {...fade} style={{ marginTop: 'var(--sp2)', color: 'var(--muted)', fontSize: 'var(--f-1)' }}>
           {L(PAPER.title)} · {PAPER.author} · ORCID {PAPER.orcid} · {L(PAPER.date)} · {PAPER.theorems}{' '}
-          {key === 'ru' ? 'теорем' : 'theorems'}
+          {key === 'ru' ? 'теорем' : 'theorems'} · {L(PAPER.status)}
         </motion.div>
 
         {/* Две работы, на которых стоит эта: они были упомянуты в разделах ниже,
@@ -244,7 +244,7 @@ export function TnfHero() {
           </a>
           <a href="https://arxiv.org/abs/2606.09686" target="_blank" rel="noopener noreferrer"
              style={{ color: 'var(--text)', textDecoration: 'none', borderBottom: '1px solid var(--border)' }}>
-            arXiv:2606.09686 — {key === 'ru' ? 'каталог 83 форматов' : 'the 83-format catalogue'}
+            arXiv:2606.09686 — {key === 'ru' ? 'Golden Ruler, каталог форматов' : 'Golden Ruler, the format catalogue'}
           </a>
           <a href="#visuals" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
             {key === 'ru' ? 'два чертежа по ним ↓' : 'two drawings from them ↓'}

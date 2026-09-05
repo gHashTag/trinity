@@ -53,7 +53,7 @@ const CORES = [
     name: 'On-chip training primitives',
     tag: 'Edge ML',
     body: 'Neural primitives that perform their own backward pass on the FPGA: forward, gradient and weight update in RTL, with no host in the loop.',
-    proof: '100% held-out accuracy; a 2-layer ReLU network solves XOR on real silicon, bit-exact spec→hardware.',
+    proof: '100% held-out accuracy; a 2-layer ReLU network solves XOR on a real Artix-7 FPGA, bit-exact spec→hardware.',
   },
 ]
 
@@ -97,7 +97,7 @@ const INCLUDED = [
 const RU = {
   eyebrow: 'Лицензирование IP',
   h1: 'Формат, который обходит опубликованный уровень. И ядра к нему.',
-  lede: 'Каждое ядро здесь спроектировано, побитово сверено с независимой эталонной моделью и измерено на реальной FPGA-плате; один дизайн отправлен на изготовление по SKY130 — измерений на кристалле пока нет. Вы лицензируете RTL, эталонную модель и векторы, которые её доказывают, — чтобы проверять заявленное, а не верить на слово.',
+  lede: 'Каждое ядро здесь спроектировано, побитово сверено с независимой эталонной моделью и измерено на реальной FPGA-плате; дизайн на SKY130 был подготовлен через Tiny Tapeout, заявка отозвана до изготовления — кристалла нет. Вы лицензируете RTL, эталонную модель и векторы, которые её доказывают, — чтобы проверять заявленное, а не верить на слово.',
   ctaEnquire: 'Спросить про ядро',
   ctaVerify: 'Как я верифицирую',
   coresTitle: 'Доступные ядра',
@@ -159,7 +159,7 @@ export default function Licensing() {
             {c ? c.lede : (
               <>
                 Every core here was designed, verified bit-exact against an independent model, and
-                measured on a real FPGA board; one design was submitted for SKY130 fabrication — no die measurements yet. You license the
+                measured on a real FPGA board; one design was prepared for SKY130 through Tiny Tapeout and the submission withdrawn before fabrication — no die exists. You license the
                 RTL, the reference model and the vectors that prove it, so you can check the claims
                 instead of trusting them.
               </>

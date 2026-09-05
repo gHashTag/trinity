@@ -55,23 +55,27 @@ export const papers: Resource[] = [
   {
     kind: 'paper',
     title:
-      'An 83-Format Numeric Catalog with Bit-Exact Conformance Vectors: A Vendor-Neutral Reference for FP8, BF16, MXFP4, and Microscaling Formats',
+      'Golden Ruler: A Numeric Format Catalog with Bit-Exact Conformance Vectors for FP8, BF16, MXFP4, and Microscaling Formats',
     href: 'https://arxiv.org/abs/2606.09686',
-    id: 'arXiv:2606.09686v2',
-    verified: '2026-08-09',
+    id: 'arXiv:2606.09686v3',
+    verified: '2026-09-05',
     status: 'live',
-    note: '83 formats, not 84. The 84-format title is v1 only and is historical.',
-    noteRu: "83 формата, не 84. Заголовок про 84 формата был только у v1 и теперь имеет историческое значение.",
+    note:
+      'v3 submitted 4 Sep 2026, announces Mon 7 Sep 2026, 19 pp; until then arXiv shows the v2 title ("An 83-Format Numeric Catalog…"). The format count is a catalog invariant that grows with each version (109 formats in 12 clusters at v3; 83 at v2) — do not hard-code it. The 84-format title of v1 is historical.',
+    noteRu:
+      'v3 подана 4 сентября 2026 года, анонс в понедельник 7 сентября 2026 года, 19 страниц; до этого arXiv показывает заголовок v2 («An 83-Format Numeric Catalog…»). Число форматов в каталоге растёт от версии к версии (109 форматов в 12 кластерах в v3; 83 в v2) — не зашивать его в тексты. Заголовок v1 про 84 формата — историческая запись.',
   },
   {
     kind: 'paper',
-    title: 'Cognitive framework',
-    href: 'https://arxiv.org/abs/2605.28405',
-    id: 'arXiv:2605.28405v1',
-    verified: '2026-07-28',
-    status: 'unverified',
-    note: 'v1, 27 May 2026, 32 pp, cs.AI. Not re-opened in the 2026-08-09 pass.',
-    noteRu: "v1, 27 мая 2026 года, 32 страницы, cs.AI. В проверке 9 августа 2026 года запись повторно не открывали.",
+    title: 'Ternary Network Floats',
+    href: 'https://github.com/gHashTag/trinity-fpga/tree/main/research/arxiv_tnf',
+    id: 'MICPRO-D-26-00839',
+    verified: '2026-09-05',
+    status: 'live',
+    note:
+      'Journal manuscript, under review at Microprocessors and Microsystems (Elsevier), submitted 3 Sep 2026 (MICPRO-D-26-00839). No arXiv preprint. The link is to the source directory, not a PDF.',
+    noteRu:
+      'Журнальная рукопись, на рецензии в Microprocessors and Microsystems (Elsevier), подана 3 сентября 2026 года (MICPRO-D-26-00839). Препринта на arXiv нет. Ссылка ведёт в каталог с исходниками, а не на PDF.',
   },
 ]
 
@@ -414,12 +418,13 @@ export const identities: Resource[] = [
   {
     kind: 'identity',
     title: 'arXiv author identifier',
-    href: 'https://arxiv.org/a/vasilev_d_1',
-    verified: '2026-08-09',
-    status: 'broken',
+    href: 'https://arxiv.org/a/0009-0008-4294-6159',
+    id: 'arXiv author id 0009-0008-4294-6159',
+    verified: '2026-09-05',
+    status: 'live',
     note:
-      'Returns "Not Found". The three arXiv papers do not resolve to one author page, so nothing can link to a single publication list.',
-    noteRu: "Возвращает «Not Found». Три статьи arXiv не ведут на единую страницу автора, поэтому ничего не связывает их в один список публикаций.",
+      'The ORCID-keyed author page lists exactly the two arXiv papers (2606.05017, 2606.09686). The older /a/vasilev_d_1 address returns "Not Found" (303 to /a/vasilev_d_1.html, then 404) and must not be linked.',
+    noteRu: "Страница автора по ORCID перечисляет ровно две статьи arXiv (2606.05017, 2606.09686). Старый адрес /a/vasilev_d_1 возвращает «Not Found» (303 на /a/vasilev_d_1.html, затем 404), ссылаться на него нельзя.",
   },
   {
     kind: 'identity',

@@ -12,6 +12,8 @@ const LINKS = {
   github: 'https://github.com/gHashTag',
   arxiv1: 'https://arxiv.org/abs/2606.05017',
   arxiv2: 'https://arxiv.org/abs/2606.09686',
+  // Journal manuscript under review; no preprint, so the link is the source directory, not a PDF
+  tnf: 'https://github.com/gHashTag/trinity-fpga/tree/main/research/arxiv_tnf',
   // Served from the apex repository, so it survives a rebuild of the SPA
   cv: 'https://t27.ai/cv.pdf',
 }
@@ -74,7 +76,7 @@ export default function AboutAuthor() {
                 {a.links?.arxiv1 || 'arXiv: GoldenFloat'}
               </motion.a>
               <motion.a href={LINKS.arxiv2} target="_blank" rel="noopener noreferrer" className="btn secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} style={{ padding: '10px 24px', fontSize: '0.85rem' }}>
-                {a.links?.arxiv2 || 'arXiv: 83-Format Catalog'}
+                {a.links?.arxiv2 || 'arXiv: Golden Ruler catalog'}
               </motion.a>
             </div>
           </div>
@@ -155,20 +157,21 @@ export default function AboutAuthor() {
 
 // English defaults (also the fallback content for locales without an `about` block)
 const DEFAULT_BIO = [
-  'I build the full stack of efficient AI compute — from the number format and the RTL that runs it to bit-exact verification on a board. I am the author of GF-T, a ternary floating-point format, and of the wider GoldenFloat family (GF-T8/16/32; φ-derived GF4→GF1024), published as a catalog of 83 formats with bit-exact conformance vectors.',
-  'I took a novel numeric format from an arXiv paper to a live Xilinx Artix-7 (ALINX AX7203, XC7A200T) on a fully open-source flow — Yosys, nextpnr, prjxray, no vendor tools. A SKY130 design has been submitted for fabrication through Tiny Tapeout; there are no measurements on a die. My work centres on the chain spec → RTL → verification → board, where every RTL node is checked bit-for-bit against an independent Python golden model, catching spec/RTL divergence before synthesis.',
+  'I build the full stack of efficient AI compute — from the number format and the RTL that runs it to bit-exact verification on a board. I am the author of GF-T, a ternary floating-point format, and of the wider GoldenFloat family (GF-T8/16/32; φ-derived GF4→GF1024), published alongside Golden Ruler, a numeric format catalog with bit-exact conformance vectors.',
+  'I took a novel numeric format from an arXiv paper to a live Xilinx Artix-7 (ALINX AX7203, XC7A200T) on a fully open-source flow — Yosys, nextpnr, prjxray, no vendor tools. A SKY130 design was prepared through Tiny Tapeout (GDS, gate-level test, precheck); the TTSKY26a/TTSKY26b submissions were withdrawn before fabrication and refunded, so no die exists. My work centres on the chain spec → RTL → verification → board, where every RTL node is checked bit-for-bit against an independent Python golden model, catching spec/RTL divergence before synthesis.',
   'Before hardware, I spent 10+ years building and teaching software — AI agents and multi-agent systems, React Native, and Web3. I am open to remote / contract work worldwide (UTC+7) across hardware-AI, FPGA / RTL / verification, ML systems, and edge AI.',
 ]
 
 const DEFAULT_ACHIEVEMENTS = [
   'On-FPGA neural training — primitives that train on the board itself, with the whole spec → RTL → board path checked bit-for-bit against the golden model.',
   'GF16 4×4 matmul — maps into Xilinx Artix-7 fabric with 0 DSP48 and 0 latches: 32,252 LUTs, or 21,223 with the hard multipliers allowed.',
-  'Tiny Tapeout SKY130 — the design has been submitted for fabrication: GDS, gate-level test, and precheck all passing. No measurements on a die yet.',
+  'Tiny Tapeout SKY130 — a design prepared through GDS, gate-level test and precheck; the submissions were withdrawn before fabrication and refunded. No die exists; every hardware number is from the Artix-7 (XC7A200T) FPGA prototype.',
   'Per-node bit-exact verification — every RTL node checked against an independent Python golden model (iverilog + KAT vectors), catching spec/RTL divergence before synthesis.',
   'tri-net — a full ternary network stack (133 .t27 specs): GF16 PHY, a BPSK modem over AD9361, mesh routing, and AEAD crypto — proven device-to-device over the air.',
 ]
 
 const DEFAULT_PUBLICATIONS = [
   { title: 'GoldenFloat: A φ-Derived Floating-Point Family (GF4→GF1024) — arXiv:2606.05017', url: LINKS.arxiv1 },
-  { title: 'An 83-Format Numeric Catalog with Bit-Exact Conformance Vectors: FP8, BF16, MXFP4 — arXiv:2606.09686', url: LINKS.arxiv2 },
+  { title: 'Golden Ruler: A Numeric Format Catalog with Bit-Exact Conformance Vectors for FP8, BF16, MXFP4, and Microscaling Formats — arXiv:2606.09686 (v3, announced 7 Sep 2026)', url: LINKS.arxiv2 },
+  { title: 'Ternary Network Floats — under review, Microprocessors and Microsystems (Elsevier), submitted 3 Sep 2026', url: LINKS.tnf },
 ]

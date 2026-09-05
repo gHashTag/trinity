@@ -165,8 +165,8 @@ const PRICING_SOURCES: [{ en: string; ru: string }, string][] = [
 const PROOF = [
   ['32,252 LUT · 0 DSP48', 'A GF16 4×4 matmul that maps into Artix-7 fabric with no hard multipliers at all — 21,223 LUTs if the 64 DSP blocks are allowed. Combinational, 0 latches.'],
   ['100% held-out', 'A neural network that trains itself on the FPGA — bit-exact from specification to FPGA.'],
-  ['SKY130: submitted', 'Taped out through Tiny Tapeout: GDS, gate-level test and precheck passed. The die is at the fab; no measurement on silicon is claimed.'],
-  ['83 formats', 'Published bit-exact conformance vectors for FP8, BF16, MXFP4 and microscaling.'],
+  ['SKY130: withdrawn', 'Prepared through Tiny Tapeout: GDS, gate-level test and precheck passed. The TTSKY26a/TTSKY26b submissions were withdrawn before fabrication and refunded; no die exists.'],
+  ['Golden Ruler', 'Published bit-exact conformance vectors for FP8, BF16, MXFP4 and microscaling (arXiv:2606.09686).'],
 ]
 
 const STEPS = [
@@ -192,13 +192,13 @@ const SIGNALS: [string, string][] = [
 
 const RELATED = [
   { href: '#/proof', title: 'The evidence', body: 'Every measured number on this site, how it was obtained, and what it is not.' },
-  { href: '#/ip', title: 'License a core', body: 'The arithmetic that has already been through silicon — GF-T, the GF16 matmul, the BPSK modem.' },
+  { href: '#/ip', title: 'License a core', body: 'The arithmetic that has already been through the open FPGA flow — GF-T, the GF16 matmul, the BPSK modem.' },
   { href: '#/course', title: 'Learn the method', body: 'Eight modules from an empty toolchain to a network training on the chip itself.' },
 ]
 
 const RELATED_RU = [
   { href: '#/proof', title: 'Доказательства', body: 'Все измеренные цифры этого сайта, как они получены и чем они не являются.' },
-  { href: '#/ip', title: 'Лицензировать ядро', body: 'Арифметика, уже прошедшая кремний: GF-T, матричный умножитель GF16, BPSK-модем.' },
+  { href: '#/ip', title: 'Лицензировать ядро', body: 'Арифметика, уже прошедшая открытый FPGA-поток: GF-T, матричный умножитель GF16, BPSK-модем.' },
   { href: '#/course', title: 'Научиться самому', body: 'Восемь модулей от пустого тулчейна до сети, которая учится на самом кристалле.' },
 ]
 
@@ -288,8 +288,8 @@ const RU = {
   proof: [
     ['32 252 LUT · 0 DSP48', 'Матричный умножитель GF16 4×4 умещается в логику Artix-7 вообще без аппаратных умножителей — 21 223 LUT, если разрешить 64 DSP-блока. Комбинационный, 0 защёлок.'],
     ['100% held-out', 'Нейросеть, обучающаяся прямо на FPGA — путь спецификация→FPGA побитово точен.'],
-    ['SKY130: отправлен', 'ASIC через TinyTapeout: GDS, gate-level тест и precheck пройдены; кристалл отправлен на изготовление, измерений на кремнии нет.'],
-    ['83 формата', 'Опубликованные побитовые векторы соответствия для FP8, BF16, MXFP4 и microscaling.'],
+    ['SKY130: отозван', 'Подготовлен через Tiny Tapeout: GDS, gate-level тест и precheck пройдены; заявки TTSKY26a/TTSKY26b отозваны до изготовления с возвратом средств — кристалла нет.'],
+    ['Golden Ruler', 'Опубликованные побитовые векторы соответствия для FP8, BF16, MXFP4 и microscaling (arXiv:2606.09686).'],
   ],
   practicalsTitle: 'Как мы работаем',
   practicals: [
