@@ -114,7 +114,7 @@ const UI = {
     reset: 'Reset',
     editing: 'Editing — not the shipped spec',
     unrun: 'not compiled yet',
-    runHint: 'GO or ⌘⏎ to compile',
+    runHint: 'RUN or ⌘⏎ to compile',
     brokeIt: 'broke',
     fixedIt: 'fixed',
     course: 'Course',
@@ -195,7 +195,7 @@ const UI = {
     reset: 'Сброс',
     editing: 'Редактирование — это уже не исходная спека',
     unrun: 'ещё не скомпилировано',
-    runHint: 'GO или ⌘⏎ для компиляции',
+    runHint: 'RUN или ⌘⏎ для компиляции',
     brokeIt: 'сломал',
     fixedIt: 'починил',
     course: 'Курс',
@@ -361,9 +361,11 @@ export default function SpecExplorer() {
   const [manifest, setManifest] = useState<SpecManifest | null>(null)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string>('')
-  // Healthy specs first, by default: this is a catalogue to browse, not a
-  // triage queue. The problem groups are one click away and carry their counts.
-  const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course'>('ok')
+  // The course first, by default. Someone arriving here has no way to know
+  // which of 760 specs to open, and "Working 522" is still 522 unordered
+  // files; the eight lessons are the one path through this that starts
+  // somewhere. Every other group is one click away and carries its count.
+  const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course'>('course')
   // Multi-select, AND across selections: picking domain/fpga + has/tests means
   // "FPGA specs that have tests", which is the question people actually ask.
   const [tagSel, setTagSel] = useState<string[]>([])
@@ -409,8 +411,10 @@ export default function SpecExplorer() {
           || m.specs.find((s) => s.featured)
           || m.specs[0]
         if (target) {
-          // A deep-linked spec is usually outside the default Working filter.
-          if (target.health !== 'ok') setHealthFilter('all')
+          // A deep-linked spec is usually outside the course, and landing on a
+          // filter that excludes the very spec the link named would show an
+          // empty list next to an open file.
+          if (!target.tutorial) setHealthFilter('all')
           void pickRef.current?.(target)
         }
       })
@@ -420,6 +424,13 @@ export default function SpecExplorer() {
   // Inline styles cannot carry media queries, and the header has three pieces
   // of text that will happily overlap rather than wrap. Track the width and
   // drop the optional ones instead.
+  // Embedded in the Queen HUD (?embed=1): the frame already sits under the
+  // HUD's own chrome, so the page header would be a second title bar.
+  const embedded = useMemo(
+    () => new URLSearchParams(window.location.hash.split('?')[1] || '').get('embed') === '1',
+    [],
+  )
+
   const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
   useEffect(() => {
     const onResize = () => setNarrow(window.innerWidth < 1100)
@@ -558,7 +569,7 @@ export default function SpecExplorer() {
    * of quiet is the trigger: long enough not to fire mid-word, short enough
    * that the pause before you look up is already over.
    *
-   * GO stays, and stays useful -- it runs without waiting for the debounce,
+   * RUN stays, and stays useful -- it runs without waiting for the debounce,
    * and it is the affordance that tells you this page compiles at all.
    */
   // `run` is reachable through a ref so it is not an effect dependency:
@@ -686,7 +697,7 @@ export default function SpecExplorer() {
       {/* Everything after the title is allowed to shrink and then clip: on a
           narrow window the provenance line would otherwise wrap under the
           heading and overlap it. */}
-      <header
+      {!embedded && <header
         style={{
           minHeight: 52,
           flexShrink: 0,
@@ -746,7 +757,7 @@ export default function SpecExplorer() {
             </span>
           )}
         </div>
-      </header>
+      </header>}
 
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
         {/* library */}
@@ -1113,7 +1124,7 @@ export default function SpecExplorer() {
                   </>
                 )}
 
-                {/* Edit / GO / Reset. GO is the loud one on purpose -- it is
+                {/* Edit / RUN / Reset. RUN is the loud one on purpose -- it is
                     the action the whole page exists to make cheap. */}
                 <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {/* Reset only appears once there is something to reset. */}
@@ -1139,7 +1150,7 @@ export default function SpecExplorer() {
                       opacity: busy ? 0.6 : 1,
                     }}
                   >
-                    {busy ? ui.compiling : 'GO'}
+                    {busy ? ui.compiling : 'RUN'}
                   </button>
                 </span>
               </div>
