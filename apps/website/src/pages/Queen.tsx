@@ -1060,7 +1060,11 @@ function activityLabel(event: QueenActivityEvent, lang: string) {
           finished: "Bee finished work",
           review: "Queen issued a verdict",
         };
-  return labels[event.kind] ?? labels.progress;
+  const word = labels[event.kind] ?? labels.progress;
+  // the wire's own state follows the kind word for verdicts and finishes
+  // (P1-24): "Queen issued a verdict · wait", "Bee finished work · accepted";
+  // the state is a wire field printed as-is, absent means no suffix
+  return (event.kind === "review" || event.kind === "finished") && event.state && event.state !== event.kind ? `${word} · ${event.state}` : word;
 }
 
 const LAYER_DESIGN: Record<string, { color: string; icon: string }> = {

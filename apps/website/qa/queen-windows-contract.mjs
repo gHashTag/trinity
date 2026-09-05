@@ -40,6 +40,7 @@ let boardText = null; let served = 0; let rotate = false;
 listeners.push(async msg => {
   if (msg.sessionId !== sessionId || msg.method !== 'Fetch.requestPaused') return;
   const { requestId, request, responseStatusCode } = msg.params;
+  if (/queen\/status/.test(request.url)) return; // handled by the refusal listener
   if (!/queen\/modules\.json/.test(request.url)) { await call('Fetch.continueRequest', { requestId }); return; }
   if (responseStatusCode === undefined) { await call('Fetch.continueRequest', { requestId }); return; }
   served += 1;
@@ -51,7 +52,19 @@ listeners.push(async msg => {
   await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(out).toString('base64') });
 });
 await call('Page.enable');
-await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/modules.json*', requestStage: 'Response' }] });
+// the gold block's decision line must survive the LONGEST refusal, not the one the wire happens to carry this minute (a flake in cycle 031): every /queen/status answer is rewritten to a refused tick with a 96-character reason
+const LONG_REFUSAL = 'no eligible specification: every open issue lacks a Boundary section and the queue holds 14 briefs';
+listeners.push(async msg => {
+  if (msg.sessionId !== sessionId || msg.method !== 'Fetch.requestPaused') return;
+  const { requestId, request, responseStatusCode } = msg.params;
+  if (!/queen\/status/.test(request.url) || responseStatusCode === undefined) return;
+  const got = await call('Fetch.getResponseBody', { requestId });
+  const text = got.base64Encoded ? Buffer.from(got.body, 'base64').toString('utf8') : got.body;
+  let out = text;
+  try { const d = JSON.parse(text); d.lastTick = { ...(d.lastTick || {}), decidedAt: d.lastTick?.decidedAt || new Date().toISOString(), allowed: false, refusal: LONG_REFUSAL, skippedCount: d.lastTick?.skippedCount ?? 0 }; out = JSON.stringify(d); } catch {}
+  await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(out).toString('base64') });
+});
+await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/modules.json*', requestStage: 'Response' }, { urlPattern: '*queen/status*', requestStage: 'Response' }] });
 
 const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 600], [390, 844]];
 const problems = [];
@@ -63,6 +76,8 @@ for (const lang of LANGS) for (const [w, h] of SIZES) {
   for (let i = 0; i < 60 && !ready; i++) { await wait(500); ready = await evaluate(`document.querySelectorAll('.queen27-hud-res').length >= 9 && !!document.querySelector('#stat-round')`); }
   if (!ready) { problems.push(`${lang} ${w}x${h}: tiles never rendered`); continue; }
   await wait(1200);
+  // the round strip replaces the decision line for six seconds after a decision moment; measure the line, not the strip
+  for (let i = 0; i < 20; i++) { const showing = await evaluate(`(() => { const e = document.querySelector('.queen27-hud-round-btn > em'); return e ? /no eligible specification|no eligible/.test(e.textContent || '') || !document.querySelector('.queen27-hud-round-strip') : true; })()`); if (showing) break; await wait(500); }
   const cutInfo = await evaluate(`(() => {
     const out = [];
     const check = (el, label) => {
@@ -83,6 +98,8 @@ for (const lang of LANGS) for (const [w, h] of SIZES) {
     return { out, minTile: tiles.length ? Math.min(...tiles) : null, tiles: tiles.length };
   })()`);
   const { out: cut, minTile, tiles } = cutInfo;
+  // the intercept must have reached the gold block, or the pin is silent
+  if (lang === 'en' && w === 1920) { const emText = await evaluate(`(() => { const e = document.querySelector('.queen27-hud-round-btn > em'); return e ? e.textContent : ''; })()`); if (!/no eligible specification/.test(emText)) problems.push(`en 1920x1080: the refusal intercept did not reach the gold block (em reads "${String(emText).slice(0, 60)}")`); }
   if (cut.length) problems.push(`${lang} ${w}x${h}: ${cut.join(' | ')}`);
   console.log(`  ${lang} ${w}x${h} ${cut.length ? 'CUT  ' + cut.length + ' window(s): ' + cut.join(' | ') : 'ok   every window whole'} · ${tiles} tiles, narrowest ${minTile} px`);
 }

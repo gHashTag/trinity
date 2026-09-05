@@ -139,6 +139,8 @@ check(/`\$\{decisionInfo\} · \$\{decision\.allowed \? c\.chose : c\.stoodDown\}
 const cov = feedCoverage([{ at: "2026-09-05T00:40:00Z" }, { at: "2026-09-05T00:41:02Z" }, { at: "2026-09-05T00:40:30Z" }]);
 check(cov.rows === 3 && cov.spanSeconds === 62 && cov.oldestAt === "2026-09-05T00:40:00Z" && cov.newestAt === "2026-09-05T00:41:02Z", "three rows over 62 s: the header says 3 rows · 62 s from the rows themselves");
 check(feedCoverage([{ at: "2026-09-05T00:40:00Z" }]).spanSeconds === null && feedCoverage([]).rows === 0 && feedCoverage([{ at: "bad" }, { at: "2026-09-05T00:40:00Z" }]).spanSeconds === null, "one row, no rows or an undatable row: no span is printed, never a fabricated 0 s");
+// review and finished rows print their wire state after the kind word (P1-24)
+check(/return \(event\.kind === "review" \|\| event\.kind === "finished"\) && event\.state && event\.state !== event\.kind \? `\$\{word\} · \$\{event\.state\}` : word;/.test(src), "a verdict or a finish carries its wire state after the kind word; no state or a state equal to the kind (finished · finished) adds no suffix");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
