@@ -20,6 +20,11 @@ export interface QueenContextLabels {
   unitS: string;
   unitMin: string;
   unitH: string;
+  /** the honey cell's card (H-E): closed, labels, epic, the layer's name */
+  closed: string;
+  labelsWord: string;
+  epic: string;
+  foundationLayer: string;
   last: string;
   selected: string;
   theQueen: string;
@@ -198,12 +203,14 @@ export function QueenContext({
 
   const showQueen = !pick || pick.isQueen;
   const card = showQueen ? null : pick.card;
-  const selectedUrl = useMemo(() => issueUrl(repo, card?.number), [repo, card]);
+  const issue = !showQueen && pick.kind === "issue" ? (pick.issue ?? null) : null;
+  const selectedUrl = useMemo(() => issueUrl(repo, card?.number ?? issue?.number), [repo, card, issue]);
 
   const sectorTitle = useMemo(() => {
+    if (issue) return labels.foundationLayer;
     if (!card) return "—";
     return columns.find((column) => column.key === card.column)?.title ?? card.column;
-  }, [columns, card]);
+  }, [columns, card, issue, labels.foundationLayer]);
 
   const portrait = useMemo(() => {
     if (showQueen) return "./queen/portrait-queen-256.png";
@@ -211,6 +218,8 @@ export function QueenContext({
     if (pick.bee) return "./queen/larva-256.png";
     // a card's cell shows its structure - the city's building for that column
     if (pick.card) return `./queen/structure-${pick.card.column}-256.png`;
+    // a honey cell: the done structure, the closed issue's own image
+    if (pick.kind === "issue" && pick.issue) return "./queen/structure-done-256.png";
     return `./queen/ground-${pick.territory}-256.png`;
   }, [showQueen, pick]);
 
@@ -338,6 +347,11 @@ export function QueenContext({
                   <b>T27: {labels.theQueen}</b>
                   <small>{labels.queenRole}</small>
                 </>
+              ) : issue ? (
+                <>
+                  <b>#{issue.number} · {publicIssueTitle(issue.title, issue.number, lang)}</b>
+                  <small>{labels.closed} · {clock(issue.closedAt, lang)}</small>
+                </>
               ) : pick.module ? (
                 <>
                   <b>{pick.module.path}</b>
@@ -391,10 +405,21 @@ export function QueenContext({
                 <dd>{sectorTitle}</dd>
                 <dt>{labels.territory}</dt>
                 <dd className={`is-${pick.territory}`}>{territoryLabel}</dd>
-                <dt>{labels.criteria}</dt>
-                <dd>{card?.criteria ?? "—"}</dd>
-                <dt>{labels.needs}</dt>
-                <dd>{card?.needs && card.needs.length > 0 ? card.needs.join(", ") : "—"}</dd>
+                {issue ? (
+                  <>
+                    <dt>{labels.labelsWord}</dt>
+                    <dd>{issue.labels.length > 0 ? issue.labels.join(", ") : "—"}</dd>
+                    <dt>{labels.epic}</dt>
+                    <dd>{issue.epicRefs.length > 0 ? issue.epicRefs.map((n) => `#${n}`).join(" ") : "—"}</dd>
+                  </>
+                ) : (
+                  <>
+                    <dt>{labels.criteria}</dt>
+                    <dd>{card?.criteria ?? "—"}</dd>
+                    <dt>{labels.needs}</dt>
+                    <dd>{card?.needs && card.needs.length > 0 ? card.needs.join(", ") : "—"}</dd>
+                  </>
+                )}
               </dl>
               <div className="queen27-context-actions">
                 {selectedUrl && (

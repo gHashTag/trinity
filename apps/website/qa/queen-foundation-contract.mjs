@@ -92,6 +92,19 @@ let hostA = null;
 for (let i = 0; i < 40 && !hostA; i++) { const a = await evaluate(`(() => { const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); return f && f.getAttribute('data-foundation-cells') ? { cells: f.getAttribute('data-foundation-cells'), first: f.getAttribute('data-foundation-first'), last: f.getAttribute('data-foundation-last'), orient: f.getAttribute('data-hex-orient'), ratio: f.getAttribute('data-hex-ratio') } : null; })()`); if (a) hostA = a; else await wait(500); }
 if (!hostA) { const why = await evaluate(`(() => { const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); return f ? ['tile', f.getAttribute('data-tile'), 'orient', f.getAttribute('data-hex-orient'), 'error', f.getAttribute('data-foundation-error'), 'frames', f.getAttribute('data-frames'), 'cells', document.querySelectorAll('.queen27-comb-field').length].join(' ') : 'no field'; })()`); console.log(`  Queen foundation contract: FAIL (the field never reported data-foundation-cells: no honey drawn; ${why})`); cleanup(); process.exit(1); }
 if (hostA.cells !== '37' || hostA.first !== '9001@1,0' || hostA.last !== '9037@4,0') { console.log(`  Queen foundation contract: FAIL (field cells=${hostA.cells} first=${hostA.first} last=${hostA.last}; expected 37, 9001@1,0, 9037@4,0)`); cleanup(); process.exit(1); }
+// (c) a click on a honey cell picks the issue: CODE off (the fixture's issues lie under the module cells), sweep until data-hit=issue, the panel names the issue
+await evaluate(`document.querySelector('button[data-layer="code"]').click()`); await wait(400);
+let issuePick = null;
+outerC: for (let gy = 0; gy < 8; gy++) for (let gx = 0; gx < 12; gx++) {
+  const x = rect.x + rect.w * (0.2 + 0.6 * (gx / 11)), y = rect.y + rect.h * (0.08 + 0.4 * (gy / 7));
+  await evaluate(`(() => { const cv = document.querySelector('.queen27-comb-field canvas'); cv.dispatchEvent(new PointerEvent('pointermove', { clientX: ${x}, clientY: ${y}, bubbles: true, pointerId: 1 })); cv.dispatchEvent(new MouseEvent('click', { clientX: ${x}, clientY: ${y}, bubbles: true })); })()`);
+  await wait(80);
+  const h = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-hit')`);
+  if (h === 'issue') { issuePick = await evaluate(`(() => { const v = document.querySelector('.queen27-hud-viewport'); const u = document.querySelector('.queen27-context-selected'); return { kind: v.getAttribute('data-pick-kind'), issue: v.getAttribute('data-pick-issue'), text: ((u && u.textContent) || '').replace(/\\s+/g, ' ').trim().slice(0, 200) }; })()`); break outerC; }
+}
+if (!issuePick) { console.log('  Queen foundation contract: FAIL (no click on the honey reported data-hit=issue with CODE off)'); cleanup(); process.exit(1); }
+if (issuePick.kind !== 'issue' || !/^\d+$/.test(issuePick.issue || '') || !issuePick.text.includes('#' + issuePick.issue) || !issuePick.text.includes('fixture issue ' + issuePick.issue)) { console.log(`  Queen foundation contract: FAIL (an issue pick did not reach the panel: kind=${issuePick.kind} issue=${issuePick.issue} text="${issuePick.text.slice(0, 120)}")`); cleanup(); process.exit(1); }
+await evaluate(`document.querySelector('button[data-layer="code"]').click()`); await wait(300);
 // (d) the FOUNDATION button hides the honey: the section names the layers, the host shows 0
 await evaluate(`document.querySelector('button[data-layer="foundation"]').click()`);
 let hidden = null;
@@ -105,5 +118,5 @@ const zIn = await evaluate(`document.querySelector('.queen27-comb-field[data-eng
 await evaluate(`document.querySelector('button[data-tool="fit"]').click()`); await wait(300);
 const zFit = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-zoom')`);
 if (zIn !== '1.25' || zFit !== '1.00') { console.log(`  Queen foundation contract: FAIL (zoom: + gave ${zIn}, FIT VIEW gave ${zFit}; expected 1.25 then 1.00)`); cleanup(); process.exit(1); }
-console.log(`  Queen foundation contract: PASS (data-foundation=${found}; field ${hostA.cells} cells, first ${hostA.first}, last ${hostA.last}, tile ${hostA.orient} ratio ${hostA.ratio}; FOUNDATION off -> shown 0, layers ${hidden.layers}; zoom ${zIn} -> ${zFit}; picked ${picked.module} at index ${picked.index})`);
+console.log(`  Queen foundation contract: PASS (data-foundation=${found}; field ${hostA.cells} cells, first ${hostA.first}, last ${hostA.last}, tile ${hostA.orient} ratio ${hostA.ratio}; FOUNDATION off -> shown 0, layers ${hidden.layers}; zoom ${zIn} -> ${zFit}; issue #${issuePick.issue} picked and named; picked ${picked.module} at index ${picked.index})`);
 cleanup(); process.exit(0);

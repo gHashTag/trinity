@@ -70,6 +70,10 @@ export interface HudPick {
   bee: { slot: number; line: BeeLine; busy: boolean } | null;
   /** The code module on the cell, when the field shows modules (M-2). */
   module?: HudModule | null;
+  /** What was picked (H-E): the Queen's hub, a module cell, or a honey cell (a closed issue). Identity is (kind, number). */
+  kind?: "queen" | "module" | "issue";
+  /** The closed issue under the pick when kind is "issue", from the loop's snapshot. */
+  issue?: FoundationIssue | null;
 }
 
 /** Imperative handle the shell uses to drive the comb's camera. */

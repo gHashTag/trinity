@@ -246,6 +246,9 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const devices = devicesRef.current;
     const cells = hexCellSummaries(cards);
     const home = HEX_HOME;
+    // the honey under the cells (H-C2): the same map the click reads (H-E)
+    const fdNow = foundationRef.current;
+    const fCells = fdNow ? foundationCells(fdNow.issues, cells.length) : null;
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
     const scene = new Scene(engine);
     scene.clearColor = new Color4(2 / 255, 8 / 255, 6 / 255, 1);
@@ -590,7 +593,6 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       bind("blocked", templates.blocked, u * 1.3); bind("dropped", templates.dropped, u * 1.2);
       // ---- the foundation: one Kenney hex under every cell but the hub, honey on the resolved ones ----
       const tileT = modelInstances.get("tile");
-      const fd = foundationRef.current;
       host.setAttribute("data-tile", tileT ? "loaded" : "missing");
       try {
       if (tileT && cells.length > 1) {
@@ -600,7 +602,6 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
         const k = S_CELL / Math.min(tileT.width, tileT.depth);
         host.setAttribute("data-hex-orient", flatTop ? "pointy-by-turn" : "pointy");
         host.setAttribute("data-hex-ratio", (tileT.width / tileT.depth).toFixed(3));
-        const fCells = fd ? foundationCells(fd.issues, cells.length) : null;
         const mats: number[] = []; const cols: number[] = [];
         for (let i = 1; i < cells.length; i += 1) {
           mats.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.RotationAxis(Vector3.Up(), turn), new Vector3(cells[i].x, -tileT.base * k, cells[i].y)).toArray());
@@ -715,13 +716,22 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const rect = canvas.getBoundingClientRect();
       const index = cellUnder(e.clientX - rect.left, e.clientY - rect.top);
       if (index < 0) { host.setAttribute("data-hit", "off"); return; }
-      const card = cards[index];
-      // a cell with no module is empty ground (P1-10): the click clears the
-      // selection, as on an RTS map, and never picks a cardless cell
-      if (!card && index !== home) { host.setAttribute("data-hit", "void"); onPickRef.current?.(null); return; }
+      const card = layersRef.current.code ? cards[index] : null;
+      // the top visible layer wins (H-E): the hub, then a module with CODE on,
+      // then a honey cell with FOUNDATION on; anything else is empty ground
+      // (P1-10): the click clears the selection, as on an RTS map
+      if (!card && index !== home) {
+        const issue = fCells?.[index];
+        if (issue && layersRef.current.foundation) {
+          host.setAttribute("data-hit", "issue");
+          onPickRef.current?.({ index, isQueen: false, territory: cells[index].own, card: null, bee: null, kind: "issue", issue } as HudPick);
+          return;
+        }
+        host.setAttribute("data-hit", "void"); onPickRef.current?.(null); return;
+      }
       host.setAttribute("data-hit", index === home ? "queen" : "module");
       const b = beeAt(index);
-      onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: b ? { slot: b.slot, line: b.line, busy: b.busy } : null } as HudPick);
+      onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: b ? { slot: b.slot, line: b.line, busy: b.busy } : null, kind: index === home ? "queen" : "module" } as HudPick);
     });
     canvas.addEventListener("pointerleave", () => { hover = -1; });
 
@@ -795,7 +805,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       if (p !== null && cells[p]) placeRing(picked, p, 1.4); else picked.isVisible = false;
       if (p !== flaredPick) { flaredPick = p; if (p !== null && cells[p] && effects.length < RING_POOL) effects.push({ index: p, tone: "muted", start: nowMs, flip: false, flare: ringTone(cells[p].own as Territory) }); }
       // no hover ring on empty ground (P1-10): only modules and the Queen's hub answer the pointer
-      if (hover >= 0 && hover !== p && cells[hover] && (cards[hover] || hover === home)) placeDashed(hover, 1.4); else hovered.isVisible = false;
+      if (hover >= 0 && hover !== p && cells[hover] && ((layersRef.current.code && cards[hover]) || hover === home || (layersRef.current.foundation && fCells?.[hover]))) placeDashed(hover, 1.4); else hovered.isVisible = false;
       scene.render();
       frames += 1;
       if (frames === 1) host.setAttribute("data-first-frame-ms", String(Math.round(nowMs - t0)));

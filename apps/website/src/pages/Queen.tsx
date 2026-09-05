@@ -48,6 +48,7 @@ import {
   FIELD_LAYERS,
   layersFromSearch,
   type FieldLayer,
+  foundationCells,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -480,6 +481,8 @@ const COPY = {
     hudOpenRepo: "OPEN REPO",
     hudFitView: "FIT VIEW",
     hudLayerFoundation: "FOUNDATION",
+    hudLabels: "LABELS",
+    hudEpic: "EPIC",
     hudLayerCastle: "CASTLE",
     hudLayerCode: "CODE",
     hudFoundationSnapshot: "snapshot",
@@ -737,6 +740,8 @@ const COPY = {
     hudOpenRepo: "ОТКРЫТЬ РЕПО",
     hudFitView: "ВПИСАТЬ",
     hudLayerFoundation: "ФУНДАМЕНТ",
+    hudLabels: "МЕТКИ",
+    hudEpic: "ЭПИК",
     hudLayerCastle: "ЗАМОК",
     hudLayerCode: "КОД",
     hudFoundationSnapshot: "снимок",
@@ -2033,8 +2038,17 @@ export default function Queen() {
   // cell. A pick with a card follows its number and re-reads the card; a pick
   // without one (the Queen's cell, an empty cell) keeps its index; a card that
   // left the board clears the pick. Derived, never stored.
+  // the honey under the cells, for picks by issue number (H-E)
+  const foundationByIndex = useMemo(() => (foundationState.data ? foundationCells(foundationState.data.closedIssues, cellSummaries.length) : null), [foundationState.data, cellSummaries.length]);
+  const foundationIndexByNumber = useMemo(() => { const m = new Map<number, number>(); foundationByIndex?.forEach((issue, i) => { if (issue) m.set(issue.number, i); }); return m; }, [foundationByIndex]);
   const livePick = useMemo<HudPick | null>(() => {
     if (!pick) return null;
+    if (pick.kind === "issue" && pick.issue) {
+      // an issue pick follows its number: the cell may move when the snapshot re-packs
+      const index = foundationIndexByNumber.get(pick.issue.number);
+      if (index === undefined) return null;
+      return { ...pick, index, issue: foundationByIndex?.[index] ?? pick.issue, territory: cellSummaries[index]?.own ?? pick.territory };
+    }
     if (!pick.card) return pick.index < cellSummaries.length ? pick : null;
     const number = pick.card.number;
     const index = cellSummaries.findIndex((cell) => cell.cardNumber === number);
@@ -2047,7 +2061,7 @@ export default function Queen() {
       territory: cellSummaries[index].own,
       isQueen: index === HEX_HOME,
     };
-  }, [pick, cellSummaries, moduleCards, modulesById]);
+  }, [pick, cellSummaries, moduleCards, modulesById, foundationByIndex, foundationIndexByNumber]);
   const pickIndex = livePick?.index ?? null;
   const pickedCard = livePick?.card ?? null;
   const pickedIssueUrl =
@@ -2245,6 +2259,8 @@ export default function Queen() {
                               : (moduleCards.find((card) => card.number === cell.cardNumber) ?? null),
                           module: cell.cardNumber === null ? null : (modulesById.get(cell.cardNumber) ?? null),
                           bee: null,
+                          kind: index === HEX_HOME ? "queen" : cell.cardNumber !== null && layers.code ? "module" : foundationByIndex?.[index] && layers.foundation ? "issue" : "module",
+                          issue: cell.cardNumber === null || !layers.code ? (foundationByIndex?.[index] ?? null) : null,
                         }
                       : null,
                   );
@@ -2555,7 +2571,9 @@ export default function Queen() {
         aria-label={viewLabel}
         data-errors-as="title"
               data-pick-index={pickIndex ?? undefined}
-        data-pick-number={pickedCard?.number ?? undefined}
+        data-pick-number={pickedCard?.number ?? livePick?.issue?.number ?? undefined}
+        data-pick-kind={livePick?.kind ?? undefined}
+        data-pick-issue={livePick?.kind === "issue" ? (livePick.issue?.number ?? undefined) : undefined}
         data-pick-territory={livePick?.territory ?? undefined}
         data-pick-module={livePick?.module?.path ?? undefined}
         data-modules={modulesState.data ? `${modules.length}@${modulesState.data.commit ?? "?"}:${modulesState.data.source}` : undefined}
@@ -2812,6 +2830,10 @@ export default function Queen() {
             unitS: c.unitS,
             unitMin: c.unitMin,
             unitH: c.unitH,
+            closed: c.hudClosed,
+            labelsWord: c.hudLabels,
+            epic: c.hudEpic,
+            foundationLayer: c.hudLayerFoundation,
             last: c.hudLast,
             selected: c.hudSelected,
             theQueen: c.hudTheQueen,
