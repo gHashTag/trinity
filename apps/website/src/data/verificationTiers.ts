@@ -52,8 +52,8 @@ export const DELIVERY_TIERS: Tier[] = [
       // being true the day two more runs were published — a hand-counted number
       // beside a generated list drifts the moment the list grows, and nothing
       // announces it.
-      en: 'Delivered: ten designs, five of them other people’s, published with their commands. It found a shuttle-blocking defect in two of my own chips and none in the five that were not mine.',
-      ru: 'Сделано: десять дизайнов, пять из них чужие, опубликованы вместе с командами. Нашла блокирующий шаттл дефект в двух моих чипах и ни одного в пяти чужих.',
+      en: 'Delivered: ten designs, five of them other people’s, published with their commands. It found a shuttle-blocking defect in two of my own designs and none in the five that were not mine.',
+      ru: 'Сделано: десять дизайнов, пять из них чужие, опубликованы вместе с командами. Нашла блокирующий шаттл дефект в двух моих дизайнах и ни одного в пяти чужих.',
     },
   },
   {
