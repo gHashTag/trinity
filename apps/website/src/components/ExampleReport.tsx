@@ -19,13 +19,13 @@ const JOBS = (report.jobs ?? []) as Job[]
 const T = {
   en: {
     h3: 'And this is what comes back',
-    lede: 'Not a sample. These are the lines the check wrote in its most recent successful run, extracted from the log of that run, on two chips waiting for a Tiny Tapeout shuttle.',
+    lede: 'Not a sample. These are the lines the check wrote in its most recent successful run, extracted from the log of that run, on two designs targeting a Tiny Tapeout shuttle (RTL scaffolds; no die exists).',
     open: 'Open the run',
     caveat: 'Four facts and the command behind each. Every one of them is structural: none of it says the design is correct, and the summary of every run says so in the same words.',
   },
   ru: {
     h3: 'А вот что приходит в ответ',
-    lede: 'Это не образец. Это строки, которые проверка написала в последнем успешном прогоне, извлечённые из лога этого прогона, на двух чипах, ждущих шаттл Tiny Tapeout.',
+    lede: 'Это не образец. Это строки, которые проверка написала в последнем успешном прогоне, извлечённые из лога этого прогона, на двух дизайнах, нацеленных на шаттл Tiny Tapeout (RTL-заготовки; кристалла нет).',
     open: 'Открыть прогон',
     caveat: 'Четыре факта и команда под каждым. Все они структурные: ни один не говорит, что дизайн верен, — и сводка каждого прогона говорит это теми же словами.',
   },

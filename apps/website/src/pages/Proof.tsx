@@ -38,13 +38,13 @@ const RESULTS = [
     metric: '100% held-out',
     title: 'A neural network that trains itself on the FPGA',
     body: 'Forward pass, gradient and weight update all in RTL, with no host in the loop. A 2-layer ReLU network learns XOR on the chip itself, 4 of 4 correct.',
-    how: 'Every node bit-exact from specification through to silicon.',
+    how: 'Every node bit-exact from specification through to the Artix-7 FPGA.',
   },
   {
     metric: 'SKY130',
-    title: 'Tape-out through Tiny Tapeout',
-    body: 'The same source that runs on the FPGA went to an open ASIC process: GDS produced, gate-level test passed, precheck passed.',
-    how: 'The full path from an arXiv paper to a fabricated design.',
+    title: 'Prepared for Tiny Tapeout; submission withdrawn',
+    body: 'The same source that runs on the FPGA was prepared for an open ASIC process: GDS produced, gate-level test passed, precheck passed. The TTSKY26a/TTSKY26b submissions were withdrawn before fabrication and refunded; no die exists.',
+    how: 'The path ends at a precheck-clean GDS, not at a fabricated design.',
   },
 
   {
@@ -54,9 +54,9 @@ const RESULTS = [
     how: 'Device to device on real radios, with no infrastructure in between.',
   },
   {
-    metric: '83 formats',
+    metric: 'Golden Ruler',
     title: 'A conformance catalogue anyone can check against',
-    body: 'Bit-exact test vectors for FP8, BF16, MXFP4 and microscaling formats — a vendor-neutral reference for verifying low-precision arithmetic.',
+    body: 'Bit-exact test vectors for FP8, BF16, MXFP4 and microscaling formats — a vendor-neutral reference for verifying low-precision arithmetic (arXiv:2606.09686, v3 announced 7 Sep 2026).',
     how: 'Published openly so the vectors can be used against any implementation.',
   },
 ]
@@ -72,7 +72,7 @@ const METHOD = [
 const NOT_CLAIMS = [
   'Competition entries are entries. A DARPA CLARA submission and an OpenAI Parameter Golf entry are exactly that — submitted work, not awarded contracts or won prizes.',
   'Measurements come from one device family, a Xilinx Artix-7. They are not multi-corner characterisation and do not claim to be.',
-  'The on-chip training result is a proven primitive at small scale — a real network learning on real silicon, not a production training accelerator.',
+  'The on-chip training result is a proven primitive at small scale — a real network learning on a real Artix-7 FPGA, not a production training accelerator.',
   'The scale result above is not a claim that we beat MXFP4 overall. A block format has two fields, and the scale is the one we win. On the element field we lose, measured: at 4 bits MXFP4 reaches 21.9397 perplexity against 36.7214 for our TNF4, and at 6 bits MXFP6 reaches 14.7269 against 18.0275. And the element axis is more contested than we used to say: NF4, the 4-bit NormalFloat published with QLoRA in 2023, beats MXFP4 in our own harness by 6.50% pooled across three models it was never fitted to (95% CI [−7.30, −5.70], p = 2e-28). We had never run it. A codebook of ours fitted against three models at once also beats MXFP4, by 1.31% on a fourth family it never saw — real, and five times smaller than the 2023 baseline. All of these statements are about the same format and belong together.',
   'The element-axis comparison above was first measured on unrotated weights, while the 2026 state of the art applies a Hadamard rotation before quantising. That scope gap has since been measured rather than argued: under a block-wise Hadamard of the quantisation block size, rotation alone makes every arm worse and ours worse by more — MXFP4 21.9397 → 23.7476 against our 36.7214 → 42.3269 — so the four-bit gap widens from 14.78 to 18.58 and the six-bit gap from 3.30 to 6.09. The verdict is not an artefact of the older measurement, in the direction least convenient for us. This isolates the rotation; the published method combines it with GPTQ error compensation, and nothing here contradicts that.',
   'Anything estimated rather than measured is labelled as estimated, here and in every report I send.',
@@ -98,11 +98,11 @@ const RU = {
     { metric: '2.1× / 2.6×', title: 'Фиксированно-полевой тернарный float против takum, заявление про tekum отозвано', body: 'Float, у которого экспонента — сбалансированное тернарное число, а поля фиксированы. Декодировать режим не надо — извлечение полей есть битовый срез — а равномерные 9 бит мантиссы держат точность там, где tapered-формат сужается. Средняя относительная ошибка: в 2.1 раза меньше, чем у takum16, и точно в 2.6 раза меньше, чем у takum32. Диапазон ограничен ±40 в степенях двойки, а у поля режима предела нет — это и есть плата, причём теорема 6 делает её дихотомией, а не предпочтением. Что отозвано: здесь стояло «2.84× и 5.53× против tekum16». Оракул, помеченный tekum, декодировал все 65 536 шестнадцатибитных кодов идентично takum-оракулу, то есть эти отношения были сравнением с takum под чужим именем. Сравнения с tekum (arXiv:2512.10964) не сделано.', how: 'Отличимость оракулов теперь тест, а не допущение: проверялка перебирает всё 16-битное кодовое пространство двух эталонных моделей и сообщает об ошибке, когда два якобы разных формата совпадают везде. Именно она это и поймала, и только поэтому отзыв имеет дату, а не открытый срок. Отношения против takum её проходят.' },
     { metric: '4.125 против 4.250 бита', title: 'Четырёхбитная геометрическая сетка масштаба строго доминирует восьмибитную E8M0 у MXFP4', body: 'MXFP4 тратит восемь бит на общую экспоненту каждого блока из 32 весов — 0.25 бита на вес. Геометрической сетке из степеней φ на ту же работу хватает четырёх. Замер целиком, при четырёхбитных элементах: φᵏ 4b/32 стоит 4.125 бита на вес и даёт перплексию 21.3545 на SmolLM2 и 14.8512 на Qwen, против 4.250 бита и 22.4998 / 14.9447 у MXFP4. Дешевле и точнее на обеих моделях — доминирование по обеим координатам, а не размен. За этим стоит неравенство, а не подгонка: для масштабов, читаемых как множители, геометрическая сетка бьёт float-сетку на любой ширине, и выигрыш растёт до 1/ln 2 = 1.4427.', how: 'Перплексия на двух чекпойнтах, базовые fp32 14.4874 и 12.2277 проверены до любого сравнения. Обе строки считаны одним квантователем, поэтому сравнение честное. Абсолютное число MXFP4 зависит от того, как выравнивается общий масштаб: верхняя величина E2M1 равна 6, а не степени двойки, поэтому три допустимых правила дают 21.94, 22.50 и 23.54 — и правило самой спецификации худшее из трёх для MXFP4. Заявленное верно при любом из них, а при спецификационном — с большим запасом, чем здесь приведён. Статья ICLR 2026 независимо называет квантование масштаба по степеням двойки дефектом точности MXFP4 — тот же диагноз, поставленный отдельно.' },
     { metric: '36.4 МГц · 3.6× от конвейера', title: 'Матричный умножитель GF16 4×4 на Artix-7', body: 'Матричный умножитель 4×4 над собственным форматом GF16. Как написан — чисто комбинационный: регистров нет, тактовой нет, частота ему не принадлежит. Разрезанный на три ступени конвейера, он закрывается на 36.36 МГц post-route на XC7A200T целиком, против 9.97 МГц у того же ядра с одной регистровой ступенью: рост 3.6× за латентность три такта и результат каждый такт. Отдельное четырёхчленное скалярное произведение доходит до 58.49 МГц против 18.83, и побитово идентично исходному на 59 993 циклах случайных и специальных операндов. В логику укладывается вообще без аппаратных умножителей.', how: 'Post-route на XC7A200T, nextpnr-xilinx, 8 августа 2026. Эквивалентность доказана, а не предположена.' },
-    { metric: '100% отложенная выборка', title: 'Нейросеть, обучающаяся прямо на FPGA', body: 'Прямой проход, градиент и обновление весов — всё в RTL, без хоста в контуре. Двухслойная ReLU-сеть учит XOR на самом кристалле, 4 из 4.', how: 'Каждый узел побитово — от спецификации до кремния.' },
-    { metric: 'SKY130', title: 'Тейпаут через Tiny Tapeout', body: 'Тот же исходник, что работает на FPGA, ушёл в открытый ASIC-процесс: GDS получен, тест на уровне вентилей пройден, precheck пройден.', how: 'Полный путь от статьи на arXiv до изготовленного дизайна.' },
+    { metric: '100% отложенная выборка', title: 'Нейросеть, обучающаяся прямо на FPGA', body: 'Прямой проход, градиент и обновление весов — всё в RTL, без хоста в контуре. Двухслойная ReLU-сеть учит XOR на самом кристалле, 4 из 4.', how: 'Каждый узел побитово — от спецификации до FPGA Artix-7.' },
+    { metric: 'SKY130', title: 'Подготовлен для Tiny Tapeout; заявка отозвана', body: 'Тот же исходник, что работает на FPGA, был подготовлен для открытого ASIC-процесса: GDS получен, тест на уровне вентилей и precheck пройдены. Заявки TTSKY26a/TTSKY26b отозваны до изготовления с возвратом средств; кристалла нет.', how: 'Путь заканчивается на GDS с пройденным precheck, а не на изготовленном дизайне.' },
     
     { metric: 'По эфиру', title: 'tri-net — полный тернарный сетевой стек', body: '133 формальные спецификации: физический уровень GF16, BPSK-модем на AD9361, mesh-маршрутизация ETX, AEAD-криптография (ChaCha20-Poly1305 / X25519). Текст и изображения передаются между физически разными платами.', how: 'От устройства к устройству на настоящих радио, без инфраструктуры между ними.' },
-    { metric: '83 формата', title: 'Каталог соответствия, с которым может свериться любой', body: 'Побитовые тест-векторы для FP8, BF16, MXFP4 и microscaling-форматов — вендоронезависимый эталон для проверки арифметики низкой разрядности.', how: 'Опубликованы открыто, чтобы векторы можно было применить к любой реализации.' },
+    { metric: 'Golden Ruler', title: 'Каталог соответствия, с которым может свериться любой', body: 'Побитовые тест-векторы для FP8, BF16, MXFP4 и microscaling-форматов — вендоронезависимый эталон для проверки арифметики низкой разрядности (arXiv:2606.09686, v3 анонсирована 7 сентября 2026).', how: 'Опубликованы открыто, чтобы векторы можно было применить к любой реализации.' },
   ],
   methodTitle: 'Как всё это проверяется',
   method: [
@@ -116,7 +116,7 @@ const RU = {
   not: [
     'Заявка на конкурс — это заявка. Подача в DARPA CLARA и участие в OpenAI Parameter Golf — именно это: отправленная работа, а не выигранные контракты или взятые призы.',
     'Измерения сняты на одном семействе устройств, Xilinx Artix-7. Это не многоугловая характеризация и не претендует ею быть.',
-    'Обучение на кристалле — доказанный примитив малого масштаба: настоящая сеть, обучающаяся на настоящем кремнии, а не продакшн-ускоритель обучения.',
+    'Обучение на кристалле — доказанный примитив малого масштаба: настоящая сеть, обучающаяся на настоящей FPGA Artix-7, а не продакшн-ускоритель обучения.',
     'Результат про масштаб выше — не заявление, что мы обходим MXFP4 в целом. У блочного формата два поля, и масштаб — то, где мы выигрываем. На поле элемента мы проигрываем, и это измерено: при 4 битах MXFP4 даёт перплексию 21.9397 против 36.7214 у нашего TNF4, при 6 битах MXFP6 — 14.7269 против 18.0275. И элементная ось оспаривается сильнее, чем мы говорили раньше: NF4, четырёхбитный NormalFloat, опубликованный вместе с QLoRA в 2023 году, обходит MXFP4 в нашей же обвязке на 6.50% в пуле по трём моделям, под которые он не подбирался (95% ДИ [−7.30, −5.70], p = 2e-28). Мы его ни разу не запускали. Наша книга, подобранная сразу под три модели, тоже обходит MXFP4 — на 1.31% на четвёртом, невиданном семействе: результат настоящий и впятеро меньше опубликованной в 2023-м полки. Все эти утверждения об одном формате и идут вместе.',
     'Сравнение по оси элемента сначала было снято на неповёрнутых весах, тогда как уровень 2026 года применяет преобразование Адамара до квантования. Этот зазор теперь измерен, а не обсуждён: при блочном Адамаре размером с блок квантования поворот сам по себе ухудшает все варианты, а наш — сильнее. MXFP4 21.9397 → 23.7476 против наших 36.7214 → 42.3269, то есть разрыв на четырёх битах растёт с 14.78 до 18.58, на шести — с 3.30 до 6.09. Вердикт не артефакт прежнего замера, и это выяснилось в наименее удобную для нас сторону. Здесь выделен именно поворот; опубликованный метод сочетает его с компенсацией ошибки GPTQ, и сказанному там ничто выше не противоречит.',
     'Всё, что оценено, а не измерено, помечено как оценка — и здесь, и в каждом отчёте, который я отправляю.',

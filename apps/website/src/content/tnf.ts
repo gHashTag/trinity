@@ -38,6 +38,7 @@ export const PAPER = {
   author: 'D. Vasilev',
   orcid: '0009-0008-4294-6159',
   date: { en: '11 August 2026', ru: '11 августа 2026' },
+  status: { en: 'under review, Microprocessors and Microsystems (Elsevier), submitted 3 Sep 2026', ru: 'на рецензии, Microprocessors and Microsystems (Elsevier), подана 3 сентября 2026' },
   theorems: 52,
   pages: 60,
 }
@@ -226,7 +227,7 @@ export const formats = {
 /* ─────────────────────── MEASURED FRONTIER ─────────────────────── */
 
 export const frontier = {
-  badge: { en: 'MEASURED ON SILICON', ru: 'ИЗМЕРЕНО НА КРЕМНИИ' },
+  badge: { en: 'MEASURED ON FPGA', ru: 'ИЗМЕРЕНО НА FPGA' },
   title: { en: 'Isolated decoder, and one whole ternary neuron', ru: 'Изолированный декодер и один целый тернарный нейрон' },
   sub: {
     en: 'XC7A200T (ALINX AX7203) on the open flow: Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus Verilog 13.0, median of 5 seeds, DSP inference disabled. One device family. Not a multi-corner characterisation; an ASIC mapping will differ.',
@@ -433,7 +434,7 @@ export const theorems = {
     {
       id: 'T3/T4',
       name: { en: 'The exact taper of posit and takum', ru: 'Точный taper posit и takum' },
-      stmt: { en: 'The significand of a posit narrows by exactly 2^−es per binade; takum fixes a 3-bit regime field. Applied to 51 formats with a published oracle, the 83-format catalogue resolves into four ladder shapes and no fifth.', ru: 'Значащая posit сужается ровно на 2^−es за бинаду; takum фиксирует 3-битное regime-поле. Применённое к 51 формату с опубликованным оракулом, это разрешает каталог 83 форматов в четыре формы лестницы и никакой пятой.' },
+      stmt: { en: 'The significand of a posit narrows by exactly 2^−es per binade; takum fixes a 3-bit regime field. Applied to 51 formats with a published oracle, the catalogue resolves into four ladder shapes and no fifth.', ru: 'Значащая posit сужается ровно на 2^−es за бинаду; takum фиксирует 3-битное regime-поле. Применённое к 51 формату с опубликованным оракулом, это разрешает каталог в четыре формы лестницы и никакой пятой.' },
       why: { en: 'A taxonomy that predicts rather than describes: given the ladder shape, the decode cost and the precision profile follow.', ru: 'Таксономия, которая предсказывает, а не описывает: по форме лестницы следуют и цена декода, и профиль точности.' },
       tag: 'proved' as Tag,
     },
@@ -571,8 +572,8 @@ export const decision = {
     },
   ],
   note: {
-    en: 'If you need a block element for a pipeline that already exists, MXFP4 or NVFP4 is the right starting point. If the question is the scale, the accumulator or multiply-free weight application, the comparison has to be run on that axis — which is what the catalogue of 83 formats and the conformance vectors are for.',
-    ru: 'Если нужен элемент блока для уже существующего конвейера — правильная отправная точка это MXFP4 или NVFP4. Если вопрос в масштабе, аккумуляторе или применении веса без умножения, сравнение надо проводить на соответствующей оси — именно для этого существуют каталог из 83 форматов и векторы соответствия.',
+    en: 'If you need a block element for a pipeline that already exists, MXFP4 or NVFP4 is the right starting point. If the question is the scale, the accumulator or multiply-free weight application, the comparison has to be run on that axis — which is what the Golden Ruler catalogue and its conformance vectors are for.',
+    ru: 'Если нужен элемент блока для уже существующего конвейера — правильная отправная точка это MXFP4 или NVFP4. Если вопрос в масштабе, аккумуляторе или применении веса без умножения, сравнение надо проводить на соответствующей оси — именно для этого существуют каталог Golden Ruler и его векторы соответствия.',
   },
 }
 
@@ -592,8 +593,8 @@ export const faq = {
     {
       q: { en: 'Is this an ASIC result?', ru: 'Это результат на ASIC?' },
       a: {
-        en: 'No. Every hardware number here was measured on a binary FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC mapping and multi-corner characterisation are not claimed. A SKY130 design was submitted through Tiny Tapeout; the die is at the fab and no measurement on silicon is claimed.',
-        ru: 'Нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC-маппинг и многоугловая характеризация не заявляются. Дизайн на SKY130 отправлен через Tiny Tapeout; кристалл на фабрике, измерений на кремнии нет.',
+        en: 'No. Every hardware number here was measured on a binary FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC mapping and multi-corner characterisation are not claimed. A SKY130 design was prepared through Tiny Tapeout; the TTSKY26a/TTSKY26b submissions were withdrawn before fabrication and refunded, so no die exists and no measurement on silicon is claimed.',
+        ru: 'Нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC-маппинг и многоугловая характеризация не заявляются. Дизайн на SKY130 был подготовлен через Tiny Tapeout; заявки TTSKY26a/TTSKY26b отозваны до изготовления с возвратом средств — кристалла нет, измерений на кремнии не заявляется.',
       },
       tag: 'measured',
     },
@@ -640,8 +641,8 @@ export const faq = {
     {
       q: { en: 'What can a reviewer check without asking us?', ru: 'Что рецензент может проверить, не спрашивая нас?' },
       a: {
-        en: 'The paper, the 52 theorems, the conformance vectors for the catalogue of 83 formats, the open toolchain versions, and the exact commands. Where a claim is machine-checked but the artefact is not yet published, it is labelled as awaiting that publication rather than counted as proved.',
-        ru: 'Статью, 52 теоремы, векторы соответствия для каталога из 83 форматов, версии открытого тулчейна и точные команды. Там, где утверждение проверено машинно, но артефакт ещё не опубликован, оно помечено как ожидающее публикации, а не зачтено как доказанное.',
+        en: 'The paper, the 52 theorems, the conformance vectors for the Golden Ruler catalogue, the open toolchain versions, and the exact commands. Where a claim is machine-checked but the artefact is not yet published, it is labelled as awaiting that publication rather than counted as proved.',
+        ru: 'Статью, 52 теоремы, векторы соответствия для каталога Golden Ruler, версии открытого тулчейна и точные команды. Там, где утверждение проверено машинно, но артефакт ещё не опубликован, оно помечено как ожидающее публикации, а не зачтено как доказанное.',
       },
       tag: 'proved',
     },
@@ -701,7 +702,7 @@ export const limits = {
     },
     {
       h: { en: 'Ternary lost to binary three times, independently', ru: 'Троичное проиграло бинарному три раза, независимо' },
-      b: { en: 'BNF16 against TNF16 within 1% in placed silicon; GF8 against GF-T8; MXFP4 against TNF4 on the block axis. We add no support to “ternary beats binary” as a general statement. We measured it three times and each time it went against us. The contribution is the condition under which the 68-year-old argument applies.', ru: 'BNF16 против TNF16 в пределах 1% в размещённом кремнии; GF8 против GF-T8; MXFP4 против TNF4 на блочной оси. Мы не добавляем поддержки утверждению «троичное бьёт бинарное» как общему. Мы измерили его трижды, и каждый раз он был против нас. Вклад — условие, при котором применим 68-летний аргумент.' },
+      b: { en: 'BNF16 against TNF16 within 1% placed and routed on the Artix-7 FPGA; GF8 against GF-T8; MXFP4 against TNF4 on the block axis. We add no support to “ternary beats binary” as a general statement. We measured it three times and each time it went against us. The contribution is the condition under which the 68-year-old argument applies.', ru: 'BNF16 против TNF16 в пределах 1% после размещения и трассировки на FPGA Artix-7; GF8 против GF-T8; MXFP4 против TNF4 на блочной оси. Мы не добавляем поддержки утверждению «троичное бьёт бинарное» как общему. Мы измерили его трижды, и каждый раз он был против нас. Вклад — условие, при котором применим 68-летний аргумент.' },
     },
     {
       h: { en: 'TNF is not the most accurate format at its width', ru: 'TNF — не самый точный формат на своей ширине' },
@@ -816,13 +817,13 @@ export const landscape = {
       },
     },
     {
-      name: { en: 'GoldenFloat · the 83-format catalog', ru: 'GoldenFloat · каталог из 83 форматов' },
+      name: { en: 'GoldenFloat · the Golden Ruler catalog', ru: 'GoldenFloat · каталог Golden Ruler' },
       who: 'D. Vasilev, 2026',
       url: 'https://arxiv.org/abs/2606.05017',
       kind: 'ours' as const,
       line: {
-        en: 'Our own prior work, and the base this stands on: a φ-derived static-split float family (arXiv:2606.05017v3) and an 83-format catalog with bit-exact conformance vectors (arXiv:2606.09686v2). There φ chose field widths. Here it enters the weight alphabet, which is a different and stronger statement — closure rather than density.',
-        ru: 'Наша собственная предыдущая работа и база, на которой стоит эта: φ-производное семейство float’ов со статическим разбиением (arXiv:2606.05017v3) и каталог 83 форматов с бит-точными conformance-векторами (arXiv:2606.09686v2). Там φ выбирало ширины полей. Здесь оно входит в весовой алфавит, а это другое и более сильное утверждение — про замкнутость, а не про плотность.',
+        en: 'Our own prior work, and the base this stands on: a φ-derived static-split float family (arXiv:2606.05017) and Golden Ruler, a numeric format catalog with bit-exact conformance vectors (arXiv:2606.09686, v3 announced 7 Sep 2026). There φ chose field widths. Here it enters the weight alphabet, which is a different and stronger statement — closure rather than density.',
+        ru: 'Наша собственная предыдущая работа и база, на которой стоит эта: φ-производное семейство float’ов со статическим разбиением (arXiv:2606.05017) и Golden Ruler — каталог числовых форматов с бит-точными conformance-векторами (arXiv:2606.09686, v3 анонсирована 7 сентября 2026). Там φ выбирало ширины полей. Здесь оно входит в весовой алфавит, а это другое и более сильное утверждение — про замкнутость, а не про плотность.',
       },
     },
   ],
@@ -931,12 +932,12 @@ export const findings = {
       n: '07',
       h: { en: 'The standard is moving fast enough to be a deadline', ru: 'Стандарт движется достаточно быстро, чтобы быть сроком' },
       b: {
-        en: 'IEEE P3109 went v2.0 (29 Oct 2024) → v3.0 (21 Jul 2025) → v3.2 (5 Jan 2026) → v3.2.1 → v3.2.2 (13 Mar 2026) → v4.0 (26 Jun 2026): six releases in twenty months. Our own 83-format catalogue already carries a P3109 v3.2.0 cross-walk, which is now two minor versions behind. A format proposal that is not tracked against this cadence dates itself, and the cross-walk is a maintenance obligation rather than a completed deliverable.',
-        ru: 'IEEE P3109 прошёл v2.0 (29.10.2024) → v3.0 (21.07.2025) → v3.2 (05.01.2026) → v3.2.1 → v3.2.2 (13.03.2026) → v4.0 (26.06.2026): шесть выпусков за двадцать месяцев. Наш собственный каталог 83 форматов уже несёт cross-walk к P3109 v3.2.0, и он отстал на две минорные версии. Предложение формата, не отслеживаемое против этого темпа, само себя датирует, а cross-walk — обязательство по поддержке, а не закрытая поставка.',
+        en: 'IEEE P3109 went v2.0 (29 Oct 2024) → v3.0 (21 Jul 2025) → v3.2 (5 Jan 2026) → v3.2.1 → v3.2.2 (13 Mar 2026) → v4.0 (26 Jun 2026): six releases in twenty months. Our own catalogue (Golden Ruler) already carries a P3109 v3.2.0 cross-walk, which is now two minor versions behind. A format proposal that is not tracked against this cadence dates itself, and the cross-walk is a maintenance obligation rather than a completed deliverable.',
+        ru: 'IEEE P3109 прошёл v2.0 (29.10.2024) → v3.0 (21.07.2025) → v3.2 (05.01.2026) → v3.2.1 → v3.2.2 (13.03.2026) → v4.0 (26.06.2026): шесть выпусков за двадцать месяцев. Наш собственный каталог (Golden Ruler) уже несёт cross-walk к P3109 v3.2.0, и он отстал на две минорные версии. Предложение формата, не отслеживаемое против этого темпа, само себя датирует, а cross-walk — обязательство по поддержке, а не закрытая поставка.',
       },
       tag: 'spec' as Tag,
       refs: [
-        { label: '83 formats · arXiv:2606.09686', url: 'https://arxiv.org/abs/2606.09686' },
+        { label: 'Golden Ruler · arXiv:2606.09686', url: 'https://arxiv.org/abs/2606.09686' },
         { label: 'P3109 Interim Report v4.0', url: 'https://docenti.ing.unipi.it/m.cococcioni/IEEE_P3109_WG_Interim_Report_ver_4.0_2026_06_26.pdf' },
       ],
     },
@@ -1018,7 +1019,7 @@ export const author = {
   facts: [
     { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
     { v: '52', l: { en: 'theorems proved in the paper', ru: 'теоремы доказаны в статье' }, tag: 'proved' },
-    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
+    { v: '109', l: { en: 'formats in the catalog (v3, Sep 2026)', ru: 'форматов в каталоге (v3, сентябрь 2026)' }, tag: 'spec' },
     { v: '974.66 MHz', l: { en: 'GFTernary decoder, 66 LUT, XC7A200T', ru: 'декодер GFTernary, 66 LUT, XC7A200T' }, tag: 'measured' },
   ],
   notClaimed: {
@@ -1063,7 +1064,7 @@ export const invest = {
     { v: '100%', l: { en: 'founder-held today, no prior round', ru: 'у основателя сегодня, прежних раундов нет' }, tag: 'terms' },
     { v: '18', l: { en: 'months of runway planned, in three tranches', ru: 'месяцев дистанции в плане, тремя траншами' }, tag: 'plan' },
     { v: 'FPGA', l: { en: 'stage: measured on FPGA, no silicon yet', ru: 'стадия: измерено на FPGA, кремния пока нет' }, tag: 'measured' },
-    { v: '83 / 52', l: { en: 'formats catalogued and theorems proved behind the ask', ru: 'форматов в каталоге и теорем доказано за этим запросом' }, tag: 'proved' },
+    { v: '109 / 52', l: { en: 'formats catalogued (v3, Sep 2026) and theorems proved behind the ask', ru: 'форматов в каталоге (v3, сентябрь 2026) и теорем доказано за этим запросом' }, tag: 'proved' },
   ],
   whyTitle: { en: 'Why this is money now, not later', ru: 'Почему это деньги сейчас, а не потом' },
   why: [
@@ -1113,7 +1114,7 @@ export const invest = {
   done: [
     { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
     { v: '52', l: { en: 'theorems proved in the paper', ru: 'теоремы, доказанные в статье' }, tag: 'proved' },
-    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
+    { v: '109', l: { en: 'formats in the catalog (v3, Sep 2026)', ru: 'форматов в каталоге (v3, сентябрь 2026)' }, tag: 'spec' },
     { v: '5 / 9', l: { en: 'ladder rungs standing in hardware', ru: 'ступеней лестницы стоят в железе' }, tag: 'measured' },
     { v: '66 LUT', l: { en: 'GFTernary decoder on XC7A200T, isolated — bare wire is 112 LUT', ru: 'декодер GFTernary на XC7A200T, изолированно — голый провод 112 LUT' }, tag: 'measured' },
     { v: '38×', l: { en: 'fewer LUT: a full TNF(4,8) adder is 397 against tekum8’s 15 251, and TNF is the wider format', ru: 'меньше LUT: полный сумматор TNF(4,8) — 397 против 15 251 у tekum8, причём TNF шире' }, tag: 'measured' },
@@ -1178,9 +1179,9 @@ export const reproduce = {
   },
   chain: ['Yosys 0.65', 'nextpnr-xilinx 1743d0f', 'Icarus Verilog 13.0', 'Python 3.14', 'XC7A200T / ALINX AX7203'],
   links: [
-    { label: { en: 'Ternary Network Floats — the paper', ru: 'Ternary Network Floats — статья' }, href: '#/resources', note: { en: '52 theorems, machine-checked where stated', ru: '52 теоремы, machine-checked где указано' } },
+    { label: { en: 'Ternary Network Floats — the paper', ru: 'Ternary Network Floats — статья' }, href: '#/resources', note: { en: 'under review, Microprocessors and Microsystems (Elsevier), submitted 3 Sep 2026 · 52 theorems, machine-checked where stated', ru: 'на рецензии, Microprocessors and Microsystems (Elsevier), подана 3 сентября 2026 · 52 теоремы, machine-checked где указано' } },
     { label: { en: 'GoldenFloat — arXiv:2606.05017', ru: 'GoldenFloat — arXiv:2606.05017' }, href: 'https://arxiv.org/abs/2606.05017', note: { en: 'φ-derived static-split family, GF4 to GF1024', ru: 'φ-производное семейство со статическим разбиением, GF4…GF1024' }, external: true },
-    { label: { en: '83-format catalog — arXiv:2606.09686', ru: 'Каталог 83 форматов — arXiv:2606.09686' }, href: 'https://arxiv.org/abs/2606.09686', note: { en: 'bit-exact conformance vectors', ru: 'бит-точные conformance-векторы' }, external: true },
+    { label: { en: 'Golden Ruler catalog — arXiv:2606.09686', ru: 'Каталог Golden Ruler — arXiv:2606.09686' }, href: 'https://arxiv.org/abs/2606.09686', note: { en: 'bit-exact conformance vectors (v3, announced 7 Sep 2026)', ru: 'бит-точные conformance-векторы (v3, анонс 7 сентября 2026)' }, external: true },
     { label: { en: 'Send RTL, get it measured', ru: 'Присылайте RTL — измерю' }, href: '#/verification', note: { en: 'On the same board, the same flow, the same seeds', ru: 'На той же плате, тем же потоком, теми же seed’ами' } },
     { label: { en: 'Licensing the arithmetic cores', ru: 'Лицензирование арифметических ядер' }, href: '#/ip', note: { en: 'Cores that have been through the flow', ru: 'Ядра, прошедшие поток' } },
     { label: { en: 'Every measured number, and its limits', ru: 'Все измеренные числа и их границы', }, href: '#/proof', note: { en: 'The proof page', ru: 'Страница доказательств' } },

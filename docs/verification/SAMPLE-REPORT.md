@@ -136,8 +136,9 @@ portable to devices with few or no DSP blocks.
 - **Latch-free confirmed.** All sequential elements are explicit flip-flops; no accidental
   latch inference, which is a common source of silicon-only failures.
 - **Portability.** Because the design uses no DSP primitives and no vendor-specific IP, it
-  ports to other families with minimal effort. This was validated by taking the same source
-  through to an ASIC process (SKY130, via Tiny Tapeout).
+  ports to other families with minimal effort. This was exercised by preparing the same source
+  for an ASIC process (SKY130, via Tiny Tapeout) through GDS and precheck; the submission was
+  withdrawn before fabrication, so no die exists.
 - **Verification hygiene.** The per-stage vectors mean that when a change breaks something,
   the failing stage is identified immediately rather than at the top level.
 
@@ -177,5 +178,6 @@ it is showing its work.
 ---
 
 *Prepared by Dmitrii Vasilev — creator of the GF-T ternary number format (arXiv:2606.05017),
-author of a bit-exact conformance catalogue for 83 numeric formats (arXiv:2606.09686), and of
-an open-source spec→RTL→silicon toolchain with a completed SKY130 tape-out.*
+author of Golden Ruler, a bit-exact conformance catalogue of numeric formats (arXiv:2606.09686),
+and of an open-source spec→RTL→FPGA toolchain; a SKY130 design was prepared through Tiny Tapeout
+precheck and the submission withdrawn before fabrication.*
