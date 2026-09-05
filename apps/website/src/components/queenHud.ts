@@ -660,3 +660,16 @@ export function feedCoverage(events: Array<{ at: string }>): { rows: number; spa
   const spanSeconds = oldest !== null && newest !== null && oldestAt !== newestAt ? Math.round((newest - oldest) / 1000) : null;
   return { rows: events.length, spanSeconds, oldestAt, newestAt };
 }
+
+/**
+ * How long a bee has been silent (P1-23): seconds since its last word on
+ * the wire, and whether that silence outlasts one round. Cold only when a
+ * round length is known; no last word yields null, never a fabricated age.
+ */
+export function beeSilence(latestAt: string | null | undefined, nowMs: number, roundSeconds: number | null): { seconds: number; cold: boolean } | null {
+  if (!latestAt) return null;
+  const t = Date.parse(latestAt);
+  if (!Number.isFinite(t)) return null;
+  const seconds = Math.max(0, Math.round((nowMs - t) / 1000));
+  return { seconds, cold: roundSeconds !== null && roundSeconds > 0 && seconds > roundSeconds };
+}

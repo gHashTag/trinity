@@ -4655,3 +4655,12 @@ main:where(.queen27-page.is-shell) section {
     box-shadow: inset 0 0 0 2px var(--hud-gold);
   }
 }
+
+/* A bee silent for more than one round (P1-23): the row cools, the words
+   stay; the age after the clock says how long. */
+.queen27-page.is-shell .queen27-context-row.is-running.is-cold {
+  opacity: 0.55;
+}
+.queen27-page.is-shell .queen27-context-row.is-running.is-cold > i {
+  color: var(--hud-muted);
+}
