@@ -1,0 +1,78 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Eliminates null pointer issues | φ² + 1/φ² = 3 | TRINITY
+
+module TriOption;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Option(T) = struct {
+        is_some : bool,
+        value : T,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // some(value: T) → Option(T)
+    fn some(value: T) -> Option(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // none() → Option(void)
+    fn none() -> Option(void) {
+        // TODO: Implement from .tri spec
+    }
+
+    // unwrap_or(opt: Option(T), default: T) → T
+    fn unwrap_or(opt: Option(T), default: T) -> T {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_some(opt: Option(T)) → bool
+    fn is_some(opt: Option(T)) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // some, none, unwrap_or and is_some are still `TODO: Implement from .tri
+    // spec` and compile to `@panic`, so none of them is called here. The
+    // testable content today is the Option(T) shape itself: the discriminant
+    // and the payload are separate fields, which is the whole point of the
+    // type -- a T can be absent without a null pointer standing in for it.
+
+    // The present case carries both the flag and the payload.
+    test option_some_shape
+        given o = Option(i64){ .is_some = true, .value = 7 }
+        then o.is_some == true
+        and o.value == 7
+
+    // The absent case is the flag alone; the payload slot still exists and is
+    // a normal value of T, never a null pointer.
+    test option_none_shape
+        given o = Option(i64){ .is_some = false, .value = 0 }
+        then o.is_some == false
+        and o.value == 0
+
+    // The discriminant is independent of the payload: the same value of T
+    // appears in both cases, and only the flag tells them apart.
+    test option_flag_alone_distinguishes_the_cases
+        given present = Option(i64){ .is_some = true, .value = 0 }
+        and absent = Option(i64){ .is_some = false, .value = 0 }
+        then present.value == absent.value
+        and present.is_some != absent.is_some
+
+    // Option is generic over T, not fixed to one payload type.
+    test option_is_generic_over_the_payload
+        given flag = Option(bool){ .is_some = true, .value = false }
+        then flag.is_some == true
+        and flag.value == false
+

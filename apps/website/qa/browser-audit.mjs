@@ -14,7 +14,7 @@ export const ROUTES = [
   '', 'gft', 'start', 'select', 'verification', 'ip', 'proof', 'blog',
   'cases', 'course', 'resources', 'formats', 'ladder', 'theorems', 'bounds',
   'landscape', 'reproduce', 'about', 'queen', 'dashboard', 'tree', 'play',
-  'chat', 'quantum', 'lab', 'canvas', 'wasm',
+  'chat', 'quantum', 'lab', 'canvas', 'wasm', 'specs',
 ]
 
 const CHROME_CANDIDATES = [
@@ -100,7 +100,17 @@ export async function collectRouteText(language, baseUrl) {
       await call('Page.navigate', { url })
       await wait(700)
       const evaluated = await call('Runtime.evaluate', {
-        expression: 'document.body ? document.body.innerText : ""',
+        // Elements marked data-lang-exempt hold quoted source, not UI copy --
+        // the /specs page renders .t27 files whose comments are written in
+        // whatever language their author used. Translating them would
+        // misrepresent the files. The surrounding UI is still audited, so this
+        // narrows the gate rather than switching it off for the route.
+        expression: `(() => {
+          if (!document.body) return "";
+          const clone = document.body.cloneNode(true);
+          clone.querySelectorAll('[data-lang-exempt]').forEach((n) => n.remove());
+          return clone.innerText;
+        })()`,
         returnByValue: true,
       })
       if (evaluated.exceptionDetails) throw new Error(`Не удалось прочитать /${route}`)

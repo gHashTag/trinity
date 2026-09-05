@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+//  | φ² + 1/φ² = 3 | TRINITY
+
+module TriNamespace;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Namespace = struct {
+        // Recovered from the upstream spec this file was converted from:
+        // trinity-fpga specs/tri/tri_namespace.tri:7. The converter dropped bare
+        // `- name` bullets, leaving `kind : Enum, variants : ,` with no names.
+        enum : [core, dev, forge, agent, mcp, system],
+    };
+
+    // A TAGGED UNION, and its payloads were not lost either. Recovered from
+    // trinity-fpga specs/tri/tri_namespace.tri:17-25, where `variants:` carries
+    // a nested map per case rather than bare names -- the converter dropped the
+    // nesting and left `namespaced : ,` `flat : ,` with no types at all.
+    //
+    // An enum rule must NOT fire here: `namespaced` and `flat` carry data, and
+    // folding them to bare tags would delete it.
+    pub const ParsedCommandNamespaced = struct {
+        namespace : Namespace,
+        // an empty string means "list the namespace"
+        command : []const u8,
+    };
+
+    pub const ParsedCommandFlat = struct {
+        command : []const u8,
+    };
+
+    pub const ParsedCommand = union(enum) {
+        namespaced : ParsedCommandNamespaced,
+        flat : ParsedCommandFlat,
+        help : void,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test "namespace_smoke_test" {
+        expect(true)
+    }
+
+    test namespace_lists_the_six_command_groups
+        // Recovered from trinity-fpga specs/tri/tri_namespace.tri:7. The
+        // upstream spec's own behaviors say Namespace.toString returns the
+        // lowercase variant name, so the spelling below is load-bearing.
+        then @typeInfo(Namespace).@"enum".fields.len == 6
+        and std.mem.eql(u8, @typeInfo(Namespace).@"enum".fields[0].name, "core")
+        and std.mem.eql(u8, @typeInfo(Namespace).@"enum".fields[5].name, "system")

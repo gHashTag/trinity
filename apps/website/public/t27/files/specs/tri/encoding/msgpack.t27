@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Compact binary format | φ² + 1/φ² = 3 | TRINITY
+
+module TriMsgpack;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const MsgPackType = struct {
+        enum : [Nil, Bool, Int, Uint, Float, Str, Bin, Array, Map],
+    };
+
+    pub const MsgPackValue = struct {
+        type : MsgPackType,
+        int_value : i64,
+        uint_value : u64,
+        float_value : f64,
+        str_value : []const u8,
+        bin_value : []const u8,
+        array_value : []MsgPackValue,
+        map_value : std.StringHashMap(MsgPackValue),
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // encode(value: MsgPackValue, allocator: std.mem.Allocator) → ![]u8
+    fn encode(value: MsgPackValue, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // decode(data: []const u8, allocator: std.mem.Allocator) → !MsgPackValue
+    fn decode(data: []const u8, allocator: std.mem.Allocator) -> !MsgPackValue {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test msgpack_type_names_the_nine_families
+        // Verify: MessagePack sorts every value into nil, bool, int, uint, float,
+        // str, bin, array or map — nine families and no tenth
+        given family_count = @typeInfo(MsgPackType).@"enum".fields.len
+        and has_nil = @hasField(MsgPackType, "Nil")
+        and has_map = @hasField(MsgPackType, "Map")
+        then family_count == 9 and has_nil and has_map
+
+    test signed_and_unsigned_integers_are_separate_families
+        // Verify: MessagePack has distinct int and uint tags, so the payload keeps
+        // an i64 and a u64 side by side rather than one signed field
+        given signed_type = @FieldType(MsgPackValue, "int_value")
+        and unsigned_type = @FieldType(MsgPackValue, "uint_value")
+        then signed_type == i64 and unsigned_type == u64
+
+    test str_and_bin_are_separate_families
+        // Verify: MessagePack split str (UTF-8 text) from bin (opaque bytes) in
+        // the 2013 spec revision, so the value carries both slices
+        given has_str = @hasField(MsgPackValue, "str_value")
+        and has_bin = @hasField(MsgPackValue, "bin_value")
+        and str_type = @FieldType(MsgPackValue, "str_value")
+        and bin_type = @FieldType(MsgPackValue, "bin_value")
+        then has_str and has_bin and str_type == bin_type
+
+    test arrays_and_maps_nest_the_value_type_inside_itself
+        // Verify: array_value holds MsgPackValue elements, which is what makes the
+        // format recursive — a document is a value, not a flat record
+        given element_type = @FieldType(MsgPackValue, "array_value")
+        and expected = []MsgPackValue
+        then element_type == expected
+
+    test positive_fixint_covers_zero_through_127
+        // Verify: the single-byte positive fixint tag 0x00..0x7f encodes 128
+        // distinct values, so any int in 0..127 costs exactly one byte
+        given low = 0x00
+        and high = 0x7f
+        when span = high - low + 1
+        then span == 128
+
+    test negative_fixint_covers_minus_32_through_minus_1
+        // Verify: the single-byte negative fixint tag 0xe0..0xff encodes 32
+        // distinct values, mapping onto -32..-1
+        given low = 0xe0
+        and high = 0xff
+        when span = high - low + 1
+        then span == 32
+

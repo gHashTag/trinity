@@ -1,0 +1,436 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/ml/transformer/feed_forward.t27
+// Transformer Feed-Forward Network (FFN) with φ-optimized dimensions | φ² + 1/φ² = 3 | TRINITY
+
+module FeedForward;
+    use base::types;
+    use math::constants;
+    use numeric::gf16;
+    use ml::activation::gelu;
+    use ml::layers::dense;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const PHI : gf16::GF16 = 1.618033988749895;
+    const INV_PHI : gf16::GF16 = 1.0 / PHI; // ≈ 0.618
+    const PHI_SQUARED : gf16::GF16 = PHI * PHI; // ≈ 2.618
+    const DEFAULT_EXPANSION_FACTOR : gf16::GF16 = 4.0;
+    const PHI_EXPANSION_FACTOR : gf16::GF16 = PHI_SQUARED; // ≈ 2.618, φ-optimized expansion
+    const DEFAULT_DROPOUT : gf16::GF16 = 0.1;
+    const DEFAULT_USE_BIAS : bool = true;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const FFNConfig = struct {
+        hidden_size : u32,          // Input/output dimension (d_model)
+        expansion_factor : gf16::GF16,     // Multiplier for intermediate dimension
+        activation : ActivationType, // Activation function
+        dropout : gf16::GF16,              // Dropout probability
+        use_bias : bool,            // Use bias in dense layers
+        use_phi_expansion : bool,   // Use φ-optimized expansion factor
+        use_residual : bool,        // Apply residual connection
+    };
+
+    pub const FFNState = struct {
+        w1 : []gf16::GF16,                 // Projection weights: [hidden_size * intermediate_size]
+        b1 : []gf16::GF16,                 // Projection bias: [intermediate_size]
+        w2 : []gf16::GF16,                 // Output weights: [intermediate_size * hidden_size]
+        b2 : []gf16::GF16,                 // Output bias: [hidden_size]
+        dropout_mask : []gf16::GF16,       // Dropout mask for inference
+        is_training : bool,         // Training/inference mode
+    };
+
+    pub const ActivationType = struct {
+        enum_type : "enum",
+        values : ,
+        GELU : Auto,
+        ReLU : Auto,
+        SiLU : Auto,
+        GELU_Approx : Auto,
+    };
+
+    pub const FFNGradients = struct {
+        d_w1 : []gf16::GF16,               // Gradient w.r.t. w1
+        d_b1 : []gf16::GF16,               // Gradient w.r.t. b1
+        d_w2 : []gf16::GF16,               // Gradient w.r.t. w2
+        d_b2 : []gf16::GF16,               // Gradient w.r.t. b2
+        d_input : []gf16::GF16,            // Gradient w.r.t. input
+    };
+
+    pub const FFNForwardResult = struct {
+        output : []gf16::GF16,             // Final output (with residual if enabled)
+        hidden : []gf16::GF16,             // After first projection and activation
+        dropout_mask : []gf16::GF16,       // Applied dropout mask (for backward)
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(config: FFNConfig) → FFNState
+    // Initializes FFN with φ-optimized weight distribution.
+    fn init(config: FFNConfig) -> FFNState {
+        // intermediate_size = hidden_size * expansion_factor
+        // If use_phi_expansion: use PHI_EXPANSION_FACTOR (≈2.618)
+        // else: use DEFAULT_EXPANSION_FACTOR (4.0)
+        //
+        // Weight initialization:
+        //   w1, w2: Xavier/Glorot initialization with φ adjustment
+        //   If use_phi_init: std = sqrt(2.0 / (fan_in + fan_out)) * INV_PHI
+    }
+
+    // get_intermediate_size(config: FFNConfig) → u32
+    // Computes the intermediate dimension based on expansion factor.
+    fn get_intermediate_size(config: FFNConfig) -> u32 {
+        // if use_phi_expansion: return hidden_size * PHI_EXPANSION_FACTOR
+        // else: return hidden_size * DEFAULT_EXPANSION_FACTOR
+    }
+
+    // forward(state: FFNState, input: []gf16::GF16) → FFNForwardResult
+    // Computes FFN forward pass: output = Dropout(Act(x @ W1 + b1)) @ W2 + b2
+    fn forward(state: FFNState, input: []gf16::GF16) -> FFNForwardResult {
+        // 1. Project: hidden = input @ W1 + b1  (or W1 @ input depending on layout)
+        // 2. Activate: hidden = activation(hidden)
+        // 3. Dropout (if training): hidden = dropout(hidden, p)
+        // 4. Project: output = hidden @ W2 + b2
+        // 5. Residual (if enabled): output = output + input
+    }
+
+    // backward(state: FFNState, result: FFNForwardResult, grad_output: []gf16::GF16) → FFNGradients
+    // Computes gradients for backpropagation.
+    fn backward(state: FFNState, result: FFNForwardResult, grad_output: []gf16::GF16) -> FFNGradients {
+        // 1. Handle residual: if use_residual, add grad_output to d_input
+        // 2. d_hidden = grad_output @ W2.T
+        // 3. d_w2 = hidden.T @ grad_output
+        // 4. d_b2 = sum(grad_output, axis=0)
+        // 5. d_hidden = d_hidden * dropout_mask (if training)
+        // 6. d_hidden = activation_backward(hidden, d_hidden)
+        // 7. d_w1 = input.T @ d_hidden
+        // 8. d_b1 = sum(d_hidden, axis=0)
+        // 9. d_input = d_hidden @ W1.T
+    }
+
+    // update(state: FFNState, grads: FFNGradients, lr: gf16::GF16) → FFNState
+    // Updates parameters using computed gradients.
+    fn update(state: FFNState, grads: FFNGradients, lr: gf16::GF16) -> FFNState {
+        // w1 = w1 - lr * d_w1
+        // b1 = b1 - lr * d_b1
+        // w2 = w2 - lr * d_w2
+        // b2 = b2 - lr * d_b2
+    }
+
+    // apply_activation(x: []gf16::GF16, act: ActivationType) → []gf16::GF16
+    // Applies the specified activation function.
+    fn apply_activation(x: []gf16::GF16, act: ActivationType) -> []gf16::GF16 {
+        // switch act:
+        //   GELU: return gelu_forward(x)
+        //   ReLU: return relu_forward(x)
+        //   SiLU: return silu_forward(x)
+        //   GELU_Approx: return gelu_approx_forward(x)
+    }
+
+    // activation_backward(x: []gf16::GF16, grad: []gf16::GF16, act: ActivationType) → []gf16::GF16
+    // Computes activation backward pass.
+    fn activation_backward(x: []gf16::GF16, grad: []gf16::GF16, act: ActivationType) -> []gf16::GF16 {
+        // switch act:
+        //   GELU: return gelu_backward(x, grad)
+        //   ReLU: return relu_backward(grad)
+        //   SiLU: return silu_backward(x, grad)
+        //   GELU_Approx: return gelu_approx_backward(x, grad)
+    }
+
+    // dropout(input: []gf16::GF16, p: gf16::GF16, training: bool) → ([]gf16::GF16, []gf16::GF16)
+    // Applies dropout during training, scales during inference.
+    fn dropout(input: []gf16::GF16, p: gf16::GF16, training: bool) -> struct { output: []gf16::GF16, mask: []gf16::GF16 } {
+        // if training:
+        //   mask = random_bernoulli(1 - p)
+        //   output = input * mask / (1 - p)
+        // else:
+        //   output = input
+        //   mask = [] (empty)
+    }
+
+    // phi_init_weights(fan_in: u32, fan_out: u32) → []gf16::GF16
+    // φ-optimized weight initialization.
+    fn phi_init_weights(fan_in: u32, fan_out: u32) -> []gf16::GF16 {
+        // std = sqrt(2.0 / (fan_in + fan_out)) * INV_PHI
+        // Sample from N(0, std^2)
+    }
+
+    // get_parameter_count(config: FFNConfig) → u64
+    // Returns total number of trainable parameters.
+    fn get_parameter_count(config: FFNConfig) -> u64 {
+        // params = (hidden_size * intermediate_size) * 2
+        // if use_bias: params += hidden_size + intermediate_size
+        // return params
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests
+    // ═══════════════════════════════════════════════════════════
+
+    test get_intermediate_size_default_expansion
+        given config = FFNConfig{.hidden_size = 512, .expansion_factor = 4.0, .use_phi_expansion = false}
+        when result = get_intermediate_size(config)
+        then result == 2048
+
+    test get_intermediate_size_phi_expansion
+        given config = FFNConfig{.hidden_size = 512, .expansion_factor = 0.0, .use_phi_expansion = true}
+        when result = get_intermediate_size(config)
+        then approximately_equal_within(result, 512.0 * PHI_EXPANSION_FACTOR, 1.0)
+
+    test init_creates_correct_dimensions
+        given config = FFNConfig{.hidden_size = 128, .expansion_factor = 4.0, .use_bias = true, .use_phi_expansion = false}
+        when state = init(config)
+        then state.w1.len == 128 * 512
+        and   state.b1.len == 512
+        and   state.w2.len == 512 * 128
+        and   state.b2.len == 128
+
+    test init_creates_correct_dimensions_no_bias
+        given config = FFNConfig{.hidden_size = 128, .expansion_factor = 4.0, .use_bias = false, .use_phi_expansion = false}
+        when state = init(config)
+        then state.b1.len == 0
+        and   state.b2.len == 0
+
+    test forward_output_shape_matches_input
+        given config = FFNConfig{.hidden_size = 64, .use_residual = false}
+        and   state = init(config)
+        and   input = random_input(64)
+        when result = forward(state, input)
+        then result.output.len == 64
+
+    test forward_with_residual_preserves_shape
+        given config = FFNConfig{.hidden_size = 64, .use_residual = true}
+        and   state = init(config)
+        and   input = random_input(64)
+        when result = forward(state, input)
+        then result.output.len == 64
+
+    test forward_hidden_size_is_intermediate
+        given config = FFNConfig{.hidden_size = 64, .expansion_factor = 4.0, .use_phi_expansion = false}
+        and   state = init(config)
+        and   input = random_input(64)
+        when result = forward(state, input)
+        then result.hidden.len == 256
+
+    test dropout_scales_during_inference
+        given config = FFNConfig{.hidden_size = 10, .dropout = 0.5}
+        and   state = init(config)
+        and   state.is_training = false
+        and   input = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        when (output, mask) = dropout(input, 0.5, false)
+        then all(output, fn(x) x == 1.0)
+
+    test dropout_applies_mask_during_training
+        given config = FFNConfig{.hidden_size = 10, .dropout = 0.5}
+        and   state = init(config)
+        and   state.is_training = true
+        and   input = [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+        when (output, mask) = dropout(input, 0.5, true)
+        then some(output, fn(x) x == 0.0 or x == 4.0) // 0.0 or 2.0/(1-0.5)=4.0
+
+    test backward_gradients_match_parameter_shapes
+        given config = FFNConfig{.hidden_size = 32, .expansion_factor = 4.0, .use_bias = true}
+        and   state = init(config)
+        and   input = random_input(32)
+        and   forward_result = forward(state, input)
+        and   grad_output = random_input(32)
+        when grads = backward(state, forward_result, grad_output)
+        then grads.d_w1.len == state.w1.len
+        and   grads.d_b1.len == state.b1.len
+        and   grads.d_w2.len == state.w2.len
+        and   grads.d_b2.len == state.b2.len
+        and   grads.d_input.len == 32
+
+    test backward_no_bias_has_zero_bias_gradients
+        given config = FFNConfig{.hidden_size = 32, .use_bias = false}
+        and   state = init(config)
+        and   input = random_input(32)
+        and   forward_result = forward(state, input)
+        and   grad_output = random_input(32)
+        when grads = backward(state, forward_result, grad_output)
+        then grads.d_b1.len == 0
+        and   grads.d_b2.len == 0
+
+    test update_modifies_parameters
+        given config = FFNConfig{.hidden_size = 10}
+        and   state = init(config)
+        and   input = random_input(10)
+        and   forward_result = forward(state, input)
+        and   grad_output = random_input(10)
+        and   grads = backward(state, forward_result, grad_output)
+        and   lr = 0.01
+        when new_state = update(state, grads, lr)
+        then not all_equal(state.w1, new_state.w1)
+
+    test get_parameter_count_with_bias
+        given config = FFNConfig{.hidden_size = 128, .expansion_factor = 4.0, .use_bias = true, .use_phi_expansion = false}
+        when result = get_parameter_count(config)
+        then result == 128 * 512 + 512 + 512 * 128 + 128 // w1 + b1 + w2 + b2
+
+    test get_parameter_count_no_bias
+        given config = FFNConfig{.hidden_size = 128, .expansion_factor = 4.0, .use_bias = false, .use_phi_expansion = false}
+        when result = get_parameter_count(config)
+        then result == 128 * 512 + 512 * 128 // w1 + w2 only
+
+    test phi_expansion_reduces_parameters
+        given default_config = FFNConfig{.hidden_size = 512, .use_phi_expansion = false}
+        and   phi_config = FFNConfig{.hidden_size = 512, .use_phi_expansion = true}
+        when default_params = get_parameter_count(default_config)
+        and   phi_params = get_parameter_count(phi_config)
+        then phi_params < default_params
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants
+    // ═══════════════════════════════════════════════════════════
+
+    invariant forward_output_finite
+        given config = any_ffn_config()
+        and   state = init(config)
+        and   input = finite_input(config.hidden_size)
+        when result = forward(state, input)
+        then all(result.output, is_finite)
+
+    invariant forward_hidden_finite
+        given config = any_ffn_config()
+        and   state = init(config)
+        and   input = finite_input(config.hidden_size)
+        when result = forward(state, input)
+        then all(result.hidden, is_finite)
+
+    invariant dropout_preserves_expected_value
+        given input = [1.0, 1.0, 1.0, 1.0]
+        and   p = 0.5
+        when (output, _) = dropout(input, p, true)
+        then absolute_value(compute_mean(output) - 1.0) < 0.3 // Statistical tolerance
+
+    invariant dropout_output_in_range
+        given input = positive_input(100)
+        and   p = 0.5
+        when (output, _) = dropout(input, p, true)
+        then all(output, fn(x) x >= 0.0)
+
+    invariant intermediate_size_multiple_of_hidden
+        given config = any_ffn_config()
+        when intermediate = get_intermediate_size(config)
+        then intermediate % config.hidden_size == 0 or config.hidden_size % intermediate == 0
+
+    invariant phi_expansion_less_than_default
+        then PHI_EXPANSION_FACTOR < DEFAULT_EXPANSION_FACTOR
+
+    invariant phi_squared_is_phi_plus_one
+        then approximately_equal_within(PHI_SQUARED, PHI + 1.0, 1e-9)
+
+    invariant inv_phi_plus_phi_equals_one
+        then approximately_equal_within(INV_PHI + PHI, 1.0 + PHI_SQUARED, 1e-9)
+
+    invariant parameter_count_non_negative
+        given config = any_ffn_config()
+        when count = get_parameter_count(config)
+        then count > 0
+
+    invariant backward_gradients_finite
+        given config = any_ffn_config()
+        and   state = init(config)
+        and   input = finite_input(config.hidden_size)
+        and   forward_result = forward(state, input)
+        and   grad_output = finite_input(config.hidden_size)
+        when grads = backward(state, forward_result, grad_output)
+        then all(grads.d_w1, is_finite)
+        and   all(grads.d_w2, is_finite)
+        and   all(grads.d_input, is_finite)
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Benchmarks
+    // ═══════════════════════════════════════════════════════════
+
+    bench init_small
+        given config = FFNConfig{.hidden_size = 128, .expansion_factor = 4.0}
+        when result = init(config)
+        then elapsed_time_ms < 5
+
+    bench init_medium
+        given config = FFNConfig{.hidden_size = 1024, .expansion_factor = 4.0}
+        when result = init(config)
+        then elapsed_time_ms < 50
+
+    bench init_large
+        given config = FFNConfig{.hidden_size = 4096, .expansion_factor = 4.0}
+        when result = init(config)
+        then elapsed_time_ms < 200
+
+    bench forward_small
+        given config = FFNConfig{.hidden_size = 128}
+        and   state = init(config)
+        and   input = random_input(128)
+        when result = forward(state, input)
+        then elapsed_time_us < 200
+
+    bench forward_medium
+        given config = FFNConfig{.hidden_size = 1024}
+        and   state = init(config)
+        and   input = random_input(1024)
+        when result = forward(state, input)
+        then elapsed_time_ms < 5
+
+    bench forward_large
+        given config = FFNConfig{.hidden_size = 4096}
+        and   state = init(config)
+        and   input = random_input(4096)
+        when result = forward(state, input)
+        then elapsed_time_ms < 50
+
+    bench backward_small
+        given config = FFNConfig{.hidden_size = 128}
+        and   state = init(config)
+        and   input = random_input(128)
+        and   forward_result = forward(state, input)
+        and   grad_output = random_input(128)
+        when result = backward(state, forward_result, grad_output)
+        then elapsed_time_us < 300
+
+    bench dropout_small
+        given input = random_input(1000)
+        when (output, mask) = dropout(input, 0.1, true)
+        then elapsed_time_us < 100
+
+    bench phi_init_weights
+        given fan_in = 768
+        and   fan_out = 3072
+        when result = phi_init_weights(fan_in, fan_out)
+        then elapsed_time_ms < 10
+
+    // ═══════════════════════════════════════════════════════════
+    // Mathematical Notes
+    // ═══════════════════════════════════════════════════════════
+    //
+    // FFN Architecture:
+    //   FFN(x) = Dropout(Act(xW₁ + b₁))W₂ + b₂
+    //   With residual: Output = FFN(x) + x
+    //
+    // Dimensions:
+    //   x: [batch, hidden_size]
+    //   W₁: [hidden_size, intermediate_size]
+    //   b₁: [intermediate_size]
+    //   W₂: [intermediate_size, hidden_size]
+    //   b₂: [hidden_size]
+    //
+    // Expansion Factor:
+    //   Default: 4.0 → intermediate = 4 * hidden
+    //   φ-optimized: φ² ≈ 2.618 → intermediate = φ² * hidden
+    //   Parameter reduction: ~34% with φ-optimization
+    //
+    // GELU Activation:
+    //   GELU(x) = x * Φ(x) where Φ is CDF of standard normal
+    //   Approximation: 0.5 * x * (1 + tanh(√(2/π) * (x + 0.044715 * x³)))
+    //
+    // Phi-Optimized Weight Initialization:
+    //   std = √(2 / (fan_in + fan_out)) / φ
+    //   Reduces initial variance for more stable training
+    //
+    // ═══════════════════════════════════════════════════════════

@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Convert error to exit code (1-9) | φ² + 1/φ² = 3 | TRINITY
+
+module TriError;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const TriError = struct {
+        // Recovered from the upstream spec this file was converted from:
+        // trinity-fpga specs/tri/tri_error.tri:8. The converter dropped bare `- name` bullets.
+        enum : [command_not_found, invalid_arguments, missing_argument, file_not_found, io_error, permission_denied, parse_error, validation_error, out_of_memory],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test "error_smoke_test" {
+        expect(true)
+    }

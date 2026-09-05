@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Monotonic clock | φ² + 1/φ² = 3 | TRINITY
+
+module TriTime;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Instant = struct {
+        epoch_seconds : i64,
+        nanos : u32,
+    };
+
+    pub const Duration = struct {
+        seconds : i64,
+        nanos : u32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // now() → Instant
+    fn now() -> Instant {
+        // TODO: Implement from .tri spec
+    }
+
+    // since_epoch(instant: Instant) → Duration
+    fn since_epoch(instant: Instant) -> Duration {
+        // TODO: Implement from .tri spec
+    }
+
+    // add(instant: Instant, duration: Duration) → Instant
+    fn add(instant: Instant, duration: Duration) -> Instant {
+        // TODO: Implement from .tri spec
+    }
+
+    // sub(a: Instant, b: Instant) → Duration
+    fn sub(a: Instant, b: Instant) -> Duration {
+        // TODO: Implement from .tri spec
+    }
+
+    // format(instant: Instant, fmt: []const u8, allocator: std.mem.Allocator) → ![]u8
+    fn format(instant: Instant, fmt: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // now, since_epoch, add, sub and format are still `TODO: Implement from
+    // .tri spec` and compile to `@panic`, so none of them is called here. The
+    // split-second representation they all operate on is real and is what the
+    // tests below pin down: whole seconds in a signed field, the sub-second
+    // remainder in an unsigned one that never reaches a full second.
+
+    // The epoch itself. Both fields zero, and the seconds field is signed, so
+    // instants before 1970 are representable rather than clamped.
+    test instant_epoch_and_before
+        given epoch = Instant{ .epoch_seconds = 0, .nanos = 0 }
+        and before = Instant{ .epoch_seconds = -1, .nanos = 0 }
+        then epoch.epoch_seconds == 0
+        and epoch.nanos == 0
+        and before.epoch_seconds < epoch.epoch_seconds
+
+    // The nanos field is the sub-second remainder: it holds up to 999_999_999,
+    // one less than a whole second, and u32 has room for it.
+    test instant_nanos_hold_a_sub_second_remainder
+        given tick = Instant{ .epoch_seconds = 1, .nanos = 999999999 }
+        then tick.nanos == 999999999
+        and tick.nanos < 1000000000
+
+    // Duration has the same two-field shape, and its seconds field is signed
+    // too, so the difference of two instants can run either way.
+    test duration_is_signed
+        given forward = Duration{ .seconds = 90, .nanos = 500000000 }
+        and backward = Duration{ .seconds = -90, .nanos = 500000000 }
+        then forward.seconds == 90
+        and backward.seconds == -90
+        and forward.nanos == backward.nanos
+
+    // A zero duration is representable and is not a sentinel for anything.
+    test zero_duration_is_representable
+        given d = Duration{ .seconds = 0, .nanos = 0 }
+        then d.seconds == 0
+        and d.nanos == 0
+

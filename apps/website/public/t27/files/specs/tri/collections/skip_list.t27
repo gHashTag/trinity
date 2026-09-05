@@ -1,0 +1,68 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Random level selection | φ² + 1/φ² = 3 | TRINITY
+
+module TriSkipList;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SkipNode(T) = struct {
+        value : T,
+        forward : []?SkipNode(T),
+        level : usize,
+    };
+
+    pub const SkipList(T) = struct {
+        head : SkipNode(T),
+        max_level : usize,
+        level : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(max_level: usize, allocator: std.mem.Allocator) → !SkipList(T)
+    fn init(max_level: usize, allocator: std.mem.Allocator) -> !SkipList(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(list: *SkipList(T), value: T, allocator: std.mem.Allocator) → !void
+    fn insert(list: *SkipList(T), value: T, allocator: std.mem.Allocator) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(list: SkipList(T), value: T) → bool
+    fn search(list: SkipList(T), value: T) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init, insert and search have empty bodies, so the random level selection
+    // in the header cannot be exercised. These pin the node shape it will use.
+
+    test forward_links_are_optional_nodes_held_by_value
+        // a level-k node carries k forward slots, each either a node or null
+        given node = SkipNode(i64)
+        and forward_type = @FieldType(node, "forward")
+        then forward_type == []?SkipNode(i64)
+
+    test a_list_holds_its_head_node_inline
+        // head is a node by value, not a pointer, so an empty list still owns
+        // one node's worth of storage
+        given list = SkipList(i64)
+        and head_type = @FieldType(list, "head")
+        then head_type == SkipNode(i64)
+
+    test levels_are_unsigned
+        given node_level_type = @FieldType(SkipNode(i64), "level")
+        and list_max_level_type = @FieldType(SkipList(i64), "max_level")
+        then node_level_type == usize and list_max_level_type == usize
+

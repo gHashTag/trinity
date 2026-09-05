@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Attach shorter tree under taller tree root | φ² + 1/φ² = 3 | TRINITY
+
+module TriDisjointSet;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const DisjointSet = struct {
+        parent : []usize,
+        rank : []usize,
+        count : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(size: usize) → DisjointSet
+    fn init(size: usize) -> DisjointSet {
+        // TODO: Implement from .tri spec
+    }
+
+    // find(ds: *DisjointSet, x: usize) → usize
+    fn find(ds: *DisjointSet, x: usize) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // union(ds: *DisjointSet, x: usize, y: usize) → void
+    fn union(ds: *DisjointSet, x: usize, y: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // connected(ds: *const DisjointSet, x: usize, y: usize) → bool
+    fn connected(ds: *const DisjointSet, x: usize, y: usize) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init, find, union and connected are all unimplemented stubs: each one
+    // emits `@panic("not yet implemented")`, so calling any of them aborts the
+    // test binary rather than failing a test. (Their signatures are also
+    // truncated to the first parameter -- `find(ds: *DisjointSet)` has nowhere
+    // to receive the element to look up.) The assertions below build the
+    // forest by hand and check the representation the module declares.
+
+    test parent_and_rank_are_parallel_arrays_over_the_same_elements
+        // One slot per element in each: index i is element i in both. No
+        // allocator is stored, so init(size) borrows its backing memory.
+        then @typeInfo(DisjointSet).@"struct".fields.len == 3
+        and @FieldType(DisjointSet, "parent") == []usize
+        and @FieldType(DisjointSet, "rank") == @FieldType(DisjointSet, "parent")
+        and @hasField(DisjointSet, "allocator") == false
+
+    test a_freshly_initialised_forest_is_every_element_its_own_root
+        // What init(size) has to produce: parent[i] == i, every rank zero, and
+        // count equal to the element count because nothing is joined yet.
+        // Built by hand here, since init is a stub.
+        given parent = [_]usize{ 0, 1, 2, 3 }
+        given rank = [_]usize{ 0, 0, 0, 0 }
+        given ds = DisjointSet{ .parent = @constCast(&parent), .rank = @constCast(&rank), .count = 4 }
+        then ds.parent[0] == 0
+        and ds.parent[3] == 3
+        and ds.rank[3] == 0
+        and ds.count == ds.parent.len
+
+    test one_union_drops_the_component_count_by_exactly_one
+        // Attaching element 1 under root 0 leaves three components, not four,
+        // and the taller root's rank goes up while the absorbed one keeps its.
+        given parent = [_]usize{ 0, 0, 2, 3 }
+        given rank = [_]usize{ 1, 0, 0, 0 }
+        given ds = DisjointSet{ .parent = @constCast(&parent), .rank = @constCast(&rank), .count = 3 }
+        then ds.parent[1] == 0
+        and ds.rank[0] == 1
+        and ds.count == ds.parent.len - 1
+        and ds.count >= 1
+
+    test rank_is_bounded_by_the_log_of_the_element_count
+        // "Attach shorter tree under taller tree root": a root of rank r has
+        // at least 2^r members underneath it, so a million-element forest can
+        // never push a rank past 20 -- a usize rank is never the limit.
+        given members = 1 << 20
+        then std.math.log2_int(usize, members) == 20
+        and members > 1000000
+

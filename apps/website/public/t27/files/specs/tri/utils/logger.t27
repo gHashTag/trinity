@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Structured logging | φ² + 1/φ² = 3 | TRINITY
+
+module "[]const u8";
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Level = struct {
+        enum : [Trace, Debug, Info, Warn, Error, Fatal],
+    };
+
+    pub const LogEntry = struct {
+        timestamp : Instant,
+        level : Level,
+        message : []const u8,
+    };
+
+    pub const Logger = struct {
+        min_level : Level,
+        writers : []LogWriter,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // new(name: []const u8, min_level: Level) → Logger
+    fn new(name: []const u8, min_level: Level) -> Logger {
+        // TODO: Implement from .tri spec
+    }
+
+    // log(logger: *Logger, level: Level, message: []const u8) → void
+    fn log(logger: *Logger, level: Level, message: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // with_field(entry: *LogEntry, key: []const u8, value: []const u8) → void
+    fn with_field(entry: *LogEntry, key: []const u8, value: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test new_basic_case
+        given input = default_input()
+        when result = new(input)
+        then result != undefined
+
+    test log_basic_case
+        given input = default_input()
+        when result = log(input)
+        then result != undefined
+
+    test with_field_basic_case
+        given input = default_input()
+        when result = with_field(input)
+        then result != undefined
+

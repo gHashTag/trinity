@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free tree | φ² + 1/φ² = 3 | TRINITY
+
+module TriQuadtree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Rect = struct {
+        x : f64,
+        y : f64,
+        width : f64,
+        height : f64,
+    };
+
+    pub const QuadNode = struct {
+        boundary : Rect,
+        children : [4]?QuadNode,
+        points : [][2]f64,
+        divided : bool,
+        allocator : std.mem.Allocator,
+    };
+
+    pub const QuadTree = struct {
+        root : ?QuadNode,
+        capacity : usize,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator, boundary: Rect, capacity: usize) → QuadTree
+    fn init(allocator: std.mem.Allocator, boundary: Rect, capacity: usize) -> QuadTree {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(qt: *QuadTree, x: f64, y: f64) → !void
+    fn insert(qt: *QuadTree, x: f64, y: f64) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // query(qt: *QuadTree, range: Rect) → [][2]f64
+    fn query(qt: *QuadTree, range: Rect) -> [][2]f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(qt: *QuadTree) → void
+    fn deinit(qt: *QuadTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init/insert/query/deinit are unimplemented stubs returning void, so no
+    // insert-then-query behaviour can be asserted yet. QuadNode and QuadTree
+    // cannot be instantiated either: QuadNode holds [4]?QuadNode by value, a
+    // type that depends on its own size, so Zig rejects it the moment anything
+    // forces the layout. Rect, the boundary geometry every subdivision is
+    // computed from, is what remains testable and is tested here.
+
+    test rect_is_origin_plus_extent_not_two_corners
+        // Verify: the far edges are derived by addition, unlike the min/max
+        // corners used in TriRtree
+        given r = Rect{.x=1.0,.y=2.0,.width=4.0,.height=6.0}
+        and right = r.x + r.width
+        and bottom = r.y + r.height
+        then (@abs(right - 5.0) < 1e-12) and (@abs(bottom - 8.0) < 1e-12)
+
+    test rect_area_is_the_extent_product
+        given r = Rect{.x=0.0,.y=0.0,.width=4.0,.height=6.0}
+        and area = r.width * r.height
+        then @abs(area - 24.0) < 1e-12
+
+    test quadrant_subdivision_partitions_the_parent_area
+        // Verify: the subdivision a quadtree performs -- four children of half
+        // width and half height -- exactly covers the parent, with no overlap
+        // and no gap. This is arithmetic on the declared Rect fields; the
+        // insert path that would perform it is still a stub.
+        given parent = Rect{.x=0.0,.y=0.0,.width=8.0,.height=8.0}
+        and half_w = parent.width / 2.0
+        and half_h = parent.height / 2.0
+        and quadrant_area = half_w * half_h
+        then @abs((quadrant_area * 4.0) - (parent.width * parent.height)) < 1e-12
+
+    test north_east_quadrant_starts_at_the_parent_midpoint
+        // Verify: the offset arithmetic for one child, so the halves are not
+        // silently both anchored at the parent origin
+        given parent = Rect{.x=0.0,.y=0.0,.width=8.0,.height=8.0}
+        and ne = Rect{.x=parent.x + parent.width / 2.0,.y=parent.y,.width=parent.width / 2.0,.height=parent.height / 2.0}
+        then (@abs(ne.x - 4.0) < 1e-12) and (@abs(ne.x + ne.width - (parent.x + parent.width)) < 1e-12)
+
+    test degenerate_rect_has_zero_area
+        // Verify: the boundary case -- a point-sized boundary is representable
+        given r = Rect{.x=3.0,.y=3.0,.width=0.0,.height=0.0}
+        then (r.width * r.height) == 0.0
+
+    test rect_coordinates_are_signed
+        // Verify: f64 origin, so a boundary may sit left of and above zero
+        given r = Rect{.x=-2.0,.y=-2.0,.width=4.0,.height=4.0}
+        then (r.x < 0.0) and (r.x + r.width > 0.0)
+

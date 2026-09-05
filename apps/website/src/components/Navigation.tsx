@@ -41,6 +41,7 @@ const PAGES: PageLink[] = [
   { href: '#/blog', en: 'Blog', ru: 'Блог', note: 'Notes on the work as it happens', noteRu: 'Заметки по ходу работы' },
   { href: '#/dashboard', en: 'Dashboard', ru: 'Панель', note: 'Project metrics', noteRu: 'Метрики проекта', color: '#00ccff' },
   { href: '#/tree', en: 'Research Lab', ru: 'Исслед. лаб', note: 'Interactive visualisations', noteRu: 'Интерактивные визуализации', color: '#ffd700' },
+  { href: '#/specs', en: 'Spec Explorer', ru: 'Обозреватель спек', note: 'All 497 .t27 specs, layer by layer, through the real compiler', noteRu: 'Все 497 спек .t27 по слоям через настоящий компилятор', color: '#00FF88' },
   { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'Full documentation', noteRu: 'Полная документация', external: true },
 ]
 

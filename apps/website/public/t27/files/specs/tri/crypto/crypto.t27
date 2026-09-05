@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Cryptographic operations | φ² + 1/φ² = 3 | TRINITY
+
+module TriCrypto;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const KeyPair = struct {
+        public_key : []u8,
+        private_key : []u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // generate_key_pair(allocator: std.mem.Allocator) → !KeyPair
+    fn generate_key_pair(allocator: std.mem.Allocator) -> !KeyPair {
+        // TODO: Implement from .tri spec
+    }
+
+    // sha256(data: []const u8, allocator: std.mem.Allocator) → ![]u8
+    fn sha256(data: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // hmac(key: []const u8, message: []const u8, allocator: std.mem.Allocator) → ![]u8
+    fn hmac(key: []const u8, message: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test generate_key_pair_basic_case
+        given input = default_input()
+        when result = generate_key_pair(input)
+        then result != undefined
+
+    test sha256_basic_case
+        given input = default_input()
+        when result = sha256(input)
+        then result != undefined
+
+    test hmac_basic_case
+        given input = default_input()
+        when result = hmac(input)
+        then result != undefined
+

@@ -1275,3 +1275,86 @@ input:focus-visible {
   color: #d8bc7a;
   text-transform: none;
 }
+
+/* ==========================================================================
+   Spec Explorer (/specs) — motion tokens and the few animations it uses.
+   Scoped under .spec-x so nothing here can reach another page.
+
+   Durations live in tokens because prefers-reduced-motion then costs one
+   media query instead of a retrofit across every rule.
+   ========================================================================== */
+
+.spec-x {
+  --dur-fast: 90ms;    /* pane content swap */
+  --dur-mid: 160ms;    /* banner enter, pending dim ramp */
+  --dur-flag: 480ms;   /* one-shot failure flash */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --shift: 4px;        /* the single knob reduced motion zeroes */
+}
+
+/* A 200-300ms compile gets no spinner, no skeleton, no shimmer: all three
+   mount and unmount inside the window and read as a flash, i.e. as jank. The
+   previous pane simply stays on screen. This dim only becomes visible if a
+   compile runs long -- the 200ms delay means a fast one never starts the ramp. */
+@keyframes spec-x-pending {
+  to { opacity: 0.55; }
+}
+.spec-x-pane[data-pending='true'] {
+  animation: spec-x-pending var(--dur-mid) var(--ease-out) 200ms both;
+  pointer-events: none;
+}
+
+/* Enter-only. A cross-fade needs both panes in the DOM at once, which for a
+   code view means double the text nodes and a real chance of a scroll blip. */
+@keyframes spec-x-in {
+  from { opacity: 0; transform: translateY(var(--shift)); }
+  to { opacity: 1; transform: none; }
+}
+.spec-x-swap {
+  animation: spec-x-in var(--dur-fast) var(--ease-out) both;
+}
+
+/* Motion marks the onset; colour and glyph carry the state. Never `infinite`:
+   in a dev tool this failure is on screen for as long as it takes to fix. */
+@keyframes spec-x-flag {
+  0% { background: rgba(248, 81, 73, 0.24); }
+  100% { background: transparent; }
+}
+.spec-x-flag {
+  animation: spec-x-flag var(--dur-flag) var(--ease-out) 1;
+}
+
+@keyframes spec-x-banner {
+  from { opacity: 0; transform: translateY(calc(var(--shift) * -1)); }
+  to { opacity: 1; transform: none; }
+}
+.spec-x-banner {
+  animation: spec-x-banner var(--dur-mid) var(--ease-out) both;
+}
+
+/* A code tab that scrolls next to an AST tab that does not would otherwise
+   shift the whole pane horizontally on every switch. */
+.spec-x-scroll {
+  overflow: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+/* Reduced motion rewrites the tokens rather than the rules. 1ms, not 0s:
+   at zero, animationend may never fire and anything awaiting it hangs. */
+@media (prefers-reduced-motion: reduce) {
+  .spec-x {
+    --dur-fast: 1ms;
+    --dur-mid: 1ms;
+    --dur-flag: 1ms;
+    --shift: 0px;
+  }
+  .spec-x *,
+  .spec-x *::before,
+  .spec-x *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

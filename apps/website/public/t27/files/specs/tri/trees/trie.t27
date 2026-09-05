@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(k) lookup where k = key length | φ² + 1/φ² = 3 | TRINITY
+
+module TriTrie;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const TrieNode(T) = struct {
+        is_end : bool,
+        value : "T",
+        children : "std.StringHashMap(*TrieNode(T))",
+    };
+
+    pub const Trie(T) = struct {
+        root : "*TrieNode(T)",
+        size : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty() → Trie(T)
+    fn empty() -> Trie(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(trie: *Trie(T)) → void
+    fn insert(trie: *Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(trie: *const Trie(T)) → void
+    fn get(trie: *const Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // has_prefix(trie: *const Trie(T)) → void
+    fn has_prefix(trie: *const Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // keys_with_prefix(trie: *const Trie(T)) → void
+    fn keys_with_prefix(trie: *const Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // remove(trie: *Trie(T)) → void
+    fn remove(trie: *Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // empty, insert, get, has_prefix, keys_with_prefix and remove are still
+    // `TODO: Implement from .tri spec` and compile to `@panic`, so none of them
+    // is called here. Trie(T) itself is not constructed either: its `root` is a
+    // plain `*TrieNode(T)`, and a test clause binds a const, which yields a
+    // `*const` that will not coerce. A leaf TrieNode is buildable, and that is
+    // where the O(k) claim in the header actually rests -- one map lookup per
+    // key character.
+
+    // A freshly built node has no children: the edge map starts empty, so a
+    // lookup of any character on it terminates immediately.
+    test leaf_node_has_no_children
+        given leaf = TrieNode(i64){ .is_end = true, .value = 7, .children = std.StringHashMap(*TrieNode(i64)).init(std.testing.allocator) }
+        then leaf.children.count() == 0
+        and leaf.is_end == true
+        and leaf.value == 7
+
+    // is_end is independent of the child map, which is what lets one stored key
+    // be a prefix of another: an interior node can end a key and still branch,
+    // and a node with no children need not end one.
+    test is_end_is_independent_of_children
+        given dead_end = TrieNode(i64){ .is_end = false, .value = 0, .children = std.StringHashMap(*TrieNode(i64)).init(std.testing.allocator) }
+        then dead_end.children.count() == 0
+        and dead_end.is_end == false
+
+    // The payload rides on the node, one T per stored key, not one per edge.
+    test node_carries_the_payload
+        given a = TrieNode(i64){ .is_end = true, .value = -3, .children = std.StringHashMap(*TrieNode(i64)).init(std.testing.allocator) }
+        and b = TrieNode(i64){ .is_end = true, .value = 3, .children = std.StringHashMap(*TrieNode(i64)).init(std.testing.allocator) }
+        then a.value != b.value
+        and a.is_end == b.is_end
+

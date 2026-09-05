@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Find MST using Prim's algorithm | φ² + 1/φ² = 3 | TRINITY
+
+module TriPrimsMst;
+    use base::types;
+    use math::constants;
+    use TriGraphBfs::Graph;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const MSTResult = struct {
+        edges : []Edge,
+        total_weight : "i64",
+        allocator : "std.mem.Allocator",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // mst(graph: *Graph) → void
+    fn mst(graph: *Graph) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test mst_basic_case
+        given input = default_input()
+        when result = mst(input)
+        then result != undefined
+

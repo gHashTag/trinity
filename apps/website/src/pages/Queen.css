@@ -4664,3 +4664,124 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-context-row.is-running.is-cold > i {
   color: var(--hud-muted);
 }
+
+/* ==========================================================================
+   SPECS view — the corpus the Queen is meant to be generated from.
+   components/QueenSpecs.tsx
+   ========================================================================== */
+
+.queen27-page.is-shell .queen27-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px 20px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* display is explicit on every section here. A `section` in this page already
+   inherits `display: flex` with a row direction, which put each label beside
+   its paragraph and collapsed the section to the label's height -- the
+   sections then painted over one another. */
+.queen27-page.is-shell .queen27-specs > section {
+  display: block;
+}
+
+/* Flex children shrink by default, and this column lives inside a
+   height-constrained HUD body -- without this the sections compress below
+   their own text and paint over each other. The container scrolls instead. */
+.queen27-page.is-shell .queen27-specs > * {
+  flex-shrink: 0;
+}
+
+.queen27-page.is-shell .queen27-specs-empty {
+  padding: 24px;
+  color: var(--muted, #8b9490);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.queen27-page.is-shell .queen27-specs-directive p,
+.queen27-page.is-shell .queen27-specs-gap p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #b9bfc6;
+  max-width: 70ch;
+}
+
+.queen27-page.is-shell .queen27-specs-bar svg {
+  width: 100%;
+  height: 6px;
+  display: block;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.queen27-page.is-shell .queen27-specs > section.queen27-specs-stats {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+
+.queen27-page.is-shell .queen27-specs-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.queen27-page.is-shell .queen27-specs-stats strong {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 19px;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.queen27-page.is-shell .queen27-specs-stats span {
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--muted, #8b9490);
+}
+
+.queen27-page.is-shell .queen27-specs-repos ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.queen27-page.is-shell .queen27-specs-repos li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 9px;
+  border: 1px solid rgba(0, 255, 136, 0.16);
+  border-radius: 999px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--muted, #8b9490);
+}
+
+.queen27-page.is-shell .queen27-specs-repos li span {
+  color: #d6dde4;
+}
+
+/* Amber, not red: this is distance to a goal, not a fault. */
+.queen27-page.is-shell .queen27-specs-gap {
+  border-left: 2px solid #f0a020;
+  padding-left: 12px;
+}
+
+.queen27-page.is-shell .queen27-specs-open {
+  align-self: flex-start;
+  padding: 5px 14px;
+  border: 1px solid var(--accent, #00ff88);
+  border-radius: 4px;
+  color: var(--accent, #00ff88);
+  text-decoration: none;
+  font-size: 12px;
+}

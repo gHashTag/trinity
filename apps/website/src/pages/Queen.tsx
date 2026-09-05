@@ -9,6 +9,7 @@ import {
   type RefObject, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
@@ -261,7 +262,7 @@ const COPY = {
       "The supervisor is alive. The current queue has no eligible specification.",
     path: "FROM INTENT TO EVIDENCE",
     spec: "SPEC",
-    specCopy: "Boundary, scenarios, requirements and success criteria.",
+    specCopy: "Boundary, scenarios, requirements and success criteria — written as a .t27 spec. The spec is the source of truth; every language output is generated from it.",
     queen: "QUEEN",
     queenCopy: "Checks collisions, state and policy before delegation.",
     bee: "BEE",
@@ -285,6 +286,24 @@ const COPY = {
     factoryHint: "Live engineering production",
     combView: "COMB",
     combHint: "The board as a field of marks",
+    specsView: "SPECS",
+    specsHint: "The corpus she is generated from",
+    specsTitle: "SPEC CORPUS",
+    specsDirective: "STANDING DIRECTIVE",
+    specsDirectiveBody:
+      "Every part of this project is to be expressed as a .t27 spec, and the project generated from those specs. A spec is the source of truth; the Zig, Verilog, C and Rust are outputs. Where hand-written code still exists, the task is to replace it with a spec that generates it — not to maintain both.",
+    specsCorpus: "corpus health",
+    specsClean: "clean",
+    specsWarnings: "flagged",
+    specsBroken: "rejected",
+    specsSpecs: "specs",
+    specsLines: "lines",
+    specsNodes: "AST nodes",
+    specsSources: "SOURCES",
+    specsOpen: "Open the Spec Explorer →",
+    specsGapTitle: "HOW FAR THIS ACTUALLY IS",
+    specsGapBody:
+      "Measured, not asserted: the generated Verilog synthesises to 0 LUTs and 0 flip-flops across every spec that Yosys accepts — module shells with IBUF/OBUF and nothing behind them. The bitstreams running on the board today come from hand-written RTL. The directive above is the goal; this line is the distance.",
     combHeld: "held",
     combNeutral: "neutral",
     combFog: "fog",
@@ -492,7 +511,7 @@ const COPY = {
       "Королева работает. В текущей очереди нет допустимой спецификации.",
     path: "ОТ НАМЕРЕНИЯ К ДОКАЗАТЕЛЬСТВУ",
     spec: "SPEC",
-    specCopy: "Граница, сценарии, требования и критерии успеха.",
+    specCopy: "Граница, сценарии, требования и критерии успеха — записанные как .t27-спека. Спека — источник истины; все языковые выходы порождаются из неё.",
     queen: "QUEEN",
     queenCopy: "Проверяет конфликты, состояние и политику до делегирования.",
     bee: "BEE",
@@ -516,6 +535,24 @@ const COPY = {
     factoryHint: "Живое инженерное производство",
     combView: "СОТЫ",
     combHint: "Доска как поле из меток",
+    specsView: "СПЕКИ",
+    specsHint: "Корпус, из которого её порождают",
+    specsTitle: "КОРПУС СПЕК",
+    specsDirective: "ПОСТОЯННАЯ ДИРЕКТИВА",
+    specsDirectiveBody:
+      "Каждая часть проекта должна быть выражена как .t27-спека, а проект — порождаться из этих спек. Спека — источник истины; Zig, Verilog, C и Rust — выходы. Там, где ещё остаётся рукописный код, задача — заменить его спекой, которая его порождает, а не поддерживать оба.",
+    specsCorpus: "здоровье корпуса",
+    specsClean: "чисто",
+    specsWarnings: "с замечаниями",
+    specsBroken: "отклонено",
+    specsSpecs: "спек",
+    specsLines: "строк",
+    specsNodes: "узлов AST",
+    specsSources: "ИСТОЧНИКИ",
+    specsOpen: "Открыть обозреватель спек →",
+    specsGapTitle: "НАСКОЛЬКО ЭТО ДАЛЕКО НА САМОМ ДЕЛЕ",
+    specsGapBody:
+      "Измерено, а не заявлено: сгенерированный Verilog даёт 0 LUT и 0 триггеров на всех спеках, которые Yosys принимает, — оболочки модулей с IBUF/OBUF и ничем внутри. Битстримы, работающие на плате сегодня, собраны из рукописного RTL. Директива выше — цель; эта строка — расстояние.",
     combHeld: "занято",
     combNeutral: "нейтрально",
     combFog: "туман",
@@ -1155,8 +1192,8 @@ function agentBootstrapText(
 ) {
   const mission =
     lang === "ru"
-      ? "Подключись к исследованиям и разработке TRINITY. Сначала прочитай граф зависимостей, выбери только доступный узел, зафиксируй проверяемый контракт, работай в изоляции и верни доказательства для adversarial review. Не считай публичный read-only доступ правом на изменения."
-      : "Join TRINITY research and development. Read the dependency graph first, choose only an available node, write an observable contract, work in isolation, and return evidence for adversarial review. Public read-only access is never mutation authority.";
+      ? "Подключись к исследованиям и разработке TRINITY. Сначала прочитай граф зависимостей, выбери только доступный узел, зафиксируй проверяемый контракт, работай в изоляции и верни доказательства для adversarial review. Не считай публичный read-only доступ правом на изменения.\n\nПОСТОЯННАЯ ДИРЕКТИВА: каждая часть проекта должна быть выражена как .t27-спека, а проект — порождаться из этих спек. Спека — источник истины; Zig, Verilog, C и Rust — выходы. Встретив рукописный код, предпочитай заменить его спекой, которая его порождает, а не поддерживать оба. Директива — цель, а не текущее состояние: сгенерированный Verilog сегодня даёт 0 LUT и 0 триггеров, поэтому измеряй, а не заявляй."
+      : "Join TRINITY research and development. Read the dependency graph first, choose only an available node, write an observable contract, work in isolation, and return evidence for adversarial review. Public read-only access is never mutation authority.\n\nSTANDING DIRECTIVE: every part of this project is to be expressed as a .t27 spec, and the project generated from those specs. A spec is the source of truth; the Zig, Verilog, C and Rust are outputs. Where you meet hand-written code, prefer replacing it with a spec that generates it over maintaining both. Treat this as the goal and not the current state: the generated Verilog today synthesises to 0 LUTs and 0 flip-flops, so measure rather than assert.";
   return [
     "# TRINITY RESEARCH · A2A BOOTSTRAP",
     mission,
@@ -1750,7 +1787,7 @@ export default function Queen() {
   const researchState = useQueenResearch();
   const hardwareState = useQueenHardware();
   const [boardView, setBoardView] = useState<
-    "kanban" | "map" | "factory" | "comb" | "research"
+    "kanban" | "map" | "factory" | "comb" | "research" | "specs"
   >("comb");
   const view: HudView = boardView;
   const now = useNow();
@@ -2094,6 +2131,9 @@ export default function Queen() {
 
   const commandItems = [
     { view: "comb" as const, glyph: "▽", label: c.combView, hint: c.combHint },
+    // Second, directly after the comb: the corpus is the Queen's core, not an
+    // appendix to the board views.
+    { view: "specs" as const, glyph: "⬡", label: c.specsView, hint: c.specsHint },
     { view: "kanban" as const, glyph: "▦", label: c.kanbanView, hint: c.kanbanHint },
     { view: "map" as const, glyph: "⌘", label: c.mapView, hint: c.mapHint },
     { view: "factory" as const, glyph: "⚙", label: c.factoryView, hint: c.factoryHint },
@@ -2576,6 +2616,27 @@ export default function Queen() {
               loaded={board !== null}
               c={c}
               lang={lang}
+            />
+          ) : boardView === "specs" ? (
+            <QueenSpecs
+              c={{
+                title: c.specsTitle,
+                directive: c.specsDirective,
+                directiveBody: c.specsDirectiveBody,
+                corpus: c.specsCorpus,
+                clean: c.specsClean,
+                warnings: c.specsWarnings,
+                broken: c.specsBroken,
+                specs: c.specsSpecs,
+                lines: c.specsLines,
+                nodes: c.specsNodes,
+                sources: c.specsSources,
+                open: c.specsOpen,
+                gapTitle: c.specsGapTitle,
+                gapBody: c.specsGapBody,
+                unavailable: c.unavailable,
+                loading: c.specsCorpus,
+              }}
             />
           ) : boardView === "comb" ? (
             ENGINE_FLAG !== "canvas" ? (

@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Values are parsed as their natural type | φ² + 1/φ² = 3 | TRINITY
+
+module TriConfig;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ConfigValue = struct {
+        string : ?[]const u8,
+        number : ?f64,
+        boolean : ?bool,
+        is_null : bool,
+    };
+
+    pub const ConfigEntry = struct {
+        key : []const u8,
+        value : ConfigValue,
+    };
+
+    pub const Config = struct {
+        entries : []ConfigEntry,
+        error : ?[]const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse(allocator: std.mem.Allocator, content: []const u8) → !Config
+    fn parse(allocator: std.mem.Allocator, content: []const u8) -> !Config {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_string(config: Config, key: []const u8, default: []const u8) → []const u8
+    fn get_string(config: Config, key: []const u8, default: []const u8) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_number(config: Config, key: []const u8, default: f64) → f64
+    fn get_number(config: Config, key: []const u8, default: f64) -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_bool(config: Config, key: []const u8, default: bool) → bool
+    fn get_bool(config: Config, key: []const u8, default: bool) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // parse and the three getters are unimplemented stubs -- each emits
+    // `@panic("not yet implemented")`, so no parsing can be exercised. The
+    // declared value model is what remains testable.
+
+    test each_natural_type_is_its_own_optional_slot
+        // "Values are parsed as their natural type": three payload slots, each
+        // optional, so an unset slot is distinguishable from a set one.
+        then @FieldType(ConfigValue, "string") == ?[]const u8
+        and @FieldType(ConfigValue, "number") == ?f64
+        and @FieldType(ConfigValue, "boolean") == ?bool
+
+    test null_is_a_flag_not_a_missing_payload
+        // is_null is the only non-optional field: an explicit null in the
+        // source is recorded here, not by leaving all three slots empty.
+        then @FieldType(ConfigValue, "is_null") == bool
+
+    test numbers_are_double_precision
+        // f64, not f32: a config literal keeps full double precision.
+        then @FieldType(ConfigValue, "number") == ?f64
+
+    test parse_failure_is_reported_in_band
+        // Config.error is optional rather than parse returning a Zig error, so
+        // a caller gets a partially built Config plus a message.
+        then @FieldType(Config, "error") == ?[]const u8
+        and @FieldType(Config, "entries") == []ConfigEntry
+
+    test an_entry_pairs_a_key_with_one_value
+        then @typeInfo(ConfigEntry).@"struct".fields.len == 2
+        and @FieldType(ConfigEntry, "key") == []const u8
+        and @FieldType(ConfigEntry, "value") == ConfigValue
+

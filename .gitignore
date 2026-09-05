@@ -423,3 +423,12 @@ fpga-flash
 !.trinity/issue_bindings.json
 !.trinity/souls/
 !templates/SOUL.md
+
+# The vendored t27 corpus backs the /specs explorer -- it is data, not build
+# output. Many bare directory rules above (`demos/`, `runtime/`, `legacy/`, …)
+# match at any depth and silently drop files from the snapshot; because git
+# cannot re-include a file whose parent directory is excluded, the `**` has to
+# re-include those directories too, not just the files inside them.
+# Enumerating them one by one was tried first and is whack-a-mole: the widened
+# corpus immediately hit three more.
+!apps/website/public/t27/**

@@ -1,0 +1,154 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Reparameterization for gradient estimation | φ² + 1/φ² = 3 | TRINITY
+
+module PpoActor;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_INIT_LOG_STD : f32 = 0.0;
+    const MIN_LOG_STD : f32 = -20.0;
+    const MAX_LOG_STD : f32 = 2.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ActorConfig = struct {
+        state_dim : u32,
+        action_dim : u32,
+        hidden_dims : []u32,
+        action_space : ActionSpace,
+        init_log_std : f32,
+    };
+
+    pub const ActionSpace = struct {
+        enum : [DISCRETE, CONTINUOUS],
+    };
+
+    pub const PolicyOutput = struct {
+        logits : []f32,
+        log_std : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward_discrete(state: []const f32, params: []const f32, config: ActorConfig) → []f32
+    fn forward_discrete(state: []const f32, params: []const f32, config: ActorConfig) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_continuous(state: []const f32, params: []const f32, config: ActorConfig) → PolicyOutput
+    fn forward_continuous(state: []const f32, params: []const f32, config: ActorConfig) -> PolicyOutput {
+        // TODO: Implement from .tri spec
+    }
+
+    // sample_action(policy_output: PolicyOutput, action_space: ActionSpace, deterministic: bool) → []f32
+    fn sample_action(policy_output: PolicyOutput, action_space: ActionSpace, deterministic: bool) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // log_prob(action: []f32, policy_output: PolicyOutput, action_space: ActionSpace) → f32
+    fn log_prob(action: []f32, policy_output: PolicyOutput, action_space: ActionSpace) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // entropy(policy_output: PolicyOutput, action_space: ActionSpace) → f32
+    fn entropy(policy_output: PolicyOutput, action_space: ActionSpace) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward_discrete/forward_continuous/sample_action/log_prob/entropy are
+    // unimplemented stubs returning void, so no policy can be evaluated or
+    // sampled yet. What the module does declare -- the log-std clamp range, the
+    // initialisation inside it, and the config/output shapes -- is tested here,
+    // including the constraint that the invariants below only state in a
+    // comment.
+
+    test log_std_clamp_range_brackets_the_initial_value
+        // Verify: ppo_actor_constraint_0 (MIN_LOG_STD <= log_std <=
+        // MAX_LOG_STD) holds for the value the actor starts at
+        then (MIN_LOG_STD <= DEFAULT_INIT_LOG_STD) and (DEFAULT_INIT_LOG_STD <= MAX_LOG_STD)
+
+    test clamp_range_is_ordered
+        // Verify: the floor really is below the ceiling, so the clamp is
+        // satisfiable
+        then MIN_LOG_STD < MAX_LOG_STD
+
+    test initial_policy_has_unit_standard_deviation
+        // Verify: log_std is a logarithm, so initialising it at 0 means the
+        // Gaussian starts at sigma = 1 -- neither collapsed nor diffuse
+        then @abs(@exp(DEFAULT_INIT_LOG_STD) - 1.0) < 1e-6
+
+    test clamp_floor_is_effectively_deterministic
+        // Verify: exp(-20) is ~2e-9, so the lower bound exists to stop sigma
+        // underflowing to zero rather than to be a usable policy width
+        then @exp(MIN_LOG_STD) < 1e-8
+
+    test clamp_ceiling_leaves_room_to_explore
+        // Verify: exp(2) is ~7.39, several times the unit initialisation
+        then @exp(MAX_LOG_STD) > 7.0
+
+    test the_floor_is_much_further_from_init_than_the_ceiling
+        // Verify: the range is deliberately asymmetric about the
+        // initialisation -- guarding against variance collapse needs far more
+        // headroom than capping exploration does
+        given down = DEFAULT_INIT_LOG_STD - MIN_LOG_STD
+        and up = MAX_LOG_STD - DEFAULT_INIT_LOG_STD
+        then down > up * 5.0
+
+    test config_carries_one_log_std_per_action_dimension
+        // Verify: ActorConfig and PolicyOutput agree on the action dimension,
+        // which is what makes the diagonal Gaussian well formed
+        given cfg = ActorConfig{.state_dim=4,.action_dim=2,.hidden_dims=@constCast(&[_]u32{64,64}),.action_space=ActionSpace.DISCRETE,.init_log_std=DEFAULT_INIT_LOG_STD}
+        and out = PolicyOutput{.logits=@constCast(&[_]f32{0.0,0.0}),.log_std=@constCast(&[_]f32{DEFAULT_INIT_LOG_STD,DEFAULT_INIT_LOG_STD})}
+        then (out.log_std.len == cfg.action_dim) and (out.logits.len == cfg.action_dim)
+
+    test hidden_dims_is_non_empty_for_a_usable_config
+        // Verify: ppo_actor_constraint_2 (len(hidden_dims) >= 1) and
+        // constraint_1 (action_dim >= 1) hold for the config above
+        given cfg = ActorConfig{.state_dim=4,.action_dim=2,.hidden_dims=@constCast(&[_]u32{64,64}),.action_space=ActionSpace.DISCRETE,.init_log_std=DEFAULT_INIT_LOG_STD}
+        then (cfg.hidden_dims.len >= 1) and (cfg.action_dim >= 1)
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant ppo_actor_constraint_0
+        given input = valid_input()
+        then true // MIN_LOG_STD <= log_std <= MAX_LOG_STD
+
+    invariant ppo_actor_constraint_1
+        given input = valid_input()
+        then true // action_dim >= 1
+
+    invariant ppo_actor_constraint_2
+        given input = valid_input()
+        then true // len(hidden_dims) >= 1
+
+    invariant ppo_actor_constraint_3
+        given input = valid_input()
+        then true // name: gaussian_log_prob
+
+    invariant ppo_actor_constraint_4
+        given input = valid_input()
+        then true // name: reparameterization
+
+    invariant ppo_actor_constraint_5
+        given input = valid_input()
+        then true // "Schulman et al. (2017) - Proximal Policy Optimization"
+
+    invariant ppo_actor_constraint_6
+        given input = valid_input()
+        then true // "Haarnoja et al. (2018) - Soft Actor-Critic"
+

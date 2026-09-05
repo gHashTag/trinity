@@ -1,0 +1,8 @@
+# fpga/mac — Zero-DSP Multiply-Accumulate for openXC7
+# Status: stub (pending full spec)
+# LUT-only MAC constrained by openXC7 DSP limitations
+module fpga_mac {
+    export mac(a: GF16, b: GF16, acc: Quire) -> Quire
+    export constraint: no_dsp = true
+    export lut_budget: u32 = 400
+}

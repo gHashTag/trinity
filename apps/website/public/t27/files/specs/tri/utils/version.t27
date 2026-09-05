@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Semantic versioning | φ² + 1/φ² = 3 | TRINITY
+
+module TriVersion;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Version = struct {
+        major : usize,
+        minor : usize,
+        patch : usize,
+        prerelease : []const u8,
+        build : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse(version_str: []const u8, allocator: std.mem.Allocator) → !Version
+    fn parse(version_str: []const u8, allocator: std.mem.Allocator) -> !Version {
+        // TODO: Implement from .tri spec
+    }
+
+    // compare(a: Version, b: Version) → i8
+    fn compare(a: Version, b: Version) -> i8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // next(version: Version, part: []const u8, allocator: std.mem.Allocator) → !Version
+    fn next(version: Version, part: []const u8, allocator: std.mem.Allocator) -> !Version {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // parse, compare and next are still `TODO: Implement from .tri spec` and
+    // compile to `@panic`, so nothing below calls them. What can be asserted
+    // today is the shape of Version: five fields, the three numeric ones and
+    // the two textual ones that SemVer 2.0.0 keeps separate.
+
+    // A full 1.2.3-rc.1+build.5 reads back field by field.
+    test version_carries_all_five_fields
+        given v = Version{ .major = 1, .minor = 2, .patch = 3, .prerelease = "rc.1", .build = "build.5" }
+        then v.major == 1
+        and v.minor == 2
+        and v.patch == 3
+        and std.mem.eql(u8, v.prerelease, "rc.1")
+        and std.mem.eql(u8, v.build, "build.5")
+
+    // A release version is the same shape with both textual fields empty --
+    // absence is an empty string, not a separate case.
+    test release_version_has_empty_text_fields
+        given v = Version{ .major = 2, .minor = 0, .patch = 0, .prerelease = "", .build = "" }
+        then v.prerelease.len == 0
+        and v.build.len == 0
+        and v.major == 2
+
+    // 0.0.0 is representable: the numeric fields are unsigned and have no
+    // reserved value standing in for "unset".
+    test zero_version_is_representable
+        given v = Version{ .major = 0, .minor = 0, .patch = 0, .prerelease = "", .build = "" }
+        then v.major == 0
+        and v.minor == 0
+        and v.patch == 0
+
+    // prerelease and build are two independent fields, not one packed string:
+    // SemVer orders by the first and ignores the second, so a version may
+    // carry either without the other.
+    test prerelease_and_build_are_independent
+        given pre_only = Version{ .major = 1, .minor = 0, .patch = 0, .prerelease = "rc.1", .build = "" }
+        and build_only = Version{ .major = 1, .minor = 0, .patch = 0, .prerelease = "", .build = "sha.abc" }
+        then pre_only.prerelease.len > 0
+        and pre_only.build.len == 0
+        and build_only.prerelease.len == 0
+        and build_only.build.len > 0
+

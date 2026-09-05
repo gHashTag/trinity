@@ -1,0 +1,56 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Stable sort | φ² + 1/φ² = 3 | TRINITY
+
+module TriSort;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SortOrder = struct {
+        enum : [Ascending, Descending],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // sort(items: []const T, order: SortOrder, allocator: std.mem.Allocator) → ![]T
+    fn sort(items: []const T, order: SortOrder, allocator: std.mem.Allocator) -> ![]T {
+        // TODO: Implement from .tri spec
+    }
+
+    // sort_by(items: []const T, key_fn: fn(T) ?Order, allocator: std.mem.Allocator) → ![]T
+    fn sort_by(items: []const T, key_fn: fn(T) ?Order, allocator: std.mem.Allocator) -> ![]T {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test sort_order_names_exactly_two_directions
+        // Verify: SortOrder offers Ascending and Descending and nothing else, so
+        // a comparator only ever has to pick a sign
+        given has_ascending = @hasField(SortOrder, "Ascending")
+        and has_descending = @hasField(SortOrder, "Descending")
+        and variant_count = @typeInfo(SortOrder).@"enum".fields.len
+        then has_ascending and has_descending and variant_count == 2
+
+    test sort_order_is_an_enum_whose_two_directions_are_alternatives
+        // Verify: SortOrder lowers to a real enum, so Ascending and Descending
+        // are mutually exclusive tags of one value rather than two void fields
+        // held simultaneously. The tags are ordered, which the void-field struct
+        // could not express: Ascending is 0 and Descending is 1.
+        given ascending = @intFromEnum(SortOrder.Ascending)
+        and descending = @intFromEnum(SortOrder.Descending)
+        then ascending == 0 and descending == 1
+
+    // NOTE: sort() and sort_by() are unimplemented — both bodies lower to
+    // @panic("not yet implemented"). There is no stability, ordering or
+    // permutation property to test until they have a body. The two tests above
+    // cover the only thing this module currently declares.
+

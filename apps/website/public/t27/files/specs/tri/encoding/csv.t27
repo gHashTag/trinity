@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// RFC 4180 compliant | φ² + 1/φ² = 3 | TRINITY
+
+module TriCsv;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const CsvRow = struct {
+        cells : [][]const u8,
+    };
+
+    pub const CsvDocument = struct {
+        headers : []CsvRow,
+        rows : []CsvRow,
+        delimiter : "u8",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse(text: []const u8) → void
+    fn parse(text: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(doc: CsvDocument) → void
+    fn get(doc: CsvDocument) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // set(doc: *CsvDocument) → void
+    fn set(doc: *CsvDocument) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // serialize(doc: CsvDocument) → void
+    fn serialize(doc: CsvDocument) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // parse/get/set/serialize are unimplemented stubs -- each emits
+    // `@panic("not yet implemented")`, so no parse/serialize round trip can be
+    // exercised. The declared document shape is what remains testable.
+
+    test the_delimiter_is_one_byte_and_is_configurable
+        // RFC 4180 names the comma, but the field exists so TSV and
+        // semicolon-separated input can use the same parser.
+        then @FieldType(CsvDocument, "delimiter") == u8
+
+    test a_header_line_is_just_another_row
+        // headers and rows are the same element type, so serialize() need not
+        // special-case the first line.
+        then @FieldType(CsvDocument, "headers") == @FieldType(CsvDocument, "rows")
+        and @FieldType(CsvDocument, "rows") == []CsvRow
+
+    test a_row_can_hold_at_least_one_cell
+        // FAILING ON PURPOSE. CsvRow is declared with no fields at all, so it
+        // is a zero-sized type: a parsed row cannot carry a single cell, and
+        // headers/rows are slices of nothing. The spec needs a cells field.
+        then @sizeOf(CsvRow) > 0
+
