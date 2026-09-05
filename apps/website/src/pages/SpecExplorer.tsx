@@ -420,6 +420,13 @@ export default function SpecExplorer() {
   // Inline styles cannot carry media queries, and the header has three pieces
   // of text that will happily overlap rather than wrap. Track the width and
   // drop the optional ones instead.
+  // Embedded in the Queen HUD (?embed=1): the frame already sits under the
+  // HUD's own chrome, so the page header would be a second title bar.
+  const embedded = useMemo(
+    () => new URLSearchParams(window.location.hash.split('?')[1] || '').get('embed') === '1',
+    [],
+  )
+
   const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
   useEffect(() => {
     const onResize = () => setNarrow(window.innerWidth < 1100)
@@ -686,7 +693,7 @@ export default function SpecExplorer() {
       {/* Everything after the title is allowed to shrink and then clip: on a
           narrow window the provenance line would otherwise wrap under the
           heading and overlap it. */}
-      <header
+      {!embedded && <header
         style={{
           minHeight: 52,
           flexShrink: 0,
@@ -746,7 +753,7 @@ export default function SpecExplorer() {
             </span>
           )}
         </div>
-      </header>
+      </header>}
 
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
         {/* library */}

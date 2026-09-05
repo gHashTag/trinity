@@ -300,7 +300,8 @@ const COPY = {
     specsLines: "lines",
     specsNodes: "AST nodes",
     specsSources: "SOURCES",
-    specsOpen: "Open the Spec Explorer →",
+    specsOpen: "Open full screen ↗",
+    specsLoading: "Loading the compiler…",
     specsGapTitle: "HOW FAR THIS ACTUALLY IS",
     specsGapBody:
       "Measured, not asserted: the generated Verilog synthesises to 0 LUTs and 0 flip-flops across every spec that Yosys accepts — module shells with IBUF/OBUF and nothing behind them. The bitstreams running on the board today come from hand-written RTL. The directive above is the goal; this line is the distance.",
@@ -549,7 +550,8 @@ const COPY = {
     specsLines: "строк",
     specsNodes: "узлов AST",
     specsSources: "ИСТОЧНИКИ",
-    specsOpen: "Открыть обозреватель спек →",
+    specsOpen: "Открыть на весь экран ↗",
+    specsLoading: "Загрузка компилятора…",
     specsGapTitle: "НАСКОЛЬКО ЭТО ДАЛЕКО НА САМОМ ДЕЛЕ",
     specsGapBody:
       "Измерено, а не заявлено: сгенерированный Verilog даёт 0 LUT и 0 триггеров на всех спеках, которые Yosys принимает, — оболочки модулей с IBUF/OBUF и ничем внутри. Битстримы, работающие на плате сегодня, собраны из рукописного RTL. Директива выше — цель; эта строка — расстояние.",
@@ -2618,22 +2620,13 @@ export default function Queen() {
           ) : boardView === "specs" ? (
             <QueenSpecs
               c={{
-                title: c.specsTitle,
                 directive: c.specsDirective,
                 directiveBody: c.specsDirectiveBody,
-                corpus: c.specsCorpus,
+                open: c.specsOpen,
+                loading: c.specsLoading,
                 clean: c.specsClean,
                 warnings: c.specsWarnings,
                 broken: c.specsBroken,
-                specs: c.specsSpecs,
-                lines: c.specsLines,
-                nodes: c.specsNodes,
-                sources: c.specsSources,
-                open: c.specsOpen,
-                gapTitle: c.specsGapTitle,
-                gapBody: c.specsGapBody,
-                unavailable: c.unavailable,
-                loading: c.specsCorpus,
               }}
             />
           ) : boardView === "comb" ? (
