@@ -43,6 +43,7 @@ import {
   spiralOrder,
   hexCellSummaries,
   HEX_HOME,
+  type FoundationIssue,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -83,6 +84,7 @@ const QUEEN_API = (
   (import.meta.env.VITE_QUEEN_API as string | undefined) ?? DEFAULT_QUEEN_API
 ).replace(/\/+$/, "");
 const LIVE_POLL_MS = 5_000;
+const FOUNDATION_POLL_MS = 60_000;
 const MODULES_POLL_MS = 15_000;
 const ACTIVITY_POLL_MS = 2_000;
 const PINNED_QUEEN_HARDWARE_PUBLIC_KEY =
@@ -770,6 +772,47 @@ function useQueenModules(): { data: { commit: string | null; generatedAt: string
         .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
     void read();
     const timer = window.setInterval(read, MODULES_POLL_MS);
+    return () => { active = false; window.clearInterval(timer); };
+  }, []);
+  return { data, error };
+}
+
+/** The loop's GitHub snapshot: closed issues (the foundation), epics (the castle), rings, releases. */
+interface FoundationSnapshot {
+  generatedAt: string;
+  repo: string;
+  rings: string[];
+  closedIssues: FoundationIssue[];
+  epics: Array<{ number: number; title: string; state: string; closedAt: string | null; labels: string[]; ring: string | null; ringBy: string | null; children: Array<{ number: number; title: string; state: string; closedAt: string | null }> }>;
+  releases: Array<{ tag: string; name: string; publishedAt: string | null; prerelease: boolean }>;
+}
+
+/**
+ * The honeycomb's facts from GitHub: the server's route first
+ * (/queen/public-foundation, when it exists), the loop's dated snapshot in
+ * public/queen/foundation.json otherwise. The wire carries no closed_at,
+ * labels or epics, so this is the only honest source; absent, the layers
+ * read a dash and draw nothing.
+ */
+function useQueenFoundation(): { data: (FoundationSnapshot & { source: "wire" | "file" }) | null; error: string | null } {
+  const [data, setData] = useState<(FoundationSnapshot & { source: "wire" | "file" }) | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    const readFrom = async (url: string, source: "wire" | "file") => {
+      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-cache" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const next = (await response.json()) as FoundationSnapshot;
+      if (!Array.isArray(next.closedIssues) || typeof next.generatedAt !== "string") throw new Error("no snapshot");
+      return { ...next, rings: Array.isArray(next.rings) ? next.rings : [], epics: Array.isArray(next.epics) ? next.epics : [], releases: Array.isArray(next.releases) ? next.releases : [], source };
+    };
+    const read = () =>
+      readFrom(`${QUEEN_API}/queen/public-foundation`, "wire")
+        .catch(() => readFrom("./queen/foundation.json", "file"))
+        .then((next) => { if (active) { setData(next); setError(null); } })
+        .catch((nextError: unknown) => { if (active) setError(nextError instanceof Error ? nextError.message : String(nextError)); });
+    void read();
+    const timer = window.setInterval(read, FOUNDATION_POLL_MS);
     return () => { active = false; window.clearInterval(timer); };
   }, []);
   return { data, error };
@@ -1760,6 +1803,7 @@ export default function Queen() {
   // from facts (an issue in progress on it, an open issue, recently touched,
   // dormant), so territories and the buildings' kinds follow.
   const modulesState = useQueenModules();
+  const foundationState = useQueenFoundation();
   const rawModules = modulesState.data?.modules ?? EMPTY_MODULES;
   // the board knows the issues; every row gets its open issues from the cards
   const modules = useMemo(() => withOpenIssues(rawModules, cards), [rawModules, cards]);
@@ -2452,6 +2496,7 @@ export default function Queen() {
         data-pick-territory={livePick?.territory ?? undefined}
         data-pick-module={livePick?.module?.path ?? undefined}
         data-modules={modulesState.data ? `${modules.length}@${modulesState.data.commit ?? "?"}:${modulesState.data.source}` : undefined}
+        data-foundation={foundationState.data ? `${foundationState.data.closedIssues.length}@${foundationState.data.generatedAt}:${foundationState.data.source}` : undefined}
       >
         <header className="queen27-hud-vp-head">
           <span className="queen27-hud-vp-title">

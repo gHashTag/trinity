@@ -155,6 +155,7 @@ check(/return \(event\.kind === "review" \|\| event\.kind === "finished"\) && ev
 const nowB = Date.parse("2026-09-05T02:05:00Z");
 check(beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.seconds === 42 && beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.cold === false && beeSilence("2026-09-05T01:59:59Z", nowB, 300)?.cold === true, "42 s of silence under a 300 s round is warm; 301 s is cold");
 check(beeSilence("2026-09-05T01:00:00Z", nowB, null)?.cold === false && beeSilence(null, nowB, 300) === null && beeSilence("bad", nowB, 300) === null, "no round length: never cold; no last word or an undatable one: no age at all");
+check(/\$\{QUEEN_API\}\/queen\/public-foundation/.test(src) && /"\.\/queen\/foundation\.json"/.test(src) && /data-foundation=\{foundationState\.data \?/.test(src), "the honeycomb's GitHub facts come from the server's route first and the loop's dated snapshot second, named on the viewport (H-C1)");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
