@@ -346,7 +346,8 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     const { fail, counts } = result;
     const zero = [];
     if (counts.shell !== 1) zero.push('shell');
-    if (counts.commands !== 5) zero.push(`commands=${counts.commands}`);
+    // six command views since the SPECS view joined the panel (origin/main a308aa8bc); the gate follows the panel it counts
+    if (counts.commands !== 6) zero.push(`commands=${counts.commands}`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
     if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
     if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);

@@ -45,6 +45,9 @@ import {
   hexCellSummaries,
   HEX_HOME,
   type FoundationIssue,
+  FIELD_LAYERS,
+  layersFromSearch,
+  type FieldLayer,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -476,6 +479,11 @@ const COPY = {
     hudCommands: "QUICK COMMANDS",
     hudOpenRepo: "OPEN REPO",
     hudFitView: "FIT VIEW",
+    hudLayerFoundation: "FOUNDATION",
+    hudLayerCastle: "CASTLE",
+    hudLayerCode: "CODE",
+    hudFoundationSnapshot: "snapshot",
+    hudClosed: "closed",
     hudZoomIn: "ZOOM IN",
     hudZoomOut: "ZOOM OUT",
     hudFullscreen: "FULLSCREEN",
@@ -728,6 +736,11 @@ const COPY = {
     hudCommands: "БЫСТРЫЕ КОМАНДЫ",
     hudOpenRepo: "ОТКРЫТЬ РЕПО",
     hudFitView: "ВПИСАТЬ",
+    hudLayerFoundation: "ФУНДАМЕНТ",
+    hudLayerCastle: "ЗАМОК",
+    hudLayerCode: "КОД",
+    hudFoundationSnapshot: "снимок",
+    hudClosed: "закрыто",
     hudZoomIn: "ПРИБЛИЗИТЬ",
     hudZoomOut: "ОТДАЛИТЬ",
     hudFullscreen: "ВО ВЕСЬ ЭКРАН",
@@ -1149,6 +1162,10 @@ function activityLabel(event: QueenActivityEvent, lang: string) {
   // the state is a wire field printed as-is, absent means no suffix
   return (event.kind === "review" || event.kind === "finished") && event.state && event.state !== event.kind ? `${word} · ${event.state}` : word;
 }
+
+// the field's three toggleable layers (H-D): the COPY key of each button and its glyph
+const LAYER_COPY: Record<FieldLayer, "hudLayerFoundation" | "hudLayerCastle" | "hudLayerCode"> = { foundation: "hudLayerFoundation", castle: "hudLayerCastle", code: "hudLayerCode" };
+const LAYER_GLYPH: Record<FieldLayer, string> = { foundation: "⬢", castle: "♜", code: "▦" };
 
 const LAYER_DESIGN: Record<string, { color: string; icon: string }> = {
   seed: { color: "#00ff88", icon: "◆" },
@@ -1821,6 +1838,8 @@ export default function Queen() {
     "idle",
   );
   const combRef = useRef<CombHandle>(null);
+  // the field's layers: from the URL (?layers=foundation,castle), all on by default (H-D)
+  const [layers, setLayers] = useState<Record<FieldLayer, boolean>>(() => layersFromSearch(window.location.search));
   const viewportRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const roundRef = useRef<HTMLElement>(null);
@@ -2541,6 +2560,7 @@ export default function Queen() {
         data-pick-module={livePick?.module?.path ?? undefined}
         data-modules={modulesState.data ? `${modules.length}@${modulesState.data.commit ?? "?"}:${modulesState.data.source}` : undefined}
         data-foundation={foundationState.data ? `${foundationState.data.closedIssues.length}@${foundationState.data.generatedAt}:${foundationState.data.source}` : undefined}
+        data-layers={FIELD_LAYERS.filter((k) => layers[k]).join(",") || "none"}
       >
         <header className="queen27-hud-vp-head">
           <span className="queen27-hud-vp-title">
@@ -2562,8 +2582,23 @@ export default function Queen() {
           <div className="queen27-hud-vp-tools">
             {view === "comb" && (
               <>
+                {FIELD_LAYERS.map((k) => (
+                  <button
+                    type="button"
+                    key={k}
+                    data-layer={k}
+                    aria-pressed={layers[k]}
+                    aria-label={c[LAYER_COPY[k]]}
+                    title={k === "foundation" ? (foundationState.data ? `${c[LAYER_COPY[k]]} · ${foundationState.data.closedIssues.length} ${c.hudClosed} · ${c.hudFoundationSnapshot} ${formatMoment(foundationState.data.generatedAt, lang)} · ${foundationState.data.source}` : `${c[LAYER_COPY[k]]} · —`) : c[LAYER_COPY[k]]}
+                    onClick={() => setLayers((l) => ({ ...l, [k]: !l[k] }))}
+                  >
+                    <i aria-hidden="true">{LAYER_GLYPH[k]}</i>
+                    <span className="queen27-hud-vp-word">{c[LAYER_COPY[k]]}</span>
+                  </button>
+                ))}
                 <button
                   type="button"
+                  data-tool="fit"
                   onClick={() => combRef.current?.fit()}
                   title={c.hudFitView}
                 >
@@ -2571,6 +2606,7 @@ export default function Queen() {
                 </button>
                 <button
                   type="button"
+                  data-tool="out"
                   onClick={() => combRef.current?.zoomOut()}
                   aria-label={c.hudZoomOut}
                   title={c.hudZoomOut}
@@ -2579,6 +2615,7 @@ export default function Queen() {
                 </button>
                 <button
                   type="button"
+                  data-tool="in"
                   onClick={() => combRef.current?.zoomIn()}
                   aria-label={c.hudZoomIn}
                   title={c.hudZoomIn}
@@ -2589,6 +2626,7 @@ export default function Queen() {
             )}
             <button
               type="button"
+              data-tool="full"
               onClick={toggleFullscreen}
               aria-pressed={isFullscreen}
               title={isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}
@@ -2639,6 +2677,8 @@ export default function Queen() {
                   modules={modulesById}
                   beeTargets={beeTargets}
                   foundation={foundationState.data ? { issues: foundationState.data.closedIssues, generatedAt: foundationState.data.generatedAt, source: foundationState.data.source } : null}
+                  layers={layers}
+                  handleRef={combRef}
                   workers={workers}
                   devices={hardware?.devices ?? null}
                   onPick={handlePick}
