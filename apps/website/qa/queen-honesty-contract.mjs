@@ -157,6 +157,7 @@ check(beeSilence("2026-09-05T02:04:18Z", nowB, 300)?.seconds === 42 && beeSilenc
 check(beeSilence("2026-09-05T01:00:00Z", nowB, null)?.cold === false && beeSilence(null, nowB, 300) === null && beeSilence("bad", nowB, 300) === null, "no round length: never cold; no last word or an undatable one: no age at all");
 check(/\$\{QUEEN_API\}\/queen\/public-foundation/.test(src) && /"\.\/queen\/foundation\.json"/.test(src) && /data-foundation=\{foundationState\.data \?/.test(src), "the honeycomb's GitHub facts come from the server's route first and the loop's dated snapshot second, named on the viewport (H-C1)");
 check((src.match(/hexField\(Math\.max\(moduleCards\.length \+ 1, closedCount \+ 1\)\)/g) || []).length >= 2, "the field is as large as the honey needs (the hub plus modules or closed issues), the modules keep their inner cells (H-C2)");
+check(/data-pick-kind=\{livePick\?\.kind/.test(src) && /data-pick-issue=\{livePick\?\.kind === "issue"/.test(src) && /if \(pick\.kind === "issue" && pick\.issue\)/.test(src), "a pick is (kind, number): an issue pick follows its number through the snapshot, the viewport names the kind and the issue (H-E)");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
