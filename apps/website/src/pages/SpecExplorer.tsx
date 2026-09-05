@@ -114,7 +114,7 @@ const UI = {
     reset: 'Reset',
     editing: 'Editing — not the shipped spec',
     unrun: 'not compiled yet',
-    runHint: 'GO or ⌘⏎ to compile',
+    runHint: 'RUN or ⌘⏎ to compile',
     brokeIt: 'broke',
     fixedIt: 'fixed',
     course: 'Course',
@@ -195,7 +195,7 @@ const UI = {
     reset: 'Сброс',
     editing: 'Редактирование — это уже не исходная спека',
     unrun: 'ещё не скомпилировано',
-    runHint: 'GO или ⌘⏎ для компиляции',
+    runHint: 'RUN или ⌘⏎ для компиляции',
     brokeIt: 'сломал',
     fixedIt: 'починил',
     course: 'Курс',
@@ -569,7 +569,7 @@ export default function SpecExplorer() {
    * of quiet is the trigger: long enough not to fire mid-word, short enough
    * that the pause before you look up is already over.
    *
-   * GO stays, and stays useful -- it runs without waiting for the debounce,
+   * RUN stays, and stays useful -- it runs without waiting for the debounce,
    * and it is the affordance that tells you this page compiles at all.
    */
   // `run` is reachable through a ref so it is not an effect dependency:
@@ -1124,7 +1124,7 @@ export default function SpecExplorer() {
                   </>
                 )}
 
-                {/* Edit / GO / Reset. GO is the loud one on purpose -- it is
+                {/* Edit / RUN / Reset. RUN is the loud one on purpose -- it is
                     the action the whole page exists to make cheap. */}
                 <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {/* Reset only appears once there is something to reset. */}
@@ -1150,7 +1150,7 @@ export default function SpecExplorer() {
                       opacity: busy ? 0.6 : 1,
                     }}
                   >
-                    {busy ? ui.compiling : 'GO'}
+                    {busy ? ui.compiling : 'RUN'}
                   </button>
                 </span>
               </div>
