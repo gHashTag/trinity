@@ -20,8 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
+      # write, not read: the action posts its reply as a PR/issue comment, so a
+      # read-scoped token cannot complete the job. This workflow has only ever
+      # been skipped (nobody has @claude-mentioned yet), so the bug is latent
+      # here rather than observed -- but it is the same one that broke every
+      # run of claude-code-review.yml.
+      pull-requests: write
+      issues: write
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
