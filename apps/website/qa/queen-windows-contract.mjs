@@ -85,7 +85,9 @@ for (const lang of LANGS) for (const [w, h] of SIZES) {
       if (!el) return;
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || el.clientWidth === 0) return; // a tile whose sub-line is hidden by design at this size shows no window at all
-      const cutX = el.scrollWidth > el.clientWidth + 1, cutY = el.scrollHeight > el.clientHeight + 1;
+      // a line-clamped element is a designed truncation of its TAIL (the decision line leads with the wire field, P1-18): its content height is not a cut
+      const clamped = cs.webkitLineClamp && cs.webkitLineClamp !== 'none';
+      const cutX = el.scrollWidth > el.clientWidth + 1, cutY = !clamped && el.scrollHeight > el.clientHeight + 1;
       if (cutX || cutY) out.push(label + ' "' + (el.textContent || '').trim().slice(0, 60) + '" ' + el.scrollWidth + 'x' + el.scrollHeight + ' in ' + el.clientWidth + 'x' + el.clientHeight);
     };
     document.querySelectorAll('.queen27-hud-res').forEach((tile, i) => check(tile.querySelector(':scope > span'), 'tile ' + i + ' (' + ((tile.querySelector('small') || {}).textContent || '').trim() + ')'));

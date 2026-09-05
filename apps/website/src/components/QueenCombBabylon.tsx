@@ -41,8 +41,8 @@ import type { InstancedMesh } from "@babylonjs/core/Meshes/instancedMesh";
 import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
-import { S, HH, EDGES, summariseCells, queenIndexOf } from "./QueenComb";
-import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity } from "./queenHud";
+import { S, EDGES } from "./QueenComb";
+import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R } from "./queenHud";
 
 interface SpikeCard {
   number: number;
@@ -94,21 +94,6 @@ type ModelKey = keyof typeof MODELS;
 const MARGIN = S * 1.2;
 
 /** Point-in-down-triangle for the cell under a world point (x, z). */
-function cellAtWorld(cells: ReturnType<typeof summariseCells>, wx: number, wz: number): number {
-  for (let i = 0; i < cells.length; i += 1) {
-    const c = cells[i];
-    const ax = c.x - S / 2, ay = c.yTop;
-    const bx = c.x + S / 2, by = c.yTop;
-    const cx = c.x, cy = c.yTop + HH;
-    const d1 = (wx - bx) * (ay - by) - (ax - bx) * (wz - by);
-    const d2 = (wx - cx) * (by - cy) - (bx - cx) * (wz - cy);
-    const d3 = (wx - ax) * (cy - ay) - (cx - ax) * (wz - ay);
-    const neg = d1 < 0 || d2 < 0 || d3 < 0;
-    const pos = d1 > 0 || d2 > 0 || d3 > 0;
-    if (!(neg && pos)) return i;
-  }
-  return -1;
-}
 
 /**
  * The ground: steel platform tiles (the user's StarCraft reference), panel
@@ -233,8 +218,8 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const cards = cardsRef.current;
     const workers = workersRef.current;
     const devices = devicesRef.current;
-    const cells = summariseCells(cards);
-    const home = queenIndexOf(cells.length);
+    const cells = hexCellSummaries(cards);
+    const home = HEX_HOME;
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
     const scene = new Scene(engine);
     scene.clearColor = new Color4(2 / 255, 8 / 255, 6 / 255, 1);
@@ -258,7 +243,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
     for (const c of cells) {
       minX = Math.min(minX, c.x - S / 2); maxX = Math.max(maxX, c.x + S / 2);
-      minZ = Math.min(minZ, c.yTop); maxZ = Math.max(maxZ, c.yTop + HH);
+      minZ = Math.min(minZ, c.y - HEX_R); maxZ = Math.max(maxZ, c.y + HEX_R);
     }
     const centre = new Vector3((minX + maxX) / 2, 0, (minZ + maxZ) / 2);
     const camera = new ArcRotateCamera("cam", Math.PI / 2 + 0.55, 0.95, 4000, centre.clone(), scene);
@@ -449,23 +434,24 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
 
 
     // ---- rings: picked (gold), hover (dashed, territory colour) ---------
-    const ring4 = () => [[new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0, 0, 0)]];
-    const picked = CreateLineSystem("picked", { lines: ring4(), updatable: true }, scene);
+    const ring7 = () => [Array.from({ length: 7 }, () => new Vector3(0, 0, 0))];
+    const picked = CreateLineSystem("picked", { lines: ring7(), updatable: true }, scene);
     picked.color = Color3.FromHexString("#FFD45A"); picked.isPickable = false;
-    const tri = (i: number): [number, number][] => { const c = cells[i]; return [[c.x - S / 2, c.yTop], [c.x + S / 2, c.yTop], [c.x, c.yTop + HH]]; };
+    // a cell's outline is its hexagon, inset a little so the ring reads as the cell's, not the neighbour's
+    const hexOf = (i: number): [number, number][] => hexCornersAt(cells[i].x, cells[i].y, HEX_R, 4).map((c) => [c.x, c.y]);
     const placeRing = (mesh: LinesMesh, i: number, y: number) => {
-      const p = tri(i); const pts = [p[0], p[1], p[2], p[0]];
+      const p = hexOf(i); const pts = [...p, p[0]];
       const buf = mesh.getVerticesData(VertexBuffer.PositionKind);
       if (!buf) return;
       pts.forEach(([px, pz], k) => { buf[k * 3] = px; buf[k * 3 + 1] = y; buf[k * 3 + 2] = pz; });
       mesh.updateVerticesData(VertexBuffer.PositionKind, buf);
       mesh.isVisible = true;
     };
-    const hovered = CreateDashedLines("hover", { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 0, 1), new Vector3(0, 0, 0)], dashSize: 3, gapSize: 2, dashNb: 60, updatable: true }, scene);
+    const hovered = CreateDashedLines("hover", { points: Array.from({ length: 7 }, (_, k) => new Vector3(Math.cos(k), 0, Math.sin(k))), dashSize: 3, gapSize: 2, dashNb: 60, updatable: true }, scene);
     hovered.alpha = 0.8; hovered.isPickable = false; hovered.isVisible = false;
     const placeDashed = (i: number, y: number) => {
-      const p = tri(i);
-      CreateDashedLines("hover", { points: [new Vector3(p[0][0], y, p[0][1]), new Vector3(p[1][0], y, p[1][1]), new Vector3(p[2][0], y, p[2][1]), new Vector3(p[0][0], y, p[0][1])], dashSize: 3, gapSize: 2, dashNb: 60, instance: hovered }, scene);
+      const p = hexOf(i);
+      CreateDashedLines("hover", { points: [...p, p[0]].map(([px, pz]) => new Vector3(px, y, pz)), dashSize: 3, gapSize: 2, dashNb: 60, instance: hovered }, scene);
       hovered.color = Color3.FromHexString(ringTone(cells[i].own as Territory));
       hovered.isVisible = true;
     };
@@ -621,7 +607,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const cellUnder = (x: number, y: number) => {
       const hit = scene.pick(x, y, (m) => m === ground);
       if (!hit?.hit || !hit.pickedPoint) return -1;
-      return cellAtWorld(cells, hit.pickedPoint.x, hit.pickedPoint.z);
+      return hexIndexAt(hit.pickedPoint.x, hit.pickedPoint.z, cells.length);
     };
     let hover = -1;
     let downAt: [number, number] | null = null;
@@ -735,7 +721,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
 
   return (
     <div className="queen27-comb is-embedded is-babylon">
-      <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="platform">
+      <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="platform" data-grid="hex">
         <canvas ref={canvasRef} style={{ touchAction: "none", outline: "none" }} />
       </div>
     </div>

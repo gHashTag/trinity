@@ -9,7 +9,7 @@ import {
   type RefObject, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { QueenComb, queenIndexOf, summariseCells } from "../components/QueenComb";
+import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
@@ -28,20 +28,21 @@ import {
   type HudEvent,
   type HudPick,
   type HudView,
-  fieldShape,
   placeCards,
   staleAge,
-  cellGeometry,
   moduleCard,
   moduleFor,
   pathInTitle,
-  ringOrder,
   type HudModule,
   withOpenIssues,
   countdownFor,
   serverOffsetMs,
   mergeActivity,
   alertSpan,
+  hexField,
+  spiralOrder,
+  hexCellSummaries,
+  HEX_HOME,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -1775,12 +1776,16 @@ export default function Queen() {
     cards: QueenCard[];
     placed: (QueenCard | null)[];
     ledger: Map<number, number>;
-  }>(() => ({ cards: moduleCards, ...placeCards(new Map(), moduleCards, fieldShape(moduleCards.length).cellCount, ringOrder(cellGeometry(moduleCards.length), queenIndexOf(fieldShape(moduleCards.length).cellCount))) }));
+  }>(() => {
+    // the honeycomb: the hub plus one cell per module, rings from the centre
+    const shape0 = hexField(moduleCards.length + 1);
+    return { cards: moduleCards, ...placeCards(new Map(), moduleCards, shape0.cellCount, spiralOrder(shape0.cellCount)) };
+  });
   let placedCards = placement.placed;
   if (placement.cards !== moduleCards) {
-    // rings from the centre: free cells are taken nearest the Queen first
-    const shape = fieldShape(moduleCards.length);
-    const next = placeCards(placement.ledger, moduleCards, shape.cellCount, ringOrder(cellGeometry(moduleCards.length), queenIndexOf(shape.cellCount)));
+    // rings from the centre: free cells are taken along the spiral, nearest the Queen first
+    const shape = hexField(moduleCards.length + 1);
+    const next = placeCards(placement.ledger, moduleCards, shape.cellCount, spiralOrder(shape.cellCount));
     placedCards = next.placed;
     setPlacement({ cards: moduleCards, placed: next.placed, ledger: next.ledger });
   }
@@ -1891,7 +1896,7 @@ export default function Queen() {
   // first answer began later than an hour ago (P0-11)
   const bellSpan = useMemo(() => alertSpan(activityState.data?.observedFrom ?? null, now), [activityState.data?.observedFrom, now]);
   const bellSpanText = bellSpan ? formatInterval(bellSpan.seconds, lang) : null;
-  const cellSummaries = useMemo(() => summariseCells(placedCards), [placedCards]);
+  const cellSummaries = useMemo(() => hexCellSummaries(placedCards), [placedCards]);
   // Bees are the issues in progress: each walks to the module its title names.
   const beeTargets = useMemo<Array<number | null>>(() => {
     const byNumber = new Map<number, number>();
@@ -1936,7 +1941,7 @@ export default function Queen() {
       card: moduleCards.find((card) => card.number === number) ?? pick.card,
       module: modulesById.get(number) ?? null,
       territory: cellSummaries[index].own,
-      isQueen: index === queenIndexOf(cellSummaries.length),
+      isQueen: index === HEX_HOME,
     };
   }, [pick, cellSummaries, moduleCards, modulesById]);
   const pickIndex = livePick?.index ?? null;
@@ -2123,12 +2128,15 @@ export default function Queen() {
                     cell
                       ? {
                           index,
-                          isQueen: index === queenIndexOf(cellSummaries.length),
+                          isQueen: index === HEX_HOME,
                           territory: cell.own,
+                          // the cells carry MODULE numbers (M-2): resolve against the
+                          // module cards, not the board's issues
                           card:
                             cell.cardNumber === null
                               ? null
-                              : (cards.find((card) => card.number === cell.cardNumber) ?? null),
+                              : (moduleCards.find((card) => card.number === cell.cardNumber) ?? null),
+                          module: cell.cardNumber === null ? null : (modulesById.get(cell.cardNumber) ?? null),
                           bee: null,
                         }
                       : null,

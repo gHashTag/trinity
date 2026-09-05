@@ -429,6 +429,25 @@ export function hexCorners(a: Axial, R = HEX_R, inset = 0): Array<{ x: number; y
     return { x: c.x + (R - inset) * Math.cos(ang), y: c.y + (R - inset) * Math.sin(ang) };
   });
 }
+/** Six corners around a world centre (pointy top), for cells the caller already placed. */
+export function hexCornersAt(x: number, y: number, R = HEX_R, inset = 0): Array<{ x: number; y: number }> {
+  return Array.from({ length: 6 }, (_, k) => {
+    const ang = (Math.PI / 6) + (Math.PI / 3) * k;
+    return { x: x + (R - inset) * Math.cos(ang), y: y + (R - inset) * Math.sin(ang) };
+  });
+}
+/**
+ * The field as every view sees it: one summary per spiral cell, the placed
+ * card's territory on it, fog where nothing stands. Replaces the comb's
+ * summariseCells for the hex field; the minimap, the Babylon field and the
+ * page share it, so a click anywhere names the same cell.
+ */
+export function hexCellSummaries(placed: ReadonlyArray<{ number: number; column: string } | null>): CombCellSummary[] {
+  return placed.map((card, i) => {
+    const w = hexToWorld(spiralAxial(i));
+    return { x: w.x, y: w.y, yTop: w.y - HEX_R, up: false, own: card ? territoryOf(card.column) : "fog", cardNumber: card ? card.number : null };
+  });
+}
 /** One centre per cell, spiral order (replaces cellGeometry for the hex field). */
 export function hexCentres(cellCount: number, R = HEX_R): Array<{ x: number; y: number }> {
   return Array.from({ length: cellCount }, (_, i) => hexToWorld(spiralAxial(i), R));
