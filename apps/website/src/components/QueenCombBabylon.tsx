@@ -24,6 +24,7 @@ import { Sprite } from "@babylonjs/core/Sprites/sprite";
 import { CreateLineSystem, CreateDashedLines } from "@babylonjs/core/Meshes/Builders/linesBuilder";
 import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
+import { CreatePlane } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateTorus } from "@babylonjs/core/Meshes/Builders/torusBuilder";
@@ -589,7 +590,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     };
     const unitInstances: Array<{ key: ModelKey; node: InstancedMesh; k: number; base: number }> = [];
     void (async () => {
-      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "tile", "plinth", "walls", "tower", "wizardTower"];
+      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "tile", "plinth", "walls", "tower", "wizardTower", "keep", "unitTower"];
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
       for (const [key, t] of loaded) if (t) { modelInstances.set(key, t); if (key === "tile") t.mesh.parent = layerNodes.foundation; else if (["plinth", "wall", "walls", "tower", "wizardTower", "keep", "unitTower"].includes(key)) t.mesh.parent = layerNodes.castle; else if (!["hub", "crystal", "scribe", "wright", "lapidary", "larva"].includes(key)) t.mesh.parent = layerNodes.code; }
@@ -696,6 +697,55 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
             t.mesh.position.y = lift + plinthT.height * kp;
           }
           const unassigned = epics.filter((e) => ringOfEpic(e, rings).ring === null).length;
+          // the keep at the hub (K-4): the castle's heart on its own layer; the unassigned epics stand around it as small towers
+          const keepT = modelInstances.get("keep");
+          if (keepT) {
+            keepT.mesh.parent = layerNodes.castle;
+            placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.5, []);
+            host.setAttribute("data-castle-keep", "1");
+            const unitT = modelInstances.get("unitTower");
+            if (unitT && unassigned > 0) {
+              unitT.mesh.parent = layerNodes.castle;
+              const um: number[] = []; const shown = Math.min(unassigned, 24);
+              for (let k2 = 0; k2 < shown; k2 += 1) { const ang = (Math.PI * 2 * k2) / shown; um.push(...Matrix.Translation(cells[home].x + Math.cos(ang) * S * 0.62, 0, cells[home].y + Math.sin(ang) * S * 0.62).toArray()); }
+              placeModel(unitT, um, S * 0.22, [], Array.from({ length: shown }, () => 1), Array.from({ length: shown }, () => 0), Array.from({ length: shown }, () => 1), Array.from({ length: shown }, () => [0.6, 0.6, 0.6, 1]).flat());
+            }
+          }
+          // a nameplate per plinth: the ring's name on a small billboard above its stone
+          let plates = 0;
+          for (const pl of places) {
+            const c = cells[pl.plinth];
+            const tex = new DynamicTexture(`plate-${pl.ring}`, { width: 256, height: 64 }, scene, false);
+            const ctx2 = tex.getContext() as CanvasRenderingContext2D;
+            ctx2.fillStyle = "rgba(6,10,12,0.82)"; ctx2.fillRect(0, 0, 256, 64);
+            const tint = familyTint(ringFamily(pl.ring));
+            ctx2.fillStyle = `rgb(${Math.round(tint[0] * 255)},${Math.round(tint[1] * 255)},${Math.round(tint[2] * 255)})`;
+            ctx2.font = "bold 34px ui-monospace, Menlo, monospace"; ctx2.textAlign = "center"; ctx2.textBaseline = "middle"; ctx2.fillText(pl.ring, 128, 34);
+            tex.update(false);
+            const plateMat = new StandardMaterial(`plate-${pl.ring}`, scene);
+            plateMat.diffuseTexture = tex; plateMat.emissiveTexture = tex; plateMat.specularColor = Color3.Black(); plateMat.backFaceCulling = false;
+            const plate = CreatePlane(`plate-${pl.ring}`, { width: S * 0.9, height: S * 0.225 }, scene);
+            plate.material = plateMat; plate.billboardMode = Mesh.BILLBOARDMODE_Y; plate.isPickable = false; plate.parent = layerNodes.castle;
+            plate.position.set(c.x, lift + plinthT.height * kp + S * 0.55, c.y);
+            plates += 1;
+          }
+          host.setAttribute("data-castle-plates", String(plates));
+          // a banner per release at the keep's rim: the tag on a pole
+          const releases = fdNow.releases ?? [];
+          releases.slice(0, 8).forEach((r, k3) => {
+            const ang = -Math.PI / 2 + (Math.PI * 2 * k3) / Math.max(1, Math.min(releases.length, 8));
+            const px = cells[home].x + Math.cos(ang) * S * 0.9, pz = cells[home].y + Math.sin(ang) * S * 0.9;
+            const pole = CreateCylinder(`banner-pole-${k3}`, { diameter: 2.2, height: S * 0.7, tessellation: 6 }, scene);
+            pole.material = steel; pole.isPickable = false; pole.parent = layerNodes.castle; pole.position.set(px, S * 0.35, pz);
+            const tex = new DynamicTexture(`banner-${k3}`, { width: 256, height: 96 }, scene, false);
+            const ctx3 = tex.getContext() as CanvasRenderingContext2D;
+            ctx3.fillStyle = "#b8860b"; ctx3.fillRect(0, 0, 256, 96); ctx3.fillStyle = "#1a1408"; ctx3.font = "bold 40px ui-monospace, Menlo, monospace"; ctx3.textAlign = "center"; ctx3.textBaseline = "middle"; ctx3.fillText(r.tag.slice(0, 12), 128, 48);
+            tex.update(false);
+            const bm = new StandardMaterial(`banner-${k3}`, scene); bm.diffuseTexture = tex; bm.emissiveColor = new Color3(0.3, 0.22, 0.05); bm.backFaceCulling = false;
+            const flag = CreatePlane(`banner-flag-${k3}`, { width: S * 0.5, height: S * 0.19 }, scene);
+            flag.material = bm; flag.billboardMode = Mesh.BILLBOARDMODE_Y; flag.isPickable = false; flag.parent = layerNodes.castle; flag.position.set(px, S * 0.62, pz);
+          });
+          host.setAttribute("data-castle-banners", String(Math.min(releases.length, 8)));
           host.setAttribute("data-castle-rings", String(places.length));
           host.setAttribute("data-castle-stages", stages.sort().join(";"));
           host.setAttribute("data-castle-unassigned", String(unassigned));
