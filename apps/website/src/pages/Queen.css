@@ -3265,10 +3265,13 @@ main:where(.queen27-page.is-shell) section {
   display: grid;
   min-width: 0;
   grid-template-columns: auto minmax(0, 1fr);
+  /* the window (sub) runs under the glyph too: measured 2026-09-05, the
+     glyph column and gap left a 62 px window in a 109 px tile at 1272 (ru
+     VERDICTS needed three lines); spanning both columns gives it ~95 px */
   grid-template-areas:
     "glyph label"
     "glyph value"
-    "glyph sub";
+    "sub sub";
   align-content: center;
   column-gap: 0.55rem;
   padding: 0 0.8rem;
@@ -4350,7 +4353,14 @@ main:where(.queen27-page.is-shell) section {
   font-size: 0.58rem;
   font-style: normal;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  /* two lines before any cut (P1-18): measured 2026-09-05 at 1280x600 (ru),
+     the refusal needed 409 px in 179 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.2;
+  white-space: normal;
+  overflow: hidden;
 }
 
 .queen27-page.is-shell .queen27-hud-round-pop {

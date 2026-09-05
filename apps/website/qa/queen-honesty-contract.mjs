@@ -130,6 +130,11 @@ check(spanEarly && spanEarly.clipped && spanEarly.seconds === 14 * 60 && spanFul
 check(/const roundSeconds = board\?\.pulse\.roundSeconds \?\? 0;/.test(src) && /const lastRoundAt = board\?\.pulse\.lastRoundAt \?\? null;/.test(src), "the round tile's two inputs come from public-board's pulse only; no fallback to the status interval or the last decision");
 check(/`\$\{c\.hudSince\} \$\{formatMoment\(lastRoundAt, lang\)\} · ≤ \$\{formatCountdown\(roundSeconds\)\}`/.test(src) && /hudSince:\s*"since"/.test(src) && /hudSince:\s*"с"/.test(src), "the sub-line names the last round's moment and the interval as a bound (≤) in both languages");
 check(/schedulerOff \|\| !roundKnown \? "—" : `\+\$\{formatCountdown\(elapsedSeconds\)\}`/.test(src), "the value counts up since the last round; no countdown promises the next round at a second");
+// the status pill reads swarmState through COPY keys; the VERDICTS tile adds the unreviewed count only when the wire has it (P1-28)
+check(/data\?\.swarmState === "working"[\s\S]{0,40}c\.swarmWorking[\s\S]{0,120}c\.swarmIdle[\s\S]{0,120}c\.swarmPaused[\s\S]{0,80}data\.swarmState\.toUpperCase\(\)[\s\S]{0,40}c\.swarmUnknown/.test(src), "the pill maps working/idle/paused to COPY keys, prints an unfamiliar wire state as itself, and a missing one as the unknown key");
+check(/swarmWorking:\s*"WORKING"/.test(src) && /swarmWorking:\s*"РАБОТАЕТ"/.test(src) && /hudReady:\s*"ready"/.test(src) && /hudReady:\s*"готово"/.test(src), "the four swarm words and the ready word exist in both languages");
+check(/typeof data\?\.dispatches\.unreviewed === "number" \? ` · \$\{data\.dispatches\.unreviewed\} \$\{c\.hudReady\}` : ""/.test(src), "the VERDICTS sub-line prints the unreviewed count only when the wire carries the field, never 0 for an absent one");
+check(/`\$\{decisionInfo\} · \$\{decision\.allowed \? c\.chose : c\.stoodDown\}`/.test(src), "the gold block's decision line leads with the wire field (the refusal or what the round did), the verb follows");
 check(decisionDetail({ allowed: false, refusal: null }, 0, 1, L) !== "0 executing now", "self-test");
 
 if (fails.length) { for (const f of fails) console.log("  ✗ " + f); console.log(`Queen honesty contract: FAIL (${fails.length})`); process.exit(1); }
