@@ -384,7 +384,7 @@ export function TnfFrontier() {
                   {frontier.decoder.map((d) => (
                     <tr key={d.name} className={d.ours ? 'ours' : ''}>
                       <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.rank}</td>
-                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}</td>
+                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}{'flag' in d && d.flag ? <sup style={{ color: 'var(--accent)' }}>{d.flag}</sup> : null}</td>
                       <td style={{ textAlign: 'left' }}>{L(d.kind)}</td>
                       <td className="tnf-mono">{d.lut}</td>
                       <td className="tnf-mono">{d.fmax.toFixed(2)}</td>
@@ -421,7 +421,7 @@ export function TnfFrontier() {
                   {frontier.neuron.map((d) => (
                     <tr key={d.name} className={d.ours ? 'ours' : ''}>
                       <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.rank}</td>
-                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}</td>
+                      <td className="tnf-mono" style={{ textAlign: 'left' }}>{d.name}{'flag' in d && d.flag ? <sup style={{ color: 'var(--accent)' }}>{d.flag}</sup> : null}</td>
                       <td className="tnf-mono">{d.lut}</td>
                       <td className="tnf-mono">{d.tpa.toFixed(4)}</td>
                       <td>
@@ -435,6 +435,7 @@ export function TnfFrontier() {
               </table>
             </div>
             <p className="tnf-note">{L(frontier.neuronNote)}</p>
+            <p className="tnf-note">{L(frontier.conformanceNote)}</p>
           </div>
         </motion.div>
 
