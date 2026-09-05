@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Check exhaustiveness at compile time when possible | φ² + 1/φ² = 3 | TRINITY
+
+module []const u8;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Match = struct {
+        matched : bool,
+        captures : []MatchCapture,
+    };
+
+    pub const MatchCapture = struct {
+        value : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // match_literal(input: []const u8, pattern: []const u8) → bool
+    fn match_literal(input: []const u8, pattern: []const u8) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // match_type(type_name: []const u8, value: Any) → bool
+    fn match_type(type_name: []const u8, value: Any) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // exhaustive(cases: [][]const u8, handled: []bool) → bool
+    fn exhaustive(cases: [][]const u8, handled: []bool) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // match_literal/match_type/exhaustive are unimplemented stubs -- each emits
+    // `@panic("not yet implemented")`, so no matching can be exercised. The
+    // module does state what a match result looks like, and that is testable.
+
+    test a_match_reports_success_separately_from_captures
+        // matched is its own bool: zero captures does not mean no match, which
+        // is what a caller checking captures.len alone would conclude.
+        then @FieldType(Match, "matched") == bool
+        and @FieldType(Match, "captures") == []MatchCapture
+
+    test a_capture_is_its_text_and_nothing_else
+        // No start/end offsets are declared, so a caller cannot locate a
+        // capture within the input -- only read its bytes.
+        then @typeInfo(MatchCapture).@"struct".fields.len == 1
+        and @FieldType(MatchCapture, "value") == []const u8
+
+    test exhaustiveness_is_not_carried_in_the_result
+        // The header promises a compile-time exhaustiveness check, but Match
+        // has no field recording it: whatever exhaustive() decides is not
+        // reported through this type.
+        then @hasField(Match, "exhaustive") == false
+        and @typeInfo(Match).@"struct".fields.len == 2
+

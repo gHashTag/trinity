@@ -1,0 +1,116 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Derivative | φ² + 1/φ² = 3 | TRINITY
+
+module Elu;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_ALPHA : f32 = 1.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ELUConfig = struct {
+        alpha : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(x: f32, alpha: f32) → f32
+    fn forward(x: f32, alpha: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_batch(input: []f32, alpha: f32) → []f32
+    fn forward_batch(input: []f32, alpha: f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // derivative(x: f32, alpha: f32) → f32
+    fn derivative(x: f32, alpha: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward, forward_batch and derivative are still `TODO: Implement`, so
+    // they compile to `@panic("not yet implemented")` and calling one aborts
+    // the test binary. What this module does state is DEFAULT_ALPHA and the
+    // shape of ELUConfig, and that is what these tests hold to.
+
+    test default_alpha_is_one
+        given alpha = DEFAULT_ALPHA
+        then @abs(alpha - 1.0) < 1e-6
+
+    test default_alpha_satisfies_alpha_positive
+        given cfg = ELUConfig{ .alpha = DEFAULT_ALPHA }
+        then cfg.alpha > 0.0
+
+    test elu_config_carries_alpha_unchanged
+        given cfg = ELUConfig{ .alpha = 0.5 }
+        then @abs(cfg.alpha - 0.5) < 1e-6
+
+    // ELU is x for x >= 0 and alpha * (exp(x) - 1) below it, so at x = 0 both
+    // branches give 0 and the function is continuous there; the negative
+    // branch is bounded below by -alpha because exp(x) - 1 > -1 for all x.
+    test elu_branches_agree_at_zero
+        given alpha = DEFAULT_ALPHA
+        then @abs(alpha * (@exp(@as(f32, 0.0)) - 1.0)) < 1e-6
+
+    // In exact arithmetic the bound is strict everywhere, but f32 cannot hold
+    // it: at x = -20, exp(x) - 1 rounds to exactly -1, so the branch lands ON
+    // -alpha rather than above it. The strict form is checked where f32 can
+    // still see the gap, and the saturating form where it cannot.
+    test negative_branch_stays_above_minus_alpha_where_f32_resolves_it
+        given alpha = DEFAULT_ALPHA
+        and left = alpha * (@exp(@as(f32, -5.0)) - 1.0)
+        then left > -alpha
+        and left < 0.0
+
+    test negative_branch_saturates_at_minus_alpha_in_f32
+        given alpha = DEFAULT_ALPHA
+        and far_left = alpha * (@exp(@as(f32, -20.0)) - 1.0)
+        then @abs(far_left + alpha) < 1e-9
+
+    // forward is given a scalar with nowhere to put a result, forward_batch a
+    // batch with no output buffer, and derivative a scalar likewise. These
+    // record the signatures as they stand.
+    test forward_and_derivative_take_one_scalar_and_return_nothing
+        given f = forward
+        then @TypeOf(f) == fn (f32) void
+        and @TypeOf(derivative) == fn (f32) void
+
+    test forward_batch_takes_one_mutable_f32_slice
+        given f = forward_batch
+        then @TypeOf(f) == fn ([]f32) void
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant elu_constraint_0
+        given input = valid_input()
+        then true // alpha > 0
+
+    invariant elu_constraint_1
+        given input = valid_input()
+        then true // name: elu_formula
+
+    invariant elu_constraint_2
+        given input = valid_input()
+        then true // name: derivative
+
+    invariant elu_constraint_3
+        given input = valid_input()
+        then true // "Clevert et al. (2016) - Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)"
+

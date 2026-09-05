@@ -1,0 +1,133 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// LAMB parameter update with trust ratio clipping | φ² + 1/φ² = 3 | TRINITY
+
+module Lamb;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_LR : f32 = 0.001;
+    const DEFAULT_BETA1 : f32 = 0.9;
+    const DEFAULT_BETA2 : f32 = 0.999;
+    const DEFAULT_EPSILON : f32 = 1e-6;
+    const DEFAULT_CLIP_THRESHOLD : f32 = 10.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const LAMBConfig = struct {
+        learning_rate : f32,
+        beta1 : f32,
+        beta2 : f32,
+        epsilon : f32,
+        weight_decay : f32,
+        clip_threshold : f32,
+    };
+
+    pub const LAMBState = struct {
+        m : []f32,
+        v : []f32,
+        step : u32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init_state(num_params: u32) → LAMBState
+    fn init_state(num_params: u32) -> LAMBState {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_layer_update(params: []f32, grads: []f32, state: LAMBState, config: LAMBConfig) → []f32
+    fn compute_layer_update(params: []f32, grads: []f32, state: LAMBState, config: LAMBConfig) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward(layers: [][]f32, grads: [][]f32, states: []LAMBState, config: LAMBConfig) → [][]f32
+    fn forward(layers: [][]f32, grads: [][]f32, states: []LAMBState, config: LAMBConfig) -> [][]f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init_state, compute_layer_update and forward have no bodies, so nothing
+    // about the update rule can be exercised yet. What the module does decide
+    // is its default hyper-parameters, and those are exactly what the
+    // invariants below claim without asserting. Checked here instead.
+
+    test default_betas_lie_in_the_open_unit_interval
+        // lamb_constraint_0 and lamb_constraint_1
+        given beta1 = DEFAULT_BETA1
+        and beta2 = DEFAULT_BETA2
+        then beta1 > 0.0 and beta1 < 1.0 and beta2 > 0.0 and beta2 < 1.0
+
+    test second_moment_decays_slower_than_first
+        // v accumulates over a longer window than m, so beta2 > beta1
+        given beta1 = DEFAULT_BETA1
+        and beta2 = DEFAULT_BETA2
+        then beta2 > beta1
+
+    test default_epsilon_is_positive_and_well_below_the_step_size
+        // lamb_constraint_2: epsilon only guards the division, it must not
+        // dominate the update
+        given epsilon = DEFAULT_EPSILON
+        and lr = DEFAULT_LR
+        then epsilon > 0.0 and epsilon < lr
+
+    test default_clip_threshold_is_positive
+        // lamb_constraint_3: the trust ratio is clipped from above
+        given clip = DEFAULT_CLIP_THRESHOLD
+        then clip > 0.0
+
+    test default_learning_rate_is_a_positive_fraction
+        given lr = DEFAULT_LR
+        then lr > 0.0 and lr < 1.0
+
+    test default_config_carries_the_declared_defaults
+        given cfg = LAMBConfig{ .learning_rate = DEFAULT_LR, .beta1 = DEFAULT_BETA1, .beta2 = DEFAULT_BETA2, .epsilon = DEFAULT_EPSILON, .weight_decay = 0.0, .clip_threshold = DEFAULT_CLIP_THRESHOLD }
+        then cfg.beta1 > 0.0 and cfg.beta1 < 1.0 and cfg.beta2 > 0.0 and cfg.beta2 < 1.0 and cfg.epsilon > 0.0 and cfg.clip_threshold > 0.0
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant lamb_constraint_0
+        given input = valid_input()
+        then true // 0 < beta1 < 1
+
+    invariant lamb_constraint_1
+        given input = valid_input()
+        then true // 0 < beta2 < 1
+
+    invariant lamb_constraint_2
+        given input = valid_input()
+        then true // epsilon > 0
+
+    invariant lamb_constraint_3
+        given input = valid_input()
+        then true // clip_threshold > 0
+
+    invariant lamb_constraint_4
+        given input = valid_input()
+        then true // name: trust_ratio
+
+    invariant lamb_constraint_5
+        given input = valid_input()
+        then true // name: lamb_update
+
+    invariant lamb_constraint_6
+        given input = valid_input()
+        then true // "You et al. (2020) - Large Batch Optimization for Deep Learning: Training BERT in 76 minutes"
+
+    invariant lamb_constraint_7
+        given input = valid_input()
+        then true // "Used in BERT, T5, and other large-scale Transformer training"
+

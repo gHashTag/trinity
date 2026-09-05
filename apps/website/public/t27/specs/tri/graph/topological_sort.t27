@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// If u -> v is edge, u appears before v in order | φ² + 1/φ² = 3 | TRINITY
+
+module TriTopological;
+    use base::types;
+    use math::constants;
+    use TriGraphBfs::Graph;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const TopologicalSort = struct {
+        order : []usize,
+        has_cycle : "bool",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // sort(graph: *const Graph) → void
+    fn sort(graph: *const Graph) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_valid(result: TopologicalSort) → void
+    fn is_valid(result: TopologicalSort) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test sort_basic_case
+        given input = default_input()
+        when result = sort(input)
+        then result != undefined
+
+    test is_valid_basic_case
+        given input = default_input()
+        when result = is_valid(input)
+        then result != undefined
+

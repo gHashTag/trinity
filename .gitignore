@@ -423,3 +423,9 @@ fpga-flash
 !.trinity/issue_bindings.json
 !.trinity/souls/
 !templates/SOUL.md
+
+# The vendored t27 spec corpus backs the /specs explorer -- it is data, not
+# build output. The bare `demos/` and `runtime/` rules above match at any
+# depth, which silently dropped six specs from the snapshot.
+!apps/website/public/t27/specs/demos/
+!apps/website/public/t27/specs/runtime/

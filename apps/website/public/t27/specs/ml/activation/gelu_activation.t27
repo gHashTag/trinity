@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Based on cumulative distribution function | φ² + 1/φ² = 3 | TRINITY
+
+module Gelu;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const SQRT_2_OVER_PI : f32 = 0.7978845608;
+    const SQRT_PI_OVER_2 : f32 = 1.2533141373;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const GELUConfig = struct {
+        approximate : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32, output: []f32, config: GELUConfig) → void
+    fn forward(input: []const f32, output: []f32, config: GELUConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32, input: []const f32, grad_input: []f32, config: GELUConfig) → void
+    fn backward(grad_output: []const f32, input: []const f32, grad_input: []f32, config: GELUConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward() and backward() have no body yet, so they panic when called.
+    // What this module does state is its two GELU constants and its config
+    // type, and those carry properties that hold or do not.
+
+    test gelu_sqrt_constants_are_reciprocals
+        // sqrt(2/pi) * sqrt(pi/2) = 1 exactly; a typo in either literal
+        // moves the product off 1
+        given product = SQRT_2_OVER_PI * SQRT_PI_OVER_2
+        then @abs(product - 1.0) < 0.0000005
+
+    test gelu_sqrt_2_over_pi_squares_to_2_over_pi
+        // 2/pi = 0.6366197724
+        given squared = SQRT_2_OVER_PI * SQRT_2_OVER_PI
+        then @abs(squared - 0.63661977) < 0.0000003
+
+    test gelu_sqrt_pi_over_2_squares_to_pi_over_2
+        // pi/2 = 1.5707963268
+        given squared = SQRT_PI_OVER_2 * SQRT_PI_OVER_2
+        then @abs(squared - 1.5707963) < 0.0000005
+
+    test gelu_config_records_the_approximation_choice
+        given exact = GELUConfig{.approximate=false}
+        and approx = GELUConfig{.approximate=true}
+        then !exact.approximate
+        and approx.approximate
+

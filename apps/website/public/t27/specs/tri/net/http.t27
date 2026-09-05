@@ -1,0 +1,132 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Standard HTTP status codes | φ² + 1/φ² = 3 | TRINITY
+
+module TriHttp;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const HttpMethod = struct {
+        enum : [GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS],
+    };
+
+    pub const HttpStatus = struct {
+        code : u16,
+        reason : []const u8,
+    };
+
+    pub const Url = struct {
+        scheme : ?[]const u8,
+        host : ?[]const u8,
+        port : ?u16,
+        path : []const u8,
+        query : ?[]const u8,
+        fragment : ?[]const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // method_to_string(method: HttpMethod) → []const u8
+    fn method_to_string(method: HttpMethod) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // status_from_code(code: u16) → HttpStatus
+    fn status_from_code(code: u16) -> HttpStatus {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_success(code: u16) → bool
+    fn is_success(code: u16) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_redirect(code: u16) → bool
+    fn is_redirect(code: u16) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_client_error(code: u16) → bool
+    fn is_client_error(code: u16) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_server_error(code: u16) → bool
+    fn is_server_error(code: u16) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // parse_url(allocator: std.mem.Allocator, url: []const u8) → !Url
+    fn parse_url(allocator: std.mem.Allocator, url: []const u8) -> !Url {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is an unimplemented stub: each one emits
+    // `@panic("not yet implemented")`, so calling any of them aborts the test
+    // binary rather than failing a test. The assertions below are therefore
+    // about the representation the module actually declares.
+
+    test a_status_is_a_numeric_code_plus_a_reason_phrase
+        // RFC 9110 status-line: a three-digit code and a textual reason. u16
+        // covers the whole 100..599 range with room to spare, and the reason
+        // is borrowed, not owned -- status_from_code can hand back a literal.
+        then @typeInfo(HttpStatus).@"struct".fields.len == 2
+        and @FieldType(HttpStatus, "code") == u16
+        and @FieldType(HttpStatus, "reason") == []const u8
+        and std.math.maxInt(u16) >= 599
+
+    test the_class_predicates_partition_the_code_space
+        // is_success / is_redirect / is_client_error / is_server_error are the
+        // 2xx / 3xx / 4xx / 5xx classes: four disjoint hundreds-blocks, so a
+        // code belongs to at most one of them and 200/301/404/500 land apart.
+        given ok = 200 / 100
+        given moved = 301 / 100
+        given not_found = 404 / 100
+        given server = 500 / 100
+        then ok == 2
+        and moved == 3
+        and not_found == 4
+        and server == 5
+
+    test every_url_component_but_the_path_is_optional
+        // A bare "/index.html" is a legal Url: no scheme, host, port, query or
+        // fragment. The path is the one field that is always present.
+        then @typeInfo(Url).@"struct".fields.len == 6
+        and @FieldType(Url, "path") == []const u8
+        and @typeInfo(@FieldType(Url, "scheme")).optional.child == []const u8
+        and @typeInfo(@FieldType(Url, "host")).optional.child == []const u8
+        and @typeInfo(@FieldType(Url, "port")).optional.child == u16
+        and @typeInfo(@FieldType(Url, "query")).optional.child == []const u8
+        and @typeInfo(@FieldType(Url, "fragment")).optional.child == []const u8
+
+    test a_path_only_url_is_constructible
+        // parse_url is a stub, so this builds the value directly: the point is
+        // that the declared type admits a relative reference at all.
+        given rel = Url{ .scheme = null, .host = null, .port = null, .path = "/index.html", .query = null, .fragment = null }
+        then rel.scheme == null
+        and rel.port == null
+        and std.mem.eql(u8, rel.path, "/index.html")
+
+    test http_method_lists_its_verbs
+        // The spec used to declare `enum : ,` -- an empty variant list -- so
+        // HttpMethod emitted as `struct { enum: void }` and could not represent
+        // GET, POST or anything else; method_to_string had nothing to switch
+        // on. (The old assertion here was `@typeInfo(...).@"struct".fields.len
+        // >= 1`, which passed on that marker field and so read green for a type
+        // with no verbs in it.) The seven verbs were recovered from the upstream
+        // spec this file was converted from: trinity-fpga tri_http.tri:7.
+        then @typeInfo(HttpMethod).@"enum".fields.len == 7
+        and std.mem.eql(u8, @typeInfo(HttpMethod).@"enum".fields[0].name, "GET")
+        and std.mem.eql(u8, @typeInfo(HttpMethod).@"enum".fields[1].name, "POST")
+        and std.mem.eql(u8, @typeInfo(HttpMethod).@"enum".fields[6].name, "OPTIONS")
+

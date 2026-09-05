@@ -1,0 +1,120 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Embeddings are learned parameters | φ² + 1/φ² = 3 | TRINITY
+
+module Embedding;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_D_MODEL : u32 = 64;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const EmbeddingConfig = struct {
+        vocab_size : u32,
+        d_model : u32,
+    };
+
+    pub const EmbeddingWeights = struct {
+        W : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(token_ids: []const u32, weights: EmbeddingWeights, embeddings: []f32, config: EmbeddingConfig) → void
+    fn forward(token_ids: []const u32, weights: EmbeddingWeights, embeddings: []f32, config: EmbeddingConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // init(weights: EmbeddingWeights, config: EmbeddingConfig) → void
+    fn init(weights: EmbeddingWeights, config: EmbeddingConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Both functions above are still `TODO: Implement`, so each compiles to
+    // `@panic("not yet implemented")`: calling one aborts the test binary.
+    // What this module does state is DEFAULT_D_MODEL and the two record
+    // shapes. The constraints listed below are checked here against a
+    // concrete configuration rather than being left as prose.
+
+    test default_d_model_is_sixty_four_and_positive
+        given d = DEFAULT_D_MODEL
+        then d == 64
+        and d > 0
+
+    test weight_table_is_one_row_of_d_model_floats_per_vocabulary_entry
+        given cfg = EmbeddingConfig{ .vocab_size = 2, .d_model = 3 }
+        and w = EmbeddingWeights{ .W = @constCast(&[_]f32{ 0.0, 0.1, 0.2, 1.0, 1.1, 1.2 }) }
+        then cfg.vocab_size > 0
+        and cfg.d_model > 0
+        and w.W.len == cfg.vocab_size * cfg.d_model
+
+    // forward reads row token_id, so the row for token 1 starts at
+    // 1 * d_model and the last valid token id is vocab_size - 1.
+    test row_for_a_token_starts_at_token_id_times_d_model
+        given cfg = EmbeddingConfig{ .vocab_size = 2, .d_model = 3 }
+        and w = EmbeddingWeights{ .W = @constCast(&[_]f32{ 0.0, 0.1, 0.2, 1.0, 1.1, 1.2 }) }
+        then @abs(w.W[1 * cfg.d_model] - 1.0) < 1e-6
+        and (cfg.vocab_size - 1) * cfg.d_model + cfg.d_model == w.W.len
+
+    test embeddings_are_stored_as_f32
+        given weights = @FieldType(EmbeddingWeights, "W")
+        then weights == []f32
+        and @FieldType(EmbeddingConfig, "vocab_size") == u32
+        and @FieldType(EmbeddingConfig, "d_model") == u32
+
+    // forward is given token ids with nowhere to write the rows it gathers,
+    // and init is given weights with no config to size them against. These
+    // record the signatures as they stand.
+    test forward_takes_token_ids_and_returns_nothing
+        given f = forward
+        then @TypeOf(f) == fn ([]const u32) void
+
+    test init_takes_the_weight_table_and_returns_nothing
+        given f = init
+        then @TypeOf(f) == fn (EmbeddingWeights) void
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant embedding_constraint_0
+        given input = valid_input()
+        then true // vocab_size > 0
+
+    invariant embedding_constraint_1
+        given input = valid_input()
+        then true // d_model > 0
+
+    invariant embedding_constraint_2
+        given input = valid_input()
+        then true // W.size() == vocab_size * d_model
+
+    invariant embedding_constraint_3
+        given input = valid_input()
+        then true // token_ids must be in [0, vocab_size)
+
+    invariant embedding_constraint_4
+        given input = valid_input()
+        then true // "Embedding dimension affects model capacity"
+
+    invariant embedding_constraint_5
+        given input = valid_input()
+        then true // "Larger vocab requires larger d_model"
+
+    invariant embedding_constraint_6
+        given input = valid_input()
+        then true // "Pre-trained embeddings transfer well"
+

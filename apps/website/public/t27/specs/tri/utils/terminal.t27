@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Uses ANSI escape codes | φ² + 1/φ² = 3 | TRINITY
+
+module TriTerminal;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Color = struct {
+        enum : [black, red, green, yellow, blue, magenta, cyan, white, default],
+    };
+
+    pub const Style = struct {
+        enum : [bold, dim, italic, underline, reverse],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // get_size() → TerminalSize
+    fn get_size() -> TerminalSize {
+        // TODO: Implement from .tri spec
+    }
+
+    // colorize(allocator: std.mem.Allocator, text: []const u8, fg: Color) → ![]u8
+    fn colorize(allocator: std.mem.Allocator, text: []const u8, fg: Color) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // reset() → []const u8
+    fn reset() -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test get_size_basic_case
+        given input = default_input()
+        when result = get_size(input)
+        then result != undefined
+
+    test colorize_basic_case
+        given input = default_input()
+        when result = colorize(input)
+        then result != undefined
+
+    test reset_basic_case
+        given input = default_input()
+        when result = reset(input)
+        then result != undefined
+

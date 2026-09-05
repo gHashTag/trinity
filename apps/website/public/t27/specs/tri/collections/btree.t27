@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Self-balancing tree | φ² + 1/φ² = 3 | TRINITY
+
+module TriBtree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BTree(K, V) = struct {
+        root : BTreeNode(K, V),
+        order : usize,
+    };
+
+    pub const BTreeNode(K, V) = struct {
+        keys : []K,
+        values : []V,
+        children : []BTreeNode(K, V),
+        leaf : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(order: usize, allocator: std.mem.Allocator) → !BTree(T)
+    fn init(order: usize, allocator: std.mem.Allocator) -> !BTree(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(tree: *BTree(T), key: K, value: V, allocator: std.mem.Allocator) → !void
+    fn insert(tree: *BTree(T), key: K, value: V, allocator: std.mem.Allocator) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(tree: BTree(T), key: K) → ?V
+    fn search(tree: BTree(T), key: K) -> ?V {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init, insert and search are all unimplemented stubs: each one emits
+    // `@panic("not yet implemented")`, so calling any of them aborts the test
+    // binary rather than failing a test. (Their signatures are also truncated
+    // to the first parameter, and they spell the type `BTree(T)` with one
+    // argument where the declaration takes two.) The assertions below are
+    // about the representation the module actually declares.
+
+    test the_tree_is_generic_over_a_key_and_a_value_type
+        // Both BTree and BTreeNode are comptime functions of two types: this
+        // is a key/value map, not a set of bare keys.
+        then @typeInfo(@TypeOf(BTree)).@"fn".params.len == 2
+        and @typeInfo(@TypeOf(BTreeNode)).@"fn".params.len == 2
+        and @TypeOf(BTree) != type
+
+    test keys_and_values_are_parallel_slices_in_a_node
+        // Slot i of `keys` pairs with slot i of `values`, so a lookup finds
+        // the index once and reads the payload from the same position.
+        then @typeInfo(BTreeNode(u32, f32)).@"struct".fields.len == 4
+        and @FieldType(BTreeNode(u32, f32), "keys") == []u32
+        and @FieldType(BTreeNode(u32, f32), "values") == []f32
+        and @FieldType(BTreeNode(u32, f32), "leaf") == bool
+
+    test children_are_a_slice_of_the_node_type_itself
+        // The recursion goes through a slice, which is a pointer plus a length
+        // -- that is what keeps the node type finite in size.
+        given children = @FieldType(BTreeNode(u32, f32), "children")
+        then @typeInfo(children).pointer.child == BTreeNode(u32, f32)
+        and @typeInfo(children).pointer.size == .slice
+
+    test the_root_is_a_node_by_value_so_an_empty_tree_still_has_one
+        // root is not optional and not a pointer: a BTree always contains a
+        // node, and `order` is carried at runtime rather than as a comptime
+        // parameter, so init(order) sets it on an already-shaped value.
+        then @FieldType(BTree(u32, f32), "root") == BTreeNode(u32, f32)
+        and @FieldType(BTree(u32, f32), "order") == usize
+        and @sizeOf(BTree(u32, f32)) >= @sizeOf(BTreeNode(u32, f32))
+

@@ -14,7 +14,7 @@ export const ROUTES = [
   '', 'gft', 'start', 'select', 'verification', 'ip', 'proof', 'blog',
   'cases', 'course', 'resources', 'formats', 'ladder', 'theorems', 'bounds',
   'landscape', 'reproduce', 'about', 'queen', 'dashboard', 'tree', 'play',
-  'chat', 'quantum', 'lab', 'canvas', 'wasm',
+  'chat', 'quantum', 'lab', 'canvas', 'wasm', 'specs',
 ]
 
 const CHROME_CANDIDATES = [

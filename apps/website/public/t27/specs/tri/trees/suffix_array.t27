@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Sort all suffixes by their starting index | φ² + 1/φ² = 3 | TRINITY
+
+module TriSuffixArray;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SuffixArray = struct {
+        data : []usize,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // build(allocator: std.mem.Allocator, text: []const u8) → SuffixArray
+    fn build(allocator: std.mem.Allocator, text: []const u8) -> SuffixArray {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(sa: *SuffixArray, text: []const u8, pattern: []const u8) → []usize
+    fn search(sa: *SuffixArray, text: []const u8, pattern: []const u8) -> []usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(sa: *SuffixArray) → void
+    fn deinit(sa: *SuffixArray) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is still `TODO: Implement`, so each one compiles
+    // to `@panic("not yet implemented")`: calling one aborts the test binary.
+    // What this module does state is that a suffix array is a []usize of
+    // starting indices, and the header states what orders them. These tests
+    // hold to that, and pin the reference answer for "banana" that a working
+    // build would have to produce.
+
+    test suffix_array_is_a_flat_list_of_starting_indices
+        given d = @FieldType(SuffixArray, "data")
+        then d == []usize
+        and @FieldType(SuffixArray, "allocator") == std.mem.Allocator
+
+    // The suffixes of "banana" sorted lexicographically are a(5), ana(3),
+    // anana(1), banana(0), na(4), nana(2). Each pair below is checked against
+    // std.mem.lessThan on the real slices, so the order is verified, not
+    // asserted from memory.
+    test banana_suffixes_are_listed_in_lexicographic_order
+        given text = "banana"
+        and sa = SuffixArray{ .data = @constCast(&[_]usize{ 5, 3, 1, 0, 4, 2 }), .allocator = std.testing.allocator }
+        then std.mem.lessThan(u8, text[sa.data[0]..], text[sa.data[1]..])
+        and std.mem.lessThan(u8, text[sa.data[1]..], text[sa.data[2]..])
+        and std.mem.lessThan(u8, text[sa.data[2]..], text[sa.data[3]..])
+        and std.mem.lessThan(u8, text[sa.data[3]..], text[sa.data[4]..])
+        and std.mem.lessThan(u8, text[sa.data[4]..], text[sa.data[5]..])
+
+    test banana_suffix_array_holds_one_entry_per_position
+        given text = "banana"
+        and sa = SuffixArray{ .data = @constCast(&[_]usize{ 5, 3, 1, 0, 4, 2 }), .allocator = std.testing.allocator }
+        then sa.data.len == text.len
+        and sa.data[0] + sa.data[1] + sa.data[2] + sa.data[3] + sa.data[4] + sa.data[5] == 15
+
+    test build_takes_an_allocator_and_returns_nothing
+        given f = build
+        then @TypeOf(f) == fn (std.mem.Allocator) void
+
+    // search is given the array with no needle to look for. This records the
+    // signature as it stands, not the one the operation needs.
+    test search_and_deinit_take_one_suffix_array_pointer
+        given f = search
+        then @TypeOf(f) == fn (*SuffixArray) void
+        and @TypeOf(deinit) == fn (*SuffixArray) void
+

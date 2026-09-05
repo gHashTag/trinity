@@ -1,0 +1,85 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Lazy evaluation | φ² + 1/φ² = 3 | TRINITY
+
+module TriAsyncStream;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Stream(T) = struct {
+        generator : fn() ?T,
+        state : StreamState,
+    };
+
+    pub const StreamState = struct {
+        enum : [Ready, Pending, Done],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // from(items: []T, allocator: std.mem.Allocator) → !Stream(T)
+    fn from(items: []T, allocator: std.mem.Allocator) -> !Stream(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // map(stream: Stream(T), fn: fn(T) U) → Stream(U)
+    fn map(stream: Stream(T), fn: fn(T) U) -> Stream(U) {
+        // TODO: Implement from .tri spec
+    }
+
+    // filter(stream: Stream(T), predicate: fn(T) bool) → Stream(T)
+    fn filter(stream: Stream(T), predicate: fn(T) bool) -> Stream(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // from()/map()/filter() have no body yet, so they panic when called and the
+    // lazy pipeline -- from(xs) mapped then filtered -- cannot be stated. What
+    // the module states is its two types.
+    //
+    // Note on StreamState: the `enum : [...]` line now lowers to a real enum,
+    // so Ready, Pending and Done are mutually exclusive tags. A value of this
+    // type is exactly one of the three. Both the count and the tag-ness hold.
+
+    test stream_state_declares_the_three_stream_kinds
+        // Ready, Pending, Done
+        given kinds = std.meta.fields(StreamState).len
+        then kinds == 3
+
+    test stream_state_kinds_are_mutually_exclusive_tags
+        // A real tag needs at least one bit to tell Pending from Done; three
+        // states need two, and the enum carries exactly that -- a u2
+        // discriminant, distinct per state and ordered Ready, Pending, Done.
+        given ready = @intFromEnum(StreamState.Ready)
+        and pending = @intFromEnum(StreamState.Pending)
+        and done = @intFromEnum(StreamState.Done)
+        and tag = @typeInfo(StreamState).@"enum".tag_type
+        then ready == 0 and pending == 1 and done == 2
+        and tag == u2
+
+    test stream_pairs_a_generator_with_a_state
+        // Verify: the two declared field names, which is what makes the stream
+        // resumable rather than a plain slice
+        then (@hasField(Stream(u8), "generator")) and (@hasField(Stream(u8), "state"))
+
+    test stream_is_generic_over_its_element_type
+        // Verify: T is a real parameter, so instantiations do not collapse
+        then Stream(u8) != Stream(i64)
+
+    test generator_signals_exhaustion_by_returning_null
+        // Verify: the generator yields ?T, not T -- null is the only end-of-
+        // stream marker the type provides, which is what Done would otherwise
+        // have to encode
+        given Gen = @FieldType(Stream(u8), "generator")
+        and ret = @typeInfo(Gen).@"fn".return_type.?
+        then ret == ?u8
+

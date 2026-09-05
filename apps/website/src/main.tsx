@@ -32,6 +32,8 @@ const Queen = lazy(() => import('./pages/Queen.tsx'))
 // unwrapped into the shape lazy() expects.
 const BlogIndex = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogIndex })))
 const BlogPost = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogPost })))
+// Lazy matters more than usual here: this page pulls a 477 KB compiler wasm.
+const SpecExplorer = lazy(() => import('./pages/SpecExplorer.tsx'))
 
 const RouteFallback = () => (
   // spinSlow, not spin — index.css only defines the former.
@@ -75,6 +77,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/play" element={<Playground />} />
             <Route path="/chat" element={<CosmicChat />} />
             <Route path="/wasm" element={<TrinityCanvasWasm />} />
+            <Route path="/specs" element={<SpecExplorer />} />
             <Route path="/viz/*" element={<Navigate to="/quantum" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
