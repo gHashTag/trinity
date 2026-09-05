@@ -1,7 +1,7 @@
 {
  "repo": "gHashTag/trios",
- "commit": "19ec9cbb8",
- "generatedAt": "2026-09-04T23:21:31Z",
+ "commit": "df85b7ed9",
+ "generatedAt": "2026-09-04T23:53:01Z",
  "source": "local scan by the loop (M-1 replaces it with /queen/public-modules)",
  "totalModules": 114,
  "droppedSmallest": 0,
@@ -20,7 +20,7 @@
    "functions": 48,
    "imports": 11,
    "exports": 85,
-   "lastTouched": "2026-09-05T06:17:05+07:00",
+   "lastTouched": "2026-09-05T06:29:24+07:00",
    "openIssues": []
   },
   {

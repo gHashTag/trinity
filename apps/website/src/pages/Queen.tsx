@@ -135,6 +135,8 @@ interface ResearchGraph {
 
 interface QueenStatus {
   status: "ok";
+  /** The swarm's own word for its state on the wire (working, idle, …). */
+  swarmState?: string | null;
   scheduler: {
     enabled: boolean;
     intervalSeconds: number;
@@ -234,7 +236,12 @@ const COPY = {
     eyebrow: "AUTONOMOUS SUPERVISOR / PRODUCTION",
     title: "Queen turns specifications into verified work.",
     lede: "One decision-maker. Isolated Bees. Every refusal and completion leaves evidence.",
-    live: "LIVE BACKEND",
+    live: "LIVE",
+    swarmWorking: "WORKING",
+    swarmIdle: "IDLE",
+    swarmPaused: "PAUSED",
+    swarmUnknown: "STATE —",
+    hudReady: "ready",
     unavailable: "BACKEND UNAVAILABLE",
     checking: "CHECKING BACKEND",
     scheduler: "Scheduler",
@@ -455,7 +462,12 @@ const COPY = {
     eyebrow: "АВТОНОМНЫЙ НАДЗОР / PRODUCTION",
     title: "Queen превращает спецификации в проверяемую работу.",
     lede: "Один центр решений. Изолированные Bees. Каждый отказ и завершение оставляют доказательства.",
-    live: "BACKEND РАБОТАЕТ",
+    live: "LIVE",
+    swarmWorking: "РАБОТАЕТ",
+    swarmIdle: "ЖДЁТ",
+    swarmPaused: "ПАУЗА",
+    swarmUnknown: "СОСТОЯНИЕ —",
+    hudReady: "готово",
     unavailable: "BACKEND НЕДОСТУПЕН",
     checking: "ПРОВЕРЯЮ BACKEND",
     scheduler: "Планировщик",
@@ -1923,8 +1935,10 @@ export default function Queen() {
   const decisionInfo = decision
     ? decisionDetail(decision, data?.dispatches.running ?? null, latest?.issue ?? null, c)
     : null;
+  // wire field first (P1-18): the refusal or what the round did leads, the
+  // verb follows, so a narrow gold block cuts the verb, never the reason
   const decisionLine = decision
-    ? `${decision.allowed ? c.chose : c.stoodDown} · ${decisionInfo}`
+    ? `${decisionInfo} · ${decision.allowed ? c.chose : c.stoodDown}`
     : c.noDecision;
   const heldCount = doneCount + runningCards.length;
   const device = hardware?.devices[0] ?? null;
@@ -2030,8 +2044,21 @@ export default function Queen() {
     { n: "05", title: c.verdict, copy: c.verdictCopy, tone: "is-queen" },
     { n: "06", title: c.merge, copy: c.mergeCopy, tone: "" },
   ];
+  // the pill says what the swarm is doing, in the wire's own state read
+  // through four COPY keys (P1-28); a state the page has no word for prints
+  // the wire's word itself, never a guess
+  const swarmWord =
+    data?.swarmState === "working"
+      ? c.swarmWorking
+      : data?.swarmState === "idle"
+        ? c.swarmIdle
+        : data?.swarmState === "paused"
+          ? c.swarmPaused
+          : data?.swarmState
+            ? data.swarmState.toUpperCase()
+            : c.swarmUnknown;
   const statusText = isLive
-    ? c.live
+    ? `${c.live} · ${swarmWord}`
     : state.kind === "error"
       ? c.unavailable
       : c.checking;
@@ -2203,6 +2230,7 @@ export default function Queen() {
           <strong id="stat-verdicts">{pulse?.verdicts ?? "—"}</strong>
           <span>
             {c.hud24h} · {board ? `${reviewCards.length} ${reviewColumnTitle}` : "—"}
+            {typeof data?.dispatches.unreviewed === "number" ? ` · ${data.dispatches.unreviewed} ${c.hudReady}` : ""}
           </span>
         </div>
 
