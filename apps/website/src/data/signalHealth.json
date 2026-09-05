@@ -12,7 +12,7 @@
       "streak": 0,
       "streakIsLowerBound": false,
       "bitsPerRed": 7.644,
-      "lastGreen": "2026-09-04T08:50:47Z"
+      "lastGreen": "2026-09-05T07:34:15Z"
     },
     {
       "repo": "gHashTag/trinity",
@@ -42,13 +42,13 @@
       "repo": "gHashTag/tt-trinity-corona",
       "workflow": "ci.yml",
       "note": "my chip, where the six-week red was",
-      "window": 128,
+      "window": 135,
       "failures": 11,
-      "pRed": 0.0859,
+      "pRed": 0.0815,
       "streak": 0,
       "streakIsLowerBound": false,
-      "bitsPerRed": 3.541,
-      "lastGreen": "2026-08-10T23:08:25Z"
+      "bitsPerRed": 3.617,
+      "lastGreen": "2026-09-05T07:34:31Z"
     }
   ]
 }
