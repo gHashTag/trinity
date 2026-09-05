@@ -78,16 +78,16 @@ export const hero = {
   metrics: [
     {
       value: '66 LUT',
-      unit: '@ 974.66 MHz',
+      unit: { en: 'decoder area', ru: 'площадь декодера' } as any,
       label: { en: 'GFTernary decoder, isolated', ru: 'декодер GFTernary, изолированно' },
-      note: { en: 'Bare wire on the same part is 112 LUT @ 827.81 MHz', ru: 'Голый провод на той же части — 112 LUT @ 827.81 МГц' },
+      note: { en: 'Bare wire on the same part is 112 LUT. No clock frequency is claimed: what the open flow reports is an unconstrained critical-path estimate, not a closed timing result.', ru: 'Голый провод на той же части — 112 LUT. Частота не заявляется: открытый поток даёт оценку критического пути без ограничений, а не закрытый тайминг.' },
       tag: 'measured' as Tag,
     },
     {
-      value: '0.1797',
-      unit: 'MHz/LUT',
-      label: { en: 'Throughput per area, 20 range-bearing formats', ru: 'Пропускная способность на площадь, 20 форматов с диапазоном' },
-      note: { en: '+10.2% over binary32 (0.1631); 6.1× over posit32 (0.0295)', ru: '+10.2% к binary32 (0.1631); 6.1× к posit32 (0.0295)' },
+      value: '463 LUT',
+      unit: { en: 'whole ternary neuron', ru: 'весь тернарный нейрон' } as any,
+      label: { en: 'Smallest of 20 range-bearing formats, accumulator included', ru: 'Наименьший из 20 форматов с диапазоном, вместе с аккумулятором' },
+      note: { en: 'binary32 is 472 LUT, posit32 is 953. Area, because area is the stable axis: LUT count is bit-identical across all five seeds, while up to 37 of 210 pairwise frequency verdicts change winner from seed to seed. The MHz/LUT ranking is withdrawn for that reason.', ru: 'binary32 — 472 LUT, posit32 — 953. Площадь, потому что она и есть устойчивая ось: число LUT побитово одинаково на всех пяти seed’ах, тогда как до 37 из 210 попарных вердиктов по частоте меняют победителя от seed’а к seed’у. Ранжирование по МГц/LUT отозвано именно поэтому.' },
       tag: 'measured' as Tag,
     },
     {
@@ -226,15 +226,15 @@ export const formats = {
 /* ─────────────────────── MEASURED FRONTIER ─────────────────────── */
 
 export const frontier = {
-  badge: { en: 'MEASURED ON SILICON', ru: 'ИЗМЕРЕНО НА КРЕМНИИ' },
+  badge: { en: 'MEASURED ON FPGA', ru: 'ИЗМЕРЕНО НА ПЛИС' },
   title: { en: 'Isolated decoder, and one whole ternary neuron', ru: 'Изолированный декодер и один целый тернарный нейрон' },
   sub: {
-    en: 'XC7A200T (ALINX AX7203) on the open flow: Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus Verilog 13.0, median of 5 seeds, DSP inference disabled. One device family. Not a multi-corner characterisation; an ASIC mapping will differ.',
-    ru: 'XC7A200T (ALINX AX7203) на открытом потоке: Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus Verilog 13.0, медиана 5 seed’ов, DSP-инференс выключен. Одна family устройств. Это не многоугловая характеризация; ASIC-маппинг будет отличаться.',
+    en: 'XC7A200T (ALINX AX7203) on the open flow: Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus Verilog 13.0, median of 5 seeds, DSP inference disabled. One device family. Not a multi-corner characterisation; an ASIC mapping will differ. No die exists: the TTSKY26a and TTSKY26b submissions were withdrawn before fabrication and refunded. The Fmax column is an unconstrained nextpnr critical-path estimate, not a closed timing result, and no ranking is claimed from it.',
+    ru: 'XC7A200T (ALINX AX7203) на открытом потоке: Yosys 0.65 + nextpnr-xilinx 1743d0f + Icarus Verilog 13.0, медиана 5 seed’ов, DSP-инференс выключен. Одна family устройств. Это не многоугловая характеризация; ASIC-маппинг будет отличаться. Кристалла не существует: заявки TTSKY26a и TTSKY26b отозваны до изготовления, деньги возвращены. Колонка Fmax — оценка критического пути nextpnr без ограничений, а не закрытый тайминг; ранжирование по ней не заявляется.',
   },
   decoderCaption: {
-    en: 'Isolated decoder — area and frequency (bare wire: 112 LUT @ 827.81 MHz)',
-    ru: 'Изолированный декодер — площадь и частота (голый провод: 112 LUT @ 827.81 МГц)',
+    en: 'Isolated decoder — area, with the unconstrained Fmax estimate shown for reference only (bare wire: 112 LUT)',
+    ru: 'Изолированный декодер — площадь; неограниченная оценка Fmax показана только для справки (голый провод: 112 LUT)',
   },
   decoder: [
     { rank: 1, name: 'GFTernary', kind: { en: 'fixed', ru: 'фикс.' }, lut: 66, fmax: 974.66, ours: true },
@@ -248,8 +248,8 @@ export const frontier = {
     { rank: 18, name: 'posit32', kind: { en: 'tapered', ru: 'tapered' }, lut: 517, fmax: 49.05, ours: false },
   ],
   decoderNote: {
-    en: 'GFTernary lands at 66 LUT where the bare wire is 112: decoding a two-bit alphabet lets the synthesiser simplify the register downstream. Against posit32 that is 7.8× in area and 19.9× in frequency.',
-    ru: 'GFTernary даёт 66 LUT там, где голый провод — 112: декод двухбитного алфавита позволяет синтезатору упростить регистр ниже по потоку. Против posit32 это 7.8× по площади и 19.9× по частоте.',
+    en: 'GFTernary lands at 66 LUT where the bare wire is 112: decoding a two-bit alphabet lets the synthesiser simplify the register downstream. Against posit32 that is 7.8× in area. The frequency column is shown for reference only: every figure is the median of five nextpnr-xilinx seeds on XC7A200T, but the constraint file was not consumed, so these are unconstrained post-route estimates rather than signed-off timing. We do not rank by them, and no ordering here is claimed on a frequency margin.',
+    ru: 'GFTernary даёт 66 LUT там, где голый провод — 112: декод двухбитного алфавита позволяет синтезатору упростить регистр ниже по потоку. Против posit32 это 7.8× по площади. Колонка частоты приведена только для справки: каждое значение — медиана пяти seed’ов nextpnr-xilinx на XC7A200T, но файл ограничений не был потреблён, то есть это неограниченные пост-роут оценки, а не подписанный тайминг. Мы по ним не ранжируем и не заявляем ни одного порядка по частотному запасу.',
   },
   neuronCaption: {
     en: 'One ternary neuron, whole accumulator observable — throughput per area, MHz per LUT',
@@ -269,8 +269,8 @@ export const frontier = {
     { rank: 20, name: 'posit32', lut: 953, tpa: 0.0295, ours: false },
   ],
   neuronNote: {
-    en: '8 of the 20 slots are ours (GFTernary, TNF, BNF, GF families). The advantage over the next format is +10.2%; over the last, 6.1×. The claim that survives on buyable silicon is about fixed fields: no regime codec, no exponent to compute.',
-    ru: '8 из 20 позиций — наши (GFTernary, TNF, BNF, семейства GF). Преимущество над следующим форматом +10.2%, над последним — 6.1×. На покупаемом кремнии выживает заявление про фиксированные поля: нет regime-кодека, нет экспоненты для вычисления.',
+    en: '8 of the 20 slots are ours (GFTernary, TNF, BNF, GF families). Read this table by area: 463 LUT against 472 for binary32 and 953 for posit32. Area is the axis that holds — LUT count is bit-identical across all five seeds. The throughput-per-area column is not: within one configuration, 25 to 37 of the 210 pairwise verdicts change winner from seed to seed, with unstable margins reaching about 30%, so an ordering separated by less than that is decided by the seed and not by the formats. The 9-LUT edge over binary32 is 1.9% and is stated as a tie in throughput terms. What survives on a buyable FPGA part is the claim about fixed fields: no regime codec, no exponent to compute.',
+    ru: '8 из 20 позиций — наши (GFTernary, TNF, BNF, семейства GF). Читать таблицу следует по площади: 463 LUT против 472 у binary32 и 953 у posit32. Площадь — та ось, что держит: число LUT побитово одинаково на всех пяти seed’ах. Колонка «пропускная на площадь» — нет: внутри одной конфигурации от 25 до 37 из 210 попарных вердиктов меняют победителя от seed’а к seed’у, а нестабильные запасы доходят до ~30%, то есть порядок с меньшим отрывом решает seed, а не форматы. Отрыв в 9 LUT от binary32 — это 1.9%, и по пропускной способности мы называем это ничьёй. На покупаемой ПЛИС выживает заявление про фиксированные поля: нет regime-кодека, нет экспоненты для вычисления.',
   },
   ops: {
     title: { en: 'What an operation costs', ru: 'Сколько стоит операция' },
@@ -592,8 +592,8 @@ export const faq = {
     {
       q: { en: 'Is this an ASIC result?', ru: 'Это результат на ASIC?' },
       a: {
-        en: 'No. Every hardware number here was measured on a binary FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC mapping and multi-corner characterisation are not claimed. A SKY130 design was submitted through Tiny Tapeout; the die is at the fab and no measurement on silicon is claimed.',
-        ru: 'Нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC-маппинг и многоугловая характеризация не заявляются. Дизайн на SKY130 отправлен через Tiny Tapeout; кристалл на фабрике, измерений на кремнии нет.',
+        en: 'No. Every hardware number here was measured on a binary FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC mapping and multi-corner characterisation are not claimed. A SKY130 design was submitted through Tiny Tapeout, but both submissions — TTSKY26a and TTSKY26b — were withdrawn before fabrication and refunded. No die was produced, none is at any fab, and no measurement on silicon is claimed.',
+        ru: 'Нет. Каждое аппаратное число здесь измерено на бинарной FPGA — ALINX AX7203, Xilinx Artix-7 XC7A200T. ASIC-маппинг и многоугловая характеризация не заявляются. Дизайн на SKY130 отправлялся через Tiny Tapeout, но обе заявки — TTSKY26a и TTSKY26b — отозваны до изготовления, деньги возвращены. Кристалл не изготавливался, ни на какой фабрике его нет, измерений на кремнии не заявляется.',
       },
       tag: 'measured',
     },
@@ -771,8 +771,8 @@ export const landscape = {
       url: 'https://posithub.org/docs/Posits4.pdf',
       kind: 'context' as const,
       line: {
-        en: 'The reference tapered family. Measured here, not argued about: posit16 at 302 LUT and 62.39 MHz isolated, posit32 at 953 LUT and 0.0295 MHz/LUT in the neuron. Its narrowing is −0.254 bits per binade. Taper is paid in latency rather than area: all fourteen fixed-field formats sit above all three tapered ones in frequency, while in area they overlap.',
-        ru: 'Референсное tapered-семейство. Здесь оно измерено, а не обсуждается: posit16 — 302 LUT и 62.39 МГц изолированно, posit32 — 953 LUT и 0.0295 МГц/LUT в нейроне. Сужение — −0.254 бита на бинаду. Taper платится задержкой, а не площадью: все четырнадцать фиксированно-полевых форматов выше всех трёх tapered по частоте, тогда как по площади они перекрываются.',
+        en: 'The reference tapered family. Measured here by area, not argued about: posit16 at 302 LUT isolated, posit32 at 953 LUT in the neuron against 463 for GFTernary. Its narrowing is −0.254 bits per binade. What the area numbers show is that the regime codec costs LUTs, and that margin is far outside seed noise. The frequency reading is stated separately and more weakly: the estimates are unconstrained, so we claim no ordering from them.',
+        ru: 'Референсное tapered-семейство. Здесь оно измерено по площади, а не обсуждается: posit16 — 302 LUT изолированно, posit32 — 953 LUT в нейроне против 463 у GFTernary. Сужение — −0.254 бита на бинаду. Площадь показывает главное: regime-кодек стоит LUT-ов, и этот отрыв далеко за пределами seed-шума. Про частоту сказано отдельно и слабее: оценки неограниченные, порядка по ним мы не заявляем.',
       },
     },
     {
@@ -1018,8 +1018,8 @@ export const author = {
   facts: [
     { v: '2', l: { en: 'preprints, both public', ru: 'препринта, оба публичны' }, tag: 'spec' },
     { v: '52', l: { en: 'theorems proved in the paper', ru: 'теоремы доказаны в статье' }, tag: 'proved' },
-    { v: '83', l: { en: 'formats in the catalog', ru: 'формата в каталоге' }, tag: 'spec' },
-    { v: '974.66 MHz', l: { en: 'GFTernary decoder, 66 LUT, XC7A200T', ru: 'декодер GFTernary, 66 LUT, XC7A200T' }, tag: 'measured' },
+    { v: '109', l: { en: 'formats in the catalog, in 12 clusters — a growing invariant, not a fixed number (83 at catalog v2)', ru: 'форматов в каталоге, в 12 кластерах — растущий инвариант, а не фиксированное число (83 в версии v2)' }, tag: 'spec' },
+    { v: '66 LUT', l: { en: 'GFTernary decoder on XC7A200T, where a bare wire is 112 — area, not frequency', ru: 'декодер GFTernary на XC7A200T, где голый провод — 112; площадь, не частота' }, tag: 'measured' },
   ],
   notClaimed: {
     en: 'Not claimed here: silicon (none exists), a ternary fabric (none was available), and any comparison against tekum — the comparison is against takum, which is a different format.',
