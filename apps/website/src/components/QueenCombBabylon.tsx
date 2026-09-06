@@ -6,6 +6,7 @@
 // summariseCells, so placement, picking, the pairing of bees to running cards
 // and the event glints keep their rules; only the picture changed. Buildings
 // are procedural until the user names an asset pack (B-5).
+import { ImageProcessingConfiguration } from "@babylonjs/core/Materials/imageProcessingConfiguration";
 import { useEffect, useRef , useImperativeHandle } from "react";
 import type { Ref } from "react";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
@@ -22,14 +23,9 @@ import { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTextur
 import { SpriteManager } from "@babylonjs/core/Sprites/spriteManager";
 import { Sprite } from "@babylonjs/core/Sprites/sprite";
 import { CreateLineSystem, CreateDashedLines } from "@babylonjs/core/Meshes/Builders/linesBuilder";
-import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
-import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
-import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
-import { CreateTorus } from "@babylonjs/core/Meshes/Builders/torusBuilder";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
-import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import "@babylonjs/core/Layers/effectLayerSceneComponent";
@@ -41,7 +37,7 @@ import type { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "@babylonjs/core/Materials/Textures/baseTexture";
 import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
-import "@babylonjs/core/Culling/ray";
+import { Ray } from "@babylonjs/core/Culling/ray";
 import { S } from "./QueenComb";
 import { buildingPlan, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, honeyTone, spiralAxial, S_CELL, type FoundationIssue,
  FIELD_LAYERS, type FieldLayer, type CombHandle,
@@ -106,7 +102,6 @@ const MODELS = {
   keep: "hex-building-castle",
 } as const;
 type ModelKey = keyof typeof MODELS;
-const MARGIN = S * 2;
 
 /** Point-in-down-triangle for the cell under a world point (x, z). */
 
@@ -233,6 +228,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // lamps, bands, rings) - what a game's post pass gives a low-poly scene
     const ipc = scene.imageProcessingConfiguration;
     ipc.toneMappingEnabled = true;
+    ipc.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_ACES;
     ipc.contrast = 1.22;
     ipc.exposure = 1.08;
     ipc.vignetteEnabled = true;
@@ -255,6 +251,18 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     }
     const centre = new Vector3((minX + maxX) / 2, 0, (minZ + maxZ) / 2);
     const camera = new ArcRotateCamera("cam", Math.PI / 2 + 0.55, 0.95, 4000, centre.clone(), scene);
+    // the ground is a plane, not a mesh: a screen point becomes a world point by
+    // solving the picking ray against y = PICK_Y, the height the comb is drawn on
+    const PICK_Y = 1.5;
+    const pickRay = new Ray(Vector3.Zero(), Vector3.Up(), Number.MAX_VALUE);
+    const groundAt = (x: number, y: number): { x: number; z: number } | null => {
+      scene.createPickingRayToRef(x, y, null, pickRay, camera);
+      const dy = pickRay.direction.y;
+      if (Math.abs(dy) < 1e-6) return null;
+      const t = (PICK_Y - pickRay.origin.y) / dy;
+      if (t < 0) return null;
+      return { x: pickRay.origin.x + pickRay.direction.x * t, z: pickRay.origin.z + pickRay.direction.z * t };
+    };
     const depth = Math.max(maxX - minX, maxZ - minZ);
     scene.fogStart = 4000 - depth * 0.1;
     scene.fogEnd = 4000 + depth * 1.4;
@@ -263,6 +271,8 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     camera.lowerAlphaLimit = camera.alpha; camera.upperAlphaLimit = camera.alpha;
     camera.panningSensibility = 0;
     let zoom = 1;
+    let zoomGoal = 1;
+    let anchor: { x: number; z: number } | null = null;
     let appliedInset = -1;
     // the castle's couplings to the code and the honey (K-5): filled when the snapshot lands
     let castleLinks: { plinthOfRing: Map<string, number>; ringOfCell: Map<number, string>; cellsOfRing: Map<string, number[]>; epics: EpicRecord[]; rings: string[] } | null = null;
@@ -287,12 +297,44 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       host.setAttribute("data-zoom", zoom.toFixed(2));
     };
     fit();
-    canvas.addEventListener("wheel", (e) => { e.preventDefault(); zoom = Math.min(8, Math.max(0.5, zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1))); fit(); }, { passive: false });
+    // the map answers the hand (the user, 2026-09-06). The camera had no inputs
+    // at all: attachControl was never called, so panningSensibility configured
+    // a manager that does not exist and a drag moved nothing. Both the drag and
+    // the wheel now work against the same y = 0 plane the pick uses, so the
+    // point under the cursor is the point that follows it.
+    const ROAM = Math.max(maxX - minX, maxZ - minZ) * 0.55;
+    const clampTarget = () => {
+      camera.target.x = Math.min(Math.max(camera.target.x, centre.x - ROAM), centre.x + ROAM);
+      camera.target.z = Math.min(Math.max(camera.target.z, centre.z - ROAM), centre.z + ROAM);
+    };
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const r = canvas.getBoundingClientRect();
+      anchor = groundAt(e.clientX - r.left, e.clientY - r.top);
+      zoomGoal = Math.min(8, Math.max(0.5, zoomGoal * Math.exp(-e.deltaY * 0.0016)));
+      host.setAttribute("data-zoom-goal", zoomGoal.toFixed(2));
+    };
+    canvas.addEventListener("wheel", onWheel, { passive: false });
+    let grab: { x: number; y: number } | null = null;
+    const onDown = (e: PointerEvent) => { if (e.button !== 0) return; grab = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); };
+    const onMove = (e: PointerEvent) => {
+      if (!grab) return;
+      const r = canvas.getBoundingClientRect();
+      const a = groundAt(grab.x - r.left, grab.y - r.top), b = groundAt(e.clientX - r.left, e.clientY - r.top);
+      if (a && b) { camera.target.x += a.x - b.x; camera.target.z += a.z - b.z; clampTarget(); fit(); }
+      grab = { x: e.clientX, y: e.clientY };
+    };
+    const onUp = (e: PointerEvent) => { grab = null; if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); };
+    canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerup", onUp);
+    canvas.addEventListener("pointercancel", onUp);
     // the toolbar's FIT VIEW / - / + reach the scene through the same handle the canvas comb exposes
     cameraRef.current = {
-      zoomIn: () => { zoom = Math.min(8, zoom * 1.25); fit(); },
-      zoomOut: () => { zoom = Math.max(0.5, zoom / 1.25); fit(); },
-      fit: () => { zoom = 1; fit(); },
+      zoomIn: () => { anchor = null; zoom = zoomGoal = Math.min(8, zoom * 1.25); fit(); },
+      zoomOut: () => { anchor = null; zoom = zoomGoal = Math.max(0.5, zoom / 1.25); fit(); },
+      // FIT VIEW is the way home: it undoes the roam as well as the zoom
+      fit: () => { anchor = null; zoom = zoomGoal = 1; camera.target.copyFrom(centre); fit(); },
     };
 
     // ---- light: a sun from the upper left and a soft sky, shadows on -----
@@ -302,89 +344,25 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const sun = new DirectionalLight("sun", new Vector3(-0.6, -1, 0.35), scene);
     sun.intensity = 1.1;
     sun.position = new Vector3(centre.x + 800, 1400, centre.z - 500);
-    const shadows = new ShadowGenerator(2048, sun);
-    shadows.useBlurExponentialShadowMap = true;
-    shadows.blurKernel = 16;
-    shadows.darkness = 0.45;
+    // no shadow generator: the plate that received the shadows is gone, so a
+    // 2048 map was rendered every frame for nothing (V-11)
 
-    // ---- the ground: one calm plate, nothing painted on it ---------------
-    // The comb carries every fact, so the ground says nothing: no steel tiles,
-    // no hazard rails, no engraving. Cut 2026-09-06 on the user's word.
-    const groundW = maxX - minX + MARGIN * 2, groundH = maxZ - minZ + MARGIN * 2;
-    const groundMat = new StandardMaterial("ground", scene);
-    groundMat.diffuseColor = new Color3(0.028, 0.04, 0.038);
-    groundMat.specularColor = new Color3(0.04, 0.05, 0.05);
-    const ground = CreateGround("ground", { width: groundW, height: groundH }, scene);
-    ground.position = new Vector3(centre.x, 0, centre.z);
-    ground.material = groundMat;
-    ground.receiveShadows = true;
-    ground.isPickable = true;
-    const rim = CreateBox("rim", { width: groundW + 8, depth: groundH + 8, height: 14 }, scene);
-    rim.position = new Vector3(centre.x, -7.5, centre.z);
-    const rimMat = new StandardMaterial("rim", scene);
-    rimMat.diffuseColor = new Color3(0.03, 0.04, 0.04);
-    rim.material = rimMat;
-    rim.isPickable = false;
-
-    // ---- buildings: one low-poly template per column, thin-instanced ------
-    const mat = (name: string, diffuse: string, emissive = "#000000") => {
-      const m = new StandardMaterial(name, scene);
-      m.diffuseColor = Color3.FromHexString(diffuse);
-      m.emissiveColor = Color3.FromHexString(emissive);
-      m.specularColor = new Color3(0.15, 0.15, 0.18);
-      return m;
-    };
-    const steel = mat("steel", "#8a93a3"), dark = mat("dark", "#3a4150"), glass = mat("glass", "#1d3a4a", "#0e5a7a");
-    const green = mat("green", "#1e4d3a", "#00ff88"), gold = mat("gold", "#5a4a1e", "#ffd45a"), red = mat("red", "#4d1e1e", "#ff6b6b"), cyan = mat("cyan", "#1e3f4d", "#64dcff"), ruin = mat("ruin", "#2a2d33");
-    const u = S * 0.4;
-    interface Template { parts: Mesh[]; matrices: number[]; scales: number[]; turns: number[]; heights: number[]; colors: number[] }
+    // ---- no plate: the ground is a number, not a mesh ---------------------
+    // The plate was a rectangle two cells wider than a hexagonal comb, so about
+    // a thousand units of bare slab stuck out at every corner and caught the
+    // sun where there is no field. It carried no fact and it was the only
+    // straight edge on the board. y = 0 is a plane; a plane has no vertices,
+    // no material and no draw call, and the pick solves against it in maths.
+    // ---- buildings: one Hexagon Kit model per cell, thin-instanced ---------
+    // No stand-ins (V-10). Until a GLB resolves the cell stays empty, and a
+    // model that fails to load reports itself on the host, instead of leaving
+    // 26 boxes and cylinders behind in a second, sci-fi art language.
+    interface Template { matrices: number[]; scales: number[]; turns: number[]; heights: number[]; colors: number[] }
+    const emptyTemplate = (): Template => ({ matrices: [], scales: [], turns: [], heights: [], colors: [] });
     const mods = modulesRef.current;
     const nowWall = Date.now();
-    const templates: Record<Column, Template> = {} as Record<Column, Template>;
-    const part = (m: Mesh, material: StandardMaterial, y: number, x = 0, z = 0) => { m.material = material; m.position.set(x, y, z); m.isPickable = false; m.isVisible = false; shadows.addShadowCaster(m); return m; };
-    templates.backlog = { parts: [
-      part(CreateBox("bl-slab", { width: u, depth: u, height: 5 }, scene), dark, 2.5),
-      ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([px, pz], k) => part(CreateBox(`bl-post-${k}`, { width: 4, depth: 4, height: 16 }, scene), steel, 8, px * u * 0.42, pz * u * 0.42)),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.running = { parts: [
-      part(CreateBox("ru-body", { width: u * 0.8, depth: u * 0.8, height: u * 0.55 }, scene), steel, u * 0.275),
-      part(CreateBox("ru-band", { width: u * 0.84, depth: u * 0.84, height: 4 }, scene), cyan, u * 0.3),
-      part(CreateCylinder("ru-mast", { diameter: 3, height: u * 0.6 }, scene), steel, u * 0.85, u * 0.25, u * 0.25),
-      part(CreateSphere("ru-lamp", { diameter: 8 }, scene), cyan, u * 1.15, u * 0.25, u * 0.25),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.review = { parts: [
-      part(CreateCylinder("rv-base", { diameter: u * 0.9, height: u * 0.3, tessellation: 12 }, scene), steel, u * 0.15),
-      part(CreateSphere("rv-dome", { diameter: u * 0.7, slice: 0.5, segments: 12 }, scene), glass, u * 0.3),
-      part(CreateTorus("rv-ring", { diameter: u * 0.72, thickness: 3, tessellation: 24 }, scene), gold, u * 0.31),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.done = { parts: [
-      part(CreateBox("dn-tower", { width: u * 0.6, depth: u * 0.6, height: u * 1.1 }, scene), steel, u * 0.55),
-      part(CreateBox("dn-win1", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.35),
-      part(CreateBox("dn-win2", { width: u * 0.62, depth: u * 0.62, height: 3 }, scene), green, u * 0.7),
-      part(CreateBox("dn-cap", { width: u * 0.7, depth: u * 0.7, height: 6 }, scene), dark, u * 1.13),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    // two more silhouettes for done cards, chosen by card number, so a hundred
-    // finished tasks read as a base and not as a grid of one tower
-    const doneDepot: Template = { parts: [
-      part(CreateBox("dd-body", { width: u * 0.95, depth: u * 0.7, height: u * 0.35 }, scene), steel, u * 0.175),
-      part(CreateBox("dd-roof", { width: u * 1.0, depth: u * 0.75, height: 4 }, scene), dark, u * 0.37),
-      part(CreateBox("dd-strip", { width: u * 0.97, depth: u * 0.72, height: 2.5 }, scene), green, u * 0.2),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    const doneSilo: Template = { parts: [
-      part(CreateCylinder("ds-body", { diameter: u * 0.6, height: u * 0.8, tessellation: 14 }, scene), steel, u * 0.4),
-      part(CreateSphere("ds-top", { diameter: u * 0.6, slice: 0.5, segments: 12 }, scene), dark, u * 0.8),
-      part(CreateTorus("ds-band", { diameter: u * 0.62, thickness: 2.5, tessellation: 24 }, scene), green, u * 0.5),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.blocked = { parts: [
-      part(CreateBox("bk-body", { width: u * 0.7, depth: u * 0.7, height: u * 0.4 }, scene), dark, u * 0.2),
-      part(CreateTorus("bk-fence", { diameter: u * 0.95, thickness: 2.5, tessellation: 6 }, scene), red, 8),
-      part(CreateBox("bk-light", { width: u * 0.72, depth: u * 0.72, height: 3 }, scene), red, u * 0.42),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    templates.dropped = { parts: [
-      part(CreateBox("dr-a", { width: u * 0.5, depth: u * 0.4, height: u * 0.18 }, scene), ruin, u * 0.09, -u * 0.12, u * 0.05),
-      part(CreateBox("dr-b", { width: u * 0.3, depth: u * 0.3, height: u * 0.3 }, scene), ruin, u * 0.15, u * 0.2, -u * 0.15),
-    ], matrices: [], scales: [], turns: [], heights: [], colors: [] };
-    const bandTpl: Template = { parts: [part(CreateTorus("win-band", { diameter: u * 1.0, thickness: 2.2, tessellation: 4 }, scene), green, 0)], matrices: [], scales: [], turns: [], heights: [], colors: [] };
+    const templates: Record<Column, Template> = Object.fromEntries(COLUMNS.map((c) => [c, emptyTemplate()])) as Record<Column, Template>;
+    const doneDepot = emptyTemplate(), doneSilo = emptyTemplate();
     cells.forEach((c, i) => {
       if (i === home) return;
       const card = cards[i];
@@ -412,17 +390,6 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
         push(templateOf(key), c.x, c.y, 1, 1, 0);
       }
     });
-    for (const t of [...COLUMNS.map((col) => templates[col]), doneDepot, doneSilo, bandTpl]) {
-      const count = t.matrices.length / 16;
-      for (const p of t.parts) {
-        if (count === 0) { p.dispose(); continue; }
-        p.parent = layerNodes.code;
-        p.isVisible = true;
-        p.thinInstanceSetBuffer("matrix", new Float32Array(t.matrices), 16, true);
-        if (t.colors.length === count * 4) p.thinInstanceSetBuffer("color", new Float32Array(t.colors), 4, true);
-      }
-    }
-
 
     // ---- rings: picked (gold), hover (dashed, territory colour) ---------
     const ring7 = () => [Array.from({ length: 7 }, () => new Vector3(0, 0, 0))];
@@ -540,7 +507,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     //      a model that fails to load leaves its procedural stand-in --------
     let disposed = false;
     const modelInstances = new Map<ModelKey, { mesh: Mesh; footprint: number; base: number; height: number; width: number; depth: number }>();
-    const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, parts: Mesh[], scales: number[] = [], turns: number[] = [], heights: number[] = [], colors: number[] = []) => {
+    const placeModel = (t: { mesh: Mesh; footprint: number; base: number }, matrices: number[], target: number, scales: number[] = [], turns: number[] = [], heights: number[] = [], colors: number[] = []) => {
       if (disposed || scene.isDisposed || matrices.length === 0) return;
       const out: number[] = [];
       for (let i = 0, j = 0; i < matrices.length; i += 16, j += 1) {
@@ -552,15 +519,16 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       // the per-instance tint (M-4): StandardMaterial multiplies its palette by it
       if (colors.length === (matrices.length / 16) * 4) t.mesh.thinInstanceSetBuffer("color", new Float32Array(colors), 4, true);
       t.mesh.isVisible = true;
-      shadows.addShadowCaster(t.mesh);
-      for (const p of parts) p.dispose();
     };
     void (async () => {
       const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "plinth", "walls", "tower", "wizardTower", "keep", "unitTower"];
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
+      const missing = loaded.filter(([, t]) => !t).map(([k]) => k);
+      host.setAttribute("data-models", `${loaded.length - missing.length}/${loaded.length}`);
+      if (missing.length > 0) host.setAttribute("data-model-error", missing.join(",")); else host.removeAttribute("data-model-error");
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
       for (const [key, t] of loaded) if (t) { modelInstances.set(key, t); if (["plinth", "wall", "walls", "tower", "wizardTower", "keep", "unitTower"].includes(key)) t.mesh.parent = layerNodes.castle; else if (!["hub", "crystal", "scribe", "wright", "lapidary", "larva"].includes(key)) t.mesh.parent = layerNodes.code; }
-      const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns, tpl.heights, tpl.colors); };
+      const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.scales, tpl.turns, tpl.heights, tpl.colors); };
       // a building takes about half a cell, so the roads between them still show
       // every Hexagon Kit building carries its own hex base, so a settlement is
       // scaled to the cell, not to a fraction of it: one cell, one tile, one roof
@@ -634,7 +602,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
             }
           }
           plinthT.mesh.parent = layerNodes.castle;
-          placeModel(plinthT, pm, S_CELL * 0.92, [], places.map(() => 1), places.map(() => (flatTopP ? Math.PI / 6 : 0)), places.map(() => 1), pc);
+          placeModel(plinthT, pm, S_CELL * 0.92, places.map(() => 1), places.map(() => (flatTopP ? Math.PI / 6 : 0)), places.map(() => 1), pc);
           plinthT.mesh.position.y = lift; // placeModel lifts by -base*k; the plinth stands above the tile
           for (const [st, mats] of towerMats) {
             const key: ModelKey = st === "walls" ? "walls" : st === "tower" ? "tower" : "wizardTower";
@@ -642,7 +610,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
             if (!t) continue;
             t.mesh.parent = layerNodes.castle;
             const hs = Array.from({ length: mats.length / 16 }, (_, j) => mats[j * 16 + 5]);
-            placeModel(t, mats, S_CELL * 0.6, [], hs.map(() => 1), hs.map(() => 0), hs, hs.flatMap(() => [1, 1, 1, 1]));
+            placeModel(t, mats, S_CELL * 0.6, hs.map(() => 1), hs.map(() => 0), hs, hs.flatMap(() => [1, 1, 1, 1]));
             t.mesh.position.y = lift + plinthT.height * kp;
           }
           const unassigned = epics.filter((e) => ringOfEpic(e, rings).ring === null).length;
@@ -650,7 +618,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
           const keepT = modelInstances.get("keep");
           if (keepT) {
             keepT.mesh.parent = layerNodes.castle;
-            placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S_CELL * 1.05, []);
+            placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S_CELL * 1.05);
             host.setAttribute("data-castle-keep", "1");
             // the unassigned epics were drawn at radius 93 inside the keep's 112.5
             // reach, so nobody ever saw them (V-6): the count testifies instead
@@ -678,7 +646,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       }
       // the throne: the Queen's castle at the hub, on no layer, always visible
       const keepT = modelInstances.get("keep");
-      if (keepT) { keepT.mesh.parent = null; placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S_CELL * 1.05, []); host.setAttribute("data-castle-keep", "1"); }
+      if (keepT) { keepT.mesh.parent = null; placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S_CELL * 1.05); host.setAttribute("data-castle-keep", "1"); }
     })();
 
     // ---- event glints: a ring that grows and fades on the issue's cell ----
@@ -717,9 +685,8 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
 
     // ---- picking and hover ---------------------------------------------------
     const cellUnder = (x: number, y: number) => {
-      const hit = scene.pick(x, y, (m) => m === ground);
-      if (!hit?.hit || !hit.pickedPoint) return -1;
-      return hexIndexAt(hit.pickedPoint.x, hit.pickedPoint.z, cells.length);
+      const p = groundAt(x, y);
+      return p ? hexIndexAt(p.x, p.z, cells.length) : -1;
     };
     let hover = -1;
     // the roots (K-5): a picked closed issue that an epic lists draws lines from the epic's tower (the keep when unassigned) to every closed child on the field
@@ -780,6 +747,21 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     engine.runRenderLoop(() => {
       const nowMs = performance.now();
       const dt = Math.min(nowMs - lastMs, 32); lastMs = nowMs;
+      // the zoom glides instead of snapping, and it glides toward the cursor:
+      // an orthographic frustum is a uniform scale about the target, so moving
+      // the target by (1 - 1/f) toward the anchor keeps that point still
+      if (zoom !== zoomGoal) {
+        const prev = zoom;
+        zoom = Math.abs(zoomGoal - zoom) < 1e-4 ? zoomGoal : zoom + (zoomGoal - zoom) * (1 - Math.pow(2, -dt / 60));
+        const f = zoom / prev;
+        if (anchor && f !== 1) {
+          const k = 1 - 1 / f;
+          camera.target.x += (anchor.x - camera.target.x) * k;
+          camera.target.z += (anchor.z - camera.target.z) * k;
+          clampTarget();
+        }
+        fit();
+      }
       // The box can change while no frame runs (a hidden pane, fullscreen,
       // a pane resized before it is shown); a ResizeObserver alone missed
       // that and left the field clipped to the old canvas. Check every frame.
@@ -857,6 +839,11 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       disposed = true;
       document.removeEventListener("visibilitychange", onVisible);
       document.removeEventListener("fullscreenchange", onVisible);
+      canvas.removeEventListener("wheel", onWheel);
+      canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener("pointercancel", onUp);
       ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose();
     };
   }, [signature]);
