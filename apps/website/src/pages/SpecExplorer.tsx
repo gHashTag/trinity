@@ -54,6 +54,7 @@ const UI = {
     loading: 'Loading compiler…',
     compiling: 'Analysing…',
     back: '← Home',
+    backToLibrary: 'All specs',
     chipTitle: 'ON THE CHIP',
     chipDerived:
       'Derived from what this spec declares: the bit width of every constant, the field layout of every packed struct, and the parameter and return widths of every function. Those are hardware facts the language requires you to state.',
@@ -149,6 +150,7 @@ const UI = {
     loading: 'Загрузка компилятора…',
     compiling: 'Анализ…',
     back: '← На главную',
+    backToLibrary: 'Все спеки',
     chipTitle: 'НА КРИСТАЛЛЕ',
     chipDerived:
       'Построено из того, что объявляет спека: разрядность каждой константы, раскладка полей каждой packed-структуры, ширины параметров и возврата каждой функции. Это аппаратные факты, которые язык требует указать явно.',
@@ -402,6 +404,37 @@ export default function SpecExplorer() {
   const [tagSel, setTagSel] = useState<string[]>([])
   const [tagsOpen, setTagsOpen] = useState(false)
   const [selected, setSelected] = useState<SpecEntry | null>(null)
+
+  /**
+   * Below this width the two panes cannot both be useful.
+   *
+   * The desktop layout is a 300px library beside the detail pane. On a 375px
+   * phone that left 150-odd pixels for the detail, which wrapped every word of
+   * the description onto its own line -- and the row still overflowed, so the
+   * page scrolled sideways and the search box was clipped off the top.
+   *
+   * 760px is chosen against the layout, not a device: it is where the library
+   * at its 300px preferred width stops leaving the detail pane enough room for
+   * a readable line. Tablets in landscape stay on the two-pane layout.
+   */
+  // Distinct from the existing `narrow` (< 1100px), which only trims chrome.
+  // This one changes the layout's shape, so it gets its own name and threshold.
+  const [phone, setPhone] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 760px)')
+    const onChange = (e: MediaQueryListEvent) => setPhone(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  /**
+   * Which pane a narrow screen is showing. Master-detail, the way a phone
+   * expects: the library is the landing view, tapping a spec opens it, and a
+   * back control returns. Ignored entirely when the two-pane layout fits.
+   */
+  const [mobilePane, setMobilePane] = useState<'list' | 'detail'>('list')
   const [source, setSource] = useState('')
   const [result, setResult] = useState<T27Analysis | null>(null)
   const [busy, setBusy] = useState(false)
@@ -446,6 +479,10 @@ export default function SpecExplorer() {
           // filter that excludes the very spec the link named would show an
           // empty list next to an open file.
           if (!target.tutorial) setHealthFilter('all')
+          // A shared link names a spec on purpose, so on a phone it opens that
+          // spec. The featured-spec fallback does not: nobody asked for it, and
+          // the library is the honest landing view.
+          if (wanted && target.path === wanted) setMobilePane('detail')
           void pickRef.current?.(target)
         }
       })
@@ -790,16 +827,17 @@ export default function SpecExplorer() {
         </div>
       </header>}
 
-      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+      <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0 }}>
         {/* library */}
-        <aside
+        {(!phone || mobilePane === 'list') && <aside
           style={{
-            width: 300,
+            width: phone ? '100%' : 300,
             // Allowed to shrink on a narrow window rather than pushing the
-            // layer panes off-screen entirely.
-            minWidth: 180,
+            // layer panes off-screen entirely. On a phone it is the whole
+            // width, because the detail pane is not on screen beside it.
+            minWidth: phone ? 0 : 180,
             flexShrink: 1,
-            borderRight: `1px solid ${C.border}`,
+            borderRight: phone ? 'none' : `1px solid ${C.border}`,
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
@@ -1003,7 +1041,12 @@ export default function SpecExplorer() {
               return (
                 <button
                   key={s.path}
-                  onClick={() => pick(s)}
+                  // The tap IS the navigation on a phone, so the pane switch
+                  // lives here rather than inside pick(): the explorer also
+                  // picks a spec on load, and that must land on the library,
+                  // not drop a first-time visitor into a file they did not
+                  // choose.
+                  onClick={() => { setMobilePane('detail'); void pick(s) }}
                   // Users hover 80-150ms before clicking; that is half the
                   // compile budget, free.
                   onPointerEnter={() => void prefetchSpec(s.path)}
@@ -1108,10 +1151,36 @@ export default function SpecExplorer() {
               )
             })}
           </div>
-        </aside>
+        </aside>}
 
         {/* main */}
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
+        {(!phone || mobilePane === 'detail') && <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
+          {/* The way back on a phone. Nothing else returns to the library:
+              the aside is not on screen, and the browser's back button
+              belongs to the route, not to this pane. */}
+          {phone && (
+            <button
+              onClick={() => setMobilePane('list')}
+              style={{
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                background: 'transparent',
+                border: 'none',
+                borderBottom: `1px solid ${C.border}`,
+                color: C.accent,
+                font: `12px ${C.mono}`,
+                // 44px is the smallest reliably tappable target.
+                minHeight: 44,
+                padding: '0 14px',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              ← {ui.backToLibrary}
+            </button>
+          )}
           {err && (
             <div style={{ padding: 14, color: C.bad, fontFamily: C.mono, fontSize: 13 }}>{err}</div>
           )}
@@ -1610,7 +1679,7 @@ export default function SpecExplorer() {
               </div>
             </>
           )}
-        </main>
+        </main>}
       </div>
     </div>
   )
