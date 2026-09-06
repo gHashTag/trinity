@@ -17,6 +17,10 @@
 #   check:api          a field the UI formats that no server emits, and any
 #                      fallback not tagged with sample() (A36/A37: novelty:0.342
 #                      rendered as an FPGA measurement on a public route)
+#   audit:mobile       no route scrolls sideways at 375px (A50: /specs kept its
+#                      desktop two-pane layout on a phone, leaving ~150px for
+#                      the detail; nothing was checking the other 27 routes, and
+#                      /dashboard was over by 13px)
 #   check:silicon      every spec naming a silicon-verified format is classified
 #                      -- mapped, family, or excluded WITH a reason (A44: the
 #                      corpus carries the GF ladder three times, the first table
@@ -105,6 +109,10 @@ jobs:
           curl --fail --silent http://127.0.0.1:4173/index.html >/dev/null
           AUDIT_BASE_URL='http://127.0.0.1:4173/index.html?lang=en' npm run audit:en
           AUDIT_BASE_URL='http://127.0.0.1:4173/index.html?lang=ru' npm run audit:ru
+          # Same server, same Chrome harness, one more question: does any route
+          # scroll sideways at 375px. Runs its own --selftest first.
+          npm run audit:mobile -- --selftest
+          AUDIT_BASE_URL='http://127.0.0.1:4173/index.html' npm run audit:mobile
 
       - name: Render check
         env:
