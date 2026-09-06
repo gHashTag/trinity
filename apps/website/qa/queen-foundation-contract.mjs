@@ -41,6 +41,7 @@ listeners.push(async msg => {
   if (msg.sessionId !== sessionId || msg.method !== 'Fetch.requestPaused') return;
   const { requestId, request, responseStatusCode } = msg.params;
   if (/queen\/foundation\.json|queen\/public-foundation/.test(request.url)) return; // the foundation listener answers these
+  if (/queen\/public-activity/.test(request.url)) return; // the activity listener answers these
   if (!/queen\/modules\.json/.test(request.url)) { await call('Fetch.continueRequest', { requestId }); return; }
   if (responseStatusCode === undefined) { await call('Fetch.continueRequest', { requestId }); return; }
   served += 1;
@@ -61,7 +62,26 @@ listeners.push(async msg => {
   if (!/queen\/foundation\.json/.test(request.url) || responseStatusCode === undefined) return;
   await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(JSON.stringify(FIXTURE)).toString('base64') });
 });
-await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/modules.json*', requestStage: 'Response' }, { urlPattern: '*queen/foundation.json*', requestStage: 'Response' }, { urlPattern: '*queen/public-foundation*', requestStage: 'Request' }] });
+// (h) the working cells: a live progress event names a file path, and the path
+// belongs to exactly one module cell - the longest module path that prefixes
+// it. Two events on two different files of the SAME module must mark ONE cell,
+// and a finished event must mark none.
+let workPath = null;
+listeners.push(async msg => {
+  if (msg.sessionId !== sessionId || msg.method !== 'Fetch.requestPaused') return;
+  const { requestId, request, responseStatusCode } = msg.params;
+  if (!/queen\/public-activity/.test(request.url)) return;
+  if (responseStatusCode === undefined) { await call('Fetch.continueRequest', { requestId }); return; }
+  if (workPath === null && boardText !== null) { const d = JSON.parse(boardText); const list = Array.isArray(d) ? d : d.modules; const m = list.find(x => x.path && x.path !== '.'); workPath = m ? m.path : null; }
+  const at = new Date().toISOString();
+  const rows = workPath === null ? [] : [
+    { id: 'w1', kind: 'progress', issue: 9101, title: `${workPath}/one.ts`, at, state: null },
+    { id: 'w2', kind: 'progress', issue: 9102, title: `${workPath}/two/deep.ts`, at, state: null },
+    { id: 'w3', kind: 'finished', issue: 9103, title: `${workPath}/three.ts`, at, state: 'finished' },
+  ];
+  await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(JSON.stringify({ events: rows })).toString('base64') });
+});
+await call('Fetch.enable', { patterns: [{ urlPattern: '*queen/modules.json*', requestStage: 'Response' }, { urlPattern: '*queen/foundation.json*', requestStage: 'Response' }, { urlPattern: '*queen/public-activity*', requestStage: 'Response' }, { urlPattern: '*queen/public-foundation*', requestStage: 'Request' }] });
 await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 await call('Page.navigate', { url: `${ORIGIN}/?foundation=1${process.env.QUEEN_ENGINE ? '&engine=' + process.env.QUEEN_ENGINE : ''}#/queen` });
 let ready = false;
@@ -137,5 +157,8 @@ const zIn = await evaluate(`document.querySelector('.queen27-comb-field[data-eng
 await evaluate(`document.querySelector('button[data-tool="fit"]').click()`); await wait(300);
 const zFit = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-zoom')`);
 if (zIn !== '1.25' || zFit !== '1.00') { console.log(`  Queen foundation contract: FAIL (zoom: + gave ${zIn}, FIT VIEW gave ${zFit}; expected 1.25 then 1.00)`); cleanup(); process.exit(1); }
+let working = null;
+for (let i = 0; i < 40 && working !== '1'; i += 1) { await wait(500); working = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-working')`); }
+if (working !== '1') { console.log(`  Queen foundation contract: FAIL (data-working=${working}; one progress event on a served module path must mark exactly one cell, and one on an unknown path must mark none)`); cleanup(); process.exit(1); }
 console.log(`  Queen foundation contract: PASS (data-foundation=${found}; field ${hostA.cells} cells, first ${hostA.first}, last ${hostA.last}, cells ${hostA.orient}; FOUNDATION off -> shown 0, layers ${hidden.layers}; zoom ${zIn} -> ${zFit}; issue #${issuePick.issue} picked and named; picked ${picked.module} at index ${picked.index})`);
 cleanup(); process.exit(0);

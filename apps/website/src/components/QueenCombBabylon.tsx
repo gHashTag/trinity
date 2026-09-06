@@ -689,6 +689,49 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       return p ? hexIndexAt(p.x, p.z, cells.length) : -1;
     };
     let hover = -1;
+    // ---- the cells the swarm is working on (the user, 2026-09-06) ---------
+    // A bee's work names a file path on the wire, and a path belongs to exactly
+    // one module cell: the longest module path that prefixes it. So the field
+    // can show WHICH cells are being worked without ever naming a bee, which
+    // the server withholds by design. An event with no resolvable path marks
+    // nothing rather than guessing a cell.
+    const modulePaths: Array<[string, number]> = [];
+    cards.forEach((c, i) => { if (c && i !== home) modulePaths.push([c.title, i]); });
+    modulePaths.sort((a, b) => b[0].length - a[0].length);
+    const cellOfPath = (path: string): number => {
+      for (const [t, i] of modulePaths) if (t === "." || path === t || path.startsWith(t + "/")) return i;
+      return -1;
+    };
+    const WORK_WINDOW_MS = 12 * 60 * 1000;
+    let workingSeen: readonly HudEvent[] | null = null;
+    let workingCells: number[] = [];
+    let workingRing: LinesMesh | null = null;
+    const refreshWorking = (nowWallMs: number) => {
+      const list = eventsRef.current;
+      if (list === workingSeen) return;
+      workingSeen = list;
+      const seen = new Set<number>();
+      for (const e of list) {
+        if (e.kind === "finished" || e.kind === "error") continue;
+        const t = Date.parse(e.at);
+        if (!Number.isFinite(t) || nowWallMs - t > WORK_WINDOW_MS) continue;
+        const i = cellOfPath(e.title);
+        if (i >= 0) seen.add(i);
+      }
+      const next = [...seen].sort((a, b) => a - b);
+      host.setAttribute("data-working", String(next.length));
+      if (next.join(",") === workingCells.join(",")) return;
+      workingCells = next;
+      if (workingRing) { workingRing.dispose(); workingRing = null; }
+      if (workingCells.length > 0) {
+        const lines = workingCells.map((i) => { const p = hexCornersAt(cells[i].x, cells[i].y, HEX_R * 0.86, 0); return [...p, p[0]].map((c) => new Vector3(c.x, 5, c.y)); });
+        workingRing = CreateLineSystem("working", { lines }, scene);
+        workingRing.color = new Color3(0.55, 1, 0.78);
+        workingRing.isPickable = false;
+        glow.referenceMeshToUseItsOwnMaterial(workingRing);
+      }
+    };
+
     // the roots (K-5): a picked closed issue that an epic lists draws lines from the epic's tower (the keep when unassigned) to every closed child on the field
     const drawRoots = (number: number | null) => {
       if (rootLines) { rootLines.dispose(); rootLines = null; }
@@ -747,6 +790,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     engine.runRenderLoop(() => {
       const nowMs = performance.now();
       const dt = Math.min(nowMs - lastMs, 32); lastMs = nowMs;
+      // the working cells breathe so a still frame still says which are live
+      refreshWorking(Date.now());
+      if (workingRing) workingRing.alpha = 0.45 + 0.45 * Math.abs(Math.sin(nowMs / 620));
       // the zoom glides instead of snapping, and it glides toward the cursor:
       // an orthographic frustum is a uniform scale about the target, so moving
       // the target by (1 - 1/f) toward the anchor keeps that point still
@@ -823,7 +869,10 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
         } else host.removeAttribute("data-castle-link");
       }
       // no hover ring on empty ground (P1-10): only modules and the Queen's hub answer the pointer
-      if (hover >= 0 && hover !== p && cells[hover] && ((layersRef.current.code && cards[hover]) || hover === home || (layersRef.current.foundation && fCells?.[hover]))) placeDashed(hover, 1.4); else hovered.isVisible = false;
+      // the cell under the pointer lights up, whatever it holds (the user,
+      // 2026-09-06). It used to light only a module, the hub or a honey cell,
+      // so most of the comb answered nothing and the board felt dead.
+      if (hover >= 0 && hover !== p && cells[hover]) placeDashed(hover, 1.4); else hovered.isVisible = false;
       showHoverCard(layersRef.current.foundation && hover >= 0 ? hover : -1);
       scene.render();
       frames += 1;
