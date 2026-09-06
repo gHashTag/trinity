@@ -479,9 +479,14 @@ jobs:
           fi
 
       # On a push there is no PR, so context.issue.number is undefined and the
-      # call becomes POST /repos/.../issues//comments -> 404 -> this step fails
-      # and takes the job with it. That is what "Brain Health Report" has been
-      # failing on for every push to main: not the health check, the reporter.
+      # call becomes POST /repos/.../issues//comments -> 404.
+      #
+      # This is NOT the whole reason the job goes red: the step above is an
+      # aggregator and exits 1 whenever an upstream job failed, which it should.
+      # But this 404 fired on top of that and buried the real verdict under a
+      # 30-line octokit dump, so the log read as an API problem rather than as
+      # "the health check did not pass". Guarding it removes the noise, not the
+      # signal -- the aggregator still fails the job on its own.
       - name: Critical State Notification
         if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
