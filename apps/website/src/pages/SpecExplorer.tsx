@@ -830,7 +830,15 @@ export default function SpecExplorer() {
           }}
         >
           {!narrow && <span style={{ color: C.accent, whiteSpace: 'nowrap', flexShrink: 0 }}>◆ {ui.wasmNote}</span>}
-          {manifest && (
+          {/* Not on a phone. Making the title shrinkable so the language
+              switcher could fit had a cost I did not look for: with the
+              provenance line still competing for the same row, the title
+              collapsed to "О..." on a 375px screen. Provenance is developer
+              metadata about which corpus snapshot is loaded -- it was already
+              truncated to "Корпус и компи…" and told nobody anything. The page
+              title is its identity. On a phone the metadata goes and the title
+              stays. */}
+          {manifest && !phone && (
             <span
               style={{
                 fontFamily: C.mono,
