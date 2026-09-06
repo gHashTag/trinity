@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { SpecCodeView } from '../components/SpecCodeView'
+import { SpecChipView } from '../components/SpecChipView'
 import { SpecEditor } from '../components/SpecEditor'
 import { SpecMetrics } from '../components/SpecMetrics'
 import { SpecShare } from '../components/SpecShare'
@@ -53,6 +54,20 @@ const UI = {
     loading: 'Loading compiler…',
     compiling: 'Analysing…',
     back: '← Home',
+    chipTitle: 'ON THE CHIP',
+    chipDerived:
+      'Derived from what this spec declares: the bit width of every constant, the field layout of every packed struct, and the parameter and return widths of every function. Those are hardware facts the language requires you to state.',
+    chipNotSynth:
+      'Not a placed-and-routed netlist. The .t27 → Verilog backend currently emits module shells: of 676 specs, 361 produce Verilog yosys accepts, and every one yields 0 LUTs and 0 flip-flops. There is no cell placement to show, so none is drawn.',
+    chipEmpty:
+      'This spec declares nothing with a fixed bit width, so there is no datapath to draw. Nothing is inferred to fill the space.',
+    chipConsts: 'constants',
+    chipStructs: 'packed structs',
+    chipFns: 'functions',
+    chipBits: 'bits',
+    chipUnsized: 'declaration(s) carry no fixed width and are not drawn.',
+    chipOmitted:
+      '{n} further declaration(s) are not drawn. The diagram scales to the panel, so past about a dozen rows every label stops being readable; the remainder is counted here rather than rendered too small to read.',
     source: 'Source',
     tokens: 'Tokens',
     ast: 'AST',
@@ -134,6 +149,20 @@ const UI = {
     loading: 'Загрузка компилятора…',
     compiling: 'Анализ…',
     back: '← На главную',
+    chipTitle: 'НА КРИСТАЛЛЕ',
+    chipDerived:
+      'Построено из того, что объявляет спека: разрядность каждой константы, раскладка полей каждой packed-структуры, ширины параметров и возврата каждой функции. Это аппаратные факты, которые язык требует указать явно.',
+    chipNotSynth:
+      'Это не размещённый и не разведённый нетлист. Бэкенд .t27 → Verilog сейчас выдаёт оболочки модулей: из 676 спек 361 даёт Verilog, который принимает yosys, и каждая — 0 LUT и 0 триггеров. Размещать нечего, поэтому ничего и не нарисовано.', 
+    chipEmpty:
+      'Эта спека не объявляет ничего с фиксированной разрядностью, поэтому тракт данных рисовать не из чего. Ничего не додумано.',
+    chipConsts: 'константы',
+    chipStructs: 'packed-структуры',
+    chipFns: 'функции',
+    chipBits: 'бит',
+    chipUnsized: 'объявлений без фиксированной разрядности не нарисованы.',
+    chipOmitted:
+      'Ещё {n} объявлений не нарисованы. Схема масштабируется под панель, и после десятка строк подписи перестают читаться; остаток посчитан здесь, а не отрисован нечитаемо мелко.',
     source: 'Исходник',
     tokens: 'Токены',
     ast: 'AST',
@@ -250,6 +279,7 @@ const LAYERS = [
   { id: 'verilog_hir', kind: 'target' },
   { id: 'c', kind: 'target' },
   { id: 'rust', kind: 'target' },
+  { id: 'chip', kind: 'chip' },
 ] as const
 
 type LayerId = (typeof LAYERS)[number]['id']
@@ -265,6 +295,7 @@ const LAYER_LABEL: Record<LayerId, string> = {
   verilog_hir: 'Verilog (HIR)',
   c: 'C',
   rust: 'Rust',
+  chip: 'Chip',
 }
 
 // ---------------------------------------------------------------- AST tree
@@ -1536,7 +1567,26 @@ export default function SpecExplorer() {
                     )
                   )}
 
-                  {/* codegen targets */}
+                  {/* on-the-chip schematic, derived from declared widths */}
+                  {layer === 'chip' && result && (
+                    <SpecChipView
+                      ast={result.ast}
+                      specPath={selected?.path || ''}
+                      copy={{
+                        title: ui.chipTitle,
+                        derived: ui.chipDerived,
+                        notSynth: ui.chipNotSynth,
+                        empty: ui.chipEmpty,
+                        consts: ui.chipConsts,
+                        structs: ui.chipStructs,
+                        fns: ui.chipFns,
+                        bits: ui.chipBits,
+                        unsized: ui.chipUnsized,
+                        omitted: ui.chipOmitted,
+                      }}
+                    />
+                  )}
+
                   {LAYERS.find((l) => l.id === layer)?.kind === 'target' && result && (
                     !activeTarget ? (
                       <div style={{ padding: 14, color: C.muted }}>{ui.emptyOut}</div>
