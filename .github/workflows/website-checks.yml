@@ -112,7 +112,11 @@ jobs:
           # Same server, same Chrome harness, one more question: does any route
           # scroll sideways at 375px. Runs its own --selftest first.
           npm run audit:mobile -- --selftest
+          # Both locales: the Russian chrome is wider than the English, and the
+          # /specs language switcher was pushed off a 375px screen in RU while
+          # fitting in EN. A single-locale run would have passed it.
           AUDIT_BASE_URL='http://127.0.0.1:4173/index.html' npm run audit:mobile
+          AUDIT_BASE_URL='http://127.0.0.1:4173/index.html?lang=ru' npm run audit:mobile
 
       - name: Render check
         env:
