@@ -98,7 +98,43 @@ export async function collectRouteText(language, baseUrl) {
     for (const route of ROUTES) {
       const url = `${baseUrl.replace(/#.*$/, '')}#/${route}`
       await call('Page.navigate', { url })
-      await wait(700)
+
+      // Wait for the ROUTE, not for a duration.
+      //
+      // This used to be a flat `await wait(700)`. Page.navigate to a hash-only
+      // URL does not reload -- it fires hashchange and the SPA re-renders
+      // asynchronously -- so on a heavy route (Queen, /dashboard with its
+      // motion sections) 700ms often expired while the PREVIOUS route's DOM was
+      // still mounted. The harness then stored route A's text under route B's
+      // key. That is not slowness, it is misattribution, and it fails in both
+      // directions: a translated page captured under an untranslated route's
+      // name passes it, and vice versa. It is why /dashboard failed the RU
+      // audit on some branches and passed on others while nothing about
+      // /dashboard changed.
+      //
+      // Now: require the SPA to have committed the hash, then require the body
+      // text to stop changing for two consecutive samples. Falls through after
+      // the budget so a genuinely animating page still gets audited rather than
+      // hanging the run.
+      const settleExpr = `(() => ({
+        hash: location.hash,
+        len: document.body ? document.body.innerText.length : -1,
+      }))()`
+      let previousLen = -2
+      let settledFor = 0
+      for (let attempt = 0; attempt < 40; attempt++) {
+        await wait(150)
+        const probe = await call('Runtime.evaluate', { expression: settleExpr, returnByValue: true })
+        const state = probe.result?.value
+        if (!state) continue
+        const hashMatches = state.hash === `#/${route}` || (route === '' && (state.hash === '#/' || state.hash === ''))
+        if (!hashMatches) { previousLen = -2; settledFor = 0; continue }
+        if (state.len > 0 && state.len === previousLen) settledFor += 1
+        else settledFor = 0
+        previousLen = state.len
+        if (settledFor >= 2) break
+      }
+
       const evaluated = await call('Runtime.evaluate', {
         // Elements marked data-lang-exempt hold quoted source, not UI copy --
         // the /specs page renders .t27 files whose comments are written in
