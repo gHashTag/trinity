@@ -40,12 +40,11 @@ import "@babylonjs/loaders/glTF";
 import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import type { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "@babylonjs/core/Materials/Textures/baseTexture";
-import type { InstancedMesh } from "@babylonjs/core/Meshes/instancedMesh";
 import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import "@babylonjs/core/Culling/ray";
-import { S, EDGES } from "./QueenComb";
-import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, honeyTone, spiralAxial, S_CELL, type FoundationIssue,
+import { S } from "./QueenComb";
+import { buildingPlan, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, honeyTone, spiralAxial, S_CELL, type FoundationIssue,
  FIELD_LAYERS, type FieldLayer, type CombHandle,
  castlePlaces, ringOfEpic, towerStage, ringSummary, ringFamily, familyTint, ringOfModulePath, epicOfIssue, hexRingStart, CASTLE_RING, type TowerStage, type EpicRecord,
 } from "./queenHud";
@@ -64,7 +63,6 @@ interface SpikeWorkers {
 interface QueenCombBabylonProps {
   cards: (SpikeCard | null)[];
   workers: SpikeWorkers | null;
-  devices: Array<{ family: string }> | null;
   onPick?: (pick: HudPick | null) => void;
   pickIndex?: number | null;
   /** Fraction (0..1) of the host's height covered at the bottom by the context panel. */
@@ -84,7 +82,6 @@ interface QueenCombBabylonProps {
 }
 // the plan's part kinds map to models the field loads: annexes are the
 // platform, antennae the dish; the core is the plan's own key
-const PART_MODEL: Record<"annex" | "antenna", ModelKey> = { annex: "backlog", antenna: "review" };
 
 type Territory = "held" | "neutral" | "fog";
 const LINES: readonly BeeLine[] = ["scribe", "wright", "lapidary"];
@@ -97,50 +94,23 @@ type Column = (typeof COLUMNS)[number];
 // source": one model per building state, three for done cards, the Queen's
 // hangar, crystals, and units. Served from public/queen/models.
 const MODELS = {
-  backlog: "platform_small", running: "machine_generatorLarge", review: "satelliteDish_large",
-  done: "hangar_smallA", doneDepot: "hangar_roundA", doneSilo: "structure_closed",
-  blocked: "gate_complex", dropped: "crater", hub: "hangar_largeA", crystal: "rock_crystalsLargeA",
-  scribe: "astronautA", wright: "rover", lapidary: "astronautB", larva: "alien",
-  // the honeycomb foundation (Kenney Hexagon Kit, CC0): one flat terrain hex per closed issue
-  // the castle of the rings (K-0): a plinth per ring directory on spiral ring 7, towers by epic stage
-  plinth: "hex-stone", wall: "hex-building-wall", walls: "hex-building-walls", tower: "hex-building-tower",
-  wizardTower: "hex-building-wizard-tower", keep: "hex-building-castle", unitTower: "hex-unit-tower",
+  // ONE KIT (Kenney Hexagon Kit, CC0). The kingdom is built from one set of
+  // parts, so a silhouette on the field always means the same thing.
+  // the CODE layer: the settlement a module becomes, by the column it sits in
+  backlog: "hex-building-cabin", running: "hex-building-mill", review: "hex-building-archery",
+  done: "hex-building-house", doneDepot: "hex-building-market", doneSilo: "hex-building-farm",
+  blocked: "hex-building-wall", dropped: "hex-stone-rocks",
+  // the CASTLE layer: a plinth per ring, a tower by the stage of its epics
+  plinth: "hex-stone", walls: "hex-building-walls", tower: "hex-building-tower",
+  wizardTower: "hex-building-wizard-tower", unitTower: "hex-unit-tower",
+  // the throne at the hub, always visible: the Queen's own castle
+  keep: "hex-building-castle",
 } as const;
 type ModelKey = keyof typeof MODELS;
 const MARGIN = S * 2;
 
 /** Point-in-down-triangle for the cell under a world point (x, z). */
 
-/**
- * The ground: steel platform tiles (the user's StarCraft reference), panel
- * seams, corner bolts, and the mark engraved faintly in the centre of every
- * tile - "the tile IS our drawing" survives as an engraving.
- */
-function drawTiles(ctx: CanvasRenderingContext2D, size: number, per: number) {
-  const tile = size / per;
-  ctx.fillStyle = "#4d5563";
-  ctx.fillRect(0, 0, size, size);
-  for (let r = 0; r < per; r += 1) for (let c = 0; c < per; c += 1) {
-    const x = c * tile, y = r * tile;
-    const v = ((r * 7 + c * 13) % 5) - 2;
-    ctx.fillStyle = `rgb(${86 + v * 3},${94 + v * 3},${108 + v * 3})`;
-    ctx.fillRect(x + 2, y + 2, tile - 4, tile - 4);
-    ctx.strokeStyle = "rgba(20,24,32,.9)";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x + 1.5, y + 1.5, tile - 3, tile - 3);
-    ctx.strokeStyle = "rgba(160,170,190,.25)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x + 5.5, y + 5.5, tile - 11, tile - 11);
-    ctx.fillStyle = "rgba(20,24,32,.8)";
-    for (const [bx, by] of [[9, 9], [tile - 9, 9], [9, tile - 9], [tile - 9, tile - 9]]) { ctx.beginPath(); ctx.arc(x + bx, y + by, 2.2, 0, Math.PI * 2); ctx.fill(); }
-    ctx.strokeStyle = "rgba(200,210,230,.16)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    const sc = tile * 0.62, cx = x + tile / 2, cy = y + tile / 2;
-    for (const [ax, ay, bx2, by2] of EDGES) { ctx.moveTo(cx + ax * sc, cy + ay * sc); ctx.lineTo(cx + bx2 * sc, cy + by2 * sc); }
-    ctx.stroke();
-  }
-}
 
 /**
  * Load a Kenney GLB and merge it into one mesh with a multi-material, so it
@@ -195,7 +165,7 @@ async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; 
 
 const ALL_LAYERS: Record<FieldLayer, boolean> = { foundation: true, castle: true, code: true };
 
-export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null, layers = ALL_LAYERS, handleRef }: QueenCombBabylonProps) {
+export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null, layers = ALL_LAYERS, handleRef }: QueenCombBabylonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -215,13 +185,11 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
   const signature = JSON.stringify([
     cards.map((c) => (c ? [c.number, c.column] : null)),
     workers?.slots.map((s) => [s.slot, s.state]) ?? null,
-    devices?.map((d) => d.family) ?? null,
     // a new snapshot of the foundation rebuilds the honey like a modules change rebuilds the city
     foundation ? [foundation.generatedAt, foundation.issues.length] : null,
   ]);
   const cardsRef = useRef(cards);
   const workersRef = useRef(workers);
-  const devicesRef = useRef(devices);
   const modulesRef = useRef(modules);
   const targetsRef = useRef(beeTargets);
   const foundationRef = useRef(foundation);
@@ -230,12 +198,11 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
   useEffect(() => {
     cardsRef.current = cards;
     workersRef.current = workers;
-    devicesRef.current = devices;
     modulesRef.current = modules;
     targetsRef.current = beeTargets;
     foundationRef.current = foundation;
     layersRef.current = layers;
-  }, [cards, workers, devices, modules, beeTargets, foundation, layers]);
+  }, [cards, workers, modules, beeTargets, foundation, layers]);
 
   useImperativeHandle(handleRef, () => ({
     zoomIn: () => cameraRef.current?.zoomIn(),
@@ -248,7 +215,6 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     if (!canvas || !host) return;
     const cards = cardsRef.current;
     const workers = workersRef.current;
-    const devices = devicesRef.current;
     const cells = hexCellSummaries(cards);
     const home = HEX_HOME;
     // the honey under the cells (H-C2): the same map the click reads (H-E)
@@ -336,19 +302,13 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     shadows.blurKernel = 16;
     shadows.darkness = 0.45;
 
-    // ---- the ground: one plate of steel tiles ----------------------------
-    const tex = new DynamicTexture("tiles", 1024, scene, true);
-    const tctx = tex.getContext() as CanvasRenderingContext2D;
-    drawTiles(tctx, 1024, 4);
-    tex.update(false);
+    // ---- the ground: one calm plate, nothing painted on it ---------------
+    // The comb carries every fact, so the ground says nothing: no steel tiles,
+    // no hazard rails, no engraving. Cut 2026-09-06 on the user's word.
     const groundW = maxX - minX + MARGIN * 2, groundH = maxZ - minZ + MARGIN * 2;
-    tex.uScale = groundW / (S * 4);
-    tex.vScale = groundH / (S * 4);
     const groundMat = new StandardMaterial("ground", scene);
-    groundMat.diffuseTexture = tex;
-    groundMat.specularTexture = tex;
-    groundMat.specularColor = new Color3(0.18, 0.19, 0.22);
-    groundMat.specularPower = 48;
+    groundMat.diffuseColor = new Color3(0.028, 0.04, 0.038);
+    groundMat.specularColor = new Color3(0.04, 0.05, 0.05);
     const ground = CreateGround("ground", { width: groundW, height: groundH }, scene);
     ground.position = new Vector3(centre.x, 0, centre.z);
     ground.material = groundMat;
@@ -357,23 +317,9 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     const rim = CreateBox("rim", { width: groundW + 8, depth: groundH + 8, height: 14 }, scene);
     rim.position = new Vector3(centre.x, -7.5, centre.z);
     const rimMat = new StandardMaterial("rim", scene);
-    rimMat.diffuseColor = new Color3(0.08, 0.09, 0.12);
+    rimMat.diffuseColor = new Color3(0.03, 0.04, 0.04);
     rim.material = rimMat;
     rim.isPickable = false;
-    // hazard stripes along the platform edge (the reference's yellow-black rails)
-    const stripes = new DynamicTexture("stripes", { width: 256, height: 32 }, scene, false);
-    const sctx = stripes.getContext() as CanvasRenderingContext2D;
-    for (let i = 0; i < 16; i += 1) { sctx.fillStyle = i % 2 ? "#d9b230" : "#1a1a1a"; sctx.beginPath(); sctx.moveTo(i * 16, 0); sctx.lineTo(i * 16 + 16, 0); sctx.lineTo(i * 16 + 8, 32); sctx.lineTo(i * 16 - 8, 32); sctx.closePath(); sctx.fill(); }
-    stripes.update(false);
-    const stripeMat = new StandardMaterial("stripes", scene);
-    stripeMat.diffuseTexture = stripes; stripeMat.emissiveColor = new Color3(0.35, 0.3, 0.1); stripeMat.specularColor = Color3.Black();
-    for (const [w, d, x, z, rep] of [[groundW, 6, centre.x, centre.z - groundH / 2 + 3, groundW / 40], [groundW, 6, centre.x, centre.z + groundH / 2 - 3, groundW / 40], [6, groundH, centre.x - groundW / 2 + 3, centre.z, groundH / 40], [6, groundH, centre.x + groundW / 2 - 3, centre.z, groundH / 40]] as const) {
-      const rail = CreateBox(`rail-${x}-${z}`, { width: w, depth: d, height: 3 }, scene);
-      rail.position = new Vector3(x, 1.5, z);
-      const m = stripeMat.clone(`stripes-${x}-${z}`);
-      const t = stripes.clone(); t.uScale = w > d ? rep : 1; t.vScale = w > d ? 1 : rep; m.diffuseTexture = t;
-      rail.material = m; rail.isPickable = false;
-    }
 
     // ---- buildings: one low-poly template per column, thin-instanced ------
     const mat = (name: string, diffuse: string, emissive = "#000000") => {
@@ -441,28 +387,21 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const col = (COLUMNS as readonly string[]).includes(card.column) ? (card.column as Column) : "backlog";
       const m = mods?.get(card.number);
       const templateOf = (key: string) => (key === "doneDepot" ? doneDepot : key === "doneSilo" ? doneSilo : templates[(key in templates ? key : "backlog") as Column]);
-      const tint: [number, number, number, number] = m ? buildingTint(m, nowWall) : [1, 1, 1, 1];
+      // no tint on the settlements: the kit's own palette reads, and colour on
+      // this field means one thing only - gold is done (the comb carries it)
+      const tint: [number, number, number, number] = [1, 1, 1, 1];
       const push = (t: Template, x: number, z: number, k: number, h: number, turn: number, y = 0) => {
         t.matrices.push(...Matrix.Compose(new Vector3(k, k * h, k), Quaternion.RotationAxis(Vector3.Up(), turn), new Vector3(x, y, z)).toArray());
         t.scales.push(k); t.turns.push(turn); t.heights.push(h); t.colors.push(...tint);
       };
       if (m) {
-        // the shape grammar: the building is the plan's parts, in the core's frame
+        // ONE model per cell. Every Hexagon Kit building carries its own hex
+        // base, so the old multi-part plan stacked hex on hex and the middle of
+        // the field turned to mush. The plan still chooses the core and the
+        // turn; a module with an open issue shows the wall instead of its trade.
         const plan = buildingPlan(m);
-        const cos = Math.cos(plan.turn), sin = Math.sin(plan.turn);
-        for (const part of plan.parts) {
-          if (part.model === "band") {
-            // a lit ring at its level up the core: the core's model height is
-            // unknown until loaded, so the level is in cell units
-            push(bandTpl, c.x, c.y, part.scale, 1, plan.turn + Math.PI / 4, u * 0.28 * (part.level ?? 1) * part.height);
-            continue;
-          }
-          const key = part.model === "core" ? plan.core : PART_MODEL[part.model];
-          const x = c.x + (part.dx * cos - part.dz * sin) * u * 2, z = c.y + (part.dx * sin + part.dz * cos) * u * 2;
-          push(templateOf(key), x, z, part.scale, part.height, plan.turn);
-        }
-        // an open issue on a module fences it in red (the blocked template's fence)
-        if (m.openIssues.length > 0 && plan.core !== "blocked") push(templates.blocked, c.x, c.y, plan.parts[0].scale, 1, 0);
+        const key = m.openIssues.length > 0 && plan.core !== "blocked" ? "blocked" : plan.core;
+        push(templateOf(key), c.x, c.y, 1, 1, plan.turn);
       } else {
         const key = col === "done" ? (["done", "doneDepot", "doneSilo"] as const)[card.number % 3] : col;
         push(templateOf(key), c.x, c.y, 1, 1, 0);
@@ -478,10 +417,6 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
         if (t.colors.length === count * 4) p.thinInstanceSetBuffer("color", new Float32Array(t.colors), 4, true);
       }
     }
-    const hub = part(CreateCylinder("hub", { diameter: S * 0.9, height: 10, tessellation: 24 }, scene), steel, 5, cells[home].x, cells[home].y);
-    hub.isVisible = true;
-    const hubDome = part(CreateSphere("hub-dome", { diameter: S * 0.5, slice: 0.5, segments: 16 }, scene), gold, 10, cells[home].x, cells[home].y);
-    hubDome.isVisible = true;
 
 
     // ---- rings: picked (gold), hover (dashed, territory colour) ---------
@@ -555,23 +490,23 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       .map((c, i) => ({ i, d: (c.x - cells[home].x) ** 2 + (c.y - cells[home].y) ** 2 }))
       .filter((e) => e.i !== home)
       .sort((a, b) => a.d - b.d);
-    const crystalSprites: Sprite[] = [];
-    (devices ?? []).forEach((d, k) => { const r = ring[k]; if (r) { const sp = put(`crystal-${crystalOf(d.family)}`, r.i, S * 0.4, 0, 64); if (sp) crystalSprites.push(sp); } });
 
     const running = cells.map((c, i) => ({ c, i })).filter(({ i }) => cards[i]?.column === "running").map(({ i }) => i);
     const indexByNumber = new Map<number, number>();
     cells.forEach((c, i) => { if (c.cardNumber !== null) indexByNumber.set(c.cardNumber, i); });
-    interface Bee { slot: number; busy: boolean; work: boolean; from: number; to: number; t: number; speed: number; hover: number; line: BeeLine; body: Sprite; larva: Sprite; bodyModel?: InstancedMesh; bodyK?: number; bodyBase?: number; larvaModel?: InstancedMesh; larvaK?: number; larvaBase?: number }
+    // The swarm is anonymous by the server's decision, so every bee is the same
+    // mote: one glowing hex, bright while it works. Three sprite costumes used
+    // to imply a distinction the wire does not carry; cut 2026-09-06.
+    const moteMat = new StandardMaterial("mote", scene);
+    moteMat.diffuseColor = new Color3(0.5, 0.4, 0.14); moteMat.emissiveColor = new Color3(0.95, 0.74, 0.28); moteMat.specularColor = Color3.Black();
+    interface Bee { slot: number; busy: boolean; work: boolean; from: number; to: number; t: number; speed: number; hover: number; line: BeeLine; mote: Mesh }
     const bees: Bee[] = (workers?.slots ?? []).map((slot, k) => {
-      const line = LINES[k % LINES.length];
-      const body = new Sprite(`bee-${slot.slot}`, manager(line, 16));
-      const larva = new Sprite(`larva-${slot.slot}`, manager("larva", 16));
-      const size = line === "scribe" ? S * 0.28 : line === "wright" ? S * 0.34 : S * 0.4;
-      body.width = size; body.height = size; body.isVisible = false;
-      larva.width = S * 0.3; larva.height = larva.width; larva.isVisible = false;
-      return { slot: slot.slot, busy: false, work: false, from: home, to: home, t: 1, speed: 0, hover: k * 1.7, line, body, larva };
+      const mote = CreateCylinder(`bee-${slot.slot}`, { tessellation: 6, diameter: S * 0.2, height: 5 }, scene);
+      mote.material = moteMat; mote.isPickable = false; mote.isVisible = false;
+      glow.referenceMeshToUseItsOwnMaterial(mote);
+      return { slot: slot.slot, busy: false, work: false, from: home, to: home, t: 1, speed: 0, hover: k * 1.7, line: LINES[k % LINES.length], mote };
     });
-    const ringCell = (rank: number) => { const r = ring[(devices?.length ?? 0) + rank]; return r ? r.i : home; };
+    const ringCell = (rank: number) => { const r = ring[rank]; return r ? r.i : home; };
     const aimBees = () => {
       const slots = new Map<number, "busy" | "idle">();
       for (const slot of workersRef.current?.slots ?? []) slots.set(slot.slot, slot.state);
@@ -588,7 +523,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     aimBees();
     const beeAt = (index: number) => bees.find((b) => (b.t < 0.5 ? b.from : b.to) === index) ?? null;
     const flightLines = bees.map((b) => { const m = CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 1)], dashSize: 6, gapSize: 4, dashNb: 40, updatable: true }, scene); m.color = Color3.FromHexString("#64DCFF"); m.alpha = 0.55; m.isPickable = false; m.isVisible = false; return m; });
-    const unitRings = bees.map((b) => { const m = CreateTorus(`unit-ring-${b.slot}`, { diameter: b.body.width * 0.8, thickness: 1.6, tessellation: 20 }, scene); m.material = green; m.isPickable = false; m.isVisible = false; return m; });
+    const unitRings = bees.map((b) => { const m = CreateTorus(`unit-ring-${b.slot}`, { diameter: S * 0.26, thickness: 1.6, tessellation: 20 }, scene); m.material = green; m.isPickable = false; m.isVisible = false; return m; });
 
     // The glTF loader creates PBR materials, and a PBR material's first use
     // schedules the environment BRDF lookup texture, generated asynchronously
@@ -616,17 +551,19 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       shadows.addShadowCaster(t.mesh);
       for (const p of parts) p.dispose();
     };
-    const unitInstances: Array<{ key: ModelKey; node: InstancedMesh; k: number; base: number }> = [];
     void (async () => {
-      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "plinth", "walls", "tower", "wizardTower", "keep", "unitTower"];
+      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "plinth", "walls", "tower", "wizardTower", "keep", "unitTower"];
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
       for (const [key, t] of loaded) if (t) { modelInstances.set(key, t); if (["plinth", "wall", "walls", "tower", "wizardTower", "keep", "unitTower"].includes(key)) t.mesh.parent = layerNodes.castle; else if (!["hub", "crystal", "scribe", "wright", "lapidary", "larva"].includes(key)) t.mesh.parent = layerNodes.code; }
       const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns, tpl.heights, tpl.colors); };
       // a building takes about half a cell, so the roads between them still show
-      bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
-      bind("done", templates.done, u * 1.35); bind("doneDepot", doneDepot, u * 1.35); bind("doneSilo", doneSilo, u * 1.25);
-      bind("blocked", templates.blocked, u * 1.3); bind("dropped", templates.dropped, u * 1.2);
+      // every Hexagon Kit building carries its own hex base, so a settlement is
+      // scaled to the cell, not to a fraction of it: one cell, one tile, one roof
+      const CELL_FIT = S_CELL * 0.94;
+      bind("backlog", templates.backlog, CELL_FIT); bind("running", templates.running, CELL_FIT); bind("review", templates.review, CELL_FIT);
+      bind("done", templates.done, CELL_FIT); bind("doneDepot", doneDepot, CELL_FIT); bind("doneSilo", doneSilo, CELL_FIT);
+      bind("blocked", templates.blocked, CELL_FIT); bind("dropped", templates.dropped, CELL_FIT);
       // ---- the foundation: one cell per closed GitHub issue, drawn as an outline (the user, 2026-09-06) ----
       // Every hexagon on the field IS a GitHub issue: no filled tile, no honey disc, only the cell's border.
       // A cell that carries a closed issue burns in its age's gold (honeyTone); an empty cell is a dim wax line.
@@ -776,21 +713,9 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       } catch (e) {
         host.setAttribute("data-castle-error", e instanceof Error ? e.message : String(e));
       }
-      const hubT = modelInstances.get("hub");
-      if (hubT) { placeModel(hubT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.25, [hub, hubDome]); }
-      const crystalT = modelInstances.get("crystal");
-      if (crystalT) {
-        const mats: number[] = [];
-        (devices ?? []).forEach((_, k2) => { const r = ring[k2]; if (r) mats.push(...Matrix.Translation(cells[r.i].x, 0, cells[r.i].y).toArray()); });
-        placeModel(crystalT, mats, u * 1.0, []);
-        for (const sp of crystalSprites) sp.dispose();
-      }
-      // units: one instance per bee (walking model) and one per larva (the alien)
-      bees.forEach((b) => {
-        const walk = modelInstances.get(b.line); const idle = modelInstances.get("larva");
-        if (walk) { const k = (S * 0.3) / walk.footprint; const inst = walk.mesh.createInstance(`unit-${b.slot}`); inst.scaling.set(k, k, k); inst.isPickable = false; inst.isVisible = false; unitInstances.push({ key: b.line, node: inst, k, base: walk.base }); b.bodyModel = inst; b.bodyK = k; b.bodyBase = walk.base; b.body.isVisible = false; b.body.dispose(); }
-        if (idle) { const k = (S * 0.26) / idle.footprint; const inst = idle.mesh.createInstance(`larva-${b.slot}`); inst.scaling.set(k, k, k); inst.isPickable = false; inst.isVisible = false; b.larvaModel = inst; b.larvaK = k; b.larvaBase = idle.base; b.larva.dispose(); }
-      });
+      // the throne: the Queen's castle at the hub, on no layer, always visible
+      const keepT = modelInstances.get("keep");
+      if (keepT) { keepT.mesh.parent = null; placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.5, []); host.setAttribute("data-castle-keep", "1"); }
     })();
 
     // ---- event glints: a ring that grows and fades on the issue's cell ----
@@ -911,22 +836,9 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
         const e = b.t < 0.5 ? 2 * b.t * b.t : 1 - 2 * (1 - b.t) * (1 - b.t);
         let x = A.x + (B.x - A.x) * e, z = A.y + (B.y - A.y) * e;
         if (b.t >= 1 && b.busy) { const ph = nowMs / 700 + b.hover; x = B.x + Math.cos(ph) * S * 0.12; z = B.y + Math.sin(ph * 1.3) * S * 0.08; }
-        const model = b.busy ? b.bodyModel : b.larvaModel;
-        const other = b.busy ? b.larvaModel : b.bodyModel;
-        if (other) other.isVisible = false;
-        if (model) {
-          const mk = (b.busy ? b.bodyK : b.larvaK) ?? 1, mb = (b.busy ? b.bodyBase : b.larvaBase) ?? 0;
-          model.isVisible = true;
-          model.position.set(x, -mb * mk + (b.busy ? Math.abs(Math.sin(nowMs / 140 + k)) * 2 : 0), z);
-          if (b.t < 1) model.rotation.y = Math.atan2(B.x - A.x, B.y - A.y);
-          b.body.isVisible = false; b.larva.isVisible = false;
-        } else {
-          const sprite = b.busy ? b.body : b.larva;
-          b.body.isVisible = b.busy; b.larva.isVisible = !b.busy;
-          sprite.position.x = x; sprite.position.z = z;
-          sprite.position.y = sprite.height / 2 + (b.busy ? 2 + Math.abs(Math.sin(nowMs / 140 + k)) * 3 : 1);
-          sprite.invertU = B.x - A.x < 0;
-        }
+        b.mote.isVisible = true;
+        b.mote.position.set(x, 4 + (b.busy ? Math.abs(Math.sin(nowMs / 140 + k)) * 4 : 0), z);
+        b.mote.scaling.setAll(b.busy ? 1 : 0.62);
         const ur = unitRings[k]; ur.position.set(x, 1.2, z); ur.isVisible = true;
         const line = flightLines[k];
         if (b.busy && b.t < 1) { CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(A.x, 2, A.y), new Vector3(B.x, 2, B.y)], dashSize: 6, gapSize: 4, dashNb: 40, instance: line }, scene); line.isVisible = true; }
