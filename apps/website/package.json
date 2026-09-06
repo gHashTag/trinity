@@ -12,6 +12,7 @@
     "typecheck": "tsc -b --pretty false",
     "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
     "check:api": "node scripts/api-contract-check.mjs",
+    "check:silicon": "node scripts/check-silicon-coverage.mjs --self-test",
     "check:render": "node scripts/render-check.mjs",
     "check:deployed": "node scripts/deployed-check.mjs",
     "check:aria": "node scripts/aria-refs-check.mjs",
