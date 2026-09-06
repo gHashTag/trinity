@@ -3,6 +3,36 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'one-saturation-rule-five-artefacts',
+    title: 'One saturation rule, five artefacts',
+    summary: '[measured] A merged fp6_e3m2 correction changed 8 boundary codes, kept 56 codes unchanged, and brought a 66,720-code consistency pass to 0 mismatches.',
+    date: '2026-09-06',
+    readingMinutes: 5,
+    tags: ['FPGA', 'Conformance', 'Reproducibility', 'Testing'],
+    receipts: [
+      { label: 'Merged PR #757 — saturation rule carried through the remaining conformance artefacts', href: 'https://github.com/gHashTag/trinity-fpga/pull/757' },
+      { label: 'Merge commit 4bb8c416 — host golden and self-test correction', href: 'https://github.com/gHashTag/trinity-fpga/commit/4bb8c416b7b11f57832bf5debfec7daa5e6d1ff0' },
+      { label: 'Host decode conformance at the merge commit', href: 'https://raw.githubusercontent.com/gHashTag/trinity-fpga/4bb8c416b7b11f57832bf5debfec7daa5e6d1ff0/conformance/corona_decode_host_ax7203.py' },
+      { label: 'Decode verification oracle at the merge commit', href: 'https://raw.githubusercontent.com/gHashTag/trinity-fpga/4bb8c416b7b11f57832bf5debfec7daa5e6d1ff0/conformance/decode_verify.py' },
+      { label: 'Full golden-consistency checker at the merge commit', href: 'https://raw.githubusercontent.com/gHashTag/trinity-fpga/4bb8c416b7b11f57832bf5debfec7daa5e6d1ff0/conformance/golden_consistency.py' },
+    ],
+    openQuestions: [
+      'The OCP MX specification was not independently read in this run; the result establishes alignment among the existing RTL and conformance artefacts.',
+      'The checked worktree did not include the RTL submodule, so no end-to-end run on the binary ALINX AX7203 FPGA was repeated here.',
+      'One corrected format does not establish the other formats in the 83-format catalogue, a general hardware result, a physical-chip result, speed, energy, or downstream-model accuracy.',
+    ],
+    published: true,
+    ru: {
+      title: 'Одно правило насыщения, пять артефактов',
+      summary: '[измерено] Смерженная правка fp6_e3m2 изменила 8 граничных кодов, оставила 56 кодов без изменений и привела проверку 66 720 кодов к 0 несовпадений.',
+      openQuestions: [
+        'Спецификация OCP MX в этом прогоне независимо не читалась; результат устанавливает согласованность существующих RTL и conformance-артефактов.',
+        'В проверенном worktree не было RTL-подмодуля, поэтому сквозной прогон на бинарной FPGA ALINX AX7203 здесь не повторялся.',
+        'Один исправленный формат не устанавливает корректность остальных форматов каталога из 83 форматов, общий аппаратный результат, результат на физическом кристалле, скорость, энергию или точность модели после квантования.',
+      ],
+    },
+  },
+  {
     slug: 'the-only-stable-speed-belonged-to-the-tool',
     title: 'The only stable speed belonged to the tool, not the cable',
     summary: '[measured] A note recorded 100 kHz as the only stable JTAG clock for this cable. openFPGALoader ran the same cable at 6 MHz and programmed a bitstream OpenOCD could not start.',
