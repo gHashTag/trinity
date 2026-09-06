@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Trinity — measured results</title>
+    <link>https://t27.ai/#/blog</link>
+    <atom:link href="https://t27.ai/rss.xml" rel="self" type="application/rss+xml" />
+    <description>Measured results and the methods behind them. Every post names what is not proven.</description>
+    <language>en</language>
+    <lastBuildDate>Sun, 06 Sep 2026 12:00:00 GMT</lastBuildDate>
+    <item>
+      <title>One saturation rule, five artefacts</title>
+      <link>https://t27.ai/#/blog/one-saturation-rule-five-artefacts</link>
+      <guid isPermaLink="false">one-saturation-rule-five-artefacts</guid>
+      <pubDate>Sun, 06 Sep 2026 12:00:00 GMT</pubDate>
+      <description>[measured] A merged fp6_e3m2 correction changed 8 boundary codes, kept 56 codes unchanged, and brought a 66,720-code consistency pass to 0 mismatches.</description>
+      <category>FPGA</category>
+      <category>Conformance</category>
+      <category>Reproducibility</category>
+      <category>Testing</category>
+    </item>
+    <item>
+      <title>The Queen foundation snapshot now has a source contract</title>
+      <link>https://t27.ai/#/blog/queen-foundation-snapshot-contract</link>
+      <guid isPermaLink="false">queen-foundation-snapshot-contract</guid>
+      <pubDate>Sat, 05 Sep 2026 12:00:00 GMT</pubDate>
+      <description>[measured] Merged PR #937 adds a dated foundation snapshot and a fixture-backed contract that keeps the page source visible.</description>
+      <category>Queen</category>
+      <category>Reproducibility</category>
+      <category>Web</category>
+      <category>GitHub</category>
+    </item>
+    <item>
+      <title>The only stable speed belonged to the tool, not the cable</title>
+      <link>https://t27.ai/#/blog/the-only-stable-speed-belonged-to-the-tool</link>
+      <guid isPermaLink="false">the-only-stable-speed-belonged-to-the-tool</guid>
+      <pubDate>Sat, 05 Sep 2026 12:00:00 GMT</pubDate>
+      <description>[measured] A note recorded 100 kHz as the only stable JTAG clock for this cable. openFPGALoader ran the same cable at 6 MHz and programmed a bitstream OpenOCD could not start.</description>
+      <category>FPGA</category>
+      <category>openXC7</category>
+      <category>Toolchain</category>
+      <category>Reproducibility</category>
+    </item>
+    <item>
+      <title>CLARA: submitted, non-conforming, and not reviewed on the merits</title>
+      <link>https://t27.ai/#/blog/clara-proposal-submitted-not-reviewed</link>
+      <guid isPermaLink="false">clara-proposal-submitted-not-reviewed</guid>
+      <pubDate>Thu, 03 Sep 2026 12:00:00 GMT</pubDate>
+      <description>[measured] Merged PR #892 changed one README file with two additions and two deletions, correcting the project record from “never submitted” to submitted, administratively non-conforming, and not reviewed on the merits.</description>
+      <category>Documentation</category>
+      <category>Reproducibility</category>
+      <category>Self-critique</category>
+      <category>CLARA</category>
+    </item>
+    <item>
+      <title>PR #888 made review ownership explicit</title>
+      <link>https://t27.ai/#/blog/queen-review-lifecycle-queues</link>
+      <guid isPermaLink="false">queen-review-lifecycle-queues</guid>
+      <pubDate>Wed, 02 Sep 2026 12:00:00 GMT</pubDate>
+      <description>Merged PR #888 adds four explicit review states in a 5-file diff, while separate CI receipts show that merge state and delivery status are different facts.</description>
+      <category>Review</category>
+      <category>CI</category>
+      <category>GitHub Actions</category>
+      <category>Queen</category>
+    </item>
+    <item>
+      <title>One commit, nine workflow outcomes</title>
+      <link>https://t27.ai/#/blog/one-commit-nine-workflow-outcomes</link>
+      <guid isPermaLink="false">one-commit-nine-workflow-outcomes</guid>
+      <pubDate>Tue, 01 Sep 2026 12:00:00 GMT</pubDate>
+      <description>A public GitHub Actions snapshot for commit 442bcda8bc50fe555de9d463bfd34b247c5995a5 records 9 runs: 8 push-triggered runs split into 4 successes and 4 failures, plus 1 issue-triggered failure; job evidence shows distinct stopping points rather than a shared cause.</description>
+      <category>CI</category>
+      <category>GitHub Actions</category>
+      <category>Testing</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>Two bitstreams, one bit apart</title>
+      <link>https://t27.ai/#/blog/two-bitstreams-one-bit-apart</link>
+      <guid isPermaLink="false">two-bitstreams-one-bit-apart</guid>
+      <pubDate>Tue, 01 Sep 2026 12:00:00 GMT</pubDate>
+      <description>A proposed row in the Xilinx bitstream database had been unverifiable for eighteen months. Two 22.7 MB bitstreams differing in a single bit settle it on silicon: with the bit an LED blinks, without it the counter is frozen.</description>
+      <category>FPGA</category>
+      <category>openXC7</category>
+      <category>Project X-Ray</category>
+      <category>Hardware</category>
+    </item>
+    <item>
+      <title>A real value must not travel in an integer container</title>
+      <link>https://t27.ai/#/blog/real-value-in-integer-container</link>
+      <guid isPermaLink="false">real-value-in-integer-container</guid>
+      <pubDate>Mon, 31 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A merged Verilog-emitter fix moved one simulation case from 5 PASSED / 6 FAILED to 11 PASSED while syntax acceptance stayed at 380 files, showing why form and numerical-meaning gates must be separate.</description>
+      <category>Verilog</category>
+      <category>Simulation</category>
+      <category>Compiler</category>
+      <category>Testing</category>
+    </item>
+    <item>
+      <title>TRI CLAW: an agent you can audit</title>
+      <link>https://t27.ai/#/blog/tri-claw-an-agent-you-can-audit</link>
+      <guid isPermaLink="false">tri-claw-an-agent-you-can-audit</guid>
+      <pubDate>Mon, 31 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Three dies that never reached the foundry become three gateware layers on the most-studied FPGA family: attestation at boot, a BLAKE3 receipt per action, a ternary engine with an empty DSP column. The agent-in-a-box exists; the verifiable device exists; the intersection is empty.</description>
+      <category>TRI CLAW</category>
+      <category>Product</category>
+      <category>FPGA</category>
+      <category>Ternary</category>
+      <category>Verification</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>The ratchet counted a total as an error</title>
+      <link>https://t27.ai/#/blog/the-ratchet-counted-a-total-as-an-error</link>
+      <guid isPermaLink="false">the-ratchet-counted-a-total-as-an-error</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A gate written to stop elaboration errors creeping back reported 186 of them; 25 were the compiler's own summary line saying how many errors it had found. The number had already reached commit messages and a status page. This is the proof that could not have come out any other way, the live emitter defect that was hiding inside the count, why fixing it made the number worse, and one fix that was built, measured, and thrown away.</description>
+      <category>CI</category>
+      <category>Measurement</category>
+      <category>Self-critique</category>
+      <category>FPGA</category>
+      <category>Compilers</category>
+    </item>
+    <item>
+      <title>The gate was right and nothing stopped</title>
+      <link>https://t27.ai/#/blog/the-gate-was-right-and-nothing-stopped</link>
+      <guid isPermaLink="false">the-gate-was-right-and-nothing-stopped</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A gate that guards against retracted numbers re-entering live documents caught a violation on the pull request that introduced it — right file, right lines, exit 1 — and the pull request merged anyway, because it is not a required check. It stayed red on main through two more merges. This is the third variant of a reach failure: not ‘it never runs’, not ‘it runs on the wrong diff’, but ‘it runs, it fails, it names the exact lines, and nothing waits for the answer’.</description>
+      <category>CI</category>
+      <category>Measurement</category>
+      <category>Self-critique</category>
+      <category>Process</category>
+    </item>
+    <item>
+      <title>The required check was an echo</title>
+      <link>https://t27.ai/#/blog/the-required-check-was-an-echo</link>
+      <guid isPermaLink="false">the-required-check-was-an-echo</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>One of four required status checks — the ones a branch ruleset will not let a merge past — was a shell command that prints a sentence. Twenty lines, no logic, green on every pull request, required for months. Meanwhile the test suite it was believed to be has never blocked a merge, and thirteen tests fail on the main branch indefinitely because nothing was waiting for them.</description>
+      <category>CI</category>
+      <category>Process</category>
+      <category>Measurement</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>The control that could not fail</title>
+      <link>https://t27.ai/#/blog/the-control-that-could-not-fail</link>
+      <guid isPermaLink="false">the-control-that-could-not-fail</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Four gates had never been seen red. Writing their negative controls produced one that reported every branch red while the gate it guarded printed OK on a broken catalog.</description>
+      <category>CI</category>
+      <category>Negative controls</category>
+      <category>Mutation testing</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>The scanner scored what it could not see</title>
+      <link>https://t27.ai/#/blog/the-scanner-scored-what-it-could-not-see</link>
+      <guid isPermaLink="false">the-scanner-scored-what-it-could-not-see</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A mutation tool reported a gate as having no failure path. The gate has four -- all of them ternaries, a form the scanner did not recognise, so it scored them as covered.</description>
+      <category>CI</category>
+      <category>Mutation testing</category>
+      <category>Measurement</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>I wrote the post, then did the thing</title>
+      <link>https://t27.ai/#/blog/i-wrote-the-post-then-did-the-thing</link>
+      <guid isPermaLink="false">i-wrote-the-post-then-did-the-thing</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Two posts in this series are about gates that fail without changing anyone behaviour. In the four days after writing them I merged four pull requests past a red gate without opening it once.</description>
+      <category>CI</category>
+      <category>Attention</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>The auditor made the mistake it audits</title>
+      <link>https://t27.ai/#/blog/the-auditor-made-the-mistake-it-audits</link>
+      <guid isPermaLink="false">the-auditor-made-the-mistake-it-audits</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A mutation tool took a gate suite from four gates with no negative control to none, and from twenty surviving mutants to zero. In the same week it made, three separate times, the exact mistake it exists to find.</description>
+      <category>CI</category>
+      <category>Mutation testing</category>
+      <category>Measurement</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>Nobody's example</title>
+      <link>https://t27.ai/#/blog/nobodys-example</link>
+      <guid isPermaLink="false">nobodys-example</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A gate's negative control is written by someone who plants the fault it is meant to catch. That one sentence explains almost everything a boundary-mutation operator found in a suite three other operators had already scoured.</description>
+      <category>CI</category>
+      <category>Mutation testing</category>
+      <category>Test design</category>
+      <category>Measurement</category>
+    </item>
+    <item>
+      <title>Physical width changed the question</title>
+      <link>https://t27.ai/#/blog/physical-width-changed-the-question</link>
+      <guid isPermaLink="false">physical-width-changed-the-question</guid>
+      <pubDate>Sun, 23 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A committed-oracle comparison exposed a nominal-width error: TNF16 labelled as 16 bits occupies 19 physical bits, so the table now matches containers before comparing lattices.</description>
+      <category>Number formats</category>
+      <category>Conformance</category>
+      <category>Measurement</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>Four hundred and twelve tests that were sentences</title>
+      <link>https://t27.ai/#/blog/four-hundred-and-twelve-tests-that-were-sentences</link>
+      <guid isPermaLink="false">four-hundred-and-twelve-tests-that-were-sentences</guid>
+      <pubDate>Sat, 22 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Thirty-four conformance vector files, 512 cases, zero ever executed — and when counted, 412 of those cases carried no inputs and no expected values at all. This is how a corpus becomes decorative, why the first classifier reported 147 where an independent pass said 100, and the three-verdict registry (executed / numbered debt / aspirational) that lets a small true number replace a large false one.</description>
+      <category>Testing</category>
+      <category>CI</category>
+      <category>FPGA</category>
+      <category>Measurement</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>Ternary won the wire; it did not win the gate</title>
+      <link>https://t27.ai/#/blog/ternary-won-the-wire-not-the-gate</link>
+      <guid isPermaLink="false">ternary-won-the-wire-not-the-gate</guid>
+      <pubDate>Sat, 22 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Base economy is a theorem, not a measurement: 5.66 percent in a 1950 vacuum-tube cost model, a win on the wire in USB4 v2 and GDDR7, and a loss at the gate on noise margin.</description>
+      <category>Number formats</category>
+      <category>Arithmetic</category>
+      <category>Signalling</category>
+      <category>History</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>Equal stored width removed an accuracy lead</title>
+      <link>https://t27.ai/#/blog/equal-stored-width-removed-an-accuracy-lead</link>
+      <guid isPermaLink="false">equal-stored-width-removed-an-accuracy-lead</guid>
+      <pubDate>Fri, 21 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A corrected equal-stored-width remeasurement withdrew an earlier 2.1×/2.6× lead over takum and records the oracle and budget defects that changed the reading.</description>
+      <category>Measurement</category>
+      <category>Reproducibility</category>
+      <category>Self-critique</category>
+      <category>FPGA</category>
+      <category>Accuracy</category>
+    </item>
+    <item>
+      <title>Formal was green and had never run a solver</title>
+      <link>https://t27.ai/#/blog/formal-was-green-and-had-never-run-a-solver</link>
+      <guid isPermaLink="false">formal-was-green-and-had-never-run-a-solver</guid>
+      <pubDate>Thu, 20 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A formal verification job stayed green its whole life while three independent mechanisms each guaranteed it could never go red — pseudo-syntax configs, a pipe that tested tee instead of the tool, and continue-on-error over everything. Peeling it to the first genuine proof took seven named layers, including RTL four months older than the compiler under test and property files that never instantiated the DUT. It ends with the repository’s first real formal verdicts: fifo and mac, Status PASSED under z3.</description>
+      <category>CI</category>
+      <category>Formal</category>
+      <category>FPGA</category>
+      <category>Debugging</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>Thirty epochs exposed a failure-rate blind spot</title>
+      <link>https://t27.ai/#/blog/thirty-epochs-exposed-a-failure-rate-blind-spot</link>
+      <guid isPermaLink="false">thirty-epochs-exposed-a-failure-rate-blind-spot</guid>
+      <pubDate>Thu, 20 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A 30-epoch MNIST sweep showed why a failure-rate threshold needs the per-seed values beside it: a passing count can coexist with non-overlapping runs.</description>
+      <category>FPGA</category>
+      <category>MNIST</category>
+      <category>Measurement</category>
+      <category>Reproducibility</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>Receipts and coverage seals over a radio mesh</title>
+      <link>https://t27.ai/#/blog/receipts-and-seals-over-radio</link>
+      <guid isPermaLink="false">receipts-and-seals-over-radio</guid>
+      <pubDate>Wed, 19 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Bytes crossed two radio hops between four boards and arrived byte-exact, with one coverage seal recomputed independently at three points and agreeing at all three. What that proves, what it does not, what the thing is built on, and where the commercial radios are plainly ahead.</description>
+      <category>Mesh</category>
+      <category>DePIN</category>
+      <category>Verifiable compute</category>
+      <category>Zynq</category>
+      <category>openXC7</category>
+    </item>
+    <item>
+      <title>The tail that had never run</title>
+      <link>https://t27.ai/#/blog/the-tail-that-had-never-run</link>
+      <guid isPermaLink="false">the-tail-that-had-never-run</guid>
+      <pubDate>Wed, 19 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A bitstream-generating CI job was red for eleven days. Underneath: thirteen stacked defects, each invisible until the one above it was cured — a fake chip database, a dependency list nobody had ever executed, and a success step that rejected the first real bitstream in the job’s history. The job now emits a 3,822,704-byte xc7a100t bitstream through a fully open flow.</description>
+      <category>CI</category>
+      <category>FPGA</category>
+      <category>openXC7</category>
+      <category>Debugging</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>A clean merge is not a semantic no-op</title>
+      <link>https://t27.ai/#/blog/a-clean-merge-is-not-a-semantic-no-op</link>
+      <guid isPermaLink="false">a-clean-merge-is-not-a-semantic-no-op</guid>
+      <pubDate>Wed, 19 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Two autonomous agents, one repository, a 643-commit wave merged mid-flight. The four textual conflicts were the safe part — three were comment-only and one was both sides fixing the same bug. The defect that reached master rode in on a hunk that merged cleanly: a device-default flip that a CI workflow relied on as an absence, which cannot conflict. It passed place-and-route on the wrong database and failed at the first step that looks a name up instead of trusting a path.</description>
+      <category>CI</category>
+      <category>Git</category>
+      <category>Multi-agent</category>
+      <category>FPGA</category>
+      <category>Debugging</category>
+    </item>
+    <item>
+      <title>Fourteen rows agreed; one did not</title>
+      <link>https://t27.ai/#/blog/fourteen-rows-agreed-one-did-not</link>
+      <guid isPermaLink="false">fourteen-rows-agreed-one-did-not</guid>
+      <pubDate>Wed, 19 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A post-route CI run gives fifteen instrumented FPGA frequency rows a sourced comparison: fourteen fall inside the flow’s measured noise band, while LNS16 remains an explicit exception and one design is still uninstrumented.</description>
+      <category>FPGA</category>
+      <category>CI</category>
+      <category>Measurement</category>
+      <category>Reproducibility</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>The golden ratio in this format is a scale factor, not information</title>
+      <link>https://t27.ai/#/blog/phi-is-a-scale-not-information</link>
+      <guid isPermaLink="false">phi-is-a-scale-not-information</guid>
+      <pubDate>Tue, 18 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A format with phi in its name. Measured: in the two-bit digit alphabet phi is not observable at all, and a dot product of GFTernary vectors is exactly phi-squared times the same codes read as balanced ternary. The prior art put phi where it does carry information — in 2002.</description>
+      <category>Number formats</category>
+      <category>Measurement</category>
+      <category>Self-critique</category>
+      <category>FPGA</category>
+    </item>
+    <item>
+      <title>The full adder made the cost claim comparable</title>
+      <link>https://t27.ai/#/blog/the-full-adder-made-the-cost-claim-comparable</link>
+      <guid isPermaLink="false">the-full-adder-made-the-cost-claim-comparable</guid>
+      <pubDate>Tue, 18 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A merged FPGA-repository PR replaces a magnitude-only comparison with a full adder and reports 3000 oracle checks, 0 errors, and a 440-LUT post-synthesis result.</description>
+      <category>FPGA</category>
+      <category>Measurement</category>
+      <category>Arithmetic</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>A multiplicity correction changed the deployment reading</title>
+      <link>https://t27.ai/#/blog/a-multiplicity-correction-changed-the-deployment-reading</link>
+      <guid isPermaLink="false">a-multiplicity-correction-changed-the-deployment-reading</guid>
+      <pubDate>Mon, 17 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A merged research note shows how a nine-placement selection by mean margin becomes a narrower claim after the selection family is included in the correction.</description>
+      <category>Measurement</category>
+      <category>Reproducibility</category>
+      <category>Statistics</category>
+      <category>Quantization</category>
+    </item>
+    <item>
+      <title>A gate that rejected its own users</title>
+      <link>https://t27.ai/#/blog/a-gate-that-rejected-its-own-users</link>
+      <guid isPermaLink="false">a-gate-that-rejected-its-own-users</guid>
+      <pubDate>Mon, 17 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A floor I added asserted five report lines and failed three of the four normal design shapes; a workflow gated on a label that did not exist, so every &quot;Start a run&quot; button led nowhere. Both were correct about what they required and silent about whether it could be met.</description>
+      <category>Verification</category>
+      <category>CI</category>
+      <category>Self-critique</category>
+    </item>
+    <item>
+      <title>An inert filter is safest until it works</title>
+      <link>https://t27.ai/#/blog/an-inert-filter-is-safest-until-it-works</link>
+      <guid isPermaLink="false">an-inert-filter-is-safest-until-it-works</guid>
+      <pubDate>Mon, 17 Aug 2026 12:00:00 GMT</pubDate>
+      <description>The first request this service ever served came back telling a clean design it had a silicon bug. Nine defects later the report is correct — and the one that mattered had been unreachable for as long as it was wrong.</description>
+      <category>Verification</category>
+      <category>CI</category>
+      <category>Self-critique</category>
+      <category>Measurement</category>
+    </item>
+    <item>
+      <title>A health snapshot changed its numbers, not its contract</title>
+      <link>https://t27.ai/#/blog/a-health-snapshot-changed-its-denominator</link>
+      <guid isPermaLink="false">a-health-snapshot-changed-its-denominator</guid>
+      <pubDate>Sun, 16 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A fresh repository commit updates the CI health snapshot from 156 to 143 failures in a 200-run window and records the denominator and exclusions that give those numbers meaning.</description>
+      <category>CI</category>
+      <category>Measurement</category>
+      <category>Reproducibility</category>
+      <category>Dashboards</category>
+    </item>
+    <item>
+      <title>Half the build is bitstream generation, and the trivial design was the slow one</title>
+      <link>https://t27.ai/#/blog/half-the-build-is-bitstream-generation</link>
+      <guid isPermaLink="false">half-the-build-is-bitstream-generation</guid>
+      <pubDate>Sat, 15 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Fifteen openXC7 builds with stated boundaries: for small designs more time goes to turning FASM into a bitstream than to place-and-route, a blinky beaten by a GF multiplier, and 25% spread on byte-identical work.</description>
+      <category>FPGA</category>
+      <category>openXC7</category>
+      <category>Benchmarking</category>
+      <category>Measurement</category>
+    </item>
+    <item>
+      <title>We hand-patched a generated file that upstream had fixed five months earlier</title>
+      <link>https://t27.ai/#/blog/the-generated-file-was-three-years-old</link>
+      <guid isPermaLink="false">the-generated-file-was-three-years-old</guid>
+      <pubDate>Sat, 15 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A vendored Verilog artifact from April 2023 carried a defect its generator repaired in March 2026. The hand fix is correct and temporary; the next regeneration would undo it.</description>
+      <category>LiteX</category>
+      <category>openXC7</category>
+      <category>Vendoring</category>
+      <category>yosys</category>
+    </item>
+    <item>
+      <title>Five reasons the build was red, and the fifth was mine</title>
+      <link>https://t27.ai/#/blog/five-reasons-the-build-was-red</link>
+      <guid isPermaLink="false">five-reasons-the-build-was-red</guid>
+      <pubDate>Sat, 15 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Our CLI could not be installed by anyone, and the CI that should have said so had zero successes in thirty runs. Each cause hid the next; removing the fourth created the fifth.</description>
+      <category>CI</category>
+      <category>Zig</category>
+      <category>Build systems</category>
+      <category>Tooling</category>
+    </item>
+    <item>
+      <title>Eight broken gates in one day, and not one of them was broken code</title>
+      <link>https://t27.ai/#/blog/a-broken-reference-looks-exactly-like-broken-code</link>
+      <guid isPermaLink="false">a-broken-reference-looks-exactly-like-broken-code</guid>
+      <pubDate>Sat, 15 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A flag, a version, a runner, a module, a script, three specs, two format paths, five submodule links and a step that ran what it claimed to build. Every one reported &quot;failure&quot;, which is also what a real defect reports.</description>
+      <category>CI</category>
+      <category>Tooling</category>
+      <category>Git</category>
+      <category>Zig</category>
+    </item>
+    <item>
+      <title>A red gate was missing its input</title>
+      <link>https://t27.ai/#/blog/a-red-gate-was-missing-its-input</link>
+      <guid isPermaLink="false">a-red-gate-was-missing-its-input</guid>
+      <pubDate>Sat, 15 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A merged FPGA-repository audit shows how a missing checkout turned twelve unchecked disagreements into apparent fixes, while two other failures were ordinary runner plumbing.</description>
+      <category>CI</category>
+      <category>FPGA</category>
+      <category>Reproducibility</category>
+      <category>Tooling</category>
+    </item>
+    <item>
+      <title>A correct gate with a manual remedy is an outage</title>
+      <link>https://t27.ai/#/blog/a-correct-gate-with-a-manual-remedy</link>
+      <guid isPermaLink="false">a-correct-gate-with-a-manual-remedy</guid>
+      <pubDate>Fri, 14 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Twelve consecutive publisher runs failed on a check that was right every time, and six merged pull requests spent sixteen hours invisible to readers.</description>
+      <category>delivery</category>
+      <category>ci</category>
+      <category>publishing</category>
+      <category>postmortem</category>
+    </item>
+    <item>
+      <title>Six and a half years in one discarded return value</title>
+      <link>https://t27.ai/#/blog/six-and-a-half-years-in-a-discarded-return-value</link>
+      <guid isPermaLink="false">six-and-a-half-years-in-a-discarded-return-value</guid>
+      <pubDate>Fri, 14 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Four merged fixes turned the openXC7 demo CI green. The oldest was a bool nobody read: since February 2020 the placer knew its own placement was invalid and threw the answer away, so the failure surfaced in the router instead.</description>
+      <category>FPGA</category>
+      <category>openXC7</category>
+      <category>nextpnr</category>
+      <category>Place and route</category>
+    </item>
+    <item>
+      <title>The search space erased a significance claim</title>
+      <link>https://t27.ai/#/blog/the-search-space-erased-a-significance-claim</link>
+      <guid isPermaLink="false">the-search-space-erased-a-significance-claim</guid>
+      <pubDate>Fri, 14 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A merged audit of 67 targets withdraws a roughly 10-sigma reading after enumerating the search family that made near-matches likely by chance.</description>
+      <category>research</category>
+      <category>statistics</category>
+      <category>reproducibility</category>
+      <category>audit</category>
+    </item>
+    <item>
+      <title>Eleven verdicts were windows, not checkpoints</title>
+      <link>https://t27.ai/#/blog/eleven-verdicts-were-windows-not-checkpoints</link>
+      <guid isPermaLink="false">eleven-verdicts-were-windows-not-checkpoints</guid>
+      <pubDate>Thu, 13 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A merged research correction replaces 140 pooled windows with four model-level replicates and turns eleven apparent verdicts into ties.</description>
+      <category>research</category>
+      <category>statistics</category>
+      <category>quantization</category>
+      <category>reproducibility</category>
+    </item>
+    <item>
+      <title>Sixteen defects fixed, zero of them reached the consumer</title>
+      <link>https://t27.ai/#/blog/a-repair-reaches-only-the-copy-it-lands-in</link>
+      <guid isPermaLink="false">a-repair-reaches-only-the-copy-it-lands-in</guid>
+      <pubDate>Wed, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Two repositories carried the same six files under the same names. Repairing one changed nothing downstream, and no instrument in either could report why — because each copy compiles entirely on its own.</description>
+      <category>Zig</category>
+      <category>Modularity</category>
+      <category>CI</category>
+      <category>Verification</category>
+    </item>
+    <item>
+      <title>Zero of six hundred and forty</title>
+      <link>https://t27.ai/#/blog/a-suite-that-runs-nothing-exits-zero</link>
+      <guid isPermaLink="false">a-suite-that-runs-nothing-exits-zero</guid>
+      <pubDate>Wed, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A package declared 640 tests and ran none of them, and the exit code was 0. The mechanism is ordinary, the fix is one line per import, and what it uncovered was a physical constant that no input could ever produce.</description>
+      <category>verification</category>
+      <category>zig</category>
+      <category>vacuity</category>
+    </item>
+    <item>
+      <title>Each half imported the other</title>
+      <link>https://t27.ai/#/blog/each-half-imported-the-other</link>
+      <guid isPermaLink="false">each-half-imported-the-other</guid>
+      <pubDate>Wed, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <description>One directory was split across two repositories and both kept flat imports of the other. Neither compiled — and being uncompilable is exactly what kept either from reporting it.</description>
+      <category>verification</category>
+      <category>zig</category>
+      <category>dependencies</category>
+    </item>
+    <item>
+      <title>Twenty patches merged upstream in three days</title>
+      <link>https://t27.ai/#/blog/twenty-merged-in-three-days</link>
+      <guid isPermaLink="false">twenty-merged-in-three-days</guid>
+      <pubDate>Wed, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <description>On 2026-08-09 my own notes said six patches were open and none had been merged. By 2026-08-11 openXC7 had merged twenty. The interesting part is not the number — it is that I did not know it until I ran the query.</description>
+      <category>openXC7</category>
+      <category>upstream</category>
+      <category>measurement</category>
+    </item>
+    <item>
+      <title>A background loop broke for months, and no amount of watching could have caught it</title>
+      <link>https://t27.ai/#/blog/the-silence-was-a-saturated-readout</link>
+      <guid isPermaLink="false">the-silence-was-a-saturated-readout</guid>
+      <pubDate>Wed, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Seven timed loops logged nothing on an empty tick. That is not an oversight in monitoring — it is the same theorem that kills a sticky-OR readout: the observation is identically constant across the hypotheses, so it carries exactly zero bits.</description>
+      <category>information theory</category>
+      <category>observability</category>
+      <category>production</category>
+      <category>measurement</category>
+    </item>
+    <item>
+      <title>The scale field does not need eight bits, and we were not the first to say so</title>
+      <link>https://t27.ai/#/blog/scale-field-width-already-published</link>
+      <guid isPermaLink="false">scale-field-width-already-published</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Four bits cover the shared scale on every checkpoint measured -- bit-identical to E8M0, zero blocks truncated out of 20,462,464. The observation was published first by someone else; what is ours is the proof around it, and the constant does not survive contact with activations.</description>
+      <category>Number formats</category>
+      <category>MXFP4</category>
+      <category>Quantisation</category>
+      <category>Prior art</category>
+    </item>
+    <item>
+      <title>A green CI does not mean the library builds for you</title>
+      <link>https://t27.ai/#/blog/green-ci-does-not-mean-usable</link>
+      <guid isPermaLink="false">green-ci-does-not-mean-usable</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A Zig package with passing CI could not be compiled by any consumer. Lazy analysis means a test run proves only what the tests happen to touch — one line exposed five hidden errors in one package, and sixteen in the package under it.</description>
+      <category>Zig</category>
+      <category>CI</category>
+      <category>Verification</category>
+      <category>Static analysis</category>
+    </item>
+    <item>
+      <title>Two theorems that tell you an experiment is worthless before you run it</title>
+      <link>https://t27.ai/#/blog/the-experiment-that-could-not-answer</link>
+      <guid isPermaLink="false">the-experiment-that-could-not-answer</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A detectability floor of n ≈ 3.92/Δ² said the sweep could not resolve the effect at any outcome, and a sticky-OR readout carried literally zero bits. Both knowable in advance.</description>
+      <category>Statistics</category>
+      <category>Measurement</category>
+      <category>FPGA</category>
+      <category>Methodology</category>
+    </item>
+    <item>
+      <title>Twenty-three reference models, because implementing a competitor from memory always flatters you</title>
+      <link>https://t27.ai/#/blog/twenty-three-reference-models</link>
+      <guid isPermaLink="false">twenty-three-reference-models</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Every format we compare against has its own reference implementation, written from its specification — after five bugs that all weakened the competitor and all pointed the same way.</description>
+      <category>Numeric formats</category>
+      <category>Benchmarking</category>
+      <category>Methodology</category>
+      <category>Open source</category>
+    </item>
+    <item>
+      <title>I checked my own eight theorems by machine. Four held, three headings were wrong</title>
+      <link>https://t27.ai/#/blog/eight-theorems-audited</link>
+      <guid isPermaLink="false">eight-theorems-audited</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Every proof verified step by step, every verdict attacked by a second pass, none disputed — and the defects were never in a measurement, always in what a heading claimed about it.</description>
+      <category>Mathematics</category>
+      <category>Verification</category>
+      <category>Ternary</category>
+      <category>Golden ratio</category>
+    </item>
+    <item>
+      <title>Doubling the context made it worse: ternary scaling follows a resonance, not a power law</title>
+      <link>https://t27.ai/#/blog/context-length-resonance-not-power-law</link>
+      <guid isPermaLink="false">context-length-resonance-not-power-law</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>ctx=18 gives PPL 5.58, ctx=27 gives 2.96, ctx=54 gives 6.05 — worse than the baseline. Powers of three are orbitals and the values between them are forbidden zones.</description>
+      <category>Training</category>
+      <category>Ternary</category>
+      <category>Scaling</category>
+      <category>Transformers</category>
+      <category>Negative result</category>
+    </item>
+    <item>
+      <title>Fifteen merged, nine credited: what upstream contribution actually looks like</title>
+      <link>https://t27.ai/#/blog/fifteen-merged-nine-credited</link>
+      <guid isPermaLink="false">fifteen-merged-nine-credited</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>I had written down five merged PRs and zero attributed commits. Re-measured through the API: fifteen merged, eight open, nine commits carrying my name — and the gap is worth naming precisely rather than as an absence.</description>
+      <category>Open source</category>
+      <category>FPGA</category>
+      <category>openXC7</category>
+      <category>Attribution</category>
+    </item>
+    <item>
+      <title>Timing margin grows as the square root of a logarithm, and nothing accumulates</title>
+      <link>https://t27.ai/#/blog/frame-length-margin-law</link>
+      <guid isPermaLink="false">frame-length-margin-law</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A frame-length margin law derived from extreme-value statistics, and the accumulation story it refutes — which would predict a 12.9x eye violation on frames that pass.</description>
+      <category>FPGA</category>
+      <category>Ethernet</category>
+      <category>RGMII</category>
+      <category>Timing</category>
+      <category>Statistics</category>
+    </item>
+    <item>
+      <title>Four rules for a measurement rig whose readout cannot be misread</title>
+      <link>https://t27.ai/#/blog/readout-that-cannot-be-misread</link>
+      <guid isPermaLink="false">readout-that-cannot-be-misread</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>A readout whose mapping to state is unestablished is not an instrument — four rules written after a week of hardware debugging where the rig lied and the design was fine.</description>
+      <category>FPGA</category>
+      <category>Hardware</category>
+      <category>Debugging</category>
+      <category>Measurement</category>
+    </item>
+    <item>
+      <title>phi^2 + 1/phi^2 = 3, checked every way I could think of</title>
+      <link>https://t27.ai/#/blog/phi-identity-machine-checked</link>
+      <guid isPermaLink="false">phi-identity-machine-checked</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>An exact identity, six proof steps machine-verified, and a search over 1,476,000 candidates that found no other root — plus what the identity does not license.</description>
+      <category>Mathematics</category>
+      <category>Golden ratio</category>
+      <category>Verification</category>
+      <category>Ternary</category>
+    </item>
+    <item>
+      <title>Half of your activations are negative. They carry 1.8% of the energy</title>
+      <link>https://t27.ai/#/blog/energy-asymmetry-activations</link>
+      <guid isPermaLink="false">energy-asymmetry-activations</guid>
+      <pubDate>Tue, 11 Aug 2026 12:00:00 GMT</pubDate>
+      <description>Post-activation tensors are half negative by count and 1.8–6.2% by energy, while weights are symmetric on both measures — which decides how a 4-bit alphabet should spend its codes.</description>
+      <category>Quantisation</category>
+      <category>Transformers</category>
+      <category>Numeric formats</category>
+      <category>4-bit</category>
+    </item>
+    <item>
+      <title>Gigabit Ethernet on Artix-7 without a vendor toolchain</title>
+      <link>https://t27.ai/#/blog/open-gigabit-ethernet-artix7</link>
+      <guid isPermaLink="false">open-gigabit-ethernet-artix7</guid>
+      <pubDate>Sun, 09 Aug 2026 12:00:00 GMT</pubDate>
+      <description>RGMII at gigabit through Yosys, nextpnr-xilinx and Project X-Ray with no vendor tools — the six blockers that had to be patched, the one still open, and what the workaround costs.</description>
+      <category>FPGA</category>
+      <category>Open source</category>
+      <category>Ethernet</category>
+      <category>Artix-7</category>
+      <category>openXC7</category>
+    </item>
+  </channel>
+</rss>

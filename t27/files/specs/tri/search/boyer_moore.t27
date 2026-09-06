@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Skip sections of text using bad character rule | φ² + 1/φ² = 3 | TRINITY
+
+module TriBoyerMoore;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BMBadChar = struct {
+        table : [256]usize,
+        pattern_len : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // build_bad_char(pattern: []const u8) → BMBadChar
+    fn build_bad_char(pattern: []const u8) -> BMBadChar {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(text: []const u8, pattern: []const u8, bad_char: *const BMBadChar) → []usize
+    fn search(text: []const u8, pattern: []const u8, bad_char: *const BMBadChar) -> []usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Both functions above are still `TODO: Implement`, so each compiles to
+    // `@panic("not yet implemented")`: calling one aborts the test binary.
+    // What this module does state is the shape of the bad-character table and
+    // the signature of each operation, plus the rule named in the header,
+    // and that is what these tests hold to.
+
+    test bad_char_table_has_one_entry_per_byte_value
+        given t = @FieldType(BMBadChar, "table")
+        then t == [256]usize
+        and @FieldType(BMBadChar, "pattern_len") == usize
+
+    // The bad character rule: on a mismatch against text byte c, shift the
+    // pattern so c lines up with its LAST occurrence in the pattern, i.e. by
+    // pattern_len - 1 - lastIndexOf(c); a byte absent from the pattern shifts
+    // the whole pattern_len. For "abca": a (97) last occurs at 3, b (98) at 1,
+    // c (99) at 2. Byte values are spelled as numbers because the t27 lexer
+    // drops the quotes off a character literal.
+    test shift_for_a_pattern_byte_is_the_distance_from_its_last_occurrence
+        given pattern = "abca"
+        then pattern.len - 1 - std.mem.lastIndexOfScalar(u8, pattern, 97).? == 0
+        and pattern.len - 1 - std.mem.lastIndexOfScalar(u8, pattern, 98).? == 2
+        and pattern.len - 1 - std.mem.lastIndexOfScalar(u8, pattern, 99).? == 1
+
+    test a_byte_absent_from_the_pattern_shifts_the_whole_pattern
+        given pattern = "abca"
+        then std.mem.lastIndexOfScalar(u8, pattern, 122) == null
+        and pattern.len == 4
+
+    // Neither signature can express its operation: build_bad_char has nowhere
+    // to put the table it builds, and search is given text with no pattern and
+    // no table to search it with. These record the signatures as they stand.
+    test build_bad_char_and_search_each_take_one_byte_slice_and_return_nothing
+        given f = build_bad_char
+        then @TypeOf(f) == fn ([]const u8) void
+        and @TypeOf(search) == fn ([]const u8) void
+

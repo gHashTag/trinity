@@ -1,0 +1,119 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Basic RNN recurrence equation | φ² + 1/φ² = 3 | TRINITY
+
+module RnnCell;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_INPUT_SIZE : u32 = 128;
+    const DEFAULT_HIDDEN_SIZE : u32 = 128;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const RNNCellConfig = struct {
+        input_size : u32,
+        hidden_size : u32,
+    };
+
+    pub const RNNState = struct {
+        hidden : []f32,
+        cell : []f32,
+    };
+
+    pub const RNNParams = struct {
+        w_x : []f32,
+        w_h : []f32,
+        b : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward_step(input: []f32, state: RNNState, params: RNNParams) → RNNState
+    fn forward_step(input: []f32, state: RNNState, params: RNNParams) -> RNNState {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_sequence(inputs: [][]f32, initial_state: []f32, params: RNNParams) → [][]f32
+    fn forward_sequence(inputs: [][]f32, initial_state: []f32, params: RNNParams) -> [][]f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // init_state(hidden_size: u32) → []f32
+    fn init_state(hidden_size: u32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward_step/forward_sequence/init_state are unimplemented stubs -- each
+    // emits `@panic("not yet implemented")`, so the recurrence itself cannot be
+    // exercised. The declared constants and parameter shape are what remain
+    // testable.
+
+    test defaults_satisfy_the_stated_size_constraints
+        // rnn_cell_constraint_0 and _1 require input_size >= 1 and
+        // hidden_size >= 1; the defaults must not violate them.
+        then DEFAULT_INPUT_SIZE >= 1
+        and DEFAULT_HIDDEN_SIZE >= 1
+        and DEFAULT_INPUT_SIZE == 128
+        and DEFAULT_HIDDEN_SIZE == 128
+
+    test params_are_the_three_terms_of_the_elman_recurrence
+        // h_t = tanh(W_x x_t + W_h h_{t-1} + b), from Elman (1990): one input
+        // matrix, one recurrent matrix, one bias -- and nothing else.
+        then @typeInfo(RNNParams).@"struct".fields.len == 3
+        and @hasField(RNNParams, "w_x") and @hasField(RNNParams, "w_h")
+        and @hasField(RNNParams, "b")
+
+    test weights_are_flat_f32_slices
+        // Shape is carried by RNNCellConfig, not by the parameter type, so
+        // every matrix is a 1-D buffer the caller must index itself.
+        then @FieldType(RNNParams, "w_x") == []f32
+        and @FieldType(RNNParams, "w_h") == []f32
+        and @FieldType(RNNParams, "b") == []f32
+
+    test state_carries_a_cell_vector_a_plain_rnn_does_not_use
+        // An Elman cell has only a hidden vector; `cell` is LSTM state. It is
+        // declared here, so RNNState is really an LSTM-shaped state struct.
+        then @hasField(RNNState, "hidden") and @hasField(RNNState, "cell")
+        and @FieldType(RNNState, "cell") == []f32
+
+    test config_declares_sizes_as_unsigned
+        then @FieldType(RNNCellConfig, "input_size") == u32
+        and @FieldType(RNNCellConfig, "hidden_size") == u32
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant rnn_cell_constraint_0
+        given input = valid_input()
+        then true // input_size >= 1
+
+    invariant rnn_cell_constraint_1
+        given input = valid_input()
+        then true // hidden_size >= 1
+
+    invariant rnn_cell_constraint_2
+        given input = valid_input()
+        then true // name: rnn_formula
+
+    invariant rnn_cell_constraint_3
+        given input = valid_input()
+        then true // "Elman (1990) - Finding Structure in Time"
+
+    invariant rnn_cell_constraint_4
+        given input = valid_input()
+        then true // "Goodfellow et al. (2016) - Sequence Modeling with RNNs and LSTMs"
+

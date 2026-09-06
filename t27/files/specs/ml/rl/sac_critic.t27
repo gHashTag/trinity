@@ -1,0 +1,163 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Clipped double Q-learning | φ² + 1/φ² = 3 | TRINITY
+
+module SacCritic;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_TAU : f32 = 0.005;
+    const DEFAULT_GAMMA : f32 = 0.99;
+    const DEFAULT_INIT_WEIGHT : f32 = 0.003;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SACCriticConfig = struct {
+        state_dim : u32,
+        action_dim : u32,
+        hidden_dims : []u32,
+        init_weight : f32,
+    };
+
+    pub const TwinQOutput = struct {
+        q1 : f32,
+        q2 : f32,
+    };
+
+    pub const TargetQUpdate = struct {
+        tau : f32,
+        gamma : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(state: []const f32, action: []const f32, params_q1: []const f32, params_q2: []const f32, config: SACCriticConfig) → TwinQOutput
+    fn forward(state: []const f32, action: []const f32, params_q1: []const f32, params_q2: []const f32, config: SACCriticConfig) -> TwinQOutput {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_target(reward: f32, next_state: []f32, done: bool, target_q1_params: []f32, target_q2_params: []f32, actor_params: []f32, config: SACCriticConfig, temperature: f32) → f32
+    fn compute_target(reward: f32, next_state: []f32, done: bool, target_q1_params: []f32, target_q2_params: []f32, actor_params: []f32, config: SACCriticConfig, temperature: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // q_loss(q1_pred: f32, q2_pred: f32, target: f32) → f32
+    fn q_loss(q1_pred: f32, q2_pred: f32, target: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // soft_update_target(source_params: []f32, target_params: []f32, tau: f32) → void
+    fn soft_update_target(source_params: []f32, target_params: []f32, tau: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is still `TODO: Implement`, so each one compiles
+    // to `@panic("not yet implemented")`: calling one aborts the test binary.
+    // What this module does state is three defaults, the twin-Q shape, and
+    // the signature of each operation. The constraints listed below are
+    // checked here against the defaults the module ships, rather than being
+    // left as prose.
+
+    test default_tau_is_a_small_positive_interpolation_factor
+        given tau = DEFAULT_TAU
+        then tau > 0.0
+        and tau < 1.0
+        and @abs(tau - 0.005) < 1e-9
+
+    test default_gamma_lies_in_the_unit_interval
+        given gamma = DEFAULT_GAMMA
+        then gamma >= 0.0
+        and gamma <= 1.0
+        and @abs(gamma - 0.99) < 1e-9
+
+    // A near-zero final-layer init keeps both Q heads small at step 0, so the
+    // clipped minimum does not start out wildly pessimistic.
+    test default_init_weight_is_small_and_positive
+        given w = DEFAULT_INIT_WEIGHT
+        then w > 0.0
+        and w < 0.01
+
+    test a_target_update_built_from_the_defaults_satisfies_both_constraints
+        given upd = TargetQUpdate{ .tau = DEFAULT_TAU, .gamma = DEFAULT_GAMMA }
+        then upd.tau > 0.0
+        and upd.tau < 1.0
+        and upd.gamma >= 0.0
+        and upd.gamma <= 1.0
+
+    // Clipped double Q: the target uses min(q1, q2), so the pair is ordered
+    // by the smaller head whichever way round the two estimates come out.
+    test clipped_double_q_takes_the_smaller_of_the_two_heads
+        given out = TwinQOutput{ .q1 = 2.5, .q2 = -1.0 }
+        and swapped = TwinQOutput{ .q1 = -1.0, .q2 = 2.5 }
+        then @abs(@min(out.q1, out.q2) - (-1.0)) < 1e-6
+        and @abs(@min(swapped.q1, swapped.q2) - @min(out.q1, out.q2)) < 1e-6
+
+    test twin_q_output_carries_two_independent_f32_estimates
+        given q1 = @FieldType(TwinQOutput, "q1")
+        then q1 == f32
+        and @FieldType(TwinQOutput, "q2") == f32
+
+    test critic_config_sizes_state_and_action_separately
+        given s = @FieldType(SACCriticConfig, "state_dim")
+        then s == u32
+        and @FieldType(SACCriticConfig, "action_dim") == u32
+        and @FieldType(SACCriticConfig, "hidden_dims") == []u32
+
+    // None of these signatures can express its operation: forward is given a
+    // state with no action, compute_target a reward with no next-state Q and
+    // no gamma, q_loss one prediction with no target, and soft_update_target
+    // one parameter buffer with no target buffer and no tau. They record what
+    // is declared, not what SAC needs.
+    test forward_takes_a_state_slice_and_returns_nothing
+        given f = forward
+        then @TypeOf(f) == fn ([]const f32) void
+
+    test compute_target_and_q_loss_take_one_scalar_and_return_nothing
+        given f = compute_target
+        then @TypeOf(f) == fn (f32) void
+        and @TypeOf(q_loss) == fn (f32) void
+
+    test soft_update_target_takes_one_mutable_parameter_slice
+        given f = soft_update_target
+        then @TypeOf(f) == fn ([]f32) void
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant sac_critic_constraint_0
+        given input = valid_input()
+        then true // 0 < tau << 1 (typically 0.005)
+
+    invariant sac_critic_constraint_1
+        given input = valid_input()
+        then true // 0 <= gamma <= 1
+
+    invariant sac_critic_constraint_2
+        given input = valid_input()
+        then true // name: sac_target
+
+    invariant sac_critic_constraint_3
+        given input = valid_input()
+        then true // name: clipped_double_q
+
+    invariant sac_critic_constraint_4
+        given input = valid_input()
+        then true // "Fujimoto et al. (2018) - Addressing Function Approximation Error in Actor-Critic Methods (TD3)"
+
+    invariant sac_critic_constraint_5
+        given input = valid_input()
+        then true // "Haarnoja et al. (2018) - Soft Actor-Critic: Off-Policy Maximum Entropy Deep RL"
+

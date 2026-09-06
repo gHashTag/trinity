@@ -1,0 +1,96 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Xorshift64* PRNG algorithm | φ² + 1/φ² = 3 | TRINITY
+
+module TriRandom;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Rng = struct {
+        state : u64,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(seed: u64) → Rng
+    fn init(seed: u64) -> Rng {
+        // TODO: Implement from .tri spec
+    }
+
+    // next(rng: *Rng) → u64
+    fn next(rng: *Rng) -> u64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // range(rng: *Rng, max: u64) → u64
+    fn range(rng: *Rng, max: u64) -> u64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // range_inclusive(rng: *Rng, min: i64, max: i64) → i64
+    fn range_inclusive(rng: *Rng, min: i64, max: i64) -> i64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test rng_state_is_exactly_one_64_bit_word
+        // Verify: xorshift64* carries all of its state in a single u64 — no
+        // counter, no stream selector, nothing else
+        given width = @sizeOf(Rng)
+        then width == 8
+
+    test a_zero_state_is_a_fixed_point_of_the_xorshift
+        // Verify: the three xorshift rounds are xor and shift only, so 0 maps to
+        // 0 forever. init() must therefore refuse or replace seed 0, or next()
+        // returns zero for the rest of the run.
+        given seed = Rng{ .state = 0 }
+        when x1 = seed.state ^ (seed.state >> 12)
+        and x2 = x1 ^ (x1 << 25)
+        and x3 = x2 ^ (x2 >> 27)
+        then x3 == 0
+
+    test a_non_zero_state_leaves_zero_after_one_round
+        // Verify: the same three rounds on the reference seed 88172645463325252
+        // do not collapse, which is what makes the zero case a special case
+        given seed = Rng{ .state = 88172645463325252 }
+        when x1 = seed.state ^ (seed.state >> 12)
+        and x2 = x1 ^ (x1 << 25)
+        and x3 = x2 ^ (x2 >> 27)
+        then x3 != 0
+
+    test a_right_xorshift_composed_with_itself_doubles_its_distance
+        // Verify: for f(x) = x ^ (x >> 12), f(f(x)) = x ^ (x >> 24), because the
+        // two copies of x >> 12 cancel. f is therefore not an involution, and the
+        // inverse of one round needs the shifts 12, 24, 48 applied in turn.
+        given seed = Rng{ .state = 88172645463325252 }
+        when once = seed.state ^ (seed.state >> 12)
+        and twice = once ^ (once >> 12)
+        and expected = seed.state ^ (seed.state >> 24)
+        then twice == expected and twice != seed.state
+
+    test the_multiplier_is_the_star_in_xorshift64_star
+        // Verify: the output stage multiplies by 2685821657736338717, which is
+        // odd and therefore invertible modulo 2^64 — it scrambles the bits
+        // without ever mapping two states onto one output
+        given multiplier = 2685821657736338717
+        when parity = multiplier % 2
+        then parity == 1
+
+    test range_endpoints_bound_a_half_open_interval
+        // Verify: range(lo, hi) spans hi - lo values and range_inclusive spans one
+        // more, which is the only difference between the two entry points
+        given lo = 3
+        and hi = 7
+        when half_open = hi - lo
+        and inclusive = hi - lo + 1
+        then half_open == 4 and inclusive == 5
+

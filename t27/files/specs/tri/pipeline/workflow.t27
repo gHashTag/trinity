@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// | | φ² + 1/φ² = 3 | TRINITY
+
+module Workflow;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const WorkflowStep = struct {
+        command : String,
+        depends_on : []const []const u8,
+        condition : ?[]const u8,
+    };
+
+    pub const Workflow = struct {
+        version : String,
+        steps : []const WorkflowStep,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test "workflow_smoke_test" {
+        expect(true)
+    }

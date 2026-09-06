@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <!-- Generated from posts.ts at build time by the rss-feed plugin in vite.config.ts. -->
+  <link rel="alternate" type="application/rss+xml" title="Trinity — measured results" href="rss.xml" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="TRINITY" />
+  <meta name="description"
+    content="GFTernary and TNF: a reference format pair for the ternary datapath. 52 theorems, 16 retractions, and every hardware number measured on an open flow on XC7A200T." />
+  <meta name="theme-color" content="#000000" />
+  <meta name="keywords" content="ternary computing, AI hardware, SU(3), quantum computing, FPGA, ASIC, energy efficient AI, BitNet, inference acceleration" />
+  <meta name="author" content="Dmitrii Vasilev" />
+  <title>TRINITY | GFTernary · TNF — a reference format pair for the ternary datapath</title>
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://t27.ai/" />
+  <meta property="og:title" content="TRINITY | GFTernary · TNF — a reference format pair for the ternary datapath" />
+  <meta property="og:description" content="GFTernary closes the weight, TNF closes the accumulator. GFTernary decoder 66 LUT at 974.66 MHz; 0.1797 MHz/LUT in a whole ternary neuron. Measured on a binary FPGA, which is stated rather than smoothed." />
+  <meta property="og:image" content="https://t27.ai/og-image.png" />
+  <meta property="og:site_name" content="TRINITY" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://t27.ai/" />
+  <meta name="twitter:title" content="TRINITY | GFTernary · TNF — a reference format pair for the ternary datapath" />
+  <meta name="twitter:description" content="52 theorems, 16 retractions. GFTernary decoder 66 LUT at 974.66 MHz on XC7A200T, open flow, median of 5 seeds." />
+  <meta name="twitter:image" content="https://t27.ai/og-image.png" />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://t27.ai/" />
+
+  <!-- Language alternates. The first screen here is prerendered in English, so
+       without these a Russian reader arriving from search has no signal that a
+       Russian entry point exists — /ru/ is a static page carrying the same
+       claims. The pair must be reciprocal: /ru/ names this URL back. -->
+  <link rel="alternate" hreflang="en" href="https://t27.ai/" />
+  <link rel="alternate" hreflang="ru" href="https://t27.ai/ru/" />
+  <link rel="alternate" hreflang="x-default" href="https://t27.ai/" />
+  
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "TRINITY",
+    "url": "https://t27.ai/",
+    "logo": "https://t27.ai/trinity-logo-with-label.svg",
+    "description": "Numeric formats and arithmetic cores for the ternary datapath: GFTernary and TNF, with bit-exact conformance vectors and open-flow FPGA measurements.",
+    "foundingDate": "2024",
+    "founder": {
+      "@type": "Person",
+      "name": "Dmitrii Vasilev"
+    },
+    "sameAs": [
+      "https://github.com/gHashTag/trinity",
+      "https://www.reddit.com/r/t27ai/",
+      "https://t.me/t27_lang",
+      "https://x.com/t27_lang"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "TRINITY OS",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Cross-platform",
+    "description": "Spec-first toolchain and arithmetic cores for ternary and φ-based numeric formats",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+  
+  <!-- No preconnect hints. media.licdn.com and blockchain.info were prefetched
+       here and neither is contacted by anything the site ships — a grep for
+       either host across every bundle returns nothing. Each hint cost a DNS
+       lookup on every page load for a host never used, and the LinkedIn one
+       announced to the network that this page was about to talk to LinkedIn,
+       which it never does. Fonts are self-hosted and the assets are same-origin,
+       so there is no third-party origin left worth warming. -->
+
+  <!-- Fonts, self-hosted. These used to come from fonts.googleapis.com: a
+       render-blocking stylesheet on a third-party origin, which then pulled the
+       actual .woff2 files from a second origin — two DNS+TLS handshakes before
+       any text could paint. The request also asked for Inter, which nothing in
+       the app references, and for three families across 13 weights: 59
+       @font-face declarations, 15 files, 324 kB.
+       These are the variable versions, so one file covers every weight, and
+       only the subsets that are actually used: Outfit has no Cyrillic on Google
+       Fonts at all (Russian already fell back to system-ui), JetBrains Mono
+       does, so its Cyrillic subset is kept and loads only when Cyrillic is
+       rendered. 72 kB total, same origin, no blocking stylesheet. -->
+  <link rel="preload" as="font" type="font/woff2" href="fonts/outfit-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="fonts/jetbrains-mono-latin.woff2" crossorigin />
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      font-style: normal;
+      font-weight: 400 800;
+      font-display: swap;
+      src: url(fonts/outfit-latin.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-weight: 400 500;
+      font-display: swap;
+      src: url(fonts/jetbrains-mono-latin.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-weight: 400 500;
+      font-display: swap;
+      src: url(fonts/jetbrains-mono-cyrillic.woff2) format('woff2');
+      unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+    }
+
+    /* First-paint shell. #root was empty, so nothing at all was on screen until
+       the JS had downloaded, parsed and mounted, and anything that does not run
+       JS saw an empty document. React clears these children on its first render.
+       The copy is injected at build time from messages/en.json by the
+       prerender-hero plugin in vite.config.ts, so it cannot drift from the hero
+       it stands in for — what is written below is only the fallback for `vite`
+       runs where the plugin has not replaced it. */
+    html { background: #000; }
+    #boot { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem; padding: 2rem; text-align: center; }
+    #boot img { width: min(46vw, 240px); height: auto; }
+    #boot h1 { font-family: 'Outfit', system-ui, sans-serif; font-weight: 600; font-size: clamp(0.7rem, 2.2vw, 0.85rem); letter-spacing: 0.14em; text-transform: uppercase; color: #00FF88; max-width: 42ch; margin: 0; }
+    #boot .eq { font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(1.6rem, 5vw, 2.4rem); font-weight: 700; color: #fff; margin: 0; }
+    #boot .sub { font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(0.85rem, 2vw, 1rem); color: #888; max-width: 56ch; margin: 0; line-height: 1.5; }
+    #boot .btns { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+    #boot .btns a { font-family: 'Outfit', system-ui, sans-serif; font-size: 0.9rem; font-weight: 600; padding: 0.7rem 1.4rem; border-radius: 999px; text-decoration: none; border: 1px solid rgba(255,255,255,0.16); color: #fff; }
+    #boot .btns a.primary { background: #00FF88; border-color: #00FF88; color: #000; }
+  </style>
+  <script type="module" crossorigin src="./assets/index-BsYbMlbQ.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/react-BikoVsHo.js">
+  <link rel="modulepreload" crossorigin href="./assets/motion-DmZWFm6O.js">
+  <link rel="modulepreload" crossorigin href="./assets/router-DHWxIZD9.js">
+  <link rel="stylesheet" crossorigin href="./assets/index-BtNuNV7Q.css">
+</head>
+<body>
+  <div id="root">
+    <div id="boot">
+      <img src="trinity-logo-with-label.svg" alt="TRINITY" width="1080" height="1080" />
+      <h1>GFTernary · TNF — a reference pair for the ternary datapath</h1>
+      <p class="eq">r² = r + 1</p>
+      <p class="sub">Where the weight is a code, the format is not a preference. GFTernary closes the weight, TNF closes the accumulator — and every hardware number here was measured on a binary FPGA, which is stated rather than smoothed.</p>
+      <div class="btns">
+        <a class="primary" href="ip/">Read the claim</a>
+        <a href="proof/">What this does not claim</a>
+      </div>
+    </div><!-- /boot -->
+  </div>
+  <!-- GitHub Pages SPA redirect handler -->
+  <script>
+    (function(l) {
+      if (l.search[1] === '/') {
+        var decoded = l.search.slice(1).split('&').map(function(s) {
+          return s.replace(/~and~/g, '&')
+        }).join('?');
+        window.history.replaceState(null, null,
+          l.pathname.slice(0, -1) + decoded + l.hash
+        );
+      }
+    }(window.location))
+  </script>
+</body>
+</html>

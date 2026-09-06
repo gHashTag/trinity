@@ -1,0 +1,106 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(1) amortized append | φ² + 1/φ² = 3 | TRINITY
+
+module TriBuilder;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Builder(T) = struct {
+        items : []T,
+        capacity : usize,
+        len : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(capacity: usize, allocator: std.mem.Allocator) → !Builder(T)
+    fn init(capacity: usize, allocator: std.mem.Allocator) -> !Builder(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // empty() → Builder(T)
+    fn empty() -> Builder(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // append(builder: *Builder(T), item: T, allocator: std.mem.Allocator) → !void
+    fn append(builder: *Builder(T), item: T, allocator: std.mem.Allocator) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // append_slice(builder: *Builder(T), slice: []const T, allocator: std.mem.Allocator) → !void
+    fn append_slice(builder: *Builder(T), slice: []const T, allocator: std.mem.Allocator) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // len(builder: Builder(T)) → usize
+    fn len(builder: Builder(T)) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // capacity(builder: Builder(T)) → usize
+    fn capacity(builder: Builder(T)) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // finish(builder: Builder(T), allocator: std.mem.Allocator) → ![]T
+    fn finish(builder: Builder(T), allocator: std.mem.Allocator) -> ![]T {
+        // TODO: Implement from .tri spec
+    }
+
+    // reset(builder: *Builder(T)) → void
+    fn reset(builder: *Builder(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test empty_basic_case
+        given input = default_input()
+        when result = empty(input)
+        then result != undefined
+
+    test append_basic_case
+        given input = default_input()
+        when result = append(input)
+        then result != undefined
+
+    test append_slice_basic_case
+        given input = default_input()
+        when result = append_slice(input)
+        then result != undefined
+
+    test len_basic_case
+        given input = default_input()
+        when result = len(input)
+        then result != undefined
+
+    test capacity_basic_case
+        given input = default_input()
+        when result = capacity(input)
+        then result != undefined
+
+    test finish_basic_case
+        given input = default_input()
+        when result = finish(input)
+        then result != undefined
+
+    test reset_basic_case
+        given input = default_input()
+        when result = reset(input)
+        then result != undefined
+

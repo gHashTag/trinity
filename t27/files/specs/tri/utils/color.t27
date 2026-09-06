@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Alpha channel support | φ² + 1/φ² = 3 | TRINITY
+
+module TriColor;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Color = struct {
+        r : u8,
+        g : u8,
+        b : u8,
+        a : u8,
+    };
+
+    pub const ColorSpace = struct {
+        enum : [RGB, HSV, HSL, LAB],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // rgb(r: u8, g: u8, b: u8) → Color
+    fn rgb(r: u8, g: u8, b: u8) -> Color {
+        // TODO: Implement from .tri spec
+    }
+
+    // to_hex(color: Color, allocator: std.mem.Allocator) → ![]u8
+    fn to_hex(color: Color, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // blend(a: Color, b: Color, factor: f64) → Color
+    fn blend(a: Color, b: Color, factor: f64) -> Color {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // rgb, to_hex and blend are all unimplemented stubs: each one emits
+    // `@panic("not yet implemented")`, so calling any of them aborts the test
+    // binary rather than failing a test. The assertions below are therefore
+    // about the representation the module actually declares.
+
+    test a_color_is_four_eight_bit_channels
+        // "Alpha channel support": alpha is a full u8, so opacity has 256
+        // levels rather than the two a bool would give. Four u8 fields pack
+        // into exactly 32 bits with no padding.
+        given opaque_red = Color{ .r = 255, .g = 0, .b = 0, .a = 255 }
+        then @typeInfo(Color).@"struct".fields.len == 4
+        and @FieldType(Color, "a") == u8
+        and @sizeOf(Color) == 4
+        and @bitSizeOf(Color) == 32
+        and opaque_red.r == 255
+        and opaque_red.a == 255
+
+    test a_hex_string_needs_two_digits_per_channel
+        // to_hex has to render each u8 as 4 bits + 4 bits, so "#rrggbbaa" is
+        // one '#' plus eight nibbles: nine bytes, and 255 is the widest value
+        // any single channel can reach.
+        given digits_per_channel = @bitSizeOf(u8) / 4
+        given hex_len = 1 + 4 * digits_per_channel
+        then digits_per_channel == 2
+        and hex_len == 9
+        and std.math.maxInt(u8) == 255
+
+    test color_space_names_four_models_and_stores_a_discriminant
+        // The four names are variants of an enum, so a ColorSpace value is
+        // exactly one model and can tell RGB from LAB at runtime. Four
+        // variants need two bits, so the value is a u2 discriminant in one
+        // byte -- not the zero bytes a struct of void fields would occupy.
+        then @typeInfo(ColorSpace).@"enum".fields.len == 4
+        and std.mem.eql(u8, @typeInfo(ColorSpace).@"enum".fields[0].name, "RGB")
+        and std.mem.eql(u8, @typeInfo(ColorSpace).@"enum".fields[3].name, "LAB")
+        and @typeInfo(ColorSpace).@"enum".tag_type == u2
+        and @intFromEnum(ColorSpace.RGB) == 0
+        and @intFromEnum(ColorSpace.LAB) == 3
+        and @sizeOf(ColorSpace) == 1
+
+    test the_constructors_take_all_of_their_operands
+        // FAILING ON PURPOSE. `rgb(r: u8)` declares one parameter, so it
+        // cannot receive g, b or a; `blend(a: Color)` declares one, so it has
+        // nothing to blend with. Both spec signatures keep only their first
+        // parameter, which is why neither is called above.
+        then @typeInfo(@TypeOf(rgb)).@"fn".params.len >= 3
+        and @typeInfo(@TypeOf(blend)).@"fn".params.len >= 2
+

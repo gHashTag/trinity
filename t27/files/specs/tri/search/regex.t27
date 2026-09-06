@@ -1,0 +1,90 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Limited regex syntax | φ² + 1/φ² = 3 | TRINITY
+
+module TriRegex;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Regex = struct {
+        pattern : []const u8,
+        compiled : bool,
+    };
+
+    pub const Match = struct {
+        start : usize,
+        end : usize,
+        groups : [][]const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compile(pattern: []const u8, allocator: std.mem.Allocator) → !Regex
+    fn compile(pattern: []const u8, allocator: std.mem.Allocator) -> !Regex {
+        // TODO: Implement from .tri spec
+    }
+
+    // match(regex: Regex, text: []const u8) → ?Match
+    fn match(regex: Regex, text: []const u8) -> ?Match {
+        // TODO: Implement from .tri spec
+    }
+
+    // find_all(regex: Regex, text: []const u8, allocator: std.mem.Allocator) → ![]Match
+    fn find_all(regex: Regex, text: []const u8, allocator: std.mem.Allocator) -> ![]Match {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test match_bounds_select_the_matched_substring
+        // Verify: start is inclusive and end is exclusive, so a match at 6..11
+        // of "hello world" names exactly "world"
+        given text = "hello world"
+        and found = Match{ .start = 6, .end = 11, .groups = &.{} }
+        when selected = text[found.start..found.end]
+        and selected_is_world = std.mem.eql(u8, selected, "world")
+        then selected_is_world and selected.len == 5
+
+    test match_length_is_end_minus_start
+        // Verify: the half-open convention makes the length a plain subtraction,
+        // with no off-by-one correction
+        given found = Match{ .start = 6, .end = 11, .groups = &.{} }
+        when length = found.end - found.start
+        then length == 5
+
+    test a_zero_width_match_has_equal_bounds
+        // Verify: the boundary case — a pattern that matches the empty string,
+        // such as an anchor, yields start == end and selects nothing
+        given text = "abc"
+        and found = Match{ .start = 1, .end = 1, .groups = &.{} }
+        when selected = text[found.start..found.end]
+        then selected.len == 0 and found.start == found.end
+
+    test a_match_over_the_whole_string_starts_at_zero_and_ends_at_len
+        // Verify: a full-string match reproduces the input exactly
+        given text = "abc"
+        and found = Match{ .start = 0, .end = 3, .groups = &.{} }
+        when selected = text[found.start..found.end]
+        and selected_is_input = std.mem.eql(u8, selected, text)
+        then selected_is_input
+
+    test a_match_with_no_capture_groups_has_an_empty_group_list
+        // Verify: groups is a slice, so "no captures" is length 0, not a null
+        given found = Match{ .start = 0, .end = 3, .groups = &.{} }
+        then found.groups.len == 0
+
+    test a_regex_keeps_its_pattern_and_a_compiled_flag
+        // Verify: the pattern text is retained verbatim and compiled starts false,
+        // so compile() has an observable before-and-after state to change
+        given regex = Regex{ .pattern = "a+b", .compiled = false }
+        when pattern_kept = std.mem.eql(u8, regex.pattern, "a+b")
+        then pattern_kept and regex.compiled == false
+

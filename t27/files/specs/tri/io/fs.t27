@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Platform-aware paths | φ² + 1/φ² = 3 | TRINITY
+
+module TriFs;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Path = struct {
+        parts : [][]const u8,
+        absolute : bool,
+    };
+
+    pub const FileInfo = struct {
+        size : u64,
+        is_dir : bool,
+        is_file : bool,
+        modified : Instant,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // join(base: Path, suffix: Path, allocator: std.mem.Allocator) → !Path
+    fn join(base: Path, suffix: Path, allocator: std.mem.Allocator) -> !Path {
+        // TODO: Implement from .tri spec
+    }
+
+    // basename(path: Path) → []const u8
+    fn basename(path: Path) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // dirname(path: Path) → []const u8
+    fn dirname(path: Path) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // extension(path: Path) → ?[]const u8
+    fn extension(path: Path) -> ?[]const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test join_basic_case
+        given input = default_input()
+        when result = join(input)
+        then result != undefined
+
+    test basename_basic_case
+        given input = default_input()
+        when result = basename(input)
+        then result != undefined
+
+    test dirname_basic_case
+        given input = default_input()
+        when result = dirname(input)
+        then result != undefined
+
+    test extension_basic_case
+        given input = default_input()
+        when result = extension(input)
+        then result != undefined
+

@@ -1,0 +1,69 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Prevent co-adaptation of neurons | φ² + 1/φ² = 3 | TRINITY
+
+module Dropout;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_DROP_RATE : f32 = 0.5;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const DropoutConfig = struct {
+        p : f32,
+        inplace : bool,
+        scale_during_training : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32, output: []f32, mask: []bool, training: bool, config: DropoutConfig) → void
+    fn forward(input: []const f32, output: []f32, mask: []bool, training: bool, config: DropoutConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32, mask: []const bool, grad_input: []f32, config: DropoutConfig) → void
+    fn backward(grad_output: []const f32, mask: []const bool, grad_input: []f32, config: DropoutConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward/backward are unimplemented stubs that return void and panic when
+    // called, so nothing behavioural can be asserted about them yet. What the
+    // module does declare -- the default rate and the config shape -- is tested
+    // here.
+
+    test default_drop_rate_is_one_half
+        // Verify: the documented default drops half of the units
+        given p = DEFAULT_DROP_RATE
+        then @abs(p - 0.5) < 1e-6
+
+    test default_drop_rate_is_a_probability
+        // Verify: the default rate lies in [0, 1]
+        given p = DEFAULT_DROP_RATE
+        then p >= 0.0 and p <= 1.0
+
+    test inverted_dropout_scale_is_reciprocal_of_keep_probability
+        // Verify: scaling survivors by 1/(1-p) keeps the expected activation
+        // unchanged; at p = 0.5 that doubles them
+        given keep = 1.0 - DEFAULT_DROP_RATE
+        when scale = 1.0 / keep
+        then @abs(scale - 2.0) < 1e-6
+
+    test config_carries_the_default_rate
+        // Verify: DropoutConfig has the declared field names and holds p
+        given cfg = DropoutConfig{.p=DEFAULT_DROP_RATE,.inplace=false,.scale_during_training=true}
+        then @abs(cfg.p - 0.5) < 1e-6 and cfg.scale_during_training and cfg.inplace == false
+

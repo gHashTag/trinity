@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Find minimum, swap to front | φ² + 1/φ² = 3 | TRINITY
+
+module TriSelectionSort;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // sort(values: []i64) → void
+    fn sort(values: []i64) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test sort_basic_case
+        given input = default_input()
+        when result = sort(input)
+        then result != undefined
+

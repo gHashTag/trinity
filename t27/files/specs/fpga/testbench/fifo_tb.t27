@@ -1,0 +1,162 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/fpga/testbench/fifo_tb.t27
+// FIFO Testbench Specification
+// Tests sync/async FIFO operations, flags, overflow/underflow
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module FIFO_Testbench {
+    use fpga::fifo::Fifo;
+
+    const CLK_PERIOD : u32 = 20;
+    const SIM_TIMEOUT : u32 = 5_000_000;
+    const DATA_WIDTH : u32 = 8;
+    const FIFO_DEPTH : u32 = 16;
+
+    var clk : bool = false;
+    var rst_n : bool = false;
+    var wr_en : bool = false;
+    var rd_en : bool = false;
+    var wr_data : u32 = 0;
+    var rd_data : u32 = 0;
+    var full : bool = false;
+    var empty : bool = false;
+    var almost_full : bool = false;
+    var almost_empty : bool = false;
+    var fill_count : u32 = 0;
+
+    var test_passed : u32 = 0;
+    var test_failed : u32 = 0;
+
+    fn tick() {
+        clk = false;
+        clk = true;
+    }
+
+    fn reset() {
+        rst_n = false;
+        tick();
+        tick();
+        rst_n = true;
+        tick();
+    }
+
+    fn write_word(data : u32) -> bool {
+        if full {
+            return false;
+        }
+        wr_en = true;
+        wr_data = data;
+        tick();
+        wr_en = false;
+        return true;
+    }
+
+    fn read_word() -> u32 {
+        if empty {
+            return 0xFFFF;
+        }
+        rd_en = true;
+        tick();
+        rd_en = false;
+        return rd_data;
+    }
+
+    fn fill_fifo() -> u32 {
+        var count : u32 = 0;
+        while !full {
+            write_word(count);
+            count = count + 1;
+        }
+        return count;
+    }
+
+    fn drain_fifo() -> u32 {
+        var count : u32 = 0;
+        while !empty {
+            read_word();
+            count = count + 1;
+        }
+        return count;
+    }
+
+    test test_reset_state {
+        reset();
+        invariant empty == true;
+        invariant full == false;
+        invariant fill_count == 0;
+    }
+
+    test test_single_write_read {
+        reset();
+        write_word(0xAB);
+        invariant empty == false;
+        invariant fill_count == 1;
+        var val : u32 = read_word();
+        invariant val == 0xAB;
+        invariant empty == true;
+    }
+
+    test test_fill_to_full {
+        reset();
+        var written : u32 = fill_fifo();
+        invariant full == true;
+        invariant written == FIFO_DEPTH;
+        invariant fill_count == FIFO_DEPTH;
+    }
+
+    test test_overflow_protection {
+        reset();
+        fill_fifo();
+        var ok : bool = write_word(0xFF);
+        invariant ok == false;
+        invariant fill_count == FIFO_DEPTH;
+    }
+
+    test test_underflow_protection {
+        reset();
+        var val : u32 = read_word();
+        invariant val == 0xFFFF;
+        invariant empty == true;
+    }
+
+    test test_fill_drain_cycle {
+        reset();
+        var i : u32 = 0;
+        while i < 3 {
+            fill_fifo();
+            var drained : u32 = drain_fifo();
+            invariant drained == FIFO_DEPTH;
+            invariant empty == true;
+            i = i + 1;
+        }
+    }
+
+    test test_simultaneous_rw {
+        reset();
+        write_word(0x42);
+        wr_en = true;
+        rd_en = true;
+        wr_data = 0x43;
+        tick();
+        wr_en = false;
+        rd_en = false;
+        invariant fill_count == 1;
+    }
+
+    invariant fifo_depth_positive : FIFO_DEPTH > 0;
+    invariant data_width_positive : DATA_WIDTH > 0;
+
+    bench bench_fifo_throughput {
+        reset();
+        var i : u32 = 0;
+        while i < 1000 {
+            write_word(i);
+            i = i + 1;
+        }
+        i = 0;
+        while i < 1000 {
+            read_word();
+            i = i + 1;
+        }
+    }
+}

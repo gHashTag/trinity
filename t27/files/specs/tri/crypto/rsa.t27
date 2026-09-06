@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Fast exponentiation mod n | φ² + 1/φ² = 3 | TRINITY
+
+module TriRsa;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const RSAKeyPair = struct {
+        public_e : u64,
+        public_n : u64,
+        private_d : u64,
+        private_n : u64,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // generate(allocator: std.mem.Allocator, bit_size: usize) → RSAKeyPair
+    fn generate(allocator: std.mem.Allocator, bit_size: usize) -> RSAKeyPair {
+        // TODO: Implement from .tri spec
+    }
+
+    // encrypt(message: u64, e: u64, n: u64) → u64
+    fn encrypt(message: u64, e: u64, n: u64) -> u64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // decrypt(ciphertext: u64, d: u64, n: u64) → u64
+    fn decrypt(ciphertext: u64, d: u64, n: u64) -> u64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is still `TODO: Implement`, so each one compiles
+    // to `@panic("not yet implemented")`: calling one aborts the test binary.
+    // What this module does state is the shape of an RSA key pair, and that
+    // shape carries a real arithmetic obligation, which these tests check on
+    // a concrete key.
+
+    test key_pair_holds_four_u64_words
+        given e = @FieldType(RSAKeyPair, "public_e")
+        then e == u64
+        and @FieldType(RSAKeyPair, "public_n") == u64
+        and @FieldType(RSAKeyPair, "private_d") == u64
+        and @FieldType(RSAKeyPair, "private_n") == u64
+
+    // The textbook key from p = 61, q = 53: n = pq = 3233, and the totient
+    // (p-1)(q-1) = 3120. Both halves of a key pair share the same modulus,
+    // and the exponents are inverses mod the totient -- 17 * 2753 = 46801 =
+    // 15 * 3120 + 1 -- which is exactly what makes decrypt undo encrypt.
+    test both_halves_of_a_key_pair_share_one_modulus
+        given key = RSAKeyPair{ .public_e = 17, .public_n = 3233, .private_d = 2753, .private_n = 3233 }
+        then key.public_n == key.private_n
+        and key.public_n == 61 * 53
+
+    test public_and_private_exponents_are_inverses_mod_the_totient
+        given key = RSAKeyPair{ .public_e = 17, .public_n = 3233, .private_d = 2753, .private_n = 3233 }
+        and totient = (61 - 1) * (53 - 1)
+        then totient == 3120
+        and (key.public_e * key.private_d) % totient == 1
+
+    test generate_takes_an_allocator_and_returns_nothing
+        given f = generate
+        then @TypeOf(f) == fn (std.mem.Allocator) void
+
+    // encrypt is given a message with no key, and decrypt a ciphertext with
+    // no key. Neither can do the modular exponentiation the header names.
+    // These record the signatures as they stand.
+    test encrypt_and_decrypt_take_one_u64_and_return_nothing
+        given f = encrypt
+        then @TypeOf(f) == fn (u64) void
+        and @TypeOf(decrypt) == fn (u64) void
+

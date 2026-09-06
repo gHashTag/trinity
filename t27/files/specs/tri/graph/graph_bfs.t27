@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free graph memory | φ² + 1/φ² = 3 | TRINITY
+
+module TriGraphBfs;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Graph = struct {
+        adj : [][]usize,
+        allocator : std.mem.Allocator,
+    };
+
+    pub const BFSResult = struct {
+        order : []usize,
+        distance : []usize,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator, vertex_count: usize) → Graph
+    fn init(allocator: std.mem.Allocator, vertex_count: usize) -> Graph {
+        // TODO: Implement from .tri spec
+    }
+
+    // add_edge(graph: *Graph, from: usize, to: usize) → void
+    fn add_edge(graph: *Graph, from: usize, to: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // traverse(graph: *Graph, start: usize, allocator: std.mem.Allocator) → BFSResult
+    fn traverse(graph: *Graph, start: usize, allocator: std.mem.Allocator) -> BFSResult {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(graph: *Graph) → void
+    fn deinit(graph: *Graph) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test adjacency_has_one_row_per_vertex
+        // Verify: adj is indexed by vertex id, so a three-vertex graph has three
+        // rows even when a vertex has no neighbours
+        given row0 = [_]usize{ 1 }
+        and row1 = [_]usize{ 0, 2 }
+        and row2 = [_]usize{ 1 }
+        and rows = [_][]usize{ @constCast(&row0), @constCast(&row1), @constCast(&row2) }
+        when graph = Graph{ .adj = @constCast(&rows), .allocator = std.testing.allocator }
+        then graph.adj.len == 3
+
+    test an_undirected_edge_appears_in_both_endpoints_rows
+        // Verify: add_edge on an undirected graph must write twice — the path
+        // 0 - 1 - 2 puts 1 in row 0 and 0 in row 1
+        given row0 = [_]usize{ 1 }
+        and row1 = [_]usize{ 0, 2 }
+        and row2 = [_]usize{ 1 }
+        and rows = [_][]usize{ @constCast(&row0), @constCast(&row1), @constCast(&row2) }
+        when graph = Graph{ .adj = @constCast(&rows), .allocator = std.testing.allocator }
+        and zero_sees_one = graph.adj[0][0]
+        and one_sees_zero = graph.adj[1][0]
+        and one_sees_two = graph.adj[1][1]
+        and two_sees_one = graph.adj[2][0]
+        then zero_sees_one == 1 and one_sees_zero == 0 and one_sees_two == 2 and two_sees_one == 1
+
+    test the_degree_sum_is_twice_the_edge_count
+        // Verify: the handshake lemma on the path 0 - 1 - 2 — two edges, so the
+        // row lengths add up to four
+        given row0 = [_]usize{ 1 }
+        and row1 = [_]usize{ 0, 2 }
+        and row2 = [_]usize{ 1 }
+        and rows = [_][]usize{ @constCast(&row0), @constCast(&row1), @constCast(&row2) }
+        when graph = Graph{ .adj = @constCast(&rows), .allocator = std.testing.allocator }
+        and degree_sum = graph.adj[0].len + graph.adj[1].len + graph.adj[2].len
+        then degree_sum == 4
+
+    test an_isolated_vertex_has_an_empty_row
+        // Verify: the boundary case — a vertex with no edges still occupies a row,
+        // and that row has length 0 rather than being absent
+        given rows = [_][]usize{ &.{} }
+        when graph = Graph{ .adj = @constCast(&rows), .allocator = std.testing.allocator }
+        and degree = graph.adj[0].len
+        then graph.adj.len == 1 and degree == 0
+
+    test bfs_result_holds_one_distance_per_vertex_and_starts_at_zero
+        // Verify: order and distance are parallel arrays over the visited set, so
+        // they are the same length, and the source sits at distance 0
+        given order = [_]usize{ 0, 1, 2 }
+        and distance = [_]usize{ 0, 1, 2 }
+        when result = BFSResult{ .order = @constCast(&order), .distance = @constCast(&distance), .allocator = std.testing.allocator }
+        and source_distance = result.distance[0]
+        then result.order.len == result.distance.len and source_distance == 0
+
+    test bfs_distances_never_jump_by_more_than_one
+        // Verify: BFS explores by layer, so along the visit order the distance
+        // rises by at most 1 at each step — this is the property traverse() must
+        // produce on the path 0 - 1 - 2
+        given distance = [_]usize{ 0, 1, 2 }
+        when step1 = distance[1] - distance[0]
+        and step2 = distance[2] - distance[1]
+        then step1 <= 1 and step2 <= 1
+

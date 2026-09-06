@@ -1,0 +1,458 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/math/constants.t27
+// Mathematical Constants for Trinity Computing
+// phi^2 + 1/phi^2 = 3 | Sacred constants for ternary computing
+
+module Constants {
+    // =================================================================
+    // 1. Sacred Constants -- phi, TRINITY, CODATA measurements
+    // =====================================================================================
+
+    // phi (phi) = (1 + sqrt(5)) / 2 ~= 1.61803398875 -- the golden ratio
+    // phi^-^1 = phi - 1 ~= 0.61803398875 -- the inverse golden ratio
+    // Sacred Identity: phi^2 + 1/phi^2 = 3
+    // Computed value: phi^2 ~= 2.61803398875
+    // 1/phi^2 ~= 0.38196601125
+    // phi^2 + 1/phi^2 = 3.000000 (exact within floating precision)
+    const PHI        : f64 = 1.61803398874989484820458683436563811772;
+    const PHI_INV    : f64 = 0.61803398874989484820458683436563811772;
+    const PHI_SQ     : f64 = PHI * PHI;
+    const PHI_INV_SQ : f64 = PHI_INV * PHI_INV;
+
+    // GF8 phi_distance invariant (exp/mant = 3/4 = 0.75)
+    const PHI_DISTANCE : f64 = 0.132;
+
+    // TRINITY = 3.0 within numeric tolerance
+    const TRINITY    : f64 = 3.0;
+
+    // pi (pi) ~= 3.14159265359
+    const PI         : f64 = 3.14159265358979323846264338327950288;
+
+    // e (Euler's number) ~= 2.71828182846
+    const E          : f64 = 2.7182818284590452353602874713526625;
+
+    // CODATA: G_measured = 6.67430767*10^-^1^1 m^3*kg^-^1*s^-^2 (SI units)
+    // Reference: Planck 2018/2020 (https://ui.adsabs.harvard.edu/energy.html)
+    // Scale factors derived from CODATA measurements:
+    //   G_scale = G / G_measured ~= 1.0001 (SI normalization)
+    //   Omega_scale = Omega_Lambda / (Omega_Lambda_computed * phi^-^2) ~= 0.9995
+    // =============================================================================
+    // 2. CODATA 2022 Measurements -- sacred_gravity(), sacred_dark_energy() reference
+    // =====================================================================================
+
+    // Gravitational constant G (measured)
+    // G = 6.67430 * 10^-11 m^3 kg^-^1 s^-^2
+    const G_MEASURED : f64 = 6.67430e-11;
+
+    // Cosmological constant Lambda (dimensional)
+    // Lambda ~= 1.1056 * 10^-52 m^-^2
+    const LAMBDA_COSMO : f64 = 1.1056e-52;
+
+    // Dark energy density parameter Omega_Lambda (dimensionless)
+    // Omega_Lambda ~= 0.685 (Planck 2018/2020)
+    const OMEGA_LAMBDA_MEASURED : f64 = 0.685;
+
+    // Scale factors for sacred formulas
+    // G_SCALE = G / G_measured ~= 1.0001 (SI normalization)
+    // OMEGA_COARSE_SCALE = Omega_Lambda_measured / Omega_Lambda_raw ~= 728.9 (measured/raw ratio)
+    // OMEGA_FINE_SCALE = Omega_Lambda_measured / (Omega_Lambda_computed * phi^-^2) ~= 0.9995 (from comment)
+    const G_SCALE : f64 = 1.0001;
+    const OMEGA_COARSE_SCALE : f64 = 728.9;
+
+    // ===========================================================================
+    // 3. Helper Functions
+    // =====================================================================================
+
+    // Absolute value
+    fn abs(x: f64) -> f64 {
+        if (x < 0.0) {
+            return -x;
+        }
+        return x;
+    }
+
+    // Power function (for simple integer exponents)
+    fn pow(x: f64, n: f64) -> f64 {
+        // Handle negative base with fractional exponent -> NaN
+        if x < 0.0 and n != floor(n) {
+            return std.math.nan(f64); // NaN
+        }
+
+        // Handle zero base
+        if x == 0.0 {
+            if n > 0.0 {
+                return 0.0;
+            } else if n == 0.0 {
+                return 1.0; // 0^0 defined as 1 in this context
+            }
+            return std.math.inf(f64); // Infinity (division by zero)
+        }
+
+        // Handle n = 0
+        if n == 0.0 {
+            return 1.0;
+        }
+
+        // Handle negative exponent: x^(-n) = 1/(x^n)
+        const negative = n < 0.0;
+        const exp = if (negative) -n else n;
+
+        // Check if exponent is an integer
+        const is_integer = exp == floor(exp);
+
+        if is_integer {
+            // Integer exponent: use binary exponentiation
+            const exp_int: i64 = @intFromFloat(exp);
+            var result: f64 = 1.0;
+            var base = x;
+            var e = exp_int;
+
+            while e > 0 {
+                if @rem(e, 2) == 1 {
+                    result = result * base;
+                }
+                base = base * base;
+                e = @divTrunc(e, 2);
+            }
+
+            if negative {
+                result = 1.0 / result;
+            }
+            return result;
+        }
+
+        // Fractional exponent: use logarithm approximation
+        // x^y = exp(y * ln(x))
+        // This is a simplified version for spec purposes
+        const ln_x = ln_approx(x);
+        var result = exp_approx(exp * ln_x);
+
+        if negative {
+            result = 1.0 / result;
+        }
+        return result;
+    }
+
+    // Natural logarithm approximation (for power function)
+    fn ln_approx(x: f64) -> f64 {
+        // Handle edge cases
+        if x <= 0.0 {
+            return std.math.nan(f64); // NaN for non-positive
+        }
+        if x == 1.0 {
+            return 0.0;
+        }
+
+        // Use series: ln(x) = 2 * ((x-1)/(x+1) + 1/3*((x-1)/(x+1))^3 + ...)
+        // For x > 0, compute (x-1)/(x+1) and use convergence
+        const t = (x - 1.0) / (x + 1.0);
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const t5 = t3 * t2;
+        const t7 = t5 * t2;
+
+        return 2.0 * (t + t3 / 3.0 + t5 / 5.0 + t7 / 7.0);
+    }
+
+    // Exponential approximation (for power function)
+    fn exp_approx(x: f64) -> f64 {
+        // Handle edge cases
+        if x == 0.0 {
+            return 1.0;
+        }
+
+        // Use Taylor series: e^x = 1 + x + x^2/2! + x^3/3! + ...
+        // For small x (|x| < 1), series converges quickly
+        var result: f64 = 1.0;
+        var term: f64 = 1.0;
+
+        // For better range, use x/2^k approach
+        var exp_x = x;
+        var scale: f64 = 1.0;
+        if x > 10.0 {
+            const k: i64 = @intFromFloat(floor(x / 10.0));
+            exp_x = x - @as(f64, @floatFromInt(k)) * 10.0;
+            scale = pow(E, @as(f64, @floatFromInt(k)) * 10.0);
+        } else if x < -10.0 {
+            const k: i64 = @intFromFloat(floor(-x / 10.0));
+            exp_x = x + @as(f64, @floatFromInt(k)) * 10.0;
+            scale = 1.0 / pow(E, @as(f64, @floatFromInt(k)) * 10.0);
+        }
+
+        // Taylor series (10 terms sufficient for reasonable accuracy)
+        for (1..11) |i| {
+            term = term * exp_x / @as(f64, @floatFromInt(i));
+            result = result + term;
+        }
+
+        return result * scale;
+    }
+
+    // Floor function (helper for power)
+    fn floor(x: f64) -> f64 {
+        const xi: i64 = @intFromFloat(x);
+        if x >= 0.0 || x == @as(f64, @floatFromInt(xi)) {
+            return @as(f64, @floatFromInt(xi));
+        }
+        return @as(f64, @floatFromInt(xi - 1));
+    }
+
+    // Default tolerance for approximately_equal/2.
+    //
+    // ABSOLUTE, not relative. The corpus already writes a third argument at 18
+    // call sites and every one of them only makes sense as an absolute bound:
+    // ml/transformer/feed_forward passes 1.0 against a value near 828, and
+    // ml/transformer/positional_enc passes 1e-6 against 5000.0. Reading the
+    // third argument as a relative factor would turn those into a 100% window
+    // and a 5e-3 window respectively. One name must mean one thing, so the
+    // default is absolute too.
+    //
+    // 1e-9 and not another value, from the magnitudes actually compared:
+    //   - Smallest 2-argument target in the corpus is 1e-6 (a learning rate;
+    //     ml/optimizer/lr_scheduler compares against 1e-6 and against
+    //     config.min_lr). At 1e-9 that check still rejects anything wrong by
+    //     more than 0.1%, so it is not vacuous. A 1e-6 default would have made
+    //     those three tests accept zero, which is the failure mode that makes a
+    //     tolerance worse than none.
+    //   - Largest 2-argument target is 50.0 (ml/transformer/positional_enc).
+    //     One f64 ulp there is 7.1e-15, so 1e-9 leaves ~140,000 ulp of headroom
+    //     -- far more than the handful of roundings in these expressions needs.
+    //   - It is exactly the tightest tolerance the corpus asks for by hand
+    //     (1e-9 at the phi identities, PHI*PHI == PHI + 1.0). So dropping the
+    //     third argument never loosens a comparison below what some author here
+    //     has already declared acceptable.
+    //
+    // At zero this reads as "|a| <= 1e-9", i.e. zero to within a nanounit. That
+    // is deliberate: nine 2-argument call sites compare against a literal 0.0
+    // (ml/transformer/norm beta[0], ml/optimizer/sgd_momentum velocities), and a
+    // relative rule divides by zero there and would reject every value except an
+    // exact bit-identical 0.0. Absolute is the only rule that is defined at 0.0.
+    //
+    // To change it, change it here: every unqualified comparison in the ml/
+    // specs moves with it.
+    pub const APPROX_TOLERANCE : f64 = 1e-9;
+
+    // approximately_equal(a, b) -> a and b agree to within APPROX_TOLERANCE.
+    // Absolute: |a - b| <= APPROX_TOLERANCE. NaN on either side is never equal,
+    // because every comparison with NaN is false and <= is no exception.
+    pub fn approximately_equal(a: f64, b: f64) -> bool {
+        return abs(a - b) <= APPROX_TOLERANCE;
+    }
+
+    // Same rule with the bound supplied by the caller, for the sites that
+    // already know what precision they can hold. Zig has neither default
+    // arguments nor overloading, so the two arities need two names.
+    pub fn approximately_equal_within(a: f64, b: f64, tolerance: f64) -> bool {
+        return abs(a - b) <= tolerance;
+    }
+
+    // =============================================================================
+    // TDD-Inside-Spec: Tests and Invariants for Sacred Physics Constants
+    // =========================================================================================
+
+    test phi_squared_plus_inverse_squared_equals_3
+        given phi = PHI
+        and   phi_sq = PHI * PHI
+        and   phi_inv_sq = PHI_INV * PHI_INV
+        when  sum = phi_sq + phi_inv_sq
+        then  abs(sum - TRINITY) < 1e-12
+
+    test phi_inverse_is_phi_minus_one
+        given phi = PHI
+        and   expected = PHI - 1.0
+        when  actual = PHI_INV
+        then  abs(actual - expected) < 1e-15
+
+    test phi_multiplicative_persistence
+        given phi = PHI
+        when  squared = phi * phi
+        and   result = squared - phi
+        then  abs(result - 1.0) < 1e-12
+
+    test trinity_constant_accuracy
+        given trinity = TRINITY
+        when  is_three = abs(trinity - 3.0) < 1e-15
+        then  is_three == true
+
+    test pi_range_validity
+        given pi = PI
+        when  lower_bound = 3.1415926535
+        and   upper_bound = 3.1415926536
+        then  pi >= lower_bound and pi <= upper_bound
+
+    test euler_number_range_validity
+        given e = E
+        when  lower_bound = 2.7182818284
+        and   upper_bound = 2.7182818285
+        then  e >= lower_bound and e <= upper_bound
+
+    test pow_zero_exponent_returns_one
+        given result = pow(2.0, 0.0)
+        then abs(result - 1.0) < 1e-15
+
+    test pow_one_exponent_returns_base
+        given result = pow(5.0, 1.0)
+        then abs(result - 5.0) < 1e-15
+
+    test pow_positive_integer_exponent
+        given result = pow(2.0, 10.0)
+        and expected = 1024.0
+        then abs(result - expected) < 1e-10
+
+    test pow_negative_integer_exponent
+        given result = pow(2.0, -3.0)
+        and expected = 0.125
+        then abs(result - expected) < 1e-10
+
+    test pow_fractional_exponent
+        given result = pow(4.0, 0.5)
+        and expected = 2.0
+        then abs(result - expected) < 1e-6
+
+    test pow_phi_squared
+        given result = pow(PHI, 2.0)
+        and expected = PHI * PHI
+        then abs(result - expected) < 1e-10
+
+    test pow_zero_base_positive_exponent
+        given result = pow(0.0, 5.0)
+        then result == 0.0
+
+    test pow_one_base_any_exponent
+        given result1 = pow(1.0, 10.0)
+        and result2 = pow(1.0, -5.0)
+        and result3 = pow(1.0, 0.5)
+        then abs(result1 - 1.0) < 1e-15 and abs(result2 - 1.0) < 1e-15 and abs(result3 - 1.0) < 1e-6
+
+    test floor_function_positive
+        given result = floor(3.7)
+        then result == 3.0
+
+    test floor_function_negative
+        given result = floor(-3.2)
+        then result == -4.0
+
+    test floor_function_integer
+        given result = floor(5.0)
+        then result == 5.0
+
+    test approximately_equal_accepts_exact_equality
+        given result = approximately_equal(0.1, 0.1)
+        then result == true
+
+    test approximately_equal_accepts_just_inside_the_bound
+        given result = approximately_equal(1.0, 1.0 + 5e-10)
+        then result == true
+
+    test approximately_equal_rejects_just_outside_the_bound
+        given result = approximately_equal(1.0, 1.0 + 5e-9)
+        then result == false
+
+    test approximately_equal_is_symmetric_in_its_arguments
+        given forward = approximately_equal(2.0, 2.0 + 5e-9)
+        and   backward = approximately_equal(2.0 + 5e-9, 2.0)
+        then forward == backward
+
+    // At zero the rule is |a| <= APPROX_TOLERANCE, not a relative test.
+    test approximately_equal_at_zero_accepts_a_nanounit
+        given result = approximately_equal(0.0, 1e-12)
+        then result == true
+
+    test approximately_equal_at_zero_rejects_a_microunit
+        given result = approximately_equal(0.0, 1e-6)
+        then result == false
+
+    // The reason the default is 1e-9 and not 1e-6: ml/optimizer/lr_scheduler
+    // compares learning rates against 1e-6, and at a 1e-6 tolerance that check
+    // would accept a learning rate of zero.
+    test approximately_equal_is_not_vacuous_at_learning_rate_scale
+        given result = approximately_equal(1e-6, 0.0)
+        then result == false
+
+    test approximately_equal_holds_at_the_largest_compared_magnitude
+        given result = approximately_equal(50.0, 50.0 + 1e-12)
+        then result == true
+
+    test approximately_equal_within_honours_a_looser_bound
+        given result = approximately_equal_within(828.0, 828.5, 1.0)
+        then result == true
+
+    test approximately_equal_within_honours_a_tighter_bound
+        given result = approximately_equal_within(1.0, 1.0 + 1e-10, 1e-12)
+        then result == false
+
+    invariant phi_squared_plus_inverse_squared_equals_3
+        assert |PHI*PHI + 1.0/(PHI*PHI) - 3.0| < 1e-12
+
+    invariant phi_self_similarity
+        assert |PHI - (1.0 + 1.0/PHI)| < 1e-15
+
+    invariant phi_inverse_property
+        assert |PHI_INV - (PHI - 1.0)| < 1e-15
+
+    invariant phi_golden_conjugate
+        assert |PHI - PHI_INV - 1.0| < 1e-12
+
+    invariant phi_fibonacci_convergence
+        assert lim(n->inf) Fib(n+1)/Fib(n) = PHI
+        // Rationale: Ratio of consecutive Fibonacci numbers converges to phi
+
+    invariant trinity_exact
+        assert TRINITY == 3.0
+
+    invariant pi_transcendental
+        assert PI is transcendental
+        // Rationale: Lindemann-Weierstrass theorem proves pi is transcendental
+
+    invariant euler_irrational
+        assert E is irrational
+        // Rationale: e is proven to be irrational (Euler, 1737)
+
+    invariant codata_gravitational_constant
+        assert G_MEASURED = 6.67430e-11 +/- 1.5e-15
+        // Rationale: CODATA 2022 measured value with uncertainty
+
+    invariant cosmological_constant_positive
+        assert LAMBDA_COSMO > 0
+
+    invariant dark_energy_dominance
+        assert OMEGA_LAMBDA_MEASURED > 0.5 and OMEGA_LAMBDA_MEASURED < 1.0
+
+    invariant pow_zero_exponent_identity
+        assert pow(x, 0.0) == 1.0 for all valid x
+
+    invariant pow_one_exponent_identity
+        assert pow(x, 1.0) == x for all valid x
+
+    invariant pow_multiply_exponents
+        assert pow(pow(x, a), b) == pow(x, a * b) for positive x, integer a, b
+
+    invariant pow_product_rule
+        assert pow(x * y, n) == pow(x, n) * pow(y, n) for positive x, y, integer n
+
+    invariant floor_returns_integer
+        assert floor(x) == i64 for all f64 x
+
+    invariant floor_monotonic
+        assert floor(x) <= floor(y) when x <= y
+
+    bench phi_computation_cost
+        measure: cycles per PHI computation
+        target: < 10 cycles (constant-time lookup)
+
+    bench pow_integer_exponent
+        measure: cycles to compute pow(2.0, 10.0)
+        target: < 500 cycles
+
+    bench pow_fractional_exponent
+        measure: cycles to compute pow(4.0, 0.5)
+        target: < 1000 cycles
+
+    bench floor_latency
+        measure: cycles to compute floor(3.7)
+        target: < 50 cycles
+
+    bench trinity_verification_cost
+        measure: cycles to verify PHI^2 + 1/PHI^2 = 3
+        target: < 100 cycles
+}
