@@ -321,13 +321,25 @@ export default function Playground() {
         background: '#161b22',
         borderBottom: '1px solid #30363d',
       }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-          <span style={{ fontSize: 24 }}>🔺</span>
-          <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>TRINITY</span>
-          <span style={{ fontSize: 10, color: '#8b949e', background: '#21262d', padding: '2px 6px', borderRadius: 3 }}>{ui.playground}</span>
+        {/* The brand gives way, the controls do not. This header is
+            space-between with a fixed height, and in Russian the run button's
+            label is longer than the English one -- enough to push the "← Назад"
+            link to right edge 387px on a 375px screen, where it cannot be
+            tapped. Nothing scrolled, because the header clips. Caught by
+            qa/mobile_audit.mjs once it started running in both locales. */}
+        <Link to="/" style={{
+          display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none',
+          minWidth: 0, flexShrink: 1, overflow: 'hidden',
+        }}>
+          <span style={{ fontSize: 24, flexShrink: 0 }}>🔺</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>TRINITY</span>
+          <span style={{
+            fontSize: 10, color: '#8b949e', background: '#21262d', padding: '2px 6px',
+            borderRadius: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{ui.playground}</span>
         </Link>
-        
-        <div style={{ display: 'flex', gap: 8 }}>
+
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <button 
             onClick={runCompile}
             disabled={isCompiling}
