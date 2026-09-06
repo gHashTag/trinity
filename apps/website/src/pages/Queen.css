@@ -2996,6 +2996,43 @@
 .queen27-hover-card b { display: block; color: #ffd45a; font-weight: 500; margin-bottom: 2px; }
 .queen27-hover-card span { display: block; color: rgba(230, 240, 236, 0.72); }
 
+/* the colour law sits on the wall itself: each word carries its own swatch */
+.queen27-hive-law {
+  position: absolute;
+  z-index: 5;
+  top: 0.65rem;
+  left: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+  max-width: min(520px, calc(100% - 1.6rem));
+  pointer-events: none;
+  color: rgba(230, 240, 236, 0.72);
+  font: 10px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.queen27-hive-law span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.queen27-hive-law i {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: 0 0 auto;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 8px currentColor;
+  background: currentColor;
+}
+
+.queen27-hive-law [data-law="t27"] { color: #ffd45a; }
+.queen27-hive-law [data-law="manual"] { color: #ff4d5e; }
+.queen27-hive-law [data-law="awaiting"] { color: #64dcff; }
+.queen27-hive-law [data-law="bees"] { color: #ffc24d; }
+
 .queen27-comb-viewport canvas {
   display: block;
   width: 100%;

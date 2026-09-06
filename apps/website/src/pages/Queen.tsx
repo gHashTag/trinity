@@ -51,6 +51,7 @@ import {
   foundationCells,
   hexCellCount,
   CASTLE_RING,
+  hiveKey,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -320,6 +321,10 @@ const COPY = {
     combNoBee: "no bee here",
     combPick: "Click a cell. A bee on it, or the Queen's own cell, shows a portrait; every cell is one card of the board.",
     combHint2: "drag to orbit · wheel to zoom · click a cell",
+    hiveLawT27: "T27 covered",
+    hiveLawManual: "manual code",
+    hiveLawAwaiting: "awaiting T27",
+    hiveLawBees: "bees",
     factoryFlow: "ISSUE → SPEC → BEE → REVIEW → EVIDENCE",
     factoryThroughput: "Live utilization",
     factoryQueueDensity: "queue density peak",
@@ -577,6 +582,10 @@ const COPY = {
     combNoBee: "пчелы здесь нет",
     combPick: "Нажмите на ячейку. Пчела на ней или ячейка Королевы покажет портрет; каждая ячейка — одна карточка доски.",
     combHint2: "тяните — вращать · колесо — масштаб · клик — выбрать",
+    hiveLawT27: "покрыто T27",
+    hiveLawManual: "ручной код",
+    hiveLawAwaiting: "ждёт T27",
+    hiveLawBees: "пчёлы",
     factoryFlow: "ISSUE → SPEC → BEE → REVIEW → EVIDENCE",
     factoryThroughput: "Живая загрузка",
     factoryQueueDensity: "пик плотности очереди",
@@ -834,6 +843,45 @@ function useQueenModules(): { data: { commit: string | null; generatedAt: string
     return () => { active = false; window.clearInterval(timer); };
   }, []);
   return { data, error };
+}
+
+interface T27ManifestSpec {
+  path?: string | null;
+  module?: string | null;
+  name?: string | null;
+  repo?: string | null;
+}
+
+/**
+ * What T27 really claims in this repository. Only trinity rows from the
+ * manifest may turn a cell yellow; every other module stays manual or awaiting.
+ * A failed read is not zero coverage — it is unknown coverage, so the set stays
+ * null and the comb keeps its previous law rather than painting a false result.
+ */
+function useT27Coverage(): ReadonlySet<string> | null {
+  const [coverage, setCoverage] = useState<ReadonlySet<string> | null>(null);
+  useEffect(() => {
+    let active = true;
+    fetch("t27/manifest.json", { headers: { Accept: "application/json" }, cache: "default" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json() as Promise<{ specs?: T27ManifestSpec[] }>;
+      })
+      .then((manifest) => {
+        if (!active || !Array.isArray(manifest.specs)) return;
+        const next = new Set<string>(["specs", "tests/t27", "rings/t27"]);
+        for (const spec of manifest.specs) {
+          if (spec.repo !== "trinity") continue;
+          for (const value of [spec.module, spec.name]) {
+            if (typeof value === "string" && value.length > 0) next.add(hiveKey(value));
+          }
+        }
+        setCoverage(next);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+  return coverage;
 }
 
 /** The loop's GitHub snapshot: closed issues (the foundation), epics (the castle), rings, releases. */
@@ -1869,6 +1917,7 @@ export default function Queen() {
   // dormant), so territories and the buildings' kinds follow.
   const modulesState = useQueenModules();
   const foundationState = useQueenFoundation();
+  const t27Coverage = useT27Coverage();
   const closedCount = foundationState.data?.closedIssues.length ?? 0;
   const rawModules = modulesState.data?.modules ?? EMPTY_MODULES;
   // the board knows the issues; every row gets its open issues from the cards
@@ -2707,6 +2756,8 @@ export default function Queen() {
                   pickIndex={pickIndex}
                   fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
                   events={events}
+                  t27Coverage={t27Coverage}
+                  law={{ t27: c.hiveLawT27, manual: c.hiveLawManual, awaiting: c.hiveLawAwaiting, bees: c.hiveLawBees }}
                 />
               </Suspense>
             ) : (
