@@ -528,6 +528,18 @@ export function ringSummary(ring: string, epics: readonly EpicRecord[], rings: r
   return { epics: mine.length, closed, total, ratio: total > 0 ? closed / total : null };
 }
 /** A wall rises only between two rings whose every epic is a keep. */
+/** The ring a module path belongs to: `rings/<NAME>` or anything beneath it; null elsewhere (K-5). */
+export function ringOfModulePath(path: string): string | null {
+  const m = /^rings\/([^/]+)(?:\/|$)/.exec(path);
+  return m ? m[1] : null;
+}
+
+/** The first epic that lists the issue among its children; null when no epic claims it (K-5). */
+export function epicOfIssue(number: number, epics: readonly EpicRecord[]): EpicRecord | null {
+  for (const e of epics) if (e.children.some((c) => c.number === number)) return e;
+  return null;
+}
+
 export function wallBetween(a: readonly EpicRecord[], b: readonly EpicRecord[]): boolean {
   const done = (list: readonly EpicRecord[]) => list.length > 0 && list.every((e) => towerStage(e) === "wizardTower");
   return done(a) && done(b);
