@@ -6,10 +6,24 @@
  * - DePIN Network status
  * - GitHub repository stats
  * - System health with Trinity branding
+ *
+ * Bilingual since 2026-09-06. This route was in the RU audit's ROUTES list from
+ * the start and had not one useI18n call, so a Russian reader got a wholly
+ * English page. The audit was right every time it fired; what made it look
+ * unreliable is that it joins page text and the offending run only exceeded its
+ * length threshold when the line breaks happened to fall a certain way. A gate
+ * that is correct but intermittent teaches people to ignore it, which is how
+ * four permanent reds ended up on every PR in this repo.
+ *
+ * What deliberately stays in English: proper nouns and identifiers a Russian
+ * reader would also write in Latin -- $TRI, DePIN, Ethereum Sepolia, Zig, MIT,
+ * GitHub, Fibonacci/Lucas as sequence names, and the commit subjects, which are
+ * real commit messages and English by project rule.
  */
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useI18n } from '../i18n/context';
 
 // === Sacred Constants ===
 const PHI = (1 + Math.sqrt(5)) / 2;
@@ -23,6 +37,103 @@ const GOLD = '#ffd700';
 const CYAN = '#00ccff';
 const PURPLE = '#aa66ff';
 const GREEN = '#00ff88';
+
+const T = {
+  en: {
+    sacredMath: 'SACRED MATHEMATICS',
+    trinityIdentity: 'THE TRINITY IDENTITY',
+    sum: 'SUM',
+    trinityIs: 'L(2) = 3 = TRINITY',
+    terms: 'Terms:',
+    depin: 'DePIN NETWORK',
+    trinityToken: 'Trinity Token',
+    totalSupply: 'Total Supply',
+    activeNodes: 'Active Nodes',
+    tps: 'TPS',
+    notLive: 'not yet live',
+    allocation: 'TOKEN ALLOCATION',
+    nodeRewards: 'Node Rewards',
+    founder: 'Founder',
+    community: 'Community',
+    treasury: 'Treasury',
+    liquidity: 'Liquidity',
+    stakingTiers: 'STAKING TIERS',
+    tierFree: 'Free',
+    tierStaker: 'Staker',
+    tierPower: 'Power',
+    tierWhale: 'Whale',
+    perMin: 'req/min',
+    unlimited: 'Unlimited',
+    repository: 'GITHUB REPOSITORY',
+    asOf: 'as of',
+    cycles: 'Cycles',
+    commits: 'Commits',
+    language: 'Language',
+    license: 'License',
+    recentCommits: 'RECENT COMMITS',
+    milestone: 'milestone',
+    title: 'TRINITY DASHBOARD',
+    operational: 'OPERATIONAL',
+    navHome: 'Home',
+    navDashboard: 'Dashboard',
+    navDocs: 'Docs',
+    infoDensity: 'INFORMATION DENSITY',
+    bitsPerTrit: 'bits/trit',
+    memorySavings: 'MEMORY SAVINGS',
+    vsFloat32: '20x vs float32',
+    compute: 'COMPUTE',
+    addOnly: 'Add-only (no mul)',
+    identityLabel: 'TRINITY IDENTITY',
+  },
+  ru: {
+    sacredMath: 'САКРАЛЬНАЯ МАТЕМАТИКА',
+    trinityIdentity: 'ТОЖДЕСТВО ТРОИЦЫ',
+    sum: 'СУММА',
+    trinityIs: 'L(2) = 3 = ТРОИЦА',
+    terms: 'Членов:',
+    depin: 'СЕТЬ DePIN',
+    trinityToken: 'Токен Trinity',
+    totalSupply: 'Общая эмиссия',
+    activeNodes: 'Активные узлы',
+    tps: 'TPS',
+    notLive: 'ещё не запущено',
+    allocation: 'РАСПРЕДЕЛЕНИЕ ТОКЕНОВ',
+    nodeRewards: 'Награды узлам',
+    founder: 'Основатель',
+    community: 'Сообщество',
+    treasury: 'Казна',
+    liquidity: 'Ликвидность',
+    stakingTiers: 'УРОВНИ СТЕЙКИНГА',
+    tierFree: 'Бесплатный',
+    tierStaker: 'Стейкер',
+    tierPower: 'Продвинутый',
+    tierWhale: 'Кит',
+    perMin: 'запр/мин',
+    unlimited: 'Без лимита',
+    repository: 'РЕПОЗИТОРИЙ GITHUB',
+    asOf: 'по состоянию на',
+    cycles: 'Циклы',
+    commits: 'Коммиты',
+    language: 'Язык',
+    license: 'Лицензия',
+    recentCommits: 'ПОСЛЕДНИЕ КОММИТЫ',
+    milestone: 'веха',
+    title: 'ПАНЕЛЬ TRINITY',
+    operational: 'В РАБОТЕ',
+    navHome: 'Главная',
+    navDashboard: 'Панель',
+    navDocs: 'Документация',
+    infoDensity: 'ПЛОТНОСТЬ ИНФОРМАЦИИ',
+    bitsPerTrit: 'бит/трит',
+    memorySavings: 'ЭКОНОМИЯ ПАМЯТИ',
+    vsFloat32: 'в 20 раз против float32',
+    compute: 'ВЫЧИСЛЕНИЯ',
+    addOnly: 'Только сложение (без умножения)',
+    identityLabel: 'ТОЖДЕСТВО ТРОИЦЫ',
+  },
+};
+
+type Copy = typeof T.en;
 
 function fibonacci(n: number): number {
   let a = 0, b = 1;
@@ -40,7 +151,7 @@ function lucas(n: number): number {
 
 // === Components ===
 
-function SacredMathSection() {
+function SacredMathSection({ t }: { t: Copy }) {
   const [n, setN] = useState(10);
 
   const data = useMemo(() => ({
@@ -66,7 +177,7 @@ function SacredMathSection() {
       }}
     >
       <h2 style={{ color: GOLD, fontSize: 18, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>
-        SACRED MATHEMATICS
+        {t.sacredMath}
       </h2>
 
       {/* Trinity Identity */}
@@ -81,7 +192,7 @@ function SacredMathSection() {
         <div style={{ color: GREEN, fontFamily: '"Times New Roman", serif', fontStyle: 'italic', fontSize: 'clamp(20px, 6vw, 28px)', marginBottom: 8 }}>
           &phi;&sup2; + 1/&phi;&sup2; = 3
         </div>
-        <div style={{ color: '#888', fontSize: 12 }}>THE TRINITY IDENTITY</div>
+        <div style={{ color: '#888', fontSize: 12 }}>{t.trinityIdentity}</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginTop: 16 }}>
           <div>
             <div style={{ color: '#666', fontSize: 10 }}>&phi;&sup2;</div>
@@ -92,7 +203,7 @@ function SacredMathSection() {
             <div style={{ color: CYAN, fontSize: 20, fontFamily: 'JetBrains Mono, monospace' }}>{data.inv_phi2.toFixed(6)}</div>
           </div>
           <div>
-            <div style={{ color: '#666', fontSize: 10 }}>SUM</div>
+            <div style={{ color: '#666', fontSize: 10 }}>{t.sum}</div>
             <div style={{ color: GREEN, fontSize: 20, fontFamily: 'JetBrains Mono, monospace', fontWeight: 700 }}>{data.trinity.toFixed(10)}</div>
           </div>
         </div>
@@ -101,12 +212,12 @@ function SacredMathSection() {
       {/* Constants Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 20 }}>
         {[
-          { label: '\u03C6 (phi)', value: PHI.toFixed(10), color: GOLD },
-          { label: '\u03BC = \u03C6\u207B\u2074', value: MU.toFixed(6), color: CYAN },
-          { label: '\u03C7', value: CHI.toFixed(6), color: PURPLE },
-          { label: '\u03C3 = \u03C6', value: SIGMA.toFixed(6), color: GOLD },
-          { label: '\u03B5 = 1/3', value: EPSILON.toFixed(6), color: GREEN },
-          { label: 'log\u2082(3)', value: data.info_density.toFixed(6), color: CYAN },
+          { label: 'φ (phi)', value: PHI.toFixed(10), color: GOLD },
+          { label: 'μ = φ⁻⁴', value: MU.toFixed(6), color: CYAN },
+          { label: 'χ', value: CHI.toFixed(6), color: PURPLE },
+          { label: 'σ = φ', value: SIGMA.toFixed(6), color: GOLD },
+          { label: 'ε = 1/3', value: EPSILON.toFixed(6), color: GREEN },
+          { label: 'log₂(3)', value: data.info_density.toFixed(6), color: CYAN },
         ].map((c) => (
           <div key={c.label} style={{
             background: 'rgba(255,255,255,0.03)',
@@ -120,7 +231,7 @@ function SacredMathSection() {
         ))}
       </div>
 
-      {/* Fibonacci & Lucas */}
+      {/* Fibonacci & Lucas -- sequence names, Latin in both locales */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div>
           <div style={{ color: GOLD, fontSize: 12, fontWeight: 600, marginBottom: 8 }}>FIBONACCI</div>
@@ -141,13 +252,13 @@ function SacredMathSection() {
               </span>
             ))}
           </div>
-          <div style={{ color: '#555', fontSize: 10, marginTop: 4 }}>L(2) = 3 = TRINITY</div>
+          <div style={{ color: '#555', fontSize: 10, marginTop: 4 }}>{t.trinityIs}</div>
         </div>
       </div>
 
       {/* Slider */}
       <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ color: '#666', fontSize: 11 }}>Terms:</span>
+        <span style={{ color: '#666', fontSize: 11 }}>{t.terms}</span>
         <input
           type="range" min={5} max={20} value={n}
           onChange={e => setN(+e.target.value)}
@@ -159,12 +270,13 @@ function SacredMathSection() {
   );
 }
 
-function DePINSection() {
+function DePINSection({ t }: { t: Copy }) {
   const [tick, setTick] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setTick(v => v + 1), 3000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setTick(v => v + 1), 3000);
+    return () => clearInterval(timer);
   }, []);
+  void tick;
 
   // These were `12 + (tick % 3)` and `42 + Math.sin(tick) * 5` -- invented in
   // this component, animated on a 3s timer so they read as polled telemetry.
@@ -175,10 +287,10 @@ function DePINSection() {
   const tps = null;
 
   const tiers = [
-    { name: 'Free', staked: '0', limit: '10 req/min', mult: '1.0x', color: '#666' },
-    { name: 'Staker', staked: '100+', limit: '60 req/min', mult: '1.5x', color: CYAN },
-    { name: 'Power', staked: '1,000+', limit: '300 req/min', mult: '2.0x', color: GOLD },
-    { name: 'Whale', staked: '10,000+', limit: 'Unlimited', mult: '3.0x', color: PURPLE },
+    { name: t.tierFree, staked: '0', limit: `10 ${t.perMin}`, mult: '1.0x', color: '#666' },
+    { name: t.tierStaker, staked: '100+', limit: `60 ${t.perMin}`, mult: '1.5x', color: CYAN },
+    { name: t.tierPower, staked: '1,000+', limit: `300 ${t.perMin}`, mult: '2.0x', color: GOLD },
+    { name: t.tierWhale, staked: '10,000+', limit: t.unlimited, mult: '3.0x', color: PURPLE },
   ];
 
   return (
@@ -195,7 +307,7 @@ function DePINSection() {
       }}
     >
       <h2 style={{ color: PURPLE, fontSize: 18, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>
-        DePIN NETWORK
+        {t.depin}
       </h2>
 
       {/* Token Info */}
@@ -209,36 +321,36 @@ function DePINSection() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div>
             <span style={{ color: GOLD, fontSize: 22, fontWeight: 700 }}>$TRI</span>
-            <span style={{ color: '#666', fontSize: 12, marginLeft: 8 }}>Trinity Token</span>
+            <span style={{ color: '#666', fontSize: 12, marginLeft: 8 }}>{t.trinityToken}</span>
           </div>
           <div style={{ color: '#666', fontSize: 11 }}>Ethereum Sepolia</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: 12 }}>
           <div>
-            <div style={{ color: '#555', fontSize: 10 }}>Total Supply</div>
+            <div style={{ color: '#555', fontSize: 10 }}>{t.totalSupply}</div>
             <div style={{ color: GOLD, fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>3&sup2;&sup1;</div>
             <div style={{ color: '#444', fontSize: 10 }}>10,460,353,203</div>
           </div>
           <div>
-            <div style={{ color: '#555', fontSize: 10 }}>Active Nodes</div>
-            <div style={{ color: '#666', fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{nodes ?? 'not yet live'}</div>
+            <div style={{ color: '#555', fontSize: 10 }}>{t.activeNodes}</div>
+            <div style={{ color: '#666', fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{nodes ?? t.notLive}</div>
           </div>
           <div>
-            <div style={{ color: '#555', fontSize: 10 }}>TPS</div>
-            <div style={{ color: '#666', fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{tps ?? 'not yet live'}</div>
+            <div style={{ color: '#555', fontSize: 10 }}>{t.tps}</div>
+            <div style={{ color: '#666', fontSize: 14, fontFamily: 'JetBrains Mono, monospace' }}>{tps ?? t.notLive}</div>
           </div>
         </div>
       </div>
 
       {/* Allocation */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>TOKEN ALLOCATION</div>
+        <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>{t.allocation}</div>
         {[
-          { label: 'Node Rewards', pct: 40, color: GREEN },
-          { label: 'Founder', pct: 20, color: GOLD },
-          { label: 'Community', pct: 20, color: CYAN },
-          { label: 'Treasury', pct: 10, color: PURPLE },
-          { label: 'Liquidity', pct: 10, color: '#ff6b6b' },
+          { label: t.nodeRewards, pct: 40, color: GREEN },
+          { label: t.founder, pct: 20, color: GOLD },
+          { label: t.community, pct: 20, color: CYAN },
+          { label: t.treasury, pct: 10, color: PURPLE },
+          { label: t.liquidity, pct: 10, color: '#ff6b6b' },
         ].map(a => (
           <div key={a.label} style={{ marginBottom: 6 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
@@ -259,20 +371,20 @@ function DePINSection() {
 
       {/* Staking Tiers */}
       <div>
-        <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>STAKING TIERS</div>
+        <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>{t.stakingTiers}</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))', gap: 8 }}>
-          {tiers.map(t => (
-            <div key={t.name} style={{
+          {tiers.map(tier => (
+            <div key={tier.name} style={{
               background: 'rgba(255,255,255,0.02)',
-              border: `1px solid ${t.color}33`,
+              border: `1px solid ${tier.color}33`,
               borderRadius: 8,
               padding: 10,
               textAlign: 'center',
             }}>
-              <div style={{ color: t.color, fontSize: 13, fontWeight: 700 }}>{t.name}</div>
-              <div style={{ color: '#666', fontSize: 9, marginTop: 4 }}>{t.staked} $TRI</div>
-              <div style={{ color: '#888', fontSize: 10, marginTop: 4 }}>{t.limit}</div>
-              <div style={{ color: t.color, fontSize: 16, fontWeight: 700, marginTop: 4 }}>{t.mult}</div>
+              <div style={{ color: tier.color, fontSize: 13, fontWeight: 700 }}>{tier.name}</div>
+              <div style={{ color: '#666', fontSize: 9, marginTop: 4 }}>{tier.staked} $TRI</div>
+              <div style={{ color: '#888', fontSize: 10, marginTop: 4 }}>{tier.limit}</div>
+              <div style={{ color: tier.color, fontSize: 16, fontWeight: 700, marginTop: 4 }}>{tier.mult}</div>
             </div>
           ))}
         </div>
@@ -281,7 +393,7 @@ function DePINSection() {
   );
 }
 
-function GitHubSection() {
+function GitHubSection({ t }: { t: Copy }) {
   // Measured against the GitHub API and `git rev-list --count HEAD` on
   // 2026-08-10. The previous literals claimed 47 stars (real: 7), 8 forks
   // (real: 2), 12 open issues (real: 21) and 120 commits (real: 5681) --
@@ -302,7 +414,11 @@ function GitHubSection() {
     branch: 'main',
     cycles: null,
   };
+  void repoData.stars; void repoData.forks; void repoData.issues;
+  void repoData.lastCommit; void repoData.branch;
 
+  // Commit subjects stay in English: they are the real messages, and this
+  // project requires commits to be written in English.
   const recentCommits = [
     { hash: '1f89423', msg: 'Fix routing PIPs for prjxray segbits', tag: '812/813 features' },
     { hash: 'f139d87', msg: 'FORGE OF KOSCHEI v2.0 — 100% Native Zig', tag: 'milestone' },
@@ -324,19 +440,19 @@ function GitHubSection() {
       }}
     >
       <h2 style={{ color: CYAN, fontSize: 18, fontWeight: 700, marginBottom: 16, letterSpacing: 2 }}>
-        GITHUB REPOSITORY
+        {t.repository}
         <span style={{ color: '#555', fontSize: 9, fontWeight: 400, marginLeft: 8 }}>
-          as of {AS_OF}
+          {t.asOf} {AS_OF}
         </span>
       </h2>
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Cycles', value: repoData.cycles ?? '—', color: GOLD },
-          { label: 'Commits', value: repoData.commits, color: CYAN },
-          { label: 'Language', value: repoData.language, color: GREEN },
-          { label: 'License', value: repoData.license, color: PURPLE },
+          { label: t.cycles, value: repoData.cycles ?? '—', color: GOLD },
+          { label: t.commits, value: repoData.commits, color: CYAN },
+          { label: t.language, value: repoData.language, color: GREEN },
+          { label: t.license, value: repoData.license, color: PURPLE },
         ].map(s => (
           <div key={s.label} style={{
             background: 'rgba(255,255,255,0.03)',
@@ -352,7 +468,7 @@ function GitHubSection() {
       </div>
 
       {/* Recent Commits */}
-      <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>RECENT COMMITS</div>
+      <div style={{ color: '#888', fontSize: 11, marginBottom: 8, fontWeight: 600 }}>{t.recentCommits}</div>
       {recentCommits.map(c => (
         <div key={c.hash} style={{
           display: 'flex',
@@ -369,7 +485,7 @@ function GitHubSection() {
             background: c.tag === 'milestone' ? `${GOLD}15` : '#ffffff08',
             padding: '2px 8px',
             borderRadius: 4,
-          }}>{c.tag}</span>
+          }}>{c.tag === 'milestone' ? t.milestone : c.tag}</span>
         </div>
       ))}
 
@@ -389,6 +505,8 @@ function GitHubSection() {
 }
 
 export default function ProductionDashboard() {
+  const { lang } = useI18n();
+  const t: Copy = lang === 'ru' ? T.ru : T.en;
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -423,15 +541,18 @@ export default function ProductionDashboard() {
               WebkitTextFillColor: 'transparent',
               letterSpacing: 2,
             }}>
-              TRINITY DASHBOARD
+              {t.title}
             </h1>
             <div style={{ color: '#555', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', marginTop: 4 }}>
-              {currentTime.toLocaleString()} | v2.0.0
+              {/* Was toLocaleString() with no locale, so a Russian reader got
+                  "9/6/2026, 9:58:14 AM" -- the browser default, not the page's
+                  language. */}
+              {currentTime.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US')} | v2.0.0
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 8, height: 8, background: GREEN, borderRadius: '50%', boxShadow: `0 0 8px ${GREEN}` }} />
-            <span style={{ color: GREEN, fontSize: 12 }}>OPERATIONAL</span>
+            <span style={{ color: GREEN, fontSize: 12 }}>{t.operational}</span>
           </div>
         </div>
       </header>
@@ -452,7 +573,7 @@ export default function ProductionDashboard() {
           borderRadius: 6,
           background: 'rgba(255,255,255,0.05)',
           border: '1px solid rgba(255,255,255,0.08)',
-        }}>Home</a>
+        }}>{t.navHome}</a>
         <span style={{
           color: GOLD,
           fontSize: 12,
@@ -460,7 +581,7 @@ export default function ProductionDashboard() {
           borderRadius: 6,
           background: `${GOLD}15`,
           border: `1px solid ${GOLD}33`,
-        }}>Dashboard</span>
+        }}>{t.navDashboard}</span>
         <a href="https://t27.ai/docs/" target="_blank" rel="noopener noreferrer" style={{
           color: '#888',
           fontSize: 12,
@@ -469,7 +590,7 @@ export default function ProductionDashboard() {
           borderRadius: 6,
           background: 'rgba(255,255,255,0.05)',
           border: '1px solid rgba(255,255,255,0.08)',
-        }}>Docs</a>
+        }}>{t.navDocs}</a>
       </nav>
 
       {/* Main */}
@@ -477,10 +598,10 @@ export default function ProductionDashboard() {
         {/* Top metrics */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 24 }}>
           {[
-            { label: 'INFORMATION DENSITY', value: `${Math.log2(3).toFixed(4)} bits/trit`, color: GOLD },
-            { label: 'MEMORY SAVINGS', value: '20x vs float32', color: CYAN },
-            { label: 'COMPUTE', value: 'Add-only (no mul)', color: GREEN },
-            { label: 'TRINITY IDENTITY', value: '\u03C6\u00B2 + 1/\u03C6\u00B2 = 3', color: PURPLE },
+            { label: t.infoDensity, value: `${Math.log2(3).toFixed(4)} ${t.bitsPerTrit}`, color: GOLD },
+            { label: t.memorySavings, value: t.vsFloat32, color: CYAN },
+            { label: t.compute, value: t.addOnly, color: GREEN },
+            { label: t.identityLabel, value: 'φ² + 1/φ² = 3', color: PURPLE },
           ].map(m => (
             <motion.div
               key={m.label}
@@ -500,12 +621,12 @@ export default function ProductionDashboard() {
         </div>
 
         {/* Sacred Math */}
-        <SacredMathSection />
+        <SacredMathSection t={t} />
 
         {/* Two columns */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 24 }}>
-          <DePINSection />
-          <GitHubSection />
+          <DePINSection t={t} />
+          <GitHubSection t={t} />
         </div>
       </main>
 
@@ -520,7 +641,7 @@ export default function ProductionDashboard() {
         fontSize: 11,
         color: '#444',
       }}>
-        <span>TRINITY DASHBOARD v2.0.0</span>
+        <span>{t.title} v2.0.0</span>
         <span style={{ fontFamily: '"Times New Roman", serif', fontStyle: 'italic', color: GREEN }}>
           &phi;&sup2; + 1/&phi;&sup2; = 3
         </span>
