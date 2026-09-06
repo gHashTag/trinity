@@ -422,12 +422,64 @@ for (const e of entries) health[e.health]++
 const backendFailures = {}
 for (const e of entries) for (const b of e.failedBackends) backendFailures[b] = (backendFailures[b] || 0) + 1
 
+// ---------------------------------------------------------------------------
+// Which vendored specs could someone else actually reproduce?
+//
+// t27 is the one source pulled from a LOCAL WORKING COPY rather than a tarball
+// of a committed ref, so whatever is on this machine ships. `specsOrCompilerDirty`
+// already says "something was uncommitted", which is true and not actionable:
+// it does not say WHAT, and a boolean cannot be diffed between syncs.
+//
+// The concrete hazard is not hypothetical. Every spec of the teaching Course --
+// hello_world plus the eight tutorial lessons -- lives on an unmerged t27 branch
+// and not on master. Re-vendoring "from master" to pick up a compiler fix would
+// therefore DELETE the entire onboarding path from the site, silently, and the
+// manifest as it stood would have reported nothing but a flipped boolean.
+//
+// Submodules are not counted: `chips/{euler,gamma,phi}` are separate
+// repositories, and asking the superproject's history about their paths returns
+// "no commit" for files that are perfectly well committed elsewhere. That
+// mistake produced a 46-file false alarm before this was written.
+const DEFAULT_REF = process.env.T27_DEFAULT_REF || 'origin/master'
+let submodulePaths = []
+try {
+  submodulePaths = execFileSync('git', ['-C', T27, 'config', '-f', '.gitmodules', '--get-regexp', 'path'], { encoding: 'utf8' })
+    .split('\n').filter(Boolean).map((line) => line.trim().split(/\s+/)[1]).filter(Boolean)
+} catch {
+  // No .gitmodules is a valid state, not an error.
+}
+const ownedByASubmodule = (rel) => submodulePaths.some((s) => rel === s || rel.startsWith(`${s}/`))
+
+const unreachable = []
+let reachableChecked = 0
+for (const e of entries) {
+  if (e.repo !== 't27') continue          // other repos ship a committed tarball sha
+  if (ownedByASubmodule(e.path)) continue // committed in its own repository
+  reachableChecked += 1
+  try {
+    execFileSync('git', ['-C', T27, 'cat-file', '-e', `${DEFAULT_REF}:${e.path}`], { stdio: 'ignore' })
+  } catch {
+    unreachable.push(e.path)
+  }
+}
+unreachable.sort()
+if (unreachable.length) {
+  console.log(`  note: ${unreachable.length} of ${reachableChecked} t27 specs are not on ${DEFAULT_REF};`)
+  console.log('        a re-vendor from that ref alone would drop them. First few:')
+  for (const p of unreachable.slice(0, 5)) console.log(`          ${p}`)
+}
+
 writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
   generatedFrom: {
     repo: 'gHashTag/t27',
     commit: sha,
     shortCommit: shortSha,
     specsOrCompilerDirty: dirty.length > 0,
+    // Named, not counted: a list can be diffed between two syncs and a number
+    // cannot. Submodule-owned paths are excluded rather than silently passing.
+    defaultRef: DEFAULT_REF,
+    t27SpecsChecked: reachableChecked,
+    unreachableFromDefaultRef: unreachable,
   },
   wasmBytes,
   specCount: entries.length,
