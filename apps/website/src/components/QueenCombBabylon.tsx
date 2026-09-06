@@ -698,35 +698,71 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const modulePaths: Array<[string, number]> = [];
     cards.forEach((c, i) => { if (c && i !== home) modulePaths.push([c.title, i]); });
     modulePaths.sort((a, b) => b[0].length - a[0].length);
+    // The wire names a path from the repository root ("trios/agent-server/...")
+    // while the module scan is rooted inside it ("agent-server/..."), so a plain
+    // prefix match found only the root module and every bee landed on one cell.
+    // Every suffix of the path is tried and the DEEPEST module wins; the root is
+    // the last resort, so a path that belongs somewhere real never falls to it.
     const cellOfPath = (path: string): number => {
-      for (const [t, i] of modulePaths) if (t === "." || path === t || path.startsWith(t + "/")) return i;
-      return -1;
+      const parts = path.split("/");
+      for (let drop = 0; drop < parts.length; drop += 1) {
+        const rest = parts.slice(drop).join("/");
+        for (const [t, i] of modulePaths) if (t !== "." && (rest === t || rest.startsWith(t + "/"))) return i;
+      }
+      const root = modulePaths.find(([t]) => t === ".");
+      return root ? root[1] : -1;
     };
-    const WORK_WINDOW_MS = 12 * 60 * 1000;
+    // Work is a STATE, not an age. Measured 2026-09-06: the wire delivers in
+    // bursts - the median gap between rows is 1 s and the p90 is 38 s - but the
+    // newest row was 18 minutes old while the swarm reported itself working. A
+    // wall-clock window of any length therefore reads 0 for most of the day and
+    // says nothing true. So an issue is being worked when its LAST event on the
+    // wire is not terminal, and the ring's brightness carries how long ago that
+    // was, which is the fact the window was trying and failing to express.
+    const ROUND_MS = 5 * 60 * 1000;
     let workingSeen: readonly HudEvent[] | null = null;
     let workingCells: number[] = [];
+    let workingAgeOf = new Map<number, number>();
     let workingRing: LinesMesh | null = null;
     const refreshWorking = (nowWallMs: number) => {
       const list = eventsRef.current;
       if (list === workingSeen) return;
       workingSeen = list;
-      const seen = new Set<number>();
-      for (const e of list) {
-        if (e.kind === "finished" || e.kind === "error") continue;
-        const t = Date.parse(e.at);
-        if (!Number.isFinite(t) || nowWallMs - t > WORK_WINDOW_MS) continue;
-        const i = cellOfPath(e.title);
-        if (i >= 0) seen.add(i);
+      // the last event of every issue, oldest first so the newest wins
+      const last = new Map<number, { at: number; kind: string; title: string }>();
+      for (const e of [...list].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
+        if (e.issue === null) continue;
+        const at = Date.parse(e.at);
+        if (Number.isFinite(at)) last.set(e.issue, { at, kind: e.kind, title: e.title });
       }
-      const next = [...seen].sort((a, b) => a - b);
+      const ageOf = new Map<number, number>();
+      for (const { at, kind, title } of last.values()) {
+        if (kind === "finished" || kind === "error") continue;
+        const i = cellOfPath(title);
+        if (i < 0) continue;
+        const age = nowWallMs - at;
+        const seen = ageOf.get(i);
+        if (seen === undefined || age < seen) ageOf.set(i, age);
+      }
+      const next = [...ageOf.keys()].sort((a, b) => a - b);
+      const newest = next.length === 0 ? null : Math.min(...ageOf.values());
       host.setAttribute("data-working", String(next.length));
+      host.setAttribute("data-working-age", newest === null ? "-" : String(Math.round(newest / 1000)));
+      host.setAttribute("data-working-quiet", String([...ageOf.values()].filter((a) => a > ROUND_MS).length));
+      workingAgeOf = ageOf;
       if (next.join(",") === workingCells.join(",")) return;
       workingCells = next;
       if (workingRing) { workingRing.dispose(); workingRing = null; }
       if (workingCells.length > 0) {
         const lines = workingCells.map((i) => { const p = hexCornersAt(cells[i].x, cells[i].y, HEX_R * 0.86, 0); return [...p, p[0]].map((c) => new Vector3(c.x, 5, c.y)); });
-        workingRing = CreateLineSystem("working", { lines }, scene);
-        workingRing.color = new Color3(0.55, 1, 0.78);
+        const colours = workingCells.map((i) => {
+          // fresh work burns, work silent for more than a round fades: the ring
+          // never claims a bee is busy when the wire has said nothing for an hour
+          const q = Math.max(0, Math.min(1, 1 - (workingAgeOf.get(i) ?? 0) / (12 * ROUND_MS)));
+          const c = new Color4(0.25 + 0.3 * q, 0.45 + 0.55 * q, 0.4 + 0.38 * q, 0.35 + 0.6 * q);
+          return Array.from({ length: 7 }, () => c);
+        });
+        workingRing = CreateLineSystem("working", { lines, colors: colours, useVertexAlpha: true }, scene);
         workingRing.isPickable = false;
         glow.referenceMeshToUseItsOwnMaterial(workingRing);
       }
