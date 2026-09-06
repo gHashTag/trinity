@@ -131,24 +131,92 @@ export const SILICON: Record<string, SiliconRecord> = Object.fromEntries(
 /**
  * Spec path -> catalog format. Written out rather than inferred from the filename,
  * so a spec never picks up a hardware claim by resembling one.
+ *
+ * The corpus carries the GF ladder THREE times -- under specs/, chips/euler/ and
+ * trinity-fpga/t27/ -- and the first version of this table listed only the first,
+ * so twelve specs describing silicon-verified formats read "No hardware run".
+ * That is a wrong readout in the understating direction, which is quieter than
+ * over-claiming and no more correct. Each path below was checked to declare the
+ * same format before being added: identical `module` name across copies (GF4,
+ * GF8, GF12, triformat-gf16, GF20, GF24) and, where stated, the identical bit
+ * layout. scripts/check-silicon-coverage.mjs now fails the build if a corpus spec
+ * declares one of these formats and appears in neither this table nor EXCLUDED.
  */
 export const SPEC_TO_FORMAT: Record<string, string> = {
+  // canonical ladder
   'specs/numeric/gf4.t27': 'gf4',
   'specs/numeric/gf8.t27': 'gf8',
   'specs/numeric/gf12.t27': 'gf12',
   'specs/numeric/gf16.t27': 'gf16',
   'specs/numeric/gf20.t27': 'gf20',
   'specs/numeric/gf24.t27': 'gf24',
+
+  // chips/euler copy -- same module names, same declared layout
+  'chips/euler/specs/numeric/gf4.t27': 'gf4',
+  'chips/euler/specs/numeric/gf8.t27': 'gf8',
+  'chips/euler/specs/numeric/gf12.t27': 'gf12',
+  'chips/euler/specs/numeric/gf16.t27': 'gf16',
+  'chips/euler/specs/numeric/gf20.t27': 'gf20',
+  'chips/euler/specs/numeric/gf24.t27': 'gf24',
+
+  // trinity-fpga/t27 copy -- shorter files, same declared layout
+  'trinity-fpga/t27/specs/numeric/gf4.t27': 'gf4',
+  'trinity-fpga/t27/specs/numeric/gf8.t27': 'gf8',
+  'trinity-fpga/t27/specs/numeric/gf12.t27': 'gf12',
+  'trinity-fpga/t27/specs/numeric/gf16.t27': 'gf16',
+  'trinity-fpga/t27/specs/numeric/gf20.t27': 'gf20',
+  'trinity-fpga/t27/specs/numeric/gf24.t27': 'gf24',
+
+  // Declares GF16 outright -- "[sign:1][exponent:6][mantissa:9], bias 31" with
+  // the field accessors -- rather than merely consuming it.
+  'tri-net/specs/gf16_format.t27': 'gf16',
+}
+
+/**
+ * Specs that name a verified format but deliberately carry no hardware record,
+ * each with the reason. This exists so the coverage guard can tell "considered
+ * and excluded" from "never looked at" -- an empty exclusion list and a missing
+ * entry are indistinguishable otherwise.
+ */
+export const EXCLUDED: Record<string, string> = {
+  // GF32 is outside the silicon-verified ladder (GF4-GF24). No cell, no claim.
+  'specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
+  'chips/euler/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
+  'trinity-fpga/t27/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
+
+  // Above the ladder. Surfaced by the coverage guard, which matches the
+  // `triformat-gf<N>` module declaration rather than the filename -- these three
+  // would have been missed by a path pattern built around the known widths.
+  // GF64 and GF128 have no hardware cell; GF256 is recorded in the conformance
+  // draft as structural, its bias still an open R&D parameter.
+  'chips/euler/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'chips/euler/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'chips/euler/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
+
+  // These use, convert or measure a verified format; they do not declare it, so
+  // the format's hardware record is not theirs to show.
+  'specs/fpga/gf16_accel.t27': 'an accelerator that consumes GF16, not a declaration of the format',
+  'specs/fpga/testbench/gf16_accel_tb.t27': 'testbench for the accelerator above',
+  'specs/benchmarks/gf16_bfloat16_nmse.t27': 'a numerical benchmark against bfloat16, not a format declaration',
+  'trinity-fpga/specs/numeric/gf16_plus_quire_audit.t27': 'an audit of GF16 plus a quire, not the format itself',
+  'chips/euler/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
+  'chips/euler/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
+  'chips/euler/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
 }
 
 /**
  * Specs that describe the catalog rather than one format. They get the family
- * totals instead of a single format's cells.
+ * totals instead of a single format's cells. Same three-copy problem as the
+ * ladder, so all copies are listed.
  */
 export const FAMILY_SPECS = new Set([
   'specs/numeric/goldenfloat_family.t27',
   'specs/numeric/formats.t27',
   'specs/numeric/gf_competitive.t27',
+  'specs/math/gf_competitive.t27',
+  'chips/euler/specs/numeric/goldenfloat_family.t27',
+  'chips/euler/specs/numeric/formats.t27',
+  'trinity-fpga/t27/specs/numeric/goldenfloat_family.t27',
 ])
 
 /** Catalog-wide totals, as published in the v0.2 draft. */

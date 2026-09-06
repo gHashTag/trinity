@@ -10,8 +10,8 @@
 import { memo } from 'react'
 import { useI18n } from '../i18n/context'
 import {
-  CHAIN, DEVICE, FAMILY_SPECS, FAMILY_TOTALS, FORMAL_PROVEN, SPEC_TO_FORMAT,
-  TOOLCHAIN, siliconFor,
+  CHAIN, DEVICE, EXCLUDED, FAMILY_SPECS, FAMILY_TOTALS, FORMAL_PROVEN,
+  SPEC_TO_FORMAT, TOOLCHAIN, siliconFor,
 } from '../data/siliconHistory'
 import type { Level, OpKind, SiliconCell } from '../data/siliconHistory'
 
@@ -46,6 +46,7 @@ const T = {
     oracle: 'Golden oracle',
     ops: 'Operations',
     caught: 'What the hardware caught',
+    excludedBecause: 'This spec names a verified format but carries no record:',
     levels: {
       silicon: 'on silicon',
       prepared: 'bitstream ready, not yet flashed',
@@ -73,6 +74,7 @@ const T = {
     oracle: 'Эталон',
     ops: 'Операции',
     caught: 'Что поймало железо',
+    excludedBecause: 'Эта спека называет проверенный формат, но записи по железу не несёт:',
     levels: {
       silicon: 'на кристалле',
       prepared: 'битстрим готов, не прошит',
@@ -158,13 +160,24 @@ function SpecSiliconHistoryImpl({ specPath }: { specPath: string }) {
 
   // Nothing has been through the board for this spec. Say it, rather than
   // rendering an empty frame that reads as "in progress".
+  //
+  // A spec that names a verified format and still has no record is a different
+  // case from one that never touched hardware, and the reason is the useful part
+  // -- "outside the verified ladder" and "a converter between two formats" are
+  // answers, where a bare "no hardware run" invites the question again.
   if (!record && !isFamily) {
+    const why = EXCLUDED[specPath]
     return (
       <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${C.wire}` }}>
         {head}
         <p style={{ font: `11px/1.8 ${MONO}`, color: C.dim, margin: 0, maxWidth: '68ch' }}>
           {t.none}
         </p>
+        {why && (
+          <p style={{ font: `11px/1.8 ${MONO}`, color: C.amber, margin: '8px 0 0', maxWidth: '68ch' }}>
+            {t.excludedBecause} {why}
+          </p>
+        )}
       </div>
     )
   }

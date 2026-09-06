@@ -17,6 +17,11 @@
 #   check:api          a field the UI formats that no server emits, and any
 #                      fallback not tagged with sample() (A36/A37: novelty:0.342
 #                      rendered as an FPGA measurement on a public route)
+#   check:silicon      every spec naming a silicon-verified format is classified
+#                      -- mapped, family, or excluded WITH a reason (A44: the
+#                      corpus carries the GF ladder three times, the first table
+#                      listed one root, and twelve specs describing formats
+#                      measured on silicon rendered "No hardware run")
 #   check:render       real Chrome over CDP, every panel on all nine canvas
 #                      layers, fails on the first uncaught error (A39: vite
 #                      build was green through all of the above -- it proves
@@ -66,6 +71,13 @@ jobs:
       # mappable fields stay unwired rather than relabelled as microseconds.
       - name: API contract
         run: npm run check:api
+
+      # Runs its own --self-test first: it injects an unclassified gf16 path and
+      # requires the detector to report it, so the gate cannot pass by looking
+      # at nothing. It reads the real tables by compiling siliconHistory.ts,
+      # not by pattern-matching its source.
+      - name: Silicon coverage
+        run: npm run check:silicon
 
       - name: Build
         run: npx vite build
