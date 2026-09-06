@@ -49,8 +49,42 @@ jobs:
           # Run health check and capture output
           ./zig-out/bin/tri stress --health 2>&1 | tee /tmp/health-output.txt || true
 
-          # Extract health score
-          HEALTH_SCORE=$(grep "Score:" /tmp/health-output.txt | grep -oE "[0-9]+\.[0-9]+" || echo "0")
+          # An absent measurement is not a measurement of zero.
+          #
+          # `grep "Score:" ... || echo "0"` used to turn "the command printed no
+          # Score: line at all" into the NUMBER 0, which the threshold check
+          # below then reported as "Brain health 0 below threshold 80". That
+          # reads as a measured regression. It is not one: `tri stress --health`
+          # currently prints "stress-test: TODO - not implemented yet", so there
+          # has never been a score to compare. The gate has failed on every run
+          # in its history, including on main, for that reason alone -- and a
+          # check that is always red carries as little information as one that
+          # is always green.
+          #
+          # Same class as A36/A37, where an unmeasured field rendered as an FPGA
+          # measurement on a public route. Report what happened, not a number
+          # that was never produced.
+          if ! grep -q "Score:" /tmp/health-output.txt; then
+            echo "HEALTH_SCORE=" >> $GITHUB_OUTPUT
+            echo "HEALTHY=unknown" >> $GITHUB_OUTPUT
+            echo "::error::brain health was NOT MEASURED -- 'tri stress --health' emitted no 'Score:' line, so there is no number to compare against the threshold of $BRAIN_HEALTH_THRESHOLD. This is not a health regression. What the command actually printed:"
+            sed -n '1,20p' /tmp/health-output.txt
+            exit 1
+          fi
+
+          # Extract health score. Accepts an integer as well as a decimal: the
+          # old pattern required "[0-9]+\.[0-9]+", so a Score: line reading
+          # "Score: 92" would have parsed as empty and reached bc as an empty
+          # string. A Score: line we cannot parse is also "not measured" -- it
+          # is not zero either.
+          HEALTH_SCORE=$(grep "Score:" /tmp/health-output.txt | grep -oE "[0-9]+(\.[0-9]+)?" | head -1 || true)
+          if [ -z "$HEALTH_SCORE" ]; then
+            echo "HEALTH_SCORE=" >> $GITHUB_OUTPUT
+            echo "HEALTHY=unknown" >> $GITHUB_OUTPUT
+            echo "::error::a 'Score:' line was present but carried no number this step could parse. This is not a health regression. The line was:"
+            grep "Score:" /tmp/health-output.txt | head -5
+            exit 1
+          fi
           echo "HEALTH_SCORE=$HEALTH_SCORE" >> $GITHUB_OUTPUT
 
           # Check if healthy
@@ -444,8 +478,17 @@ jobs:
             exit 1
           fi
 
+      # On a push there is no PR, so context.issue.number is undefined and the
+      # call becomes POST /repos/.../issues//comments -> 404.
+      #
+      # This is NOT the whole reason the job goes red: the step above is an
+      # aggregator and exits 1 whenever an upstream job failed, which it should.
+      # But this 404 fired on top of that and buried the real verdict under a
+      # 30-line octokit dump, so the log read as an API problem rather than as
+      # "the health check did not pass". Guarding it removes the noise, not the
+      # signal -- the aggregator still fails the job on its own.
       - name: Critical State Notification
-        if: failure()
+        if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
