@@ -2703,7 +2703,6 @@ export default function Queen() {
                   layers={layers}
                   handleRef={combRef}
                   workers={workers}
-                  devices={hardware?.devices ?? null}
                   onPick={handlePick}
                   pickIndex={pickIndex}
                   fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
@@ -2718,7 +2717,6 @@ export default function Queen() {
                 pickIndex={pickIndex}
                 fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
                 events={events}
-                devices={hardware?.devices ?? null}
                 columns={boardColumns}
                 cards={placedCards}
                 repo={repo}
