@@ -35,16 +35,19 @@ export function isOverflowing(measurement, tolerance = TOLERANCE_PX) {
 }
 
 /**
- * Routes that already had off-screen controls when this check was added.
+ * Routes exempted from the unreachable-control check.
  *
- * Named, not counted, and deliberately not a number: a count lets a new
- * offender in whenever an old one is fixed. These two are real -- /queen hides
- * an ALERTS button at left 850px and a MENU at 417px, /tree an ALERTS button at
- * 912px, all on a 375px screen, all clipped by an ancestor's overflow:hidden so
- * nothing scrolls and nothing complains. They are separate pages with their own
- * layouts; fixing them is not this change. The gate forbids NEW ones.
+ * Empty, and that is the point. /queen and /tree were listed here as known
+ * offenders when this check landed. They were not offenders: their HUD strip is
+ * a horizontally scrollable toolbar with 619px of real scroll, so every control
+ * in it can be swiped into view. The check now understands that, and the
+ * exemption it needed disappeared with it.
+ *
+ * Kept as a named set rather than deleted, because the next real one should be
+ * named here with its reason rather than silently tolerated -- and a count
+ * would admit a new offender each time an old one was fixed.
  */
-export const KNOWN_UNREACHABLE = new Set(['queen', 'tree'])
+export const KNOWN_UNREACHABLE = new Set([])
 
 /** A control outside the viewport is a function the reader cannot reach. */
 export function hasUnreachableControl(measurement) {
@@ -81,12 +84,30 @@ const MEASURE = `(() => {
   const d = document.documentElement;
   const client = d.clientWidth;
   const overflow = d.scrollWidth - client;
+  // Off-screen is not the same as unreachable. A horizontally scrollable strip
+  // -- a toolbar the reader can swipe -- is a legitimate mobile pattern, and
+  // everything in it can be brought into view. Only a control clipped by an
+  // ancestor that CANNOT scroll is actually lost.
+  //
+  // This distinction is not theoretical: /queen and /tree sat in this gate's
+  // baseline as known offenders until their HUD strip was measured and found to
+  // have 619px of real scroll (scrollWidth 976 vs clientWidth 357), with the
+  // MENU button moving when it was scrolled. They were never defects. The
+  // baseline was my error, not theirs.
+  const reachableByScrolling = (el) => {
+    for (let p = el.parentElement; p; p = p.parentElement) {
+      const ox = getComputedStyle(p).overflowX;
+      if ((ox === 'auto' || ox === 'scroll') && p.scrollWidth > p.clientWidth + 1) return true;
+    }
+    return false;
+  };
   const unreachable = [];
   for (const el of document.querySelectorAll('button, a, input, select, textarea, [role="button"]')) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;      // not rendered
     if (getComputedStyle(el).visibility === 'hidden') continue;
     if (r.right > client + 1 || r.left < -1) {
+      if (reachableByScrolling(el)) continue;
       unreachable.push({
         tag: el.tagName.toLowerCase(),
         txt: (el.textContent || '').trim().slice(0, 24),
