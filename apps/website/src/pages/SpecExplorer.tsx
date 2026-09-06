@@ -1282,7 +1282,12 @@ export default function SpecExplorer() {
                 <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {/* Reset only appears once there is something to reset. */}
                   {edited && <button onClick={reset} style={ctrlBtn}>{ui.reset}</button>}
-                  <button
+                  {/* On a phone this one is replaced by the sticky button at the
+                      bottom of the screen: this row sits at the TOP of a column
+                      that now scrolls, so after reading any distance the control
+                      is off-screen and out of thumb reach. Two identical RUN
+                      buttons would be worse than either alone. */}
+                  {!phone && <button
                     onClick={() => void run()}
                     disabled={busy}
                     title={ui.runHint}
@@ -1304,7 +1309,7 @@ export default function SpecExplorer() {
                     }}
                   >
                     {busy ? ui.compiling : 'RUN'}
-                  </button>
+                  </button>}
                 </span>
               </div>
 
@@ -1751,6 +1756,49 @@ export default function SpecExplorer() {
             </>
           )}
         </main>}
+
+        {/* RUN, within reach of a thumb.
+            The inline control lives in a row at the TOP of a column that now
+            scrolls on a phone, so it leaves the screen as soon as you read any
+            distance -- and the top of a tall phone is the hardest place on the
+            device to reach one-handed. Fixed to the bottom instead, so the
+            action the page exists for is always one tap away.
+
+            Bottom-right rather than a full-width bar: it stays clear of the
+            text column, and env(safe-area-inset-bottom) keeps it off the home
+            indicator. */}
+        {phone && mobilePane === 'detail' && selected && (
+          <button
+            onClick={() => void run()}
+            disabled={busy}
+            title={ui.runHint}
+            aria-label={busy ? ui.compiling : 'RUN'}
+            style={{
+              position: 'fixed',
+              right: 16,
+              bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+              zIndex: 40,
+              // Same signal as the inline control: filled once the text differs
+              // from what was last compiled.
+              background: dirty ? C.accent : '#0f1a14',
+              color: dirty ? '#04150c' : C.accent,
+              border: `1px solid ${C.accent}`,
+              borderRadius: 999,
+              // 48px clears the 44px minimum with room for a shadow.
+              minHeight: 48,
+              padding: '0 22px',
+              fontSize: 14,
+              fontWeight: 700,
+              letterSpacing: 0.5,
+              fontFamily: 'inherit',
+              cursor: busy ? 'default' : 'pointer',
+              opacity: busy ? 0.7 : 1,
+              boxShadow: '0 6px 20px rgba(0,0,0,0.55)',
+            }}
+          >
+            {busy ? ui.compiling : '▶ RUN'}
+          </button>
+        )}
       </div>
     </div>
   )
