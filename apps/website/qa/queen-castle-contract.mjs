@@ -97,6 +97,25 @@ if (!c || !c.source) { console.log('  Queen castle contract: FAIL (the field nev
 // K-4: the keep at the hub, a nameplate per plinth, a banner per release
 const k4 = await evaluate(`(() => { const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); return { keep: f.getAttribute('data-castle-keep'), plates: f.getAttribute('data-castle-plates'), banners: f.getAttribute('data-castle-banners') }; })()`);
 if (k4.keep !== '1' || k4.plates !== '2' || k4.banners !== '1') { console.log(`  Queen castle contract: FAIL (keep=${k4.keep} plates=${k4.plates} banners=${k4.banners}; expected the keep, 2 nameplates, 1 banner)`); cleanup(); process.exit(1); }
+// K-5: ring marks on the module cells under rings/<NAME> (castle layer) equal the served modules under the fixture's two rings
+const k5 = await evaluate(`(async () => { const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); const mods = await fetch('./queen/modules.json', { cache: 'no-cache' }).then((r) => r.json()); const list = Array.isArray(mods) ? mods : mods.modules; const want = list.filter((m) => new RegExp('^rings/(SR-00|RUST-13)(/|$)').test(m.path)).length; return { marks: f.getAttribute('data-castle-marks'), want }; })()`);
+if (k5.want < 1 || k5.marks !== String(k5.want)) { console.log(`  Queen castle contract: FAIL (ring marks ${k5.marks}, the served modules under SR-00/RUST-13 count ${k5.want})`); cleanup(); process.exit(1); }
+// K-5: a pick on a child of epic 9001 draws the roots from the SR-00 tower to its 3 closed children (CODE off: the fixture's issues lie under the module cells)
+await evaluate(`document.querySelector('button[data-layer="code"]').click()`); await wait(400);
+const box = await evaluate(`(() => { const r = document.querySelector('.queen27-comb-field canvas').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; })()`);
+let roots = null;
+outer: for (let rad = 0; rad <= Math.min(box.w, box.h) * 0.36; rad += 11) {
+  const steps = rad === 0 ? 1 : Math.max(6, Math.round(rad / 4));
+  for (let st = 0; st < steps; st += 1) {
+    const ang = (Math.PI * 2 * st) / steps; const x = Math.round(box.x + Math.cos(ang) * rad), y = Math.round(box.y + Math.sin(ang) * rad);
+    await evaluate(`(() => { const cv = document.querySelector('.queen27-comb-field canvas'); const o = { clientX: ${x}, clientY: ${y}, bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0 }; cv.dispatchEvent(new PointerEvent('pointermove', o)); cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); cv.dispatchEvent(new MouseEvent('click', o)); })()`);
+    await wait(90);
+    const got = await evaluate(`(() => { const v = document.querySelector('[data-layers]'); const f = document.querySelector('.queen27-comb-field[data-engine="babylon"]'); return { issue: v && v.getAttribute('data-pick-issue'), roots: f.getAttribute('data-castle-roots') }; })()`);
+    if (got.issue && ['9101', '9102', '9103'].includes(got.issue)) { roots = got.roots; break outer; }
+  }
+}
+if (roots !== '9001:3') { console.log(`  Queen castle contract: FAIL (roots ${roots}; expected 9001:3 after picking a closed child of epic 9001)`); cleanup(); process.exit(1); }
+await evaluate(`document.querySelector('button[data-layer="code"]').click()`); await wait(200);
 if (c.source !== 'file' || c.rings !== '2' || c.stages !== 'RUST-13:plinth;SR-00:tower' || c.unassigned !== '1' || c.releases !== '1') { console.log(`  Queen castle contract: FAIL (source=${c.source} rings=${c.rings} stages=${c.stages} unassigned=${c.unassigned} releases=${c.releases}; expected file, 2, RUST-13:plinth;SR-00:tower, 1, 1)`); cleanup(); process.exit(1); }
 // a missing snapshot: plinths with dashes, the source says none, no stages
 castleMode = 'missing';

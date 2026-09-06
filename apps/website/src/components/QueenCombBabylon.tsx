@@ -47,7 +47,7 @@ import "@babylonjs/core/Culling/ray";
 import { S, EDGES } from "./QueenComb";
 import { buildingPlan, buildingTint, crystalOf, eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, honeyTone, spiralAxial, S_CELL, type FoundationIssue,
  FIELD_LAYERS, type FieldLayer, type CombHandle,
- castlePlaces, ringOfEpic, towerStage, ringSummary, ringFamily, familyTint, hexRingStart, CASTLE_RING, type TowerStage, type EpicRecord,
+ castlePlaces, ringOfEpic, towerStage, ringSummary, ringFamily, familyTint, ringOfModulePath, epicOfIssue, hexRingStart, CASTLE_RING, type TowerStage, type EpicRecord,
 } from "./queenHud";
 
 interface SpikeCard {
@@ -293,6 +293,10 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     camera.panningSensibility = 0;
     let zoom = 1;
     let appliedInset = -1;
+    // the castle's couplings to the code and the honey (K-5): filled when the snapshot lands
+    let castleLinks: { plinthOfRing: Map<string, number>; ringOfCell: Map<number, string>; cellsOfRing: Map<string, number[]>; epics: EpicRecord[]; rings: string[] } | null = null;
+    let linkLines: LinesMesh | null = null; let linkFor: string | null = null;
+    let rootLines: LinesMesh | null = null;
     // three transform nodes carry the layers: a disabled parent hides its thin-instanced children without touching a buffer
     const layerNodes: Record<FieldLayer, TransformNode> = { foundation: new TransformNode("layer-foundation", scene), castle: new TransformNode("layer-castle", scene), code: new TransformNode("layer-code", scene) };
     const fit = () => {
@@ -730,6 +734,20 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
             plates += 1;
           }
           host.setAttribute("data-castle-plates", String(plates));
+          // ring marks (K-5): on the castle layer every module cell under rings/<NAME> wears its family's colour, so the code a ring owns is seen from the castle
+          const cellsOfRing = new Map<string, number[]>();
+          cards.forEach((cd, ci) => { if (!cd) return; const rn = ringOfModulePath(cd.title); if (rn && rings.includes(rn)) cellsOfRing.set(rn, [...(cellsOfRing.get(rn) ?? []), ci]); });
+          const mm: number[] = []; const mc: number[] = [];
+          for (const [rn, list] of cellsOfRing) for (const ci of list) { mm.push(...Matrix.Translation(cells[ci].x, lift + 0.6, cells[ci].y).toArray()); mc.push(...familyTint(ringFamily(rn)), 1); }
+          if (mm.length > 0) {
+            const mark = CreateCylinder("ring-mark", { diameter: S_CELL * 0.8, height: 1.2, tessellation: 6 }, scene);
+            const markMat = new StandardMaterial("ring-mark", scene); markMat.emissiveColor = new Color3(0.5, 0.5, 0.5); markMat.alpha = 0.55; markMat.specularColor = Color3.Black();
+            mark.material = markMat; mark.isPickable = false; mark.parent = layerNodes.castle;
+            mark.thinInstanceSetBuffer("matrix", new Float32Array(mm), 16, true);
+            mark.thinInstanceSetBuffer("color", new Float32Array(mc), 4, true);
+          }
+          host.setAttribute("data-castle-marks", String(mm.length / 16));
+          castleLinks = { plinthOfRing: new Map(places.map((pl) => [pl.ring, pl.plinth])), ringOfCell: new Map(places.map((pl) => [pl.plinth, pl.ring])), cellsOfRing, epics, rings };
           // a banner per release at the keep's rim: the tag on a pole
           const releases = fdNow.releases ?? [];
           releases.slice(0, 8).forEach((r, k3) => {
@@ -812,6 +830,21 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       return hexIndexAt(hit.pickedPoint.x, hit.pickedPoint.z, cells.length);
     };
     let hover = -1;
+    // the roots (K-5): a picked closed issue that an epic lists draws lines from the epic's tower (the keep when unassigned) to every closed child on the field
+    const drawRoots = (number: number | null) => {
+      if (rootLines) { rootLines.dispose(); rootLines = null; }
+      host.removeAttribute("data-castle-roots");
+      if (number === null || !castleLinks || !fCells) return;
+      const epic = epicOfIssue(number, castleLinks.epics);
+      if (!epic) return;
+      const ringName = ringOfEpic(epic, castleLinks.rings).ring;
+      const from = ringName !== null ? castleLinks.plinthOfRing.get(ringName) ?? home : home;
+      const top = new Vector3(cells[from].x, S * 0.5, cells[from].y);
+      const lines: Vector3[][] = [];
+      for (const ch of epic.children) { if (ch.state !== "closed") continue; const ci = fCells.findIndex((f) => f?.number === ch.number); if (ci < 0) continue; lines.push([top, new Vector3(cells[ci].x, 3, cells[ci].y)]); }
+      if (lines.length > 0) { rootLines = CreateLineSystem("roots", { lines }, scene); rootLines.color = new Color3(1, 0.86, 0.4); rootLines.alpha = 0.9; rootLines.isPickable = false; rootLines.parent = layerNodes.castle; }
+      host.setAttribute("data-castle-roots", `${epic.number}:${lines.length}`);
+    };
     let downAt: [number, number] | null = null;
     let travelled = 0;
     scene.onPointerObservable.add((info) => {
@@ -835,11 +868,13 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
         const issue = fCells?.[index];
         if (issue && layersRef.current.foundation) {
           host.setAttribute("data-hit", "issue");
+          drawRoots(issue.number);
           onPickRef.current?.({ index, isQueen: false, territory: cells[index].own, card: null, bee: null, kind: "issue", issue } as HudPick);
           return;
         }
-        host.setAttribute("data-hit", "void"); onPickRef.current?.(null); return;
+        host.setAttribute("data-hit", "void"); drawRoots(null); onPickRef.current?.(null); return;
       }
+      drawRoots(null);
       host.setAttribute("data-hit", index === home ? "queen" : "module");
       const b = beeAt(index);
       onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: b ? { slot: b.slot, line: b.line, busy: b.busy } : null, kind: index === home ? "queen" : "module" } as HudPick);
@@ -915,6 +950,18 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const p = pickRef.current;
       if (p !== null && cells[p]) placeRing(picked, p, 1.4); else picked.isVisible = false;
       if (p !== flaredPick) { flaredPick = p; if (p !== null && cells[p] && effects.length < RING_POOL) effects.push({ index: p, tone: "muted", start: nowMs, flip: false, flare: ringTone(cells[p].own as Territory) }); }
+      // a hovered plinth (K-5) draws the link from the ring's stone to the module cells it owns; nothing is drawn for a ring that owns no placed module
+      const linkRing = hover >= 0 && layersRef.current.castle && castleLinks ? castleLinks.ringOfCell.get(hover) ?? null : null;
+      if (linkRing !== linkFor) {
+        if (linkLines) { linkLines.dispose(); linkLines = null; }
+        linkFor = linkRing;
+        if (linkRing && castleLinks) {
+          const owned = castleLinks.cellsOfRing.get(linkRing) ?? [];
+          const from = new Vector3(cells[hover].x, S * 0.35, cells[hover].y);
+          if (owned.length > 0) { linkLines = CreateLineSystem("ring-link", { lines: owned.map((ci) => [from, new Vector3(cells[ci].x, 4, cells[ci].y)]) }, scene); const tint = familyTint(ringFamily(linkRing)); linkLines.color = new Color3(tint[0], tint[1], tint[2]); linkLines.alpha = 0.85; linkLines.isPickable = false; linkLines.parent = layerNodes.castle; }
+          host.setAttribute("data-castle-link", `${linkRing}:${owned.length}`);
+        } else host.removeAttribute("data-castle-link");
+      }
       // no hover ring on empty ground (P1-10): only modules and the Queen's hub answer the pointer
       if (hover >= 0 && hover !== p && cells[hover] && ((layersRef.current.code && cards[hover]) || hover === home || (layersRef.current.foundation && fCells?.[hover]))) placeDashed(hover, 1.4); else hovered.isVisible = false;
       scene.render();
