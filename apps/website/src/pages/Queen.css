@@ -2978,6 +2978,24 @@
   min-height: 0;
 }
 
+/* the hover card (the user, 2026-09-06): a hovered cell names its GitHub issue beside the pointer; hidden until a cell is under it */
+.queen27-hover-card {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  max-width: 300px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 212, 90, 0.55);
+  background: rgba(6, 10, 12, 0.92);
+  color: var(--q27-text, #e6f0ec);
+  font: 12px/1.35 ui-monospace, Menlo, monospace;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+.queen27-hover-card[aria-hidden="true"] { display: none; }
+.queen27-hover-card b { display: block; color: #ffd45a; font-weight: 500; margin-bottom: 2px; }
+.queen27-hover-card span { display: block; color: rgba(230, 240, 236, 0.72); }
+
 .queen27-comb-viewport canvas {
   display: block;
   width: 100%;
