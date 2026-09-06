@@ -763,7 +763,7 @@ export function buildingPlan(m: HudModule): BuildingPlan {
   // with many functions reads as a busy building at night
   const bands = band(m.functions, [40, 160, 500]);
   for (let i = 0; i < bands; i += 1) parts.push({ model: "band", dx: 0, dz: 0, scale: scale * 0.72, height, level: i + 1 });
-  return { core: CORE_BY_LANGUAGE[m.language] ?? "dropped", turn: (moduleId(m.path) % 4) * (Math.PI / 2), parts };
+  return { core: CORE_BY_LANGUAGE[m.language] ?? "dropped", turn: (moduleId(m.path) % 6) * (Math.PI / 3), parts };
 }
 
 /**

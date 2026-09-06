@@ -24,7 +24,6 @@ import { Sprite } from "@babylonjs/core/Sprites/sprite";
 import { CreateLineSystem, CreateDashedLines } from "@babylonjs/core/Meshes/Builders/linesBuilder";
 import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
-import { CreatePlane } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateTorus } from "@babylonjs/core/Meshes/Builders/torusBuilder";
@@ -115,7 +114,7 @@ const MARGIN = S * 2;
 /**
  * Load a Kenney GLB and merge it into one mesh with a multi-material, so it
  * can be thin-instanced like the procedural templates. Returns the mesh and
- * its footprint (max of width and depth) and base (min y), both in model
+ * its footprint (the flat width: min of width and depth) and base (min y), both in model
  * units, so the caller can scale it to a cell and stand it on the ground.
  */
 async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; footprint: number; base: number; height: number; width: number; depth: number } | null> {
@@ -153,7 +152,9 @@ async function loadTemplate(scene: Scene, key: ModelKey): Promise<{ mesh: Mesh; 
     merged.position.set(0, 0, 0); merged.rotationQuaternion = null; merged.rotation.set(0, 0, 0); merged.scaling.set(1, 1, 1);
     merged.computeWorldMatrix(true);
     const b = merged.getBoundingInfo().boundingBox;
-    const footprint = Math.max(b.maximum.x - b.minimum.x, b.maximum.z - b.minimum.z) || 1;
+    // a hex tile measures 1.000 flat-to-flat and 1.1547 corner-to-corner, so the
+    // FLAT width is the fit: dividing by the larger left a moat around every building
+    const footprint = Math.min(b.maximum.x - b.minimum.x, b.maximum.z - b.minimum.z) || 1;
     merged.isVisible = false; merged.isPickable = false;
     scene.addMesh(merged);
     for (const m of container.meshes) if (m !== merged && !(m as AbstractMesh).isDisposed()) m.dispose();
@@ -237,6 +238,10 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     ipc.vignetteEnabled = true;
     ipc.vignetteWeight = 1.6;
     ipc.vignetteColor = new Color4(0, 0.02, 0.01, 0);
+    // as a post-process the grade lands on the lines too (V-9): without this the
+    // 1009 comb outlines, the pick ring and the flight lines render raw over a
+    // graded world, which is the mechanical form of "the visual does not agree"
+    ipc.applyByPostProcess = true;
     scene.fogMode = Scene.FOGMODE_LINEAR;
     scene.fogColor = new Color3(2 / 255, 8 / 255, 6 / 255);
     const glow = new GlowLayer("glow", scene, { blurKernelSize: 24 });
@@ -523,7 +528,6 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     aimBees();
     const beeAt = (index: number) => bees.find((b) => (b.t < 0.5 ? b.from : b.to) === index) ?? null;
     const flightLines = bees.map((b) => { const m = CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(0, 0, 0), new Vector3(1, 0, 1)], dashSize: 6, gapSize: 4, dashNb: 40, updatable: true }, scene); m.color = Color3.FromHexString("#64DCFF"); m.alpha = 0.55; m.isPickable = false; m.isVisible = false; return m; });
-    const unitRings = bees.map((b) => { const m = CreateTorus(`unit-ring-${b.slot}`, { diameter: S * 0.26, thickness: 1.6, tessellation: 20 }, scene); m.material = green; m.isPickable = false; m.isVisible = false; return m; });
 
     // The glTF loader creates PBR materials, and a PBR material's first use
     // schedules the environment BRDF lookup texture, generated asynchronously
@@ -646,64 +650,23 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
           const keepT = modelInstances.get("keep");
           if (keepT) {
             keepT.mesh.parent = layerNodes.castle;
-            placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.5, []);
+            placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S_CELL * 1.05, []);
             host.setAttribute("data-castle-keep", "1");
-            const unitT = modelInstances.get("unitTower");
-            if (unitT && unassigned > 0) {
-              unitT.mesh.parent = layerNodes.castle;
-              const um: number[] = []; const shown = Math.min(unassigned, 24);
-              for (let k2 = 0; k2 < shown; k2 += 1) { const ang = (Math.PI * 2 * k2) / shown; um.push(...Matrix.Translation(cells[home].x + Math.cos(ang) * S * 0.62, 0, cells[home].y + Math.sin(ang) * S * 0.62).toArray()); }
-              placeModel(unitT, um, S * 0.22, [], Array.from({ length: shown }, () => 1), Array.from({ length: shown }, () => 0), Array.from({ length: shown }, () => 1), Array.from({ length: shown }, () => [0.6, 0.6, 0.6, 1]).flat());
-            }
+            // the unassigned epics were drawn at radius 93 inside the keep's 112.5
+            // reach, so nobody ever saw them (V-6): the count testifies instead
           }
-          // a nameplate per plinth: the ring's name on a small billboard above its stone
-          let plates = 0;
-          for (const pl of places) {
-            const c = cells[pl.plinth];
-            const tex = new DynamicTexture(`plate-${pl.ring}`, { width: 256, height: 64 }, scene, false);
-            const ctx2 = tex.getContext() as CanvasRenderingContext2D;
-            ctx2.fillStyle = "rgba(6,10,12,0.82)"; ctx2.fillRect(0, 0, 256, 64);
-            const tint = familyTint(ringFamily(pl.ring));
-            ctx2.fillStyle = `rgb(${Math.round(tint[0] * 255)},${Math.round(tint[1] * 255)},${Math.round(tint[2] * 255)})`;
-            ctx2.font = "bold 34px ui-monospace, Menlo, monospace"; ctx2.textAlign = "center"; ctx2.textBaseline = "middle"; ctx2.fillText(pl.ring, 128, 34);
-            tex.update(false);
-            const plateMat = new StandardMaterial(`plate-${pl.ring}`, scene);
-            plateMat.diffuseTexture = tex; plateMat.emissiveTexture = tex; plateMat.specularColor = Color3.Black(); plateMat.backFaceCulling = false;
-            const plate = CreatePlane(`plate-${pl.ring}`, { width: S * 0.9, height: S * 0.225 }, scene);
-            plate.material = plateMat; plate.billboardMode = Mesh.BILLBOARDMODE_Y; plate.isPickable = false; plate.parent = layerNodes.castle;
-            plate.position.set(c.x, lift + plinthT.height * kp + S * 0.55, c.y);
-            plates += 1;
-          }
-          host.setAttribute("data-castle-plates", String(plates));
-          // ring marks (K-5): on the castle layer every module cell under rings/<NAME> wears its family's colour, so the code a ring owns is seen from the castle
+          // the ring names live in the hover card and the panel, not as billboards
+          // over the comb (V-4): the count still testifies, nothing occludes
+          host.setAttribute("data-castle-plates", String(places.length));
+          // the ring's own cells (K-5) are named by the hover link and the panel.
+          // The mark discs were flat-top hexes on a pointy-top grid, 30 degrees off
+          // every one, and a filled tile on a field pinned as outlines (V-3).
           const cellsOfRing = new Map<string, number[]>();
           cards.forEach((cd, ci) => { if (!cd) return; const rn = ringOfModulePath(cd.title); if (rn && rings.includes(rn)) cellsOfRing.set(rn, [...(cellsOfRing.get(rn) ?? []), ci]); });
-          const mm: number[] = []; const mc: number[] = [];
-          for (const [rn, list] of cellsOfRing) for (const ci of list) { mm.push(...Matrix.Translation(cells[ci].x, lift + 0.6, cells[ci].y).toArray()); mc.push(...familyTint(ringFamily(rn)), 1); }
-          if (mm.length > 0) {
-            const mark = CreateCylinder("ring-mark", { diameter: S_CELL * 0.8, height: 1.2, tessellation: 6 }, scene);
-            const markMat = new StandardMaterial("ring-mark", scene); markMat.emissiveColor = new Color3(0.5, 0.5, 0.5); markMat.alpha = 0.55; markMat.specularColor = Color3.Black();
-            mark.material = markMat; mark.isPickable = false; mark.parent = layerNodes.castle;
-            mark.thinInstanceSetBuffer("matrix", new Float32Array(mm), 16, true);
-            mark.thinInstanceSetBuffer("color", new Float32Array(mc), 4, true);
-          }
-          host.setAttribute("data-castle-marks", String(mm.length / 16));
+          host.setAttribute("data-castle-marks", String([...cellsOfRing.values()].reduce((n, l) => n + l.length, 0)));
           castleLinks = { plinthOfRing: new Map(places.map((pl) => [pl.ring, pl.plinth])), ringOfCell: new Map(places.map((pl) => [pl.plinth, pl.ring])), cellsOfRing, epics, rings };
-          // a banner per release at the keep's rim: the tag on a pole
+          // the release tags belong in the HUD, not on 19px flags (V-5)
           const releases = fdNow.releases ?? [];
-          releases.slice(0, 8).forEach((r, k3) => {
-            const ang = -Math.PI / 2 + (Math.PI * 2 * k3) / Math.max(1, Math.min(releases.length, 8));
-            const px = cells[home].x + Math.cos(ang) * S * 0.9, pz = cells[home].y + Math.sin(ang) * S * 0.9;
-            const pole = CreateCylinder(`banner-pole-${k3}`, { diameter: 2.2, height: S * 0.7, tessellation: 6 }, scene);
-            pole.material = steel; pole.isPickable = false; pole.parent = layerNodes.castle; pole.position.set(px, S * 0.35, pz);
-            const tex = new DynamicTexture(`banner-${k3}`, { width: 256, height: 96 }, scene, false);
-            const ctx3 = tex.getContext() as CanvasRenderingContext2D;
-            ctx3.fillStyle = "#b8860b"; ctx3.fillRect(0, 0, 256, 96); ctx3.fillStyle = "#1a1408"; ctx3.font = "bold 40px ui-monospace, Menlo, monospace"; ctx3.textAlign = "center"; ctx3.textBaseline = "middle"; ctx3.fillText(r.tag.slice(0, 12), 128, 48);
-            tex.update(false);
-            const bm = new StandardMaterial(`banner-${k3}`, scene); bm.diffuseTexture = tex; bm.emissiveColor = new Color3(0.3, 0.22, 0.05); bm.backFaceCulling = false;
-            const flag = CreatePlane(`banner-flag-${k3}`, { width: S * 0.5, height: S * 0.19 }, scene);
-            flag.material = bm; flag.billboardMode = Mesh.BILLBOARDMODE_Y; flag.isPickable = false; flag.parent = layerNodes.castle; flag.position.set(px, S * 0.62, pz);
-          });
           host.setAttribute("data-castle-banners", String(Math.min(releases.length, 8)));
           host.setAttribute("data-castle-rings", String(places.length));
           host.setAttribute("data-castle-stages", stages.sort().join(";"));
@@ -715,7 +678,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       }
       // the throne: the Queen's castle at the hub, on no layer, always visible
       const keepT = modelInstances.get("keep");
-      if (keepT) { keepT.mesh.parent = null; placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S * 1.5, []); host.setAttribute("data-castle-keep", "1"); }
+      if (keepT) { keepT.mesh.parent = null; placeModel(keepT, [...Matrix.Translation(cells[home].x, 0, cells[home].y).toArray()], S_CELL * 1.05, []); host.setAttribute("data-castle-keep", "1"); }
     })();
 
     // ---- event glints: a ring that grows and fades on the issue's cell ----
@@ -839,7 +802,6 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
         b.mote.isVisible = true;
         b.mote.position.set(x, 4 + (b.busy ? Math.abs(Math.sin(nowMs / 140 + k)) * 4 : 0), z);
         b.mote.scaling.setAll(b.busy ? 1 : 0.62);
-        const ur = unitRings[k]; ur.position.set(x, 1.2, z); ur.isVisible = true;
         const line = flightLines[k];
         if (b.busy && b.t < 1) { CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(A.x, 2, A.y), new Vector3(B.x, 2, B.y)], dashSize: 6, gapSize: 4, dashNb: 40, instance: line }, scene); line.isVisible = true; }
         else line.isVisible = false;
