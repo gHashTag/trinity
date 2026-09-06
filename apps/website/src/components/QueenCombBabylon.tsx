@@ -102,7 +102,6 @@ const MODELS = {
   blocked: "gate_complex", dropped: "crater", hub: "hangar_largeA", crystal: "rock_crystalsLargeA",
   scribe: "astronautA", wright: "rover", lapidary: "astronautB", larva: "alien",
   // the honeycomb foundation (Kenney Hexagon Kit, CC0): one flat terrain hex per closed issue
-  tile: "hex-sand",
   // the castle of the rings (K-0): a plinth per ring directory on spiral ring 7, towers by epic stage
   plinth: "hex-stone", wall: "hex-building-wall", walls: "hex-building-walls", tower: "hex-building-tower",
   wizardTower: "hex-building-wizard-tower", keep: "hex-building-castle", unitTower: "hex-unit-tower",
@@ -199,6 +198,7 @@ const ALL_LAYERS: Record<FieldLayer, boolean> = { foundation: true, castle: true
 export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null, layers = ALL_LAYERS, handleRef }: QueenCombBabylonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const onPickRef = useRef(onPick);
   const pickRef = useRef<number | null>(pickIndex);
   const insetRef = useRef(fitInset);
@@ -500,6 +500,30 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     };
     const hovered = CreateDashedLines("hover", { points: Array.from({ length: 7 }, (_, k) => new Vector3(Math.cos(k), 0, Math.sin(k))), dashSize: 3, gapSize: 2, dashNb: 60, updatable: true }, scene);
     hovered.alpha = 0.8; hovered.isPickable = false; hovered.isVisible = false;
+    // the hover card (the user, 2026-09-06): the hovered cell's issue, named beside the pointer
+    let hoverIssue = -1;
+    let pointerXY: [number, number] = [0, 0];
+    const showHoverCard = (i: number) => {
+      const card = cardRef.current;
+      if (!card) return;
+      const issue = i >= 0 ? fCells?.[i] ?? null : null;
+      if (!issue) {
+        if (hoverIssue !== -1) { hoverIssue = -1; card.setAttribute("aria-hidden", "true"); card.replaceChildren(); host.removeAttribute("data-hover-issue"); }
+        return;
+      }
+      if (issue.number !== hoverIssue) {
+        hoverIssue = issue.number;
+        const head = document.createElement("b"); head.textContent = `#${issue.number} ${issue.title}`;
+        const meta = document.createElement("span");
+        meta.textContent = [issue.closedAt.slice(0, 16).replace("T", " "), ...issue.labels].join(" \u00b7 ");
+        card.replaceChildren(head, meta);
+        card.setAttribute("aria-hidden", "false");
+        host.setAttribute("data-hover-issue", String(issue.number));
+      }
+      const r = host.getBoundingClientRect();
+      card.style.left = `${Math.round(Math.min(Math.max(pointerXY[0] + 16, 8), Math.max(8, r.width - 316)))}px`;
+      card.style.top = `${Math.round(Math.min(Math.max(pointerXY[1] + 16, 8), Math.max(8, r.height - 72)))}px`;
+    };
     const placeDashed = (i: number, y: number) => {
       const p = hexOf(i);
       CreateDashedLines("hover", { points: [...p, p[0]].map(([px, pz]) => new Vector3(px, y, pz)), dashSize: 3, gapSize: 2, dashNb: 60, instance: hovered }, scene);
@@ -594,63 +618,42 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     };
     const unitInstances: Array<{ key: ModelKey; node: InstancedMesh; k: number; base: number }> = [];
     void (async () => {
-      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "tile", "plinth", "walls", "tower", "wizardTower", "keep", "unitTower"];
+      const keys: ModelKey[] = ["backlog", "running", "review", "done", "doneDepot", "doneSilo", "blocked", "dropped", "hub", "crystal", "scribe", "wright", "lapidary", "larva", "plinth", "walls", "tower", "wizardTower", "keep", "unitTower"];
       const loaded = await Promise.all(keys.map(async (key) => [key, await loadTemplate(scene, key)] as const));
       if (disposed || scene.isDisposed) { for (const [, t] of loaded) t?.mesh.dispose(); return; }
-      for (const [key, t] of loaded) if (t) { modelInstances.set(key, t); if (key === "tile") t.mesh.parent = layerNodes.foundation; else if (["plinth", "wall", "walls", "tower", "wizardTower", "keep", "unitTower"].includes(key)) t.mesh.parent = layerNodes.castle; else if (!["hub", "crystal", "scribe", "wright", "lapidary", "larva"].includes(key)) t.mesh.parent = layerNodes.code; }
+      for (const [key, t] of loaded) if (t) { modelInstances.set(key, t); if (["plinth", "wall", "walls", "tower", "wizardTower", "keep", "unitTower"].includes(key)) t.mesh.parent = layerNodes.castle; else if (!["hub", "crystal", "scribe", "wright", "lapidary", "larva"].includes(key)) t.mesh.parent = layerNodes.code; }
       const bind = (key: ModelKey, tpl: Template, target: number) => { const t = modelInstances.get(key); if (t) placeModel(t, tpl.matrices, target, tpl.parts, tpl.scales, tpl.turns, tpl.heights, tpl.colors); };
       // a building takes about half a cell, so the roads between them still show
       bind("backlog", templates.backlog, u * 1.3); bind("running", templates.running, u * 1.25); bind("review", templates.review, u * 1.3);
       bind("done", templates.done, u * 1.35); bind("doneDepot", doneDepot, u * 1.35); bind("doneSilo", doneSilo, u * 1.25);
       bind("blocked", templates.blocked, u * 1.3); bind("dropped", templates.dropped, u * 1.2);
-      // ---- the foundation: one Kenney hex under every cell but the hub, honey on the resolved ones ----
-      const tileT = modelInstances.get("tile");
-      host.setAttribute("data-tile", tileT ? "loaded" : "missing");
+      // ---- the foundation: one cell per closed GitHub issue, drawn as an outline (the user, 2026-09-06) ----
+      // Every hexagon on the field IS a GitHub issue: no filled tile, no honey disc, only the cell's border.
+      // A cell that carries a closed issue burns in its age's gold (honeyTone); an empty cell is a dim wax line.
+      host.setAttribute("data-tile", "outline");
+      host.setAttribute("data-hex-orient", "pointy");
       try {
-      if (tileT && cells.length > 1) {
-        // the tile obeys the math: pointy-top. A flat-top model (corners on x, wider than deep) turns a sixth of a turn.
-        const flatTop = tileT.width > tileT.depth;
-        const turn = flatTop ? Math.PI / 6 : 0;
-        const k = S_CELL / Math.min(tileT.width, tileT.depth);
-        host.setAttribute("data-hex-orient", flatTop ? "pointy-by-turn" : "pointy");
-        host.setAttribute("data-hex-ratio", (tileT.width / tileT.depth).toFixed(3));
-        const mats: number[] = []; const cols: number[] = [];
-        for (let i = 1; i < cells.length; i += 1) {
-          mats.push(...Matrix.Compose(new Vector3(k, k, k), Quaternion.RotationAxis(Vector3.Up(), turn), new Vector3(cells[i].x, -tileT.base * k, cells[i].y)).toArray());
-          cols.push(...(fCells?.[i] ? [0.62, 0.48, 0.2, 1] : [0.22, 0.16, 0.08, 1]));
-        }
-        tileT.mesh.thinInstanceSetBuffer("matrix", new Float32Array(mats), 16, true);
-        tileT.mesh.thinInstanceSetBuffer("color", new Float32Array(cols), 4, true);
-        tileT.mesh.isVisible = true; tileT.mesh.isPickable = false; tileT.mesh.receiveShadows = true;
-        tileT.mesh.freezeWorldMatrix();
-        if (fCells) {
-          // honey: a hexagonal disc a little inside the tile, emissive amber through the instance colour, lit by the glow layer
-          const honey = CreateCylinder("honey", { tessellation: 6, diameter: 2 * HEX_R * 0.9, height: 3 }, scene);
-          const hb = honey.getBoundingInfo().boundingBox;
-          if (hb.maximum.x - hb.minimum.x > hb.maximum.z - hb.minimum.z) { honey.rotation.y = Math.PI / 6; honey.bakeCurrentTransformIntoVertices(); }
-          const honeyMat = new StandardMaterial("honey", scene);
-          // the disc glows through the instance colour (honeyTone): a modest base emissive so the age bands read and the city above stays visible
-          honeyMat.diffuseColor = new Color3(0.45, 0.3, 0.08); honeyMat.emissiveColor = new Color3(0.55, 0.38, 0.12); honeyMat.specularColor = new Color3(0.35, 0.28, 0.1); honeyMat.specularPower = 24;
-          honey.material = honeyMat; honey.isPickable = false; honey.parent = layerNodes.foundation;
-          const hm: number[] = []; const hc: number[] = []; let count = 0; let first: string | null = null; let last: string | null = null;
-          const top = tileT.height * k - tileT.base * k;
+        if (cells.length > 1) {
+          const lines: Vector3[][] = []; const lineColours: Color4[][] = [];
+          let count = 0; let first: string | null = null; let last: string | null = null;
           for (let i = 1; i < cells.length; i += 1) {
-            const issue = fCells[i]; if (!issue) continue;
-            hm.push(...Matrix.Translation(cells[i].x, top + 1.5, cells[i].y).toArray());
-            hc.push(...honeyTone(issue.closedAt, nowWall));
-            const a = spiralAxial(i); const tag = `${issue.number}@${a.q},${a.r}`; if (first === null) first = tag; last = tag; count += 1;
+            const corners = hexCornersAt(cells[i].x, cells[i].y, HEX_R, 4);
+            lines.push([...corners, corners[0]].map((c) => new Vector3(c.x, 1.5, c.y)));
+            const issue = fCells?.[i] ?? null;
+            const tone = issue ? honeyTone(issue.closedAt, nowWall) : [0.24, 0.3, 0.28, 1];
+            const c4 = new Color4(tone[0], tone[1], tone[2], issue ? 0.95 : 0.28);
+            lineColours.push(Array.from({ length: 7 }, () => c4));
+            if (issue) { const a = spiralAxial(i); const tag = `${issue.number}@${a.q},${a.r}`; if (first === null) first = tag; last = tag; count += 1; }
           }
-          if (count > 0) {
-            honey.thinInstanceSetBuffer("matrix", new Float32Array(hm), 16, true);
-            honey.thinInstanceSetBuffer("color", new Float32Array(hc), 4, true);
-            glow.referenceMeshToUseItsOwnMaterial(honey);
-          } else honey.dispose();
+          const comb = CreateLineSystem("cells", { lines, colors: lineColours, useVertexAlpha: true }, scene);
+          comb.isPickable = false; comb.parent = layerNodes.foundation; comb.alwaysSelectAsActiveMesh = true;
+          glow.referenceMeshToUseItsOwnMaterial(comb);
+          host.setAttribute("data-foundation-shape", "outline");
           host.setAttribute("data-foundation-cells", String(count));
           host.setAttribute("data-foundation-shown", layersRef.current.foundation ? String(count) : "0");
           if (first) host.setAttribute("data-foundation-first", first);
           if (last) host.setAttribute("data-foundation-last", last);
         }
-      }
       } catch (e) {
         // the field reports its own failure instead of drawing nothing silently
         host.setAttribute("data-foundation-error", e instanceof Error ? e.message : String(e));
@@ -664,7 +667,8 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
           const epics = fdNow.epics ?? [];
           const flatTopP = plinthT.width > plinthT.depth;
           const kp = (S_CELL * 0.92) / Math.min(plinthT.width, plinthT.depth);
-          const lift = tileT ? tileT.height * (S_CELL / Math.min(tileT.width, tileT.depth)) - tileT.base * (S_CELL / Math.min(tileT.width, tileT.depth)) + 2 : 2;
+          // the cells are outlines now, so a plinth stands on the plate itself
+          const lift = 2;
           const pm: number[] = []; const pc: number[] = [];
           const stageOf = (ring: string): TowerStage => {
             const order: TowerStage[] = ["plinth", "walls", "tower", "wizardTower"];
@@ -851,7 +855,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       if (info.type === PointerEventTypes.POINTERDOWN) { downAt = [scene.pointerX, scene.pointerY]; travelled = 0; }
       if (info.type === PointerEventTypes.POINTERMOVE) {
         if (downAt) { travelled += Math.abs(scene.pointerX - downAt[0]) + Math.abs(scene.pointerY - downAt[1]); downAt = [scene.pointerX, scene.pointerY]; }
-        else hover = cellUnder(scene.pointerX, scene.pointerY);
+        else { hover = cellUnder(scene.pointerX, scene.pointerY); pointerXY = [scene.pointerX, scene.pointerY]; }
       }
       if (info.type === PointerEventTypes.POINTERUP) downAt = null;
     });
@@ -879,7 +883,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       const b = beeAt(index);
       onPickRef.current?.({ index, isQueen: index === home, territory: cells[index].own, card: card ?? null, bee: b ? { slot: b.slot, line: b.line, busy: b.busy } : null, kind: index === home ? "queen" : "module" } as HudPick);
     });
-    canvas.addEventListener("pointerleave", () => { hover = -1; });
+    canvas.addEventListener("pointerleave", () => { hover = -1; showHoverCard(-1); });
 
     // ---- frame loop ---------------------------------------------------------
     const t0 = performance.now();
@@ -964,6 +968,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
       }
       // no hover ring on empty ground (P1-10): only modules and the Queen's hub answer the pointer
       if (hover >= 0 && hover !== p && cells[hover] && ((layersRef.current.code && cards[hover]) || hover === home || (layersRef.current.foundation && fCells?.[hover]))) placeDashed(hover, 1.4); else hovered.isVisible = false;
+      showHoverCard(layersRef.current.foundation && hover >= 0 ? hover : -1);
       scene.render();
       frames += 1;
       if (frames === 1) host.setAttribute("data-first-frame-ms", String(Math.round(nowMs - t0)));
@@ -986,6 +991,7 @@ export function QueenCombBabylon({ cards, workers, devices, onPick, pickIndex = 
     <div className="queen27-comb is-embedded is-babylon">
       <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="platform" data-grid="hex">
         <canvas ref={canvasRef} style={{ touchAction: "none", outline: "none" }} />
+        <div className="queen27-hover-card" ref={cardRef} aria-hidden="true" />
       </div>
     </div>
   );
