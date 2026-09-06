@@ -424,9 +424,19 @@ export default function SpecExplorer() {
   )
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 760px)')
-    const onChange = (e: MediaQueryListEvent) => setPhone(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
+    const sync = () => setPhone(mq.matches)
+    mq.addEventListener('change', sync)
+    // `resize` as well as `change`: the sibling `narrow` state below uses
+    // resize, and a programmatic viewport change does not always deliver a
+    // matchMedia change event -- it did not in the headless browser this was
+    // verified in, which read as the layout being stuck until the page was
+    // reloaded. Both listeners call the same setter, so double-firing is a
+    // no-op.
+    window.addEventListener('resize', sync)
+    return () => {
+      mq.removeEventListener('change', sync)
+      window.removeEventListener('resize', sync)
+    }
   }, [])
 
   /**
@@ -1154,7 +1164,18 @@ export default function SpecExplorer() {
         </aside>}
 
         {/* main */}
-        {(!phone || mobilePane === 'detail') && <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
+        {/* On a phone the detail column scrolls as ONE document.
+            The desktop shape is a fixed-height flex column inside a 100dvh
+            root with overflow:hidden, so the only thing that scrolls is the
+            innermost code pane. That works when the pane owns most of the
+            screen. On a 375x812 phone the description, tags, share row,
+            metrics and tab strip come first, and the pane was left about three
+            lines tall with its own scrollbar -- the code was effectively
+            invisible and the page underneath would not move. */}
+        {(!phone || mobilePane === 'detail') && <main style={{
+          flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0,
+          ...(phone ? { overflowY: 'auto', WebkitOverflowScrolling: 'touch' } : null),
+        }}>
           {/* The way back on a phone. Nothing else returns to the library:
               the aside is not on screen, and the browser's back button
               belongs to the route, not to this pane. */}
@@ -1404,11 +1425,29 @@ export default function SpecExplorer() {
               </div>
 
               {/* layer body */}
-              <div style={{ flex: 1, minHeight: 0, padding: '0 14px 14px', display: 'flex' }}>
+              {/* On a phone this stops competing for the leftovers of a fixed
+                  column and simply asks for a readable height, letting <main>
+                  scroll. 70vh is about 30 lines of the mono face at this size:
+                  enough to read a function without the pane becoming a second
+                  scroll region fighting the page. */}
+              <div style={{
+                flex: phone ? 'none' : 1,
+                minHeight: phone ? '70vh' : 0,
+                padding: '0 14px 14px',
+                display: 'flex',
+              }}>
                 <div
                   className="spec-x-pane spec-x-scroll"
                   data-pending={busy ? 'true' : 'false'}
-                  style={{ ...box, flex: 1, minHeight: 0, borderTopLeftRadius: 0 }}
+                  style={{
+                    ...box,
+                    flex: 1,
+                    minHeight: 0,
+                    borderTopLeftRadius: 0,
+                    // The page is the scroller on a phone; a nested one here
+                    // traps the gesture and is what made the code unreachable.
+                    ...(phone ? { overflow: 'visible' } : null),
+                  }}
                 >
                   {/* Keyed on spec+layer so switching either replays the
                       90ms enter; the AST tree inside is never animated. */}
