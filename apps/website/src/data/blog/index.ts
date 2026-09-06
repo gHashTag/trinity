@@ -3,6 +3,40 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'a-linux-target-with-no-abi-is-musl',
+    title: 'A Linux target with no ABI suffix is musl, and a CI gate had been trusting it',
+    summary: '[measured] Zig resolves -target x86_64-linux to musl. A job added to catch platform-blind verification had been compiling every migrated file against a libc no real build of the project uses.',
+    date: '2026-09-06',
+    readingMinutes: 4,
+    tags: ['Zig', 'CI', 'Toolchain', 'Reproducibility'],
+    receipts: [
+      { label: '#749 — spell out the ABI; the 0.16 gate was compiling against musl · MERGED 2026-09-05', href: 'https://github.com/gHashTag/trinity-fpga/pull/749' },
+      { label: '#747 — the same job\'s predicate tested the type, not the entry point · MERGED 2026-09-05', href: 'https://github.com/gHashTag/trinity-fpga/pull/747' },
+      { label: '#746 — the commit that introduced the job · MERGED 2026-09-05', href: 'https://github.com/gHashTag/trinity-fpga/pull/746' },
+      { label: 'The workflow at merge commit f32467d4f, with the measurement in the comment', href: 'https://github.com/gHashTag/trinity-fpga/blob/f32467d4ff6ec7e1b244049e651a65c09c1d0f77/.github/workflows/zig-0-16-migrated.yml' },
+      { label: 'The "Zig 0.16 migrated files" run on the merge commit — success', href: 'https://github.com/gHashTag/trinity-fpga/actions/runs/33988238073' },
+    ],
+    openQuestions: [
+      'No file in this tree was shown to depend on a musl-only symbol. What is established is that the gate could not have caught one, not that one exists.',
+      'The target resolution was measured on one host (macOS aarch64, Zig 0.16.0) cross-compiling. The runner is inferred to resolve the same way because it fetches the same Zig version; that was not re-measured on the runner.',
+      'The eleven isGnu()/isMusl() call sites are a count in std/c.zig in one local 0.16.0 install. It is not a measure of how many of them any file in this project reaches.',
+      'The pull request\'s "byte-identical" claim is not established in either direction: this build is not reproducible run to run on this host, so neither hash nor size can discriminate a target from itself.',
+      'The job compiles files; it does not run them. Linking against the right libc is not evidence that anything works.',
+    ],
+    published: true,
+    ru: {
+      title: 'Linux-цель без суффикса ABI — это musl, и CI-проверка ей доверяла',
+      summary: '[измерено] Zig разрешает -target x86_64-linux в musl. Задача, заведённая ловить платформенно-слепую верификацию, компилировала каждый переведённый файл против libc, который не использует ни одна настоящая сборка проекта.',
+      openQuestions: [
+        'Ни один файл в этом дереве не показан зависящим от символа, специфичного для musl. Установлено, что проверка не смогла бы такой файл поймать, а не то, что он существует.',
+        'Разрешение цели измерено на одном хосте (macOS aarch64, Zig 0.16.0) в режиме кросс-компиляции. Предполагается, что раннер разрешает так же, поскольку забирает ту же версию Zig; на раннере это не перепроверялось.',
+        'Одиннадцать вызовов isGnu()/isMusl() — это подсчёт в std/c.zig одной локальной установки 0.16.0. Это не мера того, до скольких из них дотягивается хоть один файл проекта.',
+        'Утверждение pull request о «побайтовой идентичности» не установлено ни в одну сторону: сборка не воспроизводима от запуска к запуску на этом хосте, поэтому ни хеш, ни размер не отличают цель даже от неё самой.',
+        'Задача компилирует файлы, но не запускает их. Линковка с нужным libc не является свидетельством того, что что-то работает.',
+      ],
+    },
+  },
+  {
     slug: 'the-only-stable-speed-belonged-to-the-tool',
     title: 'The only stable speed belonged to the tool, not the cable',
     summary: '[measured] A note recorded 100 kHz as the only stable JTAG clock for this cable. openFPGALoader ran the same cable at 6 MHz and programmed a bitstream OpenOCD could not start.',
