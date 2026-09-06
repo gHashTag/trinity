@@ -17,6 +17,7 @@ import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { SpecCodeView } from '../components/SpecCodeView'
 import { SpecChipView } from '../components/SpecChipView'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import { SpecEditor } from '../components/SpecEditor'
 import { SpecMetrics } from '../components/SpecMetrics'
 import { SpecShare } from '../components/SpecShare'
@@ -790,8 +791,18 @@ export default function SpecExplorer() {
         <Link to="/" style={{ color: C.muted, textDecoration: 'none', fontSize: 13, flexShrink: 0 }}>
           {ui.back}
         </Link>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0, flexShrink: 0 }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: C.golden, whiteSpace: 'nowrap' }}>{ui.title}</span>
+        {/* flexShrink 0 here pushed the language switcher 9px off a 375px
+            screen: the Russian title is longer than the English one and the
+            block refused to give. The header clips with overflow:hidden, so
+            nothing showed it -- the page-level mobile audit reads
+            documentElement.scrollWidth, which an ancestor's overflow:hidden
+            clamps. The title now truncates instead, which is the right thing
+            for a heading standing beside a control. */}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0, flexShrink: 1 }}>
+          <span style={{
+            fontSize: 16, fontWeight: 700, color: C.golden,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{ui.title}</span>
           {!narrow && (
             <span
               style={{
@@ -834,6 +845,19 @@ export default function SpecExplorer() {
               {manifest.generatedFrom.specsOrCompilerDirty ? ` (${ui.snapshotDirty})` : ''}
             </span>
           )}
+        </div>
+        {/* The site is translated into five languages and this page was the
+            only one with no way to say so: it renders its own header instead of
+            <Navigation>, which is where the switcher had always lived. Someone
+            arriving here directly -- and /specs is the most-shared link on the
+            site -- had no control at all, only a ?lang= they would have to know
+            about.
+
+            Outside the provenance block and flexShrink: 0, because that block
+            is deliberately allowed to clip and a control that disappears on a
+            narrow header is the bug being fixed, not a smaller version of it. */}
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', marginLeft: 12 }}>
+          <LanguageSwitcher />
         </div>
       </header>}
 
