@@ -613,6 +613,51 @@ export function ringTone(territory: Territory): string {
   return "#64DCFF";
 }
 
+// ---- THE HIVE'S COLOUR LAW (the user, 2026-09-06) -------------------------
+// The game's objective is to rewrite the repository from hand-written code to
+// T27 specs while the bugs are fixed in parallel, so colour on the comb may
+// mean exactly one of three things — never decoration:
+//   yellow    the cell's issue is covered by T27 functionality;
+//   neon blue the cell is still waiting for its T27 spec;
+//   red       the cell carries hand-written ("manual") code that is not
+//             spec-generated and is therefore the debt the game must clear.
+// Honey is reserved for the pointer: the hand is looking for nectar.
+export const HIVE_TONES = {
+  t27: "#FFD45A",
+  awaiting: "#64DCFF",
+  manual: "#FF4D5E",
+  hover: "#FFC24D",
+} as const;
+export type HiveCover = "t27" | "awaiting" | "manual";
+
+/** Lower-case letters and digits only: the comparable form of a path or name. */
+export function hiveKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+/**
+ * A cell's cover. `covered` holds hiveKey'd names the trinity spec corpus
+ * itself claims (spec module/name, plus the corpus' own directories). A module
+ * with no claim against it is manual code; no module at all is awaiting — the
+ * cell has no code fact yet, only the wire's issue.
+ */
+export function hiveCoverOf(modulePath: string | null, covered: ReadonlySet<string>): HiveCover {
+  if (!modulePath) return "awaiting";
+  const segments = modulePath.split("/").filter(Boolean);
+  const whole = hiveKey(segments.join("/"));
+  const base = hiveKey(segments[segments.length - 1] ?? "");
+  if (covered.has(whole) || covered.has(base)) return "t27";
+  if (/^rings\/t27\d*(-|$)/i.test(modulePath) || /^specs?(\/|$)/i.test(modulePath) || /^tests\/t27(\/|$)/i.test(modulePath)) return "t27";
+  return "manual";
+}
+
+/** The cover's rgba tone for Babylon line colours. */
+export function hiveToneOf(cover: HiveCover): [number, number, number, number] {
+  const hex = HIVE_TONES[cover];
+  const n = parseInt(hex.slice(1), 16);
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255, 1];
+}
+
 /**
  * A code module of the repository the Queen supervises: the unit of place
  * on the field (the user, 2026-09-04: "modules in rings from the centre;
