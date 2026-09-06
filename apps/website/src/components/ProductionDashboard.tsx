@@ -193,7 +193,15 @@ function SacredMathSection({ t }: { t: Copy }) {
           &phi;&sup2; + 1/&phi;&sup2; = 3
         </div>
         <div style={{ color: '#888', fontSize: 12 }}>{t.trinityIdentity}</div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginTop: 16 }}>
+        {/* Wraps, and the gap shrinks with the viewport. Three fixed 32px gaps
+            plus the ten-digit sum (144px in this mono face at 20px) come to more
+            than a 375px screen holds, and without wrapping the third column ran
+            13px past the right edge -- enough to make the whole page scroll
+            sideways. Caught by qa/mobile_audit.mjs, not by eye. */}
+        <div style={{
+          display: 'flex', justifyContent: 'center', flexWrap: 'wrap',
+          gap: 'clamp(12px, 5vw, 32px)', marginTop: 16,
+        }}>
           <div>
             <div style={{ color: '#666', fontSize: 10 }}>&phi;&sup2;</div>
             <div style={{ color: GOLD, fontSize: 20, fontFamily: 'JetBrains Mono, monospace' }}>{data.phi2.toFixed(6)}</div>

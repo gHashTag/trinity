@@ -39,7 +39,20 @@ function openWebSocket(url) {
   })
 }
 
-export async function collectRouteText(language, baseUrl) {
+/**
+ * Drive every route once and return whatever `expression` evaluates to on each.
+ *
+ * The Chrome spawn, the CDP session and -- most importantly -- the settle loop
+ * live here ONCE. A second audit that copied this plumbing would eventually
+ * copy an older settle, and the whole point of the settle is that two audits
+ * cannot disagree about which route they are looking at.
+ *
+ * `windowSize` sets Chrome's REAL window size. Emulation.setDeviceMetricsOverride
+ * was tried first and silently did not take: the page kept laying out at 980px,
+ * the no-viewport-meta fallback, and a 900px probe injected into every route was
+ * not detected. The negative control caught that; nothing else would have.
+ */
+export async function forEachRoute(baseUrl, expression, { windowSize } = {}) {
   const chromePath = CHROME_CANDIDATES.find(path => existsSync(path))
   if (!chromePath) throw new Error('Chrome/Chromium не найден; задайте CHROME_PATH')
 
@@ -48,7 +61,7 @@ export async function collectRouteText(language, baseUrl) {
     '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`,
     '--no-first-run', '--no-default-browser-check', '--disable-extensions',
     '--disable-background-networking', '--disable-sync', '--mute-audio',
-    '--window-size=1440,900', '--disable-dev-shm-usage',
+    `--window-size=${windowSize ? `${windowSize.width},${windowSize.height}` : '1440,900'}`, '--disable-dev-shm-usage',
     ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
     '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
     'about:blank',
@@ -93,6 +106,18 @@ export async function collectRouteText(language, baseUrl) {
     const call = (method, params = {}) => send(method, params, sessionId)
     await call('Runtime.enable')
     await call('Page.enable')
+    // --window-size alone bottoms out at 500px in headless Chrome, which is a
+    // small tablet, not a phone. The metrics override takes it the rest of the
+    // way; both are applied because the override alone leaves the window at its
+    // default and some layouts read window.outerWidth.
+    if (windowSize) {
+      await call('Emulation.setDeviceMetricsOverride', {
+        width: windowSize.width,
+        height: windowSize.height,
+        deviceScaleFactor: 2,
+        mobile: true,
+      })
+    }
 
     const result = {}
     for (const route of ROUTES) {
@@ -135,22 +160,9 @@ export async function collectRouteText(language, baseUrl) {
         if (settledFor >= 2) break
       }
 
-      const evaluated = await call('Runtime.evaluate', {
-        // Elements marked data-lang-exempt hold quoted source, not UI copy --
-        // the /specs page renders .t27 files whose comments are written in
-        // whatever language their author used. Translating them would
-        // misrepresent the files. The surrounding UI is still audited, so this
-        // narrows the gate rather than switching it off for the route.
-        expression: `(() => {
-          if (!document.body) return "";
-          const clone = document.body.cloneNode(true);
-          clone.querySelectorAll('[data-lang-exempt]').forEach((n) => n.remove());
-          return clone.innerText;
-        })()`,
-        returnByValue: true,
-      })
+      const evaluated = await call('Runtime.evaluate', { expression, returnByValue: true })
       if (evaluated.exceptionDetails) throw new Error(`Не удалось прочитать /${route}`)
-      result[route] = String(evaluated.result?.value || '')
+      result[route] = evaluated.result?.value
     }
     await send('Target.closeTarget', { targetId })
     ws.close()
@@ -165,4 +177,27 @@ export async function collectRouteText(language, baseUrl) {
     try { rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }) } catch {}
     throw error
   }
+}
+
+/**
+ * The language audits' view: the page's visible text.
+ *
+ * Elements marked data-lang-exempt hold quoted source, not UI copy -- /specs
+ * renders .t27 files whose comments are in whatever language their author used,
+ * and translating those would misrepresent the files. The surrounding UI is
+ * still audited, so this narrows the gate rather than switching it off.
+ *
+ * `language` is unused and kept for call-site compatibility: the locale is
+ * carried in baseUrl's query string, which is where the app reads it from.
+ */
+export async function collectRouteText(language, baseUrl) {
+  const texts = await forEachRoute(baseUrl, `(() => {
+    if (!document.body) return "";
+    const clone = document.body.cloneNode(true);
+    clone.querySelectorAll('[data-lang-exempt]').forEach((n) => n.remove());
+    return clone.innerText;
+  })()`)
+  const out = {}
+  for (const [route, value] of Object.entries(texts)) out[route] = String(value || '')
+  return out
 }
