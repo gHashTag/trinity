@@ -62,10 +62,10 @@ listeners.push(async msg => {
   if (!/queen\/foundation\.json/.test(request.url) || responseStatusCode === undefined) return;
   await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(JSON.stringify(FIXTURE)).toString('base64') });
 });
-// (h) the working cells: a live progress event names a file path, and the path
-// belongs to exactly one module cell - the longest module path that prefixes
-// it. Two events on two different files of the SAME module must mark ONE cell,
-// and a finished event must mark none.
+// (h) the working cells: work is a STATE. An issue is worked while its LAST
+// event is not terminal, however long ago that was, because the wire delivers
+// in bursts. Two issues under one module mark ONE cell; a third issue whose
+// last event is `finished` marks none, even though it is the newest row.
 let workPath = null;
 listeners.push(async msg => {
   if (msg.sessionId !== sessionId || msg.method !== 'Fetch.requestPaused') return;
@@ -74,10 +74,14 @@ listeners.push(async msg => {
   if (responseStatusCode === undefined) { await call('Fetch.continueRequest', { requestId }); return; }
   if (workPath === null && boardText !== null) { const d = JSON.parse(boardText); const list = Array.isArray(d) ? d : d.modules; const m = list.find(x => x.path && x.path !== '.'); workPath = m ? m.path : null; }
   const at = new Date().toISOString();
+  const old = new Date(Date.now() - 40 * 60 * 1000).toISOString();
   const rows = workPath === null ? [] : [
-    { id: 'w1', kind: 'progress', issue: 9101, title: `${workPath}/one.ts`, at, state: null },
-    { id: 'w2', kind: 'progress', issue: 9102, title: `${workPath}/two/deep.ts`, at, state: null },
-    { id: 'w3', kind: 'finished', issue: 9103, title: `${workPath}/three.ts`, at, state: 'finished' },
+    // two issues under one module, last events 40 minutes old and not terminal
+    { id: 'w1', kind: 'progress', issue: 9101, title: `${workPath}/one.ts`, at: old, state: null },
+    { id: 'w2', kind: 'tool', issue: 9102, title: `${workPath}/two/deep.ts`, at: old, state: null },
+    // a third issue that started and then finished: the newest rows on the wire
+    { id: 'w3', kind: 'progress', issue: 9103, title: `${workPath}/three.ts`, at: old, state: null },
+    { id: 'w4', kind: 'finished', issue: 9103, title: `${workPath}/three.ts`, at, state: 'finished' },
   ];
   await call('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: '*' }], body: Buffer.from(JSON.stringify({ events: rows })).toString('base64') });
 });
@@ -159,6 +163,7 @@ const zFit = await evaluate(`document.querySelector('.queen27-comb-field[data-en
 if (zIn !== '1.25' || zFit !== '1.00') { console.log(`  Queen foundation contract: FAIL (zoom: + gave ${zIn}, FIT VIEW gave ${zFit}; expected 1.25 then 1.00)`); cleanup(); process.exit(1); }
 let working = null;
 for (let i = 0; i < 40 && working !== '1'; i += 1) { await wait(500); working = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-working')`); }
-if (working !== '1') { console.log(`  Queen foundation contract: FAIL (data-working=${working}; one progress event on a served module path must mark exactly one cell, and one on an unknown path must mark none)`); cleanup(); process.exit(1); }
+const workAge = await evaluate(`document.querySelector('.queen27-comb-field[data-engine="babylon"]').getAttribute('data-working-age')`);
+if (working !== '1' || !/^\d+$/.test(String(workAge)) || Number(workAge) < 2000) { console.log(`  Queen foundation contract: FAIL (data-working=${working} age=${workAge}; two issues under one module with 40-minute-old non-terminal events must mark ONE cell and report its age, and a finished issue must mark none)`); cleanup(); process.exit(1); }
 console.log(`  Queen foundation contract: PASS (data-foundation=${found}; field ${hostA.cells} cells, first ${hostA.first}, last ${hostA.last}, cells ${hostA.orient}; FOUNDATION off -> shown 0, layers ${hidden.layers}; zoom ${zIn} -> ${zFit}; issue #${issuePick.issue} picked and named; picked ${picked.module} at index ${picked.index})`);
 cleanup(); process.exit(0);
