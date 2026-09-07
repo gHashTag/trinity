@@ -17,7 +17,7 @@
 // for editing and the visitor pastes -- honest about what it can do.
 
 import type { SpecEntry, T27Analysis } from '../lib/t27Compiler'
-import { specUrl } from './SpecShare'
+import { canonicalSpecUrl as specUrl } from '../lib/specCatalog'
 
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
 

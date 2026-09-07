@@ -22,6 +22,7 @@ import { SpecEditor } from '../components/SpecEditor'
 import { SpecMetrics } from '../components/SpecMetrics'
 import { SpecShare } from '../components/SpecShare'
 import { SpecContribute } from '../components/SpecContribute'
+import {resolveManifestSpec,specExplorerHash} from '../lib/specCatalog'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
@@ -391,6 +392,13 @@ export default function SpecExplorer() {
   const { lang } = useI18n()
   const ui: Ui = lang === 'ru' ? UI.ru : UI.en
   usePageMeta(ui.metaTitle, ui.metaDescription)
+  const viewContext=useMemo(()=>{
+    const p=new URLSearchParams(window.location.hash.split('?')[1]||'')
+    return {path:p.get('spec'),sha256:p.get('sha256')??undefined,embedded:p.get('embed')==='1'}
+  },[])
+  const embedded=viewContext.embedded
+  const requestRef=useRef(0)
+  const [verifiedHash,setVerifiedHash]=useState<string|null>(null)
 
   const [manifest, setManifest] = useState<SpecManifest | null>(null)
   const [query, setQuery] = useState('')
@@ -454,7 +462,7 @@ export default function SpecExplorer() {
   // can type into. Every other layer is one click away and already computed.
   const [layer, setLayer] = useState<LayerId>('source')
   const [open, setOpen] = useState<Set<string>>(new Set())
-  const [hoverLine, setHoverLine] = useState<number | null>(null)
+  const [, setHoverLine] = useState<number | null>(null)
   const [kindFilter, setKindFilter] = useState('')
   const [tokenLimit, setTokenLimit] = useState(400)
   const [ms, setMs] = useState<number | null>(null)
@@ -474,7 +482,7 @@ export default function SpecExplorer() {
     // Instantiate the compiler at mount, not at first click: instantiation
     // dominates a cold compile, and paying it here makes the first selection
     // as fast as every later one.
-    void loadCompiler()
+    void loadCompiler().catch(()=>{/* The selected spec surfaces compiler failures. */})
     loadManifest()
       .then((m) => {
         setManifest(m)
@@ -482,9 +490,7 @@ export default function SpecExplorer() {
         // teaching spec. Without this a share would only ever say "the
         // explorer, go find it yourself".
         const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
-        const target = (wanted && m.specs.find((s) => s.path === wanted))
-          || m.specs.find((s) => s.featured)
-          || m.specs[0]
+        const target = resolveManifestSpec(m,wanted)
         if (target) {
           // A deep-linked spec is usually outside the course, and landing on a
           // filter that excludes the very spec the link named would show an
@@ -497,7 +503,7 @@ export default function SpecExplorer() {
           void pickRef.current?.(target)
         }
       })
-      .catch((e) => setErr(String(e)))
+      .catch((e) => {setErr(String(e));setMobilePane('detail')})
   }, [])
 
   // Inline styles cannot carry media queries, and the header has three pieces
@@ -505,11 +511,6 @@ export default function SpecExplorer() {
   // drop the optional ones instead.
   // Embedded in the Queen HUD (?embed=1): the frame already sits under the
   // HUD's own chrome, so the page header would be a second title bar.
-  const embedded = useMemo(
-    () => new URLSearchParams(window.location.hash.split('?')[1] || '').get('embed') === '1',
-    [],
-  )
-
   const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
   useEffect(() => {
     const onResize = () => setNarrow(window.innerWidth < 1100)
@@ -576,10 +577,11 @@ export default function SpecExplorer() {
   }, [])
 
   const pick = useCallback(async (spec: SpecEntry) => {
+    const request=++requestRef.current
     // Selection paints immediately -- that sub-100ms response IS the feedback.
-    // The previous result deliberately stays on screen while the new one
-    // compiles: blanking it would trade real content for a flash of nothing.
+    // Never label another source's analysis as the newly selected spec.
     setSelected(spec)
+    setSource('');setDraft(null);setResult(null);setLastCompiled('');setVerifiedHash(null)
     setErr(null)
     setTokenLimit(400)
     // A draft belongs to the spec it was typed against.
@@ -587,18 +589,21 @@ export default function SpecExplorer() {
     setDirty(false)
     // Keep the address bar on the selected spec so the link is always
     // shareable, without pushing 676 history entries as someone browses.
-    const base = window.location.hash.split('?')[0] || '#/specs'
-    window.history.replaceState(null, '', `${base}?spec=${encodeURIComponent(spec.path)}`)
-    const warm = cachedAnalysis(spec.path)
-    setBusy(!warm)
+    const expectedSha256=spec.path===viewContext.path?viewContext.sha256:undefined
+    setBusy(true)
     try {
-      const text = await loadSpecSource(spec.path)
+      window.history.replaceState(null,'',specExplorerHash(spec.path,{embedded,sha256:expectedSha256}))
+      const text = await loadSpecSource(spec.path,expectedSha256)
+      if(request!==requestRef.current)return
+      const warm=cachedAnalysis(spec.path,text)
+      setVerifiedHash(expectedSha256??null)
       setSource(text)
       // The source pane is editable from the moment it loads -- no mode to
       // enter, nothing to click first.
       setDraft(text)
       const t0 = performance.now()
       const r = await analyzeCached(spec.path, text)
+      if(request!==requestRef.current)return
       setMs(warm ? 0 : performance.now() - t0)
       setResult(r)
       setLastCompiled(text)
@@ -608,17 +613,18 @@ export default function SpecExplorer() {
       r.ast?.children.forEach((_, i) => seed.add(`0.${i}`))
       setOpen(seed)
     } catch (e) {
-      setErr(String(e))
+      if(request===requestRef.current)setErr(String(e))
     } finally {
-      setBusy(false)
+      if(request===requestRef.current)setBusy(false)
     }
-  }, [])
+  }, [embedded,viewContext])
 
   pickRef.current = pick
 
   /** Run the real compiler over the edited source. */
   const run = useCallback(async () => {
     if (draft === null) return
+    const request=++requestRef.current
     setBusy(true)
     setErr(null)
     try {
@@ -626,6 +632,7 @@ export default function SpecExplorer() {
       if (!baseline && result) setBaseline(result)
       const t0 = performance.now()
       const r = await analyzeEdited(draft)
+      if(request!==requestRef.current)return
       setMs(performance.now() - t0)
       setResult(r)
       setLastCompiled(draft)
@@ -634,9 +641,9 @@ export default function SpecExplorer() {
       r.ast?.children.forEach((_, i) => seed.add(`0.${i}`))
       setOpen(seed)
     } catch (e) {
-      setErr(String(e))
+      if(request===requestRef.current)setErr(String(e))
     } finally {
-      setBusy(false)
+      if(request===requestRef.current)setBusy(false)
     }
   }, [draft, baseline, result])
 
@@ -1237,6 +1244,7 @@ export default function SpecExplorer() {
           {err && (
             <div style={{ padding: 14, color: C.bad, fontFamily: C.mono, fontSize: 13 }}>{err}</div>
           )}
+          {verifiedHash&&<p role="status" style={{padding:'0 14px',color:C.muted,fontSize:11,overflowWrap:'anywhere'}}>{lang==='ru'?'Исходник каталога: SHA-256 проверен':'Catalog source: SHA-256 verified'} · {verifiedHash}</p>}
 
           {!selected && !err && (
             <div style={{ margin: 'auto', color: C.muted, fontSize: 14, textAlign: 'center', padding: 24 }}>
@@ -1350,8 +1358,8 @@ export default function SpecExplorer() {
                         </button>
                       ))}
                     </div>
-                    <SpecShare spec={selected} labels={{ share: ui.share, copy: ui.copyLink, copied: ui.copied }} />
-                    <SpecContribute spec={selected} result={result} edited={edited} labels={{ contribute: ui.contribute, propose: ui.propose, report: ui.report }} />
+                    <SpecShare key={selected.path} spec={selected} embedded={embedded} labels={{ share: ui.share, copy: ui.copyLink, copied: ui.copied }} />
+                    {!embedded&&<SpecContribute spec={selected} result={result} edited={edited} labels={{ contribute: ui.contribute, propose: ui.propose, report: ui.report }} />}
                   </div>
                   {result && (
                     <div style={{ flex: '0 1 340px', minWidth: 220 }}>

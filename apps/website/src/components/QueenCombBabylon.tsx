@@ -2,15 +2,16 @@
 // honeycomb wall floating right in front of the player — not a board lying on
 // the ground. No 3D models: every fact is a cell (rim, cap, colour, card).
 // Cells rise toward the hand on hover and tap; the pointer is answered with
-// honey. Colour is law: yellow T27 coverage, neon blue awaiting a spec, red
-// hand-written code. The Queen at the centre is the mark itself — the logo
+// honey. Issue fills show unresolved goals (red), work/review (blue), and
+// completed T27 goals (honey). Module provenance is a separate law. The logo
 // inside the hub cell — and the latest wire events land in their cells as
 // cards, so the comb works as the hive's display.
 import { ImageProcessingConfiguration } from "@babylonjs/core/Materials/imageProcessingConfiguration";
 import { useEffect, useRef, useState, useImperativeHandle } from "react";
-import { QueenHiveDisplays, type HiveDisplayController } from './QueenHiveDisplays';
+import { QueenHiveDisplays, QueenHiveTaskLegend, type HiveDisplayController } from './QueenHiveDisplays';
 import { QueenStarfield } from './QueenStarfield';
-import { hiveFocusZoom, hiveDisplayLod, type HiveDisplay, type HiveDisplayProjection } from './queenHiveDisplay';
+import {catalogCellAt,catalogFocusView,catalogSpecSelection,catalogConnectionView,type CatalogHive,type CatalogController} from './queenCatalogData';
+import { HIVE_TASK_PALETTE, hiveSignalDelivery, hiveSignalRing, hiveRunningIssueNumbers, hiveTaskPaint, hiveTaskCounts, hiveDisplayPaintKey, hiveFocusZoom, hiveDisplayLod, type HiveDisplay, type HiveDisplayProjection, type HiveTaskTone, type HiveSignalHealth, type HiveSignalCursor, type HiveEventRing } from './queenHiveDisplay';
 import { HIVE_WALL_ROTATION, hiveWallToWorld, hiveWorldToWall } from './queenHiveOrientation';
 import type { Ref } from "react";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
@@ -53,6 +54,16 @@ interface SpikeWorkers {
 }
 
 interface QueenCombBabylonProps {
+  sceneKey?: string;
+  inspectIssueKey?: string | null;
+  inspectCatalogKey?: string | null;
+  onDisplaySelect?: (row:HiveDisplay)=>void;
+  /** A shared resource layer in this exact renderer; never coerced to issues. */
+  catalogLayer?: CatalogHive;
+  catalogControlRef?: Ref<CatalogController>;
+  onCatalogPick?: (index:number|null)=>void;
+  onCatalogProject?: (rows:HiveDisplayProjection[],regions:HiveDisplayProjection[])=>void;
+  signalHealth?: HiveSignalHealth;
   displays?: readonly (HiveDisplay | null)[];
   lang?: 'ru' | 'en';
   onInspect?: () => void;
@@ -89,8 +100,12 @@ const RING_POOL = 24;
 
 
 const ALL_LAYERS: Record<FieldLayer, boolean> = { foundation: true, castle: true, code: true };
+const UNKNOWN_HEALTH: HiveSignalHealth = {board:'unknown',activity:'unknown'};
 
-export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null, layers = ALL_LAYERS, handleRef, t27Coverage = null, law, displays, lang = 'en', onInspect }: QueenCombBabylonProps) {
+export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fitInset = 0, events = EMPTY_EVENTS, modules, beeTargets, foundation = null, layers = ALL_LAYERS, handleRef, t27Coverage = null, law, displays, lang = 'en', onInspect, signalHealth = UNKNOWN_HEALTH, catalogLayer,catalogControlRef,onCatalogPick,onCatalogProject,sceneKey='default',inspectIssueKey,inspectCatalogKey,onDisplaySelect }: QueenCombBabylonProps) {
+  const catalogRef=useRef(catalogLayer),catalogPickRef=useRef(onCatalogPick),catalogProjectRef=useRef(onCatalogProject),catalogController=useRef<CatalogController|null>(null);
+  useEffect(()=>{catalogRef.current=catalogLayer;catalogPickRef.current=onCatalogPick;catalogProjectRef.current=onCatalogProject;},[catalogLayer,onCatalogPick,onCatalogProject]);
+  useImperativeHandle(catalogControlRef,()=>({inspect:(index,focus)=>catalogController.current?.inspect(index,focus),overview:()=>catalogController.current?.overview(),hover:index=>catalogController.current?.hover(index)}),[]);
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -102,12 +117,22 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   const selectedDisplayRef = useRef(selectedDisplay);
   const inspectRef = useRef(onInspect);
   const displayControllerRef = useRef<HiveDisplayController | null>(null);
-  const savedViewRef = useRef<{ zoom: number; x: number; y: number; focusKey: string | null } | null>(null);
+  const appliedIssueFocus=useRef<string|null>(null);
+  const appliedCatalogFocus=useRef<string|null>(null);
+  const savedViewRef = useRef<{ zoom: number; x: number; y: number; focusKey: string | null; connection?:boolean } | null>(null);
+  const savedViewsRef = useRef(new Map<string,NonNullable<typeof savedViewRef.current>>());
+  const displaySelectRef=useRef(onDisplaySelect);
+  useEffect(()=>{displaySelectRef.current=onDisplaySelect;},[onDisplaySelect]);
   useEffect(() => { displaysRef.current = displays; selectedDisplayRef.current = selectedDisplay; inspectRef.current = onInspect; }, [displays, selectedDisplay, onInspect]);
   const onPickRef = useRef(onPick);
   const pickRef = useRef<number | null>(pickIndex);
   const insetRef = useRef(fitInset);
   const eventsRef = useRef(events);
+  const signalHealthRef = useRef(signalHealth);
+  const signalCursorRef = useRef<HiveSignalCursor>({ready:false,seen:new Set()});
+  const displayRepo = displays?.find(row=>row!==null)?.repo;
+  useEffect(()=>{signalCursorRef.current={ready:false,seen:new Set()};},[displayRepo]);
+  useEffect(()=>{signalHealthRef.current=signalHealth;},[signalHealth]);
   const seenEventsRef = useRef<Set<string>>(new Set());
   const eventsPrimedRef = useRef(false);
   useEffect(() => {
@@ -118,11 +143,12 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   }, [onPick, pickIndex, fitInset, events]);
 
   const signature = JSON.stringify([
+    catalogLayer?.signature??null,
     cards.map((c) => (c ? [c.number, c.column] : null)),
     workers?.slots.map((s) => [s.slot, s.state]) ?? null,
     // a new snapshot of the foundation rebuilds the honey like a modules change rebuilds the city
     foundation ? [foundation.generatedAt, foundation.issues.length] : null,
-    displays?.map(row => row?.key ?? null) ?? null,
+    hiveDisplayPaintKey(displays),
     // a new claim from the spec corpus re-colours the law; the words re-word the legend
     t27Coverage ? [...t27Coverage].sort() : null,
     law ? [law.t27, law.manual, law.awaiting, law.unknown, law.bees] : null,
@@ -158,7 +184,14 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     if (!canvas || !host) return;
     const cards = cardsRef.current;
     const workers = workersRef.current;
-    const cells = hexCellSummaries(cards);
+    const viewKey=(index:number)=>displaysRef.current?.[index]?.key??catalogRef.current?.cells[index]?.key??null;
+    const viewStore=savedViewsRef.current;
+    savedViewRef.current=viewStore.get(sceneKey)??null;
+    const cellScale=(index:number)=>catalogRef.current?.positions?.[index]?.scale??1;
+    const cells = hexCellSummaries(cards).map((cell,index)=>{
+      const position=catalogRef.current?.positions?.[index];
+      return position?{...cell,x:position.x,y:position.y,yTop:position.y-HEX_R*position.scale}:cell;
+    });
     const home = HEX_HOME;
     // the honey under the cells (H-C2): the same map the click reads (H-E)
     const fdNow = foundationRef.current;
@@ -203,10 +236,11 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
 
     // ---- extents and the floating wall: vertical, facing the player ------
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-    for (const c of cells) {
-      minX = Math.min(minX, c.x - S / 2); maxX = Math.max(maxX, c.x + S / 2);
-      minZ = Math.min(minZ, c.y - HEX_R); maxZ = Math.max(maxZ, c.y + HEX_R);
-    }
+    cells.forEach((c,index) => {
+      const scale=cellScale(index);
+      minX = Math.min(minX, c.x - S_CELL*scale / 2); maxX = Math.max(maxX, c.x + S_CELL*scale / 2);
+      minZ = Math.min(minZ, c.y - HEX_R*scale); maxZ = Math.max(maxZ, c.y + HEX_R*scale);
+    });
     const centre = new Vector3((minX + maxX) / 2, 0, (minZ + maxZ) / 2);
     // THE WALL (the user, 2026-09-06: "поле не по горизонтали лежащим, а прямо
     // перед лицом парящее"). The comb keeps its own flat coordinates (x, z per
@@ -248,8 +282,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     let zoom = savedViewRef.current?.zoom ?? 1;
     let zoomGoal = zoom;
     if (savedViewRef.current) { camera.target.x = savedViewRef.current.x; camera.target.y = savedViewRef.current.y; }
-    const restoredFocus = savedViewRef.current?.focusKey ? displaysRef.current?.findIndex(row => row?.key === savedViewRef.current?.focusKey) ?? -1 : -1;
+    const restoredFocus = savedViewRef.current?.focusKey ? cells.findIndex((_,index)=>viewKey(index)===savedViewRef.current?.focusKey) : -1;
     let focusIndex: number | null = restoredFocus >= 0 ? restoredFocus : null;
+    let focusConnection=savedViewRef.current?.connection??false;
     let anchor: { x: number; z: number } | null = null;
     let appliedInset = -1;
     // the castle's couplings to the code and the honey (K-5): filled when the snapshot lands
@@ -262,18 +297,25 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       node.parent = fieldRoot;
       return [layer, node];
     })) as Record<FieldLayer, TransformNode>;
+    const specInset=()=>{
+      const w=host.clientWidth||1,h=host.clientHeight||1;
+      const mapHeight=host.closest('.queen-catalog-layer')?.clientHeight??h;
+      return w>=700?{right:Math.min(.7,392/w),bottom:0}:{right:0,bottom:Math.min(.8,(mapHeight*.6+32)/h)};
+    };
     const fit = () => {
       const w = host.clientWidth || 1, h = host.clientHeight || 1;
       const inset = insetRef.current;
       const band = h * (1 - inset);
       // the wall is parallel to the screen: width and height map one to one
-      const fieldW = (maxX - minX + S) * 1.04, fieldH = (maxZ - minZ + S) * 1.08;
+      const portalMargin=catalogRef.current?Math.max(w/Math.max(100,w-160),band/Math.max(100,band-110)):1;
+      const fieldW = (maxX - minX + S) * 1.04*portalMargin, fieldH = (maxZ - minZ + S) * 1.08*portalMargin;
       const aspect = w / band;
       let halfW = fieldW / 2, halfH = halfW / aspect;
       if (halfH < fieldH / 2) { halfH = fieldH / 2; halfW = halfH * aspect; }
       if (focusIndex !== null && cells[focusIndex]) {
-        zoom = zoomGoal = hiveFocusZoom(S_CELL * w / (halfW * 2), w, band);
-        const focusedPoint = hiveWallToWorld(cells[focusIndex].x, cells[focusIndex].y);
+        const view=catalogRef.current?(focusConnection?catalogConnectionView(catalogRef.current,focusIndex,halfW,halfH,specInset()):catalogFocusView(catalogRef.current,focusIndex,halfW,halfH,w,band,catalogRef.current.cells[focusIndex]?.kind==='spec'?specInset():undefined)):null;
+        zoom = zoomGoal = view?.zoom??hiveFocusZoom(S_CELL * cellScale(focusIndex) * w / (halfW * 2), w, band);
+        const focusedPoint = hiveWallToWorld(view?.x??cells[focusIndex].x, view?.y??cells[focusIndex].y);
         camera.target.x = focusedPoint.x;
         camera.target.y = focusedPoint.y;
       }
@@ -284,7 +326,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       camera.orthoTop = halfH; camera.orthoBottom = -halfH - shift;
       appliedInset = inset;
       host.setAttribute("data-zoom", zoom.toFixed(2));
-      savedViewRef.current = {zoom,x:camera.target.x,y:camera.target.y,focusKey:focusIndex !== null ? displaysRef.current?.[focusIndex]?.key ?? null : null};
+      savedViewRef.current = {zoom,x:camera.target.x,y:camera.target.y,focusKey:focusIndex !== null ? viewKey(focusIndex) : null,connection:focusConnection};
     };
     fit();
     // the wall answers the hand (the user, 2026-09-06). Both the drag and the
@@ -333,10 +375,20 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const inspectDisplay = (index: number) => {
       const row = displaysRef.current?.[index]; if (!row) return;
       selectedDisplayRef.current = index; setSelectedDisplayKey(row.key);
-      focusIndex = index; anchor = null; inspectRef.current?.(); fit();
+      if(catalogRef.current)catalogPickRef.current?.(index);
+      displaySelectRef.current?.(row);
+      focusIndex = index; focusConnection=false; anchor = null; inspectRef.current?.(); fit();
       host.setAttribute('data-display-selected', row.key);
     };
     displayControllerRef.current = { inspect: inspectDisplay, overview: () => cameraRef.current?.fit(), hover: index => { hover = index ?? -1; } };
+    catalogController.current={inspect:(index,focus=false)=>{
+      if(displaysRef.current?.[index]){inspectDisplay(index);return;}
+      const row=catalogRef.current?.cells[index];if(!row)return;
+      selectedDisplayRef.current=null;setSelectedDisplayKey(null);host.removeAttribute('data-display-selected');
+      pickRef.current=index;catalogPickRef.current?.(index);
+      focusIndex=index;focusConnection=!focus&&row.kind==='spec';anchor=null;fit();
+      host.setAttribute('data-catalog-selected',row.key);
+    },overview:()=>{cameraRef.current?.fit();pickRef.current=null;catalogPickRef.current?.(null);host.removeAttribute('data-catalog-selected');},hover:index=>{hover=index??-1;}};
 
     // ---- light: a sun from the upper left and a soft sky, shadows on -----
     const sky = new HemisphericLight("sky", new Vector3(0.2, 1, 0.1), scene);
@@ -371,7 +423,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const picked = CreateLineSystem("picked", { lines: ring7(), updatable: true }, scene);
     picked.color = Color3.FromHexString(HIVE_TONES.hover); picked.isPickable = false; picked.parent = fieldRoot;
     // a cell's outline is its hexagon, inset a little so the ring reads as the cell's, not the neighbour's
-    const hexOf = (i: number): [number, number][] => hexCornersAt(cells[i].x, cells[i].y, HEX_R, 4).map((c) => [c.x, c.y]);
+    const hexOf = (i: number): [number, number][] => hexCornersAt(cells[i].x, cells[i].y, HEX_R*cellScale(i), 4*cellScale(i)).map((c) => [c.x, c.y]);
     const placeRing = (mesh: LinesMesh, i: number, y: number) => {
       const p = hexOf(i); const pts = [...p, p[0]];
       const buf = mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -486,18 +538,25 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     host.setAttribute("data-look", "hive");
     host.setAttribute("data-models", "0/0");
     host.setAttribute("data-orientation", "facing");
-    // A CAPPED cell: in a hive a finished cell is sealed with wax and reads as a
-    // dark lid inside a bright rim. That is exactly the reference picture, and it
-    // is what a closed issue is: work sealed.
-    const capMat = new StandardMaterial("cap", scene);
-    capMat.diffuseColor = Color3.Black();
-    capMat.specularColor = Color3.Black();
-    capMat.emissiveColor = new Color3(0.055, 0.075, 0.072);
-    capMat.alpha = 0.08;
-    const caps = CreateCylinder("caps", { tessellation: 6, diameter: 2 * HEX_R * 0.92, height: 2 }, scene);
-    const cb = caps.getBoundingInfo().boundingBox;
-    if (cb.maximum.x - cb.minimum.x > cb.maximum.z - cb.minimum.z) { caps.rotation.y = Math.PI / 6; caps.bakeCurrentTransformIntoVertices(); }
-    caps.material = capMat; caps.isPickable = false; caps.parent = layerNodes.foundation; caps.isVisible = false;
+    // Full hex fills remain visible below text LOD. One batch per status color,
+    // not a material/texture per issue. Empty cells and the hub receive no fill.
+    const capBatches = new Map<HiveTaskTone | 'legacy', number[]>();
+    const drawCaps = (tone: HiveTaskTone | 'legacy', matrices: number[]) => {
+      const material = new StandardMaterial(`cap-${tone}`, scene);
+      material.diffuseColor = Color3.Black(); material.specularColor = Color3.Black();
+      material.disableLighting = true;
+      material.emissiveColor = tone === 'legacy' ? new Color3(.055, .075, .072) : Color3.FromHexString(HIVE_TASK_PALETTE[tone].hex);
+      material.alpha = tone === 'legacy' ? .08 : HIVE_TASK_PALETTE[tone].alpha;
+      // Keep catalog faces transparent at every zoom; preserve the golden rims.
+      if(tone==='honey'&&catalogRef.current)material.alpha=.035;
+      const caps = CreateCylinder(`caps-${tone}`, { tessellation: 6, diameter: 2 * HEX_R * .92, height: 2 }, scene);
+      const cb = caps.getBoundingInfo().boundingBox;
+      if (cb.maximum.x - cb.minimum.x > cb.maximum.z - cb.minimum.z) { caps.rotation.y = Math.PI / 6; caps.bakeCurrentTransformIntoVertices(); }
+      caps.material = material; caps.isPickable = false; caps.parent = layerNodes.foundation;
+      caps.alwaysSelectAsActiveMesh = true;
+      caps.thinInstanceSetBuffer("matrix", new Float32Array(matrices), 16, true);
+      glow.addExcludedMesh(caps); // Broad fills must not bloom into adjacent task states.
+    };
     // A cell RISES under the pointer and stays up while it is picked (the user,
     // 2026-09-06). This is the reference picture's raised hex, and it is the only
     // motion on the field that answers the hand rather than the wire.
@@ -514,29 +573,34 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     try {
       if (cells.length > 1) {
         const lines: Vector3[][] = []; const lineColours: Color4[][] = [];
-        const capM: number[] = [];
         let count = 0; let first: string | null = null; let last: string | null = null;
         for (let i = 1; i < cells.length; i += 1) {
-          const corners = hexCornersAt(cells[i].x, cells[i].y, HEX_R, 4);
+          const corners = hexCornersAt(cells[i].x, cells[i].y, HEX_R*cellScale(i), 4*cellScale(i));
           lines.push([...corners, corners[0]].map((c) => new Vector3(c.x, 1.5, c.y)));
           const issue = displaysRef.current ? displaysRef.current[i] : fCells?.[i] ?? null;
-          // the empty comb is the reference's dim teal wax; a cell with an
-          // issue burns in the colour LAW: yellow T27, neon blue awaiting,
-          // red manual code (the user, 2026-09-06)
-          const tone = issue ? hiveToneOf(covers[i]) : [0.11, 0.34, 0.33, 1];
-          const c4 = new Color4(tone[0], tone[1], tone[2], issue ? 0.95 : 0.34);
+          const resource=catalogRef.current?.cells[i];
+          const paint = resource?{tone:resource.kind==='spec'?'honey' as const:resource.open===null?'paused' as const:resource.open>0?'problem' as const:'active' as const}:displaysRef.current ? hiveTaskPaint(displaysRef.current[i]) : null;
+          const tint = paint ? Color3.FromHexString(HIVE_TASK_PALETTE[paint.tone].hex) : null;
+          const tone = tint ? [tint.r, tint.g, tint.b] : issue ? hiveToneOf(covers[i]) : [0.11, 0.34, 0.33, 1];
+          const c4 = new Color4(tone[0], tone[1], tone[2], issue||resource ? 0.95 : 0.34);
           lineColours.push(Array.from({ length: 7 }, () => c4));
-          if (issue) {
-            capM.push(...Matrix.Translation(cells[i].x, 0.6, cells[i].y).toArray());
-            const a = spiralAxial(i); const tag = `${issue.number}@${a.q},${a.r}`;
+          if (issue||resource) {
+            const batch = paint?.tone ?? 'legacy';
+            const matrices = capBatches.get(batch) ?? [];
+            matrices.push(...Matrix.Scaling(cellScale(i),1,cellScale(i)).multiply(Matrix.Translation(cells[i].x, .6, cells[i].y)).toArray());
+            capBatches.set(batch, matrices);
+            const a = spiralAxial(i); const tag = `${resource?.key??issue?.number}@${a.q},${a.r}`;
             if (first === null) first = tag; last = tag; count += 1;
           }
         }
         const comb = CreateLineSystem("cells", { lines, colors: lineColours, useVertexAlpha: true }, scene);
         comb.isPickable = false; comb.parent = layerNodes.foundation; comb.alwaysSelectAsActiveMesh = true;
         glow.referenceMeshToUseItsOwnMaterial(comb);
-        if (capM.length > 0) { caps.thinInstanceSetBuffer("matrix", new Float32Array(capM), 16, true); caps.isVisible = true; }
-        host.setAttribute("data-foundation-shape", "outline");
+        for (const [tone, matrices] of capBatches) drawCaps(tone, matrices);
+        host.setAttribute("data-foundation-shape", displaysRef.current ? "status-filled" : "outline");
+        if(catalogRef.current){const specs=catalogRef.current.cells.filter(c=>c?.kind==='spec');host.setAttribute('data-catalog-specs',String(new Set(specs.map(c=>c.specId)).size));host.setAttribute('data-catalog-source-specs',String(specs.filter(c=>c.placement==='source').length));host.setAttribute('data-catalog-repos',String(catalogRef.current.cells.filter(c=>c?.kind==='repo').length));}
+        host.setAttribute("data-task-fill-counts", JSON.stringify(hiveTaskCounts(displaysRef.current ?? [])));
+        host.setAttribute("data-task-fill-batches", String(capBatches.size));
         host.setAttribute("data-foundation-cells", String(count));
         host.setAttribute("data-foundation-shown", layersRef.current.foundation ? String(count) : "0");
         const law = { t27: covers.filter((v) => v === "t27").length, manual: covers.filter((v) => v === "manual").length, awaiting: covers.filter((v) => v === "awaiting").length };
@@ -622,7 +686,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     }
 
     // ---- event glints: a ring that grows and fades on the issue's cell ----
-    interface Effect { index: number; tone: Tone; start: number; flip: boolean; flare?: string }
+    interface Effect { index: number; tone: Tone; start: number; flip: boolean; flare?: string; signalColor?: string; sourceAt?: number; priority?: number }
     let flaredPick: number | null = null;
     const effects: Effect[] = [];
     const rings: LinesMesh[] = [];
@@ -634,14 +698,31 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       rings.push(m);
     }
     let lastEvents: HudEvent[] | null = null;
+    let lastSignalHealth = '';
     const ingestEvents = (stamp: number) => {
       const list = eventsRef.current;
-      if (list === lastEvents) return;
+      const health=signalHealthRef.current.activity;
+      if (list === lastEvents && lastSignalHealth === health) return;
       lastEvents = list;
+      lastSignalHealth = health;
       const seen = seenEventsRef.current;
       const primed = eventsPrimedRef.current;
       const wall = Date.now();
-      for (const event of list) {
+      if(displaysRef.current) {
+        const delivery=hiveSignalDelivery(list,wall,health,signalCursorRef.current,eventIdentity);
+        signalCursorRef.current=delivery.cursor;
+        for(const event of delivery.events) {
+          const index=event.issue!==null ? indexByNumber.get(event.issue) : undefined;
+          if(index===undefined) continue;
+          const current=effects.find((fx): fx is Effect & HiveEventRing=>fx.index===index && fx.signalColor!==undefined && fx.sourceAt!==undefined && fx.priority!==undefined && stamp-fx.start<3000);
+          const next=hiveSignalRing(current ?? null,event,stamp);
+          if(current) Object.assign(current,next);
+          else effects.push({index,tone:eventTone(event.kind),flip:false,...next});
+        }
+        return;
+      }
+      const candidates = list;
+      for (const event of candidates) {
         // a verdict re-stamped by the tick is the same verdict: no new glint (P0-10)
         const identity = eventIdentity(event);
         if (seen.has(identity)) continue;
@@ -658,7 +739,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // ---- picking and hover ---------------------------------------------------
     const cellUnder = (x: number, y: number) => {
       const p = planeAt(x, y);
-      return p ? hexIndexAt(p.x, p.z, cells.length) : -1;
+      return p ? catalogRef.current?catalogCellAt(catalogRef.current,p.x,p.z):hexIndexAt(p.x, p.z, cells.length) : -1;
     };
     let hover = -1;
     // ---- the cells the swarm is working on (the user, 2026-09-06) ---------
@@ -693,13 +774,18 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // was, which is the fact the window was trying and failing to express.
     const ROUND_MS = 5 * 60 * 1000;
     let workingSeen: readonly HudEvent[] | null = null;
+    let workingBoardSeen: typeof displays = undefined;
+    let workingHealthSeen = '';
     let workingCells: number[] = [];
     let workingAgeOf = new Map<number, number>();
     let workingRing: LinesMesh | null = null;
     const refreshWorking = (nowWallMs: number) => {
       const list = eventsRef.current;
-      if (list === workingSeen) return;
+      const issueRows = displaysRef.current;
+      const boardHealth = signalHealthRef.current.board;
+      if (issueRows ? issueRows === workingBoardSeen && boardHealth === workingHealthSeen : list === workingSeen) return;
       workingSeen = list;
+      workingBoardSeen = issueRows; workingHealthSeen = boardHealth;
       // the last event of every issue, oldest first so the newest wins
       const last = new Map<number, { at: number; kind: string; title: string }>();
       for (const e of [...list].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
@@ -708,7 +794,11 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
         if (Number.isFinite(at)) last.set(e.issue, { at, kind: e.kind, title: e.title });
       }
       const ageOf = new Map<number, number>();
-      for (const [issueNumber, { at, kind, title }] of last) {
+      if (issueRows) {
+        for (const number of hiveRunningIssueNumbers(issueRows.filter((row): row is HiveDisplay=>row!==null),boardHealth==='live')) {
+          const i=indexByNumber.get(number); if(i!==undefined) ageOf.set(i,0);
+        }
+      } else for (const [issueNumber, { at, kind, title }] of last) {
         if (kind === "finished" || kind === "error") continue;
         const i = displaysRef.current ? indexByNumber.get(issueNumber) ?? -1 : cellOfPath(title);
         if (i < 0) continue;
@@ -731,7 +821,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
           // fresh work burns, work silent for more than a round fades: the ring
           // never claims a bee is busy when the wire has said nothing for an hour
           const q = Math.max(0, Math.min(1, 1 - (workingAgeOf.get(i) ?? 0) / (12 * ROUND_MS)));
-          const c = new Color4(0.25 + 0.3 * q, 0.45 + 0.55 * q, 0.4 + 0.38 * q, 0.35 + 0.6 * q);
+          const c = issueRows ? new Color4(.39,.86,1,.9) : new Color4(0.25 + 0.3 * q, 0.45 + 0.55 * q, 0.4 + 0.38 * q, 0.35 + 0.6 * q);
           return Array.from({ length: 7 }, () => c);
         });
         workingRing = CreateLineSystem("working", { lines, colors: colours, useVertexAlpha: true }, scene);
@@ -771,6 +861,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       const rect = canvas.getBoundingClientRect();
       const index = cellUnder(e.clientX - rect.left, e.clientY - rect.top);
       if (index < 0) { host.setAttribute("data-hit", "off"); return; }
+      if(catalogRef.current){if(layersRef.current.foundation&&(catalogRef.current.cells[index]||displaysRef.current?.[index]))catalogController.current?.inspect(index);else if(index===home)catalogController.current?.overview();host.setAttribute('data-hit',displaysRef.current?.[index]?'display':'resource');return;}
       if (displaysRef.current?.[index]) { inspectDisplay(index); host.setAttribute('data-hit','display'); return; }
       // An empty issue cell cannot inherit a colocated legacy module/issue.
       if (displaysRef.current && index !== home) {
@@ -804,6 +895,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     let displayTick = -Infinity;
     let displayEventSource: readonly HudEvent[] | null = null;
     let eventIssueNumbers = new Set<number>();
+    let catalogLinks:LinesMesh|null=null,lastCatalogPick:number|null|undefined=undefined;
     const projectDisplays = (nowMs: number) => {
       if (nowMs - displayTick < 100) return;
       displayTick = nowMs;
@@ -813,12 +905,39 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       const world = fieldRoot.computeWorldMatrix(true);
       const project = (x: number,z: number) => Vector3.Project(new Vector3(x,0,z),world,matrix,viewport);
       const a = project(0,0), b = project(S_CELL,0), cellWidth = Math.abs(b.x-a.x);
+      if(catalogRef.current){
+        const resourceRows:HiveDisplayProjection[]=[];
+        catalogRef.current.cells.forEach((row,index)=>{const rowWidth=cellWidth*cellScale(index);if(!row||(row.kind!=='repo'&&rowWidth<95))return;const p=project(cells[index].x,cells[index].y);if(p.x<0||p.y<0||p.x>width||p.y>height)return;resourceRows.push({index,x:p.x,y:p.y,width:rowWidth,height:rowWidth*2/Math.sqrt(3)});});
+        resourceRows.sort((a,b)=>Number(catalogRef.current?.cells[b.index]?.kind==='repo')-Number(catalogRef.current?.cells[a.index]?.kind==='repo')||Number(b.index===pickRef.current)-Number(a.index===pickRef.current));
+        const regionRows:HiveDisplayProjection[]=[];
+        for(const region of catalogRef.current.regions??[]){
+          const p=project(region.x,region.y),radius=region.focusRadius*cellWidth/S_CELL;
+          // A small repository heading remains legible at overview, outside its issue cells.
+          if(cellWidth*region.scale>=95||p.x+radius<0||p.x-radius>width||p.y+radius<0||p.y-radius>height)continue;
+          regionRows.push({index:region.portalIndex,x:p.x,y:p.y-radius,width:radius*2,height:0});
+        }
+        catalogProjectRef.current?.(resourceRows.slice(0,40),regionRows);
+        if(lastCatalogPick!==pickRef.current){lastCatalogPick=pickRef.current;catalogLinks?.dispose();const selected=pickRef.current;
+          const selection=catalogSpecSelection(catalogRef.current,selected);
+          const pairs=selection.links.length?selection.links:selected===null?catalogRef.current.cells.flatMap((c,i)=>c?.kind==='repo'?[[0,i] as [number,number]]:[]):catalogRef.current.edges.filter(([from,to])=>from===selected||to===selected);
+          const lines=pairs.map(([from,to])=>[new Vector3(cells[from].x,10,cells[from].y),new Vector3(cells[to].x,10,cells[to].y)]);
+          for(const index of selection.indices){const cell=cells[index],radius=HEX_R*cellScale(index)*.94;lines.push(Array.from({length:7},(_,i)=>{const a=Math.PI/6+i*Math.PI/3;return new Vector3(cell.x+radius*Math.cos(a),12,cell.y+radius*Math.sin(a));}));}
+          // Ownership routes stay visible in the same map, never imply verified spec coverage.
+          if(!selection.links.length)for(const region of catalogRef.current.regions??[]){const portal=cells[region.portalIndex];lines.push([new Vector3(portal.x,10,portal.y),new Vector3(region.x,10,region.y)]);}
+          catalogLinks=lines.length?CreateLineSystem('catalog-source-edges',{lines},scene):null;
+          if(catalogLinks){catalogLinks.parent=layerNodes.foundation;catalogLinks.color=Color3.FromHexString(selected===null||selection.links.length?'#FFD45A':'#64DCFF');catalogLinks.alpha=selected===null ? .3 : .95;catalogLinks.isPickable=false;}
+          host.setAttribute('data-catalog-spec-pair',selection.indices.join(','));
+          host.setAttribute('data-catalog-edges',String(lines.length));
+        }
+      }
       const projected: HiveDisplayProjection[] = [];
-      if (hiveDisplayLod(cellWidth) !== 'overview') displaysRef.current?.forEach((row,index) => {
+      displaysRef.current?.forEach((row,index) => {
         const cell = cells[index]; if (!row || !cell) return;
-        const p = project(cell.x,cell.y), h = cellWidth * 2 / Math.sqrt(3);
-        if (p.x + cellWidth/2 < 0 || p.x-cellWidth/2 > width || p.y+h/2 < 0 || p.y-h/2 > height) return;
-        projected.push({index,x:p.x,y:p.y,width:cellWidth,height:h});
+        const rowWidth=cellWidth*cellScale(index);
+        if(hiveDisplayLod(rowWidth)==='overview')return;
+        const p = project(cell.x,cell.y), h = rowWidth * 2 / Math.sqrt(3);
+        if (p.x + rowWidth/2 < 0 || p.x-rowWidth/2 > width || p.y+h/2 < 0 || p.y-h/2 > height) return;
+        projected.push({index,x:p.x,y:p.y,width:rowWidth,height:h});
       });
       projected.sort((a,b) => Number(b.index===selectedDisplayRef.current)-Number(a.index===selectedDisplayRef.current) || Math.hypot(a.x-width/2,a.y-height/2)-Math.hypot(b.x-width/2,b.y-height/2));
       const visible = projected.slice(0,32);
@@ -849,7 +968,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       host.setAttribute('data-reduced-motion',String(motionPreference.matches));
       // the working cells breathe so a still frame still says which are live
       refreshWorking(Date.now());
-      if (workingRing) workingRing.alpha = 0.45 + 0.45 * Math.abs(Math.sin(nowMs / 620));
+      if (workingRing) workingRing.alpha = motionPreference.matches ? .8 : .65 + .15 * Math.sin(nowMs / 1600);
       // the zoom glides instead of snapping, and it glides toward the cursor:
       // an orthographic frustum is a uniform scale about the target, so moving
       // the target by (1 - 1/f) toward the anchor keeps that point still
@@ -880,14 +999,16 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       if (changed || frames === 0) { host.setAttribute("data-layers", FIELD_LAYERS.filter((k) => want[k]).join(",") || "none"); const fc = host.getAttribute("data-foundation-cells"); if (fc !== null) host.setAttribute("data-foundation-shown", want.foundation ? fc : "0"); }
       aimBees();
       bees.forEach((b, k) => {
+        const quiet = motionPreference.matches || (displaysRef.current && signalHealthRef.current.board !== 'live');
+        if(quiet) b.t = 1;
         if (b.t < 1) b.t = Math.min(1, b.t + (b.speed * dt) / 1000);
         const A = cells[b.from], B = cells[b.to];
         if (!A || !B) return;
         const e = b.t < 0.5 ? 2 * b.t * b.t : 1 - 2 * (1 - b.t) * (1 - b.t);
         let x = A.x + (B.x - A.x) * e, z = A.y + (B.y - A.y) * e;
-        if (b.t >= 1 && b.busy) { const ph = nowMs / 700 + b.hover; x = B.x + Math.cos(ph) * S * 0.12; z = B.y + Math.sin(ph * 1.3) * S * 0.08; }
-        b.mote.isVisible = true;
-        b.mote.position.set(x, 4 + (b.busy ? Math.abs(Math.sin(nowMs / 140 + k)) * 4 : 0), z);
+        if (b.t >= 1 && b.busy && !quiet) { const ph = nowMs / 700 + b.hover; x = B.x + Math.cos(ph) * S * 0.12; z = B.y + Math.sin(ph * 1.3) * S * 0.08; }
+        b.mote.isVisible = !displaysRef.current || signalHealthRef.current.board === 'live' || !b.busy;
+        b.mote.position.set(x, 4 + (b.busy && !quiet ? Math.abs(Math.sin(nowMs / 140 + k)) * 4 : 0), z);
         b.mote.scaling.setAll(b.busy ? 1 : 0.62);
         const line = flightLines[k];
         if (b.busy && b.t < 1) { CreateDashedLines(`flight-${b.slot}`, { points: [new Vector3(A.x, 2, A.y), new Vector3(B.x, 2, B.y)], dashSize: 6, gapSize: 4, dashNb: 40, instance: line }, scene); line.isVisible = true; }
@@ -896,25 +1017,25 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       ingestEvents(nowMs);
       let write = 0;
       for (let i = 0; i < effects.length; i += 1) {
-        const fx = effects[i]; const cell = cells[fx.index]; const life = fx.flare ? 500 : fx.flip ? 900 : 1300; const age = nowMs - fx.start;
-        if (!cell || age > life) continue;
+        const fx = effects[i]; const cell = cells[fx.index]; const life = fx.signalColor ? 3000 : fx.flare ? 500 : fx.flip ? 900 : 1300; const age = nowMs - fx.start;
+        if (!cell || age > life || (fx.signalColor && signalHealthRef.current.activity !== 'live')) continue;
         effects[write] = fx; write += 1;
       }
       effects.length = Math.min(write, RING_POOL);
       for (let k = 0; k < RING_POOL; k += 1) {
         const fx = effects[k]; const ring = rings[k];
         if (!fx) { ring.isVisible = false; continue; }
-        const cell = cells[fx.index]; const life = fx.flare ? 500 : fx.flip ? 900 : 1300; const u2 = (nowMs - fx.start) / life;
+        const cell = cells[fx.index]; const life = fx.signalColor ? 3000 : fx.flare ? 500 : fx.flip ? 900 : 1300; const u2 = motionPreference.matches ? .45 : (nowMs - fx.start) / life;
         const r = fx.flare ? S * (0.9 - 0.6 * u2) : S * (0.12 + 0.5 * u2);
         ring.position.set(cell.x, 1.5, cell.y);
         ring.scaling.set(r, 1, r);
-        ring.color = Color3.FromHexString(fx.flare ?? TONE_HEX[fx.tone]);
+        ring.color = Color3.FromHexString(fx.signalColor ?? fx.flare ?? TONE_HEX[fx.tone]);
         ring.alpha = 0.9 * (1 - u2);
         ring.isVisible = true;
       }
       const p = selectedDisplayRef.current ?? pickRef.current;
       if (p !== null && cells[p]) placeRing(picked, p, 1.4); else picked.isVisible = false;
-      if (p !== flaredPick) { flaredPick = p; if (p !== null && cells[p] && effects.length < RING_POOL) effects.push({ index: p, tone: "muted", start: nowMs, flip: false, flare: ringTone(cells[p].own as Territory) }); }
+      if (p !== flaredPick) { flaredPick = p; if (!catalogRef.current && !displaysRef.current && p !== null && cells[p] && effects.length < RING_POOL) effects.push({ index: p, tone: "muted", start: nowMs, flip: false, flare: ringTone(cells[p].own as Territory) }); }
       // a hovered plinth (K-5) draws the link from the ring's stone to the module cells it owns; nothing is drawn for a ring that owns no placed module
       const linkRing = !displaysRef.current && hover >= 0 && layersRef.current.castle && castleLinks ? castleLinks.ringOfCell.get(hover) ?? null : null;
       if (linkRing !== linkFor) {
@@ -934,15 +1055,16 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       if (hover >= 0 && hover !== p && cells[hover]) placeDashed(hover, 1.4); else hovered.isVisible = false;
       // the cell under the hand rises; the picked cell stays up
       const wantLift = p !== null && cells[p] ? p : hover >= 0 && cells[hover] ? hover : -1;
-      if (wantLift !== liftIndex) { liftIndex = wantLift; if (liftIndex >= 0) lift.position.set(cells[liftIndex].x, liftY, cells[liftIndex].y); }
+      if (wantLift !== liftIndex) { liftIndex = wantLift; if (liftIndex >= 0) {lift.position.set(cells[liftIndex].x, liftY, cells[liftIndex].y);lift.scaling.set(cellScale(liftIndex),1,cellScale(liftIndex));} }
       const goalY = liftIndex >= 0 ? 16 : 0;
-      liftY += (goalY - liftY) * (1 - Math.pow(2, -dt / 55));
+      liftY = motionPreference.matches ? goalY : liftY + (goalY - liftY) * (1 - Math.pow(2, -dt / 55));
       if (liftIndex >= 0) { lift.isVisible = true; lift.position.set(cells[liftIndex].x, liftY, cells[liftIndex].y); }
       else if (liftY < 0.4) lift.isVisible = false; else lift.position.y = liftY;
-      showHoverCard(!displaysRef.current && layersRef.current.foundation && hover >= 0 ? hover : -1);
+      showHoverCard(!catalogRef.current && !displaysRef.current && layersRef.current.foundation && hover >= 0 ? hover : -1);
       scene.render();
       projectDisplays(nowMs);
-      savedViewRef.current = {zoom,x:camera.target.x,y:camera.target.y,focusKey:focusIndex !== null ? displaysRef.current?.[focusIndex]?.key ?? null : null};
+      savedViewRef.current = {zoom,x:camera.target.x,y:camera.target.y,focusKey:focusIndex !== null ? displaysRef.current?.[focusIndex]?.key ?? catalogRef.current?.cells[focusIndex]?.key ?? null : null,connection:focusConnection};
+      viewStore.set(sceneKey,savedViewRef.current);
       frames += 1;
       if (frames === 1) host.setAttribute("data-first-frame-ms", String(Math.round(nowMs - t0)));
       host.setAttribute("data-frames", String(frames));
@@ -953,6 +1075,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     document.addEventListener("visibilitychange", onVisible);
     document.addEventListener("fullscreenchange", onVisible);
     return () => {
+      viewStore.set(sceneKey,{zoom,x:camera.target.x,y:camera.target.y,focusKey:focusIndex===null?null:viewKey(focusIndex),connection:focusConnection});
       clearHoverCard();
       canvas.removeEventListener('click',onCellClick);
       canvas.removeEventListener('pointerleave',onCellLeave);
@@ -966,18 +1089,35 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       canvas.removeEventListener("pointercancel", onUp);
       ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose();
     };
-  }, [signature]);
+  }, [signature,sceneKey]);
+
+  useEffect(()=>{
+    if(!inspectIssueKey){appliedIssueFocus.current=null;return;}
+    const token=`${sceneKey}:${inspectIssueKey}`;
+    if(appliedIssueFocus.current===token)return;
+    const index=displaysRef.current?.findIndex(row=>row?.key===inspectIssueKey)??-1;
+    if(index>=0){appliedIssueFocus.current=token;displayControllerRef.current?.inspect(index);}
+  },[inspectIssueKey,signature,sceneKey]);
+
+  useEffect(()=>{
+    if(!inspectCatalogKey){appliedCatalogFocus.current=null;return;}
+    const token=`${sceneKey}:${inspectCatalogKey}`;
+    if(appliedCatalogFocus.current===token)return;
+    const index=catalogRef.current?.cells.findIndex(row=>row?.key===inspectCatalogKey)??-1;
+    if(index>=0){appliedCatalogFocus.current=token;catalogController.current?.inspect(index,true);}
+  },[inspectCatalogKey,signature,sceneKey]);
 
   return (
     <div className="queen27-comb is-embedded is-babylon">
-      <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="hive" data-grid="hex">
+      <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="hive" data-grid="hex" data-board-health={signalHealth.board} data-activity-health={signalHealth.activity}>
         <canvas className="queen-hive-scene" ref={canvasRef} style={{ touchAction: "none", outline: "none" }} />
         <QueenStarfield lang={lang}/>
         <div className="queen27-hover-card" ref={cardRef} aria-hidden="true" />
-        {displays && <QueenHiveDisplays rows={displays} projections={projections} selected={selectedDisplay} events={events} lang={lang} controller={{ inspect: index => displayControllerRef.current?.inspect(index), overview: () => displayControllerRef.current?.overview(), hover: index => displayControllerRef.current?.hover(index) }} />}
-        {law && (
+        {displays && <QueenHiveDisplays rows={displays} projections={projections} selected={selectedDisplay} events={events} lang={lang} controls={!catalogLayer} showRepository={!!catalogLayer} onIssueOpen={onDisplaySelect} controller={{ inspect: index => displayControllerRef.current?.inspect(index), overview: () => displayControllerRef.current?.overview(), hover: index => displayControllerRef.current?.hover(index) }} />}
+        {displays && !catalogLayer && <QueenHiveTaskLegend rows={displays} lang={lang} health={signalHealth}/>}
+        {!displays && law && (
           <div className="queen27-hive-law">
-            {(displays || t27Coverage === null) && <span data-law="unknown"><i />{law.unknown}</span>}
+            {t27Coverage === null && <span data-law="unknown"><i />{law.unknown}</span>}
             <span data-law="t27"><i />{law.t27}</span>
             <span data-law="manual"><i />{law.manual}</span>
             <span data-law="awaiting"><i />{law.awaiting}</span>

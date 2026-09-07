@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
-import type { HudEvent, HudEventKind, SectorRow, Territory } from "./queenHud";
-import { eventTone , feedCoverage } from "./queenHud";
+import type { HudEvent, SectorRow, Territory } from "./queenHud";
+import { feedCoverage } from "./queenHud";
+import { hiveEventSignal } from './queenHiveDisplay';
 import { publicIssueTitle } from "../pages/queenReviewLifecycle";
 import "./QueenIntel.css";
 
@@ -38,26 +39,6 @@ export interface QueenIntelFeedProps {
   onToggle: () => void;
   describe: (event: HudEvent) => string;
   labels: IntelLabels;
-}
-
-function glyphOf(kind: HudEventKind): string {
-  switch (kind) {
-    case "review":
-      return "▲";
-    case "error":
-      return "✕";
-    case "finished":
-    case "result":
-      return "✓";
-    case "dispatch":
-      return "◆";
-    case "progress":
-      return "●";
-    case "tool":
-      return "▸";
-    default:
-      return "∙";
-  }
 }
 
 function localeOf(lang: string): string {
@@ -110,18 +91,21 @@ interface IntelRowProps {
 }
 
 function IntelRow({ event, lang, repo, clock, describe }: IntelRowProps) {
-  const tone = eventTone(event.kind);
+  const signal = hiveEventSignal(event);
+  const signalLabel = (lang==='ru'
+    ? {blocked:'Ошибка / отказ',accepted:'Ревью принято',review:'Ревью',result:'Результат, не приёмка',active:'Активность'}
+    : {blocked:'Failure / refusal',accepted:'Review approved',review:'Review',result:'Result, not acceptance',active:'Activity'})[signal.tone];
   const headline = `${describe(event)}${event.issue ? ` · #${event.issue}` : ""}`;
   const subtitle = publicIssueTitle(event.title, event.issue ?? 0, lang);
   const href =
     event.issue && repo ? `https://github.com/${repo}/issues/${event.issue}` : null;
   const body = (
     <>
-      <span className="queen27-intel-glyph" data-tone={tone} aria-hidden="true">
-        {glyphOf(event.kind)}
+      <span className="queen27-intel-glyph" data-event-tone={signal.tone} style={{color:signal.hex}} aria-hidden="true">
+        {signal.symbol}
       </span>
       <span className="queen27-intel-text">
-        <b>{headline}</b>
+        <b>{headline}</b><small className="queen27-intel-signal" style={{color:signal.hex}}>{signalLabel}</small>
         <span>{subtitle}</span>
       </span>
       <time dateTime={event.at}>{stampOf(clock, event.at)}</time>

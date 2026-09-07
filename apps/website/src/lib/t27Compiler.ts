@@ -4,6 +4,8 @@
 // wasm32-unknown-unknown -- the same code the CLI runs, not a reimplementation.
 // See apps/website/scripts/sync-t27-specs.mjs for how the artifact gets here.
 
+import {resolveManifestSpec,specExplorerHash} from './specCatalog.ts'
+
 export interface T27Node {
   kind: string
   line: number
@@ -156,16 +158,17 @@ export async function analyze(source: string): Promise<T27Analysis> {
  * be free -- and a cached hit deliberately skips the pending treatment
  * entirely, because there is nothing to wait for.
  */
-const cache = new Map<string, T27Analysis>()
+const cache = new Map<string, {source:string;result:T27Analysis}>()
 const CACHE_MAX = 24
 
-export function cachedAnalysis(path: string): T27Analysis | undefined {
-  return cache.get(path)
+export function cachedAnalysis(path: string,source?:string): T27Analysis | undefined {
+  const hit=cache.get(path)
+  return source===undefined||source===hit?.source?hit?.result:undefined
 }
 
 export async function analyzeCached(path: string, source: string): Promise<T27Analysis> {
   const hit = cache.get(path)
-  if (hit) return hit
+  if (hit?.source===source) return hit.result
   const r = await analyze(source)
   // Plain FIFO eviction: these are a few hundred KB each at worst and the
   // access pattern here has no reuse structure worth modelling.
@@ -173,7 +176,7 @@ export async function analyzeCached(path: string, source: string): Promise<T27An
     const oldest = cache.keys().next().value
     if (oldest !== undefined) cache.delete(oldest)
   }
-  cache.set(path, r)
+  cache.set(path, {source,result:r})
   return r
 }
 
@@ -198,14 +201,24 @@ export async function prefetchSpec(path: string): Promise<void> {
   }
 }
 
-export async function loadManifest(): Promise<SpecManifest> {
-  const res = await fetch('t27/manifest.json')
-  if (!res.ok) throw new Error(`could not fetch spec manifest (${res.status})`)
-  return res.json()
+let manifestPromise:Promise<SpecManifest>|null=null
+export function loadManifest(): Promise<SpecManifest> {
+  if(!manifestPromise)manifestPromise=fetch('t27/manifest.json',{credentials:'omit'}).then(async res=>{
+    if (!res.ok) throw new Error(`could not fetch spec manifest (${res.status})`)
+    return res.json() as Promise<SpecManifest>
+  }).catch(error=>{manifestPromise=null;throw error})
+  return manifestPromise
 }
 
-export async function loadSpecSource(path: string): Promise<string> {
-  const res = await fetch(`t27/files/${path}`)
+export async function loadSpecSource(path: string,expectedSha256?:string): Promise<string> {
+  specExplorerHash(path,{sha256:expectedSha256})
+  resolveManifestSpec(await loadManifest(),path)
+  const res = await fetch(`t27/files/${path.split('/').map(encodeURIComponent).join('/')}`,{credentials:'omit'})
   if (!res.ok) throw new Error(`could not fetch spec ${path} (${res.status})`)
-  return res.text()
+  const bytes=await res.arrayBuffer()
+  if(expectedSha256){
+    const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('')
+    if(hash!==expectedSha256)throw new Error(`Spec SHA-256 mismatch: ${path}`)
+  }
+  return new TextDecoder().decode(bytes)
 }

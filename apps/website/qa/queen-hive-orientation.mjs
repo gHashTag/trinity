@@ -27,7 +27,7 @@ for (const [x,z] of [[0,0],[123,-87],[-400,222]]) {
 const scene=readFileSync(new URL('../src/components/QueenCombBabylon.tsx',import.meta.url),'utf8');
 assert.match(scene,/fieldRoot.rotation.copyFromFloats\(HIVE_WALL_ROTATION.x, HIVE_WALL_ROTATION.y, HIVE_WALL_ROTATION.z\)/);
 assert.match(scene,/return hiveWorldToWall\(wx, wy, fieldRoot.position.y\)/, 'picking uses inverse including wall drift');
-assert.match(scene,/hiveWallToWorld\(cells\[focusIndex\].x, cells\[focusIndex\].y\)/, 'inspect targets the rotated cell');
+assert.match(scene,/hiveWallToWorld\(view\?\.x\?\?cells\[focusIndex\].x, view\?\.y\?\?cells\[focusIndex\].y\)/, 'inspect targets the rotated cell or repository region in the same wall');
 assert.match(scene,/hiveWallToWorld\(anchor.x, anchor.z\)/, 'cursor zoom targets the rotated cell');
 assert.match(scene,/cells\[home\].y - ay \* k/, 'original SVG coordinates remain unchanged');
 assert.match(scene,/new ArcRotateCamera\("cam", Math.PI \/ 2, Math.PI \/ 2/, 'camera stays in front');

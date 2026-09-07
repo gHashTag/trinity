@@ -10,7 +10,7 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
-import { hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
+import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
@@ -57,6 +57,8 @@ import {
   type VerifiedHardwareRegistry,
 } from "../components/queenHardwareRegistry";
 import { TrinityLogo } from "../components/TrinityLogo";
+import type {UniverseAtlas} from '../lib/queenUniverseAtlas';
+const QueenCatalogHive=lazy(()=>import('../components/QueenCatalogHive').then(m=>({default:m.QueenCatalogHive})));
 // The comb is Babylon.js (the user's decision, 2026-09-04). ?engine=canvas keeps
 // the canvas2D comb for one release, for anyone comparing; then it goes.
 const QueenCombBabylon = lazy(() =>
@@ -1835,7 +1837,7 @@ const EMPTY_CARDS: QueenCard[] = [];
 const EMPTY_MODULES: HudModule[] = [];
 const EMPTY_EVENTS: QueenActivityEvent[] = [];
 
-export default function Queen() {
+export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={}) {
   const { lang, setLang } = useI18n();
   const c = lang === "ru" ? COPY.ru : COPY.en;
   const state = useQueenStatus();
@@ -1858,7 +1860,7 @@ export default function Queen() {
   const [intelOpen, setIntelOpen] = useState(false);
   // The context panel belongs to the comb: it opens with the field (on a
   // desktop) and steps aside for the views that need the whole viewport.
-  const [contextOpen, setContextOpen] = useState(!isPhone);
+  const [contextOpen, setContextOpen] = useState(!isPhone&&!sharedCatalog);
   const setView = useCallback(
     (next: HudView) => {
       setBoardView(next);
@@ -2269,7 +2271,7 @@ export default function Queen() {
         <>
           <section className="queen27-hud-panel queen27-hud-minimap" aria-label={c.hudOverview}>
             <header className="queen27-hud-panel-head">
-              <span>{c.hudOverview}</span>
+              <span>{c.hudOverview}{sharedCatalog?` · ${repo??'TRIOS'}`:''}</span>
               <span>{board ? cards.length : "—"} {c.hudCards}</span>
             </header>
             <div className="queen27-hud-minimap-body">
@@ -2382,12 +2384,8 @@ export default function Queen() {
       data-view={view}
     >
       <header className="queen27-hud-top">
-        <Link to="/" className="queen27-hud-res queen27-hud-brand">
+        <Link to="/" className="queen27-hud-res queen27-hud-brand" aria-label={c.hudBrand}>
           <TrinityLogo withLabel={false} height="34px" />
-          <span className="queen27-hud-brand-text">
-            <strong>{c.hudBrand}</strong>
-            <span>{c.eyebrow}</span>
-          </span>
         </Link>
 
         <div className="queen27-hud-res queen27-hud-res-bees">
@@ -2618,7 +2616,7 @@ export default function Queen() {
       >
         <header className="queen27-hud-vp-head">
           <span className="queen27-hud-vp-title">
-            {c.sector.toUpperCase()}: {repo ?? "—"}
+            {c.sector.toUpperCase()}: {sharedCatalog&&boardView==='comb'?'TRI-27 / SHARED CORE':repo ?? "—"}
           </span>
           <span className="queen27-hud-vp-sep" aria-hidden="true">
             ///
@@ -2636,14 +2634,14 @@ export default function Queen() {
           <div className="queen27-hud-vp-tools">
             {view === "comb" && (
               <>
-                {FIELD_LAYERS.map((k) => (
+                {FIELD_LAYERS.filter(k=>!sharedCatalog||k==='foundation').map((k) => (
                   <button
                     type="button"
                     key={k}
                     data-layer={k}
                     aria-pressed={layers[k]}
                     aria-label={c[LAYER_COPY[k]]}
-                    title={k === "foundation" ? (hiveFoundation ? `${c[LAYER_COPY[k]]} · ${hiveFoundation.closedIssues.length} ${c.hudClosed} · ${c.hudFoundationSnapshot} ${formatMoment(hiveFoundation.generatedAt, lang)} · ${hiveFoundation.source}` : `${c[LAYER_COPY[k]]} · —`) : c[LAYER_COPY[k]]}
+                    title={sharedCatalog?`${c[LAYER_COPY[k]]} · ${sharedCatalog.specs.length} .t27`:k === "foundation" ? (hiveFoundation ? `${c[LAYER_COPY[k]]} · ${hiveFoundation.closedIssues.length} ${c.hudClosed} · ${c.hudFoundationSnapshot} ${formatMoment(hiveFoundation.generatedAt, lang)} · ${hiveFoundation.source}` : `${c[LAYER_COPY[k]]} · —`) : c[LAYER_COPY[k]]}
                     onClick={() => setLayers((l) => ({ ...l, [k]: !l[k] }))}
                   >
                     <i aria-hidden="true">{LAYER_GLYPH[k]}</i>
@@ -2724,9 +2722,10 @@ export default function Queen() {
               }}
             />
           ) : boardView === "comb" ? (
-            ENGINE_FLAG !== "canvas" ? (
+            sharedCatalog ? <Suspense fallback={null}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)}/></Suspense> : ENGINE_FLAG !== "canvas" ? (
               <Suspense fallback={null}>
                 <QueenCombBabylon
+                  signalHealth={{board:hiveFeedHealth(boardState.data!==null,boardState.error),activity:hiveFeedHealth(activityState.data!==null,activityState.error)}}
                   displays={hiveCells}
                   lang={lang === 'ru' ? 'ru' : 'en'}
                   onInspect={() => setContextOpen(false)}

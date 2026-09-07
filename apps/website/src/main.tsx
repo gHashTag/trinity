@@ -27,7 +27,7 @@ const Proof = lazy(() => import('./pages/Proof.tsx'))
 const AboutAuthor = lazy(() => import('./pages/AboutAuthor.tsx'))
 const Resources = lazy(() => import('./pages/Resources.tsx'))
 const Foundry = lazy(() => import('./pages/Foundry.tsx'))
-const Queen = lazy(() => import('./pages/Queen.tsx'))
+const Queen = lazy(() => import('./pages/QueenUniverse.tsx'))
 // Blog exports two components rather than a default, so the module has to be
 // unwrapped into the shape lazy() expects.
 const BlogIndex = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogIndex })))

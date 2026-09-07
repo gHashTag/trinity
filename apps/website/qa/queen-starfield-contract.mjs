@@ -21,7 +21,10 @@ const css=readFileSync(new URL('../src/pages/Queen.css',import.meta.url),'utf8')
 assert.match(css,/\.queen27-page.is-shell \.queen27-hud-viewport\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/, 'outer viewport must stretch the grid track, not only its child');
 assert.match(css,/\.queen27-page.is-shell \.queen27-hud-vp-body\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
 assert.match(css,/\.queen-hive-display\s*\{[^}]*var\(--font\)/);
-assert.match(css,/\.queen-hive-display\s*\{[^}]*rgba\(3, 14, 18, 0\.4[0-9]\)/);
+const glass=css.match(/\.queen-hive-display:is\(\[data-kind="spec"\],\[data-task-tone="honey"\]\) \{([^}]+)\}/)?.[1]??'';
+assert.match(glass,/background:rgb\(var\(--hive-task-rgb\) \/ \.035\)/,'nearly transparent honey faces transmit catalog space');
+assert.match(glass,/backdrop-filter:none/,'the user removed frosting so stars stay sharp');
+assert.doesNotMatch(glass,/gradient|blur\(/,'do not restore rejected gradients or frosting');
 const scene=readFileSync(new URL('../src/components/QueenCombBabylon.tsx',import.meta.url),'utf8');
 assert.match(scene,/scene.clearColor = new Color4\(0, 0, 0, 0\)/);
 const renderer=readFileSync(new URL('../src/components/QueenStarfield.tsx',import.meta.url),'utf8');
