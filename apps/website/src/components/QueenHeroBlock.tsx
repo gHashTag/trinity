@@ -16,7 +16,6 @@ const copy = {
     title: 'The goal of the game is a .t27 spec',
     body: 'Every gold cell on the map is a .t27 source; every red one is the GitHub issue that pays for it. Open the map to see where a spec lives and what it is linked to, or read the corpus itself in the Spec Explorer.',
     map: 'Open the map',
-    specs: 'Read the .t27 corpus',
     core: 'Shared core',
     loading: 'Loading public atlas',
     unavailable: 'Public atlas unavailable',
@@ -30,7 +29,6 @@ const copy = {
     title: 'Цель игры — спека .t27',
     body: 'Каждая золотая сота на карте — источник .t27, каждая красная — GitHub issue, которая за неё платит. Откройте карту, чтобы увидеть, где живёт спека и с чем она связана, или прочитайте сам корпус в Обозревателе спек.',
     map: 'Открыть карту',
-    specs: 'Читать корпус .t27',
     core: 'Общее ядро',
     loading: 'Загружаю публичный атлас',
     unavailable: 'Публичный атлас недоступен',
@@ -70,7 +68,6 @@ export default function QueenHeroBlock() {
           <p>{t.body}</p>
           <div className="queen-hero-block-actions">
             <a className="queen-hero-block-primary" href="#/queen">{t.map}</a>
-            <a className="queen-hero-block-secondary" href="#/specs">{t.specs}</a>
             <a className="queen-hero-block-secondary" href="#/queen?view=core">{t.core}</a>
           </div>
         </div>

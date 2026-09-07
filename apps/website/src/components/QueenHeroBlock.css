@@ -1,5 +1,7 @@
+/* No rule under this one: the spec block below is the second half of the same
+   idea, and a divider there made two slabs out of one pair. */
 .queen-hero-block {
-  border-block: 1px solid rgba(0, 255, 136, .24);
+  border-top: 1px solid rgba(0, 255, 136, .24);
   background: #020605;
   color: var(--text, #e7f7fa);
 }
@@ -87,4 +89,11 @@
   .queen-hero-block-inner { grid-template-columns: 1fr; gap: 1.5rem; }
   .queen-hero-block h2 { max-width: 16ch; }
   .queen-hero-block-atlas { height: min(68vh, 520px); min-height: 360px; }
+}
+
+/* Landscape phones: the 420px floor is taller than the screen, so the block
+   alone outgrew the viewport. Same treatment the spec frame gets. */
+@media (max-height: 500px) {
+  .queen-hero-block-inner { padding: 1.25rem 0; gap: 1rem; }
+  .queen-hero-block-atlas { height: 82vh; min-height: 240px; }
 }

@@ -1,5 +1,8 @@
+/* The hive and this block are one idea in two beats — here is the map of the
+   specs, here is a spec — so they read as a pair: no rule between them, and
+   this one answers at a lower pitch instead of repeating the hero's shape. */
 .spec-hero-block {
-  border-block: 1px solid rgba(255, 212, 90, .24);
+  border-bottom: 1px solid rgba(255, 212, 90, .24);
   background: #050403;
   color: var(--text, #e7f7fa);
 }
@@ -7,34 +10,41 @@
 .spec-hero-block-inner {
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: clamp(2rem, 6vw, 4.5rem) 0;
+  padding: clamp(1.5rem, 3.5vw, 2.5rem) 0 clamp(2rem, 6vw, 4.5rem);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: clamp(1.5rem, 4vw, 2.5rem);
   align-items: start;
 }
 
-.spec-hero-block-copy { max-width: 620px; }
+.spec-hero-block-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(1rem, 3vw, 3rem);
+  align-items: end;
+}
+.spec-hero-block-aside { display: grid; gap: .25rem; }
 .spec-hero-block-eyebrow {
   color: #ffd45a;
   font: 600 .72rem/1.2 "JetBrains Mono", monospace;
   letter-spacing: .16em;
   text-transform: uppercase;
 }
+/* Subordinate to the hive's headline rather than a second one its size. */
 .spec-hero-block h2 {
-  max-width: 20ch;
-  margin: .65rem 0 1rem;
-  font: 400 clamp(2rem, 5vw, 4.6rem)/.98 Outfit, sans-serif;
+  max-width: 22ch;
+  margin: .4rem 0 0;
+  font: 400 clamp(1.5rem, 2.7vw, 2.5rem)/1.1 Outfit, sans-serif;
 }
 .spec-hero-block p {
-  max-width: 54ch;
+  max-width: 62ch;
   margin: 0;
   color: #a8c1ba;
-  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  font-size: clamp(.95rem, 1.2vw, 1.05rem);
   line-height: 1.55;
 }
 
-.spec-hero-block-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.5rem; }
+.spec-hero-block-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem; }
 .spec-hero-block-actions a {
   min-height: 44px;
   display: inline-flex;
@@ -69,9 +79,13 @@
   background: #000;
 }
 
+@media (max-width: 900px) {
+  .spec-hero-block-copy { grid-template-columns: minmax(0, 1fr); align-items: start; gap: 1rem; }
+}
+
 @media (max-width: 760px) {
   .spec-hero-block-frame { height: min(78vh, 560px); min-height: 380px; }
-  .spec-hero-block h2 { max-width: 16ch; }
+  .spec-hero-block h2 { max-width: 18ch; }
 }
 
 /* Landscape phones: height is the scarce axis, and a 460px floor would push the

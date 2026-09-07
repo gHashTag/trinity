@@ -38,12 +38,16 @@ export default function SpecHeroBlock() {
     <section className="spec-hero-block" aria-labelledby="spec-hero-title">
       <div className="spec-hero-block-inner">
         <div className="spec-hero-block-copy">
-          <span className="spec-hero-block-eyebrow">{t.eyebrow}</span>
-          <h2 id="spec-hero-title">{t.title}</h2>
-          <p>{t.body}</p>
-          <div className="spec-hero-block-actions">
-            <a className="spec-hero-block-primary" href={full}>{t.open}</a>
-            <a className="spec-hero-block-secondary" href="#/specs">{t.all}</a>
+          <div className="spec-hero-block-lede">
+            <span className="spec-hero-block-eyebrow">{t.eyebrow}</span>
+            <h2 id="spec-hero-title">{t.title}</h2>
+          </div>
+          <div className="spec-hero-block-aside">
+            <p>{t.body}</p>
+            <div className="spec-hero-block-actions">
+              <a className="spec-hero-block-primary" href={full}>{t.open}</a>
+              <a className="spec-hero-block-secondary" href="#/specs">{t.all}</a>
+            </div>
           </div>
         </div>
         <div className="spec-hero-block-frame">
