@@ -3,6 +3,7 @@ import Navigation from './components/Navigation'
 import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
 import QueenHeroBlock from './components/QueenHeroBlock'
+import SpecHeroBlock from './components/SpecHeroBlock'
 import { TnfHero } from './components/sections/tnf'
 
 // Главная строится вокруг одного предмета: .t27-спеки и карта, которая их
@@ -38,6 +39,7 @@ export default function App() {
 
       <TnfHero />
       <QueenHeroBlock />
+      <SpecHeroBlock />
 
       <Suspense fallback={<SectionFallback />}>
         <TnfClaim />

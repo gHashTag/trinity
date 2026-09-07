@@ -1,0 +1,82 @@
+.spec-hero-block {
+  border-block: 1px solid rgba(255, 212, 90, .24);
+  background: #050403;
+  color: var(--text, #e7f7fa);
+}
+
+.spec-hero-block-inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: start;
+}
+
+.spec-hero-block-copy { max-width: 620px; }
+.spec-hero-block-eyebrow {
+  color: #ffd45a;
+  font: 600 .72rem/1.2 "JetBrains Mono", monospace;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.spec-hero-block h2 {
+  max-width: 20ch;
+  margin: .65rem 0 1rem;
+  font: 400 clamp(2rem, 5vw, 4.6rem)/.98 Outfit, sans-serif;
+}
+.spec-hero-block p {
+  max-width: 54ch;
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.55;
+}
+
+.spec-hero-block-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.5rem; }
+.spec-hero-block-actions a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .65rem .9rem;
+  border-radius: 6px;
+  font: 600 .82rem/1.2 "JetBrains Mono", monospace;
+  text-decoration: none;
+}
+.spec-hero-block-primary { background: #ffd45a; color: #1b1400; border: 1px solid #ffd45a; }
+.spec-hero-block-secondary { color: #ffd45a; border: 1px solid #ffd45a88; background: transparent; }
+.spec-hero-block-primary:hover, .spec-hero-block-secondary:hover { filter: brightness(1.12); }
+
+/* The Explorer is a two-pane application, so the frame is sized by what that
+   layout needs rather than by a decorative ratio: a desktop screen's worth,
+   and on a phone the Explorer collapses to one pane and needs the height back. */
+.spec-hero-block-frame {
+  height: min(76vh, 700px);
+  min-height: 460px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 212, 90, .28);
+  background: #000;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+.spec-hero-block-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+
+@media (max-width: 760px) {
+  .spec-hero-block-frame { height: min(78vh, 560px); min-height: 380px; }
+  .spec-hero-block h2 { max-width: 16ch; }
+}
+
+/* Landscape phones: height is the scarce axis, and a 460px floor would push the
+   frame past the screen. Give it most of the viewport and drop the floor. */
+@media (max-height: 500px) {
+  .spec-hero-block-frame { height: 82vh; min-height: 240px; }
+  .spec-hero-block-inner { padding: 1.25rem 0; gap: 1rem; }
+}
