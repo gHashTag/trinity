@@ -222,6 +222,10 @@ const card: React.CSSProperties = {
  * схлопывается, а не показывает битую картинку.
  */
 const BLOG_COVER_VERSIONS: Record<string, string> = {
+  'one-saturation-rule-five-artefacts': '8d746265',
+  'the-only-stable-speed-belonged-to-the-tool': '0b82d063',
+  'queen-foundation-snapshot-contract': '735da00e',
+  'clara-proposal-submitted-not-reviewed': '7c793241',
   'tri-claw-an-agent-you-can-audit': '972e0bab',
 }
 
