@@ -10,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
+import { hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
@@ -32,8 +33,6 @@ import {
   placeCards,
   staleAge,
   moduleCard,
-  moduleFor,
-  pathInTitle,
   type HudModule,
   withOpenIssues,
   countdownFor,
@@ -51,7 +50,7 @@ import {
   foundationCells,
   hexCellCount,
   CASTLE_RING,
-  hiveKey,
+  hiveCoverageFromManifest,
 } from "../components/queenHud";
 import {
   verifyHardwareEnvelope,
@@ -324,6 +323,7 @@ const COPY = {
     hiveLawT27: "T27 covered",
     hiveLawManual: "manual code",
     hiveLawAwaiting: "awaiting T27",
+    hiveLawUnknown: "T27 coverage unknown",
     hiveLawBees: "bees",
     factoryFlow: "ISSUE → SPEC → BEE → REVIEW → EVIDENCE",
     factoryThroughput: "Live utilization",
@@ -585,6 +585,7 @@ const COPY = {
     hiveLawT27: "покрыто T27",
     hiveLawManual: "ручной код",
     hiveLawAwaiting: "ждёт T27",
+    hiveLawUnknown: "покрытие T27 неизвестно",
     hiveLawBees: "пчёлы",
     factoryFlow: "ISSUE → SPEC → BEE → REVIEW → EVIDENCE",
     factoryThroughput: "Живая загрузка",
@@ -819,8 +820,8 @@ function useQueenStatus(): LoadState {
  * The repository's modules (M-2): public/queen/modules.json, a scan stamped
  * with its commit, until /queen/public-modules exists on the server (M-1).
  */
-function useQueenModules(): { data: { commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null; error: string | null } {
-  const [data, setData] = useState<{ commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null>(null);
+function useQueenModules(): { data: { repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null; error: string | null } {
+  const [data, setData] = useState<{ repo?: string; commit: string | null; generatedAt: string; modules: HudModule[]; source: "wire" | "file" } | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
@@ -845,43 +846,25 @@ function useQueenModules(): { data: { commit: string | null; generatedAt: string
   return { data, error };
 }
 
-interface T27ManifestSpec {
-  path?: string | null;
-  module?: string | null;
-  name?: string | null;
-  repo?: string | null;
-}
-
 /**
- * What T27 really claims in this repository. Only trinity rows from the
- * manifest may turn a cell yellow; every other module stays manual or awaiting.
- * A failed read is not zero coverage — it is unknown coverage, so the set stays
- * null and the comb keeps its previous law rather than painting a false result.
+ * Bind corpus claims to the displayed module snapshot, not to the board repo.
+ * Retain raw data so a repo change cannot reuse the previous repo's coverage.
+ * Failed/unavailable reads remain explicitly unknown.
  */
-function useT27Coverage(): ReadonlySet<string> | null {
-  const [coverage, setCoverage] = useState<ReadonlySet<string> | null>(null);
+function useT27Coverage(repository: string | null): ReadonlySet<string> | null {
+  const [manifest, setManifest] = useState<unknown>(null);
   useEffect(() => {
     let active = true;
     fetch("t27/manifest.json", { headers: { Accept: "application/json" }, cache: "default" })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json() as Promise<{ specs?: T27ManifestSpec[] }>;
+        return response.json() as Promise<unknown>;
       })
-      .then((manifest) => {
-        if (!active || !Array.isArray(manifest.specs)) return;
-        const next = new Set<string>(["specs", "tests/t27", "rings/t27"]);
-        for (const spec of manifest.specs) {
-          if (spec.repo !== "trinity") continue;
-          for (const value of [spec.module, spec.name]) {
-            if (typeof value === "string" && value.length > 0) next.add(hiveKey(value));
-          }
-        }
-        setCoverage(next);
-      })
+      .then((next) => { if (active) setManifest(next); })
       .catch(() => {});
     return () => { active = false; };
   }, []);
-  return coverage;
+  return useMemo(() => hiveCoverageFromManifest(manifest, repository), [manifest, repository]);
 }
 
 /** The loop's GitHub snapshot: closed issues (the foundation), epics (the castle), rings, releases. */
@@ -1917,8 +1900,10 @@ export default function Queen() {
   // dormant), so territories and the buildings' kinds follow.
   const modulesState = useQueenModules();
   const foundationState = useQueenFoundation();
-  const t27Coverage = useT27Coverage();
-  const closedCount = foundationState.data?.closedIssues.length ?? 0;
+  const t27Coverage = useT27Coverage(modulesState.data?.repo ?? null);
+  const hiveFoundation = hiveSameRepositorySnapshot(repo, foundationState.data);
+  const closedCount = hiveFoundation?.closedIssues.length ?? 0;
+  const hiveRecords = useMemo(() => hiveDisplayRecords(repo, cards, hiveFoundation), [repo, cards, hiveFoundation]);
   const rawModules = modulesState.data?.modules ?? EMPTY_MODULES;
   // the board knows the issues; every row gets its open issues from the cards
   const modules = useMemo(() => withOpenIssues(rawModules, cards), [rawModules, cards]);
@@ -1933,7 +1918,14 @@ export default function Queen() {
   // minimap and the pick all see the same placement in the same frame.
   // the field is as large as the honey needs (the hub plus modules or closed issues) and, when the
   // snapshot names ring directories, at least the castle's ring 7 with its plinths
-  const fieldNeed = Math.max(moduleCards.length + 1, closedCount + 1, (foundationState.data?.rings.length ?? 0) > 0 ? hexCellCount(CASTLE_RING) + 1 : 0);
+  const fieldNeed = Math.max(moduleCards.length + 1, closedCount + 1, hiveRecords.length + 1, (hiveFoundation?.rings.length ?? 0) > 0 ? hexCellCount(CASTLE_RING) + 1 : 0);
+  const [hivePlacement, setHivePlacement] = useState<{ rows: HiveDisplay[]; placed: (HiveDisplay | null)[]; ledger: Map<string, number> }>(() => ({ rows: hiveRecords, ...placeHiveDisplays(new Map(), hiveRecords, hexField(fieldNeed).cellCount) }));
+  let hiveCells = hivePlacement.placed;
+  if (hivePlacement.rows !== hiveRecords || hiveCells.length !== hexField(fieldNeed).cellCount) {
+    const next = placeHiveDisplays(hivePlacement.ledger, hiveRecords, hexField(fieldNeed).cellCount);
+    hiveCells = next.placed;
+    setHivePlacement({ rows: hiveRecords, ...next });
+  }
   const [placement, setPlacement] = useState<{
     cards: QueenCard[];
     placed: (QueenCard | null)[];
@@ -2060,16 +2052,6 @@ export default function Queen() {
   const bellSpan = useMemo(() => alertSpan(activityState.data?.observedFrom ?? null, now), [activityState.data?.observedFrom, now]);
   const bellSpanText = bellSpan ? formatInterval(bellSpan.seconds, lang) : null;
   const cellSummaries = useMemo(() => hexCellSummaries(placedCards), [placedCards]);
-  // Bees are the issues in progress: each walks to the module its title names.
-  const beeTargets = useMemo<Array<number | null>>(() => {
-    const byNumber = new Map<number, number>();
-    cellSummaries.forEach((cell, i) => { if (cell.cardNumber !== null) byNumber.set(cell.cardNumber, i); });
-    return cards.filter((c) => c.column === "running").map((c) => {
-      const path = pathInTitle(c.title);
-      const m = path ? moduleFor(path, modules) : null;
-      return m ? (byNumber.get(moduleCard(m, now, runningIssues).number) ?? null) : null;
-    });
-  }, [cellSummaries, cards, modules, now, runningIssues]);
   const sectors = useMemo(
     () => sectorRows(boardColumns, cards),
     [boardColumns, cards],
@@ -2093,7 +2075,7 @@ export default function Queen() {
   // without one (the Queen's cell, an empty cell) keeps its index; a card that
   // left the board clears the pick. Derived, never stored.
   // the honey under the cells, for picks by issue number (H-E)
-  const foundationByIndex = useMemo(() => (foundationState.data ? foundationCells(foundationState.data.closedIssues, cellSummaries.length) : null), [foundationState.data, cellSummaries.length]);
+  const foundationByIndex = useMemo(() => (hiveFoundation ? foundationCells(hiveFoundation.closedIssues, cellSummaries.length) : null), [hiveFoundation, cellSummaries.length]);
   const foundationIndexByNumber = useMemo(() => { const m = new Map<number, number>(); foundationByIndex?.forEach((issue, i) => { if (issue) m.set(issue.number, i); }); return m; }, [foundationByIndex]);
   const livePick = useMemo<HudPick | null>(() => {
     if (!pick) return null;
@@ -2631,7 +2613,7 @@ export default function Queen() {
         data-pick-territory={livePick?.territory ?? undefined}
         data-pick-module={livePick?.module?.path ?? undefined}
         data-modules={modulesState.data ? `${modules.length}@${modulesState.data.commit ?? "?"}:${modulesState.data.source}` : undefined}
-        data-foundation={foundationState.data ? `${foundationState.data.closedIssues.length}@${foundationState.data.generatedAt}:${foundationState.data.source}` : undefined}
+        data-foundation={hiveFoundation ? `${hiveFoundation.closedIssues.length}@${hiveFoundation.generatedAt}:${hiveFoundation.source}` : undefined}
         data-layers={FIELD_LAYERS.filter((k) => layers[k]).join(",") || "none"}
       >
         <header className="queen27-hud-vp-head">
@@ -2661,7 +2643,7 @@ export default function Queen() {
                     data-layer={k}
                     aria-pressed={layers[k]}
                     aria-label={c[LAYER_COPY[k]]}
-                    title={k === "foundation" ? (foundationState.data ? `${c[LAYER_COPY[k]]} · ${foundationState.data.closedIssues.length} ${c.hudClosed} · ${c.hudFoundationSnapshot} ${formatMoment(foundationState.data.generatedAt, lang)} · ${foundationState.data.source}` : `${c[LAYER_COPY[k]]} · —`) : c[LAYER_COPY[k]]}
+                    title={k === "foundation" ? (hiveFoundation ? `${c[LAYER_COPY[k]]} · ${hiveFoundation.closedIssues.length} ${c.hudClosed} · ${c.hudFoundationSnapshot} ${formatMoment(hiveFoundation.generatedAt, lang)} · ${hiveFoundation.source}` : `${c[LAYER_COPY[k]]} · —`) : c[LAYER_COPY[k]]}
                     onClick={() => setLayers((l) => ({ ...l, [k]: !l[k] }))}
                   >
                     <i aria-hidden="true">{LAYER_GLYPH[k]}</i>
@@ -2745,10 +2727,13 @@ export default function Queen() {
             ENGINE_FLAG !== "canvas" ? (
               <Suspense fallback={null}>
                 <QueenCombBabylon
+                  displays={hiveCells}
+                  lang={lang === 'ru' ? 'ru' : 'en'}
+                  onInspect={() => setContextOpen(false)}
                   cards={placedCards}
                   modules={modulesById}
-                  beeTargets={beeTargets}
-                  foundation={foundationState.data ? { issues: foundationState.data.closedIssues, generatedAt: foundationState.data.generatedAt, source: foundationState.data.source, rings: foundationState.data.rings, epics: foundationState.data.epics, releases: foundationState.data.releases } : null}
+                  beeTargets={runningCards.map(card => { const index = hiveCells.findIndex(row => row?.number === card.number); return index >= 0 ? index : null; })}
+                  foundation={hiveFoundation ? { issues: hiveFoundation.closedIssues, generatedAt: hiveFoundation.generatedAt, source: hiveFoundation.source, rings: hiveFoundation.rings, epics: hiveFoundation.epics, releases: hiveFoundation.releases } : null}
                   layers={layers}
                   handleRef={combRef}
                   workers={workers}
@@ -2757,7 +2742,7 @@ export default function Queen() {
                   fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
                   events={events}
                   t27Coverage={t27Coverage}
-                  law={{ t27: c.hiveLawT27, manual: c.hiveLawManual, awaiting: c.hiveLawAwaiting, bees: c.hiveLawBees }}
+                  law={{ t27: c.hiveLawT27, manual: c.hiveLawManual, awaiting: c.hiveLawAwaiting, unknown: c.hiveLawUnknown, bees: c.hiveLawBees }}
                 />
               </Suspense>
             ) : (

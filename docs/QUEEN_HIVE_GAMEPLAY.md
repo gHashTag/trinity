@@ -21,8 +21,9 @@ The full cycle is:
 5. **Evidence** — accepted work records the proof and seals the corresponding
    cell.
 
-A cell becomes capped only when its issue is closed. A pretty yellow rim never
-substitutes for an accepted spec and evidence.
+The issue's explicit Closed state records closure. A dark display face is just
+its screen, not evidence of completion. A pretty yellow rim never substitutes
+for an accepted spec and evidence.
 
 ## The field
 
@@ -32,9 +33,13 @@ is not a 3D character or a separate object. Every module, issue and event is a
 honeycomb cell.
 
 The pointer is part of the game language. Hover or tap raises the cell and draws
-the honey-colored nectar ring. A click selects it and opens its context. Pan,
-wheel zoom and FIT VIEW use the same wall-plane geometry as picking, so the cell
-under the hand remains the cell the game reads.
+the honey-colored nectar ring. A click or tap on an issue display frames that
+issue at reading size. Inspect and Whole hive are keyboard-operable alternatives;
+wheel and +/- permit manual zoom up to128x. Long content scrolls inside its
+screen; Ctrl+wheel zooms the map even over scrollable text. FIT VIEW returns to
+the overview. Ordinary data refresh and RU/EN changes preserve the selected
+identity and manually adjusted camera. Reduced-motion stops idle wall drift
+and camera interpolation.
 
 ## Colour law
 
@@ -47,19 +52,46 @@ There are exactly three claim colors:
 
 Honey `#FFC24D` is reserved for pointer hover. It is not a progress state.
 
-The manifest is the source for yellow: only `repo: "trinity"` spec claims may
-turn a module yellow. A missing, stale or unparseable manifest never becomes
-zero coverage; it remains unknown coverage.
+The manifest is the source for yellow: its repository must match the module
+snapshot's repository, with a versioned corpus entry and an exact relative
+`modulePath` claimed by a `.t27` row in `coverageSchemaVersion: 1`. The current
+producer emits only a language/display `module` label, not such a mapping;
+legacy manifests therefore remain unknown. This mapping schema is a consumer
+contract for the future evidence pipeline, not data we have fabricated.
+Folder names, display names and basenames
+are not coverage evidence. The current `trios` snapshot is not represented in
+the manifest: its coverage is **unknown**, not borrowed from `trinity`.
+Unknown coverage is neon blue with an explicit RU/EN label. Red means no exact
+claim in a known corpus (migration debt), not a proof of manual authorship.
+The manifest is a source claim, not live generated-code parity or acceptance;
+source-commit freshness still needs a separate verification pipeline.
+Issues and modules have separate placement identities. The issue-display layer
+has no issue-to-module proof in its public ledger, so every issue and epic has
+explicit unknown coverage even if a module corpus becomes available. It cannot
+inherit yellow or red from a colocated module. Completion is a different field.
 
 ## Hive display
 
-The latest wire event per module becomes a compact card on its cell, bounded by
-the hexagon: issue number, event kind, module path and age. The display is
-capped at twelve newest cards so the wall remains readable. Older facts remain
-available through the feed and the repository record.
+Each same-repository issue or epic is one display, identified by repository and
+number. The live board overrides historical closure, so a reopened issue never
+stays falsely closed. Stable placement leases keep neighbours in place when
+the board changes. A foreign foundation snapshot is not merged or rendered.
 
-Event cards use the existing hive architecture: a dark cell face, one event-tone
-border and monospaced slots. KIE.AI may generate optional card/frame textures
+Semantic zoom reveals the number, title, then full status, coverage, events and
+canonical GitHub link. Text uses native DOM rendering, outside bloom, not a
+256px texture enlarged with the scene. At most32 visible displays are rendered;
+the full issue/epic chooser remains available. The canvas uses up to2x backing
+resolution. Unchanged projections and chooser options are reused.
+
+The last three events join by exact issue number, never title, module hash or
+cell index. Same-second events preserve source wire order. An epic includes
+only its own events and explicitly listed children's events, with each source
+issue number shown; progress counts explicit children and live board state.
+An empty feed is labeled, never filled with synthetic activity. Older facts
+remain in the feed and the repository record.
+
+Event cards use the existing hive architecture: a graphite hexagonal screen,
+neon-cyan information, honey focus and sharp monospaced text. KIE.AI may generate optional card/frame textures
 through `apps/website/scripts/queen-kie-assets.mjs`, but generated art may never
 add a state or number that the wire did not send. The current KIE key returns
 401 “Organization access is disabled”; no generated asset is shipped or claimed.
@@ -74,9 +106,10 @@ Each round Queen prioritizes:
 3. a review that can unblock a capped cell;
 4. only then work outside `trios`.
 
-Bees are real worker slots. They fly toward the module named by their current
-event, never toward decorative targets. An event without a resolvable module
-lights nothing rather than guessing.
+Bees are real worker slots. In the issue-display layer their targets use exact
+running issue numbers. An unmapped target falls back to the hub, never to a
+module position or a fabricated issue. Slots are anonymous, so visual assignment
+does not prove a persistent worker-to-issue identity. Motion is not throughput.
 
 ## Winning and losing
 
