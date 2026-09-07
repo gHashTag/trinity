@@ -48,6 +48,8 @@ description: Maintain QUEEN's floating hive, original point-down TRINITY logo, s
   directional gradients. Keep golden contours and sharp text. Update both CSS
   faces and GPU caps; zoom must not restore an opaque fill. Do not restyle red
   issues or repository portals for this correction.
+  Do not draw a stacked honey GPU cap for catalog specs: the gold contour is the
+  spec surface. Never cover the cell with a second card, volume or gradient.
   Repo portals scale down with projected cells, never fixed-size overlays at
   overview. Keep portals nearly transparent with NO backdrop blur; it smears the
   gold core. Hide tiny text at low LOD. Preserve the approved light original look.
@@ -75,6 +77,14 @@ description: Maintain QUEEN's floating hive, original point-down TRINITY logo, s
   Newer recovery updates ring color without resetting its short TTL. Running
   board rows alone drive working rings. Stale data retains fills but suppresses
   relevant live animation; reduced-motion is static. Duplicate meanings in text.
+
+- UX guardrails: this is one game window and one dynamic context panel. Do not
+  open new browser tabs for issue/spec collaboration, do not replace the game
+  with a generic dashboard, and do not change the shared header/logo treatment
+  while tuning mobile UX. Improve by small, reversible iterations against the
+  existing canon. GitHub issue identity stays visible at repository level and
+  on the selected issue; controls remain English and source titles are quoted
+  data, never translated by mutating the upstream issue.
 
 Before changing orientation, add a failing projection/interaction regression.
 Run `npm run check:queen-displays` in `apps/website` (includes Babylon projection

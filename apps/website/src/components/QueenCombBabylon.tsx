@@ -556,6 +556,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // not a material/texture per issue. Empty cells and the hub receive no fill.
     const capBatches = new Map<HiveTaskTone | 'legacy', number[]>();
     const drawCaps = (tone: HiveTaskTone | 'legacy', matrices: number[]) => {
+      // Spec cells are the map's transparent gold outlines, not a second wall
+      // of stacked volumes over the shared core.
+      if (tone === 'honey' && catalogRef.current) return;
       const material = new StandardMaterial(`cap-${tone}`, scene);
       material.diffuseColor = Color3.Black(); material.specularColor = Color3.Black();
       material.disableLighting = true;
@@ -596,7 +599,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
           const paint = resource?{tone:resource.kind==='spec'?'honey' as const:resource.open===null?'paused' as const:resource.open>0?'problem' as const:'active' as const}:displaysRef.current ? hiveTaskPaint(displaysRef.current[i]) : null;
           const tint = paint ? Color3.FromHexString(HIVE_TASK_PALETTE[paint.tone].hex) : null;
           const tone = tint ? [tint.r, tint.g, tint.b] : issue ? hiveToneOf(covers[i]) : [0.11, 0.34, 0.33, 1];
-          const c4 = new Color4(tone[0], tone[1], tone[2], issue||resource ? 0.95 : 0.34);
+          const c4 = new Color4(tone[0], tone[1], tone[2], resource?.kind === 'spec' ? 0.28 : issue||resource ? 0.95 : 0.34);
           lineColours.push(Array.from({ length: 7 }, () => c4));
           if (issue||resource) {
             const batch = paint?.tone ?? 'legacy';
