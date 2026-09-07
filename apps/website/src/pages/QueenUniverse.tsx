@@ -23,7 +23,7 @@ function errorCopy(error:string,c:Copy) { return error==='rate-limit'?c.rate:err
 function readSaved() { try{return savedWorlds(localStorage.getItem(WORLD_STORAGE));}catch{return [...PINNED_WORLDS];} }
 
 export default function QueenUniverse() {
-  const {lang:rawLang,setLang}=useI18n(),lang=rawLang==='ru'?'ru':'en',c=WORDS[lang];
+  const {lang:rawLang}=useI18n(),lang=rawLang==='ru'?'ru':'en',c=WORDS[lang];
   const [params,setParams]=useSearchParams();
   const repo=parseWorldRepository(params.get('repo')??'')??PINNED_WORLDS[0];
   const coreView=params.get('view')==='core';
@@ -55,7 +55,6 @@ export default function QueenUniverse() {
       <select aria-label={c.choose} value={commonHive?(worlds.includes(params.get('world')??'')?params.get('world')!:''):repo} onChange={e=>e.target.value?choose(e.target.value):setParams(new URLSearchParams())}><option value="">{lang==='ru'?'Все репозитории · общая карта':'All repositories · shared map'}</option>{worlds.map(world=><option key={world} value={world}>{world}</option>)}</select>
       {repo!==PINNED_WORLDS[1]&&<button className="queen-world-shortcut" onClick={()=>choose(PINNED_WORLDS[1])}>T27 ↗</button>}
       <button className="queen-world-connect" onClick={()=>dialog.current?.showModal()}>{c.connect}</button>
-      <button className="queen-world-lang" onClick={()=>setLang(lang==='ru'?'en':'ru')}>RU / EN</button>
       <button aria-pressed={atlasView} onClick={()=>setParams(new URLSearchParams())}>{lang==='ru'?'◈ Главная игры':'◈ Game home'}</button>
       <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView)n.delete('view');else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
     </nav>
