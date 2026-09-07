@@ -38,7 +38,11 @@ This is a game, not a dashboard.
 - Use one context window/panel at a time. Selecting an issue or spec replaces the current context in the same game screen.
 - On narrow screens, the Specs tab stays in the bottom command rail, has at least a 44px touch target, and has an explicit `Specs` label. The rail may scroll horizontally; do not shrink controls to unreadable icons.
 - On phones, prioritize the field over metrics and search controls. Keep search behind the visible `Find cells` action and preserve pan, pinch zoom, hover, tap, and fit-view behavior.
-- The homepage can show the compact Queen launch block below the existing Hero. It must reuse the atlas and route to `#/queen` or `#/queen?view=core`; never embed a second Queen Babylon scene or fork atlas logic.
+- The homepage mounts the hive itself below the Hero, not a picture of it: the block
+  renders the same `QueenCatalogHive` the `#/queen` route renders, lazily, and keeps the
+  links to `#/queen`, `#/specs` and `#/queen?view=core`. One instance is ever mounted,
+  because the homepage and `#/queen` are different routes. Reuse that component and the
+  shared atlas — never fork atlas logic or write a second Babylon scene.
 - The homepage and game must not acquire generic gradients, nested cards, purple defaults, or a redesigned global header.
 - The language selector is global. Never add a local `RU / EN` switch inside QueenUniverse or Queen.
 - Existing local browser page must remain the page used for visual QA. Refresh or resize it; do not open a new tab.
