@@ -41,6 +41,11 @@ assert.equal(h.hiveIssueUrl(repo,7),'https://github.com/gHashTag/trios/issues/7'
 assert.equal(h.hiveIssueUrl('evil.example/a',NaN),null);
 const scene=readFileSync(new URL('../src/components/QueenCombBabylon.tsx',import.meta.url),'utf8');
 const page=readFileSync(new URL('../src/pages/Queen.tsx',import.meta.url),'utf8');
+const cards=readFileSync(new URL('../src/components/QueenHiveDisplays.tsx',import.meta.url),'utf8');
+assert.match(cards, /<option[^>]*data-lang-exempt="github-title"[^>]*>[^<]*\{row.title\}/, 'quoted option titles retain the existing source-language boundary');
+assert.match(cards, /<h3 data-lang-exempt="github-title"[^>]*>\{row.title\}<\/h3>/, 'close-up source title is not mistranslated');
+assert.doesNotMatch(cards, /<(?:article|select|button|div)[^>]*data-lang-exempt/, 'UI controls and card chrome remain audited');
+assert.match(cards, /title=\{c.sourceTitle\}/, 'source-language explanation is localized');
 assert.match(scene,/displaysRef.current\[i\]\?\.coverage \?\? 'awaiting'/,'issue coverage cannot use colocated module');
 assert.match(scene,/\(displays \|\| t27Coverage === null\) && <span data-law="unknown"/,'issue overview stays unknown even with a known module corpus');
 assert.match(scene,/const fallback = displaysRef.current \? undefined : running\[busyRank\]/,'unmapped Bee never falls back to module cells');

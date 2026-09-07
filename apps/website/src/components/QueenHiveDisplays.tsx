@@ -4,6 +4,7 @@ import { hiveDisplayEvents, hiveDisplayLod, hiveEpicProgress, hiveIssueUrl, type
 
 export interface HiveDisplayController { inspect(index: number): void; overview(): void; hover(index: number | null): void }
 const WORDS = {
+  // GitHub titles are quoted source, never silently translated or renamed.
   en: { inspect:'Inspect cell', overview:'Whole hive', choose:'Choose issue or epic', issue:'Issue', epic:'Epic', events:'Latest events', empty:'No events in the public feed', open:'Open in GitHub', children:'Children complete', unknown:'Coverage unknown', hint:'Tap a cell to inspect · wheel / + − to zoom', closed:'Closed', openState:'Open', running:'Running', review:'Review', backlog:'Backlog', blocked:'Blocked', dropped:'Dropped', dispatch:'Dispatched', progress:'Progress', tool:'Tool', result:'Result', usage:'Usage', error:'Error', finished:'Finished', reviewEvent:'Queen review' },
   ru: { inspect:'Рассмотреть соту', overview:'Весь улей', choose:'Выбрать задачу или эпик', issue:'Задача', epic:'Эпик', events:'Последние события', empty:'В публичной ленте нет событий', open:'Открыть в GitHub', children:'Завершено задач', unknown:'Покрытие неизвестно', hint:'Тап по соте — крупный план · колесо / + − — масштаб', closed:'Закрыто', openState:'Открыто', running:'В работе', review:'Ревью', backlog:'Беклог', blocked:'Блокер', dropped:'Отложено', dispatch:'Назначена', progress:'Прогресс', tool:'Инструмент', result:'Результат', usage:'Метрики', error:'Ошибка', finished:'Завершена', reviewEvent:'Ревью Queen' },
 };
@@ -12,7 +13,7 @@ export function QueenHiveDisplays({ rows, projections, selected, events, lang, c
   rows: readonly (HiveDisplay | null)[]; projections: HiveDisplayProjection[]; selected: number | null;
   events: readonly HudEvent[]; lang: 'ru' | 'en'; controller: HiveDisplayController | null;
 }) {
-  const c = WORDS[lang];
+  const c = { ...WORDS[lang], sourceTitle: lang === 'ru' ? 'Заголовок GitHub — на языке оригинала' : 'GitHub title — original language' };
   const layerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const layer = layerRef.current; if(!layer) return;
@@ -27,7 +28,7 @@ export function QueenHiveDisplays({ rows, projections, selected, events, lang, c
     return () => layer.removeEventListener('wheel',onWheel);
   }, []);
   const available = useMemo(() => rows.flatMap((row,index) => row ? [{row,index}] : []), [rows]);
-  const optionNodes = useMemo(() => available.map(({row,index}) => <option key={row.key} value={index}>{row.kind === 'epic' ? '⬡ ' : ''}#{row.number} {row.title}</option>), [available]);
+  const optionNodes = useMemo(() => available.map(({row,index}) => <option key={row.key} value={index} data-lang-exempt="github-title">{row.kind === 'epic' ? '⬡ ' : ''}#{row.number} {row.title}</option>), [available]);
   const allRows = useMemo(() => available.map(v=>v.row), [available]);
   const defaultIndex = useMemo(() => {
     const byNumber = new Map(available.map(v => [v.row.number,v.index]));
@@ -39,7 +40,7 @@ export function QueenHiveDisplays({ rows, projections, selected, events, lang, c
   const eventLabel = (event: HudEvent) => event.kind === 'review' ? c.reviewEvent : c[event.kind];
   return <>
     <div className="queen-hive-inspect-tools">
-      <select aria-label={c.choose} value={selected ?? ''} onChange={e => inspect(Number(e.target.value))}>
+      <select aria-label={c.choose} title={c.sourceTitle} value={selected ?? ''} onChange={e => inspect(Number(e.target.value))}>
         <option value="" disabled>{c.choose}</option>
         {optionNodes}
       </select>
@@ -63,7 +64,7 @@ export function QueenHiveDisplays({ rows, projections, selected, events, lang, c
               <span>{row.kind === 'epic' ? c.epic : c.issue}</span><strong>#{row.number}</strong>
             </button>
             <span className="queen-hive-display-state">{stateLabel(row.state)}</span>
-            {(lod === 'title' || lod === 'detail') && <h3>{row.title}</h3>}
+            {(lod === 'title' || lod === 'detail') && <h3 data-lang-exempt="github-title" title={c.sourceTitle}>{row.title}</h3>}
             {lod === 'detail' && <>
               <p className="queen-hive-display-coverage">{c.unknown}</p>
               {row.kind === 'epic' && <div className="queen-hive-epic-progress"><span>{c.children}: {progress.done}/{progress.total}</span>{progress.total > 0 && <progress aria-label={c.children} max={progress.total} value={progress.done}/>}</div>}

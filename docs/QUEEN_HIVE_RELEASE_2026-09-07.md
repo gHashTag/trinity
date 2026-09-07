@@ -48,3 +48,14 @@ runtime checks are the scoped release gates, not a claim of a clean whole repo.
 
 Prior RED/GREEN and review evidence: QUEEN_HIVE_DISPLAY_EVIDENCE.jsonl.
 Append this release's observations to that ledger without rewriting history.
+
+## Release finding: quoted GitHub titles
+
+Website checks34113558226 failed EN audit on /queen and /tree. The new chooser
+exposes historical source titles in their original language (for example trios
+issue33). Preserve these exact titles and links: do not silently translate or
+rename GitHub history. Only the individual source-title option and heading may
+use the existing data-lang-exempt boundary. The select placeholder, controls,
+states, event headings and whole card must remain subject to RU/EN audits.
+Provide a localized explanation that GitHub titles retain their original
+language. Regression checks must reject a broad card/control exemption.
