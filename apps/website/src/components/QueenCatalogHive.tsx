@@ -22,12 +22,45 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
   const toolbar=useRef<HTMLDivElement>(null);
   const [toolsOpen,setToolsOpen]=useState(false);
   useEffect(()=>{const node=toolbar.current;if(!node)return;const measure=()=>node.parentElement?.style.setProperty('--catalog-headroom',`${node.getBoundingClientRect().height}px`);const observer=new ResizeObserver(measure);observer.observe(node);measure();return()=>observer.disconnect();},[]);
+  // A region label is centred on its portal and hangs above it, so half of it sits
+  // outside the layer whenever the portal drifts to an edge -- on a 390px phone
+  // trinity-fpga rendered at left:-31 and read as "ity-fpga". The label box is
+  // clamped into the measured layer instead.
+  const labels=useRef<HTMLDivElement>(null);
+  const [field,setField]=useState({width:0,height:0});
+  const [regionHeight,setRegionHeight]=useState(49);
+  useEffect(()=>{const node=labels.current;if(!node)return;const measure=()=>setField(prev=>prev.width===node.clientWidth&&prev.height===node.clientHeight?prev:{width:node.clientWidth,height:node.clientHeight});const observer=new ResizeObserver(measure);observer.observe(node);measure();return()=>observer.disconnect();},[]);
   const [selected,setSelected]=useState<number|null>(null),[projections,setProjections]=useState<HiveDisplayProjection[]>([]),[query,setQuery]=useState(''),[limit,setLimit]=useState(8),[packet,setPacket]=useState(''),[copied,setCopied]=useState(false);
   const [regionProjections,setRegionProjections]=useState<HiveDisplayProjection[]>([]);
   const resource=selected===null?null:map.cells[selected];
   const spec=resource?.kind==='spec'?atlas.specs.find(s=>s.id===resource.specId):null;
   const selection=useMemo(()=>catalogSpecSelection(map,selected),[map,selected]);
   const linked=resource?atlas.issues.filter(i=>resource.kind==='repo'?i.repo===resource.repo:i.hits.some(h=>h.specId===resource.specId)):[];
+  // Region labels are placed here rather than inline so that two rules hold at once:
+  // each label is clamped inside the measured layer, and a label that would bury an
+  // already placed one is dropped. At 320x568 the five portals project into the same
+  // few hundred pixels and the labels stacked into one unreadable pile; the widest
+  // portal keeps its label and the rest get theirs back as soon as zoom separates them.
+  const placedRegions=useMemo(()=>{
+    const taken:{x0:number;x1:number;y0:number;y1:number}[]=[];
+    const step=regionHeight+6,lifts=[0,-step,step,-2*step,2*step,-3*step,3*step];
+    return [...regionProjections].sort((a,b)=>b.width-a.width).flatMap(p=>{
+      const row=map.cells[p.index];
+      if(row?.kind!=='repo')return [];
+      const cap=Math.max(90,Math.min(200,p.width)),half=cap/2;
+      const x=field.width>=cap+8?Math.min(Math.max(p.x,half+4),field.width-half-4):p.x;
+      const floor=regionHeight+4,ceil=field.height?field.height-4:Number.POSITIVE_INFINITY;
+      for(const lift of lifts){
+        const y=Math.min(Math.max(p.y+lift,floor),ceil);
+        if(lift&&Math.abs(y-p.y)<Math.abs(lift)-0.5)continue;      // the clamp swallowed the lift, so it is not a new slot
+        const box={x0:x-half,x1:x+half,y0:y-regionHeight,y1:y};
+        if(taken.some(b=>box.x0<b.x1&&box.x1>b.x0&&box.y0<b.y1&&box.y1>b.y0))continue;
+        taken.push(box);
+        return [{row,index:p.index,x,y,cap}];
+      }
+      return [];
+    });
+  },[regionProjections,map,field,regionHeight]);
   const options=useMemo(()=>map.cells.flatMap((resource,index)=>{
     const issue=world.displays[index],row=resource??issue;
     if(!row)return [];
@@ -62,10 +95,10 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       <button onClick={()=>control.current?.overview()}>{ru?'Вся карта':'Whole map'}</button>
     </div>
     </div>
-    <div className="queen-hive-displays queen-catalog-labels">{foundationVisible&&projections.map(p=>{const row=map.cells[p.index];if(!row)return null;const repo=row.kind==='repo',size=catalogPortalSize(p.width),rgb=repo?(row.open===null?'187 150 255':row.open>0?'255 77 94':'100 220 255'):'255 212 90';return <button key={row.key} className={`queen-hive-display queen-catalog-cell ${repo?'is-source':''}`} data-catalog-cell={row.key} data-kind={row.kind} data-placement={row.kind==='spec'?row.placement:undefined} data-related={selection.indices.includes(p.index)} data-lod={repo&&!size.readable?'overview':'title'} aria-label={row.title} title={row.title} data-focused={p.index===selected} onClick={()=>control.current?.inspect(p.index)} onPointerEnter={()=>control.current?.hover(p.index)} onPointerLeave={()=>control.current?.hover(null)} style={{left:p.x,top:p.y,...(!repo?{width:p.width*.94,height:p.height*.94}:{width:size.width,height:size.height}),'--hive-task-rgb':rgb} as CSSProperties}>
+    <div className="queen-hive-displays queen-catalog-labels" ref={labels}>{foundationVisible&&projections.map(p=>{const row=map.cells[p.index];if(!row)return null;const repo=row.kind==='repo',size=catalogPortalSize(p.width),rgb=repo?(row.open===null?'187 150 255':row.open>0?'255 77 94':'100 220 255'):'255 212 90';return <button key={row.key} className={`queen-hive-display queen-catalog-cell ${repo?'is-source':''}`} data-catalog-cell={row.key} data-kind={row.kind} data-placement={row.kind==='spec'?row.placement:undefined} data-related={selection.indices.includes(p.index)} data-lod={repo&&!size.readable?'overview':'title'} aria-label={row.title} title={row.title} data-focused={p.index===selected} onClick={()=>control.current?.inspect(p.index)} onPointerEnter={()=>control.current?.hover(p.index)} onPointerLeave={()=>control.current?.hover(null)} style={{left:p.x,top:p.y,...(!repo?{width:p.width*.94,height:p.height*.94}:{width:size.width,height:size.height}),'--hive-task-rgb':rgb} as CSSProperties}>
       <span className="queen-hive-display-content"><strong>{repo?row.repo.split('/')[1]:row.title.split('/').at(-1)}</strong><small>{repo?`${row.count} .t27`:'.t27'}</small>{repo&&<small>{row.open??'?'} {ru?'открыто':'open'}</small>}</span>
     </button>;})}
-      {foundationVisible&&regionProjections.map(p=>{const row=map.cells[p.index];if(row?.kind!=='repo')return null;return <button key={row.key} className="queen-catalog-region" data-catalog-region={row.repo} onClick={()=>control.current?.inspect(p.index,true)} style={{left:p.x,top:Math.max(24,p.y),maxWidth:Math.max(90,Math.min(200,p.width))}}><strong>{row.repo.split('/')[1]}</strong><small className="queen-catalog-gold">{row.count} .t27</small><small>{world.displays.filter(i=>i?.repo===row.repo).length} issues · {ru?'приблизить':'zoom in'}</small></button>;})}
+      {foundationVisible&&placedRegions.map(({row,index,x,y,cap})=><button key={row.key} ref={node=>{if(node&&node.offsetHeight&&node.offsetHeight!==regionHeight)setRegionHeight(node.offsetHeight);}} className="queen-catalog-region" data-catalog-region={row.repo} onClick={()=>control.current?.inspect(index,true)} style={{left:x,top:y,maxWidth:cap}}><strong>{row.repo.split('/')[1]}</strong><small className="queen-catalog-gold">{row.count} .t27</small><small>{world.displays.filter(i=>i?.repo===row.repo).length} issues · {ru?'приблизить':'zoom in'}</small></button>)}
     </div>
     {!specPath&&resource&&(!repo||!focus?.number)&&<aside className="queen-catalog-detail" aria-label={ru?'Выбранная сота':'Selected cell'}>
       <button className="queen-catalog-close" aria-label={ru?'Закрыть детали':'Close details'} onClick={()=>control.current?.overview()}>×</button>

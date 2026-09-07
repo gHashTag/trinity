@@ -65,7 +65,7 @@ html:has(body.queen-universe-shell),body.queen-universe-shell,body.queen-univers
 @media(max-width:640px) {
   .queen-universe-nav {display:flex;flex-wrap:nowrap;gap:.3rem;padding:.25rem .4rem;}
   .queen-universe-nav select {flex:1 1 auto;max-width:none;width:auto;min-height:44px;}
-  .queen-universe :is(.queen-universe-nav,.queen-world-dialog) .queen-world-connect {flex:0 0 44px;width:44px;padding:0;font-size:0;}
+  .queen-universe :is(.queen-universe-nav,.queen-world-dialog) .queen-world-connect {flex:0 0 44px;width:44px;min-height:44px;padding:0;font-size:0;}
   .queen-universe-nav .queen-world-connect::after {content:'+';font-size:1.25rem;line-height:1;}
   .queen-universe-nav .queen-world-lang {flex:0 0 auto;font-size:.68rem;padding-inline:.5rem;}
   .queen-universe-nav button:nth-last-child(2),.queen-universe-nav button:last-child {display:none;}
