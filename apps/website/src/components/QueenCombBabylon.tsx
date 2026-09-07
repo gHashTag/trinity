@@ -342,7 +342,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       const r = canvas.getBoundingClientRect();
       focusIndex = null;
       anchor = planeAt(e.clientX - r.left, e.clientY - r.top);
-      zoomGoal = Math.min(128, Math.max(0.5, zoomGoal * Math.exp(-e.deltaY * 0.0016)));
+      zoomGoal = Math.min(128, Math.max(0.05, zoomGoal * Math.exp(-e.deltaY * 0.0016)));
       host.setAttribute("data-zoom-goal", zoomGoal.toFixed(2));
     };
     canvas.addEventListener("wheel", onWheel, { passive: false });
@@ -368,7 +368,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // the toolbar's FIT VIEW / - / + reach the scene through the same handle the canvas comb exposes
     cameraRef.current = {
       zoomIn: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.min(128, zoom * 1.25); fit(); },
-      zoomOut: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.max(0.5, zoom / 1.25); fit(); },
+      zoomOut: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.max(0.05, zoom / 1.25); fit(); },
       // FIT VIEW is the way home: it undoes the roam as well as the zoom
       fit: () => { focusIndex = null; selectedDisplayRef.current = null; setSelectedDisplayKey(null); host.removeAttribute('data-display-selected'); anchor = null; zoom = zoomGoal = 1; camera.target.copyFrom(centreWorld); fit(); },
     };

@@ -115,7 +115,7 @@ export function catalogConnectionView(map:CatalogHive,index:number,halfWidth:num
   if(!points.length)return null;
   const minX=Math.min(...points.map(p=>p.x-HEX_R*p.scale)),maxX=Math.max(...points.map(p=>p.x+HEX_R*p.scale));
   const minY=Math.min(...points.map(p=>p.y-HEX_R*p.scale)),maxY=Math.max(...points.map(p=>p.y+HEX_R*p.scale));
-  const zoom=Math.min(128,Math.max(.5,Math.min(halfWidth*2*(1-inset.right)/(maxX-minX+S_CELL),halfHeight*2*(1-inset.bottom)/(maxY-minY+S_CELL))*.78));
+  const zoom=Math.min(128,Math.max(.05,Math.min(halfWidth*2*(1-inset.right)/(maxX-minX+S_CELL),halfHeight*2*(1-inset.bottom)/(maxY-minY+S_CELL))*.78));
   return {x:(minX+maxX)/2+inset.right*halfWidth/zoom,y:(minY+maxY)/2-inset.bottom*halfHeight/zoom,zoom};
 }
 

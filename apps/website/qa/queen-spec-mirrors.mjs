@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as d from '../src/components/queenCatalogData.ts';
-import {hexRing,spiralAxial} from '../src/components/queenHud.ts';
+import {hexRing,spiralAxial,HEX_R,S_CELL} from '../src/components/queenHud.ts';
 const atlas=JSON.parse(readFileSync('public/t27/universe-atlas.json','utf8'));
 const {map,displays}=d.catalogUniverse(atlas);
 assert.equal(map.specLinks?.length,atlas.specs.reduce((n,s)=>n+new Set(s.sources.map(p=>p.repo)).size,0),'Every source spec needs a real paired placement');
@@ -48,5 +48,14 @@ for(const [w,h] of [[6000,4000],[4000,6000],[4000,3000]]){
 for(const inset of [{right:.5,bottom:0},{right:0,bottom:.7}]){
   const w=6000,h=4000,view=d.catalogConnectionView(fanout,central,w,h,inset);
   for(const i of selected.indices){const p=fanout.positions[i],x=(p.x-view.x)*view.zoom,y=(p.y-view.y)*view.zoom;assert(x>-w&&x<w*(1-2*inset.right),'Connection stays left of inspector');assert(y<h&&y>h*(2*inset.bottom-1),'Connection stays above mobile inspector');}
+}
+const points=map.positions;
+const spanX=Math.max(...points.map(p=>p.x))-Math.min(...points.map(p=>p.x))+S_CELL;
+const spanY=Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y))+S_CELL;
+for(const [width,height] of [[1440,720],[390,500],[390,300],[600,250]]){
+  const margin=Math.max(width/Math.max(100,width-160),height/Math.max(100,height-110));
+  const w=Math.max(spanX*1.04,spanY*1.08*width/height)*margin/2,h=w*height/width;
+  const inset=width>=700?{right:392/width,bottom:0}:{right:0,bottom:Math.min(.8,((height+166)*.6+32)/height)};
+  for(const [core,source] of map.specLinks){const view=d.catalogConnectionView(map,core,w,h,inset);for(const i of [core,source]){const p=points[i],r=HEX_R*p.scale,x=(p.x-view.x)*view.zoom,y=(p.y-view.y)*view.zoom;assert(x-r*view.zoom>-w&&x+r*view.zoom<w*(1-2*inset.right));assert(y+r*view.zoom<h&&y-r*view.zoom>h*(2*inset.bottom-1),'Full hex clears inspector on short mobile');}}
 }
 console.log(`Spec mirrors: PASS (${atlas.specs.length} canonical specs, ${map.specLinks.length} source placements and exact two-way provenance links)`);
