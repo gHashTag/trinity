@@ -4995,3 +4995,30 @@ main:where(.queen27-page.is-shell) section {
   font-size: 11px;
   white-space: nowrap;
 }
+
+/* ---- landscape phones ---------------------------------------------------- */
+/* At 844x390 the shell's bands (worlds nav, status, viewport head, catalog
+   toolbar, command rail) left the field 130px of 390. Height is the scarce
+   axis here and width is not, so the viewport head stops taking a row and
+   floats over the field. --hud-vp-head-float is the contract with the catalog
+   toolbar, which floats directly beneath it rather than guessing an offset. */
+@media (max-height: 500px) {
+  .queen27-page.is-shell {
+    --hud-vp-head-float: 40px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .queen27-page.is-shell .queen27-hud-vp-head {
+    position: absolute;
+    z-index: 6;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: var(--hud-vp-head-float);
+    border-bottom-color: transparent;
+    background: #000000b8;
+  }
+}

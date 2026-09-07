@@ -103,3 +103,16 @@
   .queen-catalog-search-toggle {display:block;}
   .queen-catalog-layer:has(.queen-catalog-toolbar.is-search-open) {--catalog-headroom:166px;}
 }
+
+/* Landscape phones have width to spare and no height: at 844x390 the four
+   chrome bands left the field 130px, a third of the screen. The toolbar stops
+   claiming its own band and floats over the field instead, which is what
+   "buttons are secondary chrome" means when height is the scarce axis.
+   --catalog-headroom still tracks its height, so labels start below it. */
+@media (max-height:500px) {
+  .queen-catalog-layer {grid-template-rows:minmax(0,1fr);}
+  .queen-catalog-layer>.queen27-comb.is-embedded {grid-row:1;}
+  .queen-catalog-toolbar {position:absolute;top:var(--hud-vp-head-float,0px);right:0;left:0;z-index:14;background:#000000b8;}
+  /* the toolbar no longer starts at the layer's top edge, so the labels clear both bars */
+  .queen-catalog-labels {top:calc(var(--hud-vp-head-float,0px) + var(--catalog-headroom));}
+}
