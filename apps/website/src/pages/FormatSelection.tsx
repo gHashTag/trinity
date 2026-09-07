@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import { TnfDecision } from '../components/sections/tnf'
 
 type TaskId = 'weights' | 'accumulation' | 'fpga' | 'audit'
 
@@ -221,6 +222,8 @@ export default function FormatSelection() {
           <a href="#/verification" className="btn secondary" style={{ padding: '0.75rem 1.25rem', fontSize: '0.86rem' }}>{ru ? 'Методика FPGA' : 'FPGA method'}</a>
         </div>
       </section>
+      <TnfDecision />
+
       <Footer />
     </main>
   )

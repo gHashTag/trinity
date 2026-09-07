@@ -7,6 +7,7 @@ import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { CHECKS, START_INTRO, START_DEBT } from '../data/checks'
 import status from '../data/checkStatus.json'
+import { TnfStart } from '../components/sections/tnf'
 
 type Status = { id: string; job: string; conclusion: string | null; at: string; url: string }
 const STATUS = new Map(((status.entries ?? []) as Status[]).map((e) => [e.id, e]))
@@ -171,6 +172,8 @@ export default function Start() {
           </div>
         ))}
       </section>
+      <TnfStart />
+
       <Footer />
     </main>
   )

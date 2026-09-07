@@ -5,35 +5,25 @@ import ServiceEntry from './components/ServiceEntry'
 import QueenHeroBlock from './components/QueenHeroBlock'
 import { TnfHero } from './components/sections/tnf'
 
-// Главная страница построена под статьёй «Trinity S³AI: Ternary Network Floats»
-// (52 теоремы). Порядок разделов повторяет порядок аргумента:
-// что заявлено → чем именно заявлено → что измерено → что стоит бюджет →
-// на каких теоремах держится → где границы и что отозвано → кто ещё на этой
-// земле → откуда линия → как воспроизвести.
+// Главная строится вокруг одного предмета: .t27-спеки и карта, которая их
+// показывает. Порядок первого экрана — что это → карта спек → на чём держится
+// заявление → куда идти дальше.
 //
-// Секции прежней главной (DePIN, ROI-калькулятор, Solution с прогнозными
-// множителями, Invest) с главной сняты: они несли прогнозы и категорические
-// формулировки рядом с измеренными числами, и научный читатель не мог отделить
-// одно от другого. Компоненты остались в репозитории и доступны на своих
-// страницах — снята только их роль первого экрана.
+// Прежняя главная несла 21 секцию и 31 393px (около 35 экранов): вся статья
+// «Trinity S³AI: Ternary Network Floats» лежала на одной странице, и цель игры
+// в ней терялась. Ни одна секция не удалена — каждая переехала на свою
+// страницу и живёт там целиком:
+//
+//   formats, visuals, calculators → /gft
+//   ladder, theorems, limits      → /proof
+//   frontier, reproduce           → /verification
+//   decision                      → /select
+//   landscape, findings           → /cases
+//   lineage, author               → /about
+//   faq, publications             → /resources
+//   start                         → /start
+//   invest                        → /ip
 const TnfClaim = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfClaim })))
-const TnfFormats = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFormats })))
-const TnfFrontier = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFrontier })))
-const TnfLadder = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLadder })))
-const TnfTheorems = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfTheorems })))
-const TnfLimits = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLimits })))
-const TnfLandscape = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLandscape })))
-const TnfDecision = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfDecision })))
-const TnfFaq = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFaq })))
-const TnfStart = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfStart })))
-const TnfCalculators = lazy(() => import('./components/sections/tnf/Calculators'))
-const TnfVisuals = lazy(() => import('./components/sections/tnf/PhiViz'))
-const TnfFindings = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfFindings })))
-const TnfLineage = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfLineage })))
-const TnfAuthor = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfAuthor })))
-const TnfInvest = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfInvest })))
-const TnfReproduce = lazy(() => import('./components/sections/tnf').then((m) => ({ default: m.TnfReproduce })))
-const PublicationsSection = lazy(() => import('./components/sections/PublicationsSection'))
 
 const SectionFallback = () => (
   <div style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -48,28 +38,12 @@ export default function App() {
 
       <TnfHero />
       <QueenHeroBlock />
-      <ServiceEntry />
 
       <Suspense fallback={<SectionFallback />}>
         <TnfClaim />
-        <TnfFormats />
-        <TnfFrontier />
-        <TnfVisuals />
-        <TnfLadder />
-        <TnfTheorems />
-        <TnfCalculators />
-        <TnfLimits />
-        <TnfDecision />
-        <TnfLandscape />
-        <TnfFindings />
-        <TnfLineage />
-        <PublicationsSection />
-        <TnfAuthor />
-        <TnfFaq />
-        <TnfStart />
-        <TnfInvest />
-        <TnfReproduce />
       </Suspense>
+
+      <ServiceEntry />
 
       <Footer />
     </main>

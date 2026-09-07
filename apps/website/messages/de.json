@@ -4,14 +4,13 @@
   "langHref": "?lang=en",
   "nav": [
     "TRINITY",
+    "Karte",
+    "Specs",
     "These",
     "Formate",
-    "Gemessen",
-    "Leiter",
-    "Theoreme",
-    "Grenzen",
-    "Landschaft",
-    "Reproduzieren"
+    "Beweise",
+    "Verifikation",
+    "Landschaft"
   ],
   "hero": {
     "tag": "GFTernary · TNF — ein Referenzpaar für den ternären Datenpfad",

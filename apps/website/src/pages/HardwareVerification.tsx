@@ -12,6 +12,7 @@ import SelfServeRun from '../components/SelfServeRun'
 import ExampleReport from '../components/ExampleReport'
 import ConformanceEvidence from '../components/ConformanceEvidence'
 import SignalHealth from '../components/SignalHealth'
+import { TnfFrontier, TnfReproduce } from '../components/sections/tnf'
 
 const THEOREM_GROUPS = [
   {
@@ -778,6 +779,9 @@ export default function HardwareVerification() {
 
       <TierSection lang={lang} />
         <ScienceSection lang={lang} />
+
+      <TnfFrontier />
+      <TnfReproduce />
 
       <Footer />
     </main>

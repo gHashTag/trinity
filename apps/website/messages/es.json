@@ -4,14 +4,13 @@
   "langHref": "?lang=en",
   "nav": [
     "TRINITY",
+    "Mapa",
+    "Specs",
     "Tesis",
     "Formatos",
-    "Medido",
-    "Escalera",
-    "Teoremas",
-    "Límites",
-    "Panorama",
-    "Reproducir"
+    "Pruebas",
+    "Verificación",
+    "Panorama"
   ],
   "hero": {
     "tag": "GFTernary · TNF — un par de referencia para la ruta de datos ternaria",

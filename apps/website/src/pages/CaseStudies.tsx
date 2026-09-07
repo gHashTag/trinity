@@ -10,6 +10,7 @@ import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
 import { RUNS, THIRD_PARTY_RUNS, LIMITS_EN, LIMITS_RU, PROVENANCE } from '../data/verificationRuns'
 import type { Run } from '../data/verificationRuns'
+import { TnfLandscape, TnfFindings } from '../components/sections/tnf'
 
 const CONTACT = {
   email: 'admin@t27.ai',
@@ -274,6 +275,9 @@ export default function CaseStudies() {
         {/* Discovered, not curated: whatever GitHub says is true. */}
         <CommunityRuns />
       </section>
+
+      <TnfLandscape />
+      <TnfFindings />
 
       <Footer />
     </main>

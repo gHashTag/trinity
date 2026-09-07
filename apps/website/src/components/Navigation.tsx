@@ -2,8 +2,12 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-// Порядок повторяет порядок аргумента на главной, а не порядок продуктов.
-const sectionIds = ['hero', 'claim', 'formats', 'frontier', 'ladder', 'theorems', 'limits', 'landscape', 'reproduce']
+// Док ведёт к цели: карта и спеки идут сразу за именем, дальше — страницы, на
+// которые переехали секции статьи. Записи, начинающиеся с '#/', это маршруты;
+// остальные — секции самой главной.
+const navTargets = ['hero', '#/queen', '#/specs', 'claim', '#/gft', '#/proof', '#/verification', '#/cases']
+// Скролл-спай следит только за тем, что после переноса осталось на главной.
+const sectionIds = ['hero', 'claim']
 const BASE = import.meta.env.BASE_URL
 // Docs points to t27.ai/docs/ (custom domain)
 const DOCS_URL = 'https://t27.ai/docs/'
@@ -158,18 +162,25 @@ export default memo(function Navigation() {
     <>
       {/* Desktop dock nav */}
       <nav className="nav-dock" aria-label="Main navigation">
-        {t.nav?.map((item: string, i: number) => (
-          <a
-            key={i}
-            href={`#${sectionIds[i]}`}
-            className={active === sectionIds[i] ? 'active' : ''}
-            onClick={(e) => { e.preventDefault(); scrollTo(sectionIds[i]) }}
-            aria-label={`Navigate to ${item}`}
-            aria-current={active === sectionIds[i] ? 'page' : undefined}
-          >
-            {item}
-          </a>
-        ))}
+        {t.nav?.map((item: string, i: number) => {
+          const target = navTargets[i]
+          if (!target) return null
+          if (target.startsWith('#/')) {
+            return <a key={i} href={target} aria-label={`Navigate to ${item}`}>{item}</a>
+          }
+          return (
+            <a
+              key={i}
+              href={`#${target}`}
+              className={active === target ? 'active' : ''}
+              onClick={(e) => { e.preventDefault(); scrollTo(target) }}
+              aria-label={`Navigate to ${item}`}
+              aria-current={active === target ? 'page' : undefined}
+            >
+              {item}
+            </a>
+          )
+        })}
         <button
           type="button"
           className={`nav-pages-toggle ${pagesOpen ? 'open' : ''}`}
@@ -242,18 +253,29 @@ export default memo(function Navigation() {
               Navigation Menu
             </h2>
             <div className="mobile-menu-links" role="navigation" aria-label="Mobile navigation">
-              {t.nav?.map((item: string, i: number) => (
-                <a
-                  key={i}
-                  href={`#${sectionIds[i]}`}
-                  className={active === sectionIds[i] ? 'active' : ''}
-                  onClick={(e) => { e.preventDefault(); scrollTo(sectionIds[i]) }}
-                  aria-label={`Navigate to ${item}`}
-                  aria-current={active === sectionIds[i] ? 'page' : undefined}
-                >
-                  {item}
-                </a>
-              ))}
+              {t.nav?.map((item: string, i: number) => {
+                const target = navTargets[i]
+                if (!target) return null
+                if (target.startsWith('#/')) {
+                  return (
+                    <a key={i} href={target} onClick={() => setMenuOpen(false)} aria-label={`Navigate to ${item}`}>
+                      {item}
+                    </a>
+                  )
+                }
+                return (
+                  <a
+                    key={i}
+                    href={`#${target}`}
+                    className={active === target ? 'active' : ''}
+                    onClick={(e) => { e.preventDefault(); scrollTo(target) }}
+                    aria-label={`Navigate to ${item}`}
+                    aria-current={active === target ? 'page' : undefined}
+                  >
+                    {item}
+                  </a>
+                )
+              })}
               {/* Same source as the desktop disclosure, so the two can't drift apart */}
               {PAGES.map((p) => (
                 <a

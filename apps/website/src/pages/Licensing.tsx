@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/context'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
 import QuantumBackground from '../components/QuantumBackground'
+import { TnfInvest } from '../components/sections/tnf'
 
 const CONTACT = {
   email: 'admin@t27.ai',
@@ -292,6 +293,8 @@ export default function Licensing() {
           </motion.a>
         </motion.div>
       </section>
+
+      <TnfInvest />
 
       <Footer />
     </main>

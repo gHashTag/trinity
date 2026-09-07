@@ -4,14 +4,13 @@
   "langHref": "?lang=ru",
   "nav": [
     "TRINITY",
+    "Map",
+    "Specs",
     "Claim",
     "Formats",
-    "Measured",
-    "Ladder",
-    "Theorems",
-    "Limits",
-    "Landscape",
-    "Reproduce"
+    "Proof",
+    "Verification",
+    "Landscape"
   ],
   "hero": {
     "tag": "GFTernary · TNF — a reference pair for the ternary datapath",
