@@ -1235,6 +1235,17 @@ input:focus-visible {
   border-radius: 10px;
 }
 
+.blog-cover-figure { margin: 0 0 28px; }
+.blog-cover-figure > a { display: block; }
+.blog-cover-figure .blog-lead-cover { margin: 0; object-fit: contain; aspect-ratio: 40 / 21; }
+.blog-cover-figure figcaption { margin-top: 12px; font-size: .86rem; line-height: 1.5; color: var(--text-dim, #8a8a8a); }
+.blog-cover-panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; list-style: none; margin: .6rem 0 .75rem; padding: 0; }
+.blog-cover-panels li { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.blog-cover-panels strong, .blog-cover-panels span { display: block; }
+.blog-cover-panels strong { color: var(--text, #e8e8e8); font-size: .8rem; }
+.blog-cover-language { margin: .3rem 0; font-size: .8rem; }
+@media (max-width: 600px) { .blog-cover-panels { grid-template-columns: 1fr; gap: .6rem; } }
+
 /* Кнопка репоста: раньше ссылки шли обычным синим текстом в строку и не
    читались как действие. */
 .share-pill {

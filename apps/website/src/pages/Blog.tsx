@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import Footer from '../components/Footer'
+import Cover from '../components/BlogCover'
 import { publishedPosts, postBySlug } from '../data/blog/index'
 import type { Block, Post, PostBody, PostMeta } from '../data/blog/types'
 import { useI18n } from '../i18n/context'
@@ -214,39 +215,6 @@ const card: React.CSSProperties = {
   overflow: 'hidden',
 }
 
-/** Обложка поста: тот же файл, что уходит в og:image.
- *
- * Отдельный компонент нужен потому, что файла может не быть: картинки
- * лежат в репозитории статики, а не в сборке приложения, поэтому в dev и в
- * локальном dist они отвечают 404. При ошибке загрузки место просто
- * схлопывается, а не показывает битую картинку.
- */
-const BLOG_COVER_VERSIONS: Record<string, string> = {
-  'one-saturation-rule-five-artefacts': '8d746265',
-  'the-only-stable-speed-belonged-to-the-tool': '0b82d063',
-  'queen-foundation-snapshot-contract': '735da00e',
-  'clara-proposal-submitted-not-reviewed': '7c793241',
-  'tri-claw-an-agent-you-can-audit': '972e0bab',
-}
-
-function Cover({ slug, lang, className, priority }: { slug: string; lang: string; className: string; priority?: boolean }) {
-  const [failed, setFailed] = useState(false)
-  const coverVersion = BLOG_COVER_VERSIONS[slug]
-  const coverSrc = `/og-blog-${slug}${lang === 'ru' ? '-ru' : ''}.png${coverVersion ? `?v=${coverVersion}` : ''}`
-  if (failed) return null
-  return (
-    <img
-      src={coverSrc}
-      alt=""
-      loading={priority ? 'eager' : 'lazy'}
-      width={1200}
-      height={630}
-      className={className}
-      onError={() => setFailed(true)}
-    />
-  )
-}
-
 /** Карточка поста в списке: обложка сверху, под ней мета, заголовок и резюме.
  *
  * Заголовок показывается всегда. Раньше он скрывался при видимой обложке,
@@ -257,7 +225,7 @@ function Cover({ slug, lang, className, priority }: { slug: string; lang: string
 function BlogCard({ post, lang, minLabel }: { post: PostMeta; lang: string; minLabel: string }) {
   return (
     <Link to={`/blog/${post.slug}`} style={card} className="blog-card">
-      <Cover slug={post.slug} lang={lang} className="blog-card-cover" />
+      <Cover slug={post.slug} title={post.title} lang={lang} className="blog-card-cover" />
       <div className="blog-card-body">
         <div style={meta}>
           {post.date} · {post.readingMinutes} {minLabel} · <span className="blog-hashtag">{hashtagLine(post.tags)}</span>
@@ -699,7 +667,7 @@ export function BlogPost() {
       <main>
         <Navigation />
         <article style={wrap} className="blog-article">
-          <Cover slug={source.slug} lang={lang} className="blog-lead-cover" priority />
+          <Cover slug={source.slug} title={localiseMeta(source, lang).title} lang={lang} className="blog-lead-cover" priority />
           <div style={meta}>
             {source.date} · {source.readingMinutes} {t.min} · <span className="blog-hashtag">{hashtagLine(source.tags)}</span>
           </div>
@@ -731,7 +699,7 @@ export function BlogPost() {
     <main>
       <Navigation />
       <article style={wrap} className="blog-article">
-        <Cover slug={post.slug} lang={lang} className="blog-lead-cover" priority />
+        <Cover slug={post.slug} title={post.title} lang={lang} className="blog-lead-cover" priority />
         <div style={meta}>
           {post.date} · {post.readingMinutes} {t.min} · <span className="blog-hashtag">{hashtagLine(post.tags)}</span>
         </div>
