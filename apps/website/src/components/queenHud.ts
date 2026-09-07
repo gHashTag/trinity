@@ -625,29 +625,56 @@ export function ringTone(territory: Territory): string {
 export const HIVE_TONES = {
   t27: "#FFD45A",
   awaiting: "#64DCFF",
+  unknown: "#64DCFF",
   manual: "#FF4D5E",
   hover: "#FFC24D",
 } as const;
-export type HiveCover = "t27" | "awaiting" | "manual";
+export type HiveCover = "t27" | "awaiting" | "manual" | "unknown";
 
 /** Lower-case letters and digits only: the comparable form of a path or name. */
 export function hiveKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
-/**
- * A cell's cover. `covered` holds hiveKey'd names the trinity spec corpus
- * itself claims (spec module/name, plus the corpus' own directories). A module
- * with no claim against it is manual code; no module at all is awaiting — the
- * cell has no code fact yet, only the wire's issue.
- */
-export function hiveCoverOf(modulePath: string | null, covered: ReadonlySet<string>): HiveCover {
+/** Keep path identity: punctuation, case and directory boundaries are significant. */
+function coveragePath(value: unknown): string | null {
+  if (typeof value !== "string" || !value || value !== value.trim()) return null;
+  if (value === ".") return value;
+  if (value.split("/").some((part) => !part || part === "." || part === "..") || value.includes("\\")) return null;
+  return value;
+}
+
+/** Manifest SOURCE-CLAIM, not acceptance or generated-code parity. Unknown is null. */
+export function hiveCoverageFromManifest(manifest: unknown, repository: string | null): ReadonlySet<string> | null {
+  // This corpus is scanned from gHashTag repositories; a same-named fork is not it.
+  const repo = typeof repository === "string" ? repository.match(/^ghashtag\/([a-z0-9_.-]+)$/i)?.[1].toLowerCase() : null;
+  if (!repo || !manifest || typeof manifest !== "object") return null;
+  const data = manifest as { coverageSchemaVersion?: unknown; repos?: unknown; specs?: unknown };
+  // Legacy `module` is a parsed language/display label, never a code path.
+  // Until a producer supplies the explicit mapping schema, coverage is unknown.
+  if (data.coverageSchemaVersion !== 1 || !Array.isArray(data.repos) || !Array.isArray(data.specs)) return null;
+  if (!data.repos.some((row) => row && typeof row === "object" && row.repo === repo && typeof row.commit === "string" && /^[a-f0-9]{7,40}$/i.test(row.commit))) return null;
+  const covered = new Set<string>();
+  for (const row of data.specs) {
+    if (!row || typeof row !== "object" || typeof row.repo !== "string") return null;
+    if (row.repo !== repo) continue;
+    const sourcePath = coveragePath(row.path);
+    // sync-t27-specs keeps primary t27 paths relative and prefixes other repos.
+    if (!sourcePath || !sourcePath.endsWith(".t27") || (repo !== "t27" && !sourcePath.startsWith(`${repo}/`))) return null;
+    // Explicit null means the spec has no module claim (e.g. a tutorial).
+    if (row.modulePath === null) continue;
+    const modulePath = coveragePath(row.modulePath);
+    if (!modulePath) return null;
+    covered.add(modulePath);
+  }
+  return covered;
+}
+
+/** No basename, directory-name or display-name heuristics may create a claim. */
+export function hiveCoverOf(modulePath: string | null, covered: ReadonlySet<string> | null): HiveCover {
   if (!modulePath) return "awaiting";
-  const segments = modulePath.split("/").filter(Boolean);
-  const whole = hiveKey(segments.join("/"));
-  const base = hiveKey(segments[segments.length - 1] ?? "");
-  if (covered.has(whole) || covered.has(base)) return "t27";
-  if (/^rings\/t27\d*(-|$)/i.test(modulePath) || /^specs?(\/|$)/i.test(modulePath) || /^tests\/t27(\/|$)/i.test(modulePath)) return "t27";
+  if (covered === null) return "unknown";
+  if (covered.has(modulePath)) return "t27";
   return "manual";
 }
 
