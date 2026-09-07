@@ -58,6 +58,10 @@ html:has(body.queen-universe-shell),body.queen-universe-shell,body.queen-univers
   .queen-universe-nav select,.queen-world-dialog input {font-size:1rem;}
   .queen-universe-nav button {font-size:.875rem;line-height:1.25;}
 }
+@media(max-width:900px) {
+  .queen-universe-nav>span,.queen-universe-nav .queen-world-shortcut,.queen-universe-nav button:nth-last-child(2) {display:none;}
+  .queen-universe-nav button {white-space:nowrap;}
+}
 @media(max-width:640px) {
   .queen-universe-nav {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.3rem;padding:.35rem .5rem;}
   .queen-universe-nav select {grid-column:1;max-width:none;width:100%;}
