@@ -85,6 +85,11 @@ description: Maintain QUEEN's floating hive, original point-down TRINITY logo, s
   existing canon. GitHub issue identity stays visible at repository level and
   on the selected issue; controls remain English and source titles are quoted
   data, never translated by mutating the upstream issue.
+  On narrow screens the Specs command stays in the same bottom rail, keeps a
+  44px touch target, and remains explicitly labelled instead of collapsing to
+  an ambiguous icon. The homepage may expose a compact Queen launch block below
+  the existing Hero, but it must reuse the atlas and route into the same game;
+  never embed a second Queen scene or fork its data logic.
 
 Before changing orientation, add a failing projection/interaction regression.
 Run `npm run check:queen-displays` in `apps/website` (includes Babylon projection

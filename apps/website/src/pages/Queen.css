@@ -4794,10 +4794,15 @@ main:where(.queen27-page.is-shell) section {
     grid-column: auto;
     gap: 4px;
     padding: 4px;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
   }
 
   .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd {
-    flex: 1 1 0;
+    flex: 0 0 44px;
+    min-width: 44px;
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     padding: 0.3rem 0.2rem;
@@ -4806,6 +4811,27 @@ main:where(.queen27-page.is-shell) section {
   .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd > span,
   .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd > kbd {
     display: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd[data-view="specs"] {
+    flex-basis: 76px;
+    min-width: 76px;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .35rem;
+    justify-items: stretch;
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd[data-view="specs"] > span {
+    display: grid;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd[data-view="specs"] b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: .62rem;
   }
 
   .queen27-page.is-shell .queen27-hud-round-cell.is-mini {

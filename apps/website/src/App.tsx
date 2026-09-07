@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import Navigation from './components/Navigation'
 import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
+import QueenHeroBlock from './components/QueenHeroBlock'
 import { TnfHero } from './components/sections/tnf'
 
 // Главная страница построена под статьёй «Trinity S³AI: Ternary Network Floats»
@@ -46,6 +47,7 @@ export default function App() {
       <Navigation />
 
       <TnfHero />
+      <QueenHeroBlock />
       <ServiceEntry />
 
       <Suspense fallback={<SectionFallback />}>
