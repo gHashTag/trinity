@@ -3,6 +3,38 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'ninety-tests-were-unreachable',
+    title: 'Ninety tests were present, but unreachable',
+    summary: '[measured in merged PR #778] A Zig codegen subtree became importable, exposing 90 previously unreachable tests; the reported verification moved from 155 to 157 steps and from 2,832 to 2,939 tests.',
+    date: '2026-09-07',
+    readingMinutes: 6,
+    tags: ['Zig', 'Compiler', 'Testing', 'Reproducibility'],
+    receipts: [
+      { label: 'Merged PR #778 — codegen tree import and test reachability', href: 'https://github.com/gHashTag/trinity-fpga/pull/778' },
+      { label: 'Merge commit 515bc8e1 — the landed codegen changes', href: 'https://github.com/gHashTag/trinity-fpga/commit/515bc8e1b56ae45cfc25a34808aeee2f4ee0d89d' },
+      { label: 'Commit 311abb7a — the 90 tests become reachable', href: 'https://github.com/gHashTag/trinity-fpga/commit/311abb7a57f36e4c27c91d825ab18db04eae009f' },
+      { label: 'Commit f361b8a8 — signature behavior pinned by tests', href: 'https://github.com/gHashTag/trinity-fpga/commit/f361b8a802f79c4dde8e4f1a084ea42fae02d0aa' },
+      { label: 'Commit eebeae43 — allocator scope repair', href: 'https://github.com/gHashTag/trinity-fpga/commit/eebeae4344de90a9d30dbe9832b371591ef4f113' },
+    ],
+    openQuestions: [
+      'The verification commands and counts are reported by PR #778; they were not independently rerun in this blog run.',
+      'The change is a software repository result. It does not establish FPGA or AX7203 behavior, timing, energy, model quality, or a physical-chip result.',
+      'The 66 remaining errors are not resolved by this PR, and inferred return types are not connected to ordinary generated headers.',
+      'The change says nothing about the 83-format numeric catalogue.',
+    ],
+    published: true,
+    ru: {
+      title: '90 тестов существовали, но были недостижимы',
+      summary: '[измерено в смерженном PR #778] Поддерево Zig codegen стало импортируемым, и стали достижимы 90 ранее скрытых тестов; в отчёте проверки число шагов выросло со 155 до 157, а число тестов — с 2 832 до 2 939.',
+      openQuestions: [
+        'Команды проверки и числа приведены по отчёту PR #778; в этом запуске блога они независимо не повторялись.',
+        'Это результат программного репозитория. Он не устанавливает поведение FPGA или AX7203, timing, энергию, качество модели или результат на физическом кристалле.',
+        'Оставшиеся 66 ошибок этим PR не исправлены, а выведенные return types не подключены к обычным заголовкам генератора.',
+        'Изменение ничего не говорит о каталоге числовых форматов из 83 форматов.',
+      ],
+    },
+  },
+  {
     slug: 'one-saturation-rule-five-artefacts',
     title: 'One saturation rule, five artefacts',
     summary: '[measured] A merged fp6_e3m2 correction changed 8 boundary codes, kept 56 codes unchanged, and brought a 66,720-code consistency pass to 0 mismatches.',
