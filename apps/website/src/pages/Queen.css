@@ -3821,6 +3821,27 @@ main:where(.queen27-page.is-shell) section {
   }
 }
 
+@media (max-width: 760px) {
+  .queen27-page.is-shell {
+    grid-template-rows: 48px minmax(0, 1fr) calc(58px + env(safe-area-inset-bottom));
+    gap: 4px;
+  }
+  .queen27-page.is-shell .queen27-hud-top {
+    grid-template-columns: 52px minmax(66px, .7fr) minmax(88px, .8fr) minmax(0, 1.35fr);
+    min-height: 0;
+  }
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(3),
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(4),
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(5),
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(6),
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-bell { display: none; }
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res { padding-inline: .35rem; }
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res > span { display: none; }
+  .queen27-page.is-shell .queen27-hud-brand svg { height: 28px !important; }
+  .queen27-page.is-shell .queen27-hud-vp-head { padding: .25rem .5rem; font-size: .56rem; }
+  .queen27-page.is-shell .queen27-hud-vp-tools button { min-height: 36px; padding: .2rem .45rem; }
+}
+
 .queen27-page.is-shell .queen27-hud-command {
   display: grid;
   grid-row: 2;

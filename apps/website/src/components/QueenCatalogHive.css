@@ -91,3 +91,15 @@
   .queen-catalog-toolbar:not(.is-search-open) .queen-catalog-tools {display:none;}
   .queen-catalog-toolbar .queen-catalog-tools {grid-column:1 / -1;}
 }
+
+/* Field-first mobile mode: search is an explicit overlay action, not permanent headroom. */
+@media(max-width:640px) {
+  .queen-catalog-layer {--catalog-headroom:96px;}
+  .queen-catalog-toolbar {grid-template-columns:minmax(0,1fr) auto;align-items:center;}
+  .queen-catalog-toolbar .queen-catalog-tools {display:none;grid-column:1 / -1;}
+  .queen-catalog-toolbar.is-search-open .queen-catalog-tools {display:grid;}
+  .queen-catalog-toolbar .queen-catalog-law {max-height:38px;overflow:hidden;}
+  .queen-catalog-toolbar .queen-catalog-law small {display:none;}
+  .queen-catalog-search-toggle {display:block;}
+  .queen-catalog-layer:has(.queen-catalog-toolbar.is-search-open) {--catalog-headroom:166px;}
+}
