@@ -34,6 +34,7 @@ import "@babylonjs/core/Layers/effectLayerSceneComponent";
 import "@babylonjs/core/Meshes/thinInstanceMesh";
 import type { LinesMesh } from "@babylonjs/core/Meshes/linesMesh";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
+import { HivePointers } from './queenHivePointers';
 import { Ray } from "@babylonjs/core/Culling/ray";
 import { S, EDGES } from "./QueenComb";
 import { eventTone, ringTone, type BeeLine, type HudEvent, type HudModule, type HudPick, type Tone , eventIdentity , hexCellSummaries, hexIndexAt, hexCornersAt, HEX_HOME, HEX_R, foundationCells, spiralAxial, S_CELL, type FoundationIssue,
@@ -299,8 +300,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     })) as Record<FieldLayer, TransformNode>;
     const specInset=()=>{
       const w=host.clientWidth||1,h=host.clientHeight||1;
-      const mapHeight=host.closest('.queen-catalog-layer')?.clientHeight??h;
-      return w>=700?{right:Math.min(.7,392/w),bottom:0}:{right:0,bottom:Math.min(.8,(mapHeight*.6+32)/h)};
+      const layer=host.closest('.queen-catalog-layer');
+      const bottom=layer&&getComputedStyle(layer).getPropertyValue('--catalog-inspector-mode').trim()==='bottom';
+      return bottom?{right:0,bottom:Math.min(.8,.5+24/h)}:{right:Math.min(.7,392/w),bottom:0};
     };
     const fit = () => {
       const w = host.clientWidth || 1, h = host.clientHeight || 1;
@@ -337,7 +339,10 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       camera.target.x = Math.min(Math.max(camera.target.x, centreWorld.x - ROAM), centreWorld.x + ROAM);
       camera.target.y = Math.min(Math.max(camera.target.y, centreWorld.y - ROAM), centreWorld.y + ROAM);
     };
+    const gestureSurface=host.closest('.queen-catalog-layer')??canvas;
+    const mapTarget=(target:EventTarget|null)=>target===canvas||(target instanceof Element&&!!target.closest('.queen-catalog-cell'));
     const onWheel = (e: WheelEvent) => {
+      if(!mapTarget(e.target))return;
       e.preventDefault();
       const r = canvas.getBoundingClientRect();
       focusIndex = null;
@@ -345,26 +350,35 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       zoomGoal = Math.min(128, Math.max(0.05, zoomGoal * Math.exp(-e.deltaY * 0.0016)));
       host.setAttribute("data-zoom-goal", zoomGoal.toFixed(2));
     };
-    canvas.addEventListener("wheel", onWheel, { passive: false });
-    let grab: { x: number; y: number } | null = null;
-    const onDown = (e: PointerEvent) => { if (e.button !== 0) return; grab = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); };
+    // Listen above the native spec labels too: their text must not form dead
+    // islands over the map. Do not intercept inspector controls/text scrolling.
+    gestureSurface.addEventListener("wheel", onWheel as EventListener, { passive: false });
+    const pointers=new HivePointers();
+    const onDown = (e: PointerEvent) => { if(e.button!==0||!mapTarget(e.target))return;pointers.down(e.pointerId,e.clientX,e.clientY); };
     const onMove = (e: PointerEvent) => {
-      if (!grab) return;
+      if(e.pointerType==='mouse'&&e.buttons===0){pointers.up(e.pointerId,true);return;}
+      const movement=pointers.move(e.pointerId,e.clientX,e.clientY);if(!movement)return;
       focusIndex = null;
+      anchor=null;
       const r = canvas.getBoundingClientRect();
-      const a = planeAt(grab.x - r.left, grab.y - r.top), b = planeAt(e.clientX - r.left, e.clientY - r.top);
+      const a=planeAt(movement.from.x-r.left,movement.from.y-r.top);
+      zoom=zoomGoal=Math.min(128,Math.max(.05,zoom*movement.scale));fit();
+      const b=planeAt(movement.to.x-r.left,movement.to.y-r.top);
       if (a && b) {
         const from = hiveWallToWorld(a.x,a.z), to = hiveWallToWorld(b.x,b.z);
         camera.target.x += from.x - to.x; camera.target.y += from.y - to.y;
         clampTarget(); fit();
       }
-      grab = { x: e.clientX, y: e.clientY };
     };
-    const onUp = (e: PointerEvent) => { grab = null; if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); };
-    canvas.addEventListener("pointerdown", onDown);
-    canvas.addEventListener("pointermove", onMove);
-    canvas.addEventListener("pointerup", onUp);
-    canvas.addEventListener("pointercancel", onUp);
+    const onUp=(e:PointerEvent)=>pointers.up(e.pointerId,e.type==='pointercancel');
+    const onBlur=()=>pointers.cancel();
+    const suppressDraggedClick=(e:MouseEvent)=>{if(mapTarget(e.target)&&e.detail!==0&&pointers.suppressClick){e.preventDefault();e.stopPropagation();}};
+    gestureSurface.addEventListener('pointerdown',onDown as EventListener,true);
+    gestureSurface.addEventListener('click',suppressDraggedClick as EventListener,true);
+    window.addEventListener('pointermove',onMove);
+    window.addEventListener('pointerup',onUp);
+    window.addEventListener('pointercancel',onUp);
+    window.addEventListener('blur',onBlur);
     // the toolbar's FIT VIEW / - / + reach the scene through the same handle the canvas comb exposes
     cameraRef.current = {
       zoomIn: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.min(128, zoom * 1.25); fit(); },
@@ -857,7 +871,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       if (info.type === PointerEventTypes.POINTERUP) downAt = null;
     });
     const onCellClick = (e: MouseEvent) => {
-      if (travelled > 6) { travelled = 0; return; }
+      if (travelled > 6 || pointers.suppressClick) { travelled = 0; return; }
       const rect = canvas.getBoundingClientRect();
       const index = cellUnder(e.clientX - rect.left, e.clientY - rect.top);
       if (index < 0) { host.setAttribute("data-hit", "off"); return; }
@@ -1082,11 +1096,13 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       displayControllerRef.current = null;
       document.removeEventListener("visibilitychange", onVisible);
       document.removeEventListener("fullscreenchange", onVisible);
-      canvas.removeEventListener("wheel", onWheel);
-      canvas.removeEventListener("pointerdown", onDown);
-      canvas.removeEventListener("pointermove", onMove);
-      canvas.removeEventListener("pointerup", onUp);
-      canvas.removeEventListener("pointercancel", onUp);
+      gestureSurface.removeEventListener("wheel", onWheel as EventListener);
+      gestureSurface.removeEventListener('pointerdown',onDown as EventListener,true);
+      gestureSurface.removeEventListener('click',suppressDraggedClick as EventListener,true);
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+      window.removeEventListener('pointercancel',onUp);
+      window.removeEventListener('blur',onBlur);
       ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose();
     };
   }, [signature,sceneKey]);

@@ -10,6 +10,7 @@
     "check:queen-catalog": "node --experimental-strip-types qa/queen-catalog-hive.mjs",
     "check:queen-continuous": "node --experimental-strip-types qa/queen-continuous-map.mjs",
     "check:queen-spec-mirrors": "node --experimental-strip-types qa/queen-spec-mirrors.mjs",
+    "check:queen-responsive": "node --experimental-strip-types qa/queen-responsive.mjs",
     "check:spec-catalog": "node --experimental-strip-types qa/spec-catalog-contract.mjs",
     "core": "node scripts/spec-core.mjs",
     "check:shared-core": "node --experimental-strip-types qa/shared-spec-core.mjs",

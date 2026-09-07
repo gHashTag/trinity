@@ -1864,9 +1864,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const setView = useCallback(
     (next: HudView) => {
       setBoardView(next);
-      setContextOpen(next === "comb" && !isPhone);
+      setContextOpen(next === "comb" && !isPhone && !sharedCatalog);
     },
-    [isPhone],
+    [isPhone, sharedCatalog],
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const [doctrineOpen, setDoctrineOpen] = useState(false);
@@ -2835,7 +2835,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           )}
         </div>
 
-        <QueenContext
+        {!(sharedCatalog && boardView === "comb") && <QueenContext
           open={contextOpen}
           onClose={() => setContextOpen(false)}
           onOpen={() => setContextOpen(true)}
@@ -2903,7 +2903,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             close: c.hudClose,
             openPanel: c.hudOpenPanel,
           }}
-        />
+        />}
       </section>
 
       {isNarrow ? (

@@ -1,5 +1,6 @@
 html:has(body.queen-universe-shell),body.queen-universe-shell,body.queen-universe-shell>#root {height:100%;min-height:0;overflow:hidden;}
 .queen-universe {height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);background:#000;color:var(--text,#e7f7fa);font-family:var(--font,'Outfit',sans-serif);}
+.queen-universe {box-sizing:border-box;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
 .queen-universe-nav {display:flex;align-items:center;gap:.6rem;padding:.4rem .65rem;border-bottom:1px solid #00ff8844;min-width:0;}
 .queen-universe-nav>span {color:#00ff88;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;}
 .queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button,.queen-universe-nav select,.queen-world-dialog input {font:inherit;min-height:40px;border:1px solid #397d80;color:var(--text,#e7f7fa);background:#041115;padding:.4rem .75rem;border-radius:6px;}
@@ -48,4 +49,27 @@ html:has(body.queen-universe-shell),body.queen-universe-shell,body.queen-univers
   .queen-world-tools>span {flex-basis:100%;}
   .queen-world-tools button {font-size:.75rem;padding:.3rem .5rem;min-height:40px;}
   .queen-repository-world footer {font-size:.65rem;}
+}
+@media(max-width:760px),(pointer:coarse) {
+  .queen-universe .queen27-page.is-shell :is(.queen27-hud-vp-tools button,.queen27-hud-menu-btn) {min-width:44px;min-height:44px;font-size:.75rem;letter-spacing:.04em;}
+  .queen-universe .queen27-page.is-shell .queen27-hud-vp-tools button[data-tool="full"] {font-size:0;}
+  .queen-universe .queen27-page.is-shell .queen27-hud-vp-tools button[data-tool="full"]::after {content:'⛶';font-size:1.25rem;}
+  .queen-universe-nav :is(button,select),.queen-world-dialog :is(button,input) {min-height:44px;min-width:44px;}
+  .queen-universe-nav select,.queen-world-dialog input {font-size:1rem;}
+  .queen-universe-nav button {font-size:.875rem;line-height:1.25;}
+}
+@media(max-width:640px) {
+  .queen-universe-nav {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.3rem;padding:.35rem .5rem;}
+  .queen-universe-nav select {grid-column:1;max-width:none;width:100%;}
+  .queen-universe-nav .queen-world-lang {grid-column:2;grid-row:1;}
+  .queen-universe-nav .queen-world-connect {grid-column:1;}
+  .queen-universe-nav button:nth-last-child(2) {display:none;}
+  .queen-universe-nav button:last-child {grid-column:2;}
+}
+@media(max-height:500px) and (min-width:641px) {
+  .queen-universe .queen27-page.is-shell {grid-template-rows:48px minmax(0,1fr) 48px;gap:4px;padding:4px;}
+  .queen-universe .queen27-hud-bottom {min-height:0;}
+  .queen-universe .queen27-hud-vp-title,.queen-universe .queen27-hud-vp-sep {display:none;}
+  .queen-universe .queen27-hud-vp-head {padding:.25rem .5rem;}
+  .queen-universe-nav {padding:.2rem .5rem;}
 }
