@@ -59,3 +59,15 @@ use the existing data-lang-exempt boundary. The select placeholder, controls,
 states, event headings and whole card must remain subject to RU/EN audits.
 Provide a localized explanation that GitHub titles retain their original
 language. Regression checks must reject a broad card/control exemption.
+
+## Added user requirement: map half-turn and point-down mark
+
+The user explicitly requested a map turn and a durable skill rule while release
+was pending. Website checks34114098218 passed for314240da; that artifact is not
+the final release now. Rotate the facing hive field by180 degrees in its plane,
+not by moving the camera behind it or rotating the whole DOM. The original
+27-petal/135-edge TRINITY mark must project point-down inside its hub, with
+original left/right handedness. Native text and HUD stay upright. Ray picking,
+pan, cursor zoom and Inspect must use the same transform/inverse. Raised cells
+must still move toward the viewer. Add projection/roundtrip tests before code,
+then verify desktop/mobile and repeat the release gate on the updated artifact.

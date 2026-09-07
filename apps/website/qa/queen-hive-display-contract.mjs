@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+await import('./queen-hive-orientation.mjs');
+await import('./queen-starfield-contract.mjs');
 let h;
 try { h = await import('../src/components/queenHiveDisplay.ts'); }
 catch { console.error('RED: issue display model does not exist; close-up is still capped at8x and uses256px cards'); process.exit(1); }

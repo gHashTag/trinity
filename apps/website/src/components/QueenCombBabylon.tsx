@@ -9,7 +9,9 @@
 import { ImageProcessingConfiguration } from "@babylonjs/core/Materials/imageProcessingConfiguration";
 import { useEffect, useRef, useState, useImperativeHandle } from "react";
 import { QueenHiveDisplays, type HiveDisplayController } from './QueenHiveDisplays';
+import { QueenStarfield } from './QueenStarfield';
 import { hiveFocusZoom, hiveDisplayLod, type HiveDisplay, type HiveDisplayProjection } from './queenHiveDisplay';
+import { HIVE_WALL_ROTATION, hiveWallToWorld, hiveWorldToWall } from './queenHiveOrientation';
 import type { Ref } from "react";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { Engine } from "@babylonjs/core/Engines/engine";
@@ -175,7 +177,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     engine.setHardwareScalingLevel(1 / Math.min(2, Math.max(1, window.devicePixelRatio || 1)));
     const scene = new Scene(engine);
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
-    scene.clearColor = new Color4(2 / 255, 8 / 255, 6 / 255, 1);
+    scene.clearColor = new Color4(0, 0, 0, 0);
     scene.skipPointerMovePicking = true;
     // the rendered look: tone mapping with a little contrast and a vignette,
     // depth fog into the void, and a glow on every emissive part (windows,
@@ -209,15 +211,19 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // THE WALL (the user, 2026-09-06: "поле не по горизонтали лежащим, а прямо
     // перед лицом парящее"). The comb keeps its own flat coordinates (x, z per
     // cell, y as height toward the board); one root turns that plane into the
-    // wall the player faces — local (x, y, z) becomes world (x, -z, y). The
+    // wall the player faces. After the user's180-degree field turn, local
+    // (x, height, z) becomes world (-x, z, height). The original SVG mark now
+    // projects point-down, without changing its geometry or mirroring it. The
     // camera sits dead in front at +Z, so the honeycomb hangs in the air at eye
     // height and a cell's lift (its local y) comes TOWARD the hand instead of
     // away from it. Every position below stays in comb coordinates; only the
     // pick and the pan convert world to comb.
     const fieldRoot = new TransformNode("field-root", scene);
-    fieldRoot.rotation.x = Math.PI / 2;
-    // the wall's world centre: the root maps comb (x, z) to world (x, -z)
-    const centreWorld = new Vector3(centre.x, -centre.z, 0);
+    fieldRoot.rotation.copyFromFloats(HIVE_WALL_ROTATION.x, HIVE_WALL_ROTATION.y, HIVE_WALL_ROTATION.z);
+    host.setAttribute('data-map-turn', '180');
+    host.setAttribute('data-logo-orientation', 'point-down');
+    const centrePoint = hiveWallToWorld(centre.x, centre.z);
+    const centreWorld = new Vector3(centrePoint.x, centrePoint.y, 0);
     const camera = new ArcRotateCamera("cam", Math.PI / 2, Math.PI / 2, 4000, centreWorld.clone(), scene);
     // the wall is a plane, not a mesh: a screen point becomes a comb point by
     // solving the picking ray against z = 0, the plane the comb is drawn on
@@ -230,7 +236,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       if (t < 0) return null;
       const wx = pickRay.origin.x + pickRay.direction.x * t;
       const wy = pickRay.origin.y + pickRay.direction.y * t;
-      return { x: wx, z: -wy };
+      return hiveWorldToWall(wx, wy, fieldRoot.position.y);
     };
     const depth = Math.max(maxX - minX, maxZ - minZ);
     scene.fogStart = 4000 - depth * 0.1;
@@ -267,8 +273,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       if (halfH < fieldH / 2) { halfH = fieldH / 2; halfW = halfH * aspect; }
       if (focusIndex !== null && cells[focusIndex]) {
         zoom = zoomGoal = hiveFocusZoom(S_CELL * w / (halfW * 2), w, band);
-        camera.target.x = cells[focusIndex].x;
-        camera.target.y = -cells[focusIndex].y;
+        const focusedPoint = hiveWallToWorld(cells[focusIndex].x, cells[focusIndex].y);
+        camera.target.x = focusedPoint.x;
+        camera.target.y = focusedPoint.y;
       }
       halfW /= zoom; halfH /= zoom;
       const unitsPerPx = (halfH * 2) / band;
@@ -285,8 +292,8 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // the cursor is the point that follows it; pan runs in the wall's own axes.
     const ROAM = Math.max(maxX - minX, maxZ - minZ) * 0.55;
     const clampTarget = () => {
-      camera.target.x = Math.min(Math.max(camera.target.x, centre.x - ROAM), centre.x + ROAM);
-      camera.target.y = Math.min(Math.max(camera.target.y, -centre.z - ROAM), -centre.z + ROAM);
+      camera.target.x = Math.min(Math.max(camera.target.x, centreWorld.x - ROAM), centreWorld.x + ROAM);
+      camera.target.y = Math.min(Math.max(camera.target.y, centreWorld.y - ROAM), centreWorld.y + ROAM);
     };
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -304,7 +311,11 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       focusIndex = null;
       const r = canvas.getBoundingClientRect();
       const a = planeAt(grab.x - r.left, grab.y - r.top), b = planeAt(e.clientX - r.left, e.clientY - r.top);
-      if (a && b) { camera.target.x += a.x - b.x; camera.target.y += b.z - a.z; clampTarget(); fit(); }
+      if (a && b) {
+        const from = hiveWallToWorld(a.x,a.z), to = hiveWallToWorld(b.x,b.z);
+        camera.target.x += from.x - to.x; camera.target.y += from.y - to.y;
+        clampTarget(); fit();
+      }
       grab = { x: e.clientX, y: e.clientY };
     };
     const onUp = (e: PointerEvent) => { grab = null; if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); };
@@ -482,6 +493,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     capMat.diffuseColor = Color3.Black();
     capMat.specularColor = Color3.Black();
     capMat.emissiveColor = new Color3(0.055, 0.075, 0.072);
+    capMat.alpha = 0.08;
     const caps = CreateCylinder("caps", { tessellation: 6, diameter: 2 * HEX_R * 0.92, height: 2 }, scene);
     const cb = caps.getBoundingInfo().boundingBox;
     if (cb.maximum.x - cb.minimum.x > cb.maximum.z - cb.minimum.z) { caps.rotation.y = Math.PI / 6; caps.bakeCurrentTransformIntoVertices(); }
@@ -492,6 +504,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const liftMat = new StandardMaterial("lift", scene);
     liftMat.diffuseColor = Color3.Black(); liftMat.specularColor = Color3.Black();
     liftMat.emissiveColor = new Color3(0.1, 0.14, 0.135);
+    liftMat.alpha = 0.14;
     const lift = CreateCylinder("lift", { tessellation: 6, diameter: 2 * HEX_R * 0.92, height: 3 }, scene);
     const lb = lift.getBoundingInfo().boundingBox;
     if (lb.maximum.x - lb.minimum.x > lb.maximum.z - lb.minimum.z) { lift.rotation.y = Math.PI / 6; lift.bakeCurrentTransformIntoVertices(); }
@@ -846,8 +859,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
         const f = zoom / prev;
         if (anchor && f !== 1) {
           const k = 1 - 1 / f;
-          camera.target.x += (anchor.x - camera.target.x) * k;
-          camera.target.y += (-anchor.z - camera.target.y) * k;
+          const worldAnchor = hiveWallToWorld(anchor.x, anchor.z);
+          camera.target.x += (worldAnchor.x - camera.target.x) * k;
+          camera.target.y += (worldAnchor.y + fieldRoot.position.y - camera.target.y) * k;
           clampTarget();
         }
         fit();
@@ -957,7 +971,8 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   return (
     <div className="queen27-comb is-embedded is-babylon">
       <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="hive" data-grid="hex">
-        <canvas ref={canvasRef} style={{ touchAction: "none", outline: "none" }} />
+        <canvas className="queen-hive-scene" ref={canvasRef} style={{ touchAction: "none", outline: "none" }} />
+        <QueenStarfield lang={lang}/>
         <div className="queen27-hover-card" ref={cardRef} aria-hidden="true" />
         {displays && <QueenHiveDisplays rows={displays} projections={projections} selected={selectedDisplay} events={events} lang={lang} controller={{ inspect: index => displayControllerRef.current?.inspect(index), overview: () => displayControllerRef.current?.overview(), hover: index => displayControllerRef.current?.hover(index) }} />}
         {law && (
