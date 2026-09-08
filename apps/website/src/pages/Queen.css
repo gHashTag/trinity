@@ -4258,11 +4258,70 @@ main:where(.queen27-page.is-shell) section {
   width: 336px;
 }
 
+/* With the sector in the header and the quick commands beside the map's own
+   head, the footer holds nothing on a desktop: it carries the module tabs on a
+   phone and is otherwise gone. The Queen's column takes the height it freed. */
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom {
   right: 10px;
   bottom: 10px;
   left: 10px;
   height: 84px;
+}
+
+@media (min-width: 901px) {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel,
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-command {
+    bottom: 10px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
+    padding-bottom: 20px;
+  }
+
+  /* The quick commands ride with the map's head, on its right. */
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-commands {
+    position: absolute;
+    z-index: 4;
+    grid-area: 1 / 1 / -1 / -1;
+    top: 126px;
+    right: 356px;
+    width: min(420px, 34vw);
+    height: 39px;
+  }
+
+  /* Floating beside the map's head there is room for the row of commands or
+     for a title above it, not both: at 39px with the header the five buttons
+     had nowhere to be and none of them rendered. The icons carry the meaning,
+     and the panel keeps its label for a screen reader. */
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-commands > .queen27-hud-panel-head {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-commands > :not(.queen27-hud-panel-head) {
+    height: 100%;
+  }
+
+  .queen27-page.is-shell:has(.queen-chat-tab) .queen27-hud-viewport > .queen27-hud-commands {
+    right: 130px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
+    right: calc(356px + min(420px, 34vw) + 10px);
+  }
+
+  .queen27-page.is-shell:has(.queen-chat-tab) .queen27-hud-viewport > .queen27-hud-vp-head {
+    right: calc(130px + min(420px, 34vw) + 10px);
+  }
+
+  /* The sector tile keeps the bar's rhythm rather than a panel's. */
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector {
+    flex: 0 0 auto;
+    max-width: 260px;
+  }
 }
 
 /* The scene's own content starts clear of the overlays: the law line and the

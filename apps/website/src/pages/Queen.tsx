@@ -2679,6 +2679,86 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           }}
         />}
 
+      {!isPhone && (
+              <section className="queen27-hud-commands" aria-label={c.hudCommands}>
+                <header className="queen27-hud-panel-head">
+                  <span>{c.hudCommands}</span>
+                </header>
+                <div className="queen27-hud-tiles">
+                  <button
+                    type="button"
+                    className={`queen27-hud-tile${agentCopy === "copied" ? " is-gold" : ""}`}
+                    onClick={copyAgent}
+                  >
+                    <i aria-hidden="true">⌘</i>
+                    <b>
+                      {agentCopy === "copied"
+                        ? c.copiedAgent
+                        : agentCopy === "error"
+                          ? c.copyFailed
+                          : c.copyAgent}
+                    </b>
+                  </button>
+                  {repo ? (
+                    <a
+                      className="queen27-hud-tile"
+                      href={`https://github.com/${repo}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <i aria-hidden="true">◇</i>
+                      <b>{c.hudOpenRepo}</b>
+                    </a>
+                  ) : (
+                    <button type="button" className="queen27-hud-tile" disabled>
+                      <i aria-hidden="true">◇</i>
+                      <b>{c.hudOpenRepo}</b>
+                    </button>
+                  )}
+                  {pickedIssueUrl ? (
+                    <a
+                      className="queen27-hud-tile"
+                      href={pickedIssueUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <i aria-hidden="true">#</i>
+                      <b>{c.hudOpenIssue}</b>
+                    </a>
+                  ) : (
+                    <button type="button" className="queen27-hud-tile" disabled>
+                      <i aria-hidden="true">#</i>
+                      <b>{c.hudOpenIssue}</b>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="queen27-hud-tile"
+                    onClick={() => {
+                      setView("comb");
+                      combRef.current?.fit();
+                    }}
+                  >
+                    <i aria-hidden="true">▽</i>
+                    <b>{c.hudFitView}</b>
+                  </button>
+                  <button
+                    type="button"
+                    className="queen27-hud-tile"
+                    onClick={toggleFullscreen}
+                    aria-pressed={isFullscreen}
+                  >
+                    <i aria-hidden="true">⤢</i>
+                    <b>{isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}</b>
+                  </button>
+                  <button type="button" className="queen27-hud-tile" onClick={toggleLang}>
+                    <i aria-hidden="true">⟲</i>
+                    <b>{c.hudLanguage}</b>
+                  </button>
+                </div>
+              </section>
+      )}
+
       {/* Inside the map, not beside it: the header, the rails and the
           footer are children of the container that holds the 3D scene, so
           they overlay the same element rather than sitting in a grid around
@@ -2779,6 +2859,57 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           </button>
           {roundPopover}
         </section>
+
+        {/* Which sector is active is the same question the worlds selector
+            answers, so it is a header fact rather than a panel of its own. */}
+        {!isPhone && (
+              <section className="queen27-hud-sector" aria-label={c.hudActiveSector}>
+                <header className="queen27-hud-panel-head">
+                  <span>{c.hudActiveSector}</span>
+                </header>
+                <div className="queen27-hud-sector-body">
+                  <span className="queen27-hud-sector-mark" aria-hidden="true">
+                    <TrinityLogo withLabel={false} height="40px" />
+                  </span>
+                  <div className="queen27-hud-sector-text">
+                    <strong>{repo ?? "—"}</strong>
+                    <small>{c.hudProduction}</small>
+                    <dl>
+                      <div>
+                        <dt>{c.hudCards}</dt>
+                        <dd>{board ? cards.length : "—"}</dd>
+                      </div>
+                      <div>
+                        <dt>{c.hudHeld}</dt>
+                        <dd>{board ? heldCount : "—"}</dd>
+                      </div>
+                      <div>
+                        <dt>{c.hudSlots}</dt>
+                        <dd>{workers?.capacity ?? "—"}</dd>
+                      </div>
+                      <div>
+                        <dt>{c.hudSignature}</dt>
+                        <dd
+                          className={
+                            hardware ? "is-green" : hardwareState.error ? "is-cold" : "is-muted"
+                          }
+                          title={hardware ? hardware.keyId : hardwareState.error ?? undefined}
+                        >
+                          {hardware
+                            ? c.hudVerified
+                            : hardwareState.error
+                              ? c.hudUnverified
+                              : c.checking}
+                        </dd>
+                      </div>
+                    </dl>
+                    <em title={c.hudDevice}>
+                      {device ? `${device.id} · ${device.state}` : "—"}
+                    </em>
+                  </div>
+                </div>
+              </section>
+        )}
 
         {/* The board's overview reads as a header fact, not as a panel competing
             with the Queen for her column. */}
@@ -2972,130 +3103,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           </>
         ) : (
           <>
-            <section className="queen27-hud-sector" aria-label={c.hudActiveSector}>
-              <header className="queen27-hud-panel-head">
-                <span>{c.hudActiveSector}</span>
-              </header>
-              <div className="queen27-hud-sector-body">
-                <span className="queen27-hud-sector-mark" aria-hidden="true">
-                  <TrinityLogo withLabel={false} height="40px" />
-                </span>
-                <div className="queen27-hud-sector-text">
-                  <strong>{repo ?? "—"}</strong>
-                  <small>{c.hudProduction}</small>
-                  <dl>
-                    <div>
-                      <dt>{c.hudCards}</dt>
-                      <dd>{board ? cards.length : "—"}</dd>
-                    </div>
-                    <div>
-                      <dt>{c.hudHeld}</dt>
-                      <dd>{board ? heldCount : "—"}</dd>
-                    </div>
-                    <div>
-                      <dt>{c.hudSlots}</dt>
-                      <dd>{workers?.capacity ?? "—"}</dd>
-                    </div>
-                    <div>
-                      <dt>{c.hudSignature}</dt>
-                      <dd
-                        className={
-                          hardware ? "is-green" : hardwareState.error ? "is-cold" : "is-muted"
-                        }
-                        title={hardware ? hardware.keyId : hardwareState.error ?? undefined}
-                      >
-                        {hardware
-                          ? c.hudVerified
-                          : hardwareState.error
-                            ? c.hudUnverified
-                            : c.checking}
-                      </dd>
-                    </div>
-                  </dl>
-                  <em title={c.hudDevice}>
-                    {device ? `${device.id} · ${device.state}` : "—"}
-                  </em>
-                </div>
-              </div>
-            </section>
 
-            <section className="queen27-hud-commands" aria-label={c.hudCommands}>
-              <header className="queen27-hud-panel-head">
-                <span>{c.hudCommands}</span>
-              </header>
-              <div className="queen27-hud-tiles">
-                <button
-                  type="button"
-                  className={`queen27-hud-tile${agentCopy === "copied" ? " is-gold" : ""}`}
-                  onClick={copyAgent}
-                >
-                  <i aria-hidden="true">⌘</i>
-                  <b>
-                    {agentCopy === "copied"
-                      ? c.copiedAgent
-                      : agentCopy === "error"
-                        ? c.copyFailed
-                        : c.copyAgent}
-                  </b>
-                </button>
-                {repo ? (
-                  <a
-                    className="queen27-hud-tile"
-                    href={`https://github.com/${repo}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <i aria-hidden="true">◇</i>
-                    <b>{c.hudOpenRepo}</b>
-                  </a>
-                ) : (
-                  <button type="button" className="queen27-hud-tile" disabled>
-                    <i aria-hidden="true">◇</i>
-                    <b>{c.hudOpenRepo}</b>
-                  </button>
-                )}
-                {pickedIssueUrl ? (
-                  <a
-                    className="queen27-hud-tile"
-                    href={pickedIssueUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <i aria-hidden="true">#</i>
-                    <b>{c.hudOpenIssue}</b>
-                  </a>
-                ) : (
-                  <button type="button" className="queen27-hud-tile" disabled>
-                    <i aria-hidden="true">#</i>
-                    <b>{c.hudOpenIssue}</b>
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="queen27-hud-tile"
-                  onClick={() => {
-                    setView("comb");
-                    combRef.current?.fit();
-                  }}
-                >
-                  <i aria-hidden="true">▽</i>
-                  <b>{c.hudFitView}</b>
-                </button>
-                <button
-                  type="button"
-                  className="queen27-hud-tile"
-                  onClick={toggleFullscreen}
-                  aria-pressed={isFullscreen}
-                >
-                  <i aria-hidden="true">⤢</i>
-                  <b>{isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}</b>
-                </button>
-                <button type="button" className="queen27-hud-tile" onClick={toggleLang}>
-                  <i aria-hidden="true">⟲</i>
-                  <b>{c.hudLanguage}</b>
-                </button>
-              </div>
-            </section>
 
           </>
         )}

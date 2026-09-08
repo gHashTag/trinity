@@ -1086,7 +1086,21 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       if (frames === 1) host.setAttribute("data-first-frame-ms", String(Math.round(nowMs - t0)));
       host.setAttribute("data-frames", String(frames));
     });
-    const ro = new ResizeObserver(() => { engine.resize(); fit(); });
+    // A resize keeps the camera where it was, which is right for a window nudged
+    // by a few pixels and wrong when the box changes shape: framing chosen for
+    // 830x527 leaves the hive off-screen at 1440x900, and the only way back was
+    // the Whole map button. A quarter in either dimension is the line between
+    // the two — past it the view is reframed, under it the operator's zoom and
+    // target are left alone.
+    let framedFor = { w: host.clientWidth, h: host.clientHeight };
+    const ro = new ResizeObserver(() => {
+      engine.resize();
+      const w = host.clientWidth, h = host.clientHeight;
+      const reshaped = framedFor.w > 0 && framedFor.h > 0
+        && (Math.abs(w - framedFor.w) / framedFor.w > 0.25 || Math.abs(h - framedFor.h) / framedFor.h > 0.25);
+      if (w > 0 && h > 0) framedFor = { w, h };
+      if (reshaped) cameraRef.current?.fit(); else fit();
+    });
     ro.observe(host);
     const onVisible = () => { engine.resize(); fit(); };
     document.addEventListener("visibilitychange", onVisible);
