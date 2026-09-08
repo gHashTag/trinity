@@ -3,6 +3,35 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'four-languages-one-tri-extension',
+    title: 'Four languages shared one .tri extension',
+    summary: '[reported in merged PR #793] The VIBEE generator now names Markdown, TOML, and t27 inputs instead of silently treating them as empty VIBEE modules, while unrecognised files retain the old fall-through.',
+    date: '2026-09-08',
+    readingMinutes: 6,
+    tags: ['Compiler', 'Parser', 'Testing', 'Reproducibility'],
+    receipts: [
+      { label: 'Merged PR #793 — named diagnostics for Markdown, TOML, and t27', href: 'https://github.com/gHashTag/trinity-fpga/pull/793' },
+      { label: 'Merge commit 5614a4ab — landed generator change', href: 'https://github.com/gHashTag/trinity-fpga/commit/5614a4ab494a7b9feabe918ef3fa8a1d24425b83' },
+    ],
+    openQuestions: [
+      'The counts and command results are reported by PR #793; they were not independently rerun in this blog run.',
+      'The change is a software repository result. It does not establish FPGA or AX7203 behaviour, timing, energy, model quality, or a physical-chip result.',
+      'The detector is pattern-based; it is not a complete parser or proof that every `.tri` file has been classified.',
+      'The result says nothing about the 83-format numeric catalogue or about accuracy comparisons with takum.',
+    ],
+    published: true,
+    ru: {
+      title: 'Четыре языка делили одно расширение .tri',
+      summary: '[отчёт в смерженном PR #793] Генератор VIBEE теперь называет входы Markdown, TOML и t27 вместо молчаливого создания пустых VIBEE-модулей, а нераспознанные файлы сохраняют прежний путь.',
+      openQuestions: [
+        'Числа и результаты команд приведены по отчёту PR #793; в этом запуске блога они независимо не повторялись.',
+        'Это результат программного репозитория. Он не устанавливает поведение FPGA или AX7203, timing, энергию, качество модели или результат на физическом кристалле.',
+        'Детектор основан на признаках; это не полный парсер и не доказательство классификации каждого `.tri`-файла.',
+        'Результат ничего не говорит о каталоге числовых форматов из 83 форматов или о сравнении точности с takum.',
+      ],
+    },
+  },
+  {
     slug: 'ninety-tests-were-unreachable',
     title: 'Ninety tests were present, but unreachable',
     summary: '[measured in merged PR #778] A Zig codegen subtree became importable, exposing 90 previously unreachable tests; the reported verification moved from 155 to 157 steps and from 2,832 to 2,939 tests.',
