@@ -3347,6 +3347,16 @@ body.queen-shell .sticky-cta {
      which is what makes the modules read as places on one map rather than
      boxes on a page. Kept dark enough that mono text on it stays legible. */
   --hud-panel: rgba(2, 8, 6, 0.42);
+  /* Overlay geometry in one place. Every panel inside the map is positioned
+     from these, so a breakpoint moves all of them together instead of each
+     carrying its own pixel guess. */
+  --hud-worlds-h: 52px;
+  --hud-bar-h: 64px;
+  --hud-gap: 10px;
+  --hud-rail-w: 240px;
+  --hud-col-w: 336px;
+  --hud-cmds-w: min(420px, 34vw);
+  --hud-chrome-top: calc(var(--hud-worlds-h) + var(--hud-bar-h) + var(--hud-gap));
   --hud-ground: transparent;
   --hud-mono: "JetBrains Mono", ui-monospace, monospace;
   --hud-notch: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
@@ -4201,8 +4211,7 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top,
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-command,
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel,
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom,
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom {
   position: absolute;
   z-index: 4;
   /* The viewport is a grid, and an absolutely positioned grid child is placed
@@ -4215,7 +4224,7 @@ main:where(.queen27-page.is-shell) section {
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
   /* clears the worlds bar, which floats over the same container */
-  top: 52px;
+  top: calc(var(--hud-worlds-h) + var(--hud-gap));
   right: 10px;
   left: 10px;
   height: 64px;
@@ -4240,11 +4249,112 @@ main:where(.queen27-page.is-shell) section {
   min-width: 0;
 }
 
+/* The bar stops moving when its numbers do. Sized to content it re-laid itself
+   every second: the countdown gains a digit, a count goes from 99 to 100, the
+   status swaps WAITING_FOR_REVIEW for something shorter, and every tile after
+   it shifts. Each tile keeps a floor, and digits are tabular so they occupy
+   the same width whatever they read. */
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-res {
+  min-width: 104px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-res-round {
+  min-width: 420px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-status {
+  min-width: 260px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-sector {
+  min-width: 220px;
+}
+
+.queen27-page.is-shell .queen27-hud-top :is(strong, b, .queen27-hud-countdown, time) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The sector tile was drawn for a footer slot: its mark and its two columns of
+   facts do not fit a bar, and squeezed they overlapped the name. In the bar it
+   is the name and the state, which is what the tile is for. */
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector .queen27-hud-sector-mark,
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector .queen27-hud-panel-head {
+  display: none;
+}
+
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector .queen27-hud-sector-body {
+  padding: 0 10px;
+}
+
+/* Below a desktop the rail and the column stop being fixed slabs. */
+@media (max-width: 1279px) {
+  .queen27-page.is-shell {
+    --hud-rail-w: 200px;
+    --hud-col-w: 300px;
+    --hud-cmds-w: min(320px, 28vw);
+  }
+}
+
+@media (max-width: 1100px) {
+  .queen27-page.is-shell {
+    --hud-rail-w: 180px;
+    /* the column becomes a drawer here, so nothing reserves its width: the
+       head and the law line were stopping 280px short of the edge */
+    --hud-col-w: 0px;
+    --hud-cmds-w: 0px;
+  }
+
+  /* No room for the commands beside the head at this width; they are reachable
+     from the rail, so the head takes the space instead of both being cramped. */
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-commands {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .queen27-page.is-shell {
+    --hud-rail-w: 0px;
+    --hud-col-w: 0px;
+    --hud-gap: 8px;
+    /* Measured, not assumed: at 48 and 56 the chrome offset came out 112 while
+       the bars actually end at 128, and the map's head slid under the status
+       bar by eight pixels. */
+    --hud-worlds-h: 56px;
+    --hud-bar-h: 64px;
+  }
+
+  /* The phone keeps its own arrangement: the rail is the footer, the column a
+     drawer, and the map takes what is left. */
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
+    padding: calc(var(--hud-chrome-top) + 40px) var(--hud-gap) 96px var(--hud-gap);
+  }
+
+  /* On a phone the head wraps to two lines, and a floating element cannot tell
+     the body how much room it took: the law line ran into it. Here it sits in
+     the flow and the body follows it instead of guessing a padding. */
+  .queen27-page.is-shell .queen27-hud-viewport {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
+    position: static;
+    /* auto placement put it after the body — the row has to be named, or the
+       head lands under the law line it is supposed to sit above */
+    grid-area: 1 / 1 / 2 / -1;
+    margin: var(--hud-chrome-top) var(--hud-gap) 0;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
+    grid-area: 2 / 1 / -1 / -1;
+    padding-top: var(--hud-gap);
+  }
+}
+
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-command {
-  top: 126px;
-  bottom: 94px;
-  left: 10px;
-  width: 240px;
+  top: var(--hud-chrome-top);
+  bottom: var(--hud-gap);
+  left: var(--hud-gap);
+  width: var(--hud-rail-w);
 }
 
 .queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-command {
@@ -4252,10 +4362,10 @@ main:where(.queen27-page.is-shell) section {
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel {
-  top: 126px;
-  right: 10px;
-  bottom: 94px;
-  width: 336px;
+  top: var(--hud-chrome-top);
+  right: var(--hud-gap);
+  bottom: var(--hud-gap);
+  width: var(--hud-col-w);
 }
 
 /* With the sector in the header and the quick commands beside the map's own
@@ -4287,9 +4397,9 @@ main:where(.queen27-page.is-shell) section {
     position: absolute;
     z-index: 4;
     grid-area: 1 / 1 / -1 / -1;
-    top: 126px;
-    right: 356px;
-    width: min(420px, 34vw);
+    top: var(--hud-chrome-top);
+    right: calc(var(--hud-col-w) + var(--hud-gap) * 2);
+    width: var(--hud-cmds-w);
     height: 39px;
   }
 
@@ -4305,17 +4415,12 @@ main:where(.queen27-page.is-shell) section {
     height: 100%;
   }
 
-  .queen27-page.is-shell:has(.queen-chat-tab) .queen27-hud-viewport > .queen27-hud-commands {
-    right: 130px;
+  /* Collapsed, the Queen is a button rather than a column. */
+  .queen27-page.is-shell:has(.queen-chat-tab) {
+    --hud-col-w: 110px;
   }
 
-  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
-    right: calc(356px + min(420px, 34vw) + 10px);
-  }
 
-  .queen27-page.is-shell:has(.queen-chat-tab) .queen27-hud-viewport > .queen27-hud-vp-head {
-    right: calc(130px + min(420px, 34vw) + 10px);
-  }
 
   /* The sector tile keeps the bar's rhythm rather than a panel's. */
   .queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector {
@@ -4328,24 +4433,32 @@ main:where(.queen27-page.is-shell) section {
    search row were laid out for a box with chrome outside it, and with the
    chrome now floating on top they ran under the status bar. */
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
-  padding: 170px 356px 104px 260px;
+  padding: calc(var(--hud-chrome-top) + 44px) calc(var(--hud-col-w) + var(--hud-gap) * 2) 20px calc(var(--hud-rail-w) + var(--hud-gap) * 2);
 }
 
 .queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-vp-body {
   padding-left: 84px;
 }
 
-.queen27-page.is-shell:has(.queen-chat-tab) .queen27-hud-viewport > .queen27-hud-vp-body {
-  padding-right: 130px;
+
+/* The head floats with the rest only where it fits on one line. On a phone it
+   wraps to two, and a floating element cannot tell the body how much room it
+   took — the law line ran into it. Below 901px it stays in the flow. */
+@media (min-width: 901px) {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
+    position: absolute;
+    z-index: 4;
+    grid-area: 1 / 1 / -1 / -1;
+  }
 }
 
 /* The map's own head sits under the floating status bar. */
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
   position: absolute;
   z-index: 3;
-  top: 126px;
-  right: 356px;
-  left: 260px;
+  top: var(--hud-chrome-top);
+  right: calc(var(--hud-col-w) + var(--hud-gap) * 2 + var(--hud-cmds-w));
+  left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
 }
 
 .queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-vp-head {
@@ -5413,5 +5526,17 @@ main:where(.queen27-page.is-shell) section {
     height: var(--hud-vp-head-float);
     border-bottom-color: transparent;
     background: #000000b8;
+  }
+}
+
+/* Last word on the phone head. It is set absolute by the overlay block and set
+   static by the phone block, and which one lands depended on where each sat in
+   the file — at 390 it stayed absolute, row 1 collapsed to 0px, and the body
+   with the law line rendered above a head that is supposed to lead it. Stated
+   here, at the end, the cascade has nothing left to say. */
+@media (max-width: 900px) {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
+    position: static !important;
+    grid-area: 1 / 1 / 2 / -1 !important;
   }
 }
