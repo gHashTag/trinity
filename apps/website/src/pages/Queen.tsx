@@ -283,6 +283,7 @@ const COPY = {
     provenance: "LIVE / RAILWAY / POSTGRES / QUEEND",
     refresh: "refreshes every 5 seconds",
     source: "Open operational view",
+    hudSky: "Star catalog",
     board: "REALTIME KANBAN",
     boardTitle: "The whole swarm, in one place.",
     boardCopy:
@@ -543,6 +544,7 @@ const COPY = {
     provenance: "LIVE / RAILWAY / POSTGRES / QUEEND",
     refresh: "обновление каждые 5 секунд",
     source: "Открытый operational view",
+    hudSky: "Каталог звёзд",
     board: "REALTIME KANBAN",
     boardTitle: "Весь рой — в одном месте.",
     boardCopy:
@@ -2928,6 +2930,22 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 <span>{c.source}</span>
                 <b title={state.kind === "error" ? state.error : undefined}>
                   {state.kind === "error" ? c.hudOffline : c.refresh}
+                </b>
+              </li>
+              {/* The sky is someone's work under CC BY-SA 4.0, and the credit is
+                  a condition of using it, not decoration. It read as a glass
+                  badge floating over the map; it reads here instead, where this
+                  HUD already keeps where its facts come from. */}
+              <li className="queen27-hud-menu-note">
+                <span>{c.hudSky}</span>
+                <b>
+                  <a
+                    href="https://github.com/astronexus/HYG-Database/blob/main/hyg/README.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    HYG 4.1 · J2000 · David Nash / Astronexus · CC BY-SA 4.0
+                  </a>
                 </b>
               </li>
             </ul>

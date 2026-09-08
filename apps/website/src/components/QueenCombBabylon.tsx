@@ -114,6 +114,9 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   // between them is a node it can move or drop while the engine keeps drawing
   // into it — a blank map with nothing in the console to say why.
   const stageRef = useRef<HTMLDivElement>(null);
+  // The one WebGL context this component is allowed, held across effect runs.
+  const engineRef = useRef<{ engine: Engine; canvas: HTMLCanvasElement } | null>(null);
+  const engineIdleRef = useRef(0);
   const cardRef = useRef<HTMLDivElement>(null);
   const [projections, setProjections] = useState<HiveDisplayProjection[]>([]);
   const [selectedDisplayKey, setSelectedDisplayKey] = useState<string | null>(null);
@@ -188,24 +191,50 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     const host = hostRef.current;
     const stage = stageRef.current;
     if (!host || !stage) return;
-    // A canvas per mount, and never the same one twice.
+    // One WebGL context for the life of this component, not one per effect run.
     //
-    // Babylon's dispose() calls WEBGL_lose_context on the context it made, and
-    // a canvas whose context has been lost that way never gets another: every
-    // later getContext returns the dead one. React 19's StrictMode mounts an
-    // effect, cleans it up and mounts it again, so with the canvas in the JSX
-    // the second engine of every dev session was built on a corpse — measured
-    // 2026-09-08 in Safari as two Babylon banners, "WebGL: context lost", and
-    // then "Unable to create index buffer" thrown out of the scene. Chrome
-    // hands back a fresh context and hid this for months.
-    const canvas = document.createElement("canvas");
-    canvas.className = "queen-hive-scene";
-    canvas.style.touchAction = "none";
-    canvas.style.outline = "none";
-    // Into the stage, which is React's element and empty as far as React is
-    // concerned. The overlays that follow it in the field read as above it, and
-    // the field's own stacking says the same.
-    stage.appendChild(canvas);
+    // Measured 2026-09-09 by counting getContext('webgl2') on a load of this
+    // page: two contexts, 183ms apart, both on a queen-hive-scene canvas. This
+    // effect rebuilds on [signature, sceneKey], and StrictMode mounts it twice
+    // besides. Chrome grants every one of them. Safari has a small per-page
+    // limit and evicts the oldest to serve a new request — which arrives as
+    // "WebGL: context lost" on the context the scene is still building, and
+    // then "Unable to create index buffer" thrown out of that build.
+    //
+    // So the engine outlives the effect. A rebuild disposes the scene and keeps
+    // the context; disposal of the context itself is scheduled and cancelled by
+    // the next run, which is what carries it across StrictMode's gap. Babylon's
+    // dispose() also calls WEBGL_lose_context, and a canvas that has had one
+    // lost never yields another — so the canvas is made and dropped with it.
+    const held = engineRef.current;
+    if (held && (!held.canvas.isConnected || held.engine.isDisposed)) {
+      // Its element is gone (a route change, a new mount): it can never draw
+      // here again, and a context nobody can see is one Safari still counts.
+      try { held.engine.dispose(); } catch { /* already gone */ }
+      held.canvas.remove();
+      engineRef.current = null;
+    }
+    window.clearTimeout(engineIdleRef.current);
+    const reused = engineRef.current;
+    // Attached before the engine asks for a context: a detached canvas has no
+    // box, and the buffer would be sized from Babylon's 300x150 default.
+    const canvas =
+      reused?.canvas ??
+      (() => {
+        const made = document.createElement("canvas");
+        made.className = "queen-hive-scene";
+        made.style.touchAction = "none";
+        made.style.outline = "none";
+        // Into the stage, which is React's element and empty as far as React is
+        // concerned. The overlays that follow it in the field read as above it,
+        // and the field's own stacking says the same.
+        stage.appendChild(made);
+        return made;
+      })();
+    const engine =
+      reused?.engine ??
+      new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
+    if (!reused) engineRef.current = { engine, canvas };
     const cards = cardsRef.current;
     const workers = workersRef.current;
     const viewKey=(index:number)=>displaysRef.current?.[index]?.key??catalogRef.current?.cells[index]?.key??null;
@@ -242,7 +271,6 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       // therefore a floor on the level, not a ceiling.
       return Math.max(1 / ratio, Math.sqrt((width * height) / MAX_DRAWING_PIXELS));
     };
-    const engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
     // A lost context is an event, not an exception. Preventing the default is
     // what lets the browser offer one back; without it Safari never tries, and
     // the next draw throws out of a React effect instead.
@@ -1168,10 +1196,18 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       window.removeEventListener('pointercancel',onUp);
       window.removeEventListener('blur',onBlur);
       canvas.removeEventListener('webglcontextlost', onContextLost, false);
-      ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose();
-      // The context died with the engine; the element goes with it, so the next
-      // mount asks for a context on a canvas that never had one.
-      canvas.remove();
+      ro.disconnect(); engine.stopRenderLoop(); scene.dispose();
+      // The engine stays. A rebuild is a new scene on the same context, and
+      // StrictMode's unmount is followed by a mount a moment later — releasing
+      // the context in between is what made two of them. If no run claims it,
+      // this is the unmount, and it goes.
+      window.clearTimeout(engineIdleRef.current);
+      engineIdleRef.current = window.setTimeout(() => {
+        if (engineRef.current?.engine !== engine) return;
+        engine.dispose();
+        canvas.remove();
+        engineRef.current = null;
+      }, 2000);
     };
   }, [signature,sceneKey]);
 

@@ -5927,3 +5927,105 @@ body.queen-shell .phi-starfield {
     grid-area: 1 / 1 / -1 / -1;
   }
 }
+
+/* The board in the HUD's own hand.
+   Six columns of the page's body type over the sky read as a different program
+   borrowing the window: 16.8px Outfit in white, against mono, uppercase and
+   muted everywhere else in this shell. The words do not change and neither do
+   the counts — only the voice. Measured at 1440x900: a column is 210px, which
+   at this scale holds a title on two lines and its criteria under it. */
+.queen27-page.is-shell .queen27-kanban {
+  gap: var(--hud-gap);
+  background: transparent;
+}
+
+.queen27-page.is-shell .queen27-column {
+  border: 1px solid var(--hud-line);
+  background: var(--hud-panel);
+  clip-path: var(--hud-notch);
+}
+
+.queen27-page.is-shell .queen27-column > header {
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* The count is the fact in the header; it reads as one. */
+.queen27-page.is-shell .queen27-column > header > span {
+  color: var(--hud-green);
+  font-variant-numeric: tabular-nums;
+}
+
+.queen27-page.is-shell .queen27-column > small {
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+.queen27-page.is-shell .queen27-card {
+  border: 1px solid var(--hud-line);
+  background: rgba(2, 8, 6, 0.5);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+.queen27-page.is-shell .queen27-card:hover {
+  border-color: var(--hud-line-strong);
+}
+
+.queen27-page.is-shell .queen27-card-topline {
+  color: var(--hud-gold);
+  font-family: var(--hud-mono);
+  font-size: 0.6rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+}
+
+.queen27-page.is-shell .queen27-card > strong {
+  color: var(--text, #fff);
+  font-size: 0.76rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.queen27-page.is-shell .queen27-card > span {
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* A card is as wide as its column, not as its longest word. The list's implicit
+   column was max-content, so a card ran 207px inside 176 and every title was
+   cut at the column's edge with the rest reachable only by a sideways scroll
+   nobody would look for. */
+.queen27-page.is-shell .queen27-cards {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.queen27-page.is-shell .queen27-card {
+  min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-card > :is(strong, span, .queen27-card-topline) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The star catalog's badge is off the map. Its credit is a condition of the
+   licence, so it did not disappear — it moved into the menu, where this HUD
+   already lists where each fact came from. Over the field it was a glass box
+   in the corner of a scene that has no other glass boxes. */
+body.queen-shell .queen-starfield-source {
+  display: none;
+}
+
+.queen27-page.is-shell .queen27-hud-menu-note a {
+  color: var(--hud-cyan);
+}
