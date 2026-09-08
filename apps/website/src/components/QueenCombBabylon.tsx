@@ -215,7 +215,31 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // the castle's testimony starts honest: no snapshot, no castle facts
     host.setAttribute("data-castle-source", fdNow ? fdNow.source : "none");
     if (!fdNow) { host.removeAttribute("data-castle-stages"); host.removeAttribute("data-castle-rings"); host.removeAttribute("data-castle-unassigned"); host.removeAttribute("data-castle-releases"); }
+    // How many pixels the scene may ask for, at all.
+    //
+    // Sharpness was set from the device ratio alone, so a 2x display meant a
+    // drawing buffer of four times the CSS area — 5.2 million pixels at
+    // 1440x900 — and this scene keeps several full-size targets beside it: the
+    // glow layer's two blur passes and the image-processing pass. Safari's
+    // WebGL budget is not Chrome's, and it answered by losing the context at
+    // creation; "Unable to create index buffer" is what a scene says when the
+    // memory it asked for was refused. The budget is an area now, so a big
+    // display still gets sharpness — up to a ceiling, and never past it.
+    const MAX_DRAWING_PIXELS = 4_200_000;
+    const pixelBudgetLevel = () => {
+      const width = canvas.clientWidth || host.clientWidth || 1;
+      const height = canvas.clientHeight || host.clientHeight || 1;
+      const ratio = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+      // A level below 1 means more buffer pixels than CSS pixels; the budget is
+      // therefore a floor on the level, not a ceiling.
+      return Math.max(1 / ratio, Math.sqrt((width * height) / MAX_DRAWING_PIXELS));
+    };
     const engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
+    // A lost context is an event, not an exception. Preventing the default is
+    // what lets the browser offer one back; without it Safari never tries, and
+    // the next draw throws out of a React effect instead.
+    const onContextLost = (event: Event) => { event.preventDefault(); engine.stopRenderLoop(); };
+    canvas.addEventListener('webglcontextlost', onContextLost, false);
     // Sharpness (the user, 2026-09-06: "сделай качество выше"). The engine was
     // rendering one sample per CSS pixel, so on a 2x display every line on the
     // comb was drawn at half the resolution of the screen it lands on. Capped at
@@ -223,7 +247,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     // gets. Babylon's own picking divides by the same scaling level, so the pan,
     // the wheel and the pick keep working - proved by the pick, void and touch
     // gates rather than assumed.
-    engine.setHardwareScalingLevel(1 / Math.min(2, Math.max(1, window.devicePixelRatio || 1)));
+    engine.setHardwareScalingLevel(pixelBudgetLevel());
     const scene = new Scene(engine);
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
     scene.clearColor = new Color4(0, 0, 0, 0);
@@ -1021,8 +1045,8 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       // a pane resized before it is shown); a ResizeObserver alone missed
       // that and left the field clipped to the old canvas. Check every frame.
       const cw = canvas.clientWidth, ch = canvas.clientHeight;
-      const dpr = Math.min(2,Math.max(1,window.devicePixelRatio || 1));
-      if ((cw > 0 && ch > 0) && (Math.abs(canvas.width-cw*dpr)>1 || Math.abs(canvas.height-ch*dpr)>1)) { engine.setHardwareScalingLevel(1/dpr); engine.resize(); fit(); }
+      const level = pixelBudgetLevel();
+      if ((cw > 0 && ch > 0) && (Math.abs(canvas.width-cw/level)>1 || Math.abs(canvas.height-ch/level)>1)) { engine.setHardwareScalingLevel(level); engine.resize(); fit(); }
       if (insetRef.current !== appliedInset) fit();
       // the layers: applied on change, no rebuild; the host mirrors the applied state
       const want = layersRef.current;
@@ -1135,6 +1159,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       window.removeEventListener('pointerup',onUp);
       window.removeEventListener('pointercancel',onUp);
       window.removeEventListener('blur',onBlur);
+      canvas.removeEventListener('webglcontextlost', onContextLost, false);
       ro.disconnect(); engine.stopRenderLoop(); scene.dispose(); engine.dispose();
       // The context died with the engine; the element goes with it, so the next
       // mount asks for a context on a canvas that never had one.
