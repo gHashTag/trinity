@@ -1,0 +1,94 @@
+/* The shell's one loader. Mono, muted, on the same frosted veil the panels
+   around it use, so a wait looks like part of the HUD rather than a page that
+   has not started. */
+.queen-loading {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 0.55rem;
+  padding: 1.2rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  text-align: center;
+}
+
+.queen-loading[data-fill="1"] {
+  height: 100%;
+}
+
+.queen-loading > strong {
+  color: #00ff88;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.queen-loading > p {
+  margin: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.queen-loading > p i {
+  color: rgba(0, 255, 136, 0.5);
+  font-style: normal;
+}
+
+.queen-loading-mark {
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: #00ff88;
+  stroke-width: 1.5;
+  opacity: 0.85;
+  animation: queen-loading-turn 3.2s linear infinite;
+}
+
+/* A bar that says a wait is running, and nothing about how far along it is —
+   there is no progress to report, and a bar that pretends otherwise is the
+   sample problem in another costume. */
+.queen-loading-bar {
+  position: relative;
+  overflow: hidden;
+  width: min(220px, 60%);
+  height: 1px;
+  background: rgba(0, 255, 136, 0.18);
+}
+
+.queen-loading-bar::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 38%;
+  background: #00ff88;
+  animation: queen-loading-sweep 1.5s ease-in-out infinite;
+  content: "";
+}
+
+@keyframes queen-loading-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes queen-loading-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(360%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .queen-loading-mark,
+  .queen-loading-bar::after {
+    animation: none;
+  }
+
+  .queen-loading-bar::after {
+    width: 100%;
+    opacity: 0.4;
+  }
+}

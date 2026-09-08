@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { QueenLoading } from '../components/QueenLoading';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useI18n } from '../i18n/context';
@@ -91,7 +92,7 @@ export default function QueenUniverse() {
           way, so every cold load opened with the failure colour on a black
           page — which reads as "it did not load", because that is what it
           looks like. */}
-      {commonHive&&!atlas?<p className={atlasError?'queen-world-error':'queen-universe-loading'} role={atlasError?'alert':'status'}>{atlasError?c.failed:c.loading}{atlasError&&<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button>}</p>:atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
+      {commonHive&&!atlas?(atlasError?<p className="queen-world-error" role="alert">{c.failed}<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button></p>:<QueenLoading title={c.loading} facts={[`${worlds.length} ${lang==='ru'?'миров':'worlds'}`]}/>):atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
     </Suspense></div>
     <dialog className="queen-world-dialog" ref={dialog} aria-labelledby="world-connect-title">
       <header><h2 id="world-connect-title">{c.title}</h2><button onClick={()=>dialog.current?.close()} aria-label={c.close}>×</button></header>

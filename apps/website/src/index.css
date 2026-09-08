@@ -1421,9 +1421,18 @@ input:focus-visible {
    inside it go transparent, and the panels within keep their own translucency. */
 html:has(.spec-x[data-embedded="1"]),
 body:has(.spec-x[data-embedded="1"]),
-body:has(.spec-x[data-embedded="1"]) #root,
-.spec-x[data-embedded="1"] {
+body:has(.spec-x[data-embedded="1"]) #root {
   background: transparent !important;
+}
+
+/* The Explorer's own ground, embedded: a thin frosted veil. The tab strip and
+   the spec list have no panel of their own — they are bare rows on the document
+   — so with the hive drawing underneath they were read against moving hexes.
+   Thin enough that the map is still there, blurred enough that its detail is
+   not in the words. The panes inside keep their darker veil. */
+.spec-x[data-embedded="1"] {
+  background: rgba(2, 8, 6, 0.34) !important;
+  backdrop-filter: blur(4px);
 }
 
 /* Measured 2026-09-09 inside the frame: the document element and the Explorer's

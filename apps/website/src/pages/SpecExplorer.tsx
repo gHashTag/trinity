@@ -786,7 +786,12 @@ export default function SpecExplorer() {
     // the shell's own veil rather than a solid panel: one 0.42 layer, the value
     // every other panel out there uses. Standalone, the Explorer is a page and
     // keeps its opaque panel.
-    background: embedded ? 'rgba(2, 8, 6, 0.42)' : C.panel,
+    background: embedded ? 'rgba(2, 8, 6, 0.66)' : C.panel,
+    // Frosted where the text is. Over the hive the code was legible only where
+    // the map happened to be empty: a cell's outline running through a line of
+    // source is a line you read twice. The blur keeps the map as depth behind
+    // the panel and takes its detail out of the words.
+    ...(embedded ? { backdropFilter: 'blur(7px)' } : null),
     border: `1px solid ${C.border}`,
     borderRadius: 6,
   }
@@ -939,11 +944,17 @@ export default function SpecExplorer() {
               onChange={(e) => setCategory(e.target.value)}
               aria-label={ui.allCategories}
               style={{
-                background: C.raised,
+                // The platform's own arrow is drawn hard against the control's
+                // right border and cannot be moved. This is the chevron the
+                // worlds select uses, with room around it, and the padding
+                // keeps the longest category name clear of it.
+                appearance: 'none',
+                background: `${C.raised} url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m2 4 4 4 4-4' fill='none' stroke='%23e7f7fa' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center`,
+                backgroundSize: '11px 11px',
                 border: `1px solid ${C.border}`,
                 borderRadius: 4,
                 color: C.text,
-                padding: '6px 8px',
+                padding: '6px 32px 6px 8px',
                 fontSize: 12.5,
                 fontFamily: 'inherit',
                 outline: 'none',

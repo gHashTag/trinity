@@ -17,6 +17,7 @@ import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
 import { QueenSectors } from "../components/QueenIntel";
 import { SceneBoundary } from "../components/SceneBoundary";
+import { QueenLoading } from "../components/QueenLoading";
 import {
   HUD_VIEWS,
   decisionDetail,
@@ -2315,6 +2316,69 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     </div>
   );
 
+  // The hive is the ground under every view, not a view of its own.
+  //
+  // It rendered only for the comb, so every other tab was the flat starfield
+  // with panels over it — the user, repeatedly: "где карта с игрой?". The field
+  // is already a fixed, full-shell layer at z-index 0, so mounting it always
+  // puts it behind whatever the tab draws. Off the comb it keeps drawing and
+  // stops listening: its labels, its toolbar and its cards belong to the map's
+  // own view, and a scene that took clicks under the board would be a scene in
+  // the way.
+  const hiveScene =
+            sharedCatalog ? <SceneBoundary lang={lang==='ru'?'ru':'en'}><Suspense fallback={<QueenLoading title={lang==='ru'?'Собираю карту':'Building the map'} facts={[`${sharedCatalog.specs.length} .t27`,`${sharedCatalog.worlds.length} ${lang==='ru'?'репозиториев':'repositories'}`,`${sharedCatalog.issues.length} ${lang==='ru'?'задач':'issues'}`]}/>}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)}/></Suspense></SceneBoundary> : ENGINE_FLAG !== "canvas" ? (
+              <SceneBoundary lang={lang === 'ru' ? 'ru' : 'en'}>
+              <Suspense fallback={<QueenLoading title={lang === 'ru' ? 'Собираю карту' : 'Building the map'} facts={[`${placedCards.length} ${lang === 'ru' ? 'карточек' : 'cards'}`, hiveFoundation ? `${hiveFoundation.closedIssues.length} ${lang === 'ru' ? 'закрытых' : 'closed'}` : null]}/>}>
+                <QueenCombBabylon
+                  signalHealth={{board:hiveFeedHealth(boardState.data!==null,boardState.error),activity:hiveFeedHealth(activityState.data!==null,activityState.error)}}
+                  displays={hiveCells}
+                  lang={lang === 'ru' ? 'ru' : 'en'}
+                  onInspect={() => setContextOpen(false)}
+                  cards={placedCards}
+                  modules={modulesById}
+                  beeTargets={runningCards.map(card => { const index = hiveCells.findIndex(row => row?.number === card.number); return index >= 0 ? index : null; })}
+                  foundation={hiveFoundation ? { issues: hiveFoundation.closedIssues, generatedAt: hiveFoundation.generatedAt, source: hiveFoundation.source, rings: hiveFoundation.rings, epics: hiveFoundation.epics, releases: hiveFoundation.releases } : null}
+                  layers={layers}
+                  handleRef={combRef}
+                  workers={workers}
+                  onPick={handlePick}
+                  pickIndex={pickIndex}
+                  fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
+                  events={events}
+                  t27Coverage={t27Coverage}
+                  law={{ t27: c.hiveLawT27, manual: c.hiveLawManual, awaiting: c.hiveLawAwaiting, unknown: c.hiveLawUnknown, bees: c.hiveLawBees }}
+                />
+              </Suspense>
+              </SceneBoundary>
+            ) : (
+              <QueenComb
+                embedded
+                handleRef={combRef}
+                onPick={handlePick}
+                pickIndex={pickIndex}
+                fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
+                events={events}
+                columns={boardColumns}
+                cards={placedCards}
+                repo={repo}
+                workers={workers}
+                error={boardState.error ?? researchState.error}
+                labels={{
+                  aria: c.combView,
+                  held: c.combHeld,
+                  neutral: c.combNeutral,
+                  fog: c.combFog,
+                  bees: c.combBees,
+                  queen: c.combQueen,
+                  queenCell: c.combQueenCell,
+                  noBee: c.combNoBee,
+                  pick: c.combPick,
+                  hint: c.combHint2,
+                  offline: c.factoryOffline,
+                }}
+              />
+            );
+
   return (
     <main
       className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}`}
@@ -2430,6 +2494,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         </header>
 
         <div className="queen27-hud-vp-body">
+          {hiveScene}
           {boardView === "kanban" ? (
             <KanbanView
               columns={boardColumns}
@@ -2464,58 +2529,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               }}
             />
           ) : boardView === "comb" ? (
-            sharedCatalog ? <SceneBoundary lang={lang==='ru'?'ru':'en'}><Suspense fallback={<p className="queen-scene-loading" role="status">{lang==='ru'?'СОБИРАЮ КАРТУ…':'BUILDING THE MAP…'}</p>}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)}/></Suspense></SceneBoundary> : ENGINE_FLAG !== "canvas" ? (
-              <SceneBoundary lang={lang === 'ru' ? 'ru' : 'en'}>
-              <Suspense fallback={<p className="queen-scene-loading" role="status">{lang === 'ru' ? 'СОБИРАЮ КАРТУ…' : 'BUILDING THE MAP…'}</p>}>
-                <QueenCombBabylon
-                  signalHealth={{board:hiveFeedHealth(boardState.data!==null,boardState.error),activity:hiveFeedHealth(activityState.data!==null,activityState.error)}}
-                  displays={hiveCells}
-                  lang={lang === 'ru' ? 'ru' : 'en'}
-                  onInspect={() => setContextOpen(false)}
-                  cards={placedCards}
-                  modules={modulesById}
-                  beeTargets={runningCards.map(card => { const index = hiveCells.findIndex(row => row?.number === card.number); return index >= 0 ? index : null; })}
-                  foundation={hiveFoundation ? { issues: hiveFoundation.closedIssues, generatedAt: hiveFoundation.generatedAt, source: hiveFoundation.source, rings: hiveFoundation.rings, epics: hiveFoundation.epics, releases: hiveFoundation.releases } : null}
-                  layers={layers}
-                  handleRef={combRef}
-                  workers={workers}
-                  onPick={handlePick}
-                  pickIndex={pickIndex}
-                  fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
-                  events={events}
-                  t27Coverage={t27Coverage}
-                  law={{ t27: c.hiveLawT27, manual: c.hiveLawManual, awaiting: c.hiveLawAwaiting, unknown: c.hiveLawUnknown, bees: c.hiveLawBees }}
-                />
-              </Suspense>
-              </SceneBoundary>
-            ) : (
-              <QueenComb
-                embedded
-                handleRef={combRef}
-                onPick={handlePick}
-                pickIndex={pickIndex}
-                fitInset={contextOpen ? (isPhone ? 0.56 : 0.46) : 0}
-                events={events}
-                columns={boardColumns}
-                cards={placedCards}
-                repo={repo}
-                workers={workers}
-                error={boardState.error ?? researchState.error}
-                labels={{
-                  aria: c.combView,
-                  held: c.combHeld,
-                  neutral: c.combNeutral,
-                  fog: c.combFog,
-                  bees: c.combBees,
-                  queen: c.combQueen,
-                  queenCell: c.combQueenCell,
-                  noBee: c.combNoBee,
-                  pick: c.combPick,
-                  hint: c.combHint2,
-                  offline: c.factoryOffline,
-                }}
-              />
-            )
+            null
           ) : boardView === "research" ? (
             <TechnologyTree
               c={c}

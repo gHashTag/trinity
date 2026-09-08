@@ -3349,7 +3349,12 @@ body.queen-shell .sticky-cta {
      viewport box. Translucent chrome lets the same sky run under every panel,
      which is what makes the modules read as places on one map rather than
      boxes on a page. Kept dark enough that mono text on it stays legible. */
-  --hud-panel: rgba(2, 8, 6, 0.42);
+  /* Raised from 0.42 with the hive now drawing under every tab: at 0.42 a
+     panel was legible only where the map happened to be empty, and a cell's
+     outline through a line of text is a line read twice. Frosted as well as
+     darker — the blur takes the map's detail out of the words and leaves it as
+     depth, which is the part worth keeping. */
+  --hud-panel: rgba(2, 8, 6, 0.62);
   /* Overlay geometry in one place. Every panel inside the map is positioned
      from these, so a breakpoint moves all of them together instead of each
      carrying its own pixel guess. */
@@ -5769,8 +5774,23 @@ body.queen-shell .phi-starfield {
    what the browser said. Measured 2026-09-08 in Safari: a lost WebGL context
    threw out of Babylon, and with no boundary in the app React took the board,
    the rail and the Queen down with it. */
+/* The scene's box, and the reason it has one: `display: contents` left the
+   catalog layer a flow child of the body, so the hive — now mounted under every
+   view — pushed each tab's own content down by its own height. The holder is
+   the overlay instead, and the tab has the body to itself. */
 .queen27-page.is-shell .queen-scene-holder {
-  display: contents;
+  position: absolute;
+  inset: 0;
+  /* An absolutely positioned child resolves inset against the padding box, so
+     the holder would span the rail and the Queen's column too — and the cards
+     the scene opens are positioned inside it. Inheriting the body's own padding
+     puts its content box exactly where the tab's content sits. */
+  box-sizing: border-box;
+  padding: inherit;
+}
+
+.queen27-page.is-shell .queen-scene-holder > * {
+  height: 100%;
 }
 
 .queen27-page.is-shell .queen-scene-lost {
@@ -6075,8 +6095,8 @@ body.queen-shell .queen-starfield-source {
    is, embedded. */
 .queen27-page.is-shell .queen-catalog-spec {
   border-color: var(--hud-line);
-  background: rgba(2, 8, 6, 0.62);
-  backdrop-filter: none;
+  background: rgba(2, 8, 6, 0.66);
+  backdrop-filter: blur(7px);
 }
 
 .queen27-page.is-shell .queen-catalog-spec iframe {
@@ -6086,6 +6106,37 @@ body.queen-shell .queen-starfield-source {
 /* Its own detail card, the one a cell opens first, on the same veil. */
 .queen27-page.is-shell .queen-catalog-detail {
   border-color: var(--hud-line);
-  background: rgba(2, 8, 6, 0.62);
+  background: rgba(2, 8, 6, 0.66);
+  backdrop-filter: blur(7px);
+}
+
+/* Off the comb the hive is scenery: it keeps drawing and stops listening.
+   The field is a fixed, full-shell layer at z-index 0, so it is the ground
+   under every tab — which is the point — but its labels, its law line and the
+   cards a cell opens belong to the map's own view. A scene that took clicks
+   from under the board would be a scene in the way. */
+.queen27-page.is-shell:not([data-view="comb"]) .queen27-comb-field {
+  pointer-events: none;
+}
+
+.queen27-page.is-shell:not([data-view="comb"])
+  :is(.queen-catalog-labels, .queen-catalog-toolbar, .queen-catalog-detail, .queen-catalog-spec, .queen27-hive-law) {
+  display: none;
+}
+
+
+/* Matte where the words are.
+   With the hive drawing under every tab, a panel at one 0.42 veil was legible
+   only where the map happened to be empty: a cell's outline running through a
+   line of text is a line read twice. The blur keeps the map as depth behind the
+   panel and takes its detail out of the words. The veil itself stays thin — the
+   frosting is what makes it readable, not opacity. */
+.queen27-page.is-shell :is(.queen27-column, .queen27-kanban-panel, .queen27-map-sector, .queen27-tech-node, .queen27-tech-map, .queen27-tech-console, .queen27-tech-details, .queen27-city, .queen27-city-console, .queen27-city-canvas, .queen27-factory-floor, .queen27-factory-inspector, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-top, .queen27-hud-commands, .queen-catalog-toolbar) {
+  backdrop-filter: blur(6px);
+}
+
+/* The hive's own faces are exempt: the starfield contract keeps them unfrosted
+   so the stars behind a spec cell stay sharp (queen-starfield-contract.mjs). */
+.queen27-page.is-shell .queen-hive-display {
   backdrop-filter: none;
 }

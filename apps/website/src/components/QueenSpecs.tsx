@@ -18,6 +18,7 @@
 // back. Narrow screens have no such column, so there the directive stays put.
 
 import { useEffect, useRef, useState } from 'react'
+import { QueenLoading } from './QueenLoading'
 
 const FEATURED = 'specs/demos/hello_world.t27'
 
@@ -103,7 +104,7 @@ export function QueenSpecs({ c, showDirective = true }: { c: SpecsCopy; showDire
       {showDirective && <QueenSpecsDirective c={c} collapsible />}
 
       <div className="queen27-specs-frame-wrap">
-        {!ready && <div className="queen27-specs-loading">{c.loading}</div>}
+        {!ready && <div className="queen27-specs-loading"><QueenLoading title={c.loading} facts={[`${FEATURED.split('/').at(-1)}`]}/></div>}
         <iframe
           ref={frameRef}
           className="queen27-specs-frame"
