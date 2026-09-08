@@ -112,3 +112,22 @@ body.queen-shell {background:#000;}
 .queen-universe:has(.queen27-page.is-shell.is-bare) {
   grid-template-rows: minmax(0, 1fr);
 }
+
+/* The worlds bar belongs to the map too: above the shell it was the one strip
+   left outside the container everything else moved into. It floats in the same
+   place, over the scene, and leaves with the rest in bare mode. */
+body.queen-shell .queen-universe {
+  grid-template-rows: minmax(0, 1fr);
+}
+body.queen-shell .queen-universe-nav {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  right: 0;
+  left: 0;
+  border-bottom: 0;
+  background: rgba(2, 8, 6, 0.42);
+}
+body.queen-shell .queen-universe-content {
+  position: relative;
+}

@@ -4201,20 +4201,47 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top,
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-command,
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel,
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom {
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom,
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
   position: absolute;
   z-index: 4;
+  /* The viewport is a grid, and an absolutely positioned grid child is placed
+     against its own cell rather than the container. The rail still carried
+     grid-row 2, so top:126px meant 126px into that row — it started at 512 and
+     lost a module off the bottom. Spanning every track makes the offsets mean
+     what they say. */
+  grid-area: 1 / 1 / -1 / -1;
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
-  top: 10px;
+  /* clears the worlds bar, which floats over the same container */
+  top: 52px;
   right: 10px;
   left: 10px;
   height: 64px;
+  /* Floating, the bar no longer has a grid's worth of width to divide: a fixed
+     ten-column template squeezed the tiles until their labels overlapped. It
+     sizes tiles to their content and scrolls sideways instead. */
+  display: flex;
+  align-items: stretch;
+  grid-template-columns: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > * {
+  flex: 0 0 auto;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-stow {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-command {
-  top: 84px;
+  top: 126px;
   bottom: 94px;
   left: 10px;
   width: 240px;
@@ -4225,7 +4252,7 @@ main:where(.queen27-page.is-shell) section {
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel {
-  top: 84px;
+  top: 126px;
   right: 10px;
   bottom: 94px;
   width: 336px;
@@ -4242,7 +4269,7 @@ main:where(.queen27-page.is-shell) section {
    search row were laid out for a box with chrome outside it, and with the
    chrome now floating on top they ran under the status bar. */
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
-  padding: 128px 356px 104px 260px;
+  padding: 170px 356px 104px 260px;
 }
 
 .queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-vp-body {
@@ -4257,7 +4284,7 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
   position: absolute;
   z-index: 3;
-  top: 84px;
+  top: 126px;
   right: 356px;
   left: 260px;
 }
