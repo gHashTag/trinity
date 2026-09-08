@@ -77,7 +77,9 @@ pub const Server = struct {
 
         self.running = true;
 
-        std.log.info("Background agent listening on {any}", .{self.address});
+        // The address struct printed as a raw dump of its union, which says
+        // nothing a reader can use. The configured host and port do.
+        std.log.info("Background agent listening on {s}:{d}", .{ self.config.host, self.config.port });
 
         while (self.running) {
             const connection = self.server.accept() catch |err| {
@@ -206,6 +208,11 @@ pub const Server = struct {
 
         // Route and handle request
         const response = try routeRequest(self, &request_context);
+
+        // One line per request. Without it the container logged four lines at
+        // boot and then nothing for the rest of its life, so a service that was
+        // answering looked identical to one that was not.
+        std.log.info("{s} {s} -> {d}", .{ method, path, response.status });
 
         // Send response
         try sendResponse(self, connection.stream, response);
