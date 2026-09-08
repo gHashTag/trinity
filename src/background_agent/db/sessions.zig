@@ -26,13 +26,73 @@ pub const SessionsError = error{
     InvalidInput,
 };
 
+
+// ── Sessions without a database ────────────────────────────────────────────
+//
+// The Postgres client cannot authenticate against a managed database yet (it
+// speaks only trust auth), so the agent runs with LOCAL_MODE and no connection.
+// Every session call then failed with ConnectionFailed, which meant the Queen
+// could not open a task for a bee at all.
+//
+// When there is no connection these calls keep sessions in memory instead. The
+// data does not survive a restart and says so; it is what lets the loop run
+// while the client learns SCRAM.
+const MemoryStore = struct {
+    var mutex: std.Thread.Mutex = .{};
+    var items: ?std.ArrayList(Session) = null;
+    var counter: u32 = 0;
+
+    fn list(allocator: Allocator) *std.ArrayList(Session) {
+        if (items == null) items = std.ArrayList(Session).initCapacity(allocator, 8) catch unreachable;
+        return &items.?;
+    }
+};
+
+fn connected(client: *PostgresClient) bool {
+    return client.stream != null;
+}
+
+/// A quote in a name would end the string literal these queries build by hand.
+/// Reject rather than escape: the caller gets a clear error instead of a value
+/// that silently changed shape between the request and the row.
+fn rejectQuotes(value: []const u8) !void {
+    if (std.mem.indexOfAny(u8, value, "'\\") != null) return error.InvalidInput;
+}
+
 /// Create a new session
 pub fn createSession(allocator: Allocator, client: *PostgresClient, name: []const u8, service_id: []const u8) !Session {
     if (name.len == 0) return error.InvalidInput;
     if (service_id.len == 0) return error.InvalidInput;
+    try rejectQuotes(name);
+    try rejectQuotes(service_id);
 
     const now = std.time.timestamp();
     const session_id = try generateSessionId(allocator);
+
+    if (!connected(client)) {
+        MemoryStore.mutex.lock();
+        defer MemoryStore.mutex.unlock();
+        MemoryStore.counter += 1;
+        const kept = Session{
+            .id = try allocator.dupe(u8, session_id),
+            .name = try allocator.dupe(u8, name),
+            .status = try allocator.dupe(u8, "active"),
+            .railway_service_id = try allocator.dupe(u8, service_id),
+            .soul_file = try allocator.dupe(u8, ""),
+            .created_at = now,
+            .updated_at = now,
+        };
+        try MemoryStore.list(allocator).append(allocator, kept);
+        return Session{
+            .id = try allocator.dupe(u8, kept.id),
+            .name = try allocator.dupe(u8, kept.name),
+            .status = try allocator.dupe(u8, kept.status),
+            .railway_service_id = try allocator.dupe(u8, kept.railway_service_id),
+            .soul_file = try allocator.dupe(u8, kept.soul_file),
+            .created_at = now,
+            .updated_at = now,
+        };
+    }
 
     const sql = try std.fmt.allocPrint(allocator,
         \\INSERT INTO sessions (id, name, status, railway_service_id, soul_file, created_at, updated_at)
@@ -63,6 +123,24 @@ pub fn createSession(allocator: Allocator, client: *PostgresClient, name: []cons
 
 /// Get session by ID
 pub fn getSession(allocator: Allocator, client: *PostgresClient, session_id: []const u8) !Session {
+    if (!connected(client)) {
+        MemoryStore.mutex.lock();
+        defer MemoryStore.mutex.unlock();
+        for (MemoryStore.list(allocator).items) |k| {
+            if (std.mem.eql(u8, k.id, session_id)) {
+                return Session{
+                    .id = try allocator.dupe(u8, k.id),
+                    .name = try allocator.dupe(u8, k.name),
+                    .status = try allocator.dupe(u8, k.status),
+                    .railway_service_id = try allocator.dupe(u8, k.railway_service_id),
+                    .soul_file = try allocator.dupe(u8, k.soul_file),
+                    .created_at = k.created_at,
+                    .updated_at = k.updated_at,
+                };
+            }
+        }
+        return error.SessionNotFound;
+    }
     if (session_id.len == 0) return error.InvalidInput;
 
     const sql = try std.fmt.allocPrint(allocator,
@@ -111,6 +189,24 @@ pub fn getSession(allocator: Allocator, client: *PostgresClient, session_id: []c
 
 /// List all sessions
 pub fn listSessions(allocator: Allocator, client: *PostgresClient) !std.ArrayList(Session) {
+    if (!connected(client)) {
+        MemoryStore.mutex.lock();
+        defer MemoryStore.mutex.unlock();
+        const kept = MemoryStore.list(allocator);
+        var out = try std.ArrayList(Session).initCapacity(allocator, kept.items.len);
+        for (kept.items) |k| {
+            try out.append(allocator, .{
+                .id = try allocator.dupe(u8, k.id),
+                .name = try allocator.dupe(u8, k.name),
+                .status = try allocator.dupe(u8, k.status),
+                .railway_service_id = try allocator.dupe(u8, k.railway_service_id),
+                .soul_file = try allocator.dupe(u8, k.soul_file),
+                .created_at = k.created_at,
+                .updated_at = k.updated_at,
+            });
+        }
+        return out;
+    }
     const sql = "SELECT id, name, status, railway_service_id, soul_file, EXTRACT(EPOCH FROM created_at) as created_at, EXTRACT(EPOCH FROM updated_at) as updated_at FROM sessions ORDER BY created_at DESC";
 
     var result = try PostgresClient.query(client, sql);
@@ -200,6 +296,19 @@ pub fn updateSession(allocator: Allocator, client: *PostgresClient, session_id: 
 
 /// Delete session
 pub fn deleteSession(client: *PostgresClient, session_id: []const u8) !void {
+    if (!connected(client)) {
+        MemoryStore.mutex.lock();
+        defer MemoryStore.mutex.unlock();
+        if (MemoryStore.items) |*kept| {
+            for (kept.items, 0..) |k, i| {
+                if (std.mem.eql(u8, k.id, session_id)) {
+                    _ = kept.orderedRemove(i);
+                    return;
+                }
+            }
+        }
+        return error.SessionNotFound;
+    }
     if (session_id.len == 0) return error.InvalidInput;
 
     const sql = try std.fmt.allocPrint(std.heap.page_allocator,
