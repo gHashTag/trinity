@@ -4231,13 +4231,10 @@ main:where(.queen27-page.is-shell) section {
   /* Floating, the bar no longer has a grid's worth of width to divide: a fixed
      ten-column template squeezed the tiles until their labels overlapped. It
      sizes tiles to their content and scrolls sideways instead. */
-  display: flex;
-  align-items: stretch;
-  grid-template-columns: none;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
+  /* The grid stays: its minmax(0,1fr) tracks let the tiles give when the row is
+     short, which is how the bar fitted before. Flex with floors did not, and
+     LIVE ran 300px past the edge. Only the tabular digits are kept from that
+     attempt — they stop a changing number changing a width. */
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > * {
@@ -4254,21 +4251,9 @@ main:where(.queen27-page.is-shell) section {
    status swaps WAITING_FOR_REVIEW for something shorter, and every tile after
    it shifts. Each tile keeps a floor, and digits are tabular so they occupy
    the same width whatever they read. */
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-res {
-  min-width: 104px;
-}
 
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-res-round {
-  min-width: 420px;
-}
 
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-status {
-  min-width: 260px;
-}
 
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-sector {
-  min-width: 220px;
-}
 
 .queen27-page.is-shell .queen27-hud-top :is(strong, b, .queen27-hud-countdown, time) {
   font-variant-numeric: tabular-nums;
@@ -5579,4 +5564,91 @@ main:where(.queen27-page.is-shell) section {
 
 .queen27-page.is-shell .queen27-tech-node {
   background: rgba(2, 8, 6, 0.62);
+}
+
+/* The worlds sit in the map's control row now, so they take that row's scale
+   rather than a page nav's: the head is small mono controls, and a 40px
+   rounded button among them reads as something pasted on. */
+.queen27-page.is-shell .queen27-hud-vp-worlds {
+  display: contents;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-head .queen-universe-nav {
+  display: contents;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-head :is(button, select, a) {
+  height: 26px;
+  min-height: 26px;
+  padding: 0 8px;
+  border-radius: 0;
+  border: 1px solid var(--hud-line);
+  background: transparent;
+  color: var(--hud-muted);
+  font: inherit;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-head select {
+  min-width: 130px;
+  max-width: 200px;
+  color: var(--text, #fff);
+}
+
+.queen27-page.is-shell .queen27-hud-vp-head .queen-world-connect {
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+/* WORLDS labels a select that says the same thing, and the row is short. */
+.queen27-page.is-shell .queen27-hud-vp-head .queen-universe-nav > span {
+  display: none;
+}
+
+/* Its own strip above the shell is gone with it. */
+body.queen-shell .queen-universe {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* The head carries the sector, the worlds and the map's tools — 886px of them
+   in the 384px left after a slot was reserved beside it for the quick
+   commands. It takes the row instead, and the commands sit under it. */
+@media (min-width: 901px) {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
+    right: calc(var(--hud-col-w) + var(--hud-gap) * 2);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-commands {
+    top: calc(var(--hud-chrome-top) + 48px);
+    right: calc(var(--hud-col-w) + var(--hud-gap) * 2);
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
+    padding-top: calc(var(--hud-chrome-top) + 96px);
+  }
+}
+
+/* Ninety-five pixels over, and both cuts are of things that repeat: the green
+   action is already an icon on a phone, and the separator divides a title from
+   a view name that the line below states in full. */
+.queen27-page.is-shell .queen27-hud-vp-head .queen-world-connect {
+  width: 30px;
+  min-width: 30px;
+  padding: 0;
+  font-size: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-head .queen-world-connect::after {
+  content: '+';
+  font-size: 14px;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-head .queen27-hud-vp-sep {
+  display: none;
 }

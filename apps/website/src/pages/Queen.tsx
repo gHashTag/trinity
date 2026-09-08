@@ -2106,8 +2106,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     : null;
   // wire field first (P1-18): the refusal or what the round did leads, the
   // verb follows, so a narrow gold block cuts the verb, never the reason
-  const heldCount = doneCount + runningCards.length;
-  const device = hardware?.devices[0] ?? null;
 
   // ---- the shell owns the document while mounted: the body class scopes the
   // height chain in Queen.css and is removed on unmount.
@@ -2404,6 +2402,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               {c.hudStale} · {formatCountdown(staleSeconds)}
             </span>
           )}
+          {/* The worlds render here: choosing a repository is a question about
+              the map, and the map's own controls are where it is answered. */}
+          <div id="queen-worlds-slot" className="queen27-hud-vp-worlds" />
+
           <div className="queen27-hud-vp-tools">
             {view === "comb" && (
               <>
@@ -2860,57 +2862,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           {roundPopover}
         </section>
 
-        {/* Which sector is active is the same question the worlds selector
-            answers, so it is a header fact rather than a panel of its own. */}
-        {!isPhone && (
-              <section className="queen27-hud-sector" aria-label={c.hudActiveSector}>
-                <header className="queen27-hud-panel-head">
-                  <span>{c.hudActiveSector}</span>
-                </header>
-                <div className="queen27-hud-sector-body">
-                  <span className="queen27-hud-sector-mark" aria-hidden="true">
-                    <TrinityLogo withLabel={false} height="40px" />
-                  </span>
-                  <div className="queen27-hud-sector-text">
-                    <strong>{repo ?? "—"}</strong>
-                    <small>{c.hudProduction}</small>
-                    <dl>
-                      <div>
-                        <dt>{c.hudCards}</dt>
-                        <dd>{board ? cards.length : "—"}</dd>
-                      </div>
-                      <div>
-                        <dt>{c.hudHeld}</dt>
-                        <dd>{board ? heldCount : "—"}</dd>
-                      </div>
-                      <div>
-                        <dt>{c.hudSlots}</dt>
-                        <dd>{workers?.capacity ?? "—"}</dd>
-                      </div>
-                      <div>
-                        <dt>{c.hudSignature}</dt>
-                        <dd
-                          className={
-                            hardware ? "is-green" : hardwareState.error ? "is-cold" : "is-muted"
-                          }
-                          title={hardware ? hardware.keyId : hardwareState.error ?? undefined}
-                        >
-                          {hardware
-                            ? c.hudVerified
-                            : hardwareState.error
-                              ? c.hudUnverified
-                              : c.checking}
-                        </dd>
-                      </div>
-                    </dl>
-                    <em title={c.hudDevice}>
-                      {device ? `${device.id} · ${device.state}` : "—"}
-                    </em>
-                  </div>
-                </div>
-              </section>
-        )}
-
+        {/* The active sector is named on the map's own head, and the map is where
+            repositories and their tasks are. A third copy in the status bar
+            left the row eleven children against ten grid tracks, and every
+            count was crushed to 27px. */}
         {/* The board's overview reads as a header fact, not as a panel competing
             with the Queen for her column. */}
         {intelContent}
