@@ -1,20 +1,5 @@
-import { useMemo, useState, type CSSProperties } from "react";
 import { QueenResearchCity } from "./QueenResearchCity";
 import type { VerifiedHardwareRegistry } from "./queenHardwareRegistry";
-
-interface FactoryColumn {
-  key: string;
-  title: string;
-  blurb: string;
-}
-
-interface FactoryCard {
-  number: number;
-  title: string;
-  column: string;
-  criteria?: number;
-  needs?: string[];
-}
 
 interface FactoryWorkers {
   capacity: number;
@@ -73,9 +58,6 @@ interface FactoryLabels {
 }
 
 interface QueenFactoryProps {
-  columns: FactoryColumn[];
-  cards: FactoryCard[];
-  repo: string | null;
   workers: FactoryWorkers | null;
   researchNodes: FactoryResearchNode[];
   researchEdges: Array<{ from: string; to: string }>;
@@ -87,23 +69,7 @@ interface QueenFactoryProps {
   labels: FactoryLabels;
 }
 
-const STATION_GLYPHS: Record<string, string> = {
-  backlog: "◇",
-  blocked: "⊘",
-  running: "✦",
-  review: "⬡",
-  done: "◆",
-  dropped: "×",
-};
-
-function stationLoad(cards: FactoryCard[], key: string) {
-  return cards.filter((card) => card.column === key).length;
-}
-
 export function QueenFactory({
-  columns,
-  cards,
-  repo,
   workers,
   researchNodes,
   researchEdges,
@@ -115,15 +81,6 @@ export function QueenFactory({
   labels,
 }: QueenFactoryProps) {
   const effectiveWorkers = researchError ? null : workers;
-  const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-  const selected = useMemo(
-    () => cards.find((card) => card.number === selectedNumber) ?? null,
-    [cards, selectedNumber],
-  );
-  const peakLoad = useMemo(
-    () => Math.max(0, ...columns.map((column) => stationLoad(cards, column.key))),
-    [cards, columns],
-  );
 
   return (
     <section
@@ -212,116 +169,13 @@ export function QueenFactory({
         }}
       />
 
-      <div className="queen27-factory-viewport" tabIndex={0}>
-        <div
-          className="queen27-factory-floor"
-          style={{ "--station-count": columns.length } as CSSProperties}
-        >
-          <div className="queen27-factory-grid" aria-hidden="true" />
-          <div className="queen27-factory-bus" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </div>
-
-          {columns.map((column, stationIndex) => {
-            const stationCards = cards.filter(
-              (card) => card.column === column.key,
-            );
-            const isPeak = peakLoad > 0 && stationCards.length === peakLoad;
-            return (
-              <article
-                className={`queen27-factory-station is-${column.key}${isPeak ? " is-peak" : ""}`}
-                data-station={column.key}
-                key={column.key}
-              >
-                <header>
-                  <span>
-                    {labels.station} {String(stationIndex + 1).padStart(2, "0")}
-                  </span>
-                  <b>{STATION_GLYPHS[column.key] ?? "◇"}</b>
-                  <h3>{column.title}</h3>
-                  <strong>{stationCards.length}</strong>
-                </header>
-
-                <div className="queen27-factory-machine" aria-hidden="true">
-                  <span />
-                  <i />
-                  <b>{stationCards.length}</b>
-                </div>
-
-                <div className="queen27-factory-modules">
-                  <small>
-                    {stationCards.length} {labels.modules}
-                    {isPeak ? ` · ${labels.queueDensity}` : ""}
-                  </small>
-                  {stationCards.map((card) => {
-                    const issueHref = repo
-                      ? `https://github.com/${repo}/issues/${card.number}`
-                      : undefined;
-                    return (
-                      <a
-                        href={issueHref}
-                        target={issueHref ? "_blank" : undefined}
-                        rel={issueHref ? "noreferrer" : undefined}
-                        aria-disabled={!issueHref}
-                        aria-current={
-                          selectedNumber === card.number ? "true" : undefined
-                        }
-                        onFocus={() => setSelectedNumber(card.number)}
-                        onMouseEnter={() => setSelectedNumber(card.number)}
-                        key={card.number}
-                      >
-                        <i aria-hidden="true" />
-                        <span>#{card.number}</span>
-                        <strong>{card.title}</strong>
-                        {typeof card.criteria === "number" && (
-                          <small>
-                            {card.criteria} {labels.criteria}
-                          </small>
-                        )}
-                      </a>
-                    );
-                  })}
-                  {stationCards.length === 0 && (
-                    <em title={error ?? undefined}>{labels.empty}</em>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </div>
-
-      <footer className="queen27-factory-inspector" aria-live="polite">
-        <span>{labels.selectedModule}</span>
-        {selected ? (
-          <div>
-            <b>#{selected.number}</b>
-            <strong>{selected.title}</strong>
-            <small>
-              {selected.column}
-              {typeof selected.criteria === "number"
-                ? ` · ${selected.criteria} ${labels.criteria}`
-                : ""}
-              {selected.needs?.length
-                ? ` · ${labels.missing}: ${selected.needs.join(", ")}`
-                : ""}
-            </small>
-            {repo && (
-              <a
-                href={`https://github.com/${repo}/issues/${selected.number}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {labels.openIssue} ↗
-              </a>
-            )}
-          </div>
-        ) : (
-          <p title={error ?? undefined}>{labels.empty}</p>
-        )}
-      </footer>
+      {/* The stations are gone. They were the board — backlog, blocked,
+          running, in review, done, dropped — with the issue cards in them,
+          which is the kanban's whole job and the mission map's other reading of
+          it. Three views of one queue is two views too many, and this was the
+          one where it said least: a factory floor drawn around someone else's
+          columns. What is left here is the factory's own: the bee hangars, the
+          construction partials, the laboratory and the foundry. */}
     </section>
   );
 }

@@ -341,7 +341,7 @@ const COPY = {
     factoryOpenIssue: "OPEN REAL MODULE",
     factorySelectedModule: "SELECTED PRODUCTION MODULE",
     factoryLiveContract:
-      "Every station, module and Bee bay below is backed by the live Queen ledger.",
+      "Every Bee bay, partial and laboratory below is backed by the live Queen ledger.",
     cityTitle: "RESEARCH CITADEL",
     cityCopy:
       "A living city compiled from the canonical technology graph. Laboratories are research nodes; energy routes are dependencies.",
@@ -602,7 +602,7 @@ const COPY = {
     factoryOpenIssue: "ОТКРЫТЬ РЕАЛЬНЫЙ МОДУЛЬ",
     factorySelectedModule: "ВЫБРАННЫЙ ПРОИЗВОДСТВЕННЫЙ МОДУЛЬ",
     factoryLiveContract:
-      "Каждая станция, модуль и ангар Bee ниже подтверждены живым реестром Queen.",
+      "Каждый ангар Bee, сборка и лаборатория ниже подтверждены живым реестром Queen.",
     cityTitle: "ИССЛЕДОВАТЕЛЬСКАЯ ЦИТАДЕЛЬ",
     cityCopy:
       "Живой город собран из канонического графа технологий. Лаборатории — узлы исследований, энергомаршруты — зависимости.",
@@ -2594,9 +2594,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             />
           ) : (
             <QueenFactory
-              columns={boardColumns}
-              cards={boardState.data?.cards ?? []}
-              repo={boardState.data?.repo ?? null}
               workers={researchState.data?.workers ?? null}
               researchNodes={researchState.data?.nodes ?? []}
               researchEdges={researchState.data?.edges ?? []}
