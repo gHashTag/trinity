@@ -1,3 +1,12 @@
+/* The hive's chrome — the law line, the inspect tools, the display layer, the
+   starfield credit — is styled in Queen.css, which used to arrive only because
+   the /queen route imported it. Mounted on the landing the component rendered
+   with raw browser controls: a white select, default buttons, a blue link. The
+   component now carries its own styles wherever it is mounted; every rule in
+   that file is scoped to a queen27 or queen class, or to body.queen-shell, so
+   none of it reaches a page that does not render the hive. */
+@import '../pages/Queen.css';
+
 /* Data overlays for the existing hive, not a replacement page design. */
 .queen-catalog-layer {--catalog-headroom:112px;position:relative;min-width:0;min-height:0;height:100%;background:#000;overflow:hidden;display:grid;grid-template-rows:var(--catalog-headroom) minmax(0,1fr);}
 .queen-catalog-layer>.queen27-comb.is-embedded {height:100%;grid-row:2;}
