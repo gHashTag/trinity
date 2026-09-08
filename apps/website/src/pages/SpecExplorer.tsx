@@ -124,6 +124,7 @@ const UI = {
     lesson: 'LESSON',
     tags: 'Tags',
     share: 'Share',
+    about: 'About this spec',
     copyLink: 'Copy link',
     contribute: 'Contribute',
     propose: 'Propose a fix →',
@@ -220,6 +221,7 @@ const UI = {
     lesson: 'УРОК',
     tags: 'Теги',
     share: 'Поделиться',
+    about: 'Об этой спеке',
     copyLink: 'Копировать ссылку',
     contribute: 'Внести вклад',
     propose: 'Предложить правку →',
@@ -518,6 +520,21 @@ export default function SpecExplorer() {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  // Embedded, the frame is the viewport. Two things made the app scroll inside
+  // it and show a strip of background under the code: the site's 80px
+  // body padding-bottom, which exists for the mobile CTA and has no meaning in
+  // a frame, and the document scrollbar it created. 698px of frame against a
+  // 778px body, measured on the landing. The Queen shell drops the same padding
+  // for the same reason.
+  useEffect(() => {
+    if (!embedded) return
+    const body = document.body
+    const previous = { overflow: body.style.overflow, paddingBottom: body.style.paddingBottom }
+    body.style.overflow = 'hidden'
+    body.style.paddingBottom = '0px'
+    return () => { body.style.overflow = previous.overflow; body.style.paddingBottom = previous.paddingBottom }
+  }, [embedded])
 
   const filtered = useMemo(() => {
     if (!manifest) return []
@@ -1321,8 +1338,14 @@ export default function SpecExplorer() {
                 </span>
               </div>
 
-              {/* description + pipeline: what this spec is, and where it dies */}
+              {/* description + pipeline: what this spec is, and where it dies.
+                  Embedded on the landing this ran 284px tall and left the code
+                  332px, so there it collapses behind a summary and the code
+                  gets the height. On its own page it stays open, and the
+                  summary is hidden, so nothing about /specs changes. */}
               {(selected.description || result) && (
+                <details className={`spec-x-brief${embedded ? ' is-collapsible' : ''}`} open={!embedded}>
+                  <summary>{ui.about}</summary>
                 <div
                   style={{
                     flexShrink: 0,
@@ -1385,6 +1408,7 @@ export default function SpecExplorer() {
                     </div>
                   )}
                 </div>
+                </details>
               )}
 
               {/* loss banner -- the honest bit */}

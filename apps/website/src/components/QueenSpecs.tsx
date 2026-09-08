@@ -11,8 +11,11 @@
 // not a sandbox boundary here -- it is a layout boundary, which is exactly
 // what was needed.
 //
-// The directive sits above it as one line. The full statement and the measured
-// gap live on the page the frame shows.
+// The directive used to sit above the frame, where it cost the Explorer some
+// 200px of height and left the code a couple of visible lines. On a wide screen
+// it now goes into the HUD's right column -- which on this view was showing the
+// intel feed, i.e. another view's content -- and the frame takes the height
+// back. Narrow screens have no such column, so there the directive stays put.
 
 import { useEffect, useRef, useState } from 'react'
 
@@ -31,10 +34,10 @@ export interface SpecsCopy {
 
 interface Health { ok: number; warn: number; fail: number }
 
-export function QueenSpecs({ c }: { c: SpecsCopy }) {
+/** The directive, its corpus counts and the way out to the full page. Rendered
+ *  in the HUD's right column on a wide screen, above the frame on a narrow one. */
+export function QueenSpecsDirective({ c }: { c: SpecsCopy }) {
   const [health, setHealth] = useState<Health | null>(null)
-  const [ready, setReady] = useState(false)
-  const frameRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
     let alive = true
@@ -45,32 +48,41 @@ export function QueenSpecs({ c }: { c: SpecsCopy }) {
     return () => { alive = false }
   }, [])
 
+  return (
+    <div className="queen27-specs-strip">
+      <span className="queen27-section-label">{c.directive}</span>
+      <p>{c.directiveBody}</p>
+      {health && (
+        <span className="queen27-specs-counts">
+          <b style={{ color: '#00FF88' }}>{health.ok}</b> {c.clean}
+          {' · '}
+          <b style={{ color: '#f0a020' }}>{health.warn}</b> {c.warnings}
+          {' · '}
+          <b style={{ color: '#f85149' }}>{health.fail}</b> {c.broken}
+        </span>
+      )}
+      <a
+        className="queen27-specs-open"
+        href={`#/specs?spec=${encodeURIComponent(FEATURED)}`}
+        target="_blank"
+        rel="noopener"
+      >
+        {c.open}
+      </a>
+    </div>
+  )
+}
+
+export function QueenSpecs({ c, showDirective = true }: { c: SpecsCopy; showDirective?: boolean }) {
+  const [ready, setReady] = useState(false)
+  const frameRef = useRef<HTMLIFrameElement>(null)
+
   // The explorer lives at the same origin, so a relative hash URL is enough.
   const src = `${window.location.pathname}#/specs?spec=${encodeURIComponent(FEATURED)}&embed=1`
 
   return (
-    <div className="queen27-specs">
-      <div className="queen27-specs-strip">
-        <span className="queen27-section-label">{c.directive}</span>
-        <p>{c.directiveBody}</p>
-        {health && (
-          <span className="queen27-specs-counts">
-            <b style={{ color: '#00FF88' }}>{health.ok}</b> {c.clean}
-            {' · '}
-            <b style={{ color: '#f0a020' }}>{health.warn}</b> {c.warnings}
-            {' · '}
-            <b style={{ color: '#f85149' }}>{health.fail}</b> {c.broken}
-          </span>
-        )}
-        <a
-          className="queen27-specs-open"
-          href={`#/specs?spec=${encodeURIComponent(FEATURED)}`}
-          target="_blank"
-          rel="noopener"
-        >
-          {c.open}
-        </a>
-      </div>
+    <div className="queen27-specs" data-directive={showDirective ? 'above' : 'aside'}>
+      {showDirective && <QueenSpecsDirective c={c} />}
 
       <div className="queen27-specs-frame-wrap">
         {!ready && <div className="queen27-specs-loading">{c.loading}</div>}

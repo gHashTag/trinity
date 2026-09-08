@@ -4933,6 +4933,25 @@ main:where(.queen27-page.is-shell) section {
   overflow: hidden;
 }
 
+/* With the directive moved into the right column there is no row above the
+   frame, and the Explorer gets that height: the code pane was showing two
+   lines under a header that repeated what the frame already says. */
+.queen27-page.is-shell .queen27-specs[data-directive="aside"] {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* In the column it reads as a stack, not as a strip across the top. */
+.queen27-page.is-shell .queen27-hud-intel .queen27-specs-strip {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 14px;
+}
+
+.queen27-page.is-shell .queen27-hud-intel .queen27-specs-strip p {
+  max-width: none;
+}
+
 /* One line of doctrine above the tool, not a page of it. The full statement
    and the measured gap live inside the explorer itself. */
 .queen27-page.is-shell .queen27-specs-strip {

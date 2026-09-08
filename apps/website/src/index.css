@@ -1358,3 +1358,28 @@ input:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* The spec brief: open and headless on its own page, a collapsed disclosure in
+   the landing's embed, where it was taking 284px of an 826px column and
+   leaving the code 332. Scoped under .spec-x like the rest of the Explorer. */
+.spec-x-brief { min-height: 0; }
+.spec-x-brief:not(.is-collapsible) > summary { display: none; }
+.spec-x-brief.is-collapsible > summary {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 8px 14px 0;
+  padding: 6px 10px;
+  border: 1px solid #2a3138;
+  border-radius: 5px;
+  color: #b9bfc6;
+  font: 600 11.5px/1.2 var(--mono, 'JetBrains Mono', monospace);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+.spec-x-brief.is-collapsible > summary::-webkit-details-marker { display: none; }
+.spec-x-brief.is-collapsible > summary::before { content: '▸'; color: #7d8791; }
+.spec-x-brief.is-collapsible[open] > summary::before { content: '▾'; }
+.spec-x-brief.is-collapsible > summary:hover { border-color: #ffd45a; color: #ffd45a; }

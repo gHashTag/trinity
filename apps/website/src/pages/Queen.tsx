@@ -9,7 +9,7 @@ import {
   type RefObject, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { QueenSpecs } from "../components/QueenSpecs";
+import { QueenSpecs, QueenSpecsDirective } from "../components/QueenSpecs";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
@@ -2711,6 +2711,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             />
           ) : boardView === "specs" ? (
             <QueenSpecs
+              showDirective={isNarrow}
               c={{
                 directive: c.specsDirective,
                 directiveBody: c.specsDirectiveBody,
@@ -2926,9 +2927,24 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       ) : (
         <aside
           className={`queen27-hud-intel${intelExpanded ? " is-expanded" : ""}`}
-          aria-label={c.hudIntel}
+          aria-label={boardView === "specs" ? c.specsDirective : c.hudIntel}
         >
-          {intelContent}
+          {/* On the SPECS view the feed, overview and sectors all describe the
+              board, not the spec on screen. The directive takes the column and
+              the Explorer gets its height back. */}
+          {boardView === "specs" ? (
+            <QueenSpecsDirective
+              c={{
+                directive: c.specsDirective,
+                directiveBody: c.specsDirectiveBody,
+                open: c.specsOpen,
+                loading: c.specsLoading,
+                clean: c.specsClean,
+                warnings: c.specsWarnings,
+                broken: c.specsBroken,
+              }}
+            />
+          ) : intelContent}
         </aside>
       )}
 
