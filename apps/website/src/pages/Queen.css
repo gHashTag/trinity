@@ -3350,13 +3350,16 @@ body.queen-shell .sticky-cta {
   /* Overlay geometry in one place. Every panel inside the map is positioned
      from these, so a breakpoint moves all of them together instead of each
      carrying its own pixel guess. */
-  --hud-worlds-h: 52px;
   --hud-bar-h: 64px;
   --hud-gap: 10px;
   --hud-rail-w: 240px;
   --hud-col-w: 336px;
   --hud-cmds-w: min(420px, 34vw);
-  --hud-chrome-top: calc(var(--hud-worlds-h) + var(--hud-bar-h) + var(--hud-gap));
+  /* The worlds bar used to be a strip above the shell, and the chrome started
+     below where it had been. It moved into the map's control row, so that
+     reservation was 52px of empty sky above the header. What is left is the
+     rhythm the sides already keep: a gap, the bar, a gap. */
+  --hud-chrome-top: calc(var(--hud-gap) * 2 + var(--hud-bar-h));
   --hud-ground: transparent;
   --hud-mono: "JetBrains Mono", ui-monospace, monospace;
   --hud-notch: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
@@ -3455,10 +3458,11 @@ main:where(.queen27-page.is-shell) section {
      shell, so the bars own the first two columns and she owns the third */
   grid-column: 1 / 3;
   /* the clock cell is content-sized so the countdown never ellipsises.
-     Ten columns since the board's overview joined the bar: brand, five stats,
-     the round, the overview, the bell and the status. One short and the last
-     child wrapped onto an implicit second row, which a 64px bar cannot hold. */
-  grid-template-columns: auto repeat(5, minmax(0, 1fr)) auto minmax(0, 1.6fr) auto auto;
+     Eight columns for eight tiles: brand, five stats, the round, the status.
+     The overview reads on the map now and the alert count in the Queen's own
+     log, and a template longer than its children leaves empty tracks that the
+     last tile is then placed short of. */
+  grid-template-columns: auto repeat(5, minmax(0, 1fr)) auto auto;
   min-width: 0;
   border: 1px solid var(--hud-line);
   background: var(--hud-panel);
@@ -3485,7 +3489,7 @@ main:where(.queen27-page.is-shell) section {
   border-left: 0;
 }
 
-.queen27-page.is-shell .queen27-hud-res > i {
+.queen27-page.is-shell :is(.queen27-hud-res, .queen27-hud-res-round-btn) > i {
   grid-area: glyph;
   align-self: center;
   color: var(--hud-green);
@@ -3493,7 +3497,7 @@ main:where(.queen27-page.is-shell) section {
   font-style: normal;
 }
 
-.queen27-page.is-shell .queen27-hud-res > small {
+.queen27-page.is-shell :is(.queen27-hud-res, .queen27-hud-res-round-btn) > small {
   grid-area: label;
   color: var(--hud-muted);
   font-size: 0.56rem;
@@ -3502,7 +3506,7 @@ main:where(.queen27-page.is-shell) section {
   white-space: nowrap;
 }
 
-.queen27-page.is-shell .queen27-hud-res > strong {
+.queen27-page.is-shell :is(.queen27-hud-res, .queen27-hud-res-round-btn) > strong {
   grid-area: value;
   overflow: hidden;
   color: var(--text, #fff);
@@ -3515,7 +3519,7 @@ main:where(.queen27-page.is-shell) section {
   white-space: nowrap;
 }
 
-.queen27-page.is-shell .queen27-hud-res > span {
+.queen27-page.is-shell :is(.queen27-hud-res, .queen27-hud-res-round-btn) > span {
   grid-area: sub;
   overflow: hidden;
   color: var(--hud-muted);
@@ -3527,7 +3531,7 @@ main:where(.queen27-page.is-shell) section {
 /* The window under a value is a wire field: it wraps to a second line
    before it is ever cut (P1-18; measured 2026-09-04 at 1440x900: "+119 Bees
    started / 24h" needed 93 px in 82). The pill keeps its single line. */
-.queen27-page.is-shell .queen27-hud-res > span:not(.queen27-hud-pill) {
+.queen27-page.is-shell :is(.queen27-hud-res, .queen27-hud-res-round-btn) > span:not(.queen27-hud-pill) {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -3535,6 +3539,11 @@ main:where(.queen27-page.is-shell) section {
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+/* Its parts are the tile's parts, and they are read by the rules above:
+   auto-placed and unscaled they laid the tile out as a 2x2 of full-size text,
+   410px of a 1400px bar. The overview beside it was cut to "OVERVIEW · gHashT"
+   and three stat labels painted over their own dividers. */
 
 /* The round is a control now, not a read-out: it opens the round's details,
    which used to hang off a second button in the command rail. It still has to
@@ -3553,11 +3562,11 @@ main:where(.queen27-page.is-shell) section {
   position: relative;
 }
 
-.queen27-page.is-shell .queen27-hud-res-round > strong {
+.queen27-page.is-shell :is(.queen27-hud-res-round, .queen27-hud-res-round-btn) > strong {
   color: var(--hud-gold);
 }
 
-.queen27-page.is-shell .queen27-hud-res-round > span {
+.queen27-page.is-shell :is(.queen27-hud-res-round, .queen27-hud-res-round-btn) > span {
   max-width: 160px;
 }
 
@@ -3594,73 +3603,6 @@ main:where(.queen27-page.is-shell) section {
   letter-spacing: 0.14em;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.queen27-page.is-shell .queen27-hud-bell {
-  display: grid;
-  padding: 0 0.3rem;
-}
-
-.queen27-page.is-shell .queen27-hud-bell > button {
-  position: relative;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 0.1rem;
-  min-width: 3.4rem;
-  padding: 0 0.4rem;
-  border: 0;
-  color: var(--hud-muted);
-  font: inherit;
-  background: transparent;
-  cursor: pointer;
-}
-
-.queen27-page.is-shell .queen27-hud-bell > button > i {
-  color: var(--hud-green);
-  font-size: 1.1rem;
-  font-style: normal;
-}
-
-.queen27-page.is-shell .queen27-hud-bell > button > strong {
-  font-family: var(--hud-mono);
-  font-size: 0.7rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.queen27-page.is-shell .queen27-hud-bell > button > strong.is-alert {
-  padding: 0.05rem 0.35rem;
-  border: 1px solid var(--hud-cold);
-  color: var(--hud-cold);
-  box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
-}
-
-/* The span the bell vouches for (P0-11) rides on the label line: the bar's
-   row is 62 px and a fourth line overflowed it (measured 70 in 62). */
-.queen27-page.is-shell .queen27-hud-bell > button > small > span {
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  text-transform: none;
-}
-
-/* Under 1500 px the nine Russian tiles already sit at 42-49 px; the span on
-   the label line squeezed two of them to three lines (measured 1440x900,
-   ru). There the span lives in the bell's title and data attributes only. */
-@media (max-width: 1499px) {
-  .queen27-page.is-shell .queen27-hud-bell > button > small > span {
-    display: none;
-  }
-}
-
-.queen27-page.is-shell .queen27-hud-bell > button > small {
-  font-size: 0.5rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.queen27-page.is-shell .queen27-hud-bell > button[aria-pressed="true"] {
-  color: var(--hud-gold);
 }
 
 .queen27-page.is-shell .queen27-hud-status {
@@ -3886,8 +3828,7 @@ main:where(.queen27-page.is-shell) section {
   .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(3),
   .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(4),
   .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(5),
-  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(6),
-  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-bell { display: none; }
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(6) { display: none; }
   .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res { padding-inline: .35rem; }
   .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res > span { display: none; }
   .queen27-page.is-shell .queen27-hud-brand svg { height: 28px !important; }
@@ -4223,8 +4164,8 @@ main:where(.queen27-page.is-shell) section {
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
-  /* clears the worlds bar, which floats over the same container */
-  top: calc(var(--hud-worlds-h) + var(--hud-gap));
+  /* the same margin the rail and the Queen's column keep from their edges */
+  top: var(--hud-gap);
   right: 10px;
   left: 10px;
   height: 64px;
@@ -4235,15 +4176,6 @@ main:where(.queen27-page.is-shell) section {
      short, which is how the bar fitted before. Flex with floors did not, and
      LIVE ran 300px past the edge. Only the tabular digits are kept from that
      attempt — they stop a changing number changing a width. */
-}
-
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > * {
-  flex: 0 0 auto;
-}
-
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-stow {
-  flex: 1 1 auto;
-  min-width: 0;
 }
 
 /* The bar stops moving when its numbers do. Sized to content it re-laid itself
@@ -4301,10 +4233,6 @@ main:where(.queen27-page.is-shell) section {
     --hud-rail-w: 0px;
     --hud-col-w: 0px;
     --hud-gap: 8px;
-    /* Measured, not assumed: at 48 and 56 the chrome offset came out 112 while
-       the bars actually end at 128, and the map's head slid under the status
-       bar by eight pixels. */
-    --hud-worlds-h: 56px;
     --hud-bar-h: 64px;
   }
 
@@ -4643,23 +4571,31 @@ main:where(.queen27-page.is-shell) section {
   min-height: 0;
 }
 
-/* Part of the sidebar, not a disclosure over it: the overview band sits above
-   the Queen, always visible and deliberately short. Its own list scrolls when
-   the six sector rows do not fit — the column does not grow to hold them. */
-/* In the header it is a row, not a column: the overview and the six sector
-   counts read left to right beside the other status tiles, and the sidebar is
-   the Queen's alone. It scrolls sideways rather than growing the bar. */
+/* The overview is a fact about the map — which repository, how many cards,
+   the six sectors and their counts — so it sits on the map, at the foot of the
+   field it describes. In the bar it was a panel folded into 191px of a 64px
+   row: the name cut mid-repository and the minimap under it drew at a width
+   nothing was going to show. A column, stated rather than inherited from the
+   page's `section` rule, which is where the row it was meant to be went. */
 .queen27-page.is-shell .queen27-hud-stow {
   display: flex;
-  max-width: 100%;
-  align-items: stretch;
+  flex-direction: column;
   gap: 8px;
   min-width: 0;
   min-height: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-stow {
+  position: absolute;
+  z-index: 4;
+  grid-area: 1 / 1 / -1 / -1;
+  bottom: var(--hud-gap);
+  left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
+  width: 280px;
+}
+
+.queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-stow {
+  left: 84px;
 }
 
 .queen27-page.is-shell .queen27-hud-stow .queen27-hud-minimap {
@@ -5158,7 +5094,7 @@ main:where(.queen27-page.is-shell) section {
   }
 
   .queen27-page.is-shell .queen27-hud-res > span:not(.queen27-hud-pill),
-  .queen27-page.is-shell .queen27-hud-bell > button > small > span {
+  .queen27-page.is-shell .queen27-hud-res-round-btn > span {
     display: none;
   }
 }
@@ -5209,7 +5145,8 @@ main:where(.queen27-page.is-shell) section {
     display: none;
   }
 
-  .queen27-page.is-shell .queen27-hud-res-round > span {
+  .queen27-page.is-shell .queen27-hud-res-round > span,
+  .queen27-page.is-shell .queen27-hud-res-round > .queen27-hud-res-round-btn > span {
     display: none;
   }
 
@@ -5317,7 +5254,8 @@ main:where(.queen27-page.is-shell) section {
   animation: queen27-round-flash 6s ease-out 1;
 }
 
-.queen27-page.is-shell .queen27-hud-res-round.is-resolved > span {
+.queen27-page.is-shell .queen27-hud-res-round.is-resolved > span,
+.queen27-page.is-shell .queen27-hud-res-round.is-resolved > .queen27-hud-res-round-btn > span {
   color: var(--hud-gold);
 }
 
@@ -5625,12 +5563,12 @@ body.queen-shell .queen-universe {
   }
 
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-commands {
-    top: calc(var(--hud-chrome-top) + 48px);
+    top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
     right: calc(var(--hud-col-w) + var(--hud-gap) * 2);
   }
 
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
-    padding-top: calc(var(--hud-chrome-top) + 96px);
+    padding-top: calc(var(--hud-chrome-top) + 99px);
   }
 }
 
@@ -5651,4 +5589,119 @@ body.queen-shell .queen-universe {
 
 .queen27-page.is-shell .queen27-hud-vp-head .queen27-hud-vp-sep {
   display: none;
+}
+
+/* The head's own first control starts where the scene's content starts. Its
+   inline padding put it 13px right of the law line and the search row beneath
+   it, so the map's control row sat inside the column it controls rather than
+   on it — and the same 13px on the right pulled the tools off the Queen's
+   edge. The row is not a panel; it has nothing to inset from. */
+@media (min-width: 901px) {
+  .queen27-page.is-shell .queen27-hud-vp-head {
+    padding-inline: 0;
+  }
+
+  /* Both collapse to nothing here — the row has no width to spare — but they
+     still spent a gap each, which is what made the left edge ragged. The
+     sector is the lit tab in the rail, and the overview tile in the bar reads
+     view and repository in full. */
+  .queen27-page.is-shell .queen27-hud-vp-head > .queen27-hud-vp-title,
+  .queen27-page.is-shell .queen27-hud-vp-head > .queen27-hud-vp-view {
+    display: none;
+  }
+}
+
+/* The head is one nowrap line — title plus count — and an implicit column
+   sizes itself to that line rather than to the panel. A long repository name
+   would set the minimap's width from the words above it; this holds the
+   minimap to the panel and lets the line be the thing that gives. */
+.queen27-page.is-shell .queen27-hud-stow .queen27-hud-minimap {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Between the phone's arrangement and 1280 the bar had ten tiles and not the
+   width for their names: measured at 1100, a 55px RESEARCH had a 21px cell and
+   painted straight across its own divider, and at 1024 it had nine. Two tiles
+   have left the bar since, and the names still take the tile's whole width
+   here rather than the column beside the glyph. It reaches down to 761, where
+   the phone's own arrangement takes over and drops four of the tiles. */
+@media (min-width: 761px) and (max-width: 1279px) {
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res {
+    grid-template-areas:
+      "label label"
+      "glyph value"
+      "sub sub";
+    padding-inline: 0.5rem;
+  }
+
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res > small {
+    letter-spacing: 0.08em;
+  }
+}
+
+/* The map's control row holds ten controls, and only past 1440 does the row
+   hold them at full size: at 1280 it ran 115px over and scrolled sideways
+   under a hidden scrollbar. Everything is still here, one step smaller. */
+@media (min-width: 901px) and (max-width: 1439px) {
+  .queen27-page.is-shell .queen27-hud-vp-head :is(button, select, a) {
+    padding: 0 5px;
+    font-size: 0.52rem;
+    letter-spacing: 0.08em;
+  }
+
+  .queen27-page.is-shell .queen27-hud-vp-head select {
+    min-width: 110px;
+    max-width: 150px;
+  }
+}
+
+/* Measured at 940: the control row ran eight pixels over. Its gap is the
+   cheapest eight pixels in it. */
+@media (min-width: 901px) and (max-width: 1100px) {
+  .queen27-page.is-shell .queen27-hud-vp-head {
+    gap: 0.35rem;
+  }
+}
+
+/* A phone's map is the whole screen and 280x224 of overview is a third of it,
+   sitting over the module tabs and the field's own labels. The repository is
+   named in the map's head above, and the sector counts are the kanban's
+   columns — the panel is the one thing here that repeats something. */
+@media (max-width: 900px) {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-stow {
+    display: none;
+  }
+}
+
+/* Landscape on a phone: the block above gives the viewport one explicit row so
+   the head can float, but below 901 the last rule in this file sets the head
+   static again — the field is then a second, implicit row, and that is where
+   `-1` stops. Every overlay that says "the whole viewport" (1 / 1 / -1 / -1)
+   spanned the head's row alone, so the module tabs sat in the middle of the
+   map instead of at its foot: measured 844x390, the footer at y=148 in a 382px
+   viewport. Two rows, and the line means the bottom again. */
+@media (max-height: 500px) and (max-width: 900px) {
+  .queen27-page.is-shell .queen27-hud-viewport {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+}
+
+/* The Queen's opener joined the map's control row and took it 27px past its
+   width at 901. Its glyph is the one the alert tile carried, and the row is
+   read by people who have just used it: the word goes here, as the layer
+   buttons' words go one step further down. */
+@media (min-width: 901px) and (max-width: 1100px) {
+  .queen27-page.is-shell .queen27-hud-vp-tools button[data-tool="queen"] .queen27-hud-vp-word {
+    display: none;
+  }
+}
+
+/* One step before the phone drops four of them: between 761 and 860 the eight
+   tiles want 837px of min-content and the bar has 800. Research and the
+   foundry go first — both are stated in full by the views that own them. */
+@media (min-width: 761px) and (max-width: 860px) {
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(5),
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(6) {
+    display: none;
+  }
 }

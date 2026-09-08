@@ -19,7 +19,6 @@ import { QueenSectors } from "../components/QueenIntel";
 import { QueenMinimap } from "../components/QueenMinimap";
 import {
   HUD_VIEWS,
-  alertCount,
   decisionDetail,
   rewriteEndpoints,
   roundStrip,
@@ -38,7 +37,6 @@ import {
   countdownFor,
   serverOffsetMs,
   mergeActivity,
-  alertSpan,
   hexField,
   spiralOrder,
   hexCellSummaries,
@@ -437,8 +435,6 @@ const COPY = {
     hudResearch: "RESEARCH",
     hudFoundry: "FOUNDRY",
     hudNextRound: "SINCE ROUND",
-    hudAlerts: "ALERTS",
-    hudAlertsSeen: "seen /",
     hudMenu: "MENU",
     hudLanguage: "EN / RU",
     hudViews: "VIEWS",
@@ -701,8 +697,6 @@ const COPY = {
     hudResearch: "ИССЛЕДОВАНИЯ",
     hudFoundry: "ВЕРФЬ",
     hudNextRound: "С ПРОШЛОГО ЦИКЛА",
-    hudAlerts: "СИГНАЛЫ",
-    hudAlertsSeen: "за",
     hudMenu: "МЕНЮ",
     hudLanguage: "EN / RU",
     hudViews: "ВИДЫ",
@@ -1143,14 +1137,6 @@ function useDismiss(
       document.removeEventListener("keydown", onKey);
     };
   }, [open, ref, onClose]);
-}
-
-function formatInterval(seconds: number, lang: string) {
-  if (seconds > 0 && seconds % 60 === 0) {
-    const minutes = seconds / 60;
-    return lang === "ru" ? `${minutes} мин` : `${minutes} min`;
-  }
-  return lang === "ru" ? `${seconds} сек` : `${seconds} sec`;
 }
 
 function formatMoment(value: string | null | undefined, lang: string) {
@@ -2041,12 +2027,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           lang,
         )
       : null;
-  const alertEvents: HudEvent[] = activityState.data?.alerts ?? EMPTY_EVENTS;
-  const alerts = useMemo(() => alertCount(alertEvents, now), [alertEvents, now]);
-  // the span the bell can vouch for: its window, or less when the wire's
-  // first answer began later than an hour ago (P0-11)
-  const bellSpan = useMemo(() => alertSpan(activityState.data?.observedFrom ?? null, now), [activityState.data?.observedFrom, now]);
-  const bellSpanText = bellSpan ? formatInterval(bellSpan.seconds, lang) : null;
   const cellSummaries = useMemo(() => hexCellSummaries(placedCards), [placedCards]);
   const sectors = useMemo(
     () => sectorRows(boardColumns, cards),
@@ -2249,10 +2229,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     </Suspense>
   );
 
-  // The Queen takes the column. The overview stays above her as part of the
-  // sidebar — a compact band that is always there — rather than a disclosure
-  // that pops the board open over her.
-  const intelContent = (
+  // The overview is a fact about the map — which repository, how many cards,
+  // and the six sectors' counts — so it sits on the map, at the foot of the
+  // field it describes. In the bar it was a panel folded into 191px of a 64px
+  // row, and the minimap under its title had nowhere left to draw.
+  const overviewPanel = (
     <section className="queen27-hud-stow" aria-label={c.hudOverview}>
       {(
         <>
@@ -2450,6 +2431,22 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                   +
                 </button>
               </>
+            )}
+            {/* Below 1101 the Queen is a drawer, and the tile that opened her
+                left the bar with the alert count. Her opener belongs with the
+                map's own controls, where every other panel is reached. */}
+            {isNarrow && (
+              <button
+                type="button"
+                data-tool="queen"
+                onClick={onBell}
+                aria-pressed={intelOpen}
+                aria-label={c.hudIntel}
+                title={c.hudIntel}
+              >
+                <i aria-hidden="true">◉</i>
+                <span className="queen27-hud-vp-word">{c.hudIntel}</span>
+              </button>
             )}
             <button
               type="button"
@@ -2866,32 +2863,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             repositories and their tasks are. A third copy in the status bar
             left the row eleven children against ten grid tracks, and every
             count was crushed to 27px. */}
-        {/* The board's overview reads as a header fact, not as a panel competing
-            with the Queen for her column. */}
-        {intelContent}
-
-        <div className="queen27-hud-res queen27-hud-bell">
-          <button
-            type="button"
-            onClick={onBell}
-            aria-pressed={isNarrow ? intelOpen : intelExpanded}
-            title={bellSpanText ? `${c.hudAlerts} · ${c.hudAlertsSeen} ${bellSpanText}` : c.hudAlerts}
-            data-span-seconds={bellSpan ? bellSpan.seconds : undefined}
-            data-span-clipped={bellSpan ? String(bellSpan.clipped) : undefined}
-          >
-            <i aria-hidden="true">◉</i>
-            <strong
-              id="stat-alerts"
-              className={activityState.data && alerts > 0 ? "is-alert" : ""}
-            >
-              {activityState.data ? alerts : "—"}
-            </strong>
-            <small>
-              {c.hudAlerts}
-              {bellSpanText ? <span> · {bellSpanText}</span> : null}
-            </small>
-          </button>
-        </div>
+        {/* The overview moved to the map and the alert count to the Queen: she
+            carries every event the bell counted, in a log you can ask about.
+            A tile that only said how many there were said it twice. */}
 
         <div className="queen27-hud-res queen27-hud-status" ref={menuRef}>
           <span
@@ -2990,6 +2964,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           )}
         </div>
       </header>
+
+      {!isFullscreen && overviewPanel}
 
       {!isPhone && (
         <QueenCommandPanel
