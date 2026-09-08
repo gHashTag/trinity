@@ -16,6 +16,7 @@ import { QueenCommandPanel } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
 import { QueenSectors } from "../components/QueenIntel";
+import { SceneBoundary } from "../components/SceneBoundary";
 import {
   HUD_VIEWS,
   decisionDetail,
@@ -2461,7 +2462,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               }}
             />
           ) : boardView === "comb" ? (
-            sharedCatalog ? <Suspense fallback={null}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)}/></Suspense> : ENGINE_FLAG !== "canvas" ? (
+            sharedCatalog ? <SceneBoundary lang={lang==='ru'?'ru':'en'}><Suspense fallback={null}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)}/></Suspense></SceneBoundary> : ENGINE_FLAG !== "canvas" ? (
+              <SceneBoundary lang={lang === 'ru' ? 'ru' : 'en'}>
               <Suspense fallback={null}>
                 <QueenCombBabylon
                   signalHealth={{board:hiveFeedHealth(boardState.data!==null,boardState.error),activity:hiveFeedHealth(activityState.data!==null,activityState.error)}}
@@ -2483,6 +2485,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                   law={{ t27: c.hiveLawT27, manual: c.hiveLawManual, awaiting: c.hiveLawAwaiting, unknown: c.hiveLawUnknown, bees: c.hiveLawBees }}
                 />
               </Suspense>
+              </SceneBoundary>
             ) : (
               <QueenComb
                 embedded

@@ -5753,3 +5753,57 @@ body.queen-shell .phi-starfield {
 .queen27-page.is-shell .queen27-factory-bays li {
   background: rgba(4, 7, 5, 0.5);
 }
+
+/* The scene's boundary. It is a panel of the HUD like any other — the map is
+   what is missing, not the page — so it sits where the field would be and says
+   what the browser said. Measured 2026-09-08 in Safari: a lost WebGL context
+   threw out of Babylon, and with no boundary in the app React took the board,
+   the rail and the Queen down with it. */
+.queen27-page.is-shell .queen-scene-holder {
+  display: contents;
+}
+
+.queen27-page.is-shell .queen-scene-lost {
+  display: grid;
+  place-content: center;
+  gap: 0.6rem;
+  height: 100%;
+  padding: 2rem;
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  text-align: center;
+}
+
+.queen27-page.is-shell .queen-scene-lost > strong {
+  color: var(--hud-gold);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+}
+
+.queen27-page.is-shell .queen-scene-lost > p {
+  max-width: 42ch;
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.queen27-page.is-shell .queen-scene-lost > code {
+  color: var(--hud-cold);
+  font-size: 0.66rem;
+  overflow-wrap: anywhere;
+}
+
+.queen27-page.is-shell .queen-scene-lost > button {
+  justify-self: center;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--hud-line-strong);
+  background: transparent;
+  color: var(--hud-green);
+  font: inherit;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}

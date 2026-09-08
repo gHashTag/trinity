@@ -131,3 +131,30 @@ body.queen-shell .queen-universe-nav {
 body.queen-shell .queen-universe-content {
   position: relative;
 }
+
+/* Waiting for the shared map. It is the whole page for as long as it takes, so
+   it says so in the middle of the sky rather than as one line of failure-red in
+   a corner — which is how "loading" came to look like "did not load". */
+.queen-universe-loading {
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  height: 100%;
+  margin: 0;
+  color: #7fe3c0;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  animation: queen-universe-breath 1.6s ease-in-out infinite;
+}
+
+@keyframes queen-universe-breath {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .queen-universe-loading { animation: none; opacity: 0.8; }
+}

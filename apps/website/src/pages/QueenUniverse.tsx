@@ -71,10 +71,20 @@ export default function QueenUniverse() {
       <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView)n.delete('view');else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
     </nav>;
 
+  // The shared map is still loading, so the shell — and the slot in the map's
+  // control row — is not mounted yet. Rendered in place meanwhile, the nav is a
+  // strip across the top of the page: the layout this HUD replaced, arriving
+  // for a second every cold load and then vanishing. It waits for its slot.
+  const awaitingShell = commonHive && !atlas && !atlasError;
+
   return <div className="queen-universe" data-world={repo}>
-    {slot ? createPortal(nav, slot) : nav}
+    {slot ? createPortal(nav, slot) : awaitingShell ? null : nav}
     <div className="queen-universe-content"><Suspense fallback={<p role="status">{c.loading}</p>}>
-      {commonHive&&!atlas?<p className="queen-world-error" role={atlasError?'alert':'status'}>{atlasError?c.failed:c.loading}{atlasError&&<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button>}</p>:atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
+      {/* Loading is not failing. This paragraph carried the error class either
+          way, so every cold load opened with the failure colour on a black
+          page — which reads as "it did not load", because that is what it
+          looks like. */}
+      {commonHive&&!atlas?<p className={atlasError?'queen-world-error':'queen-universe-loading'} role={atlasError?'alert':'status'}>{atlasError?c.failed:c.loading}{atlasError&&<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button>}</p>:atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
     </Suspense></div>
     <dialog className="queen-world-dialog" ref={dialog} aria-labelledby="world-connect-title">
       <header><h2 id="world-connect-title">{c.title}</h2><button onClick={()=>dialog.current?.close()} aria-label={c.close}>×</button></header>
