@@ -77,3 +77,21 @@ html:has(body.queen-universe-shell),body.queen-universe-shell,body.queen-univers
   .queen-universe .queen27-hud-vp-head {padding:.25rem .5rem;}
   .queen-universe-nav {padding:.2rem .5rem;}
 }
+
+/* Ergonomics: the worlds bar sits above the shell and costs the field every
+   pixel it takes. On a mouse its controls do not need a finger's height; under
+   a coarse pointer they keep the 44px floor, because there it is the rule.
+   It lives here rather than in Queen.css: at equal specificity the later
+   stylesheet wins, and that is this one. */
+@media (pointer: fine) {
+  .queen-universe .queen-universe-nav { padding: 4px 10px; gap: 6px; }
+  /* min-height was never the binding constraint here — the control's own
+     padding was, so the bar stayed 54px while the rule said 34. */
+  .queen-universe .queen-universe-nav :is(button, select, a),
+  .queen-universe .queen-universe-nav .queen-world-connect {
+    min-height: 32px;
+    padding-block: 2px;
+    font-size: .78rem;
+  }
+  .queen-universe .queen-universe-nav select { max-width: 260px; }
+}

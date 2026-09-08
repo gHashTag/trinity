@@ -3342,7 +3342,10 @@ body.queen-shell .sticky-cta {
   max-width: none;
   height: 100vh;
   height: 100dvh;
-  grid-template-rows: 64px minmax(0, 1fr) 124px;
+  /* Ergonomics: the bars are chrome and the field is the work. 124px held a
+     sector name and six icons; 84px holds the same at a readable size and
+     hands 40px back to the board. */
+  grid-template-rows: 64px minmax(0, 1fr) 84px;
   grid-template-columns: 232px minmax(0, 1fr) 336px;
   gap: 10px;
   margin: 0;

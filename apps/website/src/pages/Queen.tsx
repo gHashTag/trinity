@@ -3091,29 +3091,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               </div>
             </section>
 
-            <section className="queen27-hud-round-cell" aria-label={c.hudNextRound}>
-              <div className={`queen27-hud-round${roundResolved ? " is-resolved" : ""}`}>
-                <div className="queen27-hud-orbit" aria-hidden="true">
-                  <div className="queen27-core-orbit" aria-hidden="true">
-                    <span
-                      data-role="orbit"
-                      className="queen27-cycle-ring queen27-cycle-ring-outer"
-                    />
-                    <span
-                      data-role="orbit"
-                      className="queen27-cycle-ring queen27-cycle-ring-dashed"
-                    />
-                    <span
-                      data-role="orbit"
-                      className="queen27-cycle-ring queen27-cycle-ring-inner"
-                    />
-                    <div className="queen27-cycle-brand">
-                      <TrinityLogo withLabel={false} height="72px" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
           </>
         )}
       </footer>
