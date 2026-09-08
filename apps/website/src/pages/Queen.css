@@ -6066,3 +6066,26 @@ body.queen-shell .queen-starfield-source {
     padding-top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
   }
 }
+
+/* A spec opened from a cell floats too.
+   The panel was a near-solid ground with a blur behind it and its frame was
+   painted black, so a spec reached from the map arrived as a black card over
+   the sky the map had just been made of. In the shell it takes the same veil as
+   every other panel and lets the Explorer inside it be transparent — which it
+   is, embedded. */
+.queen27-page.is-shell .queen-catalog-spec {
+  border-color: var(--hud-line);
+  background: rgba(2, 8, 6, 0.62);
+  backdrop-filter: none;
+}
+
+.queen27-page.is-shell .queen-catalog-spec iframe {
+  background: transparent;
+}
+
+/* Its own detail card, the one a cell opens first, on the same veil. */
+.queen27-page.is-shell .queen-catalog-detail {
+  border-color: var(--hud-line);
+  background: rgba(2, 8, 6, 0.62);
+  backdrop-filter: none;
+}
