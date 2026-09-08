@@ -5,6 +5,7 @@ import { body as body_tri_claw_an_agent_you_can_audit, ruBody as ruBody_tri_claw
 import { body as body_a_health_snapshot_changed_its_denominator, ruBody as ruBody_a_health_snapshot_changed_its_denominator } from './bodies/a-health-snapshot-changed-its-denominator'
 import { body as body_one_saturation_rule_five_artefacts, ruBody as ruBody_one_saturation_rule_five_artefacts } from './bodies/one-saturation-rule-five-artefacts'
 import { body as body_ninety_tests_were_unreachable, ruBody as ruBody_ninety_tests_were_unreachable } from './bodies/ninety-tests-were-unreachable'
+import { body as body_four_languages_one_tri_extension, ruBody as ruBody_four_languages_one_tri_extension } from './bodies/four-languages-one-tri-extension'
 import type { Post, PostBody } from './types'
 import { body as body_the_only_stable_speed_belonged_to_the_tool, ruBody as ruBody_the_only_stable_speed_belonged_to_the_tool } from './bodies/the-only-stable-speed-belonged-to-the-tool'
 import { body as body_queen_review_lifecycle_queues, ruBody as ruBody_queen_review_lifecycle_queues } from './bodies/queen-review-lifecycle-queues'
@@ -66,6 +67,7 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'four-languages-one-tri-extension': { body: body_four_languages_one_tri_extension, ruBody: ruBody_four_languages_one_tri_extension },
   'ninety-tests-were-unreachable': { body: body_ninety_tests_were_unreachable, ruBody: ruBody_ninety_tests_were_unreachable },
   'one-saturation-rule-five-artefacts': { body: body_one_saturation_rule_five_artefacts, ruBody: ruBody_one_saturation_rule_five_artefacts },
   'queen-foundation-snapshot-contract': { body: body_queen_foundation_snapshot_contract, ruBody: ruBody_queen_foundation_snapshot_contract },

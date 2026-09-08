@@ -7,12 +7,12 @@
       "workflow": "ci.yml",
       "note": "the repository this service is built in",
       "window": 200,
-      "failures": 1,
-      "pRed": 0.005,
+      "failures": 0,
+      "pRed": 0.0,
       "streak": 0,
       "streakIsLowerBound": false,
-      "bitsPerRed": 7.644,
-      "lastGreen": "2026-09-06T16:50:10Z"
+      "bitsPerRed": null,
+      "lastGreen": "2026-09-08T08:43:48Z"
     },
     {
       "repo": "gHashTag/trinity",
