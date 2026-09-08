@@ -2372,239 +2372,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}`}
       data-view={view}
     >
-      <header className="queen27-hud-top">
-        <Link to="/" className="queen27-hud-res queen27-hud-brand" aria-label={c.hudBrand}>
-          <TrinityLogo withLabel={false} height="34px" />
-        </Link>
-
-        <div className="queen27-hud-res queen27-hud-res-bees">
-          <i aria-hidden="true">◆</i>
-          <small>{c.hudBees}</small>
-          <strong id="stat-bees">
-            {data ? data.dispatches.running : "—"}/{workers?.capacity ?? "—"}
-          </strong>
-          <span>
-            {workers?.idle ?? "—"} {c.factoryIdle}
-          </span>
-        </div>
-
-        <div className="queen27-hud-res">
-          <i aria-hidden="true">✓</i>
-          <small>{doneColumnTitle}</small>
-          <strong id="stat-accepted">{board ? doneCount : "—"}</strong>
-          <span>
-            +{pulse?.bees ?? "—"} {c.beesStarted}
-          </span>
-        </div>
-
-        <div className="queen27-hud-res">
-          <i aria-hidden="true">▲</i>
-          <small>{c.hudVerdicts}</small>
-          <strong id="stat-verdicts">{pulse?.verdicts ?? "—"}</strong>
-          <span>
-            {c.hud24h} · {board ? `${reviewCards.length} ${reviewColumnTitle}` : "—"}
-            {typeof data?.dispatches.unreviewed === "number" ? ` · ${data.dispatches.unreviewed} ${c.hudReady}` : ""}
-          </span>
-        </div>
-
-        <div className="queen27-hud-res">
-          <i aria-hidden="true">◈</i>
-          <small>{c.hudResearch}</small>
-          <strong id="stat-research">
-            {research ? `${research.summary.percentage}%` : "—"}
-          </strong>
-          <span>
-            {research
-              ? `${research.summary.researched}/${research.summary.total}`
-              : researchState.error
-                ? c.graphOffline
-                : c.graphLoading}
-          </span>
-        </div>
-
-        <div className="queen27-hud-res">
-          <i aria-hidden="true">▰</i>
-          <small>{c.hudFoundry}</small>
-          <strong id="stat-foundry">
-            {hardware
-              ? `${hardware.summary.online}/${hardware.summary.total}`
-              : "—"}
-          </strong>
-          <span title={hardware ? hardware.keyId : hardwareState.error ?? undefined}>
-            {hardware
-              ? `${hardware.summary.programmed} ${c.foundryProgrammed}`
-              : hardwareState.error
-                ? c.foundryUnavailable
-                : c.checking}
-          </span>
-        </div>
-
-        <section
-          ref={roundRef}
-          className={`queen27-hud-res queen27-hud-res-round${roundResolved ? " is-resolved" : ""}`}
-        >
-          {/* One round control, and it is this one: the command rail carried a
-              second button with the same countdown. The details it opened come
-              with it rather than being lost. */}
-          <button
-            type="button"
-            className="queen27-hud-res-round-btn"
-            aria-expanded={roundOpen}
-            aria-controls="queen-round-pop"
-            onClick={() => setRoundOpen((open) => !open)}
-          >
-            <i aria-hidden="true">◎</i>
-            <small>{roundLabel}</small>
-            <strong id="stat-round" data-clock={state.offsetMs === null ? "client" : "server"}>{countdown}</strong>
-            <span>
-              {strip ? (
-                <b className="queen27-hud-round-strip">{strip}</b>
-              ) : roundWindow ? (
-                roundWindow
-              ) : (
-                "—"
-              )}
-            </span>
-          </button>
-          {roundPopover}
-        </section>
-
-        {/* The board's overview reads as a header fact, not as a panel competing
-            with the Queen for her column. */}
-        {intelContent}
-
-        <div className="queen27-hud-res queen27-hud-bell">
-          <button
-            type="button"
-            onClick={onBell}
-            aria-pressed={isNarrow ? intelOpen : intelExpanded}
-            title={bellSpanText ? `${c.hudAlerts} · ${c.hudAlertsSeen} ${bellSpanText}` : c.hudAlerts}
-            data-span-seconds={bellSpan ? bellSpan.seconds : undefined}
-            data-span-clipped={bellSpan ? String(bellSpan.clipped) : undefined}
-          >
-            <i aria-hidden="true">◉</i>
-            <strong
-              id="stat-alerts"
-              className={activityState.data && alerts > 0 ? "is-alert" : ""}
-            >
-              {activityState.data ? alerts : "—"}
-            </strong>
-            <small>
-              {c.hudAlerts}
-              {bellSpanText ? <span> · {bellSpanText}</span> : null}
-            </small>
-          </button>
-        </div>
-
-        <div className="queen27-hud-res queen27-hud-status" ref={menuRef}>
-          <span
-            className={`queen27-hud-pill ${statusTone}`}
-            id="stat-status"
-            title={state.kind === "error" ? state.error : c.provenance}
-          >
-            <i aria-hidden="true" />
-            {statusText}
-          </span>
-          <button
-            type="button"
-            className="queen27-hud-menu-btn"
-            aria-expanded={menuOpen}
-            aria-controls="queen-hud-menu"
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            {c.hudMenu} ▾
-          </button>
-          {menuOpen && (
-            <ul className="queen27-hud-menu" id="queen-hud-menu">
-              <li>
-                <button type="button" onClick={toggleLang}>
-                  <span>{c.hudLanguage}</span>
-                  <b>{lang.toUpperCase()}</b>
-                </button>
-              </li>
-              <li>
-                {repo ? (
-                  <a href={`https://github.com/${repo}`} target="_blank" rel="noreferrer">
-                    <span>{c.hudOpenRepo}</span>
-                    <b>{repo}</b>
-                  </a>
-                ) : (
-                  <button type="button" disabled>
-                    <span>{c.hudOpenRepo}</span>
-                    <b>—</b>
-                  </button>
-                )}
-              </li>
-              <li>
-                <button
-                  type="button"
-                  aria-expanded={doctrineOpen}
-                  onClick={() => setDoctrineOpen((open) => !open)}
-                >
-                  <span>{c.path}</span>
-                  <b>{doctrineOpen ? "▴" : "▾"}</b>
-                </button>
-                {doctrineOpen && (
-                  <ol className="queen27-hud-doctrine">
-                    {doctrine.map((step) => (
-                      <li key={step.n} className={step.tone}>
-                        <b>{step.n}</b>
-                        <strong>{step.title}</strong>
-                        <p>{step.copy}</p>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </li>
-              <li className="queen27-hud-menu-note">
-                <span>{c.latest}</span>
-                <b>
-                  {latest
-                    ? latest.finishedAt
-                      ? `#${latest.issue} · ${(latest.outcome ?? "—").toUpperCase()} · ${formatMoment(latest.finishedAt, lang)}`
-                      : `#${latest.issue} · ${c.hudDispatched} ${formatMoment(latest.dispatchedAt, lang)}`
-                    : "—"}
-                </b>
-              </li>
-              <li className="queen27-hud-menu-note">
-                <span>{c.reviewQueue}</span>
-                <div className="queen27-review-summary">
-                  {REVIEW_STATES.map((reviewState) => (
-                    <span className={`is-${reviewState}`} key={reviewState}>
-                      <b>{reviewQueueCounts[reviewState] ?? "—"}</b>
-                      {c[reviewState]}
-                    </span>
-                  ))}
-                  {reviewUnclassifiedCount !== null && reviewUnclassifiedCount > 0 && (
-                    <span className="is-unclassified">
-                      <b>{reviewUnclassifiedCount}</b>
-                      {c.hudReviewUnclassified}
-                    </span>
-                  )}
-                </div>
-              </li>
-              <li className="queen27-hud-menu-note">
-                <span>{c.source}</span>
-                <b title={state.kind === "error" ? state.error : undefined}>
-                  {state.kind === "error" ? c.hudOffline : c.refresh}
-                </b>
-              </li>
-            </ul>
-          )}
-        </div>
-      </header>
-
-      {!isPhone && (
-        <QueenCommandPanel
-          items={commandItems}
-          view={view}
-          onSelect={setView}
-          collapsed={commandCollapsed}
-          onToggleCollapsed={() => setCommandCollapsed((collapsed) => !collapsed)}
-          labels={{ aria: c.hudViews, collapse: c.hudCollapse, expand: c.hudExpand }}
-        />
-      )}
-
       <section
         className="queen27-hud-viewport"
         ref={viewportRef}
@@ -2911,7 +2678,243 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             openPanel: c.hudOpenPanel,
           }}
         />}
-      </section>
+
+      {/* Inside the map, not beside it: the header, the rails and the
+          footer are children of the container that holds the 3D scene, so
+          they overlay the same element rather than sitting in a grid around
+          a box that happens to contain it. */}
+      <header className="queen27-hud-top">
+        <Link to="/" className="queen27-hud-res queen27-hud-brand" aria-label={c.hudBrand}>
+          <TrinityLogo withLabel={false} height="34px" />
+        </Link>
+
+        <div className="queen27-hud-res queen27-hud-res-bees">
+          <i aria-hidden="true">◆</i>
+          <small>{c.hudBees}</small>
+          <strong id="stat-bees">
+            {data ? data.dispatches.running : "—"}/{workers?.capacity ?? "—"}
+          </strong>
+          <span>
+            {workers?.idle ?? "—"} {c.factoryIdle}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">✓</i>
+          <small>{doneColumnTitle}</small>
+          <strong id="stat-accepted">{board ? doneCount : "—"}</strong>
+          <span>
+            +{pulse?.bees ?? "—"} {c.beesStarted}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">▲</i>
+          <small>{c.hudVerdicts}</small>
+          <strong id="stat-verdicts">{pulse?.verdicts ?? "—"}</strong>
+          <span>
+            {c.hud24h} · {board ? `${reviewCards.length} ${reviewColumnTitle}` : "—"}
+            {typeof data?.dispatches.unreviewed === "number" ? ` · ${data.dispatches.unreviewed} ${c.hudReady}` : ""}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">◈</i>
+          <small>{c.hudResearch}</small>
+          <strong id="stat-research">
+            {research ? `${research.summary.percentage}%` : "—"}
+          </strong>
+          <span>
+            {research
+              ? `${research.summary.researched}/${research.summary.total}`
+              : researchState.error
+                ? c.graphOffline
+                : c.graphLoading}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">▰</i>
+          <small>{c.hudFoundry}</small>
+          <strong id="stat-foundry">
+            {hardware
+              ? `${hardware.summary.online}/${hardware.summary.total}`
+              : "—"}
+          </strong>
+          <span title={hardware ? hardware.keyId : hardwareState.error ?? undefined}>
+            {hardware
+              ? `${hardware.summary.programmed} ${c.foundryProgrammed}`
+              : hardwareState.error
+                ? c.foundryUnavailable
+                : c.checking}
+          </span>
+        </div>
+
+        <section
+          ref={roundRef}
+          className={`queen27-hud-res queen27-hud-res-round${roundResolved ? " is-resolved" : ""}`}
+        >
+          {/* One round control, and it is this one: the command rail carried a
+              second button with the same countdown. The details it opened come
+              with it rather than being lost. */}
+          <button
+            type="button"
+            className="queen27-hud-res-round-btn"
+            aria-expanded={roundOpen}
+            aria-controls="queen-round-pop"
+            onClick={() => setRoundOpen((open) => !open)}
+          >
+            <i aria-hidden="true">◎</i>
+            <small>{roundLabel}</small>
+            <strong id="stat-round" data-clock={state.offsetMs === null ? "client" : "server"}>{countdown}</strong>
+            <span>
+              {strip ? (
+                <b className="queen27-hud-round-strip">{strip}</b>
+              ) : roundWindow ? (
+                roundWindow
+              ) : (
+                "—"
+              )}
+            </span>
+          </button>
+          {roundPopover}
+        </section>
+
+        {/* The board's overview reads as a header fact, not as a panel competing
+            with the Queen for her column. */}
+        {intelContent}
+
+        <div className="queen27-hud-res queen27-hud-bell">
+          <button
+            type="button"
+            onClick={onBell}
+            aria-pressed={isNarrow ? intelOpen : intelExpanded}
+            title={bellSpanText ? `${c.hudAlerts} · ${c.hudAlertsSeen} ${bellSpanText}` : c.hudAlerts}
+            data-span-seconds={bellSpan ? bellSpan.seconds : undefined}
+            data-span-clipped={bellSpan ? String(bellSpan.clipped) : undefined}
+          >
+            <i aria-hidden="true">◉</i>
+            <strong
+              id="stat-alerts"
+              className={activityState.data && alerts > 0 ? "is-alert" : ""}
+            >
+              {activityState.data ? alerts : "—"}
+            </strong>
+            <small>
+              {c.hudAlerts}
+              {bellSpanText ? <span> · {bellSpanText}</span> : null}
+            </small>
+          </button>
+        </div>
+
+        <div className="queen27-hud-res queen27-hud-status" ref={menuRef}>
+          <span
+            className={`queen27-hud-pill ${statusTone}`}
+            id="stat-status"
+            title={state.kind === "error" ? state.error : c.provenance}
+          >
+            <i aria-hidden="true" />
+            {statusText}
+          </span>
+          <button
+            type="button"
+            className="queen27-hud-menu-btn"
+            aria-expanded={menuOpen}
+            aria-controls="queen-hud-menu"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {c.hudMenu} ▾
+          </button>
+          {menuOpen && (
+            <ul className="queen27-hud-menu" id="queen-hud-menu">
+              <li>
+                <button type="button" onClick={toggleLang}>
+                  <span>{c.hudLanguage}</span>
+                  <b>{lang.toUpperCase()}</b>
+                </button>
+              </li>
+              <li>
+                {repo ? (
+                  <a href={`https://github.com/${repo}`} target="_blank" rel="noreferrer">
+                    <span>{c.hudOpenRepo}</span>
+                    <b>{repo}</b>
+                  </a>
+                ) : (
+                  <button type="button" disabled>
+                    <span>{c.hudOpenRepo}</span>
+                    <b>—</b>
+                  </button>
+                )}
+              </li>
+              <li>
+                <button
+                  type="button"
+                  aria-expanded={doctrineOpen}
+                  onClick={() => setDoctrineOpen((open) => !open)}
+                >
+                  <span>{c.path}</span>
+                  <b>{doctrineOpen ? "▴" : "▾"}</b>
+                </button>
+                {doctrineOpen && (
+                  <ol className="queen27-hud-doctrine">
+                    {doctrine.map((step) => (
+                      <li key={step.n} className={step.tone}>
+                        <b>{step.n}</b>
+                        <strong>{step.title}</strong>
+                        <p>{step.copy}</p>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </li>
+              <li className="queen27-hud-menu-note">
+                <span>{c.latest}</span>
+                <b>
+                  {latest
+                    ? latest.finishedAt
+                      ? `#${latest.issue} · ${(latest.outcome ?? "—").toUpperCase()} · ${formatMoment(latest.finishedAt, lang)}`
+                      : `#${latest.issue} · ${c.hudDispatched} ${formatMoment(latest.dispatchedAt, lang)}`
+                    : "—"}
+                </b>
+              </li>
+              <li className="queen27-hud-menu-note">
+                <span>{c.reviewQueue}</span>
+                <div className="queen27-review-summary">
+                  {REVIEW_STATES.map((reviewState) => (
+                    <span className={`is-${reviewState}`} key={reviewState}>
+                      <b>{reviewQueueCounts[reviewState] ?? "—"}</b>
+                      {c[reviewState]}
+                    </span>
+                  ))}
+                  {reviewUnclassifiedCount !== null && reviewUnclassifiedCount > 0 && (
+                    <span className="is-unclassified">
+                      <b>{reviewUnclassifiedCount}</b>
+                      {c.hudReviewUnclassified}
+                    </span>
+                  )}
+                </div>
+              </li>
+              <li className="queen27-hud-menu-note">
+                <span>{c.source}</span>
+                <b title={state.kind === "error" ? state.error : undefined}>
+                  {state.kind === "error" ? c.hudOffline : c.refresh}
+                </b>
+              </li>
+            </ul>
+          )}
+        </div>
+      </header>
+
+      {!isPhone && (
+        <QueenCommandPanel
+          items={commandItems}
+          view={view}
+          onSelect={setView}
+          collapsed={commandCollapsed}
+          onToggleCollapsed={() => setCommandCollapsed((collapsed) => !collapsed)}
+          labels={{ aria: c.hudViews, collapse: c.hudCollapse, expand: c.hudExpand }}
+        />
+      )}
 
       {isNarrow ? (
         intelOpen && (
@@ -3097,6 +3100,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           </>
         )}
       </footer>
+      </section>
     </main>
   );
 }

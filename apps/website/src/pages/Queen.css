@@ -4183,6 +4183,89 @@ main:where(.queen27-page.is-shell) section {
   background: transparent;
 }
 
+/* The map container holds everything. The shell is one cell, the viewport
+   fills it, and the header, the rails and the footer are overlays inside that
+   container rather than tracks in a grid arranged around it. */
+.queen27-page.is-shell {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  gap: 0;
+}
+
+.queen27-page.is-shell > .queen27-hud-viewport {
+  grid-row: 1;
+  grid-column: 1;
+  position: relative;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top,
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-command,
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel,
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom {
+  position: absolute;
+  z-index: 4;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
+  top: 10px;
+  right: 10px;
+  left: 10px;
+  height: 64px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-command {
+  top: 84px;
+  bottom: 94px;
+  left: 10px;
+  width: 240px;
+}
+
+.queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-command {
+  width: 64px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel {
+  top: 84px;
+  right: 10px;
+  bottom: 94px;
+  width: 336px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom {
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  height: 84px;
+}
+
+/* The scene's own content starts clear of the overlays: the law line and the
+   search row were laid out for a box with chrome outside it, and with the
+   chrome now floating on top they ran under the status bar. */
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
+  padding: 128px 356px 104px 260px;
+}
+
+.queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-vp-body {
+  padding-left: 84px;
+}
+
+.queen27-page.is-shell:has(.queen-chat-tab) .queen27-hud-viewport > .queen27-hud-vp-body {
+  padding-right: 130px;
+}
+
+/* The map's own head sits under the floating status bar. */
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
+  position: absolute;
+  z-index: 3;
+  top: 84px;
+  right: 356px;
+  left: 260px;
+}
+
+.queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-vp-head {
+  left: 84px;
+}
+
 /* Bare: the map alone. Fullscreen hides every panel rather than making the
    same panels bigger — the chrome is what was in the way of the map. */
 .queen27-page.is-shell.is-bare > .queen27-hud-top,
