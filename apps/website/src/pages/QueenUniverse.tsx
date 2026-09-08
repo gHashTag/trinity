@@ -1,4 +1,3 @@
-import {createPortal} from 'react-dom';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useI18n } from '../i18n/context';
@@ -50,33 +49,15 @@ export default function QueenUniverse() {
     catch(e){if(!abort.signal.aborted)setError(e instanceof Error?e.message:'load-failed');}
     finally{if(!abort.signal.aborted)setBusy(false);}
   }
-  const [slot, setSlot] = useState<HTMLElement | null>(null);
-  useEffect(() => {
-    const find = () => setSlot(document.getElementById('queen-worlds-slot'));
-    find();
-    // the shell mounts after this component, so the slot appears late
-    const observer = new MutationObserver(find);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
-
-  // The worlds and the board's state are one header, so they belong to one
-  // container: as two absolutely placed elements their widths had to be guessed
-  // and the arithmetic never held — at 1440 the status wanted 1136px in 770 and
-  // the row lost Shared core, LIVE and the menu off its right edge. The shell
-  // offers a slot inside its bar; when it is there the nav renders into it and
-  // flex does the distributing. Without the shell it renders where it stands.
-  const nav = <nav className="queen-universe-nav" aria-label={c.worlds}>
+  return <div className="queen-universe" data-world={repo}>
+    <nav className="queen-universe-nav" aria-label={c.worlds}>
       <span>◈ {c.worlds}</span>
       <select aria-label={c.choose} value={commonHive?(worlds.includes(params.get('world')??'')?params.get('world')!:''):repo} onChange={e=>e.target.value?choose(e.target.value):setParams(new URLSearchParams())}><option value="">{lang==='ru'?'Все репозитории · общая карта':'All repositories · shared map'}</option>{worlds.map(world=><option key={world} value={world}>{world}</option>)}</select>
       {repo!==PINNED_WORLDS[1]&&<button className="queen-world-shortcut" onClick={()=>choose(PINNED_WORLDS[1])}>T27 ↗</button>}
       <button className="queen-world-connect" onClick={()=>dialog.current?.showModal()}>{c.connect}</button>
       <button aria-pressed={atlasView} onClick={()=>setParams(new URLSearchParams())}>{lang==='ru'?'◈ Главная игры':'◈ Game home'}</button>
       <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView)n.delete('view');else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
-    </nav>;
-
-  return <div className="queen-universe" data-world={repo}>
-    {slot ? createPortal(nav, slot) : nav}
+    </nav>
     <div className="queen-universe-content"><Suspense fallback={<p role="status">{c.loading}</p>}>
       {commonHive&&!atlas?<p className="queen-world-error" role={atlasError?'alert':'status'}>{atlasError?c.failed:c.loading}{atlasError&&<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button>}</p>:atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
     </Suspense></div>

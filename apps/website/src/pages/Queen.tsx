@@ -2768,77 +2768,67 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           <TrinityLogo withLabel={false} height="34px" />
         </Link>
 
-        {/* Five tiles of counts, one row of a header that also has to hold the
-            worlds, the round, the sector and the state. Behind a summary they
-            are a glance when closed and the same five when opened. */}
-        <details className="queen27-hud-stats">
-          <summary>
-            <span>{data ? data.dispatches.running : "—"}/{workers?.capacity ?? "—"}</span>
-            <span>{doneCount}</span>
-            <span>{reviewCards.length}</span>
-          </summary>
-          <div className="queen27-hud-res queen27-hud-res-bees">
-            <i aria-hidden="true">◆</i>
-            <small>{c.hudBees}</small>
-            <strong id="stat-bees">
-              {data ? data.dispatches.running : "—"}/{workers?.capacity ?? "—"}
-            </strong>
-            <span>
-              {workers?.idle ?? "—"} {c.factoryIdle}
-            </span>
-          </div>
-  
-          <div className="queen27-hud-res">
-            <i aria-hidden="true">✓</i>
-            <small>{doneColumnTitle}</small>
-            <strong id="stat-accepted">{board ? doneCount : "—"}</strong>
-            <span>
-              +{pulse?.bees ?? "—"} {c.beesStarted}
-            </span>
-          </div>
-  
-          <div className="queen27-hud-res">
-            <i aria-hidden="true">▲</i>
-            <small>{c.hudVerdicts}</small>
-            <strong id="stat-verdicts">{pulse?.verdicts ?? "—"}</strong>
-            <span>
-              {c.hud24h} · {board ? `${reviewCards.length} ${reviewColumnTitle}` : "—"}
-              {typeof data?.dispatches.unreviewed === "number" ? ` · ${data.dispatches.unreviewed} ${c.hudReady}` : ""}
-            </span>
-          </div>
-  
-          <div className="queen27-hud-res">
-            <i aria-hidden="true">◈</i>
-            <small>{c.hudResearch}</small>
-            <strong id="stat-research">
-              {research ? `${research.summary.percentage}%` : "—"}
-            </strong>
-            <span>
-              {research
-                ? `${research.summary.researched}/${research.summary.total}`
-                : researchState.error
-                  ? c.graphOffline
-                  : c.graphLoading}
-            </span>
-          </div>
-  
-          <div className="queen27-hud-res">
-            <i aria-hidden="true">▰</i>
-            <small>{c.hudFoundry}</small>
-            <strong id="stat-foundry">
-              {hardware
-                ? `${hardware.summary.online}/${hardware.summary.total}`
-                : "—"}
-            </strong>
-            <span title={hardware ? hardware.keyId : hardwareState.error ?? undefined}>
-              {hardware
-                ? `${hardware.summary.programmed} ${c.foundryProgrammed}`
-                : hardwareState.error
-                  ? c.foundryUnavailable
-                  : c.checking}
-            </span>
-          </div>
-        </details>
+        <div className="queen27-hud-res queen27-hud-res-bees">
+          <i aria-hidden="true">◆</i>
+          <small>{c.hudBees}</small>
+          <strong id="stat-bees">
+            {data ? data.dispatches.running : "—"}/{workers?.capacity ?? "—"}
+          </strong>
+          <span>
+            {workers?.idle ?? "—"} {c.factoryIdle}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">✓</i>
+          <small>{doneColumnTitle}</small>
+          <strong id="stat-accepted">{board ? doneCount : "—"}</strong>
+          <span>
+            +{pulse?.bees ?? "—"} {c.beesStarted}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">▲</i>
+          <small>{c.hudVerdicts}</small>
+          <strong id="stat-verdicts">{pulse?.verdicts ?? "—"}</strong>
+          <span>
+            {c.hud24h} · {board ? `${reviewCards.length} ${reviewColumnTitle}` : "—"}
+            {typeof data?.dispatches.unreviewed === "number" ? ` · ${data.dispatches.unreviewed} ${c.hudReady}` : ""}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">◈</i>
+          <small>{c.hudResearch}</small>
+          <strong id="stat-research">
+            {research ? `${research.summary.percentage}%` : "—"}
+          </strong>
+          <span>
+            {research
+              ? `${research.summary.researched}/${research.summary.total}`
+              : researchState.error
+                ? c.graphOffline
+                : c.graphLoading}
+          </span>
+        </div>
+
+        <div className="queen27-hud-res">
+          <i aria-hidden="true">▰</i>
+          <small>{c.hudFoundry}</small>
+          <strong id="stat-foundry">
+            {hardware
+              ? `${hardware.summary.online}/${hardware.summary.total}`
+              : "—"}
+          </strong>
+          <span title={hardware ? hardware.keyId : hardwareState.error ?? undefined}>
+            {hardware
+              ? `${hardware.summary.programmed} ${c.foundryProgrammed}`
+              : hardwareState.error
+                ? c.foundryUnavailable
+                : c.checking}
+          </span>
+        </div>
 
         <section
           ref={roundRef}
@@ -2924,10 +2914,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         {/* The board's overview reads as a header fact, not as a panel competing
             with the Queen for her column. */}
         {intelContent}
-
-        {/* The worlds render into this, so the header is one flex container and
-            its widths are distributed rather than guessed. */}
-        <div id="queen-worlds-slot" className="queen27-hud-worlds" />
 
         <div className="queen27-hud-res queen27-hud-bell">
           <button

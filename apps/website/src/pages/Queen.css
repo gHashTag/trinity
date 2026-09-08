@@ -4249,6 +4249,27 @@ main:where(.queen27-page.is-shell) section {
   min-width: 0;
 }
 
+/* The bar stops moving when its numbers do. Sized to content it re-laid itself
+   every second: the countdown gains a digit, a count goes from 99 to 100, the
+   status swaps WAITING_FOR_REVIEW for something shorter, and every tile after
+   it shifts. Each tile keeps a floor, and digits are tabular so they occupy
+   the same width whatever they read. */
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-res {
+  min-width: 104px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-res-round {
+  min-width: 420px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-status {
+  min-width: 260px;
+}
+
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-sector {
+  min-width: 220px;
+}
+
 .queen27-page.is-shell .queen27-hud-top :is(strong, b, .queen27-hud-countdown, time) {
   font-variant-numeric: tabular-nums;
 }
@@ -5559,176 +5580,3 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-tech-node {
   background: rgba(2, 8, 6, 0.62);
 }
-
-/* ── The header, written once ──────────────────────────────────────────────
-   It had been patched a dozen times — floors fighting caps, a later rule
-   losing to an earlier one on specificity, two halves placed by hand against
-   widths that stopped being true the moment the text changed. This replaces
-   all of it.
-
-   One flex row inside the map container. The worlds controls portal into the
-   slot and dissolve into the same row, so the browser distributes the width
-   instead of me guessing it. Every tile states a basis and may shrink; none
-   states a floor, because a floor is what kept overriding the caps. Numbers
-   are tabular so a changing value never changes a width. */
-
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  padding-inline: 8px;
-  overflow: hidden;
-  grid-template-columns: none;
-}
-
-/* Dissolve the wrappers so the controls are items of this row, not of a box
-   inside it — as a flex item the nav collapsed to zero and spilled. */
-.queen27-page.is-shell .queen27-hud-worlds,
-body.queen-shell .queen-universe-nav {
-  display: contents;
-}
-
-/* Tiles: a basis, permission to shrink, and no floor. */
-.queen27-page.is-shell .queen27-hud-top > :is(.queen27-hud-res, .queen27-hud-sector, .queen27-hud-stats, .queen27-hud-status) {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.queen27-page.is-shell .queen27-hud-top :is(strong, b, time, .queen27-hud-countdown) {
-  font-variant-numeric: tabular-nums;
-}
-
-.queen27-page.is-shell .queen27-hud-top :is(small, span, b, strong) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The mark stays: it is the game's logo and the row's left anchor. */
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-brand {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  padding-inline: 6px;
-}
-
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-res-round {
-  flex: 0 1 200px;
-}
-
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-res-round small { font-size: 9.5px; }
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-res-round strong { font-size: 17px; }
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-res-round span { font-size: 10px; }
-
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector { flex: 0 1 170px; }
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-status { flex: 0 1 150px; }
-/* The overview holds a minimap and six sector rows, whose own widths ignored a
-   flex basis: it took 420px of the row and crushed the round to 87 and the
-   status to 70. Capped, with its list scrolling inside itself. */
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-stow {
-  flex: 0 1 170px;
-  max-width: 170px;
-  overflow: hidden;
-}
-
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-stow .queen27-hud-minimap { display: none; }
-
-/* Arithmetic, not preference: logo, counts, round, sector, select, four world
-   buttons, alerts and status already claim the row at 1440, and whatever is
-   left over gets squeezed to nothing — the overview came out at 15px. It is
-   the one item here that is also a whole view of its own, so it appears where
-   there is room for it and steps out where there is not. */
-@media (max-width: 1599px) {
-  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-stow { display: none; }
-}
-
-/* Nothing in the row may be squeezed below what makes it readable; if the sum
-   still exceeds the bar, the bar scrolls sideways rather than crushing tiles. */
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-}
-
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-res-round { flex: 0 0 200px; }
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-status { flex: 0 0 150px; }
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector { flex: 0 0 170px; }
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-stats { flex: 0 0 auto; }
-
-/* The bell was the tile with no basis of its own and took what was left — 14px,
-   which is not a count. The select is the one item that can give it back. */
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-bell { flex: 0 0 64px; }
-
-/* The sector is which sector; its state lives on the panel it came from. */
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector :is(.queen27-hud-panel-head, .queen27-hud-sector-mark) { display: none; }
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector .queen27-hud-sector-text > :nth-child(n + 2) { display: none; }
-.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector .queen27-hud-sector-body { padding: 0 8px; }
-
-/* The worlds controls take the HUD's shape rather than a page nav's. */
-.queen27-page.is-shell .queen27-hud-top :is(button, select, a):not(.queen27-hud-cmd) {
-  flex: 0 0 auto;
-  height: 40px;
-  min-height: 40px;
-  align-self: center;
-  padding: 0 10px;
-  border-radius: 0;
-  border: 1px solid var(--hud-line);
-  background: var(--hud-panel);
-  font-family: var(--hud-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.queen27-page.is-shell .queen27-hud-top select {
-  flex: 1 1 150px;
-  min-width: 90px;
-  max-width: 220px;
-}
-
-.queen27-page.is-shell .queen27-hud-top .queen-world-connect {
-  width: 44px;
-  padding: 0;
-  border-color: #00ff88;
-  background: #00ff88;
-  color: #001b0e;
-  font-size: 0;
-}
-.queen27-page.is-shell .queen27-hud-top .queen-world-connect::after { content: '+'; font-size: 18px; }
-
-/* WORLDS labels a select that already says it. */
-.queen27-page.is-shell .queen27-hud-top .queen-universe-nav > span { display: none; }
-
-/* The counts, closed to a glance and dropping below the row when opened. */
-.queen27-page.is-shell .queen27-hud-stats { position: relative; display: flex; }
-.queen27-page.is-shell .queen27-hud-stats > summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px;
-  color: var(--hud-muted);
-  font-family: var(--hud-mono);
-  font-size: 11px;
-  white-space: nowrap;
-  cursor: pointer;
-  list-style: none;
-}
-.queen27-page.is-shell .queen27-hud-stats > summary::-webkit-details-marker { display: none; }
-.queen27-page.is-shell .queen27-hud-stats > summary::after { content: '▾'; }
-.queen27-page.is-shell .queen27-hud-stats[open] > summary::after { content: '▴'; }
-.queen27-page.is-shell .queen27-hud-stats > summary > span { color: var(--text, #fff); }
-.queen27-page.is-shell .queen27-hud-stats > :not(summary) {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  width: 170px;
-  border: 1px solid var(--hud-line);
-  background: var(--hud-panel);
-}
-.queen27-page.is-shell .queen27-hud-stats > .queen27-hud-res:nth-of-type(1) { top: calc(100% + 8px); }
-.queen27-page.is-shell .queen27-hud-stats > .queen27-hud-res:nth-of-type(2) { top: calc(100% + 66px); }
-.queen27-page.is-shell .queen27-hud-stats > .queen27-hud-res:nth-of-type(3) { top: calc(100% + 124px); }
-.queen27-page.is-shell .queen27-hud-stats > .queen27-hud-res:nth-of-type(4) { top: calc(100% + 182px); }
-.queen27-page.is-shell .queen27-hud-stats > .queen27-hud-res:nth-of-type(5) { top: calc(100% + 240px); }

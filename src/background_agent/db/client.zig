@@ -71,38 +71,72 @@ pub const PostgresClient = struct {
     transaction_status: TransactionStatus = .Idle,
 
     /// Connect to PostgreSQL database using wire protocol
+    /// Percent-decoding: a generated password routinely contains characters that
+    /// only survive a URL as %XX, and sending them raw fails authentication in a
+    /// way that looks like a wrong password.
+    fn percentDecode(allocator: Allocator, text: []const u8) ![]u8 {
+        var out = try std.ArrayList(u8).initCapacity(allocator, text.len);
+        errdefer out.deinit(allocator);
+        var i: usize = 0;
+        while (i < text.len) {
+            if (text[i] == '%' and i + 2 < text.len) {
+                const hi = std.fmt.charToDigit(text[i + 1], 16) catch { try out.append(allocator, text[i]); i += 1; continue; };
+                const lo = std.fmt.charToDigit(text[i + 2], 16) catch { try out.append(allocator, text[i]); i += 1; continue; };
+                try out.append(allocator, @intCast(hi * 16 + lo));
+                i += 3;
+            } else {
+                try out.append(allocator, text[i]);
+                i += 1;
+            }
+        }
+        return out.toOwnedSlice(allocator);
+    }
+
     pub fn connect(self: *PostgresClient, database_url: []const u8) !void {
-        // Parse database URL: postgres://user:password@host:port/database
-        var iter = std.mem.splitScalar(u8, database_url, '/');
-        _ = iter.first(); // "postgres:"
+        // scheme://[user[:password]@]host[:port]/database[?params]
+        //
+        // The previous parser split the whole URL on '/' and took the second
+        // field as the credentials. In "postgres://u:p@h:5432/db" that field is
+        // the empty string between the two slashes of "//", so the user was
+        // always empty and the server answered "no PostgreSQL user name
+        // specified in startup packet" — a wrong-credentials error caused by
+        // parsing, not by credentials.
+        const scheme_end = std.mem.indexOf(u8, database_url, "://") orelse return error.InvalidUrl;
+        var rest = database_url[scheme_end + 3 ..];
 
-        const credentials = iter.next() orelse return error.InvalidUrl;
-        const host_port = iter.next() orelse return error.InvalidUrl;
-        const db_name = iter.next() orelse return error.InvalidUrl;
+        // Strip any query string: it is not part of the database name.
+        if (std.mem.indexOfScalar(u8, rest, '?')) |q| rest = rest[0..q];
 
-        // Parse host:port
-        var hp_iter = std.mem.splitScalar(u8, host_port, '@');
-        const host_part: ?[]const u8 = hp_iter.first();
-        if (host_part == null) return error.InvalidUrl;
-        const actual_host_port = hp_iter.next() orelse host_part.?;
+        const slash = std.mem.indexOfScalar(u8, rest, '/');
+        const authority = if (slash) |i| rest[0..i] else rest;
+        const db_name = if (slash) |i| rest[i + 1 ..] else "";
 
-        hp_iter = std.mem.splitScalar(u8, actual_host_port, ':');
-        const hp_first = hp_iter.next();
-        if (hp_first) |hp| {
-            self.host = hp;
+        // The last '@' separates userinfo from the host: a password may contain one.
+        var userinfo: []const u8 = "";
+        var host_port: []const u8 = authority;
+        if (std.mem.lastIndexOfScalar(u8, authority, '@')) |at| {
+            userinfo = authority[0..at];
+            host_port = authority[at + 1 ..];
+        }
+
+        // The last ':' separates the port, which lets an IPv6 literal keep its colons.
+        if (std.mem.lastIndexOfScalar(u8, host_port, ':')) |colon| {
+            self.host = host_port[0..colon];
+            self.port = std.fmt.parseInt(u16, host_port[colon + 1 ..], 10) catch 5432;
         } else {
-            self.host = "localhost";
-        }
-        if (hp_iter.next()) |port_str| {
-            self.port = std.fmt.parseInt(u16, port_str, 10) catch 5432;
+            self.host = if (host_port.len > 0) host_port else "localhost";
+            self.port = 5432;
         }
 
-        // Parse credentials user:password
-        var cred_iter = std.mem.splitScalar(u8, credentials, ':');
-        const cred_user = cred_iter.first();
-        const cred_pass = cred_iter.next();
-        self.user = cred_user;
-        self.password = cred_pass orelse "";
+        // The first ':' separates user from password: a password may contain one.
+        if (std.mem.indexOfScalar(u8, userinfo, ':')) |colon| {
+            self.user = try percentDecode(self.allocator, userinfo[0..colon]);
+            self.password = try percentDecode(self.allocator, userinfo[colon + 1 ..]);
+        } else {
+            self.user = try percentDecode(self.allocator, userinfo);
+            self.password = "";
+        }
+        if (self.user.len == 0) return error.InvalidUrl;
 
         self.database = if (db_name.len > 0) db_name else "postgres";
 
@@ -122,7 +156,7 @@ pub const PostgresClient = struct {
         _ = try stream.writeAll(startup_msg);
 
         // Handle authentication
-        try handleAuthentication(&stream);
+        try self.handleAuthentication(&stream);
 
         // Wait for ReadyForQuery
         try self.waitForReady(&stream);
@@ -167,109 +201,302 @@ pub const PostgresClient = struct {
     }
 
     /// Handle authentication response from server
-    fn handleAuthentication(stream: *net.Stream) !void {
-        var len_buf: [4]u8 = undefined;
-        const bytes_read = try stream.read(&len_buf);
-        if (bytes_read < 4) return error.InvalidMessage;
-        const msg_len_u32 = std.mem.readInt(u32, &len_buf, .big);
-
-        var type_buf: [1]u8 = undefined;
-        const read_bytes = try stream.read(&type_buf);
-        if (read_bytes != 1) return error.InvalidMessage;
-        const msg_type = type_buf[0];
-
-        // For AuthenticationOk (R), msg_len_u32 includes the type byte
-        // AuthenticationOk has auth_code = 0
-        if (msg_type == @intFromEnum(MessageType.AuthenticationOk)) {
-            const remaining_len = msg_len_u32 - 4;
-            if (remaining_len >= 4) {
-                var auth_buf: [4]u8 = undefined;
-                const auth_bytes_read = try stream.read(&auth_buf);
-                if (auth_bytes_read < 4) return error.InvalidMessage;
-                const auth_code = std.mem.readInt(u32, &auth_buf, .big);
-
-                if (auth_code != 0) {
-                    // Not AuthenticationOk, need to handle password
-                    return error.AuthenticationNotImplemented;
-                }
-            }
-            return;
+    /// Read exactly buf.len bytes, or fail. A single read() returns what has
+    /// arrived, not what was asked for.
+    fn readExactly(stream: *net.Stream, buf: []u8) !void {
+        var got: usize = 0;
+        while (got < buf.len) {
+            const n = try stream.read(buf[got..]);
+            if (n == 0) return error.UnexpectedEndOfStream;
+            got += n;
         }
+    }
 
-        return error.UnexpectedMessage;
+    const Message = struct { kind: u8, payload: []u8 };
+
+    /// Every backend message is [type:1][len:4][payload], and the length counts
+    /// itself but not the type byte. The previous reader took the length first
+    /// and the type second, so it mistook the top byte of the length for the
+    /// message type and misread every message it ever saw.
+    fn readMessage(allocator: Allocator, stream: *net.Stream) !Message {
+        var head: [5]u8 = undefined;
+        try readExactly(stream, &head);
+        const len = std.mem.readInt(u32, head[1..5], .big);
+        if (len < 4) return error.InvalidMessage;
+        const payload = try allocator.alloc(u8, len - 4);
+        errdefer allocator.free(payload);
+        if (payload.len > 0) try readExactly(stream, payload);
+        return .{ .kind = head[0], .payload = payload };
+    }
+
+    fn sendPassword(stream: *net.Stream, allocator: Allocator, body: []const u8) !void {
+        const msg = try allocator.alloc(u8, 5 + body.len);
+        defer allocator.free(msg);
+        msg[0] = 'p';
+        std.mem.writeInt(u32, msg[1..5], @intCast(4 + body.len), .big);
+        @memcpy(msg[5..], body);
+        try stream.writeAll(msg);
+    }
+
+    fn b64Encode(allocator: Allocator, raw: []const u8) ![]u8 {
+        const enc = std.base64.standard.Encoder;
+        const out = try allocator.alloc(u8, enc.calcSize(raw.len));
+        _ = enc.encode(out, raw);
+        return out;
+    }
+
+    fn b64Decode(allocator: Allocator, text: []const u8) ![]u8 {
+        const dec = std.base64.standard.Decoder;
+        const size = try dec.calcSizeForSlice(text);
+        const out = try allocator.alloc(u8, size);
+        errdefer allocator.free(out);
+        try dec.decode(out, text);
+        return out;
+    }
+
+    fn fieldAfter(text: []const u8, prefix: []const u8) ?[]const u8 {
+        var it = std.mem.splitScalar(u8, text, ',');
+        while (it.next()) |part| {
+            if (std.mem.startsWith(u8, part, prefix)) return part[prefix.len..];
+        }
+        return null;
+    }
+
+    /// SCRAM-SHA-256 (RFC 5802) over Postgres SASL framing.
+    ///
+    /// The client used to understand one thing only: AuthenticationOk, the
+    /// answer a server gives when it asks for no password at all. Every managed
+    /// database asks for SCRAM, so the agent could never connect to one and ran
+    /// with its sessions in memory instead.
+    fn scram(self: *PostgresClient, stream: *net.Stream) !void {
+        const allocator = self.allocator;
+
+        var nonce_raw: [18]u8 = undefined;
+        std.crypto.random.bytes(&nonce_raw);
+        const client_nonce = try b64Encode(allocator, &nonce_raw);
+        defer allocator.free(client_nonce);
+
+        const client_first_bare = try std.fmt.allocPrint(allocator, "n=,r={s}", .{client_nonce});
+        defer allocator.free(client_first_bare);
+
+        // SASLInitialResponse: mechanism, then the length of what follows.
+        const mechanism = "SCRAM-SHA-256";
+        const initial = try allocator.alloc(u8, mechanism.len + 1 + 4 + 3 + client_first_bare.len);
+        defer allocator.free(initial);
+        @memcpy(initial[0..mechanism.len], mechanism);
+        initial[mechanism.len] = 0;
+        std.mem.writeInt(u32, initial[mechanism.len + 1 ..][0..4], @intCast(3 + client_first_bare.len), .big);
+        @memcpy(initial[mechanism.len + 5 ..][0..3], "n,,");
+        @memcpy(initial[mechanism.len + 8 ..], client_first_bare);
+        try sendPassword(stream, allocator, initial);
+
+        // AuthenticationSASLContinue: r=<nonce>,s=<salt>,i=<iterations>
+        const cont = try readMessage(allocator, stream);
+        defer allocator.free(cont.payload);
+        if (cont.kind == 'E') return error.AuthenticationFailed;
+        if (cont.kind != 'R' or cont.payload.len < 4) return error.UnexpectedMessage;
+        if (std.mem.readInt(u32, cont.payload[0..4], .big) != 11) return error.UnexpectedMessage;
+        const server_first = cont.payload[4..];
+
+        const combined_nonce = fieldAfter(server_first, "r=") orelse return error.InvalidMessage;
+        const salt_b64 = fieldAfter(server_first, "s=") orelse return error.InvalidMessage;
+        const iter_text = fieldAfter(server_first, "i=") orelse return error.InvalidMessage;
+        const iterations = try std.fmt.parseInt(u32, iter_text, 10);
+        if (!std.mem.startsWith(u8, combined_nonce, client_nonce)) return error.InvalidMessage;
+
+        const salt = try b64Decode(allocator, salt_b64);
+        defer allocator.free(salt);
+
+        var salted: [32]u8 = undefined;
+        try std.crypto.pwhash.pbkdf2(&salted, self.password, salt, iterations, std.crypto.auth.hmac.sha2.HmacSha256);
+
+        const Hmac = std.crypto.auth.hmac.sha2.HmacSha256;
+        var client_key: [32]u8 = undefined;
+        Hmac.create(&client_key, "Client Key", &salted);
+        var stored_key: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(&client_key, &stored_key, .{});
+
+        const client_final_bare = try std.fmt.allocPrint(allocator, "c=biws,r={s}", .{combined_nonce});
+        defer allocator.free(client_final_bare);
+        const auth_message = try std.fmt.allocPrint(allocator, "{s},{s},{s}", .{ client_first_bare, server_first, client_final_bare });
+        defer allocator.free(auth_message);
+
+        var client_sig: [32]u8 = undefined;
+        Hmac.create(&client_sig, auth_message, &stored_key);
+        var proof: [32]u8 = undefined;
+        for (client_key, client_sig, 0..) |k, sig, i| proof[i] = k ^ sig;
+
+        const proof_b64 = try b64Encode(allocator, &proof);
+        defer allocator.free(proof_b64);
+        const client_final = try std.fmt.allocPrint(allocator, "{s},p={s}", .{ client_final_bare, proof_b64 });
+        defer allocator.free(client_final);
+        try sendPassword(stream, allocator, client_final);
+
+        // AuthenticationSASLFinal carries the server's own proof. Verifying it is
+        // what makes this mutual: without the check a man in the middle could
+        // replay a success we would believe.
+        const fin = try readMessage(allocator, stream);
+        defer allocator.free(fin.payload);
+        if (fin.kind == 'E') return error.AuthenticationFailed;
+        if (fin.kind != 'R' or fin.payload.len < 4) return error.UnexpectedMessage;
+        if (std.mem.readInt(u32, fin.payload[0..4], .big) != 12) return error.UnexpectedMessage;
+
+        const server_sig_b64 = fieldAfter(fin.payload[4..], "v=") orelse return error.InvalidMessage;
+        const server_sig_given = try b64Decode(allocator, server_sig_b64);
+        defer allocator.free(server_sig_given);
+
+        var server_key: [32]u8 = undefined;
+        Hmac.create(&server_key, "Server Key", &salted);
+        var server_sig: [32]u8 = undefined;
+        Hmac.create(&server_sig, auth_message, &server_key);
+        if (server_sig_given.len != server_sig.len) return error.AuthenticationFailed;
+        if (!std.crypto.timing_safe.eql([32]u8, server_sig_given[0..32].*, server_sig)) return error.AuthenticationFailed;
+    }
+
+    /// An ErrorResponse is a run of [field:1][value\0] pairs; 'M' is the message
+    /// a human needs, 'C' the SQLSTATE.
+    fn describeError(payload: []const u8) []const u8 {
+        var i: usize = 0;
+        while (i < payload.len and payload[i] != 0) {
+            const code = payload[i];
+            const start = i + 1;
+            var end = start;
+            while (end < payload.len and payload[end] != 0) end += 1;
+            if (code == 'M') return payload[start..end];
+            i = end + 1;
+        }
+        return "no message";
+    }
+
+    fn handleAuthentication(self: *PostgresClient, stream: *net.Stream) !void {
+        const allocator = self.allocator;
+        while (true) {
+            const msg = try readMessage(allocator, stream);
+            defer allocator.free(msg.payload);
+            switch (msg.kind) {
+                'E' => {
+                    // The server's own words. Swallowing them left every
+                    // failure looking identical from the outside.
+                    std.log.err("postgres refused the connection: {s}", .{describeError(msg.payload)});
+                    return error.AuthenticationFailed;
+                },
+                'R' => {
+                    if (msg.payload.len < 4) return error.InvalidMessage;
+                    switch (std.mem.readInt(u32, msg.payload[0..4], .big)) {
+                        0 => return,
+                        10 => try self.scram(stream),
+                        else => return error.AuthenticationNotImplemented,
+                    }
+                },
+                else => return error.UnexpectedMessage,
+            }
+        }
     }
 
     /// Wait for ReadyForQuery message
     fn waitForReady(self: *PostgresClient, stream: *net.Stream) !void {
-        var type_buf: [1]u8 = undefined;
-        const type_bytes = try stream.read(type_buf[0..]);
-        if (type_bytes != 1) return error.InvalidMessage;
-        const msg_type = type_buf[0];
-
-        var len_buf: [4]u8 = undefined;
-        const len_bytes = try stream.read(len_buf[0..]);
-        if (len_bytes != 4) return error.InvalidMessage;
-        const msg_len_u32 = std.mem.readInt(u32, &len_buf, .big);
-
-        if (msg_type == @intFromEnum(MessageType.BackendKeyData)) {
-            // Read backend key data
-            var buf: [8]u8 = undefined;
-            const buf_bytes = try stream.read(buf[0..]);
-            if (buf_bytes != 8) return error.InvalidMessage;
-            self.backend_pid = std.mem.readInt(i32, buf[0..4], .big);
-            self.backend_key = std.mem.readInt(i32, buf[4..8], .big);
-
-            // Now wait for ReadyForQuery
-            return self.waitForReady(stream);
+        // Between authentication and readiness the server sends a run of
+        // ParameterStatus messages and a BackendKeyData, and their number is its
+        // business, not ours. The previous version read one message, understood
+        // three kinds and rejected the rest — so the very first ParameterStatus
+        // ended the connection with UnexpectedMessage.
+        while (true) {
+            const msg = try readMessage(self.allocator, stream);
+            defer self.allocator.free(msg.payload);
+            switch (msg.kind) {
+                'Z' => {
+                    if (msg.payload.len >= 1) self.transaction_status = @enumFromInt(msg.payload[0]);
+                    return;
+                },
+                'K' => {
+                    if (msg.payload.len >= 8) {
+                        self.backend_pid = std.mem.readInt(i32, msg.payload[0..4], .big);
+                        self.backend_key = std.mem.readInt(i32, msg.payload[4..8], .big);
+                    }
+                },
+                'E' => {
+                    std.log.err("postgres error before ready: {s}", .{describeError(msg.payload)});
+                    return error.QueryFailed;
+                },
+                // ParameterStatus, NoticeResponse and anything else the server
+                // volunteers: read past it rather than treating it as a fault.
+                else => {},
+            }
         }
-
-        if (msg_type == @intFromEnum(MessageType.ReadyForQuery)) {
-            var status_buf: [1]u8 = undefined;
-            const status_bytes = try stream.read(status_buf[0..]);
-            if (status_bytes != 1) return error.InvalidMessage;
-            self.transaction_status = @as(TransactionStatus, @enumFromInt(status_buf[0]));
-            return;
-        }
-
-        if (msg_type == @intFromEnum(MessageType.ErrorResponse)) {
-            return readErrorResponse(stream, msg_len_u32 - 4);
-        }
-
-        return error.UnexpectedMessage;
     }
 
     /// Read query response from server
     fn readQueryResponse(self: *PostgresClient, stream: *net.Stream, result: *QueryResult) !void {
-        _ = result; // autofix
+        // This used to discard the result outright — `_ = result` — so every
+        // query returned zero rows however many the server sent, and listing
+        // sessions could only ever answer with an empty array. It also read
+        // headers with bare read() calls that may return short, which desynced
+        // the stream and killed the connection on the next query with a broken
+        // pipe.
+        const allocator = self.allocator;
+        var columns = try std.ArrayList([]const u8).initCapacity(allocator, 8);
+        defer {
+            for (columns.items) |c| allocator.free(c);
+            columns.deinit(allocator);
+        }
+
         while (true) {
-            var type_buf: [1]u8 = undefined;
-            const n = try stream.read(type_buf[0..]);
-            if (n == 0) break;
+            const msg = try readMessage(allocator, stream);
+            defer allocator.free(msg.payload);
 
-            const msg_type = type_buf[0];
+            switch (msg.kind) {
+                // RowDescription: the column names this result set carries.
+                'T' => {
+                    for (columns.items) |c| allocator.free(c);
+                    columns.clearRetainingCapacity();
+                    if (msg.payload.len < 2) continue;
+                    const count = std.mem.readInt(u16, msg.payload[0..2], .big);
+                    var at: usize = 2;
+                    var i: u16 = 0;
+                    while (i < count and at < msg.payload.len) : (i += 1) {
+                        const nul = std.mem.indexOfScalarPos(u8, msg.payload, at, 0) orelse break;
+                        try columns.append(allocator, try allocator.dupe(u8, msg.payload[at..nul]));
+                        at = nul + 1 + 18; // the field's fixed descriptor follows its name
+                    }
+                },
+                // DataRow: one row, each value length-prefixed; -1 means NULL.
+                'D' => {
+                    if (msg.payload.len < 2) continue;
+                    const count = std.mem.readInt(u16, msg.payload[0..2], .big);
+                    var row = Row{
+                        .columns = try std.ArrayList([]const u8).initCapacity(allocator, count),
+                        .values = try std.ArrayList([]const u8).initCapacity(allocator, count),
+                    };
+                    errdefer row.deinit(allocator);
 
-            var len_buf: [4]u8 = undefined;
-            const len_bytes = try stream.read(len_buf[0..]);
-            if (len_bytes != 4) return error.InvalidMessage;
-            const msg_len_u32 = std.mem.readInt(u32, &len_buf, .big);
-
-            switch (msg_type) {
-                @intFromEnum(MessageType.CommandComplete) => {
-                    _ = try skipMessage(stream, msg_len_u32 - 4);
+                    var at: usize = 2;
+                    var i: u16 = 0;
+                    while (i < count and at + 4 <= msg.payload.len) : (i += 1) {
+                        const len = std.mem.readInt(i32, msg.payload[at..][0..4], .big);
+                        at += 4;
+                        const value = if (len < 0) "" else blk: {
+                            const n: usize = @intCast(len);
+                            if (at + n > msg.payload.len) break :blk "";
+                            const v = msg.payload[at .. at + n];
+                            at += n;
+                            break :blk v;
+                        };
+                        const name = if (i < columns.items.len) columns.items[i] else "";
+                        try row.columns.append(allocator, try allocator.dupe(u8, name));
+                        try row.values.append(allocator, try allocator.dupe(u8, value));
+                    }
+                    try result.rows.append(allocator, row);
                 },
-                @intFromEnum(MessageType.ReadyForQuery) => {
-                    var status_buf: [1]u8 = undefined;
-                    const status_bytes = try stream.read(status_buf[0..]);
-                    if (status_bytes != 1) return error.InvalidMessage;
-                    self.transaction_status = @as(TransactionStatus, @enumFromInt(status_buf[0]));
-                    break;
+                'C' => result.affected_rows = result.rows.items.len,
+                'Z' => {
+                    if (msg.payload.len >= 1) self.transaction_status = @enumFromInt(msg.payload[0]);
+                    return;
                 },
-                @intFromEnum(MessageType.ErrorResponse) => {
-                    return readErrorResponse(stream, msg_len_u32 - 4);
+                'E' => {
+                    std.log.err("postgres rejected the query: {s}", .{describeError(msg.payload)});
+                    return error.QueryFailed;
                 },
-                else => {
-                    _ = try skipMessage(stream, msg_len_u32 - 4);
-                },
+                else => {},
             }
         }
     }
@@ -371,7 +598,10 @@ pub const QueryResult = struct {
         for (self.rows.items) |*row| {
             row.deinit(allocator);
         }
-        self.rows.deinit();
+        // Zig 0.15's ArrayList holds no allocator of its own, so freeing needs
+        // the one that allocated. Nothing called this before, which is why a
+        // missing argument sat here compiling fine until it was used.
+        self.rows.deinit(allocator);
     }
 };
 
@@ -478,7 +708,10 @@ pub fn buildQueryMessage(allocator: Allocator, sql: []const u8) ![]u8 {
     errdefer allocator.free(msg);
 
     msg[0] = @intFromEnum(MessageType.Query);
-    std.mem.writeInt(u32, msg[1..5], @intCast(sql.len + 1), .big);
+    // The length counts itself and the payload, but not the type byte. Leaving
+    // its own four bytes out told the server the message ended four bytes early,
+    // and it answered "invalid string in message" for every query sent.
+    std.mem.writeInt(u32, msg[1..5], @intCast(4 + sql.len + 1), .big);
     @memcpy(msg[5..5+sql.len], sql);
     msg[5 + sql.len] = 0;
 

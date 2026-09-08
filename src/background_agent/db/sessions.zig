@@ -59,6 +59,26 @@ fn rejectQuotes(value: []const u8) !void {
     if (std.mem.indexOfAny(u8, value, "'\\") != null) return error.InvalidInput;
 }
 
+/// The table this module has always assumed. Nothing in the repository ever
+/// created it, so a real database answered every query with "relation
+/// sessions does not exist" — the service owns its schema now and makes it on
+/// connect, idempotently.
+pub fn ensureSchema(client: *PostgresClient) !void {
+    if (!connected(client)) return;
+    var result = try PostgresClient.query(client,
+        \\CREATE TABLE IF NOT EXISTS sessions (
+        \\  id TEXT PRIMARY KEY,
+        \\  name TEXT NOT NULL,
+        \\  status TEXT NOT NULL,
+        \\  railway_service_id TEXT NOT NULL DEFAULT '',
+        \\  soul_file TEXT NOT NULL DEFAULT '',
+        \\  created_at BIGINT NOT NULL,
+        \\  updated_at BIGINT NOT NULL
+        \\)
+    );
+    result.deinit(client.allocator);
+}
+
 /// Create a new session
 pub fn createSession(allocator: Allocator, client: *PostgresClient, name: []const u8, service_id: []const u8) !Session {
     if (name.len == 0) return error.InvalidInput;
@@ -145,8 +165,8 @@ pub fn getSession(allocator: Allocator, client: *PostgresClient, session_id: []c
 
     const sql = try std.fmt.allocPrint(allocator,
         \\SELECT id, name, status, railway_service_id, soul_file,
-        \\EXTRACT(EPOCH FROM created_at) as created_at,
-        \\EXTRACT(EPOCH FROM updated_at) as updated_at
+        \\created_at,
+        \\updated_at
         \\FROM sessions WHERE id = '{s}'
     , .{ session_id });
 
@@ -207,7 +227,7 @@ pub fn listSessions(allocator: Allocator, client: *PostgresClient) !std.ArrayLis
         }
         return out;
     }
-    const sql = "SELECT id, name, status, railway_service_id, soul_file, EXTRACT(EPOCH FROM created_at) as created_at, EXTRACT(EPOCH FROM updated_at) as updated_at FROM sessions ORDER BY created_at DESC";
+    const sql = "SELECT id, name, status, railway_service_id, soul_file, created_at, updated_at FROM sessions ORDER BY created_at DESC";
 
     var result = try PostgresClient.query(client, sql);
     errdefer {
