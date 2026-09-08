@@ -4295,6 +4295,14 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* ---- intel column ------------------------------------------------------- */
+/* With the Queen hidden the column carries only her button, so it stops being
+   a row that stretches its child to full height and lets the sky have the rest. */
+.queen27-page.is-shell .queen27-hud-intel:has(> .queen-chat-tab) {
+  grid-template-rows: auto minmax(0, 1fr);
+  border: 0;
+  background: transparent;
+}
+
 .queen27-page.is-shell .queen27-hud-intel {
   display: grid;
   /* full height of the shell, beside the bars rather than between them */

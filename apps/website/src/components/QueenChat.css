@@ -48,10 +48,19 @@
   cursor: pointer;
 }
 
+/* Collapsed she is a control, not an empty panel: at width:100% in a 1fr row
+   the button stretched into a full-height bordered box with "Ask the Queen"
+   floating in the middle of it, which is the panel the chat was hidden to get
+   rid of. Small, at the top, and the column below it is sky. */
 .queen-chat-tab {
-  width: 100%;
+  width: auto;
+  justify-self: end;
+  align-self: start;
   margin: 0;
+  padding: 0 12px;
+  min-height: 34px;
   color: var(--hud-gold, #ffd45a);
+  background: rgba(3, 12, 14, 0.55);
 }
 
 .queen-chat-context {

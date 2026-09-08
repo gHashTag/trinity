@@ -8,5 +8,8 @@
     "test": "zig build test",
     "link-tri": "npm install -g ./deploy/npm-local",
     "sweep-rtl": "bash scripts/move-root-rtl-to-fpga.sh"
+  },
+  "devDependencies": {
+    "railway": "^3.11.0"
   }
 }
