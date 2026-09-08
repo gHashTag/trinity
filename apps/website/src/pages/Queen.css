@@ -3346,7 +3346,7 @@ body.queen-shell .sticky-cta {
      viewport box. Translucent chrome lets the same sky run under every panel,
      which is what makes the modules read as places on one map rather than
      boxes on a page. Kept dark enough that mono text on it stays legible. */
-  --hud-panel: rgba(2, 8, 6, 0.55);
+  --hud-panel: rgba(2, 8, 6, 0.42);
   --hud-ground: transparent;
   --hud-mono: "JetBrains Mono", ui-monospace, monospace;
   --hud-notch: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
@@ -4174,6 +4174,45 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell > * {
   position: relative;
   z-index: 1;
+}
+
+/* No frame around the map: a border and a ground here drew a box around the
+   scene, which is the opposite of the scene being the container. */
+.queen27-page.is-shell .queen27-hud-viewport {
+  border: 0;
+  background: transparent;
+}
+
+/* Bare: the map alone. Fullscreen hides every panel rather than making the
+   same panels bigger — the chrome is what was in the way of the map. */
+.queen27-page.is-shell.is-bare > .queen27-hud-top,
+.queen27-page.is-shell.is-bare > .queen27-hud-command,
+.queen27-page.is-shell.is-bare > .queen27-hud-intel,
+.queen27-page.is-shell.is-bare > .queen27-hud-bottom {
+  display: none;
+}
+
+.queen27-page.is-shell.is-bare {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
+  padding: 0;
+}
+
+.queen27-page.is-shell.is-bare .queen27-hud-viewport {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+/* In bare mode the head is the only chrome left, so it floats rather than
+   taking a row from the map. */
+.queen27-page.is-shell.is-bare .queen27-hud-vp-head {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+  background: #00000099;
 }
 
 /* the factory is the one deep panel: it scrolls vertically inside the

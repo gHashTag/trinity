@@ -102,3 +102,13 @@ body.queen-shell {background:#000;}
   }
   .queen-universe .queen-universe-nav select { max-width: 260px; }
 }
+
+/* Bare mode is the map alone, and the worlds bar lives above the shell rather
+   than inside it — without this it is the one strip left on an otherwise empty
+   screen. */
+.queen-universe:has(.queen27-page.is-shell.is-bare) .queen-universe-nav {
+  display: none;
+}
+.queen-universe:has(.queen27-page.is-shell.is-bare) {
+  grid-template-rows: minmax(0, 1fr);
+}

@@ -2369,7 +2369,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
 
   return (
     <main
-      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}`}
+      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}`}
       data-view={view}
     >
       <header className="queen27-hud-top">
