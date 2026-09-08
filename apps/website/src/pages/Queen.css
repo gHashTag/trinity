@@ -4259,7 +4259,7 @@ main:where(.queen27-page.is-shell) section {
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-res-round {
-  min-width: 420px;
+  min-width: 340px;
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-status {
@@ -5580,3 +5580,79 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-tech-node {
   background: rgba(2, 8, 6, 0.62);
 }
+
+/* One header. The worlds bar and the status bar were two strips doing one job,
+   and between them they took 128px off the map before anything was shown. They
+   share a row now: the worlds keep the left, the status takes what is left of
+   it, and the counts sit behind a summary so the row has width to give. */
+@media (min-width: 901px) {
+  body.queen-shell .queen-universe-nav {
+    /* 506px is what its six controls need; the select has flex:1 and was
+       absorbing the shortfall, down to 58px of unreadable repository name. */
+    width: 620px;
+    right: auto;
+    background: transparent;
+  }
+
+  .queen27-page.is-shell {
+    --hud-chrome-top: calc(var(--hud-bar-h) + var(--hud-gap) * 2);
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
+    top: var(--hud-gap);
+    left: 620px;
+  }
+
+  body.queen-shell .queen-universe-nav select {
+    min-width: 180px;
+  }
+}
+
+/* The counts, closed and open. */
+.queen27-page.is-shell .queen27-hud-stats {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-stats > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  color: var(--hud-muted, #8b9490);
+  font-family: var(--hud-mono);
+  font-size: 12px;
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-stats > summary::-webkit-details-marker { display: none; }
+.queen27-page.is-shell .queen27-hud-stats > summary::after { content: '▾'; }
+.queen27-page.is-shell .queen27-hud-stats[open] > summary::after { content: '▴'; }
+.queen27-page.is-shell .queen27-hud-stats > summary > span { color: var(--text, #fff); }
+
+/* Open, the five tiles drop below the row rather than widening it. */
+.queen27-page.is-shell .queen27-hud-stats[open] {
+  position: relative;
+}
+
+.queen27-page.is-shell .queen27-hud-stats[open] > :not(summary) {
+  position: absolute;
+  top: calc(100% + var(--hud-gap));
+  left: 0;
+  z-index: 6;
+}
+
+.queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res {
+  min-width: 150px;
+  border: 1px solid var(--hud-line);
+  background: var(--hud-panel);
+}
+
+.queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res:nth-of-type(1) { top: calc(100% + var(--hud-gap)); }
+.queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res:nth-of-type(2) { top: calc(100% + var(--hud-gap) + 58px); }
+.queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res:nth-of-type(3) { top: calc(100% + var(--hud-gap) + 116px); }
+.queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res:nth-of-type(4) { top: calc(100% + var(--hud-gap) + 174px); }
+.queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res:nth-of-type(5) { top: calc(100% + var(--hud-gap) + 232px); }
