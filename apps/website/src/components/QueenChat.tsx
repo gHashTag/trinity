@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ChatInput from './chat/ChatInput'
 import ChatMessage from './chat/ChatMessage'
-import { checkHealth, sendMessage, type ChatResponse } from '../services/chatApi'
+import type { ChatResponse } from '../services/chatApi'
+import { askQueen, queenHealth, queenModelName } from '../services/queenModel'
 import type { HudEvent } from './queenHud'
 import './QueenChat.css'
 
@@ -80,7 +81,7 @@ export default function QueenChat({
   // offline, never as an empty conversation that looks ready.
   useEffect(() => {
     let alive = true
-    const probe = () => { checkHealth().then((ok) => { if (alive) setLive(ok) }).catch(() => { if (alive) setLive(false) }) }
+    const probe = () => { queenHealth().then((ok) => { if (alive) setLive(ok) }).catch(() => { if (alive) setLive(false) }) }
     probe()
     const id = window.setInterval(probe, 20000)
     return () => { alive = false; window.clearInterval(id) }
@@ -104,7 +105,7 @@ export default function QueenChat({
     const quoted = subject ? ` ${describe ? describe(subject) : subject.title}` : ''
     setTurns((prev) => [...prev, { kind: 'turn', at, role: 'user', content: question }])
     setBusy(true)
-    sendMessage({ message: `[${line}]${quoted ? ` ${quoted}` : ''} ${question}` })
+    askQueen(`[${line}]${quoted ? ` ${quoted}` : ''} ${question}`)
       .then((res) => setTurns((prev) => [...prev, { kind: 'turn', at: Date.now(), role: 'assistant', ...res, content: res.response }]))
       .catch(() => {
         setLive(false)
@@ -128,7 +129,7 @@ export default function QueenChat({
         <span className={`queen-chat-state is-${live === null ? 'checking' : live ? 'live' : 'offline'}`}>
           {live === null ? t.checking : live ? t.online : t.offline}
         </span>
-        <span className="queen-chat-count">{events.length} {t.events}</span>
+        <span className="queen-chat-count">{queenModelName()} · {events.length} {t.events}</span>
         <button type="button" className="queen-chat-hide" onClick={() => setOpen(false)} aria-expanded>
           {t.hide}
         </button>
