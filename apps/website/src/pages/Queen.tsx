@@ -2462,9 +2462,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               }}
             />
           ) : boardView === "comb" ? (
-            sharedCatalog ? <SceneBoundary lang={lang==='ru'?'ru':'en'}><Suspense fallback={null}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)}/></Suspense></SceneBoundary> : ENGINE_FLAG !== "canvas" ? (
+            sharedCatalog ? <SceneBoundary lang={lang==='ru'?'ru':'en'}><Suspense fallback={<p className="queen-scene-loading" role="status">{lang==='ru'?'СОБИРАЮ КАРТУ…':'BUILDING THE MAP…'}</p>}><QueenCatalogHive atlas={sharedCatalog} lang={lang==='ru'?'ru':'en'} handleRef={combRef} foundationVisible={layers.foundation} fitInset={contextOpen?(isPhone?.56:.46):0} onInspect={()=>setContextOpen(false)}/></Suspense></SceneBoundary> : ENGINE_FLAG !== "canvas" ? (
               <SceneBoundary lang={lang === 'ru' ? 'ru' : 'en'}>
-              <Suspense fallback={null}>
+              <Suspense fallback={<p className="queen-scene-loading" role="status">{lang === 'ru' ? 'СОБИРАЮ КАРТУ…' : 'BUILDING THE MAP…'}</p>}>
                 <QueenCombBabylon
                   signalHealth={{board:hiveFeedHealth(boardState.data!==null,boardState.error),activity:hiveFeedHealth(activityState.data!==null,activityState.error)}}
                   displays={hiveCells}

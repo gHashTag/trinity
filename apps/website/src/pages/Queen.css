@@ -2984,6 +2984,9 @@
 
 .queen27-comb.is-embedded.is-babylon { width: 100%; justify-self: stretch; }
 .queen27-comb.is-embedded canvas.queen-hive-scene { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; }
+/* The stage is the canvas's own element, so React never reconciles a node it
+   did not create: it is the box, and the canvas fills it. */
+.queen27-comb.is-embedded .queen-hive-stage { position: absolute; inset: 0; z-index: 1; }
 .queen27-comb.is-embedded canvas.queen-starfield { position: absolute; inset: 0; z-index: 0; pointer-events: none; width: 100%; height: 100%; }
 /* Inside the shell the sky is not the viewport's backdrop but the screen's:
    the modules are places on one star map, so the same catalog runs under the
@@ -5806,4 +5809,28 @@ body.queen-shell .phi-starfield {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+/* The scene's chunk is the largest on the page, and until it arrives this slot
+   was empty — a star field with nothing in it, which is indistinguishable from
+   a map that failed. It says what it is doing instead. */
+.queen27-page.is-shell .queen-scene-loading {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  margin: 0;
+  color: var(--hud-green);
+  font-family: var(--hud-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  animation: queen-scene-breath 1.6s ease-in-out infinite;
+}
+
+@keyframes queen-scene-breath {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .queen27-page.is-shell .queen-scene-loading { animation: none; opacity: 0.8; }
 }

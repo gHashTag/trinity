@@ -108,6 +108,12 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   useEffect(()=>{catalogRef.current=catalogLayer;catalogPickRef.current=onCatalogPick;catalogProjectRef.current=onCatalogProject;},[catalogLayer,onCatalogPick,onCatalogProject]);
   useImperativeHandle(catalogControlRef,()=>({inspect:(index,focus)=>catalogController.current?.inspect(index,focus),overview:()=>catalogController.current?.overview(),hover:index=>catalogController.current?.hover(index)}),[]);
   const hostRef = useRef<HTMLDivElement>(null);
+  // An element React renders and then never looks inside. The canvas is made
+  // per mount (see the effect) and lives here rather than among the field's
+  // other children: React reconciles those, and a node it did not create sitting
+  // between them is a node it can move or drop while the engine keeps drawing
+  // into it — a blank map with nothing in the console to say why.
+  const stageRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [projections, setProjections] = useState<HiveDisplayProjection[]>([]);
   const [selectedDisplayKey, setSelectedDisplayKey] = useState<string | null>(null);
@@ -180,7 +186,8 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   }), []);
   useEffect(() => {
     const host = hostRef.current;
-    if (!host) return;
+    const stage = stageRef.current;
+    if (!host || !stage) return;
     // A canvas per mount, and never the same one twice.
     //
     // Babylon's dispose() calls WEBGL_lose_context on the context it made, and
@@ -195,9 +202,10 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     canvas.className = "queen-hive-scene";
     canvas.style.touchAction = "none";
     canvas.style.outline = "none";
-    // First child, where the JSX had it: the overlays that follow read as above
-    // it, and the field's own stacking says the same.
-    host.insertBefore(canvas, host.firstChild);
+    // Into the stage, which is React's element and empty as far as React is
+    // concerned. The overlays that follow it in the field read as above it, and
+    // the field's own stacking says the same.
+    stage.appendChild(canvas);
     const cards = cardsRef.current;
     const workers = workersRef.current;
     const viewKey=(index:number)=>displaysRef.current?.[index]?.key??catalogRef.current?.cells[index]?.key??null;
@@ -1186,6 +1194,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
   return (
     <div className="queen27-comb is-embedded is-babylon">
       <div className="queen27-comb-field" ref={hostRef} data-engine="babylon" data-look="hive" data-grid="hex" data-board-health={signalHealth.board} data-activity-health={signalHealth.activity}>
+        <div className="queen-hive-stage" ref={stageRef} aria-hidden="true" />
         <QueenStarfield lang={lang}/>
         <div className="queen27-hover-card" ref={cardRef} aria-hidden="true" />
         {displays && <QueenHiveDisplays rows={displays} projections={projections} selected={selectedDisplay} events={events} lang={lang} controls={!catalogLayer} showRepository={!!catalogLayer} onIssueOpen={onDisplaySelect} controller={{ inspect: index => displayControllerRef.current?.inspect(index), overview: () => displayControllerRef.current?.overview(), hover: index => displayControllerRef.current?.hover(index) }} />}
