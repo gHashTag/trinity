@@ -83,7 +83,9 @@ html:has(body.queen-universe-shell),body.queen-universe-shell,body.queen-univers
    a coarse pointer they keep the 44px floor, because there it is the rule.
    It lives here rather than in Queen.css: at equal specificity the later
    stylesheet wins, and that is this one. */
-@media (pointer: fine) {
+/* Wide screens only: narrow layouts keep their own sizing, where the 44px
+   floor is set and must stay set. */
+@media (pointer: fine) and (min-width: 901px) {
   .queen-universe .queen-universe-nav { padding: 4px 10px; gap: 6px; }
   /* min-height was never the binding constraint here — the control's own
      padding was, so the bar stayed 54px while the rule said 34. */
