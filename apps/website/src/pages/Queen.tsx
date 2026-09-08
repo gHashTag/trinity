@@ -15,7 +15,7 @@ import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
-import { QueenIntelFeed, QueenSectors } from "../components/QueenIntel";
+import { QueenSectors } from "../components/QueenIntel";
 import { QueenMinimap } from "../components/QueenMinimap";
 import {
   HUD_VIEWS,
@@ -59,6 +59,9 @@ import {
 import { TrinityLogo } from "../components/TrinityLogo";
 import type {UniverseAtlas} from '../lib/queenUniverseAtlas';
 const QueenCatalogHive=lazy(()=>import('../components/QueenCatalogHive').then(m=>({default:m.QueenCatalogHive})));
+// The Queen answers from the right column on every view, so she is part of the
+// shell rather than of one tab. Lazy: the chat pulls its own components.
+const QueenChat = lazy(() => import('../components/QueenChat'));
 // The comb is Babylon.js (the user's decision, 2026-09-04). ?engine=canvas keeps
 // the canvas2D comb for one release, for anyone comparing; then it goes.
 const QueenCombBabylon = lazy(() =>
@@ -1992,10 +1995,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const schedulerOff = data ? !data.scheduler.enabled : false;
   const roundKnown = roundSeconds > 0 && lastRoundAt !== null;
   const roundOverdue = roundKnown && elapsedSeconds > roundSeconds;
-  const roundProgress =
-    roundKnown && !schedulerOff
-      ? Math.min(100, (elapsedSeconds / roundSeconds) * 100)
-      : 0;
   const syncLabel = boardState.syncedAt
     ? boardState.syncedAt.toLocaleTimeString(lang === "ru" ? "ru-RU" : "en-GB")
     : "—";
@@ -2013,11 +2012,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     : roundOverdue
       ? c.hudOverdue
       : c.hudNextRound;
-  const roundHeading = schedulerOff
-    ? c.hudSchedulerOff
-    : roundOverdue
-      ? c.hudOverdue
-      : c.nextRound;
   // A round's resolution moment: when decidedAt changes, the round tile and
   // the gold block flash for six seconds and carry the strip. The change is
   // detected during render (state adjusted from a prop, the documented
@@ -2112,9 +2106,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     : null;
   // wire field first (P1-18): the refusal or what the round did leads, the
   // verb follows, so a narrow gold block cuts the verb, never the reason
-  const decisionLine = decision
-    ? `${decisionInfo} · ${decision.allowed ? c.chose : c.stoodDown}`
-    : c.noDecision;
   const heldCount = doneCount + runningCards.length;
   const device = hardware?.devices[0] ?? null;
 
@@ -2243,31 +2234,29 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const statusTone = isLive ? "is-live" : state.kind === "error" ? "is-cold" : "is-muted";
   const skipEntries = Object.entries(decision?.skipSummary ?? {});
 
-  const intelContent = (
-    <>
-      <QueenIntelFeed
+  // The feed used to be a second list beside the Queen, saying the same things
+  // she now says in her own log — and it left her 90px of a column she is meant
+  // to work in. The events go to her; the column keeps the overview below.
+  // The same Queen in both shapes of the column: the wide aside and the phone
+  // drawer. Defined once so the drawer cannot quietly lose her.
+  const queenChat = (
+    <Suspense fallback={null}>
+      <QueenChat
+        lang={lang === "ru" ? "ru" : "en"}
+        context={{ view: boardView, repo, spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null }}
         events={events}
-        error={activityState.error}
-        lang={lang}
-        repo={repo}
-        expanded={intelExpanded}
-        onToggle={() => setIntelExpanded((expanded) => !expanded)}
         describe={describe}
-        labels={{
-          title: c.hudIntel,
-          live: c.hudLive,
-          offline: c.hudOffline,
-          empty: c.hudNoEvents,
-          viewAll: c.hudViewAll,
-          collapse: c.hudCollapseFeed,
-          rows: c.hudRows,
-          unitS: c.unitS,
-          unitMin: c.unitMin,
-          unitH: c.unitH,
-          spanTitle: c.hudSpanTitle,
-        }}
+        issueHref={(event) => (event.issue && repo ? `https://github.com/${repo}/issues/${event.issue}` : null)}
       />
-      {!intelExpanded && (
+    </Suspense>
+  );
+
+  // The Queen takes the column. The overview stays above her as part of the
+  // sidebar — a compact band that is always there — rather than a disclosure
+  // that pops the board open over her.
+  const intelContent = (
+    <section className="queen27-hud-stow" aria-label={c.hudOverview}>
+      {(
         <>
           <section className="queen27-hud-panel queen27-hud-minimap" aria-label={c.hudOverview}>
             <header className="queen27-hud-panel-head">
@@ -2325,7 +2314,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           />
         </>
       )}
-    </>
+    </section>
   );
 
   const roundPopover = roundOpen && (
@@ -2450,22 +2439,35 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           </span>
         </div>
 
-        <div
+        <section
+          ref={roundRef}
           className={`queen27-hud-res queen27-hud-res-round${roundResolved ? " is-resolved" : ""}`}
         >
-          <i aria-hidden="true">◎</i>
-          <small>{roundLabel}</small>
-          <strong id="stat-round" data-clock={state.offsetMs === null ? "client" : "server"}>{countdown}</strong>
-          <span>
-            {strip ? (
-              <b className="queen27-hud-round-strip">{strip}</b>
-            ) : roundWindow ? (
-              roundWindow
-            ) : (
-              "—"
-            )}
-          </span>
-        </div>
+          {/* One round control, and it is this one: the command rail carried a
+              second button with the same countdown. The details it opened come
+              with it rather than being lost. */}
+          <button
+            type="button"
+            className="queen27-hud-res-round-btn"
+            aria-expanded={roundOpen}
+            aria-controls="queen-round-pop"
+            onClick={() => setRoundOpen((open) => !open)}
+          >
+            <i aria-hidden="true">◎</i>
+            <small>{roundLabel}</small>
+            <strong id="stat-round" data-clock={state.offsetMs === null ? "client" : "server"}>{countdown}</strong>
+            <span>
+              {strip ? (
+                <b className="queen27-hud-round-strip">{strip}</b>
+              ) : roundWindow ? (
+                roundWindow
+              ) : (
+                "—"
+              )}
+            </span>
+          </button>
+          {roundPopover}
+        </section>
 
         <div className="queen27-hud-res queen27-hud-bell">
           <button
@@ -2922,6 +2924,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               ×
             </button>
             {intelContent}
+            {queenChat}
           </aside>
         )
       ) : (
@@ -2929,9 +2932,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           className={`queen27-hud-intel${intelExpanded ? " is-expanded" : ""}`}
           aria-label={boardView === "specs" ? c.specsDirective : c.hudIntel}
         >
-          {/* On the SPECS view the feed, overview and sectors all describe the
-              board, not the spec on screen. The directive takes the column and
-              the Explorer gets its height back. */}
+          {/* The overview sits above her, stowed: a row that opens when the board
+              is the question and stays out of the way when the Queen is. */}
           {boardView === "specs" ? (
             <QueenSpecsDirective
               c={{
@@ -2945,6 +2947,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               }}
             />
           ) : intelContent}
+          {queenChat}
         </aside>
       )}
 
@@ -2960,19 +2963,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               compact
               labels={{ aria: c.hudViews, collapse: c.hudCollapse, expand: c.hudExpand }}
             />
-            <section className="queen27-hud-round-cell is-mini" ref={roundRef} aria-label={c.hudNextRound}>
-              <button
-                type="button"
-                className="queen27-hud-round-mini"
-                aria-expanded={roundOpen}
-                aria-controls="queen-round-pop"
-                onClick={() => setRoundOpen((open) => !open)}
-              >
-                <small>{roundLabel}</small>
-                <strong className="queen27-hud-countdown">{countdown}</strong>
-              </button>
-              {roundPopover}
-            </section>
           </>
         ) : (
           <>
@@ -3101,7 +3091,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               </div>
             </section>
 
-            <section className="queen27-hud-round-cell" ref={roundRef} aria-label={c.hudNextRound}>
+            <section className="queen27-hud-round-cell" aria-label={c.hudNextRound}>
               <div className={`queen27-hud-round${roundResolved ? " is-resolved" : ""}`}>
                 <div className="queen27-hud-orbit" aria-hidden="true">
                   <div className="queen27-core-orbit" aria-hidden="true">
@@ -3122,22 +3112,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                     </div>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="queen27-hud-round-btn"
-                  aria-expanded={roundOpen}
-                  aria-controls="queen-round-pop"
-                  onClick={() => setRoundOpen((open) => !open)}
-                >
-                  <small>{roundHeading}</small>
-                  <strong className="queen27-hud-countdown">{countdown}</strong>
-                  <i aria-hidden="true">
-                    <span style={{ width: `${roundProgress}%` }} />
-                  </i>
-                  <em>{strip ?? decisionLine}</em>
-                </button>
               </div>
-              {roundPopover}
             </section>
           </>
         )}

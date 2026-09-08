@@ -3420,7 +3420,9 @@ main:where(.queen27-page.is-shell) section {
   z-index: 6;
   display: grid;
   grid-row: 1;
-  grid-column: 1 / -1;
+  /* stops short of the sidebar: the Queen's column runs the full height of the
+     shell, so the bars own the first two columns and she owns the third */
+  grid-column: 1 / 3;
   /* the clock cell is content-sized so the countdown never ellipsises */
   grid-template-columns: auto repeat(5, minmax(0, 1fr)) auto auto auto;
   min-width: 0;
@@ -3498,6 +3500,23 @@ main:where(.queen27-page.is-shell) section {
   line-height: 1.2;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+/* The round is a control now, not a read-out: it opens the round's details,
+   which used to hang off a second button in the command rail. It still has to
+   look like the tile it is, so the button carries no chrome of its own. */
+.queen27-page.is-shell .queen27-hud-res-round-btn {
+  display: contents;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.queen27-page.is-shell .queen27-hud-res-round {
+  position: relative;
 }
 
 .queen27-page.is-shell .queen27-hud-res-round > strong {
@@ -4243,13 +4262,30 @@ main:where(.queen27-page.is-shell) section {
 /* ---- intel column ------------------------------------------------------- */
 .queen27-page.is-shell .queen27-hud-intel {
   display: grid;
-  grid-row: 2;
+  /* full height of the shell, beside the bars rather than between them */
+  grid-row: 1 / -1;
   grid-column: 3;
-  /* the feed takes what the six sector rows and the minimap leave; when the
-     screen is too short for six rows the sectors list scrolls, not the page */
-  grid-template-rows: minmax(0, 0.9fr) 140px minmax(0, 1fr);
+  /* The Queen takes the column. She carries the board's events and the
+     conversation about them, so the overview and the sectors sit under her as
+     one stowed row and open when they are wanted. */
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 10px;
   min-width: 0;
+  min-height: 0;
+}
+
+/* Part of the sidebar, not a disclosure over it: the overview band sits above
+   the Queen, always visible and deliberately short. Its own list scrolls when
+   the six sector rows do not fit — the column does not grow to hold them. */
+.queen27-page.is-shell .queen27-hud-stow {
+  display: grid;
+  grid-template-rows: 96px minmax(0, 1fr);
+  gap: 6px;
+  min-height: 0;
+  max-height: 210px;
+}
+
+.queen27-page.is-shell .queen27-hud-stow .queen27-hud-minimap {
   min-height: 0;
 }
 
@@ -4304,8 +4340,8 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-hud-bottom {
   display: grid;
   grid-row: 3;
-  grid-column: 1 / -1;
-  grid-template-columns: 340px minmax(0, 1fr) 300px;
+  grid-column: 1 / 3;
+  grid-template-columns: 340px minmax(0, 1fr);
   gap: 10px;
   min-width: 0;
   min-height: 0;

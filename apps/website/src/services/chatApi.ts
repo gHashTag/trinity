@@ -7,7 +7,12 @@
 // v2.9: + /api/sacred-intelligence/* (Sacred Intelligence Production Dashboard)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const BASE_URL = 'http://localhost:8080';
+// Configurable so a deployed proxy can serve this: a hardcoded localhost meant
+// every call from t27.ai failed and the sample fallbacks fired (A36). The URL
+// points at a server that holds the model key, never at a provider directly --
+// VITE_ values are compiled into the bundle and are public, so a key put here
+// would be readable by anyone who opens the site.
+const BASE_URL = import.meta.env.VITE_QUEEN_CHAT_URL || 'http://localhost:8080';
 
 /**
  * Mark a value as placeholder data, not a measurement.

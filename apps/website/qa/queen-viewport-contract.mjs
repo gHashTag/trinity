@@ -169,6 +169,8 @@ function cleanup() {
 const DECLARED = [
   // the HUD's own scrollers
   '.queen27-intel-list', '.queen27-sectors-list', '.queen27-context-col',
+  // the Queen's own log: the board's events and the conversation about them
+  '.queen-chat-log',
   '.queen27-hud-menu', '.queen27-hud-round-pop',
   // the views
   '.queen27-cards', '.queen27-kanban', '.queen27-mission-map',
