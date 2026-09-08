@@ -7,8 +7,13 @@ export function QueenStarfield({lang}:{lang:'ru'|'en'}) {
   const [count,setCount]=useState<number|null>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
-    const canvas=ref.current,host=canvas?.parentElement,ctx=canvas?.getContext('2d');
-    if(!canvas || !host || !ctx) return;
+    const canvas=ref.current,ctx=canvas?.getContext('2d');
+    if(!canvas || !ctx) return;
+    // Measured on the canvas, not on its parent. Inside the shell the sky is
+    // fixed and fills the screen while the parent is still the comb's box, so
+    // sizing from the parent drew a 1660x1054 buffer into a 2880x1800 element
+    // and stretched it. The canvas always knows where CSS actually put it.
+    const host=canvas;
     let stars:readonly CatalogStar[]=[],disposed=false,frame=0,px=0,py=0;
     const request=new AbortController();
     const motion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -38,7 +43,7 @@ export function QueenStarfield({lang}:{lang:'ru'|'en'}) {
     const schedule=()=>{if(!frame && !document.hidden) frame=requestAnimationFrame(draw);};
     const pointer=(e:PointerEvent)=>{if(motion.matches) return;const b=host.getBoundingClientRect();px=(e.clientX-b.left)/b.width-.5;py=(e.clientY-b.top)/b.height-.5;schedule();};
     const reset=()=>{px=py=0;redraw();};
-    const observer=new ResizeObserver(redraw);observer.observe(host);
+    const observer=new ResizeObserver(redraw);observer.observe(canvas);
     host.addEventListener('pointermove',pointer);host.addEventListener('pointerleave',reset);
     motion.addEventListener('change',reset);document.addEventListener('visibilitychange',schedule);
     fetch(catalogUrl,{signal:request.signal}).then(response=>{if(!response.ok)throw new Error('Catalog unavailable');return response.json();}).then(catalog=>{if(disposed)return;stars=catalogStarRows(catalog.stars);if(!stars.length)throw new Error('Empty catalog');setCount(stars.length);redraw();}).catch(()=>{if(!disposed)setFailed(true);});
