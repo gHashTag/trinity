@@ -15,6 +15,23 @@
 const BASE_URL = import.meta.env.VITE_QUEEN_CHAT_URL || 'http://localhost:8080';
 
 /**
+ * Where the Queen answers.
+ *
+ * Her conversation is not the Zig backend's endpoints above and should not wait
+ * on one running on this machine: with nothing set the base was localhost:8080,
+ * so a built site asked a port nobody serves and the panel read OFFLINE
+ * everywhere but a developer's laptop. The default is the proxy's own public
+ * address -- the same shape as DEFAULT_QUEEN_API in Queen.tsx, which is how the
+ * board already finds its origin -- and VITE_QUEEN_CHAT_URL still overrides it.
+ *
+ * A URL, not a secret. What is one -- the token that reaches
+ * trios-agent-server, where the Queen actually runs -- lives in that proxy's
+ * environment and never in this bundle.
+ */
+const DEFAULT_CHAT_URL = 'https://queen-proxy-production-40b6.up.railway.app';
+const CHAT_URL = (import.meta.env.VITE_QUEEN_CHAT_URL || DEFAULT_CHAT_URL).replace(/\/+$/, '');
+
+/**
  * Mark a value as placeholder data, not a measurement.
  *
  * Fourteen call sites in this file silently substitute a mock object when a
@@ -361,6 +378,39 @@ export interface ChatRequest {
   message: string;
   image_path?: string;
   audio_path?: string;
+  /** Which conversation this turn belongs to; see conversationId(). */
+  conversation_id?: string;
+}
+
+/**
+ * The thread this tab is having with her.
+ *
+ * The Queen's server keeps a conversation per id, so without one every turn
+ * arrives as a stranger's first message and she cannot be asked a follow-up.
+ * One id per tab: shared across tabs it would braid two people's questions
+ * into one thread, and regenerated per message it would be no thread at all.
+ * sessionStorage is per tab and dies with it, which is the lifetime we want;
+ * when it is unavailable the id lives for as long as the page does.
+ */
+let memoryConversation = '';
+export function conversationId(): string {
+  // Her server validates it as a UUID and answers 400 to anything else, so the
+  // shape is part of the contract, not a preference.
+  const fresh = () =>
+    globalThis.crypto?.randomUUID?.() ??
+    '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
+      (Number(c) ^ (Math.floor(Math.random() * 256) & (15 >> (Number(c) / 4)))).toString(16),
+    );
+  try {
+    const held = sessionStorage.getItem('queen-conversation');
+    if (held) return held;
+    const made = fresh();
+    sessionStorage.setItem('queen-conversation', made);
+    return made;
+  } catch {
+    if (!memoryConversation) memoryConversation = fresh();
+    return memoryConversation;
+  }
 }
 
 export type ModelProvider = 'anthropic' | 'openai' | 'groq' | 'local';
@@ -399,22 +449,38 @@ export interface ChatResponse {
 }
 
 export async function sendMessage(req: ChatRequest): Promise<ChatResponse> {
-  const res = await fetch(`${BASE_URL}/chat`, {
+  const res = await fetch(`${CHAT_URL}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(req),
+    body: JSON.stringify({ conversation_id: conversationId(), ...req }),
+    // She reads the board and the repository before she answers. The default
+    // has no deadline at all, which leaves a question hanging with nothing to
+    // report; three minutes is longer than she has ever taken and still ends.
+    signal: AbortSignal.timeout(180_000),
   });
-  if (!res.ok) throw new Error(`Chat API error: ${res.status}`);
+  if (!res.ok) {
+    // The proxy answers with her words: a refusal, a provider's quota, a body
+    // it could not read. Throwing the status alone is how one message -- "the
+    // Queen did not answer" -- came to stand for every one of those.
+    const said = await res.text().catch(() => '');
+    let reason = said.trim();
+    try {
+      reason = String((JSON.parse(said) as { error?: unknown }).error ?? reason);
+    } catch {
+      // not JSON; her words as they came
+    }
+    throw new Error(reason || `Chat API error: ${res.status}`);
+  }
   return res.json();
 }
 
 export async function clearContext(): Promise<void> {
-  await fetch(`${BASE_URL}/chat/clear`, { method: 'POST' });
+  await fetch(`${CHAT_URL}/chat/clear`, { method: 'POST' });
 }
 
 export async function checkHealth(): Promise<boolean> {
   try {
-    const res = await fetch(`${BASE_URL}/health`, { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(`${CHAT_URL}/health`, { signal: AbortSignal.timeout(3000) });
     return res.ok;
   } catch {
     return false;

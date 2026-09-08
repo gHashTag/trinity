@@ -163,3 +163,26 @@
   font-size: 10.5px;
   cursor: pointer;
 }
+
+/* She is answering. Without this the log holds the question and nothing else
+   for as long as the model takes — thirty-six seconds on a local 4B — and a
+   slow Queen is indistinguishable from an absent one. The number is measured
+   from the moment the question left; nothing here predicts an arrival. */
+.queen-chat-pending {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  margin: 0.4rem 0 0;
+  padding: 0.35rem 0.6rem;
+  border-left: 2px solid #ffd45a66;
+  color: #a8c1ba;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.queen-chat-pending > b {
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}

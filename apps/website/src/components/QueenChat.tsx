@@ -30,6 +30,7 @@ const copy = {
     subject: 'Asking about',
     clearSubject: 'Drop the subject',
     events: 'events',
+    thinking: 'The Queen is answering',
   },
   ru: {
     title: 'КОРОЛЕВА', hide: 'Скрыть', show: 'Спросить королеву',
@@ -41,6 +42,7 @@ const copy = {
     subject: 'Разговор о',
     clearSubject: 'Убрать предмет',
     events: 'событий',
+    thinking: 'Королева отвечает',
   },
 } as const
 
@@ -71,6 +73,10 @@ export default function QueenChat({
   const [turns, setTurns] = useState<Turn[]>([])
   const [subject, setSubject] = useState<HudEvent | null>(null)
   const [busy, setBusy] = useState(false)
+  // How long she has been at it. A model that thinks for half a minute and a
+  // model that is not there look the same from a chair: nothing arrives. The
+  // seconds are counted, not estimated, and no progress is implied.
+  const [waited, setWaited] = useState(0)
   const log = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -97,6 +103,16 @@ export default function QueenChat({
 
   useEffect(() => { log.current?.scrollTo({ top: log.current.scrollHeight }) }, [entries.length, busy])
 
+  // The clock is started where the question is sent, not here: setting state in
+  // an effect's body re-renders before the browser has painted the one it is
+  // already in.
+  useEffect(() => {
+    if (!busy) return
+    const started = Date.now()
+    const tick = setInterval(() => setWaited(Math.round((Date.now() - started) / 1000)), 1000)
+    return () => clearInterval(tick)
+  }, [busy])
+
   const send = useCallback((text: string) => {
     const question = text.trim()
     if (!question || busy) return
@@ -104,12 +120,17 @@ export default function QueenChat({
     const line = contextLine(context, subject)
     const quoted = subject ? ` ${describe ? describe(subject) : subject.title}` : ''
     setTurns((prev) => [...prev, { kind: 'turn', at, role: 'user', content: question }])
+    setWaited(0)
     setBusy(true)
     askQueen(`[${line}]${quoted ? ` ${quoted}` : ''} ${question}`)
       .then((res) => setTurns((prev) => [...prev, { kind: 'turn', at: Date.now(), role: 'assistant', ...res, content: res.response }]))
-      .catch(() => {
+      .catch((error: unknown) => {
         setLive(false)
-        setTurns((prev) => [...prev, { kind: 'turn', at: Date.now(), role: 'assistant', content: t.failed, source: 'offline', confidence: 0 }])
+        // Why, when there is a why. Her server reports a quota or a refusal in
+        // words, and the proxy passes them through; a bare "did not answer"
+        // turned every one of those into the same silence.
+        const said = error instanceof Error ? error.message.trim() : ''
+        setTurns((prev) => [...prev, { kind: 'turn', at: Date.now(), role: 'assistant', content: said ? `${t.failed} ${said}` : t.failed, source: 'offline', confidence: 0 }])
       })
       .finally(() => setBusy(false))
   }, [busy, context, subject, describe, t.failed])
@@ -167,6 +188,12 @@ export default function QueenChat({
             latency_us={entry.latency_us}
           />
         ))}
+        {busy && (
+          <p className="queen-chat-pending" aria-live="polite">
+            {t.thinking}
+            <b>{waited}s</b>
+          </p>
+        )}
       </div>
 
       {subject && (
