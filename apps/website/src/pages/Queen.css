@@ -2985,6 +2985,17 @@
 .queen27-comb.is-embedded.is-babylon { width: 100%; justify-self: stretch; }
 .queen27-comb.is-embedded canvas.queen-hive-scene { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; }
 .queen27-comb.is-embedded canvas.queen-starfield { position: absolute; inset: 0; z-index: 0; pointer-events: none; width: 100%; height: 100%; }
+/* Inside the shell the sky is not the viewport's backdrop but the screen's:
+   the modules are places on one star map, so the same catalog runs under the
+   command rail, the sidebar and the bars as under the hive. Fixed rather than
+   absolute, behind everything, and never in the way of a pointer. */
+body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100dvh;
+}
 .queen-starfield-source { position: absolute; right: .8rem; bottom: 2.8rem; z-index: 8; color: #b9cad5; background: rgba(0,0,0,.6); border: 1px solid var(--border); border-radius: 6px; padding: .35rem .55rem; font: 400 .68rem/1.4 var(--font); text-decoration: none; }
 .queen-starfield-source:hover { color: var(--accent); }
 
@@ -3328,8 +3339,13 @@ body.queen-shell .sticky-cta {
   --hud-muted: rgba(255, 255, 255, 0.55);
   --hud-line: rgba(0, 255, 136, 0.22);
   --hud-line-strong: rgba(0, 255, 136, 0.5);
-  --hud-panel: rgba(2, 8, 6, 0.86);
-  --hud-ground: #020806;
+  /* The star map is the canvas, and the HUD floats over it: at 0.86 the panels
+     were a wall with a scene behind it, and the field only existed inside the
+     viewport box. Translucent chrome lets the same sky run under every panel,
+     which is what makes the modules read as places on one map rather than
+     boxes on a page. Kept dark enough that mono text on it stays legible. */
+  --hud-panel: rgba(2, 8, 6, 0.55);
+  --hud-ground: transparent;
   --hud-mono: "JetBrains Mono", ui-monospace, monospace;
   --hud-notch: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
   /* one screen of the viewport body: what a deep panel's block is allowed to take */
