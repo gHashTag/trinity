@@ -4151,9 +4151,29 @@ main:where(.queen27-page.is-shell) section {
   background: transparent;
 }
 
-.queen27-page.is-shell .queen-catalog-layer,
-.queen27-page.is-shell .queen27-comb-field {
+.queen27-page.is-shell .queen-catalog-layer {
   background: transparent;
+}
+
+/* The 3D map is the container, not a panel inside one. The field spans the
+   whole shell and every panel floats on it: the rail, the Queen's column and
+   both bars sit over the same scene rather than beside a box that holds it.
+   The veil is what spec cells are read against — they are transparent outlines
+   by canon, and against bare sky they washed out — thin enough that the stars
+   still come through. */
+.queen27-page.is-shell .queen27-comb-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100dvh;
+  background: rgba(2, 8, 6, 0.62);
+}
+
+/* Everything else rides above it. */
+.queen27-page.is-shell > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* the factory is the one deep panel: it scrolls vertically inside the
