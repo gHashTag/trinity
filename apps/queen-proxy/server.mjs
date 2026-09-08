@@ -27,12 +27,69 @@ const KEY_REQUIRED = !INTERNAL
 // key open to everyone.
 const ORIGINS = (process.env.QUEEN_ALLOWED_ORIGINS || 'https://t27.ai').split(',').map((s) => s.trim()).filter(Boolean)
 
+// The hive she works through. Without these she can still answer; with them she
+// can see what the bees are carrying and open or close a task herself.
+const BEES_URL = (process.env.QUEEN_BEES_URL || '').replace(/\/$/, '')
+const BEES_TOKEN = process.env.QUEEN_BEES_TOKEN || ''
+
 const SYSTEM = [
   'You are the Queen of the Trinity hive.',
   'You answer about .t27 specs, the repositories on the shared map, and the GitHub issues the board is working through.',
   'The bracketed prefix of a message is the context the operator is looking at.',
   'Answer briefly and concretely. Say plainly when you do not know.',
-].join(' ')
+  '',
+  'You direct the bees. To act, end your reply with one directive on its own line:',
+  'DIRECTIVE {"action":"open_task","name":"<what the bee is to do>","bee":"<bee id>"}',
+  'DIRECTIVE {"action":"close_task","id":"<session id>"}',
+  'Open a task only when the work is named concretely enough for a bee to start.',
+  'Close one only after reviewing it and saying what you reviewed.',
+  'No directive is the right answer when nothing needs to change.',
+].join('\n')
+
+// What the bees are carrying, so a review is of the board rather than of memory.
+async function hiveQueue() {
+  if (!BEES_URL || !BEES_TOKEN) return null
+  try {
+    const res = await fetch(`${BEES_URL}/api/sessions`, {
+      headers: { Authorization: `Bearer ${BEES_TOKEN}` },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) return { error: `bees ${res.status}` }
+    return await res.json()
+  } catch (error) {
+    return { error: String(error?.message || error) }
+  }
+}
+
+// Her decisions reach the hive here, and only in these two shapes. Anything else
+// in the reply is prose: the proxy never forwards what it did not recognise.
+async function runDirective(text) {
+  const line = /^DIRECTIVE\s+(\{.*\})\s*$/m.exec(text || '')
+  if (!line) return null
+  if (!BEES_URL || !BEES_TOKEN) return { ok: false, error: 'the hive is not configured' }
+  let directive
+  try { directive = JSON.parse(line[1]) } catch { return { ok: false, error: 'unreadable directive' } }
+
+  const call = async (path, init) => {
+    const res = await fetch(`${BEES_URL}${path}`, {
+      ...init,
+      headers: { Authorization: `Bearer ${BEES_TOKEN}`, 'Content-Type': 'application/json', ...(init?.headers || {}) },
+      signal: AbortSignal.timeout(15000),
+    })
+    const body = await res.text()
+    return { ok: res.ok, status: res.status, body: body.slice(0, 400) }
+  }
+
+  if (directive.action === 'open_task') {
+    if (!directive.name || !directive.bee) return { ok: false, error: 'open_task needs name and bee' }
+    return { action: 'open_task', ...(await call('/api/sessions', { method: 'POST', body: JSON.stringify({ name: directive.name, service_id: directive.bee }) })) }
+  }
+  if (directive.action === 'close_task') {
+    if (!directive.id) return { ok: false, error: 'close_task needs id' }
+    return { action: 'close_task', ...(await call(`/api/sessions/${encodeURIComponent(directive.id)}`, { method: 'DELETE' })) }
+  }
+  return { ok: false, error: `unknown action ${directive.action}` }
+}
 
 function cors(req, res) {
   const origin = req.headers.origin
@@ -49,6 +106,7 @@ function json(res, code, body) {
 
 async function ask(message) {
   const started = Date.now()
+  const queue = await hiveQueue()
   const upstream = await fetch(PROVIDER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${KEY}` },
@@ -56,6 +114,7 @@ async function ask(message) {
       model: MODEL,
       messages: [
         { role: 'system', content: SYSTEM },
+        ...(queue ? [{ role: 'system', content: `The hive right now: ${JSON.stringify(queue)}` }] : []),
         { role: 'user', content: message },
       ],
     }),
@@ -67,8 +126,14 @@ async function ask(message) {
   const body = await upstream.json()
   const text = body?.choices?.[0]?.message?.content
   if (!text) throw new Error('provider returned no message')
+
+  // Carry out what she decided, and report the outcome rather than the
+  // intention: a directive that failed must not read as work that happened.
+  const acted = await runDirective(text)
+
   return {
-    response: text,
+    response: acted ? `${text}\n\n[hive] ${JSON.stringify(acted)}` : text,
+    acted,
     source: MODEL,
     // Not a measurement: no provider reports one, and a number here would read
     // as a fact the way a sample does.
