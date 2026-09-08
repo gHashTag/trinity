@@ -2992,7 +2992,9 @@
 body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  /* Below every panel rather than beside them: at 0 it painted in DOM order
+     with the chrome and only showed inside the viewport box. */
+  z-index: -1;
   width: 100vw;
   height: 100dvh;
 }
