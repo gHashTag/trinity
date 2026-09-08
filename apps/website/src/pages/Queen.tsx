@@ -2465,6 +2465,42 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 </button>
               </>
             )}
+            {/* The quick-command row is gone, and what it held that this row
+                does not is here instead: the agent packet, the repository, the
+                picked issue and the language. Icons at the row's own size — the
+                row is read by people who have just used it, and each keeps its
+                name in the tooltip and for a screen reader. */}
+            <button
+              type="button"
+              data-tool="agent"
+              className={agentCopy === "copied" ? "is-gold" : undefined}
+              onClick={copyAgent}
+              aria-label={c.copyAgent}
+              title={agentCopy === "copied" ? c.copiedAgent : agentCopy === "error" ? c.copyFailed : c.copyAgent}
+            >
+              ⌘
+            </button>
+            {repo ? (
+              <a data-tool="repo" href={`https://github.com/${repo}`} target="_blank" rel="noreferrer" aria-label={c.hudOpenRepo} title={c.hudOpenRepo}>
+                ◇
+              </a>
+            ) : (
+              <button type="button" data-tool="repo" disabled aria-label={c.hudOpenRepo} title={c.hudOpenRepo}>
+                ◇
+              </button>
+            )}
+            {pickedIssueUrl ? (
+              <a data-tool="issue" href={pickedIssueUrl} target="_blank" rel="noreferrer" aria-label={c.hudOpenIssue} title={c.hudOpenIssue}>
+                #
+              </a>
+            ) : (
+              <button type="button" data-tool="issue" disabled aria-label={c.hudOpenIssue} title={c.hudOpenIssue}>
+                #
+              </button>
+            )}
+            <button type="button" data-tool="lang" onClick={toggleLang} aria-label={c.hudLanguage} title={c.hudLanguage}>
+              ⟲
+            </button>
             {/* Below 1101 the Queen is a drawer, and the tile that opened her
                 left the bar with the alert count. Her opener belongs with the
                 map's own controls, where every other panel is reached. */}
@@ -2663,85 +2699,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           }}
         />}
 
-      {!isPhone && (
-              <section className="queen27-hud-commands" aria-label={c.hudCommands}>
-                <header className="queen27-hud-panel-head">
-                  <span>{c.hudCommands}</span>
-                </header>
-                <div className="queen27-hud-tiles">
-                  <button
-                    type="button"
-                    className={`queen27-hud-tile${agentCopy === "copied" ? " is-gold" : ""}`}
-                    onClick={copyAgent}
-                  >
-                    <i aria-hidden="true">⌘</i>
-                    <b>
-                      {agentCopy === "copied"
-                        ? c.copiedAgent
-                        : agentCopy === "error"
-                          ? c.copyFailed
-                          : c.copyAgent}
-                    </b>
-                  </button>
-                  {repo ? (
-                    <a
-                      className="queen27-hud-tile"
-                      href={`https://github.com/${repo}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <i aria-hidden="true">◇</i>
-                      <b>{c.hudOpenRepo}</b>
-                    </a>
-                  ) : (
-                    <button type="button" className="queen27-hud-tile" disabled>
-                      <i aria-hidden="true">◇</i>
-                      <b>{c.hudOpenRepo}</b>
-                    </button>
-                  )}
-                  {pickedIssueUrl ? (
-                    <a
-                      className="queen27-hud-tile"
-                      href={pickedIssueUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <i aria-hidden="true">#</i>
-                      <b>{c.hudOpenIssue}</b>
-                    </a>
-                  ) : (
-                    <button type="button" className="queen27-hud-tile" disabled>
-                      <i aria-hidden="true">#</i>
-                      <b>{c.hudOpenIssue}</b>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className="queen27-hud-tile"
-                    onClick={() => {
-                      setView("comb");
-                      combRef.current?.fit();
-                    }}
-                  >
-                    <i aria-hidden="true">▽</i>
-                    <b>{c.hudFitView}</b>
-                  </button>
-                  <button
-                    type="button"
-                    className="queen27-hud-tile"
-                    onClick={toggleFullscreen}
-                    aria-pressed={isFullscreen}
-                  >
-                    <i aria-hidden="true">⤢</i>
-                    <b>{isFullscreen ? c.hudExitFullscreen : c.hudFullscreen}</b>
-                  </button>
-                  <button type="button" className="queen27-hud-tile" onClick={toggleLang}>
-                    <i aria-hidden="true">⟲</i>
-                    <b>{c.hudLanguage}</b>
-                  </button>
-                </div>
-              </section>
-      )}
 
       {/* Inside the map, not beside it: the header, the rails and the
           footer are children of the container that holds the 3D scene, so

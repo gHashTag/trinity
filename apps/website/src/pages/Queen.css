@@ -6140,3 +6140,68 @@ body.queen-shell .queen-starfield-source {
 .queen27-page.is-shell .queen-hive-display {
   backdrop-filter: none;
 }
+
+/* The cell's card in the HUD's own colours.
+   It came from the world pages and kept their palette — white body type, teal
+   borders, 40px buttons — which over the map read as a different program's
+   dialog. Same green, same mono, same hairline as every other panel here. */
+.queen27-page.is-shell .queen-catalog-detail {
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+}
+
+.queen27-page.is-shell .queen-catalog-detail h3 {
+  color: var(--hud-green);
+  font-family: var(--hud-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  overflow-wrap: anywhere;
+}
+
+.queen27-page.is-shell .queen-catalog-detail h4 {
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.queen27-page.is-shell .queen-catalog-detail :is(button, a) {
+  border: 1px solid var(--hud-line);
+  background: transparent;
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+}
+
+.queen27-page.is-shell .queen-catalog-detail :is(button, a):hover:not(:disabled) {
+  border-color: var(--hud-line-strong);
+  color: var(--hud-green);
+}
+
+/* The close is a mark, not a panel: it had a filled black box of its own. */
+.queen27-page.is-shell .queen-catalog-detail .queen-catalog-close {
+  border-color: transparent;
+  color: var(--hud-muted);
+  font-size: 0.9rem;
+}
+
+.queen27-page.is-shell .queen-catalog-detail .queen-catalog-issue small {
+  color: var(--hud-gold);
+  font-size: 0.54rem;
+  letter-spacing: 0.06em;
+}
+
+/* Under a mouse the 44px floor is not the rule; it stays under a coarse one. */
+@media (pointer: fine) and (min-width: 901px) {
+  .queen27-page.is-shell .queen-catalog-detail :is(button, a) {
+    min-height: 26px;
+    padding: 3px 8px;
+  }
+}
