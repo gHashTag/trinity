@@ -3444,8 +3444,11 @@ main:where(.queen27-page.is-shell) section {
   /* stops short of the sidebar: the Queen's column runs the full height of the
      shell, so the bars own the first two columns and she owns the third */
   grid-column: 1 / 3;
-  /* the clock cell is content-sized so the countdown never ellipsises */
-  grid-template-columns: auto repeat(5, minmax(0, 1fr)) auto auto auto;
+  /* the clock cell is content-sized so the countdown never ellipsises.
+     Ten columns since the board's overview joined the bar: brand, five stats,
+     the round, the overview, the bell and the status. One short and the last
+     child wrapped onto an implicit second row, which a 64px bar cannot hold. */
+  grid-template-columns: auto repeat(5, minmax(0, 1fr)) auto minmax(0, 1.6fr) auto auto;
   min-width: 0;
   border: 1px solid var(--hud-line);
   background: var(--hud-panel);
@@ -4140,6 +4143,17 @@ main:where(.queen27-page.is-shell) section {
 
 .queen27-page.is-shell .queen27-comb.is-embedded {
   height: 100%;
+  /* The last two sheets between the sky and the UI. The comb carries #020806
+     and the catalog layer #000 so that each is readable on its own page; inside
+     the shell they would bury the star map that is supposed to run under every
+     panel. The Babylon scene already clears to a transparent colour, so with
+     these gone the sky reaches the whole screen. */
+  background: transparent;
+}
+
+.queen27-page.is-shell .queen-catalog-layer,
+.queen27-page.is-shell .queen27-comb-field {
+  background: transparent;
 }
 
 /* the factory is the one deep panel: it scrolls vertically inside the
@@ -4289,7 +4303,7 @@ main:where(.queen27-page.is-shell) section {
   /* The Queen takes the column. She carries the board's events and the
      conversation about them, so the overview and the sectors sit under her as
      one stowed row and open when they are wanted. */
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 10px;
   min-width: 0;
   min-height: 0;
@@ -4298,12 +4312,37 @@ main:where(.queen27-page.is-shell) section {
 /* Part of the sidebar, not a disclosure over it: the overview band sits above
    the Queen, always visible and deliberately short. Its own list scrolls when
    the six sector rows do not fit — the column does not grow to hold them. */
+/* In the header it is a row, not a column: the overview and the six sector
+   counts read left to right beside the other status tiles, and the sidebar is
+   the Queen's alone. It scrolls sideways rather than growing the bar. */
 .queen27-page.is-shell .queen27-hud-stow {
-  display: grid;
-  grid-template-rows: 96px minmax(0, 1fr);
-  gap: 6px;
+  display: flex;
+  max-width: 100%;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
   min-height: 0;
-  max-height: 210px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.queen27-page.is-shell .queen27-hud-stow .queen27-hud-minimap {
+  flex: 0 0 140px;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-stow .queen27-sectors {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-stow .queen27-sectors-list {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .queen27-page.is-shell .queen27-hud-stow .queen27-hud-minimap {

@@ -2469,6 +2469,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           {roundPopover}
         </section>
 
+        {/* The board's overview reads as a header fact, not as a panel competing
+            with the Queen for her column. */}
+        {intelContent}
+
         <div className="queen27-hud-res queen27-hud-bell">
           <button
             type="button"
@@ -2923,7 +2927,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             >
               ×
             </button>
-            {intelContent}
             {queenChat}
           </aside>
         )
@@ -2946,7 +2949,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 broken: c.specsBroken,
               }}
             />
-          ) : intelContent}
+          ) : null}
           {queenChat}
         </aside>
       )}
