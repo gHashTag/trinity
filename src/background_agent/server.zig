@@ -111,15 +111,17 @@ pub const Server = struct {
         const first_line = if (lines.next()) |line| line else return error.InvalidRequest;
         var parts = std.mem.splitScalar(u8, first_line, ' ');
 
-        const method = if (parts.next()) |m| m else return error.InvalidRequest;
-        _ = parts.next(); // URI
-        _ = parts.next(); // Protocol
+        // A request line is "METHOD TARGET PROTOCOL", three fields. This skipped
+        // the target and then read the URI from a fourth field that does not
+        // exist, so path was always empty, no route ever matched, and every
+        // request — including the platform's health probe — got nothing back.
+        const method = parts.next() orelse return error.InvalidRequest;
+        const target = parts.next() orelse return error.InvalidRequest;
 
         // Parse URI and query string
-        const next_part = parts.next() orelse "";
-        var uri_parts = std.mem.splitScalar(u8, next_part, '?');
-        const path = if (uri_parts.next()) |p| p else return error.InvalidRequest;
-        const query = if (uri_parts.next()) |q| q else "";
+        var uri_parts = std.mem.splitScalar(u8, target, '?');
+        const path = uri_parts.next() orelse return error.InvalidRequest;
+        const query = uri_parts.next() orelse "";
 
         // Parse headers
         var headers = try std.ArrayList(Header).initCapacity(self.allocator, 16);
@@ -469,29 +471,30 @@ pub const Server = struct {
 
     /// Send HTTP response
     fn sendResponse(self: *Server, stream: net.Stream, response: Response) !void {
-        // Build headers
+        // A multiline literal does not process escapes: "\r" inside one is a
+        // backslash and an r, and the lines end with a bare \n. The response
+        // therefore had no CRLF anywhere and a single stray character where the
+        // blank line between headers and body belongs — not HTTP, which is why
+        // the proxy answered 502 while the process sat there healthy.
         var headers = try std.ArrayList(u8).initCapacity(self.allocator, 256);
         defer headers.deinit(self.allocator);
 
         try headers.writer(self.allocator).print(
-            \\HTTP/1.1 {d} OK\r
-            \\Content-Type: {s}\r
-            \\Content-Length: {d}\r
-            \\Connection: close\r
-        , .{ response.status, response.content_type, response.body.len });
+            "HTTP/1.1 {d} OK\r\nContent-Type: {s}\r\nContent-Length: {d}\r\nConnection: close\r\n",
+            .{ response.status, response.content_type, response.body.len },
+        );
 
-        // Add CORS if enabled
         if (response.cors) {
-            try headers.appendSlice(self.allocator, "Access-Control-Allow-Origin: *\r");
-            try headers.appendSlice(self.allocator, "Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS\r");
-            try headers.appendSlice(self.allocator, "Access-Control-Allow-Headers: Content-Type, Authorization\r");
+            try headers.appendSlice(self.allocator, "Access-Control-Allow-Origin: *\r\n");
+            try headers.appendSlice(self.allocator, "Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS\r\n");
+            try headers.appendSlice(self.allocator, "Access-Control-Allow-Headers: Content-Type, Authorization\r\n");
         }
 
-        try headers.append(self.allocator, '\r');
+        // The blank line that ends the header block.
+        try headers.appendSlice(self.allocator, "\r\n");
 
-        // Send headers and body
-        _ = try stream.writeAll(headers.items);
-        _ = try stream.writeAll(response.body);
+        try stream.writeAll(headers.items);
+        try stream.writeAll(response.body);
     }
 
     /// Get error name from error union
