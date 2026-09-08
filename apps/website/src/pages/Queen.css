@@ -6205,3 +6205,22 @@ body.queen-shell .queen-starfield-source {
     padding: 3px 8px;
   }
 }
+
+/* Embedded on the homepage: one module, and the chrome that names it left out.
+   The block around the frame carries the module's name, its number and what it
+   shows, so the bar, the rail, the map's control row and the Queen's column
+   would all be saying it twice in a 520px frame. The hive is skipped in the
+   markup rather than hidden here — four previews each booting Babylon is four
+   more WebGL contexts on one page. */
+.queen27-page.is-shell.is-embed .queen27-hud-viewport
+  > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-vp-head, .queen27-hud-bottom, .queen27-context-chip) {
+  display: none;
+}
+
+.queen27-page.is-shell.is-embed {
+  padding: 0;
+}
+
+.queen27-page.is-shell.is-embed .queen27-hud-viewport > .queen27-hud-vp-body {
+  padding: 10px;
+}

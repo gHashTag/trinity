@@ -1842,6 +1842,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // `tab`, not `view`: the universe around this page already owns `view` for
   // its atlas and its shared core. Read once, on mount — the shell does not
   // then rewrite the URL as you click, which would fight the same params.
+  // Embedded on the homepage: the same shell, showing one module, with the
+  // chrome that names it left out — the block around it already does that — and
+  // without the hive. Four previews each booting Babylon is four more WebGL
+  // contexts on one page, which is the failure this shell was just fixed for.
+  const embedded = useMemo(
+    () => new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("embed") === "1",
+    [],
+  );
   const [boardView, setBoardView] = useState<
     "kanban" | "map" | "factory" | "comb" | "research" | "specs"
   >(() => {
@@ -2391,7 +2399,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
 
   return (
     <main
-      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}`}
+      className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}${embedded ? " is-embed" : ""}`}
       data-view={view}
     >
       <section
@@ -2540,7 +2548,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         </header>
 
         <div className="queen27-hud-vp-body">
-          {hiveScene}
+          {!embedded && hiveScene}
           {boardView === "kanban" ? (
             <KanbanView
               columns={boardColumns}

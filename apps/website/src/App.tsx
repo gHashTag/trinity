@@ -5,6 +5,7 @@ import ServiceEntry from './components/ServiceEntry'
 import QueenHeroBlock from './components/QueenHeroBlock'
 import SpecHeroBlock from './components/SpecHeroBlock'
 import ModulesBlock from './components/ModulesBlock'
+import ModuleHeroBlock from './components/ModuleHeroBlock'
 import { TnfHero } from './components/sections/tnf'
 
 // Главная строится вокруг одного предмета: .t27-спеки и карта, которая их
@@ -45,6 +46,13 @@ export default function App() {
           link that opens that tab. The two blocks above are the map and the
           corpus; this is the rest of the same one screen. */}
       <ModulesBlock />
+      {/* And then each of the four the two blocks above do not already show,
+          the same way those two do it: the module itself in a frame, not a
+          picture of one. The map is the QUEEN block, the corpus the SPEC one. */}
+      <ModuleHeroBlock tab="kanban" />
+      <ModuleHeroBlock tab="map" />
+      <ModuleHeroBlock tab="factory" />
+      <ModuleHeroBlock tab="research" />
 
       <Suspense fallback={<SectionFallback />}>
         <TnfClaim />

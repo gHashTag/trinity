@@ -8,7 +8,7 @@ import './ModulesBlock.css'
 // landing and the HUD do not describe the same thing differently. The paragraph
 // under each says what the view actually shows, checked against the view; the
 // link opens that tab, which is why the shell reads `?tab=` on mount.
-const MODULES = [
+export const MODULES = [
   {
     tab: 'comb',
     key: '1',
