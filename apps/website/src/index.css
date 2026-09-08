@@ -1414,3 +1414,12 @@ input:focus-visible {
   flex: 1 1 auto;
   min-height: 0;
 }
+
+/* Embedded, the Explorer is a pane of the game and not a page of its own: its
+   own ground made the SPECS tab a black rectangle over the star map, which is
+   the one thing every other panel had stopped doing. The frame and the document
+   inside it go transparent, and the panels within keep their own translucency. */
+body:has(.spec-x[data-embedded="1"]),
+body:has(.spec-x[data-embedded="1"]) #root {
+  background: transparent !important;
+}

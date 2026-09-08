@@ -789,7 +789,7 @@ export default function SpecExplorer() {
 
   return (
     <div
-      className="spec-x"
+      className="spec-x" data-embedded={embedded ? "1" : undefined}
       style={{
         height: '100dvh',
         display: 'flex',
