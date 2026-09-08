@@ -106,9 +106,13 @@ pub const PostgresClient = struct {
 
         self.database = if (db_name.len > 0) db_name else "postgres";
 
-        // Connect via TCP
-        const address = try net.Address.resolveIp(self.host, self.port);
-        var stream = try std.net.tcpConnectToAddress(address);
+        // Connect via TCP.
+        //
+        // resolveIp parses a literal address and does no name lookup, so every
+        // managed Postgres crashed the agent on boot with InvalidIPAddressFormat:
+        // Railway addresses its database as postgres.railway.internal, a name.
+        // tcpConnectToHost resolves names and still accepts a literal IP.
+        var stream = try std.net.tcpConnectToHost(self.allocator, self.host, self.port);
         self.stream = stream;
 
         // Send startup message
@@ -424,44 +428,42 @@ pub const Error = error{
 /// Build PostgreSQL StartupMessage
 /// Format: [len:4][version:4][user\0user_name\0database\0db_name\0...\0]
 pub fn buildStartupMessage(allocator: Allocator, user: []const u8, database: []const u8) ![]u8 {
-    // Calculate message size
-    // len(4) + version(4) + user + \0 + "user" + \0 + database + \0 + "database" + \0 + \0
-    const size = 4 + 4 + user.len + 1 + 5 + 1 + database.len + 1 + 9 + 1 + 1;
+    // Each parameter is a NUL-terminated key followed by a NUL-terminated value,
+    // and the whole list ends with one more NUL. The keys carry their own
+    // terminator here ("user\x00" is five bytes, "database\x00" is nine), which
+    // is why no separate NUL is written after them.
+    //
+    // Two bugs lived here: @memcpy was handed a five-byte destination and the
+    // four-byte "user", which panics on non-equal lengths in safe builds, and
+    // the size counted a terminator after each key that the literals already
+    // included — two bytes of slack the server would read as a malformed
+    // parameter list.
+    const user_key = "user\x00";
+    const database_key = "database\x00";
+    const size = 4 + 4 + user_key.len + user.len + 1 + database_key.len + database.len + 1 + 1;
 
-    var msg = try allocator.alloc(u8, size);
+    const msg = try allocator.alloc(u8, size);
     errdefer allocator.free(msg);
 
-    var offset: usize = 0;
-
-    // Message length (including self, excluding length field)
-    std.mem.writeInt(u32, msg[0..4], @intCast(size - 4), .big);
-    offset += 4;
-
-    // Protocol version 3.0
+    std.mem.writeInt(u32, msg[0..4], @intCast(size), .big);
     std.mem.writeInt(u32, msg[4..8], PROTOCOL_VERSION, .big);
-    offset += 4;
+    var offset: usize = 8;
 
-    // User parameter
-    @memcpy(msg[offset..offset+5], "user");
-    offset += 5;
-    msg[offset] = 0;
-    offset += 1;
-    @memcpy(msg[offset..offset+user.len], user);
+    @memcpy(msg[offset..][0..user_key.len], user_key);
+    offset += user_key.len;
+    @memcpy(msg[offset..][0..user.len], user);
     offset += user.len;
     msg[offset] = 0;
     offset += 1;
 
-    // Database parameter
-    @memcpy(msg[offset..offset+9], "database");
-    offset += 9;
-    msg[offset] = 0;
-    offset += 1;
-    @memcpy(msg[offset..offset+database.len], database);
+    @memcpy(msg[offset..][0..database_key.len], database_key);
+    offset += database_key.len;
+    @memcpy(msg[offset..][0..database.len], database);
     offset += database.len;
     msg[offset] = 0;
     offset += 1;
 
-    // Terminator
+    // End of the parameter list.
     msg[offset] = 0;
 
     return msg;

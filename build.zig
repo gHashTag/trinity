@@ -1545,6 +1545,26 @@ pub fn build(b: *std.Build) void {
     agent_step.dependOn(&run_agent.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // BACKGROUND AGENT API — the bees' runtime
+    //
+    // src/background_agent/ has existed without ever being wired into the build,
+    // so `zig build background-agent-api` — the command the deployment Dockerfile
+    // runs — answered "no step named 'background-agent-api'" and the image could
+    // never be produced. The step is the name the Dockerfile already uses.
+    const background_agent_api = b.addExecutable(.{
+        .name = "background-agent-api",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/background_agent/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(background_agent_api);
+
+    const background_agent_api_step = b.step("background-agent-api", "Build the background agent API (the bees' runtime)");
+    background_agent_api_step.dependOn(&background_agent_api.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // MU AGENT — Autonomous Self-Healing Daemon
     const telegram_mod = b.createModule(.{
         .root_source_file = b.path("tools/mcp/trinity_mcp/agent/telegram.zig"),
