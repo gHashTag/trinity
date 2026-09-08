@@ -2925,6 +2925,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             with the Queen for her column. */}
         {intelContent}
 
+        {/* The worlds render into this, so the header is one flex container and
+            its widths are distributed rather than guessed. */}
+        <div id="queen-worlds-slot" className="queen27-hud-worlds" />
+
         <div className="queen27-hud-res queen27-hud-bell">
           <button
             type="button"
