@@ -782,7 +782,11 @@ export default function SpecExplorer() {
     (result?.discarded.length || 0) + (result?.swallowed.length || 0) + (result?.lexerDiscarded.length || 0)
 
   const box: React.CSSProperties = {
-    background: C.panel,
+    // Embedded in the HUD the panes float on the star map, so their ground is
+    // the shell's own veil rather than a solid panel: one 0.42 layer, the value
+    // every other panel out there uses. Standalone, the Explorer is a page and
+    // keeps its opaque panel.
+    background: embedded ? 'rgba(2, 8, 6, 0.42)' : C.panel,
     border: `1px solid ${C.border}`,
     borderRadius: 6,
   }
@@ -1440,12 +1444,17 @@ export default function SpecExplorer() {
 
               {/* layer tabs */}
               <div
+                // Every backend's name legible at once. The strip scrolled
+                // sideways, so past Zig the tabs existed only for whoever
+                // thought to drag a row that gives no sign it can be dragged —
+                // Verilog, and the HIR beside it, were off the end of an 804px
+                // pane. Wrapping costs one line and hides nothing.
                 style={{
                   flexShrink: 0,
                   display: 'flex',
+                  flexWrap: 'wrap',
                   gap: 2,
                   padding: '10px 14px 0',
-                  overflowX: 'auto',
                 }}
               >
                 {LAYERS.map((l) => {

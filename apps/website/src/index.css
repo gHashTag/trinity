@@ -1419,7 +1419,14 @@ input:focus-visible {
    own ground made the SPECS tab a black rectangle over the star map, which is
    the one thing every other panel had stopped doing. The frame and the document
    inside it go transparent, and the panels within keep their own translucency. */
+html:has(.spec-x[data-embedded="1"]),
 body:has(.spec-x[data-embedded="1"]),
-body:has(.spec-x[data-embedded="1"]) #root {
+body:has(.spec-x[data-embedded="1"]) #root,
+.spec-x[data-embedded="1"] {
   background: transparent !important;
 }
+
+/* Measured 2026-09-09 inside the frame: the document element and the Explorer's
+   own root were solid black over a sky the frame had already been made
+   transparent for. The panes carry their ground in an inline style, so theirs is
+   chosen in SpecExplorer.tsx where that object is built — see `box`. */

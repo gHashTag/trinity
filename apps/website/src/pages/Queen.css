@@ -6052,3 +6052,17 @@ body.queen-shell .queen-starfield-source {
   letter-spacing: 0.02em;
   line-height: 1.55;
 }
+
+/* The specs view is not the map, and the map's controls do not act on it:
+   copy-to-agent, fit view, the zoom pair, fullscreen — every one of them
+   addresses a scene that is not on this screen. The row goes here, and the
+   Explorer is given back the 66px it stood in. */
+@media (min-width: 901px) {
+  .queen27-page.is-shell[data-view="specs"] .queen27-hud-viewport > .queen27-hud-commands {
+    display: none;
+  }
+
+  .queen27-page.is-shell[data-view="specs"] .queen27-hud-viewport > .queen27-hud-vp-body {
+    padding-top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
+  }
+}

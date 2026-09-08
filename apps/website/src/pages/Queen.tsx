@@ -9,7 +9,7 @@ import {
   type RefObject, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { QueenSpecs, QueenSpecsDirective } from "../components/QueenSpecs";
+import { QueenSpecs } from "../components/QueenSpecs";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
@@ -2988,19 +2988,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         >
           {/* The overview sits above her, stowed: a row that opens when the board
               is the question and stays out of the way when the Queen is. */}
-          {boardView === "specs" ? (
-            <QueenSpecsDirective
-              c={{
-                directive: c.specsDirective,
-                directiveBody: c.specsDirectiveBody,
-                open: c.specsOpen,
-                loading: c.specsLoading,
-                clean: c.specsClean,
-                warnings: c.specsWarnings,
-                broken: c.specsBroken,
-              }}
-            />
-          ) : null}
+          {/* The standing directive counted what the Explorer's own filter strip
+              counts on the same screen — clean, flagged, rejected, under its
+              search — and it took the head of the Queen's column to do it. She
+              is the reason the column exists. It still reads inside the specs
+              view itself on a narrow screen, where the Explorer's strip is the
+              first thing to go. */}
           {queenChat}
         </aside>
       )}
