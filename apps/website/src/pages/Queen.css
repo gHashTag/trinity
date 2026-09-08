@@ -6029,3 +6029,26 @@ body.queen-shell .queen-starfield-source {
 .queen27-page.is-shell .queen27-hud-menu-note a {
   color: var(--hud-cyan);
 }
+
+/* One layer of ground, not two.
+   Every panel in this shell sits on --hud-panel, a single 0.42 veil over the
+   sky. The board nests: six columns at 0.42, and every card another 0.5 on top
+   of that — about 0.71 where the cards are, which is why this tab read as a
+   sheet while the others read as glass. The card keeps its outline and lets the
+   column's one veil be the ground. */
+.queen27-page.is-shell .queen27-card {
+  background: transparent;
+}
+
+.queen27-page.is-shell .queen27-card:hover {
+  background: rgba(0, 255, 136, 0.05);
+}
+
+/* And it speaks in the same hand: the titles were the page's proportional face
+   at 16.8px, the last of it left in this view. */
+.queen27-page.is-shell .queen27-card > strong {
+  font-family: var(--hud-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  line-height: 1.55;
+}
