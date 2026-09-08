@@ -36,7 +36,7 @@ interface Health { ok: number; warn: number; fail: number }
 
 /** The directive, its corpus counts and the way out to the full page. Rendered
  *  in the HUD's right column on a wide screen, above the frame on a narrow one. */
-export function QueenSpecsDirective({ c }: { c: SpecsCopy }) {
+export function QueenSpecsDirective({ c, collapsible = false }: { c: SpecsCopy; collapsible?: boolean }) {
   const [health, setHealth] = useState<Health | null>(null)
 
   useEffect(() => {
@@ -48,9 +48,8 @@ export function QueenSpecsDirective({ c }: { c: SpecsCopy }) {
     return () => { alive = false }
   }, [])
 
-  return (
-    <div className="queen27-specs-strip">
-      <span className="queen27-section-label">{c.directive}</span>
+  const body = (
+    <>
       <p>{c.directiveBody}</p>
       {health && (
         <span className="queen27-specs-counts">
@@ -69,6 +68,25 @@ export function QueenSpecsDirective({ c }: { c: SpecsCopy }) {
       >
         {c.open}
       </a>
+    </>
+  )
+
+  // Above the frame on a phone the doctrine ran 211px of a 581px view — 36% of
+  // the screen for a paragraph, against 197px of code. There it collapses; in
+  // the wide column it has room and stays open.
+  if (collapsible) {
+    return (
+      <details className="queen27-specs-strip is-collapsible">
+        <summary>{c.directive}</summary>
+        {body}
+      </details>
+    )
+  }
+
+  return (
+    <div className="queen27-specs-strip">
+      <span className="queen27-section-label">{c.directive}</span>
+      {body}
     </div>
   )
 }
@@ -82,7 +100,7 @@ export function QueenSpecs({ c, showDirective = true }: { c: SpecsCopy; showDire
 
   return (
     <div className="queen27-specs" data-directive={showDirective ? 'above' : 'aside'}>
-      {showDirective && <QueenSpecsDirective c={c} />}
+      {showDirective && <QueenSpecsDirective c={c} collapsible />}
 
       <div className="queen27-specs-frame-wrap">
         {!ready && <div className="queen27-specs-loading">{c.loading}</div>}

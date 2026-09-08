@@ -521,19 +521,23 @@ export default function SpecExplorer() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
-  // Embedded, the frame is the viewport. Two things made the app scroll inside
-  // it and show a strip of background under the code: the site's 80px
-  // body padding-bottom, which exists for the mobile CTA and has no meaning in
-  // a frame, and the document scrollbar it created. 698px of frame against a
-  // 778px body, measured on the landing. The Queen shell drops the same padding
-  // for the same reason.
+  // Embedded, the frame is the viewport, and the site's 80px body
+  // padding-bottom -- there for the mobile CTA -- means nothing inside one. It
+  // made the document 778px against a 698px frame, so the whole app scrolled
+  // and left a strip of background under the code. The Queen shell drops the
+  // same padding for the same reason.
+  //
+  // Only the padding: locking the body's overflow as well would fix desktop
+  // twice over and break the phone, where the pane is deliberately
+  // overflow:visible so the page scrolls instead of trapping the gesture in a
+  // nested scroller. With the padding gone the desktop frame does not overflow
+  // anyway.
   useEffect(() => {
     if (!embedded) return
     const body = document.body
-    const previous = { overflow: body.style.overflow, paddingBottom: body.style.paddingBottom }
-    body.style.overflow = 'hidden'
+    const previous = body.style.paddingBottom
     body.style.paddingBottom = '0px'
-    return () => { body.style.overflow = previous.overflow; body.style.paddingBottom = previous.paddingBottom }
+    return () => { body.style.paddingBottom = previous }
   }, [embedded])
 
   const filtered = useMemo(() => {

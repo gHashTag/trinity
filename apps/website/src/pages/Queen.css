@@ -4973,6 +4973,48 @@ main:where(.queen27-page.is-shell) section {
   color: #b9bfc6;
 }
 
+/* Collapsed above the frame on a phone: the doctrine is worth reading once,
+   not worth 36% of the screen every time the tab is opened. The summary keeps
+   the label and the disclosure arrow; opening it restores the full strip. */
+.queen27-page.is-shell .queen27-specs-strip.is-collapsible {
+  display: block;
+  padding: 0 16px;
+}
+
+.queen27-page.is-shell .queen27-specs-strip.is-collapsible > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--hud-green, #00ff88);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+
+.queen27-page.is-shell .queen27-specs-strip.is-collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+.queen27-page.is-shell .queen27-specs-strip.is-collapsible > summary::after {
+  content: '▾';
+  color: var(--hud-muted, #8b9490);
+}
+
+.queen27-page.is-shell .queen27-specs-strip.is-collapsible[open] > summary::after {
+  content: '▴';
+}
+
+.queen27-page.is-shell .queen27-specs-strip.is-collapsible > p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #b9bfc6;
+}
+
 .queen27-page.is-shell .queen27-specs-counts {
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
