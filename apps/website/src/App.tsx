@@ -4,6 +4,7 @@ import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
 import QueenHeroBlock from './components/QueenHeroBlock'
 import SpecHeroBlock from './components/SpecHeroBlock'
+import ModulesBlock from './components/ModulesBlock'
 import { TnfHero } from './components/sections/tnf'
 
 // Главная строится вокруг одного предмета: .t27-спеки и карта, которая их
@@ -40,6 +41,10 @@ export default function App() {
       <TnfHero />
       <QueenHeroBlock />
       <SpecHeroBlock />
+      {/* The six modules of the shell, each with what it actually shows and a
+          link that opens that tab. The two blocks above are the map and the
+          corpus; this is the rest of the same one screen. */}
+      <ModulesBlock />
 
       <Suspense fallback={<SectionFallback />}>
         <TnfClaim />

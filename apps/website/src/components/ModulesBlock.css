@@ -1,0 +1,168 @@
+/* The six modules, presented. Flexible by construction: the grid is
+   auto-fit/minmax, so the number of columns is decided by the width available
+   and not by a breakpoint list — one card on a phone, two on a tablet, three on
+   a desktop, without a media query naming any of them. */
+.modules-block {
+  border-top: 1px solid rgba(0, 255, 136, 0.24);
+  background: #020605;
+  color: var(--text, #e7f7fa);
+}
+
+.modules-block-inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) 0;
+  display: grid;
+  gap: clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.modules-block-head {
+  max-width: 68ch;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.modules-block-eyebrow {
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.modules-block-head h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.modules-block-head p {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(0.9rem, 1.6vw, 1rem);
+  line-height: 1.6;
+}
+
+.modules-block-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: rgba(0, 255, 136, 0.16);
+  border: 1px solid rgba(0, 255, 136, 0.16);
+}
+
+.modules-block-grid > li {
+  display: grid;
+  background: #020605;
+}
+
+.modules-card {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  height: 100%;
+  padding: clamp(1.1rem, 2.4vw, 1.6rem);
+  color: inherit;
+  text-decoration: none;
+  transition: background 160ms ease;
+}
+
+.modules-card:hover,
+.modules-card:focus-visible {
+  background: rgba(0, 255, 136, 0.05);
+  outline: none;
+}
+
+.modules-card:focus-visible {
+  outline: 2px solid #ffd45a;
+  outline-offset: -2px;
+}
+
+.modules-card-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+.modules-card-mark > i {
+  font-size: 1.3rem;
+  font-style: normal;
+  line-height: 1;
+}
+
+/* The number is the key that opens this module in the shell, so it is drawn as
+   a key: boxed, and the same size the rail draws it. */
+.modules-card-mark > b {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  color: #a8c1ba;
+  font-size: 0.62rem;
+  font-weight: 400;
+}
+
+.modules-card > strong {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+
+.modules-card > small {
+  color: #ffd45a;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+.modules-card > p {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.modules-card-open {
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.modules-block-all {
+  justify-self: start;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid #00ff88;
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.modules-block-all:hover {
+  background: rgba(0, 255, 136, 0.08);
+}
+
+/* Under a finger every card is a target of its own, and the 44px floor is the
+   rule there rather than a preference. */
+@media (pointer: coarse) {
+  .modules-card {
+    min-height: 44px;
+  }
+
+  .modules-block-all {
+    min-height: 44px;
+    display: inline-grid;
+    place-items: center;
+  }
+}

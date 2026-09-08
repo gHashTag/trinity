@@ -1837,9 +1837,19 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const activityState = useQueenActivity();
   const researchState = useQueenResearch();
   const hardwareState = useQueenHardware();
+  // A tab is addressable. The landing presents all six and links to each, and a
+  // link that lands on the comb whatever it said would be a link that lies.
+  // `tab`, not `view`: the universe around this page already owns `view` for
+  // its atlas and its shared core. Read once, on mount — the shell does not
+  // then rewrite the URL as you click, which would fight the same params.
   const [boardView, setBoardView] = useState<
     "kanban" | "map" | "factory" | "comb" | "research" | "specs"
-  >("comb");
+  >(() => {
+    const asked = new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("tab");
+    return (HUD_VIEWS as readonly string[]).includes(asked ?? "")
+      ? (asked as "kanban" | "map" | "factory" | "comb" | "research" | "specs")
+      : "comb";
+  });
   const view: HudView = boardView;
   const now = useNow();
   const isNarrow = useMediaQuery("(max-width: 1100px)");
