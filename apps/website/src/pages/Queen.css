@@ -4258,8 +4258,32 @@ main:where(.queen27-page.is-shell) section {
   min-width: 104px;
 }
 
+/* Pinned, not floored. min-width let it grow, and it changes text constantly:
+   the label swaps SINCE ROUND for OVERDUE, the clock gains a digit, the second
+   line rewrites itself every round — and each time it pushed everything after
+   it along the row. A fixed width and smaller type end the shoving; what no
+   longer fits is truncated rather than allowed to widen the tile. */
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-res-round {
-  min-width: 340px;
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+  overflow: hidden;
+}
+
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-res-round small {
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-res-round strong {
+  font-size: 17px;
+}
+
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-res-round span {
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top > .queen27-hud-status {
@@ -5586,11 +5610,12 @@ main:where(.queen27-page.is-shell) section {
    share a row now: the worlds keep the left, the status takes what is left of
    it, and the counts sit behind a summary so the row has width to give. */
 @media (min-width: 901px) {
+  /* The worlds sit on the right and the board's state on the left: the state is
+     what is read continuously, and reading starts at the left edge. */
   body.queen-shell .queen-universe-nav {
-    /* 506px is what its six controls need; the select has flex:1 and was
-       absorbing the shortfall, down to 58px of unreadable repository name. */
     width: 620px;
-    right: auto;
+    right: var(--hud-gap, 10px);
+    left: auto;
     background: transparent;
   }
 
@@ -5600,7 +5625,8 @@ main:where(.queen27-page.is-shell) section {
 
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
     top: var(--hud-gap);
-    left: 620px;
+    left: var(--hud-gap);
+    right: 640px;
   }
 
   body.queen-shell .queen-universe-nav select {
@@ -5656,3 +5682,60 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res:nth-of-type(3) { top: calc(100% + var(--hud-gap) + 116px); }
 .queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res:nth-of-type(4) { top: calc(100% + var(--hud-gap) + 174px); }
 .queen27-page.is-shell .queen27-hud-stats[open] > .queen27-hud-res:nth-of-type(5) { top: calc(100% + var(--hud-gap) + 232px); }
+
+/* One style across the header. The worlds controls came from a page nav —
+   rounded, 40px tall, wrapping to two lines when the row narrowed — while the
+   HUD tiles beside them are square-edged, one line, monospaced. They read as
+   two designs sharing a row. The worlds take the HUD's shape. */
+@media (min-width: 901px) {
+  body.queen-shell .queen-universe-nav {
+    gap: var(--hud-gap, 10px);
+  }
+
+  body.queen-shell .queen-universe-nav :is(button, select, a) {
+    height: 40px;
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 0;
+    border-color: var(--hud-line, rgba(0, 255, 136, 0.22));
+    background: var(--hud-panel, rgba(2, 8, 6, 0.42));
+    font-family: var(--hud-mono, "JetBrains Mono", monospace);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    /* wrapping is what made them two lines tall beside a one-line bar */
+    white-space: nowrap;
+  }
+
+  body.queen-shell .queen-universe-nav .queen-world-connect {
+    border-color: #00ff88;
+    background: #00ff88;
+    color: #001b0e;
+  }
+
+  body.queen-shell .queen-universe-nav > span {
+    font-family: var(--hud-mono, "JetBrains Mono", monospace);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    white-space: nowrap;
+  }
+}
+
+/* The sector tile still showed its two columns of facts and clipped them mid
+   word — PRODUCTI… CARD HELD SLOT: SIGN. In a header it is the name and the
+   state, and the rest belongs to the panel it came from. */
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector .queen27-hud-sector-text > :nth-child(n + 3) {
+  display: none;
+}
+
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector .queen27-hud-sector-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-hud-top > .queen27-hud-sector .queen27-hud-sector-text > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
