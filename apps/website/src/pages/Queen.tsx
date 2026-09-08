@@ -16,7 +16,6 @@ import { QueenCommandPanel } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
 import { QueenSectors } from "../components/QueenIntel";
-import { QueenMinimap } from "../components/QueenMinimap";
 import {
   HUD_VIEWS,
   decisionDetail,
@@ -2233,66 +2232,33 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // and the six sectors' counts — so it sits on the map, at the foot of the
   // field it describes. In the bar it was a panel folded into 191px of a 64px
   // row, and the minimap under its title had nowhere left to draw.
-  const overviewPanel = (
-    <section className="queen27-hud-stow" aria-label={c.hudOverview}>
-      {(
-        <>
-          <section className="queen27-hud-panel queen27-hud-minimap" aria-label={c.hudOverview}>
-            <header className="queen27-hud-panel-head">
-              <span>{c.hudOverview}{sharedCatalog?` · ${repo??'TRIOS'}`:''}</span>
-              <span>{board ? cards.length : "—"} {c.hudCards}</span>
-            </header>
-            <div className="queen27-hud-minimap-body">
-              <QueenMinimap
-                cards={placedCards}
-                picked={pickIndex}
-                onPick={(index) => {
-                  // The same cell the comb would name: summariseCells is
-                  // the comb's own layout. No bee: the sprites' positions
-                  // are the comb's flight animation, not a fact.
-                  const cell = cellSummaries[index];
-                  handlePick(
-                    cell
-                      ? {
-                          index,
-                          isQueen: index === HEX_HOME,
-                          territory: cell.own,
-                          // the cells carry MODULE numbers (M-2): resolve against the
-                          // module cards, not the board's issues
-                          card:
-                            cell.cardNumber === null
-                              ? null
-                              : (moduleCards.find((card) => card.number === cell.cardNumber) ?? null),
-                          module: cell.cardNumber === null ? null : (modulesById.get(cell.cardNumber) ?? null),
-                          bee: null,
-                          kind: index === HEX_HOME ? "queen" : cell.cardNumber !== null && layers.code ? "module" : foundationByIndex?.[index] && layers.foundation ? "issue" : "module",
-                          issue: cell.cardNumber === null || !layers.code ? (foundationByIndex?.[index] ?? null) : null,
-                        }
-                      : null,
-                  );
-                  setView("comb");
-                }}
-                labels={{ aria: c.hudOverview }}
-              />
-            </div>
-          </section>
-          <QueenSectors
-            rows={board ? sectors : null}
-            active={activeSector}
-            onSelect={(key) => {
-              setActiveSector(key);
-              setView("kanban");
-            }}
-            labels={{
-              title: c.hudSectors,
-              held: c.combHeld,
-              neutral: c.combNeutral,
-              fog: c.combFog,
-              cards: c.hudCards,
-            }}
-          />
-        </>
-      )}
+  // The overview's numbers, in the bar with the rest of the counts.
+  //
+  // As a panel on the map it was a picture of the field drawn on top of the
+  // field — 280x224 of it — and what it carried that nothing else does is two
+  // numbers: how many cards the board holds, and how they fall across the six
+  // sectors. Numbers are what this bar is for. The rows keep their names for a
+  // screen reader and their click, which still opens the sector on the board.
+  const overviewNumbers = (
+    <section className="queen27-hud-res queen27-hud-sectors" aria-label={c.hudOverview}>
+      <i aria-hidden="true">◇</i>
+      <small>{c.hudSectors}</small>
+      <strong>{board ? cards.length : "—"}</strong>
+      <QueenSectors
+        rows={board ? sectors : null}
+        active={activeSector}
+        onSelect={(key) => {
+          setActiveSector(key);
+          setView("kanban");
+        }}
+        labels={{
+          title: c.hudSectors,
+          held: c.combHeld,
+          neutral: c.combNeutral,
+          fog: c.combFog,
+          cards: c.hudCards,
+        }}
+      />
     </section>
   );
 
@@ -2863,9 +2829,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             repositories and their tasks are. A third copy in the status bar
             left the row eleven children against ten grid tracks, and every
             count was crushed to 27px. */}
-        {/* The overview moved to the map and the alert count to the Queen: she
-            carries every event the bell counted, in a log you can ask about.
-            A tile that only said how many there were said it twice. */}
+        {/* The alert count went to the Queen: she carries every event the bell
+            counted, in a log you can ask about, and a tile that only said how
+            many there were said it twice. The overview's numbers stayed. */}
+        {overviewNumbers}
 
         <div className="queen27-hud-res queen27-hud-status" ref={menuRef}>
           <span
@@ -2964,8 +2931,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           )}
         </div>
       </header>
-
-      {!isFullscreen && overviewPanel}
 
       {!isPhone && (
         <QueenCommandPanel

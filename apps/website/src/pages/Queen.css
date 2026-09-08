@@ -3458,11 +3458,11 @@ main:where(.queen27-page.is-shell) section {
      shell, so the bars own the first two columns and she owns the third */
   grid-column: 1 / 3;
   /* the clock cell is content-sized so the countdown never ellipsises.
-     Eight columns for eight tiles: brand, five stats, the round, the status.
-     The overview reads on the map now and the alert count in the Queen's own
-     log, and a template longer than its children leaves empty tracks that the
-     last tile is then placed short of. */
-  grid-template-columns: auto repeat(5, minmax(0, 1fr)) auto auto;
+     Nine columns for nine tiles: brand, five stats, the round, the sectors,
+     the status. The alert count reads in the Queen's own log now, and a
+     template longer than its children leaves empty tracks that the last tile
+     is then placed short of. */
+  grid-template-columns: auto repeat(5, minmax(0, 1fr)) auto minmax(0, 2fr) auto;
   min-width: 0;
   border: 1px solid var(--hud-line);
   background: var(--hud-panel);
@@ -4571,52 +4571,64 @@ main:where(.queen27-page.is-shell) section {
   min-height: 0;
 }
 
-/* The overview is a fact about the map — which repository, how many cards,
-   the six sectors and their counts — so it sits on the map, at the foot of the
-   field it describes. In the bar it was a panel folded into 191px of a 64px
-   row: the name cut mid-repository and the minimap under it drew at a width
-   nothing was going to show. A column, stated rather than inherited from the
-   page's `section` rule, which is where the row it was meant to be went. */
-.queen27-page.is-shell .queen27-hud-stow {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* The overview's tile: a total and six counts, in the bar's own anatomy.
+   The panel this replaces drew a picture of the field on top of the field and
+   took 280x224 of the map to do it. The numbers were the part of it that said
+   something the map does not, and numbers are what this bar is for. */
+.queen27-page.is-shell .queen27-hud-sectors > .queen27-sectors {
+  grid-area: sub;
   min-width: 0;
-  min-height: 0;
+  border: 0;
+  background: none;
 }
 
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-stow {
-  position: absolute;
-  z-index: 4;
-  grid-area: 1 / 1 / -1 / -1;
-  bottom: var(--hud-gap);
-  left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
-  width: 280px;
+.queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-head {
+  display: none;
 }
 
-.queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-stow {
-  left: 84px;
-}
-
-.queen27-page.is-shell .queen27-hud-stow .queen27-hud-minimap {
-  flex: 0 0 140px;
-  min-height: 0;
-}
-
-.queen27-page.is-shell .queen27-hud-stow .queen27-sectors {
-  flex: 0 0 auto;
-  min-height: 0;
-}
-
-.queen27-page.is-shell .queen27-hud-stow .queen27-sectors-list {
+.queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-list {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  gap: 5px;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
-.queen27-page.is-shell .queen27-hud-stow .queen27-hud-minimap {
+.queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-row {
+  display: flex;
+  gap: 2px;
+  align-items: baseline;
   min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--hud-muted);
+  font-size: 0.58rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-row[aria-pressed="true"] {
+  color: var(--hud-gold);
+}
+
+/* The name stays — for a screen reader, and in the pointer's tooltip — but a
+   62px bar has room for a glyph and a number, so that is what it shows. */
+.queen27-page.is-shell .queen27-hud-sectors .queen27-sectors-title {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-hud-sectors
+  :is(.queen27-sectors-territory, .queen27-sectors-bar, .queen27-sectors-count small) {
+  display: none;
 }
 
 .queen27-page.is-shell .queen27-hud-intel.is-expanded {
@@ -5611,14 +5623,6 @@ body.queen-shell .queen-universe {
   }
 }
 
-/* The head is one nowrap line — title plus count — and an implicit column
-   sizes itself to that line rather than to the panel. A long repository name
-   would set the minimap's width from the words above it; this holds the
-   minimap to the panel and lets the line be the thing that gives. */
-.queen27-page.is-shell .queen27-hud-stow .queen27-hud-minimap {
-  grid-template-columns: minmax(0, 1fr);
-}
-
 /* Between the phone's arrangement and 1280 the bar had ten tiles and not the
    width for their names: measured at 1100, a 55px RESEARCH had a 21px cell and
    painted straight across its own divider, and at 1024 it had nine. Two tiles
@@ -5663,12 +5667,10 @@ body.queen-shell .queen-universe {
   }
 }
 
-/* A phone's map is the whole screen and 280x224 of overview is a third of it,
-   sitting over the module tabs and the field's own labels. The repository is
-   named in the map's head above, and the sector counts are the kanban's
-   columns — the panel is the one thing here that repeats something. */
+/* A phone's bar keeps four tiles; the sector counts are the kanban's own
+   columns, which is one tap away and reads them in full. */
 @media (max-width: 900px) {
-  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-stow {
+  .queen27-page.is-shell .queen27-hud-top > .queen27-hud-sectors {
     display: none;
   }
 }
@@ -5704,4 +5706,50 @@ body.queen-shell .queen-universe {
   .queen27-page.is-shell .queen27-hud-top > .queen27-hud-res:nth-child(6) {
     display: none;
   }
+}
+
+/* The star map under every tab, not only the comb's.
+   The sky the shell floats on is the starfield in index.css, and it sits at
+   z-index -5 — below the page's own black, which is why only the comb showed
+   any: those stars are the hive canvas's own, drawn inside the field. The
+   other five tabs were a black sheet with translucent panels on it, which is
+   translucency over nothing. Zero lifts it above the ground and still leaves
+   it under every panel here, which start at 3; it keeps `pointer-events: none`
+   from index.css, so nothing on it is in the way of a click. */
+body.queen-shell .phi-starfield {
+  z-index: 0;
+}
+
+/* With the specs directive above her, the Queen's column is two rows. Stated
+   as one, the strip took an implicit second row and the chat's `1fr` resolved
+   to 0: measured 1440x900, a 29px strip drawn straight over her first four
+   events. */
+.queen27-page.is-shell .queen27-hud-intel:has(> .queen27-specs-strip) {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+/* Every tab over the map, not two of six.
+   Measured at 1440x900 with the sky lit: the mission map's sectors were 0.88
+   opaque, and in the factory the floor (1480x642), the city's canvas, the
+   inspector and the bay cells were solid colour. Translucent panels on an
+   opaque floor is translucency over nothing — the sheet is what the eye sees. */
+.queen27-page.is-shell .queen27-map-sector {
+  background: rgba(1, 7, 5, 0.45);
+}
+
+.queen27-page.is-shell .queen27-factory-floor {
+  background: rgba(2, 4, 3, 0.3);
+}
+
+.queen27-page.is-shell .queen27-city-canvas {
+  background: rgba(1, 7, 6, 0.42);
+}
+
+.queen27-page.is-shell .queen27-factory-inspector {
+  background: rgba(3, 4, 3, 0.5);
+}
+
+.queen27-page.is-shell .queen27-factory-bays > div,
+.queen27-page.is-shell .queen27-factory-bays li {
+  background: rgba(4, 7, 5, 0.5);
 }
