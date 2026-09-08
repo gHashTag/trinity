@@ -5577,13 +5577,20 @@ body.queen-shell .queen-universe {
     scrollbar-width: none;
   }
 
+  /* The commands take the row, not a corner of it. At 420px the six tiles were
+     63px each: a glyph, and a name clipped away under it — the row said what
+     the buttons do only to whoever already knew. Across the map's own width
+     they are 128px, which is what their names ask for. */
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-commands {
     top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
     right: calc(var(--hud-col-w) + var(--hud-gap) * 2);
+    left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
+    width: auto;
+    height: 56px;
   }
 
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
-    padding-top: calc(var(--hud-chrome-top) + 99px);
+    padding-top: calc(var(--hud-chrome-top) + 116px);
   }
 }
 
@@ -5833,4 +5840,90 @@ body.queen-shell .phi-starfield {
 
 @media (prefers-reduced-motion: reduce) {
   .queen27-page.is-shell .queen-scene-loading { animation: none; opacity: 0.8; }
+}
+
+/* The law and the cell search read at the foot of the map.
+   They describe the field — where the snapshot came from, and a way into one
+   cell — so they belong where a legend belongs: along the bottom edge, between
+   the rail and the Queen, level with both. Over the map's head they were the
+   first thing read and in the page's body type, the one panel here still
+   wearing it. */
+.queen27-page.is-shell .queen-catalog-toolbar {
+  position: fixed;
+  z-index: 4;
+  right: calc(var(--hud-col-w) + var(--hud-gap) * 3);
+  bottom: calc(var(--hud-gap) * 2);
+  left: calc(var(--hud-rail-w) + var(--hud-gap) * 3);
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--hud-line);
+  background: var(--hud-panel);
+  clip-path: var(--hud-notch);
+}
+
+.queen27-page.is-shell.is-command-collapsed .queen-catalog-toolbar {
+  left: 84px;
+}
+
+.queen27-page.is-shell .queen-catalog-toolbar .queen-catalog-law {
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+/* The caveat under the line is a sentence, not a label: it keeps its case. */
+.queen27-page.is-shell .queen-catalog-toolbar .queen-catalog-law small {
+  color: var(--hud-muted);
+  font: inherit;
+  letter-spacing: 0.06em;
+  opacity: 0.72;
+  text-transform: none;
+}
+
+/* The controls take the scale the map's own head uses. Only where a mouse
+   points: under a coarse pointer the 44px floor is the rule, and it stays. */
+@media (pointer: fine) and (min-width: 901px) {
+  .queen27-page.is-shell .queen-catalog-toolbar .queen-catalog-tools :is(input, select, button) {
+    height: 26px;
+    min-height: 26px;
+    padding: 0 8px;
+    border: 1px solid var(--hud-line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--hud-muted);
+    font-family: var(--hud-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .queen27-page.is-shell .queen-catalog-toolbar .queen-catalog-tools select {
+    color: var(--text, #fff);
+  }
+}
+
+/* A phone's map has no room for a legend fixed over it, and the footer is
+   already there. It goes back into the flow above the field. */
+@media (max-width: 900px) {
+  .queen27-page.is-shell .queen-catalog-toolbar {
+    position: static;
+    clip-path: none;
+  }
+}
+
+/* The body is the scene's area, and every other panel floats over it — so it
+   spans the viewport instead of sharing it. Auto-placed it took the first grid
+   row and the context chip took the second, which meant the row was sized to
+   whatever the view happened to render. In the comb that went unnoticed: the
+   field is positioned over the whole shell anyway. In the specs view the
+   content is an iframe, and it was handed 150px of an 880px shell — the Spec
+   Explorer drew its header and its tab bar, and the code was cut off below. */
+@media (min-width: 901px) {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body,
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-context-chip {
+    grid-area: 1 / 1 / -1 / -1;
+  }
 }
