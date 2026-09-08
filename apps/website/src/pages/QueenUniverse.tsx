@@ -71,14 +71,21 @@ export default function QueenUniverse() {
       <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView)n.delete('view');else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
     </nav>;
 
-  // The shared map is still loading, so the shell — and the slot in the map's
-  // control row — is not mounted yet. Rendered in place meanwhile, the nav is a
-  // strip across the top of the page: the layout this HUD replaced, arriving
-  // for a second every cold load and then vanishing. It waits for its slot.
-  const awaitingShell = commonHive && !atlas && !atlasError;
+  // Where the nav goes when there is no slot yet.
+  //
+  // The Runtime is the HUD, and the HUD is what offers the slot in the map's
+  // control row. Between this component rendering and that chunk mounting —
+  // the atlas fetch, then the lazy import — the nav has nowhere to go, and
+  // rendered here meanwhile it is a strip across the top of the page: the
+  // layout this HUD replaced, arriving on every reload and then vanishing.
+  // Hiding it only while the atlas loaded was half the window; the second half
+  // is the shell's own chunk, which is the part that blinks. On the pages that
+  // have no shell — a repository world, the atlas, the shared core — it still
+  // renders where it is, because there it is the only place it has.
+  const shellIsComing = !atlasView && !coreView && repo === PINNED_WORLDS[0];
 
   return <div className="queen-universe" data-world={repo}>
-    {slot ? createPortal(nav, slot) : awaitingShell ? null : nav}
+    {slot ? createPortal(nav, slot) : shellIsComing ? null : nav}
     <div className="queen-universe-content"><Suspense fallback={<p role="status">{c.loading}</p>}>
       {/* Loading is not failing. This paragraph carried the error class either
           way, so every cold load opened with the failure colour on a black
