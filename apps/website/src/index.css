@@ -1383,3 +1383,34 @@ input:focus-visible {
 .spec-x-brief.is-collapsible > summary::before { content: '▸'; color: #7d8791; }
 .spec-x-brief.is-collapsible[open] > summary::before { content: '▾'; }
 .spec-x-brief.is-collapsible > summary:hover { border-color: #ffd45a; color: #ffd45a; }
+
+/* The source layer is a textarea, and a textarea sizes to nothing in
+   particular: in a pane taller than the visible code it stopped at 368px and
+   left 168px of empty box under it, with the code scrolling inside its own
+   368. The swap now fills the pane and every layer inside it stretches, so the
+   editor is as tall as the box that holds it. Content taller than the pane
+   still scrolls — min-height does not cap anything. */
+.spec-x-pane > .spec-x-swap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.spec-x-pane > .spec-x-swap > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* The stretch has to reach the textarea itself: the source container sits one
+   level further down, and stopping at it left the editor 368px in a 566px box. */
+.spec-x-pane [data-lang-exempt="source"] {
+  flex: 1 1 auto;
+  /* The container carries an inline min-height:100%, which on top of the swap
+     already filling the pane made the editor a header taller than the box and
+     pushed 68px past it on /specs. The flex chain supplies the height now. */
+  min-height: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+.spec-x-pane [data-lang-exempt="source"] > textarea {
+  flex: 1 1 auto;
+  min-height: 0;
+}
