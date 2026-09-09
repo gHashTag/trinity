@@ -9,16 +9,16 @@ import './ModulesBlock.css'
 
 const COPY = {
   en: {
-    eyebrow: 'QUEEN / EIGHT MODULES',
-    title: 'One screen, nine ways to read it',
-    lede: 'The Queen is a single-page module: the 3D map is the ground and every panel floats on it. These nine are what that ground can be read as — each one opens on the same map, in the same shell, from the key beside it.',
+    eyebrow: 'QUEEN / TEN MODULES',
+    title: 'One screen, ten ways to read it',
+    lede: 'The Queen is a single-page module: the 3D map is the ground and every panel floats on it. These ten are what that ground can be read as — each one opens on the same map, in the same shell, from the key beside it.',
     open: 'Open',
     all: 'Open the shell →',
   },
   ru: {
-    eyebrow: 'КОРОЛЕВА / ВОСЕМЬ МОДУЛЕЙ',
-    title: 'Один экран и девять способов его прочитать',
-    lede: 'Королева — одностраничный модуль: 3D-карта здесь основание, а каждая панель плавает над ним. Эти девять — то, чем это основание можно прочитать; любой открывается на той же карте, в том же шелле, по клавише рядом с ним.',
+    eyebrow: 'КОРОЛЕВА / ДЕСЯТЬ МОДУЛЕЙ',
+    title: 'Один экран и десять способов его прочитать',
+    lede: 'Королева — одностраничный модуль: 3D-карта здесь основание, а каждая панель плавает над ним. Эти десять — то, чем это основание можно прочитать; любой открывается на той же карте, в том же шелле, по клавише рядом с ним.',
     open: 'Открыть',
     all: 'Открыть шелл →',
   },

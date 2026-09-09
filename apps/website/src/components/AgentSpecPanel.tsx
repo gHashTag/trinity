@@ -28,6 +28,7 @@ import {
   WITNESS_LABEL,
   type ControlAction,
   type AgentSpecEntry,
+  type FunctionSpecEntry,
   type CronSpecEntry,
   type SkillSpecEntry,
 } from '../lib/agentSpecs'
@@ -79,6 +80,9 @@ const COPY = {
     holds: 'holds skills',
     noHolds: 'no source binds a skill to this letter',
     agentRun: 'an agent is a letter of the alphabet bound by SOUL.md and AGENTS.md; it is not launched from here — it holds skills, and jobs launch those',
+    relates: 'related cards',
+    noRelates: 'no cron card states this schedule; an event function has none',
+    functionRun: 'an Inngest function runs when its event arrives or its cron fires; this page never sends an event — the safe probe of 2026-09-09 is recorded in the spec, not repeated here',
     unresolved: 'unresolved id',
     summary: 'summary',
     translations: 'translations',
@@ -135,6 +139,9 @@ const COPY = {
     holds: 'держит скиллы',
     noHolds: 'ни один источник не привязывает скилл к этой букве',
     agentRun: 'агент — буква алфавита, связанная SOUL.md и AGENTS.md; отсюда он не запускается — он держит скиллы, а их запускают задания',
+    relates: 'связанные карточки',
+    noRelates: 'ни одна крон-карточка не описывает это расписание; у событийной функции её и нет',
+    functionRun: 'функция Inngest выполняется, когда приходит её событие или срабатывает крон; эта страница событий не отправляет — безопасная проба 2026-09-09 записана в спеке и здесь не повторяется',
     unresolved: 'неизвестный id',
     summary: 'кратко',
     translations: 'переводы',
@@ -157,10 +164,10 @@ export interface CrossLink {
 
 interface Props {
   lang: 'en' | 'ru'
-  kind: 'skill' | 'cron' | 'agent'
+  kind: 'skill' | 'cron' | 'agent' | 'function'
   /** The catalog id of the card, for the code-only case where there is no spec. */
   id: string
-  entry: SkillSpecEntry | CronSpecEntry | AgentSpecEntry | null
+  entry: SkillSpecEntry | CronSpecEntry | AgentSpecEntry | FunctionSpecEntry | null
   links: CrossLink[]
   /** Whether the reader can jump to the Spec Explorer in this frame. */
   embedded: boolean
@@ -180,17 +187,19 @@ async function sha256Hex(text: string): Promise<string | null> {
 function label(kind: Props['kind'], t: Copy): { links: string; empty: string } {
   if (kind === 'cron') return { links: t.runs, empty: t.noRuns }
   if (kind === 'agent') return { links: t.holds, empty: t.noHolds }
+  if (kind === 'function') return { links: t.relates, empty: t.noRelates }
   return { links: t.runBy, empty: t.noRunBy }
 }
 
-const SPEC_DIR: Record<Props['kind'], string> = { skill: 'specs/skills', cron: 'specs/crons', agent: 'specs/agents' }
-const LINK_GLYPH: Record<Props['kind'], string> = { skill: '◷', cron: '⟲', agent: '◈' }
+const SPEC_DIR: Record<Props['kind'], string> = { skill: 'specs/skills', cron: 'specs/crons', agent: 'specs/agents', function: 'specs/functions' }
+const LINK_GLYPH: Record<Props['kind'], string> = { skill: '◷', cron: '⟲', agent: '◈', function: '⟲' }
 
 export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = [], extraControls }: Props) {
   const t: Copy = COPY[lang]
   // An agent is not a job: the control plane's run/enable/disable verbs do not
   // apply to a letter, so the plane is shown for skills and crons only.
-  const planeApplies = kind !== 'agent'
+  // A function has no control-plane verb here either: it is launched by its event or cron.
+  const planeApplies = kind !== 'agent' && kind !== 'function'
   // Everything fetched for one spec travels together, keyed by its path, so a
   // change of card is a change of key rather than a burst of resets.
   interface Loaded { path: string; source: string; lines: Span[][]; err: string | null; sha: 'pending' | 'ok' | 'mismatch' | 'unchecked' }
@@ -243,7 +252,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
 
   const act = useCallback(
     async (action: ControlAction) => {
-      if (!plane || kind === 'agent') return
+      if (!plane || kind === 'agent' || kind === 'function') return
       setPlaneNote('…')
       try {
         const r = await requestControl(plane, kind, id, action)
@@ -416,12 +425,16 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
       <div style={box}>
         {heading(t.control)}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span
-            title={t.readOnly}
-            style={{ ...tagChip(false, false), cursor: 'default', color: entry.fields.ENABLED ? C.accent : C.muted, borderColor: entry.fields.ENABLED ? C.accent : C.border }}
-          >
-            {t.enabled} = {entry.fields.ENABLED ? t.on : t.off}
-          </span>
+          {/* A function spec has no ENABLED: whether it runs is the manifest's
+              deployed flag, shown by the Function Explorer, not a spec switch. */}
+          {'ENABLED' in entry.fields ? (
+            <span
+              title={t.readOnly}
+              style={{ ...tagChip(false, false), cursor: 'default', color: entry.fields.ENABLED ? C.accent : C.muted, borderColor: entry.fields.ENABLED ? C.accent : C.border }}
+            >
+              {t.enabled} = {entry.fields.ENABLED ? t.on : t.off}
+            </span>
+          ) : null}
           <a href={canonicalSpecEditUrl(entry.specPath)} target="_blank" rel="noopener noreferrer" style={pill}>
             {t.editSpec}
           </a>
@@ -433,6 +446,8 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {kind === 'agent' ? (
             <span style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{t.agentRun}</span>
+          ) : kind === 'function' ? (
+            <span style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{t.functionRun}</span>
           ) : kind === 'cron' && runNow ? (
             runNow.kind === 'link' ? (
               <>

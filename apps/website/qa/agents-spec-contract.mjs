@@ -18,7 +18,7 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
+import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl, specSlug } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS } from '../src/components/queenHud.ts'
@@ -27,6 +27,8 @@ const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
 const skills = JSON.parse(readFileSync(SKILLS_OUT, 'utf8'))
 const crons = JSON.parse(readFileSync(CRONS_OUT, 'utf8'))
 const agents = JSON.parse(readFileSync(AGENTS_OUT, 'utf8'))
+const functions = JSON.parse(readFileSync(FUNCTIONS_OUT, 'utf8'))
+const functionsCode = JSON.parse(readFileSync(FUNCTIONS_MANIFEST, 'utf8'))
 const experience = JSON.parse(readFileSync(EXPERIENCE_PATH, 'utf8'))
 const skillsCode = JSON.parse(readFileSync('public/skills/manifest.json', 'utf8'))
 const cronsCode = JSON.parse(readFileSync('public/crons/manifest.json', 'utf8'))
@@ -39,6 +41,8 @@ assert.deepEqual(fresh.problems, [], 'the generator reports problems:\n' + fresh
 assert.equal(skills.contentSha256, fresh.skills.contentSha256, `${SKILLS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
 assert.equal(crons.contentSha256, fresh.crons.contentSha256, `${CRONS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
 assert.equal(agents.contentSha256, fresh.agents.contentSha256, `${AGENTS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
+assert.equal(functions.contentSha256, fresh.functions.contentSha256, `${FUNCTIONS_OUT} is stale or hand-edited; run node scripts/agents-from-specs.mjs`)
+assert.equal(functions.compilerWasmSha256, skills.compilerWasmSha256)
 assert.equal(agents.compilerWasmSha256, skills.compilerWasmSha256)
 assert.equal(skills.compilerWasmSha256, sha256(readFileSync('public/t27/t27_compiler.wasm')), 'the catalog names a compiler other than the vendored one')
 assert.equal(crons.compilerWasmSha256, skills.compilerWasmSha256)
@@ -52,7 +56,7 @@ const FORBIDDEN = [
   { name: 'url credential', re: /:\/\/[^\s/:@]+:[^\s@]+@/ },
   { name: 'github token', re: /\bgh[pousr]_[A-Za-z0-9]{20,}\b/ },
 ]
-for (const [name, text] of [['spec-skills', JSON.stringify(skills)], ['spec-crons', JSON.stringify(crons)], ['spec-agents', JSON.stringify(agents)], ['experience', JSON.stringify(experience)]]) {
+for (const [name, text] of [['spec-skills', JSON.stringify(skills)], ['spec-crons', JSON.stringify(crons)], ['spec-agents', JSON.stringify(agents)], ['spec-functions', JSON.stringify(functions)], ['functions-manifest', JSON.stringify(functionsCode)], ['experience', JSON.stringify(experience)]]) {
   for (const f of FORBIDDEN) {
     const hit = f.re.exec(text)
     assert.ok(!hit, `${name} carries something shaped like a ${f.name} (${hit ? hit[0].slice(0, 4) : ''}…)`)
@@ -249,8 +253,84 @@ assert.deepEqual(agents.ladder, { specs: t27Manifest.specCount, skills: skills.s
 // The snapshot's own attribution rule names the letters it can assign; every agent letter is among them.
 for (const a of agents.agents) assert.ok(experience.attribution.letters.includes(a.letter), `${a.letter}: the attribution rule cannot assign this letter`)
 
-// 5. The Queen knows the three explorer views, at the keys the modules list promises.
-for (const tab of ['skills', 'crons', 'agents']) {
+// 4b. Layer five: every function spec is a card, witnessed by the vendored
+//     functions manifest (public/functions/manifest.json), with the spec first
+//     and the manifest's own reading beside it; where they differ the card says so.
+const codeFns = new Map(functionsCode.functions.map((f) => [f.id, f]))
+assert.equal(functions.functions.length, codeFns.size, `${FUNCTIONS_OUT}: ${functions.functions.length} specs against ${codeFns.size} manifest entries`)
+assert.deepEqual(functions.codeOnly, [], 'every manifest function has a spec (none is code-only)')
+assert.equal(functions.manifest.repo, functionsCode.repo)
+assert.equal(functions.manifest.entries, functionsCode.functions.length)
+assert.match(functions.manifest.generatedFrom.commit, /^[0-9a-f]{7,40}$/, 'the manifest names the commit it was read from')
+const functionIds = new Set(functions.functions.map((f) => f.id))
+assert.equal(functionIds.size, functions.functions.length, 'duplicate function ids')
+assert.deepEqual(functions.functions.map((f) => f.id), [...functionIds].sort(), 'functions are sorted by id')
+const cronIdSet = new Set(crons.crons.map((c) => c.id))
+for (const f of functions.functions) {
+  const x = f.fields
+  assert.equal(x.KIND, 'function', `${f.id}: KIND`)
+  assert.equal(x.ID, f.id, `${f.id}: ID is the file name`)
+  assert.equal(f.specPath, `specs/functions/${f.id}.t27`)
+  assert.equal(f.moduleName, `fn_${f.id.replace(/-/g, '_')}`)
+  assert.equal(specSlug(f.specPath), f.id)
+  assert.ok(f.typecheckOk, `${f.id}: the compiler rejected the spec`)
+  assert.equal(x.REPO, '999-multibots-telegraf')
+  assert.ok(FN_TRIGGERS.includes(x.TRIGGER), `${f.id}: TRIGGER ${x.TRIGGER}`)
+  assert.ok(FN_ON_FAILURE.includes(x.ON_FAILURE), `${f.id}: ON_FAILURE ${x.ON_FAILURE}`)
+  assert.ok(FN_PROBE_RESULTS.includes(x.PROBE_RESULT), `${f.id}: PROBE_RESULT ${x.PROBE_RESULT}`)
+  assert.ok(FN_CONTROLS.includes(x.CONTROL), `${f.id}: CONTROL ${x.CONTROL}`)
+  assert.ok(Array.isArray(x.SIDE_EFFECTS) && x.SIDE_EFFECTS.length >= 1, `${f.id}: SIDE_EFFECTS names at least one effect (or none)`)
+  for (const se of x.SIDE_EFFECTS) assert.ok(FN_SIDE_EFFECTS.includes(se), `${f.id}: side effect ${se}`)
+  assert.ok(Array.isArray(x.STEPS) && x.STEPS.length >= 1, `${f.id}: STEPS in source order`)
+  assert.ok(Number.isInteger(x.RETRIES) && x.RETRIES >= 0, `${f.id}: RETRIES`)
+  assert.match(x.SERVICE, /^src\/inngest_app\/functions\/.+\.ts:\d+$/, `${f.id}: SERVICE is file:line under src/inngest_app/functions`)
+  if (x.TRIGGER === 'event') {
+    assert.ok(x.EVENT.length > 0 && x.CRON === '', `${f.id}: an event function has EVENT, not CRON`)
+    assert.equal(f.cronSpec, null, `${f.id}: an event function joins no cron card`)
+  } else {
+    assert.ok(x.CRON.length > 0 && x.EVENT === '', `${f.id}: a cron function has CRON, not EVENT`)
+    assert.equal(x.LEGACY_EVENTS.length, 0, `${f.id}: a cron function has no legacy events`)
+    assert.ok(f.cronSpec && cronIdSet.has(f.cronSpec), `${f.id}: its cron card ${f.cronSpec} is in the crons catalog`)
+    assert.equal(f.cronSpec, `inngest/999-multibots-telegraf/${x.LEGACY_ID}`, `${f.id}: the cron card is joined by host, repo and legacy id`)
+  }
+  if (x.SAFE_PROBE) JSON.parse(x.SAFE_PROBE)
+  assertSummary(f, localesOf(functions))
+  // Witness: the manifest entry with the same id, read verbatim; differences are computed, not asserted away.
+  const code = codeFns.get(f.id)
+  assert.ok(code, `${f.id}: no manifest entry — the generator must have marked it spec-only`)
+  assert.equal(f.witness, 'spec+code')
+  assert.equal(f.code.legacyId, code.legacy_id)
+  assert.equal(f.code.file, code.file || null, `${f.id}: an empty manifest file is null on the card, never an invented path`)
+  assert.equal(f.code.deployed, code.deployed_2026_09_09)
+  assert.equal(f.code.probeResult, code.probe_result)
+  assert.deepEqual(f.differences, functionDifferences(x, code), `${f.id}: differences are exactly what the generator computes`)
+  if (f.code.deployed === false) {
+    assert.equal(x.PROBE_RESULT, 'not-deployed', `${f.id}: a function not on the production build has PROBE_RESULT not-deployed`)
+    assert.ok(f.messages.some((m) => /not on the production build/.test(m)), `${f.id}: the card says it is not deployed`)
+  }
+  if (f.differences.length) assert.equal(f.health, 'warn', `${f.id}: a difference from the manifest is a warning`)
+  for (const d of f.differences) assert.ok(f.messages.some((m) => m.startsWith(d.field)), `${f.id}: difference ${d.field} is stated on the card`)
+}
+assert.equal(functions.counts.specs, functions.functions.length)
+assert.equal(functions.counts.specPlusCode, functions.functions.filter((f) => f.witness === 'spec+code').length)
+assert.equal(functions.counts.specOnly, functions.functions.filter((f) => f.witness === 'spec-only').length)
+assert.equal(functions.counts.codeOnly, functions.codeOnly.length)
+assert.equal(functions.counts.deployed, functions.functions.filter((f) => f.code?.deployed === true).length)
+assert.equal(functions.counts.notDeployed, functions.functions.filter((f) => f.code?.deployed === false).length)
+assert.equal(functions.counts.deployed + functions.counts.notDeployed + functions.counts.deployUnknown, functions.functions.length)
+assert.equal(functions.counts.withCronSpec, functions.functions.filter((f) => f.cronSpec).length)
+assert.equal(functions.counts.withCronSpec, functions.counts.byTrigger.cron, 'every cron function has its cron card')
+assert.equal(functions.counts.withDifferences, functions.functions.filter((f) => f.differences.length).length)
+for (const t of FN_TRIGGERS) assert.equal(functions.counts.byTrigger[t], functions.functions.filter((f) => f.fields.TRIGGER === t).length)
+for (const s of FN_SIDE_EFFECTS) assert.equal(functions.counts.bySideEffect[s], functions.functions.filter((f) => f.fields.SIDE_EFFECTS.includes(s)).length)
+for (const p of FN_PROBE_RESULTS) assert.equal(functions.counts.byProbeResult[p], functions.functions.filter((f) => f.fields.PROBE_RESULT === p).length)
+assert.deepEqual(functions.ladder, { specs: t27Manifest.specCount, skills: skills.skills.length, crons: crons.crons.length, agents: agents.agents.length, functions: functions.functions.length }, 'the functions ladder counts are the catalogs')
+// The deployed app the manifest describes registers as many functions as the manifest lists.
+assert.equal(functionsCode.deployedApp.mainRegisters, functionsCode.functions.length, 'main registers every manifest function')
+assert.equal(functionsCode.deployedApp.baseFunctions, functions.counts.deployed, 'the production build carries exactly the deployed functions')
+
+// 5. The Queen knows the four explorer views, at the keys the modules list promises.
+for (const tab of ['skills', 'crons', 'agents', 'functions']) {
   const m = MODULES.find((x) => x.tab === tab)
   assert.ok(m, `queenModules has no ${tab} entry`)
   assert.ok(HUD_VIEWS.includes(tab), `HUD_VIEWS does not include ${tab}`)
@@ -262,6 +342,7 @@ assert.ok(HUD_KEYS.length >= HUD_VIEWS.length, 'every view has a key')
 assert.equal(new Set(HUD_KEYS).size, HUD_KEYS.length, 'keys are unique')
 for (const [i, m] of MODULES.entries()) assert.equal(m.key, HUD_KEYS[i], `module ${m.tab} carries key ${m.key} at position ${i + 1} (expected ${HUD_KEYS[i]})`)
 assert.equal(MODULES.find((m) => m.tab === 'agents').key, '9', 'AGENTS opens on 9')
+assert.equal(MODULES.find((m) => m.tab === 'functions').key, '0', 'FUNCTIONS opens on 0, the tenth key')
 
 // 6. Translations are connected through .t27 contract specs, never hardcoded.
 //    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists
@@ -291,7 +372,10 @@ for (const l of skills.i18n) {
   assert.equal(bundle.$spec, l.spec, `${l.bundle}: $spec must name its contract`)
   assert.equal(bundle.locale, l.locale, `${l.bundle}: locale must match the contract`)
   for (const field of l.fields) assert.ok(field in I18N_FIELD_SOURCE, `${l.spec}: FIELDS ${field} backed by no spec constant`)
-  const ids = new Set([...skillIds, ...cronIds, ...agentIds])
+  const fn = functions.i18n.find((x) => x.locale === l.locale)
+  assert.ok(fn, `${l.locale}: contract missing from functions.i18n`)
+  assert.ok(l.scope.includes('specs/functions'), `${l.spec}: SCOPE must name specs/functions`)
+  const ids = new Set([...skillIds, ...cronIds, ...agentIds, ...functionIds])
   for (const [id, entry] of Object.entries(bundle.entries)) {
     assert.ok(ids.has(id), `${l.bundle}: orphan entry ${id} (ORPHANS_ALLOWED is false)`)
     for (const k of Object.keys(entry)) assert.ok(l.fields.includes(k), `${l.bundle}: ${id}.${k} not in FIELDS ${l.fields.join(',')}`)
@@ -304,8 +388,10 @@ for (const l of skills.i18n) {
   assert.equal(c.coverage.total, crons.crons.length)
   assert.equal(ag.coverage.n, has(agents.agents), `${l.locale}: agents coverage n mismatch`)
   assert.equal(ag.coverage.total, agents.agents.length)
+  assert.equal(fn.coverage.n, has(functions.functions), `${l.locale}: functions coverage n mismatch`)
+  assert.equal(fn.coverage.total, functions.functions.length)
   assert.equal(l.missing.length, l.coverage.total - l.coverage.n)
-  coverageLine.push(`${l.locale} via ${l.spec}${l.enabled ? '' : ' (off)'}: skills ${l.coverage.n}/${l.coverage.total}, crons ${c.coverage.n}/${c.coverage.total}, agents ${ag.coverage.n}/${ag.coverage.total}, orphans 0`)
+  coverageLine.push(`${l.locale} via ${l.spec}${l.enabled ? '' : ' (off)'}: skills ${l.coverage.n}/${l.coverage.total}, crons ${c.coverage.n}/${c.coverage.total}, agents ${ag.coverage.n}/${ag.coverage.total}, functions ${fn.coverage.n}/${fn.coverage.total}, orphans 0`)
 }
 
 console.log(
@@ -313,6 +399,7 @@ console.log(
   `crons ${crons.crons.length} (spec+code ${crons.counts.specPlusCode}, spec-only ${crons.counts.specOnly}, code-only ${crons.counts.codeOnly}, with RUNS ${crons.counts.withRuns}); ` +
   `in vendored corpus manifest: ${skills.skills.filter((s) => s.inSpecCorpus).length + crons.crons.filter((c) => c.inSpecCorpus).length}/${skills.skills.length + crons.crons.length}; ` +
   `agents ${agents.agents.length} (spec+experience ${agents.counts.specPlusExperience}, spec-only ${agents.counts.specOnly}, with skills ${agents.counts.withSkills}, with crons ${agents.counts.withCrons}; episodes attributed ${agents.counts.episodesAttributed}, unattributed ${agents.counts.episodesUnattributed}, unreadable files ${experience.counts.unreadableFiles}; links pinned at ${agents.pin.ref.slice(0, 7)}); ` +
+  `functions ${functions.functions.length} (spec+code ${functions.counts.specPlusCode}, spec-only ${functions.counts.specOnly}, code-only ${functions.counts.codeOnly}; deployed ${functions.counts.deployed}, not deployed ${functions.counts.notDeployed}, unknown ${functions.counts.deployUnknown}; differences from the manifest ${functions.counts.withDifferences}; cron cards ${functions.counts.withCronSpec}/${functions.counts.byTrigger.cron}; manifest ${functions.manifest.repo}@${functions.manifest.generatedFrom.commit.slice(0, 7)}); ` +
   `Queen views ${HUD_VIEWS.length}, modules ${MODULES.length}, keys ${HUD_KEYS.slice(0, HUD_VIEWS.length).join('')}; ` +
   `i18n contracts ${skills.i18n.length} [${coverageLine.join('; ')}]`,
 )

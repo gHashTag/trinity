@@ -41,6 +41,7 @@ const SpecExplorer = lazy(() => import('./pages/SpecExplorer.tsx'))
 const SkillExplorer = lazy(() => import('./pages/SkillExplorer.tsx'))
 const CronExplorer = lazy(() => import('./pages/CronExplorer.tsx'))
 const AgentExplorer = lazy(() => import('./pages/AgentExplorer.tsx'))
+const FunctionExplorer = lazy(() => import('./pages/FunctionExplorer.tsx'))
 const ClientsConsole = lazy(() => import('./pages/ClientsConsole.tsx'))
 
 const RouteFallback = () => (
@@ -93,6 +94,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/skills" element={<SkillExplorer />} />
             <Route path="/crons" element={<CronExplorer />} />
             <Route path="/agents" element={<AgentExplorer />} />
+            <Route path="/functions" element={<FunctionExplorer />} />
             {/* Not in the navigation: the console shows one person's
                 correspondence and opens only for the owner. */}
             <Route path="/clients" element={<ClientsConsole />} />
