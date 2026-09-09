@@ -113,13 +113,26 @@ export interface LeadContext {
   how_to_read?: string
 }
 
+/**
+ * The overview, with the service's OWN field names.
+ *
+ * Not renamed on the way in: `people` and `waiting` would read more nicely here
+ * and would silently be undefined, which is how a panel comes to print
+ * "undefined people" or "[object Object] messages" while every test passes.
+ * Every field below was read off the tool's return statement.
+ */
 export interface Summary {
-  people?: number
-  messages?: number
-  waiting?: number
+  window_days?: number
+  /** Everyone the memory knows, including people with no messages kept. */
+  people_known?: number
+  people_with_messages?: number
+  messages?: { total: number; inbound: number; outbound: number }
+  /** A count, not a list: how many people are waiting on our reply. */
+  waiting_for_reply?: number
   segments?: Record<string, number>
   by_stage?: Record<string, number>
   by_next?: Record<string, number>
+  last_ingest_at?: string | null
   [key: string]: unknown
 }
 

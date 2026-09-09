@@ -325,6 +325,13 @@ fpga/tools/weight_pack_wide
 # .claude/skills/ are tracked only because they predate the *.md rule above --
 # every skill written since has been silently unstageable without -f.
 !.claude/skills/**
+# The vendored skill corpus is a PUBLISHED artifact, exactly like
+# public/t27/files: the site fetches these bodies at runtime and the manifest
+# pins each one by SHA-256. The *.md rule above swallowed all 26 of them on the
+# first commit, so the catalog shipped naming files that were not in the tree --
+# the build passed locally, where they exist on disk, and the contract caught it
+# only in CI.
+!apps/website/public/skills/files/**
 
 # Docker files in root (use deploy/ subdirectory instead)
 #

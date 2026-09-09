@@ -125,6 +125,7 @@ const UI = {
     session: 'session',
     key: 'key',
     summaryTitle: 'The base',
+    lastIngest: 'last read',
     zepUnreliable: 'This summary is written by a small model and has been wrong before. The dialog below is the record.',
   },
   ru: {
@@ -196,6 +197,7 @@ const UI = {
     session: 'сессия',
     key: 'ключ',
     summaryTitle: 'База',
+    lastIngest: 'последний обход',
     zepUnreliable: 'Эту сводку пишет маленькая модель, она уже ошибалась. Правда — диалог ниже.',
   },
 } as const
@@ -667,8 +669,10 @@ export default function ClientsConsole() {
                     <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono, marginBottom: 6 }}>{ui.summaryTitle}</div>
                     <StackBar segments={stack} />
                     <div style={{ marginTop: 6, fontSize: 11.5, color: C.muted, fontFamily: C.mono }}>
-                      {String(summary.people ?? leads.length)} {ui.people} · {String(summary.messages ?? '')} {ui.messages} ·{' '}
-                      {String(summary.waiting ?? waitCounts.ours)} {ui.waitingOnUs}
+                      {summary.people_known ?? summary.people_with_messages ?? leads.length} {ui.people} ·{' '}
+                      {summary.messages?.total ?? 0} {ui.messages} ({summary.messages?.inbound ?? 0} {ui.inbound}) ·{' '}
+                      {summary.waiting_for_reply ?? waitCounts.ours} {ui.waitingOnUs}
+                      {summary.last_ingest_at ? ` · ${ui.lastIngest} ${summary.last_ingest_at.replace('T', ' ').slice(0, 16)}` : ''}
                     </div>
                   </div>
                 )}
