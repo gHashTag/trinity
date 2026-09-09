@@ -1,5 +1,5 @@
-// The Queen's SKILLS, CRONS and AGENTS views: the real Skill, Cron and Agent
-// Explorers, inside the game.
+// The Queen's SKILLS, CRONS, AGENTS and FUNCTIONS views: the real Skill, Cron,
+// Agent and Function Explorers, inside the game.
 //
 // Same shape as QueenSpecs, for the same reasons: the Explorers own a
 // full-viewport layout and the Skill/Cron pages boot the compiler wasm to
@@ -14,9 +14,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
-import { loadAgentSpecs, loadCronSpecs, loadSkillSpecs } from '../lib/agentSpecs'
+import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadSkillSpecs } from '../lib/agentSpecs'
 
-export type AgentsKind = 'skills' | 'crons' | 'agents'
+export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions'
 
 export interface AgentsCopy {
   directive: string
@@ -41,6 +41,12 @@ async function loadCounts(kind: AgentsKind): Promise<Counts> {
   if (kind === 'agents') {
     const c = (await loadAgentSpecs()).counts
     return { specs: c.specs, specPlusCode: c.specPlusExperience, codeOnly: c.episodesUnattributed ?? 0, typecheckOk: c.typecheckOk }
+  }
+  if (kind === 'functions') {
+    // The witness is the vendored functions manifest; code-only are the
+    // manifest entries no spec states yet.
+    const c = (await loadFunctionSpecs()).counts
+    return { specs: c.specs, specPlusCode: c.specPlusCode, codeOnly: c.codeOnly, typecheckOk: c.typecheckOk }
   }
   const c = kind === 'skills' ? (await loadSkillSpecs()).counts : (await loadCronSpecs()).counts
   return { specs: c.specs, specPlusCode: c.specPlusCode, codeOnly: c.codeOnly, typecheckOk: c.typecheckOk }
@@ -123,7 +129,7 @@ export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKin
           ref={frameRef}
           className="queen27-specs-frame"
           src={src}
-          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : 'Agent Explorer'}
+          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : kind === 'agents' ? 'Agent Explorer' : 'Function Explorer'}
           onLoad={() => setReady(true)}
           loading="lazy"
         />

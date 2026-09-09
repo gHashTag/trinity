@@ -470,3 +470,185 @@ test('the committed agent catalog: 27 specs, every skill link resolved, experien
   assert.equal(r.agents.counts.episodesUnattributed, snap.unattributed.episodes)
   assert.equal(r.agents.counts.episodesAttributed + r.agents.counts.episodesUnattributed, snap.counts.episodes)
 })
+
+// ---- layer 5: functions ----------------------------------------------------
+
+const fnSrc = (id, { module = `fn_${id.replace(/[^A-Za-z0-9]+/g, '_')}`, trigger = 'event', event = 'neuro/image.generate', legacyEvents = ['neuro/photo.generate'], cron = '', retries = 3, onFailure = 'admin-telegram', steps = ['get-bot', 'check-user'], sideEffects = ['paid-api', 'db-write'], probeResult = 'FAILED-at-guard', safeProbe = '{\\"telegram_id\\": \\"0\\"}', legacyId = 'neuro-image-generation', extra = '' } = {}) => `module ${module};
+pub const KIND : str = "function";
+pub const ID : str = ${q(id)};
+pub const LEGACY_ID : str = ${q(legacyId)};
+pub const NAME : str = "Neuro image";
+pub const REPO : str = "999-multibots-telegraf";
+pub const SERVICE : str = "src/inngest_app/functions/neuroImageGeneration.ts:25";
+pub const DOMAIN : str = "neuro";
+pub const TRIGGER : str = ${q(trigger)};
+pub const EVENT : str = ${q(event)};
+pub const LEGACY_EVENTS : [${legacyEvents.length}]str = ${q(legacyEvents)};
+pub const CRON : str = ${q(cron)};
+pub const TZ : str = "UTC";
+pub const SUMMARY_EN : str = "Generates an image.";
+pub const STEPS : [${steps.length}]str = ${q(steps)};
+pub const RETRIES : u8 = ${retries};
+pub const ON_FAILURE : str = ${q(onFailure)};
+pub const SIDE_EFFECTS : [${sideEffects.length}]str = ${q(sideEffects)};
+pub const GUARD : str = "check-user";
+pub const SAFE_PROBE : str = "${safeProbe}";
+pub const PROBE_RESULT : str = ${q(probeResult)};
+pub const CONTROL : str = "spec+code";
+pub const NOTE : str = "";
+${extra}`
+const fnFiles = (...pairs) => pairs.map(([id, text]) => ({ path: `specs/functions/${id}.t27`, text }))
+const fnManifestEntry = (id, over = {}) => ({
+  id, legacy_id: 'neuro-image-generation', domain: 'neuro', trigger: 'event', event: 'neuro/image.generate', legacy_events: ['neuro/photo.generate'], cron: '', tz: 'UTC',
+  file: 'src/inngest_app/functions/neuroImageGeneration.ts', steps: ['get-bot', 'check-user'], retries: 3, on_failure: 'admin-telegram',
+  side_effects: ['paid-api', 'db-write'], guard: 'check-user', safe_probe: '{"telegram_id": "0"}', probe_result: 'FAILED-at-guard', deployed_2026_09_09: true, control: 'spec+code', ...over,
+})
+const inngestCron = (name) => cronSrc(`inngest/999-multibots-telegraf/${name}`, { module: 'cron_x1', host: 'inngest', extra: '' }).replace('pub const NAME : str = "x";', `pub const NAME : str = ${q(name)};`).replace('pub const REPO : str = "trinity";', 'pub const REPO : str = "999-multibots-telegraf";')
+const withFunctions = (functionSpecs, manifestFns, over = {}) => build(
+  files('specs/skills', skillSrc('trinity/x', { module: 'skill_x0' })),
+  [...files('specs/crons', cronSrc('github-actions/trinity/x', { module: 'cron_x0', runs: ['trinity/x'] })), { path: 'specs/crons/x1.t27', text: inngestCron('check-stuck-trainings') }],
+  { functionSpecs: analyzeSpecFiles(analyze, functionSpecs), functionsManifest: manifestFns ? { probedAt: '2026-09-09', functions: manifestFns } : null, ...over },
+)
+
+test('a function spec typechecks, is spec+code when the manifest lists its id, and carries the deployed flag from the witness', () => {
+  const r = withFunctions(fnFiles(['neuro-image-generate', fnSrc('neuro-image-generate')]), [fnManifestEntry('neuro-image-generate')])
+  assert.deepEqual(r.problems, [])
+  const f = r.functions.functions[0]
+  assert.equal(f.id, 'neuro-image-generate')
+  assert.equal(f.moduleName, 'fn_neuro_image_generate')
+  assert.equal(f.typecheckOk, true)
+  assert.equal(f.witness, 'spec+code')
+  assert.equal(f.health, 'ok')
+  assert.equal(f.code.deployed, true)
+  assert.equal(f.fields.RETRIES, 3)
+  assert.deepEqual(f.fields.STEPS, ['get-bot', 'check-user'])
+  assert.deepEqual(f.differences, [])
+  assert.equal(f.cronSpec, null)
+  assert.equal(r.functions.counts.specPlusCode, 1)
+  assert.equal(r.functions.counts.byTrigger.event, 1)
+  assert.equal(r.functions.ladder.functions, 1)
+})
+
+test('a function the manifest does not list is spec-only (warn); a manifest id with no spec is code-only, listed not invented', () => {
+  const r = withFunctions(fnFiles(['neuro-image-generate', fnSrc('neuro-image-generate')]), [fnManifestEntry('ghost-function')])
+  assert.deepEqual(r.problems, [])
+  const f = r.functions.functions[0]
+  assert.equal(f.witness, 'spec-only')
+  assert.equal(f.health, 'warn')
+  assert.equal(f.code, null)
+  assert.ok(f.messages.some((m) => m.includes('no function neuro-image-generate')))
+  assert.deepEqual(r.functions.codeOnly, ['ghost-function'])
+  assert.equal(r.functions.counts.codeOnly, 1)
+  assert.equal(r.functions.counts.deployUnknown, 1)
+})
+
+test('no manifest at all: every function is spec-only and nothing is invented', () => {
+  const r = withFunctions(fnFiles(['neuro-image-generate', fnSrc('neuro-image-generate')]), null)
+  assert.deepEqual(r.problems, [])
+  assert.equal(r.functions.functions[0].witness, 'spec-only')
+  assert.equal(r.functions.manifest, null)
+})
+
+test('a spec that differs from what the manifest read is shown as warn with the distance named; an unread manifest field is not a difference', () => {
+  const r = withFunctions(
+    fnFiles(['neuro-image-generate', fnSrc('neuro-image-generate', { onFailure: 'log', retries: 4 })]),
+    [fnManifestEntry('neuro-image-generate', { retries: null, steps: [], file: '', deployed_2026_09_09: false })],
+  )
+  assert.deepEqual(r.problems, [])
+  const f = r.functions.functions[0]
+  assert.equal(f.health, 'warn')
+  assert.deepEqual(f.differences, [{ field: 'ON_FAILURE', spec: 'log', code: 'admin-telegram' }])
+  assert.ok(f.messages.some((m) => m === 'ON_FAILURE "log" differs from the manifest ("admin-telegram")'))
+  assert.ok(f.messages.some((m) => m.includes('not on the production build probed 2026-09-09')))
+  assert.equal(f.code.deployed, false)
+  assert.equal(f.code.retries, null)
+  assert.equal(r.functions.counts.notDeployed, 1)
+})
+
+test('a cron function carries CRON not EVENT, joins its cron card by REPO + LEGACY_ID, and an event function the other way round', () => {
+  const ok = withFunctions(
+    fnFiles(['training-stuck-check', fnSrc('training-stuck-check', { trigger: 'cron', event: '', legacyEvents: [], cron: '*/30 * * * *', legacyId: 'check-stuck-trainings' })]),
+    [fnManifestEntry('training-stuck-check', { trigger: 'cron', event: '', legacy_events: [], cron: '*/30 * * * *', legacy_id: 'check-stuck-trainings' })],
+  )
+  assert.deepEqual(ok.problems, [])
+  assert.equal(ok.functions.functions[0].cronSpec, 'inngest/999-multibots-telegraf/check-stuck-trainings')
+  assert.equal(ok.functions.counts.withCronSpec, 1)
+  const unjoined = withFunctions(
+    fnFiles(['x-check', fnSrc('x-check', { trigger: 'cron', event: '', legacyEvents: [], cron: '*/30 * * * *', legacyId: 'no-such-cron' })]),
+    [fnManifestEntry('x-check', { trigger: 'cron', event: '', legacy_events: [], cron: '*/30 * * * *', legacy_id: 'no-such-cron' })],
+  )
+  assert.equal(unjoined.functions.functions[0].cronSpec, null)
+  assert.ok(unjoined.functions.functions[0].messages.some((m) => m.includes('no cron card')))
+  const bad = withFunctions(
+    fnFiles(
+      ['a-cron', fnSrc('a-cron', { trigger: 'cron', cron: '' })],
+      ['b-event', fnSrc('b-event', { trigger: 'event', cron: '0 0 * * *' })],
+      ['c-event', fnSrc('c-event', { trigger: 'event', event: '' })],
+    ),
+    [],
+  )
+  assert.ok(bad.problems.some((p) => p.includes('a-cron.t27: a cron function needs CRON')))
+  assert.ok(bad.problems.some((p) => p.includes('a-cron.t27: a cron function has CRON, not EVENT')))
+  assert.ok(bad.problems.some((p) => p.includes('a-cron.t27: a cron function has no LEGACY_EVENTS')))
+  assert.ok(bad.problems.some((p) => p.includes('b-event.t27: an event function has EVENT, not CRON')))
+  assert.ok(bad.problems.some((p) => p.includes('c-event.t27: an event function needs EVENT')))
+})
+
+test('function vocabularies, module, file name, KIND, duplicate ID and SAFE_PROBE JSON are gates', () => {
+  const r = withFunctions(
+    fnFiles(
+      ['neuro-image-generate', fnSrc('neuro-image-generate', { module: 'fn_wrong', onFailure: 'shrug', probeResult: 'MAYBE', sideEffects: ['teleport'], safeProbe: 'not json' })],
+      ['other-id', fnSrc('neuro-image-generate')],
+      ['no-effects', fnSrc('no-effects', { sideEffects: [], trigger: 'webhook' }).replace('"function"', '"cron"')],
+    ),
+    [],
+  )
+  const p = r.problems.join('\n')
+  assert.match(p, /module must be fn_neuro_image_generate, is fn_wrong/)
+  assert.match(p, /ON_FAILURE "shrug" is not one of/)
+  assert.match(p, /PROBE_RESULT "MAYBE" is not one of/)
+  assert.match(p, /SIDE_EFFECTS names "teleport"/)
+  assert.match(p, /SAFE_PROBE is neither "" nor JSON/)
+  assert.match(p, /other-id\.t27: duplicate function ID neuro-image-generate/)
+  assert.match(p, /other-id\.t27: ID must equal the file name \(other-id\)/)
+  assert.match(p, /no-effects\.t27: KIND must be "function"/)
+  assert.match(p, /no-effects\.t27: SIDE_EFFECTS must name at least one value/)
+  assert.match(p, /no-effects\.t27: TRIGGER "webhook" is not one of event\|cron/)
+  const missing = withFunctions([{ path: 'specs/functions/m.t27', text: fnSrc('m').replace(/pub const RETRIES[^\n]*\n/, '') }], [])
+  assert.ok(missing.problems.some((x) => x.includes('m.t27') && x.includes('RETRIES')))
+})
+
+test('function translations come through the same i18n contract once SCOPE names specs/functions', () => {
+  const spec = i18nFiles(i18nSrc({ scope: ['specs/skills', 'specs/crons', 'specs/functions'] }))
+  const bundles = new Map([['apps/website/i18n/agents.ru.json', ruBundle({ 'neuro-image-generate': { SUMMARY: 'Генерирует изображение.', NAME: 'Нейро-картинка' } })]])
+  const r = withFunctions(fnFiles(['neuro-image-generate', fnSrc('neuro-image-generate')]), [fnManifestEntry('neuro-image-generate')], { i18nSpecs: analyzeSpecFiles(analyze, spec), bundles })
+  assert.deepEqual(r.problems, [])
+  const f = r.functions.functions[0]
+  assert.equal(f.summary.ru, 'Генерирует изображение.')
+  assert.equal(f.name.ru, 'Нейро-картинка')
+  assert.deepEqual(r.functions.i18n[0].coverage, { n: 1, total: 1 })
+})
+
+test('the committed function catalog: 28 specs, every one witnessed by the manifest, five cron cards joined, four not deployed, Russian on each', async () => {
+  const { generate, FUNCTIONS_MANIFEST } = await import('./agents-from-specs.mjs')
+  const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
+  assert.deepEqual(r.problems, [])
+  const fns = r.functions.functions
+  assert.equal(fns.length, 28)
+  assert.equal(r.functions.counts.specPlusCode, 28)
+  assert.deepEqual(r.functions.codeOnly, [])
+  assert.equal(r.functions.counts.byTrigger.cron, 5)
+  assert.equal(r.functions.counts.withCronSpec, 5)
+  assert.equal(r.functions.counts.notDeployed, 4)
+  const manifest = JSON.parse(readFileSync(join(SITE, FUNCTIONS_MANIFEST), 'utf8'))
+  assert.equal(manifest.functions.length, 28)
+  for (const f of fns) {
+    assert.equal(f.id, f.specPath.replace(/^specs\/functions\//, '').replace(/\.t27$/, ''))
+    assert.ok(f.summary.ru && /[\u0400-\u04ff]/.test(f.summary.ru), `${f.id}: no Russian summary`)
+    assert.ok(f.name.ru && /[\u0400-\u04ff]/.test(f.name.ru), `${f.id}: no Russian name`)
+  }
+  // The one known distance between spec and manifest is kept visible, not resolved.
+  const pay = fns.find((f) => f.id === 'payment-ai-server-process')
+  assert.deepEqual(pay.differences, [{ field: 'ON_FAILURE', spec: 'admin-telegram', code: 'log' }])
+  assert.equal(pay.health, 'warn')
+})

@@ -148,6 +148,21 @@ export const MODULES = [
       body: 'Обозреватель агентов целиком. Уровень за уровнем мы создаём систему: спеки говорят, что существует, скиллы — что делает запуск, кроны — что его запускает, а агенты — четвёртый слой — кто держит скиллы, под каким законом (SOUL.md, AGENTS.md), с каким входным и выходным инвариантом. Двадцать семь букв, от A до Z и зарезервированная Ti, у каждой сначала спека, затем её скиллы, выведенные кроны и опыт, присоединённый из журнала эпизодов по свидетельствам: агент, которого не называет ни один эпизод, говорит об этом сам.',
     },
   },
+  {
+    tab: 'functions',
+    key: '0',
+    glyph: 'ƒ',
+    en: {
+      name: 'FUNCTIONS',
+      hint: 'The 28 Inngest functions of the bot, each stated by a .t27 spec',
+      body: 'The Function Explorer, embedded whole: the fifth layer, where a spec meets a running service. Each of the 28 Inngest functions of 999-multibots-telegraf is stated by a .t27 spec under specs/functions — trigger, event and legacy events or cron, steps in source order, retries, what happens on failure, side effects, the guard step, the safe probe and its result — and witnessed by a vendored copy of the functions manifest read from the repository. Live run counts come from the bot once a minute; when the status source does not answer, the page says so and shows unknown, never zero.',
+    },
+    ru: {
+      name: 'ФУНКЦИИ',
+      hint: '28 функций Inngest бота, каждая заявлена спекой .t27',
+      body: 'Обозреватель функций целиком: пятый слой, где спека встречается с работающим сервисом. Каждая из 28 функций Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, шаг-страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория. Живые счётчики запусков приходят с бота раз в минуту; когда источник статуса не отвечает, страница говорит об этом и показывает «неизвестно», а не ноль.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

@@ -323,6 +323,11 @@ const COPY = {
     agentsUnattributed: "unattributed episodes",
     agentsCodeOnly: "code-only",
     agentsTypecheck: "typecheck ok",
+    functionsView: "FUNCTIONS",
+    functionsHint: "The 28 Inngest functions of the bot, each stated by a .t27 spec",
+    functionsDirective: "FUNCTIONS ARE SPECS",
+    functionsDirectiveBody:
+      "The fifth layer, where a spec meets a running service: each Inngest function of 999-multibots-telegraf is stated by a .t27 spec under specs/functions — its trigger, event and legacy events or cron, its steps in source order, retries, what happens on failure, its side effects, guard, safe probe and probe result — and witnessed by a vendored copy of the functions manifest read from the repository at a named commit. Where spec and manifest disagree the card says so. Live run counts are read from the bot once a minute and never invented: an offline status source is shown as offline, and a count it did not send is unknown, not zero.",
     specsTitle: "SPEC CORPUS",
     specsDirective: "STANDING DIRECTIVE",
     specsDirectiveBody:
@@ -606,6 +611,11 @@ const COPY = {
     agentsUnattributed: "эпизодов без агента",
     agentsCodeOnly: "только код",
     agentsTypecheck: "типизация ок",
+    functionsView: "ФУНКЦИИ",
+    functionsHint: "28 функций Inngest бота, каждая заявлена спекой .t27",
+    functionsDirective: "ФУНКЦИИ — ЭТО СПЕКИ",
+    functionsDirectiveBody:
+      "Пятый слой, где спека встречается с работающим сервисом: каждая функция Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория на названном коммите. Где спека и манифест расходятся, карточка говорит об этом. Живые счётчики запусков читаются с бота раз в минуту и не придумываются: недоступный источник статуса показан как недоступный, а счётчик, которого он не прислал, — как «неизвестно», а не ноль.",
     specsTitle: "КОРПУС СПЕК",
     specsDirective: "ПОСТОЯННАЯ ДИРЕКТИВА",
     specsDirectiveBody:
@@ -2253,6 +2263,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // Ninth: the agents themselves — the fourth layer, who holds the skills
     // under SOUL.md and AGENTS.md, with their experience joined by evidence.
     { view: "agents" as const, glyph: "Ω", label: c.agentsView, hint: c.agentsHint },
+    // Tenth: the functions — the fifth layer, where a spec meets a running
+    // service, witnessed by the vendored manifest and read live once a minute.
+    { view: "functions" as const, glyph: "ƒ", label: c.functionsView, hint: c.functionsHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -2638,13 +2651,13 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 broken: c.specsBroken,
               }}
             />
-          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" ? (
+          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" ? (
             <QueenAgents
               kind={boardView}
               showDirective={isNarrow}
               c={{
-                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : c.agentsDirective,
-                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : c.agentsDirectiveBody,
+                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : c.agentsDirective,
+                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : c.agentsDirectiveBody,
                 open: c.specsOpen,
                 loading: c.agentsLoading,
                 specs: c.agentsSpecs,
@@ -3061,7 +3074,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                   ? c.cronsDirective
                   : boardView === "agents"
                     ? c.agentsDirective
-                    : c.hudIntel
+                    : boardView === "functions"
+                      ? c.functionsDirective
+                      : c.hudIntel
           }
         >
           {/* The overview sits above her, stowed: a row that opens when the board

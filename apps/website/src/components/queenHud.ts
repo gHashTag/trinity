@@ -7,7 +7,7 @@
 // derivable from these types, the number does not exist yet and the panel
 // must say so rather than invent it.
 
-export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents";
+export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents" | "functions";
 // In command-panel order: the key that opens a view is HUD_KEYS at the same
 // position, and `?tab=` accepts exactly these names. Kept identical to
 // lib/queenModules (qa/agents-spec-contract.mjs checks the two lists agree), so
@@ -22,6 +22,7 @@ export const HUD_VIEWS: readonly HudView[] = [
   "skills",
   "crons",
   "agents",
+  "functions",
 ] as const;
 // The keyboard shortcut per view, by position: the digits 1-9, then 0, then
 // letters once the digits are spent. The rail prints HUD_KEYS[i] on button i and

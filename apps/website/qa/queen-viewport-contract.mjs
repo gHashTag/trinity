@@ -376,9 +376,10 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     const { fail, counts } = result;
     const zero = [];
     if (counts.shell !== 1) zero.push('shell');
-    // eight command views: SPECS joined at origin/main a308aa8bc, SKILLS and CRONS with the spec-first agents catalog;
-    // the gate follows the panel it counts (src/components/queenHud.ts HUD_VIEWS)
-    if (counts.commands !== 8) zero.push(`commands=${counts.commands}`);
+    // ten command views: SPECS joined at origin/main a308aa8bc, SKILLS and CRONS with the spec-first agents catalog,
+    // AGENTS with layer four, FUNCTIONS with layer five; the gate follows the panel it counts
+    // (src/components/queenHud.ts HUD_VIEWS) and qa/agents-spec-contract.mjs holds that list to the modules.
+    if (counts.commands !== 10) zero.push(`commands=${counts.commands}`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
     if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
     if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);

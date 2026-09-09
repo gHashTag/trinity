@@ -145,6 +145,63 @@ export interface AgentSpecEntry extends Omit<SpecEntryBase, 'witness'> {
   witness: AgentWitness
 }
 
+// Layer 5: the Inngest functions of 999-multibots-telegraf (specs/functions/<id>.t27),
+// witnessed by the vendored functions manifest at public/functions/manifest.json.
+export type FunctionTrigger = 'event' | 'cron'
+export type FunctionOnFailure = 'admin-telegram' | 'log' | 'refund+notify'
+export type FunctionSideEffect = 'charges-balance' | 'paid-api' | 'messages-user' | 'messages-owners' | 'messages-admin' | 'db-write' | 'external-webhook' | 'none'
+export type FunctionProbeResult = 'COMPLETED' | 'FAILED-at-guard' | 'skipped' | 'not-deployed'
+
+export interface FunctionSpecFields {
+  KIND: 'function'
+  ID: string
+  LEGACY_ID: string
+  NAME: string
+  REPO: string
+  /** `file:line` of the `createFunction(` call, repo-relative. */
+  SERVICE: string
+  DOMAIN: string
+  TRIGGER: FunctionTrigger
+  EVENT: string
+  LEGACY_EVENTS: string[]
+  CRON: string
+  TZ: string
+  SUMMARY_EN: string
+  STEPS: string[]
+  RETRIES: number
+  ON_FAILURE: FunctionOnFailure
+  SIDE_EFFECTS: FunctionSideEffect[]
+  GUARD: string
+  /** JSON of the safe-mode payload, or "" when no probe was sent. */
+  SAFE_PROBE: string
+  PROBE_RESULT: FunctionProbeResult
+  CONTROL: Witness
+  NOTE: string
+}
+
+/** One field where the spec and the manifest entry read different values. */
+export interface FunctionDifference { field: string; spec: unknown; code: unknown }
+
+export interface FunctionSpecEntry extends SpecEntryBase {
+  fields: FunctionSpecFields
+  /** The manifest entry with the same id, or null when the manifest does not list it. */
+  code: { legacyId: string | null; file: string | null; deployed: boolean | null; probeResult: string | null; retries: number | null; steps: number | null; control: string | null } | null
+  differences: FunctionDifference[]
+  /** The cron card (specs/crons) that states the same schedule, joined by REPO + LEGACY_ID; null when none does. */
+  cronSpec: string | null
+}
+
+export interface FunctionSpecCatalog extends SpecCatalogBase {
+  counts: {
+    specs: number; specPlusCode: number; specOnly: number; codeOnly: number; typecheckOk: number
+    deployed: number; notDeployed: number; deployUnknown: number; withCronSpec: number; withDifferences: number
+    byTrigger: Record<FunctionTrigger, number>; byDomain: Record<string, number>; bySideEffect: Record<FunctionSideEffect, number>; byProbeResult: Record<FunctionProbeResult, number>
+  }
+  ladder: { specs: number | null; skills: number; crons: number; agents: number; functions: number }
+  manifest: { repo: string | null; generatedFrom: { branch?: string; commit?: string; note?: string } | null; probedAt: string | null; deployedApp: { name?: string; sdk?: string; baseFunctions?: number; mainRegisters?: number } | null; entries: number } | null
+  functions: FunctionSpecEntry[]
+}
+
 export type Localized = { en: string } & Partial<Record<string, string>>
 
 /** One translation contract (a specs/i18n/*.t27) as it applies to one catalog. */
@@ -203,6 +260,18 @@ export interface AgentSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
 let skillsPromise: Promise<SkillSpecCatalog> | null = null
 let cronsPromise: Promise<CronSpecCatalog> | null = null
 let agentsPromise: Promise<AgentSpecCatalog> | null = null
+let functionsPromise: Promise<FunctionSpecCatalog> | null = null
+
+export function loadFunctionSpecs(): Promise<FunctionSpecCatalog> {
+  if (!functionsPromise) {
+    functionsPromise = fetch('functions/spec-functions.json', { credentials: 'omit' }).then((r) => {
+      if (!r.ok) throw new Error(`could not load spec-functions (${r.status})`)
+      return r.json() as Promise<FunctionSpecCatalog>
+    })
+    functionsPromise.catch(() => { functionsPromise = null })
+  }
+  return functionsPromise
+}
 
 export function loadAgentSpecs(): Promise<AgentSpecCatalog> {
   if (!agentsPromise) {
@@ -251,7 +320,7 @@ export async function loadAgentSpecSource(specPath: string): Promise<string> {
 export const T27_DEFAULT_BRANCH = 'master'
 
 export function specSlug(specPath: string): string {
-  return specPath.replace(/^specs\/(skills|crons)\//, '').replace(/\.t27$/, '')
+  return specPath.replace(/^specs\/(skills|crons|agents|functions)\//, '').replace(/\.t27$/, '')
 }
 
 /** The canonical spec: the file in gHashTag/t27, opened in GitHub's editor. */

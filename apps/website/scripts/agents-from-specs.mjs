@@ -16,7 +16,15 @@
 // Outputs: public/skills/spec-skills.json, public/crons/spec-crons.json,
 // public/agents/spec-agents.json (layer 4: specs/agents/<letter>.t27 x 27, with
 // skills resolved, crons derived from RUNS, and experience joined by LETTER from
-// public/agents/experience.json -- see scripts/sync-agents-experience.mjs).
+// public/agents/experience.json -- see scripts/sync-agents-experience.mjs),
+// public/functions/spec-functions.json (layer 5: specs/functions/<id>.t27 x 28,
+// the Inngest functions of 999-multibots-telegraf, witnessed by a vendored copy
+// of the functions manifest at public/functions/manifest.json: spec+code /
+// spec-only / code-only exactly like skills; a spec whose TRIGGER, EVENT, CRON,
+// RETRIES, ON_FAILURE, STEPS or SIDE_EFFECTS differ from the manifest entry is
+// not a failure -- the distance is written on the card and health drops to warn).
+// Live run counts are NOT here: the page polls the bot's status endpoint at
+// runtime and says "offline" when it cannot.
 //
 // Language: the specs are English-only (t27 LANG-EN; bootstrap/build.rs on
 // gHashTag/t27 fails the build on any Cyrillic in specs/). A Cyrillic character
@@ -67,6 +75,16 @@ export const AGENTS_OUT = 'public/agents/spec-agents.json'
 export const EXPERIENCE_PATH = 'public/agents/experience.json'
 export const AGENT_LAYERS = ['Archetypal', 'Spiritual', 'Physical']
 export const AGENT_COUNT = 27
+// Layer 5: the Inngest functions of 999-multibots-telegraf (specs/functions/<id>.t27),
+// witnessed by the vendored functions manifest.
+export const FUNCTION_SPEC_DIR = 'specs/functions'
+export const FUNCTIONS_OUT = 'public/functions/spec-functions.json'
+export const FUNCTIONS_MANIFEST = 'public/functions/manifest.json'
+export const FN_TRIGGERS = ['event', 'cron']
+export const FN_ON_FAILURE = ['admin-telegram', 'log', 'refund+notify']
+export const FN_SIDE_EFFECTS = ['charges-balance', 'paid-api', 'messages-user', 'messages-owners', 'messages-admin', 'db-write', 'external-webhook', 'none']
+export const FN_PROBE_RESULTS = ['COMPLETED', 'FAILED-at-guard', 'skipped', 'not-deployed']
+export const FN_CONTROLS = ['spec+code', 'spec-only', 'code-only']
 export const T27_REPO_URL = 'https://github.com/gHashTag/t27'
 // Repo root of gHashTag/trinity (BUNDLE_PATH is repo-relative).
 export const REPO_ROOT = resolve(SITE, '..', '..')
@@ -162,6 +180,11 @@ const AGENT_REQUIRED = {
 }
 // TOOLS arrives with layer 5 (specs/tools); until then an agent spec may omit it.
 const AGENT_OPTIONAL = { TOOLS: 'arr', TOOLS_NOTE: 'str' }
+const FUNCTION_REQUIRED = {
+  KIND: 'str', ID: 'str', LEGACY_ID: 'str', NAME: 'str', REPO: 'str', SERVICE: 'str', DOMAIN: 'str', TRIGGER: 'str',
+  EVENT: 'str', LEGACY_EVENTS: 'arr', CRON: 'str', TZ: 'str', SUMMARY_EN: 'str', STEPS: 'arr', RETRIES: 'u8',
+  ON_FAILURE: 'str', SIDE_EFFECTS: 'arr', GUARD: 'str', SAFE_PROBE: 'str', PROBE_RESULT: 'str', CONTROL: 'str', NOTE: 'str',
+}
 const INT_MAX = { u8: 0xff, u16: 0xffff, u32: 0xffffffff }
 export const CYRILLIC = /[\u0400-\u04ff]/
 
@@ -333,9 +356,9 @@ export function analyzeSpecFiles(analyze, files) {
   })
 }
 
-export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], i18nSpecs = [], bundles = new Map(), experience = null, skillsManifest, cronsManifest, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
+export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], functionSpecs = [], i18nSpecs = [], bundles = new Map(), experience = null, skillsManifest, cronsManifest, functionsManifest = null, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
   const problems = []
-  for (const s of [...skillSpecs, ...cronSpecs, ...agentSpecs, ...i18nSpecs]) {
+  for (const s of [...skillSpecs, ...cronSpecs, ...agentSpecs, ...functionSpecs, ...i18nSpecs]) {
     if (s.text !== undefined && CYRILLIC.test(s.text)) problems.push(`${s.path}: Cyrillic in a .t27 spec (t27 LANG-EN; translated text belongs in the bundle a specs/i18n/*.t27 contract points to)`)
   }
   const corpusPaths = new Set((t27Manifest?.specs ?? []).map((s) => s.path))
@@ -536,12 +559,21 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], i18n
   agents.sort((x, y) => (x.ordinal ?? 0) - (y.ordinal ?? 0) || String(x.id).localeCompare(String(y.id)))
   if (agentSpecs.length && agents.length !== AGENT_COUNT) problems.push(`${AGENT_SPEC_DIR}: ${agents.length} agent spec(s), the alphabet has ${AGENT_COUNT}`)
 
+  // Layer 5: functions. The witness is the vendored functions manifest, keyed
+  // by the canonical id exactly as skills are keyed by theirs. A manifest field
+  // the extractor left empty (file "", steps [], retries null) is "not read",
+  // never "disagrees"; a filled field that differs from the spec is written on
+  // the card. A cron function is joined to its cron card by REPO + LEGACY_ID =
+  // the cron spec's NAME with HOST inngest -- an evidence join, not a name guess.
+  const { functions, codeOnlyFunctions } = buildFunctions({ functionSpecs, functionsManifest, crons, corpusPaths, problems })
+
   // Translations, connected through their contract specs. Every locale comes
   // from a specs/i18n/*.t27; nothing here knows which locales exist.
   const specsById = new Map()
   for (const s of skills) specsById.set(s.id, { dir: SKILL_SPEC_DIR, fields: s.fields })
   for (const c of crons) specsById.set(c.id, { dir: CRON_SPEC_DIR, fields: c.fields })
   for (const a of agents) specsById.set(a.id, { dir: AGENT_SPEC_DIR, fields: a.fields })
+  for (const fn of functions) specsById.set(fn.id, { dir: FUNCTION_SPEC_DIR, fields: fn.fields })
   const locales = []
   const seenLocale = new Map()
   for (const spec of [...i18nSpecs].sort((a, b) => a.path.localeCompare(b.path))) {
@@ -560,7 +592,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], i18n
     const { missing: _all, ...rest } = l.entry
     return { ...rest, coverage: { n: list.length - missing.length, total: list.length }, missing }
   })
-  for (const e of [...skills, ...crons, ...agents]) {
+  for (const e of [...skills, ...crons, ...agents, ...functions]) {
     e.summary = localized(e.fields.SUMMARY_EN, e.id, 'SUMMARY', locales)
     e.name = localized(e.fields.NAME, e.id, 'NAME', locales)
   }
@@ -609,10 +641,147 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], i18n
   })
   // A hash of everything but the clock, so a checker can compare committed and
   // regenerated output without the timestamp getting in the way.
+  const functionsOut = sortKeys({
+    ...base,
+    generatedAt,
+    counts: {
+      specs: functions.length,
+      specPlusCode: functions.filter((f) => f.witness === 'spec+code').length,
+      specOnly: functions.filter((f) => f.witness === 'spec-only').length,
+      codeOnly: codeOnlyFunctions.length,
+      typecheckOk: functions.filter((f) => f.typecheckOk).length,
+      deployed: functions.filter((f) => f.code?.deployed === true).length,
+      notDeployed: functions.filter((f) => f.code?.deployed === false).length,
+      deployUnknown: functions.filter((f) => f.code == null || typeof f.code.deployed !== 'boolean').length,
+      withCronSpec: functions.filter((f) => f.cronSpec).length,
+      withDifferences: functions.filter((f) => f.differences.length).length,
+      byTrigger: Object.fromEntries(FN_TRIGGERS.map((t) => [t, functions.filter((f) => f.fields.TRIGGER === t).length])),
+      byDomain: Object.fromEntries([...new Set(functions.map((f) => f.fields.DOMAIN))].sort().map((d) => [d, functions.filter((f) => f.fields.DOMAIN === d).length])),
+      bySideEffect: Object.fromEntries(FN_SIDE_EFFECTS.map((s) => [s, functions.filter((f) => (f.fields.SIDE_EFFECTS ?? []).includes(s)).length])),
+      byProbeResult: Object.fromEntries(FN_PROBE_RESULTS.map((p) => [p, functions.filter((f) => f.fields.PROBE_RESULT === p).length])),
+    },
+    ladder: { specs: t27Manifest?.specCount ?? null, skills: skills.length, crons: crons.length, agents: agents.length, functions: functions.length },
+    manifest: functionsManifest
+      ? { repo: functionsManifest.repo ?? null, generatedFrom: functionsManifest.generatedFrom ?? null, probedAt: functionsManifest.probedAt ?? null, deployedApp: functionsManifest.deployedApp ?? null, entries: (functionsManifest.functions ?? []).length }
+      : null,
+    functions,
+    codeOnly: codeOnlyFunctions,
+    i18n: i18nFor(FUNCTION_SPEC_DIR, functions),
+  })
+  // A hash of everything but the clock, so a checker can compare committed and
+  // regenerated output without the timestamp getting in the way.
   skillsOut.contentSha256 = sha256(JSON.stringify({ ...skillsOut, generatedAt: null }))
   cronsOut.contentSha256 = sha256(JSON.stringify({ ...cronsOut, generatedAt: null }))
   agentsOut.contentSha256 = sha256(JSON.stringify({ ...agentsOut, generatedAt: null }))
-  return { skills: sortKeys(skillsOut), crons: sortKeys(cronsOut), agents: sortKeys(agentsOut), problems }
+  functionsOut.contentSha256 = sha256(JSON.stringify({ ...functionsOut, generatedAt: null }))
+  return { skills: sortKeys(skillsOut), crons: sortKeys(cronsOut), agents: sortKeys(agentsOut), functions: sortKeys(functionsOut), problems }
+}
+
+/** The fields of a manifest entry the spec repeats, and how each is compared. */
+const sameList = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => x === b[i])
+const sameSet = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && [...a].sort().every((x, i) => x === [...b].sort()[i])
+
+/**
+ * Compare one function spec with its manifest entry. Returns the list of
+ * differences as `{field, spec, code}`; a manifest field the extractor left
+ * empty ("" / [] / null) is "not read" and produces no difference.
+ */
+export function functionDifferences(fields, code) {
+  if (!code) return []
+  const out = []
+  const push = (field, spec, value) => out.push({ field, spec, code: value })
+  if (code.trigger && fields.TRIGGER !== code.trigger) push('TRIGGER', fields.TRIGGER, code.trigger)
+  if (code.event && fields.EVENT !== code.event) push('EVENT', fields.EVENT, code.event)
+  if (Array.isArray(code.legacy_events) && code.legacy_events.length && !sameList(fields.LEGACY_EVENTS, code.legacy_events)) push('LEGACY_EVENTS', fields.LEGACY_EVENTS, code.legacy_events)
+  if (code.cron && fields.CRON !== code.cron) push('CRON', fields.CRON, code.cron)
+  if (code.tz && fields.TZ !== code.tz) push('TZ', fields.TZ, code.tz)
+  if (code.legacy_id && fields.LEGACY_ID !== code.legacy_id) push('LEGACY_ID', fields.LEGACY_ID, code.legacy_id)
+  if (code.domain && fields.DOMAIN !== code.domain) push('DOMAIN', fields.DOMAIN, code.domain)
+  if (Number.isInteger(code.retries) && fields.RETRIES !== code.retries) push('RETRIES', fields.RETRIES, code.retries)
+  if (code.on_failure && fields.ON_FAILURE !== code.on_failure) push('ON_FAILURE', fields.ON_FAILURE, code.on_failure)
+  if (Array.isArray(code.steps) && code.steps.length && !sameList(fields.STEPS, code.steps)) push('STEPS', fields.STEPS, code.steps)
+  if (Array.isArray(code.side_effects) && code.side_effects.length && !sameSet(fields.SIDE_EFFECTS, code.side_effects)) push('SIDE_EFFECTS', fields.SIDE_EFFECTS, code.side_effects)
+  if (code.guard && fields.GUARD !== code.guard) push('GUARD', fields.GUARD, code.guard)
+  if (code.probe_result && fields.PROBE_RESULT !== code.probe_result) push('PROBE_RESULT', fields.PROBE_RESULT, code.probe_result)
+  if (code.control && fields.CONTROL !== code.control) push('CONTROL', fields.CONTROL, code.control)
+  if (code.file && typeof fields.SERVICE === 'string' && fields.SERVICE.split(':')[0] !== code.file) push('SERVICE', fields.SERVICE, code.file)
+  return out
+}
+
+function buildFunctions({ functionSpecs, functionsManifest, crons, corpusPaths, problems }) {
+  const codeFns = new Map((functionsManifest?.functions ?? []).filter((f) => f && typeof f.id === 'string').map((f) => [f.id, f]))
+  const functions = []
+  const seen = new Map()
+  for (const s of functionSpecs) {
+    const file = s.path
+    if (!s.verdict.typecheckOk || s.verdict.discarded > 0 || !s.verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(s.verdict)})`)
+    problems.push(...checkSchema(s.consts, FUNCTION_REQUIRED, {}, file))
+    const f = plain(s.consts)
+    if (f.KIND !== 'function') problems.push(`${file}: KIND must be "function"`)
+    const slug = file.replace(/^specs\/functions\//, '').replace(/\.t27$/, '')
+    if (typeof f.ID === 'string') {
+      if (seen.has(f.ID)) problems.push(`${file}: duplicate function ID ${f.ID} (also ${seen.get(f.ID)})`)
+      seen.set(f.ID, file)
+      if (f.ID !== slug) problems.push(`${file}: ID must equal the file name (${slug}), is ${JSON.stringify(f.ID)}`)
+    }
+    const expectModule = `fn_${slug.replace(/[^A-Za-z0-9]+/g, '_')}`
+    if (s.moduleName && s.moduleName !== expectModule) problems.push(`${file}: module must be ${expectModule}, is ${s.moduleName}`)
+    if (f.TRIGGER !== undefined && !FN_TRIGGERS.includes(f.TRIGGER)) problems.push(`${file}: TRIGGER ${JSON.stringify(f.TRIGGER)} is not one of ${FN_TRIGGERS.join('|')}`)
+    if (f.ON_FAILURE !== undefined && !FN_ON_FAILURE.includes(f.ON_FAILURE)) problems.push(`${file}: ON_FAILURE ${JSON.stringify(f.ON_FAILURE)} is not one of ${FN_ON_FAILURE.join('|')}`)
+    if (f.PROBE_RESULT !== undefined && !FN_PROBE_RESULTS.includes(f.PROBE_RESULT)) problems.push(`${file}: PROBE_RESULT ${JSON.stringify(f.PROBE_RESULT)} is not one of ${FN_PROBE_RESULTS.join('|')}`)
+    if (f.CONTROL !== undefined && !FN_CONTROLS.includes(f.CONTROL)) problems.push(`${file}: CONTROL ${JSON.stringify(f.CONTROL)} is not one of ${FN_CONTROLS.join('|')}`)
+    for (const se of Array.isArray(f.SIDE_EFFECTS) ? f.SIDE_EFFECTS : []) if (!FN_SIDE_EFFECTS.includes(se)) problems.push(`${file}: SIDE_EFFECTS names ${JSON.stringify(se)}, not one of ${FN_SIDE_EFFECTS.join('|')}`)
+    if (Array.isArray(f.SIDE_EFFECTS) && f.SIDE_EFFECTS.length === 0) problems.push(`${file}: SIDE_EFFECTS must name at least one value ("none" when a run touches nothing outside)`)
+    if (f.TRIGGER === 'event') {
+      if (f.EVENT === '') problems.push(`${file}: an event function needs EVENT`)
+      if (f.CRON !== undefined && f.CRON !== '') problems.push(`${file}: an event function has EVENT, not CRON`)
+    }
+    if (f.TRIGGER === 'cron') {
+      if (f.CRON === '') problems.push(`${file}: a cron function needs CRON`)
+      if (f.EVENT !== undefined && f.EVENT !== '') problems.push(`${file}: a cron function has CRON, not EVENT`)
+      if (Array.isArray(f.LEGACY_EVENTS) && f.LEGACY_EVENTS.length) problems.push(`${file}: a cron function has no LEGACY_EVENTS`)
+    }
+    if (typeof f.SAFE_PROBE === 'string' && f.SAFE_PROBE !== '') {
+      try { JSON.parse(f.SAFE_PROBE) } catch { problems.push(`${file}: SAFE_PROBE is neither "" nor JSON`) }
+    }
+    const code = codeFns.get(f.ID) ?? null
+    const differences = functionDifferences(f, code)
+    // The cron card for the same schedule, when specs/crons states one.
+    const cronSpec = f.TRIGGER === 'cron'
+      ? (crons.find((c) => c.fields.HOST === 'inngest' && c.fields.REPO === f.REPO && c.fields.NAME === f.LEGACY_ID)?.id ?? null)
+      : null
+    const messages = [
+      ...(code ? [] : [`no function ${f.ID} in ${FUNCTIONS_MANIFEST}`]),
+      ...differences.map((d) => `${d.field} ${JSON.stringify(d.spec)} differs from the manifest (${JSON.stringify(d.code)})`),
+      ...(code && code.deployed_2026_09_09 === false ? [`not on the production build probed ${functionsManifest?.probedAt ?? '2026-09-09'} (deployed_2026_09_09 false)`] : []),
+      ...(f.TRIGGER === 'cron' && !cronSpec ? ['no cron card in specs/crons states this schedule'] : []),
+    ]
+    let health = 'ok'
+    if (!code || differences.length) health = 'warn'
+    functions.push({
+      id: f.ID,
+      specPath: file,
+      summary: { en: f.SUMMARY_EN },
+      name: { en: f.NAME },
+      sha256: s.sha256,
+      typecheckOk: s.verdict.typecheckOk,
+      discarded: s.verdict.discarded,
+      moduleName: s.moduleName,
+      inSpecCorpus: corpusPaths.has(file),
+      fields: f,
+      code: code
+        ? { legacyId: code.legacy_id ?? null, file: code.file || null, deployed: typeof code.deployed_2026_09_09 === 'boolean' ? code.deployed_2026_09_09 : null, probeResult: code.probe_result ?? null, retries: Number.isInteger(code.retries) ? code.retries : null, steps: Array.isArray(code.steps) ? code.steps.length : null, control: code.control ?? null }
+        : null,
+      witness: code ? 'spec+code' : 'spec-only',
+      differences,
+      cronSpec,
+      health,
+      messages,
+    })
+  }
+  functions.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+  const codeOnlyFunctions = [...codeFns.keys()].filter((id) => !seen.has(id)).sort()
+  return { functions, codeOnlyFunctions }
 }
 
 /**
@@ -655,6 +824,7 @@ export async function generate({ generatedAt } = {}) {
   const skillSpecs = analyzeSpecFiles(analyze, readSpecDir(SKILL_SPEC_DIR))
   const cronSpecs = analyzeSpecFiles(analyze, readSpecDir(CRON_SPEC_DIR))
   const agentSpecs = analyzeSpecFiles(analyze, readSpecDir(AGENT_SPEC_DIR))
+  const functionSpecs = analyzeSpecFiles(analyze, readSpecDir(FUNCTION_SPEC_DIR))
   const i18nSpecs = analyzeSpecFiles(analyze, readSpecDir(I18N_SPEC_DIR))
   // Each contract names its bundle; load exactly those, repo-relative.
   const bundles = new Map()
@@ -670,9 +840,11 @@ export async function generate({ generatedAt } = {}) {
     skillSpecs,
     cronSpecs,
     agentSpecs,
+    functionSpecs,
     experience: readJson(EXPERIENCE_PATH),
     skillsManifest: readJson('public/skills/manifest.json'),
     cronsManifest: readJson('public/crons/manifest.json'),
+    functionsManifest: readJson(FUNCTIONS_MANIFEST),
     t27Manifest: readJson('public/t27/manifest.json'),
     railway: readJson('scripts/railway-services.json'),
     i18nSpecs,
@@ -692,33 +864,36 @@ function writeAtomic(rel, data) {
 
 async function main(argv) {
   const check = argv.includes('--check')
-  const { skills, crons, agents, problems } = await generate()
+  const { skills, crons, agents, functions, problems } = await generate()
   if (problems.length) {
     console.error(`agents-from-specs: ${problems.length} problem(s)`)
     for (const p of problems) console.error('  ' + p)
     process.exit(1)
   }
   if (check) {
-    const prior = { skills: readJson(SKILLS_OUT), crons: readJson(CRONS_OUT), agents: readJson(AGENTS_OUT) }
+    const prior = { skills: readJson(SKILLS_OUT), crons: readJson(CRONS_OUT), agents: readJson(AGENTS_OUT), functions: readJson(FUNCTIONS_OUT) }
     const drift = []
     if (prior.skills?.contentSha256 !== skills.contentSha256) drift.push(SKILLS_OUT)
     if (prior.crons?.contentSha256 !== crons.contentSha256) drift.push(CRONS_OUT)
     if (prior.agents?.contentSha256 !== agents.contentSha256) drift.push(AGENTS_OUT)
+    if (prior.functions?.contentSha256 !== functions.contentSha256) drift.push(FUNCTIONS_OUT)
     if (drift.length) {
       console.error(`agents-from-specs: committed output is stale: ${drift.join(', ')} -- run node scripts/agents-from-specs.mjs`)
       process.exit(1)
     }
-    console.log(`agents-from-specs: ${SKILLS_OUT}, ${CRONS_OUT} and ${AGENTS_OUT} match the specs`)
+    console.log(`agents-from-specs: ${SKILLS_OUT}, ${CRONS_OUT}, ${AGENTS_OUT} and ${FUNCTIONS_OUT} match the specs`)
     return
   }
   writeAtomic(SKILLS_OUT, skills)
   writeAtomic(CRONS_OUT, crons)
   writeAtomic(AGENTS_OUT, agents)
-  const s = skills.counts, c = crons.counts, a = agents.counts
+  writeAtomic(FUNCTIONS_OUT, functions)
+  const s = skills.counts, c = crons.counts, a = agents.counts, fn = functions.counts
   console.log(`agents-from-specs: skills ${s.specs} specs (typecheck ok ${s.typecheckOk}/${s.specs}; spec+code ${s.specPlusCode}, spec-only ${s.specOnly}, code-only ${s.codeOnly}) -> ${SKILLS_OUT}`)
   console.log(`agents-from-specs: crons  ${c.specs} specs (typecheck ok ${c.typecheckOk}/${c.specs}; spec+code ${c.specPlusCode}, spec-only ${c.specOnly}, code-only ${c.codeOnly}; with RUNS ${c.withRuns}) -> ${CRONS_OUT}`)
   console.log(`agents-from-specs: agents ${a.specs} specs (typecheck ok ${a.typecheckOk}/${a.specs}; enabled ${a.enabled}; with skills ${a.withSkills}, with crons ${a.withCrons}, with tools ${a.withTools}; spec+experience ${a.specPlusExperience}, spec-only ${a.specOnly}; episodes attributed ${a.episodesAttributed}, unattributed ${a.episodesUnattributed ?? 'n/a'}; links pinned at ${agents.pin.ref.slice(0, 7)}) -> ${AGENTS_OUT}`)
-  for (const l of skills.i18n) console.log(`agents-from-specs: i18n ${l.locale} via ${l.spec} -> ${l.bundle}: skills ${l.coverage.n}/${l.coverage.total}, crons ${crons.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${crons.counts.specs}, agents ${agents.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${agents.counts.specs}${l.enabled ? '' : ' (disabled)'}`)
+  console.log(`agents-from-specs: functions ${fn.specs} specs (typecheck ok ${fn.typecheckOk}/${fn.specs}; spec+code ${fn.specPlusCode}, spec-only ${fn.specOnly}, code-only ${fn.codeOnly}; deployed ${fn.deployed}, not deployed ${fn.notDeployed}, unknown ${fn.deployUnknown}; with differences from the manifest ${fn.withDifferences}; cron cards joined ${fn.withCronSpec}/${fn.byTrigger.cron}) -> ${FUNCTIONS_OUT}`)
+  for (const l of skills.i18n) console.log(`agents-from-specs: i18n ${l.locale} via ${l.spec} -> ${l.bundle}: skills ${l.coverage.n}/${l.coverage.total}, crons ${crons.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${crons.counts.specs}, agents ${agents.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${agents.counts.specs}, functions ${functions.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${functions.counts.specs}${l.enabled ? '' : ' (disabled)'}`)
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
