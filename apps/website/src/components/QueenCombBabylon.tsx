@@ -384,7 +384,12 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       const inset = insetRef.current;
       const band = h * (1 - inset);
       // the wall is parallel to the screen: width and height map one to one
-      const portalMargin=catalogRef.current?Math.max(w/Math.max(100,w-160),band/Math.max(100,band-110)):1;
+      // room kept around the field for the region labels: 160x110px on a
+      // desktop; on a phone (measured 2026-09-10 at 358px of field) the same
+      // allowance was 45% of the width and the whole map drew 180px wide.
+      // Phone labels are two lines and ~85px (queen-phone.css), so 80x64.
+      const labelRoomW=w<641?80:160,labelRoomH=w<641?64:110;
+      const portalMargin=catalogRef.current?Math.max(w/Math.max(100,w-labelRoomW),band/Math.max(100,band-labelRoomH)):1;
       const fieldW = (maxX - minX + S) * 1.04*portalMargin, fieldH = (maxZ - minZ + S) * 1.08*portalMargin;
       const aspect = w / band;
       let halfW = fieldW / 2, halfH = halfW / aspect;

@@ -90,6 +90,8 @@ function reviewSignalLabel(
   return state ? copy[state] : "—";
 }
 import "./Queen.css";
+// the phone's chrome, after Queen.css so that at equal specificity it wins
+import "./queen-phone.css";
 
 const DEFAULT_QUEEN_API =
   "https://trios-agent-server-production.up.railway.app";
