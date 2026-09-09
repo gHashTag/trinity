@@ -48,7 +48,9 @@ const PAGES: PageLink[] = [
   { href: '#/blog', en: 'Blog', ru: 'Блог', note: 'Notes on the work as it happens', noteRu: 'Заметки по ходу работы' },
   { href: '#/dashboard', en: 'Dashboard', ru: 'Панель', note: 'Project metrics', noteRu: 'Метрики проекта', color: '#00ccff' },
   { href: '#/tree', en: 'Research Lab', ru: 'Исслед. лаб', note: 'Interactive visualisations', noteRu: 'Интерактивные визуализации', color: '#ffd700' },
-  { href: '#/specs', en: 'Spec Explorer', ru: 'Обозреватель спек', note: 'All 497 .t27 specs, layer by layer, through the real compiler', noteRu: 'Все 497 спек .t27 по слоям через настоящий компилятор', color: '#00FF88' },
+  { href: '#/specs', en: 'Spec Explorer', ru: 'Обозреватель спек', note: 'The .t27 corpus, layer by layer, through the real compiler', noteRu: 'Корпус .t27 по слоям через настоящий компилятор', color: '#00FF88' },
+  { href: '#/skills', en: 'Skill Explorer', ru: 'Обозреватель скилов', note: 'Every published skill, bound to the .t27 spec it stands on', noteRu: 'Каждый опубликованный скил и спека .t27, на которой он стоит', color: '#00FF88' },
+  { href: '#/crons', en: 'Cron Explorer', ru: 'Обозреватель кронов', note: 'Every scheduled job of the farm, and when it next fires', noteRu: 'Все задания по расписанию и когда каждое сработает', color: '#00ccff' },
   { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'Full documentation', noteRu: 'Полная документация', external: true },
 ]
 

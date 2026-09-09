@@ -24,6 +24,7 @@ import { SpecShare } from '../components/SpecShare'
 import { SpecContribute } from '../components/SpecContribute'
 import {resolveManifestSpec,specExplorerHash} from '../lib/specCatalog'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
+import { SpecSkillChips } from '../components/SpecChips'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import {
   analyzeCached,
@@ -124,6 +125,8 @@ const UI = {
     lesson: 'LESSON',
     tags: 'Tags',
     share: 'Share',
+    skillsUsing: 'Skills that stand on this spec',
+    openSkill: 'Open in the Skill Explorer',
     about: 'About this spec',
     copyLink: 'Copy link',
     contribute: 'Contribute',
@@ -221,6 +224,8 @@ const UI = {
     lesson: 'УРОК',
     tags: 'Теги',
     share: 'Поделиться',
+    skillsUsing: 'Скилы, которые стоят на этой спеке',
+    openSkill: 'Открыть в Обозревателе скилов',
     about: 'Об этой спеке',
     copyLink: 'Копировать ссылку',
     contribute: 'Внести вклад',
@@ -1400,6 +1405,10 @@ export default function SpecExplorer() {
                         </button>
                       ))}
                     </div>
+                    {/* The reverse direction of the skill link, derived at
+                        index time and never written into a .t27 file. Renders
+                        nothing when no skill names this spec. */}
+                    <SpecSkillChips specPath={selected.path} labels={{ skillsUsing: ui.skillsUsing, openSkill: ui.openSkill }} />
                     <SpecShare key={selected.path} spec={selected} embedded={embedded} labels={{ share: ui.share, copy: ui.copyLink, copied: ui.copied }} />
                     {!embedded&&<SpecContribute spec={selected} result={result} edited={edited} labels={{ contribute: ui.contribute, propose: ui.propose, report: ui.report }} />}
                   </div>

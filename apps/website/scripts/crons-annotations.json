@@ -1,0 +1,116 @@
+{
+  "inngest/999-multibots-telegraf/periodic-webhook-health-check": {
+    "what": "Tests both Telegram webhook URLs every hour and sends the admin a critical alarm when neither of them answers."
+  },
+  "inngest/999-multibots-telegraf/check-stuck-trainings": {
+    "what": "Finds model trainings still marked pending or processing past the stuck threshold and reconciles them against Replicate.",
+    "note": "Records whose Replicate id is still a placeholder are skipped, because there is nothing on the provider to ask about."
+  },
+  "inngest/999-multibots-telegraf/log-monitor": {
+    "what": "Reads the application logs once a day, has a model summarise the errors and warnings, and sends the digest to Telegram."
+  },
+  "inngest/999-multibots-telegraf/daily-sales-advisor": {
+    "what": "Builds every bot owner a morning report of yesterday's revenue, the week's costs and which services their users actually bought.",
+    "note": "One report per owner across all of their bots, assembled from the payments ledger rather than from a balance column."
+  },
+  "inngest/999-multibots-telegraf/health-check": {
+    "what": "Probes the main API and the Inngest service every half hour and reports what answered."
+  },
+  "inngest/999-multibots-telegraf/skill-detector": {
+    "what": "Mines successful generations for repeated model and prompt patterns once a day and saves the new ones as reusable skills."
+  },
+
+  "timer/999-multibots-telegraf/production-monitor-L80": {
+    "what": "Re-runs the container, nginx, port, domain, webhook and system-resource checks, and applies the fixes that are enabled.",
+    "note": "Started only by running this module from the command line with the `monitor` argument; the bot's own entry point never starts it."
+  },
+  "timer/999-multibots-telegraf/taskCache-L27": {
+    "what": "Drops video-generation cache entries past their fifteen-minute lifetime so a finished task cannot block the next request."
+  },
+  "timer/999-multibots-telegraf/notificationHandler-L318": {
+    "what": "Drains the notification queue and delivers the Telegram messages waiting in it.",
+    "note": "Wrapped in an exclusive tick, so two bot processes cannot deliver the same notification twice."
+  },
+  "timer/999-multibots-telegraf/notificationHandler-L324": {
+    "what": "Deletes notification messages old enough that nobody is going to read them."
+  },
+  "timer/999-multibots-telegraf/bot-owner-billing-L474": {
+    "what": "Recomputes every bot owner's debt from the payments ledger, warns them at the soft, warning and critical thresholds, and disables a bot that stays critical for three days.",
+    "note": "The first run after a restart is skipped on purpose, and an owner whose payments cannot be read is left alone rather than accused."
+  },
+  "timer/999-multibots-telegraf/crmProactive-L375": {
+    "what": "Runs one proactive seller turn for the owner: walks the CRM queue and puts the next draft card in front of them without being asked.",
+    "note": "The period is CRM_PROACTIVE_MINUTES from src/index.ts, thirty minutes by default; the first sweep waits two minutes after start."
+  },
+  "timer/999-multibots-telegraf/video-task-store-L156": {
+    "what": "Forgets video tasks older than an hour and rewrites the store to disk when anything was removed."
+  },
+  "timer/999-multibots-telegraf/provider-health-monitor-L344": {
+    "what": "Checks every AI provider that is not parked and records whether it is currently answering.",
+    "note": "Providers listed in HEALTH_SKIP_PROVIDERS are deliberately not watched and do not raise the alarm."
+  },
+  "timer/999-multibots-telegraf/generate-jobs-L164": {
+    "what": "Sweeps finished generation jobs out of memory an hour after they end, once a caller who lost the connection has had time to collect the result."
+  },
+  "timer/999-multibots-telegraf/render-server-L919": {
+    "what": "Re-reads the session revocation list from Postgres so a revoked browser session stops being accepted.",
+    "note": "Only starts when a session signing key is configured; a deployed render server refuses to boot without one."
+  },
+  "timer/999-multibots-telegraf/render-server-L2301": {
+    "what": "Removes render jobs older than an hour from the in-memory job map."
+  },
+  "timer/999-multibots-telegraf/render-server-L2325": {
+    "what": "Reads the hive journal and delivers the queen's report to the keepers, passing alarms straight through and batching ordinary events.",
+    "note": "Checks often and writes rarely: the cursor lives in the database, because this Railway project has no volume and a deploy wipes local state."
+  },
+  "timer/999-multibots-telegraf/render-server-L10845": {
+    "what": "Pings every websocket peer and drops the ones that did not answer the previous round."
+  },
+  "timer/999-multibots-telegraf/agent-autopilot-L1118": {
+    "what": "Runs one autopilot cycle -- the generation pass and then the channel tick -- and skips the tick entirely when the previous cycle is still running.",
+    "note": "Daemon mode only, under --loop or AUTOPILOT_LOOP=1; AUTOPILOT_INTERVAL_MS overrides the thirty-minute period, with a one-minute floor."
+  },
+
+  "github-actions/999-multibots-telegraf/ci": {
+    "what": "Runs the whole build, type-check and test pipeline once a day so a dependency that rots without a push still gets caught."
+  },
+  "github-actions/999-multibots-telegraf/security": {
+    "what": "Runs the weekly security sweep: secret detection over the full history, dependency audit and code scanning."
+  },
+  "github-actions/t27/formal-mutation": {
+    "what": "Proves the formal gates actually bite by mutating the generated RTL once a week and requiring each gate to go red for its own mutation.",
+    "note": "Weekly rather than per-push because a full run costs about thirty yosys invocations."
+  },
+  "github-actions/t27/pr-dashboard": {
+    "what": "Rebuilds the pull-request dashboard every hour from the current state of the open pull requests."
+  },
+  "github-actions/trinity/agent-cron-cleanup": {
+    "what": "Finds agent deployments that got stuck and kills them, every two hours."
+  },
+  "github-actions/trinity/agent-queue-drain": {
+    "what": "Looks for queued issues and free agent slots every five minutes and starts the next agent when there is room."
+  },
+  "github-actions/trinity/brain-ci": {
+    "what": "Runs the weekly brain stress test, the long version of the health gate that every commit already gets."
+  },
+  "github-actions/trinity/codegen": {
+    "what": "Validates the VIBEE code generator once a day, independently of whether anyone pushed."
+  },
+  "github-actions/trinity/discover-callers": {
+    "what": "Reads GitHub for repositories that run the RTL check, so the gallery counts its own users instead of being hand-written."
+  },
+  "github-actions/trinity/pages-health-check": {
+    "what": "Fetches the published site every fifteen minutes, follows the redirect, and redeploys only when the evidence says the deploy is what broke.",
+    "note": "An earlier version judged a bare status code, failed ninety-six times a day on a site that was up, and dispatched a redeploy each time."
+  },
+  "github-actions/trinity/signal-health-self": {
+    "what": "Applies the signal-health check to the repository that sells it and writes the numbers into the website data."
+  },
+  "github-actions/trinity/site-live-gate": {
+    "what": "Compares the content-hashed entry bundle served at the apex against a build of main, so that 'deployed' means a reader can actually see it."
+  },
+
+  "railway-cron/999/jobsearch-cron": {
+    "what": "The scheduled job-search service of the Railway project, reachable at cron.t27.ai."
+  }
+}
