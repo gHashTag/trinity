@@ -3833,16 +3833,6 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* ---- command panel ----------------------------------------------------- */
-/* At short heights (1280x600 is a gate size) six commands and COLLAPSE do
-   not fit with their hints: the hints go, the labels stay. */
-@media (max-height: 640px) {
-  .queen27-page.is-shell .queen27-hud-cmd small {
-    display: none;
-  }
-  .queen27-page.is-shell .queen27-hud-command {
-    gap: 4px;
-  }
-}
 
 @media (max-width: 760px) {
   .queen27-page.is-shell {
@@ -3865,16 +3855,25 @@ main:where(.queen27-page.is-shell) section {
 }
 
 .queen27-page.is-shell .queen27-hud-command {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-row: 2;
   grid-column: 1;
-  /* six command views since /specs (#932): the sixth had landed in the spacer track and overflowed at 600 px */
-  grid-template-rows: repeat(6, auto) minmax(0, 1fr) auto;
+  /* The rail used to be a grid with `repeat(6, auto)` rows: every view added
+     after the sixth (SKILLS, CRONS, AGENTS, TOOLS) landed in the spacer track
+     below COLLAPSE. A flex column does not know how many views there are: the
+     command buttons stack from the top, COLLAPSE pins itself to the bottom
+     with `margin-top: auto`, and the item count comes from `commandItems`
+     alone (`data-views` on the nav is the DOM witness the QA contract reads). */
   gap: 6px;
   min-width: 0;
   min-height: 0;
   padding: 8px;
   overflow: hidden;
+}
+
+.queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd {
+  flex: 0 0 auto;
 }
 
 .queen27-page.is-shell .queen27-hud-cmd,
@@ -3953,7 +3952,9 @@ main:where(.queen27-page.is-shell) section {
 }
 
 .queen27-page.is-shell .queen27-hud-cmd-collapse {
-  grid-row: 7;
+  flex: 0 0 auto;
+  /* pins COLLAPSE to the bottom of the rail whatever the view count */
+  margin-top: auto;
   font-size: 0.56rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3970,6 +3971,67 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-hud-command.is-collapsed .queen27-hud-cmd > kbd,
 .queen27-page.is-shell .queen27-hud-command.is-collapsed .queen27-hud-cmd-collapse > span {
   display: none;
+}
+
+/* This block sits AFTER the base rail rules on purpose: the container
+   selector has the same specificity as the flex base, so source order is
+   what lets `display: grid` win below 760 px. */
+/* At short heights (1280x700 and 1280x600 are gate sizes) eleven commands
+   and COLLAPSE do not fit as a one-column list: below 760 px the rail
+   becomes two columns of tiles (glyph over label, no hint, no key badge) and
+   COLLAPSE stays the last, full-width row. The row count comes from the
+   shell (--queen-tile-rows = ceil(commandItems.length / 2)), so a new view
+   adds a row instead of falling under COLLAPSE. Budget at 600 px:
+   600 - 64 (top) - 84 (bottom) - 12 (gaps) = 440 px for the rail; six tile
+   rows at ~48 px + gaps + COLLAPSE + padding is ~370 px. */
+@media (max-height: 760px) {
+  .queen27-page.is-shell .queen27-hud-command {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(var(--queen-tile-rows, 6), max-content) minmax(0, 1fr) max-content;
+    gap: 4px;
+    padding: 6px;
+  }
+  .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 0.15rem;
+    justify-items: center;
+    padding: 0.35rem 0.3rem;
+    text-align: center;
+  }
+  .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd > i {
+    font-size: 0.95rem;
+  }
+  .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd > span {
+    justify-items: center;
+    max-width: 100%;
+  }
+  .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd b {
+    font-size: 0.56rem;
+    letter-spacing: 0.08em;
+    max-width: 100%;
+  }
+  .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd small,
+  .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd kbd {
+    display: none;
+  }
+  .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd-collapse {
+    grid-column: 1 / -1;
+    grid-row: -2 / -1;
+    margin-top: 0;
+    padding: 0.35rem 0.6rem;
+  }
+  /* collapsed (64 px wide) rail: back to one column of glyphs, still count-driven */
+  .queen27-page.is-shell .queen27-hud-command.is-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(var(--queen-views, 11), max-content) minmax(0, 1fr) max-content;
+    gap: 3px;
+  }
+  .queen27-page.is-shell .queen27-hud-command.is-collapsed > .queen27-hud-cmd,
+  .queen27-page.is-shell .queen27-hud-command.is-collapsed > .queen27-hud-cmd-collapse {
+    padding: 0.28rem 0.2rem;
+  }
 }
 
 /* ---- centre viewport ---------------------------------------------------- */
@@ -5218,6 +5280,7 @@ main:where(.queen27-page.is-shell) section {
 
   .queen27-page.is-shell .queen27-hud-command.is-compact {
     display: flex;
+    flex-direction: row;
     grid-row: auto;
     grid-column: auto;
     gap: 4px;

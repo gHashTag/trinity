@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { HudView } from "./queenHud";
 
 // The COMMAND PANEL of the one-screen HUD: the view switches (one per entry in
@@ -50,7 +51,18 @@ export function QueenCommandPanel({
     .join(" ");
 
   return (
-    <nav className={className} aria-label={labels.aria}>
+    <nav
+      className={className}
+      aria-label={labels.aria}
+      data-views={items.length}
+      style={
+        {
+          // the rail derives its row count from the item list, never from a hardcoded number
+          "--queen-views": items.length,
+          "--queen-tile-rows": Math.ceil(items.length / 2),
+        } as CSSProperties
+      }
+    >
       {items.map((item, index) => {
         const active = item.view === view;
         return (
