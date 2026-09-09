@@ -2,6 +2,8 @@ import Navigation from './components/Navigation'
 import GameHero from './components/GameHero'
 import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
+import QueenHeroBlock from './components/QueenHeroBlock'
+import SpecHeroBlock from './components/SpecHeroBlock'
 import ModuleHeroBlock from './components/ModuleHeroBlock'
 import { MODULES } from './lib/queenModules'
 import PlayBlock from './components/PlayBlock'
@@ -41,11 +43,14 @@ export default function App() {
           modules are. The core is built by playing it. */}
       <PlayBlock />
 
-      {/* One identical block per module, in the order the rail lists them, each
-          with what that view shows and the view itself in a frame. Rendered from
-          the list rather than written out, so a seventh module is a seventh
-          entry in lib/queenModules and nothing here changes. */}
-      {MODULES.map((module) => (
+      {/* The comb and the corpus keep their own blocks: each mounts something
+          particular — the live scene, the Explorer — rather than a frame of the
+          shell. Every other module is that same shape, at that same size,
+          rendered from the list, so a seventh module is a seventh entry in
+          lib/queenModules and nothing here changes. */}
+      <QueenHeroBlock />
+      <SpecHeroBlock />
+      {MODULES.filter((module) => module.tab !== 'comb' && module.tab !== 'specs').map((module) => (
         <ModuleHeroBlock key={module.tab} tab={module.tab} />
       ))}
 

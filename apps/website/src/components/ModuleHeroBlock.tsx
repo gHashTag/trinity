@@ -3,19 +3,21 @@ import { useI18n } from '../i18n/context'
 import { MODULES, type QueenModuleTab } from '../lib/queenModules'
 import './ModuleHeroBlock.css'
 
-// A module of the shell, shown on the homepage the way the hive and the Spec
-// Explorer are: the thing itself, in a frame, not a picture of it. The shell
-// answers ?tab= for which module and ?embed=1 for the chrome it should leave
-// out — so this block is one iframe and its own words, and it cannot drift from
-// what the module actually does, because it is what the module actually does.
+// A module of the shell, presented the way the hive and the Spec Explorer are:
+// a headline, what it shows, the ways in, and then the thing itself at the size
+// of a screen. Those two blocks are hand-written because each mounts something
+// particular — the live scene, the Explorer — and this one is their shape given
+// to every other module, driven by lib/queenModules so that the next module is
+// an entry in that list and not another component.
 //
-// The frame is mounted when the block comes near the viewport, not on load.
-// Four shells booting at once on a landing page is four of everything: four
-// board fetches, four intervals, four React trees. Near the fold they are one
-// at a time, and above it there is nothing to pay for at all.
+// The frame mounts when the block comes near the viewport: a page of shells
+// booting at once is a page of everything at once. The observer reports nothing
+// in a tab that is open but not displayed, so the rectangle is also read on a
+// timer that stops itself — an empty frame is the one state a presentation must
+// not have.
 const COPY = {
-  en: { open: 'Open this module', frame: 'TRINITY module' },
-  ru: { open: 'Открыть модуль', frame: 'Модуль TRINITY' },
+  en: { open: 'Open this module', all: 'Open the shell', frame: 'TRINITY module' },
+  ru: { open: 'Открыть модуль', all: 'Открыть шелл', frame: 'Модуль TRINITY' },
 } as const
 
 export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
@@ -25,9 +27,6 @@ export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
   const module = MODULES.find((m) => m.tab === tab)!
   const m = module[lang]
   const host = useRef<HTMLDivElement>(null)
-  // No observer, no problem: the frame mounts immediately rather than never.
-  // Decided here rather than in the effect, where setting state synchronously
-  // is a render the browser has not painted yet.
   const [near, setNear] = useState(() => typeof IntersectionObserver === 'undefined')
 
   useEffect(() => {
@@ -38,13 +37,6 @@ export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
       { rootMargin: '320px' },
     )
     watch.observe(node)
-    // A second opinion, asked repeatedly. An observer needs the page laid out
-    // and painted to report anything, and a tab that is open but not displayed
-    // does neither — measured here: every block scrolled into view and not one
-    // frame mounted. A single check at mount is no better, because at mount the
-    // block is far below the fold and the answer is correctly "not yet". So the
-    // rectangle is read on a timer until it says yes, and the timer stops
-    // itself. Timers run in a hidden tab; the rectangle is true there too.
     const poll = window.setInterval(() => {
       const box = node.getBoundingClientRect()
       if (box.top < window.innerHeight + 320 && box.bottom > -320) {
@@ -61,18 +53,27 @@ export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
   return (
     <section className="module-hero" aria-labelledby={`module-hero-${tab}`}>
       <div className="module-hero-inner">
-        <header className="module-hero-copy">
-          <span className="module-hero-eyebrow">
-            <i aria-hidden="true">{module.glyph}</i>
-            {m.name}
-            <b aria-hidden="true">{module.key}</b>
-          </span>
-          <h2 id={`module-hero-${tab}`}>{m.hint}</h2>
-          <p>{m.body}</p>
-          <a className="module-hero-open" href={`#/queen?tab=${tab}`}>
-            {t.open} →
-          </a>
-        </header>
+        <div className="module-hero-copy">
+          <div className="module-hero-lede">
+            <span className="module-hero-eyebrow">
+              <i aria-hidden="true">{module.glyph}</i>
+              {m.name}
+              <b aria-hidden="true">{module.key}</b>
+            </span>
+            <h2 id={`module-hero-${tab}`}>{m.hint}</h2>
+          </div>
+          <div className="module-hero-aside">
+            <p>{m.body}</p>
+            <div className="module-hero-actions">
+              <a className="module-hero-primary" href={`#/queen?tab=${tab}`}>
+                {t.open}
+              </a>
+              <a className="module-hero-secondary" href="#/queen">
+                {t.all}
+              </a>
+            </div>
+          </div>
+        </div>
         <div className="module-hero-frame" ref={host}>
           {near ? (
             <iframe
