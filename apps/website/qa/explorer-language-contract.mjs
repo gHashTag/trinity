@@ -22,6 +22,7 @@ const PAGES = [
   'src/pages/SkillExplorer.tsx',
   'src/pages/CronExplorer.tsx',
   'src/pages/AgentExplorer.tsx',
+  'src/pages/ToolExplorer.tsx',
   'src/pages/ClientsConsole.tsx',
 ]
 

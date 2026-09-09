@@ -37,6 +37,10 @@ pub const CLARA_ROLE : str = "TA1: AR Theoretical Foundations - provides mathema
 ; cites that source or says why the list is empty.
 pub const SKILLS : [0]str = [];
 pub const SKILLS_NOTE : str = "No source binds a skill to this agent: the alphabet key files point at specs and docs, not at a skill directory, no .claude/agents file names one, and specs/OWNERS.md has no row for it.";
+; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
+; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
+pub const TOOLS : [0]str = [];
+pub const TOOLS_NOTE : str = "No source binds a tri command or MCP server to this agent: docs/agents/AGENTS_ALPHABET.md (row, key files, phase cycle), specs/OWNERS.md and .claude/agents/*.md do not name one.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;

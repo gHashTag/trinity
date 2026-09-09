@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/tools/tri/vsim.t27 -- tool tri/vsim, the `tri vsim` command of the tri CLI
+; Source of truth for the tool card on t27.ai (#/tools?tool=tri/vsim).
+; Extracted from the clap #[derive(Subcommand)] enums in cli/tri/src (witness source-parse:
+; cargo was not run, the enum and its /// docs were read at commit 3cb7a4352492).
+; Layer 5 of the ladder Specs -> Skills -> Crons -> Agents -> Tools. ASCII only (L3).
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module tool_tri_vsim;
+
+pub const KIND : str = "tool";
+pub const FAMILY : str = "tri-cli";
+pub const ID : str = "tri/vsim";
+pub const COMMAND : str = "tri vsim";
+; clap enum variant and where the dispatch lands
+pub const VARIANT : str = "Commands::Vsim";
+pub const SOURCE : str = "cli/tri/src/vsim.rs";
+pub const ENTRY : str = "cli/tri/src/main.rs";
+; The clap about text (first /// paragraph), as `tri --help` would print it.
+pub const ABOUT : str = "How far each spec gets when its generated Verilog is actually RUN.";
+pub const ABOUT_SOURCE : str = "clap /// doc on Commands::Vsim (cli/tri/src/main.rs; module cli/tri/src/vsim.rs)";
+; Nested subcommands (kebab-case as clap derives them) and their first /// paragraph ("" when none).
+pub const ACTIONS : [1]str = ["funnel"];
+pub const ACTIONS_ABOUT : [1]str = ["Walk the corpus through `t27c icarus-simulate` and print the funnel."];
+; Top-level arguments/flags of the command itself, "<name>: doc".
+pub const ARGS : [0]str = [];
+; Agent letters that own this command, only where a source line names it (AGENTS_NOTE cites it).
+pub const AGENTS : [0]str = [];
+pub const AGENTS_NOTE : str = "No source binds an agent letter to this command: docs/agents/AGENTS_ALPHABET.md (rows, key files, phase cycle), specs/OWNERS.md and .claude/agents/*.md do not name it. creator.md and verifier.md name tri gen/test/verify but are not letter agents.";
+; From the about text (long about when the doc has more than one paragraph); no marketing.
+pub const WHEN_TO_USE : str = "How far each spec gets when its generated Verilog is actually RUN. The one arm that can catch a defect whose nature is that it compiles, and the one arm whose gate has had no targets since #2283 -- see #2987.";
+pub const WITNESS : str = "source-parse";
+pub const ENABLED : bool = true;

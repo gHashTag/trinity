@@ -139,7 +139,7 @@ export interface AgentSpecEntry extends Omit<SpecEntryBase, 'witness'> {
   skills: { id: string; ok: boolean }[]
   /** Derived: crons whose RUNS name one of this agent's SKILLS. */
   crons: string[]
-  tools: string[]
+  tools: { id: string; ok: boolean }[]
   experience: AgentExperience
   links: { soul: string; agentsDoc: string; alphabet: string; experienceLog: string | null; pinnedAt: string; pinSource: string }
   witness: AgentWitness
@@ -197,7 +197,7 @@ export interface FunctionSpecCatalog extends SpecCatalogBase {
     deployed: number; notDeployed: number; deployUnknown: number; withCronSpec: number; withDifferences: number
     byTrigger: Record<FunctionTrigger, number>; byDomain: Record<string, number>; bySideEffect: Record<FunctionSideEffect, number>; byProbeResult: Record<FunctionProbeResult, number>
   }
-  ladder: { specs: number | null; skills: number; crons: number; agents: number; functions: number }
+  ladder: LadderCounts
   manifest: { repo: string | null; generatedFrom: { branch?: string; commit?: string; note?: string } | null; probedAt: string | null; deployedApp: { name?: string; sdk?: string; baseFunctions?: number; mainRegisters?: number } | null; entries: number } | null
   functions: FunctionSpecEntry[]
 }
@@ -245,8 +245,8 @@ export interface AgentSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
     specPlusExperience: number; specOnly: number; byLayer: Record<AgentLayer, number>
     episodesAttributed: number; episodesUnattributed: number | null; episodesTotal: number | null
   }
-  /** Specs -> Skills -> Crons -> Agents, the counts the ladder header shows. */
-  ladder: { specs: number | null; skills: number; crons: number; agents: number }
+  /** Specs -> Skills -> Crons -> Agents -> Tools -> Functions, the counts the ladder header shows. */
+  ladder: LadderCounts
   pin: { ref: string; source: string }
   experienceSnapshot: {
     generatedAt: string
@@ -255,6 +255,94 @@ export interface AgentSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
     attribution: { fields: string[]; letters: string[]; rule: string } | null
   } | null
   agents: AgentSpecEntry[]
+}
+
+export interface LadderCounts { specs: number | null; skills: number; crons: number; agents: number; tools: number; functions: number }
+
+// ---------------------------------------------------------------------------
+// Layer 5: tools (public/tools/spec-tools.json). Two families, never merged:
+// `tri-cli` (one card per clap variant of gHashTag/t27 `tri`, read from the
+// source -- witness `source-parse` -- or diffed against `tri --help` --
+// `help-output`) and `mcp` (one card per MCP server registered in either repo).
+// ---------------------------------------------------------------------------
+export type ToolFamily = 'tri-cli' | 'mcp'
+export type ToolWitness = 'source-parse' | 'help-output'
+
+interface ToolEntryBase {
+  id: string
+  specPath: string
+  summary: Localized
+  name: Localized
+  sha256: string
+  typecheckOk: boolean
+  discarded: number
+  moduleName: string
+  inSpecCorpus: boolean
+  family: ToolFamily
+  repo: 'gHashTag/t27' | 'gHashTag/trinity'
+  source: string
+  aboutSource: string
+  agents: { letter: string; ok: boolean }[]
+  /** Skills whose own spec text (COMMAND / SUMMARY_EN) names this command. */
+  skills: { id: string; via: string[] }[]
+  links: { source: string; config: string | null; pinnedAt: string }
+  witness: ToolWitness
+  health: Health
+  messages: string[]
+  searchText: string
+}
+
+export interface TriToolEntry extends ToolEntryBase {
+  family: 'tri-cli'
+  command: string
+  variant: string
+  entry: string
+  actions: { name: string; about: string }[]
+  args: { name: string; about: string }[]
+  whenToUse: string
+  fields: Record<string, unknown> & { ID: string; KIND: 'tool'; FAMILY: 'tri-cli'; COMMAND: string; SOURCE: string; ABOUT: string; ABOUT_SOURCE: string; ACTIONS: string[]; AGENTS: string[]; AGENTS_NOTE: string; WHEN_TO_USE: string; WITNESS: ToolWitness; ENABLED: boolean }
+}
+
+export interface McpToolEntry extends ToolEntryBase {
+  family: 'mcp'
+  server: string
+  serverVersion: string
+  transport: 'stdio' | 'http'
+  launch: string
+  env: string[]
+  config: string
+  tools: { name: string; about: string; inputs: string[] }[]
+  resources: { path: string; about: string }[]
+  toolsNote: string
+  external: boolean
+  fields: Record<string, unknown> & { ID: string; KIND: 'tool'; FAMILY: 'mcp'; SERVER: string; TRANSPORT: string; LAUNCH: string; CONFIG: string; REPO: string; SOURCE: string; ABOUT: string; ABOUT_SOURCE: string; TOOLS: string[]; RESOURCES: string[]; TOOLS_NOTE: string; EXTERNAL: boolean; AGENTS: string[]; AGENTS_NOTE: string; WITNESS: ToolWitness; ENABLED: boolean }
+}
+
+export type ToolSpecEntry = TriToolEntry | McpToolEntry
+
+export interface ToolSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
+  counts: {
+    specs: number; tri: number; mcp: number; typecheckOk: number; enabled: number; withAgents: number; withSkills: number
+    triWithActions: number; triActions: number; mcpWithTools: number; mcpTools: number; mcpExternal: number
+    byWitness: Record<ToolWitness, number>; byRepo: Record<'gHashTag/t27' | 'gHashTag/trinity', number>
+  }
+  groups: { triByAgent: Record<string, string[]>; mcpByRepo: Record<string, string[]> }
+  ladder: LadderCounts
+  pin: { ref: string; source: string }
+  tools: ToolSpecEntry[]
+}
+
+let toolsPromise: Promise<ToolSpecCatalog> | null = null
+
+export function loadToolSpecs(): Promise<ToolSpecCatalog> {
+  if (!toolsPromise) {
+    toolsPromise = fetch('tools/spec-tools.json', { credentials: 'omit' }).then((r) => {
+      if (!r.ok) throw new Error(`could not load spec-tools (${r.status})`)
+      return r.json() as Promise<ToolSpecCatalog>
+    })
+    toolsPromise.catch(() => { toolsPromise = null })
+  }
+  return toolsPromise
 }
 
 let skillsPromise: Promise<SkillSpecCatalog> | null = null
@@ -320,7 +408,7 @@ export async function loadAgentSpecSource(specPath: string): Promise<string> {
 export const T27_DEFAULT_BRANCH = 'master'
 
 export function specSlug(specPath: string): string {
-  return specPath.replace(/^specs\/(skills|crons|agents|functions)\//, '').replace(/\.t27$/, '')
+  return specPath.replace(/^specs\/(skills|crons|agents|functions|tools\/(tri|mcp))\//, '').replace(/\.t27$/, '')
 }
 
 /** The canonical spec: the file in gHashTag/t27, opened in GitHub's editor. */
@@ -365,11 +453,14 @@ export async function requestControl(base: string, kind: 'skill' | 'cron', id: s
 // ---------------------------------------------------------------------------
 // Labels shared by both Explorers.
 // ---------------------------------------------------------------------------
-export const WITNESS_LABEL: Record<Witness | AgentWitness, { en: string; ru: string }> = {
+export const WITNESS_LABEL: Record<Witness | AgentWitness | ToolWitness, { en: string; ru: string }> = {
   'spec+code': { en: 'spec+code', ru: 'спека+код' },
   'spec-only': { en: 'spec-only', ru: 'только спека' },
   'code-only': { en: 'code-only', ru: 'только код' },
   'spec+experience': { en: 'spec+experience', ru: 'спека+опыт' },
+  // Tools: how the card's text was obtained from the program it describes.
+  'source-parse': { en: 'source-parse', ru: 'разбор исходника' },
+  'help-output': { en: 'help-output', ru: 'вывод --help' },
 }
 
 export function witnessOf<T extends { id: string }>(specById: Map<string, T>, id: string): Witness {

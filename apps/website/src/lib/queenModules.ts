@@ -1,7 +1,9 @@
 // The modules of the Queen's shell, and the only place their identity is
 // written down.
 //
-// One entry is one module: the glyph the rail draws, the number that opens it,
+// One entry is one module: the glyph the rail draws, the key that opens it (the
+// digits 1-0 are taken by the first ten; later modules use a letter, named in
+// their hint),
 // the one-line hint the rail shows, and a paragraph saying what that view
 // actually shows — checked against the view, not against its name. The homepage
 // renders one identical block per entry and the shell answers `?tab=` for each,
@@ -155,12 +157,27 @@ export const MODULES = [
     en: {
       name: 'FUNCTIONS',
       hint: 'The 28 Inngest functions of the bot, each stated by a .t27 spec',
-      body: 'The Function Explorer, embedded whole: the fifth layer, where a spec meets a running service. Each of the 28 Inngest functions of 999-multibots-telegraf is stated by a .t27 spec under specs/functions — trigger, event and legacy events or cron, steps in source order, retries, what happens on failure, side effects, the guard step, the safe probe and its result — and witnessed by a vendored copy of the functions manifest read from the repository. Live run counts come from the bot once a minute; when the status source does not answer, the page says so and shows unknown, never zero.',
+      body: 'The Function Explorer, embedded whole: the layer where a spec meets a running service — sixth on this site\'s ladder, after Tools, although specs/functions/README.md in t27 calls it layer 5 (as specs/tools/README.md does for tools; the two READMEs disagree and this page says so rather than picking one). Each of the 28 Inngest functions of 999-multibots-telegraf is stated by a .t27 spec under specs/functions — trigger, event and legacy events or cron, steps in source order, retries, what happens on failure, side effects, the guard step, the safe probe and its result — and witnessed by a vendored copy of the functions manifest read from the repository. Live run counts come from the bot once a minute; when the status source does not answer, the page says so and shows unknown, never zero.',
     },
     ru: {
       name: 'ФУНКЦИИ',
       hint: '28 функций Inngest бота, каждая заявлена спекой .t27',
-      body: 'Обозреватель функций целиком: пятый слой, где спека встречается с работающим сервисом. Каждая из 28 функций Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, шаг-страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория. Живые счётчики запусков приходят с бота раз в минуту; когда источник статуса не отвечает, страница говорит об этом и показывает «неизвестно», а не ноль.',
+      body: 'Обозреватель функций целиком: слой, где спека встречается с работающим сервисом — шестой на лестнице этого сайта, после инструментов, хотя specs/functions/README.md в t27 называет его пятым (как и specs/tools/README.md — инструменты; два README расходятся, и страница говорит об этом, а не выбирает одно). Каждая из 28 функций Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, шаг-страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория. Живые счётчики запусков приходят с бота раз в минуту; когда источник статуса не отвечает, страница говорит об этом и показывает «неизвестно», а не ноль.',
+    },
+  },
+  {
+    tab: 'tools',
+    key: 't',
+    glyph: '⟐',
+    en: {
+      name: 'TOOLS',
+      hint: 'The tri CLI and the MCP servers, each stated by a .t27 spec (key t)',
+      body: 'The Tool Explorer, embedded whole: the tools every agent should know. The fifth layer of the ladder, Specs → Skills → Crons → Agents → Tools → Functions, in two families: the commands of the t27 tri CLI, read from the clap enum and its doc comments, and the MCP servers of both repositories with their tool lists, read from their manifests and source. Each card is a .t27 spec under specs/tools first, then its synopsis, when to use it, the letters that own it, and the file and commit it was read from; a tool no agent has bound says so.',
+    },
+    ru: {
+      name: 'ИНСТРУМЕНТЫ',
+      hint: 'tri CLI и MCP-серверы, каждый заявлен спекой .t27 (клавиша t)',
+      body: 'Обозреватель инструментов целиком: инструменты, о которых должен знать каждый агент. Пятый слой лестницы — спеки → скиллы → кроны → агенты → инструменты → функции — в двух семействах: команды t27 tri CLI, прочитанные из enum clap и его doc-комментариев, и MCP-серверы обоих репозиториев со списками их инструментов, прочитанными из манифестов и исходников. У каждой карточки сначала спека .t27 в specs/tools, затем синопсис, когда использовать, буквы-владельцы и файл с коммитом, из которого она прочитана; инструмент, который не привязал ни один агент, говорит об этом сам.',
     },
   },
 ] as const

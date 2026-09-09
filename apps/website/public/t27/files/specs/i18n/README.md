@@ -1,5 +1,9 @@
 # specs/i18n -- translation contracts for the agent specs
 
+> **Where this lives.** This directory is canonical in gHashTag/t27; gHashTag/trinity
+> vendors a byte-identical copy at `apps/website/public/t27/files/specs/i18n/` and the
+> bundle files the contracts point to live in trinity only.
+
 Specs are English-only (t27 `LANG-EN`: `bootstrap/build.rs` fails the build on any
 Cyrillic under `specs/`). A translation is therefore never inside a `.t27`. It is
 **connected through** a `.t27`: one module per locale under this directory declares

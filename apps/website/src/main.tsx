@@ -35,13 +35,15 @@ const BlogIndex = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.
 const BlogPost = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogPost })))
 // Lazy matters more than usual here: this page pulls a 477 KB compiler wasm.
 const SpecExplorer = lazy(() => import('./pages/SpecExplorer.tsx'))
-// The Explorer family: the same shell over four other corpora — the skills
+// The Explorer family: the same shell over five other corpora — the skills
 // that stand on those specs, the jobs that run on a schedule, the agents that
-// hold the skills, and the owner's own client memory.
+// hold the skills, the tools those agents should know, and the owner's own
+// client memory.
 const SkillExplorer = lazy(() => import('./pages/SkillExplorer.tsx'))
 const CronExplorer = lazy(() => import('./pages/CronExplorer.tsx'))
 const AgentExplorer = lazy(() => import('./pages/AgentExplorer.tsx'))
 const FunctionExplorer = lazy(() => import('./pages/FunctionExplorer.tsx'))
+const ToolExplorer = lazy(() => import('./pages/ToolExplorer.tsx'))
 const ClientsConsole = lazy(() => import('./pages/ClientsConsole.tsx'))
 
 const RouteFallback = () => (
@@ -95,6 +97,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/crons" element={<CronExplorer />} />
             <Route path="/agents" element={<AgentExplorer />} />
             <Route path="/functions" element={<FunctionExplorer />} />
+            <Route path="/tools" element={<ToolExplorer />} />
             {/* Not in the navigation: the console shows one person's
                 correspondence and opens only for the owner. */}
             <Route path="/clients" element={<ClientsConsole />} />

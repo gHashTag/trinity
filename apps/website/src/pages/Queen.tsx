@@ -316,6 +316,13 @@ const COPY = {
     agentsDirective: "AGENTS ARE SPECS",
     agentsDirectiveBody:
       "Level by level the system is built: Specs → Skills → Crons → Agents. An agent exists when a .t27 spec under specs/agents states it — its letter, domain, archetype, the skills it holds, its entry and exit invariant — bound by SOUL.md and AGENTS.md at the repository root. Its crons are derived from the crons' RUNS, never listed by hand. Its experience is joined from the episode log only when an episode names its letter; an agent no episode names says so, and the episodes that name no one are counted as unattributed, not assigned.",
+    toolsView: "TOOLS",
+    toolsHint: "The tri CLI and the MCP servers, each stated by a .t27 spec (key t)",
+    toolsDirective: "TOOLS ARE SPECS",
+    toolsDirectiveBody:
+      "The fifth layer: Specs → Skills → Crons → Agents → Tools → Functions — the tools every agent should know. A tool exists when a .t27 spec under specs/tools states it: a command of the t27 tri CLI, read from the clap enum and its doc comments, or an MCP server of either repository with its tool list, read from the manifest and source. The witness names how the text was obtained (source-parse, help-output). An agent owns a tool only when both the agent's spec and a source say so; a tool no letter has bound says so, and nothing on this page is typed by hand.",
+    toolsOwned: "owned by an agent",
+    toolsUnowned: "no owner yet",
     agentsLoading: "Loading the Explorer…",
     agentsSpecs: "specs",
     agentsSpecCode: "spec+code",
@@ -327,7 +334,7 @@ const COPY = {
     functionsHint: "The 28 Inngest functions of the bot, each stated by a .t27 spec",
     functionsDirective: "FUNCTIONS ARE SPECS",
     functionsDirectiveBody:
-      "The fifth layer, where a spec meets a running service: each Inngest function of 999-multibots-telegraf is stated by a .t27 spec under specs/functions — its trigger, event and legacy events or cron, its steps in source order, retries, what happens on failure, its side effects, guard, safe probe and probe result — and witnessed by a vendored copy of the functions manifest read from the repository at a named commit. Where spec and manifest disagree the card says so. Live run counts are read from the bot once a minute and never invented: an offline status source is shown as offline, and a count it did not send is unknown, not zero.",
+      "The layer where a spec meets a running service — sixth on this site's ladder, after Tools; t27 specs/functions/README.md calls it layer 5, as specs/tools/README.md does for tools, and the two READMEs disagree: each Inngest function of 999-multibots-telegraf is stated by a .t27 spec under specs/functions — its trigger, event and legacy events or cron, its steps in source order, retries, what happens on failure, its side effects, guard, safe probe and probe result — and witnessed by a vendored copy of the functions manifest read from the repository at a named commit. Where spec and manifest disagree the card says so. Live run counts are read from the bot once a minute and never invented: an offline status source is shown as offline, and a count it did not send is unknown, not zero.",
     specsTitle: "SPEC CORPUS",
     specsDirective: "STANDING DIRECTIVE",
     specsDirectiveBody:
@@ -604,6 +611,13 @@ const COPY = {
     agentsDirective: "АГЕНТЫ — ЭТО СПЕКИ",
     agentsDirectiveBody:
       "Уровень за уровнем мы создаём систему: спеки → скиллы → кроны → агенты. Агент существует, когда его заявляет спека .t27 в specs/agents — буква, домен, архетип, скиллы, которые он держит, входной и выходной инвариант, — под законом SOUL.md и AGENTS.md в корне репозитория. Его кроны выводятся из RUNS кронов, а не пишутся руками. Его опыт присоединяется из журнала эпизодов только когда эпизод называет его букву; агент, которого не называет ни один эпизод, говорит об этом сам, а эпизоды без имени считаются неатрибутированными, а не приписываются.",
+    toolsView: "ИНСТРУМЕНТЫ",
+    toolsHint: "tri CLI и MCP-серверы, каждый заявлен спекой .t27 (клавиша t)",
+    toolsDirective: "ИНСТРУМЕНТЫ — ЭТО СПЕКИ",
+    toolsDirectiveBody:
+      "Пятый слой: спеки → скиллы → кроны → агенты → инструменты → функции — инструменты, о которых должен знать каждый агент. Инструмент существует, когда его заявляет спека .t27 в specs/tools: команда t27 tri CLI, прочитанная из enum clap и его doc-комментариев, или MCP-сервер любого из двух репозиториев со списком инструментов, прочитанным из манифеста и исходника. Свидетель называет, как получен текст (source-parse, help-output). Агент владеет инструментом только когда об этом говорят и спека агента, и источник; инструмент, который не привязала ни одна буква, говорит об этом сам, и ничего на этой странице не набрано руками.",
+    toolsOwned: "с агентом-владельцем",
+    toolsUnowned: "без владельца",
     agentsLoading: "Загружаем Обозреватель…",
     agentsSpecs: "спек",
     agentsSpecCode: "спека+код",
@@ -615,7 +629,7 @@ const COPY = {
     functionsHint: "28 функций Inngest бота, каждая заявлена спекой .t27",
     functionsDirective: "ФУНКЦИИ — ЭТО СПЕКИ",
     functionsDirectiveBody:
-      "Пятый слой, где спека встречается с работающим сервисом: каждая функция Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория на названном коммите. Где спека и манифест расходятся, карточка говорит об этом. Живые счётчики запусков читаются с бота раз в минуту и не придумываются: недоступный источник статуса показан как недоступный, а счётчик, которого он не прислал, — как «неизвестно», а не ноль.",
+      "Слой, где спека встречается с работающим сервисом — шестой на лестнице этого сайта, после инструментов; specs/functions/README.md в t27 называет его пятым, как и specs/tools/README.md — инструменты, и два README расходятся: каждая функция Inngest бота 999-multibots-telegraf заявлена спекой .t27 в specs/functions — триггер, событие и старые события или крон, шаги в порядке исходника, повторы, действие при сбое, побочные эффекты, страж, безопасная проба и её результат — и засвидетельствована копией манифеста функций, прочитанного из репозитория на названном коммите. Где спека и манифест расходятся, карточка говорит об этом. Живые счётчики запусков читаются с бота раз в минуту и не придумываются: недоступный источник статуса показан как недоступный, а счётчик, которого он не прислал, — как «неизвестно», а не ноль.",
     specsTitle: "КОРПУС СПЕК",
     specsDirective: "ПОСТОЯННАЯ ДИРЕКТИВА",
     specsDirectiveBody:
@@ -2263,9 +2277,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // Ninth: the agents themselves — the fourth layer, who holds the skills
     // under SOUL.md and AGENTS.md, with their experience joined by evidence.
     { view: "agents" as const, glyph: "Ω", label: c.agentsView, hint: c.agentsHint },
-    // Tenth: the functions — the fifth layer, where a spec meets a running
+    // Tenth: the functions — where a spec meets a running
     // service, witnessed by the vendored manifest and read live once a minute.
     { view: "functions" as const, glyph: "ƒ", label: c.functionsView, hint: c.functionsHint },
+    // Eleventh (key t; the digits are exhausted): the tools — what every agent should know: the
+    // tri CLI and the MCP servers, each read from its spec and its source.
+    { view: "tools" as const, glyph: "⟐", label: c.toolsView, hint: c.toolsHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -2651,13 +2668,13 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 broken: c.specsBroken,
               }}
             />
-          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" ? (
+          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" || boardView === "tools" ? (
             <QueenAgents
               kind={boardView}
               showDirective={isNarrow}
               c={{
-                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : c.agentsDirective,
-                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : c.agentsDirectiveBody,
+                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : c.agentsDirective,
+                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : c.agentsDirectiveBody,
                 open: c.specsOpen,
                 loading: c.agentsLoading,
                 specs: c.agentsSpecs,
@@ -2666,6 +2683,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 typecheck: c.agentsTypecheck,
                 specPlusExperience: c.agentsSpecExperience,
                 unattributed: c.agentsUnattributed,
+                toolsOwned: c.toolsOwned,
+                toolsUnowned: c.toolsUnowned,
               }}
             />
           ) : boardView === "comb" ? (
@@ -3076,6 +3095,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                     ? c.agentsDirective
                     : boardView === "functions"
                       ? c.functionsDirective
+                    : boardView === "tools"
+                      ? c.toolsDirective
                       : c.hudIntel
           }
         >

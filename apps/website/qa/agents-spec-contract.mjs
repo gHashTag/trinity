@@ -18,7 +18,7 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
+import { generate, SKILLS_OUT, CRONS_OUT, AGENTS_OUT, FUNCTIONS_OUT, TOOLS_OUT, FUNCTIONS_MANIFEST, EXPERIENCE_PATH, AGENT_COUNT, AGENT_LAYERS, HOSTS, CONTROLS, ON_FAILURE, FN_TRIGGERS, FN_ON_FAILURE, FN_SIDE_EFFECTS, FN_PROBE_RESULTS, FN_CONTROLS, functionDifferences, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl, specSlug } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS, HUD_KEYS } from '../src/components/queenHud.ts'
@@ -29,6 +29,7 @@ const crons = JSON.parse(readFileSync(CRONS_OUT, 'utf8'))
 const agents = JSON.parse(readFileSync(AGENTS_OUT, 'utf8'))
 const functions = JSON.parse(readFileSync(FUNCTIONS_OUT, 'utf8'))
 const functionsCode = JSON.parse(readFileSync(FUNCTIONS_MANIFEST, 'utf8'))
+const tools = JSON.parse(readFileSync(TOOLS_OUT, 'utf8'))
 const experience = JSON.parse(readFileSync(EXPERIENCE_PATH, 'utf8'))
 const skillsCode = JSON.parse(readFileSync('public/skills/manifest.json', 'utf8'))
 const cronsCode = JSON.parse(readFileSync('public/crons/manifest.json', 'utf8'))
@@ -223,8 +224,14 @@ for (const a of agents.agents) {
   // Crons: exactly the crons whose RUNS name one of the agent's skills.
   const expectCrons = crons.crons.filter((c) => c.runs.some((id) => a.fields.SKILLS.includes(id))).map((c) => c.id).sort()
   assert.deepEqual(a.crons, expectCrons, `${a.id}: crons are not derived from RUNS`)
-  // Tools (layer 5): optional; when present, an empty list explains itself.
-  assert.deepEqual(a.tools, a.fields.TOOLS ?? [])
+  // Tools (layer 5): every ID resolves to a tool spec that names the letter back; an empty list explains itself.
+  assert.deepEqual(a.tools.map((x) => x.id), a.fields.TOOLS ?? [])
+  for (const x of a.tools) {
+    assert.equal(x.ok, true, `${a.id}: TOOLS ${x.id} unresolved`)
+    const tl = tools.tools.find((t) => t.id === x.id)
+    assert.ok(tl, `${a.id}: TOOLS ${x.id} has no tool spec`)
+    assert.ok(tl.agents.some((g) => g.letter === a.letter), `${a.id}: ${x.id} does not name ${a.letter} in AGENTS`)
+  }
   if ('TOOLS' in a.fields && a.fields.TOOLS.length === 0) assert.ok(a.fields.TOOLS_NOTE, `${a.id}: empty TOOLS without TOOLS_NOTE`)
   // Experience: joined by LETTER, witness follows the count, zero says so.
   const ex = experience.agents?.[a.letter]
@@ -247,9 +254,10 @@ assert.equal(agents.counts.specPlusExperience, agents.agents.filter((a) => a.wit
 assert.equal(agents.counts.specOnly, agents.agents.filter((a) => a.witness === 'spec-only').length)
 assert.equal(agents.counts.withSkills, agents.agents.filter((a) => a.skills.length).length)
 assert.equal(agents.counts.withCrons, agents.agents.filter((a) => a.crons.length).length)
+assert.equal(agents.counts.withTools, agents.agents.filter((a) => a.tools.length).length)
 assert.equal(agents.counts.withExperience, agents.counts.specPlusExperience)
 for (const l of AGENT_LAYERS) assert.equal(agents.counts.byLayer[l], agents.agents.filter((a) => a.fields.LAYER === l).length)
-assert.deepEqual(agents.ladder, { specs: t27Manifest.specCount, skills: skills.skills.length, crons: crons.crons.length, agents: agents.agents.length }, 'the ladder counts are the catalogs')
+assert.deepEqual(agents.ladder, { specs: t27Manifest.specCount, skills: skills.skills.length, crons: crons.crons.length, agents: agents.agents.length, tools: tools.tools.length, functions: functions.functions.length }, 'the ladder counts are the catalogs, tools and functions included')
 // The snapshot's own attribution rule names the letters it can assign; every agent letter is among them.
 for (const a of agents.agents) assert.ok(experience.attribution.letters.includes(a.letter), `${a.letter}: the attribution rule cannot assign this letter`)
 
@@ -324,13 +332,13 @@ assert.equal(functions.counts.withDifferences, functions.functions.filter((f) =>
 for (const t of FN_TRIGGERS) assert.equal(functions.counts.byTrigger[t], functions.functions.filter((f) => f.fields.TRIGGER === t).length)
 for (const s of FN_SIDE_EFFECTS) assert.equal(functions.counts.bySideEffect[s], functions.functions.filter((f) => f.fields.SIDE_EFFECTS.includes(s)).length)
 for (const p of FN_PROBE_RESULTS) assert.equal(functions.counts.byProbeResult[p], functions.functions.filter((f) => f.fields.PROBE_RESULT === p).length)
-assert.deepEqual(functions.ladder, { specs: t27Manifest.specCount, skills: skills.skills.length, crons: crons.crons.length, agents: agents.agents.length, functions: functions.functions.length }, 'the functions ladder counts are the catalogs')
+assert.deepEqual(functions.ladder, agents.ladder, 'the functions catalog shows the same ladder as the agents catalog')
 // The deployed app the manifest describes registers as many functions as the manifest lists.
 assert.equal(functionsCode.deployedApp.mainRegisters, functionsCode.functions.length, 'main registers every manifest function')
 assert.equal(functionsCode.deployedApp.baseFunctions, functions.counts.deployed, 'the production build carries exactly the deployed functions')
 
-// 5. The Queen knows the four explorer views, at the keys the modules list promises.
-for (const tab of ['skills', 'crons', 'agents', 'functions']) {
+// 5. The Queen knows the five explorer views, at the keys the modules list promises.
+for (const tab of ['skills', 'crons', 'agents', 'functions', 'tools']) {
   const m = MODULES.find((x) => x.tab === tab)
   assert.ok(m, `queenModules has no ${tab} entry`)
   assert.ok(HUD_VIEWS.includes(tab), `HUD_VIEWS does not include ${tab}`)
@@ -343,6 +351,7 @@ assert.equal(new Set(HUD_KEYS).size, HUD_KEYS.length, 'keys are unique')
 for (const [i, m] of MODULES.entries()) assert.equal(m.key, HUD_KEYS[i], `module ${m.tab} carries key ${m.key} at position ${i + 1} (expected ${HUD_KEYS[i]})`)
 assert.equal(MODULES.find((m) => m.tab === 'agents').key, '9', 'AGENTS opens on 9')
 assert.equal(MODULES.find((m) => m.tab === 'functions').key, '0', 'FUNCTIONS opens on 0, the tenth key')
+assert.equal(MODULES.find((m) => m.tab === 'tools').key, 't', 'TOOLS opens on t: the digits are spent after FUNCTIONS on 0')
 
 // 6. Translations are connected through .t27 contract specs, never hardcoded.
 //    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists
@@ -366,6 +375,7 @@ for (const l of skills.i18n) {
   const ag = agents.i18n.find((x) => x.locale === l.locale)
   assert.ok(ag, `${l.locale}: contract missing from agents.i18n`)
   assert.ok(l.scope.includes('specs/agents'), `${l.spec}: SCOPE must name specs/agents`)
+  assert.ok(l.scope.includes('specs/tools'), `${l.spec}: SCOPE must name specs/tools`)
   assert.equal(l.sha256, sha256(readFileSync(join('public/t27/files', l.spec))), `${l.spec}: sha256 in the catalog is not the vendored file`)
   assert.ok(existsSync(join(REPO_ROOT, l.bundle)), `${l.spec}: bundle ${l.bundle} does not exist`)
   const bundle = JSON.parse(readFileSync(join(REPO_ROOT, l.bundle), 'utf8'))
@@ -375,7 +385,9 @@ for (const l of skills.i18n) {
   const fn = functions.i18n.find((x) => x.locale === l.locale)
   assert.ok(fn, `${l.locale}: contract missing from functions.i18n`)
   assert.ok(l.scope.includes('specs/functions'), `${l.spec}: SCOPE must name specs/functions`)
-  const ids = new Set([...skillIds, ...cronIds, ...agentIds, ...functionIds])
+  const tl = tools.i18n.find((x) => x.locale === l.locale)
+  assert.ok(tl, `${l.locale}: contract missing from tools.i18n`)
+  const ids = new Set([...skillIds, ...cronIds, ...agentIds, ...functionIds, ...tools.tools.map((t) => t.id)])
   for (const [id, entry] of Object.entries(bundle.entries)) {
     assert.ok(ids.has(id), `${l.bundle}: orphan entry ${id} (ORPHANS_ALLOWED is false)`)
     for (const k of Object.keys(entry)) assert.ok(l.fields.includes(k), `${l.bundle}: ${id}.${k} not in FIELDS ${l.fields.join(',')}`)

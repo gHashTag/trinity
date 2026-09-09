@@ -37,6 +37,10 @@ pub const CLARA_ROLE : str = "TA1: AR Language Implementation - implements AR la
 ; cites that source or says why the list is empty.
 pub const SKILLS : [0]str = [];
 pub const SKILLS_NOTE : str = "No source binds a skill to this agent: the alphabet key files point at specs and docs, not at a skill directory, no .claude/agents file names one, and specs/OWNERS.md has no row for it.";
+; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
+; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
+pub const TOOLS : [1]str = ["tri/gen"];
+pub const TOOLS_NOTE : str = ".claude/agents/agent-c-compiler.md:40 names tri gen (trigger On tri gen command, line 7). Line 41 names tri seal, which is not a tri command at this commit (tri cell seal is not bound here).";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;

@@ -400,7 +400,7 @@ test('an agent spec typechecks, resolves its skills, derives its crons from RUNS
   assert.equal(a.links.alphabet, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/docs/agents/AGENTS_ALPHABET.md`)
   assert.equal(a.links.experienceLog, `https://github.com/gHashTag/t27/tree/${'c'.repeat(40)}/.trinity/experience`)
   assert.equal(r.agents.pin.ref, 'c'.repeat(40))
-  assert.deepEqual(r.agents.ladder, { specs: null, skills: 1, crons: 1, agents: 1 })
+  assert.deepEqual(r.agents.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 0, functions: 0 })
   assert.equal(r.agents.counts.episodesUnattributed, 2)
   assert.equal(r.agents.counts.withCrons, 1)
 })
@@ -430,19 +430,178 @@ test('an unknown skill ID, an empty SKILLS without a note, a wrong ID, a bad LAY
   assert.equal(r.agents.agents.find((x) => x.letter === 'A').health, 'fail')
 })
 
-test('the module and file name follow the letter; ORDINAL is a u8 in 1..27; TOOLS is optional but an empty one needs a note', () => {
+test('the module and file name follow the letter; ORDINAL is a u8 in 1..27; TOOLS is optional but an empty one needs a note and a tool spec', () => {
   const r = withAgents([
     { path: 'specs/agents/a.t27', text: agentSrc('A', { module: 'agent_b' }) },
     { path: 'specs/agents/c.t27', text: agentSrc('C', { ordinal: 28 }) },
     { path: 'specs/agents/d.t27', text: agentSrc('D', { ordinal: 3, extra: 'pub const TOOLS : [0]str = [];' }) },
     { path: 'specs/agents/e.t27', text: agentSrc('E', { ordinal: 4, extra: 'pub const TOOLS : [1]str = ["tri/cell"];\npub const TOOLS_NOTE : str = "alphabet Key files";' }) },
-  ])
+  ], { toolSpecs: analyzeSpecFiles(analyze, toolFiles(['tri', 'cell', triToolSrc('cell', { agents: ['E'] })])) })
   const p = r.problems.join('\n')
   assert.match(p, /a\.t27: module must be agent_a, is agent_b/)
   assert.match(p, /c\.t27: ORDINAL 28 is not 1\.\.27/)
   assert.match(p, /d\.t27: empty TOOLS needs a TOOLS_NOTE/)
   assert.ok(!/e\.t27/.test(p), `e.t27 must be clean:\n${p}`)
-  assert.deepEqual(r.agents.agents.find((x) => x.letter === 'E').tools, ['tri/cell'])
+  assert.deepEqual(r.agents.agents.find((x) => x.letter === 'E').tools, [{ id: 'tri/cell', ok: true }])
+})
+
+// ---------------------------------------------------------------------------
+// Layer 5: tools -- the tri CLI and the MCP servers.
+// ---------------------------------------------------------------------------
+const triToolSrc = (name, { module = `tool_tri_${name}`, id = `tri/${name}`, family = 'tri-cli', actions = ['checkpoint', 'seal'], actionsAbout = ['Records a step', ''], agents = [], agentsNote = 'no source binds a letter', witness = 'source-parse', about = 'Records a checkpoint step in the active cell.', aboutSource = 'CellAction enum cli/tri/src/main.rs:448', extra = '' } = {}) => `module ${module};
+pub const KIND : str = "tool";
+pub const FAMILY : str = ${q(family)};
+pub const ID : str = ${q(id)};
+pub const COMMAND : str = ${q(`tri ${name}`)};
+pub const VARIANT : str = "Commands::Cell";
+pub const SOURCE : str = "cli/tri/src/main.rs";
+pub const ENTRY : str = "cli/tri/src/main.rs";
+pub const ABOUT : str = ${q(about)};
+pub const ABOUT_SOURCE : str = ${q(aboutSource)};
+pub const ACTIONS : [${actions.length}]str = ${q(actions)};
+pub const ACTIONS_ABOUT : [${actionsAbout.length}]str = ${q(actionsAbout)};
+pub const ARGS : [0]str = [];
+pub const AGENTS : [${agents.length}]str = ${q(agents)};
+pub const AGENTS_NOTE : str = ${q(agentsNote)};
+pub const WHEN_TO_USE : str = ${q(about)};
+pub const WITNESS : str = ${q(witness)};
+pub const ENABLED : bool = true;
+${extra}`
+const mcpToolSrc = (name, { module = `tool_mcp_${name.replace(/-/g, '_')}`, tools = ['tri_issue'], toolsAbout = ['GitHub Issue management'], toolsInputs = ['action,title'], toolsNote = '', external = false, config = '.mcp.json', agents = [], agentsNote = 'no source binds a letter', extra = '' } = {}) => `module ${module};
+pub const KIND : str = "tool";
+pub const FAMILY : str = "mcp";
+pub const ID : str = ${q(`mcp/${name}`)};
+pub const SERVER : str = ${q(name)};
+pub const SERVER_VERSION : str = "1.0.0";
+pub const TRANSPORT : str = "stdio";
+pub const LAUNCH : str = "npx -y ${name}";
+pub const ENV : [1]str = ["TOKEN"];
+pub const CONFIG : str = ${q(config)};
+pub const REPO : str = "gHashTag/t27";
+pub const SOURCE : str = ".mcp.json";
+pub const ABOUT : str = "SSOT Integration";
+pub const ABOUT_SOURCE : str = "manifest.json description";
+pub const TOOLS : [${tools.length}]str = ${q(tools)};
+pub const TOOLS_ABOUT : [${toolsAbout.length}]str = ${q(toolsAbout)};
+pub const TOOLS_INPUTS : [${toolsInputs.length}]str = ${q(toolsInputs)};
+pub const RESOURCES : [0]str = [];
+pub const RESOURCES_ABOUT : [0]str = [];
+pub const TOOLS_NOTE : str = ${q(toolsNote)};
+pub const EXTERNAL : bool = ${external};
+pub const AGENTS : [${agents.length}]str = ${q(agents)};
+pub const AGENTS_NOTE : str = ${q(agentsNote)};
+pub const WITNESS : str = "source-parse";
+pub const ENABLED : bool = true;
+${extra}`
+const toolFiles = (...triples) => triples.map(([sub, base, text]) => ({ path: `specs/tools/${sub}/${base}.t27`, text }))
+const withTools = (toolSpecs, agentSpecs = [], over = {}) => build(
+  files('specs/skills', skillSrc('trinity/x', { module: 'skill_x0', summary: 'Runs tri cell seal after the loop' })),
+  files('specs/crons', cronSrc('github-actions/trinity/x', { module: 'cron_x0', runs: ['trinity/x'] })),
+  { toolSpecs: analyzeSpecFiles(analyze, toolSpecs), agentSpecs: analyzeSpecFiles(analyze, agentSpecs), ...over },
+)
+
+test('a tri tool spec typechecks into a card with its actions, its owner letters, the skills whose text names it, and pinned source links', () => {
+  const r = withTools(
+    toolFiles(['tri', 'cell', triToolSrc('cell', { agents: ['W'], agentsNote: 'AGENTS_ALPHABET.md:144' })]),
+    agentFiles(['W', agentSrc('W', { ordinal: 23, extra: 'pub const TOOLS : [1]str = ["tri/cell"];\npub const TOOLS_NOTE : str = "alphabet Key files";' })]),
+    { experience },
+  )
+  assert.deepEqual(r.problems, ['specs/agents: 1 agent spec(s), the alphabet has 27'])
+  const t = r.tools.tools[0]
+  assert.equal(t.id, 'tri/cell')
+  assert.equal(t.family, 'tri-cli')
+  assert.equal(t.command, 'tri cell')
+  assert.deepEqual(t.actions, [{ name: 'checkpoint', about: 'Records a step' }, { name: 'seal', about: '' }])
+  assert.deepEqual(t.agents, [{ letter: 'W', ok: true }])
+  assert.deepEqual(t.skills, [{ id: 'trinity/x', via: ['SUMMARY_EN'] }])
+  assert.equal(t.witness, 'source-parse')
+  assert.equal(t.health, 'ok')
+  assert.equal(t.links.source, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/cli/tri/src/main.rs`)
+  assert.equal(t.links.pinnedAt, 'c'.repeat(40))
+  assert.ok(t.searchText.includes('checkpoint') && t.searchText.includes('w'))
+  assert.deepEqual(r.tools.ladder, { specs: null, skills: 1, crons: 1, agents: 1, tools: 1, functions: 0 })
+  assert.equal(r.tools.counts.tri, 1)
+  assert.equal(r.tools.counts.triActions, 2)
+  assert.equal(r.tools.counts.withAgents, 1)
+  assert.deepEqual(r.tools.groups.triByAgent, { W: ['tri/cell'] })
+  // and the agent side sees the same binding
+  assert.deepEqual(r.agents.agents[0].tools, [{ id: 'tri/cell', ok: true }])
+})
+
+test('an MCP server spec becomes a card with its launch line, its tools table and its config; an external server may list none', () => {
+  const r = withTools(toolFiles(
+    ['mcp', 'tri-ssot', mcpToolSrc('tri-ssot')],
+    ['mcp', 'needle', mcpToolSrc('needle', { tools: [], toolsAbout: [], toolsInputs: [], external: true, toolsNote: 'published package, list not in repo' })],
+  ))
+  assert.deepEqual(r.problems, [])
+  const [needle, ssot] = r.tools.tools
+  assert.equal(ssot.id, 'mcp/tri-ssot')
+  assert.equal(ssot.family, 'mcp')
+  assert.equal(ssot.launch, 'npx -y tri-ssot')
+  assert.deepEqual(ssot.tools, [{ name: 'tri_issue', about: 'GitHub Issue management', inputs: ['action', 'title'] }])
+  assert.deepEqual(ssot.env, ['TOKEN'])
+  assert.equal(ssot.config, '.mcp.json')
+  assert.equal(ssot.external, false)
+  assert.equal(needle.external, true)
+  assert.deepEqual(needle.tools, [])
+  assert.equal(r.tools.counts.mcp, 2)
+  assert.equal(r.tools.counts.mcpTools, 1)
+  assert.equal(r.tools.counts.mcpExternal, 1)
+  assert.deepEqual(r.tools.groups.mcpByRepo, { 'gHashTag/t27': ['mcp/needle', 'mcp/tri-ssot'], 'gHashTag/trinity': [] })
+})
+
+test('tool problems: wrong directory family, unknown letter, empty AGENTS without a note, bad witness, empty ABOUT, an in-repo server with no tools, duplicate IDs, a one-way binding', () => {
+  const r = withTools(
+    toolFiles(
+      ['tri', 'cell', triToolSrc('cell', { family: 'mcp', agents: ['Q9'], witness: 'guessed', about: '' })],
+      ['tri', 'gen', triToolSrc('gen', { id: 'tri/cell', agents: [], agentsNote: '' })],
+      ['mcp', 'local', mcpToolSrc('local', { tools: [], toolsAbout: [], toolsInputs: [], external: false, agents: ['A'] })],
+    ),
+    agentFiles(['A', agentSrc('A', { extra: 'pub const TOOLS : [1]str = ["tri/gen"];\npub const TOOLS_NOTE : str = "x";' })]),
+  )
+  const p = r.problems.join('\n')
+  assert.match(p, /tri\/cell\.t27: FAMILY must be "tri-cli" under tri\/, is "mcp"/)
+  assert.match(p, /tri\/cell\.t27: AGENTS names "Q9", which is not a letter of the alphabet/)
+  assert.match(p, /tri\/cell\.t27: WITNESS "guessed" is not one of source-parse\|help-output/)
+  assert.match(p, /tri\/cell\.t27: ABOUT is empty/)
+  assert.match(p, /tri\/gen\.t27: duplicate tool ID tri\/cell/)
+  assert.match(p, /tri\/gen\.t27: empty AGENTS needs an AGENTS_NOTE/)
+  assert.match(p, /mcp\/local\.t27: empty TOOLS needs a TOOLS_NOTE/)
+  assert.match(p, /mcp\/local\.t27: an in-repo server with no tools listed/)
+  // A binds tri/gen, but tri/gen's spec does not name A; local names A, but A does not name mcp/local.
+  assert.match(p, /specs\/agents\/a\.t27: TOOLS names tri\/gen, which has no tool spec|specs\/agents\/a\.t27: TOOLS names tri\/gen, but specs\/tools\/tri\/gen\.t27 AGENTS does not name A/)
+  assert.match(p, /mcp\/local\.t27: AGENTS names A, but specs\/agents\/a\.t27 TOOLS does not name mcp\/local/)
+  assert.equal(r.tools.tools.find((t) => t.specPath.endsWith('tri/cell.t27')).health, 'fail')
+})
+
+test('a tool spec must not carry a home path: the witness is the repository, not one machine', () => {
+  const r = withTools(toolFiles(['mcp', 'homey', mcpToolSrc('homey', { extra: '' }).replace('npx -y homey', '/home/someone/bin/homey')]))
+  // The generator itself does not police paths; the QA contract does. Here we only pin that LAUNCH is passed through verbatim so the contract can see it.
+  assert.equal(r.tools.tools[0].launch, '/home/someone/bin/homey')
+})
+
+test('tool translations come through the same i18n contract once SCOPE names specs/tools', () => {
+  const spec = i18nFiles(i18nSrc({ scope: ['specs/skills', 'specs/crons', 'specs/agents', 'specs/tools'] }))
+  const bundles = new Map([['apps/website/i18n/agents.ru.json', ruBundle({ 'tri/cell': { SUMMARY: 'Ячейка.' } })]])
+  const r = withTools(toolFiles(['tri', 'cell', triToolSrc('cell')]), [], { i18nSpecs: analyzeSpecFiles(analyze, spec), bundles })
+  assert.equal(r.tools.tools[0].summary.ru, 'Ячейка.')
+  assert.equal(r.tools.i18n[0].coverage.n, 1)
+})
+
+test('the committed tool catalog: 62 specs in two families, every agent link resolved both ways, RU summaries for all', async () => {
+  const { generate } = await import('./agents-from-specs.mjs')
+  const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
+  assert.deepEqual(r.problems, [])
+  assert.equal(r.tools.tools.length, 62)
+  assert.equal(r.tools.counts.tri, 52)
+  assert.equal(r.tools.counts.mcp, 10)
+  const byId = new Map(r.tools.tools.map((t) => [t.id, t]))
+  for (const t of r.tools.tools) {
+    assert.ok(t.agents.every((a) => a.ok), `${t.id}: unresolved agent`)
+    assert.ok(t.summary.ru && /[\u0400-\u04ff]/.test(t.summary.ru), `${t.id}: no Russian summary`)
+    assert.ok(!/\/(home|Users)\//.test(t.launch ?? ''), `${t.id}: LAUNCH carries a home path`)
+  }
+  for (const a of r.agents.agents) for (const t of a.tools) assert.ok(byId.get(t.id)?.agents.some((x) => x.letter === a.letter), `${a.id} -> ${t.id} is one-way`)
 })
 
 test('agent translations come through the same i18n contract once SCOPE names specs/agents', () => {
