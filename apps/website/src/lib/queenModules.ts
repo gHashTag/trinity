@@ -103,6 +103,36 @@ export const MODULES = [
       body: 'Исследования как граф с предпосылками: что засеяно, что за чем закрыто и что исследуется сейчас — со свидетельством под каждым узлом, и без утверждений, под которыми его нет.',
     },
   },
+  {
+    tab: 'skills',
+    key: '7',
+    glyph: '⟁',
+    en: {
+      name: 'SKILLS',
+      hint: 'Agent skills, each stated by a .t27 spec',
+      body: 'The Skill Explorer, embedded whole: every published agent skill with the .t27 spec that states it first — its bytes, its hash, the compiler’s verdict — then the SKILL.md the sync script saw. A card with a spec and code is labelled spec+code; one with code alone says code-only. ENABLED is read from the spec and changed there.',
+    },
+    ru: {
+      name: 'СКИЛЛЫ',
+      hint: 'Скиллы агентов, каждый заявлен спекой .t27',
+      body: 'Обозреватель скиллов целиком: каждый опубликованный скилл агента сначала со спекой .t27, которая его заявляет — байты, хеш, вердикт компилятора, — затем SKILL.md, который увидел скрипт синхронизации. Карточка со спекой и кодом помечена «спека+код»; карточка только с кодом говорит «только код». ENABLED читается из спеки и меняется там.',
+    },
+  },
+  {
+    tab: 'crons',
+    key: '8',
+    glyph: '◷',
+    en: {
+      name: 'CRONS',
+      hint: 'Scheduled jobs, each stated by a .t27 spec',
+      body: 'The Cron Explorer, embedded whole: every scheduled job on GitHub Actions, Railway, Inngest and in-process timers, with the .t27 spec that states it first, then what the code scan found. Each card links to the skills its RUNS names, says where “run now” really goes for its host, and admits when a timer has no outside handle at all.',
+    },
+    ru: {
+      name: 'КРОНЫ',
+      hint: 'Расписания, каждое заявлено спекой .t27',
+      body: 'Обозреватель кронов целиком: каждое задание по расписанию на GitHub Actions, Railway, Inngest и во внутрипроцессных таймерах, сначала со спекой .t27, которая его заявляет, затем с тем, что нашло сканирование кода. Каждая карточка ведёт к скиллам из своего RUNS, говорит, куда на самом деле идёт «Запустить сейчас» для её хоста, и признаёт, когда у таймера нет внешней ручки.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];
