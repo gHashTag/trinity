@@ -8,9 +8,6 @@
   "t27/tri-pipeline": [
     "specs/pipeline/e2e_test.t27"
   ],
-  "trinity/cloud": [
-    "specs/cloud/railway_deploy.t27"
-  ],
   "trinity/agents": [
     "specs/tri/agent/agents.t27"
   ],

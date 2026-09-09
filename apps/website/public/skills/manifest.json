@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-09T07:25:15.790Z",
+  "generatedAt": "2026-09-09T08:11:47.735Z",
   "generatedFrom": [
     {
       "repo": "gHashTag/999-multibots-telegraf",
-      "commit": "3f01d449e5a04d37f6ff4d76d5572f499c201789",
-      "shortCommit": "3f01d449e",
+      "commit": "a9c08b4ebdfab947c81c94a1b37a08265d665bdb",
+      "shortCommit": "a9c08b4eb",
       "branch": "main",
       "dirty": false,
       "private": true
@@ -20,8 +20,8 @@
     },
     {
       "repo": "gHashTag/trinity",
-      "commit": "cdc1d68d697fca070d9ad0f2d36aa4074de140f4",
-      "shortCommit": "cdc1d68d6",
+      "commit": "5a495eef12f087ba8c474122c5824fe4ed0d05a1",
+      "shortCommit": "5a495eef1",
       "branch": "feat/explorer-tabs-skills-clients-crons",
       "dirty": false,
       "private": false
@@ -42,16 +42,16 @@
   "tags": {
     "lang/en": 26,
     "has/frontmatter": 24,
-    "link/unbound": 22,
+    "link/unbound": 23,
     "src/trinity": 20,
     "has/code": 18,
     "size/small": 12,
     "size/tiny": 10,
     "has/live-shell": 6,
     "src/t27": 6,
-    "link/bound": 4,
     "size/medium": 4,
     "has/extras": 3,
+    "link/bound": 3,
     "issue/dangling-candidate": 2,
     "issue/no-frontmatter": 2
   },
@@ -1331,30 +1331,18 @@
       "extras": [],
       "liveShell": true,
       "specsDeclared": [],
-      "specRefs": [
-        {
-          "text": "specs/cloud/railway_deploy.t27",
-          "line": 0,
-          "declared": true,
-          "via": "site",
-          "to": "specs/cloud/railway_deploy.t27",
-          "candidates": [
-            "specs/cloud/railway_deploy.t27"
-          ],
-          "status": "resolved"
-        }
-      ],
+      "specRefs": [],
       "tags": [
         "has/code",
         "has/frontmatter",
         "has/live-shell",
         "lang/en",
-        "link/bound",
+        "link/unbound",
         "size/small",
         "src/trinity"
       ],
-      "link": "bound",
-      "health": "ok"
+      "link": "unbound",
+      "health": "warn"
     },
     {
       "id": "trinity/doctor",
