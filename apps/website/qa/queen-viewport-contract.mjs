@@ -27,7 +27,7 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const DIST = join(ROOT, 'dist');
 const ROUTE = '#/queen';
 const SHOTS = '/tmp/hud-shots';
-const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 600], [390, 844]];
+const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600], [390, 844]];
 const VIEWS = ['comb', 'kanban', 'map', 'factory', 'research'];
 const DATA_WAIT_MS = 60000; // under the gate chain's load the sectors rows render late (the "sectors=0" readiness flake, cycles 015 and 035): a minute, like the windows gate
 const SETTLE_MS = 700;
@@ -249,6 +249,31 @@ const PROBE = (phone) => `(() => {
   });
   A(escapes.length === 0, 'ESCAPES VIEWPORT', escapes.slice(0, 6).join(' | '));
 
+  // 6b. Command rail order: every view button sits above COLLAPSE and inside
+  // the rail (the six-row grid regression of #932/#975: views after the sixth
+  // landed in the spacer track under COLLAPSE). data-views is the count the
+  // shell rendered from commandItems; the DOM must agree with it.
+  const rail = shell.querySelector('.queen27-hud-command');
+  if (rail && getComputedStyle(rail).display !== 'none' && !rail.classList.contains('is-compact')) {
+    const cmds = [...rail.querySelectorAll('.queen27-hud-cmd')];
+    const collapse = rail.querySelector('.queen27-hud-cmd-collapse');
+    const declared = Number(rail.getAttribute('data-views'));
+    A(cmds.length === declared && declared > 0, 'RAIL COUNT MISMATCH', cmds.length, declared);
+    const rr = rail.getBoundingClientRect();
+    cmds.forEach((b, i) => {
+      const r = b.getBoundingClientRect();
+      A(r.height > 0 && r.top >= rr.top - 0.5 && r.bottom <= rr.bottom + 0.5, 'RAIL ITEM OUTSIDE RAIL', b.dataset.view, Math.round(r.top), Math.round(r.bottom), Math.round(rr.bottom));
+      // tops never decrease: true for the one-column rail and for the two-column tiles under 760 px
+      if (i > 0) A(r.top >= cmds[i - 1].getBoundingClientRect().top - 0.5, 'RAIL ITEM OUT OF ORDER', b.dataset.view);
+    });
+    if (collapse && getComputedStyle(collapse).display !== 'none') {
+      const cr = collapse.getBoundingClientRect();
+      const lastBottom = Math.max(...cmds.map(b => b.getBoundingClientRect().bottom));
+      A(cr.top >= lastBottom - 0.5, 'COLLAPSE ABOVE A VIEW BUTTON', Math.round(cr.top), Math.round(lastBottom));
+      A(cr.bottom <= rr.bottom + 0.5, 'COLLAPSE OUTSIDE RAIL', Math.round(cr.bottom), Math.round(rr.bottom));
+    }
+  }
+
   // 7. The status numbers are on screen.
   const required = phone ? ['round', 'bees'] : ['bees', 'accepted', 'verdicts', 'research', 'foundry', 'round', 'alerts', 'status'];
   required.forEach(id => {
@@ -322,7 +347,10 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       const dead = !!document.querySelector('#stat-status.is-cold');
       const rows = document.querySelectorAll('.queen27-sectors-row').length;
       const data = ${DEAD} ? dead : (live || rows === 6);
-      return round && data && document.querySelectorAll('.queen27-hud-cmd').length === 8;
+      const rail = document.querySelector('.queen27-hud-command');
+      const declared = rail ? Number(rail.getAttribute('data-views')) : 0;
+      // the rail declares its own count (data-views from commandItems); the gate follows it rather than a hardcoded eight
+      return round && data && declared > 0 && document.querySelectorAll('.queen27-hud-cmd').length === declared;
     })()`);
     if (ready) break;
     await wait(250);

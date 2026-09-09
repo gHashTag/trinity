@@ -337,3 +337,136 @@ test('the committed contract and bundle: no problems, every vendored spec Englis
     if (e.summary.ru) assert.ok(/[\u0400-\u04ff]/.test(e.summary.ru), `${e.id}: summary.ru is not Russian`)
   }
 })
+
+// ---------------------------------------------------------------------------
+// Layer 4: agents.
+// ---------------------------------------------------------------------------
+const agentSrc = (letter, { ordinal = 1, module = `agent_${letter.toLowerCase()}`, skills = [], skillsNote = 'no source binds a skill to this agent', layer = 'Archetypal', id = `t27/${letter}`, extra = '' } = {}) => `module ${module};
+pub const KIND : str = "agent";
+pub const ID : str = ${q(id)};
+pub const LETTER : str = ${q(letter)};
+pub const ORDINAL : u8 = ${ordinal};
+pub const LETTER_NAME : str = "Alpha";
+pub const NAME : str = "Alpha (Architecture)";
+pub const DOMAIN : str = "Architecture / ADR / SOUL";
+pub const ARCHETYPE : str = "Bull - leader, primary force";
+pub const REGISTER : str = "R0";
+pub const LAYER : str = ${q(layer)};
+pub const SUMMARY_EN : str = "Architecture / ADR / SOUL. SOUL.md is the primary cause.";
+pub const SOUL : str = "SOUL.md";
+pub const AGENTS_DOC : str = "AGENTS.md";
+pub const ALPHABET : str = "docs/agents/AGENTS_ALPHABET.md";
+pub const KEY_FILES : [1]str = ["SOUL.md"];
+pub const ENTRY_INVARIANT : str = "SOUL.md exists";
+pub const EXIT_INVARIANT : str = "All ADRs reviewed";
+pub const CLARA_ROLE : str = "";
+pub const SKILLS : [${skills.length}]str = ${q(skills)};
+pub const SKILLS_NOTE : str = ${q(skillsNote)};
+pub const EXPERIENCE_LOG : str = ".trinity/experience/";
+pub const ENABLED : bool = true;
+${extra}`
+const agentFiles = (...pairs) => pairs.map(([letter, text]) => ({ path: `specs/agents/${letter.toLowerCase()}.t27`, text }))
+const withAgents = (agentSpecs, over = {}) => build(
+  files('specs/skills', skillSrc('trinity/x', { module: 'skill_x0' })),
+  files('specs/crons', cronSrc('github-actions/trinity/x', { module: 'cron_x0', runs: ['trinity/x'] })),
+  { agentSpecs: analyzeSpecFiles(analyze, agentSpecs), ...over },
+)
+const experience = {
+  generatedAt: '2026-01-01T00:00:00.000Z',
+  sources: [{ repo: 'trinity', commit: 'b'.repeat(40), files: 2, episodes: 2, unreadable: 0 }, { repo: 't27', commit: 'c'.repeat(40), files: 1, episodes: 1, unreadable: 0 }],
+  counts: { episodes: 3, attributed: 1, unattributed: 2, agentsWithEpisodes: 1, unreadableFiles: 0 },
+  attribution: { fields: ['agent'], letters: ['A'], rule: 'test' },
+  agents: { A: { episodes: 1, first: '2026-01-01T00:00:00.000Z', last: '2026-01-01T00:00:00.000Z', lastTask: 't', outcomes: { PASS: 1 }, lessons: ['l'], files: ['trinity:.trinity/experience/episodes/a.json'] } },
+  unattributed: { episodes: 2 },
+}
+
+test('an agent spec typechecks, resolves its skills, derives its crons from RUNS and joins experience by LETTER', () => {
+  const r = withAgents(agentFiles(['A', agentSrc('A', { skills: ['trinity/x'], skillsNote: 'test binding' })]), { experience })
+  // Only the 27-count rule complains; the single agent itself is clean.
+  assert.deepEqual(r.problems, ['specs/agents: 1 agent spec(s), the alphabet has 27'])
+  const a = r.agents.agents[0]
+  assert.equal(a.id, 't27/A')
+  assert.equal(a.letter, 'A')
+  assert.equal(a.ordinal, 1)
+  assert.deepEqual(a.skills, [{ id: 'trinity/x', ok: true }])
+  assert.deepEqual(a.crons, ['github-actions/trinity/x'])
+  assert.equal(a.experience.episodes, 1)
+  assert.deepEqual(a.experience.outcomes, { PASS: 1 })
+  assert.equal(a.witness, 'spec+experience')
+  assert.equal(a.health, 'ok')
+  assert.deepEqual(a.messages, [])
+  assert.equal(a.links.soul, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/SOUL.md`)
+  assert.equal(a.links.agentsDoc, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/AGENTS.md`)
+  assert.equal(a.links.alphabet, `https://github.com/gHashTag/t27/blob/${'c'.repeat(40)}/docs/agents/AGENTS_ALPHABET.md`)
+  assert.equal(a.links.experienceLog, `https://github.com/gHashTag/t27/tree/${'c'.repeat(40)}/.trinity/experience`)
+  assert.equal(r.agents.pin.ref, 'c'.repeat(40))
+  assert.deepEqual(r.agents.ladder, { specs: null, skills: 1, crons: 1, agents: 1 })
+  assert.equal(r.agents.counts.episodesUnattributed, 2)
+  assert.equal(r.agents.counts.withCrons, 1)
+})
+
+test('no experience snapshot: zero episodes, spec-only, a plain message, links pinned to the default branch', () => {
+  const r = withAgents(agentFiles(['A', agentSrc('A')]))
+  const a = r.agents.agents[0]
+  assert.equal(a.experience.episodes, 0)
+  assert.equal(a.witness, 'spec-only')
+  assert.deepEqual(a.messages, ['no attributed episodes in the experience snapshot'])
+  assert.equal(r.agents.pin.ref, 'master')
+  assert.equal(a.links.soul, 'https://github.com/gHashTag/t27/blob/master/SOUL.md')
+  assert.equal(r.agents.counts.episodesUnattributed, null)
+})
+
+test('an unknown skill ID, an empty SKILLS without a note, a wrong ID, a bad LAYER and a duplicate ORDINAL are problems', () => {
+  const r = withAgents(agentFiles(
+    ['A', agentSrc('A', { skills: ['trinity/nope'], skillsNote: 'x' })],
+    ['B', agentSrc('B', { ordinal: 1, skillsNote: '', layer: 'Cosmic', id: 't27/X' })],
+  ))
+  const p = r.problems.join('\n')
+  assert.match(p, /a\.t27: SKILLS names trinity\/nope, which has no skill spec/)
+  assert.match(p, /b\.t27: empty SKILLS needs a SKILLS_NOTE/)
+  assert.match(p, /b\.t27: ID must be t27\/B, is "t27\/X"/)
+  assert.match(p, /b\.t27: LAYER "Cosmic" is not one of Archetypal\|Spiritual\|Physical/)
+  assert.match(p, /b\.t27: duplicate ORDINAL 1 \(also specs\/agents\/a\.t27\)/)
+  assert.equal(r.agents.agents.find((x) => x.letter === 'A').health, 'fail')
+})
+
+test('the module and file name follow the letter; ORDINAL is a u8 in 1..27; TOOLS is optional but an empty one needs a note', () => {
+  const r = withAgents([
+    { path: 'specs/agents/a.t27', text: agentSrc('A', { module: 'agent_b' }) },
+    { path: 'specs/agents/c.t27', text: agentSrc('C', { ordinal: 28 }) },
+    { path: 'specs/agents/d.t27', text: agentSrc('D', { ordinal: 3, extra: 'pub const TOOLS : [0]str = [];' }) },
+    { path: 'specs/agents/e.t27', text: agentSrc('E', { ordinal: 4, extra: 'pub const TOOLS : [1]str = ["tri/cell"];\npub const TOOLS_NOTE : str = "alphabet Key files";' }) },
+  ])
+  const p = r.problems.join('\n')
+  assert.match(p, /a\.t27: module must be agent_a, is agent_b/)
+  assert.match(p, /c\.t27: ORDINAL 28 is not 1\.\.27/)
+  assert.match(p, /d\.t27: empty TOOLS needs a TOOLS_NOTE/)
+  assert.ok(!/e\.t27/.test(p), `e.t27 must be clean:\n${p}`)
+  assert.deepEqual(r.agents.agents.find((x) => x.letter === 'E').tools, ['tri/cell'])
+})
+
+test('agent translations come through the same i18n contract once SCOPE names specs/agents', () => {
+  const spec = i18nFiles(i18nSrc({ scope: ['specs/skills', 'specs/crons', 'specs/agents'] }))
+  const bundles = new Map([['apps/website/i18n/agents.ru.json', ruBundle({ 't27/A': { SUMMARY: 'Архитектура.' } })]])
+  const r = withAgents(agentFiles(['A', agentSrc('A')]), { i18nSpecs: analyzeSpecFiles(analyze, spec), bundles })
+  const a = r.agents.agents[0]
+  assert.equal(a.summary.ru, 'Архитектура.')
+  assert.equal(r.agents.i18n[0].coverage.n, 1)
+  assert.equal(r.agents.i18n[0].coverage.total, 1)
+})
+
+test('the committed agent catalog: 27 specs, every skill link resolved, experience counts add up', async () => {
+  const { generate, EXPERIENCE_PATH } = await import('./agents-from-specs.mjs')
+  const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
+  assert.deepEqual(r.problems, [])
+  assert.equal(r.agents.agents.length, 27)
+  assert.deepEqual(r.agents.agents.map((a) => a.letter), [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'TI'])
+  for (const a of r.agents.agents) {
+    assert.ok(a.skills.every((s) => s.ok), `${a.id}: unresolved skill`)
+    assert.ok(a.summary.ru && /[\u0400-\u04ff]/.test(a.summary.ru), `${a.id}: no Russian summary`)
+  }
+  const snap = JSON.parse(readFileSync(join(SITE, EXPERIENCE_PATH), 'utf8'))
+  assert.equal(r.agents.counts.episodesAttributed, snap.counts.attributed)
+  assert.equal(r.agents.counts.episodesUnattributed, snap.unattributed.episodes)
+  assert.equal(r.agents.counts.episodesAttributed + r.agents.counts.episodesUnattributed, snap.counts.episodes)
+})

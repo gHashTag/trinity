@@ -11,6 +11,8 @@
 // justify.
 
 export type Witness = 'spec+code' | 'spec-only' | 'code-only'
+/** An agent's witness: at least one experience episode names its letter, or none does. */
+export type AgentWitness = 'spec+experience' | 'spec-only'
 export type Health = 'ok' | 'warn' | 'fail'
 export type CronHostKind = 'github-actions' | 'inngest' | 'railway-cron' | 'timer'
 export type CronControl = 'github-actions-dispatch' | 'railway-dashboard' | 'inngest-dashboard' | 'code-only'
@@ -90,6 +92,59 @@ export interface CronSpecEntry extends SpecEntryBase {
   runNow: RunNowTarget
 }
 
+export type AgentLayer = 'Archetypal' | 'Spiritual' | 'Physical'
+
+export interface AgentSpecFields {
+  KIND: 'agent'
+  ID: string
+  LETTER: string
+  ORDINAL: number
+  LETTER_NAME: string
+  NAME: string
+  DOMAIN: string
+  ARCHETYPE: string
+  REGISTER: string
+  LAYER: AgentLayer
+  SUMMARY_EN: string
+  SOUL: string
+  AGENTS_DOC: string
+  ALPHABET: string
+  KEY_FILES: string[]
+  ENTRY_INVARIANT: string
+  EXIT_INVARIANT: string
+  CLARA_ROLE: string
+  SKILLS: string[]
+  SKILLS_NOTE: string
+  TOOLS?: string[]
+  TOOLS_NOTE?: string
+  EXPERIENCE_LOG: string
+  ENABLED: boolean
+}
+
+/** The slice of public/agents/experience.json joined to one agent by LETTER. */
+export interface AgentExperience {
+  episodes: number
+  first: string | null
+  last: string | null
+  lastTask: string | null
+  outcomes: Record<string, number>
+  lessons: string[]
+  files: string[]
+}
+
+export interface AgentSpecEntry extends Omit<SpecEntryBase, 'witness'> {
+  letter: string
+  ordinal: number
+  fields: AgentSpecFields
+  skills: { id: string; ok: boolean }[]
+  /** Derived: crons whose RUNS name one of this agent's SKILLS. */
+  crons: string[]
+  tools: string[]
+  experience: AgentExperience
+  links: { soul: string; agentsDoc: string; alphabet: string; experienceLog: string | null; pinnedAt: string; pinSource: string }
+  witness: AgentWitness
+}
+
 export type Localized = { en: string } & Partial<Record<string, string>>
 
 /** One translation contract (a specs/i18n/*.t27) as it applies to one catalog. */
@@ -127,8 +182,38 @@ export interface CronSpecCatalog extends SpecCatalogBase {
   crons: CronSpecEntry[]
 }
 
+export interface AgentSpecCatalog extends Omit<SpecCatalogBase, 'codeOnly'> {
+  counts: {
+    specs: number; enabled: number; typecheckOk: number; withSkills: number; withCrons: number; withTools: number; withExperience: number; withClaraRole: number
+    specPlusExperience: number; specOnly: number; byLayer: Record<AgentLayer, number>
+    episodesAttributed: number; episodesUnattributed: number | null; episodesTotal: number | null
+  }
+  /** Specs -> Skills -> Crons -> Agents, the counts the ladder header shows. */
+  ladder: { specs: number | null; skills: number; crons: number; agents: number }
+  pin: { ref: string; source: string }
+  experienceSnapshot: {
+    generatedAt: string
+    sources: { repo: string; commit: string; files: number; episodes: number; unreadable: number }[]
+    counts: { episodes: number; attributed: number; unattributed: number; agentsWithEpisodes: number; unreadableFiles: number } | null
+    attribution: { fields: string[]; letters: string[]; rule: string } | null
+  } | null
+  agents: AgentSpecEntry[]
+}
+
 let skillsPromise: Promise<SkillSpecCatalog> | null = null
 let cronsPromise: Promise<CronSpecCatalog> | null = null
+let agentsPromise: Promise<AgentSpecCatalog> | null = null
+
+export function loadAgentSpecs(): Promise<AgentSpecCatalog> {
+  if (!agentsPromise) {
+    agentsPromise = fetch('agents/spec-agents.json', { credentials: 'omit' }).then((r) => {
+      if (!r.ok) throw new Error(`could not load spec-agents (${r.status})`)
+      return r.json() as Promise<AgentSpecCatalog>
+    })
+    agentsPromise.catch(() => { agentsPromise = null })
+  }
+  return agentsPromise
+}
 
 export function loadSkillSpecs(): Promise<SkillSpecCatalog> {
   if (!skillsPromise) {
@@ -211,10 +296,11 @@ export async function requestControl(base: string, kind: 'skill' | 'cron', id: s
 // ---------------------------------------------------------------------------
 // Labels shared by both Explorers.
 // ---------------------------------------------------------------------------
-export const WITNESS_LABEL: Record<Witness, { en: string; ru: string }> = {
+export const WITNESS_LABEL: Record<Witness | AgentWitness, { en: string; ru: string }> = {
   'spec+code': { en: 'spec+code', ru: 'спека+код' },
   'spec-only': { en: 'spec-only', ru: 'только спека' },
   'code-only': { en: 'code-only', ru: 'только код' },
+  'spec+experience': { en: 'spec+experience', ru: 'спека+опыт' },
 }
 
 export function witnessOf<T extends { id: string }>(specById: Map<string, T>, id: string): Witness {

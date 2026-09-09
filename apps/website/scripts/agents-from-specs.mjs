@@ -13,7 +13,10 @@
 //   node scripts/agents-from-specs.mjs            write both JSON files
 //   node scripts/agents-from-specs.mjs --check    regenerate in memory and diff
 //
-// Outputs: public/skills/spec-skills.json, public/crons/spec-crons.json.
+// Outputs: public/skills/spec-skills.json, public/crons/spec-crons.json,
+// public/agents/spec-agents.json (layer 4: specs/agents/<letter>.t27 x 27, with
+// skills resolved, crons derived from RUNS, and experience joined by LETTER from
+// public/agents/experience.json -- see scripts/sync-agents-experience.mjs).
 //
 // Language: the specs are English-only (t27 LANG-EN; bootstrap/build.rs on
 // gHashTag/t27 fails the build on any Cyrillic in specs/). A Cyrillic character
@@ -57,6 +60,14 @@ const WASM = 'public/t27/t27_compiler.wasm'
 export const SKILLS_OUT = 'public/skills/spec-skills.json'
 export const CRONS_OUT = 'public/crons/spec-crons.json'
 export const I18N_SPEC_DIR = 'specs/i18n'
+// Layer 4: the 27-agent alphabet (specs/agents/<letter>.t27), joined to the
+// experience snapshot scripts/sync-agents-experience.mjs writes.
+export const AGENT_SPEC_DIR = 'specs/agents'
+export const AGENTS_OUT = 'public/agents/spec-agents.json'
+export const EXPERIENCE_PATH = 'public/agents/experience.json'
+export const AGENT_LAYERS = ['Archetypal', 'Spiritual', 'Physical']
+export const AGENT_COUNT = 27
+export const T27_REPO_URL = 'https://github.com/gHashTag/t27'
 // Repo root of gHashTag/trinity (BUNDLE_PATH is repo-relative).
 export const REPO_ROOT = resolve(SITE, '..', '..')
 export const VERSION = 1
@@ -143,7 +154,15 @@ const CRON_REQUIRED = {
   TZ: 'str', RUNS: 'arr', RUNS_NOTE: 'str', ENABLED: 'bool', ON_FAILURE: 'str', CONTROL: 'str',
 }
 const CRON_OPTIONAL = { SCHEDULE: 'str', SCHEDULE_NOTE: 'str', INTERVAL_MS: 'u32', NOTE: 'str' }
-const INT_MAX = { u16: 0xffff, u32: 0xffffffff }
+const AGENT_REQUIRED = {
+  KIND: 'str', ID: 'str', LETTER: 'str', ORDINAL: 'u8', LETTER_NAME: 'str', NAME: 'str', DOMAIN: 'str', ARCHETYPE: 'str',
+  REGISTER: 'str', LAYER: 'str', SUMMARY_EN: 'str', SOUL: 'str', AGENTS_DOC: 'str', ALPHABET: 'str', KEY_FILES: 'arr',
+  ENTRY_INVARIANT: 'str', EXIT_INVARIANT: 'str', CLARA_ROLE: 'str', SKILLS: 'arr', SKILLS_NOTE: 'str',
+  EXPERIENCE_LOG: 'str', ENABLED: 'bool',
+}
+// TOOLS arrives with layer 5 (specs/tools); until then an agent spec may omit it.
+const AGENT_OPTIONAL = { TOOLS: 'arr', TOOLS_NOTE: 'str' }
+const INT_MAX = { u8: 0xff, u16: 0xffff, u32: 0xffffffff }
 export const CYRILLIC = /[\u0400-\u04ff]/
 
 // Translation contracts (specs/i18n/agents-<locale>.t27).
@@ -266,6 +285,7 @@ export function shapeProblem(decl, shape) {
       if (type !== 'bool') return `annotated ${type}, must be bool`
       if (typeof value !== 'boolean') return 'value is not true/false'
       return null
+    case 'u8':
     case 'u16':
     case 'u32':
       if (type !== shape) return `annotated ${type}, must be ${shape}`
@@ -313,9 +333,9 @@ export function analyzeSpecFiles(analyze, files) {
   })
 }
 
-export function buildSpecCatalogs({ skillSpecs, cronSpecs, i18nSpecs = [], bundles = new Map(), skillsManifest, cronsManifest, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
+export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], i18nSpecs = [], bundles = new Map(), experience = null, skillsManifest, cronsManifest, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
   const problems = []
-  for (const s of [...skillSpecs, ...cronSpecs, ...i18nSpecs]) {
+  for (const s of [...skillSpecs, ...cronSpecs, ...agentSpecs, ...i18nSpecs]) {
     if (s.text !== undefined && CYRILLIC.test(s.text)) problems.push(`${s.path}: Cyrillic in a .t27 spec (t27 LANG-EN; translated text belongs in the bundle a specs/i18n/*.t27 contract points to)`)
   }
   const corpusPaths = new Set((t27Manifest?.specs ?? []).map((s) => s.path))
@@ -439,11 +459,89 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, i18nSpecs = [], bundl
   const codeOnlySkills = [...codeSkills.keys()].filter((id) => !seenSkill.has(id)).sort()
   const codeOnlyCrons = [...codeCrons.keys()].filter((id) => !seenCron.has(id)).sort()
 
+  // Layer 4: agents. Skills resolve against the skill specs (an unknown ID is a
+  // build failure: the spec would claim a skill nobody wrote), crons are derived
+  // from the crons' RUNS, experience is joined by LETTER from the snapshot, and
+  // the SOUL / AGENTS.md / alphabet links are pinned to the t27 commit that
+  // snapshot was read from. An agent's witness is `spec+experience` when at
+  // least one episode names its letter, else `spec-only`; nothing is assumed.
+  const pin = agentPin(experience)
+  const agents = []
+  const seenAgent = new Map()
+  const seenOrdinal = new Map()
+  for (const a of agentSpecs) {
+    const file = a.path
+    if (!a.verdict.typecheckOk || a.verdict.discarded > 0 || !a.verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(a.verdict)})`)
+    problems.push(...checkSchema(a.consts, AGENT_REQUIRED, AGENT_OPTIONAL, file))
+    const f = plain(a.consts)
+    if (f.KIND !== 'agent') problems.push(`${file}: KIND must be "agent"`)
+    if (typeof f.LETTER === 'string' && !/^([A-Z]|TI)$/.test(f.LETTER)) problems.push(`${file}: LETTER ${JSON.stringify(f.LETTER)} is not A-Z or TI`)
+    if (typeof f.LETTER === 'string' && f.ID !== `t27/${f.LETTER}`) problems.push(`${file}: ID must be t27/${f.LETTER}, is ${JSON.stringify(f.ID)}`)
+    if (typeof f.ID === 'string') {
+      if (seenAgent.has(f.ID)) problems.push(`${file}: duplicate agent ID ${f.ID} (also ${seenAgent.get(f.ID)})`)
+      seenAgent.set(f.ID, file)
+    }
+    if (Number.isInteger(f.ORDINAL)) {
+      if (f.ORDINAL < 1 || f.ORDINAL > AGENT_COUNT) problems.push(`${file}: ORDINAL ${f.ORDINAL} is not 1..${AGENT_COUNT}`)
+      if (seenOrdinal.has(f.ORDINAL)) problems.push(`${file}: duplicate ORDINAL ${f.ORDINAL} (also ${seenOrdinal.get(f.ORDINAL)})`)
+      seenOrdinal.set(f.ORDINAL, file)
+    }
+    if (f.LAYER !== undefined && !AGENT_LAYERS.includes(f.LAYER)) problems.push(`${file}: LAYER ${JSON.stringify(f.LAYER)} is not one of ${AGENT_LAYERS.join('|')}`)
+    const expectModule = `agent_${file.replace(/^specs\/agents\//, '').replace(/\.t27$/, '').replace(/[^A-Za-z0-9]+/g, '_')}`
+    if (a.moduleName && a.moduleName !== expectModule) problems.push(`${file}: module must be ${expectModule}, is ${a.moduleName}`)
+    if (typeof f.LETTER === 'string' && expectModule !== `agent_${f.LETTER.toLowerCase()}`) problems.push(`${file}: file name must be ${f.LETTER.toLowerCase()}.t27 for LETTER ${f.LETTER}`)
+    const skillIds = Array.isArray(f.SKILLS) ? f.SKILLS : []
+    for (const id of skillIds) if (!seenSkill.has(id)) problems.push(`${file}: SKILLS names ${id}, which has no skill spec`)
+    if (skillIds.length === 0 && !(typeof f.SKILLS_NOTE === 'string' && f.SKILLS_NOTE.trim())) problems.push(`${file}: empty SKILLS needs a SKILLS_NOTE`)
+    const toolIds = Array.isArray(f.TOOLS) ? f.TOOLS : []
+    if ('TOOLS' in f && toolIds.length === 0 && !(typeof f.TOOLS_NOTE === 'string' && f.TOOLS_NOTE.trim())) problems.push(`${file}: empty TOOLS needs a TOOLS_NOTE`)
+    const agentCrons = crons.filter((c) => c.runsResolved.some((r) => r.ok && skillIds.includes(r.id))).map((c) => c.id).sort()
+    const ex = experience?.agents?.[f.LETTER] ?? null
+    const exp = ex
+      ? { episodes: ex.episodes, first: ex.first ?? null, last: ex.last ?? null, lastTask: ex.lastTask ?? null, outcomes: ex.outcomes ?? {}, lessons: ex.lessons ?? [], files: ex.files ?? [] }
+      : { episodes: 0, first: null, last: null, lastTask: null, outcomes: {}, lessons: [], files: [] }
+    agents.push({
+      id: f.ID,
+      letter: f.LETTER,
+      ordinal: f.ORDINAL,
+      specPath: file,
+      summary: { en: f.SUMMARY_EN },
+      name: { en: f.NAME },
+      sha256: a.sha256,
+      typecheckOk: a.verdict.typecheckOk,
+      discarded: a.verdict.discarded,
+      moduleName: a.moduleName,
+      inSpecCorpus: corpusPaths.has(file),
+      fields: f,
+      skills: skillIds.map((id) => ({ id, ok: seenSkill.has(id) })),
+      crons: agentCrons,
+      tools: toolIds,
+      experience: exp,
+      links: {
+        soul: `${T27_REPO_URL}/blob/${pin.ref}/${f.SOUL}`,
+        agentsDoc: `${T27_REPO_URL}/blob/${pin.ref}/${f.AGENTS_DOC}`,
+        alphabet: `${T27_REPO_URL}/blob/${pin.ref}/${f.ALPHABET}`,
+        experienceLog: f.EXPERIENCE_LOG ? `${T27_REPO_URL}/tree/${pin.ref}/${f.EXPERIENCE_LOG.replace(/\/$/, '')}` : null,
+        pinnedAt: pin.ref,
+        pinSource: pin.source,
+      },
+      witness: exp.episodes > 0 ? 'spec+experience' : 'spec-only',
+      health: skillIds.every((id) => seenSkill.has(id)) ? 'ok' : 'fail',
+      messages: [
+        ...(exp.episodes === 0 ? ['no attributed episodes in the experience snapshot'] : []),
+        ...skillIds.filter((id) => !seenSkill.has(id)).map((id) => `SKILLS names ${id}, which has no skill spec`),
+      ],
+    })
+  }
+  agents.sort((x, y) => (x.ordinal ?? 0) - (y.ordinal ?? 0) || String(x.id).localeCompare(String(y.id)))
+  if (agentSpecs.length && agents.length !== AGENT_COUNT) problems.push(`${AGENT_SPEC_DIR}: ${agents.length} agent spec(s), the alphabet has ${AGENT_COUNT}`)
+
   // Translations, connected through their contract specs. Every locale comes
   // from a specs/i18n/*.t27; nothing here knows which locales exist.
   const specsById = new Map()
   for (const s of skills) specsById.set(s.id, { dir: SKILL_SPEC_DIR, fields: s.fields })
   for (const c of crons) specsById.set(c.id, { dir: CRON_SPEC_DIR, fields: c.fields })
+  for (const a of agents) specsById.set(a.id, { dir: AGENT_SPEC_DIR, fields: a.fields })
   const locales = []
   const seenLocale = new Map()
   for (const spec of [...i18nSpecs].sort((a, b) => a.path.localeCompare(b.path))) {
@@ -462,7 +560,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, i18nSpecs = [], bundl
     const { missing: _all, ...rest } = l.entry
     return { ...rest, coverage: { n: list.length - missing.length, total: list.length }, missing }
   })
-  for (const e of [...skills, ...crons]) {
+  for (const e of [...skills, ...crons, ...agents]) {
     e.summary = localized(e.fields.SUMMARY_EN, e.id, 'SUMMARY', locales)
     e.name = localized(e.fields.NAME, e.id, 'NAME', locales)
   }
@@ -483,11 +581,50 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, i18nSpecs = [], bundl
     codeOnly: codeOnlyCrons,
     i18n: i18nFor(CRON_SPEC_DIR, crons),
   })
+  const agentsOut = sortKeys({
+    ...base,
+    generatedAt,
+    counts: {
+      specs: agents.length,
+      enabled: agents.filter((a) => a.fields.ENABLED === true).length,
+      typecheckOk: agents.filter((a) => a.typecheckOk).length,
+      withSkills: agents.filter((a) => a.skills.length).length,
+      withCrons: agents.filter((a) => a.crons.length).length,
+      withTools: agents.filter((a) => a.tools.length).length,
+      withExperience: agents.filter((a) => a.experience.episodes > 0).length,
+      withClaraRole: agents.filter((a) => a.fields.CLARA_ROLE).length,
+      specPlusExperience: agents.filter((a) => a.witness === 'spec+experience').length,
+      specOnly: agents.filter((a) => a.witness === 'spec-only').length,
+      byLayer: Object.fromEntries(AGENT_LAYERS.map((l) => [l, agents.filter((a) => a.fields.LAYER === l).length])),
+      episodesAttributed: agents.reduce((n, a) => n + a.experience.episodes, 0),
+      episodesUnattributed: experience?.unattributed?.episodes ?? null,
+      episodesTotal: experience?.counts?.episodes ?? null,
+    },
+    // The ladder the explorers share: Specs -> Skills -> Crons -> Agents.
+    ladder: { specs: t27Manifest?.specCount ?? null, skills: skills.length, crons: crons.length, agents: agents.length },
+    pin,
+    experienceSnapshot: experience ? { generatedAt: experience.generatedAt, sources: (experience.sources ?? []).map((x) => ({ repo: x.repo, commit: x.commit, files: x.files, episodes: x.episodes, unreadable: x.unreadable })), counts: experience.counts ?? null, attribution: experience.attribution ?? null } : null,
+    agents,
+    i18n: i18nFor(AGENT_SPEC_DIR, agents),
+  })
   // A hash of everything but the clock, so a checker can compare committed and
   // regenerated output without the timestamp getting in the way.
   skillsOut.contentSha256 = sha256(JSON.stringify({ ...skillsOut, generatedAt: null }))
   cronsOut.contentSha256 = sha256(JSON.stringify({ ...cronsOut, generatedAt: null }))
-  return { skills: sortKeys(skillsOut), crons: sortKeys(cronsOut), problems }
+  agentsOut.contentSha256 = sha256(JSON.stringify({ ...agentsOut, generatedAt: null }))
+  return { skills: sortKeys(skillsOut), crons: sortKeys(cronsOut), agents: sortKeys(agentsOut), problems }
+}
+
+/**
+ * The t27 ref the agents' SOUL / AGENTS.md / alphabet links point at: the commit
+ * the experience snapshot was read from (its `sources` carry `repo: 't27'`), or
+ * the default branch when no snapshot pins one. The source is recorded so the
+ * page can say which it is.
+ */
+export function agentPin(experience) {
+  const t27 = (experience?.sources ?? []).find((x) => x.repo === 't27' && /^[0-9a-f]{40}$/.test(x.commit ?? ''))
+  if (t27) return { ref: t27.commit, source: `${EXPERIENCE_PATH} sources[t27].commit` }
+  return { ref: 'master', source: 'default branch (no t27 commit in the experience snapshot)' }
 }
 
 export function sortKeys(value) {
@@ -517,6 +654,7 @@ export async function generate({ generatedAt } = {}) {
   const analyze = await loadCompiler(wasmBytes)
   const skillSpecs = analyzeSpecFiles(analyze, readSpecDir(SKILL_SPEC_DIR))
   const cronSpecs = analyzeSpecFiles(analyze, readSpecDir(CRON_SPEC_DIR))
+  const agentSpecs = analyzeSpecFiles(analyze, readSpecDir(AGENT_SPEC_DIR))
   const i18nSpecs = analyzeSpecFiles(analyze, readSpecDir(I18N_SPEC_DIR))
   // Each contract names its bundle; load exactly those, repo-relative.
   const bundles = new Map()
@@ -531,6 +669,8 @@ export async function generate({ generatedAt } = {}) {
   return buildSpecCatalogs({
     skillSpecs,
     cronSpecs,
+    agentSpecs,
+    experience: readJson(EXPERIENCE_PATH),
     skillsManifest: readJson('public/skills/manifest.json'),
     cronsManifest: readJson('public/crons/manifest.json'),
     t27Manifest: readJson('public/t27/manifest.json'),
@@ -552,30 +692,33 @@ function writeAtomic(rel, data) {
 
 async function main(argv) {
   const check = argv.includes('--check')
-  const { skills, crons, problems } = await generate()
+  const { skills, crons, agents, problems } = await generate()
   if (problems.length) {
     console.error(`agents-from-specs: ${problems.length} problem(s)`)
     for (const p of problems) console.error('  ' + p)
     process.exit(1)
   }
   if (check) {
-    const prior = { skills: readJson(SKILLS_OUT), crons: readJson(CRONS_OUT) }
+    const prior = { skills: readJson(SKILLS_OUT), crons: readJson(CRONS_OUT), agents: readJson(AGENTS_OUT) }
     const drift = []
     if (prior.skills?.contentSha256 !== skills.contentSha256) drift.push(SKILLS_OUT)
     if (prior.crons?.contentSha256 !== crons.contentSha256) drift.push(CRONS_OUT)
+    if (prior.agents?.contentSha256 !== agents.contentSha256) drift.push(AGENTS_OUT)
     if (drift.length) {
       console.error(`agents-from-specs: committed output is stale: ${drift.join(', ')} -- run node scripts/agents-from-specs.mjs`)
       process.exit(1)
     }
-    console.log(`agents-from-specs: ${SKILLS_OUT} and ${CRONS_OUT} match the specs`)
+    console.log(`agents-from-specs: ${SKILLS_OUT}, ${CRONS_OUT} and ${AGENTS_OUT} match the specs`)
     return
   }
   writeAtomic(SKILLS_OUT, skills)
   writeAtomic(CRONS_OUT, crons)
-  const s = skills.counts, c = crons.counts
+  writeAtomic(AGENTS_OUT, agents)
+  const s = skills.counts, c = crons.counts, a = agents.counts
   console.log(`agents-from-specs: skills ${s.specs} specs (typecheck ok ${s.typecheckOk}/${s.specs}; spec+code ${s.specPlusCode}, spec-only ${s.specOnly}, code-only ${s.codeOnly}) -> ${SKILLS_OUT}`)
   console.log(`agents-from-specs: crons  ${c.specs} specs (typecheck ok ${c.typecheckOk}/${c.specs}; spec+code ${c.specPlusCode}, spec-only ${c.specOnly}, code-only ${c.codeOnly}; with RUNS ${c.withRuns}) -> ${CRONS_OUT}`)
-  for (const l of skills.i18n) console.log(`agents-from-specs: i18n ${l.locale} via ${l.spec} -> ${l.bundle}: skills ${l.coverage.n}/${l.coverage.total}, crons ${crons.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${crons.counts.specs}${l.enabled ? '' : ' (disabled)'}`)
+  console.log(`agents-from-specs: agents ${a.specs} specs (typecheck ok ${a.typecheckOk}/${a.specs}; enabled ${a.enabled}; with skills ${a.withSkills}, with crons ${a.withCrons}, with tools ${a.withTools}; spec+experience ${a.specPlusExperience}, spec-only ${a.specOnly}; episodes attributed ${a.episodesAttributed}, unattributed ${a.episodesUnattributed ?? 'n/a'}; links pinned at ${agents.pin.ref.slice(0, 7)}) -> ${AGENTS_OUT}`)
+  for (const l of skills.i18n) console.log(`agents-from-specs: i18n ${l.locale} via ${l.spec} -> ${l.bundle}: skills ${l.coverage.n}/${l.coverage.total}, crons ${crons.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${crons.counts.specs}, agents ${agents.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${agents.counts.specs}${l.enabled ? '' : ' (disabled)'}`)
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

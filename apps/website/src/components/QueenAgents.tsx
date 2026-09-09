@@ -1,5 +1,5 @@
-// The Queen's SKILLS and CRONS views: the real Skill and Cron Explorers,
-// inside the game.
+// The Queen's SKILLS, CRONS and AGENTS views: the real Skill, Cron and Agent
+// Explorers, inside the game.
 //
 // Same shape as QueenSpecs, for the same reasons: the Explorers own a
 // full-viewport layout and the Skill/Cron pages boot the compiler wasm to
@@ -14,9 +14,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
-import { loadCronSpecs, loadSkillSpecs } from '../lib/agentSpecs'
+import { loadAgentSpecs, loadCronSpecs, loadSkillSpecs } from '../lib/agentSpecs'
 
-export type AgentsKind = 'skills' | 'crons'
+export type AgentsKind = 'skills' | 'crons' | 'agents'
 
 export interface AgentsCopy {
   directive: string
@@ -27,11 +27,21 @@ export interface AgentsCopy {
   specPlusCode: string
   codeOnly: string
   typecheck: string
+  /** Agents only: the witness is experience, and the third number is what no letter claims. */
+  specPlusExperience?: string
+  unattributed?: string
 }
 
+// For skills and crons the third figure is code-only cards; for agents it is
+// the episodes no letter claims (`unattributed`), which is a fact about the log,
+// not a defect of any agent.
 interface Counts { specs: number; specPlusCode: number; codeOnly: number; typecheckOk: number }
 
 async function loadCounts(kind: AgentsKind): Promise<Counts> {
+  if (kind === 'agents') {
+    const c = (await loadAgentSpecs()).counts
+    return { specs: c.specs, specPlusCode: c.specPlusExperience, codeOnly: c.episodesUnattributed ?? 0, typecheckOk: c.typecheckOk }
+  }
   const c = kind === 'skills' ? (await loadSkillSpecs()).counts : (await loadCronSpecs()).counts
   return { specs: c.specs, specPlusCode: c.specPlusCode, codeOnly: c.codeOnly, typecheckOk: c.typecheckOk }
 }
@@ -55,9 +65,11 @@ export function QueenAgentsDirective({ kind, c, collapsible = false }: { kind: A
         <span className="queen27-specs-counts">
           <b style={{ color: '#00FF88' }}>{counts.specs}</b> {c.specs}
           {' · '}
-          <b style={{ color: '#00FF88' }}>{counts.specPlusCode}</b> {c.specPlusCode}
+          <b style={{ color: kind === 'agents' && counts.specPlusCode === 0 ? '#8b9490' : '#00FF88' }}>{counts.specPlusCode}</b>{' '}
+          {kind === 'agents' ? c.specPlusExperience ?? c.specPlusCode : c.specPlusCode}
           {' · '}
-          <b style={{ color: counts.codeOnly ? '#f0a020' : '#8b9490' }}>{counts.codeOnly}</b> {c.codeOnly}
+          <b style={{ color: counts.codeOnly ? '#f0a020' : '#8b9490' }}>{counts.codeOnly}</b>{' '}
+          {kind === 'agents' ? c.unattributed ?? c.codeOnly : c.codeOnly}
           {' · '}
           <b style={{ color: counts.typecheckOk === counts.specs ? '#00FF88' : '#f85149' }}>
             {counts.typecheckOk}/{counts.specs}
@@ -104,14 +116,14 @@ export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKin
       <div className="queen27-specs-frame-wrap">
         {!ready && (
           <div className="queen27-specs-loading">
-            <QueenLoading title={c.loading} facts={[kind === 'skills' ? 'specs/skills/*.t27' : 'specs/crons/*.t27']} />
+            <QueenLoading title={c.loading} facts={[`specs/${kind}/*.t27`]} />
           </div>
         )}
         <iframe
           ref={frameRef}
           className="queen27-specs-frame"
           src={src}
-          title={kind === 'skills' ? 'Skill Explorer' : 'Cron Explorer'}
+          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : 'Agent Explorer'}
           onLoad={() => setReady(true)}
           loading="lazy"
         />

@@ -1,11 +1,12 @@
-import type { HudView } from "./queenHud";
+import type { CSSProperties } from "react";
+import { HUD_KEYS, type HudView } from "./queenHud";
 
 // The COMMAND PANEL of the one-screen HUD: the view switches (one per entry in
-// HUD_VIEWS, eight today) stacked down the
-// left edge (or, on a phone, laid out as an icon row inside the bottom bar) and
-// a collapse toggle. Switching a view is the only thing a button here does;
-// nothing acts on the Queen. The digit shown on each button is the keyboard
-// shortcut the shell binds (1-8, its position in HUD_VIEWS), not a figure from the wire.
+// HUD_VIEWS) stacked down the left edge (or, on a phone, laid out as an icon
+// row inside the bottom bar) and a collapse toggle. Switching a view is the only
+// thing a button here does; nothing acts on the Queen. The key shown on each
+// button is the keyboard shortcut the shell binds (HUD_KEYS at the item's
+// position: 1-9, 0, p), not a figure from the wire.
 
 export interface CommandItem {
   view: HudView;
@@ -50,9 +51,21 @@ export function QueenCommandPanel({
     .join(" ");
 
   return (
-    <nav className={className} aria-label={labels.aria}>
+    <nav
+      className={className}
+      aria-label={labels.aria}
+      data-views={items.length}
+      style={
+        {
+          // the rail derives its row count from the item list, never from a hardcoded number
+          "--queen-views": items.length,
+          "--queen-tile-rows": Math.ceil(items.length / 2),
+        } as CSSProperties
+      }
+    >
       {items.map((item, index) => {
         const active = item.view === view;
+        const key = HUD_KEYS[index] ?? "";
         return (
           <button
             type="button"
@@ -60,7 +73,7 @@ export function QueenCommandPanel({
             className={`queen27-hud-cmd${active ? " is-active" : ""}`}
             data-view={item.view}
             aria-pressed={active}
-            title={`${index + 1} · ${item.label}`}
+            title={`${key} · ${item.label}`}
             onClick={() => onSelect(item.view)}
           >
             <i aria-hidden="true">{item.glyph}</i>
@@ -68,7 +81,7 @@ export function QueenCommandPanel({
               <b>{item.label}</b>
               <small>{item.hint}</small>
             </span>
-            <kbd aria-hidden="true">{index + 1}</kbd>
+            <kbd aria-hidden="true">{key}</kbd>
           </button>
         );
       })}

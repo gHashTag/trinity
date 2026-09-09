@@ -7,11 +7,11 @@
 // derivable from these types, the number does not exist yet and the panel
 // must say so rather than invent it.
 
-export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons";
-// In command-panel order: the digit that opens a view is its position here,
-// and `?tab=` accepts exactly these names. Kept identical to lib/queenModules
-// (qa/agents-spec-contract.mjs checks the two lists agree), so SPECS is the
-// second entry rather than an afterthought the keyboard could not reach.
+export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents";
+// In command-panel order: the key that opens a view is HUD_KEYS at the same
+// position, and `?tab=` accepts exactly these names. Kept identical to
+// lib/queenModules (qa/agents-spec-contract.mjs checks the two lists agree), so
+// SPECS is the second entry rather than an afterthought the keyboard could not reach.
 export const HUD_VIEWS: readonly HudView[] = [
   "comb",
   "specs",
@@ -21,7 +21,14 @@ export const HUD_VIEWS: readonly HudView[] = [
   "research",
   "skills",
   "crons",
+  "agents",
 ] as const;
+// The keyboard shortcut per view, by position: the digits 1-9, then 0, then
+// letters once the digits are spent. The rail prints HUD_KEYS[i] on button i and
+// the shell binds exactly these keys; a tenth or eleventh view takes the next
+// entry here and nothing else changes.
+export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "p"] as const;
+export const hudKeyOf = (view: HudView): string => HUD_KEYS[HUD_VIEWS.indexOf(view)] ?? "";
 
 export type Territory = "held" | "neutral" | "fog";
 
