@@ -24,6 +24,7 @@ const CaseStudies = lazy(() => import('./pages/CaseStudies.tsx'))
 const GFT = lazy(() => import('./pages/GFT.tsx'))
 const Licensing = lazy(() => import('./pages/Licensing.tsx'))
 const Proof = lazy(() => import('./pages/Proof.tsx'))
+const Trinity = lazy(() => import('./pages/Trinity.tsx'))
 const AboutAuthor = lazy(() => import('./pages/AboutAuthor.tsx'))
 const Resources = lazy(() => import('./pages/Resources.tsx'))
 const Foundry = lazy(() => import('./pages/Foundry.tsx'))
@@ -63,6 +64,10 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/gft" element={<GFT />} />
             <Route path="/ip" element={<Licensing />} />
             <Route path="/proof" element={<Proof />} />
+            {/* The number and the claim under it. They were the homepage's first
+                screen; the homepage is the game now, and this is where the
+                arithmetic lives. */}
+            <Route path="/trinity" element={<Trinity />} />
             <Route path="/about" element={<AboutAuthor />} />
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

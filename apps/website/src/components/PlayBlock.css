@@ -1,0 +1,118 @@
+/* Four moves, in a row that becomes a column when the width says so. Same
+   auto-fit rule as the modules block: the number of columns is the width's
+   decision, not a breakpoint's. */
+.play-block {
+  border-top: 1px solid rgba(0, 255, 136, 0.24);
+  background: #020605;
+  color: var(--text, #e7f7fa);
+}
+
+.play-block-inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) 0;
+  display: grid;
+  gap: clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.play-block-head {
+  max-width: 68ch;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.play-block-eyebrow {
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.play-block-head h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.play-block-head p {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(0.9rem, 1.6vw, 1rem);
+  line-height: 1.6;
+}
+
+.play-block-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid rgba(0, 255, 136, 0.16);
+  background: rgba(0, 255, 136, 0.16);
+}
+
+.play-block-steps > li {
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+  padding: clamp(1.1rem, 2.4vw, 1.5rem);
+  background: #020605;
+}
+
+.play-step-n {
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+}
+
+.play-block-steps strong {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.play-block-steps p {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.play-block-steps a {
+  justify-self: start;
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.4);
+}
+
+.play-block-steps a:hover {
+  border-bottom-color: #00ff88;
+}
+
+.play-block-closing {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: 0.86rem;
+}
+
+.play-block-closing a {
+  color: #ffd45a;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 212, 90, 0.4);
+}
+
+@media (pointer: coarse) {
+  .play-block-steps a,
+  .play-block-closing a {
+    display: inline-block;
+    min-height: 44px;
+    line-height: 44px;
+  }
+}
