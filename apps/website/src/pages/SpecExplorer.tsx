@@ -15,6 +15,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { useDocumentLock, useViewport } from '../lib/useViewport'
+import { HEADER_CHROME_MAX } from '../lib/viewport.generated'
 import { SpecCodeView } from '../components/SpecCodeView'
 import { SpecChipView } from '../components/SpecChipView'
 import LanguageSwitcher from '../components/LanguageSwitcher'
@@ -422,38 +424,25 @@ export default function SpecExplorer() {
   const [selected, setSelected] = useState<SpecEntry | null>(null)
 
   /**
-   * Below this width the two panes cannot both be useful.
+   * Below the phone tier's upper bound the two panes cannot both be useful.
    *
    * The desktop layout is a 300px library beside the detail pane. On a 375px
    * phone that left 150-odd pixels for the detail, which wrapped every word of
    * the description onto its own line -- and the row still overflowed, so the
    * page scrolled sideways and the search box was clipped off the top.
    *
-   * 760px is chosen against the layout, not a device: it is where the library
-   * at its 300px preferred width stops leaving the detail pane enough room for
-   * a readable line. Tablets in landscape stay on the two-pane layout.
+   * The bound is PHONE_MAX from specs/ui/viewport.t27, read through
+   * useViewport (matchMedia per tier plus `resize`; see the note there about
+   * programmatic viewport changes not always delivering a matchMedia change
+   * event). Tablets stay on the two-pane layout.
    */
-  // Distinct from the existing `narrow` (< 1100px), which only trims chrome.
-  // This one changes the layout's shape, so it gets its own name and threshold.
-  const [phone, setPhone] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches,
-  )
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 760px)')
-    const sync = () => setPhone(mq.matches)
-    mq.addEventListener('change', sync)
-    // `resize` as well as `change`: the sibling `narrow` state below uses
-    // resize, and a programmatic viewport change does not always deliver a
-    // matchMedia change event -- it did not in the headless browser this was
-    // verified in, which read as the layout being stuck until the page was
-    // reloaded. Both listeners call the same setter, so double-firing is a
-    // no-op.
-    window.addEventListener('resize', sync)
-    return () => {
-      mq.removeEventListener('change', sync)
-      window.removeEventListener('resize', sync)
-    }
-  }, [])
+  // Distinct from `narrow` below, which only trims chrome. This one changes
+  // the layout's shape, so it gets its own name.
+  const viewport = useViewport()
+  const phone = viewport.tier === 'phone'
+  // Phone and tablet lock the document (DOCUMENT_SCROLLS = false): the panes
+  // scroll, body's 80px bottom padding for the long pages does not apply.
+  useDocumentLock(viewport.tier === 'phone' || viewport.tier === 'tablet')
 
   /**
    * Which pane a narrow screen is showing. Master-detail, the way a phone
@@ -518,13 +507,8 @@ export default function SpecExplorer() {
   // drop the optional ones instead.
   // Embedded in the Queen HUD (?embed=1): the frame already sits under the
   // HUD's own chrome, so the page header would be a second title bar.
-  const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
-  useEffect(() => {
-    const onResize = () => setNarrow(window.innerWidth < 1100)
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
+  // HEADER_CHROME_MAX is the 1100 this page always used; it is not a tier.
+  const narrow = viewport.width < HEADER_CHROME_MAX
 
   // Embedded, the frame is the viewport, and the site's 80px body
   // padding-bottom -- there for the mobile CTA -- means nothing inside one. It
@@ -803,7 +787,7 @@ export default function SpecExplorer() {
 
   return (
     <div
-      className="spec-x" data-embedded={embedded ? "1" : undefined}
+      className="spec-x" data-tier={viewport.tier} data-embedded={embedded ? "1" : undefined}
       style={{
         height: '100dvh',
         display: 'flex',
@@ -830,7 +814,7 @@ export default function SpecExplorer() {
           overflow: 'hidden',
         }}
       >
-        <Link to="/" style={{ color: C.muted, textDecoration: 'none', fontSize: 13, flexShrink: 0 }}>
+        <Link to="/" className="spec-x-target" style={{ color: C.muted, textDecoration: 'none', fontSize: 13, flexShrink: 0 }}>
           {ui.back}
         </Link>
         {/* flexShrink 0 here pushed the language switcher 9px off a 375px
@@ -1261,7 +1245,7 @@ export default function SpecExplorer() {
               belongs to the route, not to this pane. */}
           {phone && (
             <button
-              onClick={() => setMobilePane('list')}
+              className="spec-x-back" onClick={() => setMobilePane('list')}
               style={{
                 flexShrink: 0,
                 display: 'flex',
@@ -1419,6 +1403,7 @@ export default function SpecExplorer() {
                         active={layer}
                         onPick={(id) => setLayer(id as LayerId)}
                         labels={LAYER_LABEL}
+                        interactive={viewport.tier !== 'phone' && viewport.tier !== 'tablet'}
                       />
                     </div>
                   )}

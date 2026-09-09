@@ -62,7 +62,7 @@ export function ExplorerHeader({
         overflow: 'hidden',
       }}
     >
-      <Link to={backHref} style={{ color: C.muted, textDecoration: 'none', fontSize: 13, flexShrink: 0 }}>
+      <Link to={backHref} className="spec-x-target" style={{ color: C.muted, textDecoration: 'none', fontSize: 13, flexShrink: 0 }}>
         {back}
       </Link>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0, flexShrink: 1 }}>

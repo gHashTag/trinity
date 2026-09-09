@@ -338,6 +338,17 @@ export function shapeProblem(decl, shape) {
       if (type !== `[${value.length}]str`) return `annotated ${type}, holds ${value.length} string(s)`
       return null
     }
+    // Integer arrays ([N]u8, [N]u16, [N]u32), e.g. the viewport matrix widths and heights.
+    case 'arr-u8':
+    case 'arr-u16':
+    case 'arr-u32': {
+      const elem = shape.slice(4)
+      if (!Array.isArray(value)) return 'value is not an array'
+      const bad = value.find((x) => !Number.isInteger(x) || x < 0 || x > INT_MAX[elem])
+      if (bad !== undefined) return `element ${bad} is not in ${elem} range`
+      if (type !== `[${value.length}]${elem}`) return `annotated ${type}, holds ${value.length} ${elem} value(s)`
+      return null
+    }
     default:
       return `unknown shape ${shape}`
   }

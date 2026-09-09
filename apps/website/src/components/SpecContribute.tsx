@@ -110,6 +110,7 @@ export function SpecContribute({
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
       <span style={{ fontSize: 10, color: '#8b9490', opacity: 0.7, fontFamily: MONO }}>{labels.contribute}</span>
       <a
+        className="spec-x-target"
         href={editHref}
         target="_blank"
         rel="noopener noreferrer"
@@ -119,6 +120,7 @@ export function SpecContribute({
         {labels.propose}
       </a>
       <a
+        className="spec-x-target"
         href={issueHref}
         target="_blank"
         rel="noopener noreferrer"

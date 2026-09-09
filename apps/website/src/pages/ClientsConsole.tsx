@@ -85,6 +85,7 @@ const UI = {
     people: 'people',
     noResults: 'Nobody matches that search.',
     noneInGroup: 'Nobody in this group.',
+    filters: 'Filters',
     emptyBase: 'The memory is empty. Run the chat ingest in the bot first.',
     pickLead: 'Pick a person on the left to see the history before you write.',
     loading: 'Loading…',
@@ -157,6 +158,7 @@ const UI = {
     people: 'людей',
     noResults: 'Никого не найдено.',
     noneInGroup: 'В этой группе никого.',
+    filters: 'Фильтры',
     emptyBase: 'Память пуста. Сначала запустите разбор переписки в боте.',
     pickLead: 'Выберите человека слева — покажу историю до того, как писать.',
     loading: 'Загружаю…',
@@ -592,7 +594,10 @@ export default function ClientsConsole() {
             tagSel={tagSel}
             toggleTag={(t) => setTagSel((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))}
             clearTags={() => setTagSel([])}
-            phone={phone}
+            // Not migrated to useViewport in P0 (the console is outside the five
+            // explorers): phone keeps its one-pane shape, everything else is the
+            // desktop shape it had.
+            tier={phone ? 'phone' : 'desktop'}
             countLabel={`${filtered.length} ${ui.people}`}
             titlesAreGenerated
             ui={{
@@ -602,6 +607,7 @@ export default function ClientsConsole() {
               clear: ui.clear,
               noResults: ui.noResults,
               noneInGroup: leads.length === 0 ? ui.emptyBase : ui.noneInGroup,
+              filters: ui.filters,
             }}
           />
         )}

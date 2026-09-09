@@ -16,6 +16,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { useHashParams } from '../hooks/useHashParams'
+import { useDocumentLock, useViewport } from '../lib/useViewport'
+import { HEADER_CHROME_MAX } from '../lib/viewport.generated'
 import { ExplorerHeader } from '../components/ExplorerHeader'
 import { ExplorerLibrary, type ExplorerItem } from '../components/ExplorerLibrary'
 import { SpecCodeView } from '../components/SpecCodeView'
@@ -110,6 +112,7 @@ const UI = {
     codeBlocks: 'code blocks',
     links: 'links',
     backToLibrary: 'All skills',
+    filters: 'Filters',
     detail: 'Skill',
     failed: 'The catalog could not be read:',
   },
@@ -184,6 +187,7 @@ const UI = {
     codeBlocks: 'блоков кода',
     links: 'ссылок',
     backToLibrary: 'Все скилы',
+    filters: 'Фильтры',
     detail: 'Скил',
     failed: 'Каталог не прочитан:',
   },
@@ -250,19 +254,15 @@ export default function SkillExplorer() {
 
   // Below this width the two panes cannot both be useful, so the library and
   // the detail take turns.
-  const [phone, setPhone] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 760))
-  const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
+  // Layout tier from specs/ui/viewport.t27 (via useViewport); `narrow` trims the
+  // header chrome and is not a tier. Phone and tablet lock the document: the
+  // panes are the scrollers there.
+  const viewport = useViewport()
+  const phone = viewport.tier === 'phone'
+  const compact = phone || viewport.tier === 'tablet'
+  const narrow = viewport.width < HEADER_CHROME_MAX
+  useDocumentLock(compact)
   const [pane, setPane] = useState<'list' | 'detail'>('list')
-  useEffect(() => {
-    const onResize = () => {
-      setPhone(window.innerWidth < 760)
-      setNarrow(window.innerWidth < 1100)
-    }
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-
   const pick = useCallback(
     async (entry: SkillEntry, pinned?: string) => {
       setSelected(entry)
@@ -320,6 +320,25 @@ export default function SkillExplorer() {
     // Mount only: the deep link is read once, exactly as /specs reads it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // A deep link that arrives after mount (the back button, a link on this
+  // page, a script setting the hash): open that card, on a phone as the card
+  // pane. Measured before this at 390x844: `#/skills` then a `?skill=` hash
+  // kept the list, because the parameters were read once.
+  useEffect(() => {
+    if (!manifest || params.changes === 0) return
+    const wanted = params.get('skill')
+    if (!wanted) return
+    try {
+      const target = resolveManifestSkill(manifest, wanted)
+      setPane('detail')
+      if (target !== selected) void pick(target, params.get('sha256') ?? undefined)
+    } catch {
+      // An unknown id in a later hash: keep the card that is open.
+    }
+    // Only the hash counter: the catalog and the selection are read, not followed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.changes])
 
   // `?? []` creates a new array on every render, which would make every useMemo
   // below re-run for nothing.
@@ -424,6 +443,7 @@ export default function SkillExplorer() {
   return (
     <div
       className="spec-x"
+      data-tier={viewport.tier}
       data-embedded={embedded ? '1' : undefined}
       style={{
         height: '100dvh',
@@ -485,7 +505,7 @@ export default function SkillExplorer() {
             tagSel={tagSel}
             toggleTag={(t) => setTagSel((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))}
             clearTags={() => setTagSel([])}
-            phone={phone}
+            tier={viewport.tier}
             countLabel={`${filtered.length} ${ui.skills}`}
             titlesAreGenerated
             ui={{
@@ -495,6 +515,7 @@ export default function SkillExplorer() {
               clear: ui.clear,
               noResults: ui.noResults,
               noneInGroup: ui.noneInGroup,
+              filters: ui.filters,
             }}
           />
         )}
@@ -523,12 +544,12 @@ export default function SkillExplorer() {
             {selected && (
               <>
                 {phone && (
-                  <button onClick={() => setPane('list')} style={{ ...pill, alignSelf: 'flex-start', margin: '10px 14px 0' }}>
+                  <button onClick={() => setPane('list')} className="spec-x-back" style={{ ...pill, alignSelf: 'flex-start', margin: '10px 14px 0' }}>
                     ← {ui.backToLibrary}
                   </button>
                 )}
                 {/* brief */}
-                <div style={{ flexShrink: 0, padding: '10px 14px 0', display: 'flex', gap: 18, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div data-card={selected.id} style={{ flexShrink: 0, padding: '10px 14px 0', display: 'flex', gap: 18, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                   <div style={{ flex: '1 1 320px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 15, fontWeight: 700, color: C.text }} data-lang-exempt="live">
@@ -570,14 +591,14 @@ export default function SkillExplorer() {
                         {copied ? ui.copied : ui.copyLink}
                       </button>
                       {gh.url ? (
-                        <a href={gh.url} target="_blank" rel="noopener noreferrer" style={pill}>
+                        <a className="spec-x-target" href={gh.url} target="_blank" rel="noopener noreferrer" style={pill}>
                           {ui.edit}
                         </a>
                       ) : (
                         <span style={{ ...pill, cursor: 'default', opacity: 0.75 }}>{ui.privateRepo}</span>
                       )}
                       {selected.link !== 'bound' && proposeHref(selected) && (
-                        <a href={proposeHref(selected) as string} target="_blank" rel="noopener noreferrer" style={{ ...pill, color: C.warn, borderColor: 'rgba(240,160,32,0.4)' }}>
+                        <a className="spec-x-target" href={proposeHref(selected) as string} target="_blank" rel="noopener noreferrer" style={{ ...pill, color: C.warn, borderColor: 'rgba(240,160,32,0.4)' }}>
                           {ui.proposeSpec}
                         </a>
                       )}
@@ -646,6 +667,7 @@ export default function SkillExplorer() {
                             id={selected.id}
                             entry={specById.get(selected.id) ?? null}
                             embedded={embedded}
+                            flat={compact}
                             i18n={specs?.i18n ?? []}
                             links={(specById.get(selected.id)?.runBy ?? []).map((id) => ({ id, ok: true, href: cronExplorerHash(id, { embedded }) }))}
                           />
@@ -730,7 +752,7 @@ export default function SkillExplorer() {
                                 <div style={{ flex: 1, minHeight: 320, display: 'flex', flexDirection: 'column' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                                     <span style={{ fontFamily: C.mono, fontSize: 11, color: C.accent }}>{openSpec}</span>
-                                    <a href={specExplorerHash(openSpec)} style={{ ...pill, marginLeft: 'auto' }}>
+                                    <a className="spec-x-target" href={specExplorerHash(openSpec)} style={{ ...pill, marginLeft: 'auto' }}>
                                       {ui.openSpec}
                                     </a>
                                   </div>
@@ -783,7 +805,7 @@ export default function SkillExplorer() {
                                           {id}
                                         </a>
                                         {href && (
-                                          <a href={href} target="_blank" rel="noopener noreferrer" style={{ ...pill, fontSize: 9.5, padding: '0 7px' }}>
+                                          <a className="spec-x-target" href={href} target="_blank" rel="noopener noreferrer" style={{ ...pill, fontSize: 9.5, padding: '0 7px' }}>
                                             {ui.proposeSpec}
                                           </a>
                                         )}

@@ -103,6 +103,12 @@ jobs:
         run: npm run check:explorer-languages
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
+      # The tiers, the touch minimum and the QA matrix come from
+      # specs/ui/viewport.t27 through the compiler; the two generated files
+      # must be the ones the vendored spec produces, and the generator must
+      # still refuse a spec whose own tests do not hold.
+      - name: Viewport spec
+        run: npm run check:viewport && npm run test:viewport-spec
 
       - name: Build
         run: npx vite build
@@ -143,6 +149,15 @@ jobs:
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run check:render -- --no-build
+
+      # The five explorers and the spec explorer at every size in the spec's
+      # matrix: one pane on a phone, two above, the deep-linked card open and
+      # on screen, 44px controls where a finger is the pointer, one scroller
+      # per pane, nothing sideways. Skips itself without Chrome.
+      - name: Explorer viewport contract
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:explorer-viewport -- --no-build
 
       # A51: four PRs merged, every check green, and the live site changed
       # nothing -- this app deploys from a second repository that holds build

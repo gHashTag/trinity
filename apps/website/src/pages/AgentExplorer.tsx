@@ -13,6 +13,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { useHashParams } from '../hooks/useHashParams'
+import { useDocumentLock, useViewport } from '../lib/useViewport'
+import { HEADER_CHROME_MAX } from '../lib/viewport.generated'
 import { ExplorerHeader } from '../components/ExplorerHeader'
 import { ExplorerLibrary, type ExplorerItem } from '../components/ExplorerLibrary'
 import { AgentSpecPanel } from '../components/AgentSpecPanel'
@@ -44,6 +46,7 @@ const UI = {
     failed: 'Could not load the agent catalog:',
     pickAgent: 'Pick an agent',
     backToLibrary: 'All agents',
+    filters: 'Filters',
     filterAll: 'All',
     filterWithExperience: 'with experience',
     filterSpecOnly: 'spec only',
@@ -113,6 +116,7 @@ const UI = {
     failed: 'Не удалось загрузить каталог агентов:',
     pickAgent: 'Выберите агента',
     backToLibrary: 'Все агенты',
+    filters: 'Фильтры',
     filterAll: 'Все',
     filterWithExperience: 'с опытом',
     filterSpecOnly: 'только спека',
@@ -211,19 +215,15 @@ export default function AgentExplorer() {
   const [witnessFilter, setWitnessFilter] = useState<'all' | 'spec+experience' | 'spec-only'>('all')
   const [tagSel, setTagSel] = useState<string[]>([])
   const [copied, setCopied] = useState(false)
-  const [phone, setPhone] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 760))
-  const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
+  // Layout tier from specs/ui/viewport.t27 (via useViewport); `narrow` trims the
+  // header chrome and is not a tier. Phone and tablet lock the document: the
+  // panes are the scrollers there.
+  const viewport = useViewport()
+  const phone = viewport.tier === 'phone'
+  const compact = phone || viewport.tier === 'tablet'
+  const narrow = viewport.width < HEADER_CHROME_MAX
+  useDocumentLock(compact)
   const [pane, setPane] = useState<'list' | 'detail'>('list')
-
-  useEffect(() => {
-    const onResize = () => {
-      setPhone(window.innerWidth < 760)
-      setNarrow(window.innerWidth < 1100)
-    }
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
 
   const pick = useCallback(
     (entry: AgentSpecEntry) => {
@@ -260,6 +260,25 @@ export default function AgentExplorer() {
     // Mount only: the deep link is read once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // A deep link that arrives after mount (the back button, a link on this
+  // page, a script setting the hash): open that card, on a phone as the card
+  // pane. Measured before this at 390x844: `#/agents` then a `?agent=` hash
+  // kept the list, because the parameters were read once.
+  useEffect(() => {
+    if (!catalog || params.changes === 0) return
+    const wanted = params.get('agent')
+    if (!wanted) return
+    try {
+      const target = resolveAgent(catalog, wanted)
+      setPane('detail')
+      if (target !== selected) pick(target)
+    } catch {
+      // An unknown id in a later hash: keep the card that is open.
+    }
+    // Only the hash counter: the catalog and the selection are read, not followed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.changes])
 
   const agents = useMemo(() => catalog?.agents ?? [], [catalog])
 
@@ -349,7 +368,7 @@ export default function AgentExplorer() {
 
   const chipLink = (href: string, text: string, glyph: string, ok = true) =>
     ok ? (
-      <a key={text} href={href} style={{ ...tagChip(false, false), color: C.accent, borderColor: C.borderBright, textDecoration: 'none' }} data-lang-exempt="live">
+      <a className="spec-x-target" key={text} href={href} style={{ ...tagChip(false, false), color: C.accent, borderColor: C.borderBright, textDecoration: 'none' }} data-lang-exempt="live">
         {glyph} {text}
       </a>
     ) : (
@@ -363,6 +382,7 @@ export default function AgentExplorer() {
   return (
     <div
       className="spec-x"
+      data-tier={viewport.tier}
       data-embedded={embedded ? '1' : undefined}
       style={{
         height: '100dvh',
@@ -427,7 +447,7 @@ export default function AgentExplorer() {
             tagSel={tagSel}
             toggleTag={(t) => setTagSel((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))}
             clearTags={() => setTagSel([])}
-            phone={phone}
+            tier={viewport.tier}
             countLabel={`${filtered.length} ${ui.agents}`}
             titlesAreGenerated
             ui={{
@@ -437,6 +457,7 @@ export default function AgentExplorer() {
               clear: ui.clear,
               noResults: ui.noResults,
               noneInGroup: ui.noneInGroup,
+              filters: ui.filters,
             }}
           />
         )}
@@ -461,9 +482,9 @@ export default function AgentExplorer() {
             )}
             {!selected && !err && <div style={{ padding: 24, color: C.muted, fontSize: 13 }}>{catalog ? ui.pickAgent : ui.loading}</div>}
             {selected && (
-              <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div data-card={selected.id} style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {phone && (
-                  <button onClick={() => setPane('list')} style={{ ...pill, alignSelf: 'flex-start' }}>
+                  <button onClick={() => setPane('list')} className="spec-x-back" style={{ ...pill, alignSelf: 'flex-start' }}>
                     ← {ui.backToLibrary}
                   </button>
                 )}
@@ -507,18 +528,19 @@ export default function AgentExplorer() {
                   id={selected.id}
                   entry={selected}
                   embedded={embedded}
+                  flat={compact}
                   i18n={catalog?.i18n ?? []}
                   links={selected.skills.map((s) => ({ id: s.id, ok: s.ok, href: s.ok ? skillExplorerHash(s.id, { embedded }) : '#' }))}
                   extraControls={
                     <>
-                      <a href={selected.links.soul} target="_blank" rel="noopener noreferrer" style={pill}>
+                      <a className="spec-x-target" href={selected.links.soul} target="_blank" rel="noopener noreferrer" style={pill}>
                         {ui.openSoul}
                       </a>
-                      <a href={selected.links.agentsDoc} target="_blank" rel="noopener noreferrer" style={pill}>
+                      <a className="spec-x-target" href={selected.links.agentsDoc} target="_blank" rel="noopener noreferrer" style={pill}>
                         {ui.openAgentsDoc}
                       </a>
                       {selected.links.experienceLog && (
-                        <a href={selected.links.experienceLog} target="_blank" rel="noopener noreferrer" style={pill}>
+                        <a className="spec-x-target" href={selected.links.experienceLog} target="_blank" rel="noopener noreferrer" style={pill}>
                           {ui.experienceLog}
                         </a>
                       )}
@@ -531,13 +553,13 @@ export default function AgentExplorer() {
                   {heading(ui.soulLaw)}
                   <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.soulLawHint}</div>
                   <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                    <a href={selected.links.soul} target="_blank" rel="noopener noreferrer" style={pill} data-lang-exempt="live">
+                    <a className="spec-x-target" href={selected.links.soul} target="_blank" rel="noopener noreferrer" style={pill} data-lang-exempt="live">
                       {selected.fields.SOUL}
                     </a>
-                    <a href={selected.links.agentsDoc} target="_blank" rel="noopener noreferrer" style={pill} data-lang-exempt="live">
+                    <a className="spec-x-target" href={selected.links.agentsDoc} target="_blank" rel="noopener noreferrer" style={pill} data-lang-exempt="live">
                       {selected.fields.AGENTS_DOC}
                     </a>
-                    <a href={selected.links.alphabet} target="_blank" rel="noopener noreferrer" style={pill} data-lang-exempt="live">
+                    <a className="spec-x-target" href={selected.links.alphabet} target="_blank" rel="noopener noreferrer" style={pill} data-lang-exempt="live">
                       {selected.fields.ALPHABET}
                     </a>
                   </div>
