@@ -1,5 +1,14 @@
 # specs/agents — the 27-agent alphabet as first-class `.t27` specs
 
+> **Where this lives.** This directory in `gHashTag/t27` is the canonical home of these
+> specs — edit them here. `gHashTag/trinity` keeps a vendored copy under
+> `apps/website/public/t27/files/specs/agents/` and its build reads that copy through the
+> vendored compiler wasm (`t27_compiler.wasm`). The wasm's `typecheck.ok` is necessary,
+> not sufficient, so the site's generator (`scripts/agents-from-specs.mjs`) also checks the
+> field schema below. The bootstrap compiler on `master` was not run against these files in
+> the commit that added them.
+
+
 One file per agent of the Trinity alphabet (`docs/agents/AGENTS_ALPHABET.md`, v3.0): A…Z and
 the 27th seat, Ti. The `.t27` file is the source of truth for the agent card on t27.ai;
 the JSON the site serves (`public/agents/spec-agents.json`) is generated from these files by
@@ -53,8 +62,8 @@ written by hand.
 | `CLARA_ROLE`      | `str`     | the CLARA role; `""` when the table says `—`                                              |
 | `SKILLS`          | `[N]str`  | skill IDs (`specs/skills`) the agent holds — ONLY when a source binds them (see below)     |
 | `SKILLS_NOTE`     | `str`     | where the binding comes from, or why `SKILLS` is empty; required when `SKILLS` is `[]`    |
-| `TOOLS`           | `[N]str`  | *optional, layer 5:* tool IDs (`specs/tools`) the agent owns, evidence-bound like SKILLS   |
-| `TOOLS_NOTE`      | `str`     | *optional:* source of the tool binding; required when `TOOLS` is present and `[]`          |
+| `TOOLS`           | `[N]str`  | tool IDs from `specs/tools` (`tri/<command>`, `mcp/<server>`) a source line binds to the letter |
+| `TOOLS_NOTE`      | `str`     | the source line, or why `TOOLS` is empty; required when `TOOLS` is `[]`                    |
 | `EXPERIENCE_LOG`  | `str`     | the experience directory the agent's episodes are read from, or `""`                      |
 | `ENABLED`         | `bool`    | `false` only for the reserved seat (Ti)                                                   |
 

@@ -1,5 +1,5 @@
-// The Queen's SKILLS, CRONS, AGENTS and FUNCTIONS views: the real Skill, Cron,
-// Agent and Function Explorers, inside the game.
+// The Queen's SKILLS, CRONS, AGENTS, FUNCTIONS and TOOLS views: the real Skill, Cron,
+// Agent, Function and Tool Explorers, inside the game.
 //
 // Same shape as QueenSpecs, for the same reasons: the Explorers own a
 // full-viewport layout and the Skill/Cron pages boot the compiler wasm to
@@ -14,9 +14,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
-import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadSkillSpecs } from '../lib/agentSpecs'
+import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadSkillSpecs, loadToolSpecs } from '../lib/agentSpecs'
 
-export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions'
+export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions' | 'tools'
 
 export interface AgentsCopy {
   directive: string
@@ -30,11 +30,15 @@ export interface AgentsCopy {
   /** Agents only: the witness is experience, and the third number is what no letter claims. */
   specPlusExperience?: string
   unattributed?: string
+  /** Tools only: the split is ownership — how many an agent's spec and a source bind, how many nobody has yet. */
+  toolsOwned?: string
+  toolsUnowned?: string
 }
 
 // For skills and crons the third figure is code-only cards; for agents it is
 // the episodes no letter claims (`unattributed`), which is a fact about the log,
-// not a defect of any agent.
+// not a defect of any agent. For tools the pair is owned / not yet owned: an
+// unbound tool is a gap in the alphabet's bindings, not a broken spec.
 interface Counts { specs: number; specPlusCode: number; codeOnly: number; typecheckOk: number }
 
 async function loadCounts(kind: AgentsKind): Promise<Counts> {
@@ -47,6 +51,10 @@ async function loadCounts(kind: AgentsKind): Promise<Counts> {
     // manifest entries no spec states yet.
     const c = (await loadFunctionSpecs()).counts
     return { specs: c.specs, specPlusCode: c.specPlusCode, codeOnly: c.codeOnly, typecheckOk: c.typecheckOk }
+  }
+  if (kind === 'tools') {
+    const c = (await loadToolSpecs()).counts
+    return { specs: c.specs, specPlusCode: c.withAgents, codeOnly: c.specs - c.withAgents, typecheckOk: c.typecheckOk }
   }
   const c = kind === 'skills' ? (await loadSkillSpecs()).counts : (await loadCronSpecs()).counts
   return { specs: c.specs, specPlusCode: c.specPlusCode, codeOnly: c.codeOnly, typecheckOk: c.typecheckOk }
@@ -71,11 +79,11 @@ export function QueenAgentsDirective({ kind, c, collapsible = false }: { kind: A
         <span className="queen27-specs-counts">
           <b style={{ color: '#00FF88' }}>{counts.specs}</b> {c.specs}
           {' · '}
-          <b style={{ color: kind === 'agents' && counts.specPlusCode === 0 ? '#8b9490' : '#00FF88' }}>{counts.specPlusCode}</b>{' '}
-          {kind === 'agents' ? c.specPlusExperience ?? c.specPlusCode : c.specPlusCode}
+          <b style={{ color: (kind === 'agents' || kind === 'tools') && counts.specPlusCode === 0 ? '#8b9490' : '#00FF88' }}>{counts.specPlusCode}</b>{' '}
+          {kind === 'agents' ? c.specPlusExperience ?? c.specPlusCode : kind === 'tools' ? c.toolsOwned ?? c.specPlusCode : c.specPlusCode}
           {' · '}
           <b style={{ color: counts.codeOnly ? '#f0a020' : '#8b9490' }}>{counts.codeOnly}</b>{' '}
-          {kind === 'agents' ? c.unattributed ?? c.codeOnly : c.codeOnly}
+          {kind === 'agents' ? c.unattributed ?? c.codeOnly : kind === 'tools' ? c.toolsUnowned ?? c.codeOnly : c.codeOnly}
           {' · '}
           <b style={{ color: counts.typecheckOk === counts.specs ? '#00FF88' : '#f85149' }}>
             {counts.typecheckOk}/{counts.specs}
@@ -129,7 +137,7 @@ export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKin
           ref={frameRef}
           className="queen27-specs-frame"
           src={src}
-          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : kind === 'agents' ? 'Agent Explorer' : 'Function Explorer'}
+          title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : kind === 'agents' ? 'Agent Explorer' : kind === 'functions' ? 'Function Explorer' : 'Tool Explorer'}
           onLoad={() => setReady(true)}
           loading="lazy"
         />

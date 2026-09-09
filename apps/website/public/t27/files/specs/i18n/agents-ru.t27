@@ -16,8 +16,8 @@ pub const LOCALE : str = "ru";
 pub const SOURCE_LOCALE : str = "en";
 ; Spec directories whose modules this bundle may translate; an entry ID must
 ; resolve to a spec in one of them.
-pub const SCOPE : [4]str = ["specs/skills", "specs/crons", "specs/agents", "specs/functions"];
-; Spec fields a bundle entry may carry. SUMMARY maps to SUMMARY_EN, NAME to NAME.
+pub const SCOPE : [5]str = ["specs/skills", "specs/crons", "specs/agents", "specs/functions", "specs/tools"];
+; Spec fields a bundle entry may carry. SUMMARY maps to SUMMARY_EN (ABOUT for specs/tools), NAME to NAME.
 pub const FIELDS : [2]str = ["SUMMARY", "NAME"];
 pub const BUNDLE_REPO : str = "trinity";
 pub const BUNDLE_PATH : str = "apps/website/i18n/agents.ru.json";

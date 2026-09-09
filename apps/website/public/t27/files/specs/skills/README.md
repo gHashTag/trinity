@@ -1,5 +1,15 @@
 # specs/skills — skills as first-class `.t27` specs
 
+> **Where this lives.** This directory in `gHashTag/t27` is the canonical home of these
+> specs — edit them here. `gHashTag/trinity` keeps a vendored copy under
+> `apps/website/public/t27/files/specs/skills/` and its build reads that copy through the
+> vendored compiler wasm (`t27_compiler.wasm`). The wasm's `typecheck.ok` is necessary,
+> not sufficient: it stays `true` for a wrong annotation such as `str = 5`, so the site's
+> generator (`scripts/agents-from-specs.mjs`) also checks the field schema below. The
+> bootstrap compiler on `master` was not run against these files in the commit that
+> added them.
+
+
 One file per Claude Code skill the site publishes (`apps/website/public/skills/manifest.json`).
 The `.t27` file is the source of truth for the skill card on t27.ai; the JSON the site
 serves (`public/skills/spec-skills.json`) is generated from these files by the real

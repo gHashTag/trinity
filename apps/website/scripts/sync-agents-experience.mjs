@@ -142,7 +142,9 @@ function gitHead(root) {
 /** Read one checkout; pure apart from the file system. */
 export function readRepo({ repo, root }) {
   const dir = join(root, EXPERIENCE_DIR)
-  const source = { repo, root, commit: gitHead(root), dir: EXPERIENCE_DIR, files: 0, episodes: 0, unreadable: [], notes: [] }
+  // The commit is the witness; the checkout's absolute path is a fact about one
+  // machine and does not go into the published snapshot.
+  const source = { repo, commit: gitHead(root), dir: EXPERIENCE_DIR, files: 0, episodes: 0, unreadable: [], notes: [] }
   const episodes = []
   if (!existsSync(dir)) return { source: { ...source, missing: true }, episodes }
   for (const abs of walk(dir)) {
@@ -290,7 +292,7 @@ export async function main(argv) {
   const generatedAt = epoch ? new Date(Number(epoch) * 1000).toISOString() : new Date().toISOString()
   const doc = buildExperience({ repos, generatedAt })
   writeAtomic(OUT, doc)
-  for (const s of doc.sources) console.log(`sync-agents-experience: ${s.repo} ${s.root}${s.missing ? ' (no .trinity/experience)' : ''} @ ${(s.commit ?? 'no-git').slice(0, 7)}: ${s.files} files, ${s.episodes} episodes, ${s.unreadable} unreadable, ${s.notes.length} notes`)
+  for (const s of doc.sources) console.log(`sync-agents-experience: ${s.repo}${s.missing ? ' (no .trinity/experience)' : ''} @ ${(s.commit ?? 'no-git').slice(0, 7)}: ${s.files} files, ${s.episodes} episodes, ${s.unreadable} unreadable, ${s.notes.length} notes`)
   console.log(`sync-agents-experience: ${doc.counts.attributed} attributed to ${doc.counts.agentsWithEpisodes} agent(s), ${doc.counts.unattributed} unattributed -> ${OUT}`)
   if (doc.counts.unattributed) console.log(`sync-agents-experience: unattributed agent values: ${Object.entries(doc.unattributed.agentValues).map(([k, v]) => `${k} x${v}`).join(', ')}`)
 }

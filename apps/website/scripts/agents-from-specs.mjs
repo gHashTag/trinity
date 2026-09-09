@@ -72,6 +72,13 @@ export const I18N_SPEC_DIR = 'specs/i18n'
 // experience snapshot scripts/sync-agents-experience.mjs writes.
 export const AGENT_SPEC_DIR = 'specs/agents'
 export const AGENTS_OUT = 'public/agents/spec-agents.json'
+// Layer 5: the tri CLI and the MCP servers (specs/tools/tri/*.t27, specs/tools/mcp/*.t27).
+// The three corpus specs at the top of specs/tools/ are not tool cards and are not read.
+export const TOOL_SPEC_DIR = 'specs/tools'
+export const TOOL_SPEC_SUBDIRS = ['tri', 'mcp']
+export const TOOLS_OUT = 'public/tools/spec-tools.json'
+export const TOOL_FAMILIES = { tri: 'tri-cli', mcp: 'mcp' }
+export const TOOL_WITNESSES = ['source-parse', 'help-output']
 export const EXPERIENCE_PATH = 'public/agents/experience.json'
 export const AGENT_LAYERS = ['Archetypal', 'Spiritual', 'Physical']
 export const AGENT_COUNT = 27
@@ -178,12 +185,21 @@ const AGENT_REQUIRED = {
   ENTRY_INVARIANT: 'str', EXIT_INVARIANT: 'str', CLARA_ROLE: 'str', SKILLS: 'arr', SKILLS_NOTE: 'str',
   EXPERIENCE_LOG: 'str', ENABLED: 'bool',
 }
-// TOOLS arrives with layer 5 (specs/tools); until then an agent spec may omit it.
+// TOOLS arrived with layer 5 (specs/tools); an agent spec written before it may still omit it.
 const AGENT_OPTIONAL = { TOOLS: 'arr', TOOLS_NOTE: 'str' }
 const FUNCTION_REQUIRED = {
   KIND: 'str', ID: 'str', LEGACY_ID: 'str', NAME: 'str', REPO: 'str', SERVICE: 'str', DOMAIN: 'str', TRIGGER: 'str',
   EVENT: 'str', LEGACY_EVENTS: 'arr', CRON: 'str', TZ: 'str', SUMMARY_EN: 'str', STEPS: 'arr', RETRIES: 'u8',
   ON_FAILURE: 'str', SIDE_EFFECTS: 'arr', GUARD: 'str', SAFE_PROBE: 'str', PROBE_RESULT: 'str', CONTROL: 'str', NOTE: 'str',
+}
+const TOOL_TRI_REQUIRED = {
+  KIND: 'str', FAMILY: 'str', ID: 'str', COMMAND: 'str', VARIANT: 'str', SOURCE: 'str', ENTRY: 'str', ABOUT: 'str', ABOUT_SOURCE: 'str',
+  ACTIONS: 'arr', ACTIONS_ABOUT: 'arr', ARGS: 'arr', AGENTS: 'arr', AGENTS_NOTE: 'str', WHEN_TO_USE: 'str', WITNESS: 'str', ENABLED: 'bool',
+}
+const TOOL_MCP_REQUIRED = {
+  KIND: 'str', FAMILY: 'str', ID: 'str', SERVER: 'str', SERVER_VERSION: 'str', TRANSPORT: 'str', LAUNCH: 'str', ENV: 'arr', CONFIG: 'str',
+  REPO: 'str', SOURCE: 'str', ABOUT: 'str', ABOUT_SOURCE: 'str', TOOLS: 'arr', TOOLS_ABOUT: 'arr', TOOLS_INPUTS: 'arr', RESOURCES: 'arr',
+  RESOURCES_ABOUT: 'arr', TOOLS_NOTE: 'str', EXTERNAL: 'bool', AGENTS: 'arr', AGENTS_NOTE: 'str', WITNESS: 'str', ENABLED: 'bool',
 }
 const INT_MAX = { u8: 0xff, u16: 0xffff, u32: 0xffffffff }
 export const CYRILLIC = /[\u0400-\u04ff]/
@@ -193,8 +209,10 @@ const I18N_REQUIRED = {
   KIND: 'str', LOCALE: 'str', SOURCE_LOCALE: 'str', SCOPE: 'arr', FIELDS: 'arr', BUNDLE_REPO: 'str', BUNDLE_PATH: 'str',
   BUNDLE_FORMAT: 'str', KEY: 'str', FALLBACK: 'str', COVERAGE_REQUIRED: 'bool', ORPHANS_ALLOWED: 'bool', ENABLED: 'bool',
 }
-// Bundle field -> spec constant it translates.
+// Bundle field -> spec constant it translates. Tool specs have no SUMMARY_EN; for them
+// SUMMARY translates ABOUT (see summarySourceOf), and NAME is not used.
 export const I18N_FIELD_SOURCE = { SUMMARY: 'SUMMARY_EN', NAME: 'NAME' }
+export const summarySourceOf = (fields) => (fields.KIND === 'tool' ? fields.ABOUT : fields.SUMMARY_EN)
 export const LOCALE_RE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/
 
 /**
@@ -356,9 +374,9 @@ export function analyzeSpecFiles(analyze, files) {
   })
 }
 
-export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], functionSpecs = [], i18nSpecs = [], bundles = new Map(), experience = null, skillsManifest, cronsManifest, functionsManifest = null, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
+export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], functionSpecs = [], toolSpecs = [], i18nSpecs = [], bundles = new Map(), experience = null, skillsManifest, cronsManifest, functionsManifest = null, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
   const problems = []
-  for (const s of [...skillSpecs, ...cronSpecs, ...agentSpecs, ...functionSpecs, ...i18nSpecs]) {
+  for (const s of [...skillSpecs, ...cronSpecs, ...agentSpecs, ...functionSpecs, ...toolSpecs, ...i18nSpecs]) {
     if (s.text !== undefined && CYRILLIC.test(s.text)) problems.push(`${s.path}: Cyrillic in a .t27 spec (t27 LANG-EN; translated text belongs in the bundle a specs/i18n/*.t27 contract points to)`)
   }
   const corpusPaths = new Set((t27Manifest?.specs ?? []).map((s) => s.path))
@@ -566,6 +584,115 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   // the card. A cron function is joined to its cron card by REPO + LEGACY_ID =
   // the cron spec's NAME with HOST inngest -- an evidence join, not a name guess.
   const { functions, codeOnlyFunctions } = buildFunctions({ functionSpecs, functionsManifest, crons, corpusPaths, problems })
+  // Tools, the layer after agents on this site's ladder (the t27 README of
+  // specs/tools also calls itself "Layer 5", as does specs/functions -- a
+  // source discrepancy recorded in the report, not resolved here). Two families read from two sub-directories, never merged
+  // into one list: specs/tools/tri (the tri CLI, one file per clap variant) and
+  // specs/tools/mcp (one file per MCP server). AGENTS on a tool and TOOLS on an
+  // agent must agree in both directions and name only letters / IDs that exist;
+  // a skill is cross-linked when its COMMAND names the tri command. The witness
+  // is what the spec says it is (`source-parse` = read from the source, `help-output`
+  // = diffed against `tri --help`); the generator does not upgrade it.
+  const tools = []
+  const seenTool = new Map()
+  const seenLetter = new Map(agents.map((a) => [a.letter, a]))
+  for (const t of toolSpecs) {
+    const file = t.path
+    const m = /^specs\/tools\/(tri|mcp)\/([^/]+)\.t27$/.exec(file)
+    if (!m) { problems.push(`${file}: a tool spec must live in specs/tools/tri/ or specs/tools/mcp/`); continue }
+    const [, sub, base] = m
+    if (!t.verdict.typecheckOk || t.verdict.discarded > 0 || !t.verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(t.verdict)})`)
+    problems.push(...checkSchema(t.consts, sub === 'tri' ? TOOL_TRI_REQUIRED : TOOL_MCP_REQUIRED, {}, file))
+    const f = plain(t.consts)
+    if (f.KIND !== 'tool') problems.push(`${file}: KIND must be "tool"`)
+    if (f.FAMILY !== TOOL_FAMILIES[sub]) problems.push(`${file}: FAMILY must be ${JSON.stringify(TOOL_FAMILIES[sub])} under ${sub}/, is ${JSON.stringify(f.FAMILY)}`)
+    const expectId = `${sub}/${base}`
+    if (f.ID !== expectId) problems.push(`${file}: ID must be ${expectId}, is ${JSON.stringify(f.ID)}`)
+    if (typeof f.ID === 'string') {
+      if (seenTool.has(f.ID)) problems.push(`${file}: duplicate tool ID ${f.ID} (also ${seenTool.get(f.ID)})`)
+      seenTool.set(f.ID, file)
+    }
+    const expectModule = `tool_${sub}_${base.replace(/[^A-Za-z0-9]+/g, '_')}`
+    if (t.moduleName && t.moduleName !== expectModule) problems.push(`${file}: module must be ${expectModule}, is ${t.moduleName}`)
+    if (!TOOL_WITNESSES.includes(f.WITNESS)) problems.push(`${file}: WITNESS ${JSON.stringify(f.WITNESS)} is not one of ${TOOL_WITNESSES.join('|')}`)
+    if (typeof f.ABOUT === 'string' && !f.ABOUT.trim()) problems.push(`${file}: ABOUT is empty`)
+    if (typeof f.ABOUT_SOURCE === 'string' && !f.ABOUT_SOURCE.trim()) problems.push(`${file}: ABOUT_SOURCE is empty`)
+    const letters = Array.isArray(f.AGENTS) ? f.AGENTS : []
+    for (const l of letters) if (!seenLetter.has(l)) problems.push(`${file}: AGENTS names ${JSON.stringify(l)}, which is not a letter of the alphabet`)
+    if (letters.length === 0 && !(typeof f.AGENTS_NOTE === 'string' && f.AGENTS_NOTE.trim())) problems.push(`${file}: empty AGENTS needs an AGENTS_NOTE`)
+    const same = (a, b, na, nb) => { if (Array.isArray(f[a]) && Array.isArray(f[b]) && f[a].length !== f[b].length) problems.push(`${file}: ${na} has ${f[a].length} entries, ${nb} has ${f[b].length}`) }
+    let card
+    if (sub === 'tri') {
+      if (f.COMMAND !== `tri ${base}`) problems.push(`${file}: COMMAND must be "tri ${base}", is ${JSON.stringify(f.COMMAND)}`)
+      same('ACTIONS', 'ACTIONS_ABOUT', 'ACTIONS', 'ACTIONS_ABOUT')
+      const actions = (Array.isArray(f.ACTIONS) ? f.ACTIONS : []).map((name, i) => ({ name, about: f.ACTIONS_ABOUT?.[i] ?? '' }))
+      const args = (Array.isArray(f.ARGS) ? f.ARGS : []).map((x) => { const k = x.indexOf(': '); return k === -1 ? { name: x, about: '' } : { name: x.slice(0, k), about: x.slice(k + 2) } })
+      // Skills whose own spec names this tri command (COMMAND or SUMMARY_EN text -- the
+      // skill's fields, not a guess); the matched field is recorded beside the skill ID.
+      const cmdRe = new RegExp(`(^|[^A-Za-z0-9_-])tri\\s+${base.replace(/[-/\\\\^$*+?.()|[\]{}]/g, '\\$&')}(?![A-Za-z0-9_-])`)
+      const skillIds = skills.flatMap((sk) => {
+        const via = ['COMMAND', 'SUMMARY_EN'].filter((k) => typeof sk.fields[k] === 'string' && cmdRe.test(sk.fields[k]))
+        return via.length ? [{ id: sk.id, via }] : []
+      }).sort((x, y) => (x.id < y.id ? -1 : 1))
+      card = { family: 'tri-cli', command: f.COMMAND, variant: f.VARIANT, actions, args, whenToUse: f.WHEN_TO_USE, skills: skillIds, aboutSource: f.ABOUT_SOURCE, repo: 'gHashTag/t27', source: f.SOURCE, entry: f.ENTRY }
+    } else {
+      same('TOOLS', 'TOOLS_ABOUT', 'TOOLS', 'TOOLS_ABOUT'); same('TOOLS', 'TOOLS_INPUTS', 'TOOLS', 'TOOLS_INPUTS'); same('RESOURCES', 'RESOURCES_ABOUT', 'RESOURCES', 'RESOURCES_ABOUT')
+      if (!['stdio', 'http'].includes(f.TRANSPORT)) problems.push(`${file}: TRANSPORT ${JSON.stringify(f.TRANSPORT)} is not stdio|http`)
+      if (!['gHashTag/t27', 'gHashTag/trinity'].includes(f.REPO)) problems.push(`${file}: REPO ${JSON.stringify(f.REPO)} is not gHashTag/t27|gHashTag/trinity`)
+      const mcpTools = (Array.isArray(f.TOOLS) ? f.TOOLS : []).map((name, i) => ({ name, about: f.TOOLS_ABOUT?.[i] ?? '', inputs: (f.TOOLS_INPUTS?.[i] ?? '').split(',').filter(Boolean) }))
+      if (mcpTools.length === 0 && !(typeof f.TOOLS_NOTE === 'string' && f.TOOLS_NOTE.trim())) problems.push(`${file}: empty TOOLS needs a TOOLS_NOTE`)
+      if (mcpTools.length === 0 && f.EXTERNAL !== true) problems.push(`${file}: an in-repo server with no tools listed (set EXTERNAL or list its tools)`)
+      const resources = (Array.isArray(f.RESOURCES) ? f.RESOURCES : []).map((path, i) => ({ path, about: f.RESOURCES_ABOUT?.[i] ?? '' }))
+      card = { family: 'mcp', server: f.SERVER, serverVersion: f.SERVER_VERSION, transport: f.TRANSPORT, launch: f.LAUNCH, env: f.ENV ?? [], config: f.CONFIG, tools: mcpTools, resources, toolsNote: f.TOOLS_NOTE, external: f.EXTERNAL === true, skills: [], aboutSource: f.ABOUT_SOURCE, repo: f.REPO, source: f.SOURCE }
+    }
+    const repoUrl = card.repo === 'gHashTag/t27' ? T27_REPO_URL : 'https://github.com/gHashTag/trinity'
+    const ref = card.repo === 'gHashTag/t27' ? pin.ref : (experience?.sources ?? []).find((x) => x.repo === 'trinity' && /^[0-9a-f]{40}$/.test(x.commit ?? ''))?.commit ?? 'main'
+    tools.push({
+      id: f.ID,
+      specPath: file,
+      summary: { en: f.ABOUT },
+      name: { en: sub === 'tri' ? f.COMMAND : f.SERVER },
+      sha256: t.sha256,
+      typecheckOk: t.verdict.typecheckOk,
+      discarded: t.verdict.discarded,
+      moduleName: t.moduleName,
+      inSpecCorpus: corpusPaths.has(file),
+      fields: f,
+      ...card,
+      agents: letters.map((l) => ({ letter: l, ok: seenLetter.has(l) })),
+      links: {
+        source: `${repoUrl}/blob/${ref}/${card.source}`,
+        config: card.config ? `${repoUrl}/blob/${ref}/${card.config}` : null,
+        pinnedAt: ref,
+      },
+      witness: f.WITNESS,
+      health: letters.every((l) => seenLetter.has(l)) ? 'ok' : 'fail',
+      messages: [
+        ...(letters.length === 0 ? ['no agent letter bound by a source'] : []),
+        ...(sub === 'mcp' && card.external ? ['external package: tool list not in the repository'] : []),
+      ],
+    })
+  }
+  tools.sort(byId)
+  // Both directions must agree: an agent's TOOLS name existing tools that name the agent back.
+  for (const a of agents) {
+    const ids = a.tools
+    a.tools = ids.map((id) => ({ id, ok: seenTool.has(id) }))
+    for (const id of ids) {
+      if (!seenTool.has(id)) { problems.push(`${a.specPath}: TOOLS names ${id}, which has no tool spec`); continue }
+      const tl = tools.find((x) => x.id === id)
+      if (!tl.agents.some((x) => x.letter === a.letter)) problems.push(`${a.specPath}: TOOLS names ${id}, but ${tl.specPath} AGENTS does not name ${a.letter}`)
+    }
+  }
+  for (const tl of tools) for (const { letter } of tl.agents) {
+    const a = seenLetter.get(letter)
+    if (a && !a.tools.some((x) => x.id === tl.id)) problems.push(`${tl.specPath}: AGENTS names ${letter}, but ${a.specPath} TOOLS does not name ${tl.id}`)
+  }
+  // Full-text index: one lowercase string per tool the explorer's search box filters on.
+  for (const tl of tools) {
+    const parts = [tl.id, tl.name.en, tl.summary.en, tl.whenToUse ?? '', ...(tl.actions ?? []).flatMap((x) => [x.name, x.about]), ...(tl.tools ?? []).flatMap((x) => [x.name, x.about]), ...tl.agents.map((x) => x.letter)]
+    tl.searchText = parts.join(' ').toLowerCase().replace(/\s+/g, ' ').trim()
+  }
 
   // Translations, connected through their contract specs. Every locale comes
   // from a specs/i18n/*.t27; nothing here knows which locales exist.
@@ -574,6 +701,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   for (const c of crons) specsById.set(c.id, { dir: CRON_SPEC_DIR, fields: c.fields })
   for (const a of agents) specsById.set(a.id, { dir: AGENT_SPEC_DIR, fields: a.fields })
   for (const fn of functions) specsById.set(fn.id, { dir: FUNCTION_SPEC_DIR, fields: fn.fields })
+  for (const tl of tools) specsById.set(tl.id, { dir: TOOL_SPEC_DIR, fields: tl.fields })
   const locales = []
   const seenLocale = new Map()
   for (const spec of [...i18nSpecs].sort((a, b) => a.path.localeCompare(b.path))) {
@@ -596,7 +724,9 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     e.summary = localized(e.fields.SUMMARY_EN, e.id, 'SUMMARY', locales)
     e.name = localized(e.fields.NAME, e.id, 'NAME', locales)
   }
+  for (const tl of tools) tl.summary = localized(summarySourceOf(tl.fields), tl.id, 'SUMMARY', locales)
   const base = { version: VERSION, compilerWasmSha256 }
+  const ladder = { specs: t27Manifest?.specCount ?? null, skills: skills.length, crons: crons.length, agents: agents.length, tools: tools.length, functions: functions.length }
   const skillsOut = sortKeys({
     ...base,
     generatedAt,
@@ -632,12 +762,43 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       episodesUnattributed: experience?.unattributed?.episodes ?? null,
       episodesTotal: experience?.counts?.episodes ?? null,
     },
-    // The ladder the explorers share: Specs -> Skills -> Crons -> Agents.
-    ladder: { specs: t27Manifest?.specCount ?? null, skills: skills.length, crons: crons.length, agents: agents.length },
+    // The ladder the explorers share: Specs -> Skills -> Crons -> Agents -> Tools -> Functions.
+    // Every count is the length of a spec catalog built above (functions from specs/functions), never typed.
+    ladder,
     pin,
     experienceSnapshot: experience ? { generatedAt: experience.generatedAt, sources: (experience.sources ?? []).map((x) => ({ repo: x.repo, commit: x.commit, files: x.files, episodes: x.episodes, unreadable: x.unreadable })), counts: experience.counts ?? null, attribution: experience.attribution ?? null } : null,
     agents,
     i18n: i18nFor(AGENT_SPEC_DIR, agents),
+  })
+  const triTools = tools.filter((x) => x.family === 'tri-cli'), mcpTools = tools.filter((x) => x.family === 'mcp')
+  const toolsOut = sortKeys({
+    ...base,
+    generatedAt,
+    counts: {
+      specs: tools.length,
+      tri: triTools.length,
+      mcp: mcpTools.length,
+      typecheckOk: tools.filter((x) => x.typecheckOk).length,
+      enabled: tools.filter((x) => x.fields.ENABLED === true).length,
+      withAgents: tools.filter((x) => x.agents.length).length,
+      withSkills: tools.filter((x) => x.skills.length).length,
+      triWithActions: triTools.filter((x) => x.actions.length).length,
+      triActions: triTools.reduce((n, x) => n + x.actions.length, 0),
+      mcpWithTools: mcpTools.filter((x) => x.tools.length).length,
+      mcpTools: mcpTools.reduce((n, x) => n + x.tools.length, 0),
+      mcpExternal: mcpTools.filter((x) => x.external).length,
+      byWitness: Object.fromEntries(TOOL_WITNESSES.map((w) => [w, tools.filter((x) => x.witness === w).length])),
+      byRepo: { 'gHashTag/t27': tools.filter((x) => x.repo === 'gHashTag/t27').length, 'gHashTag/trinity': tools.filter((x) => x.repo === 'gHashTag/trinity').length },
+    },
+    // Grouping the navigator shows: tri commands by owning letter (unbound under '-'), MCP servers by repo.
+    groups: {
+      triByAgent: Object.fromEntries([...new Set(triTools.flatMap((x) => (x.agents.length ? x.agents.map((a) => a.letter) : ['-'])))].sort().map((l) => [l, triTools.filter((x) => (l === '-' ? x.agents.length === 0 : x.agents.some((a) => a.letter === l))).map((x) => x.id)])),
+      mcpByRepo: Object.fromEntries(['gHashTag/t27', 'gHashTag/trinity'].map((r) => [r, mcpTools.filter((x) => x.repo === r).map((x) => x.id)])),
+    },
+    ladder,
+    pin,
+    tools,
+    i18n: i18nFor(TOOL_SPEC_DIR, tools),
   })
   // A hash of everything but the clock, so a checker can compare committed and
   // regenerated output without the timestamp getting in the way.
@@ -660,7 +821,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       bySideEffect: Object.fromEntries(FN_SIDE_EFFECTS.map((s) => [s, functions.filter((f) => (f.fields.SIDE_EFFECTS ?? []).includes(s)).length])),
       byProbeResult: Object.fromEntries(FN_PROBE_RESULTS.map((p) => [p, functions.filter((f) => f.fields.PROBE_RESULT === p).length])),
     },
-    ladder: { specs: t27Manifest?.specCount ?? null, skills: skills.length, crons: crons.length, agents: agents.length, functions: functions.length },
+    ladder,
     manifest: functionsManifest
       ? { repo: functionsManifest.repo ?? null, generatedFrom: functionsManifest.generatedFrom ?? null, probedAt: functionsManifest.probedAt ?? null, deployedApp: functionsManifest.deployedApp ?? null, entries: (functionsManifest.functions ?? []).length }
       : null,
@@ -674,7 +835,8 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   cronsOut.contentSha256 = sha256(JSON.stringify({ ...cronsOut, generatedAt: null }))
   agentsOut.contentSha256 = sha256(JSON.stringify({ ...agentsOut, generatedAt: null }))
   functionsOut.contentSha256 = sha256(JSON.stringify({ ...functionsOut, generatedAt: null }))
-  return { skills: sortKeys(skillsOut), crons: sortKeys(cronsOut), agents: sortKeys(agentsOut), functions: sortKeys(functionsOut), problems }
+  toolsOut.contentSha256 = sha256(JSON.stringify({ ...toolsOut, generatedAt: null }))
+  return { skills: sortKeys(skillsOut), crons: sortKeys(cronsOut), agents: sortKeys(agentsOut), functions: sortKeys(functionsOut), tools: sortKeys(toolsOut), problems }
 }
 
 /** The fields of a manifest entry the spec repeats, and how each is compared. */
@@ -816,6 +978,10 @@ function readSpecDir(dir) {
     .map((f) => ({ path: `${dir}/${f}`, text: readFileSync(join(abs, f), 'utf8') }))
 }
 
+function readToolSpecs() {
+  return TOOL_SPEC_SUBDIRS.flatMap((sub) => readSpecDir(`${TOOL_SPEC_DIR}/${sub}`))
+}
+
 const readJson = (rel) => (existsSync(join(SITE, rel)) ? JSON.parse(readFileSync(join(SITE, rel), 'utf8')) : null)
 
 export async function generate({ generatedAt } = {}) {
@@ -825,6 +991,7 @@ export async function generate({ generatedAt } = {}) {
   const cronSpecs = analyzeSpecFiles(analyze, readSpecDir(CRON_SPEC_DIR))
   const agentSpecs = analyzeSpecFiles(analyze, readSpecDir(AGENT_SPEC_DIR))
   const functionSpecs = analyzeSpecFiles(analyze, readSpecDir(FUNCTION_SPEC_DIR))
+  const toolSpecs = analyzeSpecFiles(analyze, readToolSpecs())
   const i18nSpecs = analyzeSpecFiles(analyze, readSpecDir(I18N_SPEC_DIR))
   // Each contract names its bundle; load exactly those, repo-relative.
   const bundles = new Map()
@@ -841,6 +1008,7 @@ export async function generate({ generatedAt } = {}) {
     cronSpecs,
     agentSpecs,
     functionSpecs,
+    toolSpecs,
     experience: readJson(EXPERIENCE_PATH),
     skillsManifest: readJson('public/skills/manifest.json'),
     cronsManifest: readJson('public/crons/manifest.json'),
@@ -864,36 +1032,39 @@ function writeAtomic(rel, data) {
 
 async function main(argv) {
   const check = argv.includes('--check')
-  const { skills, crons, agents, functions, problems } = await generate()
+  const { skills, crons, agents, functions, tools, problems } = await generate()
   if (problems.length) {
     console.error(`agents-from-specs: ${problems.length} problem(s)`)
     for (const p of problems) console.error('  ' + p)
     process.exit(1)
   }
   if (check) {
-    const prior = { skills: readJson(SKILLS_OUT), crons: readJson(CRONS_OUT), agents: readJson(AGENTS_OUT), functions: readJson(FUNCTIONS_OUT) }
+    const prior = { skills: readJson(SKILLS_OUT), crons: readJson(CRONS_OUT), agents: readJson(AGENTS_OUT), functions: readJson(FUNCTIONS_OUT), tools: readJson(TOOLS_OUT) }
     const drift = []
     if (prior.skills?.contentSha256 !== skills.contentSha256) drift.push(SKILLS_OUT)
     if (prior.crons?.contentSha256 !== crons.contentSha256) drift.push(CRONS_OUT)
     if (prior.agents?.contentSha256 !== agents.contentSha256) drift.push(AGENTS_OUT)
     if (prior.functions?.contentSha256 !== functions.contentSha256) drift.push(FUNCTIONS_OUT)
+    if (prior.tools?.contentSha256 !== tools.contentSha256) drift.push(TOOLS_OUT)
     if (drift.length) {
       console.error(`agents-from-specs: committed output is stale: ${drift.join(', ')} -- run node scripts/agents-from-specs.mjs`)
       process.exit(1)
     }
-    console.log(`agents-from-specs: ${SKILLS_OUT}, ${CRONS_OUT}, ${AGENTS_OUT} and ${FUNCTIONS_OUT} match the specs`)
+    console.log(`agents-from-specs: ${SKILLS_OUT}, ${CRONS_OUT}, ${AGENTS_OUT} ${FUNCTIONS_OUT} and ${TOOLS_OUT} match the specs`)
     return
   }
   writeAtomic(SKILLS_OUT, skills)
   writeAtomic(CRONS_OUT, crons)
   writeAtomic(AGENTS_OUT, agents)
   writeAtomic(FUNCTIONS_OUT, functions)
-  const s = skills.counts, c = crons.counts, a = agents.counts, fn = functions.counts
+  writeAtomic(TOOLS_OUT, tools)
+  const s = skills.counts, c = crons.counts, a = agents.counts, fn = functions.counts, t = tools.counts
   console.log(`agents-from-specs: skills ${s.specs} specs (typecheck ok ${s.typecheckOk}/${s.specs}; spec+code ${s.specPlusCode}, spec-only ${s.specOnly}, code-only ${s.codeOnly}) -> ${SKILLS_OUT}`)
   console.log(`agents-from-specs: crons  ${c.specs} specs (typecheck ok ${c.typecheckOk}/${c.specs}; spec+code ${c.specPlusCode}, spec-only ${c.specOnly}, code-only ${c.codeOnly}; with RUNS ${c.withRuns}) -> ${CRONS_OUT}`)
   console.log(`agents-from-specs: agents ${a.specs} specs (typecheck ok ${a.typecheckOk}/${a.specs}; enabled ${a.enabled}; with skills ${a.withSkills}, with crons ${a.withCrons}, with tools ${a.withTools}; spec+experience ${a.specPlusExperience}, spec-only ${a.specOnly}; episodes attributed ${a.episodesAttributed}, unattributed ${a.episodesUnattributed ?? 'n/a'}; links pinned at ${agents.pin.ref.slice(0, 7)}) -> ${AGENTS_OUT}`)
   console.log(`agents-from-specs: functions ${fn.specs} specs (typecheck ok ${fn.typecheckOk}/${fn.specs}; spec+code ${fn.specPlusCode}, spec-only ${fn.specOnly}, code-only ${fn.codeOnly}; deployed ${fn.deployed}, not deployed ${fn.notDeployed}, unknown ${fn.deployUnknown}; with differences from the manifest ${fn.withDifferences}; cron cards joined ${fn.withCronSpec}/${fn.byTrigger.cron}) -> ${FUNCTIONS_OUT}`)
-  for (const l of skills.i18n) console.log(`agents-from-specs: i18n ${l.locale} via ${l.spec} -> ${l.bundle}: skills ${l.coverage.n}/${l.coverage.total}, crons ${crons.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${crons.counts.specs}, agents ${agents.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${agents.counts.specs}, functions ${functions.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${functions.counts.specs}${l.enabled ? '' : ' (disabled)'}`)
+  console.log(`agents-from-specs: tools  ${t.specs} specs (tri ${t.tri} commands, ${t.triActions} actions; mcp ${t.mcp} servers, ${t.mcpTools} tools, ${t.mcpExternal} external; typecheck ok ${t.typecheckOk}/${t.specs}; with agents ${t.withAgents}, with skills ${t.withSkills}; witness ${Object.entries(t.byWitness).map(([k, v]) => `${k} ${v}`).join(', ')}) -> ${TOOLS_OUT}`)
+  for (const l of skills.i18n) console.log(`agents-from-specs: i18n ${l.locale} via ${l.spec} -> ${l.bundle}: skills ${l.coverage.n}/${l.coverage.total}, crons ${crons.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${crons.counts.specs}, agents ${agents.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${agents.counts.specs}, functions ${functions.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${functions.counts.specs}, tools ${tools.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${tools.counts.specs}${l.enabled ? '' : ' (disabled)'}`)
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

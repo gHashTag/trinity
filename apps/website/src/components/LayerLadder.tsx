@@ -1,4 +1,4 @@
-// The ladder every Explorer stands on: Specs → Skills → Crons → Agents (→ …).
+// The ladder every Explorer stands on: Specs → Skills → Crons → Agents → Tools → Functions.
 //
 // One compact strip, one link and one live count per layer, drawn from the
 // catalog the page already loaded (spec-agents.json carries `ladder`). The
