@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/agents/t.t27 -- agent t27/T, letter T of the 27-agent alphabet
+; Source of truth for the agent card on t27.ai (#/agents?agent=t27/T).
+; Transcribed from docs/agents/AGENTS_ALPHABET.md (v3.0): the FULL TABLE row and the
+; "Agent T - Tau (TRINITY Queen)" schema section. The agent is bound to the others by SOUL.md,
+; AGENTS.md and the experience log; the JSON the site serves is generated from this
+; file by the real compiler, nothing below is parsed with a regex. ASCII only (L3).
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module agent_t;
+
+pub const KIND : str = "agent";
+pub const ID : str = "t27/T";
+pub const LETTER : str = "T";
+; position in the alphabet, 1..27 (the 27th letter is Ti, register R26)
+pub const ORDINAL : u8 = 20;
+pub const LETTER_NAME : str = "Tau";
+pub const NAME : str = "Tau (TRINITY Queen)";
+pub const DOMAIN : str = "Queen / Lotus Orchestrator";
+pub const ARCHETYPE : str = "CROSS - seal, signature, truth";
+; Coptic register from the schema section (the ISA register the agent is bound to)
+pub const REGISTER : str = "R19";
+; alphabet layer: Archetypal (A-I), Spiritual (J-R), Physical (S-27th)
+pub const LAYER : str = "Physical";
+pub const SUMMARY_EN : str = "Queen / Lotus Orchestrator. T is the queen: she puts the final seal on everything.";
+; The three documents that bind every agent, as repo-root paths in gHashTag/t27.
+pub const SOUL : str = "SOUL.md";
+pub const AGENTS_DOC : str = "AGENTS.md";
+pub const ALPHABET : str = "docs/agents/AGENTS_ALPHABET.md";
+; Key files as the alphabet lists them (paths and globs relative to the t27 root).
+pub const KEY_FILES : [1]str = ["t27/specs/queen/lotus.t27"];
+pub const ENTRY_INVARIANT : str = "Queen health >= 0.9, graph is loaded";
+pub const EXIT_INVARIANT : str = "All rings are sealed, verdict is clean";
+; CLARA role from the alphabet (TA1/TA2 work areas).
+pub const CLARA_ROLE : str = "TA2: AR Orchestrator - coordinates all AR agents for CLARA submission";
+; Skill IDs the agent holds. Bound only where a source names the skill; SKILLS_NOTE
+; cites that source or says why the list is empty.
+pub const SKILLS : [2]str = ["t27/phi-loop", "t27/tri-pipeline"];
+pub const SKILLS_NOTE : str = ".claude/agents/trinity.md, Phase 2 PLAN: \"Identify required skills (phi-loop, tri-pipeline)\"; Phase 4 VERIFY: \"Run conformance tests via tri-pipeline\". specs/OWNERS.md lists skills/ and crons/ under T-Queen, which is catalog ownership, not a held skill.";
+; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
+pub const EXPERIENCE_LOG : str = ".trinity/experience/";
+pub const ENABLED : bool = true;

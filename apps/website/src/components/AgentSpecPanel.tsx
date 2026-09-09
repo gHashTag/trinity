@@ -27,6 +27,7 @@ import {
   vendoredSpecUrl,
   WITNESS_LABEL,
   type ControlAction,
+  type AgentSpecEntry,
   type CronSpecEntry,
   type SkillSpecEntry,
 } from '../lib/agentSpecs'
@@ -75,6 +76,9 @@ const COPY = {
     runBy: 'run by jobs',
     noRuns: 'names no skill',
     noRunBy: 'no job names this skill',
+    holds: 'holds skills',
+    noHolds: 'no source binds a skill to this letter',
+    agentRun: 'an agent is a letter of the alphabet bound by SOUL.md and AGENTS.md; it is not launched from here — it holds skills, and jobs launch those',
     unresolved: 'unresolved id',
     summary: 'summary',
     translations: 'translations',
@@ -128,6 +132,9 @@ const COPY = {
     runBy: 'запускается заданиями',
     noRuns: 'не называет ни одного скилла',
     noRunBy: 'ни одно задание не называет этот скилл',
+    holds: 'держит скиллы',
+    noHolds: 'ни один источник не привязывает скилл к этой букве',
+    agentRun: 'агент — буква алфавита, связанная SOUL.md и AGENTS.md; отсюда он не запускается — он держит скиллы, а их запускают задания',
     unresolved: 'неизвестный id',
     summary: 'кратко',
     translations: 'переводы',
@@ -150,15 +157,17 @@ export interface CrossLink {
 
 interface Props {
   lang: 'en' | 'ru'
-  kind: 'skill' | 'cron'
+  kind: 'skill' | 'cron' | 'agent'
   /** The catalog id of the card, for the code-only case where there is no spec. */
   id: string
-  entry: SkillSpecEntry | CronSpecEntry | null
+  entry: SkillSpecEntry | CronSpecEntry | AgentSpecEntry | null
   links: CrossLink[]
   /** Whether the reader can jump to the Spec Explorer in this frame. */
   embedded: boolean
   /** The catalog's translation contracts, for the `translations:` line. */
   i18n?: I18nContract[]
+  /** Extra buttons the page adds to the management strip (an agent's SOUL.md, its experience log). */
+  extraControls?: React.ReactNode
 }
 
 async function sha256Hex(text: string): Promise<string | null> {
@@ -169,11 +178,19 @@ async function sha256Hex(text: string): Promise<string | null> {
 }
 
 function label(kind: Props['kind'], t: Copy): { links: string; empty: string } {
-  return kind === 'cron' ? { links: t.runs, empty: t.noRuns } : { links: t.runBy, empty: t.noRunBy }
+  if (kind === 'cron') return { links: t.runs, empty: t.noRuns }
+  if (kind === 'agent') return { links: t.holds, empty: t.noHolds }
+  return { links: t.runBy, empty: t.noRunBy }
 }
 
-export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = [] }: Props) {
+const SPEC_DIR: Record<Props['kind'], string> = { skill: 'specs/skills', cron: 'specs/crons', agent: 'specs/agents' }
+const LINK_GLYPH: Record<Props['kind'], string> = { skill: '◷', cron: '⟲', agent: '◈' }
+
+export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = [], extraControls }: Props) {
   const t: Copy = COPY[lang]
+  // An agent is not a job: the control plane's run/enable/disable verbs do not
+  // apply to a letter, so the plane is shown for skills and crons only.
+  const planeApplies = kind !== 'agent'
   // Everything fetched for one spec travels together, keyed by its path, so a
   // change of card is a change of key rather than a burst of resets.
   interface Loaded { path: string; source: string; lines: Span[][]; err: string | null; sha: 'pending' | 'ok' | 'mismatch' | 'unchecked' }
@@ -226,7 +243,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
 
   const act = useCallback(
     async (action: ControlAction) => {
-      if (!plane) return
+      if (!plane || kind === 'agent') return
       setPlaneNote('…')
       try {
         const r = await requestControl(plane, kind, id, action)
@@ -255,7 +272,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
 
   // ---- code-only: no spec to show, but an honest card and a way to write one.
   if (!entry) {
-    const dir = kind === 'cron' ? 'specs/crons' : 'specs/skills'
+    const dir = SPEC_DIR[kind]
     const filename = `${id.replace(/[^A-Za-z0-9_.-]+/g, '-')}.t27`
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -284,7 +301,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
     )
   }
 
-  const witnessColor = entry.witness === 'spec+code' ? C.accent : C.warn
+  const witnessColor = entry.witness === 'spec+code' || entry.witness === 'spec+experience' ? C.accent : C.warn
   const verdictColor = entry.typecheckOk && entry.discarded === 0 ? C.accent : C.bad
 
   return (
@@ -374,13 +391,16 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
             {kind === 'cron' && (entry as CronSpecEntry).fields.RUNS_NOTE ? (
               <span data-lang-exempt="live"> — {(entry as CronSpecEntry).fields.RUNS_NOTE}</span>
             ) : null}
+            {kind === 'agent' && (entry as AgentSpecEntry).fields.SKILLS_NOTE ? (
+              <span data-lang-exempt="live"> — {(entry as AgentSpecEntry).fields.SKILLS_NOTE}</span>
+            ) : null}
           </div>
         ) : (
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {links.map((l) =>
               l.ok ? (
                 <a key={l.id} href={l.href} style={{ ...tagChip(false, false), color: C.accent, borderColor: C.borderBright, textDecoration: 'none' }} data-lang-exempt="live">
-                  {kind === 'cron' ? '⟲' : '◷'} {l.id}
+                  {LINK_GLYPH[kind]} {l.id}
                 </a>
               ) : (
                 <span key={l.id} title={t.unresolved} style={{ ...tagChip(false, false), color: C.bad, borderColor: C.bad }} data-lang-exempt="live">
@@ -408,9 +428,12 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
           <a href={vendoredSpecUrl(entry.specPath)} target="_blank" rel="noopener noreferrer" style={{ ...pill, opacity: 0.8 }}>
             {t.vendored}
           </a>
+          {extraControls}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {kind === 'cron' && runNow ? (
+          {kind === 'agent' ? (
+            <span style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{t.agentRun}</span>
+          ) : kind === 'cron' && runNow ? (
             runNow.kind === 'link' ? (
               <>
                 <a href={runNow.url} target="_blank" rel="noopener noreferrer" style={{ ...pill, color: C.golden, borderColor: 'rgba(255,215,0,0.4)' }}>
@@ -440,7 +463,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
             </span>
           )}
         </div>
-        {plane ? (
+        {!planeApplies ? null : plane ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 10.5, color: C.muted, fontFamily: C.mono }}>{t.plane}</span>
             <button onClick={() => void act('run')} style={pill}>

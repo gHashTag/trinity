@@ -20,6 +20,7 @@ import { QueenSectors } from "../components/QueenIntel";
 import { SceneBoundary } from "../components/SceneBoundary";
 import { QueenLoading } from "../components/QueenLoading";
 import {
+  HUD_KEYS,
   HUD_VIEWS,
   decisionDetail,
   rewriteEndpoints,
@@ -310,9 +311,16 @@ const COPY = {
     cronsDirective: "CRONS ARE SPECS",
     cronsDirectiveBody:
       "A scheduled job exists when a .t27 spec under specs/crons states it: host, schedule, what it runs, what happens on failure, whether it is on. The workflow, Inngest function or timer the sync script found is the witness. “Run now” goes to the host that owns the job; a timer inside a process has no outside handle and the card says so. No live control plane is deployed.",
+    agentsView: "AGENTS",
+    agentsHint: "The 27-letter alphabet, each agent stated by a .t27 spec",
+    agentsDirective: "AGENTS ARE SPECS",
+    agentsDirectiveBody:
+      "Level by level the system is built: Specs → Skills → Crons → Agents. An agent exists when a .t27 spec under specs/agents states it — its letter, domain, archetype, the skills it holds, its entry and exit invariant — bound by SOUL.md and AGENTS.md at the repository root. Its crons are derived from the crons' RUNS, never listed by hand. Its experience is joined from the episode log only when an episode names its letter; an agent no episode names says so, and the episodes that name no one are counted as unattributed, not assigned.",
     agentsLoading: "Loading the Explorer…",
     agentsSpecs: "specs",
     agentsSpecCode: "spec+code",
+    agentsSpecExperience: "spec+experience",
+    agentsUnattributed: "unattributed episodes",
     agentsCodeOnly: "code-only",
     agentsTypecheck: "typecheck ok",
     specsTitle: "SPEC CORPUS",
@@ -586,9 +594,16 @@ const COPY = {
     cronsDirective: "КРОНЫ — ЭТО СПЕКИ",
     cronsDirectiveBody:
       "Задание по расписанию существует, когда его заявляет спека .t27 в specs/crons: хост, расписание, что запускает, что при сбое, включено ли. Workflow, функция Inngest или таймер, найденные скриптом синхронизации, — свидетель. «Запустить сейчас» ведёт к хосту, которому задание принадлежит; у таймера внутри процесса внешней ручки нет, и карточка так и говорит. Живой контур управления не развёрнут.",
+    agentsView: "АГЕНТЫ",
+    agentsHint: "Алфавит из 27 букв, каждый агент заявлен спекой .t27",
+    agentsDirective: "АГЕНТЫ — ЭТО СПЕКИ",
+    agentsDirectiveBody:
+      "Уровень за уровнем мы создаём систему: спеки → скиллы → кроны → агенты. Агент существует, когда его заявляет спека .t27 в specs/agents — буква, домен, архетип, скиллы, которые он держит, входной и выходной инвариант, — под законом SOUL.md и AGENTS.md в корне репозитория. Его кроны выводятся из RUNS кронов, а не пишутся руками. Его опыт присоединяется из журнала эпизодов только когда эпизод называет его букву; агент, которого не называет ни один эпизод, говорит об этом сам, а эпизоды без имени считаются неатрибутированными, а не приписываются.",
     agentsLoading: "Загружаем Обозреватель…",
     agentsSpecs: "спек",
     agentsSpecCode: "спека+код",
+    agentsSpecExperience: "спека+опыт",
+    agentsUnattributed: "эпизодов без агента",
     agentsCodeOnly: "только код",
     agentsTypecheck: "типизация ок",
     specsTitle: "КОРПУС СПЕК",
@@ -2157,8 +2172,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       ) {
         return;
       }
-      const digit = Number.parseInt(event.key, 10);
-      if (digit >= 1 && digit <= HUD_VIEWS.length) setView(HUD_VIEWS[digit - 1]);
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const at = HUD_KEYS.indexOf(event.key.toLowerCase());
+      if (at >= 0 && at < HUD_VIEWS.length) setView(HUD_VIEWS[at]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -2234,6 +2250,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // generated from .t27 specs, opened whole like the corpus is.
     { view: "skills" as const, glyph: "⟁", label: c.skillsView, hint: c.skillsHint },
     { view: "crons" as const, glyph: "◷", label: c.cronsView, hint: c.cronsHint },
+    // Ninth: the agents themselves — the fourth layer, who holds the skills
+    // under SOUL.md and AGENTS.md, with their experience joined by evidence.
+    { view: "agents" as const, glyph: "Ω", label: c.agentsView, hint: c.agentsHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -2619,19 +2638,21 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 broken: c.specsBroken,
               }}
             />
-          ) : boardView === "skills" || boardView === "crons" ? (
+          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" ? (
             <QueenAgents
               kind={boardView}
               showDirective={isNarrow}
               c={{
-                directive: boardView === "skills" ? c.skillsDirective : c.cronsDirective,
-                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : c.cronsDirectiveBody,
+                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : c.agentsDirective,
+                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : c.agentsDirectiveBody,
                 open: c.specsOpen,
                 loading: c.agentsLoading,
                 specs: c.agentsSpecs,
                 specPlusCode: c.agentsSpecCode,
                 codeOnly: c.agentsCodeOnly,
                 typecheck: c.agentsTypecheck,
+                specPlusExperience: c.agentsSpecExperience,
+                unattributed: c.agentsUnattributed,
               }}
             />
           ) : boardView === "comb" ? (
@@ -3038,7 +3059,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 ? c.skillsDirective
                 : boardView === "crons"
                   ? c.cronsDirective
-                  : c.hudIntel
+                  : boardView === "agents"
+                    ? c.agentsDirective
+                    : c.hudIntel
           }
         >
           {/* The overview sits above her, stowed: a row that opens when the board

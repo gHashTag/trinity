@@ -133,6 +133,21 @@ export const MODULES = [
       body: 'Обозреватель кронов целиком: каждое задание по расписанию на GitHub Actions, Railway, Inngest и во внутрипроцессных таймерах, сначала со спекой .t27, которая его заявляет, затем с тем, что нашло сканирование кода. Каждая карточка ведёт к скиллам из своего RUNS, говорит, куда на самом деле идёт «Запустить сейчас» для её хоста, и признаёт, когда у таймера нет внешней ручки.',
     },
   },
+  {
+    tab: 'agents',
+    key: '9',
+    glyph: 'Ω',
+    en: {
+      name: 'AGENTS',
+      hint: 'The 27-letter alphabet, each agent stated by a .t27 spec',
+      body: 'The Agent Explorer, embedded whole. Level by level the system is built: Specs state what exists, Skills state what a run does, Crons state what starts a run, and Agents — the fourth layer — state who holds the skills, under which law (SOUL.md, AGENTS.md), with which entry and exit invariant. Twenty-seven letters, A to Z and the reserved Ti, each with its spec first, then its skills, its derived crons, and its experience joined from the episode log by evidence: an agent no episode names says so.',
+    },
+    ru: {
+      name: 'АГЕНТЫ',
+      hint: 'Алфавит из 27 букв, каждый агент заявлен спекой .t27',
+      body: 'Обозреватель агентов целиком. Уровень за уровнем мы создаём систему: спеки говорят, что существует, скиллы — что делает запуск, кроны — что его запускает, а агенты — четвёртый слой — кто держит скиллы, под каким законом (SOUL.md, AGENTS.md), с каким входным и выходным инвариантом. Двадцать семь букв, от A до Z и зарезервированная Ti, у каждой сначала спека, затем её скиллы, выведенные кроны и опыт, присоединённый из журнала эпизодов по свидетельствам: агент, которого не называет ни один эпизод, говорит об этом сам.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

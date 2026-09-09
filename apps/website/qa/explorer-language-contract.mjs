@@ -21,6 +21,7 @@ const PAGES = [
   'src/pages/SpecExplorer.tsx',
   'src/pages/SkillExplorer.tsx',
   'src/pages/CronExplorer.tsx',
+  'src/pages/AgentExplorer.tsx',
   'src/pages/ClientsConsole.tsx',
 ]
 
@@ -28,7 +29,7 @@ const PAGES = [
  * Values that are allowed to be identical in both locales, or to look English
  * in the Russian dictionary: proper nouns and file names carry no translation.
  */
-const NEUTRAL = new Set(['SKILL.md', 'Inngest', 'GitHub Actions', 'Telegram'])
+const NEUTRAL = new Set(['SKILL.md', 'Inngest', 'GitHub Actions', 'Telegram', 'SOUL.md', 'AGENTS.md'])
 
 /** AST, HIR, UTC, DNS: an acronym is the same word in both languages. */
 function isAcronym(value) {
