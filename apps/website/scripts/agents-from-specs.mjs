@@ -15,6 +15,19 @@
 //
 // Outputs: public/skills/spec-skills.json, public/crons/spec-crons.json.
 //
+// Language: the specs are English-only (t27 LANG-EN; bootstrap/build.rs on
+// gHashTag/t27 fails the build on any Cyrillic in specs/). A Cyrillic character
+// in a spec is a problem here too, so the vendored copy can never drift from
+// what the canonical repository accepts. Translations are CONNECTED THROUGH A
+// SPEC: every public/t27/files/specs/i18n/*.t27 (KIND "i18n", one per locale)
+// declares the locale, the spec directories in SCOPE, the FIELDS a bundle may
+// translate, and the BUNDLE_PATH (repo-relative, in BUNDLE_REPO) of the JSON
+// that carries the translated text. This file discovers those specs, loads each
+// bundle, checks it against its contract (locale matches, entry keys within
+// FIELDS, every entry ID resolves to a spec in SCOPE unless ORPHANS_ALLOWED,
+// full coverage if COVERAGE_REQUIRED) and emits summary/name as {en, <locale>}
+// plus an `i18n` list with the coverage per catalog. No locale is hardcoded.
+//
 // Compiler quirks this file depends on (verified against the vendored wasm):
 //   * a string literal comes back as ExprLiteral{value:'"..."'} -- the value
 //     keeps its quotes, so it is JSON-parsed, not trimmed;
@@ -43,6 +56,9 @@ const CORPUS = 'public/t27/files'
 const WASM = 'public/t27/t27_compiler.wasm'
 export const SKILLS_OUT = 'public/skills/spec-skills.json'
 export const CRONS_OUT = 'public/crons/spec-crons.json'
+export const I18N_SPEC_DIR = 'specs/i18n'
+// Repo root of gHashTag/trinity (BUNDLE_PATH is repo-relative).
+export const REPO_ROOT = resolve(SITE, '..', '..')
 export const VERSION = 1
 
 export const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
@@ -119,15 +135,94 @@ export function verdictOf(analysis) {
 // ---------------------------------------------------------------------------
 // Shapes: 'str' | 'bool' | 'arr' (of str) | 'u16' | 'u32'.
 const SKILL_REQUIRED = {
-  KIND: 'str', ID: 'str', NAME: 'str', REPO: 'str', SOURCE: 'str', SUMMARY_EN: 'str', SUMMARY_RU: 'str',
+  KIND: 'str', ID: 'str', NAME: 'str', REPO: 'str', SOURCE: 'str', SUMMARY_EN: 'str',
   COMMAND: 'str', SPECS: 'arr', TAGS: 'arr', ENABLED: 'bool', TIMEOUT_MIN: 'u16',
 }
 const CRON_REQUIRED = {
-  KIND: 'str', ID: 'str', NAME: 'str', HOST: 'str', REPO: 'str', SERVICE: 'str', SUMMARY_EN: 'str', SUMMARY_RU: 'str',
+  KIND: 'str', ID: 'str', NAME: 'str', HOST: 'str', REPO: 'str', SERVICE: 'str', SUMMARY_EN: 'str',
   TZ: 'str', RUNS: 'arr', RUNS_NOTE: 'str', ENABLED: 'bool', ON_FAILURE: 'str', CONTROL: 'str',
 }
 const CRON_OPTIONAL = { SCHEDULE: 'str', SCHEDULE_NOTE: 'str', INTERVAL_MS: 'u32', NOTE: 'str' }
 const INT_MAX = { u16: 0xffff, u32: 0xffffffff }
+export const CYRILLIC = /[\u0400-\u04ff]/
+
+// Translation contracts (specs/i18n/agents-<locale>.t27).
+const I18N_REQUIRED = {
+  KIND: 'str', LOCALE: 'str', SOURCE_LOCALE: 'str', SCOPE: 'arr', FIELDS: 'arr', BUNDLE_REPO: 'str', BUNDLE_PATH: 'str',
+  BUNDLE_FORMAT: 'str', KEY: 'str', FALLBACK: 'str', COVERAGE_REQUIRED: 'bool', ORPHANS_ALLOWED: 'bool', ENABLED: 'bool',
+}
+// Bundle field -> spec constant it translates.
+export const I18N_FIELD_SOURCE = { SUMMARY: 'SUMMARY_EN', NAME: 'NAME' }
+export const LOCALE_RE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/
+
+/**
+ * Check one i18n spec + its bundle against the contract the spec declares.
+ * `specsById` maps a spec ID to `{dir, fields}` for every skill and cron spec.
+ * Returns `{entry, translations, problems}` where `translations` is
+ * `Map<ID, {FIELD: text}>` (empty when disabled or broken) and `entry` is what
+ * goes into the catalog's `i18n` list.
+ */
+export function checkI18n(spec, bundle, specsById) {
+  const problems = []
+  const file = spec.path
+  const f = spec.fields
+  if (!spec.verdict.typecheckOk || spec.verdict.discarded > 0 || !spec.verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(spec.verdict)})`)
+  problems.push(...checkSchema(spec.consts, I18N_REQUIRED, {}, file))
+  if (f.KIND !== 'i18n') problems.push(`${file}: KIND must be "i18n"`)
+  if (typeof f.LOCALE === 'string' && !LOCALE_RE.test(f.LOCALE)) problems.push(`${file}: LOCALE ${JSON.stringify(f.LOCALE)} is not a BCP-47-shaped tag`)
+  if (f.SOURCE_LOCALE !== 'en') problems.push(`${file}: SOURCE_LOCALE must be "en" (the specs are English-only)`)
+  if (f.FALLBACK !== 'en') problems.push(`${file}: FALLBACK must be "en"`)
+  if (f.KEY !== 'ID') problems.push(`${file}: KEY must be "ID" (bundles are keyed by the spec ID)`)
+  if (f.BUNDLE_FORMAT !== 'json') problems.push(`${file}: BUNDLE_FORMAT ${JSON.stringify(f.BUNDLE_FORMAT)} is not supported (json)`)
+  const expectModule = `i18n_${file.replace(/^specs\/i18n\//, '').replace(/\.t27$/, '').replace(/[^A-Za-z0-9]+/g, '_')}`
+  if (spec.moduleName && spec.moduleName !== expectModule) problems.push(`${file}: module must be ${expectModule}, is ${spec.moduleName}`)
+  const fields = Array.isArray(f.FIELDS) ? f.FIELDS : []
+  for (const name of fields) if (!(name in I18N_FIELD_SOURCE)) problems.push(`${file}: FIELDS names ${JSON.stringify(name)}, which no spec constant backs (${Object.keys(I18N_FIELD_SOURCE).join(', ')})`)
+  const scope = new Set(Array.isArray(f.SCOPE) ? f.SCOPE : [])
+  const inScope = [...specsById.entries()].filter(([, v]) => scope.has(v.dir))
+  const entry = {
+    locale: f.LOCALE, spec: file, sha256: spec.sha256, bundle: f.BUNDLE_REPO === 'trinity' ? f.BUNDLE_PATH : `${f.BUNDLE_REPO}:${f.BUNDLE_PATH}`,
+    enabled: f.ENABLED === true, fields, scope: [...scope], coverage: { n: 0, total: inScope.length }, missing: [],
+  }
+  const translations = new Map()
+  if (f.ENABLED !== true) return { entry, translations, problems }
+  if (f.BUNDLE_REPO !== 'trinity') { problems.push(`${file}: BUNDLE_REPO ${JSON.stringify(f.BUNDLE_REPO)} -- only a bundle in this repository can be loaded at build time`); return { entry, translations, problems } }
+  if (!bundle) { problems.push(`${file}: bundle ${f.BUNDLE_PATH} is missing or not JSON`); return { entry, translations, problems } }
+  if (bundle.$spec !== file) problems.push(`${f.BUNDLE_PATH}: $spec is ${JSON.stringify(bundle.$spec)}, the contract is ${file}`)
+  if (bundle.locale !== f.LOCALE) problems.push(`${f.BUNDLE_PATH}: locale ${JSON.stringify(bundle.locale)} does not match the spec's LOCALE ${JSON.stringify(f.LOCALE)}`)
+  const entries = bundle.entries && typeof bundle.entries === 'object' && !Array.isArray(bundle.entries) ? bundle.entries : null
+  if (!entries) { problems.push(`${f.BUNDLE_PATH}: entries must be an object keyed by spec ID`); return { entry, translations, problems } }
+  for (const [id, value] of Object.entries(entries)) {
+    const target = specsById.get(id)
+    if (!target || !scope.has(target.dir)) {
+      if (f.ORPHANS_ALLOWED !== true) problems.push(`${f.BUNDLE_PATH}: entry ${JSON.stringify(id)} matches no spec in SCOPE (${[...scope].join(', ')}) and ORPHANS_ALLOWED is false`)
+      continue
+    }
+    if (!value || typeof value !== 'object' || Array.isArray(value)) { problems.push(`${f.BUNDLE_PATH}: entry ${JSON.stringify(id)} must be an object of FIELDS`); continue }
+    const clean = {}
+    for (const [k, v] of Object.entries(value)) {
+      if (!fields.includes(k)) { problems.push(`${f.BUNDLE_PATH}: entry ${JSON.stringify(id)} carries ${JSON.stringify(k)}, which is not in FIELDS (${fields.join(', ')})`); continue }
+      if (typeof v !== 'string' || !v.trim()) { problems.push(`${f.BUNDLE_PATH}: entry ${JSON.stringify(id)}.${k} must be a non-empty string`); continue }
+      clean[k] = v
+    }
+    if (Object.keys(clean).length) translations.set(id, clean)
+  }
+  for (const [id] of inScope) if (!translations.has(id)) entry.missing.push(id)
+  entry.missing.sort()
+  entry.coverage.n = inScope.length - entry.missing.length
+  if (f.COVERAGE_REQUIRED === true && entry.missing.length) problems.push(`${file}: COVERAGE_REQUIRED and ${entry.missing.length} spec(s) have no ${f.LOCALE} entry in ${f.BUNDLE_PATH}: ${entry.missing.slice(0, 5).join(', ')}${entry.missing.length > 5 ? ', ...' : ''}`)
+  return { entry, translations, problems }
+}
+
+/** `{en, <locale>...}` for one field of one spec from every loaded locale. */
+export function localized(en, id, field, locales) {
+  const out = { en }
+  for (const { locale, translations } of locales) {
+    const t = translations.get(id)?.[field]
+    if (t) out[locale] = t
+  }
+  return out
+}
 export const HOSTS = ['github-actions', 'inngest', 'railway-cron', 'timer']
 export const CONTROLS = ['github-actions-dispatch', 'railway-dashboard', 'inngest-dashboard', 'code-only']
 export const ON_FAILURE = ['issue', 'log', 'unknown']
@@ -214,12 +309,15 @@ const plain = (consts) => Object.fromEntries(Object.entries(consts).map(([k, v])
 export function analyzeSpecFiles(analyze, files) {
   return files.map((f) => {
     const analysis = analyze(f.text)
-    return { path: f.path, sha256: sha256(Buffer.from(f.text, 'utf8')), consts: constsOf(analysis), verdict: verdictOf(analysis), moduleName: analysis.ast?.name ?? null }
+    return { path: f.path, text: f.text, sha256: sha256(Buffer.from(f.text, 'utf8')), consts: constsOf(analysis), verdict: verdictOf(analysis), moduleName: analysis.ast?.name ?? null }
   })
 }
 
-export function buildSpecCatalogs({ skillSpecs, cronSpecs, skillsManifest, cronsManifest, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
+export function buildSpecCatalogs({ skillSpecs, cronSpecs, i18nSpecs = [], bundles = new Map(), skillsManifest, cronsManifest, t27Manifest, railway, compilerWasmSha256, generatedAt }) {
   const problems = []
+  for (const s of [...skillSpecs, ...cronSpecs, ...i18nSpecs]) {
+    if (s.text !== undefined && CYRILLIC.test(s.text)) problems.push(`${s.path}: Cyrillic in a .t27 spec (t27 LANG-EN; translated text belongs in the bundle a specs/i18n/*.t27 contract points to)`)
+  }
   const corpusPaths = new Set((t27Manifest?.specs ?? []).map((s) => s.path))
   const codeSkills = new Map((skillsManifest?.skills ?? []).map((s) => [s.id, s]))
   const codeCrons = new Map((cronsManifest?.crons ?? []).map((c) => [c.id, c]))
@@ -243,6 +341,8 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, skillsManifest, crons
     skills.push({
       id: f.ID,
       specPath: file,
+      summary: { en: f.SUMMARY_EN },
+      name: { en: f.NAME },
       sha256: s.sha256,
       typecheckOk: s.verdict.typecheckOk,
       discarded: s.verdict.discarded,
@@ -306,6 +406,8 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, skillsManifest, crons
     crons.push({
       id: f.ID,
       specPath: file,
+      summary: { en: f.SUMMARY_EN },
+      name: { en: f.NAME },
       sha256: c.sha256,
       typecheckOk: c.verdict.typecheckOk,
       discarded: c.verdict.discarded,
@@ -337,6 +439,33 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, skillsManifest, crons
   const codeOnlySkills = [...codeSkills.keys()].filter((id) => !seenSkill.has(id)).sort()
   const codeOnlyCrons = [...codeCrons.keys()].filter((id) => !seenCron.has(id)).sort()
 
+  // Translations, connected through their contract specs. Every locale comes
+  // from a specs/i18n/*.t27; nothing here knows which locales exist.
+  const specsById = new Map()
+  for (const s of skills) specsById.set(s.id, { dir: SKILL_SPEC_DIR, fields: s.fields })
+  for (const c of crons) specsById.set(c.id, { dir: CRON_SPEC_DIR, fields: c.fields })
+  const locales = []
+  const seenLocale = new Map()
+  for (const spec of [...i18nSpecs].sort((a, b) => a.path.localeCompare(b.path))) {
+    const fields = plain(spec.consts)
+    const r = checkI18n({ ...spec, fields }, bundles.get(fields.BUNDLE_PATH) ?? null, specsById)
+    problems.push(...r.problems)
+    if (typeof fields.LOCALE === 'string') {
+      if (seenLocale.has(fields.LOCALE)) problems.push(`${spec.path}: duplicate LOCALE ${fields.LOCALE} (also ${seenLocale.get(fields.LOCALE)})`)
+      seenLocale.set(fields.LOCALE, spec.path)
+    }
+    locales.push({ locale: fields.LOCALE, entry: r.entry, translations: r.translations, scope: new Set(r.entry.scope) })
+  }
+  const i18nFor = (dir, list) => [...locales].sort((a, b) => String(a.locale).localeCompare(String(b.locale))).filter((l) => l.scope.has(dir)).map((l) => {
+    const ids = new Set(list.map((e) => e.id))
+    const missing = l.entry.missing.filter((id) => ids.has(id))
+    const { missing: _all, ...rest } = l.entry
+    return { ...rest, coverage: { n: list.length - missing.length, total: list.length }, missing }
+  })
+  for (const e of [...skills, ...crons]) {
+    e.summary = localized(e.fields.SUMMARY_EN, e.id, 'SUMMARY', locales)
+    e.name = localized(e.fields.NAME, e.id, 'NAME', locales)
+  }
   const base = { version: VERSION, compilerWasmSha256 }
   const skillsOut = sortKeys({
     ...base,
@@ -344,6 +473,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, skillsManifest, crons
     counts: { specs: skills.length, specPlusCode: skills.filter((s) => s.witness === 'spec+code').length, specOnly: skills.filter((s) => s.witness === 'spec-only').length, codeOnly: codeOnlySkills.length, typecheckOk: skills.filter((s) => s.typecheckOk).length, runBy: skills.filter((s) => s.runBy.length).length },
     skills,
     codeOnly: codeOnlySkills,
+    i18n: i18nFor(SKILL_SPEC_DIR, skills),
   })
   const cronsOut = sortKeys({
     ...base,
@@ -351,6 +481,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, skillsManifest, crons
     counts: { specs: crons.length, specPlusCode: crons.filter((c) => c.witness === 'spec+code').length, specOnly: crons.filter((c) => c.witness === 'spec-only').length, codeOnly: codeOnlyCrons.length, typecheckOk: crons.filter((c) => c.typecheckOk).length, withRuns: crons.filter((c) => c.runs.length).length, byHost: Object.fromEntries(HOSTS.map((h) => [h, crons.filter((c) => c.fields.HOST === h).length])) },
     crons,
     codeOnly: codeOnlyCrons,
+    i18n: i18nFor(CRON_SPEC_DIR, crons),
   })
   // A hash of everything but the clock, so a checker can compare committed and
   // regenerated output without the timestamp getting in the way.
@@ -386,6 +517,15 @@ export async function generate({ generatedAt } = {}) {
   const analyze = await loadCompiler(wasmBytes)
   const skillSpecs = analyzeSpecFiles(analyze, readSpecDir(SKILL_SPEC_DIR))
   const cronSpecs = analyzeSpecFiles(analyze, readSpecDir(CRON_SPEC_DIR))
+  const i18nSpecs = analyzeSpecFiles(analyze, readSpecDir(I18N_SPEC_DIR))
+  // Each contract names its bundle; load exactly those, repo-relative.
+  const bundles = new Map()
+  for (const s of i18nSpecs) {
+    const path = plain(s.consts).BUNDLE_PATH
+    if (typeof path !== 'string' || path.includes('..')) continue
+    const abs = join(REPO_ROOT, path)
+    if (existsSync(abs)) { try { bundles.set(path, JSON.parse(readFileSync(abs, 'utf8'))) } catch { bundles.set(path, null) } }
+  }
   const epoch = process.env.SOURCE_DATE_EPOCH
   const stamp = generatedAt ?? (epoch ? new Date(Number(epoch) * 1000).toISOString() : new Date().toISOString())
   return buildSpecCatalogs({
@@ -395,6 +535,8 @@ export async function generate({ generatedAt } = {}) {
     cronsManifest: readJson('public/crons/manifest.json'),
     t27Manifest: readJson('public/t27/manifest.json'),
     railway: readJson('scripts/railway-services.json'),
+    i18nSpecs,
+    bundles,
     compilerWasmSha256: sha256(wasmBytes),
     generatedAt: stamp,
   })
@@ -433,6 +575,7 @@ async function main(argv) {
   const s = skills.counts, c = crons.counts
   console.log(`agents-from-specs: skills ${s.specs} specs (typecheck ok ${s.typecheckOk}/${s.specs}; spec+code ${s.specPlusCode}, spec-only ${s.specOnly}, code-only ${s.codeOnly}) -> ${SKILLS_OUT}`)
   console.log(`agents-from-specs: crons  ${c.specs} specs (typecheck ok ${c.typecheckOk}/${c.specs}; spec+code ${c.specPlusCode}, spec-only ${c.specOnly}, code-only ${c.codeOnly}; with RUNS ${c.withRuns}) -> ${CRONS_OUT}`)
+  for (const l of skills.i18n) console.log(`agents-from-specs: i18n ${l.locale} via ${l.spec} -> ${l.bundle}: skills ${l.coverage.n}/${l.coverage.total}, crons ${crons.i18n.find((x) => x.locale === l.locale)?.coverage.n ?? 0}/${crons.counts.specs}${l.enabled ? '' : ' (disabled)'}`)
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

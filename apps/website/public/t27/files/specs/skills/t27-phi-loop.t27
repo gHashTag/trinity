@@ -15,7 +15,6 @@ pub const NAME : str = "PHI LOOP";
 pub const REPO : str = "t27";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Execute 9-phase spec-first development workflow (Issue → Spec → TDD → Code → Gen → Seal → Verify → Land → Learn)";
-pub const SUMMARY_RU : str = "Девятифазный цикл spec-first разработки: Issue → Spec → TDD → Code → Gen → Seal → Verify → Land → Learn.";
 ; The frontmatter name is a display title, not a slash command, so no invocation is declared.
 pub const COMMAND : str = "";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

@@ -15,7 +15,6 @@ pub const NAME : str = "vibee-gen";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Generate Zig or Verilog code from VIBEE specifications. Use when creating or updating .tri specs and regenerating code.";
-pub const SUMMARY_RU : str = "Генерация кода Zig или Verilog из спецификаций VIBEE. При создании или обновлении .tri-спек и перегенерации кода.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/vibee-gen <path/to/spec.tri>";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/handlers/notificationHandler.ts:318";
 pub const SUMMARY_EN : str = "Drains the notification queue and delivers the Telegram messages waiting in it.";
-pub const SUMMARY_RU : str = "Разгружает очередь уведомлений и доставляет ждущие в ней сообщения Telegram.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 60000;
 pub const TZ : str = "UTC";

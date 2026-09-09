@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "trinity";
 pub const SERVICE : str = ".github/workflows/site-live-gate.yml";
 pub const SUMMARY_EN : str = "Compares the content-hashed entry bundle served at the apex against a build of main, so that 'deployed' means a reader can actually see it.";
-pub const SUMMARY_RU : str = "Сравнивает бандл с контент-хешем на апексе со сборкой main, чтобы «задеплоено» означало, что читатель это видит.";
 pub const SCHEDULE : str = "17 6 * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

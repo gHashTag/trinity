@@ -15,7 +15,6 @@ pub const NAME : str = "wave";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Farm wave management — create Railway accounts, spawn workers, deploy configs, track wave progress. Use for scaling training farm.";
-pub const SUMMARY_RU : str = "Управление волнами фермы: аккаунты Railway, запуск рабочих, раскатка конфигов, прогресс волны. Для масштабирования тренировочной фермы.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/wave [status|spawn <account> <count>|deploy|progress]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

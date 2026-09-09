@@ -15,7 +15,6 @@ pub const NAME : str = "god-mode";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "GOD MODE — Agent monitoring dashboard. Shows swarm status, task queue, pipeline compliance, circuit breakers, git activity, and rule violations.";
-pub const SUMMARY_RU : str = "GOD MODE: панель наблюдения за агентами — состояние роя, очередь задач, соблюдение конвейера, предохранители, активность git, нарушения правил.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/god-mode [status|agents|tasks|violations]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

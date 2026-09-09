@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/services/crmProactive.ts:375";
 pub const SUMMARY_EN : str = "Runs one proactive seller turn for the owner: walks the CRM queue and puts the next draft card in front of them without being asked.";
-pub const SUMMARY_RU : str = "Один проактивный ход продавца для владельца: обходит очередь CRM и кладёт перед ним следующую карточку-черновик без просьбы.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 1800000;
 pub const TZ : str = "UTC";

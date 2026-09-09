@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "t27";
 pub const SERVICE : str = ".github/workflows/pr-dashboard.yml";
 pub const SUMMARY_EN : str = "Rebuilds the pull-request dashboard every hour from the current state of the open pull requests.";
-pub const SUMMARY_RU : str = "Каждый час пересобирает панель pull request из текущего состояния открытых PR.";
 pub const SCHEDULE : str = "0 * * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

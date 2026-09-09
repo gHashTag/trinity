@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = ".github/workflows/ci.yml";
 pub const SUMMARY_EN : str = "Runs the whole build, type-check and test pipeline once a day so a dependency that rots without a push still gets caught.";
-pub const SUMMARY_RU : str = "Раз в день прогоняет весь конвейер сборки, проверки типов и тестов, чтобы зависимость, гниющая без пуша, всё равно была поймана.";
 pub const SCHEDULE : str = "0 2 * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

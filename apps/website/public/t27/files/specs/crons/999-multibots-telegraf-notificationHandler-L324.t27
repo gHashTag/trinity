@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/handlers/notificationHandler.ts:324";
 pub const SUMMARY_EN : str = "Deletes notification messages old enough that nobody is going to read them.";
-pub const SUMMARY_RU : str = "Удаляет уведомления, настолько старые, что их уже никто не прочитает.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 3600000;
 pub const TZ : str = "UTC";

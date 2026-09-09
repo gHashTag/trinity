@@ -15,7 +15,6 @@ pub const NAME : str = "MEASURE THE CORPUS";
 pub const REPO : str = "t27";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Pick the right instrument for a claim about the t27 spec corpus, and avoid the specific traps that have produced wrong published numbers. Use before quoting any figure about specs, errors, or gates.";
-pub const SUMMARY_RU : str = "Выбор правильного инструмента для любого утверждения о корпусе спек t27 и список ловушек, которые уже давали неверные опубликованные числа. Использовать перед тем, как цитировать любое число о корпусе.";
 ; The frontmatter name is a display title, not a slash command, so no invocation is declared.
 pub const COMMAND : str = "";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

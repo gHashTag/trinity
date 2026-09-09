@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "apps/vibee-editor/render/render-server.ts:919";
 pub const SUMMARY_EN : str = "Re-reads the session revocation list from Postgres so a revoked browser session stops being accepted.";
-pub const SUMMARY_RU : str = "Перечитывает из Postgres список отозванных сессий, чтобы отозванная сессия браузера перестала приниматься.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 5000;
 pub const TZ : str = "UTC";

@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "apps/vibee-editor/render/scripts/agent-autopilot.ts:1118";
 pub const SUMMARY_EN : str = "Runs one autopilot cycle -- the generation pass and then the channel tick -- and skips the tick entirely when the previous cycle is still running.";
-pub const SUMMARY_RU : str = "Один цикл автопилота — проход генерации и затем тик канала; тик пропускается целиком, если предыдущий цикл ещё идёт.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 1800000;
 pub const TZ : str = "UTC";

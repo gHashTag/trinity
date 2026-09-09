@@ -15,7 +15,6 @@ pub const NAME : str = "implement-issue";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Read a GitHub issue, create a branch, implement the solution, and open a PR. Use when given an issue number to implement.";
-pub const SUMMARY_RU : str = "Прочитать GitHub issue, создать ветку, реализовать решение и открыть PR. Для работы по номеру задачи.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/implement-issue [issue-number]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

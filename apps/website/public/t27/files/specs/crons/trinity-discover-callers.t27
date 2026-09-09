@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "trinity";
 pub const SERVICE : str = ".github/workflows/discover-callers.yml";
 pub const SUMMARY_EN : str = "Reads GitHub for repositories that run the RTL check, so the gallery counts its own users instead of being hand-written.";
-pub const SUMMARY_RU : str = "Читает GitHub в поисках репозиториев, запускающих RTL-проверку, чтобы галерея считала своих пользователей сама.";
 pub const SCHEDULE : str = "41 5 * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

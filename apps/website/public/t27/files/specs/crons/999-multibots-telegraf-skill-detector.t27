@@ -15,7 +15,6 @@ pub const HOST : str = "inngest";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/inngest_app/functions/analytics/skillDetector.ts";
 pub const SUMMARY_EN : str = "Mines successful generations for repeated model and prompt patterns once a day and saves the new ones as reusable skills.";
-pub const SUMMARY_RU : str = "Раз в день ищет в успешных генерациях повторяющиеся паттерны моделей и промптов и сохраняет новые как переиспользуемые навыки бота.";
 pub const SCHEDULE : str = "0 10 * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

@@ -15,7 +15,6 @@ pub const NAME : str = "cloud";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Show Trinity Cloud Dev dashboard — containers, training farm, issues, PRs, costs. Use when checking agent swarm status, cloud containers, or CI/CD pipeline.";
-pub const SUMMARY_RU : str = "Панель Trinity Cloud Dev: контейнеры, тренировочная ферма, issues, PR, расходы. Для проверки состояния роя агентов и CI/CD.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/cloud [status|agents|events|full]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "apps/vibee-editor/render/render-server.ts:2301";
 pub const SUMMARY_EN : str = "Removes render jobs older than an hour from the in-memory job map.";
-pub const SUMMARY_RU : str = "Удаляет из карты в памяти задания рендера старше часа.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 60000;
 pub const TZ : str = "UTC";

@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/modules/videoGenerator/taskCache.ts:27";
 pub const SUMMARY_EN : str = "Drops video-generation cache entries past their fifteen-minute lifetime so a finished task cannot block the next request.";
-pub const SUMMARY_RU : str = "Сбрасывает записи кэша видеогенерации старше пятнадцати минут, чтобы завершённая задача не блокировала следующий запрос.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 300000;
 pub const TZ : str = "UTC";

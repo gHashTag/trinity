@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/services/bot-owner-billing.ts:474";
 pub const SUMMARY_EN : str = "Recomputes every bot owner's debt from the payments ledger, warns them at the soft, warning and critical thresholds, and disables a bot that stays critical for three days.";
-pub const SUMMARY_RU : str = "Пересчитывает долг каждого владельца бота по журналу платежей, предупреждает на мягком, тревожном и критическом порогах и отключает бота, три дня остающегося критическим.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 86400000;
 pub const TZ : str = "UTC";

@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "trinity";
 pub const SERVICE : str = ".github/workflows/codegen.yml";
 pub const SUMMARY_EN : str = "Validates the VIBEE code generator once a day, independently of whether anyone pushed.";
-pub const SUMMARY_RU : str = "Раз в день проверяет генератор кода VIBEE независимо от того, пушил ли кто-нибудь.";
 pub const SCHEDULE : str = "0 0 * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

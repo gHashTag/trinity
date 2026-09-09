@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/utils/production-monitor.ts:80";
 pub const SUMMARY_EN : str = "Re-runs the container, nginx, port, domain, webhook and system-resource checks, and applies the fixes that are enabled.";
-pub const SUMMARY_RU : str = "Повторяет проверки контейнера, nginx, порта, домена, вебхука и ресурсов системы и применяет включённые исправления.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 300000;
 pub const TZ : str = "UTC";

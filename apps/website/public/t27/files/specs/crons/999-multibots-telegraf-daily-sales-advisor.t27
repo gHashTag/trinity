@@ -15,7 +15,6 @@ pub const HOST : str = "inngest";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/inngest_app/functions/analytics/dailySalesAdvisor.ts";
 pub const SUMMARY_EN : str = "Builds every bot owner a morning report of yesterday's revenue, the week's costs and which services their users actually bought.";
-pub const SUMMARY_RU : str = "Собирает каждому владельцу бота утренний отчёт: вчерашняя выручка, расходы недели и что реально покупали пользователи.";
 pub const SCHEDULE : str = "0 9 * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

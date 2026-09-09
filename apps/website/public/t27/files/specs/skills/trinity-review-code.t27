@@ -15,7 +15,6 @@ pub const NAME : str = "review-code";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Review recent code changes for bugs, style issues, and improvements. Use after writing code or before committing.";
-pub const SUMMARY_RU : str = "Ревью недавних изменений кода: ошибки, стиль, улучшения. После написания кода или перед коммитом.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/review-code [file-or-branch] (optional)";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

@@ -15,7 +15,6 @@ pub const HOST : str = "inngest";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/inngest_app/functions/training/checkStuckTrainings.ts";
 pub const SUMMARY_EN : str = "Finds model trainings still marked pending or processing past the stuck threshold and reconciles them against Replicate.";
-pub const SUMMARY_RU : str = "Находит обучения моделей, застрявшие в pending или processing дольше порога, и сверяет их с Replicate.";
 pub const SCHEDULE : str = "*/30 * * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

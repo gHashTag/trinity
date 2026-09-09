@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "trinity";
 pub const SERVICE : str = ".github/workflows/agent-cron-cleanup.yml";
 pub const SUMMARY_EN : str = "Finds agent deployments that got stuck and kills them, every two hours.";
-pub const SUMMARY_RU : str = "Каждые два часа находит застрявшие деплои агентов и убивает их.";
 pub const SCHEDULE : str = "0 */2 * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

@@ -16,9 +16,9 @@
 
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { generate, SKILLS_OUT, CRONS_OUT, HOSTS, CONTROLS, ON_FAILURE } from '../scripts/agents-from-specs.mjs'
+import { generate, SKILLS_OUT, CRONS_OUT, HOSTS, CONTROLS, ON_FAILURE, I18N_SPEC_DIR, I18N_FIELD_SOURCE, REPO_ROOT } from '../scripts/agents-from-specs.mjs'
 import { canonicalSpecEditUrl, vendoredSpecUrl, specSlug } from '../src/lib/agentSpecs.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 import { HUD_VIEWS } from '../src/components/queenHud.ts'
@@ -58,6 +58,26 @@ for (const [name, text] of [['spec-skills', JSON.stringify(skills)], ['spec-cron
 // 3. Every entry: a real file, the right bytes, an honest witness.
 const WITNESS = new Set(['spec+code', 'spec-only'])
 const HEALTH = new Set(['ok', 'warn', 'fail'])
+const CYRILLIC = /[\u0400-\u04ff]/
+
+// Language policy: a .t27 spec is English-only (t27 LANG-EN; bootstrap/build.rs
+// on gHashTag/t27 fails on any Cyrillic under specs/). Every other locale is
+// connected through a contract spec in specs/i18n/ (checked in section 6); the
+// entry itself carries `en` from the spec plus whatever the loaded bundles gave.
+function assertSummary(e, locales) {
+  const file = join('public/t27/files', e.specPath)
+  assert.ok(!CYRILLIC.test(readFileSync(file, 'utf8')), `${e.specPath}: Cyrillic in a .t27 spec (LANG-EN)`)
+  assert.ok(!('SUMMARY_RU' in e.fields), `${e.id}: SUMMARY_RU must not be a spec constant`)
+  assert.ok(!('ruSource' in e), `${e.id}: ruSource is gone; locales come from specs/i18n/*.t27`)
+  assert.equal(e.summary.en, e.fields.SUMMARY_EN)
+  assert.equal(e.name.en, e.fields.NAME)
+  assert.ok(e.summary.en.length > 10, `${e.id}: SUMMARY_EN is missing`)
+  for (const field of ['summary', 'name']) {
+    for (const k of Object.keys(e[field])) assert.ok(k === 'en' || locales.has(k), `${e.id}: ${field}.${k} has no contract spec in ${I18N_SPEC_DIR}`)
+  }
+  if (e.summary.ru) assert.ok(e.summary.ru.length > 10 && CYRILLIC.test(e.summary.ru), `${e.id}: summary.ru is not Russian`)
+}
+const localesOf = (cat) => new Set(cat.i18n.map((l) => l.locale))
 const skillIds = new Set(skills.skills.map((s) => s.id))
 const cronIds = new Set(crons.crons.map((c) => c.id))
 assert.equal(skillIds.size, skills.skills.length, 'duplicate skill ids')
@@ -78,8 +98,7 @@ for (const s of skills.skills) {
   assert.equal(s.inSpecCorpus, corpusPaths.has(s.specPath), `${s.id}: inSpecCorpus disagrees with public/t27/manifest.json`)
   assert.equal(s.fields.ID, s.id)
   assert.equal(s.fields.KIND, 'skill')
-  assert.ok(s.fields.SUMMARY_RU.length > 10 && s.fields.SUMMARY_EN.length > 10, `${s.id}: a summary is missing`)
-  assert.ok(/[а-яА-ЯёЁ]/.test(s.fields.SUMMARY_RU), `${s.id}: SUMMARY_RU is not Russian`)
+  assertSummary(s, localesOf(skills))
   for (const id of s.runBy) assert.ok(cronIds.has(id), `${s.id}: runBy names ${id}, which has no cron spec`)
   for (const id of s.runBy) {
     const cron = crons.crons.find((c) => c.id === id)
@@ -108,7 +127,7 @@ for (const c of crons.crons) {
   assert.ok(CONTROLS.includes(c.control))
   assert.equal(c.control, c.fields.CONTROL)
   assert.ok(ON_FAILURE.includes(c.fields.ON_FAILURE))
-  assert.ok(/[а-яА-ЯёЁ]/.test(c.fields.SUMMARY_RU), `${c.id}: SUMMARY_RU is not Russian`)
+  assertSummary(c, localesOf(crons))
   assert.deepEqual(c.runs, c.fields.RUNS)
   assert.equal(c.runsResolved.length, c.runs.length)
   for (const r of c.runsResolved) {
@@ -165,9 +184,49 @@ for (const tab of ['skills', 'crons']) {
 assert.equal(MODULES.length, HUD_VIEWS.length, 'every module is a view and every view a module')
 for (const [i, m] of MODULES.entries()) assert.equal(m.key, String(i + 1), `module ${m.tab} carries key ${m.key} at position ${i + 1}`)
 
+// 6. Translations are connected through .t27 contract specs, never hardcoded.
+//    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists
+//    (the vendored copy is English-only too); each contract's bundle exists at
+//    the declared path, names the contract back, matches the locale, and every
+//    entry resolves to a spec whose keys are within FIELDS (ORPHANS_ALLOWED is
+//    false in the shipped contract). Coverage is printed, not asserted (the
+//    contract says COVERAGE_REQUIRED false), unless the spec says otherwise.
+const i18nDir = join('public/t27/files', I18N_SPEC_DIR)
+const i18nSpecFiles = existsSync(i18nDir) ? readdirSync(i18nDir).filter((f) => f.endsWith('.t27')).sort() : []
+assert.ok(i18nSpecFiles.length >= 1, `${I18N_SPEC_DIR}: at least the Russian contract (agents-ru.t27) must exist`)
+assert.ok(i18nSpecFiles.includes('agents-ru.t27'), `${I18N_SPEC_DIR}/agents-ru.t27 is the Russian contract`)
+for (const f of i18nSpecFiles) assert.ok(!CYRILLIC.test(readFileSync(join(i18nDir, f), 'utf8')), `${I18N_SPEC_DIR}/${f}: Cyrillic in a .t27 spec (LANG-EN)`)
+assert.deepEqual(skills.i18n.map((l) => l.spec), i18nSpecFiles.map((f) => `${I18N_SPEC_DIR}/${f}`).sort((a, b) => a.localeCompare(b)), 'skills.i18n lists exactly the contract specs')
+assert.deepEqual(crons.i18n.map((l) => l.spec).sort(), skills.i18n.map((l) => l.spec).sort(), 'both catalogs see the same contracts')
+const coverageLine = []
+for (const l of skills.i18n) {
+  const c = crons.i18n.find((x) => x.locale === l.locale)
+  assert.ok(c, `${l.locale}: contract missing from crons.i18n`)
+  assert.equal(l.sha256, sha256(readFileSync(join('public/t27/files', l.spec))), `${l.spec}: sha256 in the catalog is not the vendored file`)
+  assert.ok(existsSync(join(REPO_ROOT, l.bundle)), `${l.spec}: bundle ${l.bundle} does not exist`)
+  const bundle = JSON.parse(readFileSync(join(REPO_ROOT, l.bundle), 'utf8'))
+  assert.equal(bundle.$spec, l.spec, `${l.bundle}: $spec must name its contract`)
+  assert.equal(bundle.locale, l.locale, `${l.bundle}: locale must match the contract`)
+  for (const field of l.fields) assert.ok(field in I18N_FIELD_SOURCE, `${l.spec}: FIELDS ${field} backed by no spec constant`)
+  const ids = new Set([...skillIds, ...cronIds])
+  for (const [id, entry] of Object.entries(bundle.entries)) {
+    assert.ok(ids.has(id), `${l.bundle}: orphan entry ${id} (ORPHANS_ALLOWED is false)`)
+    for (const k of Object.keys(entry)) assert.ok(l.fields.includes(k), `${l.bundle}: ${id}.${k} not in FIELDS ${l.fields.join(',')}`)
+  }
+  // Coverage in the catalog equals what the bundle actually gives each entry.
+  const has = (list) => list.filter((e) => e.summary[l.locale] || e.name[l.locale]).length
+  assert.equal(l.coverage.n, has(skills.skills), `${l.locale}: skills coverage n mismatch`)
+  assert.equal(l.coverage.total, skills.skills.length)
+  assert.equal(c.coverage.n, has(crons.crons), `${l.locale}: crons coverage n mismatch`)
+  assert.equal(c.coverage.total, crons.crons.length)
+  assert.equal(l.missing.length, l.coverage.total - l.coverage.n)
+  coverageLine.push(`${l.locale} via ${l.spec}${l.enabled ? '' : ' (off)'}: skills ${l.coverage.n}/${l.coverage.total}, crons ${c.coverage.n}/${c.coverage.total}, orphans 0`)
+}
+
 console.log(
   `agents-spec-contract: skills ${skills.skills.length} (spec+code ${skills.counts.specPlusCode}, spec-only ${skills.counts.specOnly}, code-only ${skills.counts.codeOnly}, run by a cron ${skills.counts.runBy}); ` +
   `crons ${crons.crons.length} (spec+code ${crons.counts.specPlusCode}, spec-only ${crons.counts.specOnly}, code-only ${crons.counts.codeOnly}, with RUNS ${crons.counts.withRuns}); ` +
   `in vendored corpus manifest: ${skills.skills.filter((s) => s.inSpecCorpus).length + crons.crons.filter((c) => c.inSpecCorpus).length}/${skills.skills.length + crons.crons.length}; ` +
-  `Queen views ${HUD_VIEWS.length}, modules ${MODULES.length}`,
+  `Queen views ${HUD_VIEWS.length}, modules ${MODULES.length}; ` +
+  `i18n contracts ${skills.i18n.length} [${coverageLine.join('; ')}]`,
 )

@@ -15,7 +15,6 @@ pub const NAME : str = "trinity-test";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Run Trinity test suites and analyze results. Use for testing VSA, VM, Firebird, WASM, or full test suite.";
-pub const SUMMARY_RU : str = "Прогон тестовых наборов Trinity и разбор результатов: VSA, VM, Firebird, WASM или всё целиком.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/trinity-test [module] (vsa, vm, firebird, all)";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

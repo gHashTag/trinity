@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "trinity";
 pub const SERVICE : str = ".github/workflows/brain-ci.yml";
 pub const SUMMARY_EN : str = "Runs the weekly brain stress test, the long version of the health gate that every commit already gets.";
-pub const SUMMARY_RU : str = "Еженедельный стресс-тест мозга — длинная версия гейта здоровья, который получает каждый коммит.";
 pub const SCHEDULE : str = "0 0 * * 0";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

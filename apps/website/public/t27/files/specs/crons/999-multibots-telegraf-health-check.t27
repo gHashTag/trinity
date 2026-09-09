@@ -15,7 +15,6 @@ pub const HOST : str = "inngest";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/inngest_app/functions/monitoring/criticalErrorMonitor.ts";
 pub const SUMMARY_EN : str = "Probes the main API and the Inngest service every half hour and reports what answered.";
-pub const SUMMARY_RU : str = "Каждые полчаса опрашивает основной API и сервис Inngest и сообщает, кто ответил.";
 pub const SCHEDULE : str = "*/30 * * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

@@ -15,7 +15,6 @@ pub const NAME : str = "tri";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "TRI status dashboard — agent thought mode by default, /tri full for visual dashboard";
-pub const SUMMARY_RU : str = "Панель статуса TRI: по умолчанию режим мысли агента, /tri full — визуальная панель.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/tri [short] [full] [audit] [coverage] [lang:ru|en] [humor|prof|toxic|zen]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

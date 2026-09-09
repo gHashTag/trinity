@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "apps/vibee-editor/render/generate-jobs.ts:164";
 pub const SUMMARY_EN : str = "Sweeps finished generation jobs out of memory an hour after they end, once a caller who lost the connection has had time to collect the result.";
-pub const SUMMARY_RU : str = "Через час после завершения выметает из памяти законченные задания генерации, когда потерявший соединение клиент успел забрать результат.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 300000;
 pub const TZ : str = "UTC";

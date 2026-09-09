@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "trinity";
 pub const SERVICE : str = ".github/workflows/signal-health-self.yml";
 pub const SUMMARY_EN : str = "Applies the signal-health check to the repository that sells it and writes the numbers into the website data.";
-pub const SUMMARY_RU : str = "Применяет проверку signal-health к репозиторию, который её продаёт, и записывает числа в данные сайта.";
 pub const SCHEDULE : str = "23 4 * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

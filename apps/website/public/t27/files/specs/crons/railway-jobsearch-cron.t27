@@ -15,7 +15,6 @@ pub const HOST : str = "railway-cron";
 pub const REPO : str = "railway";
 pub const SERVICE : str = "jobsearch-cron";
 pub const SUMMARY_EN : str = "The scheduled job-search service of the Railway project, reachable at cron.t27.ai.";
-pub const SUMMARY_RU : str = "Сервис поиска вакансий по расписанию в проекте Railway, доступен на cron.t27.ai.";
 ; No expression is readable from a checkout; the dashboard holds it.
 pub const SCHEDULE : str = "";
 pub const SCHEDULE_NOTE : str = "configured in the Railway dashboard (project 999); not readable from the checkout";

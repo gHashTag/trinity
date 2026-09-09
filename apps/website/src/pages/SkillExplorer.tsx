@@ -343,7 +343,7 @@ export default function SkillExplorer() {
         s.name.toLowerCase().includes(q) ||
         s.description.toLowerCase().includes(q) ||
         s.specsDeclared.some((p) => p.toLowerCase().includes(q)) ||
-        (spec ? `${spec.fields.SUMMARY_EN} ${spec.fields.SUMMARY_RU} ${spec.fields.COMMAND}`.toLowerCase().includes(q) : false)
+        (spec ? `${Object.values(spec.summary).join(' ')} ${spec.fields.COMMAND}`.toLowerCase().includes(q) : false)
       )
     })
   }, [skills, query, repo, linkFilter, tagSel, tagsOf, specById])
@@ -646,6 +646,7 @@ export default function SkillExplorer() {
                             id={selected.id}
                             entry={specById.get(selected.id) ?? null}
                             embedded={embedded}
+                            i18n={specs?.i18n ?? []}
                             links={(specById.get(selected.id)?.runBy ?? []).map((id) => ({ id, ok: true, href: cronExplorerHash(id, { embedded }) }))}
                           />
                         </div>

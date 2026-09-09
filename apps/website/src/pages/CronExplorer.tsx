@@ -267,7 +267,7 @@ export default function CronExplorer() {
         c.what.toLowerCase().includes(q) ||
         (c.where.file ?? '').toLowerCase().includes(q) ||
         (c.schedule.expr ?? '').includes(q) ||
-        (spec ? `${spec.fields.SUMMARY_EN} ${spec.fields.SUMMARY_RU} ${spec.runs.join(' ')}`.toLowerCase().includes(q) : false)
+        (spec ? `${Object.values(spec.summary).join(' ')} ${spec.runs.join(' ')}`.toLowerCase().includes(q) : false)
       )
     })
   }, [crons, query, kind, healthFilter, tagSel, tagsOf, specById])
@@ -457,6 +457,7 @@ export default function CronExplorer() {
                   id={selected.id}
                   entry={specById.get(selected.id) ?? null}
                   embedded={embedded}
+                  i18n={specs?.i18n ?? []}
                   links={(specById.get(selected.id)?.runsResolved ?? []).map((r) => ({
                     id: r.id,
                     ok: r.ok,

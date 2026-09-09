@@ -15,7 +15,6 @@ pub const NAME : str = "vsa-verify";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Verify VSA (Vector Symbolic Architecture) mathematical proofs and operations. Use for math verification, bind/unbind/bundle testing, phi identity checks.";
-pub const SUMMARY_RU : str = "Проверка математических доказательств и операций VSA: bind/unbind/bundle, тождества phi.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/vsa-verify [operation or proof to verify]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

@@ -15,7 +15,6 @@ pub const NAME : str = "TRI Pipeline";
 pub const REPO : str = "t27";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Execute tri commands (gen, test, verify, seal, verdict) for spec-first development";
-pub const SUMMARY_RU : str = "Выполнение команд tri (gen, test, verify, seal, verdict) для spec-first разработки.";
 ; The frontmatter name is a display title, not a slash command, so no invocation is declared.
 pub const COMMAND : str = "";
 ; Specs this skill stands on, as declared (frontmatter or the site's bindings.json).

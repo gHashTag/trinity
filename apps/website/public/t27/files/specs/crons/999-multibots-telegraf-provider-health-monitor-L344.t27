@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/services/provider-health-monitor.ts:344";
 pub const SUMMARY_EN : str = "Checks every AI provider that is not parked and records whether it is currently answering.";
-pub const SUMMARY_RU : str = "Проверяет каждого не отключённого AI-провайдера и записывает, отвечает ли он сейчас.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 300000;
 pub const TZ : str = "UTC";

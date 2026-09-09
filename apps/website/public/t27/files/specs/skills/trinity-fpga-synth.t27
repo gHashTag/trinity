@@ -15,7 +15,6 @@ pub const NAME : str = "fpga-synth";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Run FPGA synthesis pipeline from .tri spec to bitstream. Use when working with Verilog, FPGA, or hardware synthesis.";
-pub const SUMMARY_RU : str = "Конвейер синтеза FPGA от .tri-спеки до битстрима. Для работы с Verilog, FPGA и аппаратным синтезом.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/fpga-synth <spec.tri or module-name>";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

@@ -15,7 +15,6 @@ pub const NAME : str = "Wave Audit — Comprehensive Project Analysis";
 pub const REPO : str = "t27";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Full-spectrum audit of t27 project: GitHub issues analysis, weakness identification, SOTA research review, decomposed plan, and implementation of critical fixes.";
-pub const SUMMARY_RU : str = "Полный аудит проекта t27: разбор GitHub issues, поиск слабых мест, обзор SOTA, декомпозированный план и реализация критичных исправлений.";
 ; The skill file has no frontmatter, so it declares no invocation.
 pub const COMMAND : str = "";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

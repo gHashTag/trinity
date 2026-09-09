@@ -22,7 +22,6 @@ export interface SkillSpecFields {
   REPO: string
   SOURCE: string
   SUMMARY_EN: string
-  SUMMARY_RU: string
   COMMAND: string
   SPECS: string[]
   TAGS: string[]
@@ -38,7 +37,6 @@ export interface CronSpecFields {
   REPO: string
   SERVICE: string
   SUMMARY_EN: string
-  SUMMARY_RU: string
   SCHEDULE?: string
   SCHEDULE_NOTE?: string
   INTERVAL_MS?: number
@@ -55,6 +53,15 @@ interface SpecEntryBase {
   id: string
   /** Corpus-relative, e.g. `specs/skills/trinity-doctor.t27`. */
   specPath: string
+  /**
+   * SUMMARY_EN and NAME by locale. `en` is the spec text. Every other key is a
+   * translation connected through a contract spec (specs/i18n/agents-<locale>.t27)
+   * whose bundle the generator loaded; a locale with no entry for this spec is
+   * simply absent, and the catalog's `i18n` list says which contract each
+   * locale came from. Specs themselves are English-only (t27 LANG-EN).
+   */
+  summary: Localized
+  name: Localized
   sha256: string
   typecheckOk: boolean
   discarded: number
@@ -83,12 +90,31 @@ export interface CronSpecEntry extends SpecEntryBase {
   runNow: RunNowTarget
 }
 
+export type Localized = { en: string } & Partial<Record<string, string>>
+
+/** One translation contract (a specs/i18n/*.t27) as it applies to one catalog. */
+export interface I18nContract {
+  locale: string
+  /** Corpus path of the contract spec, e.g. `specs/i18n/agents-ru.t27`. */
+  spec: string
+  sha256: string
+  /** Repo-relative path of the bundle the spec points to. */
+  bundle: string
+  enabled: boolean
+  fields: string[]
+  scope: string[]
+  coverage: { n: number; total: number }
+  /** Spec ids in this catalog with no entry in the bundle. */
+  missing: string[]
+}
+
 interface SpecCatalogBase {
   version: number
   generatedAt: string
   compilerWasmSha256: string
   contentSha256: string
   codeOnly: string[]
+  i18n: I18nContract[]
 }
 
 export interface SkillSpecCatalog extends SpecCatalogBase {

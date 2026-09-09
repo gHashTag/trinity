@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "apps/vibee-editor/render/render-server.ts:10845";
 pub const SUMMARY_EN : str = "Pings every websocket peer and drops the ones that did not answer the previous round.";
-pub const SUMMARY_RU : str = "Пингует каждого websocket-пира и отключает тех, кто не ответил в прошлом раунде.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 30000;
 pub const TZ : str = "UTC";

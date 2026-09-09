@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = ".github/workflows/security.yml";
 pub const SUMMARY_EN : str = "Runs the weekly security sweep: secret detection over the full history, dependency audit and code scanning.";
-pub const SUMMARY_RU : str = "Еженедельная проверка безопасности: поиск секретов по всей истории, аудит зависимостей и сканирование кода.";
 pub const SCHEDULE : str = "0 3 * * 0";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

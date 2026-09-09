@@ -15,7 +15,6 @@ pub const NAME : str = "queen-hive-visuals";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Maintain QUEEN's floating hive, original point-down TRINITY logo, sharp issue displays and matching camera interactions.";
-pub const SUMMARY_RU : str = "Поддержка плавающего улья Королевы, оригинального логотипа TRINITY остриём вниз, чётких табло задач и согласованных движений камеры.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/queen-hive-visuals";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

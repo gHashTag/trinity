@@ -15,7 +15,6 @@ pub const NAME : str = "blog-post";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Write and publish a post to the t27.ai blog. Covers where the blog actually lives (not where it looks like it lives), the Post schema with its required receipts and openQuestions, the honesty rules the data file itself imposes, and the b...";
-pub const SUMMARY_RU : str = "Написать и опубликовать пост в блог t27.ai: где блог реально живёт, схема Post с обязательными свидетельствами, обложка и проверки.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/blog-post";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

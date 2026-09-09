@@ -17,8 +17,7 @@ File name: `<repo>-<job slug>.t27`; module name: `cron_<file name with underscor
 | `HOST`          | `str`    | `github-actions` \| `inngest` \| `railway-cron` \| `timer`                                |
 | `REPO`          | `str`    | short repo name                                                                           |
 | `SERVICE`       | `str`    | workflow file / Inngest function file / Railway service / `file:line` of the timer         |
-| `SUMMARY_EN`    | `str`    | what the job does, English                                                                |
-| `SUMMARY_RU`    | `str`    | the same, Russian                                                                         |
+| `SUMMARY_EN`    | `str`    | what the job does (English)                                                               |
 | `SCHEDULE`      | `str`    | cron expression (absent for timers; `""` when only a dashboard holds it, see `SCHEDULE_NOTE`) |
 | `INTERVAL_MS`   | `u32`    | period of an in-process timer (timers only, instead of `SCHEDULE`)                        |
 | `TZ`            | `str`    | timezone of the schedule                                                                  |
@@ -28,6 +27,20 @@ File name: `<repo>-<job slug>.t27`; module name: `cron_<file name with underscor
 | `NOTE`          | `str`    | optional caveat carried from the code catalog                                             |
 | `ON_FAILURE`    | `str`    | `issue` \| `log` \| `unknown`                                                             |
 | `CONTROL`       | `str`    | `github-actions-dispatch` \| `railway-dashboard` \| `inngest-dashboard` \| `code-only`     |
+
+## Language
+
+Specs are English-only (t27 `LANG-EN`: `bootstrap/build.rs` fails the build on any
+Cyrillic under `specs/`). There is no `SUMMARY_RU`. Translations are connected
+through a spec: `specs/i18n/agents-<locale>.t27` (see `specs/i18n/README.md`)
+declares the locale, the spec directories it covers (`SCOPE`), the fields a bundle
+may translate (`FIELDS`: `SUMMARY`, `NAME`) and the bundle file that carries the
+text (`BUNDLE_REPO`/`BUNDLE_PATH`, keyed by `ID`). The Russian layer is
+`specs/i18n/agents-ru.t27` -> `trinity:apps/website/i18n/agents.ru.json`. The site's
+generator discovers every `specs/i18n/*.t27`, loads each bundle, fails on an entry
+whose `ID` matches no spec (`ORPHANS_ALLOWED = false`) and emits `summary`/`name`
+as `{en, <locale>...}` plus an `i18n` list with the coverage per catalog. A spec
+with no translation falls back to English (`FALLBACK = "en"`).
 
 ## Rules the generator enforces
 

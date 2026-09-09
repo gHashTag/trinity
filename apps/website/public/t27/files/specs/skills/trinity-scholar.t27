@@ -15,7 +15,6 @@ pub const NAME : str = "scholar";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Self-Evolving Research Agent — scans web for relevant tech, evaluates findings, proposes improvements. Uses Perplexity Sonar API via MCP.";
-pub const SUMMARY_RU : str = "Саморазвивающийся исследовательский агент: сканирует веб на релевантные технологии, оценивает находки, предлагает улучшения. Perplexity Sonar через MCP.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/scholar [scan|eval|apply|full|report|topic:\"query\"]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

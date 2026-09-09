@@ -15,7 +15,6 @@ pub const NAME : str = "doctor";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "HEALER — diagnose, heal, commit dirty files, monitor junk & docs & duplicates, report honestly. Every loop = action + proof.";
-pub const SUMMARY_RU : str = "ЛЕКАРЬ: диагностика, лечение, коммит грязных файлов, надзор за мусором, документацией и дубликатами, честный отчёт. Каждый цикл = действие + доказательство.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/doctor [quick|full|scan|junk|docs|dupes] [lang:ru|en]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

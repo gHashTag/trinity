@@ -15,7 +15,6 @@ pub const NAME : str = "wrap-up";
 pub const REPO : str = "t27";
 pub const SOURCE : str = "skill.md";
 pub const SUMMARY_EN : str = "Format and upload session wrap-up to NotebookLM for persistent semantic memory";
-pub const SUMMARY_RU : str = "Оформление и загрузка итогов сессии в NotebookLM как постоянной семантической памяти.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/wrap-up";
 ; Specs this skill stands on, as declared (frontmatter or the site's bindings.json).

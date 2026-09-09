@@ -15,7 +15,6 @@ pub const NAME : str = "ux-wave";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Autonomous UX improvement waves — launch 4 parallel agents per wave, audit every 5 waves, commit fixes. For Queen UI chat & network polish.";
-pub const SUMMARY_RU : str = "Автономные волны улучшения UX: 4 параллельных агента на волну, аудит каждые 5 волн, коммит исправлений. Для чата и сети Queen UI.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/ux-wave [wave-number] [audit]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

@@ -15,7 +15,6 @@ pub const NAME : str = "tree";
 pub const REPO : str = "trinity";
 pub const SOURCE : str = "SKILL.md";
 pub const SUMMARY_EN : str = "Technology dependency tree — shows issue DAG, prereqs, critical path, blocked/ready tasks. Single source of truth for work order.";
-pub const SUMMARY_RU : str = "Дерево технологических зависимостей: DAG задач, предпосылки, критический путь, заблокированные и готовые задачи. Единый источник порядка работ.";
 ; Invocation, from the skill's own frontmatter (name + argument-hint).
 pub const COMMAND : str = "/tree [next|path|blocked|update]";
 ; No spec is declared for this skill yet; the Skill Explorer lists it as unbound.

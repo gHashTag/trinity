@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "trinity";
 pub const SERVICE : str = ".github/workflows/agent-queue-drain.yml";
 pub const SUMMARY_EN : str = "Looks for queued issues and free agent slots every five minutes and starts the next agent when there is room.";
-pub const SUMMARY_RU : str = "Каждые пять минут ищет задачи в очереди и свободные слоты агентов и запускает следующего агента, когда есть место.";
 pub const SCHEDULE : str = "*/5 * * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];

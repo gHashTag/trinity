@@ -18,6 +18,7 @@ import { highlightCode, highlightSource, type Span } from '../lib/highlight'
 import { analyze } from '../lib/t27Compiler'
 import { specExplorerHash } from '../lib/specCatalog'
 import {
+  type I18nContract,
   agentControlUrl,
   canonicalSpecEditUrl,
   loadAgentSpecSource,
@@ -76,6 +77,10 @@ const COPY = {
     noRunBy: 'no job names this skill',
     unresolved: 'unresolved id',
     summary: 'summary',
+    translations: 'translations',
+    noTranslations: 'none declared',
+    translationsTitle: 'Specs are English-only (t27 LANG-EN). Each locale is connected through a contract spec under specs/i18n/ that names the bundle carrying the text; n/total is how many entries of this catalog that bundle covers.',
+    viaSpec: 'via',
     copy: 'copy',
     copied: 'copied',
     messages: 'generator notes',
@@ -125,6 +130,10 @@ const COPY = {
     noRunBy: 'ни одно задание не называет этот скилл',
     unresolved: 'неизвестный id',
     summary: 'кратко',
+    translations: 'переводы',
+    noTranslations: 'не объявлены',
+    translationsTitle: 'Спеки только на английском (t27 LANG-EN). Каждая локаль подключена через спеку-контракт в specs/i18n/, которая называет бандл с текстом; n/total — сколько записей этого каталога бандл покрывает.',
+    viaSpec: 'через',
     copy: 'копировать',
     copied: 'скопировано',
     messages: 'заметки генератора',
@@ -148,6 +157,8 @@ interface Props {
   links: CrossLink[]
   /** Whether the reader can jump to the Spec Explorer in this frame. */
   embedded: boolean
+  /** The catalog's translation contracts, for the `translations:` line. */
+  i18n?: I18nContract[]
 }
 
 async function sha256Hex(text: string): Promise<string | null> {
@@ -161,7 +172,7 @@ function label(kind: Props['kind'], t: Copy): { links: string; empty: string } {
   return kind === 'cron' ? { links: t.runs, empty: t.noRuns } : { links: t.runBy, empty: t.noRunBy }
 }
 
-export function AgentSpecPanel({ lang, kind, id, entry, links, embedded }: Props) {
+export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = [] }: Props) {
   const t: Copy = COPY[lang]
   // Everything fetched for one spec travels together, keyed by its path, so a
   // change of card is a change of key rather than a burst of resets.
@@ -235,7 +246,11 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded }: Props
     return (entry as CronSpecEntry).runNow
   }, [entry, kind])
 
-  const summary = entry ? (lang === 'ru' ? entry.fields.SUMMARY_RU : entry.fields.SUMMARY_EN) : ''
+  // The spec is English-only (LANG-EN). Any other locale reaches this panel
+  // through a contract spec under specs/i18n/ and its bundle; when that locale
+  // has no entry for this spec, the English text from the spec is shown (the
+  // contract's FALLBACK).
+  const summary = entry ? (entry.summary[lang] ?? entry.summary.en) : ''
   const { links: linksLabel, empty: emptyLabel } = label(kind, t)
 
   // ---- code-only: no spec to show, but an honest card and a way to write one.
@@ -292,6 +307,21 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded }: Props
             {summary}
           </div>
         )}
+        <div style={{ fontFamily: C.mono, fontSize: 10.5, color: C.muted }} title={t.translationsTitle}>
+          {t.translations}:{' '}
+          {i18n.length === 0
+            ? t.noTranslations
+            : i18n.map((c, i) => (
+                <span key={c.locale} data-lang-exempt="live">
+                  {i > 0 ? ' · ' : ''}
+                  <b style={{ color: entry.summary[c.locale] ? '#d8d8d8' : C.muted }}>{c.locale}</b> {t.viaSpec}{' '}
+                  <a href={vendoredSpecUrl(c.spec)} target="_blank" rel="noopener noreferrer" style={{ color: C.muted }}>
+                    {c.spec}
+                  </a>{' '}
+                  ({c.coverage.n}/{c.coverage.total}){c.enabled ? '' : ' · off'}
+                </span>
+              ))}
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontFamily: C.mono, fontSize: 11 }}>
           <span style={{ color: C.muted }}>{t.sha}</span>
           <span style={{ color: '#d8d8d8' }} title={entry.sha256}>

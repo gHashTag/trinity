@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "apps/vibee-editor/render/render-server.ts:2325";
 pub const SUMMARY_EN : str = "Reads the hive journal and delivers the queen's report to the keepers, passing alarms straight through and batching ordinary events.";
-pub const SUMMARY_RU : str = "Читает журнал улья и доставляет отчёт королевы хранителям: тревоги — сразу, обычные события — пакетом.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 600000;
 pub const TZ : str = "UTC";

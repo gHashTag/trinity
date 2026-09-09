@@ -15,7 +15,6 @@ pub const HOST : str = "timer";
 pub const REPO : str = "999-multibots-telegraf";
 pub const SERVICE : str = "src/services/video-task-store.ts:156";
 pub const SUMMARY_EN : str = "Forgets video tasks older than an hour and rewrites the store to disk when anything was removed.";
-pub const SUMMARY_RU : str = "Забывает видеозадачи старше часа и переписывает хранилище на диск, если что-то было удалено.";
 ; A setInterval inside a long-lived process: a period, not a cron expression.
 pub const INTERVAL_MS : u32 = 600000;
 pub const TZ : str = "UTC";

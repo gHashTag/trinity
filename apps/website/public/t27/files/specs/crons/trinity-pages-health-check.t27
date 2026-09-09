@@ -15,7 +15,6 @@ pub const HOST : str = "github-actions";
 pub const REPO : str = "trinity";
 pub const SERVICE : str = ".github/workflows/pages-health-check.yml";
 pub const SUMMARY_EN : str = "Fetches the published site every fifteen minutes, follows the redirect, and redeploys only when the evidence says the deploy is what broke.";
-pub const SUMMARY_RU : str = "Каждые пятнадцать минут запрашивает опубликованный сайт, следует редиректу и передеплоит только когда свидетельства говорят, что сломан именно деплой.";
 pub const SCHEDULE : str = "*/15 * * * *";
 pub const TZ : str = "UTC";
 pub const RUNS : [0]str = [];
