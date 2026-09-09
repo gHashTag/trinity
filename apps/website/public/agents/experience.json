@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-09-09T14:09:33.647Z",
+ "generatedAt": "2026-09-09T14:34:56.907Z",
  "attribution": {
   "fields": [
    "agent_letter",
@@ -52,7 +52,7 @@
   {
    "repo": "trinity",
    "root": "/home/user/workspace/trinity",
-   "commit": "a7916a012769ea0818b2710e8ec86e1d10727460",
+   "commit": "dbed0905268b21f68aa1c527091d91ecea2bda76",
    "dir": ".trinity/experience",
    "files": 440,
    "episodes": 383,
@@ -71,7 +71,7 @@
   {
    "repo": "t27",
    "root": "/home/user/workspace/t27",
-   "commit": "2de523fcc24f96aa5fcdb9291eee33d623a0e380",
+   "commit": "9874cc6cfd38b768a8792ecc2c2c7afa3abc20e1",
    "dir": ".trinity/experience",
    "files": 2,
    "episodes": 3,

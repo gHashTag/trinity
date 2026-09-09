@@ -83,8 +83,9 @@ name matching a skill name.
 ## Experience attribution rule (`public/agents/experience.json`)
 
 `scripts/sync-agents-experience.mjs` (trinity) reads `.trinity/experience/**` in the trinity
-checkout and in the t27 checkout (`T27_ROOT`; default `/home/user/workspace/t27` on the build
-box, `/Users/playom/t27` on the owner's machine) and writes a committed snapshot. The rule,
+checkout and in the t27 checkout (`T27_ROOT`; when unset, the sibling directory `../t27` of the
+trinity repo root, i.e. `$(git rev-parse --show-toplevel)/../t27`) and writes a committed
+snapshot. No absolute home path is written anywhere. The rule,
 kept identical in the script header:
 
 1. An episode is one JSON object: a `*.json` file holding an object, each object of a `*.json`

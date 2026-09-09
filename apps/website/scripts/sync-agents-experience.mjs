@@ -2,9 +2,9 @@
 // sync-agents-experience.mjs -- the agents' experience, joined to the alphabet by evidence.
 //
 // Reads every episode under `.trinity/experience/**` of two checkouts -- this repo
-// (gHashTag/trinity, the repo root above apps/website) and gHashTag/t27 (T27_ROOT,
-// default /home/user/workspace/t27 on the build box; the owner's checkout is
-// /Users/playom/t27) -- and writes public/agents/experience.json: per agent letter the
+// (gHashTag/trinity, the repo root above apps/website) and gHashTag/t27 (T27_ROOT;
+// when unset, the sibling checkout ../t27 of the trinity repo root -- no absolute
+// home path is hardcoded) -- and writes public/agents/experience.json: per agent letter the
 // episode count, first/last timestamps, outcome mix, lessons, and the files plus commit
 // shas the numbers came from. An episode that names no agent letter is counted under
 // `unattributed` and never assigned to anyone.
@@ -43,8 +43,8 @@ export const SITE = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 export const REPO_ROOT = resolve(SITE, '..', '..')
 export const OUT = 'public/agents/experience.json'
 export const EXPERIENCE_DIR = '.trinity/experience'
-export const T27_ROOT_DEFAULT = '/home/user/workspace/t27'
-export const OWNER_T27_ROOT = '/Users/playom/t27'
+// Sibling checkout of gHashTag/t27 next to the trinity repo root; override with T27_ROOT.
+export const T27_ROOT_DEFAULT = resolve(REPO_ROOT, '..', 't27')
 export const VERSION = 1
 export const LETTERS = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'TI']
 export const AGENT_FIELDS = ['agent_letter', 'letter', 'agent', 'agent_id', 'agents', 'owner']
