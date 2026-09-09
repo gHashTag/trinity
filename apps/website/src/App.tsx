@@ -2,10 +2,8 @@ import Navigation from './components/Navigation'
 import GameHero from './components/GameHero'
 import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
-import QueenHeroBlock from './components/QueenHeroBlock'
-import SpecHeroBlock from './components/SpecHeroBlock'
-import ModulesBlock from './components/ModulesBlock'
 import ModuleHeroBlock from './components/ModuleHeroBlock'
+import { MODULES } from './lib/queenModules'
 import PlayBlock from './components/PlayBlock'
 
 // Главная — это игра. Первый экран: карта, на которой лежат спеки, затем сама
@@ -38,23 +36,18 @@ export default function App() {
       {/* The mark first, and then in one line what the site is. The number the
           game exists to build lives on /trinity and is linked from here. */}
       <GameHero />
-      <QueenHeroBlock />
-      <SpecHeroBlock />
-      {/* The six modules of the shell, each with what it actually shows and a
-          link that opens that tab. The two blocks above are the map and the
-          corpus; this is the rest of the same one screen. */}
       {/* The point of the front door: a developer arrives, and the four moves
           that put a cell of the core in their hands are named before the
           modules are. The core is built by playing it. */}
       <PlayBlock />
-      <ModulesBlock />
-      {/* And then each of the four the two blocks above do not already show,
-          the same way those two do it: the module itself in a frame, not a
-          picture of one. The map is the QUEEN block, the corpus the SPEC one. */}
-      <ModuleHeroBlock tab="kanban" />
-      <ModuleHeroBlock tab="map" />
-      <ModuleHeroBlock tab="factory" />
-      <ModuleHeroBlock tab="research" />
+
+      {/* One identical block per module, in the order the rail lists them, each
+          with what that view shows and the view itself in a frame. Rendered from
+          the list rather than written out, so a seventh module is a seventh
+          entry in lib/queenModules and nothing here changes. */}
+      {MODULES.map((module) => (
+        <ModuleHeroBlock key={module.tab} tab={module.tab} />
+      ))}
 
       <ServiceEntry />
 

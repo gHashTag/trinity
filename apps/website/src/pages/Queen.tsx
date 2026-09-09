@@ -2548,7 +2548,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         </header>
 
         <div className="queen27-hud-vp-body">
-          {!embedded && hiveScene}
+          {/* Embedded, the scene is skipped — a page of previews would be a page
+              of WebGL contexts — except on the comb, where the scene IS the
+              view. One preview on the homepage boots one context, which is what
+              the hive block booted before there were six blocks. */}
+          {(!embedded || boardView === "comb") && hiveScene}
           {boardView === "kanban" ? (
             <KanbanView
               columns={boardColumns}

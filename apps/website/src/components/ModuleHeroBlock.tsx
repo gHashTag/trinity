@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n/context'
-import { MODULES } from './ModulesBlock'
+import { MODULES, type QueenModuleTab } from '../lib/queenModules'
 import './ModuleHeroBlock.css'
 
 // A module of the shell, shown on the homepage the way the hive and the Spec
@@ -18,7 +18,7 @@ const COPY = {
   ru: { open: 'Открыть модуль', frame: 'Модуль TRINITY' },
 } as const
 
-export default function ModuleHeroBlock({ tab }: { tab: (typeof MODULES)[number]['tab'] }) {
+export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
   const { lang: rawLang } = useI18n()
   const lang = rawLang === 'ru' ? 'ru' : 'en'
   const t = COPY[lang]
@@ -38,18 +38,23 @@ export default function ModuleHeroBlock({ tab }: { tab: (typeof MODULES)[number]
       { rootMargin: '320px' },
     )
     watch.observe(node)
-    // A second opinion, from the box itself. An observer needs the page to be
-    // laid out and painted to report anything, and a tab that is open but not
-    // displayed does neither — the block would then be an empty frame for as
-    // long as nobody looked at it, which is the one state a presentation must
-    // not have. Timers run in a hidden tab; the rectangle is true there too.
-    const check = window.setTimeout(() => {
+    // A second opinion, asked repeatedly. An observer needs the page laid out
+    // and painted to report anything, and a tab that is open but not displayed
+    // does neither — measured here: every block scrolled into view and not one
+    // frame mounted. A single check at mount is no better, because at mount the
+    // block is far below the fold and the answer is correctly "not yet". So the
+    // rectangle is read on a timer until it says yes, and the timer stops
+    // itself. Timers run in a hidden tab; the rectangle is true there too.
+    const poll = window.setInterval(() => {
       const box = node.getBoundingClientRect()
-      if (box.top < window.innerHeight + 320 && box.bottom > -320) setNear(true)
-    }, 600)
+      if (box.top < window.innerHeight + 320 && box.bottom > -320) {
+        window.clearInterval(poll)
+        setNear(true)
+      }
+    }, 400)
     return () => {
       watch.disconnect()
-      window.clearTimeout(check)
+      window.clearInterval(poll)
     }
   }, [near])
 
