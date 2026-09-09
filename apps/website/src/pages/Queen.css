@@ -6253,3 +6253,21 @@ body.queen-shell .queen-starfield-source {
 .queen27-page.is-shell.is-embed .queen27-hud-viewport > .queen27-hud-vp-body {
   padding: 10px;
 }
+
+/* The labels live in the canvas's coordinate space, because that is where their
+   numbers come from.
+   Babylon projects a cell to CSS pixels of the render viewport — canvas-local,
+   and the field is fixed at inset 0, so canvas-local is the window. The layer
+   that carries the labels was inside the scene holder, whose box is inset by
+   the body's padding, so every label was displaced by exactly that inset: at
+   1280x720 the names sat a couple of hundred pixels right and below their own
+   hexagons. Same origin as the canvas, and a label lands on its portal. */
+.queen27-page.is-shell .queen-hive-displays {
+  position: fixed;
+  inset: 0;
+  /* Above the field it labels, below the chrome that floats on it. At 6 — the
+     value it carries inside the scene, where the field's own stacking context
+     kept it in place — a fixed layer is loose in the page instead, and a
+     repository name near the top edge was drawn over the status bar. */
+  z-index: 2;
+}
