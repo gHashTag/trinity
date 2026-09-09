@@ -52,9 +52,9 @@ What an agent can call: the commands of the `tri` CLI and the tools of the MCP s
 `specs/tools/tri/<command>.t27` is read from the clap `Commands` enum in
 `cli/tri/src/main.rs` (one card per variant, with its nested actions and arguments);
 `specs/tools/mcp/<server>.t27` from the server sources, manifests and `.mcp.json` entries of
-both repositories, with the tool names, descriptions and input-schema keys. The witness on a
-tri card is `source-parse` (the enum was read at a recorded commit) until someone diffs the
-list against `tri --help` and relabels it `help-output`. Servers whose code is a published
+both repositories, with the tool names, descriptions and input-schema keys. The witness on
+every tri card is `source-parse` (the enum was read at a recorded commit) until someone
+diffs the list against `tri --help` and relabels it `help-output`. Servers whose code is a published
 package outside the repositories carry `EXTERNAL = true`. Tool Explorer: `#/tools`.
 
 ## From spec to site

@@ -24,29 +24,34 @@ law on git. The site renders the cycle from that document; in short:
 6. **EVOLVE** -- update `graph_v2.json` if dependencies changed; update experience in E and
    M; S updates standards; W seals the tri-cell commit; Z updates documentation; T puts the
    final TAW seal.
-7. **GIT WORKFLOW** ("new -- SOUL law") -- `tri git commit --all -m "cell:{id} issue:{N} ..."`,
-   `tri git push origin HEAD` in strict mode; checks: sealed cell, non-toxic verdict,
-   artifacts; the registry records the commit hash and the pushed flag.
+7. **GIT WORKFLOW** ("new -- SOUL law") -- commit with `--all` and the message
+   `cell:{id} issue:{N} ...`, then push `HEAD` to origin in strict mode; checks: sealed cell,
+   non-toxic verdict, artifacts; the registry records the commit hash and the pushed flag.
+   The alphabet writes both steps as a `git` subcommand of tri; the current clap surface
+   does not expose one (witness: `cli/tri/src/main.rs` has no such variant), so they are
+   quoted here as steps, not as commands to copy.
 
-The document's SOUL law for TDD follows the seventh phase: "Any P0/P1 episode in `--strict`
-mode is considered COMPLETE only after successful `tri git push` to `github.com/gHashTag/t27`
-with bound sealed-cell and non-toxic verdict." Where an agent letter appears in a phase
+The document's SOUL law for TDD follows the seventh phase: any P0/P1 episode in `--strict`
+mode is considered COMPLETE only after a successful push to `github.com/gHashTag/t27` with
+bound sealed-cell and non-toxic verdict (the law names the push as a tri subcommand; see the
+note on the seventh phase above). Where an agent letter appears in a phase
 description, the tools chapter and the agent cards use that line as the source of a binding
 (`tri cell` to W, `tri verdict` to V).
 
 ## Cell, seal, verdict
 
-Three tri commands carry the cycle's state; two of them have a spec under `specs/tools/tri/`
-read from the clap enum of `cli/tri/src/main.rs`:
+Three steps carry the cycle's state; two of them are tri commands with a spec under
+`specs/tools/tri/` read from the clap enum of `cli/tri/src/main.rs`:
 
 - **`tri cell`** -- the unit of work of one agent: created in ASSIGN, sealed by W with a hash
   in EVOLVE. Nested actions are listed on the tool card (`specs/tools/tri/cell.t27`).
 - **`tri verdict`** -- V's decision over the metrics; `--toxic` is the question the cycle asks
   in VERDICT (`specs/tools/tri/verdict.t27`).
-- **`tri git`** -- the seventh phase as the alphabet document writes it. At the commit this
-  documentation was generated from the clap enum of `cli/tri/src/main.rs` has no `git`
-  variant, so the tool catalog has no card for it; the phase is documented from the alphabet
-  and marked `[declared]`, and the gap is recorded here rather than filled with a card.
+- **the git step** -- the seventh phase as the alphabet document writes it, as a `git`
+  subcommand of tri. At the commit this documentation was generated from the clap enum of
+  `cli/tri/src/main.rs` has no such variant, so the tool catalog has no card for it; the
+  phase is documented from the alphabet and marked `[declared]`, and the gap is recorded here
+  rather than filled with a card.
 
 The seal itself is a hash. At the compiler level the same idea is the seal of the bootstrap
 compiler (`bootstrap/stage0/FROZEN_HASH`, `CANON.md` section 0) and the ring canon: a ring
