@@ -38,6 +38,42 @@ export function HealthBar({ health, total }: { health: Record<Health, number>; t
   )
 }
 
+export interface StackSegment {
+  key: string
+  count: number
+  color: string
+  label: string
+}
+
+/**
+ * Any set of counted groups as one stacked bar.
+ *
+ * HealthBar was this shape hard-wired to three health states; the skills and
+ * crons catalogs group by other things entirely, and a second copy of the same
+ * six lines would eventually disagree about rounding. The legend beside it
+ * carries the exact counts, so this only has to keep the ratio legible.
+ */
+export function StackBar({ segments }: { segments: StackSegment[] }) {
+  const total = segments.reduce((n, s) => n + s.count, 0)
+  let x = 0
+  return (
+    <svg
+      viewBox="0 0 100 3"
+      preserveAspectRatio="none"
+      style={{ width: '100%', height: 6, display: 'block', borderRadius: 3, overflow: 'hidden' }}
+      role="img"
+      aria-label={segments.map((s) => `${s.count} ${s.label}`).join(', ')}
+    >
+      {segments.map((s) => {
+        const w = total > 0 ? (s.count / total) * 100 : 0
+        const el = <rect key={s.key} x={x} y={0} width={w} height={3} fill={s.color} />
+        x += w
+        return el
+      })}
+    </svg>
+  )
+}
+
 /** A single spec's status as a 3px rail. Sits in a list row without adding height. */
 export function HealthDot({ health }: { health: Health }) {
   return (

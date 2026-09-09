@@ -130,6 +130,84 @@ export function highlightCode(code: string, lang: string): Span[][] {
 }
 
 /**
+ * Markdown as coloured spans, for the skill bodies.
+ *
+ * A skill is a document, not a program: there is no token stream to colour it
+ * from, so this is the same honest regex pass the generated-code highlighter
+ * is — presentation only, nothing downstream depends on it. Fenced blocks are
+ * handed to `highlightCode` with the fence's own language, so a shell recipe
+ * inside a skill reads the way it reads on the /specs page.
+ */
+export function highlightMarkdown(text: string): Span[][] {
+  const lines = text.split('\n')
+  const out: Span[][] = []
+  let fence: { lang: string; body: string[]; open: string } | null = null
+
+  const flush = () => {
+    if (!fence) return
+    const coloured = highlightCode(fence.body.join('\n'), fence.lang)
+    // An empty fenced block yields one empty line from split; keep the shape.
+    for (const line of fence.body.length ? coloured : [[{ text: '', cls: 'plain' as Cls }]]) out.push(line)
+    fence = null
+  }
+
+  for (const raw of lines) {
+    const fenceMatch = raw.match(/^\s*(```+|~~~+)\s*([A-Za-z0-9_+-]*)\s*$/)
+    if (fence) {
+      if (fenceMatch && fenceMatch[1][0] === fence.open[0] && fenceMatch[1].length >= fence.open.length) {
+        flush()
+        out.push([{ text: raw, cls: 'punct' }])
+      } else {
+        fence.body.push(raw)
+      }
+      continue
+    }
+    if (fenceMatch) {
+      fence = { lang: fenceMatch[2].toLowerCase(), body: [], open: fenceMatch[1] }
+      out.push([{ text: raw, cls: 'punct' }])
+      continue
+    }
+    out.push(markdownLine(raw))
+  }
+  flush()
+  return out
+}
+
+/** One line of prose: headings, list bullets, quotes, inline code, links, emphasis. */
+function markdownLine(line: string): Span[] {
+  if (/^\s{0,3}#{1,6}\s/.test(line)) return [{ text: line, cls: 'kw' }]
+  if (/^\s*(---+|===+|\*\*\*+)\s*$/.test(line)) return [{ text: line, cls: 'punct' }]
+  if (/^\s*>/.test(line)) return [{ text: line, cls: 'comment' }]
+  // The frontmatter block reads as key/value pairs; colour the key like one.
+  const kv = line.match(/^([A-Za-z_][\w-]*)(:\s*)(.*)$/)
+  if (kv && kv[3] !== '') return [{ text: kv[1], cls: 'type' }, { text: kv[2], cls: 'punct' }, ...inlineSpans(kv[3])]
+
+  const bullet = line.match(/^(\s*(?:[-*+]|\d+\.)\s+)(.*)$/)
+  if (bullet) return [{ text: bullet[1], cls: 'op' }, ...inlineSpans(bullet[2])]
+  return inlineSpans(line)
+}
+
+function inlineSpans(text: string): Span[] {
+  const out: Span[] = []
+  // Inline code first: everything inside backticks is literal and must not be
+  // re-read as emphasis or a link.
+  const re = /(`[^`]*`|\[[^\]]*\]\([^)\s]*\)|https?:\/\/\S+|\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*)/g
+  let last = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push({ text: text.slice(last, m.index), cls: 'plain' })
+    const tok = m[0]
+    if (tok.startsWith('`')) out.push({ text: tok, cls: 'str' })
+    else if (tok.startsWith('http')) out.push({ text: tok, cls: 'num' })
+    else if (tok.startsWith('[')) out.push({ text: tok, cls: 'ident' })
+    else out.push({ text: tok, cls: 'type' })
+    last = m.index + tok.length
+  }
+  if (last < text.length) out.push({ text: text.slice(last), cls: 'plain' })
+  return out.length ? out : [{ text, cls: 'plain' }]
+}
+
+/**
  * Built from the site's own tokens rather than a stock editor theme.
  *
  * `--accent` (#00FF88) and `--golden` (#FFD700) are the two colours the rest of

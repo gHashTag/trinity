@@ -14,7 +14,10 @@ export const ROUTES = [
   '', 'gft', 'start', 'select', 'verification', 'ip', 'proof', 'blog',
   'cases', 'course', 'resources', 'formats', 'ladder', 'theorems', 'bounds',
   'landscape', 'reproduce', 'about', 'queen', 'dashboard', 'tree', 'play',
-  'chat', 'quantum', 'lab', 'canvas', 'wasm', 'specs',
+  'chat', 'quantum', 'lab', 'canvas', 'wasm', 'specs', 'skills', 'crons',
+  // Signed out, /clients renders only its sign-in screen — which is exactly
+  // what an audit should see: no credential, no data, fully dictionary-driven.
+  'clients',
 ]
 
 const CHROME_CANDIDATES = [

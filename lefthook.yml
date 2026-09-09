@@ -13,6 +13,9 @@ pre-commit:
     queen-bilingual-contract:
       root: "apps/website/"
       run: npm run check:queen-languages
+    explorer-bilingual-contract:
+      root: "apps/website/"
+      run: npm run check:explorer-languages
 
 pre-push:
   commands:
