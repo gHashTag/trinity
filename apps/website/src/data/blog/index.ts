@@ -3,6 +3,34 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'merge-diff-ci-boundaries',
+    title: 'A merged diff was not one CI verdict',
+    summary: '[measured] Merged PR #975 changed 85 files with 4,154 additions and 58 deletions; the receipts still need to be kept separate from interface correctness and live delivery.',
+    date: '2026-09-09',
+    readingMinutes: 4,
+    tags: ['Reproducibility', 'CI', 'Web', 'Spec-first'],
+    receipts: [
+      { label: 'Merged PR #975 — spec-first SKILLS and CRONS website explorers', href: 'https://github.com/gHashTag/trinity/pull/975' },
+      { label: 'Merge commit 479743ff — 85 files, 4,154 additions, 58 deletions', href: 'https://github.com/gHashTag/trinity/commit/479743ffb11520d6c63b9483ba25b1e543f40247' },
+      { label: 'Public commit API — reproducible diff statistics', href: 'https://api.github.com/repos/gHashTag/trinity/commits/479743ffb11520d6c63b9483ba25b1e543f40247' },
+    ],
+    openQuestions: [
+      'The exact correctness of every new explorer, interface, and generated specification was not independently rerun in this blog run.',
+      'Merge and diff receipts do not establish a cause for any CI status without the relevant workflow and step logs.',
+      'A repository merge does not establish delivery to the live static page; that needs its own URL check.',
+    ],
+    published: true,
+    ru: {
+      title: 'Смерженный diff не был одним вердиктом CI',
+      summary: '[измерено] Смерженный PR #975 изменил 85 файлов: 4 154 строки добавлены, 58 удалены; эти квитанции всё равно нужно отделять от корректности интерфейсов и доставки на живой сайт.',
+      openQuestions: [
+        'Точная корректность каждого нового обозревателя, интерфейса и сгенерированной спецификации в этом запуске блога независимо не повторялась.',
+        'Merge и статистика diff не устанавливают причину какого-либо статуса CI без журналов соответствующего workflow и его шагов.',
+        'Слияние в репозитории не устанавливает доставку на живую статическую страницу; это требует отдельной проверки URL.',
+      ],
+    },
+  },
+  {
     slug: 'four-languages-one-tri-extension',
     title: 'Four languages shared one .tri extension',
     summary: '[reported in merged PR #793] The VIBEE generator now names Markdown, TOML, and t27 inputs instead of silently treating them as empty VIBEE modules, while unrecognised files retain the old fall-through.',
