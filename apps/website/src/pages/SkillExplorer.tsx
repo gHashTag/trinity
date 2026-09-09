@@ -19,6 +19,9 @@ import { useHashParams } from '../hooks/useHashParams'
 import { ExplorerHeader } from '../components/ExplorerHeader'
 import { ExplorerLibrary, type ExplorerItem } from '../components/ExplorerLibrary'
 import { SpecCodeView } from '../components/SpecCodeView'
+import { AgentSpecPanel } from '../components/AgentSpecPanel'
+import { loadSkillSpecs, type SkillSpecCatalog, type SkillSpecEntry } from '../lib/agentSpecs'
+import { cronExplorerHash } from '../lib/cronsCatalog'
 import { SkillSpecChips } from '../components/SpecChips'
 import { StackBar } from '../components/SpecGraphics'
 import { C, panelBox, pill, tagChip, type Health } from '../lib/explorerTheme'
@@ -57,6 +60,7 @@ const UI = {
     linkBound: 'Bound',
     linkUnbound: 'No spec',
     linkBroken: 'Broken',
+    layerSpec: 'Spec',
     layerSource: 'Skill',
     layerFrontmatter: 'Frontmatter',
     layerOutline: 'Outline',
@@ -130,6 +134,7 @@ const UI = {
     linkBound: 'Со спекой',
     linkUnbound: 'Без спеки',
     linkBroken: 'Битые',
+    layerSpec: 'Спека',
     layerSource: 'Скил',
     layerFrontmatter: 'Шапка',
     layerOutline: 'Оглавление',
@@ -186,7 +191,9 @@ const UI = {
 
 type Ui = Record<keyof typeof UI.en, string>
 
-const LAYERS = ['source', 'frontmatter', 'outline', 'specs', 'coverage'] as const
+// The spec is the statement and comes first; the skill file is the code it
+// is a witness for.
+const LAYERS = ['spec', 'source', 'frontmatter', 'outline', 'specs', 'coverage'] as const
 type LayerId = (typeof LAYERS)[number]
 
 const TAG_FAMILIES = [
@@ -196,7 +203,15 @@ const TAG_FAMILIES = [
   { prefix: 'has/', label: 'contains' },
   { prefix: 'issue/', label: 'problems' },
   { prefix: 'size/', label: 'size' },
+  { prefix: 'witness/', label: 'witness' },
+  { prefix: 'enabled/', label: 'enabled' },
 ]
+
+/** Spec-side tags: the witness that backs the card and whether its spec says it is on. */
+function specTags(spec: SkillSpecEntry | undefined): string[] {
+  if (!spec) return ['witness/code-only']
+  return [`witness/${spec.witness}`, `enabled/${spec.fields.ENABLED ? 'true' : 'false'}`]
+}
 
 const LINK_COLOR: Record<string, string> = { bound: C.accent, unbound: C.warn, broken: C.bad }
 
@@ -219,6 +234,7 @@ export default function SkillExplorer() {
 
   const [manifest, setManifest] = useState<SkillsManifest | null>(null)
   const [core, setCore] = useState<SkillsCore | null>(null)
+  const [specs, setSpecs] = useState<SkillSpecCatalog | null>(null)
   const [selected, setSelected] = useState<SkillEntry | null>(null)
   const [source, setSource] = useState('')
   const [verified, setVerified] = useState(false)
@@ -254,7 +270,7 @@ export default function SkillExplorer() {
       setVerified(false)
       setErr(null)
       setOpenSpec(null)
-      setLayer('source')
+      setLayer('spec')
       setBusy(true)
       try {
         params.set(skillExplorerHash(entry.id, { embedded, sha256: pinned }))
@@ -295,6 +311,9 @@ export default function SkillExplorer() {
     loadSkillsCore()
       .then((c) => alive && setCore(c))
       .catch(() => {/* the coverage layer says so on its own */})
+    loadSkillSpecs()
+      .then((c) => alive && setSpecs(c))
+      .catch(() => {/* the spec layer says code-only on its own */})
     return () => {
       alive = false
     }
@@ -305,42 +324,54 @@ export default function SkillExplorer() {
   // `?? []` creates a new array on every render, which would make every useMemo
   // below re-run for nothing.
   const skills = useMemo(() => manifest?.skills ?? [], [manifest])
+  const specById = useMemo(() => new Map((specs?.skills ?? []).map((s) => [s.id, s])), [specs])
+  const tagsOf = useCallback((s: SkillEntry) => [...s.tags, ...specTags(specById.get(s.id))], [specById])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return skills.filter((s) => {
       if (repo && s.repo !== repo) return false
       if (linkFilter !== 'all' && s.link !== linkFilter) return false
-      if (tagSel.length && !tagSel.every((t) => s.tags.includes(t))) return false
+      if (tagSel.length) {
+        const tags = tagsOf(s)
+        if (!tagSel.every((t) => tags.includes(t))) return false
+      }
       if (!q) return true
+      const spec = specById.get(s.id)
       return (
         s.id.toLowerCase().includes(q) ||
         s.name.toLowerCase().includes(q) ||
         s.description.toLowerCase().includes(q) ||
-        s.specsDeclared.some((p) => p.toLowerCase().includes(q))
+        s.specsDeclared.some((p) => p.toLowerCase().includes(q)) ||
+        (spec ? `${Object.values(spec.summary).join(' ')} ${spec.fields.COMMAND}`.toLowerCase().includes(q) : false)
       )
     })
-  }, [skills, query, repo, linkFilter, tagSel])
+  }, [skills, query, repo, linkFilter, tagSel, tagsOf, specById])
 
   const tagCounts = useMemo(() => {
     const acc: Record<string, number> = {}
-    for (const s of filtered) for (const t of s.tags) acc[t] = (acc[t] ?? 0) + 1
+    for (const s of filtered) for (const t of tagsOf(s)) acc[t] = (acc[t] ?? 0) + 1
     for (const t of Object.keys(manifest?.tags ?? {})) acc[t] = acc[t] ?? 0
     return acc
-  }, [filtered, manifest])
+  }, [filtered, manifest, tagsOf])
 
   const items: ExplorerItem[] = useMemo(
     () =>
-      filtered.map((s) => ({
-        id: s.id,
-        title: s.name || s.dir,
-        subtitle: `${s.repo}/${s.dir}`,
-        badge: s.id === manifest?.featured ? 'START HERE' : undefined,
-        health: s.health as Health,
-        tags: s.tags,
-        haystack: `${s.id} ${s.name} ${s.description}`.toLowerCase(),
-      })),
-    [filtered, manifest],
+      filtered.map((s) => {
+        const spec = specById.get(s.id)
+        // ◷ N: how many jobs' RUNS name this skill. START HERE keeps priority.
+        const runBy = spec && spec.runBy.length > 0 ? `◷ ${spec.runBy.length}` : undefined
+        return {
+          id: s.id,
+          title: s.name || s.dir,
+          subtitle: `${s.repo}/${s.dir}`,
+          badge: s.id === manifest?.featured ? 'START HERE' : runBy,
+          health: s.health as Health,
+          tags: tagsOf(s),
+          haystack: `${s.id} ${s.name} ${s.description}`.toLowerCase(),
+        }
+      }),
+    [filtered, manifest, specById, tagsOf],
   )
 
   const linkCounts = useMemo(() => {
@@ -522,7 +553,7 @@ export default function SkillExplorer() {
                       {verified ? ` · ${ui.verified}` : ''}
                     </div>
                     <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                      {selected.tags.map((t) => (
+                      {tagsOf(selected).map((t) => (
                         <button
                           key={t}
                           onClick={() => setTagSel((prev) => (prev.includes(t) ? prev : [...prev, t]))}
@@ -559,9 +590,12 @@ export default function SkillExplorer() {
                   {LAYERS.map((id) => {
                     const active = layer === id
                     const label =
-                      id === 'source' ? ui.layerSource : id === 'frontmatter' ? ui.layerFrontmatter : id === 'outline' ? ui.layerOutline : id === 'specs' ? ui.layerSpecs : ui.layerCoverage
+                      id === 'spec' ? ui.layerSpec : id === 'source' ? ui.layerSource : id === 'frontmatter' ? ui.layerFrontmatter : id === 'outline' ? ui.layerOutline : id === 'specs' ? ui.layerSpecs : ui.layerCoverage
+                    const spec = specById.get(selected.id)
                     const badge =
-                      id === 'outline'
+                      id === 'spec'
+                        ? spec ? (spec.runBy.length ? `◷ ${spec.runBy.length}` : '') : '·'
+                        : id === 'outline'
                         ? String(selected.headings.length)
                         : id === 'specs'
                           ? String(selected.specRefs.length)
@@ -604,6 +638,20 @@ export default function SkillExplorer() {
                     style={{ ...box, flex: 1, minHeight: 0, borderTopLeftRadius: 0, ...(phone ? { overflow: 'visible' } : null) }}
                   >
                     <div className="spec-x-swap" key={`${selected.id}:${layer}`}>
+                      {layer === 'spec' && (
+                        <div style={{ padding: 14 }}>
+                          <AgentSpecPanel
+                            lang={lang === 'ru' ? 'ru' : 'en'}
+                            kind="skill"
+                            id={selected.id}
+                            entry={specById.get(selected.id) ?? null}
+                            embedded={embedded}
+                            i18n={specs?.i18n ?? []}
+                            links={(specById.get(selected.id)?.runBy ?? []).map((id) => ({ id, ok: true, href: cronExplorerHash(id, { embedded }) }))}
+                          />
+                        </div>
+                      )}
+
                       {layer === 'source' && (
                         <SpecCodeView
                           lines={lines}

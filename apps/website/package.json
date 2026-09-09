@@ -14,8 +14,8 @@
     "check:spec-catalog": "node --experimental-strip-types qa/spec-catalog-contract.mjs",
     "core": "node scripts/spec-core.mjs",
     "check:shared-core": "node --experimental-strip-types qa/shared-spec-core.mjs",
-    "prebuild": "npm run core -- index && node scripts/skills-core.mjs index",
-    "prebuild:ci": "npm run core -- index && node scripts/skills-core.mjs index",
+    "prebuild": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs",
+    "prebuild:ci": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs",
     "dev": "vite",
     "build": "vite build",
     "build:ci": "vite build",
@@ -64,7 +64,9 @@
     "check:clients-console": "node --experimental-strip-types qa/clients-console-contract.mjs",
     "check:explorer-languages": "node qa/explorer-language-contract.mjs",
     "test:sync-skills": "node --test scripts/sync-skills.test.mjs scripts/skills-core.test.mjs",
-    "test:sync-crons": "node --test scripts/sync-crons.test.mjs"
+    "test:sync-crons": "node --test scripts/sync-crons.test.mjs",
+    "check:agents": "node --experimental-strip-types qa/agents-spec-contract.mjs",
+    "test:agents-specs": "node --test scripts/agents-from-specs.test.mjs"
   },
   "dependencies": {
     "@babylonjs/core": "^9.25.0",

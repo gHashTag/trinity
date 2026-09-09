@@ -7,13 +7,20 @@
 // derivable from these types, the number does not exist yet and the panel
 // must say so rather than invent it.
 
-export type HudView = "comb" | "kanban" | "map" | "factory" | "research" | "specs";
+export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons";
+// In command-panel order: the digit that opens a view is its position here,
+// and `?tab=` accepts exactly these names. Kept identical to lib/queenModules
+// (qa/agents-spec-contract.mjs checks the two lists agree), so SPECS is the
+// second entry rather than an afterthought the keyboard could not reach.
 export const HUD_VIEWS: readonly HudView[] = [
   "comb",
+  "specs",
   "kanban",
   "map",
   "factory",
   "research",
+  "skills",
+  "crons",
 ] as const;
 
 export type Territory = "held" | "neutral" | "fog";

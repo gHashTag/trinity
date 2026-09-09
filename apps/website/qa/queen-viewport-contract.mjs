@@ -322,7 +322,7 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       const dead = !!document.querySelector('#stat-status.is-cold');
       const rows = document.querySelectorAll('.queen27-sectors-row').length;
       const data = ${DEAD} ? dead : (live || rows === 6);
-      return round && data && document.querySelectorAll('.queen27-hud-cmd').length === 5;
+      return round && data && document.querySelectorAll('.queen27-hud-cmd').length === 8;
     })()`);
     if (ready) break;
     await wait(250);
@@ -348,8 +348,9 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     const { fail, counts } = result;
     const zero = [];
     if (counts.shell !== 1) zero.push('shell');
-    // six command views since the SPECS view joined the panel (origin/main a308aa8bc); the gate follows the panel it counts
-    if (counts.commands !== 6) zero.push(`commands=${counts.commands}`);
+    // eight command views: SPECS joined at origin/main a308aa8bc, SKILLS and CRONS with the spec-first agents catalog;
+    // the gate follows the panel it counts (src/components/queenHud.ts HUD_VIEWS)
+    if (counts.commands !== 8) zero.push(`commands=${counts.commands}`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
     if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
     if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);

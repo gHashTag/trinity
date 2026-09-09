@@ -439,3 +439,7 @@ fpga-flash
 # Enumerating them one by one was tried first and is whack-a-mole: the widened
 # corpus immediately hit three more.
 !apps/website/public/t27/**
+
+# apps/website/docs: hand-written contracts for the website (e.g. the optional
+# agent control API), not generated reports; the *.md rule above would drop them.
+!apps/website/docs/**

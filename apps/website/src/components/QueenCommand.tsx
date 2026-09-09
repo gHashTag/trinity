@@ -1,10 +1,11 @@
 import type { HudView } from "./queenHud";
 
-// The COMMAND PANEL of the one-screen HUD: five view switches stacked down the
+// The COMMAND PANEL of the one-screen HUD: the view switches (one per entry in
+// HUD_VIEWS, eight today) stacked down the
 // left edge (or, on a phone, laid out as an icon row inside the bottom bar) and
 // a collapse toggle. Switching a view is the only thing a button here does;
 // nothing acts on the Queen. The digit shown on each button is the keyboard
-// shortcut the shell binds (1-5), not a figure from the wire.
+// shortcut the shell binds (1-8, its position in HUD_VIEWS), not a figure from the wire.
 
 export interface CommandItem {
   view: HudView;

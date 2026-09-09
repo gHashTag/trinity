@@ -17,6 +17,9 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { useHashParams } from '../hooks/useHashParams'
 import { ExplorerHeader } from '../components/ExplorerHeader'
 import { ExplorerLibrary, type ExplorerItem } from '../components/ExplorerLibrary'
+import { AgentSpecPanel } from '../components/AgentSpecPanel'
+import { loadCronSpecs, type CronSpecCatalog, type CronSpecEntry } from '../lib/agentSpecs'
+import { skillExplorerHash } from '../lib/skillsCatalog'
 import { C, panelBox, pill, tagChip, type Health } from '../lib/explorerTheme'
 import { canonicalCronUrl, cronExplorerHash, describeCron, describeInterval, nextRuns, resolveManifestCron } from '../lib/cronsCatalog'
 import { loadCronsManifest, type CronEntry, type CronsManifest } from '../lib/cronsLoader'
@@ -148,7 +151,19 @@ const TAG_FAMILIES = [
   { prefix: 'host/', label: 'host' },
   { prefix: 'repo/', label: 'repository' },
   { prefix: 'health/', label: 'health' },
+  { prefix: 'witness/', label: 'witness' },
+  { prefix: 'enabled/', label: 'enabled' },
 ]
+
+/**
+ * The spec-side tags a card gains: which witness backs it and whether its spec
+ * says it is on. Derived here so the library's tag panel doubles as the
+ * witness / enabled filter without a second widget.
+ */
+function specTags(spec: CronSpecEntry | undefined): string[] {
+  if (!spec) return ['witness/code-only']
+  return [`witness/${spec.witness}`, `enabled/${spec.fields.ENABLED ? 'true' : 'false'}`]
+}
 
 const HEALTH_COLOR: Record<Health, string> = { ok: C.accent, warn: C.warn, fail: C.bad }
 
@@ -168,6 +183,7 @@ export default function CronExplorer() {
   const embedded = params.embedded
 
   const [manifest, setManifest] = useState<CronsManifest | null>(null)
+  const [specs, setSpecs] = useState<CronSpecCatalog | null>(null)
   const [selected, setSelected] = useState<CronEntry | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [query, setQuery] = useState('')
@@ -218,6 +234,9 @@ export default function CronExplorer() {
         setErr(String(e instanceof Error ? e.message : e))
         setPane('detail')
       })
+    loadCronSpecs()
+      .then((c) => alive && setSpecs(c))
+      .catch(() => {/* the spec panel says code-only on its own */})
     return () => {
       alive = false
     }
@@ -228,30 +247,37 @@ export default function CronExplorer() {
   // `?? []` creates a new array on every render, which would make every useMemo
   // below re-run for nothing.
   const crons = useMemo(() => manifest?.crons ?? [], [manifest])
+  const specById = useMemo(() => new Map((specs?.crons ?? []).map((c) => [c.id, c])), [specs])
+  const tagsOf = useCallback((c: CronEntry) => [...c.tags, ...specTags(specById.get(c.id))], [specById])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return crons.filter((c) => {
       if (kind && c.kind !== kind) return false
       if (healthFilter !== 'all' && c.health !== healthFilter) return false
-      if (tagSel.length && !tagSel.every((t) => c.tags.includes(t))) return false
+      if (tagSel.length) {
+        const tags = tagsOf(c)
+        if (!tagSel.every((t) => tags.includes(t))) return false
+      }
       if (!q) return true
+      const spec = specById.get(c.id)
       return (
         c.id.toLowerCase().includes(q) ||
         c.name.toLowerCase().includes(q) ||
         c.what.toLowerCase().includes(q) ||
         (c.where.file ?? '').toLowerCase().includes(q) ||
-        (c.schedule.expr ?? '').includes(q)
+        (c.schedule.expr ?? '').includes(q) ||
+        (spec ? `${Object.values(spec.summary).join(' ')} ${spec.runs.join(' ')}`.toLowerCase().includes(q) : false)
       )
     })
-  }, [crons, query, kind, healthFilter, tagSel])
+  }, [crons, query, kind, healthFilter, tagSel, tagsOf, specById])
 
   const tagCounts = useMemo(() => {
     const acc: Record<string, number> = {}
-    for (const c of filtered) for (const t of c.tags) acc[t] = (acc[t] ?? 0) + 1
+    for (const c of filtered) for (const t of tagsOf(c)) acc[t] = (acc[t] ?? 0) + 1
     for (const t of Object.keys(manifest?.tags ?? {})) acc[t] = acc[t] ?? 0
     return acc
-  }, [filtered, manifest])
+  }, [filtered, manifest, tagsOf])
 
   const scheduleText = useCallback(
     (entry: CronEntry): string => {
@@ -265,15 +291,21 @@ export default function CronExplorer() {
 
   const items: ExplorerItem[] = useMemo(
     () =>
-      filtered.map((c) => ({
-        id: c.id,
-        title: c.name,
-        subtitle: `${kindLabel(c.kind, ui)} · ${scheduleText(c)}`,
-        health: c.health,
-        tags: c.tags,
-        haystack: `${c.id} ${c.name} ${c.what}`.toLowerCase(),
-      })),
-    [filtered, scheduleText, ui],
+      filtered.map((c) => {
+        const spec = specById.get(c.id)
+        return {
+          id: c.id,
+          title: c.name,
+          subtitle: `${kindLabel(c.kind, ui)} · ${scheduleText(c)}`,
+          // ⟲ N: how many skills the spec's RUNS names. Absent when none.
+          badge: spec && spec.runs.length > 0 ? `⟲ ${spec.runs.length}` : undefined,
+          badgeColor: spec && spec.runsResolved.some((r) => !r.ok) ? C.bad : undefined,
+          health: c.health,
+          tags: tagsOf(c),
+          haystack: `${c.id} ${c.name} ${c.what}`.toLowerCase(),
+        }
+      }),
+    [filtered, scheduleText, ui, specById, tagsOf],
   )
 
   const runs = useMemo(() => {
@@ -417,6 +449,22 @@ export default function CronExplorer() {
                   </span>
                 </div>
 
+                {/* The spec comes first: it is the statement; the boxes below
+                    are what the code scan saw. */}
+                <AgentSpecPanel
+                  lang={short}
+                  kind="cron"
+                  id={selected.id}
+                  entry={specById.get(selected.id) ?? null}
+                  embedded={embedded}
+                  i18n={specs?.i18n ?? []}
+                  links={(specById.get(selected.id)?.runsResolved ?? []).map((r) => ({
+                    id: r.id,
+                    ok: r.ok,
+                    href: r.ok ? skillExplorerHash(r.id, { embedded }) : '#',
+                  }))}
+                />
+
                 <div style={{ ...box, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{ui.schedule}</div>
                   <div style={{ fontSize: 16, color: C.accent }}>{scheduleText(selected)}</div>
@@ -484,7 +532,7 @@ export default function CronExplorer() {
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 4 }}>
-                    {selected.tags.map((t) => (
+                    {tagsOf(selected).map((t) => (
                       <button
                         key={t}
                         onClick={() => setTagSel((prev) => (prev.includes(t) ? prev : [...prev, t]))}

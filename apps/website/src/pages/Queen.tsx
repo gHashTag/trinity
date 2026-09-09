@@ -10,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
+import { QueenAgents } from "../components/QueenAgents";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
@@ -299,6 +300,21 @@ const COPY = {
     combHint: "The board as a field of marks",
     specsView: "SPECS",
     specsHint: "The corpus she is generated from",
+    skillsView: "SKILLS",
+    skillsHint: "Agent skills, each stated by a .t27 spec",
+    cronsView: "CRONS",
+    cronsHint: "Scheduled jobs, each stated by a .t27 spec",
+    skillsDirective: "SKILLS ARE SPECS",
+    skillsDirectiveBody:
+      "An agent skill exists when a .t27 spec under specs/skills states it; the SKILL.md in the repository is the code that witnesses it. The catalog is generated from the specs through the compiler at build time. A card with both is spec+code; a card with code alone is code-only and says so. ENABLED is read from the spec and changed there, not on this page.",
+    cronsDirective: "CRONS ARE SPECS",
+    cronsDirectiveBody:
+      "A scheduled job exists when a .t27 spec under specs/crons states it: host, schedule, what it runs, what happens on failure, whether it is on. The workflow, Inngest function or timer the sync script found is the witness. “Run now” goes to the host that owns the job; a timer inside a process has no outside handle and the card says so. No live control plane is deployed.",
+    agentsLoading: "Loading the Explorer…",
+    agentsSpecs: "specs",
+    agentsSpecCode: "spec+code",
+    agentsCodeOnly: "code-only",
+    agentsTypecheck: "typecheck ok",
     specsTitle: "SPEC CORPUS",
     specsDirective: "STANDING DIRECTIVE",
     specsDirectiveBody:
@@ -560,6 +576,21 @@ const COPY = {
     combHint: "Доска как поле из меток",
     specsView: "СПЕКИ",
     specsHint: "Корпус, из которого её порождают",
+    skillsView: "СКИЛЛЫ",
+    skillsHint: "Скиллы агентов, каждый заявлен спекой .t27",
+    cronsView: "КРОНЫ",
+    cronsHint: "Расписания, каждое заявлено спекой .t27",
+    skillsDirective: "СКИЛЛЫ — ЭТО СПЕКИ",
+    skillsDirectiveBody:
+      "Скилл агента существует, когда его заявляет спека .t27 в specs/skills; SKILL.md в репозитории — код, который это свидетельствует. Каталог порождается из спек через компилятор при сборке. Карточка с тем и другим — «спека+код»; карточка только с кодом — «только код», и она об этом говорит. ENABLED читается из спеки и меняется там, а не на этой странице.",
+    cronsDirective: "КРОНЫ — ЭТО СПЕКИ",
+    cronsDirectiveBody:
+      "Задание по расписанию существует, когда его заявляет спека .t27 в specs/crons: хост, расписание, что запускает, что при сбое, включено ли. Workflow, функция Inngest или таймер, найденные скриптом синхронизации, — свидетель. «Запустить сейчас» ведёт к хосту, которому задание принадлежит; у таймера внутри процесса внешней ручки нет, и карточка так и говорит. Живой контур управления не развёрнут.",
+    agentsLoading: "Загружаем Обозреватель…",
+    agentsSpecs: "спек",
+    agentsSpecCode: "спека+код",
+    agentsCodeOnly: "только код",
+    agentsTypecheck: "типизация ок",
     specsTitle: "КОРПУС СПЕК",
     specsDirective: "ПОСТОЯННАЯ ДИРЕКТИВА",
     specsDirectiveBody:
@@ -1850,13 +1881,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     () => new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("embed") === "1",
     [],
   );
-  const [boardView, setBoardView] = useState<
-    "kanban" | "map" | "factory" | "comb" | "research" | "specs"
-  >(() => {
+  // HudView is the one list of views (src/components/queenHud.ts); `?tab=`
+  // accepts exactly its names and the digit keys index it.
+  const [boardView, setBoardView] = useState<HudView>(() => {
     const asked = new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("tab");
-    return (HUD_VIEWS as readonly string[]).includes(asked ?? "")
-      ? (asked as "kanban" | "map" | "factory" | "comb" | "research" | "specs")
-      : "comb";
+    return (HUD_VIEWS as readonly string[]).includes(asked ?? "") ? (asked as HudView) : "comb";
   });
   const view: HudView = boardView;
   const now = useNow();
@@ -2201,6 +2230,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     { view: "map" as const, glyph: "⌘", label: c.mapView, hint: c.mapHint },
     { view: "factory" as const, glyph: "⚙", label: c.factoryView, hint: c.factoryHint },
     { view: "research" as const, glyph: "◈", label: c.tech, hint: c.researchHint },
+    // Seventh and eighth: the agents' skills and schedules, each a catalog
+    // generated from .t27 specs, opened whole like the corpus is.
+    { view: "skills" as const, glyph: "⟁", label: c.skillsView, hint: c.skillsHint },
+    { view: "crons" as const, glyph: "◷", label: c.cronsView, hint: c.cronsHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -2584,6 +2617,21 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 clean: c.specsClean,
                 warnings: c.specsWarnings,
                 broken: c.specsBroken,
+              }}
+            />
+          ) : boardView === "skills" || boardView === "crons" ? (
+            <QueenAgents
+              kind={boardView}
+              showDirective={isNarrow}
+              c={{
+                directive: boardView === "skills" ? c.skillsDirective : c.cronsDirective,
+                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : c.cronsDirectiveBody,
+                open: c.specsOpen,
+                loading: c.agentsLoading,
+                specs: c.agentsSpecs,
+                specPlusCode: c.agentsSpecCode,
+                codeOnly: c.agentsCodeOnly,
+                typecheck: c.agentsTypecheck,
               }}
             />
           ) : boardView === "comb" ? (
@@ -2983,7 +3031,15 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       ) : (
         <aside
           className={`queen27-hud-intel${intelExpanded ? " is-expanded" : ""}`}
-          aria-label={boardView === "specs" ? c.specsDirective : c.hudIntel}
+          aria-label={
+            boardView === "specs"
+              ? c.specsDirective
+              : boardView === "skills"
+                ? c.skillsDirective
+                : boardView === "crons"
+                  ? c.cronsDirective
+                  : c.hudIntel
+          }
         >
           {/* The overview sits above her, stowed: a row that opens when the board
               is the question and stays out of the way when the Queen is. */}
