@@ -6161,6 +6161,15 @@ body.queen-shell .queen-starfield-source {
   backdrop-filter: none;
 }
 
+/* And so is the Queen's column when she is hidden. Collapsed it is a button on
+   an otherwise empty strip — its background is already transparent — but a
+   backdrop-filter blurs what is behind it whether it paints anything or not, so
+   the map carried a soft vertical band down the side of the screen with nothing
+   drawn on it. Frosting belongs to a panel, and with her hidden there is none. */
+.queen27-page.is-shell .queen27-hud-intel:has(> .queen-chat-tab) {
+  backdrop-filter: none;
+}
+
 /* The cell's card in the HUD's own colours.
    It came from the world pages and kept their palette — white body type, teal
    borders, 40px buttons — which over the map read as a different program's
