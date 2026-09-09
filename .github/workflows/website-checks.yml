@@ -83,6 +83,27 @@ jobs:
       - name: Silicon coverage
         run: npm run check:silicon
 
+      # The three catalogs behind the Explorer tabs. Each is generated from an
+      # artifact -- the spec corpus, the skill files, the source of every
+      # scheduled job -- so each gets a gate that re-reads the artifact rather
+      # than trusting the committed JSON.
+      - name: Skill catalog
+        run: npm run check:skills-catalog
+      - name: Cron catalog
+        run: npm run check:crons-catalog
+      # The console reads one person's correspondence in a browser tab. This
+      # asserts the four properties that keep that from being a leak: no service
+      # key anywhere under src/, exactly one identity header per request, three
+      # endpoints only, and no tool that can send.
+      - name: Clients console cannot send
+        run: npm run check:clients-console
+      # The Explorer pages carry their own en/ru dictionaries instead of the
+      # site catalogues, and a locale that gains a key alone rots silently.
+      - name: Explorer languages
+        run: npm run check:explorer-languages
+      - name: Catalog generators
+        run: npm run test:sync-skills && npm run test:sync-crons
+
       - name: Build
         run: npx vite build
 
