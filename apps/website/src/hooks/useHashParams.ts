@@ -18,5 +18,7 @@ export function useHashParams() {
   const set = useCallback((hash: string) => {
     window.history.replaceState(null, '', hash)
   }, [])
-  return { get, set, embedded: initial.get('embed') === '1' }
+  // Memoised: the pages hold callbacks that close over this object, and a new
+  // identity on every render would rebuild every one of them for nothing.
+  return useMemo(() => ({ get, set, embedded: initial.get('embed') === '1' }), [get, set, initial])
 }

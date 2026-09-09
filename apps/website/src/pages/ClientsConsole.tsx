@@ -308,10 +308,12 @@ export default function ClientsConsole() {
 
   useEffect(() => {
     if (kind) void load()
-    // The credential decides whether anything loads at all; the filter reload
-    // is driven by the Refresh button so a typing pause never fires a request.
+    // The credential decides whether anything loads at all, and the segment is
+    // a SERVER-side filter -- it selects across the whole base, not within the
+    // fifty rows already in hand -- so changing it has to fetch. The search box
+    // and the chip filters are client-side and deliberately do not.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind])
+  }, [kind, segment])
 
   const open = useCallback(
     async (lead: Lead) => {
@@ -391,9 +393,9 @@ export default function ClientsConsole() {
 
   const record = useCallback(async () => {
     if (!selected) return
-    const who = selected.display || selected.lead
+    const person = selected.display || selected.lead
     const kindLabel = label(TOUCH_LABEL, touchKind, short)
-    if (!window.confirm(ui.touchConfirm.replace('{kind}', kindLabel).replace('{who}', who))) return
+    if (!window.confirm(ui.touchConfirm.replace('{kind}', kindLabel).replace('{who}', person))) return
     if (touchKind === 'refused' && !window.confirm(ui.refuseTwice)) return
     try {
       await callTool('crm_touch', { telegram_id: selected.lead, kind: touchKind, note: touchNote })

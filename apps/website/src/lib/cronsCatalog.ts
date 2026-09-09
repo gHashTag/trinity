@@ -44,8 +44,8 @@ function field(spec: string, min: number, max: number): Set<number> | null {
     const m = part.match(/^(\*|\d+)(?:-(\d+))?(?:\/(\d+))?$/)
     if (!m) return null
     const step = m[3] ? Number(m[3]) : 1
-    let lo = m[1] === '*' ? min : Number(m[1])
-    let hi = m[1] === '*' ? max : m[2] !== undefined ? Number(m[2]) : m[3] ? max : Number(m[1])
+    const lo = m[1] === '*' ? min : Number(m[1])
+    const hi = m[1] === '*' ? max : m[2] !== undefined ? Number(m[2]) : m[3] ? max : Number(m[1])
     if (step < 1 || lo < min || hi > max || lo > hi) return null
     for (let v = lo; v <= hi; v += step) out.add(v === 7 && max === 7 ? 0 : v)
   }

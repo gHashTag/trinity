@@ -17,7 +17,6 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { useHashParams } from '../hooks/useHashParams'
 import { ExplorerHeader } from '../components/ExplorerHeader'
 import { ExplorerLibrary, type ExplorerItem } from '../components/ExplorerLibrary'
-import { StackBar } from '../components/SpecGraphics'
 import { C, panelBox, pill, tagChip, type Health } from '../lib/explorerTheme'
 import { canonicalCronUrl, cronExplorerHash, describeCron, describeInterval, nextRuns, resolveManifestCron } from '../lib/cronsCatalog'
 import { loadCronsManifest, type CronEntry, type CronsManifest } from '../lib/cronsLoader'
@@ -226,7 +225,9 @@ export default function CronExplorer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const crons = manifest?.crons ?? []
+  // `?? []` creates a new array on every render, which would make every useMemo
+  // below re-run for nothing.
+  const crons = useMemo(() => manifest?.crons ?? [], [manifest])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()

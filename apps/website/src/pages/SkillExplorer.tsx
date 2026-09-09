@@ -302,7 +302,9 @@ export default function SkillExplorer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const skills = manifest?.skills ?? []
+  // `?? []` creates a new array on every render, which would make every useMemo
+  // below re-run for nothing.
+  const skills = useMemo(() => manifest?.skills ?? [], [manifest])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
