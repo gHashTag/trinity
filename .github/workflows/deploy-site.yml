@@ -64,6 +64,18 @@ jobs:
           cp apps/website/dist/index.html ghio/index.html
           cp apps/website/dist/manifest.json ghio/manifest.json
           cp apps/website/dist/cv.pdf ghio/cv.pdf
+          # The data the app fetches at runtime, not just the bundles that fetch
+          # it. On 2026-09-09 the apex served this build with no
+          # /t27/universe-atlas.json — the file had been added to the app after
+          # this step was written — and the shared map answered "Could not load
+          # this map" while the same build served from /trinity/ worked. Copying
+          # the directories rather than named files means the next data file
+          # arrives without anyone remembering to add a line here.
+          for dir in t27 queen wasm fonts; do
+            [ -d "apps/website/dist/$dir" ] || continue
+            mkdir -p "ghio/$dir"
+            cp -R "apps/website/dist/$dir/." "ghio/$dir/"
+          done
           node - <<'EOF'
           const {readFileSync, readdirSync, unlinkSync} = require('node:fs');
           const {join} = require('node:path');

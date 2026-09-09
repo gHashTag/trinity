@@ -53,7 +53,12 @@ export default function SpecHeroBlock() {
         <div className="spec-hero-block-frame">
           <iframe
             title={t.frame}
-            src={`./${embedded}`}
+            // The language rides in the search, not the hash: the provider reads
+            // ?lang= from location.search, and a frame is a document of its own
+            // — it booted with whatever localStorage said at the time and never
+            // heard the switch. Binding it to the parent's choice also reloads
+            // the frame when that choice changes, because the src changes.
+            src={`./?lang=${lang}${embedded}`}
             loading="lazy"
             sandbox="allow-scripts allow-same-origin"
             allow="clipboard-write"

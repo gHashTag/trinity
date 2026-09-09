@@ -1,4 +1,5 @@
 import Navigation from './components/Navigation'
+import GameHero from './components/GameHero'
 import Footer from './components/Footer'
 import ServiceEntry from './components/ServiceEntry'
 import QueenHeroBlock from './components/QueenHeroBlock'
@@ -34,6 +35,9 @@ export default function App() {
     <main>
       <Navigation />
 
+      {/* The mark first, and then in one line what the site is. The number the
+          game exists to build lives on /trinity and is linked from here. */}
+      <GameHero />
       <QueenHeroBlock />
       <SpecHeroBlock />
       {/* The six modules of the shell, each with what it actually shows and a

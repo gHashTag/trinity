@@ -72,7 +72,9 @@ export default function ModuleHeroBlock({ tab }: { tab: (typeof MODULES)[number]
           {near ? (
             <iframe
               title={`${t.frame} — ${m.name}`}
-              src={`./#/queen?tab=${tab}&embed=1`}
+              // ?lang= in the search, where the provider reads it: a frame is
+              // its own document and does not hear the parent's switch.
+              src={`./?lang=${lang}#/queen?tab=${tab}&embed=1`}
               loading="lazy"
               sandbox="allow-scripts allow-same-origin"
             />

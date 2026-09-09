@@ -18,6 +18,7 @@
 // back. Narrow screens have no such column, so there the directive stays put.
 
 import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
 
 const FEATURED = 'specs/demos/hello_world.t27'
@@ -93,11 +94,15 @@ export function QueenSpecsDirective({ c, collapsible = false }: { c: SpecsCopy; 
 }
 
 export function QueenSpecs({ c, showDirective = true }: { c: SpecsCopy; showDirective?: boolean }) {
+  const { lang } = useI18n()
   const [ready, setReady] = useState(false)
   const frameRef = useRef<HTMLIFrameElement>(null)
 
   // The explorer lives at the same origin, so a relative hash URL is enough.
-  const src = `${window.location.pathname}#/specs?spec=${encodeURIComponent(FEATURED)}&embed=1`
+  // ?lang= in the search, where the i18n provider reads it. Without it the
+  // frame boots on whatever localStorage held when it loaded and never hears
+  // the switch — the shell in English with a Russian Explorer inside it.
+  const src = `${window.location.pathname}?lang=${lang}#/specs?spec=${encodeURIComponent(FEATURED)}&embed=1`
 
   return (
     <div className="queen27-specs" data-directive={showDirective ? 'above' : 'aside'}>
