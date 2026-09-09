@@ -79,6 +79,7 @@ export const TOOL_SPEC_SUBDIRS = ['tri', 'mcp']
 export const TOOLS_OUT = 'public/tools/spec-tools.json'
 export const TOOL_FAMILIES = { tri: 'tri-cli', mcp: 'mcp' }
 export const TOOL_WITNESSES = ['source-parse', 'help-output']
+export const CATALOG_SPEC_DIRS = new Set([SKILL_SPEC_DIR, CRON_SPEC_DIR, AGENT_SPEC_DIR, TOOL_SPEC_DIR])
 export const EXPERIENCE_PATH = 'public/agents/experience.json'
 export const AGENT_LAYERS = ['Archetypal', 'Spiritual', 'Physical']
 export const AGENT_COUNT = 27
@@ -704,7 +705,14 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   for (const tl of tools) specsById.set(tl.id, { dir: TOOL_SPEC_DIR, fields: tl.fields })
   const locales = []
   const seenLocale = new Map()
-  for (const spec of [...i18nSpecs].sort((a, b) => a.path.localeCompare(b.path))) {
+  // A translation contract belongs to this generator when its SCOPE names one of the
+  // four catalog directories; contracts scoped elsewhere (specs/docs -> docs-from-specs.mjs)
+  // are validated by their own generator and only Cyrillic-checked here.
+  const ownI18n = i18nSpecs.filter((spec) => {
+    const scope = plain(spec.consts).SCOPE
+    return !Array.isArray(scope) || scope.some((d) => CATALOG_SPEC_DIRS.has(d))
+  })
+  for (const spec of [...ownI18n].sort((a, b) => a.path.localeCompare(b.path))) {
     const fields = plain(spec.consts)
     const r = checkI18n({ ...spec, fields }, bundles.get(fields.BUNDLE_PATH) ?? null, specsById)
     problems.push(...r.problems)

@@ -323,6 +323,14 @@ const COPY = {
       "The fifth layer: Specs → Skills → Crons → Agents → Tools → Functions — the tools every agent should know. A tool exists when a .t27 spec under specs/tools states it: a command of the t27 tri CLI, read from the clap enum and its doc comments, or an MCP server of either repository with its tool list, read from the manifest and source. The witness names how the text was obtained (source-parse, help-output). An agent owns a tool only when both the agent's spec and a source say so; a tool no letter has bound says so, and nothing on this page is typed by hand.",
     toolsOwned: "owned by an agent",
     toolsUnowned: "no owner yet",
+    projectView: "PROJECT",
+    projectHint: "The project, the rules of the game for its agents, and the system in detail (key p)",
+    projectDirective: "THE SYSTEM IS A DOCUMENT",
+    projectDirectiveBody:
+      "The system documentation, whole: one declared document, specs/docs/system.t27, names seven chapters and their order; each chapter spec names its sources, its sections and the Markdown body that is its text. The generator renders the body through the compiler, builds every table from the catalogs and draws every figure from data; nothing on the page is typed twice. Chapters: the project and its tagged claims, the constitution and the rules of the game, the five-layer ladder, the 27-letter alphabet, the Queen's cycle, the tools, the witnesses. Opens on the letter p: the digits are spent.",
+    projectChapters: "chapters",
+    projectRu: "with a Russian body",
+    projectSources: "sources pinned",
     agentsLoading: "Loading the Explorer…",
     agentsSpecs: "specs",
     agentsSpecCode: "spec+code",
@@ -618,6 +626,14 @@ const COPY = {
       "Пятый слой: спеки → скиллы → кроны → агенты → инструменты → функции — инструменты, о которых должен знать каждый агент. Инструмент существует, когда его заявляет спека .t27 в specs/tools: команда t27 tri CLI, прочитанная из enum clap и его doc-комментариев, или MCP-сервер любого из двух репозиториев со списком инструментов, прочитанным из манифеста и исходника. Свидетель называет, как получен текст (source-parse, help-output). Агент владеет инструментом только когда об этом говорят и спека агента, и источник; инструмент, который не привязала ни одна буква, говорит об этом сам, и ничего на этой странице не набрано руками.",
     toolsOwned: "с агентом-владельцем",
     toolsUnowned: "без владельца",
+    projectView: "ПРОЕКТ",
+    projectHint: "проект, правила игры для агентов и система в деталях (клавиша p)",
+    projectDirective: "СИСТЕМА — ЭТО ДОКУМЕНТ",
+    projectDirectiveBody:
+      "Документация системы целиком: один объявленный документ, specs/docs/system.t27, называет семь глав и их порядок; спека каждой главы называет её источники, разделы и Markdown-текст, который и есть её содержание. Генератор прогоняет текст через компилятор, строит каждую таблицу из каталогов и рисует каждый рисунок по данным; ничего на странице не набрано дважды. Главы: проект и его помеченные утверждения, конституция и правила игры, пятислойная лестница, алфавит из 27 букв, цикл Королевы, инструменты, свидетели. Открывается буквой p: цифры заняты.",
+    projectChapters: "глав",
+    projectRu: "с русским текстом",
+    projectSources: "источников закреплено",
     agentsLoading: "Загружаем Обозреватель…",
     agentsSpecs: "спек",
     agentsSpecCode: "спека+код",
@@ -2283,6 +2299,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // Eleventh (key t; the digits are exhausted): the tools — what every agent should know: the
     // tri CLI and the MCP servers, each read from its spec and its source.
     { view: "tools" as const, glyph: "⟐", label: c.toolsView, hint: c.toolsHint },
+    // Twelfth, on the letter p (HUD_KEYS[11]; the digits are spent, t is TOOLS): the
+    // system documentation — the project, the rules of the game for its
+    // agents, and the system in detail, framed from #/docs.
+    { view: "project" as const, glyph: "§", label: c.projectView, hint: c.projectHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -2668,13 +2688,13 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 broken: c.specsBroken,
               }}
             />
-          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" || boardView === "tools" ? (
+          ) : boardView === "skills" || boardView === "crons" || boardView === "agents" || boardView === "functions" || boardView === "tools" || boardView === "project" ? (
             <QueenAgents
               kind={boardView}
               showDirective={isNarrow}
               c={{
-                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : c.agentsDirective,
-                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : c.agentsDirectiveBody,
+                directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
+                directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,
                 open: c.specsOpen,
                 loading: c.agentsLoading,
                 specs: c.agentsSpecs,
@@ -2685,6 +2705,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 unattributed: c.agentsUnattributed,
                 toolsOwned: c.toolsOwned,
                 toolsUnowned: c.toolsUnowned,
+                projectChapters: c.projectChapters,
+                projectRu: c.projectRu,
+                projectSources: c.projectSources,
               }}
             />
           ) : boardView === "comb" ? (
@@ -3097,7 +3120,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                       ? c.functionsDirective
                     : boardView === "tools"
                       ? c.toolsDirective
-                      : c.hudIntel
+                      : boardView === "project"
+                        ? c.projectDirective
+                        : c.hudIntel
           }
         >
           {/* The overview sits above her, stowed: a row that opens when the board

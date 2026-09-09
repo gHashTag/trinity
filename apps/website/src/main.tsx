@@ -44,6 +44,10 @@ const CronExplorer = lazy(() => import('./pages/CronExplorer.tsx'))
 const AgentExplorer = lazy(() => import('./pages/AgentExplorer.tsx'))
 const FunctionExplorer = lazy(() => import('./pages/FunctionExplorer.tsx'))
 const ToolExplorer = lazy(() => import('./pages/ToolExplorer.tsx'))
+// The system documentation: one declared document (specs/docs/system.t27), seven
+// chapters, rendered from public/docs/system-docs.json. The Queen's PROJECT view
+// frames it with ?embed=1.
+const SystemDocs = lazy(() => import('./pages/SystemDocs.tsx'))
 const ClientsConsole = lazy(() => import('./pages/ClientsConsole.tsx'))
 
 const RouteFallback = () => (
@@ -98,6 +102,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/agents" element={<AgentExplorer />} />
             <Route path="/functions" element={<FunctionExplorer />} />
             <Route path="/tools" element={<ToolExplorer />} />
+            <Route path="/docs" element={<SystemDocs />} />
+            <Route path="/docs/:chapter" element={<SystemDocs />} />
             {/* Not in the navigation: the console shows one person's
                 correspondence and opens only for the owner. */}
             <Route path="/clients" element={<ClientsConsole />} />

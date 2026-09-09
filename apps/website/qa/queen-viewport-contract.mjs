@@ -169,6 +169,10 @@ function cleanup() {
 const DECLARED = [
   // the HUD's own scrollers
   '.queen27-intel-list', '.queen27-sectors-list', '.queen27-context-col',
+  // the command rail: twelve views + COLLAPSE scroll their own list when a
+  // window is shorter than the budget (COLLAPSE is sticky at the bottom), and
+  // the phone icon row scrolls sideways
+  '.queen27-hud-command',
   // the Queen's own log: the board's events and the conversation about them
   '.queen-chat-log',
   '.queen27-hud-menu', '.queen27-hud-round-pop',
@@ -376,9 +380,10 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     const { fail, counts } = result;
     const zero = [];
     if (counts.shell !== 1) zero.push('shell');
-    // eleven command views (HUD_VIEWS.length): SPECS joined at origin/main a308aa8bc, SKILLS and CRONS with the spec-first agents catalog,
-    // AGENTS (layer four), FUNCTIONS and TOOLS with specs/agents, specs/functions and specs/tools;
-    // the gate follows the panel it counts (src/components/queenHud.ts HUD_VIEWS) and qa/agents-spec-contract.mjs holds that list to the modules.
+    // twelve command views (HUD_VIEWS.length): SPECS joined at origin/main a308aa8bc, SKILLS and CRONS with the spec-first agents catalog,
+    // AGENTS (layer four), FUNCTIONS and TOOLS with specs/agents, specs/functions and specs/tools, PROJECT (the system
+    // documentation, key p -- the digits 1-9,0 are spent and t is TOOLS) with specs/docs;
+    // the gate follows the panel it counts (src/components/queenHud.ts HUD_VIEWS, keys 1234567890tp) and qa/agents-spec-contract.mjs holds that list to the modules.
     if (counts.commands !== 11) zero.push(`commands=${counts.commands}`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
     if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);

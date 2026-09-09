@@ -14,8 +14,8 @@
     "check:spec-catalog": "node --experimental-strip-types qa/spec-catalog-contract.mjs",
     "core": "node scripts/spec-core.mjs",
     "check:shared-core": "node --experimental-strip-types qa/shared-spec-core.mjs",
-    "prebuild": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs",
-    "prebuild:ci": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs",
+    "prebuild": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs",
+    "prebuild:ci": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs",
     "dev": "vite",
     "build": "vite build",
     "build:ci": "vite build",
@@ -67,7 +67,9 @@
     "test:sync-crons": "node --test scripts/sync-crons.test.mjs",
     "check:agents": "node --experimental-strip-types qa/agents-spec-contract.mjs",
     "check:tools": "node --experimental-strip-types qa/tools-spec-contract.mjs",
-    "test:agents-specs": "node --test scripts/agents-from-specs.test.mjs"
+    "test:agents-specs": "node --test scripts/agents-from-specs.test.mjs",
+    "check:docs": "node --experimental-strip-types qa/docs-spec-contract.mjs",
+    "test:docs-specs": "node --test scripts/docs-from-specs.test.mjs"
   },
   "dependencies": {
     "@babylonjs/core": "^9.25.0",
