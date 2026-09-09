@@ -2898,12 +2898,21 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               <li className="queen27-hud-menu-note">
                 <span>{c.reviewQueue}</span>
                 <div className="queen27-review-summary">
-                  {REVIEW_STATES.map((reviewState) => (
-                    <span className={`is-${reviewState}`} key={reviewState}>
-                      <b>{reviewQueueCounts[reviewState] ?? "—"}</b>
-                      {c[reviewState]}
-                    </span>
-                  ))}
+                  {REVIEW_STATES.map((reviewState) => {
+                    // Null is not zero: the ledger has cards in review and does
+                    // not say which queue they are in. The dash says that, and
+                    // says it as a state rather than as a missing number.
+                    const stated = reviewQueueCounts[reviewState];
+                    return (
+                      <span
+                        className={`is-${reviewState}${stated === null ? " is-unstated" : ""}`}
+                        key={reviewState}
+                      >
+                        <b>{stated ?? "—"}</b>
+                        {c[reviewState]}
+                      </span>
+                    );
+                  })}
                   {reviewUnclassifiedCount !== null && reviewUnclassifiedCount > 0 && (
                     <span className="is-unclassified">
                       <b>{reviewUnclassifiedCount}</b>

@@ -403,9 +403,14 @@
   text-transform: uppercase;
 }
 
+/* Five queues in a menu column, and auto-fit with a zero minimum gave them
+   whatever was left: measured 21px each against labels needing 55 to 72, so
+   every one of them was cut mid-word — "CHANGES REQUESTE", "HUMAN ESCALATIO".
+   A real minimum makes them wrap onto another row instead of shrinking below
+   the width of their own names. */
 .queen27-review-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 116px), 1fr));
   gap: 1px;
   margin-bottom: 0.35rem;
   background: var(--border);
@@ -419,7 +424,11 @@
   color: var(--muted);
   font-size: 0.58rem;
   letter-spacing: 0.06em;
+  line-height: 1.35;
   text-transform: uppercase;
+  /* The names are two and three words long and the cell is one column of a
+     menu: they wrap rather than run past its edge. */
+  overflow-wrap: anywhere;
   background: #050505;
 }
 
@@ -427,6 +436,17 @@
   color: var(--text);
   font-size: 1.1rem;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A dash here is a fact: the ledger puts cards in review without saying which
+   queue each is in, so no queue may read 0 — queenReviewLifecycle.ts states
+   that rule and this only has to show it. It reads as "not stated" rather than
+   as a number that failed to arrive: dimmer than a count, and the same size, so
+   nothing moves when the wire starts stating them. */
+.queen27-review-summary .is-unstated b {
+  color: var(--muted);
+  opacity: 0.7;
 }
 
 .queen27-review-queue a > em {
