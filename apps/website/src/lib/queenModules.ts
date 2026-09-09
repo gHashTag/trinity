@@ -180,6 +180,21 @@ export const MODULES = [
       body: 'Обозреватель инструментов целиком: инструменты, о которых должен знать каждый агент. Пятый слой лестницы — спеки → скиллы → кроны → агенты → инструменты → функции — в двух семействах: команды t27 tri CLI, прочитанные из enum clap и его doc-комментариев, и MCP-серверы обоих репозиториев со списками их инструментов, прочитанными из манифестов и исходников. У каждой карточки сначала спека .t27 в specs/tools, затем синопсис, когда использовать, буквы-владельцы и файл с коммитом, из которого она прочитана; инструмент, который не привязал ни один агент, говорит об этом сам.',
     },
   },
+  {
+    tab: 'project',
+    key: 'p',
+    glyph: '§',
+    en: {
+      name: 'PROJECT',
+      hint: 'The project, the rules of the game for its agents, and the system in detail (key p)',
+      body: 'The system documentation, embedded whole: seven chapters read from one declared document, specs/docs/system.t27 — what the project claims and how each claim is tagged; the constitution and the rules of the game its agents follow; the five-layer ladder, Specs → Skills → Crons → Agents → Tools, with live counts; the 27-letter alphabet; the Queen\'s 6+1 phase cycle; the tools; and how every number on the site is witnessed. Prose comes from docs/system/*.md through the compiler, tables are generated from the catalogs, figures are drawn from data, and each carries its source and commit. The digits 1–0 are taken, so this view opens on the letter p.',
+    },
+    ru: {
+      name: 'ПРОЕКТ',
+      hint: 'проект, правила игры для агентов и система в деталях (клавиша p)',
+      body: 'Документация системы целиком: семь глав, прочитанных из одного объявленного документа specs/docs/system.t27 — что проект утверждает и как помечено каждое утверждение; конституция и правила игры, по которым живут агенты; пятислойная лестница спеки → скиллы → кроны → агенты → инструменты с живыми числами; алфавит из 27 букв; цикл Королевы 6+1; инструменты; и то, как засвидетельствовано каждое число на сайте. Проза берётся из docs/system/*.md через компилятор, таблицы порождаются из каталогов, рисунки строятся по данным, и у каждого указан источник и коммит. Цифры 1–0 заняты, поэтому этот вид открывается буквой p.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

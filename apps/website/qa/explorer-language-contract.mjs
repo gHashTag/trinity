@@ -23,6 +23,7 @@ const PAGES = [
   'src/pages/CronExplorer.tsx',
   'src/pages/AgentExplorer.tsx',
   'src/pages/ToolExplorer.tsx',
+  'src/pages/SystemDocs.tsx',
   'src/pages/ClientsConsole.tsx',
 ]
 

@@ -9,8 +9,9 @@ const navTargets = ['hero', '#/queen', '#/specs', 'claim', '#/gft', '#/proof', '
 // Скролл-спай следит только за тем, что после переноса осталось на главной.
 const sectionIds = ['hero', 'claim']
 const BASE = import.meta.env.BASE_URL
-// Docs points to t27.ai/docs/ (custom domain)
-const DOCS_URL = 'https://t27.ai/docs/'
+// Docs is the site's own system documentation (#/docs, generated from
+// specs/docs/**.t27); the t27.ai/docs/ Jekyll copy is being retired in its favour.
+const DOCS_URL = '#/docs'
 
 // The locale files have no keys for the commercial pages yet, so the labels
 // live next to the links. Missing locales fall back to English.
@@ -51,7 +52,7 @@ const PAGES: PageLink[] = [
   { href: '#/specs', en: 'Spec Explorer', ru: 'Обозреватель спек', note: 'The .t27 corpus, layer by layer, through the real compiler', noteRu: 'Корпус .t27 по слоям через настоящий компилятор', color: '#00FF88' },
   { href: '#/skills', en: 'Skill Explorer', ru: 'Обозреватель скилов', note: 'Every published skill, bound to the .t27 spec it stands on', noteRu: 'Каждый опубликованный скил и спека .t27, на которой он стоит', color: '#00FF88' },
   { href: '#/crons', en: 'Cron Explorer', ru: 'Обозреватель кронов', note: 'Every scheduled job of the farm, and when it next fires', noteRu: 'Все задания по расписанию и когда каждое сработает', color: '#00ccff' },
-  { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'Full documentation', noteRu: 'Полная документация', external: true },
+  { href: DOCS_URL, en: 'Docs', ru: 'Документация', note: 'The project, the rules of the game for its agents, and the system in detail', noteRu: 'Проект, правила игры для агентов и система в деталях', color: '#ffd700' },
 ]
 
 // Smooth scrolling is animation-driven, so it silently does nothing when

@@ -590,7 +590,7 @@ export default function ProductionDashboard() {
           background: `${GOLD}15`,
           border: `1px solid ${GOLD}33`,
         }}>{t.navDashboard}</span>
-        <a href="https://t27.ai/docs/" target="_blank" rel="noopener noreferrer" style={{
+        <a href="#/docs" style={{
           color: '#888',
           fontSize: 12,
           textDecoration: 'none',

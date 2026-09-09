@@ -337,8 +337,8 @@ assert.deepEqual(functions.ladder, agents.ladder, 'the functions catalog shows t
 assert.equal(functionsCode.deployedApp.mainRegisters, functionsCode.functions.length, 'main registers every manifest function')
 assert.equal(functionsCode.deployedApp.baseFunctions, functions.counts.deployed, 'the production build carries exactly the deployed functions')
 
-// 5. The Queen knows the five explorer views, at the keys the modules list promises.
-for (const tab of ['skills', 'crons', 'agents', 'functions', 'tools']) {
+// 5. The Queen knows the five explorer views and the PROJECT view, at the keys the modules list promises.
+for (const tab of ['skills', 'crons', 'agents', 'functions', 'tools', 'project']) {
   const m = MODULES.find((x) => x.tab === tab)
   assert.ok(m, `queenModules has no ${tab} entry`)
   assert.ok(HUD_VIEWS.includes(tab), `HUD_VIEWS does not include ${tab}`)
@@ -352,6 +352,8 @@ for (const [i, m] of MODULES.entries()) assert.equal(m.key, HUD_KEYS[i], `module
 assert.equal(MODULES.find((m) => m.tab === 'agents').key, '9', 'AGENTS opens on 9')
 assert.equal(MODULES.find((m) => m.tab === 'functions').key, '0', 'FUNCTIONS opens on 0, the tenth key')
 assert.equal(MODULES.find((m) => m.tab === 'tools').key, 't', 'TOOLS opens on t: the digits are spent after FUNCTIONS on 0')
+assert.equal(MODULES.find((m) => m.tab === 'project').key, 'p', 'PROJECT opens on p (the digits are spent, t is TOOLS)')
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tp', 'the rail keys are 1-9, 0, t, p in that order')
 
 // 6. Translations are connected through .t27 contract specs, never hardcoded.
 //    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists
@@ -365,7 +367,20 @@ const i18nSpecFiles = existsSync(i18nDir) ? readdirSync(i18nDir).filter((f) => f
 assert.ok(i18nSpecFiles.length >= 1, `${I18N_SPEC_DIR}: at least the Russian contract (agents-ru.t27) must exist`)
 assert.ok(i18nSpecFiles.includes('agents-ru.t27'), `${I18N_SPEC_DIR}/agents-ru.t27 is the Russian contract`)
 for (const f of i18nSpecFiles) assert.ok(!CYRILLIC.test(readFileSync(join(i18nDir, f), 'utf8')), `${I18N_SPEC_DIR}/${f}: Cyrillic in a .t27 spec (LANG-EN)`)
-assert.deepEqual(skills.i18n.map((l) => l.spec), i18nSpecFiles.map((f) => `${I18N_SPEC_DIR}/${f}`).sort((a, b) => a.localeCompare(b)), 'skills.i18n lists exactly the contract specs')
+// The catalogs list the contracts whose SCOPE names their directories; a
+// contract scoped to specs/docs belongs to docs-from-specs.mjs and is listed by
+// public/docs/system-docs.json instead. Between the two generators every file in
+// the directory is claimed exactly once -- read from their outputs, not by
+// parsing the specs here.
+const docsOut = 'public/docs/system-docs.json'
+const docsI18n = existsSync(docsOut) ? JSON.parse(readFileSync(docsOut, 'utf8')).i18n.map((l) => l.spec) : []
+for (const l of skills.i18n) assert.ok(l.scope.some((d) => ['specs/skills', 'specs/crons', 'specs/agents', 'specs/tools'].includes(d)), `${l.spec}: listed by the catalogs but scoped elsewhere (${l.scope.join(', ')})`)
+assert.deepEqual(
+  [...new Set([...skills.i18n.map((l) => l.spec), ...docsI18n])].sort((a, b) => a.localeCompare(b)),
+  i18nSpecFiles.map((f) => `${I18N_SPEC_DIR}/${f}`).sort((a, b) => a.localeCompare(b)),
+  'the catalogs and the docs generator together list exactly the contract specs',
+)
+assert.ok(skills.i18n.some((l) => l.spec === `${I18N_SPEC_DIR}/agents-ru.t27`), 'skills.i18n lists the Russian catalog contract')
 assert.deepEqual(crons.i18n.map((l) => l.spec).sort(), skills.i18n.map((l) => l.spec).sort(), 'both catalogs see the same contracts')
 assert.deepEqual(agents.i18n.map((l) => l.spec).sort(), skills.i18n.map((l) => l.spec).sort(), 'the agent catalog sees the same contracts (SCOPE names specs/agents)')
 const coverageLine = []

@@ -102,7 +102,7 @@ export default function Footer() {
                 <li><a href="#author" onClick={(e) => goToSection(e, 'author')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Author section">{lang === 'ru' ? 'Автор' : 'Author'}</a></li>
                 <li><a href="#invest" onClick={(e) => goToSection(e, 'invest')} style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Investment section">{lang === 'ru' ? 'Инвестиции' : 'Investment'}</a></li>
                 <li>
-                  <a href="https://t27.ai/docs/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open documentation in new tab">
+                  <a href="#/docs" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open the system documentation">
                     {t.footer?.docs || 'Documentation'}
                   </a>
                 </li>

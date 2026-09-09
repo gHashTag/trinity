@@ -3869,7 +3869,15 @@ main:where(.queen27-page.is-shell) section {
   min-width: 0;
   min-height: 0;
   padding: 8px;
-  overflow: hidden;
+  /* Eleven views and COLLAPSE fit a 806 px window with room to spare (the
+     budget is worked out under the 760 px rule below). If a twelfth arrives,
+     or a browser's UI eats the margin, the rail scrolls its own list instead
+     of pushing a button under the bottom bar; COLLAPSE is sticky at the
+     bottom edge so it is always the last item and always visible. The rail is
+     a declared scroller in qa/queen-viewport-contract.mjs. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .queen27-page.is-shell .queen27-hud-command > .queen27-hud-cmd {
@@ -3953,8 +3961,12 @@ main:where(.queen27-page.is-shell) section {
 
 .queen27-page.is-shell .queen27-hud-cmd-collapse {
   flex: 0 0 auto;
-  /* pins COLLAPSE to the bottom of the rail whatever the view count */
+  /* pins COLLAPSE to the bottom of the rail whatever the view count, and keeps
+     it in view when the list above it has to scroll */
   margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  background: rgba(4, 10, 7, 0.96);
   font-size: 0.56rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4021,6 +4033,10 @@ main:where(.queen27-page.is-shell) section {
     grid-row: -2 / -1;
     margin-top: 0;
     padding: 0.35rem 0.6rem;
+    /* the spacer track above absorbs any slack; if the tiles ever outgrow the
+       rail the list scrolls and COLLAPSE stays pinned to the bottom edge */
+    position: sticky;
+    bottom: 0;
   }
   /* collapsed (64 px wide) rail: back to one column of glyphs, still count-driven */
   .queen27-page.is-shell .queen27-hud-command.is-collapsed {
@@ -5409,6 +5425,51 @@ main:where(.queen27-page.is-shell) section {
    lines under a header that repeated what the frame already says. */
 .queen27-page.is-shell .queen27-specs[data-directive="aside"] {
   grid-template-rows: minmax(0, 1fr);
+}
+
+/* PROJECT: a row of quick jumps between the documentation's chapters sits
+   above the frame; the frame still takes every remaining pixel. */
+.queen27-page.is-shell .queen27-specs.has-jumps {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.queen27-page.is-shell .queen27-specs.has-jumps[data-directive="aside"] {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.queen27-page.is-shell .queen27-docs-jumps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.12);
+  background: rgba(2, 8, 6, 0.82);
+  min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-docs-jump {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--hud-line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--hud-muted);
+  font: inherit;
+  font-family: var(--hud-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+
+.queen27-page.is-shell .queen27-docs-jump:hover {
+  border-color: var(--hud-line-strong);
+  color: var(--hud-green);
+}
+
+.queen27-page.is-shell .queen27-docs-jump.is-active {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+  background: rgba(255, 215, 0, 0.05);
 }
 
 /* In the column it reads as a stack, not as a strip across the top. */
