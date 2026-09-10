@@ -16,9 +16,23 @@
  * Also framed inside the Telegram Mini App (app.t27.ai, the "Hive" tab): there
  * the viewport is the phone minus that app's header and tab bar, about
  * 390x700, which is why nothing here assumes a height.
+ *
+ * WHY "PORTRAIT" AND NOT "MIN-HEIGHT: 501PX" (2026-09-10, SECOND PICTURE)
+ *
+ * The owner opened the Hive tab in Telegram on an iPhone and saw no sky and
+ * the desktop chrome squeezed into 390px. Measured in Chrome at 390x480: the
+ * old gate `(min-height: 501px)` failed, so the desktop shell rules ran, and
+ * the landscape-phone rules (`max-height: 500px`) ran on top of them. Inside
+ * a Telegram web view the frame is the phone minus Telegram's header, this
+ * app's header and its tab bar -- on a 667pt iPhone that is about 414px, and
+ * a not-yet-expanded web view is shorter still. Height is not the axis that
+ * tells a portrait phone from a landscape one; orientation is. So this file
+ * gates on `(orientation: portrait)`, and the landscape rules in Queen.css and
+ * QueenCatalogHive.css gate on `(orientation: landscape)`. At 390x480 the
+ * comb, the star canvas and the one-row head now render as at 390x844.
  */
 
-@media (max-width: 640px) and (min-height: 501px) {
+@media (max-width: 640px) and (orientation: portrait) {
   /* 1. THE HEAD: title on one line, tools on one row that scrolls sideways.
         Ten buttons on two rows were 92px; one row is 44px, and the ones that
         do not fit are a thumb-swipe away rather than a full row of height. */
