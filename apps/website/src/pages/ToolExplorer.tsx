@@ -16,6 +16,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { useHashParams } from '../hooks/useHashParams'
+import { useDocumentLock, useViewport } from '../lib/useViewport'
+import { HEADER_CHROME_MAX } from '../lib/viewport.generated'
 import { ExplorerHeader } from '../components/ExplorerHeader'
 import { ExplorerLibrary, type ExplorerItem } from '../components/ExplorerLibrary'
 import { AgentSpecPanel } from '../components/AgentSpecPanel'
@@ -46,6 +48,7 @@ const UI = {
     failed: 'Could not load the tool catalog:',
     pickTool: 'Pick a tool',
     backToLibrary: 'All tools',
+    filters: 'Filters',
     filterAll: 'All',
     filterOwned: 'owned by an agent',
     filterUnowned: 'no owner yet',
@@ -122,6 +125,7 @@ const UI = {
     failed: 'Не удалось загрузить каталог инструментов:',
     pickTool: 'Выберите инструмент',
     backToLibrary: 'Все инструменты',
+    filters: 'Фильтры',
     filterAll: 'Все',
     filterOwned: 'с владельцем',
     filterUnowned: 'без владельца',
@@ -215,19 +219,15 @@ export default function ToolExplorer() {
   const [ownerFilter, setOwnerFilter] = useState<'all' | 'owned' | 'unowned'>('all')
   const [tagSel, setTagSel] = useState<string[]>([])
   const [copied, setCopied] = useState(false)
-  const [phone, setPhone] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 760))
-  const [narrow, setNarrow] = useState(() => (typeof window === 'undefined' ? false : window.innerWidth < 1100))
+  // Layout tier from specs/ui/viewport.t27 (via useViewport); `narrow` trims the
+  // header chrome and is not a tier. Phone and tablet lock the document: the
+  // panes are the scrollers there.
+  const viewport = useViewport()
+  const phone = viewport.tier === 'phone'
+  const compact = phone || viewport.tier === 'tablet'
+  const narrow = viewport.width < HEADER_CHROME_MAX
+  useDocumentLock(compact)
   const [pane, setPane] = useState<'list' | 'detail'>('list')
-
-  useEffect(() => {
-    const onResize = () => {
-      setPhone(window.innerWidth < 760)
-      setNarrow(window.innerWidth < 1100)
-    }
-    onResize()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
 
   const pick = useCallback(
     (entry: ToolSpecEntry) => {
@@ -264,6 +264,25 @@ export default function ToolExplorer() {
     // Mount only: the deep link is read once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // A deep link that arrives after mount (the back button, a link on this
+  // page, a script setting the hash): open that card, on a phone as the card
+  // pane. Measured before this at 390x844: `#/tools` then a `?tool=` hash
+  // kept the list, because the parameters were read once.
+  useEffect(() => {
+    if (!catalog || params.changes === 0) return
+    const wanted = params.get('tool')
+    if (!wanted) return
+    try {
+      const target = resolveTool(catalog, wanted)
+      setPane('detail')
+      if (target !== selected) pick(target)
+    } catch {
+      // An unknown id in a later hash: keep the card that is open.
+    }
+    // Only the hash counter: the catalog and the selection are read, not followed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.changes])
 
   const tools = useMemo(() => catalog?.tools ?? [], [catalog])
 
@@ -352,7 +371,7 @@ export default function ToolExplorer() {
   )
   const chipLink = (href: string, text: string, glyph: string, ok = true) =>
     ok ? (
-      <a key={text} href={href} style={{ ...tagChip(false, false), color: C.accent, borderColor: C.borderBright, textDecoration: 'none' }} data-lang-exempt="live">
+      <a className="spec-x-target" key={text} href={href} style={{ ...tagChip(false, false), color: C.accent, borderColor: C.borderBright, textDecoration: 'none' }} data-lang-exempt="live">
         {glyph} {text}
       </a>
     ) : (
@@ -366,6 +385,7 @@ export default function ToolExplorer() {
   return (
     <div
       className="spec-x"
+      data-tier={viewport.tier}
       data-embedded={embedded ? '1' : undefined}
       style={{
         height: '100dvh',
@@ -427,7 +447,7 @@ export default function ToolExplorer() {
             tagSel={tagSel}
             toggleTag={(x) => setTagSel((prev) => (prev.includes(x) ? prev.filter((y) => y !== x) : [...prev, x]))}
             clearTags={() => setTagSel([])}
-            phone={phone}
+            tier={viewport.tier}
             countLabel={`${filtered.length} ${ui.toolsCount}`}
             titlesAreGenerated
             ui={{
@@ -437,6 +457,7 @@ export default function ToolExplorer() {
               clear: ui.clear,
               noResults: ui.noResults,
               noneInGroup: ui.noneInGroup,
+              filters: ui.filters,
             }}
           />
         )}
@@ -461,9 +482,9 @@ export default function ToolExplorer() {
             )}
             {!selected && !err && <div style={{ padding: 24, color: C.muted, fontSize: 13 }}>{catalog ? ui.pickTool : ui.loading}</div>}
             {selected && (
-              <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div data-card={selected.id} style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {phone && (
-                  <button onClick={() => setPane('list')} style={{ ...pill, alignSelf: 'flex-start' }}>
+                  <button onClick={() => setPane('list')} className="spec-x-back" style={{ ...pill, alignSelf: 'flex-start' }}>
                     ← {ui.backToLibrary}
                   </button>
                 )}
@@ -505,15 +526,16 @@ export default function ToolExplorer() {
                   id={selected.id}
                   entry={selected}
                   embedded={embedded}
+                  flat={compact}
                   i18n={catalog?.i18n ?? []}
                   links={selected.agents.map((a) => ({ id: a.letter, ok: a.ok, href: a.ok ? agentExplorerHash(a.letter, { embedded }) : '#' }))}
                   extraControls={
                     <>
-                      <a href={selected.links.source} target="_blank" rel="noopener noreferrer" style={pill}>
+                      <a className="spec-x-target" href={selected.links.source} target="_blank" rel="noopener noreferrer" style={pill}>
                         {ui.openSource}
                       </a>
                       {selected.links.config && (
-                        <a href={selected.links.config} target="_blank" rel="noopener noreferrer" style={pill}>
+                        <a className="spec-x-target" href={selected.links.config} target="_blank" rel="noopener noreferrer" style={pill}>
                           {ui.openConfig}
                         </a>
                       )}
@@ -572,7 +594,7 @@ export default function ToolExplorer() {
                         {selected.toolsNote}
                       </div>
                     ) : (
-                      <div style={{ maxHeight: 420, overflow: 'auto', border: `1px solid ${C.border}`, borderRadius: 5 }}>
+                      <div style={{ border: `1px solid ${C.border}`, borderRadius: 5, ...(compact ? null : { maxHeight: 420, overflow: 'auto' }) }}>
                         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                           <thead>
                             <tr>

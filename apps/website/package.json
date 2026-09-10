@@ -14,8 +14,8 @@
     "check:spec-catalog": "node --experimental-strip-types qa/spec-catalog-contract.mjs",
     "core": "node scripts/spec-core.mjs",
     "check:shared-core": "node --experimental-strip-types qa/shared-spec-core.mjs",
-    "prebuild": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs",
-    "prebuild:ci": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs",
+    "prebuild": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs && node scripts/viewport-from-spec.mjs",
+    "prebuild:ci": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs && node scripts/viewport-from-spec.mjs",
     "dev": "vite",
     "build": "vite build",
     "build:ci": "vite build",
@@ -69,7 +69,10 @@
     "check:tools": "node --experimental-strip-types qa/tools-spec-contract.mjs",
     "test:agents-specs": "node --test scripts/agents-from-specs.test.mjs",
     "check:docs": "node --experimental-strip-types qa/docs-spec-contract.mjs",
-    "test:docs-specs": "node --test scripts/docs-from-specs.test.mjs"
+    "test:docs-specs": "node --test scripts/docs-from-specs.test.mjs",
+    "check:viewport": "node scripts/viewport-from-spec.mjs --check",
+    "test:viewport-spec": "node --test scripts/viewport-from-spec.test.mjs",
+    "check:explorer-viewport": "node qa/explorer-viewport-contract.mjs"
   },
   "dependencies": {
     "@babylonjs/core": "^9.25.0",

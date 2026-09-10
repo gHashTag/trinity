@@ -182,6 +182,12 @@ interface Props {
   i18n?: I18nContract[]
   /** Extra buttons the page adds to the management strip (an agent's SOUL.md, its experience log). */
   extraControls?: React.ReactNode
+  /**
+   * The source box has no scroller of its own: on a phone or a tablet the card
+   * pane is the one scroller (spec ONE_SCROLLER_PER_PANE), so the 420px box
+   * that nests a second one on desktop opens out to its full height.
+   */
+  flat?: boolean
 }
 
 async function sha256Hex(text: string): Promise<string | null> {
@@ -202,7 +208,7 @@ function label(kind: Props['kind'], t: Copy): { links: string; empty: string } {
 const SPEC_DIR: Record<Props['kind'], string> = { skill: 'specs/skills', cron: 'specs/crons', agent: 'specs/agents', function: 'specs/functions', tool: 'specs/tools' }
 const LINK_GLYPH: Record<Props['kind'], string> = { skill: '◷', cron: '⟲', agent: '◈', function: '⟲', tool: 'Ω' }
 
-export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = [], extraControls }: Props) {
+export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = [], extraControls, flat }: Props) {
   const t: Copy = COPY[lang]
   // An agent is not a job: the control plane's run/enable/disable verbs do not
   // apply to a letter, so the plane is shown for skills and crons only.
@@ -274,7 +280,12 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
   )
 
   const heading = (text: string) => <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{text}</div>
-  const box: React.CSSProperties = { background: C.panel, border: `1px solid ${C.border}`, borderRadius: 6, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }
+  // Longhands, not the `border` shorthand: the code-only branch below overrides
+  // borderColor, and when a later render drops that override React clears the
+  // longhand, which strips the colour out of the shorthand (currentColor, i.e.
+  // a white frame). Keeping borderColor a stable key makes the swap a value
+  // change, not a removal.
+  const box: React.CSSProperties = { background: C.panel, borderWidth: 1, borderStyle: 'solid', borderColor: C.border, borderRadius: 6, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }
 
   const runNow = useMemo(() => {
     if (!entry || kind !== 'cron') return null
@@ -302,6 +313,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
           <div style={{ fontSize: 12.5, lineHeight: 1.55, color: '#d8d8d8' }}>{t.codeOnly}</div>
           <div>
             <a
+              className="spec-x-target"
               href={`https://github.com/gHashTag/t27/new/master/${dir}?filename=${encodeURIComponent(filename)}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -371,11 +383,11 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
         </div>
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
           {entry.inSpecCorpus ? (
-            <a href={specExplorerHash(entry.specPath, { embedded })} style={pill}>
+            <a className="spec-x-target" href={specExplorerHash(entry.specPath, { embedded })} style={pill}>
               {t.openSpec}
             </a>
           ) : (
-            <span style={{ ...pill, cursor: 'default', opacity: 0.7 }}>{t.notInCorpus}</span>
+            <span className="spec-x-note" style={{ ...pill, cursor: 'default', opacity: 0.7 }}>{t.notInCorpus}</span>
           )}
         </div>
         {entry.messages.length > 0 && (
@@ -384,7 +396,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
             <span data-lang-exempt="live">{entry.messages.join(' · ')}</span>
           </div>
         )}
-        <div style={{ border: `1px solid ${C.border}`, borderRadius: 5, maxHeight: 420, overflow: 'auto', background: C.bg }}>
+        <div style={{ border: `1px solid ${C.border}`, borderRadius: 5, background: C.bg, ...(flat ? null : { maxHeight: 420, overflow: 'auto' }) }}>
           {err ? (
             <div style={{ padding: 12, fontSize: 12, color: C.bad }}>
               {t.failed} <span data-lang-exempt="live">{err}</span>
@@ -420,7 +432,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {links.map((l) =>
               l.ok ? (
-                <a key={l.id} href={l.href} style={{ ...tagChip(false, false), color: C.accent, borderColor: C.borderBright, textDecoration: 'none' }} data-lang-exempt="live">
+                <a className="spec-x-target" key={l.id} href={l.href} style={{ ...tagChip(false, false), color: C.accent, borderColor: C.borderBright, textDecoration: 'none' }} data-lang-exempt="live">
                   {LINK_GLYPH[kind]} {l.id}
                 </a>
               ) : (
@@ -447,10 +459,10 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
               {t.enabled} = {entry.fields.ENABLED ? t.on : t.off}
             </span>
           ) : null}
-          <a href={canonicalSpecEditUrl(entry.specPath)} target="_blank" rel="noopener noreferrer" style={pill}>
+          <a className="spec-x-target" href={canonicalSpecEditUrl(entry.specPath)} target="_blank" rel="noopener noreferrer" style={pill}>
             {t.editSpec}
           </a>
-          <a href={vendoredSpecUrl(entry.specPath)} target="_blank" rel="noopener noreferrer" style={{ ...pill, opacity: 0.8 }}>
+          <a className="spec-x-target" href={vendoredSpecUrl(entry.specPath)} target="_blank" rel="noopener noreferrer" style={{ ...pill, opacity: 0.8 }}>
             {t.vendored}
           </a>
           {extraControls}
@@ -465,7 +477,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
           ) : kind === 'cron' && runNow ? (
             runNow.kind === 'link' ? (
               <>
-                <a href={runNow.url} target="_blank" rel="noopener noreferrer" style={{ ...pill, color: C.golden, borderColor: 'rgba(255,215,0,0.4)' }}>
+                <a className="spec-x-target" href={runNow.url} target="_blank" rel="noopener noreferrer" style={{ ...pill, color: C.golden, borderColor: 'rgba(255,215,0,0.4)' }}>
                   {t.runNow}
                 </a>
                 <span style={{ fontSize: 11, color: C.muted }}>

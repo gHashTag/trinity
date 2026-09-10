@@ -9,6 +9,7 @@
 import { useMemo, useState } from 'react'
 import { C, HEALTH_GLYPH, tagChip, inputStyle, selectStyle, type Health } from '../lib/explorerTheme'
 import { HealthDot, StackBar, type StackSegment } from './SpecGraphics'
+import type { ViewportTier } from '../lib/viewport.generated'
 
 export interface ExplorerItem {
   id: string
@@ -56,7 +57,7 @@ export function ExplorerLibrary({
   tagSel,
   toggleTag,
   clearTags,
-  phone,
+  tier,
   countLabel,
   titlesAreGenerated,
   ui,
@@ -80,7 +81,13 @@ export function ExplorerLibrary({
   tagSel: string[]
   toggleTag: (t: string) => void
   clearTags: () => void
-  phone: boolean
+  /**
+   * From useViewport. Phone: the aside is the whole screen. Phone and tablet:
+   * the category, group and tag controls fold into one collapsible row under
+   * the search box, so the list keeps the height (spec: TABLET_PANES = 2 with
+   * filters as a collapsible row). Desktop: unchanged.
+   */
+  tier: ViewportTier
   /** e.g. "12 skills" — already interpolated by the page. */
   countLabel: string
   /**
@@ -96,9 +103,16 @@ export function ExplorerLibrary({
     clear: string
     noResults: string
     noneInGroup: string
+    filters: string
   }
 }) {
+  const phone = tier === 'phone'
+  const compact = tier === 'phone' || tier === 'tablet'
   const [tagsOpen, setTagsOpen] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  // How many constraints are live while the row is folded, so a filtered list
+  // never looks like the whole library.
+  const activeFilters = (category ? 1 : 0) + (filters.length > 0 && filter !== filters[0].key ? 1 : 0) + tagSel.length
   const allTags = useMemo(
     () => Object.keys(tagCounts).sort((a, b) => (tagCounts[b] ?? 0) - (tagCounts[a] ?? 0) || a.localeCompare(b)),
     [tagCounts],
@@ -107,7 +121,7 @@ export function ExplorerLibrary({
   return (
     <aside
       style={{
-        width: phone ? '100%' : 300,
+        width: phone ? '100%' : tier === 'tablet' ? 260 : 300,
         minWidth: phone ? 0 : 180,
         flexShrink: 1,
         borderRight: phone ? 'none' : `1px solid ${C.border}`,
@@ -124,6 +138,31 @@ export function ExplorerLibrary({
           aria-label={ui.search}
           style={inputStyle}
         />
+        {compact && (categories.length > 0 || filters.length > 0 || allTags.length > 0) && (
+          <button
+            onClick={() => setFiltersOpen((v) => !v)}
+            aria-expanded={filtersOpen}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              width: '100%',
+              background: 'transparent',
+              border: `1px solid ${activeFilters ? C.accent : C.border}`,
+              borderRadius: 5,
+              color: activeFilters ? C.accent : C.muted,
+              padding: '2px 10px',
+              cursor: 'pointer',
+              fontSize: 11.5,
+              fontFamily: 'inherit',
+            }}
+          >
+            <span aria-hidden="true" style={{ fontSize: 9 }}>{filtersOpen ? '▾' : '▸'}</span>
+            <span>{ui.filters}</span>
+            {activeFilters > 0 && <span style={{ fontFamily: C.mono }}>{activeFilters}</span>}
+          </button>
+        )}
+        {(!compact || filtersOpen) && <>
         {categories.length > 0 && (
           <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label={ui.allCategories} style={selectStyle}>
             <option value="">{ui.allCategories}</option>
@@ -251,6 +290,7 @@ export function ExplorerLibrary({
             )}
           </div>
         )}
+        </>}
         <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{countLabel}</div>
       </div>
 

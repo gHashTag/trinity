@@ -112,11 +112,18 @@ export function PipelineRibbon({
   active,
   onPick,
   labels,
+  interactive = true,
 }: {
   result: T27Analysis
   active: string
   onPick: (id: string) => void
   labels: Record<string, string>
+  /**
+   * False on a phone or a tablet: ten bars share one 375px row, so as buttons
+   * they are 31px wide, under the spec's 44px touch minimum, and every bar
+   * duplicates a layer tab. Drawn as a figure there; the tabs do the picking.
+   */
+  interactive?: boolean
 }) {
   const stages: Stage[] = [
     { key: 'source', label: labels.source, value: result.sourceBytes, ok: true },
@@ -141,10 +148,12 @@ export function PipelineRibbon({
         const h = s.ok ? Math.max(3, mag * 26) : 26
         const color = !s.ok ? HEALTH_COLOR.fail : s.key === 'typecheck' && (s.value ?? 0) > 0 ? HEALTH_COLOR.warn : HEALTH_COLOR.ok
         const isActive = active === s.key
+        const Tag = interactive ? 'button' : 'span'
         return (
-          <button
+          <Tag
             key={s.key}
-            onClick={() => onPick(s.key)}
+            onClick={interactive ? () => onPick(s.key) : undefined}
+            role={interactive ? undefined : 'img'}
             title={`${s.label}: ${s.ok ? (s.value ?? 0).toLocaleString() : 'failed'}`}
             aria-label={`${s.label}, ${s.ok ? String(s.value ?? 0) : 'failed'}`}
             style={{
@@ -157,7 +166,7 @@ export function PipelineRibbon({
               background: 'transparent',
               border: 'none',
               padding: 0,
-              cursor: 'pointer',
+              cursor: interactive ? 'pointer' : 'default',
             }}
           >
             <span
@@ -172,7 +181,7 @@ export function PipelineRibbon({
                 transition: 'opacity 140ms ease-out',
               }}
             />
-          </button>
+          </Tag>
         )
       })}
     </div>

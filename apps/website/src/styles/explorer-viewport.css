@@ -1,0 +1,90 @@
+/* The explorers at phone and tablet size. Hand-written, but every number is a
+   custom property from src/styles/viewport.generated.css (specs/ui/viewport.t27);
+   the tier itself is set by useViewport on the explorer root (data-tier), because
+   a custom property cannot drive @media and the breakpoint must not be typed twice.
+
+   Desktop and wide carry no rule here on purpose: the P0 brief freezes them
+   (pixel-identical at 1280). */
+
+/* The document is not a scroller under a full-height explorer on a phone or a
+   tablet: html -> body -> #root -> the explorer root, each a definite height
+   with overflow hidden (the chain Queen.css uses for body.queen-shell). body's
+   80px bottom padding (index.css) is for the long pages. */
+html:has(body.explorer-shell) {
+  height: 100%;
+}
+body.explorer-shell {
+  height: 100%;
+  padding-bottom: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body.explorer-shell > #root {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Touch targets. Every control in the explorer chrome (header, ladder, library,
+   card) is at least the spec's minimum on each side on a phone or a tablet.
+   Inline links inside prose are exempt, as WCAG 2.5.8 exempts them: they are
+   sized by the text they sit in. */
+.spec-x[data-tier='phone'] :is(button, select, input, [role='button'], .spec-x-ladder a, .spec-x-target),
+.spec-x[data-tier='tablet'] :is(button, select, input, [role='button'], .spec-x-ladder a, .spec-x-target) {
+  min-height: var(--touch-target-min-px);
+  min-width: var(--touch-target-min-px);
+  box-sizing: border-box;
+}
+.spec-x[data-tier='phone'] :is(.spec-x-ladder a, .spec-x-target, [role='button']),
+.spec-x[data-tier='tablet'] :is(.spec-x-ladder a, .spec-x-target, [role='button']) {
+  display: inline-flex;
+  /* !important: the ladder links carry an inline align-items: baseline for the
+     desktop strip; centred inside a 44px box the text would otherwise sit at
+     the top edge. */
+  align-items: center !important;
+}
+
+/* The way back from a card to the list on a phone. */
+.spec-x-back {
+  min-height: var(--back-control-min-px);
+  min-width: var(--back-control-min-px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The ladder as one line: on a phone it scrolls sideways inside itself rather
+   than wrapping to three rows above the list. */
+.spec-x[data-tier='phone'] .spec-x-ladder {
+  /* !important: the ladder carries an inline flex-wrap: wrap for the desktop strip. */
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.spec-x[data-tier='phone'] .spec-x-ladder::-webkit-scrollbar {
+  display: none;
+}
+.spec-x[data-tier='phone'] .spec-x-ladder > span {
+  flex: 0 0 auto;
+}
+
+/* One pane, one width. A nowrap note chip ("not in the vendored corpus
+   manifest yet ...", ~500px at 11px mono) would otherwise set the pane's
+   min-content and push it past a 390px viewport: the pane then scrolls
+   sideways and the card's right edge is off screen. Measured at 390x844 on
+   #/skills: pane 557px wide before this rule. */
+.spec-x[data-tier='phone'] .spec-x-pane,
+.spec-x[data-tier='tablet'] .spec-x-pane {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.spec-x[data-tier='phone'] .spec-x-note,
+.spec-x[data-tier='tablet'] .spec-x-note {
+  /* !important: the pill carries an inline white-space: nowrap for desktop. */
+  white-space: normal !important;
+  text-align: left;
+  line-height: 1.4;
+}

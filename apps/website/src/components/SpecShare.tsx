@@ -66,7 +66,7 @@ export function SpecShare({
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
       <span style={{ fontSize: 10, color: '#8b9490', opacity: 0.7, fontFamily: MONO }}>{labels.share}</span>
       {!embedded && targets.map((s) => (
-        <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" style={pill}>
+        <a key={s.name} className="spec-x-target" href={s.href} target="_blank" rel="noopener noreferrer" style={pill}>
           {s.name}
         </a>
       ))}
