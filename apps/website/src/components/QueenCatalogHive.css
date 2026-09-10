@@ -90,12 +90,12 @@
   .queen-catalog-toolbar .queen-catalog-tools {grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
   .queen-catalog-toolbar .queen-catalog-law {gap:.15rem .5rem;}
 }
-@media(max-height:500px) and (min-width:641px) {
+@media(max-height:500px) and (min-width:641px) and (orientation:landscape) {
   .queen-catalog-toolbar .queen-catalog-law small {flex-basis:auto;}
   .queen-catalog-layer {--catalog-inspector-mode:side;}
   .queen-catalog-detail {left:auto;right:.5rem;bottom:.5rem;width:min(360px,45%);max-height:calc(100% - var(--catalog-headroom) - 1rem);}
 }
-@media(max-height:500px),(max-width:380px) and (max-height:760px) {
+@media(max-height:500px) and (orientation:landscape),(max-width:380px) and (max-height:760px) {
   .queen-catalog-toolbar {grid-template-columns:minmax(0,1fr) auto;}
   .queen-catalog-search-toggle {display:block;}
   .queen-catalog-toolbar:not(.is-search-open) .queen-catalog-tools {display:none;}
@@ -119,7 +119,7 @@
    claiming its own band and floats over the field instead, which is what
    "buttons are secondary chrome" means when height is the scarce axis.
    --catalog-headroom still tracks its height, so labels start below it. */
-@media (max-height:500px) {
+@media (max-height:500px) and (orientation:landscape) {
   .queen-catalog-layer {grid-template-rows:minmax(0,1fr);}
   .queen-catalog-layer>.queen27-comb.is-embedded {grid-row:1;}
   .queen-catalog-toolbar {position:absolute;top:var(--hud-vp-head-float,0px);right:0;left:0;z-index:14;background:#000000b8;}

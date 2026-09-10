@@ -5590,12 +5590,17 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* ---- landscape phones ---------------------------------------------------- */
+/* `and (orientation: landscape)`: a short PORTRAIT viewport -- the page framed
+   in the Telegram Mini App's Hive tab, measured 390x480 on 2026-09-10 -- is a
+   phone held upright with less room, not a phone on its side; it belongs to
+   queen-phone.css, which gates on portrait. Without the orientation term both
+   rule sets ran there at once. */
 /* At 844x390 the shell's bands (worlds nav, status, viewport head, catalog
    toolbar, command rail) left the field 130px of 390. Height is the scarce
    axis here and width is not, so the viewport head stops taking a row and
    floats over the field. --hud-vp-head-float is the contract with the catalog
    toolbar, which floats directly beneath it rather than guessing an offset. */
-@media (max-height: 500px) {
+@media (max-height: 500px) and (orientation: landscape) {
   .queen27-page.is-shell {
     --hud-vp-head-float: 40px;
   }
@@ -5841,7 +5846,7 @@ body.queen-shell .queen-universe {
    spanned the head's row alone, so the module tabs sat in the middle of the
    map instead of at its foot: measured 844x390, the footer at y=148 in a 382px
    viewport. Two rows, and the line means the bottom again. */
-@media (max-height: 500px) and (max-width: 900px) {
+@media (max-height: 500px) and (max-width: 900px) and (orientation: landscape) {
   .queen27-page.is-shell .queen27-hud-viewport {
     grid-template-rows: auto minmax(0, 1fr);
   }
