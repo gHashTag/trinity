@@ -3,6 +3,34 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'queen-phone-orientation-gate',
+    title: 'A phone web view needed an orientation gate',
+    summary: '[measured] Merged PR #983 changed 3 CSS files after a 390×480 Chrome check exposed a phone layout selected by height instead of orientation.',
+    date: '2026-09-10',
+    readingMinutes: 4,
+    tags: ['Web', 'CSS', 'Reproducibility', 'Testing'],
+    receipts: [
+      { label: 'Merged PR #983 — phone layout gated on orientation', href: 'https://github.com/gHashTag/trinity/pull/983' },
+      { label: 'Merge commit a368d812 — responsive CSS change and viewport checks', href: 'https://github.com/gHashTag/trinity/commit/a368d8126788c09bcac29169dccd9602ea9b3ac8' },
+      { label: 'Public commit API — files and verification note', href: 'https://api.github.com/repos/gHashTag/trinity/commits/a368d8126788c09bcac29169dccd9602ea9b3ac8' },
+    ],
+    openQuestions: [
+      'The viewport checks are the checks reported by the merged commit; this run did not independently audit every phone, WebView, font scale, or embedded browser.',
+      'The merge does not establish delivery to the live static site; that requires a separate URL check.',
+      'This is a software and CSS result. It does not establish FPGA or AX7203 behaviour, silicon, speed, energy, or downstream-model accuracy.',
+    ],
+    published: true,
+    ru: {
+      title: 'Телефонному web view понадобился гейт по ориентации',
+      summary: '[измерено] Смерженный PR #983 изменил 3 CSS-файла после проверки Chrome 390×480, где телефонный layout выбирался по высоте вместо ориентации.',
+      openQuestions: [
+        'Viewport-проверки — это проверки, записанные в смерженном коммите; в этом запуске не проводился независимый аудит каждого телефона, WebView, масштаба шрифта или встроенного браузера.',
+        'Слияние не устанавливает доставку на живой статический сайт; для этого нужна отдельная проверка URL.',
+        'Это результат программного и CSS-изменения. Он не устанавливает поведение FPGA или AX7203, кремния, скорость, энергию или точность downstream-модели.',
+      ],
+    },
+  },
+  {
     slug: 'merge-diff-ci-boundaries',
     title: 'A merged diff was not one CI verdict',
     summary: '[measured] Merged PR #975 changed 85 files with 4,154 additions and 58 deletions; the receipts still need to be kept separate from interface correctness and live delivery.',
