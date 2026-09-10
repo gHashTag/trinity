@@ -1,0 +1,128 @@
+/*
+ * THE PHONE, PORTRAIT. MEASURED AT 390x844 ON 2026-09-10.
+ *
+ * The owner opened t27.ai/#/queen on a phone and sent the picture: the map's
+ * head took two rows of 44px buttons, the body then padded ANOTHER 124px under
+ * it (a desktop rule later in Queen.css wins over the phone rule before it),
+ * the law line and the search button sat across the middle of the map, the
+ * five region labels were three lines tall on portals forty pixels apart, and
+ * the footer tabs were 84px. The comb had about a third of the screen.
+ *
+ * This file is only the phone. It changes no scene, no material, no data --
+ * chrome only, and only under 641px wide with room above 500px tall (landscape
+ * phones have their own rules in QueenCatalogHive.css). It is loaded after
+ * Queen.css so that, at equal specificity, it is the rule that wins.
+ *
+ * Also framed inside the Telegram Mini App (app.t27.ai, the "Hive" tab): there
+ * the viewport is the phone minus that app's header and tab bar, about
+ * 390x700, which is why nothing here assumes a height.
+ */
+
+@media (max-width: 640px) and (min-height: 501px) {
+  /* 1. THE HEAD: title on one line, tools on one row that scrolls sideways.
+        Ten buttons on two rows were 92px; one row is 44px, and the ones that
+        do not fit are a thumb-swipe away rather than a full row of height. */
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
+    padding: 4px 8px 6px;
+    gap: 6px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-vp-tools {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-vp-tools::-webkit-scrollbar {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-hud-vp-tools > * {
+    flex: 0 0 auto;
+  }
+
+  /* 2. THE BODY FOLLOWS THE HEAD. The head is in the flow on a phone (Queen.css,
+        max-width: 900px), so the body needs a gap above it, not the 124px a
+        floating head would need; and it stops above the footer tabs. */
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
+    padding: var(--hud-gap) var(--hud-gap) calc(64px + 16px);
+  }
+
+  /* 3. THE LAW LINE AT THE BOTTOM OF THE FIELD, NOT ACROSS ITS MIDDLE.
+        The layer is a two-row grid: the comb first, the toolbar under it. The
+        labels layer starts at the top of the field again -- the headroom it
+        used to skip is below the field now. */
+  .queen27-page.is-shell .queen-catalog-layer {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .queen27-page.is-shell .queen-catalog-layer > .queen27-comb.is-embedded {
+    grid-row: 1;
+  }
+
+  .queen27-page.is-shell .queen-catalog-toolbar {
+    grid-row: 2;
+    padding: 0.3rem 0.5rem;
+    background: #000000b8;
+  }
+
+  .queen27-page.is-shell .queen-catalog-labels {
+    top: 0;
+  }
+
+  /* 4. REGION LABELS THAT FIT BETWEEN PORTALS. Two lines, smaller type, no
+        44px floor: five satellites project into a 340px-wide field here, and
+        a 90x50 label on each covered the next one's portal. */
+  .queen27-page.is-shell .queen-catalog-region {
+    min-height: 0;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  .queen27-page.is-shell .queen-catalog-region small {
+    font-size: 0.56rem;
+  }
+
+  /* 5. FOOTER TABS: 64px, the height the bar variable already names. */
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom {
+    height: 64px;
+    bottom: 8px;
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd {
+    height: 56px;
+  }
+
+  /* 6. THE SCENE FITS THE FIELD, NOT THE WINDOW. On a desktop the comb field is
+        fixed to the whole viewport and every panel floats over it -- the scene
+        is the container. On a phone the same rule centred the comb on the
+        window's middle, which is under the head, and left the field's lower
+        half empty. Here the field is the box the layer gives it, the Babylon
+        `fit()` measures that box, and the labels layer shares its origin so a
+        label still hangs over its portal. Nothing about the scene changes. */
+  .queen27-page.is-shell .queen-catalog-layer > .queen27-comb.is-embedded {
+    position: relative;
+  }
+
+  .queen27-page.is-shell .queen-catalog-layer .queen27-comb-field,
+  .queen27-page.is-shell .queen-catalog-layer .queen27-comb-field > .queen-hive-displays,
+  .queen27-page.is-shell .queen-catalog-layer .queen27-comb-field > .queen-starfield {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .queen27-page.is-shell .queen-catalog-layer > .queen-catalog-labels {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: var(--catalog-headroom);
+    left: 0;
+    width: auto;
+    height: auto;
+  }
+}
