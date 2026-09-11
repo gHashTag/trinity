@@ -3,6 +3,38 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'signal-health-self-run32',
+    title: 'A green self-check still had a boundary',
+    summary: '[measured] Signal health (self) run 32 completed successfully with 2 jobs and 11 successful steps, but the receipt covers only one scheduled chain.',
+    date: '2026-09-11',
+    readingMinutes: 4,
+    tags: ['CI', 'Reproducibility', 'Operations', 'Testing'],
+    receipts: [
+      { label: 'Public Signal health (self) run 32', href: 'https://github.com/gHashTag/trinity/actions/runs/34581703199' },
+      { label: 'Jobs API for run 32', href: 'https://api.github.com/repos/gHashTag/trinity/actions/runs/34581703199/jobs?per_page=100' },
+      { label: 'Head commit c8d73ce0', href: 'https://github.com/gHashTag/trinity/commit/c8d73ce00de23aaa772d6084c24cf6c472042d42' },
+    ],
+    openQuestions: [
+      'The receipt does not independently establish that the values written by the jobs are correct.',
+      'One scheduled run does not establish the health of the whole repository or the state of neighbouring workflows.',
+      'A single successful run does not establish a time trend; that needs a comparable series with retained values.',
+      'The run does not establish delivery of a blog page; live static delivery requires a separate URL check.',
+      'This is an operations and CI receipt. It does not establish FPGA or AX7203 behaviour, speed, energy, or downstream-model accuracy.',
+    ],
+    published: true,
+    ru: {
+      title: 'У зелёного self-check всё равно была граница',
+      summary: '[измерено] Signal health (self) run 32 успешно завершил 2 job и 11 шагов, но квитанция относится только к одной плановой цепочке.',
+      openQuestions: [
+        'Квитанция сама по себе не устанавливает корректность значений, записанных job.',
+        'Один плановый запуск не устанавливает состояние всего репозитория или соседних workflow.',
+        'Один успешный запуск не устанавливает временной тренд: для него нужен сопоставимый ряд с сохранёнными значениями.',
+        'Запуск не устанавливает доставку страницы блога; живую статическую доставку нужно проверять отдельным URL-запросом.',
+        'Это операционная CI-квитанция. Она не устанавливает поведение FPGA или AX7203, скорость, энергию или точность downstream-модели.',
+      ],
+    },
+  },
+  {
     slug: 'queen-phone-orientation-gate',
     title: 'A phone web view needed an orientation gate',
     summary: '[measured] Merged PR #983 changed 3 CSS files after a 390×480 Chrome check exposed a phone layout selected by height instead of orientation.',
