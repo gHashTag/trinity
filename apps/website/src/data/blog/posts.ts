@@ -1,4 +1,5 @@
 import { postsIndex } from './index'
+import { body as body_signal_health_self_run32, ruBody as ruBody_signal_health_self_run32 } from './bodies/signal-health-self-run32'
 import { body as body_queen_phone_orientation_gate, ruBody as ruBody_queen_phone_orientation_gate } from './bodies/queen-phone-orientation-gate'
 import { body as body_merge_diff_ci_boundaries, ruBody as ruBody_merge_diff_ci_boundaries } from './bodies/merge-diff-ci-boundaries'
 import { body as body_queen_foundation_snapshot_contract, ruBody as ruBody_queen_foundation_snapshot_contract } from './bodies/queen-foundation-snapshot-contract'
@@ -69,6 +70,7 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'signal-health-self-run32': { body: body_signal_health_self_run32, ruBody: ruBody_signal_health_self_run32 },
   'queen-phone-orientation-gate': { body: body_queen_phone_orientation_gate, ruBody: ruBody_queen_phone_orientation_gate },
   'merge-diff-ci-boundaries': { body: body_merge_diff_ci_boundaries, ruBody: ruBody_merge_diff_ci_boundaries },
   'four-languages-one-tri-extension': { body: body_four_languages_one_tri_extension, ruBody: ruBody_four_languages_one_tri_extension },
