@@ -584,6 +584,93 @@
     },
     "tri/worktrees": {
       "SUMMARY": "Что держат чекауты на этом диске. Ничего не удаляет."
+    },
+    "gHashTag/trinity:tri/bench": {
+      "SUMMARY": "Бенчмарки Trinity."
+    },
+    "gHashTag/trinity:tri/bio": {
+      "SUMMARY": "Биология v14.0 — сакральный анализ ДНК, РНК и белков."
+    },
+    "gHashTag/trinity:tri/blindspots": {
+      "SUMMARY": "Слепые пятна: поиск областей, где сакральная формула ещё не проверена."
+    },
+    "gHashTag/trinity:tri/conscious": {
+      "SUMMARY": "Метрики сознания Trinity."
+    },
+    "gHashTag/trinity:tri/constants": {
+      "SUMMARY": "Сакральные константы (phi, pi, e и их соотношения)."
+    },
+    "gHashTag/trinity:tri/cosmos": {
+      "SUMMARY": "Космология v15.0 — постоянная Хаббла и сакральные космологические константы."
+    },
+    "gHashTag/trinity:tri/dashboard": {
+      "SUMMARY": "Панель состояния Trinity."
+    },
+    "gHashTag/trinity:tri/fib": {
+      "SUMMARY": "Числа Фибоначчи."
+    },
+    "gHashTag/trinity:tri/fpga": {
+      "SUMMARY": "FPGA: синтез, прошивка и проверка."
+    },
+    "gHashTag/trinity:tri/gematria": {
+      "SUMMARY": "Гематрия: числовое значение текста."
+    },
+    "gHashTag/trinity:tri/govern": {
+      "SUMMARY": "Управление роем."
+    },
+    "gHashTag/trinity:tri/hardware": {
+      "SUMMARY": "Сведения об оборудовании."
+    },
+    "gHashTag/trinity:tri/identity": {
+      "SUMMARY": "Сакральное тождество phi^2 + 1/phi^2 = 3."
+    },
+    "gHashTag/trinity:tri/lucas": {
+      "SUMMARY": "Числа Люка."
+    },
+    "gHashTag/trinity:tri/mesh": {
+      "SUMMARY": "Состояние mesh-сети."
+    },
+    "gHashTag/trinity:tri/needle-check": {
+      "SUMMARY": "Needle: проверка качества кода."
+    },
+    "gHashTag/trinity:tri/needle-search": {
+      "SUMMARY": "Needle: поиск по шаблону в коде."
+    },
+    "gHashTag/trinity:tri/needle": {
+      "SUMMARY": "Needle: AST-редактирование кода."
+    },
+    "gHashTag/trinity:tri/omega": {
+      "SUMMARY": "Состояние Omega."
+    },
+    "gHashTag/trinity:tri/particles": {
+      "SUMMARY": "Физика частиц: константы и массы."
+    },
+    "gHashTag/trinity:tri/phi": {
+      "SUMMARY": "Золотое сечение phi и его степени."
+    },
+    "gHashTag/trinity:tri/quantum": {
+      "SUMMARY": "Квантовые константы."
+    },
+    "gHashTag/trinity:tri/reputation": {
+      "SUMMARY": "Репутация узла Omega."
+    },
+    "gHashTag/trinity:tri/sacred-const": {
+      "SUMMARY": "Сакральные константы для FPGA."
+    },
+    "gHashTag/trinity:tri/spiral": {
+      "SUMMARY": "Золотая спираль: координаты точек."
+    },
+    "gHashTag/trinity:tri/swarm": {
+      "SUMMARY": "Состояние роя агентов."
+    },
+    "gHashTag/trinity:tri/test": {
+      "SUMMARY": "Запуск тестов Trinity."
+    },
+    "gHashTag/trinity:tri/vsa": {
+      "SUMMARY": "VSA: связывание векторов."
+    },
+    "gHashTag/trinity:tri/wallet": {
+      "SUMMARY": "Баланс кошелька DePIN."
     }
   }
 }

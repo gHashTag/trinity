@@ -37,9 +37,15 @@ Two facts are recorded rather than fixed: `tri-mcp` is not registered in `.mcp.j
 pinned commit (`CONFIG` is empty), and the `tri-ssot` manifest names a module the tree does
 not contain.
 
-Two repositories are two lists. `gHashTag/trinity` has no `tri` binary at the pinned commit
-(`build.zig` defines none; its `.claude/skills/tri/SKILL.md` is a skill and is in the skills
-catalog), so its tools are its MCP servers only, under `REPO = "gHashTag/trinity"`.
+Two repositories are two lists. `gHashTag/trinity` does have a command-line binary of its own
+(an earlier version of this chapter said it had none; that was wrong): since S06 of
+gHashTag/trinity#988 its commands are cards under `specs/tools/trinity/tri/`, read from the one
+registry that binary exports and its CI holds to the binary (`.trinity/registry.json`, 29
+commands of a 187-entry table), with repository-qualified IDs (`gHashTag/trinity:tri/<command>`)
+so that a same-named command of the two binaries is never confused. `specs/tools/catalog.t27`
+states the schema, the identity rules and the legacy resolution; `specs/tools/mcp_protocol.t27`
+states what the Trinity MCP server does with a request; `tools/trinity_tools_registry.py` holds
+both and the cards to a measured inventory of the consumer.
 
 ## Who owns a tool
 

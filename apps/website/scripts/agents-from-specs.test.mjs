@@ -500,6 +500,96 @@ const withTools = (toolSpecs, agentSpecs = [], over = {}) => build(
   { toolSpecs: analyzeSpecFiles(analyze, toolSpecs), agentSpecs: analyzeSpecFiles(analyze, agentSpecs), ...over },
 )
 
+const trinityToolSrc = (name, { id = `gHashTag/trinity:tri/${name}`, repo = 'gHashTag/trinity', qualifiedId = `gHashTag/trinity:tri/${name}`, schema = 2, routeKind = 'execute_map', routed = true, collidesWith = '', witness = 'registry-export', extra = '' } = {}) => `module tool_trinity_tri_${name.replace(/-/g, '_')};
+pub const KIND : str = "tool";
+pub const FAMILY : str = "tri-cli";
+pub const ID : str = ${q(id)};
+pub const REPO : str = ${q(repo)};
+pub const QUALIFIED_ID : str = ${q(qualifiedId)};
+pub const SCHEMA : u32 = ${schema};
+pub const COMMAND : str = ${q(`tri ${name}`)};
+pub const VARIANT : str = "registry command ${name} (cli_namespace core)";
+pub const SOURCE : str = "src/registry/command_table.zig";
+pub const ENTRY : str = "src/tri/tri_register.zig execute_map, reached through src/tri/main.zig";
+pub const ROUTED : bool = ${routed};
+pub const ROUTE_KIND : str = ${q(routeKind)};
+pub const ROUTE_NOTE : str = "named by a live execute_map entry";
+pub const ABOUT : str = "Golden ratio constant and powers";
+pub const ABOUT_SOURCE : str = ".trinity/registry.json description";
+pub const ACTIONS : [0]str = [];
+pub const ACTIONS_ABOUT : [0]str = [];
+pub const ARGS : [1]str = ["<n>: integer, optional; power"];
+pub const ALIASES : [0]str = [];
+pub const NAMESPACE : str = "core";
+pub const MODE : str = "sync";
+pub const STABILITY : str = "stable";
+pub const CATEGORY : str = "math";
+pub const JOB_TIMEOUT : u32 = 300;
+pub const SIDE_EFFECTS : [0]str = [];
+pub const CAPABILITIES : [0]str = [];
+pub const MCP_ENABLED : bool = true;
+pub const MCP_NAME : str = "tri_${name.replace(/-/g, '_')}";
+pub const MCP_DISPLAY_NAME : str = "Phi";
+pub const EXAMPLES : [1]str = ["tri ${name} 10"];
+pub const EXIT_CODES : [2]str = ["0: every path that returns to main", "1: only where a handler exits"];
+pub const RESULT : str = "UnifiedOutput";
+pub const COLLIDES_WITH : str = ${q(collidesWith)};
+pub const AGENTS : [0]str = [];
+pub const AGENTS_NOTE : str = "no source binds a letter";
+pub const WHEN_TO_USE : str = "Golden ratio constant and powers";
+pub const WITNESS : str = ${q(witness)};
+pub const WITNESS_SOURCE : str = ".trinity/registry.json at 976df517, exported by zig build export-registry";
+pub const ENABLED : bool = true;
+${extra}`
+
+test('schema 2: a trinity/tri card is qualified only, joins the collision table when the t27 tri has the name, and a legacy card gains its qualified id', () => {
+  const r = withTools(toolFiles(
+    ['tri', 'test', triToolSrc('test', { extra: 'pub const REPO : str = "gHashTag/t27";\npub const QUALIFIED_ID : str = "gHashTag/t27:tri/test";\npub const SCHEMA : u32 = 2;' })],
+    ['trinity/tri', 'test', trinityToolSrc('test', { collidesWith: 'gHashTag/t27:tri/test' })],
+    ['trinity/tri', 'phi', trinityToolSrc('phi')],
+  ))
+  assert.deepEqual(r.problems, [])
+  const ids = r.tools.tools.map((t) => t.id)
+  assert.deepEqual(ids, ['gHashTag/trinity:tri/phi', 'gHashTag/trinity:tri/test', 'tri/test'])
+  const legacy = r.tools.tools.find((t) => t.id === 'tri/test')
+  assert.equal(legacy.qualifiedId, 'gHashTag/t27:tri/test')
+  assert.equal(legacy.schema, 2)
+  assert.deepEqual(r.tools.legacy, { 'tri/test': 'gHashTag/t27:tri/test' })
+  const trinity = r.tools.tools.find((t) => t.id === 'gHashTag/trinity:tri/test')
+  assert.equal(trinity.repo, 'gHashTag/trinity')
+  assert.equal(trinity.family, 'tri-cli')
+  assert.equal(trinity.command, 'tri test')
+  assert.equal(trinity.witness, 'registry-export')
+  assert.equal(trinity.moduleName, 'tool_trinity_tri_test')
+  assert.deepEqual(trinity.routing, { routed: true, kind: 'execute_map', note: 'named by a live execute_map entry' })
+  assert.equal(trinity.registry.mcpName, 'tri_test')
+  assert.equal(trinity.collidesWith, 'gHashTag/t27:tri/test')
+  assert.deepEqual(trinity.skills, [])
+  assert.match(trinity.links.source, /^https:\/\/github\.com\/gHashTag\/trinity\/blob\/.+\/src\/registry\/command_table\.zig$/)
+  assert.deepEqual(r.tools.collisions, [{ name: 'test', t27: 'gHashTag/t27:tri/test', trinity: 'gHashTag/trinity:tri/test' }])
+  assert.equal(r.tools.counts.trinityTri, 2)
+  assert.equal(r.tools.counts.schema2, 3)
+  assert.equal(r.tools.counts.collisions, 1)
+  assert.deepEqual(r.tools.groups.triByRepo, { 'gHashTag/t27': ['tri/test'], 'gHashTag/trinity': ['gHashTag/trinity:tri/phi', 'gHashTag/trinity:tri/test'] })
+  assert.equal(r.tools.counts.byWitness['registry-export'], 2)
+})
+
+test('schema 2: a trinity/tri card with a short id, a wrong repository, a wrong qualified id, an unknown route kind or a schema other than 2 is refused, and so is a legacy card whose QUALIFIED_ID is not REPO:ID', () => {
+  const p = (...triples) => withTools(toolFiles(...triples)).problems.filter((x) => !x.startsWith('specs/agents:')).join('\n')
+  assert.match(p(['trinity/tri', 'phi', trinityToolSrc('phi', { id: 'tri/phi' })]), /ID must be gHashTag\/trinity:tri\/phi/)
+  assert.match(p(['trinity/tri', 'phi', trinityToolSrc('phi', { repo: 'gHashTag/t27', qualifiedId: 'gHashTag/t27:tri/phi', id: 'gHashTag/t27:tri/phi' })]), /REPO must be gHashTag\/trinity/)
+  assert.match(p(['trinity/tri', 'phi', trinityToolSrc('phi', { qualifiedId: 'gHashTag/trinity:tri/fib' })]), /QUALIFIED_ID must be gHashTag\/trinity:tri\/phi/)
+  assert.match(p(['trinity/tri', 'phi', trinityToolSrc('phi', { routeKind: 'magic' })]), /ROUTE_KIND "magic"/)
+  assert.match(p(['trinity/tri', 'phi', trinityToolSrc('phi', { routed: false })]), /ROUTED must agree with ROUTE_KIND/)
+  assert.match(p(['trinity/tri', 'phi', trinityToolSrc('phi', { schema: 3 })]), /SCHEMA must be 2/)
+  assert.match(p(['trinity/tri', 'phi', trinityToolSrc('phi', { witness: 'guess' })]), /WITNESS "guess"/)
+  assert.match(p(['tri', 'cell', triToolSrc('cell', { extra: 'pub const REPO : str = "gHashTag/t27";\npub const QUALIFIED_ID : str = "gHashTag/t27:tri/seal";\npub const SCHEMA : u32 = 2;' })]), /QUALIFIED_ID must be gHashTag\/t27:tri\/cell/)
+  assert.match(p(['tri', 'cell', triToolSrc('cell', { extra: 'pub const REPO : str = "gHashTag/trinity";' })]), /REPO must be gHashTag\/t27 under tri\//)
+  assert.match(p(['tri', 'cell', triToolSrc('cell', { extra: 'pub const NEW_FIELD : str = "x";' })]), /unknown constant NEW_FIELD/)
+  // a legacy card without the three fields is still accepted (schema 1 until re-vendored)
+  assert.equal(p(['tri', 'cell', triToolSrc('cell')]), '')
+})
+
 test('a tri tool spec typechecks into a card with its actions, its owner letters, the skills whose text names it, and pinned source links', () => {
   const r = withTools(
     toolFiles(['tri', 'cell', triToolSrc('cell', { agents: ['W'], agentsNote: 'AGENTS_ALPHABET.md:144' })]),
@@ -562,7 +652,7 @@ test('tool problems: wrong directory family, unknown letter, empty AGENTS withou
   const p = r.problems.join('\n')
   assert.match(p, /tri\/cell\.t27: FAMILY must be "tri-cli" under tri\/, is "mcp"/)
   assert.match(p, /tri\/cell\.t27: AGENTS names "Q9", which is not a letter of the alphabet/)
-  assert.match(p, /tri\/cell\.t27: WITNESS "guessed" is not one of source-parse\|help-output/)
+  assert.match(p, /tri\/cell\.t27: WITNESS "guessed" is not one of source-parse\|registry-export\|help-output\|runtime/)
   assert.match(p, /tri\/cell\.t27: ABOUT is empty/)
   assert.match(p, /tri\/gen\.t27: duplicate tool ID tri\/cell/)
   assert.match(p, /tri\/gen\.t27: empty AGENTS needs an AGENTS_NOTE/)
@@ -588,13 +678,20 @@ test('tool translations come through the same i18n contract once SCOPE names spe
   assert.equal(r.tools.i18n[0].coverage.n, 1)
 })
 
-test('the committed tool catalog: 62 specs in two families, every agent link resolved both ways, RU summaries for all', async () => {
+test('the committed tool catalog: 91 specs in three directories at schema 2 (52 t27 tri, 29 Trinity tri, 10 mcp), a 62-entry legacy table, two collisions, every agent link resolved both ways, RU summaries for all', async () => {
   const { generate } = await import('./agents-from-specs.mjs')
   const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
   assert.deepEqual(r.problems, [])
-  assert.equal(r.tools.tools.length, 62)
-  assert.equal(r.tools.counts.tri, 52)
+  assert.equal(r.tools.tools.length, 91)
+  assert.equal(r.tools.counts.tri, 81)
+  assert.equal(r.tools.counts.trinityTri, 29)
   assert.equal(r.tools.counts.mcp, 10)
+  assert.equal(r.tools.counts.schema2, 91)
+  assert.equal(r.tools.schema, 2)
+  assert.equal(Object.keys(r.tools.legacy).length, 62)
+  assert.deepEqual(r.tools.collisions.map((c) => c.name), ['fpga', 'test'])
+  assert.equal(r.tools.counts.byWitness['registry-export'], 29)
+  for (const t of r.tools.tools) assert.equal(t.qualifiedId, `${t.repo}:${t.id.includes(':') ? t.id.split(':')[1] : t.id}`, `${t.id}: qualified id`)
   const byId = new Map(r.tools.tools.map((t) => [t.id, t]))
   for (const t of r.tools.tools) {
     assert.ok(t.agents.every((a) => a.ok), `${t.id}: unresolved agent`)

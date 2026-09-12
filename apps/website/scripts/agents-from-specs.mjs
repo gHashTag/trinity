@@ -75,10 +75,19 @@ export const AGENTS_OUT = 'public/agents/spec-agents.json'
 // Layer 5: the tri CLI and the MCP servers (specs/tools/tri/*.t27, specs/tools/mcp/*.t27).
 // The three corpus specs at the top of specs/tools/ are not tool cards and are not read.
 export const TOOL_SPEC_DIR = 'specs/tools'
-export const TOOL_SPEC_SUBDIRS = ['tri', 'mcp']
+export const TOOL_SPEC_SUBDIRS = ['tri', 'mcp', 'trinity/tri']
 export const TOOLS_OUT = 'public/tools/spec-tools.json'
-export const TOOL_FAMILIES = { tri: 'tri-cli', mcp: 'mcp' }
-export const TOOL_WITNESSES = ['source-parse', 'help-output']
+export const TOOL_FAMILIES = { tri: 'tri-cli', mcp: 'mcp', 'trinity/tri': 'tri-cli' }
+// Witnesses (specs/tools/catalog.t27): source-parse (read from the source at a named commit),
+// registry-export (read from an artifact the binary itself exported and CI holds to the binary),
+// help-output (diffed against the binary's --help), runtime (an invocation recorded). The
+// generator never upgrades a witness.
+export const TOOL_WITNESSES = ['source-parse', 'registry-export', 'help-output', 'runtime']
+export const TOOL_REPOS = ['gHashTag/t27', 'gHashTag/trinity']
+// Schema 2 (specs/tools/catalog.t27): every card carries REPO, QUALIFIED_ID (<owner>/<repo>:<family>/<name>)
+// and SCHEMA = 2; a legacy card keeps its short ID, a card under trinity/tri has ID = QUALIFIED_ID.
+export const TOOL_SCHEMA = 2
+export const TOOL_REPO_OF_SUBDIR = { tri: 'gHashTag/t27', 'trinity/tri': 'gHashTag/trinity' }
 export const CATALOG_SPEC_DIRS = new Set([SKILL_SPEC_DIR, CRON_SPEC_DIR, AGENT_SPEC_DIR, TOOL_SPEC_DIR])
 export const EXPERIENCE_PATH = 'public/agents/experience.json'
 export const AGENT_LAYERS = ['Archetypal', 'Spiritual', 'Physical']
@@ -202,6 +211,17 @@ const TOOL_MCP_REQUIRED = {
   REPO: 'str', SOURCE: 'str', ABOUT: 'str', ABOUT_SOURCE: 'str', TOOLS: 'arr', TOOLS_ABOUT: 'arr', TOOLS_INPUTS: 'arr', RESOURCES: 'arr',
   RESOURCES_ABOUT: 'arr', TOOLS_NOTE: 'str', EXTERNAL: 'bool', AGENTS: 'arr', AGENTS_NOTE: 'str', WITNESS: 'str', ENABLED: 'bool',
 }
+// Schema 2 fields a legacy card may carry (REPO is already required on mcp cards).
+const TOOL_TRI_SCHEMA2_OPTIONAL = { REPO: 'str', QUALIFIED_ID: 'str', SCHEMA: 'u32' }
+const TOOL_MCP_SCHEMA2_OPTIONAL = { QUALIFIED_ID: 'str', SCHEMA: 'u32' }
+// A card of the gHashTag/trinity tri (specs/tools/trinity/tri/<command>.t27), derived from the
+// registry that binary exports (.trinity/registry.json); every field required.
+const TOOL_TRINITY_TRI_REQUIRED = {
+  ...TOOL_TRI_REQUIRED, REPO: 'str', QUALIFIED_ID: 'str', SCHEMA: 'u32', ROUTED: 'bool', ROUTE_KIND: 'str', ROUTE_NOTE: 'str',
+  ALIASES: 'arr', NAMESPACE: 'str', MODE: 'str', STABILITY: 'str', CATEGORY: 'str', JOB_TIMEOUT: 'u32', SIDE_EFFECTS: 'arr', CAPABILITIES: 'arr',
+  MCP_ENABLED: 'bool', MCP_NAME: 'str', MCP_DISPLAY_NAME: 'str', EXAMPLES: 'arr', EXIT_CODES: 'arr', RESULT: 'str', COLLIDES_WITH: 'str', WITNESS_SOURCE: 'str',
+}
+const TOOL_ROUTE_KINDS = ['execute_map', 'parse_command', 'main_chain', 'cell_map', 'none']
 const INT_MAX = { u8: 0xff, u16: 0xffff, u32: 0xffffffff }
 export const CYRILLIC = /[\u0400-\u04ff]/
 
@@ -610,21 +630,36 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
   const seenLetter = new Map(agents.map((a) => [a.letter, a]))
   for (const t of toolSpecs) {
     const file = t.path
-    const m = /^specs\/tools\/(tri|mcp)\/([^/]+)\.t27$/.exec(file)
-    if (!m) { problems.push(`${file}: a tool spec must live in specs/tools/tri/ or specs/tools/mcp/`); continue }
+    const m = /^specs\/tools\/(tri|mcp|trinity\/tri)\/([^/]+)\.t27$/.exec(file)
+    if (!m) { problems.push(`${file}: a tool spec must live in specs/tools/tri/, specs/tools/mcp/ or specs/tools/trinity/tri/`); continue }
     const [, sub, base] = m
     if (!t.verdict.typecheckOk || t.verdict.discarded > 0 || !t.verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(t.verdict)})`)
-    problems.push(...checkSchema(t.consts, sub === 'tri' ? TOOL_TRI_REQUIRED : TOOL_MCP_REQUIRED, {}, file))
+    const [required, optional] = sub === 'tri' ? [TOOL_TRI_REQUIRED, TOOL_TRI_SCHEMA2_OPTIONAL] : sub === 'mcp' ? [TOOL_MCP_REQUIRED, TOOL_MCP_SCHEMA2_OPTIONAL] : [TOOL_TRINITY_TRI_REQUIRED, {}]
+    problems.push(...checkSchema(t.consts, required, optional, file))
     const f = plain(t.consts)
     if (f.KIND !== 'tool') problems.push(`${file}: KIND must be "tool"`)
     if (f.FAMILY !== TOOL_FAMILIES[sub]) problems.push(`${file}: FAMILY must be ${JSON.stringify(TOOL_FAMILIES[sub])} under ${sub}/, is ${JSON.stringify(f.FAMILY)}`)
-    const expectId = `${sub}/${base}`
+    // Identity (specs/tools/catalog.t27): a legacy card keeps ID = <family>/<name> and, at schema 2,
+    // QUALIFIED_ID = REPO:ID; a card under trinity/tri has ID = QUALIFIED_ID = gHashTag/trinity:tri/<name>.
+    const shortId = `${sub === 'trinity/tri' ? 'tri' : sub}/${base}`
+    const repo = sub === 'mcp' ? f.REPO : (f.REPO ?? TOOL_REPO_OF_SUBDIR[sub])
+    const qualifiedId = `${repo}:${shortId}`
+    const expectId = sub === 'trinity/tri' ? qualifiedId : shortId
     if (f.ID !== expectId) problems.push(`${file}: ID must be ${expectId}, is ${JSON.stringify(f.ID)}`)
+    if (sub !== 'mcp' && f.REPO !== undefined && f.REPO !== TOOL_REPO_OF_SUBDIR[sub]) problems.push(`${file}: REPO must be ${TOOL_REPO_OF_SUBDIR[sub]} under ${sub}/, is ${JSON.stringify(f.REPO)}`)
+    if (f.SCHEMA !== undefined && f.SCHEMA !== TOOL_SCHEMA) problems.push(`${file}: SCHEMA must be ${TOOL_SCHEMA}, is ${JSON.stringify(f.SCHEMA)}`)
+    if (f.QUALIFIED_ID !== undefined && f.QUALIFIED_ID !== qualifiedId) problems.push(`${file}: QUALIFIED_ID must be ${qualifiedId} (REPO:ID), is ${JSON.stringify(f.QUALIFIED_ID)}`)
+    if (sub === 'trinity/tri') {
+      if (f.SCHEMA === undefined || f.QUALIFIED_ID === undefined || f.REPO === undefined) problems.push(`${file}: a trinity/tri card must carry REPO, QUALIFIED_ID and SCHEMA`)
+      if (!TOOL_ROUTE_KINDS.includes(f.ROUTE_KIND)) problems.push(`${file}: ROUTE_KIND ${JSON.stringify(f.ROUTE_KIND)} is not one of ${TOOL_ROUTE_KINDS.join('|')}`)
+      if (f.ROUTED !== (f.ROUTE_KIND !== 'none')) problems.push(`${file}: ROUTED must agree with ROUTE_KIND`)
+      if (f.COLLIDES_WITH && !/^gHashTag\/t27:tri\/[^/]+$/.test(f.COLLIDES_WITH)) problems.push(`${file}: COLLIDES_WITH must name a gHashTag/t27:tri/<name> card or be empty`)
+    }
     if (typeof f.ID === 'string') {
       if (seenTool.has(f.ID)) problems.push(`${file}: duplicate tool ID ${f.ID} (also ${seenTool.get(f.ID)})`)
       seenTool.set(f.ID, file)
     }
-    const expectModule = `tool_${sub}_${base.replace(/[^A-Za-z0-9]+/g, '_')}`
+    const expectModule = `tool_${sub.replace('/', '_')}_${base.replace(/[^A-Za-z0-9]+/g, '_')}`
     if (t.moduleName && t.moduleName !== expectModule) problems.push(`${file}: module must be ${expectModule}, is ${t.moduleName}`)
     if (!TOOL_WITNESSES.includes(f.WITNESS)) problems.push(`${file}: WITNESS ${JSON.stringify(f.WITNESS)} is not one of ${TOOL_WITNESSES.join('|')}`)
     if (typeof f.ABOUT === 'string' && !f.ABOUT.trim()) problems.push(`${file}: ABOUT is empty`)
@@ -634,7 +669,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     if (letters.length === 0 && !(typeof f.AGENTS_NOTE === 'string' && f.AGENTS_NOTE.trim())) problems.push(`${file}: empty AGENTS needs an AGENTS_NOTE`)
     const same = (a, b, na, nb) => { if (Array.isArray(f[a]) && Array.isArray(f[b]) && f[a].length !== f[b].length) problems.push(`${file}: ${na} has ${f[a].length} entries, ${nb} has ${f[b].length}`) }
     let card
-    if (sub === 'tri') {
+    if (sub === 'tri' || sub === 'trinity/tri') {
       if (f.COMMAND !== `tri ${base}`) problems.push(`${file}: COMMAND must be "tri ${base}", is ${JSON.stringify(f.COMMAND)}`)
       same('ACTIONS', 'ACTIONS_ABOUT', 'ACTIONS', 'ACTIONS_ABOUT')
       const actions = (Array.isArray(f.ACTIONS) ? f.ACTIONS : []).map((name, i) => ({ name, about: f.ACTIONS_ABOUT?.[i] ?? '' }))
@@ -642,11 +677,20 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       // Skills whose own spec names this tri command (COMMAND or SUMMARY_EN text -- the
       // skill's fields, not a guess); the matched field is recorded beside the skill ID.
       const cmdRe = new RegExp(`(^|[^A-Za-z0-9_-])tri\\s+${base.replace(/[-/\\\\^$*+?.()|[\]{}]/g, '\\$&')}(?![A-Za-z0-9_-])`)
-      const skillIds = skills.flatMap((sk) => {
+      // The skills of this repository name the t27 tri; a Trinity command is never cross-linked by name.
+      const skillIds = sub !== 'tri' ? [] : skills.flatMap((sk) => {
         const via = ['COMMAND', 'SUMMARY_EN'].filter((k) => typeof sk.fields[k] === 'string' && cmdRe.test(sk.fields[k]))
         return via.length ? [{ id: sk.id, via }] : []
       }).sort((x, y) => (x.id < y.id ? -1 : 1))
-      card = { family: 'tri-cli', command: f.COMMAND, variant: f.VARIANT, actions, args, whenToUse: f.WHEN_TO_USE, skills: skillIds, aboutSource: f.ABOUT_SOURCE, repo: 'gHashTag/t27', source: f.SOURCE, entry: f.ENTRY }
+      card = { family: 'tri-cli', command: f.COMMAND, variant: f.VARIANT, actions, args, whenToUse: f.WHEN_TO_USE, skills: skillIds, aboutSource: f.ABOUT_SOURCE, repo, source: f.SOURCE, entry: f.ENTRY }
+      if (sub === 'trinity/tri') {
+        card.registry = { aliases: f.ALIASES ?? [], namespace: f.NAMESPACE, mode: f.MODE, stability: f.STABILITY, category: f.CATEGORY, jobTimeout: f.JOB_TIMEOUT, sideEffects: f.SIDE_EFFECTS ?? [], capabilities: f.CAPABILITIES ?? [], mcpEnabled: f.MCP_ENABLED === true, mcpName: f.MCP_NAME, mcpDisplayName: f.MCP_DISPLAY_NAME, examples: f.EXAMPLES ?? [] }
+        card.routing = { routed: f.ROUTED === true, kind: f.ROUTE_KIND, note: f.ROUTE_NOTE }
+        card.exitCodes = f.EXIT_CODES ?? []
+        card.result = f.RESULT
+        card.collidesWith = f.COLLIDES_WITH || null
+        card.witnessSource = f.WITNESS_SOURCE
+      }
     } else {
       same('TOOLS', 'TOOLS_ABOUT', 'TOOLS', 'TOOLS_ABOUT'); same('TOOLS', 'TOOLS_INPUTS', 'TOOLS', 'TOOLS_INPUTS'); same('RESOURCES', 'RESOURCES_ABOUT', 'RESOURCES', 'RESOURCES_ABOUT')
       if (!['stdio', 'http'].includes(f.TRANSPORT)) problems.push(`${file}: TRANSPORT ${JSON.stringify(f.TRANSPORT)} is not stdio|http`)
@@ -661,9 +705,11 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     const ref = card.repo === 'gHashTag/t27' ? pin.ref : (experience?.sources ?? []).find((x) => x.repo === 'trinity' && /^[0-9a-f]{40}$/.test(x.commit ?? ''))?.commit ?? 'main'
     tools.push({
       id: f.ID,
+      qualifiedId,
+      schema: f.SCHEMA ?? 1,
       specPath: file,
       summary: { en: f.ABOUT },
-      name: { en: sub === 'tri' ? f.COMMAND : f.SERVER },
+      name: { en: sub === 'mcp' ? f.SERVER : f.COMMAND },
       sha256: t.sha256,
       typecheckOk: t.verdict.typecheckOk,
       discarded: t.verdict.discarded,
@@ -790,6 +836,8 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     i18n: i18nFor(AGENT_SPEC_DIR, agents),
   })
   const triTools = tools.filter((x) => x.family === 'tri-cli'), mcpTools = tools.filter((x) => x.family === 'mcp')
+  const t27TriNames = new Set(triTools.filter((x) => x.repo === 'gHashTag/t27').map((x) => x.id.slice('tri/'.length)))
+  const collisions = triTools.filter((x) => x.repo === 'gHashTag/trinity' && t27TriNames.has(x.qualifiedId.split(':tri/')[1])).map((x) => ({ name: x.qualifiedId.split(':tri/')[1], t27: `gHashTag/t27:tri/${x.qualifiedId.split(':tri/')[1]}`, trinity: x.qualifiedId })).sort((a, b) => (a.name < b.name ? -1 : 1))
   const toolsOut = sortKeys({
     ...base,
     generatedAt,
@@ -808,11 +856,20 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
       mcpExternal: mcpTools.filter((x) => x.external).length,
       byWitness: Object.fromEntries(TOOL_WITNESSES.map((w) => [w, tools.filter((x) => x.witness === w).length])),
       byRepo: { 'gHashTag/t27': tools.filter((x) => x.repo === 'gHashTag/t27').length, 'gHashTag/trinity': tools.filter((x) => x.repo === 'gHashTag/trinity').length },
+      trinityTri: triTools.filter((x) => x.repo === 'gHashTag/trinity').length,
+      schema2: tools.filter((x) => x.schema === TOOL_SCHEMA).length,
+      collisions: collisions.length,
     },
+    // Schema 2 (specs/tools/catalog.t27): the legacy table maps every short ID to its qualified ID and
+    // nothing else resolves a short ID; a collision is a command name both binaries dispatch.
+    schema: TOOL_SCHEMA,
+    legacy: Object.fromEntries(tools.filter((x) => x.id !== x.qualifiedId).map((x) => [x.id, x.qualifiedId])),
+    collisions,
     // Grouping the navigator shows: tri commands by owning letter (unbound under '-'), MCP servers by repo.
     groups: {
       triByAgent: Object.fromEntries([...new Set(triTools.flatMap((x) => (x.agents.length ? x.agents.map((a) => a.letter) : ['-'])))].sort().map((l) => [l, triTools.filter((x) => (l === '-' ? x.agents.length === 0 : x.agents.some((a) => a.letter === l))).map((x) => x.id)])),
       mcpByRepo: Object.fromEntries(['gHashTag/t27', 'gHashTag/trinity'].map((r) => [r, mcpTools.filter((x) => x.repo === r).map((x) => x.id)])),
+      triByRepo: Object.fromEntries(TOOL_REPOS.map((r) => [r, triTools.filter((x) => x.repo === r).map((x) => x.id)])),
     },
     ladder,
     pin,
