@@ -38,6 +38,8 @@ jobs:
       # The leak checking is enabled by using std.testing.allocator in tests.
       # Additional runtime leak checking can be enabled with --zig-lib-dir.
       - name: Test (with leak detection)
+        # Explicit bash enables pipefail so tee cannot hide a failed test run.
+        shell: bash
         run: |
           # Run tests with Zig's built-in leak detection
           # Tests using std.testing.allocator will automatically detect leaks
