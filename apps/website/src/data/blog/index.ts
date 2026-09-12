@@ -3,6 +3,35 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'the-fpga-row-was-corrected',
+    title: 'The FPGA row was corrected before it became evidence',
+    summary: '[proven] A merged t27 PR corrected an invalid Yosys invocation and changed three FPGA status rows from green to red after 881 historical runs showed 36 successes, 842 failures, and 3 cancellations.',
+    date: '2026-09-12',
+    readingMinutes: 6,
+    tags: ['FPGA', 'CI', 'Reproducibility', 'Audit'],
+    receipts: [
+      { label: 'Merged gHashTag/t27 PR #2081', href: 'https://github.com/gHashTag/t27/pull/2081' },
+      { label: 'Merge commit d2a36bcd — CI and claim corrections', href: 'https://github.com/gHashTag/t27/commit/d2a36bcd192a247db37fba8ed64dfdae94fa0bcb' },
+    ],
+    openQuestions: [
+      'The PR leaves a placeholder chipdb, so this merge does not establish an end-to-end bitstream job.',
+      'The local gen-verilog smoke result is 5/5, but that is not synthesis, placement, routing, or a flashed design on ALINX AX7203.',
+      'The 881-run breakdown is a repository CI receipt, not a new board measurement, silicon result, speed result, energy result, or downstream-model result.',
+      'The corrected documentation does not establish a new gf16 frequency, LUT result, or physical-device result.',
+    ],
+    published: true,
+    ru: {
+      title: 'Строку FPGA исправили до того, как она стала доказательством',
+      summary: '[доказано] Смерженный PR в t27 исправил некорректный вызов Yosys и изменил три строки статуса FPGA с зелёных на красные после 881 исторического запуска: 36 успехов, 842 ошибки и 3 отмены.',
+      openQuestions: [
+        'В PR остаётся placeholder chipdb, поэтому это слияние не устанавливает сквозной bitstream job.',
+        'Локальная smoke-проверка gen-verilog дала 5/5, но это не синтез, placement, routing и не прошитый дизайн на ALINX AX7203.',
+        'Разбивка 881 запуска — квитанция CI репозитория, а не новое измерение на плате, результат на кремнии, результат по скорости, энергии или downstream-модели.',
+        'Исправленная документация не устанавливает новую частоту gf16, результат по LUT или результат на физическом устройстве.',
+      ],
+    },
+  },
+  {
     slug: 'signal-health-self-run32',
     title: 'A green self-check still had a boundary',
     summary: '[measured] Signal health (self) run 32 completed successfully with 2 jobs and 11 successful steps, but the receipt covers only one scheduled chain.',
