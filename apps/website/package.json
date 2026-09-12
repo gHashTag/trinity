@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "atlas": "node --experimental-strip-types scripts/universe-atlas.mjs",
+  "discover": "node scripts/discover-t27-worlds.mjs",
+  "check:discovery": "node --experimental-strip-types qa/t27-world-discovery.mjs",
     "check:queen-atlas": "node --experimental-strip-types qa/queen-universe-atlas.mjs",
     "check:queen-treasury": "node --experimental-strip-types qa/queen-spec-treasury.mjs",
     "check:queen-catalog": "node --experimental-strip-types qa/queen-catalog-hive.mjs",

@@ -26,7 +26,10 @@ for(const [width,height] of [[1440,800],[390,600],[390,300]]){
   for(const region of world.map.regions){
     const view=data.catalogFocusView(world.map,region.portalIndex,halfWidth,halfHeight,width,height);
     for(const i of region.indices){const p=positions[i];assert(Math.abs(p.x-view.x)+HEX_R*p.scale<halfWidth/view.zoom);assert(Math.abs(p.y-view.y)+HEX_R*p.scale<halfHeight/view.zoom);}
-    for(const i of region.indices){const view=data.catalogFocusView(world.map,i,halfWidth,halfHeight,width,height),p=positions[i];assert.equal(view.x,p.x);assert.equal(view.y,p.y);const projected=S_CELL*p.scale*width/(halfWidth*2)*view.zoom;assert(projected>=Math.min(260,width*.84,height*.74),'Close-up stays readable at the actual viewport');}
+    // hiveFocusZoom solves for the readable size exactly, so at the smallest viewport the
+    // bound is an equality and floating point may land a few 1e-14 px under it (it did at
+    // 390x300 once the field held eight repositories). A pixel fraction is not a regression.
+    for(const i of region.indices){const view=data.catalogFocusView(world.map,i,halfWidth,halfHeight,width,height),p=positions[i];assert.equal(view.x,p.x);assert.equal(view.y,p.y);const projected=S_CELL*p.scale*width/(halfWidth*2)*view.zoom;assert(projected>=Math.min(260,width*.84,height*.74)-1e-6,'Close-up stays readable at the actual viewport');}
   }
 }
 for(const region of world.map.regions){

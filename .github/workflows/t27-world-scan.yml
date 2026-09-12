@@ -1,0 +1,95 @@
+# Scan GitHub for repositories that write .t27 specs and keep the catalog current.
+#
+# The catalog behind #/specs and the Queen map knew five repositories, each typed
+# into apps/website/scripts/sync-t27-specs.mjs by hand. gHashTag/trios (71 specs)
+# sat in the same owner's public inventory unnoticed, and
+# dmitrii-f-t27/trinity-memory belongs to another owner, so no list would have
+# found it. This runs the scan whose contract is
+# apps/website/public/t27/files/specs/catalog/discovery.t27 (owners, exclusions,
+# what qualifies), vendors what qualifies, rebuilds the shared core and the
+# atlas, runs the catalog gates and commits the data -- the way
+# signal-health-self.yml commits its numbers.
+#
+# Publishing stays with deploy-site.yml, manual on purpose: content is approved
+# before it goes out. The five founding sources are not refreshed here either;
+# they come from a local t27 checkout that carries the teaching course on a
+# branch not yet on t27 master (see sync-t27-specs.mjs), and a re-vendor from
+# GitHub alone would delete it from the site.
+name: t27 world scan
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/website/package-lock.json
+
+      - run: npm ci
+
+      # Public reads only: owner inventories, code search, trees, blobs, tarballs,
+      # open issues. The token is the workflow's own; nothing is written to GitHub
+      # by these commands, and the reports carry no credentials.
+      - name: Scan, vendor, index, atlas
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          npm run discover -- scan --out "$RUNNER_TEMP/discovery.json"
+          npm run discover -- vendor --report "$RUNNER_TEMP/discovery.json"
+          npm run core -- index
+          # The generated catalogs pin the manifest by hash (check:agents, check:docs refuse
+          # a stale one), so they are rebuilt here exactly as prebuild rebuilds them.
+          node scripts/skills-core.mjs index
+          node scripts/agents-from-specs.mjs
+          node scripts/docs-from-specs.mjs
+          npm run atlas -- scan --discovery "$RUNNER_TEMP/discovery.json" --out "$RUNNER_TEMP/atlas-report.json"
+          npm run atlas -- build --report "$RUNNER_TEMP/atlas-report.json"
+          node -e "const r=require('$RUNNER_TEMP/discovery.json');console.log('worlds: '+r.worlds.join(', ')+'; founding: '+r.founding.length+'; code search: '+r.codeSearch.status)" >> "$GITHUB_STEP_SUMMARY"
+
+      # The same gates a PR runs on the catalog, against the tree about to be committed.
+      - name: Catalog gates
+        run: |
+          set -euo pipefail
+          npm run check:discovery
+          npm run check:shared-core
+          npm run check:spec-catalog
+          npm run check:queen-atlas
+          npm run check:queen-catalog
+          npm run check:queen-continuous
+          npm run check:queen-spec-mirrors
+          npm run check:skills-catalog
+          npm run check:crons-catalog
+          npm run check:agents
+          npm run check:tools
+          npm run check:docs
+
+      - name: Commit if the catalog changed
+        run: |
+          set -uo pipefail
+          git config user.name  't27 world scan'
+          git config user.email 'admin@t27.ai'
+          git add public/t27 public/skills public/crons public/agents public/tools public/functions public/docs qa/language-exceptions.json
+          if git diff --cached --quiet; then
+            echo "- no change" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          N=$(node -e "const m=require('./public/t27/manifest.json');console.log(m.repos.length+' repositories, '+m.specCount+' specs')")
+          git commit -q -m "t27 worlds: refresh the catalog ($N)"
+          git push -q
+          echo "- committed: $N" >> "$GITHUB_STEP_SUMMARY"

@@ -13,7 +13,9 @@ let count=0;
 for(const spec of atlas.specs)for(const source of spec.sources){
   const entry=resolveManifestSpec(manifest,source.path);
   assert.equal(entry.path,source.path);
-  assert.equal(entry.repo,source.repo.split('/')[1]);
+  // Founding sources are labelled by bare name (t27, tri-net); a scanned world of another
+  // owner carries owner/name, so two owners with a repository of one name cannot collide.
+  assert.equal(entry.repo.includes('/')?entry.repo:`ghashtag/${entry.repo}`,source.repo);
   const url=new URL(canonicalSpecUrl(source.path));
   assert.equal(new URLSearchParams(url.hash.split('?')[1]).get('spec'),source.path);
   const bytes=readFileSync('public/t27/files/'+entry.path);
