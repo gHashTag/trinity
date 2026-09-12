@@ -109,6 +109,11 @@ jobs:
       # still refuse a spec whose own tests do not hold.
       - name: Viewport spec
         run: npm run check:viewport && npm run test:viewport-spec
+      # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
+      # its pure decisions, and the manifest merge that must never touch a founding
+      # source. The scan itself runs against GitHub in t27-world-scan.yml.
+      - name: t27 world discovery
+        run: npm run check:discovery
 
       - name: Build
         run: npx vite build

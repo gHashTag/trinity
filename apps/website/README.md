@@ -135,7 +135,7 @@ SPA `#/blog/<slug>` отдаёт 200 всегда и доказательств�
 
 | Маршрут | Корпус | Откуда данные |
 |---|---|---|
-| `#/specs` | 760 спек `.t27` | `public/t27/`, вендорится `scripts/sync-t27-specs.mjs` |
+| `#/specs` | спеки `.t27` пяти исходных репозиториев и всех миров, найденных сканированием | `public/t27/`, вендорится `scripts/sync-t27-specs.mjs` и `scripts/discover-t27-worlds.mjs` |
 | `#/skills` | опубликованные скилы трёх репозиториев | `public/skills/`, вендорится `scripts/sync-skills.mjs` |
 | `#/crons` | всё, что запускается по расписанию | `public/crons/manifest.json`, `scripts/sync-crons.mjs` |
 | `#/clients` | память CRM владельца | ничего не вендорится — живой вызов `/mcp` |
@@ -198,9 +198,48 @@ Railway и из репозитория не читается — страниц�
 инструменты плюс `crm_touch`, который меняет лишь нашу память. Отправка —
 в боте, после нажатия на карточку. Со страницы не уходит ничего.
 
+### Автосканирование репозиториев со спеками .t27
+
+Пять исходных репозиториев каталога (`t27`, `tri-net`, `trinity`, `trinity-fpga`,
+`tt-trinity-corona`) вендорятся вручную из локального checkout t27 скриптом
+`scripts/sync-t27-specs.mjs`: этот checkout несёт учебный курс (`specs/tutorial`,
+`hello_world`) на ветке, которой ещё нет на master t27, и пере-выгрузка «с GitHub»
+удалила бы курс с сайта. Всё остальное каталог находит сам.
+
+Контракт сканирования — спека `public/t27/files/specs/catalog/discovery.t27`
+(модуль `catalog_discovery`): какие владельцы GitHub сканируются (`OWNERS`), что
+исключается (приватные, форки, зеркало сборки `ghashtag.github.io`), что считается
+репозиторием на t27 (один из первых `PROBE_FILES` файлов `.t27` даёт компилятору
+не меньше `MIN_DECLARATIONS` объявлений — компилятор принимает любой текст как
+пустой модуль, поэтому «компилируется» ничего не доказывает), и пределы. Скрипт
+читает константы через вендоренный wasm, проверяет схему и прогоняет тесты спеки
+до первого обращения к GitHub.
+
+```bash
+npm run discover -- scan   --out /абсолютный/путь/NEW-discovery.json   # инвентари владельцев + code search, деревья, проба компилятором
+npm run discover -- vendor --report /абсолютный/путь/discovery.json    # тарболы миров, дедупликация по байтам, manifest.json
+npm run core -- index                                                   # shared-core.json
+node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs  # каталоги, которые пиннят манифест по sha
+npm run atlas -- scan  --discovery /абсолютный/путь/discovery.json --out /абсолютный/путь/NEW-atlas.json
+npm run atlas -- build --report /абсолютный/путь/NEW-atlas.json          # universe-atlas.json — карта Queen
+npm run check:discovery                                                 # контракт: спека, решения, слияние манифеста
+```
+
+Файлы найденного мира лежат в `public/t27/files/<name>/` для репозиториев gHashTag
+(как у исходных пяти) и в `public/t27/files/<owner>/<name>/` для любого другого
+владельца; в манифесте такой мир помечен `discoveredAt`, и повторное сканирование
+заменяет его записи целиком, не трогая остальные. Отчёты сканирования не
+перезаписываются, в GitHub ничего не пишется, приватные репозитории не читаются.
+
+Расписание: `.github/workflows/t27-world-scan.yml` запускает эту цепочку раз в
+сутки, прогоняет гейты каталога и коммитит данные, как `signal-health-self.yml`
+коммитит свои числа. Публикация на t27.ai остаётся за `deploy-site.yml` — вручную,
+по правилу «контент утверждается до выхода».
+
 ### Проверки
 
 ```bash
+npm run check:discovery         # сканирование миров: контракт-спека, решения, слияние манифеста
 npm run check:skills-catalog    # каталог скилов: sha, id, связи, обратимость
 npm run check:crons-catalog     # каталог кронов: строки исходников перечитаны
 npm run check:clients-console   # безопасность консоли владельца
