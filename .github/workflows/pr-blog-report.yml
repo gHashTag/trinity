@@ -1,0 +1,75 @@
+name: PR work report and blog
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened, ready_for_review, closed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: 'PR number to validate or recover after a failed merge dispatch'
+        required: true
+        type: string
+
+# Never check out or execute the PR head in this privileged workflow.
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-blog-report-${{ github.event.pull_request.number || inputs.pr }}
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      statuses: write
+      issues: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Load current PR metadata as data, not executable input
+        run: |
+          set -euo pipefail
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" > /tmp/pr.json
+          python3 -c 'import json; from pathlib import Path; p=json.loads(Path("/tmp/pr.json").read_text()); Path("/tmp/event.json").write_text(json.dumps({"repository":{"full_name":p["base"]["repo"]["full_name"]},"number":p["number"],"pull_request":p}))'
+      - name: Validate mandatory report and generate blog draft
+        id: validate
+        continue-on-error: true
+        run: python3 scripts/pr_blog_report.py validate --event /tmp/event.json --output /tmp/pr-blog
+      - name: Bind the required status to the current PR head
+        if: always()
+        env:
+          VALIDATION: ${{ steps.validate.outcome }}
+        run: |
+          set -euo pipefail
+          SHA=$(jq -er '.head.sha' /tmp/pr.json)
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]
+          STATE=failure
+          DESC='Missing, stale or invalid work report; see the workflow log'
+          if [ "$VALIDATION" = success ]; then
+            STATE=success
+            DESC='Current-head work report validated; blog draft generated'
+          fi
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$SHA" \
+            -f state="$STATE" -f context='T27 work report' -f description="$DESC" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --silent
+          [ "$STATE" = success ]
+      - name: Save generated report and draft
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-${{ env.PR_NUMBER }}-blog-draft
+          path: /tmp/pr-blog/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Enqueue merged PR and start its dedicated author
+        run: python3 scripts/pr_blog_dispatch.py --event /tmp/event.json --draft-dir /tmp/pr-blog

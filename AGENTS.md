@@ -1,5 +1,25 @@
 # AGENTS.md — Trinity 27-Agent Alphabet
 
+## Mandatory work report → blog (all PRs)
+
+Before requesting review or claiming completion, every agent MUST add the
+machine-readable work report described in [docs/PR_BLOG_AUTOMATION.md](docs/PR_BLOG_AUTOMATION.md)
+to the PR body. Bind `head_sha` to the latest commit, record actual changes,
+test commands/results/evidence, what failed or was not run, and limitations.
+Update the report after every push. A checked checkbox or “all tests pass”
+without evidence is not a report. Never fabricate results to satisfy the gate.
+
+The required `T27 work report` status validates this contract using trusted
+base-branch code. Every valid PR creates a source-linked blog draft; only a
+merged PR enters the publication queue. Do not call a draft, dispatched task,
+merged article source, or uploaded cover “published”: verify the live canonical
+t27.ai article and its complete triptych first. Publication-only PRs link their
+existing article instead of starting an endless blog-about-blog chain.
+
+Read the blog skill before writing content. Preserve the user's img2img
+triptych, mandatory hashtags, truthful limitations and relevant service offer.
+Never omit the work report for a small, documentation-only or automation PR.
+
 **Version**: 2.0
 **Date**: 2026-04-04
 **Status**: Active
