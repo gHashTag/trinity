@@ -20,6 +20,8 @@ pub const ENV : [0]str = [];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = ".claude/mcp/tri-ssot/manifest.json";
 pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:mcp/tri-ssot";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = ".claude/mcp/tri-ssot/manifest.json";
 pub const ABOUT : str = "SSOT Integration for t27: GitHub Issues + PRs + Documentation -> NotebookLM";
 pub const ABOUT_SOURCE : str = "manifest.json description";

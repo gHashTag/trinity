@@ -20,6 +20,8 @@ pub const ENV : [2]str = ["PROJECT_ROOT", "ENFORCE_L1"];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = ".mcp.json";
 pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:mcp/t27-traceability";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = "scripts/mcp-traceability-server.js";
 pub const ABOUT : str = "MCP server over stdio that checks L1 TRACEABILITY (Closes #N) in commit messages and PR descriptions, generates compliant commit messages, validates branch names and serves the PHI LOOP stacked-branch template; resources expose the constitution and the L1 audit.";
 pub const ABOUT_SOURCE : str = "derived from the tool and resource descriptions in scripts/mcp-traceability-server.js";

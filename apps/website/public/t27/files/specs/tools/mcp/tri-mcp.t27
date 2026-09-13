@@ -20,6 +20,8 @@ pub const ENV : [0]str = [];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = "";
 pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:mcp/tri-mcp";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = "cli/tri-mcp/src/main.rs";
 pub const ABOUT : str = "Rust MCP server exposing the PHI LOOP tri commands as tools: status, skill begin/end, cell checkpoint/seal, gen, test, verdict, experience save, health.";
 pub const ABOUT_SOURCE : str = "derived from the tool descriptions in cli/tri-mcp/src/main.rs build_tools_list";

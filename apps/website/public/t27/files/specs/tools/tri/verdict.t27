@@ -11,6 +11,9 @@ module tool_tri_verdict;
 pub const KIND : str = "tool";
 pub const FAMILY : str = "tri-cli";
 pub const ID : str = "tri/verdict";
+pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:tri/verdict";
+pub const SCHEMA : u32 = 2;
 pub const COMMAND : str = "tri verdict";
 ; clap enum variant and where the dispatch lands
 pub const VARIANT : str = "Commands::Verdict";

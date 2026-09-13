@@ -11,6 +11,9 @@ module tool_tri_abandoned;
 pub const KIND : str = "tool";
 pub const FAMILY : str = "tri-cli";
 pub const ID : str = "tri/abandoned";
+pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:tri/abandoned";
+pub const SCHEMA : u32 = 2;
 pub const COMMAND : str = "tri abandoned";
 ; clap enum variant and where the dispatch lands
 pub const VARIANT : str = "Commands::Abandoned";
