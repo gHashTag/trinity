@@ -1,0 +1,38 @@
+name: t27 inngest key probe
+
+# Вспомогательный workflow: проверяет, доступен ли ключ события Inngest
+# существующим секретом RAILWAY_API_TOKEN. Печатает ТОЛЬКО имена переменных
+# и длину найденного ключа, самих значений не печатает.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+    steps:
+      - name: Опросить переменные сервисов
+        run: |
+          set -uo pipefail
+          probe() {
+            local NAME="$1" SID="$2"
+            RESP=$(curl -sS -X POST https://backboard.railway.com/graphql/v2 \
+              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"query\":\"query(\$p:String!,\$e:String!,\$s:String!){variables(projectId:\$p,environmentId:\$e,serviceId:\$s)}\",\"variables\":{\"p\":\"${RAILWAY_PROJECT_ID}\",\"e\":\"${RAILWAY_ENVIRONMENT_ID}\",\"s\":\"${SID}\"}}")
+            echo "=== ${NAME} (${SID})"
+            printf '%s' "$RESP" | jq -r 'if .errors then ("ошибка: " + (.errors[0].message)) else (.data.variables | keys | join(", ")) end'
+            printf '%s' "$RESP" | jq -r '.data.variables.INNGEST_EVENT_KEY // "" | if . == "" then "INNGEST_EVENT_KEY: нет" else "INNGEST_EVENT_KEY: есть, длина \(length)" end'
+          }
+          probe "inngest/inngest" "3cb0290e-0858-47e6-921d-edd10ed6de3c"
+          probe "trios-agent-server" "40d67e62-08bd-4eea-b709-7201242e9d82"
+          echo "=== сервисы проекта"
+          curl -sS -X POST https://backboard.railway.com/graphql/v2 \
+            -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"query(\$id:String!){project(id:\$id){name services{edges{node{id name}}}}}\",\"variables\":{\"id\":\"${RAILWAY_PROJECT_ID}\"}}" \
+            | jq -r 'if .errors then ("ошибка: " + .errors[0].message) else (.data.project.name, (.data.project.services.edges[] | "\(.node.name) \(.node.id)")) end'
