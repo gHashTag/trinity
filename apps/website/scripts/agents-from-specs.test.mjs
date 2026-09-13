@@ -678,17 +678,20 @@ test('tool translations come through the same i18n contract once SCOPE names spe
   assert.equal(r.tools.i18n[0].coverage.n, 1)
 })
 
-test('the committed tool catalog: 91 specs in three directories at schema 2 (52 t27 tri, 29 Trinity tri, 10 mcp), a 62-entry legacy table, two collisions, every agent link resolved both ways, RU summaries for all', async () => {
+test('the committed tool catalog: 92 specs in three directories at schema 2 (52 t27 tri, 29 Trinity tri, 11 mcp), a 63-entry legacy table, two collisions, every agent link resolved both ways, RU summaries for all', async () => {
   const { generate } = await import('./agents-from-specs.mjs')
   const r = await generate({ generatedAt: '2026-01-01T00:00:00.000Z' })
   assert.deepEqual(r.problems, [])
-  assert.equal(r.tools.tools.length, 91)
+  assert.equal(r.tools.tools.length, 92)
   assert.equal(r.tools.counts.tri, 81)
   assert.equal(r.tools.counts.trinityTri, 29)
-  assert.equal(r.tools.counts.mcp, 10)
-  assert.equal(r.tools.counts.schema2, 91)
+  assert.equal(r.tools.counts.mcp, 11)
+  assert.equal(r.tools.counts.schema2, 92)
   assert.equal(r.tools.schema, 2)
-  assert.equal(Object.keys(r.tools.legacy).length, 62)
+  assert.equal(Object.keys(r.tools.legacy).length, 63)
+  // The eleventh mcp card is the Queen's scheduler; its witness is the only help-output one.
+  assert.equal(r.tools.counts.byWitness['help-output'], 1)
+  assert.equal(byIdOf(r).get('mcp/inngest-dev')?.agents.map((a) => a.letter).join(), 'T')
   assert.deepEqual(r.tools.collisions.map((c) => c.name), ['fpga', 'test'])
   assert.equal(r.tools.counts.byWitness['registry-export'], 29)
   for (const t of r.tools.tools) assert.equal(t.qualifiedId, `${t.repo}:${t.id.includes(':') ? t.id.split(':')[1] : t.id}`, `${t.id}: qualified id`)
@@ -700,6 +703,8 @@ test('the committed tool catalog: 91 specs in three directories at schema 2 (52 
   }
   for (const a of r.agents.agents) for (const t of a.tools) assert.ok(byId.get(t.id)?.agents.some((x) => x.letter === a.letter), `${a.id} -> ${t.id} is one-way`)
 })
+
+const byIdOf = (r) => new Map(r.tools.tools.map((t) => [t.id, t]))
 
 test('agent translations come through the same i18n contract once SCOPE names specs/agents', () => {
   const spec = i18nFiles(i18nSrc({ scope: ['specs/skills', 'specs/crons', 'specs/agents'] }))
