@@ -116,6 +116,11 @@ const UI = {
     unknown: 'unknown',
     lastRun: 'last run',
     lastError: 'last error',
+    lastProbe: 'last probe',
+    probeAsExpected: 'as expected',
+    probeUnexpected: 'not as expected',
+    probeExpects: 'expects',
+    noProbeYet: 'no probe reported',
     noRunsYet: 'no run reported',
     healthRing: 'HEALTH, 24 H',
     healthRingHint: 'Completed against failed runs across every reported function, last 24 hours.',
@@ -217,6 +222,11 @@ const UI = {
     unknown: 'неизвестно',
     lastRun: 'последний запуск',
     lastError: 'последняя ошибка',
+    lastProbe: 'последняя проба',
+    probeAsExpected: 'как ожидалось',
+    probeUnexpected: 'не как ожидалось',
+    probeExpects: 'ожидание',
+    noProbeYet: 'проб не сообщено',
     noRunsYet: 'запусков не сообщено',
     healthRing: 'ЗДОРОВЬЕ, 24 Ч',
     healthRingHint: 'Завершённые против упавших запусков по всем сообщённым функциям за последние 24 часа.',
@@ -884,6 +894,17 @@ export default function FunctionExplorer() {
                         selectedLive?.lastRun
                           ? mono(`${selectedLive.lastRun.status ?? ui.unknown} · ${shortDate(selectedLive.lastRun.endedAt)}${selectedLive.lastRun.id ? ` · ${selectedLive.lastRun.id}` : ''}`)
                           : liveText(selectedLive ? ui.noRunsYet : ui.unknown),
+                      )}
+                      {row(
+                        ui.lastProbe,
+                        selectedLive?.lastProbe
+                          ? mono(
+                              `${selectedLive.lastProbe.status ?? ui.unknown} · ${shortDate(selectedLive.lastProbe.endedAt)} · ${ui.probeExpects} ${selectedLive.lastProbe.expect ?? selectedLive.probeExpect ?? ui.unknown}${
+                                selectedLive.lastProbe.asExpected === null ? '' : ` · ${selectedLive.lastProbe.asExpected ? ui.probeAsExpected : ui.probeUnexpected}`
+                              }`,
+                              selectedLive.lastProbe.asExpected === false ? C.bad : undefined,
+                            )
+                          : liveText(selectedLive ? ui.noProbeYet : ui.unknown),
                       )}
                       {row(ui.lastError, selectedLive?.lastError ? mono(selectedLive.lastError, C.bad) : liveText(selectedLive ? '—' : ui.unknown))}
                     </div>
