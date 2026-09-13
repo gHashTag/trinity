@@ -11,6 +11,9 @@ module tool_tri_misread;
 pub const KIND : str = "tool";
 pub const FAMILY : str = "tri-cli";
 pub const ID : str = "tri/misread";
+pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:tri/misread";
+pub const SCHEMA : u32 = 2;
 pub const COMMAND : str = "tri misread";
 ; clap enum variant and where the dispatch lands
 pub const VARIANT : str = "Commands::Misread";

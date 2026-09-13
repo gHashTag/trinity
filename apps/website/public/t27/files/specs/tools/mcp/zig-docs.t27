@@ -20,6 +20,8 @@ pub const ENV : [0]str = [];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = ".mcp.json";
 pub const REPO : str = "gHashTag/trinity";
+pub const QUALIFIED_ID : str = "gHashTag/trinity:mcp/zig-docs";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = ".mcp.json";
 pub const ABOUT : str = "External MCP server `zig-docs` registered in .mcp.json; launched as `npx -y @nichochar/zig-mcp@latest`.";
 pub const ABOUT_SOURCE : str = ".mcp.json entry; no tool list in this repository";

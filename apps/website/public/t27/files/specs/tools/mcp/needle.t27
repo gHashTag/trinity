@@ -20,6 +20,8 @@ pub const ENV : [0]str = [];
 ; The .mcp.json that registers the server ("" when it is not registered at this commit).
 pub const CONFIG : str = ".claude-plugin/.mcp.json";
 pub const REPO : str = "gHashTag/trinity";
+pub const QUALIFIED_ID : str = "gHashTag/trinity:mcp/needle";
+pub const SCHEMA : u32 = 2;
 pub const SOURCE : str = "tools/mcp/needle_mcp/server.zig";
 pub const ABOUT : str = "Zig MCP server for AST-aware code editing (needle): structural search and replace, quality gates, preview.";
 pub const ABOUT_SOURCE : str = "derived from the tool descriptions in tools/mcp/needle_mcp/server.zig";

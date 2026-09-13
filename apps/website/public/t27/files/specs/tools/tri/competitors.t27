@@ -11,6 +11,9 @@ module tool_tri_competitors;
 pub const KIND : str = "tool";
 pub const FAMILY : str = "tri-cli";
 pub const ID : str = "tri/competitors";
+pub const REPO : str = "gHashTag/t27";
+pub const QUALIFIED_ID : str = "gHashTag/t27:tri/competitors";
+pub const SCHEMA : u32 = 2;
 pub const COMMAND : str = "tri competitors";
 ; clap enum variant and where the dispatch lands
 pub const VARIANT : str = "Commands::Competitors";

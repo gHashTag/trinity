@@ -39,8 +39,8 @@ pub const SKILLS : [2]str = ["t27/phi-loop", "t27/tri-pipeline"];
 pub const SKILLS_NOTE : str = ".claude/agents/trinity.md, Phase 2 PLAN: \"Identify required skills (phi-loop, tri-pipeline)\"; Phase 4 VERIFY: \"Run conformance tests via tri-pipeline\". specs/OWNERS.md lists skills/ and crons/ under T-Queen, which is catalog ownership, not a held skill.";
 ; Tool IDs (specs/tools) the agent holds. Bound only where a source line names the command
 ; for this letter; TOOLS_NOTE cites that line or says why the list is empty.
-pub const TOOLS : [2]str = ["tri/gen", "tri/test"];
-pub const TOOLS_NOTE : str = ".claude/agents/trinity.md:68 (5. Gen - Run tri gen) and :70 (7. Verify - Run tri test). No source binds tri loop or tri health to T.";
+pub const TOOLS : [3]str = ["tri/gen", "tri/test", "mcp/inngest-dev"];
+pub const TOOLS_NOTE : str = ".claude/agents/trinity.md:68 (5. Gen - Run tri gen) and :70 (7. Verify - Run tri test); specs/automation/inngest-queen-scheduler.t27 OWNER = \"T\" binds the scheduler mcp/inngest-dev to the Queen (specs/OWNERS.md: skills/ and crons/ under T-Queen). No source binds tri loop or tri health to T.";
 ; Where the agent logs episodes (AGENTS_ALPHABET.md: "Logs to .trinity/experience/").
 pub const EXPERIENCE_LOG : str = ".trinity/experience/";
 pub const ENABLED : bool = true;
