@@ -101,9 +101,10 @@ Nothing in these files is typed by hand. Each file records where its text came f
 
 Every card carries three fields beyond its family's: `REPO` (`gHashTag/t27` or
 `gHashTag/trinity`), `QUALIFIED_ID` (`<owner>/<repo>:<family>/<name>`, unique across
-repositories by construction) and `SCHEMA = 2`. The 62 cards written before schema 2 keep
-their short `ID` (`tri/<command>`, `mcp/<server>`): the site route and the agents' `TOOLS`
-arrays use it, and `QUALIFIED_ID = REPO:ID`. A card of the Trinity `tri` has
+repositories by construction) and `SCHEMA = 2`. The 62 cards written before schema 2, and
+`mcp/inngest-dev` (the Queen's scheduler, 2026-09-13, written with the same short form), keep
+a short `ID` (`tri/<command>`, `mcp/<server>`): the site route and the agents' `TOOLS`
+arrays use it, and `QUALIFIED_ID = REPO:ID`; `LEGACY_COUNT = 63` in `catalog.t27`. A card of the Trinity `tri` has
 `ID = QUALIFIED_ID` and no short form, so a same-named command (`fpga`, `test` at the pin;
 `COLLISIONS` in `catalog.t27`) can never be selected by the wrong repository.
 
