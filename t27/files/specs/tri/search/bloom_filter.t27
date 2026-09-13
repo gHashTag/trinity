@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// May return true for items not added (false positive), never false negative | φ² + 1/φ² = 3 | TRINITY
+
+module TriBloomFilter;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BloomFilter = struct {
+        bits : []bool,
+        hash_count : usize,
+        size : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(size: usize, hash_count: usize) → BloomFilter
+    fn init(size: usize, hash_count: usize) -> BloomFilter {
+        // TODO: Implement from .tri spec
+    }
+
+    // add(filter: *BloomFilter, item: []const u8) → void
+    fn add(filter: *BloomFilter, item: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // contains(filter: *const BloomFilter, item: []const u8) → bool
+    fn contains(filter: *const BloomFilter, item: []const u8) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init, add and contains have empty bodies, so the no-false-negative claim
+    // in the header cannot be exercised yet -- that needs a real add/contains
+    // round trip. What the module has decided is the storage.
+
+    test the_bit_array_is_one_byte_per_bit
+        // bits is a bool slice, not a packed bitset, so an m-bit filter costs
+        // m bytes -- eight times what the packed form would need
+        given bits_type = @FieldType(BloomFilter, "bits")
+        and bool_bytes = @sizeOf(bool)
+        then bits_type == []bool and bool_bytes == 1
+
+    test size_and_hash_count_are_unsigned
+        given size_type = @FieldType(BloomFilter, "size")
+        and hash_count_type = @FieldType(BloomFilter, "hash_count")
+        then size_type == usize and hash_count_type == usize
+

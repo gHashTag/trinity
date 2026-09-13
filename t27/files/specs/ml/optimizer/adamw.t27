@@ -1,0 +1,305 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Weight decay applied to parameters, not gradients | φ² + 1/φ² = 3 | TRINITY
+
+module Adamw;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_WEIGHT_DECAY : f32 = 0.01;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const AdamWConfig = struct {
+        learning_rate : f32,
+        beta1 : f32,
+        beta2 : f32,
+        weight_decay : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // step(grad: []const f32, param: []f32, m: []f32, v: []f32, lr: f32, wd: f32) → void
+    fn step(grad: []const f32, param: []f32, m: []f32, v: []f32, lr: f32, wd: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_creates_zero_moments
+        given config = AdamWConfig{.learning_rate = 1e-3, .beta1 = 0.9, .beta2 = 0.999, .weight_decay = 0.01, .epsilon = 1e-8, .amsgrad = false, .use_phi_betas = false}
+        when state = init(config, 10)
+        then state.m.len == 10
+        and   state.v.len == 10
+        and   all(state.m, is_zero)
+        and   all(state.v, is_zero)
+        and   state.step == 0
+
+    test init_with_amsgrad_creates_v_max
+        given config = AdamWConfig{.amsgrad = true}
+        when state = init(config, 10)
+        then state.v_max.len == 10
+        and   all(state.v_max, is_zero)
+
+    test compute_bias_correction_first_step
+        given beta = 0.9
+        and   t = 1
+        when result = compute_bias_correction(beta, t)
+        then approximately_equal(result, 0.1)
+
+    test compute_bias_correction_later_steps
+        given beta = 0.9
+        and   t = 10
+        when result = compute_bias_correction(beta, t)
+        then result < 1.0
+        and   result > 0.0
+
+    test update_first_momentum_basic
+        given m_prev = 0.0
+        and   grad = 1.0
+        and   beta1 = 0.9
+        when result = update_first_moment(m_prev, grad, beta1)
+        then approximately_equal(result, 0.1) // 0.9 * 0 + 0.1 * 1
+
+    test update_first_momentum_with_history
+        given m_prev = 0.5
+        and   grad = 1.0
+        and   beta1 = 0.9
+        when result = update_first_moment(m_prev, grad, beta1)
+        then approximately_equal(result, 0.9 * 0.5 + 0.1)
+
+    test update_second_momentum_basic
+        given v_prev = 0.0
+        and   grad = 2.0
+        and   beta2 = 0.999
+        when result = update_second_moment(v_prev, grad, beta2)
+        then approximately_equal(result, 0.001 * 4.0) // 0.999 * 0 + 0.001 * 4
+
+    test compute_update_basic
+        given m = 0.1
+        and   v = 0.01
+        and   lr_t = 0.001
+        and   epsilon = 1e-8
+        when result = compute_update(m, v, lr_t, epsilon)
+        then result > 0.0
+
+    test apply_weight_decay_reduces_parameters
+        given params = [1.0, 2.0, 3.0]
+        and   lr = 0.01
+        and   weight_decay = 0.1
+        when result = apply_weight_decay(params, lr, weight_decay)
+        then result[0] < 1.0
+        and   result[1] < 2.0
+        and   result[2] < 3.0
+
+    test step_without_weight_decay_matches_adam
+        given config = AdamWConfig{.learning_rate = 0.001, .beta1 = 0.9, .beta2 = 0.999, .weight_decay = 0.0}
+        and   state = init(config, 1)
+        and   params = [1.0]
+        and   grads = [0.1]
+        when result = step(state, params, grads)
+        then result.updated_params.len == 1
+
+    test step_with_weight_decay_shrinks_params
+        given config = AdamWConfig{.learning_rate = 0.01, .beta1 = 0.9, .beta2 = 0.999, .weight_decay = 0.1}
+        and   state = init(config, 1)
+        and   params = [1.0]
+        and   grads = [0.0] // No gradient, only weight decay
+        when result = step(state, params, grads)
+        then result.updated_params[0] < 1.0
+
+    test amsgrad_update_tracks_maximum
+        given v = 0.05
+        and   v_max = 0.03
+        when result = amsgrad_update(v, v_max)
+        then result == 0.05
+
+    test amsgrad_update_preserves_maximum
+        given v = 0.02
+        and   v_max = 0.05
+        when result = amsgrad_update(v, v_max)
+        then result == 0.05
+
+    test get_effective_beta_phi_damped
+        given config = AdamWConfig{.beta1 = 0.9, .beta2 = 0.999, .use_phi_betas = true}
+        when beta1 = get_effective_beta(config, "beta1")
+        and   beta2 = get_effective_beta(config, "beta2")
+        then approximately_equal(beta1, PHI_BETA1)
+        and   approximately_equal(beta2, PHI_BETA2)
+
+    test get_effective_beta_uses_config
+        given config = AdamWConfig{.beta1 = 0.85, .beta2 = 0.995, .use_phi_betas = false}
+        when beta1 = get_effective_beta(config, "beta1")
+        and   beta2 = get_effective_beta(config, "beta2")
+        then approximately_equal(beta1, 0.85)
+        and   approximately_equal(beta2, 0.995)
+
+    test step_increases_step_counter
+        given config = AdamWConfig{}
+        and   state = init(config, 10)
+        and   params = random_input(10)
+        and   grads = random_input(10)
+        when result = step(state, params, grads)
+        then result.step_norm >= 0.0 // Step was executed
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants
+    // ═══════════════════════════════════════════════════════════
+
+    invariant step_preserves_param_count
+        given config = any_adamw_config()
+        and   state = init(config, 100)
+        and   params = random_input(100)
+        and   grads = random_input(100)
+        when result = step(state, params, grads)
+        then result.updated_params.len == 100
+
+    invariant moments_have_same_length
+        given config = any_adamw_config()
+        and   state = init(config, 50)
+        then state.m.len == 50
+        and   state.v.len == 50
+
+    invariant first_moment_remains_bounded
+        given config = any_adamw_config()
+        and   state = init(config, 10)
+        and   params = finite_input(10)
+        and   grads = bounded_input(10, -1.0, 1.0)
+        and   result = step(state, params, grads)
+        then all(result.m, is_finite)
+
+    invariant second_moment_non_negative
+        given config = any_adamw_config()
+        and   state = init(config, 10)
+        and   params = finite_input(10)
+        and   grads = finite_input(10)
+        and   result = step(state, params, grads)
+        then all(result.v, fn(x) x >= 0.0)
+
+    invariant bias_correction_in_zero_one_range
+        given beta = random_gf16_in_range(0.0, 0.999)
+        and   t = random_u64_in_range(1, 1000)
+        when bc = compute_bias_correction(beta, t)
+        then bc >= 0.0
+        and   bc <= 1.0
+
+    invariant phi_betas_smaller_than_defaults
+        then PHI_BETA1 < DEFAULT_BETA1
+        and   PHI_BETA2 < DEFAULT_BETA2
+
+    invariant weight_decay_preserves_sign
+        given params = [-1.0, 0.0, 1.0]
+        and   lr = 0.01
+        and   weight_decay = 0.1
+        when result = apply_weight_decay(params, lr, weight_decay)
+        then result[0] < 0.0
+        and   result[2] > 0.0
+
+    invariant amsgrad_v_max_non_decreasing
+        given config = AdamWConfig{.amsgrad = true}
+        and   state = init(config, 10)
+        and   params = random_input(10)
+        and   grads = random_input(10)
+        and   result1 = step(state, params, grads)
+        and   result2 = step(state, result1.updated_params, grads)
+        then all_pairs(result1.v_max, result2.v_max, fn(a, b) b >= a)
+
+    invariant denominator_positive
+        given v = 0.0
+        and   epsilon = 1e-8
+        when denom = sqrt(v) + epsilon
+        then denom > 0.0
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Benchmarks
+    // ═══════════════════════════════════════════════════════════
+
+    bench init_small
+        given config = any_adamw_config()
+        when result = init(config, 100)
+        then elapsed_time_us < 50
+
+    bench init_large
+        given config = any_adamw_config()
+        when result = init(config, 1000000)
+        then elapsed_time_ms < 20
+
+    bench step_small
+        given config = any_adamw_config()
+        and   state = init(config, 100)
+        and   params = random_input(100)
+        and   grads = random_input(100)
+        when result = step(state, params, grads)
+        then elapsed_time_us < 200
+
+    bench step_medium
+        given config = any_adamw_config()
+        and   state = init(config, 10000)
+        and   params = random_input(10000)
+        and   grads = random_input(10000)
+        when result = step(state, params, grads)
+        then elapsed_time_ms < 10
+
+    bench step_large
+        given config = any_adamw_config()
+        and   state = init(config, 1000000)
+        and   params = random_input(1000000)
+        and   grads = random_input(1000000)
+        when result = step(state, params, grads)
+        then elapsed_time_ms < 200
+
+    bench compute_bias_correction
+        given beta = 0.9
+        and   t = 100
+        when result = compute_bias_correction(beta, t)
+        then elapsed_time_ns < 50
+
+    bench amsgrad_update
+        given v = random_positive_gf16()
+        and   v_max = random_positive_gf16()
+        when result = amsgrad_update(v, v_max)
+        then elapsed_time_ns < 10
+
+    // ═══════════════════════════════════════════════════════════
+    // Mathematical Notes
+    // ═══════════════════════════════════════════════════════════
+    //
+    // AdamW Update Rule:
+    //   1. Apply weight decay (decoupled):
+    //      θ_t = θ_{t-1} * (1 - η * λ)
+    //
+    //   2. Update moments:
+    //      m_t = β₁ * m_{t-1} + (1 - β₁) * g_t
+    //      v_t = β₂ * v_{t-1} + (1 - β₂) * g_t²
+    //
+    //   3. Bias correction:
+    //      m̂_t = m_t / (1 - β₁^t)
+    //      v̂_t = v_t / (1 - β₂^t)
+    //
+    //   4. Parameter update:
+    //      θ_t = θ_t - η * m̂_t / (√v̂_t + ε)
+    //
+    // AMSGrad Variant:
+    //   v_max_t = max(v_max_{t-1}, v_t)
+    //   Use √v_max_t instead of √v̂_t in denominator
+    //
+    // Phi-Damped Betas:
+    //   β₁_eff = β₁ / φ ≈ 0.556 for β₁ = 0.9
+    //   β₂_eff = β₂ / φ ≈ 0.617 for β₂ = 0.999
+    //   Reduces momentum, provides smoother convergence
+    //
+    // Difference from Adam:
+    //   Adam: weight decay added to gradients before moment update
+    //   AdamW: weight decay applied directly to parameters (decoupled)
+    //
+    // ═══════════════════════════════════════════════════════════

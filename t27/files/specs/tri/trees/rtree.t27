@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Spatial indexing | φ² + 1/φ² = 3 | TRINITY
+
+module TriRtree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Rect = struct {
+        x_min : f64,
+        y_min : f64,
+        x_max : f64,
+        y_max : f64,
+    };
+
+    pub const RTreeNode = struct {
+        rect : Rect,
+        children : []RTreeNode,
+        is_leaf : bool,
+    };
+
+    pub const RTree = struct {
+        root : ?RTreeNode,
+        max_entries : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(max_entries: usize) → RTree
+    fn init(max_entries: usize) -> RTree {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(tree: *RTree, rect: Rect, allocator: std.mem.Allocator) → !void
+    fn insert(tree: *RTree, rect: Rect, allocator: std.mem.Allocator) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // query(tree: RTree, search_rect: Rect) → []Rect
+    fn query(tree: RTree, search_rect: Rect) -> []Rect {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init/insert/query are unimplemented stubs returning void, so no insert-then-
+    // query behaviour can be asserted yet. What the module does declare -- the
+    // bounding-box corners and the optional root -- is tested here.
+
+    test empty_tree_has_no_root
+        // Verify: root is optional, so a configured but unfilled tree is empty
+        // rather than holding a sentinel node
+        given t = RTree{.root=null,.max_entries=4}
+        then t.root == null and t.max_entries == 4
+
+    test rect_stores_min_before_max_on_both_axes
+        // Verify: a well-formed bounding box orders its corners
+        given r = Rect{.x_min=0.0,.y_min=1.0,.x_max=3.0,.y_max=5.0}
+        then r.x_min < r.x_max and r.y_min < r.y_max
+
+    test rect_extent_is_the_corner_difference
+        // Verify: those corners give width 3 and height 4
+        given r = Rect{.x_min=0.0,.y_min=1.0,.x_max=3.0,.y_max=5.0}
+        and width = r.x_max - r.x_min
+        and height = r.y_max - r.y_min
+        then @abs(width - 3.0) < 1e-12 and height > width
+
+    test degenerate_rect_is_a_single_point
+        // Verify: a zero-area box, the boundary case for spatial indexing,
+        // is representable
+        given r = Rect{.x_min=2.0,.y_min=2.0,.x_max=2.0,.y_max=2.0}
+        then r.x_min == r.x_max and r.y_min == r.y_max
+
+    test leaf_node_carries_a_box_and_no_children
+        // Verify: RTreeNode has the declared field names; a leaf holds its
+        // bounding box with an empty child list
+        given n = RTreeNode{.rect=Rect{.x_min=0.0,.y_min=0.0,.x_max=1.0,.y_max=1.0},.children=@constCast(&[_]RTreeNode{}),.is_leaf=true}
+        then n.is_leaf and n.children.len == 0
+

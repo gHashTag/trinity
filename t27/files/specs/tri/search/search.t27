@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(log n) binary search | φ² + 1/φ² = 3 | TRINITY
+
+module TriSearch;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SearchResult = struct {
+        index : ?usize,
+        found : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // binary(sorted: []const T, target: T) → SearchResult
+    fn binary(sorted: []const T, target: T) -> SearchResult {
+        // TODO: Implement from .tri spec
+    }
+
+    // linear(items: []const T, target: T) → SearchResult
+    fn linear(items: []const T, target: T) -> SearchResult {
+        // TODO: Implement from .tri spec
+    }
+
+    // lower_bound(sorted: []const T, value: T) → usize
+    fn lower_bound(sorted: []const T, value: T) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test miss_carries_no_index
+        // Verify: a failed search reports found = false and leaves index null,
+        // so there is no position to misread
+        given miss = SearchResult{ .index = null, .found = false }
+        then miss.found == false and miss.index == null
+
+    test hit_carries_the_position
+        // Verify: a successful search reports found = true and an index that
+        // can be unwrapped
+        given hit = SearchResult{ .index = 2, .found = true }
+        then hit.found and hit.index != null and hit.index.? == 2
+
+    test found_flag_agrees_with_the_optional_index
+        // Verify: the two fields are redundant -- `found` is exactly
+        // (index != null) on both outcomes, and any result where they disagree
+        // is malformed
+        given miss = SearchResult{ .index = null, .found = false }
+        and hit = SearchResult{ .index = 7, .found = true }
+        when miss_agrees = miss.found == (miss.index != null)
+        and hit_agrees = hit.found == (hit.index != null)
+        then miss_agrees and hit_agrees
+

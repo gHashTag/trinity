@@ -1,0 +1,11 @@
+# queen/lotus — AGENT T 6-phase orchestration spec
+# Status: stub (pending full spec)
+# See AGENTS.md for the 6-phase cycle: PLAN → ASSIGN → RUN → TEST → VERDICT → EVOLVE
+module queen_lotus {
+    export phase_plan(task: String) -> Plan
+    export phase_assign(plan: Plan) -> Assignments
+    export phase_run(assignments: Assignments) -> Results
+    export phase_test(results: Results) -> Metrics
+    export phase_verdict(metrics: Metrics) -> Verdict
+    export phase_evolve(verdict: Verdict) -> Evolution
+}

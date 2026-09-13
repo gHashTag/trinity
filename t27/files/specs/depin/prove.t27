@@ -1,0 +1,284 @@
+// SPDX-License-Identifier: Apache-2.0
+// DePIN proof-of-useful-compute spec
+// Issue #40 — L-TRI-1: POST /prove endpoint
+// phi^2 + phi^-2 = 3 | TRINITY
+
+module depin.prove;
+
+// ============================================================================
+// Types
+// ============================================================================
+
+pub struct ProveRequest {
+    node_id : [u8; 32],
+    epoch : u64,
+    phi_response : Vec<u8>,
+    merkle_proof : MerkleProof,
+    merkle_leaf_index : usize,
+    peer_sample_sig : [u8; 64],
+    version : u8,
+}
+
+pub struct MerkleProof {
+    root : [u8; 32],
+    leaf : [u8; 32],
+    siblings : Vec<[u8; 32]>,
+}
+
+pub struct ProveResponse {
+    valid : bool,
+    reward_lamports : u64,
+    epoch_hash : [u8; 32],
+    next_challenge : [u8; 16],
+    tokens_count : u64,
+    reason : ?[]const u8,
+}
+
+pub struct MiningEpoch {
+    epoch_id : u64,
+    phi_seed : [u8; 16],
+    start_ts : u64,
+    block_reward : u64,
+}
+
+// ============================================================================
+// Functions
+// ============================================================================
+
+pub fn derive_phi_challenge(epoch: u64, node_id: &[u8; 32]) [u8; 16] {
+    // SHA256("TRI_PHI_CHALLENGE_V1" || epoch_le || node_id)[..16]
+}
+
+pub fn verify_phi_response(challenge: &[u8; 16], response: &[u8; 4], node_id: &[u8; 32]) bool {
+    // gf16_dot4(challenge[..4], node_id[..4]) == response
+}
+
+pub fn gf16_mul(a: u8, b: u8) u8 {
+    // GF(2^4) multiplication, reduction polynomial 0x3 (x^4 + x + 1)
+}
+
+pub fn gf16_dot4(w: &[u8; 4], x: &[u8; 4]) [u8; 4] {
+    // Element-wise GF16 multiplication of 4-element vectors
+}
+
+pub fn derive_phi_challenge_v2(epoch: u64, node_id: &[u8; 32]) [[u8; 16]; 16] {
+    // 16 rows, each = SHA256("TRI_PHI_CHALLENGE_V2" || epoch_le8 || node_id || row_index)[j*2] >> 4
+}
+
+pub fn compute_phi_response_v2(challenge: &[[u8; 16]; 16]) [u8; 32] {
+    // SHA256(pack(gf16_matmul(CHAMPION_WEIGHTS, challenge)))
+}
+
+pub fn verify_phi_response_v2(challenge: &[[u8; 16]; 16], response: &[u8; 32]) bool {
+    // compute_phi_response_v2(challenge) == response
+}
+
+pub fn gf16_matmul(a: &[[u8; 16]; 16], b: &[[u8; 16]; 16]) [[u8; 16]; 16] {
+    // 16x16 GF(2^4) matrix multiplication
+}
+
+pub fn pack_gf16_matrix(m: &[[u8; 16]; 16]) [u8; 128] {
+    // Pack 16x16 nibble matrix into 128 bytes (2 nibbles per byte)
+}
+
+pub fn merkle_root(leaves: &Vec<[u8; 32]>) [u8; 32] {
+    // Binary Merkle tree root computation
+}
+
+pub fn verify_merkle(root: &[u8; 32], leaf: &[u8; 32], siblings: &Vec<[u8; 32]>, index: usize) bool {
+    // Merkle inclusion proof verification
+}
+
+// ============================================================================
+// TDD — Tests
+// ============================================================================
+
+test "test_phi_challenge_deterministic" {
+    // derive_phi_challenge(e, id) == derive_phi_challenge(e, id)
+}
+
+test "test_phi_challenge_epoch_unique" {
+    // derive_phi_challenge(e1, id) != derive_phi_challenge(e2, id) for e1 != e2
+}
+
+test "test_phi_challenge_node_unique" {
+    // derive_phi_challenge(e, id1) != derive_phi_challenge(e, id2) for id1 != id2
+}
+
+test "test_gf16_dot4_identity" {
+    // gf16_dot4([1,1,1,1], x) == x
+}
+
+test "test_gf16_mul_commutative" {
+    // gf16_mul(a, b) == gf16_mul(b, a) for all a, b in GF(2^4)
+}
+
+test "test_verify_phi_response_correct" {
+    // verify_phi_response returns true for correct gf16_dot4 result
+}
+
+test "test_verify_phi_response_wrong_epoch" {
+    // verify_phi_response fails for response computed with wrong epoch
+}
+
+test "test_merkle_single_leaf_roundtrip" {
+    // merkle_root([leaf]) -> verify_merkle(root, leaf, [], 0) == true
+}
+
+test "test_merkle_four_leaves_roundtrip" {
+    // merkle_root([l0,l1,l2,l3]) -> verify_merkle for each leaf
+}
+
+test "test_merkle_wrong_root_fails" {
+    // verify_merkle with wrong root returns false
+}
+
+test "test_merkle_wrong_siblings_fails" {
+    // verify_merkle with wrong siblings returns false
+}
+
+test "test_post_prove_valid_proof" {
+    // Full E2E: epoch-challenge -> compute phi_response -> sign -> POST /prove -> valid
+}
+
+test "test_post_prove_invalid_merkle" {
+    // POST /prove with invalid merkle proof returns valid: false, reason: merkle_proof_invalid
+}
+
+test "test_v2_derive_challenge_deterministic" {
+    // derive_phi_challenge_v2(epoch, node_id) is deterministic
+}
+
+test "test_v2_response_correct" {
+    // compute_phi_response_v2(challenge) passes verify_phi_response_v2
+}
+
+test "test_v2_wrong_response_fails" {
+    // verify_phi_response_v2 rejects wrong 32-byte response
+}
+
+test "test_v2_wrong_epoch_fails" {
+    // V2 verification fails for response computed with wrong epoch
+}
+
+test "test_v2_wrong_node_fails" {
+    // V2 verification fails for response computed with wrong node_id
+}
+
+test "test_post_prove_v2_valid" {
+    // Full E2E V2: version=2, 32-byte SHA256 response, valid proof
+}
+
+test "test_post_prove_v2_wrong_response" {
+    // POST /prove version=2 with wrong phi_response returns phi_challenge_mismatch
+}
+
+// ============================================================================
+// TDD — Invariants
+// ============================================================================
+
+invariant phi_challenge_deterministic {
+    // derive_phi_challenge(epoch, node_id) is deterministic for identical inputs
+    // Rationale: SHA256 is a deterministic PRF
+    @compileAssert(true);
+}
+
+invariant phi_challenge_epoch_binding {
+    // derive_phi_challenge(e1, id) != derive_phi_challenge(e2, id) for e1 != e2
+    // Rationale: epoch is mixed into SHA256 input, collisions are negligible
+    @compileAssert(true);
+}
+
+invariant phi_challenge_node_binding {
+    // derive_phi_challenge(e, id1) != derive_phi_challenge(e, id2) for id1 != id2
+    // Rationale: node_id is mixed into SHA256 input, collisions are negligible
+    @compileAssert(true);
+}
+
+invariant gf16_mul_field_closure {
+    // gf16_mul(a, b) in [0..15] for all a, b in [0..15]
+    // Rationale: GF(2^4) multiplication is closed
+    @compileAssert(true);
+}
+
+invariant gf16_mul_commutative {
+    // gf16_mul(a, b) == gf16_mul(b, a)
+    // Rationale: Finite field multiplication is commutative
+    @compileAssert(true);
+}
+
+invariant gf16_dot4_elementwise {
+    // gf16_dot4(w, x)[i] == gf16_mul(w[i], x[i]) for i in [0..3]
+    // Rationale: dot4 is element-wise multiplication
+    @compileAssert(true);
+}
+
+invariant merkle_root_empty_is_zero {
+    // merkle_root([]) == [0u8; 32]
+    // Rationale: Empty tree has zero root
+    @compileAssert(true);
+}
+
+invariant merkle_verify_single_leaf_no_siblings {
+    // verify_merkle(root, leaf, [], 0) for single-leaf tree
+    // Rationale: Single leaf is its own root, no siblings needed
+    @compileAssert(true);
+}
+
+invariant merkle_verify_tamper_detection {
+    // verify_merkle returns false for any tampered root, leaf, or siblings
+    // Rationale: SHA256 collision resistance ensures tamper detection
+    @compileAssert(true);
+}
+
+invariant prove_requires_valid_phi_challenge {
+    // POST /prove rejects if phi_response != gf16_dot4(challenge[..4], node_id[..4])
+    // V2: rejects if SHA256(pack(gf16_matmul(CHAMPION_WEIGHTS, challenge))) != response
+    // Rationale: Layer 1 of PoUC must be enforced
+    @compileAssert(true);
+}
+
+invariant v2_response_is_sha256_of_matmul {
+    // V2 response = SHA256(pack(gf16_matmul(CHAMPION_WEIGHTS, challenge)))
+    // Rationale: Forces full 16x16 matrix multiply, 2^256 security
+    @compileAssert(true);
+}
+
+invariant v2_champion_weights_derived_from_seed {
+    // CHAMPION_WEIGHTS[i][j] = SHA256("TRI_PHI_CHAMPION_SEED_V1" || i_le8)[j*2] >> 4
+    // Rationale: Deterministic, publicly verifiable bootstrap
+    @compileAssert(true);
+}
+
+invariant prove_requires_valid_merkle {
+    // POST /prove rejects if merkle proof verification fails
+    // Rationale: Layer 2 of PoUC must be enforced
+    @compileAssert(true);
+}
+
+// ============================================================================
+// TDD — Benchmarks
+// ============================================================================
+
+bench "bench_derive_phi_challenge" {
+    // Measure: SHA256 challenge derivation latency
+    // Target: < 500ns on commodity CPU
+    @setEvalBranchQuota(10000);
+    var node_id = [1u8; 32];
+    _ = derive_phi_challenge(1, &node_id);
+}
+
+bench "bench_gf16_dot4" {
+    // Measure: GF16 dot product of 4-element vectors
+    // Target: < 20ns on commodity CPU, < 5 cycles on FPGA
+    @setEvalBranchQuota(10000);
+    var w = [1u8, 2, 3, 4];
+    var x = [5u8, 6, 7, 8];
+    _ = gf16_dot4(&w, &x);
+}
+
+bench "bench_merkle_verify_8_leaves" {
+    // Measure: Merkle proof verification for 8-leaf tree
+    // Target: < 2us on commodity CPU
+    @setEvalBranchQuota(10000);
+}

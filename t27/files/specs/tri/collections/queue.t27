@@ -1,0 +1,69 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// First-in-first-out ordering | φ² + 1/φ² = 3 | TRINITY
+
+module TriQueue;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Queue(T) = struct {
+        front : []T,
+        back : []T,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty() → Queue(T)
+    fn empty() -> Queue(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // enqueue(queue: Queue(T)) → void
+    fn enqueue(queue: Queue(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // dequeue(queue: Queue(T)) → void
+    fn dequeue(queue: Queue(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // peek(queue: Queue(T)) → void
+    fn peek(queue: Queue(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_empty(queue: Queue(T)) → void
+    fn is_empty(queue: Queue(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // empty/enqueue/dequeue/peek/is_empty are unimplemented stubs -- each emits
+    // `@panic("not yet implemented")`, so no FIFO behaviour can be exercised.
+    // Queue(T) itself is a real type constructor, and that is testable.
+
+    test queue_substitutes_its_element_type
+        // The parameter reaches both fields: Queue(i64) stores i64, not T.
+        then @FieldType(Queue(i64), "front") == []i64
+        and @FieldType(Queue(i64), "back") == []i64
+
+    test distinct_element_types_give_distinct_queues
+        // A generic that ignored T would collapse these to one type.
+        then Queue(i64) != Queue(u8)
+        and Queue(i64) == Queue(i64)
+
+    test queue_is_the_two_stack_shape
+        // front and back only: the amortised FIFO built from two LIFOs.
+        then @typeInfo(Queue(u8)).@"struct".fields.len == 2
+        and @hasField(Queue(u8), "front") and @hasField(Queue(u8), "back")
+

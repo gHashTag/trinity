@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Uses usize words for efficiency | φ² + 1/φ² = 3 | TRINITY
+
+module TriBitmap;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Bitmap = struct {
+        bits : []usize,
+        capacity : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(capacity: usize, allocator: std.mem.Allocator) → !Bitmap
+    fn init(capacity: usize, allocator: std.mem.Allocator) -> !Bitmap {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(bitmap: Bitmap, index: usize) → bool
+    fn get(bitmap: Bitmap, index: usize) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // set(bitmap: *Bitmap, index: usize) → void
+    fn set(bitmap: *Bitmap, index: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // clear(bitmap: *Bitmap, index: usize) → void
+    fn clear(bitmap: *Bitmap, index: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // flip(bitmap: *Bitmap, index: usize) → void
+    fn flip(bitmap: *Bitmap, index: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // set_all(bitmap: *Bitmap) → void
+    fn set_all(bitmap: *Bitmap) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // clear_all(bitmap: *Bitmap) → void
+    fn clear_all(bitmap: *Bitmap) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // count(bitmap: Bitmap) → usize
+    fn count(bitmap: Bitmap) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // find_first(bitmap: Bitmap) → ?usize
+    fn find_first(bitmap: Bitmap) -> ?usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // find_last(bitmap: Bitmap) → ?usize
+    fn find_last(bitmap: Bitmap) -> ?usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is an unimplemented stub: each one emits
+    // `@panic("not yet implemented")`, so calling any of them aborts the test
+    // binary rather than failing a test. The assertions below are therefore
+    // about the representation the module actually declares.
+
+    test bits_are_packed_into_usize_words
+        // "Uses usize words for efficiency" -- the backing store is machine
+        // words, not bytes and not bools.
+        then @FieldType(Bitmap, "bits") == []usize
+        and @bitSizeOf(usize) >= 32
+
+    test capacity_is_a_bit_count_not_a_word_count
+        // capacity counts bits, so a bitmap needs ceil(capacity / bits-per-word)
+        // words -- 1024 bits is 16 words on a 64-bit target, not 1024.
+        given words_for_1024 = (1024 + @bitSizeOf(usize) - 1) / @bitSizeOf(usize)
+        then @FieldType(Bitmap, "capacity") == usize
+        and words_for_1024 * @bitSizeOf(usize) >= 1024
+        and words_for_1024 < 1024
+
+    test bitmap_is_a_slice_plus_a_length
+        // No allocator and no word count are stored: the slice carries its own
+        // length, and capacity is the only other state.
+        then @typeInfo(Bitmap).@"struct".fields.len == 2
+        and @hasField(Bitmap, "allocator") == false
+

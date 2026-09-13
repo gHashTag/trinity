@@ -1,0 +1,152 @@
+// SPDX-License-Identifier: Apache-2.0
+# GF16 vs bfloat16 NMSE PROTOCOL BENCHMARK 0 TRI-NET
+
+## Specification
+
+Standard comparison protocol for GoldenFloat GF16 vs bfloat16 numeric
+fidelity, expressed as Normalised Mean Squared Error (NMSE) over named
+reference distributions. Protocol-level only; no silicon numbers asserted.
+
+Human-readable companion: docs/GF16_BFLOAT16_NMSE_PROTOCOL.md
+Schema for results manifest: schemas/nmse-protocol-v1.json
+Numeric SSOT: conformance/FORMAT-SPEC-001.json
+
+## Mathematical Foundation
+
+```
+phi^2 + 1/phi^2 = 3 = TRINITY
+NMSE(F) = E[ (x - Q_F(x))^2 ] / E[ x^2 ]
+```
+
+## Formats Under Test
+
+### GF16 (GoldenFloat 16-bit, primary path)
+
+```
+bit_layout: [ S(1) | E(6) | M(9) ]
+bias: 31
+value: (-1)^S * 2^(E - 31) * (1 + M / 2^9)
+rounding: round_to_nearest_ties_to_even
+source: specs/numeric/gf16.t27
+```
+
+### bfloat16 (IEEE 754 binary32 truncated)
+
+```
+bit_layout: [ S(1) | E(8) | M(7) ]
+bias: 127
+value: (-1)^S * 2^(E - 127) * (1 + M / 2^7)
+rounding: round_to_nearest_ties_to_even
+subnormal_policy: { ieee | ftz }   // must be declared in manifest
+```
+
+## Reference Distributions
+
+```
+D_NORM   : x ~ N(0, 1)
+D_LOG    : log2|x| ~ U(-10, 10) ; sign uniform
+D_RELU   : x = max(0, N(0, 1))
+D_PHI    : x ~ N(phi, 1/phi) ; phi = (1 + sqrt 5) / 2
+D_DEEP   : 0.7 D_NORM + 0.3 D_LOG
+```
+
+Each distribution: 10_000_000 samples per run unless overridden.
+
+## Identity Witness (L5 IDENTITY)
+
+```
+witness phi_squared_identity {
+    require |phi^2 - (phi + 1)| < 1e-15
+}
+witness trinity_identity {
+    require |phi^2 + 1/phi^2 - 3| < 1e-15
+}
+```
+
+A run aborts before reporting NMSE if either witness fails.
+
+## Tests
+
+```
+test "NMSE-Protocol: identity witness gates run" {
+    // Both witnesses must hold in IEEE f64 before any measurement.
+}
+
+test "NMSE-Protocol: non-negative" {
+    // For each format and distribution, NMSE >= 0.
+}
+
+test "NMSE-Protocol: deterministic for fixed seed" {
+    // Two runs with the same seed and same RNG family produce
+    // bit-identical per-distribution NMSE values.
+}
+```
+
+## Invariants
+
+```
+invariant "NMSE non-negative" {
+    forall F, D : NMSE(F, D) >= 0
+}
+
+invariant "ratio undefined on zero baseline" {
+    // If E[x^2] == 0 over the sample, NMSE is undefined and the run
+    // reports null for that distribution. No division-by-zero is
+    // silently produced.
+    forall D : if mean_sq_ref(D) == 0 then NMSE(*, D) == null
+}
+
+invariant "subnormal policy is declared" {
+    // Manifest must state ieee or ftz for BF16; missing => non-conforming.
+}
+
+invariant "seal hash recorded" {
+    // Every conforming manifest cites the toolchain seal hash matching
+    // bootstrap/stage0/FROZEN_HASH.
+}
+```
+
+## Benchmark
+
+```
+bench "GF16 vs BF16 NMSE over D_NORM, D_LOG, D_RELU, D_PHI, D_DEEP" {
+    seed: declared_in_manifest
+    samples_per_distribution: 10_000_000
+    output: schemas/nmse-protocol-v1.json
+    reports:
+        - nmse_gf16[D]
+        - nmse_bf16[D]
+        - ratio[D] = nmse_gf16[D] / nmse_bf16[D]
+    fail_modes:
+        - identity_witness_fail        -> abort, no manifest emitted
+        - subnormal_policy_missing     -> abort, no manifest emitted
+        - seal_hash_missing            -> emit manifest tagged "informational"
+}
+```
+
+## Reporting Rules
+
+```
+- protocol_version: semver, MAJOR matches schema MAJOR
+- ratio: dimensionless; meaningful only when both NMSE values are
+         non-null over the same seed and the same distribution
+- direction: ratio < 1.0 favours GF16 on that distribution;
+             ratio > 1.0 favours BF16; ratio == 1.0 ties
+- never report a ratio without naming the distribution and seed
+- never compare against a commercial-NPU number under this protocol
+```
+
+## Cross-links
+
+- docs/GF16_BFLOAT16_NMSE_PROTOCOL.md  (human-readable mirror)
+- docs/TRI_NET_API.md                  (artefact consumer contract)
+- schemas/nmse-protocol-v1.json        (manifest schema)
+- specs/numeric/gf16.t27               (GF16 SSOT)
+- conformance/FORMAT-SPEC-001.json     (numeric registry SSOT)
+- LINEUP.md                            (chip-repo cross-links for runners)
+
+## Non-Claims (R5-HONEST)
+
+- This spec does not assert a measured NMSE on silicon.
+- This spec does not assert GF16 wins or loses over BF16 in general.
+- This spec assumes nothing about ratio sign without a distribution and seed.

@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Basic ASCII text processing | φ² + 1/φ² = 3 | TRINITY
+
+module TriText;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const TextMetrics = struct {
+        width : usize,
+        height : usize,
+        lines : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // word_wrap(allocator: std.mem.Allocator, text: []const u8, width: usize) → ![]u8
+    fn word_wrap(allocator: std.mem.Allocator, text: []const u8, width: usize) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // count_words(text: []const u8) → usize
+    fn count_words(text: []const u8) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // count_lines(text: []const u8) → usize
+    fn count_lines(text: []const u8) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // indent(allocator: std.mem.Allocator, text: []const u8, spaces: usize) → ![]u8
+    fn indent(allocator: std.mem.Allocator, text: []const u8, spaces: usize) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test word_wrap_basic_case
+        given input = default_input()
+        when result = word_wrap(input)
+        then result != undefined
+
+    test count_words_basic_case
+        given input = default_input()
+        when result = count_words(input)
+        then result != undefined
+
+    test count_lines_basic_case
+        given input = default_input()
+        when result = count_lines(input)
+        then result != undefined
+
+    test indent_basic_case
+        given input = default_input()
+        when result = indent(input)
+        then result != undefined
+

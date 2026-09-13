@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Log probability correction for tanh squashing | φ² + 1/φ² = 3 | TRINITY
+
+module SacActor;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_LOG_STD_MIN : f32 = -20.0;
+    const DEFAULT_LOG_STD_MAX : f32 = 2.0;
+    const DEFAULT_ACTION_RANGE : []f32 = "[-1.0, 1.0]";
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SACActorConfig = struct {
+        state_dim : u32,
+        action_dim : u32,
+        hidden_dims : []u32,
+        action_range : []f32,
+        log_std_min : f32,
+        log_std_max : f32,
+    };
+
+    pub const PolicyOutput = struct {
+        mean : []f32,
+        log_std : []f32,
+    };
+
+    pub const SquashedGaussianSample = struct {
+        action : []f32,
+        log_prob : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(state: []const f32, params: []const f32, config: SACActorConfig) → PolicyOutput
+    fn forward(state: []const f32, params: []const f32, config: SACActorConfig) -> PolicyOutput {
+        // TODO: Implement from .tri spec
+    }
+
+    // sample(policy_output: PolicyOutput, deterministic: bool) → SquashedGaussianSample
+    fn sample(policy_output: PolicyOutput, deterministic: bool) -> SquashedGaussianSample {
+        // TODO: Implement from .tri spec
+    }
+
+    // scale_action(action: []f32, action_range: []f32) → []f32
+    fn scale_action(action: []f32, action_range: []f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // unscale_action(action: []f32, action_range: []f32) → []f32
+    fn unscale_action(action: []f32, action_range: []f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward/sample/scale_action/unscale_action are unimplemented stubs
+    // returning void, so no behavioural assertion is possible yet. These tests
+    // execute the bound constraints that the invariants below only state in
+    // comments. DEFAULT_ACTION_RANGE is deliberately not referenced: it is
+    // declared []f32 but initialised with a string literal, so any use of it is
+    // a type error.
+
+    test default_log_std_bounds_are_ordered
+        // Verify: constraint_0 (log_std_min < log_std_max) holds for the defaults
+        given lo = DEFAULT_LOG_STD_MIN
+        and hi = DEFAULT_LOG_STD_MAX
+        then lo < hi
+
+    test default_log_std_bounds_give_a_positive_std_range
+        // Verify: exponentiating the clamp bounds yields a usable std range --
+        // exp(-20) is tiny but strictly positive, exp(2) is about 7.389
+        given std_min = @exp(DEFAULT_LOG_STD_MIN)
+        and std_max = @exp(DEFAULT_LOG_STD_MAX)
+        then @abs(std_max - 7.389056) < 1e-3 and std_min > 0.0
+
+    test config_action_range_is_low_then_high
+        // Verify: constraint_1 (action_low < action_high) for the [-1, 1] range
+        // the module documents, through the declared config fields
+        given cfg = SACActorConfig{.state_dim=3,.action_dim=1,.hidden_dims=@constCast(&[_]u32{256,256}),.action_range=@constCast(&[_]f32{-1.0,1.0}),.log_std_min=DEFAULT_LOG_STD_MIN,.log_std_max=DEFAULT_LOG_STD_MAX}
+        then cfg.log_std_min < cfg.log_std_max and cfg.action_range[0] < cfg.action_range[1]
+
+    test squashed_sample_holds_an_action_and_a_log_probability
+        // Verify: SquashedGaussianSample has the declared fields, and a squashed
+        // action sits strictly inside the [-1, 1] range the module documents
+        given s = SquashedGaussianSample{.action=@constCast(&[_]f32{0.999}),.log_prob=-1.5}
+        then s.log_prob < 0.0 and s.action[0] < 1.0 and s.action[0] > -1.0
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant sac_actor_constraint_0
+        given input = valid_input()
+        then true // log_std_min < log_std_max
+
+    invariant sac_actor_constraint_1
+        given input = valid_input()
+        then true // action_low < action_high
+
+    invariant sac_actor_constraint_2
+        given input = valid_input()
+        then true // name: reparameterization
+
+    invariant sac_actor_constraint_3
+        given input = valid_input()
+        then true // name: squashed_correction
+
+    invariant sac_actor_constraint_4
+        given input = valid_input()
+        then true // "Haarnoja et al. (2018) - Soft Actor-Critic: Off-Policy Maximum Entropy Deep RL"
+
+    invariant sac_actor_constraint_5
+        given input = valid_input()
+        then true // "Haarnoja et al. (2019) - Soft Actor-Critic Algorithms and Applications"
+

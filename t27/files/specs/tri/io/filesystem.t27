@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Results don't end with separator (except root) | φ² + 1/φ² = 3 | TRINITY
+
+module TriFilesystem;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const PathError = struct {
+        enum : [invalid_path, not_found, not_a_directory, not_a_file, permission_denied],
+    };
+
+    pub const FileInfo = struct {
+        path : []const u8,
+        size : u64,
+        is_dir : bool,
+        is_file : bool,
+        modified : u64,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // join(allocator: std.mem.Allocator, parts: [][]const u8) → ![]u8
+    fn join(allocator: std.mem.Allocator, parts: [][]const u8) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // basename(path: []const u8) → []const u8
+    fn basename(path: []const u8) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // dirname(path: []const u8) → []const u8
+    fn dirname(path: []const u8) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ext(path: []const u8) → []const u8
+    fn ext(path: []const u8) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // has_ext(path: []const u8, ext: []const u8) → bool
+    fn has_ext(path: []const u8, ext: []const u8) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_absolute(path: []const u8) → bool
+    fn is_absolute(path: []const u8) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // normalize(allocator: std.mem.Allocator, path: []const u8) → ![]u8
+    fn normalize(allocator: std.mem.Allocator, path: []const u8) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // All seven path functions are unimplemented stubs returning void, so no
+    // join/basename/dirname round trip can be asserted yet. FileInfo, the one
+    // well-formed declaration in this module, is tested here.
+    //
+    // PathError used to be untestable: its body was `enum : ,` and the type
+    // emitted as a struct with no variants. The five names have been recovered
+    // from the upstream spec this file was converted from (trinity-fpga
+    // specs/tri/tri_filesystem.tri:7) and are pinned below.
+
+    test directory_entry_is_not_also_a_file
+        // Verify: FileInfo has the declared field names, and the two kind flags
+        // are mutually exclusive for a directory
+        given info = FileInfo{.path="/usr/local",.size=4096,.is_dir=true,.is_file=false,.modified=0}
+        then info.is_dir and info.is_file == false
+
+    test regular_file_entry_is_not_a_directory
+        // Verify: the same exclusion the other way round
+        given info = FileInfo{.path="/usr/local/bin/t27c",.size=1024,.is_dir=false,.is_file=true,.modified=1700000000}
+        then info.is_file and info.is_dir == false
+
+    test size_field_reaches_past_four_gigabytes
+        // Verify: the declared u64 size holds a file a u32 could not address
+        given info = FileInfo{.path="/big.bin",.size=5000000000,.is_dir=false,.is_file=true,.modified=0}
+        then info.size > 4294967295
+
+    test absolute_path_is_stored_verbatim
+        // Verify: the path field keeps the bytes it was built from, leading
+        // separator included
+        given info = FileInfo{.path="/usr/local/bin/t27c",.size=0,.is_dir=false,.is_file=true,.modified=0}
+        and stored = std.mem.eql(u8, info.path, "/usr/local/bin/t27c")
+        then stored
+
+    test empty_size_is_representable_for_an_empty_file
+        // Verify: zero, the boundary value, is a legal size
+        given info = FileInfo{.path="/empty",.size=0,.is_dir=false,.is_file=true,.modified=0}
+        then info.size == 0 and info.is_file
+
+
+    test path_error_lists_the_failures_a_path_operation_can_have
+        // Recovered from trinity-fpga specs/tri/tri_filesystem.tri:7. The
+        // not_a_directory / not_a_file pair is what makes is_dir and is_file on
+        // FileInfo checkable rather than merely declared.
+        then @typeInfo(PathError).@"enum".fields.len == 5
+        and std.mem.eql(u8, @typeInfo(PathError).@"enum".fields[0].name, "invalid_path")
+        and std.mem.eql(u8, @typeInfo(PathError).@"enum".fields[4].name, "permission_denied")

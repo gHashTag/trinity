@@ -1,0 +1,85 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// -- separates options from positional args | φ² + 1/φ² = 3 | TRINITY
+
+module []const u8;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Arg = struct {
+        short : ?u8,
+        long : ?[]const u8,
+        required : bool,
+    };
+
+    pub const ArgValue = struct {
+        value : ?[]const u8,
+        present : bool,
+    };
+
+    pub const ParseResult = struct {
+        positional : [][]const u8,
+        named : []ArgValue,
+        error : ?[]const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse(allocator: std.mem.Allocator, args: [][]const u8, spec: []Arg) → !ParseResult
+    fn parse(allocator: std.mem.Allocator, args: [][]const u8, spec: []Arg) -> !ParseResult {
+        // TODO: Implement from .tri spec
+    }
+
+    // has_flag(result: ParseResult, name: []const u8) → bool
+    fn has_flag(result: ParseResult, name: []const u8) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_value(result: ParseResult, name: []const u8) → ?[]const u8
+    fn get_value(result: ParseResult, name: []const u8) -> ?[]const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_positional(result: ParseResult, index: usize) → ?[]const u8
+    fn get_positional(result: ParseResult, index: usize) -> ?[]const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // parse, has_flag, get_value and get_positional all have empty bodies, so
+    // no command line can be parsed here and the "--" rule in the header
+    // cannot be checked. These pin the shapes the parser will have to fill.
+
+    test both_argument_spellings_are_optional
+        // nothing in Arg requires at least one spelling: an option with
+        // neither a short nor a long name is representable
+        given short_type = @FieldType(Arg, "short")
+        and long_type = @FieldType(Arg, "long")
+        and nameless = Arg{ .short = null, .long = null, .required = true }
+        then short_type == ?u8 and long_type == ?[]const u8 and nameless.required
+
+    test presence_is_tracked_apart_from_the_value
+        // a flag that was supplied without an argument is present with a null
+        // value, so the two fields cannot be collapsed into one optional
+        given value_type = @FieldType(ArgValue, "value")
+        and present_type = @FieldType(ArgValue, "present")
+        and bare_flag = ArgValue{ .value = null, .present = true }
+        then value_type == ?[]const u8 and present_type == bool and bare_flag.present
+
+    test parse_failure_is_reported_beside_the_results
+        // the error is an optional string held alongside positional and named
+        // results rather than a Zig error, so a failed parse still carries
+        // whatever it managed to collect
+        given error_type = @FieldType(ParseResult, "error")
+        and positional_type = @FieldType(ParseResult, "positional")
+        then error_type == ?[]const u8 and positional_type == [][]const u8
+

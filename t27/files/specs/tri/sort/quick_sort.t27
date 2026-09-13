@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Use last element as pivot | φ² + 1/φ² = 3 | TRINITY
+
+module TriQuickSort;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // sort(values: []i64) → void
+    fn sort(values: []i64) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // sort_range(values: []i64, low: usize, high: usize) → void
+    fn sort_range(values: []i64, low: usize, high: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Both functions have empty bodies, so neither the ordering nor the
+    // last-element pivot rule in the header can be exercised: calling either
+    // one panics. The single decision the module has made is its signature.
+
+    test sorting_is_in_place
+        // a mutable slice in, nothing out -- the caller's array is reordered
+        // rather than copied into a freshly allocated one
+        given sort_type = @TypeOf(sort)
+        then sort_type == fn ([]i64) void
+
+    test sort_range_shares_the_in_place_signature
+        given sort_range_type = @TypeOf(sort_range)
+        then sort_range_type == fn ([]i64) void
+

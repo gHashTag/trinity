@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free tree | φ² + 1/φ² = 3 | TRINITY
+
+module TriKdTree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const KDNode = struct {
+        point : []f64,
+        axis : usize,
+        left : ?KDNode,
+        right : ?KDNode,
+    };
+
+    pub const KDTree = struct {
+        root : ?KDNode,
+        k : usize,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator, k: usize) → KDTree
+    fn init(allocator: std.mem.Allocator, k: usize) -> KDTree {
+        // TODO: Implement from .tri spec
+    }
+
+    // build(allocator: std.mem.Allocator, points: [][]f64, k: usize) → KDTree
+    fn build(allocator: std.mem.Allocator, points: [][]f64, k: usize) -> KDTree {
+        // TODO: Implement from .tri spec
+    }
+
+    // nearest(tree: *KDTree, target: []f64) → []f64
+    fn nearest(tree: *KDTree, target: []f64) -> []f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // range(tree: *KDTree, center: []f64, radius: f64) → [][]f64
+    fn range(tree: *KDTree, center: []f64, radius: f64) -> [][]f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(tree: *KDTree) → void
+    fn deinit(tree: *KDTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is still `TODO: Implement`, so each one compiles
+    // to `@panic("not yet implemented")`: calling one aborts the test binary.
+    // The signatures are real, and that is what these tests hold to.
+    //
+    // KDNode CANNOT BE INSTANTIATED AS DECLARED. `left : "?KDNode"` and
+    // `right : "?KDNode"` store a KDNode BY VALUE, so the type contains
+    // itself and has no finite size; KDTree.root has the same problem. Zig
+    // resolves struct fields lazily, which is the only reason this file
+    // compiles at all -- the moment any test touches a field, e.g.
+    //
+    //     then @FieldType(KDNode, "left") == ?KDNode
+    //
+    // the whole module dies with "type 'KDNode' depends on itself for field
+    // declared here" and NOTHING in it runs. That test is left out on
+    // purpose so the rest of the file still has tests; the fix is
+    // `?*KDNode`, and it belongs in the type declaration, not here.
+
+    test init_and_build_take_an_allocator_and_return_nothing
+        given f = init
+        then @TypeOf(f) == fn (std.mem.Allocator) void
+        and @TypeOf(build) == fn (std.mem.Allocator) void
+
+    // nearest and range are declared with the tree alone: no query point, no
+    // radius, no result buffer. These record the signatures as they stand.
+    test nearest_range_and_deinit_take_one_tree_pointer
+        given f = nearest
+        then @TypeOf(f) == fn (*KDTree) void
+        and @TypeOf(range) == fn (*KDTree) void
+        and @TypeOf(deinit) == fn (*KDTree) void
+

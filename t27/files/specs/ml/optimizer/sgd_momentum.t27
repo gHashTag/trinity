@@ -1,0 +1,279 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Accumulates gradient direction for faster convergence | φ² + 1/φ² = 3 | TRINITY
+
+module SgdMomentum;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_MOMENTUM : f32 = 0.9;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SGDMomentumConfig = struct {
+        learning_rate : f32,
+        momentum : f32,
+        nesterov : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // step(grad: []const f32, param: []f32, velocity: []f32, lr: f32, mu: f32, nesterov: bool) → void
+    fn step(grad: []const f32, param: []f32, velocity: []f32, lr: f32, mu: f32, nesterov: bool) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_creates_zero_velocities
+        given config = SgdMomentumConfig{.learning_rate = 0.01, .momentum = 0.9, .weight_decay = 0.0, .nesterov = false, .use_phi_damping = false, .dampening = 0.1}
+        when state = init(config, 10)
+        then state.velocities.len == 10
+        and   all(state.velocities, is_zero)
+        and   state.step == 0
+
+    test compute_velocity_basic_case
+        given velocity = 0.0
+        and   grad = 1.0
+        and   momentum = 0.9
+        and   dampening = 0.1
+        when result = compute_velocity(velocity, grad, momentum, dampening)
+        then approximately_equal(result, 0.1)
+
+    test compute_velocity_with_previous_velocity
+        given velocity = 0.5
+        and   grad = 1.0
+        and   momentum = 0.9
+        and   dampening = 0.1
+        when result = compute_velocity(velocity, grad, momentum, dampening)
+        then approximately_equal(result, 0.9 * 0.5 + 0.1)
+
+    test standard_update_decreases_param
+        given param = 1.0
+        and   velocity = 0.1
+        and   lr = 0.01
+        when result = standard_update(param, velocity, lr)
+        then result < param
+        and   approximately_equal(result, 1.0 - 0.001)
+
+    test nesterov_update_considers_lookahead
+        given param = 1.0
+        and   velocity = 0.1
+        and   grad = 0.5
+        and   lr = 0.01
+        and   momentum = 0.9
+        when result = nesterov_update(param, velocity, grad, lr, momentum)
+        then approximately_equal(result, 1.0 - 0.01 * (0.9 * 0.1 + 0.5))
+
+    test step_without_momentum_behaves_like_sgd
+        given config = SgdMomentumConfig{.learning_rate = 0.01, .momentum = 0.0, .weight_decay = 0.0, .nesterov = false, .use_phi_damping = false, .dampening = 1.0}
+        and   state = init(config, 3)
+        and   params = [1.0, 2.0, 3.0]
+        and   grads = [0.1, 0.2, 0.3]
+        when result = step(state, params, grads)
+        then approximately_equal(result.updated_params[0], 1.0 - 0.001)
+        and   approximately_equal(result.updated_params[1], 2.0 - 0.002)
+        and   approximately_equal(result.updated_params[2], 3.0 - 0.003)
+
+    test step_with_momentum_accumulates_velocity
+        given config = SgdMomentumConfig{.learning_rate = 0.01, .momentum = 0.9, .weight_decay = 0.0, .nesterov = false, .use_phi_damping = false, .dampening = 0.1}
+        and   state = init(config, 1)
+        and   params = [1.0]
+        and   grads = [0.1]
+        when result1 = step(state, params, grads)
+        and   state2 = SgdMomentumState{.velocities = result1.velocities, .param_count = 1, .step = 1}
+        and   result2 = step(state2, result1.updated_params, grads)
+        then result2.velocities[0] > result1.velocities[0]
+
+    test step_with_weight_decay_modifies_gradients
+        given config = SgdMomentumConfig{.learning_rate = 0.01, .momentum = 0.9, .weight_decay = 0.1, .nesterov = false, .use_phi_damping = false, .dampening = 0.1}
+        and   state = init(config, 1)
+        and   params = [1.0]
+        and   grads = [0.1]
+        when result = step(state, params, grads)
+        then result.updated_params[0] < 1.0 - 0.001 // More aggressive decrease due to weight decay
+
+    test apply_weight_decay_increases_gradient_magnitude
+        given params = [1.0, -1.0]
+        and   grads = [0.1, 0.1]
+        and   weight_decay = 0.1
+        when result = apply_weight_decay(params, grads, weight_decay)
+        then approximately_equal(result[0], 0.2)   // 0.1 + 0.1 * 1.0
+        and   approximately_equal(result[1], 0.0)   // 0.1 + 0.1 * (-1.0)
+
+    test phi_damped_momentum_reduces_momentum
+        given base_momentum = 0.9
+        when result = phi_damped_momentum(base_momentum)
+        then result < base_momentum
+        and   approximately_equal(result, 0.9 / PHI)
+
+    test get_effective_momentum_returns_phi_damped_when_enabled
+        given config = SgdMomentumConfig{.momentum = 0.9, .use_phi_damping = true}
+        when result = get_effective_momentum(config)
+        then approximately_equal(result, PHI_DAMPED_MOMENTUM)
+
+    test get_effective_momentum_returns_base_when_disabled
+        given config = SgdMomentumConfig{.momentum = 0.9, .use_phi_damping = false}
+        when result = get_effective_momentum(config)
+        then approximately_equal(result, 0.9)
+
+    test step_norm_is_correct
+        given config = SgdMomentumConfig{.learning_rate = 0.01, .momentum = 0.9, .weight_decay = 0.0, .nesterov = false, .use_phi_damping = false, .dampening = 0.1}
+        and   state = init(config, 2)
+        and   params = [1.0, 2.0]
+        and   grads = [0.3, 0.4]
+        when result = step(state, params, grads)
+        then approximately_equal(result.step_norm, sqrt(pow(1.0 - result.updated_params[0], 2) + pow(2.0 - result.updated_params[1], 2)))
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants
+    // ═══════════════════════════════════════════════════════════
+
+    invariant step_preserves_param_count
+        given config = any_sgd_momentum_config()
+        and   state = init(config, 100)
+        and   params = random_input(100)
+        and   grads = random_input(100)
+        when result = step(state, params, grads)
+        then result.updated_params.len == params.len
+
+    invariant step_velocities_same_length
+        given config = any_sgd_momentum_config()
+        and   state = init(config, 50)
+        and   params = random_input(50)
+        and   grads = random_input(50)
+        when result = step(state, params, grads)
+        then result.velocities.len == params.len
+
+    invariant velocity_remains_bounded
+        given config = any_sgd_momentum_config()
+        and   state = init(config, 10)
+        and   params = finite_input(10)
+        and   grads = bounded_input(10, -1.0, 1.0)
+        and   result = step(state, params, grads)
+        then all(result.velocities, is_finite)
+
+    invariant momentum_coefficient_in_valid_range
+        given config = SgdMomentumConfig{.momentum = 0.9, .use_phi_damping = false}
+        when effective = get_effective_momentum(config)
+        then effective >= 0.0
+        and   effective <= 1.0
+
+    invariant phi_damped_momentum_less_than_base
+        given base = random_gf16_in_range(0.5, 0.99)
+        when damped = phi_damped_momentum(base)
+        then damped < base
+        and   damped > 0.0
+
+    invariant step_norm_non_negative
+        given config = any_sgd_momentum_config()
+        and   state = init(config, 10)
+        and   params = random_input(10)
+        and   grads = random_input(10)
+        when result = step(state, params, grads)
+        then result.step_norm >= 0.0
+
+    invariant zero_grad_preserves_velocities
+        given config = any_sgd_momentum_config()
+        and   state = init(config, 10)
+        and   state.velocities[0] = 0.5
+        when result = zero_grad(state)
+        then result.velocities[0] == 0.5
+
+    invariant phi_damped_momentum_constant
+        then approximately_equal_within(PHI_DAMPED_MOMENTUM, 0.9 / PHI, 1e-6)
+
+    invariant dampening_equals_one_minus_momentum_by_default
+        given config = SgdMomentumConfig{.momentum = 0.9, .dampening = 0.0}
+        when result = 1.0 - config.momentum
+        then approximately_equal(result, 0.1)
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Benchmarks
+    // ═══════════════════════════════════════════════════════════
+
+    bench init_small
+        given config = any_sgd_momentum_config()
+        when result = init(config, 100)
+        then elapsed_time_us < 50
+
+    bench init_large
+        given config = any_sgd_momentum_config()
+        when result = init(config, 1000000)
+        then elapsed_time_ms < 10
+
+    bench step_small
+        given config = any_sgd_momentum_config()
+        and   state = init(config, 100)
+        and   params = random_input(100)
+        and   grads = random_input(100)
+        when result = step(state, params, grads)
+        then elapsed_time_us < 100
+
+    bench step_medium
+        given config = any_sgd_momentum_config()
+        and   state = init(config, 10000)
+        and   params = random_input(10000)
+        and   grads = random_input(10000)
+        when result = step(state, params, grads)
+        then elapsed_time_ms < 5
+
+    bench step_large
+        given config = any_sgd_momentum_config()
+        and   state = init(config, 1000000)
+        and   params = random_input(1000000)
+        and   grads = random_input(1000000)
+        when result = step(state, params, grads)
+        then elapsed_time_ms < 100
+
+    bench compute_velocity
+        given velocity = random_gf16()
+        and   grad = random_gf16()
+        and   momentum = 0.9
+        and   dampening = 0.1
+        when result = compute_velocity(velocity, grad, momentum, dampening)
+        then elapsed_time_ns < 10
+
+    bench nesterov_update
+        given param = random_gf16()
+        and   velocity = random_gf16()
+        and   grad = random_gf16()
+        and   lr = 0.01
+        and   momentum = 0.9
+        when result = nesterov_update(param, velocity, grad, lr, momentum)
+        then elapsed_time_ns < 10
+
+    // ═══════════════════════════════════════════════════════════
+    // Mathematical Notes
+    // ═══════════════════════════════════════════════════════════
+    //
+    // Standard Momentum Update:
+    //   v_t = μ * v_{t-1} + (1 - μ) * ∇L(θ_{t-1})
+    //   θ_t = θ_{t-1} - η * v_t
+    //
+    // Nesterov Accelerated Gradient:
+    //   v_t = μ * v_{t-1} + (1 - μ) * ∇L(θ_{t-1} - η * μ * v_{t-1})
+    //   θ_t = θ_{t-1} - η * (μ * v_t + ∇L(θ_t))
+    //
+    // With Weight Decay (L2 Regularization):
+    //   ∇L'(θ) = ∇L(θ) + λ * θ
+    //
+    // Phi-Damped Momentum:
+    //   μ_eff = μ / φ ≈ 0.556 for μ = 0.9
+    //   Reduces momentum accumulation, providing smoother convergence
+    //
+    // Dampening:
+    //   Standard: dampening = 1 - momentum
+    //   Alternative: dampening can be set independently
+    //
+    // ═══════════════════════════════════════════════════════════

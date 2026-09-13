@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// RFC 3986 compliant | φ² + 1/φ² = 3 | TRINITY
+
+module TriUrl;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Url = struct {
+        scheme : []const u8,
+        host : []const u8,
+        port : ?u16,
+        path : []const u8,
+        query : []const u8,
+        fragment : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse(str: []const u8, allocator: std.mem.Allocator) → !Url
+    fn parse(str: []const u8, allocator: std.mem.Allocator) -> !Url {
+        // TODO: Implement from .tri spec
+    }
+
+    // encode(component: []const u8, allocator: std.mem.Allocator) → ![]u8
+    fn encode(component: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // decode(encoded: []const u8, allocator: std.mem.Allocator) → ![]u8
+    fn decode(encoded: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // to_string(url: Url, allocator: std.mem.Allocator) → ![]u8
+    fn to_string(url: Url, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // parse/encode/decode/to_string are unimplemented stubs returning void, so
+    // no round trip can be asserted yet. What the module does declare -- the Url
+    // component fields, and the optional port RFC 3986 allows to be absent -- is
+    // tested here.
+
+    test url_without_a_port_leaves_it_absent
+        // Verify: port is optional, so a URL that relies on the scheme default
+        // carries no port at all rather than a sentinel value
+        given u = Url{.scheme="https",.host="example.com",.port=null,.path="/",.query="",.fragment=""}
+        then u.port == null
+
+    test url_with_an_explicit_port_carries_it
+        // Verify: an explicit authority port is retained
+        given u = Url{.scheme="http",.host="example.com",.port=8080,.path="/a",.query="",.fragment=""}
+        then u.port.? == 8080
+
+    test port_field_spans_the_full_range
+        // Verify: the declared u16 holds 65535, the highest legal TCP port
+        given u = Url{.scheme="http",.host="h",.port=65535,.path="/",.query="",.fragment=""}
+        then u.port.? == 65535
+
+    test empty_query_and_fragment_are_representable
+        // Verify: the optional RFC 3986 components are empty strings, not absent
+        given u = Url{.scheme="https",.host="example.com",.port=null,.path="/index.html",.query="",.fragment=""}
+        then u.query.len == 0 and u.fragment.len == 0
+
+    test components_keep_the_values_they_were_built_from
+        // Verify: Url has the declared field names and stores each component
+        given u = Url{.scheme="https",.host="example.com",.port=null,.path="/docs",.query="q=1",.fragment="top"}
+        and scheme_kept = std.mem.eql(u8, u.scheme, "https")
+        and query_kept = std.mem.eql(u8, u.query, "q=1")
+        then scheme_kept and query_kept
+

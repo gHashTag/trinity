@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Adjacency list representation | φ² + 1/φ² = 3 | TRINITY
+
+module TriGraph;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Graph(T) = struct {
+        nodes : std.HashMap(T, []T),
+        directed : "bool",
+    };
+
+    pub const GraphPath(T) = struct {
+        nodes : []T,
+        cost : "f64",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty(directed: bool) → void
+    fn empty(directed: bool) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // add_node(graph: *Graph(T)) → void
+    fn add_node(graph: *Graph(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // add_edge(graph: *Graph(T)) → void
+    fn add_edge(graph: *Graph(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test empty_basic_case
+        given input = default_input()
+        when result = empty(input)
+        then result != undefined
+
+    test add_node_basic_case
+        given input = default_input()
+        when result = add_node(input)
+        then result != undefined
+
+    test add_edge_basic_case
+        given input = default_input()
+        when result = add_edge(input)
+        then result != undefined
+

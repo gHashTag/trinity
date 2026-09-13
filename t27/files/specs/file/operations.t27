@@ -1,0 +1,445 @@
+// specs/file/operations.t27
+// File Operations
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module FileOperations {
+    use base::types;
+    use file::schema;
+
+    // ====================================================================
+    // Read Operations
+    // ====================================================================
+
+    // read reads a file's contents
+    fn read(path: str, includeDiff: bool) -> Result<FileContent, FileError> {
+        // Implementation: Read file and return content
+    }
+
+    // read_range reads a range of lines from a file
+    fn read_range(path: str, startLine: u32, endLine: u32) -> Result<str, FileError> {
+        // Implementation: Read specific line range
+    }
+
+    // read_binary reads binary file content
+    fn read_binary(path: str) -> Result<[u8], FileError> {
+        // Implementation: Read binary file
+    }
+
+    // exists checks if a file exists
+    fn exists(path: str) -> Result<bool, FileError> {
+        // Implementation: Check file existence
+    }
+
+    // stat returns file information
+    fn stat(path: str) -> Result<FileInfo, FileError> {
+        // Implementation: Get file metadata
+    }
+
+    // ====================================================================
+    // Write Operations
+    // ====================================================================
+
+    // write writes content to a file
+    fn write(path: str, content: str) -> Result<void, FileError> {
+        // Implementation: Write content to file
+    }
+
+    // write_binary writes binary content to a file
+    fn write_binary(path: str, data: [u8]) -> Result<void, FileError> {
+        // Implementation: Write binary data to file
+    }
+
+    // append appends content to a file
+    fn append(path: str, content: str) -> Result<void, FileError> {
+        // Implementation: Append content to file
+    }
+
+    // edit edits a file with replacements
+    fn edit(path: str, oldText: str, newText: str) -> Result<void, FileError> {
+        // Implementation: Replace text in file
+    }
+
+    // edit_all edits all occurrences in a file
+    fn edit_all(path: str, oldText: str, newText: str) -> Result<u32, FileError> {
+        // Implementation: Replace all occurrences, return count
+    }
+
+    // insert inserts text at a line number
+    fn insert(path: str, line: u32, content: str) -> Result<void, FileError> {
+        // Implementation: Insert content at line
+    }
+
+    // delete_lines removes a line range from a file
+    fn delete_lines(path: str, startLine: u32, endLine: u32) -> Result<void, FileError> {
+        // Implementation: Delete line range
+    }
+
+    // ====================================================================
+    // Directory Operations
+    // ====================================================================
+
+    // list lists contents of a directory
+    fn list(path: str) -> Result<[FileNode], FileError> {
+        // Implementation: List directory contents
+    }
+
+    // list_recursive lists directory contents recursively
+    fn list_recursive(path: str, maxDepth: u32) -> Result<[FileNode], FileError> {
+        // Implementation: List directory recursively
+    }
+
+    // create_dir creates a directory
+    fn create_dir(path: str, recursive: bool) -> Result<void, FileError> {
+        // Implementation: Create directory
+    }
+
+    // delete_dir deletes a directory
+    fn delete_dir(path: str, recursive: bool) -> Result<void, FileError> {
+        // Implementation: Delete directory
+    }
+
+    // move_path moves a file or directory
+    fn move_path(from: str, to: str) -> Result<void, FileError> {
+        // Implementation: Move file/directory
+    }
+
+    // copy copies a file
+    fn copy(from: str, to: str) -> Result<void, FileError> {
+        // Implementation: Copy file
+    }
+
+    // delete deletes a file
+    fn delete(path: str) -> Result<void, FileError> {
+        // Implementation: Delete file
+    }
+
+    // ====================================================================
+    // Ignore Operations
+    // ====================================================================
+
+    // is_ignored checks if a path is ignored
+    fn is_ignored(path: str, rules: IgnoreRules) -> bool {
+        // Implementation: Check if path matches ignore rules
+    }
+
+    // load_ignore_rules loads ignore rules from .gitignore/.ignore files
+    fn load_ignore_rules(root: str) -> Result<IgnoreRules, FileError> {
+        // Implementation: Load and parse ignore files
+    }
+
+    // add_ignore_pattern adds a pattern to ignore rules
+    fn add_ignore_pattern(rules: IgnoreRules, pattern: str) -> IgnoreRules {
+        // Implementation: Add ignore pattern
+    }
+
+    // ====================================================================
+    // Path Operations
+    // ====================================================================
+
+    // normalize normalizes a file path
+    fn normalize(path: str) -> str {
+        // Implementation: Normalize path separators and resolve . and ..
+    }
+
+    // join joins path components
+    fn join(parts: [str]) -> str {
+        // Implementation: Join path parts
+    }
+
+    // dirname returns the directory name of a path
+    fn dirname(path: str) -> str {
+        // Implementation: Get directory name
+    }
+
+    // basename returns the file name of a path
+    fn basename(path: str) -> str {
+        // Implementation: Get file name
+    }
+
+    // extname returns the file extension
+    fn extname(path: str) -> str {
+        // Implementation: Get file extension
+    }
+
+    // relative returns relative path from base to path
+    fn relative(from: str, to: str) -> Result<str, FileError> {
+        // Implementation: Get relative path
+    }
+
+    // absolute returns absolute path
+    fn absolute(path: str) -> Result<str, FileError> {
+        // Implementation: Get absolute path
+    }
+
+    // resolve resolves a path to absolute form
+    fn resolve(base: str, path: str) -> str {
+        // Implementation: Resolve path relative to base
+    }
+
+    // ====================================================================
+    // Content Operations
+    // ====================================================================
+
+    // detect_type detects content type
+    fn detect_type(path: str, content: str) -> ContentType {
+        // Implementation: Detect if text, binary, or image
+    }
+
+    // count_lines counts lines in content
+    fn count_lines(content: str) -> u32 {
+        // Implementation: Count line breaks
+    }
+
+    // truncate truncates content to max length
+    fn truncate(content: str, maxLength: u32) -> str {
+        // Implementation: Truncate and add ellipsis
+    }
+
+    // ====================================================================
+    // Tests
+    // ====================================================================
+
+    test "file_type_values" {
+        assert(FileType::File as u32 == 0);
+        assert(FileType::Directory as u32 == 1);
+        assert(FileType::Symlink as u32 == 2);
+    }
+
+    test "file_status_values" {
+        assert(FileStatus::Added as u32 == 0);
+        assert(FileStatus::Deleted as u32 == 1);
+        assert(FileStatus::Modified as u32 == 2);
+    }
+
+    test "content_type_values" {
+        assert(ContentType::Text as u32 == 0);
+        assert(ContentType::Binary as u32 == 1);
+        assert(ContentType::Image as u32 == 2);
+    }
+
+    test "file_error_values" {
+        assert(FileError::NotFound as u32 == 0);
+        assert(FileError::PermissionDenied as u32 == 1);
+        assert(FileError::IsDirectory as u32 == 2);
+        assert(FileError::NotDirectory as u32 == 3);
+        assert(FileError::AccessDenied as u32 == 4);
+        assert(FileError::InvalidPath as u32 == 5);
+        assert(FileError::ReadError as u32 == 6);
+        assert(FileError::WriteError as u32 == 7);
+        assert(FileError::DeleteError as u32 == 8);
+    }
+
+    test "file_info_creation" {
+        var info = FileInfo {
+            path = "test.txt",
+            fileType = FileType::File,
+            size = 100,
+            modified = 1234567890,
+            permissions = 644,
+            isHidden = false,
+            isIgnored = false,
+        };
+        assert(info.path == "test.txt");
+        assert(info.fileType == FileType::File);
+    }
+
+    test "file_content_text" {
+        var content = FileContent {
+            type = ContentType::Text,
+            content = "hello",
+            diff = null,
+            mimeType = "text/plain",
+            encoding = null,
+            lineCount = 1,
+        };
+        assert(is_text(content.type));
+    }
+
+    test "file_node_creation" {
+        var node = FileNode {
+            name = "dir",
+            path = "dir",
+            absolute = "/home/dir",
+            fileType = FileType::Directory,
+            ignored = false,
+            children = null,
+        };
+        assert(node.fileType == FileType::Directory);
+    }
+
+    test "file_change_creation" {
+        var change = FileChange {
+            path = "test.txt",
+            status = FileStatus::Modified,
+            additions = 1,
+            deletions = 0,
+        };
+        assert(change.status == FileStatus::Modified);
+    }
+
+    test "ignore_pattern_creation" {
+        var pattern = IgnorePattern {
+            pattern = "*.log",
+            isDir = false,
+        };
+        assert(pattern.pattern == "*.log");
+    }
+
+    test "ignore_rules_creation" {
+        var patterns = [
+            IgnorePattern {
+                pattern = "node_modules",
+                isDir = true,
+            },
+        ];
+        var rules = IgnoreRules {
+            patterns = patterns,
+            whitelists: [],
+        };
+        assert(rules.patterns.len == 1);
+    }
+
+    test "search_match_creation" {
+        var match = SearchMatch {
+            path = "test.txt",
+            line = 1,
+            content = "test",
+            start = 0,
+            end = 4,
+        };
+        assert(match.path == "test.txt");
+    }
+
+    test "search_options_creation" {
+        var options = SearchOptions {
+            query = "pattern",
+            pattern = "*.ts",
+            caseSensitive = true,
+            maxResults = 50,
+            includeHidden = false,
+            fileType = FileType::File,
+        };
+        assert(options.caseSensitive);
+        assert(options.maxResults == 50);
+    }
+
+    test "constants_values" {
+        assert(MAX_FILE_SIZE == 10485760);
+        assert(MAX_SEARCH_RESULTS == 1000);
+        assert(DEFAULT_READ_CHUNK == 8192);
+    }
+
+    test "file_content_text" {
+        var content = FileContent {
+            type = ContentType::Text,
+            content = "hello",
+            diff = null,
+            mimeType = "text/plain",
+            encoding = null,
+            lineCount = 1,
+        };
+        assert(is_text(content.type));
+    }
+
+    test "file_change_creation" {
+        var change = FileChange {
+            path = "test.txt",
+            status = FileStatus::Modified,
+            additions = 1,
+            deletions = 0,
+        };
+        assert(change.status == FileStatus::Modified);
+    }
+
+    test "watcher_handle_creation" {
+        var handle = WatcherHandle {
+            id = "watch-1",
+            paths = ["/home/project"],
+            active = true,
+        };
+        assert(handle.active);
+    }
+
+    test "submatch_creation" {
+        var submatch = Submatch {
+            match = "match",
+            start = 0,
+            end = 5,
+        };
+        assert(submatch.match == "match");
+    }
+
+    test "ripgrep_match_creation" {
+        var submatches = [
+            Submatch {
+                match = "test",
+                start = 0,
+                end = 4,
+            },
+        ];
+        var match = RipgrepMatch {
+            path = "file.ts",
+            lineNumber = 1,
+            content = "test line",
+            submatches = submatches,
+        };
+        assert(match.path == "file.ts");
+    }
+
+    test "ripgrep_options_creation" {
+        var globs = ["*.ts"];
+        var options = RipgrepOptions {
+            glob = globs,
+            hidden = true,
+            follow = false,
+            maxDepth = 5,
+            limit = 10,
+        };
+        assert(options.glob?.len == 1);
+    }
+
+    test "content_type_values" {
+        assert(ContentType::Text as u32 == 0);
+        assert(ContentType::Binary as u32 == 1);
+        assert(ContentType::Image as u32 == 2);
+    }
+
+    test "file_status_values" {
+        assert(FileStatus::Added as u32 == 0);
+        assert(FileStatus::Deleted as u32 == 1);
+        assert(FileStatus::Modified as u32 == 2);
+    }
+
+    test "is_text_true" {
+        assert(is_text(ContentType::Text));
+    }
+
+    test "is_binary_true" {
+        assert(is_binary(ContentType::Binary));
+    }
+
+    test "is_image_true" {
+        assert(is_image(ContentType::Image));
+    }
+
+    test "is_hidden_true" {
+        assert(is_hidden(".git"));
+    }
+
+    test "is_hidden_false" {
+        assert(!is_hidden("visible"));
+    }
+
+    test "get_extension_simple" {
+        assert(get_extension("test.txt") == "txt");
+    }
+
+    test "watch_event_creation" {
+        var event = WatchEvent {
+            path = "test.txt",
+            eventType = WatchEventType::Change,
+            timestamp = 1234567890,
+        };
+        assert(event.eventType == WatchEventType::Change);
+    }
+}

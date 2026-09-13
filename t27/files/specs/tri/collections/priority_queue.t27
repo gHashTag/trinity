@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free queue | φ² + 1/φ² = 3 | TRINITY
+
+module TriPriorityQueue;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const PriorityQueue = struct {
+        data : []i64,
+        size : usize,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator) → PriorityQueue
+    fn init(allocator: std.mem.Allocator) -> PriorityQueue {
+        // TODO: Implement from .tri spec
+    }
+
+    // enqueue(pq: *PriorityQueue, value: i64) → !void
+    fn enqueue(pq: *PriorityQueue, value: i64) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // dequeue(pq: *PriorityQueue) → i64
+    fn dequeue(pq: *PriorityQueue) -> i64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // peek(pq: *PriorityQueue) → i64
+    fn peek(pq: *PriorityQueue) -> i64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_empty(pq: *PriorityQueue) → bool
+    fn is_empty(pq: *PriorityQueue) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(pq: *PriorityQueue) → void
+    fn deinit(pq: *PriorityQueue) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is an unimplemented stub emitting
+    // `@panic("not yet implemented")`, so no heap ordering can be exercised.
+    // What the module states is the layout, and that is what is asserted.
+
+    test priorities_are_signed
+        // []i64, not []u64: a negative priority is representable, so callers
+        // may order by cost as well as by rank.
+        then @FieldType(PriorityQueue, "data") == []i64
+
+    test size_is_tracked_separately_from_the_buffer
+        // data.len is the allocated capacity; size is the number of live
+        // elements. Two distinct numbers, hence the separate field.
+        then @hasField(PriorityQueue, "size")
+        and @FieldType(PriorityQueue, "size") == usize
+
+    test the_queue_owns_its_allocator
+        // init takes an allocator and the struct stores it, which is why
+        // deinit exists at all.
+        then @FieldType(PriorityQueue, "allocator") == std.mem.Allocator
+        and @typeInfo(PriorityQueue).@"struct".fields.len == 3
+

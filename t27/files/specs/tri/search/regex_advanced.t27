@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Capture groups support | φ² + 1/φ² = 3 | TRINITY
+
+module TriRegexAdvanced;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const RegexFlags = struct {
+        enum : [IgnoreCase, Multiline, DotAll],
+    };
+
+    pub const RegexMatch = struct {
+        matched : bool,
+        groups : [][]const u8,
+        start : usize,
+        end : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compile(pattern: []const u8, flags: RegexFlags, allocator: std.mem.Allocator) → !Regex
+    fn compile(pattern: []const u8, flags: RegexFlags, allocator: std.mem.Allocator) -> !Regex {
+        // TODO: Implement from .tri spec
+    }
+
+    // match(regex: Regex, text: []const u8, allocator: std.mem.Allocator) → !RegexMatch
+    fn match(regex: Regex, text: []const u8, allocator: std.mem.Allocator) -> !RegexMatch {
+        // TODO: Implement from .tri spec
+    }
+
+    // replace(regex: Regex, text: []const u8, replacement: []const u8, allocator: std.mem.Allocator) → ![]u8
+    fn replace(regex: Regex, text: []const u8, replacement: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test compile_basic_case
+        given input = default_input()
+        when result = compile(input)
+        then result != undefined
+
+    test match_basic_case
+        given input = default_input()
+        when result = match(input)
+        then result != undefined
+
+    test replace_basic_case
+        given input = default_input()
+        when result = replace(input)
+        then result != undefined
+

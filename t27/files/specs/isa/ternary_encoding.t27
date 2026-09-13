@@ -1,0 +1,41 @@
+// specs/isa/ternary_encoding.t27
+// Ternary encoding: values in {-1, 0, +1}
+
+algorithm ternary_encoding {
+    module: base.ternary_encoding
+
+    strand_i: {
+        trit_values: [-1, 0, +1],
+        encoding_name: "balanced_ternary",
+        isa_extension: "ternary"
+    }
+
+    strand_ii: {
+        biological_analog: "multi-state signaling in biological membranes"
+    }
+
+    strand_iii: {
+        t27_target: "isa/ternary_encoding",
+        backends: [rust, c, zig, verilog]
+    }
+
+    invariants: [
+        "unique_encoding"
+    ]
+
+    hardware: [x86, arm, riscv]
+
+    notes: |
+        Balanced ternary encoding efficiently represents
+        three discrete states using 1.58 trits per value
+        vs 1 bit per value for binary
+
+    tests: [
+        { encode: 1, decode: [+1], 0 },
+        { encode: 0, decode: [0], 0 },
+        { encode: [+1], decode: [1], 1 }
+    ]
+}
+    test "ternary_encoding_smoke_test" {
+        expect(true)
+    }

@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Pearson correlation coefficient | φ² + 1/φ² = 3 | TRINITY
+
+module TriStatistics;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // mean(values: []f64) → f64
+    fn mean(values: []f64) -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // variance(values: []f64) → f64
+    fn variance(values: []f64) -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // std_dev(values: []f64) → f64
+    fn std_dev(values: []f64) -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // median(allocator: std.mem.Allocator, values: []f64) → f64
+    fn median(allocator: std.mem.Allocator, values: []f64) -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // percentile(allocator: std.mem.Allocator, values: []f64, p: f64) → f64
+    fn percentile(allocator: std.mem.Allocator, values: []f64, p: f64) -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // correlation(x: []f64, y: []f64) → f64
+    fn correlation(x: []f64, y: []f64) -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test mean_basic_case
+        given input = default_input()
+        when result = mean(input)
+        then result != undefined
+
+    test variance_basic_case
+        given input = default_input()
+        when result = variance(input)
+        then result != undefined
+
+    test std_dev_basic_case
+        given input = default_input()
+        when result = std_dev(input)
+        then result != undefined
+
+    test median_basic_case
+        given input = default_input()
+        when result = median(input)
+        then result != undefined
+
+    test percentile_basic_case
+        given input = default_input()
+        when result = percentile(input)
+        then result != undefined
+
+    test correlation_basic_case
+        given input = default_input()
+        when result = correlation(input)
+        then result != undefined
+

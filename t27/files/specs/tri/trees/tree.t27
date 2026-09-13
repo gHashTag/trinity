@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Operations return new trees | φ² + 1/φ² = 3 | TRINITY
+
+module TriTree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Tree(T) = struct {
+        is_leaf : bool,
+        value : T,
+        left : Tree(T),
+        right : Tree(T),
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // leaf(value: T) → Tree(T)
+    fn leaf(value: T) -> Tree(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // branch(left: Tree(T), right: Tree(T)) → Tree(T)
+    fn branch(left: Tree(T), right: Tree(T)) -> Tree(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_leaf(tree: Tree(T)) → bool
+    fn is_leaf(tree: Tree(T)) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // height(tree: Tree(T)) → usize
+    fn height(tree: Tree(T)) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // size(tree: Tree(T)) → usize
+    fn size(tree: Tree(T)) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // inorder(tree: Tree(T)) → []T
+    fn inorder(tree: Tree(T)) -> []T {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is an unimplemented stub: each one emits
+    // `@panic("not yet implemented")`, so calling any of them aborts the test
+    // binary rather than failing a test.
+    //
+    // Tree(T) itself cannot be instantiated either: `left` and `right` hold a
+    // Tree(T) BY VALUE, so the type is infinitely large and Zig rejects it
+    // with "depends on itself for field declared here". Naming Tree(u8)
+    // anywhere below would be a compile error that takes the whole module
+    // down, not a test failure -- so nothing here mentions an instance. The
+    // children need to be pointers (?*Tree(T)) before this type is usable.
+
+    test tree_is_a_type_constructor_over_one_element_type
+        // Tree is a comptime function from a type to a type, not a type.
+        given info = @typeInfo(@TypeOf(Tree)).@"fn"
+        then info.params.len == 1
+        and info.params[0].type == type
+        and info.return_type == type
+        and @TypeOf(Tree) != type
+
+    test branch_takes_a_value_and_both_subtrees
+        // FAILING ON PURPOSE. `branch(left: Tree(T))` declares one parameter,
+        // so it has no way to receive the node's value or its right child --
+        // it cannot build a branch. The spec kept only the first parameter of
+        // the signature; every other function in this module is truncated the
+        // same way, which is why none of them are called above.
+        then @typeInfo(@TypeOf(branch)).@"fn".params.len >= 3
+

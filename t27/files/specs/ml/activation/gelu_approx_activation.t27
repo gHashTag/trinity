@@ -1,0 +1,81 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Exact GELU using error function | φ² + 1/φ² = 3 | TRINITY
+
+module GeluApprox;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const SQRT_2_OVER_PI : f32 = 0.7978845608;
+    const TANH_COEF : f32 = 0.044715;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const GELUApproxConfig = struct {
+        none : void,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(x: f32) → f32
+    fn forward(x: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_batch(input: []f32) → []f32
+    fn forward_batch(input: []f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // derivative(x: f32) → f32
+    fn derivative(x: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward, forward_batch and derivative are all unimplemented stubs: each
+    // emits `@panic("not yet implemented")`, so calling one aborts the test
+    // binary instead of failing a test. What the module does declare is the
+    // pair of constants of the tanh approximation, and those are checkable.
+
+    test sqrt_2_over_pi_is_the_constant_it_is_named_after
+        // The tanh form scales x by sqrt(2/pi) = 0.797884560802865...
+        then @abs(SQRT_2_OVER_PI - @sqrt(2.0 / std.math.pi)) < 1e-7
+
+    test the_two_constants_reproduce_published_gelu_values
+        // Hendrycks & Gimpel (2016): 0.5x(1 + tanh(sqrt(2/pi)(x + 0.044715x^3)))
+        // tracks the exact erf GELU to about 1e-3. Evaluated here from the
+        // module's own constants, since forward() is a stub. Exact GELU(1) is
+        // 1 * Phi(1) = 0.8413447, and GELU(-1) = -1 * Phi(-1) = -0.1586553.
+        given inner_pos = SQRT_2_OVER_PI * (1.0 + TANH_COEF)
+        given gelu_pos = 0.5 * (1.0 + std.math.tanh(inner_pos))
+        given gelu_neg = -0.5 * (1.0 - std.math.tanh(inner_pos))
+        then @abs(gelu_pos - 0.8413447) < 1e-3
+        and @abs(gelu_neg + 0.1586553) < 1e-3
+
+    test gelu_is_zero_at_the_origin_and_below_the_identity
+        // x = 0 gives exactly 0 because the whole expression is multiplied by
+        // x, and for positive x the tanh factor is under 1, so GELU(x) < x.
+        given gelu_zero = 0.5 * 0.0 * (1.0 + std.math.tanh(SQRT_2_OVER_PI * 0.0))
+        given gelu_two = 0.5 * 2.0 * (1.0 + std.math.tanh(SQRT_2_OVER_PI * (2.0 + TANH_COEF * 8.0)))
+        then gelu_zero == 0.0
+        and gelu_two < 2.0
+        and gelu_two > 1.9
+
+    test the_config_carries_no_hyperparameters
+        // GELU has nothing to tune: the config is a single void field.
+        then @typeInfo(GELUApproxConfig).@"struct".fields.len == 1
+        and @FieldType(GELUApproxConfig, "none") == void
+        and @sizeOf(GELUApproxConfig) == 0
+

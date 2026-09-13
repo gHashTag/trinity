@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// One of many types | φ² + 1/φ² = 3 | TRINITY
+
+module TriVariant;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Variant(T) = struct {
+        tag : []const u8,
+        value : T,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // make(tag: []const u8, value: T) → Variant(T)
+    fn make(tag: []const u8, value: T) -> Variant(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_tag(variant: Variant(T)) → []const u8
+    fn get_tag(variant: Variant(T)) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // match(variant: Variant(T), handlers: Map) → T
+    fn match(variant: Variant(T), handlers: Map) -> T {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // make/get_tag/match are unimplemented stubs -- each emits
+    // `@panic("not yet implemented")`, so tagging and dispatch cannot be
+    // exercised. Variant(T) is a real type constructor, and that is testable.
+
+    test payload_type_follows_the_parameter
+        then @FieldType(Variant(u8), "value") == u8
+        and @FieldType(Variant(bool), "value") == bool
+
+    test tag_is_a_string_whatever_the_payload
+        // The tag is not derived from T: it is the same []const u8 either way.
+        then @FieldType(Variant(u8), "tag") == []const u8
+        and @FieldType(Variant(bool), "tag") == []const u8
+
+    test distinct_payloads_give_distinct_variants
+        then Variant(u8) != Variant(bool)
+        and Variant(u8) == Variant(u8)
+
+    test variant_is_tag_plus_payload_only
+        // "One of many types" is carried by a runtime string, not a Zig union:
+        // there is no compile-time exhaustiveness available here.
+        then @typeInfo(Variant(u8)).@"struct".fields.len == 2
+

@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Wraps around when full | φ² + 1/φ² = 3 | TRINITY
+
+module TriRing;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Ring(T) = struct {
+        buffer : []T,
+        head : usize,
+        tail : usize,
+        capacity : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // new(capacity: usize) → Ring(T)
+    fn new(capacity: usize) -> Ring(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // push(ring: Ring(T), value: T) → bool
+    fn push(ring: Ring(T), value: T) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // pop(ring: Ring(T)) → Option(T)
+    fn pop(ring: Ring(T)) -> Option(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_empty(ring: Ring(T)) → bool
+    fn is_empty(ring: Ring(T)) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_full(ring: Ring(T)) → bool
+    fn is_full(ring: Ring(T)) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test a_fresh_ring_has_head_and_tail_at_the_same_slot
+        // Verify: the empty case — head == tail is the emptiness test, and the
+        // backing storage is exactly capacity slots wide
+        given storage = [_]u8{ 0, 0, 0, 0 }
+        when ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 0, .capacity = 4 }
+        then ring.head == ring.tail and ring.buffer.len == ring.capacity
+
+    test the_slot_after_the_last_one_is_the_first_one
+        // Verify: the wrap rule — indices advance modulo capacity, so a tail
+        // sitting on the final slot moves to slot 0, not past the end
+        given storage = [_]u8{ 0, 0, 0, 0 }
+        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 3, .capacity = 4 }
+        when wrapped = (ring.tail + 1) % ring.capacity
+        then wrapped == 0 and wrapped < ring.buffer.len
+
+    test occupancy_is_tail_minus_head_modulo_capacity
+        // Verify: the count survives a wrap — head 3, tail 1 in a 4-slot ring
+        // holds two items (slots 3 and 0), not a negative number
+        given storage = [_]u8{ 0, 0, 0, 0 }
+        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 3, .tail = 1, .capacity = 4 }
+        when used = (ring.tail + ring.capacity - ring.head) % ring.capacity
+        then used == 2 and used < ring.capacity
+
+    test occupancy_of_an_unwrapped_ring_is_the_plain_difference
+        // Verify: head 1, tail 3 holds slots 1 and 2 — the same two items,
+        // reached without the modulo doing any work
+        given storage = [_]u8{ 0, 0, 0, 0 }
+        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 1, .tail = 3, .capacity = 4 }
+        when used = (ring.tail + ring.capacity - ring.head) % ring.capacity
+        then used == 2
+
+    test a_full_ring_and_an_empty_ring_both_show_head_equal_to_tail
+        // Verify: the classic ambiguity — this layout carries no separate count,
+        // so capacity slots of data would be indistinguishable from zero slots.
+        // A correct push must therefore stop at capacity - 1 usable entries.
+        given storage = [_]u8{ 0, 0, 0, 0 }
+        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 0, .capacity = 4 }
+        when used = (ring.tail + ring.capacity - ring.head) % ring.capacity
+        and max_distinguishable = ring.capacity - 1
+        then used == 0 and max_distinguishable == 3
+
+    test ring_is_one_type_per_element_type
+        // Verify: Ring is generic over T, so two instantiations at the same
+        // element type are the same type and different element types are not
+        given same = Ring(u8) == Ring(u8)
+        and different = Ring(u8) == Ring(u32)
+        then same and different == false
+

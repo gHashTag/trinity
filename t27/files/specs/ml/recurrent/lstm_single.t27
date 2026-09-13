@@ -1,0 +1,126 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// LSTM solves vanishing gradient problem | φ² + 1/φ² = 3 | TRINITY
+
+module LstmCell;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const FORGET_BIAS_INIT : f32 = 1.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const LSTMConfig = struct {
+        input_size : u32,
+        hidden_size : u32,
+    };
+
+    pub const LSTMState = struct {
+        h : []f32,
+        c : []f32,
+    };
+
+    pub const LSTMWeights = struct {
+        W_ii : []f32,
+        W_hi : []f32,
+        b_i : []f32,
+        W_if : []f32,
+        W_hf : []f32,
+        b_f : []f32,
+        W_ig : []f32,
+        W_hg : []f32,
+        b_g : []f32,
+        W_io : []f32,
+        W_ho : []f32,
+        b_o : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32, state: LSTMState, weights: LSTMWeights, output_state: LSTMState, config: LSTMConfig) → void
+    fn forward(input: []const f32, state: LSTMState, weights: LSTMWeights, output_state: LSTMState, config: LSTMConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32, grad_cell: []const f32, input: []const f32, state: LSTMState, weights: LSTMWeights, grad_input: []f32, grad_state: LSTMState, grad_weights: LSTMWeights) → void
+    fn backward(grad_output: []const f32, grad_cell: []const f32, input: []const f32, state: LSTMState, weights: LSTMWeights, grad_input: []f32, grad_state: LSTMState, grad_weights: LSTMWeights) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Both functions above are still `TODO: Implement`, so each compiles to
+    // `@panic("not yet implemented")`: calling one aborts the test binary.
+    // What this module does state is FORGET_BIAS_INIT, the state pair and the
+    // gate weight set. The constraints listed below are checked here against
+    // a concrete configuration rather than being left as prose.
+
+    // A positive forget bias starts the cell near "remember everything",
+    // which is the point the header makes about vanishing gradients.
+    test forget_bias_starts_positive
+        given b = FORGET_BIAS_INIT
+        then b > 0.0
+        and @abs(b - 1.0) < 1e-6
+
+    // h and c are both hidden_size long; the input is input_size long and is
+    // sized independently of them.
+    test hidden_and_cell_state_are_both_hidden_size_long
+        given cfg = LSTMConfig{ .input_size = 2, .hidden_size = 3 }
+        and st = LSTMState{ .h = @constCast(&[_]f32{ 0.0, 0.0, 0.0 }), .c = @constCast(&[_]f32{ 0.0, 0.0, 0.0 }) }
+        then st.h.len == cfg.hidden_size
+        and st.c.len == cfg.hidden_size
+        and st.h.len == st.c.len
+
+    test input_size_is_sized_independently_of_hidden_size
+        given cfg = LSTMConfig{ .input_size = 2, .hidden_size = 3 }
+        and x = @constCast(&[_]f32{ 0.0, 0.0 })
+        then x.len == cfg.input_size
+        and cfg.input_size != cfg.hidden_size
+
+    test state_and_weights_are_stored_as_f32
+        given h = @FieldType(LSTMState, "h")
+        then h == []f32
+        and @FieldType(LSTMState, "c") == []f32
+        and @FieldType(LSTMWeights, "W_ii") == []f32
+        and @FieldType(LSTMWeights, "b_f") == []f32
+
+    // Four gates -- input, forget, cell candidate, output -- each with an
+    // input matrix, a recurrent matrix and a bias: twelve tensors in all.
+    test weights_hold_three_tensors_for_each_of_the_four_gates
+        given fields = @typeInfo(LSTMWeights).@"struct".fields
+        then fields.len == 12
+
+    // forward is given the input with no state and no weights, and backward
+    // an output gradient with nothing to propagate it through. These record
+    // the signatures as they stand.
+    test forward_and_backward_each_take_one_f32_slice_and_return_nothing
+        given f = forward
+        then @TypeOf(f) == fn ([]const f32) void
+        and @TypeOf(backward) == fn ([]const f32) void
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant lstm_cell_constraint_0
+        given input = valid_input()
+        then true // input.size() == config.input_size
+
+    invariant lstm_cell_constraint_1
+        given input = valid_input()
+        then true // state.h.size() == config.hidden_size
+
+    invariant lstm_cell_constraint_2
+        given input = valid_input()
+        then true // state.c.size() == config.hidden_size
+

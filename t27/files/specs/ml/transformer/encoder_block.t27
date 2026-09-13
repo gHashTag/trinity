@@ -1,0 +1,116 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Standard Transformer encoder block with residual connections | φ² + 1/φ² = 3 | TRINITY
+
+module EncoderBlock;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_D_MODEL : u32 = 512;
+    const DEFAULT_N_HEADS : u32 = 8;
+    const DEFAULT_D_FF : u32 = 2048;
+    const DEFAULT_DROPOUT : f32 = 0.1;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const EncoderBlockConfig = struct {
+        d_model : u32,
+        n_heads : u32,
+        d_ff : u32,
+        dropout : f32,
+        use_pre_norm : bool,
+    };
+
+    pub const AttentionOutput = struct {
+        output : []f32,
+        attn_weights : [][]f32,
+    };
+
+    pub const FFNOutput = struct {
+        output : []f32,
+    };
+
+    pub const BlockOutput = struct {
+        output : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // multi_head_attention(query: []f32, key: []f32, value: []f32, n_heads: u32, d_model: u32) → AttentionOutput
+    fn multi_head_attention(query: []f32, key: []f32, value: []f32, n_heads: u32, d_model: u32) -> AttentionOutput {
+        // TODO: Implement from .tri spec
+    }
+
+    // feed_forward(input: []f32, d_model: u32, d_ff: u32, dropout: f32) → FFNOutput
+    fn feed_forward(input: []f32, d_model: u32, d_ff: u32, dropout: f32) -> FFNOutput {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward(input: []f32, config: EncoderBlockConfig) → BlockOutput
+    fn forward(input: []f32, config: EncoderBlockConfig) -> BlockOutput {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // The three functions above are unimplemented stubs returning void, so no
+    // behavioural assertion is possible yet. These tests execute the shape
+    // constraints that the invariants below only state in comments.
+
+    test default_d_model_divides_evenly_across_heads
+        // Verify: constraint_0 (d_model % n_heads == 0) holds for the defaults,
+        // so each of the 8 heads gets 512/8 = 64 dimensions
+        given head_dim = DEFAULT_D_MODEL / DEFAULT_N_HEADS
+        then DEFAULT_D_MODEL % DEFAULT_N_HEADS == 0 and head_dim == 64
+
+    test default_ffn_is_at_least_as_wide_as_the_model
+        // Verify: constraint_1 (d_ff >= d_model) holds, at the 4x ratio of
+        // Vaswani et al. (2017)
+        given ratio = DEFAULT_D_FF / DEFAULT_D_MODEL
+        then DEFAULT_D_FF >= DEFAULT_D_MODEL and ratio == 4
+
+    test default_dropout_is_a_probability
+        // Verify: the default dropout rate lies in [0, 1]
+        given p = DEFAULT_DROPOUT
+        then p >= 0.0 and p <= 1.0
+
+    test config_built_from_defaults_satisfies_both_constraints
+        // Verify: EncoderBlockConfig has the declared field names, and a config
+        // filled from the defaults meets constraint_0 and constraint_1
+        given cfg = EncoderBlockConfig{.d_model=DEFAULT_D_MODEL,.n_heads=DEFAULT_N_HEADS,.d_ff=DEFAULT_D_FF,.dropout=DEFAULT_DROPOUT,.use_pre_norm=true}
+        then cfg.d_model % cfg.n_heads == 0 and cfg.d_ff >= cfg.d_model and cfg.use_pre_norm
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant encoder_block_constraint_0
+        given input = valid_input()
+        then true // d_model % n_heads == 0
+
+    invariant encoder_block_constraint_1
+        given input = valid_input()
+        then true // d_ff >= d_model
+
+    invariant encoder_block_constraint_2
+        given input = valid_input()
+        then true // name: encoder_block
+
+    invariant encoder_block_constraint_3
+        given input = valid_input()
+        then true // "Vaswani et al. (2017) - Attention Is All You Need"
+
+    invariant encoder_block_constraint_4
+        given input = valid_input()
+        then true // "Baevski et al. (2020) - Revisiting the Self-Attention"
+

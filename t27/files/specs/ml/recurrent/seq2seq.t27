@@ -1,0 +1,120 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Training technique using ground truth tokens | φ² + 1/φ² = 3 | TRINITY
+
+module Seq2seq;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Seq2SeqConfig = struct {
+        vocab_size : u32,
+        d_model : u32,
+        hidden_size : u32,
+    };
+
+    pub const Seq2SeqState = struct {
+        encoder_hidden : []f32,
+        encoder_context : []f32,
+        decoder_hidden : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // encode(input_seq: []const u32, state: Seq2SeqState, config: Seq2SeqConfig) → void
+    fn encode(input_seq: []const u32, state: Seq2SeqState, config: Seq2SeqConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // decode(target_seq: []const u32, state: Seq2SeqState, output: []f32, config: Seq2SeqConfig) → void
+    fn decode(target_seq: []const u32, state: Seq2SeqState, output: []f32, config: Seq2SeqConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // encode and decode are both unimplemented stubs: each one emits
+    // `@panic("not yet implemented")`, so calling either aborts the test
+    // binary rather than failing a test. (Their signatures are also truncated
+    // to the first parameter, so decode has nowhere to receive the encoder
+    // context it is supposed to condition on.) The invariants below never
+    // reach the generated code either -- they emit an empty comptime block,
+    // which is what the first test here is about.
+
+    test the_positivity_invariants_are_not_enforced_by_the_types
+        // The spec constrains vocab_size, d_model and hidden_size to be
+        // positive, but all three are plain u32 and the invariant blocks emit
+        // nothing, so an all-zero config is perfectly constructible. Whatever
+        // checks these has to be code, not the type.
+        given degenerate = Seq2SeqConfig{ .vocab_size = 0, .d_model = 0, .hidden_size = 0 }
+        then degenerate.vocab_size == 0
+        and degenerate.hidden_size == 0
+        and @typeInfo(@FieldType(Seq2SeqConfig, "vocab_size")).int.signedness == .unsigned
+        and @typeInfo(Seq2SeqConfig).@"struct".fields.len == 3
+
+    test the_context_vector_is_a_hidden_state_of_the_same_shape
+        // All three buffers are []f32: the context handed from encoder to
+        // decoder is an encoder hidden state, not a separate representation.
+        then @typeInfo(Seq2SeqState).@"struct".fields.len == 3
+        and @FieldType(Seq2SeqState, "encoder_context") == @FieldType(Seq2SeqState, "encoder_hidden")
+        and @FieldType(Seq2SeqState, "decoder_hidden") == @FieldType(Seq2SeqState, "encoder_hidden")
+        and @FieldType(Seq2SeqState, "encoder_hidden") == []f32
+
+    test hidden_size_is_what_sizes_all_three_buffers
+        // A hidden_size of 4 means three length-4 runs. Built by hand, since
+        // encode is a stub -- the point is that one config field fixes every
+        // buffer length, so no per-buffer size is stored on the state.
+        given cfg = Seq2SeqConfig{ .vocab_size = 32, .d_model = 8, .hidden_size = 4 }
+        given buf = std.mem.zeroes([4]f32)
+        given state = Seq2SeqState{ .encoder_hidden = @constCast(&buf), .encoder_context = @constCast(&buf), .decoder_hidden = @constCast(&buf) }
+        then state.encoder_hidden.len == cfg.hidden_size
+        and state.encoder_context.len == cfg.hidden_size
+        and state.decoder_hidden.len == cfg.hidden_size
+        and @hasField(Seq2SeqState, "hidden_size") == false
+
+    test both_sequences_are_token_ids_of_the_vocabulary_width
+        // encode takes source ids and decode takes target ids, both []const
+        // u32 -- the same width as vocab_size, so any id the config admits is
+        // representable. decode reading ground-truth targets is teacher
+        // forcing, which is what the module header describes.
+        given encode_arg = @typeInfo(@TypeOf(encode)).@"fn".params[0].type
+        given decode_arg = @typeInfo(@TypeOf(decode)).@"fn".params[0].type
+        then encode_arg == []const u32
+        and decode_arg == []const u32
+        and @FieldType(Seq2SeqConfig, "vocab_size") == u32
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant seq2seq_constraint_0
+        given input = valid_input()
+        then true // vocab_size > 0
+
+    invariant seq2seq_constraint_1
+        given input = valid_input()
+        then true // d_model > 0
+
+    invariant seq2seq_constraint_2
+        given input = valid_input()
+        then true // hidden_size > 0
+
+    invariant seq2seq_constraint_3
+        given input = valid_input()
+        then true // "Seq2Seq learns alignment between input and output"
+
+    invariant seq2seq_constraint_4
+        given input = valid_input()
+        then true // "Teacher forcing speeds up training"
+
+    invariant seq2seq_constraint_5
+        given input = valid_input()
+        then true // "Beam search improves generation quality"
+

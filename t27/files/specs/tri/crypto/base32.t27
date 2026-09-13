@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// RFC 4648 compliant | φ² + 1/φ² = 3 | TRINITY
+
+module TriBase32;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Base32 = struct {
+        alphabet : []const u8,
+        padding : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // standard() → Base32
+    fn standard() -> Base32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // encode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) → ![]const u8
+    fn encode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) -> ![]const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // decode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) → ![]const u8
+    fn decode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) -> ![]const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test standard_alphabet_holds_thirty_two_symbols
+        // Verify: RFC 4648 section 6 — 5 bits per symbol means exactly 32 symbols,
+        // and the standard encoding pads to a multiple of eight characters
+        given codec = Base32{ .alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", .padding = true }
+        then codec.alphabet.len == 32 and codec.padding
+
+    test alphabet_is_the_letters_then_the_digits_two_through_seven
+        // Verify: the 26 uppercase letters fill indices 0..25 and 2-7 fill 26..31
+        given alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+        when letters_match = std.mem.eql(u8, alphabet[0..26], "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        and digits_match = std.mem.eql(u8, alphabet[26..32], "234567")
+        then letters_match and digits_match
+
+    test alphabet_omits_the_digits_that_look_like_letters
+        // Verify: RFC 4648 section 6 leaves out 0, 1, 8 and 9 so that a symbol
+        // cannot be confused with O, I, B or g when read aloud or by hand
+        given alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+        when zero_at = std.mem.indexOf(u8, alphabet, "0")
+        and one_at = std.mem.indexOf(u8, alphabet, "1")
+        and eight_at = std.mem.indexOf(u8, alphabet, "8")
+        and nine_at = std.mem.indexOf(u8, alphabet, "9")
+        then zero_at == null and one_at == null and eight_at == null and nine_at == null
+
+    test alphabet_is_narrower_than_base64
+        // Verify: base32 trades density for case-insensitivity — 5 bits a symbol
+        // against base64's 6, so the same 40-bit group needs 8 symbols not 7
+        given base32_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+        when group_symbols = 40 / 5
+        then base32_alphabet.len == 32 and group_symbols == 8
+
+    test encoded_length_is_eight_characters_per_five_bytes
+        // Verify: with padding on, n input bytes become 8 * ceil(n/5) characters —
+        // 5 bytes give 8, and 6 bytes give 16 because the last group is padded
+        given five = 8 * ((5 + 4) / 5)
+        and six = 8 * ((6 + 4) / 5)
+        then five == 8 and six == 16
+

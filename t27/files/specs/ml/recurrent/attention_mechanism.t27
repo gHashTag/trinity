@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Memory-efficient attention for long sequences | φ² + 1/φ² = 3 | TRINITY
+
+module Attention;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const SCALE_FACTOR : f32 = 0.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const AttentionConfig = struct {
+        d_model : u32,
+        num_heads : u32,
+        dropout : f32,
+        causal : bool,
+    };
+
+    pub const AttentionOutput = struct {
+        output : []f32,
+        weights : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(query: []const f32, key: []const f32, value: []const f32, output: []f32, weights: []f32, config: AttentionConfig) → void
+    fn forward(query: []const f32, key: []const f32, value: []const f32, output: []f32, weights: []f32, config: AttentionConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32, query: []const f32, key: []const f32, value: []const f32, attn_weights: []const f32, grad_query: []f32, grad_key: []f32, grad_value: []f32, config: AttentionConfig) → void
+    fn backward(grad_output: []const f32, query: []const f32, key: []const f32, value: []const f32, attn_weights: []const f32, grad_query: []f32, grad_key: []f32, grad_value: []f32, config: AttentionConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward and backward are unimplemented stubs -- both emit
+    // `@panic("not yet implemented")`, so attention_constraint_2 (matching
+    // query/key/value shapes) cannot be checked here. The declared constant and
+    // config shape are what remain testable.
+
+    test head_split_and_dropout_are_declared_as_the_constraints_assume
+        // attention_constraint_0 divides d_model by num_heads and _1 bounds
+        // dropout in [0, 1), so both must be numeric fields of this config.
+        then @FieldType(AttentionConfig, "d_model") == u32
+        and @FieldType(AttentionConfig, "num_heads") == u32
+        and @FieldType(AttentionConfig, "dropout") == f32
+
+    test causal_masking_is_a_runtime_flag
+        then @FieldType(AttentionConfig, "causal") == bool
+        and @typeInfo(AttentionConfig).@"struct".fields.len == 4
+
+    test forward_returns_the_weights_alongside_the_output
+        // Both are flat f32 buffers, so the attention map stays inspectable
+        // rather than being folded away inside forward().
+        then @FieldType(AttentionOutput, "output") == []f32
+        and @FieldType(AttentionOutput, "weights") == []f32
+
+    test scale_factor_is_usable_as_a_divisor_of_the_scores
+        // FAILING ON PURPOSE. Scaled dot-product attention divides the scores
+        // by sqrt(d_k), but SCALE_FACTOR is declared 0.0. Multiplying by it
+        // annihilates every score, so softmax would return a uniform
+        // distribution for any input. It needs a positive value, or to be
+        // computed from d_model / num_heads at run time.
+        then SCALE_FACTOR > 0.0
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant attention_constraint_0
+        given input = valid_input()
+        then true // d_model % num_heads == 0
+
+    invariant attention_constraint_1
+        given input = valid_input()
+        then true // 0 <= dropout < 1
+
+    invariant attention_constraint_2
+        given input = valid_input()
+        then true // query.shape == key.shape == value.shape
+

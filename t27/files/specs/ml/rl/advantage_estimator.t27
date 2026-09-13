@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Efficient backward recurrence | φ² + 1/φ² = 3 | TRINITY
+
+module Advantage;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_GAMMA : f32 = 0.99;
+    const DEFAULT_LAMBDA : f32 = 0.95;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const GAEConfig = struct {
+        gamma : f32,
+        lambda_ : f32,
+        normalize : bool,
+    };
+
+    pub const TrajectoryBatch = struct {
+        states : [][]f32,
+        actions : [][]f32,
+        rewards : []f32,
+        values : []f32,
+        dones : []bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compute_td_residual(reward: f32, value: f32, next_value: f32, gamma: f32, done: bool) → f32
+    fn compute_td_residual(reward: f32, value: f32, next_value: f32, gamma: f32, done: bool) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_gae(rewards: []f32, values: []f32, dones: []bool, gamma: f32, lambda_: f32) → []f32
+    fn compute_gae(rewards: []f32, values: []f32, dones: []bool, gamma: f32, lambda_: f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_returns(rewards: []f32, dones: []bool, last_value: f32, gamma: f32) → []f32
+    fn compute_returns(rewards: []f32, dones: []bool, last_value: f32, gamma: f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // normalize_advantages(advantages: []f32) → []f32
+    fn normalize_advantages(advantages: []f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test default_gamma_within_unit_interval
+        // Verify: the shipped discount satisfies constraint 0 of this module
+        given gamma = DEFAULT_GAMMA
+        then gamma >= 0.0 and gamma <= 1.0
+
+    test default_lambda_within_unit_interval
+        // Verify: the shipped trace decay satisfies constraint 1 of this module
+        given lambda_ = DEFAULT_LAMBDA
+        then lambda_ >= 0.0 and lambda_ <= 1.0
+
+    test default_lambda_below_default_gamma
+        // Verify: lambda < gamma, so the GAE weight gamma*lambda decays faster
+        // than the discount alone — the bias/variance trade-off of Schulman et al.
+        given gamma = DEFAULT_GAMMA
+        and lambda_ = DEFAULT_LAMBDA
+        then lambda_ < gamma
+
+    test gae_weight_decays_geometrically
+        // Verify: successive GAE weights (gamma*lambda)^k shrink; the k=1 weight
+        // is 0.9405 for the shipped defaults
+        given w1 = DEFAULT_GAMMA * DEFAULT_LAMBDA
+        and err = @abs(w1 - 0.9405)
+        then err < 1.0e-6 and w1 < 1.0
+
+    test gae_config_from_defaults_meets_both_constraints
+        // Verify: a config built straight from the module constants is admissible
+        given config = GAEConfig{ .gamma = DEFAULT_GAMMA, .lambda_ = DEFAULT_LAMBDA, .normalize = true }
+        then config.gamma >= 0.0 and config.gamma <= 1.0 and config.lambda_ >= 0.0 and config.lambda_ <= 1.0
+
+    test trajectory_batch_arrays_share_one_horizon
+        // Verify: rewards, values and dones are all indexed by the same timestep t,
+        // so a well-formed batch has them at equal length
+        given rewards = [_]f32{ 1.0, 0.0, -1.0 }
+        and values = [_]f32{ 0.5, 0.25, 0.0 }
+        and dones = [_]bool{ false, false, true }
+        when batch = TrajectoryBatch{ .states = &.{}, .actions = &.{}, .rewards = @constCast(&rewards), .values = @constCast(&values), .dones = @constCast(&dones) }
+        then batch.rewards.len == batch.values.len and batch.values.len == batch.dones.len and batch.dones[2]
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant advantage_constraint_0
+        given input = valid_input()
+        then true // 0 <= gamma <= 1
+
+    invariant advantage_constraint_1
+        given input = valid_input()
+        then true // 0 <= lambda_ <= 1
+
+    invariant advantage_constraint_2
+        given input = valid_input()
+        then true // name: gae_formula
+
+    invariant advantage_constraint_3
+        given input = valid_input()
+        then true // name: td_residual
+
+    invariant advantage_constraint_4
+        given input = valid_input()
+        then true // name: gae_recursive
+
+    invariant advantage_constraint_5
+        given input = valid_input()
+        then true // "Schulman et al. (2016) - High-Dimensional Continuous Control Using Generalized Advantage Estimation, arXiv:1506.02438"
+

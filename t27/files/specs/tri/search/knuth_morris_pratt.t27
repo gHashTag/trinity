@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(n + m) time where n=text length, m=pattern length | φ² + 1/φ² = 3 | TRINITY
+
+module TriKmp;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const KMPPrefix = struct {
+        table : []usize,
+        pattern : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // build_prefix(pattern: []const u8, allocator: std.mem.Allocator) → !KMPPrefix
+    fn build_prefix(pattern: []const u8, allocator: std.mem.Allocator) -> !KMPPrefix {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(text: []const u8, prefix: *const KMPPrefix) → []usize
+    fn search(text: []const u8, prefix: *const KMPPrefix) -> []usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // build_prefix and search are both unimplemented stubs: each one emits
+    // `@panic("not yet implemented")`, so calling either aborts the test
+    // binary rather than failing a test. (search's signature is also truncated
+    // to `search(text: []const u8)`, with nowhere to receive the pattern.) The
+    // tables below are written out by hand and checked against the border
+    // property that build_prefix has to satisfy.
+
+    test the_table_has_one_slot_per_pattern_byte
+        // table[i] is the longest proper border of pattern[0..i+1], so the two
+        // slices are the same length and the table is indexed by byte, not by
+        // match position.
+        then @typeInfo(KMPPrefix).@"struct".fields.len == 2
+        and @FieldType(KMPPrefix, "table") == []usize
+        and @FieldType(KMPPrefix, "pattern") == []const u8
+
+    test the_border_table_of_ababa
+        // "ababa": no border at 'a' or 'ab', then "aba" borders on "a" (1),
+        // "abab" on "ab" (2), "ababa" on "aba" (3). This is what build_prefix
+        // must produce for this pattern.
+        given table = [_]usize{ 0, 0, 1, 2, 3 }
+        given kmp = KMPPrefix{ .table = @constCast(&table), .pattern = "ababa" }
+        then kmp.table.len == kmp.pattern.len
+        and kmp.table[0] == 0
+        and kmp.table[2] == 1
+        and kmp.table[4] == 3
+
+    test a_border_is_proper_so_an_entry_never_reaches_its_own_length
+        // table[i] <= i for every i, with equality impossible at i = 0. The
+        // all-same pattern "aaaa" is the extreme case that saturates the
+        // bound, and even there the last entry is 3, not 4.
+        given table = [_]usize{ 0, 1, 2, 3 }
+        given kmp = KMPPrefix{ .table = @constCast(&table), .pattern = "aaaa" }
+        then kmp.table[0] == 0
+        and kmp.table[1] <= 1
+        and kmp.table[3] == 3
+        and kmp.table[3] < kmp.pattern.len
+
+    test a_fallback_chain_strictly_decreases_so_the_scan_terminates
+        // On a mismatch the search follows j = table[j-1] repeatedly. Each hop
+        // lands on a strictly smaller index, which is why the whole scan is
+        // O(n + m) rather than quadratic: "ababa" falls 3 -> 1 -> 0.
+        given table = [_]usize{ 0, 0, 1, 2, 3 }
+        given first_hop = table[4]
+        given second_hop = table[first_hop - 1]
+        then first_hop == 3
+        and second_hop == 1
+        and second_hop < first_hop
+        and table[second_hop - 1] == 0
+

@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Reduce spatial dimensions | φ² + 1/φ² = 3 | TRINITY
+
+module Maxpool2d;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const MaxPool2DConfig = struct {
+        kernel_size : u32,
+        stride : u32,
+        padding : u32,
+        dilation : u32,
+        return_indices : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32, output: []f32, indices: []u32, config: MaxPool2DConfig) → void
+    fn forward(input: []const f32, output: []f32, indices: []u32, config: MaxPool2DConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32, input: []const f32, indices: []const u32, grad_input: []f32, config: MaxPool2DConfig) → void
+    fn backward(grad_output: []const f32, input: []const f32, indices: []const u32, grad_input: []f32, config: MaxPool2DConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward and backward are still `TODO: Implement from .tri spec` and
+    // compile to `@panic`, so neither is called here. MaxPool2DConfig is real,
+    // and the output-size arithmetic it feeds is checkable against it:
+    //   out = (in + 2*padding - dilation*(kernel_size - 1) - 1) / stride + 1
+
+    // The textbook 2x2 pool: stride equals kernel, no padding, no dilation.
+    // Every input element is read exactly once and the map halves.
+    test default_2x2_pool_config
+        given cfg = MaxPool2DConfig{ .kernel_size = 2, .stride = 2, .padding = 0, .dilation = 1, .return_indices = false }
+        then cfg.kernel_size == 2
+        and cfg.stride == cfg.kernel_size
+        and cfg.padding == 0
+        and cfg.dilation == 1
+        and cfg.return_indices == false
+
+    // Non-overlapping 2x2 over a 4x4 map gives 2x2 out, by the formula above.
+    test pool_2x2_halves_a_4x4_map
+        given cfg = MaxPool2DConfig{ .kernel_size = 2, .stride = 2, .padding = 0, .dilation = 1, .return_indices = false }
+        then (4 + 2 * cfg.padding - cfg.dilation * (cfg.kernel_size - 1) - 1) / cfg.stride + 1 == 2
+
+    // Stride 1 with kernel 3 and padding 1 is size-preserving -- the setting
+    // used when pooling must not change the spatial dimensions.
+    test padded_stride_one_pool_preserves_size
+        given cfg = MaxPool2DConfig{ .kernel_size = 3, .stride = 1, .padding = 1, .dilation = 1, .return_indices = false }
+        then (8 + 2 * cfg.padding - cfg.dilation * (cfg.kernel_size - 1) - 1) / cfg.stride + 1 == 8
+
+    // return_indices is what a max-pool needs to route gradients back in
+    // backward; it is a separate flag, not implied by any other field.
+    test return_indices_is_independent
+        given tracking = MaxPool2DConfig{ .kernel_size = 2, .stride = 2, .padding = 0, .dilation = 1, .return_indices = true }
+        and plain = MaxPool2DConfig{ .kernel_size = 2, .stride = 2, .padding = 0, .dilation = 1, .return_indices = false }
+        then tracking.kernel_size == plain.kernel_size
+        and tracking.stride == plain.stride
+        and tracking.return_indices != plain.return_indices
+

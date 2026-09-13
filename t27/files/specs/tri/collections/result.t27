@@ -1,0 +1,78 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Forces checking error case | φ² + 1/φ² = 3 | TRINITY
+
+module TriResult;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Result(T, E) = struct {
+        is_ok : bool,
+        value : T,
+        error : E,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // ok(value: T) → Result(T, E)
+    fn ok(value: T) -> Result(T, E) {
+        // TODO: Implement from .tri spec
+    }
+
+    // err(error: E) → Result(T, E)
+    fn err(error: E) -> Result(T, E) {
+        // TODO: Implement from .tri spec
+    }
+
+    // unwrap_or(result: Result(T, E), default: T) → T
+    fn unwrap_or(result: Result(T, E), default: T) -> T {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_error(result: Result(T, E)) → bool
+    fn is_error(result: Result(T, E)) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // ok/err/unwrap_or/is_error are unimplemented stubs returning void, so no
+    // construct-then-unwrap round trip can be exercised yet. What the module
+    // does declare -- a struct generic over both the value and the error type --
+    // is tested here.
+
+    test ok_shaped_result_carries_its_value
+        // Verify: is_ok is the discriminant and value holds the payload
+        given r = Result(i32, u8){.is_ok=true,.value=7,.@"error"=0}
+        then r.is_ok and r.value == 7
+
+    test err_shaped_result_carries_its_error
+        // Verify: the error side is reachable under the same field names
+        given r = Result(i32, u8){.is_ok=false,.value=0,.@"error"=42}
+        then r.is_ok == false and r.@"error" == 42
+
+    test both_payloads_are_always_present
+        // Verify: this Result is a product, not a sum -- value and error are
+        // both storage-resident regardless of is_ok, so is_ok is the only thing
+        // that "forces checking the error case"
+        given r = Result(i32, u8){.is_ok=true,.value=7,.@"error"=42}
+        then r.value == 7 and r.@"error" == 42
+
+    test result_is_generic_over_both_parameters
+        // Verify: T and E are independent, so instantiations differing in
+        // either one are distinct types
+        then (Result(i32, u8) != Result(bool, u8)) and (Result(i32, u8) != Result(i32, i64))
+
+    test error_field_name_survives_being_a_zig_keyword
+        // Verify: the declared field is named "error", which the emitter must
+        // escape rather than rename
+        then (@hasField(Result(i32, u8), "error")) and (@hasField(Result(i32, u8), "is_ok"))
+

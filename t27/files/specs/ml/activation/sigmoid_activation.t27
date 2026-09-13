@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Derivative (compute from output) | φ² + 1/φ² = 3 | TRINITY
+
+module Sigmoid;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SigmoidConfig = struct {
+        none : void,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(x: f32) → f32
+    fn forward(x: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_batch(input: []f32) → []f32
+    fn forward_batch(input: []f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // derivative(sigmoid_x: f32) → f32
+    fn derivative(sigmoid_x: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward()/forward_batch()/derivative() have no body yet, so they panic
+    // when called. None of what makes sigmoid worth having can be stated: not
+    // that forward(0) == 0.5, not that the output is confined to (0, 1), and
+    // not the identity in the header comment -- that the derivative is
+    // computable from the output alone, sigma'(x) = sigma(x) * (1 - sigma(x)).
+    // Those tests belong here the moment the three bodies exist.
+    //
+    // What the module states today is a config with nothing in it.
+
+    test sigmoid_has_no_tunable_parameter
+        // Verify: unlike LeakyReLU's slope or ELU's alpha, sigmoid is a fixed
+        // function -- the config carries a single void placeholder and so
+        // occupies no storage
+        given size = @sizeOf(SigmoidConfig)
+        then size == 0
+
+    test sigmoid_config_is_a_placeholder_not_an_empty_struct
+        // Verify: the one declared field is `none`, typed void -- the config
+        // exists to keep the shape uniform with activations that do have
+        // parameters
+        given fields = std.meta.fields(SigmoidConfig)
+        then (fields.len == 1) and (fields[0].type == void)
+

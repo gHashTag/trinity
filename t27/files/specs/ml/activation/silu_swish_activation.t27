@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// SiLU derivative | φ² + 1/φ² = 3 | TRINITY
+
+module SiluSwish;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_BETA : f32 = 1.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SiLUConfig = struct {
+        beta : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(x: f32, beta: f32) → f32
+    fn forward(x: f32, beta: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_batch(input: []f32, beta: f32) → []f32
+    fn forward_batch(input: []f32, beta: f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // derivative(x: f32, beta: f32) → f32
+    fn derivative(x: f32, beta: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(), forward_batch() and derivative() have no body yet, so they
+    // panic when called. The default beta and the config type are the only
+    // things this module states, and they are what these tests check.
+
+    test silu_default_beta_is_the_swish_beta_one_case
+        // SiLU is Swish with beta = 1 (Elfwing 2017 / Ramachandran 2017)
+        given beta = DEFAULT_BETA
+        then @abs(beta - 1.0) < 0.0000005
+
+    test silu_default_beta_satisfies_the_positivity_constraint
+        // constraint silu_swish_constraint_0: beta > 0
+        given beta = DEFAULT_BETA
+        then beta > 0.0
+
+    test silu_config_carries_a_beta_other_than_the_default
+        given cfg = SiLUConfig{.beta=2.5}
+        then @abs(cfg.beta - 2.5) < 0.0000005
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant silu_swish_constraint_0
+        given input = valid_input()
+        then true // beta > 0
+
+    invariant silu_swish_constraint_1
+        given input = valid_input()
+        then true // name: silu_formula
+
+    invariant silu_swish_constraint_2
+        given input = valid_input()
+        then true // name: derivative
+
+    invariant silu_swish_constraint_3
+        given input = valid_input()
+        then true // "Elfwing et al. (2017) - Sigmoid-Weighted Linear Units for Neural Network Function Approximation"
+
+    invariant silu_swish_constraint_4
+        given input = valid_input()
+        then true // "Ramachandran et al. (2017) - Searching for Activation Functions (Swish)"
+

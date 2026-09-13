@@ -1,0 +1,9 @@
+# vsa/ops — Vector Symbolic Architecture operations
+# Status: stub (pending full spec)
+# Bind, unbind, bundle, similarity for ternary VSA on FPGA
+module vsa_ops {
+    export bind(a: TritVec, b: TritVec) -> TritVec
+    export unbind(a: TritVec, b: TritVec) -> TritVec
+    export bundle(vecs: []TritVec) -> TritVec
+    export similarity(a: TritVec, b: TritVec) -> f32
+}

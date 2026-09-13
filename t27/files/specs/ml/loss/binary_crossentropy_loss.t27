@@ -1,0 +1,119 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Gradient w.r.t predictions | φ² + 1/φ² = 3 | TRINITY
+
+module BinaryCe;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_EPSILON : f32 = 1e-7;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BinaryCEConfig = struct {
+        from_logits : bool,
+        epsilon : f32,
+        reduction : Reduction,
+    };
+
+    pub const Reduction = struct {
+        enum : [MEAN, SUM, NONE],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // sigmoid(x: f32) → f32
+    fn sigmoid(x: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward(predictions: []f32, targets: []f32, config: BinaryCEConfig) → f32
+    fn forward(predictions: []f32, targets: []f32, config: BinaryCEConfig) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_batch(predictions: [][]f32, targets: []f32, config: BinaryCEConfig) → f32
+    fn forward_batch(predictions: [][]f32, targets: []f32, config: BinaryCEConfig) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // gradient(predictions: []f32, targets: []f32, config: BinaryCEConfig) → []f32
+    fn gradient(predictions: []f32, targets: []f32, config: BinaryCEConfig) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // sigmoid/forward/forward_batch/gradient are unimplemented stubs -- each
+    // emits `@panic("not yet implemented")`, so sigmoid(0) == 0.5 and the loss
+    // itself cannot be checked here. The declared constants and config shape
+    // are what remain testable.
+
+    test default_epsilon_satisfies_the_stated_constraint
+        // binary_ce_constraint_1 states 0 < epsilon << 1. The clamp exists so
+        // log(0) is never evaluated, which needs epsilon strictly positive and
+        // far below the 0/1 targets it guards.
+        then DEFAULT_EPSILON > 0.0
+        and DEFAULT_EPSILON < 0.001
+        and @abs(DEFAULT_EPSILON - 1e-7) < 1e-12
+
+    test epsilon_is_stored_at_the_same_precision_as_the_default
+        // A f64 field would silently widen the f32 default and change the
+        // clamp point.
+        then @FieldType(BinaryCEConfig, "epsilon") == f32
+        and @TypeOf(DEFAULT_EPSILON) == f32
+
+    test from_logits_selects_the_fused_path
+        // A bool, so the caller chooses between raw logits and probabilities;
+        // sigmoid() exists to serve the from_logits == true case.
+        then @FieldType(BinaryCEConfig, "from_logits") == bool
+
+    test reduction_can_represent_a_choice
+        // Reduction used to be written `enum : ,` -- an empty variant list --
+        // and landed as a zero-sized struct with exactly one value, so the
+        // reduction field of BinaryCEConfig carried no information. The three
+        // names below were recovered from the upstream spec this file was
+        // converted from (trinity-fpga specs/algo/binary_ce.tri:24).
+        then @typeInfo(Reduction).@"enum".fields.len == 3
+        and std.mem.eql(u8, @typeInfo(Reduction).@"enum".fields[0].name, "MEAN")
+        and std.mem.eql(u8, @typeInfo(Reduction).@"enum".fields[1].name, "SUM")
+        and std.mem.eql(u8, @typeInfo(Reduction).@"enum".fields[2].name, "NONE")
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant binary_ce_constraint_0
+        given input = valid_input()
+        then true // targets[i] ∈ {0, 1}
+
+    invariant binary_ce_constraint_1
+        given input = valid_input()
+        then true // 0 < epsilon << 1
+
+    invariant binary_ce_constraint_2
+        given input = valid_input()
+        then true // name: binary_ce
+
+    invariant binary_ce_constraint_3
+        given input = valid_input()
+        then true // name: gradient
+
+    invariant binary_ce_constraint_4
+        given input = valid_input()
+        then true // "Bishop (2006) - Pattern Recognition and Machine Learning"
+
+    invariant binary_ce_constraint_5
+        given input = valid_input()
+        then true // "Goodfellow et al. (2016) - Deep Learning"
+

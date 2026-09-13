@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: Apache-2.0
+; hello_world.t27 -- start here
+; The smallest spec that still shows every part of the language: constants,
+; a type, functions, a test and an invariant. Read it top to bottom, then
+; watch it become tokens, an AST, and five different target languages.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module hello-world;
+
+// ============================================================================
+// Constants
+//
+// A spec is a source of truth, so the numbers it fixes are named. `pub` makes
+// a name visible to other specs; the type after `:` is not optional.
+// ============================================================================
+
+pub const GREETING_LEN : u8 = 5;
+pub const TRINITY : i8 = 3;
+
+; A trit is the unit this language is built on: three states, not two.
+pub const TRIT_NEG : i8 = -1;
+pub const TRIT_ZERO : i8 = 0;
+pub const TRIT_POS : i8 = 1;
+
+// ============================================================================
+// Types
+//
+// A struct groups named fields. Every field carries its own width, because a
+// spec has to say what reaches hardware, not leave it to a compiler default.
+// ============================================================================
+
+pub const Greeting = packed struct {
+    length : u8,
+    trit : i8,
+};
+
+// ============================================================================
+// Functions
+//
+// A function declares its parameter types and its return type. There is no
+// inference here either -- the signature is part of the specification.
+// ============================================================================
+
+; Add two trits and clamp the result back into {-1, 0, +1}.
+; Saturation, not wrap-around: a trit that overflows stays at the rail.
+pub fn trit_add(a: i8, b: i8) i8 {
+    const sum = a + b;
+    if (sum > TRIT_POS) {
+        return TRIT_POS;
+    }
+    if (sum < TRIT_NEG) {
+        return TRIT_NEG;
+    }
+    return sum;
+}
+
+; The multiplicative identity of the trit set: multiplying by zero gives zero,
+; and the sign rule is the ordinary one.
+pub fn trit_mul(a: i8, b: i8) i8 {
+    return a * b;
+}
+
+; Build the struct above from a length and a trit.
+pub fn greeting_new(length: u8, trit: i8) Greeting {
+    return Greeting{ .length = length, .trit = trit };
+}
+
+// ============================================================================
+// Tests
+//
+// Tests live beside the thing they describe and are emitted into every target
+// that supports them, so the same claim is checked in each language.
+// ============================================================================
+
+test "trit_add saturates instead of wrapping" {
+    try std.testing.expectEqual(@as(i8, TRIT_POS), trit_add(TRIT_POS, TRIT_POS));
+    try std.testing.expectEqual(@as(i8, TRIT_NEG), trit_add(TRIT_NEG, TRIT_NEG));
+    try std.testing.expectEqual(@as(i8, TRIT_ZERO), trit_add(TRIT_POS, TRIT_NEG));
+}
+
+test "trit_mul follows the ordinary sign rule" {
+    try std.testing.expectEqual(@as(i8, TRIT_POS), trit_mul(TRIT_NEG, TRIT_NEG));
+    try std.testing.expectEqual(@as(i8, TRIT_NEG), trit_mul(TRIT_NEG, TRIT_POS));
+    try std.testing.expectEqual(@as(i8, TRIT_ZERO), trit_mul(TRIT_ZERO, TRIT_POS));
+}
+
+// ============================================================================
+// Invariants
+//
+// An invariant is a claim that must hold for the whole module rather than for
+// one example. This is the part a test cannot express on its own.
+// ============================================================================
+
+invariant trit_set_is_three
+    assert TRIT_POS - TRIT_NEG == TRINITY - 1
+
+invariant greeting_length_is_fixed
+    assert GREETING_LEN == 5

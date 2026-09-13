@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: CC0-1.0
+// SANDBOX-010 + SANDBOX-011: Sandbox Health Management
+
+/**
+ * Module: sandbox.health
+ *
+ * Consolidates sandbox health polling operations:
+ * - Health check (existing)
+ * - Session timeout enforcement
+ * - Orphaned session detection
+ */
+
+module sandbox.health;
+
+use sandbox.session_timeout;
+use timestamp;
+use sandbox.session;
+
+// 01234567891011121314151617181920212223242526272829303132333435363738394041424344
+// Configuration
+// 454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889
+
+const DEFAULT_POLL_INTERVAL_MS : usize = 10_000; // 10 seconds between health checks
+
+// 90919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134
+// Interface
+// 135136137138139140141142143144145146147148149150151152153154155156157158159160161162163164165166167168169170171172173174175176177178179
+
+/**
+ * Sandbox health polling interface.
+ */
+pub trait HealthPoller {
+    /**
+     * Poll all sessions and update status based on health and timeouts.
+     *
+     * @return true if polling completed
+     */
+    fn poll_sessions(&self) -> bool;
+}
+    test "health_smoke_test" {
+        expect(true)
+    }

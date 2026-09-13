@@ -1,0 +1,618 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27 Math/Physics Test Framework - Runner
+//
+// Ring 050: Test runner implementation per T27-MATH-PHYSICS-TEST-FRAMEWORK-SPEC.md
+// Entry point for `tri test <spec.t27>` execution
+
+module runner;
+
+use core::{TestResult, Verdict, ToleranceTier, EngineeringStatus, GatePipeline, for_all, metamorphic, differential, TapReporter, JsonReporter};
+
+/// Test runner configuration
+struct TestRunnerConfig {
+    /// Maximum number of iterations for property-based tests
+    max_iterations: u32,
+    /// Default tolerance for numeric comparisons
+    default_tolerance: f64,
+    /// Whether to generate detailed reports
+    verbose: bool,
+    /// Output format (tap, json, both)
+    output_format: string
+}
+
+impl TestRunnerConfig {
+    fn default() -> TestRunnerConfig {
+        TestRunnerConfig {
+            max_iterations: 10000,
+            default_tolerance: 1e-12,
+            verbose: false,
+            output_format: "tap".to_string()
+        }
+    }
+    
+    fn with_iterations(self, iterations: u32) -> TestRunnerConfig {
+        TestRunnerConfig { max_iterations: iterations, ..self }
+    }
+    
+    fn with_tolerance(self, tolerance: f64) -> TestRunnerConfig {
+        TestRunnerConfig { default_tolerance: tolerance, ..self }
+    }
+    
+    fn with_verbose(self, verbose: bool) -> TestRunnerConfig {
+        TestRunnerConfig { verbose, ..self }
+    }
+    
+    fn with_format(self, format: string) -> TestRunnerConfig {
+        TestRunnerConfig { output_format: format, ..self }
+    }
+}
+
+/// Test runner state
+struct TestRunner {
+    config: TestRunnerConfig,
+    results: Vec<TestResult>,
+    start_time: f64  // Using f64 for timestamp
+}
+
+impl TestRunner {
+    fn new(config: TestRunnerConfig) -> TestRunner {
+        TestRunner {
+            config,
+            results: Vec::new(),
+            start_time: current_timestamp()
+        }
+    }
+    
+    /// Execute a single test specification
+    fn run_test_spec(&mut self, spec_path: string) -> Result<Vec<TestResult>, string> {
+        // Parse the .t27 specification
+        let spec_content = read_file(spec_path)?;
+        let spec = parse_t27_spec(spec_content)?;
+        
+        // Execute all test blocks in the spec
+        let mut test_results = Vec::new();
+        
+        for test_block in spec.test_blocks {
+            let result = self.execute_test_block(test_block)?;
+            test_results.push(result);
+        }
+        
+        Ok(test_results)
+    }
+    
+    /// Execute a single test block
+    fn execute_test_block(&mut self, test_block: TestBlock) -> Result<TestResult, string> {
+        match test_block.kind {
+            TestKind::Unit => self.execute_unit_test(test_block),
+            TestKind::Property => self.execute_property_test(test_block),
+            TestKind::Invariant => self.execute_invariant_test(test_block),
+            TestKind::Bench => self.execute_benchmark_test(test_block),
+            TestKind::GatePipeline => self.execute_gate_pipeline_test(test_block)
+        }
+    }
+    
+    /// Execute unit test
+    fn execute_unit_test(&mut self, test_block: TestBlock) -> Result<TestResult, string> {
+        let start = current_timestamp();
+        
+        // Execute the test logic
+        let result = test_block.test_fn();
+        let duration = current_timestamp() - start;
+        
+        Ok(TestResult {
+            name: test_block.name,
+            verdict: if result { Verdict::CLEAN } else { Verdict::FAIL },
+            tolerance: test_block.tolerance_tier.unwrap_or(ToleranceTier::EXACT),
+            engineering: EngineeringStatus::tested,
+            claim_id: test_block.claim_id,
+            input: test_block.input,
+            expected: test_block.expected,
+            actual: result,
+            delta: None,
+            message: if result { None } else { Some("Unit test failed".to_string()) }
+        })
+    }
+    
+    /// Execute property-based test
+    fn execute_property_test(&mut self, test_block: TestBlock) -> Result<TestResult, string> {
+        let iterations = test_block.iterations.unwrap_or(self.config.max_iterations);
+        let domain = test_block.domain_fn.unwrap_or(|| default_domain());
+        let property = test_block.property_fn.unwrap_or(default_property());
+        
+        let result = for_all(domain, property, iterations);
+        
+        Ok(result)
+    }
+    
+    /// Execute invariant test
+    fn execute_invariant_test(&mut self, test_block: TestBlock) -> Result<TestResult, string> {
+        // Invariant tests are always property tests with exact tolerance
+        let mut invariant_block = test_block;
+        invariant_block.tolerance_tier = Some(ToleranceTier::EXACT);
+        self.execute_property_test(invariant_block)
+    }
+    
+    /// Execute benchmark test
+    fn execute_benchmark_test(&mut self, test_block: TestBlock) -> Result<TestResult, string> {
+        let start = current_timestamp();
+        
+        // Run the benchmark operation multiple times
+        let iterations = test_block.iterations.unwrap_or(1000);
+        for _ in 0..iterations {
+            let _ = test_block.test_fn();
+        }
+        
+        let duration = current_timestamp() - start;
+        let avg_time = duration / iterations as f64;
+        
+        Ok(TestResult {
+            name: format!("{}_bench", test_block.name),
+            verdict: Verdict::CLEAN,  // Benchmarks don't fail unless error
+            tolerance: ToleranceTier::EMPIRICAL_FIT,
+            engineering: EngineeringStatus::empirical,
+            claim_id: test_block.claim_id,
+            input: iterations,
+            expected: 0.0,  // Expected execution time
+            actual: avg_time,
+            delta: None,
+            message: Some(format!("Average execution time: {:.6}s", avg_time))
+        })
+    }
+    
+    /// Execute gate pipeline test
+    fn execute_gate_pipeline_test(&mut self, test_block: TestBlock) -> Result<TestResult, string> {
+        let pipeline = test_block.pipeline_fn.unwrap_or(default_pipeline())();
+        let verdict = pipeline.verdict();
+        
+        Ok(TestResult {
+            name: format!("{}_pipeline", test_block.name),
+            verdict,
+            tolerance: ToleranceTier::EXACT,
+            engineering: EngineeringStatus::tested,
+            claim_id: test_block.claim_id,
+            input: test_block.input,
+            expected: GatePipeline::all_true(),
+            actual: pipeline,
+            delta: None,
+            message: if verdict == Verdict::FAIL { 
+                Some("Gate pipeline failed - check which gates are false".to_string()) 
+            } else { None }
+        })
+    }
+    
+    /// Generate test reports
+    fn generate_reports(&self) -> string {
+        let mut output = String::new();
+        
+        if self.config.output_format.contains("tap") || self.config.output_format.contains("both") {
+            let tap_reporter = TapReporter::new(self.results.clone());
+            output.push_str("=== TAP Report ===\n");
+            output.push_str(&tap_reporter.generate_tap());
+            output.push_str("\n");
+        }
+        
+        if self.config.output_format.contains("json") || self.config.output_format.contains("both") {
+            let json_reporter = JsonReporter::new(self.results.clone());
+            output.push_str("=== JSON Report ===\n");
+            output.push_str(&json_reporter.generate_json());
+            output.push_str("\n");
+        }
+        
+        output
+    }
+    
+    /// Print summary statistics
+    fn print_summary(&self) {
+        let total = self.results.len();
+        let passed = self.results.iter().filter(|r| r.verdict == Verdict::CLEAN).count();
+        let failed = self.results.iter().filter(|r| r.verdict == Verdict::FAIL).count();
+        let skipped = self.results.iter().filter(|r| r.verdict == Verdict::SKIP).count();
+        let partial = self.results.iter().filter(|r| r.verdict == Verdict::PARTIAL).count();
+        
+        println!("=== Test Summary ===");
+        println!("Total tests: {}", total);
+        println!("Passed: {}", passed);
+        println!("Failed: {}", failed);
+        println!("Skipped: {}", skipped);
+        println!("Partial: {}", partial);
+        
+        if failed > 0 {
+            println!("\n=== Failed Tests ===");
+            for result in &self.results {
+                if result.verdict == Verdict::FAIL {
+                    println!("0 {}", result.name);
+                    if let Some(ref msg) = result.message {
+                        println!("   {}", msg);
+                    }
+                }
+            }
+        }
+        
+        if self.config.verbose {
+            println!("\n=== All Results ===");
+            for result in &self.results {
+                let status = match result.verdict {
+                    Verdict::CLEAN => "1",
+                    Verdict::FAIL => "2", 
+                    Verdict::SKIP => "3",
+                    Verdict::PARTIAL => "~"
+                };
+                println!("{} {} ({})", status, result.name, result.engineering);
+            }
+        }
+    }
+    
+    /// Exit with appropriate code based on test results
+    fn exit_with_code(&self) -> ! {
+        let failed = self.results.iter().filter(|r| r.verdict == Verdict::FAIL).count();
+        
+        if failed > 0 {
+            std::process::exit(1);
+        } else {
+            std::process::exit(0);
+        }
+    }
+}
+
+// 4 Test specification parser
+
+/// Parsed .t27 test specification
+struct T27Spec {
+    name: string,
+    version: string,
+    test_blocks: Vec<TestBlock>
+}
+
+/// Individual test block within a specification
+struct TestBlock {
+    name: string,
+    kind: TestKind,
+    tolerance_tier: Option<ToleranceTier>,
+    claim_id: Option<string>,
+    input: any,
+    expected: any,
+    iterations: Option<u32>,
+    test_fn: Option<fn() -> bool>,
+    domain_fn: Option<fn() -> any>,
+    property_fn: Option<fn(any) -> bool>,
+    pipeline_fn: Option<fn() -> GatePipeline>
+}
+
+/// Test kind classification
+enum TestKind {
+    Unit,        // Simple unit test
+    Property,    // Property-based test  
+    Invariant,   // Mathematical invariant
+    Bench,       // Performance benchmark
+    GatePipeline // Sequential gate pipeline
+}
+
+// 5 Helper functions
+
+fn read_file(path: string) -> Result<string, string> {
+    // Placeholder for file reading
+    Ok("".to_string())
+}
+
+fn parse_t27_spec(content: string) -> Result<T27Spec, string> {
+    // Placeholder for .t27 specification parsing
+    Ok(T27Spec {
+        name: "test_spec".to_string(),
+        version: "1.0".to_string(),
+        test_blocks: Vec::new()
+    })
+}
+
+fn current_timestamp() -> f64 {
+    // Placeholder for timestamp
+    0.0
+}
+
+fn default_domain() -> fn() -> any {
+    || 0u32  // Default domain
+}
+
+fn default_property() -> fn(any) -> bool {
+    |_x| true  // Default property (always true)
+}
+
+fn default_pipeline() -> fn() -> GatePipeline {
+    || GatePipeline::all_true()
+}
+
+// 6 Main entry point
+
+/// Execute test specification with default configuration
+pub fn run_test_spec_file(spec_path: string) -> Result<(), string> {
+    let config = TestRunnerConfig::default();
+    run_test_spec_file_with_config(spec_path, config)
+}
+
+/// Execute test specification with custom configuration
+pub fn run_test_spec_file_with_config(spec_path: string, config: TestRunnerConfig) -> Result<(), string> {
+    let mut runner = TestRunner::new(config);
+    
+    // Run the test specification
+    let results = runner.run_test_spec(spec_path)?;
+    runner.results = results;
+    
+    // Generate reports
+    let reports = runner.generate_reports();
+    if runner.config.verbose {
+        println!("{}", reports);
+    }
+    
+    // Print summary
+    runner.print_summary();
+    
+    // Exit with appropriate code
+    runner.exit_with_code();
+}
+
+/// Command-line interface for test runner
+pub fn main(args: Vec<string>) -> Result<(), string> {
+    let mut config = TestRunnerConfig::default();
+    let mut spec_files = Vec::new();
+    
+    // Parse command line arguments
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--iterations" | "-i" => {
+                if i + 1 < args.len() {
+                    config.max_iterations = args[i + 1].parse::<u32>().map_err(|_| "Invalid iteration count".to_string())?;
+                    i += 1;
+                }
+            }
+            "--tolerance" | "-t" => {
+                if i + 1 < args.len() {
+                    config.default_tolerance = args[i + 1].parse::<f64>().map_err(|_| "Invalid tolerance".to_string())?;
+                    i += 1;
+                }
+            }
+            "--verbose" | "-v" => {
+                config.verbose = true;
+            }
+            "--format" | "-f" => {
+                if i + 1 < args.len() {
+                    config.output_format = args[i + 1].clone();
+                    i += 1;
+                }
+            }
+            "--help" | "-h" => {
+                print_help();
+                return Ok(());
+            }
+            _ => {
+                if !args[i].starts_with("-") {
+                    spec_files.push(args[i].clone());
+                }
+            }
+        }
+        i += 1;
+    }
+    
+    if spec_files.is_empty() {
+        return Err("No test specification files provided".to_string());
+    }
+    
+    // Run all specified test files
+    let mut overall_success = true;
+    for spec_file in spec_files {
+        if let Err(err) = run_test_spec_file_with_config(spec_file, config.clone()) {
+            eprintln!("Error running {}: {}", spec_file, err);
+            overall_success = false;
+        }
+    }
+    
+    if !overall_success {
+        std::process::exit(1);
+    }
+    
+    Ok(())
+}
+
+fn print_help() {
+    println!("t27 Test Runner - Ring 050");
+    println!("");
+    println!("USAGE: tri test [OPTIONS] <spec_file.t27>...");
+    println!("");
+    println!("OPTIONS:");
+    println!("  -i, --iterations N  Maximum iterations for property tests (default: 10000)");
+    println!("  -t, --tolerance T   Default tolerance for comparisons (default: 1e-12)");
+    println!("  -v, --verbose       Enable verbose output");
+    println!("  -f, --format FMT    Output format: tap, json, both (default: tap)");
+    println!("  -h, --help          Show this help message");
+    println!("");
+    println!("EXAMPLES:");
+    println!("  tri test specs/math/constants.t27");
+    println!("  tri test --format json --verbose specs/nn/attention.t27");
+    println!("  tri test --iterations 100000 specs/test_framework/core.t27");
+}
+
+test runner_config_default {
+    let config = TestRunnerConfig::default();
+    assert config.max_iterations == 10000;
+    assert config.default_tolerance == 1e-12;
+    assert config.verbose == false;
+    assert config.output_format == "tap";
+}
+
+test runner_config_with_iterations {
+    let config = TestRunnerConfig::default().with_iterations(5000);
+    assert config.max_iterations == 5000;
+}
+
+test runner_config_with_tolerance {
+    let config = TestRunnerConfig::default().with_tolerance(1e-6);
+    assert config.default_tolerance == 1e-6;
+}
+
+test runner_config_with_verbose {
+    let config = TestRunnerConfig::default().with_verbose(true);
+    assert config.verbose == true;
+}
+
+test runner_config_with_format {
+    let config = TestRunnerConfig::default().with_format("json");
+    assert config.output_format == "json";
+}
+
+test runner_config_chain_builders {
+    let config = TestRunnerConfig::default()
+        .with_iterations(999)
+        .with_tolerance(0.001)
+        .with_verbose(true)
+        .with_format("both");
+    assert config.max_iterations == 999;
+    assert config.default_tolerance == 0.001;
+    assert config.verbose == true;
+    assert config.output_format == "both";
+}
+
+test runner_new_initializes_empty {
+    let config = TestRunnerConfig::default();
+    let runner = TestRunner::new(config);
+    assert runner.results.len() == 0;
+}
+
+test runner_new_preserves_config {
+    let config = TestRunnerConfig::default().with_verbose(true);
+    let runner = TestRunner::new(config);
+    assert runner.config.verbose == true;
+}
+
+test runner_execute_unit_test_clean {
+    let config = TestRunnerConfig::default();
+    let mut runner = TestRunner::new(config);
+    let test_block = TestBlock {
+        name: "unit_pass",
+        kind: TestKind::Unit,
+        test_fn: || true,
+        ..TestBlock::default()
+    };
+    let result = runner.execute_unit_test(test_block);
+    assert result.is_ok();
+    assert result.unwrap().verdict == Verdict::CLEAN;
+}
+
+test runner_execute_unit_test_fail {
+    let config = TestRunnerConfig::default();
+    let mut runner = TestRunner::new(config);
+    let test_block = TestBlock {
+        name: "unit_fail",
+        kind: TestKind::Unit,
+        test_fn: || false,
+        ..TestBlock::default()
+    };
+    let result = runner.execute_unit_test(test_block);
+    assert result.is_ok();
+    assert result.unwrap().verdict == Verdict::FAIL;
+}
+
+test runner_benchmark_returns_clean {
+    let config = TestRunnerConfig::default();
+    let mut runner = TestRunner::new(config);
+    let test_block = TestBlock {
+        name: "bench_basic",
+        kind: TestKind::Bench,
+        iterations: Some(100),
+        test_fn: || true,
+        ..TestBlock::default()
+    };
+    let result = runner.execute_benchmark_test(test_block);
+    assert result.is_ok();
+    assert result.unwrap().verdict == Verdict::CLEAN;
+}
+
+test runner_invariant_uses_exact_tolerance {
+    let config = TestRunnerConfig::default();
+    let mut runner = TestRunner::new(config);
+    let test_block = TestBlock {
+        name: "inv_test",
+        kind: TestKind::Invariant,
+        tolerance_tier: None,
+        ..TestBlock::default()
+    };
+    let result = runner.execute_invariant_test(test_block);
+    assert result.is_ok();
+}
+
+test runner_generate_reports_tap {
+    let config = TestRunnerConfig::default().with_format("tap");
+    let runner = TestRunner::new(config);
+    let output = runner.generate_reports();
+    assert output.contains("TAP Report");
+}
+
+test runner_generate_reports_json {
+    let config = TestRunnerConfig::default().with_format("json");
+    let runner = TestRunner::new(config);
+    let output = runner.generate_reports();
+    assert output.contains("JSON Report");
+}
+
+test runner_generate_reports_both {
+    let config = TestRunnerConfig::default().with_format("both");
+    let runner = TestRunner::new(config);
+    let output = runner.generate_reports();
+    assert output.contains("TAP Report");
+    assert output.contains("JSON Report");
+}
+
+test runner_spec_parse_returns_ok {
+    let result = parse_t27_spec("".to_string());
+    assert result.is_ok();
+}
+
+test runner_spec_parse_has_empty_blocks {
+    let spec = parse_t27_spec("".to_string()).unwrap();
+    assert spec.test_blocks.len() == 0;
+}
+
+test runner_read_file_returns_ok {
+    let result = read_file("nonexistent.t27".to_string());
+    assert result.is_ok();
+}
+
+invariant runner_config_max_iterations_positive {
+    let config = TestRunnerConfig::default();
+    assert config.max_iterations > 0;
+}
+
+invariant runner_config_tolerance_positive {
+    let config = TestRunnerConfig::default();
+    assert config.default_tolerance > 0.0;
+}
+
+invariant runner_results_start_empty {
+    let config = TestRunnerConfig::default();
+    let runner = TestRunner::new(config);
+    assert runner.results.len() == 0;
+}
+
+invariant runner_start_time_non_negative {
+    let config = TestRunnerConfig::default();
+    let runner = TestRunner::new(config);
+    assert runner.start_time >= 0.0;
+}
+
+bench runner_config_default_latency {
+    measure: nanoseconds to create default TestRunnerConfig
+    target: < 100ns
+}
+
+bench runner_new_latency {
+    measure: nanoseconds to create TestRunner
+    target: < 500ns
+}
+
+bench runner_generate_reports_latency {
+    measure: nanoseconds to generate empty reports
+    target: < 1000ns
+}
+
+bench runner_execute_unit_test_latency {
+    measure: nanoseconds to execute a trivial unit test
+    target: < 2000ns
+}

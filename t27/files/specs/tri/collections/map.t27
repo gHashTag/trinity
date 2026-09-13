@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Operations return new maps | φ² + 1/φ² = 3 | TRINITY
+
+module TriMap;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Map(K, V) = struct {
+        keys : []K,
+        values : []V,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty() → Map(K, V)
+    fn empty() -> Map(K, V) {
+        // TODO: Implement from .tri spec
+    }
+
+    // singleton(key: K, value: V) → Map(K, V)
+    fn singleton(key: K, value: V) -> Map(K, V) {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(map: Map(K, V), key: K) → Option(V)
+    fn get(map: Map(K, V), key: K) -> Option(V) {
+        // TODO: Implement from .tri spec
+    }
+
+    // set(map: Map(K, V), key: K, value: V) → Map(K, V)
+    fn set(map: Map(K, V), key: K, value: V) -> Map(K, V) {
+        // TODO: Implement from .tri spec
+    }
+
+    // keys(map: Map(K, V)) → []K
+    fn keys(map: Map(K, V)) -> []K {
+        // TODO: Implement from .tri spec
+    }
+
+    // values(map: Map(K, V)) → []V
+    fn values(map: Map(K, V)) -> []V {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // All six operations have empty bodies, so no lookup or insertion can be
+    // exercised here. The representation is the part the module has decided,
+    // and these pin it.
+
+    test map_keeps_keys_and_values_in_two_parallel_slices
+        given m = Map(u8, i64)
+        and keys_type = @FieldType(m, "keys")
+        and values_type = @FieldType(m, "values")
+        then keys_type == []u8 and values_type == []i64
+
+    test map_stores_no_shared_length
+        // the struct is exactly two slices, so nothing in the type forces
+        // keys.len == values.len -- callers carry that invariant themselves
+        given total_size = @sizeOf(Map(u8, i64))
+        and slice_size = @sizeOf([]u8)
+        then total_size == 2 * slice_size
+

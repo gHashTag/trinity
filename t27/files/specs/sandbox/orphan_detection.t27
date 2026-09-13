@@ -1,0 +1,256 @@
+// SPDX-License-Identifier: CC0-1.0
+// SANDBOX-011: Orphaned Session Detection
+
+/**
+ * Module: sandbox.orphan_detection
+ *
+ * Detects sessions with no associated Railway resources (orphaned).
+ * Orphaned sessions are those where:
+ * 1. Session exists in database
+ * 2. No corresponding Railway deployment/service exists
+ * 3. Session status is still "active" or "starting"
+ *
+ * Orphaned sessions should be flagged for cleanup to prevent
+ * resource waste and ensure accurate slot accounting.
+ */
+
+module sandbox.orphan_detection;
+
+import timestamp;
+import sandbox.session;
+
+// ─────────────────────────────────────────────
+// Session Type Definition (shared with session_timeout)
+// ─────────────────────────────────────────────
+
+/**
+ * Common Session type for sandbox management.
+ */
+pub struct Session {
+    id: [u8; 32],
+    name: [u8; 64],
+    status: SessionStatus,
+    created_at: Timestamp,
+    updated_at: Timestamp,
+    railway_id: Option<[u8; 64]>,  // Railway deployment/service ID
+}
+
+/**
+ * Timestamp type for session tracking.
+ */
+pub struct Timestamp {
+    ms: u64,
+}
+
+/**
+ * Session status enum.
+ */
+pub enum SessionStatus {
+    Starting = "starting",
+    Active = "active",
+    Failed = "failed",
+    Terminating = "terminating",
+    Deleted = "deleted",
+}
+
+/**
+ * Optional type for railway_id field.
+ */
+pub enum Option<T> {
+    Some(T),
+    None,
+}
+
+// ─────────────────────────────────────────────
+// Configuration
+// ─────────────────────────────────────────────
+
+const ORPHANED_THRESHOLD_MINUTES : u64 = 15;  // Sessions without railway_id for 15+ min are orphans
+
+/**
+ * Check if a session is orphaned.
+ *
+ * A session is considered orphaned if:
+ * 1. It has no railway_id (None or empty)
+ * 2. Its status is Starting or Active (not Failed/Terminating/Deleted)
+ * 3. It was created more than ORPHANED_THRESHOLD_MINUTES ago
+ *
+ * @param session - The session to check
+ * @param current_time_ms - Current timestamp in milliseconds
+ * @return true if session is orphaned
+ */
+fn is_session_orphaned(
+    session: &Session,
+    current_time_ms: u64,
+) -> bool {
+    // Must have status that should have a railway resource
+    if session.status != SessionStatus.Starting && session.status != SessionStatus.Active {
+        return false;
+    }
+
+    // Must have no railway_id (None) or empty
+    match session.railway_id {
+        Option::Some(id) if !id.is_empty() => return false,
+        _ => {},
+    }
+
+    // Must be old enough to be considered orphaned
+    let age_ms = current_time_ms - session.created_at.ms;
+    let threshold_ms = ORPHANED_THRESHOLD_MINUTES * 60_000;
+    age_ms >= threshold_ms
+}
+
+/**
+ * Find all orphaned sessions in a list.
+ *
+ * @param sessions - List of sessions to check
+ * @param current_time_ms - Current timestamp in milliseconds
+ * @return Vector of orphaned session IDs
+ */
+fn detect_orphaned_sessions(
+    sessions: &[Session],
+    current_time_ms: u64,
+) -> Vec<[u8; 32]> {
+    let mut orphans = Vec::new();
+    for session in sessions {
+        if is_session_orphaned(session, current_time_ms) {
+            orphans.push(session.id);
+        }
+    }
+    orphans
+}
+
+// ─────────────────────────────────────────────
+// Interface
+// ─────────────────────────────────────────────
+
+/**
+ * Orphan detection interface for sandbox health service.
+ */
+pub trait OrphanDetector {
+    /**
+     * Scan all sessions and return orphaned ones.
+     *
+     * @param current_time_ms - Current timestamp in milliseconds
+     * @return List of orphaned session IDs
+     */
+    fn scan_orphans(&self, current_time_ms: u64) -> Vec<[u8; 32]>;
+
+    /**
+     * Check if a specific session is orphaned.
+     *
+     * @param session - The session to check
+     * @return true if session is orphaned
+     */
+    fn is_orphan(&self, session: &Session) -> bool;
+}
+
+// ─────────────────────────────────────────────
+// TDD Tests
+// ─────────────────────────────────────────────
+
+.test {
+    use sandbox.orphan_detection;
+
+    // Test: Active session without railway_id for > 15 minutes is orphaned
+    test "orphaned_active_session_no_railway_id" {
+        input: {
+            session: Session {
+                id: [0x01, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Active,
+                created_at: Timestamp { ms: 4_000_000_000 },  // 16 minutes ago
+                updated_at: Timestamp { ms: 4_000_000_000 },
+                railway_id: Option::None,
+            },
+            current_time_ms: 4_960_000_000,  // Now
+        };
+        expected: true;
+        description: "Active session without railway_id for >15 min should be orphaned";
+    }
+
+    // Test: Active session with railway_id is NOT orphaned
+    test "active_session_with_railway_id_not_orphaned" {
+        input: {
+            session: Session {
+                id: [0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Active,
+                created_at: Timestamp { ms: 4_000_000_000 },
+                updated_at: Timestamp { ms: 4_000_000_000 },
+                railway_id: Option::Some([0x72, 0x77, 0x00]),  // Has railway_id
+            },
+            current_time_ms: 4_960_000_000,
+        };
+        expected: false;
+        description: "Active session with railway_id should not be orphaned";
+    }
+
+    // Test: Failed session is NOT orphaned (even without railway_id)
+    test "failed_session_not_orphaned" {
+        input: {
+            session: Session {
+                id: [0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Failed,
+                created_at: Timestamp { ms: 4_000_000_000 },
+                updated_at: Timestamp { ms: 4_000_000_000 },
+                railway_id: Option::None,
+            },
+            current_time_ms: 4_960_000_000,
+        };
+        expected: false;
+        description: "Failed sessions should not be orphaned (handled separately)";
+    }
+
+    // Test: Terminating session is NOT orphaned
+    test "terminating_session_not_orphaned" {
+        input: {
+            session: Session {
+                id: [0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Terminating,
+                created_at: Timestamp { ms: 4_000_000_000 },
+                updated_at: Timestamp { ms: 4_000_000_000 },
+                railway_id: Option::None,
+            },
+            current_time_ms: 4_960_000_000,
+        };
+        expected: false;
+        description: "Terminating sessions should not be orphaned (already in cleanup)";
+    }
+
+    // Test: Deleted session is NOT orphaned
+    test "deleted_session_not_orphaned" {
+        input: {
+            session: Session {
+                id: [0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Deleted,
+                created_at: Timestamp { ms: 4_000_000_000 },
+                updated_at: Timestamp { ms: 4_000_000_000 },
+                railway_id: Option::None,
+            },
+            current_time_ms: 4_960_000_000,
+        };
+        expected: false;
+        description: "Deleted sessions should not be orphaned (already cleaned up)";
+    }
+
+    // Test: Starting session < 15 minutes without railway_id is NOT orphaned (grace period)
+    test "starting_session_grace_period_not_orphaned" {
+        input: {
+            session: Session {
+                id: [0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Starting,
+                created_at: Timestamp { ms: 4_800_000_000 },  // 10 minutes ago
+                updated_at: Timestamp { ms: 4_800_000_000 },
+                railway_id: Option::None,
+            },
+            current_time_ms: 5_400_000_000,  // Now
+        };
+        expected: false;
+        description: "Starting session within 15 min grace period should not be orphaned";
+    }
+}

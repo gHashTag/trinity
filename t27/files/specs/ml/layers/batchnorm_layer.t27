@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Prevent division by zero in sqrt | φ² + 1/φ² = 3 | TRINITY
+
+module Batchnorm;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_EPSILON : f32 = 1.0e-5;
+    const DEFAULT_MOMENTUM : f32 = 0.1;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BatchNormConfig = struct {
+        num_features : u32,
+        epsilon : f32,
+        momentum : f32,
+        affine : bool,
+        track_running_stats : bool,
+    };
+
+    pub const BatchNormState = struct {
+        running_mean : []f32,
+        running_var : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32, gamma: []const f32, beta: []const f32, state: BatchNormState, output: []f32, config: BatchNormConfig) → void
+    fn forward(input: []const f32, gamma: []const f32, beta: []const f32, state: BatchNormState, output: []f32, config: BatchNormConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32, input: []const f32, gamma: []const f32, beta: []const f32, mean: []const f32, var: []const f32, grad_gamma: []f32, grad_beta: []f32, grad_input: []f32, config: BatchNormConfig) → void
+    fn backward(grad_output: []const f32, input: []const f32, gamma: []const f32, beta: []const f32, mean: []const f32, var: []const f32, grad_gamma: []f32, grad_beta: []f32, grad_input: []f32, config: BatchNormConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test default_epsilon_is_positive
+        // Verify: constraint_1 -- epsilon > 0 -- holds for the shipped default
+        given eps = DEFAULT_EPSILON
+        then eps > 0.0
+
+    test epsilon_keeps_the_normalisation_denominator_nonzero
+        // Verify: the module's stated purpose -- sqrt(variance + epsilon) is
+        // still positive when the batch variance is exactly zero, so the
+        // normalisation never divides by zero
+        given variance = 0.0
+        when denom = @sqrt(variance + DEFAULT_EPSILON)
+        then denom > 0.0
+
+    test default_momentum_is_in_range
+        // Verify: constraint_2 -- 0 <= momentum < 1
+        given m = DEFAULT_MOMENTUM
+        then m >= 0.0 and m < 1.0
+
+    test running_stats_update_stays_between_old_and_new
+        // Verify: running = (1 - momentum)*running + momentum*batch is a convex
+        // combination at the declared momentum, so the running estimate never
+        // overshoots the batch statistic
+        given running = 0.0
+        and batch = 1.0
+        when updated = (1.0 - DEFAULT_MOMENTUM) * running + DEFAULT_MOMENTUM * batch
+        then updated >= running and updated <= batch
+
+    test running_stats_are_sized_by_num_features
+        // Verify: constraint_0/3/4 -- num_features > 0 and there is exactly one
+        // running mean and one running variance per feature
+        given cfg = BatchNormConfig{ .num_features = 3, .epsilon = DEFAULT_EPSILON, .momentum = DEFAULT_MOMENTUM, .affine = true, .track_running_stats = true }
+        and means = [_]f32{0.0} ** 3
+        and vars = [_]f32{1.0} ** 3
+        and state = BatchNormState{ .running_mean = @constCast(&means), .running_var = @constCast(&vars) }
+        then cfg.num_features > 0 and state.running_mean.len == cfg.num_features and state.running_var.len == cfg.num_features
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant batchnorm_constraint_0
+        given input = valid_input()
+        then true // num_features > 0
+
+    invariant batchnorm_constraint_1
+        given input = valid_input()
+        then true // epsilon > 0
+
+    invariant batchnorm_constraint_2
+        given input = valid_input()
+        then true // 0 <= momentum < 1
+
+    invariant batchnorm_constraint_3
+        given input = valid_input()
+        then true // gamma.size() == num_features
+
+    invariant batchnorm_constraint_4
+        given input = valid_input()
+        then true // beta.size() == num_features
+

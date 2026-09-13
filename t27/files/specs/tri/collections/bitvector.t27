@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Grows as needed | φ² + 1/φ² = 3 | TRINITY
+
+module TriBitvector;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BitVector = struct {
+        bits : []usize,
+        length : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty() → BitVector
+    fn empty() -> BitVector {
+        // TODO: Implement from .tri spec
+    }
+
+    // with_capacity(bits: usize, allocator: std.mem.Allocator) → !BitVector
+    fn with_capacity(bits: usize, allocator: std.mem.Allocator) -> !BitVector {
+        // TODO: Implement from .tri spec
+    }
+
+    // push(bv: *BitVector, bit: bool, allocator: std.mem.Allocator) → !void
+    fn push(bv: *BitVector, bit: bool, allocator: std.mem.Allocator) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // pop(bv: *BitVector) → ?bool
+    fn pop(bv: *BitVector) -> ?bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(bv: BitVector, index: usize) → bool
+    fn get(bv: BitVector, index: usize) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // set(bv: *BitVector, index: usize, value: bool) → void
+    fn set(bv: *BitVector, index: usize, value: bool) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // len(bv: BitVector) → usize
+    fn len(bv: BitVector) -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // append(bv: *BitVector, other: BitVector, allocator: std.mem.Allocator) → !void
+    fn append(bv: *BitVector, other: BitVector, allocator: std.mem.Allocator) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test empty_vector_owns_no_words_and_holds_no_bits
+        // Verify: the boundary -- an empty BitVector has both an empty backing
+        // slice and a zero bit count
+        given bv = BitVector{ .bits = &[_]usize{}, .length = 0 }
+        then bv.bits.len == 0 and bv.length == 0
+
+    test word_capacity_covers_the_bit_length
+        // Verify: `bits` is measured in machine words and `length` in bits, so
+        // the backing slice must span at least `length` bits
+        given words = [_]usize{ 0, 0 }
+        and bv = BitVector{ .bits = @constCast(&words), .length = 65 }
+        when capacity = bv.bits.len * @bitSizeOf(usize)
+        then capacity >= bv.length and bv.length > @bitSizeOf(usize)
+
+    test bit_index_maps_to_word_and_offset
+        // Verify: the addressing get/set must implement -- bit i lives in word
+        // i / @bitSizeOf(usize) at offset i % @bitSizeOf(usize), counting from
+        // the least significant bit. Word 1 holds 0b10, so bit
+        // @bitSizeOf(usize) + 1 reads back set and bit @bitSizeOf(usize) does not.
+        given words = [_]usize{ 0, 2 }
+        and bv = BitVector{ .bits = @constCast(&words), .length = @bitSizeOf(usize) + 2 }
+        and idx = @bitSizeOf(usize) + 1
+        when word = bv.bits[idx / @bitSizeOf(usize)]
+        and bit = (word >> (idx % @bitSizeOf(usize))) & 1
+        and neighbour = word & 1
+        then bit == 1 and neighbour == 0
+

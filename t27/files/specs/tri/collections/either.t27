@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Either represents tagged union | φ² + 1/φ² = 3 | TRINITY
+
+module TriEither;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Either(L, R) = struct {
+        is_left : bool,
+        left : L,
+        right : R,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // left(value: L) → Either(L, R)
+    fn left(value: L) -> Either(L, R) {
+        // TODO: Implement from .tri spec
+    }
+
+    // right(value: R) → Either(L, R)
+    fn right(value: R) -> Either(L, R) {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_left(either: Either(L, R)) → bool
+    fn is_left(either: Either(L, R)) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_right(either: Either(L, R)) → bool
+    fn is_right(either: Either(L, R)) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // unwrap(either: Either(L, R), "default_left: L, "default_right: R) → ?T
+    fn unwrap(either: Either(L, R), "default_left: L, "default_right: R) -> ?T {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // The five constructors and accessors have empty bodies, so no value can
+    // be wrapped or unwrapped yet. What the module has decided is how the two
+    // arms are laid out.
+
+    test the_tag_is_a_plain_bool
+        given e = Either(i64, f64)
+        and tag_type = @FieldType(e, "is_left")
+        then tag_type == bool
+
+    test either_stores_both_arms_side_by_side
+        // this is a struct, not a tagged union: the L and R payloads are both
+        // resident and only is_left says which one is meaningful, so the type
+        // costs at least the sum of the two arms rather than the larger one
+        given total_size = @sizeOf(Either(i64, f64))
+        and both_arms = @sizeOf(i64) + @sizeOf(f64)
+        then total_size >= both_arms
+
+    test the_two_arms_may_have_different_types
+        given e = Either(i64, f64)
+        and left_type = @FieldType(e, "left")
+        and right_type = @FieldType(e, "right")
+        then left_type == i64 and right_type == f64
+

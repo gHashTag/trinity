@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Piecewise derivative | φ² + 1/φ² = 3 | TRINITY
+
+module LeakyRelu;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_ALPHA : f32 = 0.01;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const LeakyReLUConfig = struct {
+        alpha : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(x: f32, alpha: f32) → f32
+    fn forward(x: f32, alpha: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_batch(input: []f32, alpha: f32) → []f32
+    fn forward_batch(input: []f32, alpha: f32) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // derivative(x: f32, alpha: f32) → f32
+    fn derivative(x: f32, alpha: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // forward, forward_batch and derivative have no bodies yet -- they are
+    // `TODO: Implement from .tri spec` and compile to `@panic`. Calling one
+    // asserts nothing about leaky ReLU, so nothing here calls them. What is
+    // testable today is the declared constant and the config that carries it.
+
+    // Invariant leaky_relu_constraint_0 says 0 < alpha < 1; the shipped default
+    // satisfies it, and sits in the 0.01-0.1 band the comment names.
+    test default_alpha_is_in_the_leaky_band
+        then DEFAULT_ALPHA > 0.0
+        and DEFAULT_ALPHA < 1.0
+        and DEFAULT_ALPHA >= 0.01
+        and DEFAULT_ALPHA <= 0.1
+
+    // The Maas et al. (2013) default is 0.01. f32 cannot hold it exactly, so
+    // the comparison carries a tolerance.
+    test default_alpha_is_one_percent
+        then @abs(DEFAULT_ALPHA - 0.01) < 1e-9
+
+    // A config built from the default reads the default back.
+    test config_carries_alpha
+        given cfg = LeakyReLUConfig{ .alpha = DEFAULT_ALPHA }
+        then @abs(cfg.alpha - DEFAULT_ALPHA) < 1e-9
+
+    // alpha is a field, not a constant: a steeper leak is representable.
+    test config_alpha_is_settable
+        given cfg = LeakyReLUConfig{ .alpha = 0.2 }
+        then @abs(cfg.alpha - 0.2) < 1e-6
+        and cfg.alpha > DEFAULT_ALPHA
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant leaky_relu_constraint_0
+        given input = valid_input()
+        then true // 0 < alpha < 1 (typically 0.01-0.1)
+
+    invariant leaky_relu_constraint_1
+        given input = valid_input()
+        then true // name: leaky_relu_formula
+
+    invariant leaky_relu_constraint_2
+        given input = valid_input()
+        then true // name: derivative
+
+    invariant leaky_relu_constraint_3
+        given input = valid_input()
+        then true // "Maas et al. (2013) - Rectifier Nonlinearities Improve Neural Network Acoustic Models"
+

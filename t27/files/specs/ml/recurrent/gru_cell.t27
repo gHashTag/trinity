@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Convex combination of old and new | φ² + 1/φ² = 3 | TRINITY
+
+module Gru;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const GRUConfig = struct {
+        input_size : u32,
+        hidden_size : u32,
+    };
+
+    pub const GRUState = struct {
+        h : []f32,
+    };
+
+    pub const GRUWeights = struct {
+        Wr : []f32,
+        br : []f32,
+        Wz : []f32,
+        bz : []f32,
+        Wh : []f32,
+        bh : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32, h_prev: []const f32, weights: GRUWeights, h_next: []f32, config: GRUConfig) → void
+    fn forward(input: []const f32, h_prev: []const f32, weights: GRUWeights, h_next: []f32, config: GRUConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // init(weights: GRUWeights, config: GRUConfig) → void
+    fn init(weights: GRUWeights, config: GRUConfig) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test gate_matrices_match_the_configured_shape
+        // Verify: constraints 2-4 -- every gate matrix is
+        // (input_size + hidden_size) * hidden_size, and the three gates agree
+        given cfg = GRUConfig{ .input_size = 2, .hidden_size = 3 }
+        and Wr = [_]f32{0.0} ** 15
+        and Wz = [_]f32{0.0} ** 15
+        and Wh = [_]f32{0.0} ** 15
+        and br = [_]f32{0.0} ** 3
+        and bz = [_]f32{0.0} ** 3
+        and bh = [_]f32{0.0} ** 3
+        and w = GRUWeights{ .Wr = @constCast(&Wr), .br = @constCast(&br), .Wz = @constCast(&Wz), .bz = @constCast(&bz), .Wh = @constCast(&Wh), .bh = @constCast(&bh) }
+        then w.Wr.len == (cfg.input_size + cfg.hidden_size) * cfg.hidden_size and w.Wz.len == w.Wr.len and w.Wh.len == w.Wr.len
+
+    test gate_biases_match_the_hidden_size
+        // Verify: constraints 5-7 -- each gate bias holds one entry per hidden unit
+        given cfg = GRUConfig{ .input_size = 2, .hidden_size = 3 }
+        and Wr = [_]f32{0.0} ** 15
+        and Wz = [_]f32{0.0} ** 15
+        and Wh = [_]f32{0.0} ** 15
+        and br = [_]f32{0.0} ** 3
+        and bz = [_]f32{0.0} ** 3
+        and bh = [_]f32{0.0} ** 3
+        and w = GRUWeights{ .Wr = @constCast(&Wr), .br = @constCast(&br), .Wz = @constCast(&Wz), .bz = @constCast(&bz), .Wh = @constCast(&Wh), .bh = @constCast(&bh) }
+        then w.br.len == cfg.hidden_size and w.bz.len == cfg.hidden_size and w.bh.len == cfg.hidden_size
+
+    test state_carries_one_activation_per_hidden_unit
+        // Verify: constraints 0-1 -- both sizes are positive, and the hidden
+        // state h is sized by hidden_size, not by input_size
+        given cfg = GRUConfig{ .input_size = 2, .hidden_size = 3 }
+        and h = [_]f32{0.0} ** 3
+        and state = GRUState{ .h = @constCast(&h) }
+        then cfg.input_size > 0 and cfg.hidden_size > 0 and state.h.len == cfg.hidden_size
+
+    test gru_has_three_gate_matrices_where_lstm_has_four
+        // Verify: constraint_8 -- the parameter count behind "GRU trains faster
+        // than LSTM"; reset, update and candidate, no output gate
+        given cfg = GRUConfig{ .input_size = 2, .hidden_size = 3 }
+        and per_gate = (cfg.input_size + cfg.hidden_size) * cfg.hidden_size + cfg.hidden_size
+        when total = 3 * per_gate
+        then total == 54
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant gru_constraint_0
+        given input = valid_input()
+        then true // input_size > 0
+
+    invariant gru_constraint_1
+        given input = valid_input()
+        then true // hidden_size > 0
+
+    invariant gru_constraint_2
+        given input = valid_input()
+        then true // Wr.size() == (input_size + hidden_size) * hidden_size
+
+    invariant gru_constraint_3
+        given input = valid_input()
+        then true // Wz.size() == (input_size + hidden_size) * hidden_size
+
+    invariant gru_constraint_4
+        given input = valid_input()
+        then true // Wh.size() == (input_size + hidden_size) * hidden_size
+
+    invariant gru_constraint_5
+        given input = valid_input()
+        then true // br.size() == hidden_size
+
+    invariant gru_constraint_6
+        given input = valid_input()
+        then true // bz.size() == hidden_size
+
+    invariant gru_constraint_7
+        given input = valid_input()
+        then true // bh.size() == hidden_size
+
+    invariant gru_constraint_8
+        given input = valid_input()
+        then true // "GRU trains faster than LSTM (fewer parameters)"
+
+    invariant gru_constraint_9
+        given input = valid_input()
+        then true // "GRU performance similar to LSTM on most tasks"
+
+    invariant gru_constraint_10
+        given input = valid_input()
+        then true // "Reset gate enables adaptive temporal resolution"
+

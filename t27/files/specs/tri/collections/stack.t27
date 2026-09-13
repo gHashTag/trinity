@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Last-in-first-out ordering | φ² + 1/φ² = 3 | TRINITY
+
+module TriStack;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Stack(T) = struct {
+        items : []T,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty() → Stack(T)
+    fn empty() -> Stack(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // push(stack: Stack(T)) → void
+    fn push(stack: Stack(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // pop(stack: Stack(T)) → void
+    fn pop(stack: Stack(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // peek(stack: Stack(T)) → void
+    fn peek(stack: Stack(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_empty(stack: Stack(T)) → void
+    fn is_empty(stack: Stack(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test empty_stack_holds_no_items
+        // Verify: the boundary is_empty tests for -- an empty stack's backing
+        // slice has length zero
+        given s = Stack(u32){ .items = &[_]u32{} }
+        then s.items.len == 0
+
+    test top_of_stack_is_the_highest_index
+        // Verify: last-in-first-out ordering. Items enter at the end of the
+        // slice, so peek reads items[len - 1] and 30 -- pushed last -- is on top
+        given xs = [_]u32{ 10, 20, 30 }
+        and s = Stack(u32){ .items = @constCast(&xs) }
+        then s.items[s.items.len - 1] == 30 and s.items[0] == 10
+
+    test stack_is_generic_over_the_element_type
+        // Verify: Stack(T) stores T, so Stack(u8) and Stack(u32) are two
+        // distinct types rather than one erased container
+        given a = Stack(u8){ .items = &[_]u8{} }
+        when element_type = @TypeOf(a.items)
+        and distinct = Stack(u8) != Stack(u32)
+        then distinct and element_type == []u8
+

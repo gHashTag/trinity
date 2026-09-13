@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// All constants are comptime-known | φ² + 1/φ² = 3 | TRINITY
+
+module TriConstants;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SystemLimits = struct {
+        max_path_len : usize,
+        max_line_len : usize,
+        max_args : usize,
+        max_env_vars : usize,
+    };
+
+    pub const SacredConstants = struct {
+        phi : f64,
+        pi : f64,
+        e : f64,
+        sqrt2 : f64,
+        sqrt3 : f64,
+        golden_ratio : f64,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // max_path_len() → usize
+    fn max_path_len() -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // max_line_len() → usize
+    fn max_line_len() -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // max_args() → usize
+    fn max_args() -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // max_env_vars() → usize
+    fn max_env_vars() -> usize {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_p_h_i() → f64
+    fn get_p_h_i() -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_p_i() → f64
+    fn get_p_i() -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_e() → f64
+    fn get_e() -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_s_q_r_t2() → f64
+    fn get_s_q_r_t2() -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_s_q_r_t3() → f64
+    fn get_s_q_r_t3() -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_golden_ratio() → f64
+    fn get_golden_ratio() -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_system_limits() → SystemLimits
+    fn get_system_limits() -> SystemLimits {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_sacred_constants() → SacredConstants
+    fn get_sacred_constants() -> SacredConstants {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every one of the twelve accessors above has an empty body, so no value
+    // can be read out of this module yet and no test here can name one. What
+    // the module does commit to is the width of the fields it stores them in:
+    // SacredConstants declares f64, and the identities below hold to 1e-12 in
+    // f64 and would not in f32.
+
+    test declared_f64_width_carries_the_sacred_identity
+        // phi^2 + 1/phi^2 = 3
+        given c = SacredConstants{ .phi = 1.61803398874989484820458683436563811772, .pi = 3.14159265358979323846264338327950288, .e = 2.7182818284590452353602874713526625, .sqrt2 = 1.41421356237309504880168872420969808, .sqrt3 = 1.73205080756887729352744634150587237, .golden_ratio = 1.61803398874989484820458683436563811772 }
+        and phi_sq = c.phi * c.phi
+        and sum = phi_sq + 1.0 / phi_sq
+        then @abs(sum - 3.0) < 1e-12
+
+    test declared_f64_width_carries_the_golden_ratio_fixed_point
+        // phi^2 = phi + 1
+        given c = SacredConstants{ .phi = 1.61803398874989484820458683436563811772, .pi = 3.14159265358979323846264338327950288, .e = 2.7182818284590452353602874713526625, .sqrt2 = 1.41421356237309504880168872420969808, .sqrt3 = 1.73205080756887729352744634150587237, .golden_ratio = 1.61803398874989484820458683436563811772 }
+        then @abs(c.phi * c.phi - (c.phi + 1.0)) < 1e-12
+
+    test declared_f64_width_carries_the_surds
+        given c = SacredConstants{ .phi = 1.61803398874989484820458683436563811772, .pi = 3.14159265358979323846264338327950288, .e = 2.7182818284590452353602874713526625, .sqrt2 = 1.41421356237309504880168872420969808, .sqrt3 = 1.73205080756887729352744634150587237, .golden_ratio = 1.61803398874989484820458683436563811772 }
+        and sqrt2_error = @abs(c.sqrt2 * c.sqrt2 - 2.0)
+        and sqrt3_error = @abs(c.sqrt3 * c.sqrt3 - 3.0)
+        then sqrt2_error < 1e-12 and sqrt3_error < 1e-12
+
+    test system_limits_are_declared_unsigned_and_pointer_wide
+        // all four limits are usize, so none of them can be negative and each
+        // can address the whole span the platform can
+        given limits_are_usize = @FieldType(SystemLimits, "max_path_len") == usize
+        and args_are_usize = @FieldType(SystemLimits, "max_args") == usize
+        then limits_are_usize and args_are_usize
+

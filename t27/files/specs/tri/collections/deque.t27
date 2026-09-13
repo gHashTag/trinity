@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free deque | φ² + 1/φ² = 3 | TRINITY
+
+module TriDeque;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Deque = struct {
+        data : []i64,
+        front : usize,
+        back : usize,
+        size : usize,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator) → Deque
+    fn init(allocator: std.mem.Allocator) -> Deque {
+        // TODO: Implement from .tri spec
+    }
+
+    // push_front(deque: *Deque, value: i64) → !void
+    fn push_front(deque: *Deque, value: i64) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // push_back(deque: *Deque, value: i64) → !void
+    fn push_back(deque: *Deque, value: i64) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // pop_front(deque: *Deque) → i64
+    fn pop_front(deque: *Deque) -> i64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // pop_back(deque: *Deque) → i64
+    fn pop_back(deque: *Deque) -> i64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(deque: *Deque) → void
+    fn deinit(deque: *Deque) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above has no body yet, so it panics when called; and
+    // push_front(deque) / pop_front(deque) take no element and return none,
+    // so no push/pop round trip can be stated until those signatures grow an
+    // element. What can be stated is the shape of the Deque value itself.
+
+    test deque_empty_state_is_self_consistent
+        given empty = Deque{.data=&[_]i64{},.front=0,.back=0,.size=0,.allocator=std.testing.allocator}
+        then empty.size == 0
+        and empty.front == empty.back
+        and empty.data.len == 0
+
+    test deque_holds_its_elements_and_its_two_ends_apart
+        given d = Deque{.data=@constCast(&[_]i64{10,20,30,40}),.front=1,.back=3,.size=3,.allocator=std.testing.allocator}
+        then d.data.len == 4
+        and d.data[d.front] == 20
+        and d.data[d.back] == 40
+        and d.size <= d.data.len
+

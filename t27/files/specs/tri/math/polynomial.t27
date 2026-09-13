@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free polynomial | φ² + 1/φ² = 3 | TRINITY
+
+module TriPolynomial;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Polynomial = struct {
+        coeffs : []f64,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator, coeffs: []f64) → Polynomial
+    fn init(allocator: std.mem.Allocator, coeffs: []f64) -> Polynomial {
+        // TODO: Implement from .tri spec
+    }
+
+    // eval(p: *Polynomial, x: f64) → f64
+    fn eval(p: *Polynomial, x: f64) -> f64 {
+        // TODO: Implement from .tri spec
+    }
+
+    // add(a: *Polynomial, b: *Polynomial, allocator: std.mem.Allocator) → Polynomial
+    fn add(a: *Polynomial, b: *Polynomial, allocator: std.mem.Allocator) -> Polynomial {
+        // TODO: Implement from .tri spec
+    }
+
+    // multiply(a: *Polynomial, b: *Polynomial, allocator: std.mem.Allocator) → Polynomial
+    fn multiply(a: *Polynomial, b: *Polynomial, allocator: std.mem.Allocator) -> Polynomial {
+        // TODO: Implement from .tri spec
+    }
+
+    // derivative(p: *Polynomial, allocator: std.mem.Allocator) → Polynomial
+    fn derivative(p: *Polynomial, allocator: std.mem.Allocator) -> Polynomial {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(p: *Polynomial) → void
+    fn deinit(p: *Polynomial) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test zero_polynomial_has_no_coefficients
+        // Verify: the boundary -- the zero polynomial carries an empty
+        // coefficient slice, which is what init() must hand back before any
+        // term is added
+        given p = Polynomial{ .coeffs = &[_]f64{}, .allocator = std.testing.allocator }
+        then p.coeffs.len == 0
+
+    test coefficients_are_stored_in_ascending_degree
+        // Verify: coeffs[i] is the coefficient of x^i. For 1 + 2x + 3x^2 the
+        // Horner evaluation at x = 2 is 1 + 2*(2 + 2*3) = 17; under the
+        // opposite (descending) convention the same slice would give 11
+        given coeffs = [_]f64{ 1.0, 2.0, 3.0 }
+        and p = Polynomial{ .coeffs = @constCast(&coeffs), .allocator = std.testing.allocator }
+        when value = p.coeffs[0] + 2.0 * (p.coeffs[1] + 2.0 * p.coeffs[2])
+        and error_ = @abs(value - 17.0)
+        then error_ < 1.0e-12
+
+    test degree_is_one_below_the_coefficient_count
+        // Verify: a cubic needs four slots, so derivative() must return three
+        given coeffs = [_]f64{ 4.0, 3.0, 2.0, 1.0 }
+        and p = Polynomial{ .coeffs = @constCast(&coeffs), .allocator = std.testing.allocator }
+        when degree = p.coeffs.len - 1
+        then degree == 3
+

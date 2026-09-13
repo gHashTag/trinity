@@ -1,0 +1,113 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Vectorization operation | φ² + 1/φ² = 3 | TRINITY
+
+module Flatten;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const MAX_DIMS : u32 = 8;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const FlattenConfig = struct {
+        input_shape : []u32,
+    };
+
+    pub const InputTensor = struct {
+        dims : []u32,
+        data : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // calc_output_size(input_dims: []u32) → u32
+    fn calc_output_size(input_dims: []u32) -> u32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward(input: []f32, config: FlattenConfig) → []f32
+    fn forward(input: []f32, config: FlattenConfig) -> []f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // calc_output_size and forward are both unimplemented stubs: each one
+    // emits `@panic("not yet implemented")`, so calling either aborts the test
+    // binary rather than failing a test. The invariants below it never reach
+    // the generated code either -- they emit an empty comptime block. What is
+    // checkable is the constant, the declared shapes, and the arithmetic those
+    // invariants describe.
+
+    test max_dims_caps_the_rank_not_the_extent
+        // MAX_DIMS is a bound on how many dimensions a tensor may have, not on
+        // how large any one of them is: the shape itself is a runtime slice,
+        // so `len(input_dims) <= MAX_DIMS` has to be checked, not typed.
+        then MAX_DIMS == 8
+        and @FieldType(FlattenConfig, "input_shape") == []u32
+        and @typeInfo(FlattenConfig).@"struct".fields.len == 1
+
+    test the_output_size_is_the_product_of_the_dims
+        // flatten_formula: a 2x3x4 tensor flattens to 24 elements. No element
+        // is added or dropped, so the data slice already has that length --
+        // flatten only rewrites the shape.
+        given dims = [_]u32{ 2, 3, 4 }
+        given data = std.mem.zeroes([24]f32)
+        given tensor = InputTensor{ .dims = @constCast(&dims), .data = @constCast(&data) }
+        given elems = @as(usize, dims[0]) * dims[1] * dims[2]
+        then elems == 24
+        and tensor.data.len == elems
+        and tensor.dims.len == 3
+
+    test flatten_is_the_identity_on_a_rank_one_tensor
+        // With one dimension the product is that dimension, so the output has
+        // the same length as the input and the operation moves no data.
+        given dims = [_]u32{ 5 }
+        given data = std.mem.zeroes([5]f32)
+        given tensor = InputTensor{ .dims = @constCast(&dims), .data = @constCast(&data) }
+        then tensor.dims.len == 1
+        and tensor.data.len == dims[0]
+        and tensor.dims.len >= 1
+
+    test a_tensor_carries_its_shape_beside_one_flat_run_of_data
+        // data is a single []f32 whatever the rank, which is why flattening is
+        // a metadata change: there is no nesting to undo.
+        then @typeInfo(InputTensor).@"struct".fields.len == 2
+        and @FieldType(InputTensor, "dims") == []u32
+        and @FieldType(InputTensor, "data") == []f32
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant flatten_constraint_0
+        given input = valid_input()
+        then true // len(input_dims) >= 1
+
+    invariant flatten_constraint_1
+        given input = valid_input()
+        then true // len(input_dims) <= MAX_DIMS
+
+    invariant flatten_constraint_2
+        given input = valid_input()
+        then true // name: flatten_formula
+
+    invariant flatten_constraint_3
+        given input = valid_input()
+        then true // "Goodfellow et al. (2016) - Deep Learning"
+
+    invariant flatten_constraint_4
+        given input = valid_input()
+        then true // "Used in CNN → Flatten → Dense → Classification"
+

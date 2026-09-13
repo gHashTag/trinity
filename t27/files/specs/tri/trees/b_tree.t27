@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Split full child node during insertion | φ² + 1/φ² = 3 | TRINITY
+
+module TriBTree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BTreeNode = struct {
+        keys : []usize,
+        children : []?*BTreeNode,
+        leaf : bool,
+        count : usize,
+    };
+
+    pub const BTree = struct {
+        root : ?*BTreeNode,
+        t : usize,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator, min_degree: usize) → BTree
+    fn init(allocator: std.mem.Allocator, min_degree: usize) -> BTree {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(tree: *BTree, key: usize) → bool
+    fn search(tree: *BTree, key: usize) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(tree: *BTree, key: usize) → !void
+    fn insert(tree: *BTree, key: usize) -> !void {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(tree: *BTree) → void
+    fn deinit(tree: *BTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init, search, insert and deinit are all unimplemented stubs: each one
+    // emits `@panic("not yet implemented")`, so calling any of them aborts the
+    // test binary rather than failing a test. (Their signatures are also
+    // truncated to the first parameter -- `insert(tree: *BTree)` has nowhere
+    // to receive the key -- so there is nothing to call them with either.)
+    // The assertions below are about the representation the module declares.
+
+    test an_empty_tree_is_a_null_root_and_still_owns_its_allocator
+        // root is an optional pointer, so "no nodes yet" needs no allocation;
+        // the allocator is stored on the tree, so insert can grow it later and
+        // deinit can free it without being handed one.
+        given empty = BTree{ .root = null, .t = 3, .allocator = std.testing.allocator }
+        then empty.root == null
+        and empty.t == 3
+        and @typeInfo(@FieldType(BTree, "root")).optional.child == *BTreeNode
+        and @FieldType(BTree, "allocator") == std.mem.Allocator
+
+    test a_node_counts_its_live_keys_separately_from_its_slice
+        // keys is the allocated run, count is how many of them are in use --
+        // that is what lets a split move keys around without reallocating.
+        then @typeInfo(BTreeNode).@"struct".fields.len == 4
+        and @FieldType(BTreeNode, "keys") == []usize
+        and @FieldType(BTreeNode, "count") == usize
+        and @FieldType(BTreeNode, "leaf") == bool
+
+    test children_are_optional_pointers_so_a_slot_can_be_empty
+        // A leaf's child slots exist but hold null; only an interior node
+        // fills them in. The child type is the node type itself.
+        then @typeInfo(@FieldType(BTreeNode, "children")).pointer.child == ?*BTreeNode
+        and @typeInfo(@FieldType(BTreeNode, "children")).pointer.size == .slice
+
+    test minimum_degree_t_bounds_the_keys_and_the_children
+        // "Split full child node during insertion": a node of minimum degree t
+        // is full at 2t-1 keys, and a node with k keys has k+1 children. So a
+        // full node splits into two halves of t-1 keys with one key promoted.
+        given max_keys = 2 * 3 - 1
+        given max_children = 2 * 3
+        given half = (max_keys - 1) / 2
+        then max_children == max_keys + 1
+        and half == 2
+        and 2 * half + 1 == max_keys
+

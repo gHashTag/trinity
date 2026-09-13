@@ -1,0 +1,101 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Uses ANSI colors for terminal output | φ² + 1/φ² = 3 | TRINITY
+
+module TriLogging;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const LogLevel = struct {
+        enum : [debug, info, warn, error],
+    };
+
+    pub const LogEntry = struct {
+        level : LogLevel,
+        message : []const u8,
+        timestamp : u64,
+        tag : ?[]const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // level_to_string(level: LogLevel) → []const u8
+    fn level_to_string(level: LogLevel) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // level_from_string(s: []const u8) → ?LogLevel
+    fn level_from_string(s: []const u8) -> ?LogLevel {
+        // TODO: Implement from .tri spec
+    }
+
+    // level_color(level: LogLevel) → []const u8
+    fn level_color(level: LogLevel) -> []const u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // format_entry(allocator: std.mem.Allocator, entry: LogEntry) → ![]u8
+    fn format_entry(allocator: std.mem.Allocator, entry: LogEntry) -> ![]u8 {
+        // TODO: Implement from .tri spec
+    }
+
+    // should_log(msg_level: LogLevel, min_level: LogLevel) → bool
+    fn should_log(msg_level: LogLevel, min_level: LogLevel) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is an unimplemented stub: each one emits
+    // `@panic("not yet implemented")`, so calling any of them aborts the test
+    // binary rather than failing a test. The assertions below are therefore
+    // about the representation the module actually declares.
+
+    test an_entry_is_a_level_a_message_a_timestamp_and_an_optional_tag
+        // Four fields and no more: no allocator, no formatted buffer. The tag
+        // is the only optional one -- an untagged entry is still an entry.
+        then @typeInfo(LogEntry).@"struct".fields.len == 4
+        and @FieldType(LogEntry, "level") == LogLevel
+        and @FieldType(LogEntry, "message") == []const u8
+        and @FieldType(LogEntry, "timestamp") == u64
+        and @typeInfo(@FieldType(LogEntry, "tag")).optional.child == []const u8
+        and @hasField(LogEntry, "allocator") == false
+
+    test the_timestamp_is_wide_enough_for_nanoseconds
+        // u64 nanoseconds since the epoch runs past year 2500; u32 seconds
+        // would have wrapped in 2106. The declared width is the deciding fact.
+        given ns_per_year = 31536000000000000
+        then @FieldType(LogEntry, "timestamp") == u64
+        and std.math.maxInt(u64) / ns_per_year > 500
+        and std.math.maxInt(u32) / ns_per_year == 0
+
+    test an_untagged_entry_is_constructible
+        // format_entry is a stub, so this builds the value directly: the point
+        // is that the declared type admits a null tag at all.
+        given e = LogEntry{ .level = LogLevel.debug, .message = "boot", .timestamp = 0, .tag = null }
+        then e.tag == null
+        and e.timestamp == 0
+        and std.mem.eql(u8, e.message, "boot")
+
+    test log_level_lists_its_severities
+        // The spec used to declare `enum : ,` -- an empty variant list -- so
+        // LogLevel emitted with no severities at all: nothing for
+        // level_to_string to name or for should_log to compare, which made
+        // every LogEntry.level identical. The four names were recovered from
+        // the upstream spec this file was converted from: trinity-fpga
+        // specs/tri/tri_logging.tri:7. `error` is a Zig keyword, so the emitter
+        // escapes it -- the variant is spelled @"error" in the emitted enum but
+        // its reflected name is still "error".
+        then @typeInfo(LogLevel).@"enum".fields.len == 4
+        and std.mem.eql(u8, @typeInfo(LogLevel).@"enum".fields[0].name, "debug")
+        and std.mem.eql(u8, @typeInfo(LogLevel).@"enum".fields[3].name, "error")
+        and @intFromEnum(LogLevel.debug) < @intFromEnum(LogLevel.warn)
+

@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// BFS to build failure links | φ² + 1/φ² = 3 | TRINITY
+
+module TriAhoCorasick;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ACTrieNode = struct {
+        children : [256]?*ACTrieNode,
+        fail : *ACTrieNode,
+        output : [][]const u8,
+        char : u8,
+    };
+
+    pub const ACAutomaton = struct {
+        root : *ACTrieNode,
+        patterns : [][]const u8,
+        allocator : std.mem.Allocator,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // build(allocator: std.mem.Allocator, patterns: [][]const u8) → ACAutomaton
+    fn build(allocator: std.mem.Allocator, patterns: [][]const u8) -> ACAutomaton {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(ac: *ACAutomaton, text: []const u8) → []Match
+    fn search(ac: *ACAutomaton, text: []const u8) -> []Match {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(ac: *ACAutomaton) → void
+    fn deinit(ac: *ACAutomaton) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // match() → void
+    fn match() -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // Every function above is still `TODO: Implement`, so each one compiles
+    // to `@panic("not yet implemented")`: calling one aborts the test binary.
+    // What this module does state is the layout of the trie and the signature
+    // of each operation, and that is what these tests hold to.
+
+    test trie_node_branches_on_every_byte_value
+        given c = @FieldType(ACTrieNode, "children")
+        then c == [256]?*ACTrieNode
+        and @FieldType(ACTrieNode, "char") == u8
+
+    // The failure link is a plain pointer, not an optional: the root's link
+    // points at the root itself, so there is no node without one.
+    test failure_link_is_never_absent
+        given f = @FieldType(ACTrieNode, "fail")
+        then f == *ACTrieNode
+
+    // output holds pattern indices, so one node can end several patterns --
+    // that is what lets a single pass report overlapping matches.
+    test a_node_can_end_more_than_one_pattern
+        given o = @FieldType(ACTrieNode, "output")
+        then o == []usize
+
+    test automaton_owns_a_root_the_patterns_and_an_allocator
+        given r = @FieldType(ACAutomaton, "root")
+        then r == *ACTrieNode
+        and @FieldType(ACAutomaton, "patterns") == [][]const u8
+        and @FieldType(ACAutomaton, "allocator") == std.mem.Allocator
+
+    test build_takes_an_allocator_and_returns_nothing
+        given f = build
+        then @TypeOf(f) == fn (std.mem.Allocator) void
+
+    // search is given the automaton with no text to run it over, and match
+    // takes no arguments at all -- the stub test that used to sit here called
+    // it as `match(input)`, which it has never accepted. These record the
+    // signatures as they stand.
+    test search_and_deinit_take_one_automaton_pointer
+        given f = search
+        then @TypeOf(f) == fn (*ACAutomaton) void
+        and @TypeOf(deinit) == fn (*ACAutomaton) void
+
+    test match_is_declared_with_no_arguments
+        given f = match
+        then @TypeOf(f) == fn () void
+

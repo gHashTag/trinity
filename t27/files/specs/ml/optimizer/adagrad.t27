@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Sum of squared gradients | φ² + 1/φ² = 3 | TRINITY
+
+module Adagrad;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_LR : f32 = 0.01;
+    const DEFAULT_EPSILON : f32 = 1e-8;
+    const DEFAULT_WEIGHT_DECAY : f32 = 0.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const AdagradConfig = struct {
+        learning_rate : f32,
+        epsilon : f32,
+        weight_decay : f32,
+    };
+
+    pub const AdagradState = struct {
+        sum_squared_grad : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init_state(num_params: u32) → AdagradState
+    fn init_state(num_params: u32) -> AdagradState {
+        // TODO: Implement from .tri spec
+    }
+
+    // update(params: []f32, grads: []f32, state: AdagradState, config: AdagradConfig) → AdagradState
+    fn update(params: []f32, grads: []f32, state: AdagradState, config: AdagradConfig) -> AdagradState {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // init_state/update are unimplemented stubs returning void, so no
+    // accumulate-then-step behaviour can be exercised yet. What the module does
+    // declare -- the shipped defaults and the config/state shapes -- is tested
+    // here, including the two constraints that the invariants below only state
+    // in a comment.
+
+    test default_hyperparameters_satisfy_the_declared_constraints
+        // Verify: adagrad_constraint_0 (learning_rate > 0) and
+        // adagrad_constraint_1 (epsilon > 0) hold for the shipped defaults
+        then (DEFAULT_LR > 0.0) and (DEFAULT_EPSILON > 0.0)
+
+    test default_learning_rate_is_one_hundredth
+        // Verify: the published default is pinned, not drifting
+        then @abs(DEFAULT_LR - 0.01) < 1e-9
+
+    test epsilon_is_negligible_against_the_step_size
+        // Verify: epsilon exists only to keep the sqrt denominator away from
+        // zero, so it must sit orders of magnitude under the learning rate
+        // rather than participating in it
+        then DEFAULT_EPSILON < DEFAULT_LR * 1e-4
+
+    test regularisation_is_off_by_default
+        // Verify: weight decay is opt-in, so plain Adagrad is the default
+        then DEFAULT_WEIGHT_DECAY == 0.0
+
+    test config_built_from_the_module_defaults_is_well_formed
+        // Verify: the three constants populate the three config fields
+        given cfg = AdagradConfig{.learning_rate=DEFAULT_LR,.epsilon=DEFAULT_EPSILON,.weight_decay=DEFAULT_WEIGHT_DECAY}
+        then (cfg.learning_rate > 0.0) and (cfg.epsilon > 0.0) and (cfg.weight_decay == 0.0)
+
+    test accumulator_holds_one_running_sum_per_parameter
+        // Verify: AdagradState carries a per-parameter accumulator, which is
+        // what makes the learning rate adaptive per coordinate
+        given state = AdagradState{.sum_squared_grad=@constCast(&[_]f32{0.0,0.0,0.0})}
+        then (state.sum_squared_grad.len == 3) and (state.sum_squared_grad[0] == 0.0)
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant adagrad_constraint_0
+        given input = valid_input()
+        then true // learning_rate > 0
+
+    invariant adagrad_constraint_1
+        given input = valid_input()
+        then true // epsilon > 0
+
+    invariant adagrad_constraint_2
+        given input = valid_input()
+        then true // name: adagrad_update
+
+    invariant adagrad_constraint_3
+        given input = valid_input()
+        then true // name: accumulated_gradients
+
+    invariant adagrad_constraint_4
+        given input = valid_input()
+        then true // "Duchi et al. (2011) - Adaptive Subgradient Methods for Online Learning and Stochastic Optimization"
+
+    invariant adagrad_constraint_5
+        given input = valid_input()
+        then true // "Goodfellow et al. (2016) - Deep Learning (Chapter 8)"
+

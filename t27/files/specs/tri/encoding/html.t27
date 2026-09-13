@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// HTML5 subset | φ² + 1/φ² = 3 | TRINITY
+
+module TriHtml;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const HtmlNode = struct {
+        tag : []const u8,
+        attributes : [td.StringHashMap([]Const u8),
+        children : []HtmlNode,
+        inner_text : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse(html: []const u8, allocator: std.mem.Allocator) → !HtmlNode
+    fn parse(html: []const u8, allocator: std.mem.Allocator) -> !HtmlNode {
+        // TODO: Implement from .tri spec
+    }
+
+    // query_selector(node: HtmlNode, selector: []const u8) → ?HtmlNode
+    fn query_selector(node: HtmlNode, selector: []const u8) -> ?HtmlNode {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test parse_basic_case
+        given input = default_input()
+        when result = parse(input)
+        then result != undefined
+
+    test query_selector_basic_case
+        given input = default_input()
+        when result = query_selector(input)
+        then result != undefined
+

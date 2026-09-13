@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Check if point satisfies curve equation | φ² + 1/φ² = 3 | TRINITY
+
+module TriEcc;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ECPoint = struct {
+        x : f64,
+        y : f64,
+        is_infinity : bool,
+    };
+
+    pub const EllipticCurve = struct {
+        a : f64,
+        b : f64,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // add(curve: *EllipticCurve, p: ECPoint, q: ECPoint) → ECPoint
+    fn add(curve: *EllipticCurve, p: ECPoint, q: ECPoint) -> ECPoint {
+        // TODO: Implement from .tri spec
+    }
+
+    // multiply(curve: *EllipticCurve, p: ECPoint, k: u64) → ECPoint
+    fn multiply(curve: *EllipticCurve, p: ECPoint, k: u64) -> ECPoint {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_on_curve(curve: *EllipticCurve, p: ECPoint) → bool
+    fn is_on_curve(curve: *EllipticCurve, p: ECPoint) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // add/multiply/is_on_curve are unimplemented stubs returning void, so they
+    // cannot be called. The curve equation they are built around is asserted
+    // directly against the declared fields instead: the reference curve is
+    // y^2 = x^3 + 1 (a = 0, b = 1), on which (2, 3) lies because 9 = 8 + 1.
+
+    test reference_point_satisfies_the_curve_equation
+        // Verify: this is the condition is_on_curve must decide -- the residual
+        // y^2 - (x^3 + a*x + b) vanishes for a point on the curve
+        given curve = EllipticCurve{.a=0.0,.b=1.0}
+        and p = ECPoint{.x=2.0,.y=3.0,.is_infinity=false}
+        and residual = p.y * p.y - (p.x * p.x * p.x + curve.a * p.x + curve.b)
+        then @abs(residual) < 1e-12
+
+    test point_off_the_curve_leaves_a_nonzero_residual
+        // Verify: the negative case -- (2, 4) gives 16 rather than 9, so the
+        // residual is 7 and the point is rejected
+        given curve = EllipticCurve{.a=0.0,.b=1.0}
+        and p = ECPoint{.x=2.0,.y=4.0,.is_infinity=false}
+        and residual = p.y * p.y - (p.x * p.x * p.x + curve.a * p.x + curve.b)
+        then @abs(residual - 7.0) < 1e-12
+
+    test negated_point_is_also_on_the_curve
+        // Verify: the curve is symmetric about the x-axis, so (2, -3) satisfies
+        // it as well -- this is the additive inverse used by add
+        given curve = EllipticCurve{.a=0.0,.b=1.0}
+        and p = ECPoint{.x=2.0,.y=-3.0,.is_infinity=false}
+        and residual = p.y * p.y - (p.x * p.x * p.x + curve.a * p.x + curve.b)
+        then @abs(residual) < 1e-12
+
+    test reference_curve_is_nonsingular
+        // Verify: the discriminant condition 4a^3 + 27b^2 != 0 holds, so the
+        // curve has no cusp or self-intersection and the group law is defined
+        given curve = EllipticCurve{.a=0.0,.b=1.0}
+        and disc = 4.0 * curve.a * curve.a * curve.a + 27.0 * curve.b * curve.b
+        then @abs(disc - 27.0) < 1e-12
+
+    test point_at_infinity_is_flagged_rather_than_coordinate_encoded
+        // Verify: the group identity is carried by is_infinity, not by a
+        // sentinel pair of coordinates
+        given identity = ECPoint{.x=0.0,.y=0.0,.is_infinity=true}
+        then identity.is_infinity
+

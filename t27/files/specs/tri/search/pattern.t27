@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Standard glob pattern syntax | φ² + 1/φ² = 3 | TRINITY
+
+module TriPattern;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const MatchResult = struct {
+        matches : bool,
+        captured : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // glob_match(pattern: []const u8, text: []const u8) → bool
+    fn glob_match(pattern: []const u8, text: []const u8) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // wildcard_match(pattern: []const u8, text: []const u8) → bool
+    fn wildcard_match(pattern: []const u8, text: []const u8) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // glob_match and wildcard_match are still `TODO: Implement from .tri spec`
+    // and compile to `@panic`, so neither is called here. What exists to test
+    // is MatchResult: a verdict and a capture, kept apart so that a match with
+    // nothing captured is distinguishable from no match at all.
+
+    // A hit with a capture.
+    test match_result_hit_with_capture
+        given r = MatchResult{ .matches = true, .captured = "src/main.zig" }
+        then r.matches == true
+        and std.mem.eql(u8, r.captured, "src/main.zig")
+
+    // A miss carries no capture; the empty slice is the absence.
+    test match_result_miss_is_empty
+        given r = MatchResult{ .matches = false, .captured = "" }
+        then r.matches == false
+        and r.captured.len == 0
+
+    // The verdict is not derived from the capture: a pattern with no capture
+    // group can still match, so an empty capture does not mean a miss.
+    test empty_capture_does_not_imply_a_miss
+        given hit = MatchResult{ .matches = true, .captured = "" }
+        and miss = MatchResult{ .matches = false, .captured = "" }
+        then hit.captured.len == miss.captured.len
+        and hit.matches != miss.matches
+

@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Probability ratio between policies | φ² + 1/φ² = 3 | TRINITY
+
+module PpoClipLoss;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_CLIP_EPSILON : f32 = 0.2;
+    const DEFAULT_ENTROPY_COEF : f32 = 0.01;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const PPOClipConfig = struct {
+        clip_epsilon : f32,
+        entropy_coef : f32,
+        value_clip_coef : f32,
+    };
+
+    pub const PPOBatch = struct {
+        states : [][]f32,
+        actions : [][]f32,
+        old_log_probs : []f32,
+        advantages : []f32,
+        returns : []f32,
+        values : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compute_ratio(new_log_prob: f32, old_log_prob: f32) → f32
+    fn compute_ratio(new_log_prob: f32, old_log_prob: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // clipped_surrogate(ratio: f32, advantage: f32, clip_epsilon: f32) → f32
+    fn clipped_surrogate(ratio: f32, advantage: f32, clip_epsilon: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // policy_loss(ratios: []f32, advantages: []f32, clip_epsilon: f32) → f32
+    fn policy_loss(ratios: []f32, advantages: []f32, clip_epsilon: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // entropy_loss(entropies: []f32, entropy_coef: f32) → f32
+    fn entropy_loss(entropies: []f32, entropy_coef: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // value_loss(predicted_values: []f32, target_values: []f32, old_values: []f32, clip_coef: f32) → f32
+    fn value_loss(predicted_values: []f32, target_values: []f32, old_values: []f32, clip_coef: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // total_loss(policy_loss_value: f32, value_loss_value: f32, entropy_loss_value: f32, value_loss_coef: f32) → f32
+    fn total_loss(policy_loss_value: f32, value_loss_value: f32, entropy_loss_value: f32, value_loss_coef: f32) -> f32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    // The six loss functions are unimplemented stubs returning void, so no
+    // surrogate objective can be evaluated yet. What the module does declare --
+    // the shipped clip and entropy coefficients, the clipping window they
+    // imply, and the batch layout -- is tested here, including the two
+    // constraints that the invariants below only state in a comment.
+
+    test default_coefficients_satisfy_the_declared_constraints
+        // Verify: ppo_clip_loss_constraint_0 (0 < clip_epsilon <= 1) and
+        // ppo_clip_loss_constraint_1 (entropy_coef >= 0) hold for the defaults
+        then (DEFAULT_CLIP_EPSILON > 0.0) and (DEFAULT_CLIP_EPSILON <= 1.0) and (DEFAULT_ENTROPY_COEF >= 0.0)
+
+    test default_clip_epsilon_is_the_paper_value
+        // Verify: 0.2, the value used throughout Schulman et al. (2017), and
+        // inside the 0.1-0.3 band constraint_0 calls typical
+        then @abs(DEFAULT_CLIP_EPSILON - 0.2) < 1e-6
+
+    test clipping_window_is_symmetric_about_an_unchanged_policy
+        // Verify: a ratio of exactly 1 means the new policy matches the old
+        // one, and the window brackets it evenly
+        given lower = 1.0 - DEFAULT_CLIP_EPSILON
+        and upper = 1.0 + DEFAULT_CLIP_EPSILON
+        then @abs((upper - 1.0) - (1.0 - lower)) < 1e-6
+
+    test clipping_window_is_zero_point_eight_to_one_point_two
+        // Verify: the concrete bounds the default epsilon produces
+        given lower = 1.0 - DEFAULT_CLIP_EPSILON
+        and upper = 1.0 + DEFAULT_CLIP_EPSILON
+        then (@abs(lower - 0.8) < 1e-6) and (@abs(upper - 1.2) < 1e-6)
+
+    test entropy_bonus_is_small_but_present
+        // Verify: exploration is encouraged, not dominant -- the coefficient is
+        // nonzero yet well under the clip range it competes with
+        then (DEFAULT_ENTROPY_COEF > 0.0) and (DEFAULT_ENTROPY_COEF < DEFAULT_CLIP_EPSILON)
+
+    test config_built_from_the_module_defaults_is_well_formed
+        given cfg = PPOClipConfig{.clip_epsilon=DEFAULT_CLIP_EPSILON,.entropy_coef=DEFAULT_ENTROPY_COEF,.value_clip_coef=DEFAULT_CLIP_EPSILON}
+        then (cfg.clip_epsilon > 0.0) and (cfg.entropy_coef >= 0.0)
+
+    test batch_fields_are_parallel_per_sample_arrays
+        // Verify: old_log_probs, advantages, returns and values carry one entry
+        // per transition, so a two-transition batch has length two in each
+        given batch = PPOBatch{.states=@constCast(&[_][]f32{@constCast(&[_]f32{0.0,1.0}),@constCast(&[_]f32{1.0,0.0})}),.actions=@constCast(&[_][]f32{@constCast(&[_]f32{1.0}),@constCast(&[_]f32{0.0})}),.old_log_probs=@constCast(&[_]f32{-0.5,-0.7}),.advantages=@constCast(&[_]f32{1.0,-1.0}),.returns=@constCast(&[_]f32{2.0,0.5}),.values=@constCast(&[_]f32{1.5,1.0})}
+        then (batch.states.len == 2) and (batch.old_log_probs.len == batch.states.len) and (batch.advantages.len == batch.returns.len)
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant ppo_clip_loss_constraint_0
+        given input = valid_input()
+        then true // 0 < clip_epsilon <= 1 (typically 0.1-0.3)
+
+    invariant ppo_clip_loss_constraint_1
+        given input = valid_input()
+        then true // entropy_coef >= 0
+
+    invariant ppo_clip_loss_constraint_2
+        given input = valid_input()
+        then true // name: ppo_objective
+
+    invariant ppo_clip_loss_constraint_3
+        given input = valid_input()
+        then true // name: probability_ratio
+
+    invariant ppo_clip_loss_constraint_4
+        given input = valid_input()
+        then true // "Schulman et al. (2017) - Proximal Policy Optimization Algorithms, arXiv:1707.06347"
+

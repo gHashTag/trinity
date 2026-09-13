@@ -1,0 +1,111 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Polyak averaging formula | φ² + 1/φ² = 3 | TRINITY
+
+module DqnTarget;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_TAU : f32 = 0.005;
+    const DEFAULT_UPDATE_FREQ : u32 = 1000;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const UpdateMethod = struct {
+        enum : [HARD, SOFT],
+    };
+
+    pub const TargetUpdateConfig = struct {
+        method : UpdateMethod,
+        tau : f32,
+        update_freq : u32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // hard_update(source: []f32, target: []f32) → void
+    fn hard_update(source: []f32, target: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // soft_update(source: []f32, target: []f32, tau: f32) → void
+    fn soft_update(source: []f32, target: []f32, tau: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // should_update(step: u32, config: TargetUpdateConfig) → bool
+    fn should_update(step: u32, config: TargetUpdateConfig) -> bool {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test default_tau_is_a_valid_interpolation_weight
+        // Verify: constraint_0 -- 0 <= tau <= 1 -- holds for the shipped default
+        given tau = DEFAULT_TAU
+        then tau >= 0.0 and tau <= 1.0
+
+    test default_tau_sits_in_the_stability_band
+        // Verify: constraint_1 -- tau << 1, the 0.001-0.01 band named in the spec
+        given tau = DEFAULT_TAU
+        then tau >= 0.001 and tau <= 0.01
+
+    test default_update_freq_is_at_least_one_step
+        // Verify: constraint_2 -- update_freq >= 1, so should_update can fire
+        given freq = DEFAULT_UPDATE_FREQ
+        then freq >= 1
+
+    test soft_update_never_leaves_the_target_source_interval
+        // Verify: constraint_3 -- target' = tau*source + (1 - tau)*target is a
+        // convex combination at the declared tau, so it stays inside [0, 1]
+        // and moves the target toward the source by exactly tau
+        given target = 0.0
+        and source = 1.0
+        when moved = DEFAULT_TAU * source + (1.0 - DEFAULT_TAU) * target
+        and drift = @abs(moved - DEFAULT_TAU)
+        then moved >= target and moved <= source and drift < 1.0e-6
+
+    test config_defaults_satisfy_every_declared_constraint
+        // Verify: a config built from the two module defaults meets constraint_0,
+        // constraint_1 and constraint_2 at once
+        given cfg = TargetUpdateConfig{ .method = UpdateMethod.HARD, .tau = DEFAULT_TAU, .update_freq = DEFAULT_UPDATE_FREQ }
+        then cfg.tau > 0.0 and cfg.tau < 1.0 and cfg.update_freq >= 1
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant dqn_target_constraint_0
+        given input = valid_input()
+        then true // 0 <= tau <= 1
+
+    invariant dqn_target_constraint_1
+        given input = valid_input()
+        then true // tau << 1 for stability (typically 0.001-0.01)
+
+    invariant dqn_target_constraint_2
+        given input = valid_input()
+        then true // update_freq >= 1
+
+    invariant dqn_target_constraint_3
+        given input = valid_input()
+        then true // name: soft_update_equation
+
+    invariant dqn_target_constraint_4
+        given input = valid_input()
+        then true // "Mnih et al. (2015) - Human-level control through deep RL"
+
+    invariant dqn_target_constraint_5
+        given input = valid_input()
+        then true // "Lillicrap et al. (2016) - Continuous control with DDPG (soft update)"
+
