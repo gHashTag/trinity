@@ -2017,9 +2017,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     (next: HudView, card?: string | null) => {
       setBoardView(next);
       setHashParams(() => {
-        const live = window.location.hash;
-        const params = tabAddress(live, next);
-        if ((hashParamsOf(live).get("tab") ?? "comb") !== next) {
+        const leaving = (hashParamsOf(window.location.hash).get("tab") ?? "comb") !== next;
+        const params = tabAddress(window.location.hash, next);
+        if (leaving) {
           for (const key of Object.values(SELECTION_KEY)) params.delete(key);
         }
         if (card && isExplorerTab(next)) params.set(SELECTION_KEY[next], card);
