@@ -242,7 +242,10 @@ for (const [w, h] of SIZES) {
   const compact = tier === 'phone' || tier === 'tablet';
   await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: compact });
   for (const x of EXPLORERS) {
-    await call('Page.navigate', { url: `${ORIGIN}/?lang=en${x.route}` });
+    // A distinct search per explorer forces a full load. With one search for all,
+    // #/tools?tool=… then #/tools is a hash change inside one document, and the
+    // explorer (which reads its deep link on mount) keeps the previous card.
+    await call('Page.navigate', { url: `${ORIGIN}/?lang=en&explorer=${x.name}${x.route}` });
     await sleep(SETTLE_MS);
     let r;
     try { r = await evaluate(PROBE); } catch (e) { failures++; console.log(`  ${w}x${h} ${x.name.padEnd(9)} FAIL  ${e.message}`); continue; }
