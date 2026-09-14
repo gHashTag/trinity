@@ -8,14 +8,16 @@
 // app.t27.ai/manifest.json is VIBEE's manifest, app.t27.ai/verification/ is
 // VIBEE's index page).
 //
-// So a URL in src/ or public/manifest.json is relative (shipped in the build),
-// absolute https://t27.ai/... (a page or file that exists only on the apex),
-// or a hash route. Never root-absolute.
+// So a URL in src/, messages/*.json or public/manifest.json is relative
+// (shipped in the build), absolute https://t27.ai/... (a page or file that
+// exists only on the apex), or a hash route. Never root-absolute.
 //
 // What counts as a URL is decided by where the string goes, not by its shape:
 // '/queen' is a route in <Route path> and <Link to>, a separator in
 // split('/'), and a URL only in href, src, fetch() and their kin. The detector
 // reads the TypeScript AST and proves itself on a fixture before it reads src/.
+// The JSON files have no such context, so any root-absolute string value in
+// them counts.
 //
 //   node qa/subpath-safe-urls-contract.mjs
 
@@ -38,12 +40,23 @@ const KNOWN = [
   // Nothing imports this component. An API the apex does not serve (404);
   // where it should point is unknown.
   { file: 'src/components/sections/FPGASynthesisWidget.tsx', url: '/api/fpga/synthesis' },
+  // invest.community.cta.{node,docs,buy}.url: unread dead data. No file in src/
+  // reads community.cta, and InvestSection, the only reader of t.invest, is
+  // imported nowhere. It still ships in the bundle.
+  ...['de', 'en', 'es', 'ru', 'zh'].flatMap((locale) =>
+    ['/docs/node-setup', '/docs', '/buy'].map((url) => ({ file: `messages/${locale}.json`, url }))),
 ]
 
-const ATTRS = new Set(['href', 'src', 'srcSet', 'action', 'formAction', 'poster'])
+const ATTRS = new Set(['href', 'src', 'srcSet', 'srcset', 'action', 'formAction', 'poster', 'data', 'xlinkHref'])
 const PROPS = new Set(['href', 'src', 'url'])
-const CALLS = new Set(['fetch', 'window.fetch', 'window.open', 'navigator.sendBeacon', 'location.assign', 'location.replace', 'window.location.assign', 'window.location.replace'])
-const CTORS = new Set(['URL', 'WebSocket', 'EventSource', 'Worker', 'SharedWorker'])
+// Callee -> the argument that carries the URL.
+const CALLS = new Map([
+  ['fetch', 0], ['window.fetch', 0], ['open', 0], ['window.open', 0], ['navigator.sendBeacon', 0],
+  ['location.assign', 0], ['location.replace', 0], ['window.location.assign', 0], ['window.location.replace', 0],
+  ['history.pushState', 2], ['history.replaceState', 2], ['window.history.pushState', 2], ['window.history.replaceState', 2],
+  ['navigator.serviceWorker.register', 0],
+])
+const CTORS = new Set(['URL', 'Request', 'WebSocket', 'EventSource', 'Worker', 'SharedWorker'])
 
 // Every string an expression can begin with, as far as literals decide it.
 // `${lang === 'ru' ? '/ru' : ''}/blog/` begins with '/ru/blog/' or '/blog/';
@@ -56,11 +69,13 @@ function leads(node) {
     const [first] = node.templateSpans
     return leads(first.expression).map((s) => s + first.literal.text)
   }
-  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isJsxExpression(node)) return leads(node.expression)
+  if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)
+    || ts.isNonNullExpression(node) || ts.isJsxExpression(node)) return leads(node.expression)
   if (ts.isConditionalExpression(node)) return [...leads(node.whenTrue), ...leads(node.whenFalse)]
   if (ts.isBinaryExpression(node)) {
     const op = node.operatorToken.kind
     if (op === ts.SyntaxKind.PlusToken) return leads(node.left)
+    if (op === ts.SyntaxKind.AmpersandAmpersandToken) return leads(node.right)
     if (op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken) return [...leads(node.left), ...leads(node.right)]
   }
   return []
@@ -81,7 +96,7 @@ function rootAbsoluteUrls(sf) {
     else if (ts.isVariableDeclaration(node) && /(src|href|url)$/i.test(nameOf(node.name))) flag(node.initializer)
     else if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
       && ts.isPropertyAccessExpression(node.left) && PROPS.has(node.left.name.text)) flag(node.right)
-    else if (ts.isCallExpression(node) && CALLS.has(node.expression.getText(sf))) flag(node.arguments[0])
+    else if (ts.isCallExpression(node) && CALLS.has(node.expression.getText(sf))) flag(node.arguments[CALLS.get(node.expression.getText(sf))])
     else if (ts.isNewExpression(node) && CTORS.has(node.expression.getText(sf))) flag(node.arguments?.[0])
     ts.forEachChild(node, visit)
   }
@@ -89,9 +104,9 @@ function rootAbsoluteUrls(sf) {
   return found
 }
 
-function manifestUrls(value, at = '') {
+function jsonUrls(value, at = '') {
   if (typeof value === 'string') return ROOT_ABSOLUTE.test(value) ? [{ url: value, at }] : []
-  if (value && typeof value === 'object') return Object.entries(value).flatMap(([k, v]) => manifestUrls(v, at ? `${at}.${k}` : k))
+  if (value && typeof value === 'object') return Object.entries(value).flatMap(([k, v]) => jsonUrls(v, at ? `${at}.${k}` : k))
   return []
 }
 
@@ -109,21 +124,27 @@ export const Page = () => <>
   <a href="#/proof">d</a>
   <a href="https://t27.ai/ip/">e</a>
   <img src="favicon.svg" />
+  <a href={ok && '/and/'}>f</a>
+  <object data="/object.svg" /><image xlinkHref="/xlink.svg" /><img srcset="/srcset.png 2x" />
 </>
 const tracks = { href: '/about/', title: '/not-a-url' }
 fetch('/api/x'); fetch('t27/manifest.json'); fetch(\`\${BASE}/api/y\`)
+fetch(('/nonnull/')!); fetch('/satisfies/' satisfies string); fetch(new Request('/request/'))
 new URL('/r/', location.href)
+open('/open/'); history.pushState(null, '', '/push/'); history.pushState(null, '', '#/hash'); window.history.replaceState(null, '', '/replace/')
+navigator.serviceWorker.register('/sw.js')
 'a/b'.split('/'); navigate('/queen')
 `
 assert.deepEqual(
   rootAbsoluteUrls(parse('fixture.tsx', FIXTURE)).map((h) => h.url).sort(),
-  ['/about/', '/api/x', '/blog/', '/og-blog-', '/r/', '/ru/blog/', '/verification/'],
+  ['/about/', '/and/', '/api/x', '/blog/', '/nonnull/', '/object.svg', '/og-blog-', '/open/', '/push/', '/r/', '/replace/', '/request/',
+    '/ru/blog/', '/satisfies/', '/srcset.png 2x', '/sw.js', '/verification/', '/xlink.svg'],
   'the detector must report exactly the root-absolute URLs in its fixture',
 )
 assert.deepEqual(
-  manifestUrls({ start_url: '/', scope: './', icons: [{ src: '/a.png' }, { src: 'b.png' }, { src: 'https://t27.ai/c.png' }] }).map((h) => h.at),
+  jsonUrls({ start_url: '/', scope: './', icons: [{ src: '/a.png' }, { src: 'b.png' }, { src: 'https://t27.ai/c.png' }] }).map((h) => h.at),
   ['start_url', 'icons.0.src'],
-  'the manifest walker must report exactly the root-absolute values in its fixture',
+  'the JSON walker must report exactly the root-absolute values in its fixture',
 )
 
 // ── the real tree ─────────────────────────────────────────────────────────────
@@ -139,19 +160,27 @@ function walk(dir) {
 
 const problems = []
 const used = new Set()
+const report = (file, url, where) => {
+  const known = KNOWN.find((k) => k.file === file && k.url === url)
+  if (known) used.add(known)
+  else problems.push(`${where} root-absolute URL '${url}' -- make it relative if the build ships it, https://t27.ai/... if only the apex has it`)
+}
+
 const files = walk(join(ROOT, 'src'))
 for (const path of files) {
   const file = relative(ROOT, path)
-  for (const { url, line } of rootAbsoluteUrls(parse(file, readFileSync(path, 'utf8')))) {
-    const known = KNOWN.find((k) => k.file === file && k.url === url)
-    if (known) used.add(known)
-    else problems.push(`${file}:${line} root-absolute URL '${url}' -- make it relative if the build ships it, https://t27.ai/... if only the apex has it`)
-  }
+  for (const { url, line } of rootAbsoluteUrls(parse(file, readFileSync(path, 'utf8')))) report(file, url, `${file}:${line}`)
+}
+// src/i18n/context.tsx imports these, so their strings ship in the bundle.
+const messages = readdirSync(join(ROOT, 'messages')).filter((name) => name.endsWith('.json'))
+for (const name of messages) {
+  const file = `messages/${name}`
+  for (const { url, at } of jsonUrls(JSON.parse(readFileSync(join(ROOT, file), 'utf8')))) report(file, url, `${file} ${at}`)
 }
 for (const k of KNOWN) if (!used.has(k)) problems.push(`${k.file}: known exception '${k.url}' no longer occurs -- remove it from KNOWN`)
 
 const manifest = JSON.parse(readFileSync(join(ROOT, 'public/manifest.json'), 'utf8'))
-for (const { url, at } of manifestUrls(manifest)) {
+for (const { url, at } of jsonUrls(manifest)) {
   problems.push(`public/manifest.json ${at} is root-absolute '${url}' -- manifest URLs resolve against the manifest, so write it relative`)
 }
 
@@ -160,4 +189,4 @@ if (problems.length) {
   for (const p of problems) console.error(`  ${p}`)
   process.exit(1)
 }
-console.log(`subpath-safe URLs: ${files.length} source files and public/manifest.json, ${KNOWN.length} known exceptions -- ok`)
+console.log(`subpath-safe URLs: ${files.length} source files, ${messages.length} message files and public/manifest.json, ${KNOWN.length} known exceptions -- ok`)

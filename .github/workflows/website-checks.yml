@@ -109,7 +109,7 @@ jobs:
         run: npm run check:explorer-languages
       # The same build is served at t27.ai/ and under app.t27.ai/game/. A
       # root-absolute URL resolves to the other app's root under the subpath,
-      # so every URL in src/ and the manifest is relative, https://t27.ai/...,
+      # so every URL in src/, messages/ and the manifest is relative, https://t27.ai/...,
       # or a hash route. Proves its detector on a fixture first.
       - name: Subpath-safe URLs
         run: npm run check:subpath-urls

@@ -26,7 +26,7 @@ function render(props, captions = { sample: { en: panels } }) {
 test('article hero exposes complete image, meaningful ALT, full-size link and three visible captions', () => {
   const html = render({ priority: true })
   assert.match(html, /<figure class="blog-cover-figure">/)
-  assert.match(html, /src="\/og-blog-sample.png\?v=englishhash"/)
+  assert.match(html, /src="https:\/\/t27\.ai\/og-blog-sample\.png\?v=englishhash"/)
   assert.match(html, /alt="Three-panel engraved illustration for: A measured result. PANEL 1 \/ PANEL 2 \/ PANEL 3"/)
   assert.match(html, /width="1200" height="630" loading="eager" decoding="async"/)
   assert.equal((html.match(/<a /g) ?? []).length, 2)
