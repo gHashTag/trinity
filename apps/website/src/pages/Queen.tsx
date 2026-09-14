@@ -73,6 +73,7 @@ const ENGINE_FLAG =
   typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("engine") : null;
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
+import { QueenIdentity } from "../components/QueenIdentity";
 import { hashParamsOf, tabAddress } from "../lib/triScreens";
 import {
   REVIEW_STATES,
@@ -350,6 +351,13 @@ const COPY = {
     triFrameTitle: "Trinity app",
     triInsidePlayer: "You are already inside the app: TRI is the app, and the app is around this game. Use its tabs.",
     triPreview: "A preview does not load the app. Open TRI in the game itself.",
+    identitySignIn: "Sign in",
+    identitySignInTitle: "Sign in with Telegram on app.t27.ai and come back to this view",
+    identitySignInAgain: "Sign in again in TRI",
+    identitySignedIn: "Signed in",
+    identityRoleKeeper: "Keeper",
+    identityRoleOwner: "Owner",
+    identityRoleBee: "Bee",
     agentsLoading: "Loading the Explorer…",
     agentsSpecs: "specs",
     agentsSpecCode: "spec+code",
@@ -667,6 +675,13 @@ const COPY = {
     triFrameTitle: "Приложение Trinity",
     triInsidePlayer: "Вы уже внутри приложения: TRI — это само приложение, и оно вокруг этой игры. Пользуйтесь его вкладками.",
     triPreview: "Превью не загружает приложение. Откройте TRI в самой игре.",
+    identitySignIn: "Войти",
+    identitySignInTitle: "Войти через Telegram на app.t27.ai и вернуться к этому виду",
+    identitySignInAgain: "Войдите заново в TRI",
+    identitySignedIn: "Вы вошли",
+    identityRoleKeeper: "Хранитель",
+    identityRoleOwner: "Владелец",
+    identityRoleBee: "Пчела",
     agentsLoading: "Загружаем Обозреватель…",
     agentsSpecs: "спек",
     agentsSpecCode: "спека+код",
@@ -2677,6 +2692,22 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 picked issue and the language. Icons at the row's own size — the
                 row is read by people who have just used it, and each keeps its
                 name in the tooltip and for a screen reader. */}
+            {/* Who is playing (src/lib/triIdentity.ts). A preview on the landing
+                (embed=1) asks nobody: it would mount a bridge per block. */}
+            {!embedded && (
+              <QueenIdentity
+                view={view}
+                c={{
+                  signIn: c.identitySignIn,
+                  signInTitle: c.identitySignInTitle,
+                  signInAgain: c.identitySignInAgain,
+                  signedIn: c.identitySignedIn,
+                  roleKeeper: c.identityRoleKeeper,
+                  roleOwner: c.identityRoleOwner,
+                  roleBee: c.identityRoleBee,
+                }}
+              />
+            )}
             <button
               type="button"
               data-tool="agent"
