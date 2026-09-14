@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { specExplorerHash } from '../lib/specCatalog'
+import { loadManifest } from '../lib/t27Compiler'
 import './SpecHeroBlock.css'
 
 // The landing shows the Spec Explorer itself, the same way the Queen inspector
@@ -13,7 +15,7 @@ const copy = {
     eyebrow: 'T27 / SOURCE',
     title: 'This is what a .t27 spec is',
     body: 'hello_world.t27 is the smallest spec that still shows every part of the language: constants, a type, functions, a test and an invariant. It is compiled here by the real compiler, not quoted.',
-    all: 'All 760 specs',
+    all: 'All specs',
     open: 'Open this spec full screen',
     frame: 'T27 Spec Explorer',
   },
@@ -21,7 +23,7 @@ const copy = {
     eyebrow: 'T27 / ИСТОЧНИК',
     title: 'Вот что такое спека .t27',
     body: 'hello_world.t27 — самая маленькая спека, в которой видна каждая часть языка: константы, тип, функции, тест и инвариант. Здесь её компилирует настоящий компилятор, а не цитата.',
-    all: 'Все 760 спек',
+    all: 'Все спеки',
     open: 'Открыть спеку на весь экран',
     frame: 'Обозреватель спецификаций T27',
   },
@@ -33,6 +35,16 @@ export default function SpecHeroBlock() {
   const t = copy[lang]
   const embedded = specExplorerHash(LANDING_SPEC, { embedded: true })
   const full = specExplorerHash(LANDING_SPEC)
+  // The count is the Spec Explorer's own: the same manifest through the same
+  // loader, in the shape its category list prints, so this link and the page it
+  // opens cannot disagree. It was the literal 760 and stayed 760 while the
+  // corpus grew to 856. Until the manifest answers, the link carries no number.
+  const [specCount, setSpecCount] = useState<number | null>(null)
+  useEffect(() => {
+    let alive = true
+    loadManifest().then((manifest) => { if (alive) setSpecCount(manifest.specCount) }).catch(() => {})
+    return () => { alive = false }
+  }, [])
 
   return (
     <section className="spec-hero-block" aria-labelledby="spec-hero-title">
@@ -46,7 +58,7 @@ export default function SpecHeroBlock() {
             <p>{t.body}</p>
             <div className="spec-hero-block-actions">
               <a className="spec-hero-block-primary" href={full}>{t.open}</a>
-              <a className="spec-hero-block-secondary" href="#/specs">{t.all}</a>
+              <a className="spec-hero-block-secondary" href="#/specs">{specCount === null ? t.all : `${t.all} (${specCount})`}</a>
             </div>
           </div>
         </div>

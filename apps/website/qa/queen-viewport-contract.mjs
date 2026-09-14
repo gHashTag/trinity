@@ -369,6 +369,15 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
       continue;
     }
     await wait(SETTLE_MS);
+    // A tab is addressable in both directions, so the click must have written
+    // it into the address (the comb, the default, carries no tab). Before this
+    // the view changed and the address kept naming the tab you had left.
+    const tabInUrl = new URLSearchParams((await evaluate('location.hash')).split('?')[1] ?? '').get('tab');
+    if (tabInUrl !== (view === 'comb' ? null : view)) {
+      console.log(`  ${w}x${h} ${view.padEnd(8)} FAIL  the address says tab=${tabInUrl} after clicking ${view}`);
+      failures++;
+      continue;
+    }
     let result;
     try {
       result = await evaluate(PROBE(phone));
@@ -403,6 +412,19 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     } else {
       console.log(`  ${w}x${h} ${view.padEnd(8)} PASS  round=${result.round} cmd=${counts.commands} res=${counts.resources} sectors=${counts.sectors}`);
     }
+  }
+  // The other direction: an address changed from outside (Back, a link, a
+  // script) moves the shell. Before this the tab was read once, on mount, and
+  // a later ?tab= was ignored.
+  const outside = VIEWS.find(v => v !== 'comb' && v !== VIEWS[VIEWS.length - 1]);
+  await evaluate(`location.hash = ${JSON.stringify(`${ROUTE}?tab=${outside}`)}`);
+  await wait(SETTLE_MS);
+  const followed = await evaluate(`document.querySelector('main[data-view]')?.getAttribute('data-view') ?? null`);
+  if (followed !== outside) {
+    failures++;
+    console.log(`  ${w}x${h} address  FAIL  the hash says tab=${outside}, the shell shows ${followed}`);
+  } else {
+    console.log(`  ${w}x${h} address  PASS  a hash set from outside moved the shell to ${outside}`);
   }
 }
 

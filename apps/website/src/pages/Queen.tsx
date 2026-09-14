@@ -8,7 +8,7 @@ import {
   type CSSProperties,
   type RefObject, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
@@ -1925,11 +1925,16 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const activityState = useQueenActivity();
   const researchState = useQueenResearch();
   const hardwareState = useQueenHardware();
-  // A tab is addressable. The landing presents all six and links to each, and a
-  // link that lands on the comb whatever it said would be a link that lies.
-  // `tab`, not `view`: the universe around this page already owns `view` for
-  // its atlas and its shared core. Read once, on mount — the shell does not
-  // then rewrite the URL as you click, which would fight the same params.
+  // A tab is addressable, in both directions. The landing presents every module
+  // and links to each, and a link that lands on the comb whatever it said would
+  // be a link that lies — and so would an address bar still naming the tab you
+  // left. `tab`, not `view`: the universe around this page already owns `view`
+  // for its atlas and its shared core. Both go through the router's search
+  // params, each writer keeping the other's key, so they do not fight; and a
+  // hash changed from outside (Back, a link, a script) moves the shell as a
+  // click does. Measured on t27.ai before this: load #/queen?tab=kanban, click
+  // FACTORY, and the address still said kanban; set the hash to ?tab=crons,
+  // and the shell stayed on factory.
   // Embedded on the homepage: the same shell, showing one module, with the
   // chrome that names it left out — the block around it already does that — and
   // without the hive. Four previews each booting Babylon is four more WebGL
@@ -1939,11 +1944,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     [],
   );
   // HudView is the one list of views (src/components/queenHud.ts); `?tab=`
-  // accepts exactly its names and the digit keys index it.
-  const [boardView, setBoardView] = useState<HudView>(() => {
-    const asked = new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("tab");
-    return (HUD_VIEWS as readonly string[]).includes(asked ?? "") ? (asked as HudView) : "comb";
-  });
+  // accepts exactly its names and the digit keys index it. The comb is the
+  // default and carries no `tab`, so #/queen stays the comb's address.
+  const [hashParams, setHashParams] = useSearchParams();
+  const asked = hashParams.get("tab");
+  const boardView: HudView = (HUD_VIEWS as readonly string[]).includes(asked ?? "") ? (asked as HudView) : "comb";
   const view: HudView = boardView;
   const now = useNow();
   const isNarrow = useMediaQuery("(max-width: 1100px)");
@@ -1957,13 +1962,27 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // The context panel belongs to the comb: it opens with the field (on a
   // desktop) and steps aside for the views that need the whole viewport.
   const [contextOpen, setContextOpen] = useState(!isPhone&&!sharedCatalog);
+  // Replace, not push, as useHashParams does: moving between tabs does not pile
+  // up history entries.
   const setView = useCallback(
     (next: HudView) => {
-      setBoardView(next);
-      setContextOpen(next === "comb" && !isPhone && !sharedCatalog);
+      setHashParams((current) => {
+        const params = new URLSearchParams(current);
+        if (next === "comb") params.delete("tab");
+        else params.set("tab", next);
+        return params;
+      }, { replace: true });
     },
-    [isPhone, sharedCatalog],
+    [setHashParams],
   );
+  // The panel follows the view however the view changed — a click, a digit key
+  // or the address bar — and only on a change, so the first render keeps the
+  // initial state it had before.
+  const [contextView, setContextView] = useState<HudView>(view);
+  if (contextView !== view) {
+    setContextView(view);
+    setContextOpen(view === "comb" && !isPhone && !sharedCatalog);
+  }
   const [menuOpen, setMenuOpen] = useState(false);
   const [doctrineOpen, setDoctrineOpen] = useState(false);
   const [roundOpen, setRoundOpen] = useState(false);
