@@ -2314,7 +2314,17 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     }
   };
 
-  const toggleLang = () => setLang(lang === "ru" ? "en" : "ru");
+  // The address says the language too, as the header's LanguageSwitcher already
+  // makes it: measured before this, /?lang=ru stayed in the address after the toggle
+  // switched the page to English, so a reload came back in Russian. history.state
+  // is kept, since HashRouter keeps its entry index there.
+  const toggleLang = () => {
+    const next = lang === "ru" ? "en" : "ru";
+    setLang(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", next);
+    window.history.replaceState(window.history.state, "", url);
+  };
 
   const copyAgent = async () => {
     if (agentCopyTimer.current !== null) {
