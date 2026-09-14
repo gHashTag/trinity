@@ -118,6 +118,11 @@ jobs:
       # messages from its own frame are heard. Pure, no browser.
       - name: TRI screens
         run: npm run check:tri
+      # Who is playing, without holding the player's session: replies only from
+      # app.t27.ai and from the window asked, with its nonce; the game token in
+      # memory only; whoami never carries X-Agent-Key. Pure, no browser.
+      - name: TRI identity
+        run: npm run check:tri-identity
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from
