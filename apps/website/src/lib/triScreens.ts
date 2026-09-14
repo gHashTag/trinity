@@ -78,14 +78,19 @@ export function screenOfAppPath(path: string): TriScreen | null {
 }
 
 /**
- * A deep path the address may carry as `path=` for this screen: one client in
- * the CRM (/crm/<id>, /crm/<id>/chat) or one person's profile (/<username>).
- * Anything else, including the screen's own root, is null.
+ * A deep path the address may carry as `path=` for this screen: one person's
+ * profile (/<username>), without a trailing slash. Anything else, including the
+ * screen's own root, is null.
+ *
+ * The CRM is addressed at the list only. Its client ids (/crm/<id>) are the
+ * Telegram user ids of customers, and `path=` would put them in the t27.ai
+ * address bar, its history and every copied link. A reload inside one client
+ * therefore reopens the CRM list.
  */
 export function triPathOf(screen: TriScreen, raw: string | null | undefined): string | null {
-  if (typeof raw !== 'string') return null
-  if (screen === 'crm' && CRM_PATH.test(raw) && raw !== '/crm') return raw
-  if (screen === 'profile' && screenOfAppPath(raw) === 'profile' && PROFILE_PATH.test(raw) && raw !== '/profile') return raw
+  if (typeof raw !== 'string' || screen !== 'profile') return null
+  const clean = raw.length > 1 && raw.endsWith('/') ? raw.slice(0, -1) : raw
+  if (screenOfAppPath(clean) === 'profile' && PROFILE_PATH.test(clean) && clean !== '/profile') return clean
   return null
 }
 
@@ -180,7 +185,7 @@ export function tabAddress(hash: string, next: string): URLSearchParams {
   return params
 }
 
-/** TRI's write: its tab, its screen (none for the feed) and a checked deep path. */
+/** TRI's write: its tab, its screen (none for the feed) and a checked profile path. */
 export function triAddress(hash: string, screen: TriScreen, path: string | null): URLSearchParams {
   const params = hashParamsOf(hash)
   params.set('tab', 'tri')

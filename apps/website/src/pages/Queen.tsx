@@ -348,6 +348,7 @@ const COPY = {
     triOpenApp: "Open this screen in the app",
     triFrameTitle: "Trinity app",
     triInsidePlayer: "You are already inside the app: TRI is the app, and the app is around this game. Use its tabs.",
+    triPreview: "A preview does not load the app. Open TRI in the game itself.",
     agentsLoading: "Loading the Explorer…",
     agentsSpecs: "specs",
     agentsSpecCode: "spec+code",
@@ -664,6 +665,7 @@ const COPY = {
     triOpenApp: "Открыть этот экран в приложении",
     triFrameTitle: "Приложение Trinity",
     triInsidePlayer: "Вы уже внутри приложения: TRI — это само приложение, и оно вокруг этой игры. Пользуйтесь его вкладками.",
+    triPreview: "Превью не загружает приложение. Откройте TRI в самой игре.",
     agentsLoading: "Загружаем Обозреватель…",
     agentsSpecs: "спек",
     agentsSpecCode: "спека+код",
@@ -2776,6 +2778,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           ) : boardView === "tri" ? (
             <QueenTri
               lang={lang}
+              embedded={embedded}
               c={{
                 screens: c.triScreens,
                 feed: c.triFeed,
@@ -2788,6 +2791,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 openApp: c.triOpenApp,
                 frameTitle: c.triFrameTitle,
                 insidePlayer: c.triInsidePlayer,
+                preview: c.triPreview,
               }}
             />
           ) : boardView === "comb" ? (

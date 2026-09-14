@@ -81,7 +81,8 @@
   pointer-events: none;
 }
 
-.queen27-page.is-shell .queen27-tri.is-nested {
+.queen27-page.is-shell .queen27-tri.is-nested,
+.queen27-page.is-shell .queen27-tri.is-preview {
   justify-content: center;
   padding: 16px;
   gap: 12px;

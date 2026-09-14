@@ -202,12 +202,12 @@ export const MODULES = [
     en: {
       name: 'TRI',
       hint: 'The app inside the game: feed, agent, AI generation, profile and CRM (key r)',
-      body: 'The app at app.t27.ai, inside the game. Each screen is the real app page in a frame: the feed, the agent, the AI pipeline from the script through voice, photo, lipsync and video to the editor, a profile, and the owner\'s CRM. The screen is in the address (?tab=tri&screen=chat, and path= for one client or one profile), so a link opens it and a reload keeps it. On t27.ai Telegram does not let its sign-in load inside another site, so the screens that need a person say so and link out to the app; the feed works for everyone. Until the app allows t27.ai to frame it, a screen does not answer and says so, with the same link out. Opens on the letter r.',
+      body: 'The app at app.t27.ai, inside the game. Each screen is the real app page in a frame: the feed, the agent, the AI pipeline from the script through voice, photo, lipsync and video to the editor, a profile, and the owner\'s CRM. The screen is in the address (?tab=tri&screen=chat, and path= for one profile), so a link opens it and a reload keeps it. On t27.ai Telegram does not let its sign-in load inside another site, so the screens that need a person say so and link out to the app; the feed works for everyone. Until the app allows t27.ai to frame it, a screen does not answer and says so, with the same link out. Opens on the letter r.',
     },
     ru: {
       name: 'TRI',
       hint: 'Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)',
-      body: 'Приложение app.t27.ai внутри игры. Каждый экран — настоящая страница приложения во фрейме: лента, агент, ИИ-конвейер от сценария через голос, фото, липсинк и видео к редактору, профиль и CRM владельца. Экран записан в адресе (?tab=tri&screen=chat, а для одного клиента или профиля ещё path=), поэтому ссылка его открывает, а перезагрузка сохраняет. На t27.ai Telegram не даёт своему входу загрузиться внутри чужого сайта, поэтому экраны, которым нужен человек, говорят об этом и ведут в само приложение; лента работает для всех. Пока приложение не разрешит t27.ai показывать себя во фрейме, экран не отвечает и говорит об этом. Открывается буквой r.',
+      body: 'Приложение app.t27.ai внутри игры. Каждый экран — настоящая страница приложения во фрейме: лента, агент, ИИ-конвейер от сценария через голос, фото, липсинк и видео к редактору, профиль и CRM владельца. Экран записан в адресе (?tab=tri&screen=chat, а для одного профиля ещё path=), поэтому ссылка его открывает, а перезагрузка сохраняет. На t27.ai Telegram не даёт своему входу загрузиться внутри чужого сайта, поэтому экраны, которым нужен человек, говорят об этом и ведут в само приложение; лента работает для всех. Пока приложение не разрешит t27.ai показывать себя во фрейме, экран не отвечает и говорит об этом. Открывается буквой r.',
     },
   },
 ] as const

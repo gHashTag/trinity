@@ -5,11 +5,11 @@
 // in embed mode hides its own header and tab bar, so this row is its navigation.
 //
 // Every screen has its own address, like every tab: ?tab=tri&screen=chat, and
-// path= for one CRM client or one profile. A click writes it, a reload reads it,
-// and an address changed from outside (Back, a link, a script) moves the screen.
-// Stages the app switches inside the frame (the AI pipeline, a CRM client) come
-// back as a {type:'t27-app', kind:'route', path} message and are written to the
-// address without reloading the frame.
+// path= for one profile (the CRM is addressed at its list, never by client id).
+// A click writes it, a reload reads it, and an address changed from outside
+// (Back, a link, a script) moves the screen. Stages the app switches inside the
+// frame (the AI pipeline, a profile) come back as a {type:'t27-app', kind:'route',
+// path} message and are written to the address without reloading the frame.
 //
 // Nothing is ever posted INTO the frame: telegram-web-app.js in the app treats
 // JSON messages from its parent as Telegram events (and reloads on one of them).
@@ -46,6 +46,7 @@ export interface TriCopy {
   openApp: string
   frameTitle: string
   insidePlayer: string
+  preview: string
 }
 
 /** Without an answer from the app this long after the frame loaded, say so. */
@@ -63,7 +64,7 @@ interface Frame {
   nonce: number
 }
 
-export function QueenTri({ c, lang }: { c: TriCopy; lang: string }) {
+export function QueenTri({ c, lang, embedded }: { c: TriCopy; lang: string; embedded: boolean }) {
   const [hashParams, setHashParams] = useSearchParams()
   const addressScreen = triScreenOf(hashParams.get('screen'))
   const addressPath = triPathOf(addressScreen, hashParams.get('path'))
@@ -108,8 +109,8 @@ export function QueenTri({ c, lang }: { c: TriCopy; lang: string }) {
   )
 
   const choose = (next: TriScreen) => {
-    // Any click opens the screen at its root, so after drilling into one CRM
-    // client a click on CRM returns to the list.
+    // Any click opens the screen at its root, so after moving to another
+    // person's profile a click on Profile returns to the viewer's own.
     setScreen(next)
     setPath(null)
     setFrame((f) => ({ screen: next, path: null, lang, nonce: f.nonce + 1 }))
@@ -137,6 +138,22 @@ export function QueenTri({ c, lang }: { c: TriCopy; lang: string }) {
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
   }, [frame.nonce, screen, path, writeAddress])
+
+  // One frame element for the life of the view. Its src attribute stays the
+  // first URL: changing it would PUSH a history entry for every screen. A new
+  // screen instead replaces the frame's current entry, so screen clicks add
+  // nothing to Back. Pages the app pushes inside the frame do add entries (a
+  // fresh element per screen would strand them: Back would do nothing until
+  // they ran out). With one element, Back walks them, the app's route message
+  // moves screen= along, and the frame and the address stay in step.
+  const src = triFrameSrc(frame.screen, frame.lang, frame.path)
+  const [mountSrc] = useState(src)
+  const navigatedNonce = useRef(frame.nonce)
+  useEffect(() => {
+    if (navigatedNonce.current === frame.nonce) return
+    navigatedNonce.current = frame.nonce
+    frameRef.current?.contentWindow?.location.replace(src)
+  }, [frame.nonce, src])
 
   // A frame the app refuses (frame-ancestors) still fires load on Chrome's
   // error page, so load is not success: the app's own message is.
@@ -172,7 +189,17 @@ export function QueenTri({ c, lang }: { c: TriCopy; lang: string }) {
     )
   }
 
-  const src = triFrameSrc(frame.screen, frame.lang, frame.path)
+  // A preview of another module on the landing (embed=1) reaches TRI by a key
+  // press. It frames nothing: the app would load for a visitor who never asked,
+  // inside a sandbox where the link out cannot open.
+  if (embedded) {
+    return (
+      <div className="queen27-tri is-preview">
+        <p className="queen27-tri-nested">{c.preview}</p>
+      </div>
+    )
+  }
+
   const outside = appScreenUrl(screen, path)
   const answered = answeredNonce === frame.nonce
   const loading = loadedNonce !== frame.nonce && !answered
@@ -214,16 +241,12 @@ export function QueenTri({ c, lang }: { c: TriCopy; lang: string }) {
             <QueenLoading title={c.loading} facts={[outside]} />
           </div>
         )}
-        {/* Keyed on the frame: a new screen is a new browsing context, whose
-            first load adds no entry to the tab's history, so Back leaves TRI
-            instead of walking the frame. name= marks this frame as the game's
-            embed for the app, for this frame only. */}
+        {/* src is the first URL only; data-src names the page the frame was last sent to. */}
         <iframe
-          key={`${frame.nonce}:${src}`}
           ref={frameRef}
-          name="t27-embed"
           className="queen27-tri-frame"
-          src={src}
+          src={mountSrc}
+          data-src={src}
           title={`${c.frameTitle} - ${labelOf(c, triGroupOf(frame.screen))}`}
           allow="clipboard-write; fullscreen"
           referrerPolicy="strict-origin-when-cross-origin"

@@ -15,8 +15,9 @@
 //   3  an address set from outside moves the screen and the frame
 //   4  a route message from the app, with the main thread janked so the address
 //      write lags, moves screen= without reloading the frame (no new request)
-//   5  a deep route (/crm/42) writes path=, survives a reload, and a click on the
-//      active screen returns the frame to the screen's root
+//   5  a CRM client route (/crm/42) leaves no client id in the address; a
+//      profile route (/durov) writes path=, survives a reload, and a click on
+//      the active screen returns the frame to the screen's root
 //   6  two writes inside one janked transition keep each other's keys
 //   7  screen clicks add no history entries: one Back leaves TRI
 //   8  leaving TRI drops screen= and path=
@@ -24,6 +25,17 @@
 //  10  inside the app (an app.t27.ai page framing the game) TRI frames nothing;
 //      inside another host it does (control)
 //  11  390x844: a deep link to TRI shows its rail button, no sideways page scroll
+//  12  the app pushes two pages inside the frame, then a screen click: every
+//      Back shows the frame's previous page with screen= following it, and the
+//      third leaves TRI (a fresh frame element per screen stranded those
+//      entries: Back did nothing twice)
+//  13  control for 12, the player's embed contract: an app that REPLACES its
+//      in-frame pages leaves TRI on one Back after a screen click
+//  14  an embedded Queen (a landing preview, embed=1) pressed with r shows TRI
+//      without a frame and asks app.t27.ai for nothing
+//
+// The frame's src attribute is its first URL only; checks read data-src (where
+// TRI sent the frame) and the frame tree (where the frame really is).
 //
 // Exits 0 on pass, 1 on a failed check, 2 when it could not run (never read as a pass).
 //
@@ -89,8 +101,17 @@ const STUB = (mode) => `<!doctype html><meta charset="utf-8"><title>app stub</ti
   document.getElementById('where').textContent = location.pathname + location.search;
   const post = (kind, path) => parent.postMessage({ type: 't27-app', kind, path }, '*');
   ${mode === 'answer' ? "post('ready', location.pathname);" : ''}
-  // The harness (not the game) asks for a route message this way.
-  addEventListener('message', (e) => { if (typeof e.data === 'string' && e.data.startsWith('harness-route:')) post('route', e.data.slice(14)); });
+  // The harness (not the game) asks for a route message this way, or for an
+  // in-app navigation that pushes or replaces a history entry, as the app's
+  // router does. Back inside the frame reports its route too.
+  const here = () => { document.getElementById('where').textContent = location.pathname + location.search; };
+  addEventListener('message', (e) => {
+    if (typeof e.data !== 'string') return;
+    if (e.data.startsWith('harness-route:')) post('route', e.data.slice(14));
+    const nav = e.data.match(/^harness-(push|replace):(.*)$/);
+    if (nav) { history[nav[1] + 'State']({}, '', nav[2] + location.search); here(); post('route', location.pathname); }
+  });
+  addEventListener('popstate', () => { here(); post('route', location.pathname); });
 </script>`
 const HOST = (target) => `<!doctype html><meta charset="utf-8"><title>host</title>
 <body style="margin:0"><iframe id="game" src="${target}" style="width:1200px;height:800px;border:0" referrerpolicy="strict-origin-when-cross-origin"></iframe>`
@@ -165,13 +186,16 @@ try {
   const railReady = `document.querySelectorAll('button.queen27-hud-cmd[data-view]').length > 0 && !!document.querySelector('main[data-view]')`
   const STATE = `(() => { const q = new URLSearchParams(location.hash.split('?')[1] ?? ''); const f = document.querySelector('iframe.queen27-tri-frame');
     return { view: document.querySelector('main[data-view]')?.getAttribute('data-view') ?? null, tab: q.get('tab'), screen: q.get('screen'), path: q.get('path'), hash: location.hash,
-      src: f?.getAttribute('src') ?? null, shown: document.querySelector('.queen27-tri')?.getAttribute('data-screen') ?? null,
+      src: f?.dataset.src ?? null, shown: document.querySelector('.queen27-tri')?.getAttribute('data-screen') ?? null,
       pressed: [...document.querySelectorAll('.queen27-tri-screen[aria-pressed="true"]')].map((b) => b.dataset.screen),
       noanswer: !!document.querySelector('.queen27-tri-noanswer'), loading: !!document.querySelector('.queen27-tri-loading'), history: history.length } })()`
   const state = () => evaluate(STATE)
   const clickScreen = (s) => evaluate(`document.querySelector('.queen27-tri-screen[data-screen="${s}"]').click()`)
   const clickRail = (v) => evaluate(`document.querySelector('button.queen27-hud-cmd[data-view="${v}"]').click()`)
   const askRoute = (p) => evaluate(`document.querySelector('iframe.queen27-tri-frame').contentWindow.postMessage(${JSON.stringify(`harness-route:${p}`)}, '*')`)
+  const askNav = (mode, p) => evaluate(`document.querySelector('iframe.queen27-tri-frame').contentWindow.postMessage(${JSON.stringify(`harness-${mode}:`)} + ${JSON.stringify(p)}, '*')`)
+  // Where the app frame really is (the src attribute stays its first URL).
+  const appFrameUrl = async () => ((await call('Page.getFrameTree')).frameTree.childFrames ?? []).map((f) => f.frame.url).find((u) => u.startsWith(APP)) ?? null
   // Long tasks back to back, the shape of the hive's work on t27.ai: React's
   // transition (the address) waits, a message handler still runs between them.
   const jank = (on) => evaluate(on
@@ -204,19 +228,22 @@ try {
       await until(`${railReady} && !!document.querySelector('iframe.queen27-tri-frame')`, 90000)
       await wait(TRI_WAIT())
       const after = await state()
-      record(2, 'a screen click writes screen=chat, a reload keeps it, an answering app shows no strip', clicked && after.view === 'tri' && after.screen === 'chat' && after.src === frameUrl('/chat') && !after.noanswer && !after.loading, { clicked: s, after })
+      after.frame = await appFrameUrl()
+      record(2, 'a screen click writes screen=chat, a reload keeps it, an answering app shows no strip', clicked && after.view === 'tri' && after.screen === 'chat' && after.src === frameUrl('/chat') && after.frame === frameUrl('/chat') && !after.noanswer && !after.loading, { clicked: s, after })
     }
 
     if (runs(3)) {
       await evaluate(`location.hash = '#/queen?tab=tri&screen=crm'`)
-      await until(`document.querySelector('iframe.queen27-tri-frame')?.getAttribute('src') === ${JSON.stringify(frameUrl('/crm'))}`, 20000)
+      await until(`document.querySelector('iframe.queen27-tri-frame')?.dataset.src ===${JSON.stringify(frameUrl('/crm'))}`, 20000)
       s = await state()
-      record(3, 'an outside hash moves the screen and the frame to crm', s.view === 'tri' && s.screen === 'crm' && s.pressed.join() === 'crm' && s.src === frameUrl('/crm'), s)
+      s.frame = await appFrameUrl()
+      for (let i = 0; i < 50 && s.frame !== frameUrl('/crm'); i++) { await wait(200); s.frame = await appFrameUrl() }
+      record(3, 'an outside hash moves the screen and the frame to crm', s.view === 'tri' && s.screen === 'crm' && s.pressed.join() === 'crm' && s.src === frameUrl('/crm') && s.frame === frameUrl('/crm'), s)
     }
 
     if (runs(4)) {
       await evaluate(`location.hash = '#/queen?tab=tri&screen=crm'`)
-      await until(`document.querySelector('iframe.queen27-tri-frame')?.getAttribute('src') === ${JSON.stringify(frameUrl('/crm'))}`, 20000)
+      await until(`document.querySelector('iframe.queen27-tri-frame')?.dataset.src ===${JSON.stringify(frameUrl('/crm'))}`, 20000)
       await wait(1500)
       const crmBefore = count(frameUrl('/crm'))
       const videoBefore = count(frameUrl('/generate/video'))
@@ -234,18 +261,30 @@ try {
       await clickScreen('crm')
       await until(`document.querySelector('.queen27-tri')?.dataset.screen === 'crm'`, 20000)
       await wait(1500)
+      // One CRM client: the screen stays crm and its id never reaches the address.
       await askRoute('/crm/42')
-      await until(`new URLSearchParams(location.hash.split('?')[1] ?? '').get('path') === '/crm/42'`, 20000)
+      await wait(2500)
+      const client = await state()
+      // One profile: path= carries it through a reload.
+      await clickScreen('profile')
+      await until(`document.querySelector('.queen27-tri')?.dataset.screen === 'profile'`, 20000)
+      await wait(1500)
+      await askRoute('/durov')
+      await until(`new URLSearchParams(location.hash.split('?')[1] ?? '').get('path') === '/durov'`, 20000)
       const deep = await state()
       await call('Page.reload', {})
       await until(`${railReady} && !!document.querySelector('iframe.queen27-tri-frame')`, 90000)
       const reloaded = await state()
-      const rootBefore = count(frameUrl('/crm'))
-      await clickScreen('crm')
-      await until(`document.querySelector('iframe.queen27-tri-frame')?.getAttribute('src') === ${JSON.stringify(frameUrl('/crm'))}`, 20000)
+      reloaded.frame = await appFrameUrl()
+      const rootBefore = count(frameUrl('/profile'))
+      await clickScreen('profile')
+      await until(`document.querySelector('iframe.queen27-tri-frame')?.dataset.src === ${JSON.stringify(frameUrl('/profile'))}`, 20000)
       await wait(1500)
       const back = await state()
-      record(5, 'a deep route writes path=/crm/42, survives a reload, and a click on CRM returns to its root', deep.screen === 'crm' && deep.path === '/crm/42' && reloaded.src === frameUrl('/crm/42') && reloaded.path === '/crm/42' && back.src === frameUrl('/crm') && back.path === null && back.screen === 'crm' && count(frameUrl('/crm')) === rootBefore + 1, { deep, reloaded, back })
+      record(5, 'a CRM client route leaves no id in the address; a profile route writes path=/durov, survives a reload, and a click on Profile returns to its root',
+        client.screen === 'crm' && client.path === null && !/42/.test(client.hash) &&
+        deep.screen === 'profile' && deep.path === '/durov' && reloaded.src === frameUrl('/durov') && reloaded.frame === frameUrl('/durov') && reloaded.path === '/durov' &&
+        back.src === frameUrl('/profile') && back.path === null && back.screen === 'profile' && count(frameUrl('/profile')) === rootBefore + 1, { client, deep, reloaded, back })
     }
 
     if (runs(6)) {
@@ -303,8 +342,8 @@ try {
       await until(`document.querySelector('main[data-view]')?.getAttribute('data-view') === 'tri'`, 20000)
     }
     if (runs(8)) {
-      await evaluate(`location.hash = '#/queen?tab=tri&screen=crm&path=/crm/7&layers=foundation'`)
-      await until(`document.querySelector('iframe.queen27-tri-frame')?.getAttribute('src') === ${JSON.stringify(frameUrl('/crm/7'))}`, 20000)
+      await evaluate(`location.hash = '#/queen?tab=tri&screen=profile&path=/durov&layers=foundation'`)
+      await until(`document.querySelector('iframe.queen27-tri-frame')?.dataset.src === ${JSON.stringify(frameUrl('/durov'))}`, 20000)
       await clickRail('kanban')
       await until(`new URLSearchParams(location.hash.split('?')[1] ?? '').get('tab') === 'kanban'`, 20000)
       await wait(1000)
@@ -346,6 +385,73 @@ try {
       const r = rail.getBoundingClientRect(), x = b.getBoundingClientRect(); const de = document.scrollingElement;
       return { inside: x.left >= r.left - 0.5 && x.right <= r.right + 0.5 && x.width > 0, rail: [Math.round(r.left), Math.round(r.right)], button: [Math.round(x.left), Math.round(x.right)], sideways: de.scrollWidth > de.clientWidth + 1 } })()`)
     record(11, '390x844: the TRI rail button is in view after a deep link, no sideways page scroll', phone && phone.inside && !phone.sideways, phone)
+    await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
+  }
+
+  // 12 and 13: the app navigates inside the frame (mode 'push' or 'replace'),
+  // then a screen click, then Back up to three times.
+  const backWalk = async (mode) => {
+    await open('#/queen?tab=kanban')
+    await evaluate(`location.hash = '#/queen?tab=tri&screen=script'`)
+    await until(`document.querySelector('.queen27-tri')?.dataset.screen === 'script' && !document.querySelector('.queen27-tri-loading')`, 30000)
+    await wait(1500)
+    const start = await state()
+    for (const [route, screen] of [['/generate/video', 'video'], ['/generate/editor', 'editor']]) {
+      await askNav(mode, route)
+      await until(`new URLSearchParams(location.hash.split('?')[1] ?? '').get('screen') === ${JSON.stringify(screen)}`, 20000)
+      await wait(800)
+    }
+    await clickScreen('chat')
+    await until(`new URLSearchParams(location.hash.split('?')[1] ?? '').get('screen') === 'chat'`, 20000)
+    for (let i = 0; i < 50 && (await appFrameUrl()) !== frameUrl('/chat'); i++) await wait(200)
+    await wait(1500)
+    const clicked = { ...(await state()), frame: await appFrameUrl() }
+    const steps = []
+    for (let i = 0; i < 3; i++) {
+      const prev = steps.at(-1) ?? clicked
+      await evaluate('history.back()')
+      // Wait for anything to change; a dead Back entry changes nothing.
+      const t0 = Date.now()
+      let now = { ...(await state()), frame: await appFrameUrl() }
+      while (Date.now() - t0 < 10000 && now.view === prev.view && now.hash === prev.hash && now.frame === prev.frame) { await wait(250); now = { ...(await state()), frame: await appFrameUrl() } }
+      await wait(1500)
+      now = { ...(await state()), frame: await appFrameUrl() }
+      steps.push(now)
+      if (now.view !== 'tri') break
+    }
+    return { start, clicked, steps: steps.map(({ view, screen, shown, frame, history: h }) => ({ view, screen, shown, frame, history: h })) }
+  }
+
+  if (runs(12)) {
+    const w = await backWalk('push')
+    const [b1, b2, b3] = w.steps
+    record(12, 'after two pages pushed inside the frame and a screen click, each Back shows the previous page with screen= following, the third leaves TRI',
+      w.clicked.history === w.start.history + 2 &&
+      b1?.view === 'tri' && b1.screen === 'video' && b1.shown === 'video' && b1.frame === frameUrl('/generate/video') &&
+      b2?.view === 'tri' && b2.screen === 'script' && b2.shown === 'script' && b2.frame === frameUrl('/generate/script') &&
+      b3?.view === 'kanban' && b3.screen === null, w)
+  }
+
+  if (runs(13)) {
+    const w = await backWalk('replace')
+    const [b1] = w.steps
+    record(13, 'control: an app that replaces its in-frame pages leaves TRI on one Back after a screen click',
+      w.clicked.history === w.start.history && b1?.view === 'kanban' && b1.screen === null, w)
+  }
+
+  if (runs(14)) {
+    // The landing's previews frame the Queen with embed=1 and hide its rail,
+    // but the digit and letter keys still reach it.
+    const before = requests.length
+    await load(`${ORIGIN}/?lang=en&open=${++opens}#/queen?tab=kanban&embed=1`)
+    await until(`document.querySelector('main[data-view]')?.getAttribute('data-view') === 'kanban'`, 90000)
+    await wait(1500)
+    await evaluate(`document.activeElement?.blur?.(); window.dispatchEvent(new KeyboardEvent('keydown', { key: 'r' }))`)
+    const shown = await until(`document.querySelector('main[data-view]')?.getAttribute('data-view') === 'tri' && !!document.querySelector('.queen27-tri')`, 20000)
+    await wait(2500)
+    const preview = await evaluate(`({ preview: !!document.querySelector('.queen27-tri.is-preview'), frames: document.querySelectorAll('iframe.queen27-tri-frame').length })`)
+    record(14, 'an embedded Queen pressed with r shows TRI without a frame and asks app.t27.ai for nothing',
+      shown && preview.preview && preview.frames === 0 && requests.length === before, { shown, preview, requests: requests.slice(before) })
   }
 
   const failed = checks.filter((c) => !c.ok)

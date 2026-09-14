@@ -59,9 +59,16 @@ for (const { screen, route } of TRI_SCREENS) {
 }
 assert.equal(triFrameSrc('video', 'ru'), 'https://app.t27.ai/generate/video?embed=1&lang=ru')
 assert.equal(triFrameSrc('feed', 'en'), 'https://app.t27.ai/feed?embed=1&lang=en')
-assert.equal(new URL(triFrameSrc('feed', 'en&x=@evil.example')).origin, APP_ORIGIN, 'a hostile lang cannot move the origin')
-assert.equal(triFrameSrc('crm', 'en', '/crm/42'), 'https://app.t27.ai/crm/42?embed=1&lang=en', 'one CRM client is addressable')
-assert.equal(triFrameSrc('crm', 'en', '/crm/42/chat'), 'https://app.t27.ai/crm/42/chat?embed=1&lang=en')
+{
+  // lang is one query value: it cannot add a parameter of its own.
+  const hostile = new URL(triFrameSrc('feed', 'en&x=1'))
+  assert.equal(hostile.searchParams.get('x'), null, 'a lang with & adds no parameter')
+  assert.equal(hostile.searchParams.get('lang'), 'en&x=1', 'lang is encoded as one value')
+  assert.equal(hostile.searchParams.get('embed'), '1')
+}
+// The CRM is addressed at its list: client ids are customers' Telegram ids.
+assert.equal(triFrameSrc('crm', 'en', '/crm/42'), 'https://app.t27.ai/crm?embed=1&lang=en', 'no CRM client in the frame URL from the address')
+assert.equal(triFrameSrc('crm', 'en', '/crm/42/chat'), 'https://app.t27.ai/crm?embed=1&lang=en')
 assert.equal(triFrameSrc('profile', 'en', '/durov'), 'https://app.t27.ai/durov?embed=1&lang=en', 'one profile is addressable')
 for (const [screen, hostile] of [['crm', '//evil.example'], ['crm', '/crm/../../x'], ['crm', '/crm/1?x=1'], ['feed', '/crm/42'], ['profile', '/hive'], ['profile', '/templates'], ['profile', '@evil.example'], ['profile', '/a/b']]) {
   const src = triFrameSrc(screen, 'en', hostile)
@@ -69,7 +76,8 @@ for (const [screen, hostile] of [['crm', '//evil.example'], ['crm', '/crm/../../
   assert.equal(new URL(src).pathname, TRI_SCREENS.find((s) => s.screen === screen).route, `${screen} + ${hostile}: falls back to the screen root`)
 }
 assert.equal(appScreenUrl('chat'), 'https://app.t27.ai/chat')
-assert.equal(appScreenUrl('crm', '/crm/7'), 'https://app.t27.ai/crm/7')
+assert.equal(appScreenUrl('crm', '/crm/7'), 'https://app.t27.ai/crm', 'the link out names no CRM client either')
+assert.equal(appScreenUrl('profile', '/durov/'), 'https://app.t27.ai/durov')
 assert.equal(appScreenUrl('crm', '//evil.example'), 'https://app.t27.ai/crm')
 
 // ---- 2. The screen table and the app's paths ----
@@ -91,12 +99,19 @@ const pathCases = [
   ['/learn', null], ['/privacy-policy', null], ['/instagram/callback', null], ['//evil.example/crm', null], ['crm', null], ['', null],
 ]
 for (const [path, expected] of pathCases) assert.equal(screenOfAppPath(path), expected, `screenOfAppPath(${JSON.stringify(path)})`)
-assert.equal(triPathOf('crm', '/crm/42'), '/crm/42')
-assert.equal(triPathOf('crm', '/crm'), null, 'the root is not a deep path')
-assert.equal(triPathOf('profile', '/profile'), null)
+for (const raw of ['/crm/42', '/crm/42/', '/crm/42/chat', '/crm', '/crm/..', '/crm/a.b', '/crm/a@b', '/crm/a:b']) {
+  assert.equal(triPathOf('crm', raw), null, `triPathOf('crm', ${JSON.stringify(raw)}): no CRM client id in the address`)
+}
+assert.equal(screenOfAppPath('/crm/42/'), 'crm', 'a trailing slash keeps the screen')
+assert.equal(triPathOf('profile', '/profile'), null, 'the root is not a deep path')
 assert.equal(triPathOf('profile', '/someone'), '/someone')
-assert.equal(triPathOf('chat', '/crm/42'), null, 'a path belongs to its own screen only')
-assert.equal(triPathOf('crm', null), null)
+assert.equal(triPathOf('profile', '/someone/'), '/someone', 'a trailing slash keeps the profile path')
+assert.equal(triPathOf('profile', '/profile/'), null)
+for (const raw of ['/..', '/a.b', '/a@b', '/a:b', '/a%2Fb', '//someone', '/hive/', '/someone//']) {
+  assert.equal(triPathOf('profile', raw), null, `triPathOf('profile', ${JSON.stringify(raw)})`)
+}
+assert.equal(triPathOf('chat', '/someone'), null, 'a path belongs to its own screen only')
+assert.equal(triPathOf('profile', null), null)
 
 // ---- 3. The address: both writers build from the live hash ----
 const params = (p) => Object.fromEntries(p)
@@ -107,8 +122,10 @@ assert.deepEqual(params(tabAddress('#/queen?tab=kanban', 'comb')), {}, 'the comb
 assert.deepEqual(params(tabAddress('#/queen?screen=chat', 'tri')), { screen: 'chat', tab: 'tri' }, 'entering TRI keeps a pending screen')
 assert.deepEqual(params(triAddress('#/queen?tab=tri&layers=x', 'chat', null)), { tab: 'tri', layers: 'x', screen: 'chat' })
 assert.deepEqual(params(triAddress('#/queen?tab=tri&screen=chat&path=/crm/1', 'feed', null)), { tab: 'tri' }, 'the feed carries no screen')
-assert.deepEqual(params(triAddress('#/queen?tab=tri', 'crm', '/crm/42')), { tab: 'tri', screen: 'crm', path: '/crm/42' })
-assert.deepEqual(params(triAddress('#/queen?tab=tri', 'crm', '//evil.example')), { tab: 'tri', screen: 'crm' }, 'an unchecked path is not written')
+assert.deepEqual(params(triAddress('#/queen?tab=tri', 'crm', '/crm/42')), { tab: 'tri', screen: 'crm' }, 'a CRM client id is never written to the address')
+assert.deepEqual(params(triAddress('#/queen?tab=tri&screen=crm&path=/crm/42', 'crm', null)), { tab: 'tri', screen: 'crm' }, 'an old client path is dropped on the next write')
+assert.deepEqual(params(triAddress('#/queen?tab=tri', 'profile', '/durov/')), { tab: 'tri', screen: 'profile', path: '/durov' })
+assert.deepEqual(params(triAddress('#/queen?tab=tri', 'profile', '//evil.example')), { tab: 'tri', screen: 'profile' }, 'an unchecked path is not written')
 // Two writes inside one pending transition (click TRI, then Agent): the live
 // form keeps both keys. The control builds the second write from the stale
 // render-time params, as React Router's updater does, and loses the tab.
@@ -135,6 +152,7 @@ assert.equal(acceptAppMessage({ ...ok, origin: 'https://t27.ai' }, frame), null,
 assert.equal(acceptAppMessage({ ...ok, source: { name: 'other' } }, frame), null, 'wrong source')
 assert.equal(acceptAppMessage(ok, null), null, 'no frame, no message')
 assert.equal(acceptAppMessage({ ...ok, data: '{"eventType":"iframe_ready"}' }, frame), null, 'telegram-web-app.js JSON string')
+assert.equal(acceptAppMessage({ ...ok, data: JSON.stringify(ok.data) }, frame), null, 'a JSON string is never parsed, even one shaped like the app message')
 assert.equal(acceptAppMessage({ ...ok, data: { eventType: 'iframe_ready' } }, frame), null, 'a Telegram-shaped object')
 assert.equal(acceptAppMessage({ ...ok, data: { type: 't27-app', kind: 'other', path: '/feed' } }, frame), null, 'unknown kind')
 assert.equal(acceptAppMessage({ ...ok, data: { type: 't27-app', kind: 'route', path: 'x' } }, frame), null, 'relative path')
