@@ -73,7 +73,11 @@ body.queen-shell {background:#000;}
   .queen-universe :is(.queen-universe-nav,.queen-world-dialog) .queen-world-connect {flex:0 0 44px;width:44px;min-height:44px;padding:0;font-size:0;}
   .queen-universe-nav .queen-world-connect::after {content:'+';font-size:1.25rem;line-height:1;}
   .queen-universe-nav .queen-world-lang {flex:0 0 auto;font-size:.68rem;padding-inline:.5rem;}
-  .queen-universe-nav button:nth-last-child(2),.queen-universe-nav button:last-child {display:none;}
+  /* Shared core stays: hidden here, a phone had no way to reach view=core. In the
+     shell's head the world select gives up the 50px the button needs, so the head
+     keeps its height (measured at 390x844: 110px either way). */
+  .queen-universe-nav button:nth-last-child(2) {display:none;}
+  .queen27-page.is-shell .queen27-hud-vp-head .queen-universe-nav select {min-width:0;max-width:150px;flex:1 1 auto;}
 }
 @media(max-height:500px) and (min-width:641px) {
   .queen-universe .queen27-page.is-shell {grid-template-rows:48px minmax(0,1fr) 48px;gap:4px;padding:4px;}
