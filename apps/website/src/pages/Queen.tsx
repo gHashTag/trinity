@@ -1948,7 +1948,19 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // default and carries no `tab`, so #/queen stays the comb's address.
   const [hashParams, setHashParams] = useSearchParams();
   const asked = hashParams.get("tab");
-  const boardView: HudView = (HUD_VIEWS as readonly string[]).includes(asked ?? "") ? (asked as HudView) : "comb";
+  const addressView: HudView = (HUD_VIEWS as readonly string[]).includes(asked ?? "") ? (asked as HudView) : "comb";
+  // The shell keeps its own view; the address follows it and feeds it. HashRouter
+  // hands every navigation to React inside startTransition, and while the hive's
+  // long tasks run after load that transition waited: on t27.ai the address
+  // changed within 5 ms of a click and the view in 0 of 42 clicks, up to 11.9 s
+  // later. So a click sets the view directly, and an address changed from outside
+  // (Back, a link, a script) still moves it through the check below.
+  const [boardView, setBoardView] = useState<HudView>(addressView);
+  const [seenAddressView, setSeenAddressView] = useState<HudView>(addressView);
+  if (seenAddressView !== addressView) {
+    setSeenAddressView(addressView);
+    setBoardView(addressView);
+  }
   const view: HudView = boardView;
   const now = useNow();
   const isNarrow = useMediaQuery("(max-width: 1100px)");
@@ -1966,6 +1978,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // up history entries.
   const setView = useCallback(
     (next: HudView) => {
+      setBoardView(next);
       setHashParams((current) => {
         const params = new URLSearchParams(current);
         if (next === "comb") params.delete("tab");
