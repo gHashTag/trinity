@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { QueenSpecs } from "../components/QueenSpecs";
 import { QueenAgents } from "../components/QueenAgents";
+import { SELECTION_KEY, isExplorerTab } from "../lib/queenEmbed";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
 import { QueenCommandPanel } from "../components/QueenCommand";
@@ -72,7 +73,7 @@ const ENGINE_FLAG =
   typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("engine") : null;
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
-import { tabAddress } from "../lib/triScreens";
+import { hashParamsOf, tabAddress } from "../lib/triScreens";
 import {
   REVIEW_STATES,
   publicIssueTitle,
@@ -2008,11 +2009,22 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // up history entries. Built from the live hash, not the updater's argument:
   // React Router hands the updater the params of this hook's last render, so
   // with TRI's screen write pending in the same transition one would erase the
-  // other. A tab you leave takes TRI's screen= and path= with it.
+  // other. A tab you leave takes TRI's screen= and path= with it. A tab that
+  // embeds an Explorer also names its card (skill=, spec=, chapter= …,
+  // lib/queenEmbed); the card belongs to its tab, so leaving the tab drops it,
+  // and a card given with the tab is written with it.
   const setView = useCallback(
-    (next: HudView) => {
+    (next: HudView, card?: string | null) => {
       setBoardView(next);
-      setHashParams(() => tabAddress(window.location.hash, next), { replace: true });
+      setHashParams(() => {
+        const live = window.location.hash;
+        const params = tabAddress(live, next);
+        if ((hashParamsOf(live).get("tab") ?? "comb") !== next) {
+          for (const key of Object.values(SELECTION_KEY)) params.delete(key);
+        }
+        if (card && isExplorerTab(next)) params.set(SELECTION_KEY[next], card);
+        return params;
+      }, { replace: true });
     },
     [setHashParams],
   );
@@ -2753,6 +2765,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           ) : boardView === "specs" ? (
             <QueenSpecs
               showDirective={isNarrow}
+              onNavigate={setView}
               c={{
                 directive: c.specsDirective,
                 directiveBody: c.specsDirectiveBody,
@@ -2767,6 +2780,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenAgents
               kind={boardView}
               showDirective={isNarrow}
+              onNavigate={setView}
               c={{
                 directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
                 directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,

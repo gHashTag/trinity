@@ -18,10 +18,9 @@
 // back. Narrow screens have no such column, so there the directive stays put.
 
 import { useEffect, useRef, useState } from 'react'
-import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
-
-const FEATURED = 'specs/demos/hello_world.t27'
+import { useQueenExplorerFrame } from './useQueenExplorerFrame'
+import { FEATURED_SPEC as FEATURED, type ExplorerTab } from '../lib/queenEmbed'
 
 export interface SpecsCopy {
   directive: string
@@ -93,16 +92,14 @@ export function QueenSpecsDirective({ c, collapsible = false }: { c: SpecsCopy; 
   )
 }
 
-export function QueenSpecs({ c, showDirective = true }: { c: SpecsCopy; showDirective?: boolean }) {
-  const { lang } = useI18n()
+export function QueenSpecs({ c, showDirective = true, onNavigate }: { c: SpecsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void }) {
   const [ready, setReady] = useState(false)
+  // The spec in the frame is the spec= of the Queen address (lib/queenEmbed); with
+  // none, the featured one. The frame carries ?lang= in its search, where the i18n
+  // provider reads it: without it the frame booted on whatever localStorage held and
+  // never heard the switch -- the shell in English with a Russian Explorer inside it.
   const frameRef = useRef<HTMLIFrameElement>(null)
-
-  // The explorer lives at the same origin, so a relative hash URL is enough.
-  // ?lang= in the search, where the i18n provider reads it. Without it the
-  // frame boots on whatever localStorage held when it loaded and never hears
-  // the switch — the shell in English with a Russian Explorer inside it.
-  const src = `${window.location.pathname}?lang=${lang}#/specs?spec=${encodeURIComponent(FEATURED)}&embed=1`
+  const frame = useQueenExplorerFrame('specs', onNavigate, frameRef)
 
   return (
     <div className="queen27-specs" data-directive={showDirective ? 'above' : 'aside'}>
@@ -111,11 +108,13 @@ export function QueenSpecs({ c, showDirective = true }: { c: SpecsCopy; showDire
       <div className="queen27-specs-frame-wrap">
         {!ready && <div className="queen27-specs-loading"><QueenLoading title={c.loading} facts={[`${FEATURED.split('/').at(-1)}`]}/></div>}
         <iframe
+          key={frame.frameKey}
           ref={frameRef}
+          name={frame.frameName}
           className="queen27-specs-frame"
-          src={src}
+          src={frame.src}
           title="Spec Explorer"
-          onLoad={() => setReady(true)}
+          onLoad={() => { setReady(true); frame.onFrameLoad() }}
           // The explorer is ours and same-origin; it needs scripts and wasm to
           // run at all. No allow-same-origin escape concern: it is our page.
           loading="lazy"

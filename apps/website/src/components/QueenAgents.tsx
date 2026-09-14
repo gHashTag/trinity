@@ -14,14 +14,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
+import { useQueenExplorerFrame } from './useQueenExplorerFrame'
 import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadSkillSpecs, loadToolSpecs } from '../lib/agentSpecs'
-import { loadSystemDocs, systemDocsHash } from '../lib/systemDocs'
+import { loadSystemDocs } from '../lib/systemDocs'
+import type { ExplorerTab } from '../lib/queenEmbed'
 
 export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'project'
 
-// PROJECT frames #/docs?embed=1. The quick jumps above the frame rewrite the
-// frame's hash to a chapter; the page inside follows hashchange, so a jump is a
-// chapter switch, not a reload. Chapter stems are those of specs/docs/chapters.
+// PROJECT frames #/docs?embed=1. A quick jump above the frame is a chapter written
+// to the Queen address (chapter=), like a pick inside the frame; the frame's hash
+// follows, and the page inside answers hashchange, so a jump is a chapter switch,
+// not a reload. Chapter stems are those of specs/docs/chapters.
 export const PROJECT_JUMPS: readonly { stem: string; en: string; ru: string }[] = [
   { stem: 'project', en: 'Project', ru: 'Проект' },
   { stem: 'rules', en: 'Rules of the game', ru: 'Правила игры' },
@@ -136,28 +139,14 @@ export function QueenAgentsDirective({ kind, c, collapsible = false }: { kind: A
   )
 }
 
-export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKind; c: AgentsCopy; showDirective?: boolean }) {
+export function QueenAgents({ kind, c, showDirective = true, onNavigate }: { kind: AgentsKind; c: AgentsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void }) {
   const { lang } = useI18n()
   const [ready, setReady] = useState(false)
-  const [jump, setJump] = useState<string>(PROJECT_JUMPS[0].stem)
+  // The card in the frame is the card in the Queen address: skill=, cron=, agent=,
+  // function=, tool= or chapter= (lib/queenEmbed). PROJECT opens on the first chapter.
   const frameRef = useRef<HTMLIFrameElement>(null)
-
-  // ?lang= rides in the search, where the i18n provider reads it, so the frame
-  // follows the shell's language instead of whatever localStorage held.
-  // PROJECT is the docs page at #/docs; the first chapter is the initial frame.
-  const src = kind === 'project'
-    ? `${window.location.pathname}?lang=${lang}${systemDocsHash(PROJECT_JUMPS[0].stem, { embedded: true })}`
-    : `${window.location.pathname}?lang=${lang}#/${kind}?embed=1`
-
-  // A quick jump changes only the frame's fragment (same document, same origin),
-  // which the docs page answers by switching chapter without reloading.
-  const jumpTo = (stem: string) => {
-    setJump(stem)
-    const win = frameRef.current?.contentWindow
-    if (win) {
-      try { win.location.hash = systemDocsHash(stem, { embedded: true }).slice(1) } catch { /* cross-origin never happens: same document */ }
-    }
-  }
+  const frame = useQueenExplorerFrame(kind, onNavigate, frameRef)
+  const jump = frame.card ?? PROJECT_JUMPS[0].stem
 
   return (
     <div className={`queen27-specs${kind === 'project' ? ' has-jumps' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>
@@ -171,7 +160,7 @@ export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKin
               key={j.stem}
               className={`queen27-docs-jump${jump === j.stem ? ' is-active' : ''}`}
               aria-pressed={jump === j.stem}
-              onClick={() => jumpTo(j.stem)}
+              onClick={() => frame.show(j.stem)}
             >
               {lang === 'ru' ? j.ru : j.en}
             </button>
@@ -186,11 +175,13 @@ export function QueenAgents({ kind, c, showDirective = true }: { kind: AgentsKin
           </div>
         )}
         <iframe
+          key={frame.frameKey}
           ref={frameRef}
+          name={frame.frameName}
           className="queen27-specs-frame"
-          src={src}
+          src={frame.src}
           title={kind === 'skills' ? 'Skill Explorer' : kind === 'crons' ? 'Cron Explorer' : kind === 'agents' ? 'Agent Explorer' : kind === 'functions' ? 'Function Explorer' : kind === 'tools' ? 'Tool Explorer' : 'System documentation'}
-          onLoad={() => setReady(true)}
+          onLoad={() => { setReady(true); frame.onFrameLoad() }}
           loading="lazy"
         />
       </div>

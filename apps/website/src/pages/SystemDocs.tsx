@@ -268,6 +268,14 @@ export default function SystemDocs({ embed = false }: { embed?: boolean }) {
   const chapter = useMemo(() => (docs ? resolveChapter(docs, stem) : null), [docs, stem])
   const idx = docs && chapter ? docs.chapters.indexOf(chapter) : -1
 
+  // An unknown chapter opens the first one. In a frame the address then names the
+  // chapter on show, so the Queen's address (chapter=, lib/queenEmbed) does not keep
+  // naming a chapter nobody sees. The page on its own leaves its address as it was.
+  useEffect(() => {
+    if (!embedded || !chapter || !stem || chapter.stem === stem) return
+    params.set(systemDocsHash(chapter.stem, { embedded }))
+  }, [embedded, chapter, stem, params])
+
   useEffect(() => {
     if (!chapter) return
     const main = document.getElementById('sysdocs-main')

@@ -25,6 +25,7 @@ import { SpecMetrics } from '../components/SpecMetrics'
 import { SpecShare } from '../components/SpecShare'
 import { SpecContribute } from '../components/SpecContribute'
 import {resolveManifestSpec,specExplorerHash} from '../lib/specCatalog'
+import { reportExplorerAddress } from '../lib/queenFrame'
 import { HealthBar, HealthDot, PipelineRibbon, HEALTH_COLOR } from '../components/SpecGraphics'
 import { SpecSkillChips } from '../components/SpecChips'
 import { highlightCode, highlightSource, type Span } from '../lib/highlight'
@@ -502,6 +503,28 @@ export default function SpecExplorer() {
       .catch((e) => {setErr(String(e));setMobilePane('detail')})
   }, [])
 
+  // In a frame, a spec named by a later hash -- the Queen moving its frame after Back
+  // or a link -- opens that spec; the address used to be read once at mount, so a
+  // changed ?spec= left the old spec open under it. The page on its own still reads
+  // its address once, as before.
+  useEffect(() => {
+    if (!manifest || !embedded) return
+    const onHash = () => {
+      const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
+      if (!wanted || wanted === selected?.path) return
+      try {
+        const target = resolveManifestSpec(manifest, wanted)
+        if (!target.tutorial) setHealthFilter('all')
+        setMobilePane('detail')
+        void pickRef.current?.(target)
+      } catch {
+        // An unknown path in a later hash: keep the spec that is open.
+      }
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [manifest, selected, embedded])
+
   // Inline styles cannot carry media queries, and the header has three pieces
   // of text that will happily overlap rather than wrap. Track the width and
   // drop the optional ones instead.
@@ -602,7 +625,9 @@ export default function SpecExplorer() {
     const expectedSha256=spec.path===viewContext.path?viewContext.sha256:undefined
     setBusy(true)
     try {
-      window.history.replaceState(null,'',specExplorerHash(spec.path,{embedded,sha256:expectedSha256}))
+      const address=specExplorerHash(spec.path,{embedded,sha256:expectedSha256})
+      window.history.replaceState(null,'',address)
+      reportExplorerAddress(address)
       const text = await loadSpecSource(spec.path,expectedSha256)
       if(request!==requestRef.current)return
       const warm=cachedAnalysis(spec.path,text)

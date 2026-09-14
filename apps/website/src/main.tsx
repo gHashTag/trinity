@@ -8,6 +8,11 @@ import './styles/explorer-viewport.css'
 import App from './App.tsx'
 import { I18nProvider } from './i18n/context.tsx'
 import GlobalStarfield from './components/GlobalStarfield.tsx'
+import { handExplorerLinksToQueen } from './lib/queenFrame'
+
+// In a Queen tab's frame, a link to another Explorer switches the Queen's tab instead
+// of navigating the frame under a rail that names a different one.
+handExplorerLinksToQueen()
 
 // Only "/" is eager — it is the route every visitor lands on. The others were
 // static imports, which put all of them in the entry chunk (843 kB) and made the
