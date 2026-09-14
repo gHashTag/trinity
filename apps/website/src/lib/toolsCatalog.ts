@@ -5,10 +5,15 @@
 // under specs/tools/{tri,mcp}/ and the key the generated catalog uses, so a
 // chip on an agent card links without a lookup. Nothing here reads the
 // catalog: a bad id is a thrown error, never a silently different tool.
+//
+// Catalog schema 2 qualifies tools read from another repository's registry
+// as `<owner>/<repo>:tri/<command>` (29 of 92 today, e.g.
+// `gHashTag/trinity:tri/bench`). The qualifier is part of the identity:
+// `tri/fpga` and `tri/test` exist in two repositories, so it is never dropped.
 
 import type { ToolSpecCatalog, ToolSpecEntry } from './agentSpecs'
 
-const TOOL_ID = /^(tri|mcp)\/[a-z0-9][a-z0-9-]*$/
+const TOOL_ID = /^(?:[A-Za-z0-9][A-Za-z0-9-]*\/[A-Za-z0-9][A-Za-z0-9._-]*:)?(tri|mcp)\/[a-z0-9][a-z0-9-]*$/
 
 export function normalizeToolId(raw: string): string {
   const s = raw.trim()

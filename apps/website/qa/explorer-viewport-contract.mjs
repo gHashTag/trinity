@@ -71,6 +71,11 @@ if (SIZES.length !== 6) { console.error(`  VIEWPORTS has ${SIZES.length} sizes, 
 // card), it does not pass quietly.
 const EXPLORERS = [
   { name: 'tools', route: '#/tools?tool=mcp%2Fgitbutler', card: 'mcp/gitbutler' },
+  // No deep link: the card the explorer opens by itself, which is what the Queen's
+  // Tools tab (#/tools?embed=1) shows. Every deep link above was a short id, so the
+  // default card — a schema-2 qualified id with the `registry-export` witness —
+  // threw on every boot and left the tab blank while this contract stayed green.
+  { name: 'tools-default', route: '#/tools', card: JSON.parse(readFileSync(join(ROOT, 'public/tools/spec-tools.json'), 'utf8')).tools[0].id },
   { name: 'skills', route: '#/skills?skill=t27%2Ftri-pipeline', card: 't27/tri-pipeline' },
   { name: 'crons', route: '#/crons?cron=github-actions%2Ft27%2Fpr-dashboard', card: 'github-actions/t27/pr-dashboard' },
   { name: 'agents', route: '#/agents?agent=D', card: 't27/D' },

@@ -69,6 +69,7 @@
     "test:sync-crons": "node --test scripts/sync-crons.test.mjs",
     "check:agents": "node --experimental-strip-types qa/agents-spec-contract.mjs",
     "check:tools": "node --experimental-strip-types qa/tools-spec-contract.mjs",
+    "check:tools-site": "node --experimental-strip-types qa/tools-site-contract.mjs",
     "test:agents-specs": "node --test scripts/agents-from-specs.test.mjs",
     "check:docs": "node --experimental-strip-types qa/docs-spec-contract.mjs",
     "test:docs-specs": "node --test scripts/docs-from-specs.test.mjs",

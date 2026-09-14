@@ -231,8 +231,11 @@ export default function ToolExplorer() {
 
   const pick = useCallback(
     (entry: ToolSpecEntry) => {
+      // The address first: an id it refuses must not leave a half-applied
+      // selection behind it.
+      const hash = toolExplorerHash(entry.id, { embedded })
       setSelected(entry)
-      params.set(toolExplorerHash(entry.id, { embedded }))
+      params.set(hash)
     },
     [embedded, params],
   )

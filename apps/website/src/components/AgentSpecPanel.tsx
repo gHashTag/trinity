@@ -331,7 +331,7 @@ export function AgentSpecPanel({ lang, kind, id, entry, links, embedded, i18n = 
     )
   }
 
-  const witnessColor = entry.witness === 'spec+code' || entry.witness === 'spec+experience' || entry.witness === 'help-output' ? C.accent : entry.witness === 'source-parse' ? C.golden : C.warn
+  const witnessColor = entry.witness === 'spec+code' || entry.witness === 'spec+experience' || entry.witness === 'help-output' || entry.witness === 'registry-export' || entry.witness === 'runtime' ? C.accent : entry.witness === 'source-parse' ? C.golden : C.warn
   const verdictColor = entry.typecheckOk && entry.discarded === 0 ? C.accent : C.bad
 
   return (

@@ -264,9 +264,12 @@ export interface LadderCounts { specs: number | null; skills: number; crons: num
 // `tri-cli` (one card per clap variant of gHashTag/t27 `tri`, read from the
 // source -- witness `source-parse` -- or diffed against `tri --help` --
 // `help-output`) and `mcp` (one card per MCP server registered in either repo).
+// Schema 2 added `registry-export` (read from an artifact the binary exported)
+// and `runtime`; the list is scripts/agents-from-specs.mjs TOOL_WITNESSES, and a
+// witness missing here is a type error in WITNESS_LABEL rather than a blank tab.
 // ---------------------------------------------------------------------------
 export type ToolFamily = 'tri-cli' | 'mcp'
-export type ToolWitness = 'source-parse' | 'help-output'
+export type ToolWitness = 'source-parse' | 'registry-export' | 'help-output' | 'runtime'
 
 interface ToolEntryBase {
   id: string
@@ -460,7 +463,9 @@ export const WITNESS_LABEL: Record<Witness | AgentWitness | ToolWitness, { en: s
   'spec+experience': { en: 'spec+experience', ru: 'спека+опыт' },
   // Tools: how the card's text was obtained from the program it describes.
   'source-parse': { en: 'source-parse', ru: 'разбор исходника' },
+  'registry-export': { en: 'registry-export', ru: 'экспорт реестра' },
   'help-output': { en: 'help-output', ru: 'вывод --help' },
+  'runtime': { en: 'runtime', ru: 'запуск' },
 }
 
 export function witnessOf<T extends { id: string }>(specById: Map<string, T>, id: string): Witness {

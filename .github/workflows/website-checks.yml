@@ -91,6 +91,12 @@ jobs:
         run: npm run check:skills-catalog
       - name: Cron catalog
         run: npm run check:crons-catalog
+      # The tools catalog's gate (check:tools) asks the generator's questions and
+      # is red on main for an unrelated reason, so it runs nowhere. This one asks
+      # only whether the site can open every card: schema 2 added a witness and
+      # qualified ids the site did not know, and the Queen's Tools tab was blank.
+      - name: Tool cards open on the site
+        run: npm run check:tools-site
       # The console reads one person's correspondence in a browser tab. This
       # asserts the four properties that keep that from being a leak: no service
       # key anywhere under src/, exactly one identity header per request, three
