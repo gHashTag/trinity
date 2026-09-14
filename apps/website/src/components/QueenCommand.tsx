@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { HUD_KEYS, type HudView } from "./queenHud";
 
 // The COMMAND PANEL of the one-screen HUD: the view switches (one per entry in
@@ -42,6 +42,21 @@ export function QueenCommandPanel({
   compact = false,
   labels,
 }: QueenCommandProps) {
+  // Phone row: about six of the buttons fit, so a view opened by a deep link or
+  // a key (t, p, r) would leave its button off-screen. Scroll the row itself --
+  // scrollIntoView could scroll the one-viewport shell instead.
+  const railRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!compact) return;
+    const rail = railRef.current;
+    const button = rail?.querySelector<HTMLElement>(".queen27-hud-cmd.is-active");
+    if (!rail || !button) return;
+    const r = rail.getBoundingClientRect();
+    const b = button.getBoundingClientRect();
+    if (b.left < r.left) rail.scrollLeft += b.left - r.left - 4;
+    else if (b.right > r.right) rail.scrollLeft += b.right - r.right + 4;
+  }, [compact, view]);
+
   const className = [
     "queen27-hud-command",
     collapsed && !compact ? "is-collapsed" : "",
@@ -52,6 +67,7 @@ export function QueenCommandPanel({
 
   return (
     <nav
+      ref={railRef}
       className={className}
       aria-label={labels.aria}
       data-views={items.length}

@@ -66,6 +66,8 @@
     "check:clients-console": "node --experimental-strip-types qa/clients-console-contract.mjs",
     "check:explorer-languages": "node qa/explorer-language-contract.mjs",
     "check:subpath-urls": "node qa/subpath-safe-urls-contract.mjs",
+    "check:tri": "node --experimental-strip-types qa/tri-screens-contract.mjs",
+    "check:queen-tri": "node qa/queen-tri-contract.mjs",
     "test:sync-skills": "node --test scripts/sync-skills.test.mjs scripts/skills-core.test.mjs",
     "test:sync-crons": "node --test scripts/sync-crons.test.mjs",
     "check:agents": "node --experimental-strip-types qa/agents-spec-contract.mjs",

@@ -50,7 +50,10 @@ export default function App() {
           lib/queenModules and nothing here changes. */}
       <QueenHeroBlock />
       <SpecHeroBlock />
-      {MODULES.filter((module) => module.tab !== 'comb' && module.tab !== 'specs').map((module) => (
+      {/* TRI is left out: its preview would load the whole third-party app
+          (bundle, feed API, media) for every visitor who scrolls past, inside
+          the preview's sandbox, where its link out cannot open. */}
+      {MODULES.filter((module) => module.tab !== 'comb' && module.tab !== 'specs' && module.tab !== 'tri').map((module) => (
         <ModuleHeroBlock key={module.tab} tab={module.tab} />
       ))}
 

@@ -113,6 +113,11 @@ jobs:
       # or a hash route. Proves its detector on a fixture first.
       - name: Subpath-safe URLs
         run: npm run check:subpath-urls
+      # The Queen's TRI tab frames app.t27.ai: every frame URL keeps that
+      # origin, the address round-trips its screen, and only the app's own
+      # messages from its own frame are heard. Pure, no browser.
+      - name: TRI screens
+        run: npm run check:tri
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from

@@ -71,6 +71,8 @@ const QueenCombBabylon = lazy(() =>
 const ENGINE_FLAG =
   typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("engine") : null;
 import { useI18n } from "../i18n/context";
+import { QueenTri } from "../components/QueenTri";
+import { tabAddress } from "../lib/triScreens";
 import {
   REVIEW_STATES,
   publicIssueTitle,
@@ -333,6 +335,19 @@ const COPY = {
     projectChapters: "chapters",
     projectRu: "with a Russian body",
     projectSources: "sources pinned",
+    triView: "TRI",
+    triHint: "The app inside the game: feed, agent, AI generation, profile and CRM (key r)",
+    triScreens: "App screens",
+    triFeed: "Feed",
+    triAgent: "Agent",
+    triAi: "AI",
+    triProfile: "Profile",
+    triCrm: "CRM",
+    triLoading: "Opening app.t27.ai…",
+    triNoAnswer: "The app did not answer inside the game: it may not allow t27.ai to frame it yet.",
+    triOpenApp: "Open this screen in the app",
+    triFrameTitle: "Trinity app",
+    triInsidePlayer: "You are already inside the app: TRI is the app, and the app is around this game. Use its tabs.",
     agentsLoading: "Loading the Explorer…",
     agentsSpecs: "specs",
     agentsSpecCode: "spec+code",
@@ -636,6 +651,19 @@ const COPY = {
     projectChapters: "глав",
     projectRu: "с русским текстом",
     projectSources: "источников закреплено",
+    triView: "TRI",
+    triHint: "Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)",
+    triScreens: "Экраны приложения",
+    triFeed: "Лента",
+    triAgent: "Агент",
+    triAi: "ИИ",
+    triProfile: "Профиль",
+    triCrm: "CRM",
+    triLoading: "Открываю app.t27.ai…",
+    triNoAnswer: "Приложение не ответило внутри игры: возможно, оно ещё не разрешает t27.ai показывать себя во фрейме.",
+    triOpenApp: "Открыть этот экран в приложении",
+    triFrameTitle: "Приложение Trinity",
+    triInsidePlayer: "Вы уже внутри приложения: TRI — это само приложение, и оно вокруг этой игры. Пользуйтесь его вкладками.",
     agentsLoading: "Загружаем Обозреватель…",
     agentsSpecs: "спек",
     agentsSpecCode: "спека+код",
@@ -1975,16 +2003,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // desktop) and steps aside for the views that need the whole viewport.
   const [contextOpen, setContextOpen] = useState(!isPhone&&!sharedCatalog);
   // Replace, not push, as useHashParams does: moving between tabs does not pile
-  // up history entries.
+  // up history entries. Built from the live hash, not the updater's argument:
+  // React Router hands the updater the params of this hook's last render, so
+  // with TRI's screen write pending in the same transition one would erase the
+  // other. A tab you leave takes TRI's screen= and path= with it.
   const setView = useCallback(
     (next: HudView) => {
       setBoardView(next);
-      setHashParams((current) => {
-        const params = new URLSearchParams(current);
-        if (next === "comb") params.delete("tab");
-        else params.set("tab", next);
-        return params;
-      }, { replace: true });
+      setHashParams(() => tabAddress(window.location.hash, next), { replace: true });
     },
     [setHashParams],
   );
@@ -2337,6 +2363,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // system documentation — the project, the rules of the game for its
     // agents, and the system in detail, framed from #/docs.
     { view: "project" as const, glyph: "§", label: c.projectView, hint: c.projectHint },
+    // Thirteenth, on the letter r (HUD_KEYS[12]; digits spent, t is TOOLS, p is
+    // PROJECT): TRI, the app at app.t27.ai inside the game, one screen per address.
+    { view: "tri" as const, glyph: "△", label: c.triView, hint: c.triHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -2742,6 +2771,23 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 projectChapters: c.projectChapters,
                 projectRu: c.projectRu,
                 projectSources: c.projectSources,
+              }}
+            />
+          ) : boardView === "tri" ? (
+            <QueenTri
+              lang={lang}
+              c={{
+                screens: c.triScreens,
+                feed: c.triFeed,
+                agent: c.triAgent,
+                ai: c.triAi,
+                profile: c.triProfile,
+                crm: c.triCrm,
+                loading: c.triLoading,
+                noAnswer: c.triNoAnswer,
+                openApp: c.triOpenApp,
+                frameTitle: c.triFrameTitle,
+                insidePlayer: c.triInsidePlayer,
               }}
             />
           ) : boardView === "comb" ? (

@@ -353,7 +353,12 @@ assert.equal(MODULES.find((m) => m.tab === 'agents').key, '9', 'AGENTS opens on 
 assert.equal(MODULES.find((m) => m.tab === 'functions').key, '0', 'FUNCTIONS opens on 0, the tenth key')
 assert.equal(MODULES.find((m) => m.tab === 'tools').key, 't', 'TOOLS opens on t: the digits are spent after FUNCTIONS on 0')
 assert.equal(MODULES.find((m) => m.tab === 'project').key, 'p', 'PROJECT opens on p (the digits are spent, t is TOOLS)')
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tp', 'the rail keys are 1-9, 0, t, p in that order')
+const triModule = MODULES.find((m) => m.tab === 'tri')
+assert.ok(triModule && HUD_VIEWS.includes('tri'), 'TRI (the app inside the game) is a module and a view')
+assert.equal(triModule.key, 'r', 'TRI opens on r: digits spent, t is TOOLS, p is PROJECT')
+assert.ok(triModule.en.hint.includes('(key r)') && triModule.ru.hint.includes('(клавиша r)'), 'TRI names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(triModule[lang].name && triModule[lang].body.length > 40, `tri: ${lang} copy missing`)
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tpr', 'the rail keys are 1-9, 0, t, p, r in that order')
 
 // 6. Translations are connected through .t27 contract specs, never hardcoded.
 //    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists
