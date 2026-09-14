@@ -231,11 +231,13 @@ interface SpecCatalogBase {
 
 export interface SkillSpecCatalog extends SpecCatalogBase {
   counts: { specs: number; specPlusCode: number; specOnly: number; codeOnly: number; typecheckOk: number; runBy: number }
+  ladder: LadderCounts
   skills: SkillSpecEntry[]
 }
 
 export interface CronSpecCatalog extends SpecCatalogBase {
   counts: { specs: number; specPlusCode: number; specOnly: number; codeOnly: number; typecheckOk: number; withRuns: number; byHost: Record<CronHostKind, number> }
+  ladder: LadderCounts
   crons: CronSpecEntry[]
 }
 

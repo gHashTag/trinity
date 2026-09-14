@@ -19,6 +19,7 @@ import { useHashParams } from '../hooks/useHashParams'
 import { useDocumentLock, useViewport } from '../lib/useViewport'
 import { HEADER_CHROME_MAX } from '../lib/viewport.generated'
 import { ExplorerHeader } from '../components/ExplorerHeader'
+import { LayerLadder, type LadderStep } from '../components/LayerLadder'
 import { ExplorerLibrary, type ExplorerItem } from '../components/ExplorerLibrary'
 import { SpecCodeView } from '../components/SpecCodeView'
 import { AgentSpecPanel } from '../components/AgentSpecPanel'
@@ -115,6 +116,13 @@ const UI = {
     filters: 'Filters',
     detail: 'Skill',
     failed: 'The catalog could not be read:',
+    ladder: 'ladder',
+    ladderSpecs: 'Specs',
+    ladderSkills: 'Skills',
+    ladderCrons: 'Crons',
+    ladderAgents: 'Agents',
+    ladderTools: 'Tools',
+    ladderFunctions: 'Functions',
   },
   ru: {
     title: 'Обозреватель скилов',
@@ -190,6 +198,13 @@ const UI = {
     filters: 'Фильтры',
     detail: 'Скил',
     failed: 'Каталог не прочитан:',
+    ladder: 'лестница',
+    ladderSpecs: 'Спеки',
+    ladderSkills: 'Скиллы',
+    ladderCrons: 'Кроны',
+    ladderAgents: 'Агенты',
+    ladderTools: 'Инструменты',
+    ladderFunctions: 'Функции',
   },
 } as const
 
@@ -436,6 +451,20 @@ export default function SkillExplorer() {
     return `${base}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`
   }
 
+  // The ladder every Explorer stands on, with the counts the spec catalog carries.
+  const ladderSteps: LadderStep[] = useMemo(() => {
+    const l = specs?.ladder
+    const embed = embedded ? '?embed=1' : ''
+    return [
+      { key: 'specs', label: ui.ladderSpecs, count: l?.specs ?? null, href: `#/specs${embed}` },
+      { key: 'skills', label: ui.ladderSkills, count: l?.skills ?? null, href: `#/skills${embed}`, current: true },
+      { key: 'crons', label: ui.ladderCrons, count: l?.crons ?? null, href: `#/crons${embed}` },
+      { key: 'agents', label: ui.ladderAgents, count: l?.agents ?? null, href: `#/agents${embed}` },
+      { key: 'tools', label: ui.ladderTools, count: l?.tools ?? null, href: `#/tools${embed}` },
+      { key: 'functions', label: ui.ladderFunctions, count: l?.functions ?? null, href: `#/functions${embed}` },
+    ]
+  }, [specs, embedded, ui.ladderSpecs, ui.ladderSkills, ui.ladderCrons, ui.ladderAgents, ui.ladderTools, ui.ladderFunctions])
+
   const box = panelBox(embedded)
   const showList = !phone || pane === 'list'
   const showDetail = !phone || pane === 'detail'
@@ -468,6 +497,7 @@ export default function SkillExplorer() {
           phone={phone}
         />
       )}
+      <LayerLadder steps={ladderSteps} caption={ui.ladder} />
 
       <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0 }}>
         {showList && (

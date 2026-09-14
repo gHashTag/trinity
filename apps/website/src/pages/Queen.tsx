@@ -331,7 +331,7 @@ const COPY = {
     projectHint: "The project, the rules of the game for its agents, and the system in detail (key p)",
     projectDirective: "THE SYSTEM IS A DOCUMENT",
     projectDirectiveBody:
-      "The system documentation, whole: one declared document, specs/docs/system.t27, names seven chapters and their order; each chapter spec names its sources, its sections and the Markdown body that is its text. The generator renders the body through the compiler, builds every table from the catalogs and draws every figure from data; nothing on the page is typed twice. Chapters: the project and its tagged claims, the constitution and the rules of the game, the five-layer ladder, the 27-letter alphabet, the Queen's cycle, the tools, the witnesses. Opens on the letter p: the digits are spent.",
+      "The system documentation, whole: one declared document, specs/docs/system.t27, names seven chapters and their order; each chapter spec names its sources, its sections and the Markdown body that is its text. The generator renders the body through the compiler, builds every table from the catalogs and draws every figure from data; nothing on the page is typed twice. Chapters: the project and its tagged claims, the constitution and the rules of the game, the six-step ladder, the 27-letter alphabet, the Queen's cycle, the tools, the witnesses. Opens on the letter p: the digits are spent.",
     projectChapters: "chapters",
     projectRu: "with a Russian body",
     projectSources: "sources pinned",
@@ -648,7 +648,7 @@ const COPY = {
     projectHint: "проект, правила игры для агентов и система в деталях (клавиша p)",
     projectDirective: "СИСТЕМА — ЭТО ДОКУМЕНТ",
     projectDirectiveBody:
-      "Документация системы целиком: один объявленный документ, specs/docs/system.t27, называет семь глав и их порядок; спека каждой главы называет её источники, разделы и Markdown-текст, который и есть её содержание. Генератор прогоняет текст через компилятор, строит каждую таблицу из каталогов и рисует каждый рисунок по данным; ничего на странице не набрано дважды. Главы: проект и его помеченные утверждения, конституция и правила игры, пятислойная лестница, алфавит из 27 букв, цикл Королевы, инструменты, свидетели. Открывается буквой p: цифры заняты.",
+      "Документация системы целиком: один объявленный документ, specs/docs/system.t27, называет семь глав и их порядок; спека каждой главы называет её источники, разделы и Markdown-текст, который и есть её содержание. Генератор прогоняет текст через компилятор, строит каждую таблицу из каталогов и рисует каждый рисунок по данным; ничего на странице не набрано дважды. Главы: проект и его помеченные утверждения, конституция и правила игры, лестница из шести ступеней, алфавит из 27 букв, цикл Королевы, инструменты, свидетели. Открывается буквой p: цифры заняты.",
     projectChapters: "глав",
     projectRu: "с русским текстом",
     projectSources: "источников закреплено",

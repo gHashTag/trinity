@@ -799,6 +799,8 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     skills,
     codeOnly: codeOnlySkills,
     i18n: i18nFor(SKILL_SPEC_DIR, skills),
+    // Every Explorer shows the one ladder, the Skill and Cron Explorers too.
+    ladder,
   })
   const cronsOut = sortKeys({
     ...base,
@@ -807,6 +809,7 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     crons,
     codeOnly: codeOnlyCrons,
     i18n: i18nFor(CRON_SPEC_DIR, crons),
+    ladder,
   })
   const agentsOut = sortKeys({
     ...base,

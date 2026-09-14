@@ -68,6 +68,7 @@ const catalogs = () => ({
   crons: { counts: { specs: 1, specPlusCode: 1, specOnly: 0, codeOnly: 0, typecheckOk: 1, withRuns: 1 }, crons: [{ id: 't27/c', runs: [{ id: 't27/a', ok: true }] }] },
   agents: { counts: { specs: 1, typecheckOk: 1, withSkills: 1, withTools: 0, specPlusExperience: 0, specOnly: 1, episodesAttributed: 0, episodesUnattributed: 3 }, agents: [{ id: 't27/T', letter: 'T', ordinal: 20, fields: { LETTER_NAME: 'Tau', NAME: 'Tau', DOMAIN: 'Queen', ARCHETYPE: 'x', REGISTER: 'R19', LAYER: 'Physical', ENABLED: true }, skills: [{ id: 't27/a', ok: true }], tools: [], experience: { episodes: 0 } }] },
   tools: { counts: { specs: 1, typecheckOk: 1, byWitness: { 'source-parse': 1, 'help-output': 0 }, mcpExternal: 0 }, tools: [{ id: 'tri/gen', family: 'tri-cli', command: 'tri gen', repo: 'gHashTag/t27', actions: [], agents: [], fields: { WITNESS: 'source-parse' }, external: false }], groups: { triByAgent: { '-': ['tri/gen'] }, mcpByRepo: {} } },
+  functions: { counts: { specs: 4, typecheckOk: 4 }, functions: [{}, {}, {}, {}] },
   t27Manifest: { specs: [{}, {}, {}], health: { typecheckOk: 3 } },
 })
 
@@ -139,7 +140,7 @@ test('a clean document builds: chapters in order, tables and figures fed, source
   assert.equal(docs.chapters[0].body.en.sections[0].blocks.length, 2)
   assert.equal(docs.chapters[0].sources[0].where, 'vendored')
   assert.match(docs.chapters[0].sources[0].url, /^https:\/\/github\.com\/gHashTag\/t27\/blob\/a{40}\/SOUL\.md$/)
-  assert.deepEqual(docs.ladder, { specs: 3, skills: 2, crons: 1, agents: 1, tools: 1, docsChapters: 2 })
+  assert.deepEqual(docs.ladder, { specs: 3, skills: 2, crons: 1, agents: 1, tools: 1, functions: 4, docsChapters: 2 })
   assert.deepEqual(docs.figures['skills-crons-agents'].edges, [{ from: 't27/c', to: 't27/a', kind: 'cron-runs-skill' }, { from: 't27/T', to: 't27/a', kind: 'agent-holds-skill' }])
   assert.equal(docs.figures['law-hierarchy'].laws.length, 2)
   assert.equal(docs.counts.typecheckOk, 3)

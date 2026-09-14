@@ -349,7 +349,7 @@ export function buildDocs({ docsSpec, chapterSpecs, i18nSpecs = [], bundles = ne
   for (const id of byId.keys()) if (!order.includes(id)) problems.push(`${CHAPTER_DIR}/${id}.t27 is not listed in ${docsSpec.path} CHAPTERS`)
 
   // Catalog-derived tables and figure data.
-  const { skills, crons, agents, tools, t27Manifest } = catalogs
+  const { skills, crons, agents, tools, functions, t27Manifest } = catalogs
   const constitution = sourceTexts.get('docs/T27-CONSTITUTION.md') ?? ''
   const alphabet = sourceTexts.get('docs/agents/AGENTS_ALPHABET.md') ?? ''
   const laws = parseLawTable(constitution)
@@ -362,8 +362,11 @@ export function buildDocs({ docsSpec, chapterSpecs, i18nSpecs = [], bundles = ne
     id: t.id, family: t.family, name: t.family === 'tri-cli' ? t.command : t.fields.SERVER, repo: t.repo, items: t.family === 'tri-cli' ? (t.actions ?? []).length : (t.fields.TOOLS ?? []).length,
     agents: (t.agents ?? []).map((x) => x.letter), witness: t.fields.WITNESS, external: t.external === true,
   })).sort((a, b) => a.id.localeCompare(b.id))
+  // The site's ladder is the one every Explorer header shows: Specs -> Skills -> Crons ->
+  // Agents -> Tools -> Functions (public/agents/spec-agents.json `ladder`). The chapter's
+  // prose is vendored from t27 and may name fewer layers; the counts here are the site's.
   const ladder = {
-    specs: t27Manifest?.specs?.length ?? 0, skills: skills?.counts?.specs ?? 0, crons: crons?.counts?.specs ?? 0, agents: agents?.counts?.specs ?? 0, tools: tools?.counts?.specs ?? 0, docsChapters: order.length,
+    specs: t27Manifest?.specs?.length ?? 0, skills: skills?.counts?.specs ?? 0, crons: crons?.counts?.specs ?? 0, agents: agents?.counts?.specs ?? 0, tools: tools?.counts?.specs ?? 0, functions: functions?.counts?.specs ?? 0, docsChapters: order.length,
   }
   const ladderRows = [
     { layer: 'Specs', dir: 'specs/**', count: ladder.specs, typecheckOk: t27Manifest?.health?.typecheckOk ?? null, source: 'public/t27/manifest.json' },
@@ -371,6 +374,7 @@ export function buildDocs({ docsSpec, chapterSpecs, i18nSpecs = [], bundles = ne
     { layer: 'Crons', dir: 'specs/crons', count: ladder.crons, typecheckOk: crons?.counts?.typecheckOk ?? null, source: 'public/crons/spec-crons.json' },
     { layer: 'Agents', dir: 'specs/agents', count: ladder.agents, typecheckOk: agents?.counts?.typecheckOk ?? null, source: 'public/agents/spec-agents.json' },
     { layer: 'Tools', dir: 'specs/tools/{tri,mcp}', count: ladder.tools, typecheckOk: tools?.counts?.typecheckOk ?? null, source: 'public/tools/spec-tools.json' },
+    { layer: 'Functions', dir: 'specs/functions', count: ladder.functions, typecheckOk: functions?.counts?.typecheckOk ?? null, source: 'public/functions/spec-functions.json' },
   ]
   const witnessRows = [
     ...['specPlusCode', 'specOnly', 'codeOnly'].map((k) => ({ layer: 'Skills', label: { specPlusCode: 'spec+code', specOnly: 'spec-only', codeOnly: 'code-only' }[k], count: skills?.counts?.[k] ?? 0, source: 'public/skills/spec-skills.json counts' })),
@@ -389,7 +393,7 @@ export function buildDocs({ docsSpec, chapterSpecs, i18nSpecs = [], bundles = ne
   const tables = {
     laws: { columns: ['law', 'name', 'body', 'enforcement'], rows: laws.rows, source: 'docs/T27-CONSTITUTION.md, section 2', note: laws.priority ? `Priority: ${laws.priority}` : '' },
     phases: { columns: ['n', 'name', 'steps'], rows: phases, source: 'docs/agents/AGENTS_ALPHABET.md, "6-Phase Cycle of AGENT T"', note: '' },
-    'ladder-counts': { columns: ['layer', 'dir', 'count', 'typecheckOk', 'source'], rows: ladderRows, source: 'the four catalog JSON files and public/t27/manifest.json', note: '' },
+    'ladder-counts': { columns: ['layer', 'dir', 'count', 'typecheckOk', 'source'], rows: ladderRows, source: 'the five catalog JSON files and public/t27/manifest.json', note: '' },
     agents: { columns: ['letter', 'ordinal', 'letterName', 'domain', 'archetype', 'register', 'layer', 'skills', 'tools'], rows: agentRows, source: 'public/agents/spec-agents.json', note: '' },
     tools: { columns: ['id', 'family', 'name', 'repo', 'items', 'agents', 'witness', 'external'], rows: toolRows, source: 'public/tools/spec-tools.json', note: '' },
     witnesses: { columns: ['layer', 'label', 'count', 'source'], rows: witnessRows, source: 'counts of the four catalog JSON files and public/agents/experience.json', note: '' },
@@ -547,7 +551,7 @@ export async function generate({ generatedAt } = {}) {
   const stamp = generatedAt ?? (epoch ? new Date(Number(epoch) * 1000).toISOString() : new Date().toISOString())
   return buildDocs({
     docsSpec, chapterSpecs, i18nSpecs, bundles, bodies, sourceTexts, pin, trinityPin,
-    catalogs: { skills: readJson('public/skills/spec-skills.json'), crons: readJson('public/crons/spec-crons.json'), agents: readJson('public/agents/spec-agents.json'), tools: readJson('public/tools/spec-tools.json'), t27Manifest: readJson('public/t27/manifest.json') },
+    catalogs: { skills: readJson('public/skills/spec-skills.json'), crons: readJson('public/crons/spec-crons.json'), agents: readJson('public/agents/spec-agents.json'), tools: readJson('public/tools/spec-tools.json'), functions: readJson('public/functions/spec-functions.json'), t27Manifest: readJson('public/t27/manifest.json') },
     compilerWasmSha256: sha256(wasmBytes), generatedAt: stamp,
   })
 }

@@ -54,7 +54,7 @@ export interface DocChapter {
   links: { spec: string; body: string }
 }
 
-export interface LadderCounts { specs: number; skills: number; crons: number; agents: number; tools: number; docsChapters: number }
+export interface LadderCounts { specs: number; skills: number; crons: number; agents: number; tools: number; functions: number; docsChapters: number }
 
 export interface RingAgent { letter: string; ordinal: number; layer: 'Archetypal' | 'Spiritual' | 'Physical'; name: string; skills: number; tools: number }
 export interface PhaseNode { n: number; name: string; note: string; steps: number }

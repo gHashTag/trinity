@@ -15,7 +15,7 @@ import type { DiagramKind, DocFigures } from '../lib/systemDocs'
 const LAYER_COLOR: Record<string, string> = { Archetypal: C.golden, Spiritual: C.blue, Physical: C.accent }
 
 const CAPTIONS: Record<DiagramKind, { en: string; ru: string }> = {
-  ladder: { en: 'The five-layer ladder: Specs → Skills → Crons → Agents → Tools, with the count each catalog holds today.', ru: 'Пятислойная лестница: спеки → навыки → расписания → агенты → инструменты, с текущим числом карточек в каждом каталоге.' },
+  ladder: { en: 'The six-step ladder every Explorer shows: Specs → Skills → Crons → Agents → Tools → Functions, with the count each catalog holds today.', ru: 'Лестница из шести ступеней, которую показывает каждый обозреватель: спеки → навыки → расписания → агенты → инструменты → функции, с текущим числом карточек в каждом каталоге.' },
   'agent-ring': { en: 'The 27-letter alphabet as a ring: three nonas, coloured by layer; an outer tick marks a letter with a source-bound skill or tool.', ru: 'Алфавит из 27 букв как кольцо: три ноны, цвет — слой; внешняя метка отмечает букву с привязанным по источнику навыком или инструментом.' },
   'phase-cycle': { en: 'The 6+1 phase cycle of AGENT T as the alphabet draws it; the seventh box (GIT WORKFLOW) closes the loop under the SOUL law.', ru: 'Цикл 6+1 фаз АГЕНТА T, как его рисует алфавит; седьмой блок (GIT WORKFLOW) замыкает петлю по закону SOUL.' },
   'law-hierarchy': { en: 'The law hierarchy of the constitution: a higher law wins a conflict, so L1 sits widest and L7 narrowest.', ru: 'Иерархия законов конституции: при конфликте побеждает старший закон, поэтому L1 самый широкий, L7 самый узкий.' },
@@ -24,8 +24,8 @@ const CAPTIONS: Record<DiagramKind, { en: string; ru: string }> = {
 }
 
 const UI = {
-  en: { source: 'Data source', figure: 'Figure', unowned: 'no owner', external: 'external', crons: 'crons', skills: 'skills', agents: 'agents', tools: 'tools', noEdges: 'without a drawn edge', specs: 'specs', chapters: 'docs chapters', tri: 'tri commands', mcp: 'MCP servers', repo: 'repository', priority: 'priority', steps: 'steps' },
-  ru: { source: 'Источник данных', figure: 'Рисунок', unowned: 'без владельца', external: 'внешний', crons: 'расписания', skills: 'навыки', agents: 'агенты', tools: 'инструменты', noEdges: 'без нарисованных связей', specs: 'спеки', chapters: 'главы документации', tri: 'команды tri', mcp: 'MCP-серверы', repo: 'репозиторий', priority: 'приоритет', steps: 'шагов' },
+  en: { source: 'Data source', figure: 'Figure', unowned: 'no owner', external: 'external', crons: 'crons', skills: 'skills', agents: 'agents', tools: 'tools', functions: 'functions', noEdges: 'without a drawn edge', specs: 'specs', chapters: 'docs chapters', tri: 'tri commands', mcp: 'MCP servers', repo: 'repository', priority: 'priority', steps: 'steps' },
+  ru: { source: 'Источник данных', figure: 'Рисунок', unowned: 'без владельца', external: 'внешний', crons: 'расписания', skills: 'навыки', agents: 'агенты', tools: 'инструменты', functions: 'функции', noEdges: 'без нарисованных связей', specs: 'спеки', chapters: 'главы документации', tri: 'команды tri', mcp: 'MCP-серверы', repo: 'репозиторий', priority: 'приоритет', steps: 'шагов' },
 }
 
 const mono: CSSProperties = { fontFamily: C.mono }
@@ -52,8 +52,9 @@ export function LadderFigure({ data, lang }: { data: DocFigures['ladder']; lang:
     { key: 'crons', label: ui.crons, n: data.counts.crons },
     { key: 'agents', label: ui.agents, n: data.counts.agents },
     { key: 'tools', label: ui.tools, n: data.counts.tools },
+    { key: 'functions', label: ui.functions, n: data.counts.functions },
   ]
-  const W = 640, H = 230, base = 190, stepW = 116, x0 = 24
+  const W = 740, H = 250, base = 210, stepW = 116, x0 = 24
   const max = Math.max(...steps.map((s) => Math.log10(Math.max(1, s.n)) + 1))
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={CAPTIONS.ladder[lang === 'ru' ? 'ru' : 'en']} style={{ maxWidth: W, display: 'block' }}>

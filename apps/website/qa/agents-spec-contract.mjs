@@ -258,6 +258,8 @@ assert.equal(agents.counts.withTools, agents.agents.filter((a) => a.tools.length
 assert.equal(agents.counts.withExperience, agents.counts.specPlusExperience)
 for (const l of AGENT_LAYERS) assert.equal(agents.counts.byLayer[l], agents.agents.filter((a) => a.fields.LAYER === l).length)
 assert.deepEqual(agents.ladder, { specs: t27Manifest.specCount, skills: skills.skills.length, crons: crons.crons.length, agents: agents.agents.length, tools: tools.tools.length, functions: functions.functions.length }, 'the ladder counts are the catalogs, tools and functions included')
+assert.deepEqual(skills.ladder, agents.ladder, 'the skills catalog shows the same ladder as the agents catalog')
+assert.deepEqual(crons.ladder, agents.ladder, 'the crons catalog shows the same ladder as the agents catalog')
 // The snapshot's own attribution rule names the letters it can assign; every agent letter is among them.
 for (const a of agents.agents) assert.ok(experience.attribution.letters.includes(a.letter), `${a.letter}: the attribution rule cannot assign this letter`)
 
