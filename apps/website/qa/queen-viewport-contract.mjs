@@ -29,6 +29,16 @@ const ROUTE = '#/queen';
 const SHOTS = '/tmp/hud-shots';
 const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600], [390, 844]];
 const VIEWS = ['comb', 'kanban', 'map', 'factory', 'research'];
+// The rail draws one button per view, so its count is read from HUD_VIEWS
+// itself (src/components/queenHud.ts), not pinned: #980 added PROJECT as the
+// twelfth view and left this gate expecting 11.
+const HUD_VIEW_COUNT = (readFileSync(join(ROOT, 'src/components/queenHud.ts'), 'utf8')
+  .match(/export const HUD_VIEWS[^=]*=\s*\[([\s\S]*?)\]\s*as const/)?.[1]
+  .match(/^\s*"[a-z]+",/gm) ?? []).length;
+if (HUD_VIEW_COUNT < 1) {
+  console.error('  could not read HUD_VIEWS from src/components/queenHud.ts');
+  process.exit(1);
+}
 const DATA_WAIT_MS = 60000; // under the gate chain's load the sectors rows render late (the "sectors=0" readiness flake, cycles 015 and 035): a minute, like the windows gate
 const SETTLE_MS = 700;
 
@@ -389,11 +399,9 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     const { fail, counts } = result;
     const zero = [];
     if (counts.shell !== 1) zero.push('shell');
-    // twelve command views (HUD_VIEWS.length): SPECS joined at origin/main a308aa8bc, SKILLS and CRONS with the spec-first agents catalog,
-    // AGENTS (layer four), FUNCTIONS and TOOLS with specs/agents, specs/functions and specs/tools, PROJECT (the system
-    // documentation, key p -- the digits 1-9,0 are spent and t is TOOLS) with specs/docs;
-    // the gate follows the panel it counts (src/components/queenHud.ts HUD_VIEWS, keys 1234567890tp) and qa/agents-spec-contract.mjs holds that list to the modules.
-    if (counts.commands !== 11) zero.push(`commands=${counts.commands}`);
+    // one command button per view: HUD_VIEW_COUNT is read from src/components/queenHud.ts HUD_VIEWS,
+    // and qa/agents-spec-contract.mjs holds that list to the modules.
+    if (counts.commands !== HUD_VIEW_COUNT) zero.push(`commands=${counts.commands} (HUD_VIEWS has ${HUD_VIEW_COUNT})`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
     if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
     if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);
