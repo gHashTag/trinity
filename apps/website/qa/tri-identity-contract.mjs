@@ -236,9 +236,12 @@ try {
   await world.deliver({ v: 1, type: 'tri-identity', nonce: first.m.nonce, state: 'consent-required' })
   eq([world.client.getSnapshot().state, world.visible], ['consent-required', true], 'consent-required shows the bridge frame')
   eq(world.timer(IDENTITY_ANSWER_MS).length, 0, 'an answer clears the deadline')
+  await world.deliver(signedIn('f'.repeat(32)))
+  eq([world.client.getSnapshot().state, world.visible, world.log.fetches.length], ['consent-required', true, 0], 'while the click is awaited another nonce is still refused')
 
-  // The click in the bridge: a push with the token.
-  await world.deliver(signedIn(null))
+  // The click in the bridge: bridge.js answers the waiting request's own nonce
+  // (its pendingNonce) with the token. It never pushes signed-in with nonce null.
+  await world.deliver(signedIn(first.m.nonce))
   eq(world.visible, false, 'signed in hides the frame')
   eq(world.log.fetches.length, 1, 'one whoami')
   const [{ url, init }] = world.log.fetches
@@ -294,6 +297,20 @@ try {
   eq([world.client.getSnapshot(), world.log.bridgePosts.length], [{ state: 'unavailable', code: 'no_token' }, 1], 'no token in an answer: unavailable, no loop')
   await world.deliver({ v: 1, type: 'tri-identity', nonce: null, state: 'signed-in' })
   eq(world.log.bridgePosts.length, 2, 'a tokenless push asks once')
+
+  // A newer request replaces the one waiting for the click, as in bridge.js.
+  world = fakeWorld()
+  world.start()
+  world.load()
+  const waiting = world.lastNonce(world.log.bridgePosts)
+  await world.deliver({ v: 1, type: 'tri-identity', nonce: waiting, state: 'consent-required' })
+  await world.deliver({ v: 1, type: 'tri-identity', nonce: null, state: 'signed-in' })
+  const newer = world.lastNonce(world.log.bridgePosts)
+  ok(newer !== waiting, 'a push while the click is awaited asks again with a fresh nonce')
+  await world.deliver(signedIn(waiting))
+  eq(world.log.fetches.length, 0, 'the replaced nonce is refused')
+  await world.deliver(signedIn(newer))
+  eq([world.client.getSnapshot().state, world.log.fetches.length], ['signed-in', 1], 'the newer nonce is heard')
 
   // whoami refused: the token is dropped.
   world = fakeWorld({ whoami: () => ({ ok: false, status: 401, json: async () => ({}) }) })

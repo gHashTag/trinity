@@ -22,7 +22,8 @@
 //      is hidden and was asked once with {v:1, type, 32-hex nonce}
 //   2  the same in Russian
 //   3  consent-required: the bridge frame is shown and no chip; a real click in the
-//      frame signs in and hides it again
+//      frame answers the waiting request's own nonce (as bridge.js does), which
+//      signs in and hides it again
 //   4  signed-in: name and role from the stubbed whoami, as text; whoami carried
 //      the game token as Bearer and no X-Agent-Key (though the console's agent
 //      key sits in this tab's sessionStorage), no cookie; the token is in no
@@ -93,6 +94,8 @@ const identityMessage = (nonce, mode) => mode === 'signed-in'
 const BRIDGE = (mode) => `<!doctype html><meta charset="utf-8"><title>bridge stub</title>
 <body style="margin:0;background:#021;color:#9fc;font:13px monospace" data-asked="[]">bridge stub <button id="go" style="margin:12px;padding:10px 16px">Continue as Ada</button>
 <script>
+  // As bridge.js: the request waiting for the click, answered with its own nonce.
+  let pendingNonce = null;
   const answer = (nonce, mode) => {
     const messages = { 'signed-in': ${identityMessage('nonce', 'signed-in')}, 'signed-out': ${identityMessage('nonce', 'signed-out')}, 'consent-required': ${identityMessage('nonce', 'consent-required')}, 'parent-not-web': ${identityMessage('nonce', 'parent-not-web')} };
     parent.postMessage(messages[mode], 'https://t27.ai');
@@ -102,11 +105,17 @@ const BRIDGE = (mode) => `<!doctype html><meta charset="utf-8"><title>bridge stu
     const d = e.data;
     if (d && typeof d === 'object' && d.type === 'tri-identity-request') {
       document.body.dataset.asked = JSON.stringify([...JSON.parse(document.body.dataset.asked), d]);
+      if (${JSON.stringify(mode)} === 'consent-required') pendingNonce = d.nonce;
       answer(d.nonce, ${JSON.stringify(mode)});
     }
     if (typeof d === 'string' && d.startsWith('harness-push:')) answer(null, d.slice(13));
   });
-  document.getElementById('go').addEventListener('click', () => answer(null, 'signed-in'));
+  document.getElementById('go').addEventListener('click', (e) => {
+    if (!e.isTrusted || pendingNonce === null) return;
+    const nonce = pendingNonce;
+    pendingNonce = null;
+    answer(nonce, 'signed-in');
+  });
 </script>`
 const IMPOSTOR = `<!doctype html><meta charset="utf-8"><title>impostor</title><body>impostor
 <script>

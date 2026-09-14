@@ -300,9 +300,11 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
     const reply = acceptIdentityMessage(event, asked(), openNonce)
     if (!reply) return
     if (reply.nonce !== null) {
-      openNonce = null
       stopTimer(answerTimer)
       answerTimer = null
+      // consent-required is not the last answer: after the click the bridge
+      // answers this same nonce with the token. A newer request() replaces it.
+      if (reply.state !== 'consent-required') openNonce = null
     }
     apply(reply)
   }
