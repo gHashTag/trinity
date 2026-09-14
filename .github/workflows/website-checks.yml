@@ -107,6 +107,12 @@ jobs:
       # site catalogues, and a locale that gains a key alone rots silently.
       - name: Explorer languages
         run: npm run check:explorer-languages
+      # The same build is served at t27.ai/ and under app.t27.ai/game/. A
+      # root-absolute URL resolves to the other app's root under the subpath,
+      # so every URL in src/ and the manifest is relative, https://t27.ai/...,
+      # or a hash route. Proves its detector on a fixture first.
+      - name: Subpath-safe URLs
+        run: npm run check:subpath-urls
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from

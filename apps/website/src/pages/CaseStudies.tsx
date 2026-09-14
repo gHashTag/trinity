@@ -110,7 +110,7 @@ function RunCard({ run, foundLabel, lang }: { run: Run; foundLabel: string; lang
       {/* The result page is the thing worth sending to a reviewer, so the card
           has to lead there. It existed and nothing linked to it. */}
       <p style={{ fontSize: '0.82rem', margin: '0.9rem 0 0' }}>
-        <a href={`/r/${run.slug}/`}>{lang === 'ru' ? 'Открыть страницу результата' : 'Open the result page'} →</a>
+        <a href={`https://t27.ai/r/${run.slug}/`}>{lang === 'ru' ? 'Открыть страницу результата' : 'Open the result page'} →</a>
       </p>
       {run.found && (
         <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: '0.9rem', marginTop: '1rem' }}>

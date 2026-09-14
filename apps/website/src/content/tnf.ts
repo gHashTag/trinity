@@ -1161,8 +1161,8 @@ export const invest = {
     ru: 'Теги здесь не украшение. Условия предложения — запрашиваемая позиция, а не измерение; распределение и транши — план, а не результат; внешние числа ведут ссылкой на страницу, откуда взяты. Инженерные цифры — те же, что измерены выше, с тем же происхождением.',
   },
   ctas: [
-    { label: { en: 'Deck in English — PDF, 11 pages', ru: 'Дека по-английски — PDF, 11 страниц' }, href: '/deck/trinity-s3ai-deck-en.pdf' },
-    { label: { en: 'Deck in Russian — PDF, 11 pages', ru: 'Дека по-русски — PDF, 11 страниц' }, href: '/deck/trinity-s3ai-deck-ru.pdf' },
+    { label: { en: 'Deck in English — PDF, 11 pages', ru: 'Дека по-английски — PDF, 11 страниц' }, href: 'https://t27.ai/deck/trinity-s3ai-deck-en.pdf' },
+    { label: { en: 'Deck in Russian — PDF, 11 pages', ru: 'Дека по-русски — PDF, 11 страниц' }, href: 'https://t27.ai/deck/trinity-s3ai-deck-ru.pdf' },
     { label: { en: 'Investor — request the terms', ru: 'Инвестор — запросить условия' }, href: 'mailto:admin@t27.ai?subject=Trinity%20—%20investment' },
     { label: { en: 'Licence a core', ru: 'Лицензировать ядро' }, href: '#/ip' },
     { label: { en: 'Every measured number, and its limits', ru: 'Все измеренные числа и их границы' }, href: '#/proof' },

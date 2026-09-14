@@ -14,7 +14,7 @@ type Props = {
 export default function BlogCover({ slug, title, lang, className, priority = false }: Props) {
   const locale = lang === 'ru' ? 'ru' : 'en'
   const version = BLOG_COVER_VERSIONS[slug]?.[locale]
-  const src = `/og-blog-${slug}${locale === 'ru' ? '-ru' : ''}.png${version ? `?v=${version}` : ''}`
+  const src = `https://t27.ai/og-blog-${slug}${locale === 'ru' ? '-ru' : ''}.png${version ? `?v=${version}` : ''}`
   const [failedSrc, setFailedSrc] = useState<string | null>(null)
   if (failedSrc === src) return null
 

@@ -103,32 +103,32 @@ const WORK = {
         title: 'Want this kind of check on your own design?',
         body: 'I audit RTL and build independent, bit-exact models, then take the result through synthesis and, when useful, onto an Artix-7 board. The first conformance module is free.',
         detail: 'See the verification service',
-        href: '/verification/',
+        href: 'https://t27.ai/verification/',
       },
       arithmetic: {
         title: 'Need arithmetic built for your constraints?',
         body: 'I design low-precision and ternary formats, synthesizable RTL, independent reference models and bit-exact vectors. Existing measured cores can also be licensed.',
         detail: 'See IP and custom arithmetic',
-        href: '/ip/',
+        href: 'https://t27.ai/ip/',
       },
       engineering: {
         title: 'Need an FPGA/RTL problem taken to measured hardware?',
         body: 'I work contract and part-time on hardware-AI, FPGA/RTL and ML systems — from specification and open toolchains to reproducible measurements.',
         detail: 'See how I work',
-        href: '/about/',
+        href: 'https://t27.ai/about/',
       },
       training: {
         title: 'Want your team to build and verify this themselves?',
         body: 'I run a self-paced FPGA course, a four-week cohort and two-day team workshops built around a problem your engineers actually have.',
         detail: 'See courses and workshops',
-        href: '/course/',
+        href: 'https://t27.ai/course/',
       },
     },
     services: [
-      ['Verification', '/verification/'],
-      ['IP licensing', '/ip/'],
-      ['Courses and workshops', '/course/'],
-      ['Contract work', '/about/'],
+      ['Verification', 'https://t27.ai/verification/'],
+      ['IP licensing', 'https://t27.ai/ip/'],
+      ['Courses and workshops', 'https://t27.ai/course/'],
+      ['Contract work', 'https://t27.ai/about/'],
     ],
   },
   ru: {
@@ -140,32 +140,32 @@ const WORK = {
         title: 'Хотите так же проверить собственный дизайн?',
         body: 'Я аудирую RTL и строю независимые побитово точные модели, затем провожу результат через синтез и, когда это полезно, проверяю на плате Artix-7. Первый модуль проверки — бесплатно.',
         detail: 'Услуга верификации',
-        href: '/ru/verification/',
+        href: 'https://t27.ai/ru/verification/',
       },
       arithmetic: {
         title: 'Нужна арифметика под ваши ограничения?',
         body: 'Я проектирую форматы низкой разрядности и троичную арифметику, синтезируемый RTL, независимые референсные модели и побитовые тест-векторы. Готовые измеренные ядра можно лицензировать.',
         detail: 'IP и заказная арифметика',
-        href: '/ru/ip/',
+        href: 'https://t27.ai/ru/ip/',
       },
       engineering: {
         title: 'Нужно довести FPGA/RTL-задачу до замеров на железе?',
         body: 'Работаю по контракту и part-time с hardware-AI, FPGA/RTL и ML-системами — от спецификации и открытого тулчейна до воспроизводимых измерений.',
         detail: 'Как я работаю',
-        href: '/ru/about/',
+        href: 'https://t27.ai/ru/about/',
       },
       training: {
         title: 'Хотите, чтобы команда умела строить и проверять это сама?',
         body: 'Провожу самостоятельный FPGA-курс, четырёхнедельный поток и двухдневные воркшопы вокруг реальной задачи вашей команды.',
         detail: 'Курсы и воркшопы',
-        href: '/ru/course/',
+        href: 'https://t27.ai/ru/course/',
       },
     },
     services: [
-      ['Верификация', '/ru/verification/'],
-      ['Лицензирование IP', '/ru/ip/'],
-      ['Курсы и воркшопы', '/ru/course/'],
-      ['Контрактная работа', '/ru/about/'],
+      ['Верификация', 'https://t27.ai/ru/verification/'],
+      ['Лицензирование IP', 'https://t27.ai/ru/ip/'],
+      ['Курсы и воркшопы', 'https://t27.ai/ru/course/'],
+      ['Контрактная работа', 'https://t27.ai/ru/about/'],
     ],
   },
 } as const
@@ -662,7 +662,7 @@ export function BlogPost() {
   }
 
   if (!body) {
-    const staticPostHref = `${lang === 'ru' ? '/ru' : ''}/blog/${source.slug}/`
+    const staticPostHref = `https://t27.ai${lang === 'ru' ? '/ru' : ''}/blog/${source.slug}/`
     return (
       <main>
         <Navigation />

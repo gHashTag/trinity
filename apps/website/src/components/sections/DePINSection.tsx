@@ -440,7 +440,7 @@ export default function DePINSection() {
       {/* CTA Button */}
       <div className="fade" style={{ textAlign: 'center' }}>
         <motion.a
-          href="/trinity/docs/depin/quickstart"
+          href="https://t27.ai/trinity/docs/depin/quickstart"
           style={{
             display: 'inline-block',
             padding: '1rem 2.5rem',
