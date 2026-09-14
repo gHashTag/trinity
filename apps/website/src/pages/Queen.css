@@ -4113,11 +4113,18 @@ main:where(.queen27-page.is-shell) section {
   display: flex;
   gap: 4px;
   margin-left: auto;
+  min-width: 0;
 }
 
-/* The identity chip (QueenIdentity.tsx) sits in the tools row at a button's size. */
+/* The identity chip (QueenIdentity.tsx) sits in the tools row at a button's size.
+   The row can run out of room, so the chip shrinks there, but never below an
+   avatar, a few letters of the name and the whole role; inside it the name
+   gives way first. */
 .queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity {
   display: inline-flex;
+  flex: 0 1 auto;
+  min-width: 8.5rem;
+  overflow: hidden;
   align-items: center;
   gap: 0.35rem;
   max-width: 16rem;
@@ -4139,12 +4146,16 @@ main:where(.queen27-page.is-shell) section {
   border-radius: 50%;
   object-fit: cover;
 }
+/* The name gives way (ellipsis) so the role label is never the part cut off. */
 .queen27-identity-name {
+  flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--hud-green);
 }
 .queen27-identity-role {
+  flex: 0 0 auto;
   color: var(--hud-gold);
   text-transform: uppercase;
 }
