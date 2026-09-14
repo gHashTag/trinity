@@ -35,6 +35,8 @@
 //   9  embedded (embed=1): no chip, no bridge, nothing asked of app.t27.ai
 //  10  inside the player (app.t27.ai framing the game): the parent is asked, no
 //      bridge is mounted, and the chip shows the person
+//  11  (runs with 3) while the click is awaited, another route of the site hides
+//      the consent frame, and coming back to the Queen shows it again
 //
 // Exits 0 on pass, 1 on a failed check, 2 when it could not run (never read as a pass).
 //
@@ -281,22 +283,38 @@ try {
     record(2, 'signed-out in Russian: "Войти"', text === 'Войти', { text })
   }
 
-  if (runs(3)) {
+  if (runs(3) || runs(11)) {
+    const frameShown = `(() => { const f = document.querySelector('iframe.queen27-identity-bridge'); return f && !f.hidden })()`
     await open('#/queen?tab=kanban', { mode: 'consent-required' })
-    await until(`(() => { const f = document.querySelector('iframe.queen27-identity-bridge'); return f && !f.hidden })()`, 30000)
+    await until(frameShown, 30000)
     await wait(500)
     const shown = await chip()
+    // 11: another route of the same page while the click is awaited, then back.
+    await evaluate(`location.hash = '#/about'`)
+    await until(`!document.querySelector('button.queen27-hud-cmd[data-view]')`, 30000)
+    await wait(1000)
+    const away = await chip()
+    await evaluate(`location.hash = '#/queen?tab=kanban'`)
+    await until(railReady, 120000)
+    await until(frameShown, 30000)
+    await wait(500)
+    const back = await chip()
+    if (runs(11)) {
+      record(11, 'while the click is awaited another route hides the consent frame, and the Queen shows it again',
+        shown.frameHidden === false && away.state === null && away.frames === 1 && away.frameHidden === true && away.frameBox === null &&
+        back.frames === 1 && back.frameHidden === false && back.frameBox && back.frameBox[2] > 100, { shown, away, back })
+    }
     // A real click inside the bridge frame, at its button.
     const button = await inFrame(`${APP}/bridge`, `(() => { const r = document.getElementById('go')?.getBoundingClientRect(); return r && r.width ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null })()`)
     let clicked = null
-    if (shown.frameBox && button) {
-      const x = shown.frameBox[0] + 1 + button.x
-      const y = shown.frameBox[1] + 1 + button.y
+    if (back.frameBox && button) {
+      const x = back.frameBox[0] + 1 + button.x
+      const y = back.frameBox[1] + 1 + button.y
       for (const type of ['mousePressed', 'mouseReleased']) await call('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 })
       await until(`document.querySelector('[data-tool="identity"]')?.dataset.identity === 'signed-in'`, 30000)
       clicked = await chip()
     }
-    record(3, 'consent-required: the bridge frame is shown and no chip; a real click in it signs in and hides it',
+    if (runs(3)) record(3, 'consent-required: the bridge frame is shown and no chip; a real click in it signs in and hides it',
       shown.state === null && shown.frameHidden === false && shown.frameBox && shown.frameBox[2] > 100 && shown.frameBox[3] > 50 &&
       shown.frameBox[0] >= 0 && shown.frameBox[0] + shown.frameBox[2] <= 1440 && shown.frameBox[1] + shown.frameBox[3] <= 900 &&
       clicked?.state === 'signed-in' && clicked.frameHidden === true, { shown, button, clicked })

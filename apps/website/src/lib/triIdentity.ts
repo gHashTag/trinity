@@ -11,7 +11,8 @@
 //
 // Who answers: when the game is framed by the player (its Hive tab), the parent
 // window. Otherwise a hidden frame of https://app.t27.ai/bridge, shown small only
-// while the bridge needs a click to continue ('consent-required').
+// while the bridge needs a click to continue ('consent-required') and something
+// on screen subscribes (the Queen's chip): leaving the Queen hides it.
 //
 // THE RULES THIS FILE KEEPS (qa/tri-identity-contract.mjs holds it to them):
 //   1. Active on https://t27.ai only. Any other origin stays anonymous.
@@ -204,6 +205,7 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
   let viaParent = false
   let frame: BridgeFrame | null = null
   let frameLoaded = false
+  let consentAsked = false
   let openNonce: string | null = null
   // Rule 3: here and nowhere else.
   let token: { value: string; telegramId: string } | null = null
@@ -220,6 +222,8 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
     if (id !== null) env.clearTimeout(id)
   }
   const asked = (): Poster | null => (viaParent ? env.parent : frame ? frame.target() : null)
+  // The frame sits above every route, so it shows only while someone subscribes.
+  const showFrame = () => frame?.setVisible(consentAsked && listeners.size > 0)
 
   function request() {
     const target = asked()
@@ -272,11 +276,13 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
   function apply(reply: IdentityReply) {
     if (reply.state !== 'signed-in') {
       forget()
-      frame?.setVisible(reply.state === 'consent-required')
+      consentAsked = reply.state === 'consent-required'
+      showFrame()
       publish(reply.code ? { state: reply.state, code: reply.code } : { state: reply.state })
       return
     }
-    frame?.setVisible(false)
+    consentAsked = false
+    showFrame()
     if (!reply.gameToken || !reply.telegramId || !reply.expiresIn) {
       // A push saying "signed in now" is a cue to ask; an answer without a token is not an identity.
       if (reply.nonce === null) request()
@@ -332,7 +338,11 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
     subscribe(listener) {
       listeners.add(listener)
       start()
-      return () => listeners.delete(listener)
+      showFrame()
+      return () => {
+        listeners.delete(listener)
+        showFrame()
+      }
     },
     getSnapshot: () => snapshot,
   }

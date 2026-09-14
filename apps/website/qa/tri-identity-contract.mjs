@@ -312,6 +312,36 @@ try {
   await world.deliver(signedIn(newer))
   eq([world.client.getSnapshot().state, world.log.fetches.length], ['signed-in', 1], 'the newer nonce is heard')
 
+  // The consent frame is fixed above every route: it shows only while someone
+  // subscribes (the Queen's chip), so leaving the Queen hides it.
+  world = fakeWorld()
+  const leaveChip = world.start()
+  const leaveOther = world.client.subscribe(() => {})
+  world.load()
+  const clickFor = world.lastNonce(world.log.bridgePosts)
+  await world.deliver({ v: 1, type: 'tri-identity', nonce: clickFor, state: 'consent-required' })
+  eq(world.visible, true, 'consent-required with a subscriber shows the frame')
+  leaveOther()
+  eq(world.visible, true, 'one of two subscribers leaving keeps it')
+  leaveChip()
+  eq(world.visible, false, 'the last subscriber leaving hides it')
+  const backChip = world.start()
+  eq(world.visible, true, 'a subscriber coming back while the click is awaited shows it again')
+  await world.deliver(signedIn(clickFor))
+  eq([world.client.getSnapshot().state, world.visible], ['signed-in', false], 'the click then signs in and hides it')
+  backChip()
+  world.start()
+  eq(world.visible, false, 'signed in, a new subscriber does not show it')
+
+  world = fakeWorld()
+  const leftEarly = world.start()
+  world.load()
+  leftEarly()
+  await world.deliver({ v: 1, type: 'tri-identity', nonce: world.lastNonce(world.log.bridgePosts), state: 'consent-required' })
+  eq([world.client.getSnapshot().state, world.visible], ['consent-required', false], 'consent that arrives after the last subscriber left does not show the frame')
+  world.start()
+  eq(world.visible, true, 'it shows when a subscriber returns')
+
   // whoami refused: the token is dropped.
   world = fakeWorld({ whoami: () => ({ ok: false, status: 401, json: async () => ({}) }) })
   world.start()
