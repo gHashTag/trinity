@@ -21,7 +21,7 @@
 //      returning to the current view; it follows a view change; the bridge frame
 //      is hidden and was asked once with {v:1, type, 32-hex nonce}
 //   2  the same in Russian
-//   3  consent-needed: the bridge frame is shown and no chip; a real click in the
+//   3  consent-required: the bridge frame is shown and no chip; a real click in the
 //      frame signs in and hides it again
 //   4  signed-in: name and role from the stubbed whoami, as text; whoami carried
 //      the game token as Bearer and no X-Agent-Key (though the console's agent
@@ -81,7 +81,8 @@ const distFile = (pathname) => {
 }
 
 // ---- Stubs ----
-let bridgeMode = 'signed-out' // 'signed-out' | 'consent-needed' | 'signed-in' | 'parent-not-web'
+// The states as the player's bridge.js sends them.
+let bridgeMode = 'signed-out' // 'signed-out' | 'consent-required' | 'signed-in' | 'parent-not-web'
 const appRequests = [] // every app.t27.ai URL asked for
 const mcpCalls = [] // every request to the render service
 const identityMessage = (nonce, mode) => mode === 'signed-in'
@@ -93,7 +94,7 @@ const BRIDGE = (mode) => `<!doctype html><meta charset="utf-8"><title>bridge stu
 <body style="margin:0;background:#021;color:#9fc;font:13px monospace" data-asked="[]">bridge stub <button id="go" style="margin:12px;padding:10px 16px">Continue as Ada</button>
 <script>
   const answer = (nonce, mode) => {
-    const messages = { 'signed-in': ${identityMessage('nonce', 'signed-in')}, 'signed-out': ${identityMessage('nonce', 'signed-out')}, 'consent-needed': ${identityMessage('nonce', 'consent-needed')}, 'parent-not-web': ${identityMessage('nonce', 'parent-not-web')} };
+    const messages = { 'signed-in': ${identityMessage('nonce', 'signed-in')}, 'signed-out': ${identityMessage('nonce', 'signed-out')}, 'consent-required': ${identityMessage('nonce', 'consent-required')}, 'parent-not-web': ${identityMessage('nonce', 'parent-not-web')} };
     parent.postMessage(messages[mode], 'https://t27.ai');
   };
   addEventListener('message', (e) => {
@@ -272,7 +273,7 @@ try {
   }
 
   if (runs(3)) {
-    await open('#/queen?tab=kanban', { mode: 'consent-needed' })
+    await open('#/queen?tab=kanban', { mode: 'consent-required' })
     await until(`(() => { const f = document.querySelector('iframe.queen27-identity-bridge'); return f && !f.hidden })()`, 30000)
     await wait(500)
     const shown = await chip()
@@ -286,7 +287,7 @@ try {
       await until(`document.querySelector('[data-tool="identity"]')?.dataset.identity === 'signed-in'`, 30000)
       clicked = await chip()
     }
-    record(3, 'consent-needed: the bridge frame is shown and no chip; a real click in it signs in and hides it',
+    record(3, 'consent-required: the bridge frame is shown and no chip; a real click in it signs in and hides it',
       shown.state === null && shown.frameHidden === false && shown.frameBox && shown.frameBox[2] > 100 && shown.frameBox[3] > 50 &&
       shown.frameBox[0] >= 0 && shown.frameBox[0] + shown.frameBox[2] <= 1440 && shown.frameBox[1] + shown.frameBox[3] <= 900 &&
       clicked?.state === 'signed-in' && clicked.frameHidden === true, { shown, button, clicked })

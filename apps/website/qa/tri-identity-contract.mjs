@@ -26,6 +26,7 @@ import {
   RENDER_BASE,
   RENEW_BEFORE_S,
   IDENTITY_ANSWER_MS,
+  IDENTITY_STATES,
   identityActiveOn,
   framedByPlayer,
   acceptIdentityMessage,
@@ -99,6 +100,16 @@ const refused = [
   ['a telegram_id that is not digits', msg({ ...signedIn(N), telegram_id: '../1' }), bridge, N],
 ]
 for (const [name, event, source, open] of refused) eq(acceptIdentityMessage(event, source, open), null, `refused: ${name}`)
+
+// The states, spelled exactly as the player sends them. The bridge page
+// (gHashTag/999-multibots-telegraf apps/vibee-editor/player/public/bridge/bridge.js)
+// sends signed-out, consent-required, signed-in and unavailable; the Hive
+// (player src/lib/hive.ts) the same minus consent-required. A state spelled
+// otherwise here is dropped as unknown, and the frame never shows.
+const PLAYER_STATES = ['signed-in', 'signed-out', 'consent-required', 'unavailable']
+eq([...IDENTITY_STATES].sort(), [...PLAYER_STATES].sort(), "the game's states are the player's")
+for (const state of PLAYER_STATES) eq(acceptIdentityMessage(msg({ v: 1, type: 'tri-identity', nonce: N, state }), bridge, N)?.state, state, `the player's ${state} is accepted`)
+eq(acceptIdentityMessage(msg({ v: 1, type: 'tri-identity', nonce: N, state: 'consent-needed' }), bridge, N), null, 'refused: consent-needed, a spelling the player never sends')
 eq(acceptIdentityMessage(msg({ v: 1, type: 'tri-identity', nonce: null, state: 'signed-out', code: 'Drop Table' }), bridge, null), { state: 'signed-out', nonce: null }, 'a code of another shape is dropped')
 
 // ---- whoami's answer ----
@@ -221,9 +232,9 @@ try {
   await world.deliver(signedIn('f'.repeat(32)))
   eq([world.client.getSnapshot().state, world.log.fetches.length], ['pending', 0], 'a wrong origin, a wrong source and a wrong nonce change nothing and fetch nothing')
 
-  // consent-needed shows the frame.
-  await world.deliver({ v: 1, type: 'tri-identity', nonce: first.m.nonce, state: 'consent-needed' })
-  eq([world.client.getSnapshot().state, world.visible], ['consent-needed', true], 'consent-needed shows the bridge frame')
+  // consent-required shows the frame.
+  await world.deliver({ v: 1, type: 'tri-identity', nonce: first.m.nonce, state: 'consent-required' })
+  eq([world.client.getSnapshot().state, world.visible], ['consent-required', true], 'consent-required shows the bridge frame')
   eq(world.timer(IDENTITY_ANSWER_MS).length, 0, 'an answer clears the deadline')
 
   // The click in the bridge: a push with the token.

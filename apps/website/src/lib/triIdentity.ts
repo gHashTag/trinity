@@ -11,7 +11,7 @@
 //
 // Who answers: when the game is framed by the player (its Hive tab), the parent
 // window. Otherwise a hidden frame of https://app.t27.ai/bridge, shown small only
-// while the bridge needs a click to continue ('consent-needed').
+// while the bridge needs a click to continue ('consent-required').
 //
 // THE RULES THIS FILE KEEPS (qa/tri-identity-contract.mjs holds it to them):
 //   1. Active on https://t27.ai only. Any other origin stays anonymous.
@@ -37,7 +37,8 @@ export const IDENTITY_ANSWER_MS = 10000
 /** Ask again this long before the token expires. */
 export const RENEW_BEFORE_S = 30
 
-export const IDENTITY_STATES = ['signed-in', 'signed-out', 'consent-needed', 'unavailable'] as const
+/** Spelled as the player sends them: public/bridge/bridge.js and src/lib/hive.ts. */
+export const IDENTITY_STATES = ['signed-in', 'signed-out', 'consent-required', 'unavailable'] as const
 export type IdentityState = (typeof IDENTITY_STATES)[number]
 export const HIVE_ROLES = ['keeper', 'owner', 'bee'] as const
 export type HiveRole = (typeof HIVE_ROLES)[number]
@@ -271,7 +272,7 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
   function apply(reply: IdentityReply) {
     if (reply.state !== 'signed-in') {
       forget()
-      frame?.setVisible(reply.state === 'consent-needed')
+      frame?.setVisible(reply.state === 'consent-required')
       publish(reply.code ? { state: reply.state, code: reply.code } : { state: reply.state })
       return
     }
