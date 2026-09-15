@@ -123,6 +123,11 @@ jobs:
       # memory only; whoami never carries X-Agent-Key. Pure, no browser.
       - name: TRI identity
         run: npm run check:tri-identity
+      # Why free bees are idle, read from /queen/status alone: real snapshots
+      # and malformed ones through the pure reader, no fabricated zeros, a
+      # stale round called stale. Pure, no browser.
+      - name: Queen idle reason
+        run: npm run check:queen-idle
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from

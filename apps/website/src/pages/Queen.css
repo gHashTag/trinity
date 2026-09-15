@@ -5573,6 +5573,60 @@ main:where(.queen27-page.is-shell) section {
   }
 }
 
+/* ---- why free bees are idle (2026-09-15) ----------------------------------
+   BEES 0/4 was read as broken bees while the round had said "nothing to
+   choose". The line sits under the map's head, over the top edge of the
+   field, and wraps rather than being cut: the head itself is one row that
+   clips anything taller. On a phone the head is in the flow (row 1), so the
+   line takes the top of row 2 without resizing it. */
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-idle {
+  position: absolute;
+  z-index: 3;
+  grid-area: 1 / 1 / -1 / -1;
+  top: calc(var(--hud-chrome-top) + 40px);
+  right: calc(var(--hud-col-w) + var(--hud-gap) * 2);
+  left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
+  align-self: start;
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--hud-line);
+  background: #000000b8;
+  color: var(--hud-gold);
+  font-size: 0.66rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-idle {
+  left: 84px;
+}
+
+.queen27-page.is-shell .queen27-hud-idle a {
+  color: var(--hud-cyan);
+  text-decoration: underline;
+}
+
+.queen27-page.is-shell .queen27-hud-idle a:focus-visible {
+  outline: 2px solid var(--hud-cyan);
+  outline-offset: 2px;
+}
+
+.queen27-page.is-shell.is-bare .queen27-hud-idle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-idle {
+    position: relative;
+    z-index: 6;
+    grid-area: 2 / 1 / 3 / -1;
+    top: auto;
+    right: auto;
+    left: auto;
+    margin-top: var(--hud-gap);
+  }
+}
+
 /* ---- a round's resolution moment (loop cycle 004, P1-1) ------------------- */
 .queen27-page.is-shell .queen27-hud-res-round.is-resolved,
 .queen27-page.is-shell .queen27-hud-round.is-resolved {
@@ -6588,7 +6642,7 @@ body.queen-shell .queen-starfield-source {
    markup rather than hidden here — four previews each booting Babylon is four
    more WebGL contexts on one page. */
 .queen27-page.is-shell.is-embed .queen27-hud-viewport
-  > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-vp-head, .queen27-hud-bottom, .queen27-context-chip) {
+  > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-vp-head, .queen27-hud-idle, .queen27-hud-bottom, .queen27-context-chip) {
   display: none;
 }
 

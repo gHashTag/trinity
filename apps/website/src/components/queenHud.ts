@@ -303,6 +303,133 @@ export function skipReasonWords(key: string): string {
   return key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
 }
 
+/** One skip category and how many candidates the round filed under it. */
+export interface SkipCount { key: string; count: number }
+
+const isCount = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0;
+
+/**
+ * lastTick.skipSummary as counts in wire order. The wire sends
+ * { count, issues, more } per category (older servers a bare number); only
+ * the count is read. Null when the summary is absent or any entry is
+ * unreadable, including a count above skippedCount: a malformed summary says
+ * nothing, never a zero.
+ */
+export function skipCounts(summary: unknown, skipped: number | null = null): SkipCount[] | null {
+  if (!summary || typeof summary !== "object" || Array.isArray(summary)) return null;
+  const counts: SkipCount[] = [];
+  for (const [key, value] of Object.entries(summary)) {
+    const count = value && typeof value === "object" ? (value as { count?: unknown }).count : value;
+    if (!isCount(count) || (skipped !== null && count > skipped)) return null;
+    counts.push({ key, count });
+  }
+  return counts;
+}
+
+/** The refusal queend writes when no candidate survives a round. */
+const NOTHING_TO_CHOOSE = "nothing to choose";
+
+export type IdleReason =
+  | { kind: "stale"; free: number; ageSeconds: number; intervalSeconds: number }
+  | { kind: "refused"; free: number; refusal: string; skipped: number | null; counts: SkipCount[] | null };
+
+/**
+ * Why free worker slots started nothing, from /queen/status alone. Measured
+ * 2026-09-15: BEES 0/4 was read as broken bees while the round had said
+ * "nothing to choose" and 449 of 488 candidates had no ## Boundary. Null when
+ * there is nothing to explain or nothing trustworthy to explain it with: no
+ * free slot, a round that dispatched, a scheduler that is off, an unreadable
+ * tick. A tick older than two intervals (the server's TICK_STALENESS_INTERVALS)
+ * is stale, and a stale round explains nothing.
+ */
+export function idleReason(status: unknown, serverNowMs: number): IdleReason | null {
+  if (!status || typeof status !== "object") return null;
+  const { scheduler, workers, lastTick } = status as {
+    scheduler?: { enabled?: unknown; intervalSeconds?: unknown } | null;
+    workers?: { capacity?: unknown; active?: unknown } | null;
+    lastTick?: { decidedAt?: unknown; allowed?: unknown; refusal?: unknown; skippedCount?: unknown; skipSummary?: unknown } | null;
+  };
+  if (!scheduler || scheduler.enabled !== true) return null;
+  const interval = scheduler.intervalSeconds;
+  if (typeof interval !== "number" || !Number.isFinite(interval) || interval <= 0) return null;
+  if (!workers || !isCount(workers.capacity) || !isCount(workers.active)) return null;
+  const free = workers.capacity - workers.active;
+  if (free <= 0) return null;
+  if (!lastTick || typeof lastTick.decidedAt !== "string" || typeof lastTick.allowed !== "boolean") return null;
+  const decidedMs = Date.parse(lastTick.decidedAt);
+  if (Number.isNaN(decidedMs)) return null;
+  const ageMs = serverNowMs - decidedMs;
+  if (ageMs > interval * 1000 * 2) {
+    return { kind: "stale", free, ageSeconds: Math.floor(ageMs / 1000), intervalSeconds: interval };
+  }
+  if (lastTick.allowed || typeof lastTick.refusal !== "string" || !lastTick.refusal.trim()) return null;
+  const skipped = isCount(lastTick.skippedCount) ? lastTick.skippedCount : null;
+  const counts = lastTick.refusal === NOTHING_TO_CHOOSE ? skipCounts(lastTick.skipSummary, skipped) : null;
+  return { kind: "refused", free, refusal: lastTick.refusal, skipped, counts };
+}
+
+export interface IdleWords {
+  idle: string;
+  nothingToChoose: string;
+  of: string;
+  issues: string;
+  stale: string;
+  /** With {age} and {interval}. */
+  staleDetail: string;
+  unitS: string;
+  unitMin: string;
+  unitH: string;
+  /** Words per skip category; an unknown category is spaced, not invented. */
+  reasons: Record<string, string>;
+}
+
+export interface IdleLine { head: string; tail: string | null; text: string; example: boolean }
+
+function spanWords(seconds: number, words: IdleWords): string {
+  if (seconds < 120) return `${seconds} ${words.unitS}`;
+  if (seconds < 7200) return `${Math.floor(seconds / 60)} ${words.unitMin}`;
+  return `${Math.floor(seconds / 3600)} ${words.unitH}`;
+}
+
+/**
+ * The idle reason as one line. The head is short enough for the BEES tile:
+ * the free slots and the refusal, or "round stale". The tail is what the wire
+ * counted: the three largest skip reasons, or the stale tick's age. A refusal
+ * prints as the wire wrote it; only queend's fixed "nothing to choose" has
+ * words of its own. The example work order is offered only when nothing could
+ * be chosen.
+ */
+export function idleLine(reason: IdleReason, words: IdleWords): IdleLine {
+  const lead = `${reason.free} ${words.idle}`;
+  let head: string;
+  let tail: string | null;
+  if (reason.kind === "stale") {
+    head = `${lead}: ${words.stale}`;
+    tail = words.staleDetail
+      .replace("{age}", spanWords(reason.ageSeconds, words))
+      .replace("{interval}", spanWords(reason.intervalSeconds, words));
+  } else {
+    head = `${lead}: ${reason.refusal === NOTHING_TO_CHOOSE ? words.nothingToChoose : reason.refusal}`;
+    const top = (reason.counts ?? []).filter((r) => r.count > 0).sort((a, b) => b.count - a.count).slice(0, 3);
+    tail = top.length === 0
+      ? null
+      : top
+          .map((r, i) => {
+            const n = i > 0 ? `${r.count}` : reason.skipped !== null ? `${r.count} ${words.of} ${reason.skipped} ${words.issues}` : `${r.count} ${words.issues}`;
+            const said = Object.prototype.hasOwnProperty.call(words.reasons, r.key) ? words.reasons[r.key] : skipReasonWords(r.key);
+            return `${n} ${said}`;
+          })
+          .join(", ");
+  }
+  return {
+    head,
+    tail,
+    text: tail ? `${head} — ${tail}` : head,
+    example: reason.kind === "refused" && reason.refusal === NOTHING_TO_CHOOSE,
+  };
+}
+
 /**
  * A hardware device's family string -> the crystal hue on the comb: gold for
  * CPU (the default), cyan for FPGA, green for GPU - the ring colours of the
