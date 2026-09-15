@@ -162,3 +162,53 @@ body.queen-shell .queen-universe-content {
 @media (prefers-reduced-motion: reduce) {
   .queen-universe-loading { animation: none; opacity: 0.8; }
 }
+
+/* The atlas is one of the shell's data sources, not its gate. When it cannot
+   be fetched the shell still mounts -- Kanban, the Spec Explorer, Agents and
+   Tools never read it -- so the failure is reported over the map rather than in
+   place of every tab. Pinned above the shell's own chrome, clear of the rail on
+   the left and the intel column on the right. */
+.queen-atlas-offline {
+  position: fixed;
+  left: 50%;
+  /* Under the HUD bar, not over the command rail: the rail owns the bottom of
+     the shell and a banner placed there covered SPECS and its neighbours. 84px
+     is the shell's own top rhythm -- a gap, the bar, a gap (--hud-gap 10 +
+     --hud-bar-h 64 + --hud-gap 10, Queen.css) -- which this element cannot read
+     as a token because those live on .queen27-page inside the content it sits
+     beside. */
+  top: calc(84px + 8px);
+  transform: translateX(-50%);
+  z-index: 40;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  max-width: min(92vw, 520px);
+  padding: .5rem .8rem;
+  border: 1px solid #ff7e8b66;
+  border-radius: 6px;
+  background: rgba(2, 8, 6, 0.86);
+  backdrop-filter: blur(6px);
+  color: #ff7e8b;
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+.queen-atlas-offline > button {
+  flex: none;
+  padding: .25rem .7rem;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  /* A finger needs a target; the banner is small and this is its only action. */
+  min-height: 32px;
+}
+
+.queen-atlas-offline > button:hover,
+.queen-atlas-offline > button:focus-visible {
+  background: rgba(255, 126, 139, 0.12);
+}

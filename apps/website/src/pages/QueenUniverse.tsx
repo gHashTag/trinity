@@ -91,9 +91,17 @@ export default function QueenUniverse() {
       {/* Loading is not failing. This paragraph carried the error class either
           way, so every cold load opened with the failure colour on a black
           page — which reads as "it did not load", because that is what it
-          looks like. */}
-      {commonHive&&!atlas?(atlasError?<p className="queen-world-error" role="alert">{c.failed}<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button></p>:<QueenLoading label={c.loading}/>):atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
+          looks like.
+          Nor is a failed atlas a failed shell. This branch used to return the
+          error in place of <Runtime/>, so one unreachable JSON file took all
+          thirteen tabs down with it — Kanban, the Spec Explorer, Agents, Tools,
+          none of which read the atlas at all. Queen takes sharedCatalog as
+          optional and falls back to the older hive without it, which is the
+          same path a connected repository already uses, so the shell mounts and
+          the failure is reported over it instead of in place of it. */}
+      {commonHive&&!atlas&&!atlasError?<QueenLoading label={c.loading}/>:atlasView?<Atlas key={repo} atlas={atlas} error={atlasError} retry={()=>setAtlasRetry(n=>n+1)} lang={lang} initialRepo={repo} saved={saved}/>:coreView?<SharedCore key={`${repo}:${issueNumber}`} repo={repo} lang={lang} initialIssue={Number.isSafeInteger(issueNumber)&&issueNumber>0?issueNumber:undefined}/>:repo===PINNED_WORLDS[0]?<Runtime key={repo} sharedCatalog={commonHive?atlas??undefined:undefined}/>:<RepositoryWorld key={repo} repo={repo} lang={lang}/>}
     </Suspense></div>
+    {commonHive&&atlasError&&!atlas&&<p className="queen-atlas-offline" role="alert">{c.failed}<button onClick={()=>setAtlasRetry(n=>n+1)}>{c.retry}</button></p>}
     <dialog className="queen-world-dialog" ref={dialog} aria-labelledby="world-connect-title">
       <header><h2 id="world-connect-title">{c.title}</h2><button onClick={()=>dialog.current?.close()} aria-label={c.close}>×</button></header>
       {authReady?<a className="queen-world-connect" href={`${COLLAB_ORIGIN}/queen/connect`} target="_blank" rel="noopener noreferrer">{c.login} ↗</a>:<p className="queen-world-auth-pending">{c.authPending}</p>}
