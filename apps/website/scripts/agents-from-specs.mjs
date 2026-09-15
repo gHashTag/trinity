@@ -870,7 +870,12 @@ export function buildSpecCatalogs({ skillSpecs, cronSpecs, agentSpecs = [], func
     collisions,
     // Grouping the navigator shows: tri commands by owning letter (unbound under '-'), MCP servers by repo.
     groups: {
-      triByAgent: Object.fromEntries([...new Set(triTools.flatMap((x) => (x.agents.length ? x.agents.map((a) => a.letter) : ['-'])))].sort().map((l) => [l, triTools.filter((x) => (l === '-' ? x.agents.length === 0 : x.agents.some((a) => a.letter === l))).map((x) => x.id)])),
+      // '-' is always present, empty when nothing is unbound. It used to appear
+      // only while some command had no agent, so the day every command gained
+      // one the bucket vanished and the contract read undefined where it had
+      // asked for a list. "Nothing is unbound" is a fact worth stating, not an
+      // absence to infer.
+      triByAgent: Object.fromEntries([...new Set(['-', ...triTools.flatMap((x) => x.agents.map((a) => a.letter))])].sort().map((l) => [l, triTools.filter((x) => (l === '-' ? x.agents.length === 0 : x.agents.some((a) => a.letter === l))).map((x) => x.id)])),
       mcpByRepo: Object.fromEntries(['gHashTag/t27', 'gHashTag/trinity'].map((r) => [r, mcpTools.filter((x) => x.repo === r).map((x) => x.id)])),
       triByRepo: Object.fromEntries(TOOL_REPOS.map((r) => [r, triTools.filter((x) => x.repo === r).map((x) => x.id)])),
     },
