@@ -41,8 +41,8 @@
 //  16  at the rail's rest position every command is the element under its
 //      centre (1440x900, 1440x813, 1366x768, 1280x800, 1280x720), a click on
 //      TRI opens it, and the collapsed rail lists TRI and opens it too
-//  17  a hung app document (never loads): the link out shows beside the
-//      spinner after about 3 s, the "did not answer" strip within 8 s
+//  17  a hung app document (never loads): from TRI's mount, the link out shows
+//      beside the spinner after about 3 s, the "did not answer" strip after about 8 s
 //  18  an app that posts {kind:'error', code} gets an error strip with the link
 //  19  the key r on a Russian layout (key 'к', code KeyR) opens TRI; turned off
 //      in the menu the digit keys do nothing, also after a reload
@@ -548,16 +548,26 @@ try {
   if (runs(17)) {
     stubMode = 'hang'
     await open('#/queen?tab=kanban')
+    // Timed on the page's own clock from the moment TRI mounts its frame (the
+    // loading overlay appears): the answer clock starts there, and a busy main
+    // thread can take seconds between the address write and the mount.
+    await evaluate(`(() => { const t = window.__tri17 = {}; const seen = () => { const n = performance.now();
+      if (t.mount === undefined && document.querySelector('.queen27-tri-loading')) t.mount = n;
+      if (t.link === undefined && document.querySelector('.queen27-tri-loading a')) t.link = n;
+      if (t.strip === undefined && document.querySelector('.queen27-tri-noanswer')) t.strip = n; };
+      new MutationObserver(seen).observe(document.body, { childList: true, subtree: true }); return true })()`)
     await evaluate(`location.hash = '#/queen?tab=tri&screen=chat'`)
-    const t0 = Date.now()
-    const link = await until(`(() => { const a = document.querySelector('.queen27-tri-loading a'); return a ? { href: a.getAttribute('href'), target: a.getAttribute('target') } : null })()`, 8000)
-    const linkMs = Date.now() - t0
-    const strip = await until(`(() => { const s = document.querySelector('.queen27-tri-noanswer'); return s ? { href: s.querySelector('a')?.getAttribute('href'), target: s.querySelector('a')?.getAttribute('target') } : null })()`, 12000)
-    const stripMs = Date.now() - t0
+    await until(`window.__tri17?.strip !== undefined`, 20000)
+    const t = await evaluate(`window.__tri17`)
+    const found = await evaluate(`(() => { const a = document.querySelector('.queen27-tri-loading a'); const s = document.querySelector('.queen27-tri-noanswer a'); return { link: a && { href: a.getAttribute('href'), target: a.getAttribute('target') }, strip: s && { href: s.getAttribute('href'), target: s.getAttribute('target') } } })()`)
     const s = await state()
-    record(17, 'a hung app document: the link out shows beside the spinner after about 3 s and the "did not answer" strip within 8 s of the frame being sent',
-      link && link.href === `${APP}/chat` && link.target === '_blank' && linkMs >= 2500 && strip && strip.href === `${APP}/chat` && stripMs <= 10000 && s.loading,
-      { link, linkMs, strip, stripMs, loading: s.loading })
+    const linkMs = t.link !== undefined && t.mount !== undefined ? Math.round(t.link - t.mount) : null
+    const stripMs = t.strip !== undefined && t.mount !== undefined ? Math.round(t.strip - t.mount) : null
+    // 8 s is the design; up to 3 s more is timer and render delay on a loaded machine, not a missed clock.
+    record(17, 'a hung app document: from the mount, the link out shows beside the spinner after about 3 s and the "did not answer" strip after about 8 s',
+      found.link?.href === `${APP}/chat` && found.link.target === '_blank' && found.strip?.href === `${APP}/chat` && s.loading &&
+      linkMs !== null && linkMs >= 2500 && stripMs !== null && stripMs >= 7500 && stripMs <= 11000 && linkMs < stripMs,
+      { linkMs, stripMs, found, loading: s.loading })
     stubMode = 'answer'
   }
 
