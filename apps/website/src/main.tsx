@@ -9,10 +9,38 @@ import App from './App.tsx'
 import { I18nProvider } from './i18n/context.tsx'
 import GlobalStarfield from './components/GlobalStarfield.tsx'
 import { handExplorerLinksToQueen } from './lib/queenFrame'
+import { triIdentity } from './lib/triIdentity'
 
 // In a Queen tab's frame, a link to another Explorer switches the Queen's tab instead
 // of navigating the frame under a rail that names a different one.
 handExplorerLinksToQueen()
+
+// The Queen's identity chip waits on the app.t27.ai bridge, a document from
+// another host that then waits behind the hive's long tasks. Measured on a
+// local build with the bridge's live latency: requested only when the shell
+// rendered (~0.7 s), loaded, then ~1.1 s more behind long tasks; chip at
+// 3.3-6.0 s. Asked here, at the entry, the bridge loads beside the Queen's own
+// chunks. Only on the address that renders the Queen shell, never for an
+// embedded preview (embed=1, which asks nobody), in the language the page
+// will pick (src/i18n/context.tsx: ?lang=, then the saved choice).
+{
+  const hash = window.location.hash
+  const params = new URLSearchParams(hash.split('?')[1] ?? '')
+  const view = params.get('view')
+  if (/^#\/queen(?:\?|$)/.test(hash) && params.get('embed') !== '1' && !params.has('repo') && view !== 'atlas' && view !== 'core') {
+    const asked = new URLSearchParams(window.location.search).get('lang')
+    let lang = asked && ['en', 'ru', 'de', 'zh', 'es'].includes(asked) ? asked : null
+    if (!lang) {
+      try {
+        lang = window.localStorage.getItem('trinity-lang')
+      } catch {
+        lang = null
+      }
+    }
+    triIdentity().setLanguage(lang ?? 'en')
+    triIdentity().prime()
+  }
+}
 
 // Only "/" is eager — it is the route every visitor lands on. The others were
 // static imports, which put all of them in the entry chunk (843 kB) and made the

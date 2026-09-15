@@ -18,7 +18,8 @@
 //   6  the sign-in link: the player's login, returning to a fixed Queen route
 //      the player accepts (a copy of its returnTarget rules)
 //   7  the chip: a next step for every code the client can receive
-//   8  wired into the Queen: the chip in the tools row, not in a preview, en/ru copy
+//   8  wired into the Queen: the chip in the tools row, not in a preview, en/ru
+//      copy; the page primes the bridge on the Queen's address only
 //
 //   node --experimental-strip-types qa/tri-identity-contract.mjs
 
@@ -746,5 +747,7 @@ for (const key of ['identitySignIn', 'identitySignInTitle', 'identitySignInAgain
 }
 ok(/^\s*identitySignInAgain: "Sign in again in TRI",$/m.test(queen), 'the English copy says "Sign in again in TRI"')
 ok(/^\s*identityConfirm: "Confirm in TRI",$/m.test(queen) && /^\s*identityResume: "Resume in TRI",$/m.test(queen), 'the English copy says "Confirm in TRI" and "Resume in TRI"')
+const main = code('src/main.tsx')
+ok(main.includes('triIdentity().prime()') && main.includes("params.get('embed') !== '1'") && main.includes('/^#\\/queen(?:\\?|$)/'), 'the entry primes the bridge on the Queen address only, never for an embedded preview')
 
 console.log(`TRI identity contract: PASS (${checks} checks)`)
