@@ -45,6 +45,7 @@
     "check:queen-viewport": "node qa/queen-viewport-contract.mjs",
     "check:queen-honesty": "node --experimental-strip-types qa/queen-honesty-contract.mjs",
     "check:queen-idle": "node --experimental-strip-types qa/queen-idle-reason-contract.mjs",
+    "check:queen-idle-layout": "node qa/queen-idle-layout-contract.mjs",
     "check:queen-coverage": "node --experimental-strip-types qa/queen-coverage-contract.mjs",
     "check:queen-displays": "node --experimental-strip-types qa/queen-hive-display-contract.mjs",
     "check:queen-worlds": "node --experimental-strip-types qa/queen-repository-worlds.mjs",

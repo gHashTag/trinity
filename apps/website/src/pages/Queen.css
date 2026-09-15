@@ -5575,15 +5575,18 @@ main:where(.queen27-page.is-shell) section {
 
 /* ---- why free bees are idle (2026-09-15) ----------------------------------
    BEES 0/4 was read as broken bees while the round had said "nothing to
-   choose". The line sits under the map's head, over the top edge of the
-   field, and wraps rather than being cut: the head itself is one row that
-   clips anything taller. On a phone the head is in the flow (row 1), so the
-   line takes the top of row 2 without resizing it. */
+   choose". On a desktop the line floats under the map's head, over the top
+   edge of the field, and wraps rather than being cut: the head itself is one
+   row that clips anything taller. Its top is the head as served from t27.ai,
+   42px (measured 1440x900 and 1280x720, en and ru: the identity chip is 28px
+   there, and the head's bottom rule is its last pixel; 40px covered that
+   rule). qa/queen-idle-layout-contract.mjs holds the line at or below the
+   head. */
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-idle {
   position: absolute;
   z-index: 3;
   grid-area: 1 / 1 / -1 / -1;
-  top: calc(var(--hud-chrome-top) + 40px);
+  top: calc(var(--hud-chrome-top) + 42px);
   right: calc(var(--hud-col-w) + var(--hud-gap) * 2);
   left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
   align-self: start;
@@ -5597,8 +5600,12 @@ main:where(.queen27-page.is-shell) section {
   overflow-wrap: anywhere;
 }
 
-.queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-idle {
-  left: 84px;
+/* Desktop only: at 0,5,0 it outranked the phone block, and a page collapsed at
+   1440 then narrowed to 390 pushed the line 84px out of the window. */
+@media (min-width: 901px) {
+  .queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-idle {
+    left: 84px;
+  }
 }
 
 .queen27-page.is-shell .queen27-hud-idle a {
@@ -5615,15 +5622,36 @@ main:where(.queen27-page.is-shell) section {
   display: none;
 }
 
-@media (max-width: 900px) {
+/* On a phone the line is a row of its own between the head and the body.
+   Laid over the top of the body's row it took the taps meant for what starts
+   there (measured 390x844 on t27.ai: TRI's screen tabs, and the first
+   disclosure of the specs, skills and crons views), so the body gives up the
+   line's height instead and the page stays one screen. Portrait, or tall
+   enough; a landscape phone is the next block. */
+@media (max-width: 900px) and (orientation: portrait), (max-width: 900px) and (min-height: 501px) {
+  .queen27-page.is-shell .queen27-hud-viewport:has(> .queen27-hud-idle) {
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-idle {
-    position: relative;
-    z-index: 6;
+    position: static;
     grid-area: 2 / 1 / 3 / -1;
-    top: auto;
-    right: auto;
-    left: auto;
-    margin-top: var(--hud-gap);
+    margin: var(--hud-gap) var(--hud-gap) 0;
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport:has(> .queen27-hud-idle) > .queen27-hud-vp-body {
+    grid-area: 3 / 1 / -1 / -1;
+  }
+}
+
+/* A landscape phone has no row to give. Its head is a 40px band whose tools
+   spill below it (measured 844x390: tools at y 126-154 under a head ending at
+   124), and the line over that band took every tool and the identity chip.
+   The line is not shown there. The BEES tile's sub-line is hidden at that
+   size as well, so this orientation says what it said before the line. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-idle {
+    display: none;
   }
 }
 
