@@ -151,13 +151,16 @@ export const SPEC_TO_FORMAT: Record<string, string> = {
   'specs/numeric/gf20.t27': 'gf20',
   'specs/numeric/gf24.t27': 'gf24',
 
-  // chips/euler copy -- same module names, same declared layout
-  'chips/euler/specs/numeric/gf4.t27': 'gf4',
-  'chips/euler/specs/numeric/gf8.t27': 'gf8',
-  'chips/euler/specs/numeric/gf12.t27': 'gf12',
-  'chips/euler/specs/numeric/gf16.t27': 'gf16',
-  'chips/euler/specs/numeric/gf20.t27': 'gf20',
-  'chips/euler/specs/numeric/gf24.t27': 'gf24',
+  // tt-trinity-euler copy -- same module names, same declared layout. These
+  // were vendored under chips/euler/ while the corpus came from a t27 branch
+  // that carried the chip repositories as directories; the GitHub-sourced
+  // refresh attributes them to tt-trinity-euler, the repository that owns them.
+  'tt-trinity-euler/specs/numeric/gf4.t27': 'gf4',
+  'tt-trinity-euler/specs/numeric/gf8.t27': 'gf8',
+  'tt-trinity-euler/specs/numeric/gf12.t27': 'gf12',
+  'tt-trinity-euler/specs/numeric/gf16.t27': 'gf16',
+  'tt-trinity-euler/specs/numeric/gf20.t27': 'gf20',
+  'tt-trinity-euler/specs/numeric/gf24.t27': 'gf24',
 
   // trinity-fpga/t27 copy -- shorter files, same declared layout
   'trinity-fpga/t27/specs/numeric/gf4.t27': 'gf4',
@@ -181,7 +184,7 @@ export const SPEC_TO_FORMAT: Record<string, string> = {
 export const EXCLUDED: Record<string, string> = {
   // GF32 is outside the silicon-verified ladder (GF4-GF24). No cell, no claim.
   'specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
-  'chips/euler/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-euler/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
   'trinity-fpga/t27/specs/numeric/gf32.t27': 'format outside the silicon-verified GF4-GF24 ladder',
 
   // Above the ladder. Surfaced by the coverage guard, which matches the
@@ -189,9 +192,29 @@ export const EXCLUDED: Record<string, string> = {
   // would have been missed by a path pattern built around the known widths.
   // GF64 and GF128 have no hardware cell; GF256 is recorded in the conformance
   // draft as structural, its bias still an open R&D parameter.
-  'chips/euler/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
-  'chips/euler/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
-  'chips/euler/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
+  'tt-trinity-euler/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-euler/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-euler/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
+
+  // Widths the GitHub-sourced refresh brought in from t27 master, none of them
+  // rungs of the silicon-verified ladder (GF4, GF8, GF12, GF16, GF20, GF24 --
+  // enumerated in SPEC_TO_FORMAT above). Between the rungs first, then above
+  // them. No cell was run for any of these, so none carries a claim.
+  'specs/numeric/gf6.t27': 'a width between the rungs of the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf10.t27': 'a width between the rungs of the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf14.t27': 'a width between the rungs of the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf48.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf96.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf512.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf1024.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  // The canonical copies of three widths whose tt-trinity-euler copies are
+  // listed above, with the same reasons. GF64 here declares `module GF64`
+  // rather than `triformat-gf64`, so the guard does not surface it; it is
+  // listed anyway, because one copy excluded and its twin silent is how the
+  // three-copy problem started.
+  'specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
 
   // These use, convert or measure a verified format; they do not declare it, so
   // the format's hardware record is not theirs to show.
@@ -199,9 +222,9 @@ export const EXCLUDED: Record<string, string> = {
   'specs/fpga/testbench/gf16_accel_tb.t27': 'testbench for the accelerator above',
   'specs/benchmarks/gf16_bfloat16_nmse.t27': 'a numerical benchmark against bfloat16, not a format declaration',
   'trinity-fpga/specs/numeric/gf16_plus_quire_audit.t27': 'an audit of GF16 plus a quire, not the format itself',
-  'chips/euler/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
-  'chips/euler/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
-  'chips/euler/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
+  'tt-trinity-euler/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
+  'tt-trinity-euler/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
+  'tt-trinity-euler/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
 }
 
 /**
@@ -214,8 +237,8 @@ export const FAMILY_SPECS = new Set([
   'specs/numeric/formats.t27',
   'specs/numeric/gf_competitive.t27',
   'specs/math/gf_competitive.t27',
-  'chips/euler/specs/numeric/goldenfloat_family.t27',
-  'chips/euler/specs/numeric/formats.t27',
+  'tt-trinity-euler/specs/numeric/goldenfloat_family.t27',
+  'tt-trinity-euler/specs/numeric/formats.t27',
   'trinity-fpga/t27/specs/numeric/goldenfloat_family.t27',
 ])
 
