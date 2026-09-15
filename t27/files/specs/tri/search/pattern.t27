@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Standard glob pattern syntax | φ² + 1/φ² = 3 | TRINITY
+
+module TriPattern;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const MatchResult = struct {
+        matches : bool,
+        captured : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // glob_match(pattern: []const u8) → void
+    fn glob_match(pattern: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // wildcard_match(pattern: []const u8) → void
+    fn wildcard_match(pattern: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test glob_match_basic_case
+        given input = default_input()
+        when result = glob_match(input)
+        then result != undefined
+
+    test wildcard_match_basic_case
+        given input = default_input()
+        when result = wildcard_match(input)
+        then result != undefined
+

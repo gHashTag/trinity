@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(1) hash update when sliding window | φ² + 1/φ² = 3 | TRINITY
+
+module TriRabinKarp;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const RKState = struct {
+        pattern_hash : "u64",
+        pattern_len : "usize",
+        base : "u64",
+        modulus : "u64",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(pattern: []const u8) → void
+    fn init(pattern: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(state: *RKState) → void
+    fn search(state: *RKState) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test search_basic_case
+        given input = default_input()
+        when result = search(input)
+        then result != undefined
+

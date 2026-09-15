@@ -1,0 +1,91 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(k) lookup where k = key length | φ² + 1/φ² = 3 | TRINITY
+
+module TriTrie;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const TrieNode(T) = struct {
+        is_end : bool,
+        value : "T",
+        children : "std.StringHashMap(*TrieNode(T))",
+    };
+
+    pub const Trie(T) = struct {
+        root : "*TrieNode(T)",
+        size : usize,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty() → Trie(T)
+    fn empty() -> Trie(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(trie: *Trie(T)) → void
+    fn insert(trie: *Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(trie: *const Trie(T)) → void
+    fn get(trie: *const Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // has_prefix(trie: *const Trie(T)) → void
+    fn has_prefix(trie: *const Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // keys_with_prefix(trie: *const Trie(T)) → void
+    fn keys_with_prefix(trie: *const Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // remove(trie: *Trie(T)) → void
+    fn remove(trie: *Trie(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test empty_basic_case
+        given input = default_input()
+        when result = empty(input)
+        then result != undefined
+
+    test insert_basic_case
+        given input = default_input()
+        when result = insert(input)
+        then result != undefined
+
+    test get_basic_case
+        given input = default_input()
+        when result = get(input)
+        then result != undefined
+
+    test has_prefix_basic_case
+        given input = default_input()
+        when result = has_prefix(input)
+        then result != undefined
+
+    test keys_with_prefix_basic_case
+        given input = default_input()
+        when result = keys_with_prefix(input)
+        then result != undefined
+
+    test remove_basic_case
+        given input = default_input()
+        when result = remove(input)
+        then result != undefined
+

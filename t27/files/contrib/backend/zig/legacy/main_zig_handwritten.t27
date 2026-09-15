@@ -1,0 +1,1125 @@
+// tri.zig a Trinity T27 CLI Runtime
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+const std = @import("std");
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// AST Types (simplified for CLI runtime)
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+const AST = struct {
+    const Program = struct {
+        constants: []Const = &[0]Const{},
+        spec_decl: ?SpecDecl = null,
+        test_section: ?TestSection = null,
+        invariant_section: ?InvariantSection = null,
+    };
+
+    const Const = struct {
+        name: []const u8,
+        value: f64,
+    };
+
+    const SpecDecl = struct {
+        name: []const u8,
+        test_blocks: []TestBlock = &[0]TestBlock{},
+        invariants: []InvariantBlock = &[0]InvariantBlock{},
+    };
+
+    const TestBlock = struct {
+        name: []const u8,
+        clauses: []Clause = &[0]Clause{},
+    };
+
+    const InvariantBlock = struct {
+        name: []const u8,
+        expression: []const u8,
+    };
+
+    const TestSection = struct {
+        test_cases: []TestCase = &[0]TestCase{},
+    };
+
+    const InvariantSection = struct {
+        invariants: []Invariant = &[0]Invariant{},
+    };
+
+    const TestCase = struct {
+        name: []const u8,
+        verify: []const u8 = "",
+        setup: []const u8 = "",
+        expected_value: []const u8 = "",
+    };
+
+    const Invariant = struct {
+        name: []const u8,
+        statement: []const u8 = "",
+        rationale: []const u8 = "",
+    };
+
+    const Clause = struct {
+        kind: ClauseKind,
+        content: []const u8,
+    };
+
+    const ClauseKind = enum {
+        given,
+        when,
+        then,
+        and,
+        assert,
+        expect,
+    };
+};
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Parse Context
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+const ParseContext = struct {
+    ast_root: AST.Program,
+    errors: []Error = &[0]Error{},
+
+    const Error = struct {
+        line: usize,
+        column: usize,
+        message: []const u8,
+    };
+};
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// CLI Entry Point
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    // Parse command line arguments
+    const args = try std.process.argsAlloc(allocator);
+    defer allocator.free(args);
+
+    if (args.len < 2) {
+        try printUsage();
+        return;
+    }
+
+    const command = args[1];
+
+    // Route to command handler
+    if (std.mem.eql(u8, command, "spec")) {
+        try runSpecCommand(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "gen")) {
+        try runGenCommand(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "git")) {
+        try runGitCommand(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "lint")) {
+        try runLintCommand(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "help")) {
+        try printUsage();
+    } else {
+        std.debug.print("Unknown command: {s}\n", .{command});
+        try printUsage();
+        std.process.exit(1);
+    }
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Command Handlers
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn runSpecCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        try printError("spec command requires subcommand: create, validate, list\n");
+        return;
+    }
+
+    const subcommand = args[0];
+
+    if (std.mem.eql(u8, subcommand, "create")) {
+        if (args.len < 2) {
+            try printError("tri spec create <name> [--path <path>]\n");
+            return;
+        }
+        const name = args[1];
+        const path = if (args.len >= 4 and std.mem.eql(u8, args[2], "--path"))
+            args[3]
+        else
+            "";
+
+        try specCreate(allocator, name, path);
+    } else if (std.mem.eql(u8, subcommand, "validate")) {
+        if (args.len < 2) {
+            try printError("tri spec validate <spec-path>\n");
+            return;
+        }
+        try specValidate(allocator, args[1]);
+    } else if (std.mem.eql(u8, subcommand, "list")) {
+        try specList(allocator);
+    } else {
+        try printError("Unknown spec subcommand: {s}\n", .{subcommand});
+    }
+}
+
+fn runGenCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const options = try parseGenOptions(allocator, args);
+
+    if (options.all) {
+        try genAll(allocator, options);
+    } else if (options.spec_path) |spec| {
+        try gen(allocator, spec, options);
+    } else {
+        try printError("tri gen <spec> | --all\n");
+    }
+}
+
+fn runGitCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        try printError("git command requires subcommand: commit, push, status\n");
+        return;
+    }
+
+    const subcommand = args[0];
+
+    if (std.mem.eql(u8, subcommand, "commit")) {
+        try gitCommit(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcommand, "push")) {
+        try gitPush(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcommand, "status")) {
+        try gitStatusWithCell(allocator);
+    } else {
+        try printError("Unknown git subcommand: {s}\n", .{subcommand});
+    }
+}
+
+fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const all = args.len > 0 and std.mem.eql(u8, args[0], "--all");
+
+    if (all) {
+        try lintAll(allocator);
+    } else if (args.len == 1) {
+        try lintFile(allocator, args[0]);
+    } else {
+        try lintAll(allocator);
+    }
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Spec Commands
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn specCreate(allocator: std.mem.Allocator, name: []const u8, path: []const u8) !void {
+    // Validate spec name
+    if (!isValidSpecName(name)) {
+        try printError("Invalid spec name: {s}\n", .{name});
+        try printError("Spec names must be lowercase alphanumeric with underscores\n");
+        return error.InvalidSpecName;
+    }
+
+    // Determine output path
+    const output_path = if (path.len == 0)
+        try std.fmt.allocPrint(allocator, "specs/{s}.t27", .{name})
+    else
+        try allocator.dupe(u8, path);
+
+    // Check if file exists
+    if (fileExists(output_path)) {
+        try printError("Spec already exists: {s}\n", .{output_path});
+        try printError("Use --force to overwrite (not implemented yet)\n");
+        return error.FileExists;
+    }
+
+    // Create spec with TDD template
+    const content = generateSpecTemplate(allocator, name);
+    try std.fs.cwd().writeFile(output_path, content);
+
+    std.debug.print("Created spec: {s}\n", .{output_path});
+    try std.io.getStdOut().writeAll(
+        \\Next steps:
+        \\  1. Add constants, functions to your spec
+        \\  2. Add test cases using 'test <name>' blocks
+        \\  3. Add invariants using 'invariant <name>' blocks
+        \\  4. Run 'tri gen {s}.t27' to generate code
+        \\  5. Run 'tri test' to execute tests
+    , .{name});
+}
+
+fn specValidate(allocator: std.mem.Allocator, spec_path: []const u8) !void {
+    if (!fileExists(spec_path)) {
+        try printError("Spec not found: {s}\n", .{spec_path});
+        return error.FileNotFound;
+    }
+
+    const content = try std.fs.cwd().readFileAlloc(allocator, spec_path, 1024 * 1024);
+    defer allocator.free(content);
+
+    // Simple parser (placeholder - would use real parser)
+    const context = parseSimple(content, spec_path);
+
+    if (context.errors.len > 0) {
+        try printError("Parse errors in {s}:\n", .{spec_path});
+        for (context.errors) |err| {
+            try std.io.getStdErr().writer().print(
+                "  Line {d}:{d}: {s}\n",
+                .{ err.line, err.column, err.message },
+            );
+        }
+        return error.ParseError;
+    }
+
+    // Validate TDD compliance
+    const tdd_errors = try validateTDDCompliance(allocator, &context.ast_root);
+
+    if (tdd_errors.items.len > 0) {
+        try printError("TDD compliance violations in {s}:\n", .{spec_path});
+        for (tdd_errors.items) |err| {
+            try std.io.getStdErr().writer().print("  {s}\n", .{err});
+        }
+        tdd_errors.deinit();
+        return error.TDDViolation;
+    }
+    tdd_errors.deinit();
+
+    std.debug.print("Spec {s} is TDD compliant\n\n", .{spec_path});
+
+    // Print summary
+    try printSummary(&context.ast_root);
+}
+
+fn specList(allocator: std.mem.Allocator) !void {
+    const spec_dir = "specs";
+    var dir = std.fs.cwd().openDir(spec_dir) catch |err| {
+        if (err == error.FileNotFound) {
+            try std.io.getStdOut().writeAll("No specs directory found\n");
+            return;
+        }
+        return err;
+    };
+    defer dir.close();
+
+    var spec_files = std.ArrayList([]const u8).init(allocator);
+    defer {
+        for (spec_files.items) |f| allocator.free(f);
+        spec_files.deinit();
+    }
+
+    var walker = try dir.walk(allocator);
+    defer walker.deinit();
+
+    while (try walker.next()) |entry| {
+        if (entry.kind == .file and std.mem.endsWith(u8, entry.path, ".t27")) {
+            const path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ spec_dir, entry.path });
+            try spec_files.append(path);
+        }
+    }
+
+    if (spec_files.items.len == 0) {
+        try std.io.getStdOut().writeAll("No spec files found\n");
+        return;
+    }
+
+    try std.io.getStdOut().writeAll("Spec files in project:\n\n");
+
+    for (spec_files.items) |spec_path| {
+        defer allocator.free(spec_path);
+
+        const rel_path = spec_path["specs/".len..];
+        const content = try std.fs.cwd().readFileAlloc(allocator, spec_path, 1024 * 1024);
+        defer allocator.free(content);
+
+        // Quick check for tests
+        const has_tests = std.mem.indexOf(u8, content, ".test") != null or
+                         std.mem.indexOf(u8, content, "test ") != null;
+
+        const status = if (has_tests) "a" else "a";
+        try std.io.getStdOut().writer().print("  {s} {s}\n", .{ status, rel_path });
+    }
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Gen Commands
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+const GenOptions = struct {
+    backend: []const u8 = "zig",
+    output_dir: []const u8 = "",
+    emit_tests: bool = true,
+    emit_conformance: bool = true,
+    optimize_level: u8 = 0,
+    no_prototype: bool = true,
+    all: bool = false,
+    spec_path: ?[]const u8 = null,
+};
+
+fn parseGenOptions(allocator: std.mem.Allocator, args: []const []const u8) !GenOptions {
+    _ = allocator;
+    var options = GenOptions{};
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+
+        if (std.mem.eql(u8, arg, "--backend")) {
+            if (i + 1 < args.len) {
+                options.backend = args[i + 1];
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, arg, "--output-dir")) {
+            if (i + 1 < args.len) {
+                options.output_dir = args[i + 1];
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, arg, "--no-tests")) {
+            options.emit_tests = false;
+        } else if (std.mem.eql(u8, arg, "--no-conformance")) {
+            options.emit_conformance = false;
+        } else if (std.mem.eql(u8, arg, "--all")) {
+            options.all = true;
+        } else if (!std.mem.startsWith(u8, arg, "-")) {
+            options.spec_path = arg;
+        }
+    }
+
+    return options;
+}
+
+fn gen(allocator: std.mem.Allocator, spec_path: []const u8, options: GenOptions) !void {
+    // Check if spec exists
+    if (!fileExists(spec_path)) {
+        try printError("Spec not found: {s}\n", .{spec_path});
+        return error.FileNotFound;
+    }
+
+    const content = try std.fs.cwd().readFileAlloc(allocator, spec_path, 1024 * 1024);
+    defer allocator.free(content);
+
+    // Validate language policy (no Cyrillic)
+    if (!validateNoCyrillic(content, spec_path)) {
+        try printError("Language policy violation: {s} contains Cyrillic\n", .{spec_path});
+        return error.LanguagePolicyViolation;
+    }
+
+    // Parse spec
+    const context = parseSimple(content, spec_path);
+
+    if (context.errors.len > 0) {
+        try printError("Parse errors in {s}:\n", .{spec_path});
+        for (context.errors) |err| {
+            try std.io.getStdErr().writer().print(
+                "  Line {d}:{d}: {s}\n",
+                .{ err.line, err.column, err.message },
+            );
+        }
+        return error.ParseError;
+    }
+
+    // TDD compliance check
+    const has_tests = hasTestsOrInvariants(&context.ast_root);
+
+    if (!has_tests) {
+        try printError("TDD contract violated: no tests in spec\n\n");
+        try std.io.getStdErr().writeAll(
+            \\The t27 project follows Test-Driven Development where:
+            \\  1. Every spec MUST have at least one 'test' or 'invariant' block
+            \\  2. Tests are written BEFORE or WITH the implementation
+            \\  3. Conformance JSON is generated FROM tests, not hand-written
+            \\
+            \\To fix this error:
+            \\  1. Add a .test section with test cases to your spec
+            \\  2. Or add a .invariant section with invariant declarations
+            \\  3. Or use the high-level TDD syntax with 'test' and 'invariant' blocks
+            \\
+            \\Example:
+            \\  .test
+            \\      ; my_test
+            \\      ; Verify: functionality works
+            \\      ; Expected: correct result
+            \\
+            \\  .invariant
+            \\      ; my_invariant
+            \\      ; For all valid inputs: output is valid
+            \\
+            \\NOTE: There is NO --allow-no-tests flag (prototype mode is disabled per policy)
+        );
+        return error.TDDViolation;
+    }
+
+    std.debug.print("TDD contract validated\n", .{});
+
+    // Generate implementation code
+    const impl_output = try generateImplementation(allocator, spec_path, &context.ast_root, options);
+    defer allocator.free(impl_output);
+
+    // Generate test code
+    const test_output = if (options.emit_tests)
+        try generateTests(allocator, &context.ast_root, options)
+    else
+        try allocator.dupe(u8, "");
+    defer if (options.emit_tests) allocator.free(test_output);
+
+    // Generate conformance JSON
+    const conf_output = if (options.emit_conformance)
+        try generateConformance(allocator, &context.ast_root)
+    else
+        try allocator.dupe(u8, "");
+    defer if (options.emit_conformance) allocator.free(conf_output);
+
+    std.debug.print("Code generation complete!\n", .{});
+}
+
+fn genAll(allocator: std.mem.Allocator, options: GenOptions) !void {
+    const spec_files = try globSpecs(allocator);
+    defer {
+        for (spec_files.items) |f| allocator.free(f);
+        spec_files.deinit();
+    }
+
+    if (spec_files.items.len == 0) {
+        try std.io.getStdOut().writeAll("No spec files found\n");
+        return;
+    }
+
+    std.debug.print("Found {d} spec file(s)\n\n", .{spec_files.items.len});
+
+    var success_count: usize = 0;
+    var fail_count: usize = 0;
+
+    for (spec_files.items) |spec_path| {
+        std.debug.print("Generating: {s}\n", .{spec_path});
+        const result = gen(allocator, spec_path, options);
+
+        if (result) |_| {
+            success_count += 1;
+        } else |_| {
+            fail_count += 1;
+            try std.io.getStdErr().writer().print("  Failed: {s}\n", .{spec_path});
+        }
+    }
+
+    try std.io.getStdOut().writer().print(
+        "\nGeneration complete:\n  Success: {d}\n  Failed: {d}\n",
+        .{ success_count, fail_count },
+    );
+
+    if (fail_count > 0) {
+        return error.GenerationFailed;
+    }
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Git Commands
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn gitCommit(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    var message: []const u8 = "";
+    var all = false;
+    var mode: []const u8 = "strict";
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--all") or std.mem.eql(u8, arg, "-a")) {
+            all = true;
+        } else if (std.mem.eql(u8, arg, "-m")) {
+            if (i + 1 < args.len) {
+                message = args[i + 1];
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, arg, "--mode")) {
+            if (i + 1 < args.len) {
+                mode = args[i + 1];
+                i += 1;
+            }
+        }
+    }
+
+    // TODO: Implement full git commit with cell validation
+    // For now, delegate to git
+    const git_argv = &[_][]const u8{ "git", "commit" } ++ if (all) &[_][]const u8{"--all"} else &[_][]const u8{} ++
+        if (message.len > 0) &[_][]const u8{ "-m", message } else &[_][]const u8{};
+
+    try runGitDirect(git_argv);
+    std.debug.print("Mode: {s}\n", .{mode});
+}
+
+fn gitPush(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    var remote: []const u8 = "origin";
+    var branch: []const u8 = "";
+    var mode: []const u8 = "strict";
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--mode")) {
+            if (i + 1 < args.len) {
+                mode = args[i + 1];
+                i += 1;
+            }
+        } else if (!std.mem.startsWith(u8, arg, "-")) {
+            if (remote.len == 0) {
+                remote = arg;
+            } else if (branch.len == 0) {
+                branch = arg;
+            }
+        }
+    }
+
+    // TODO: Implement full git push with cell validation
+    const branch_arg = if (branch.len > 0) branch else "HEAD";
+    const git_argv = &[_][]const u8{ "git", "push", remote, branch_arg };
+
+    try runGitDirect(git_argv);
+    std.debug.print("Mode: {s}\n", .{mode});
+}
+
+fn gitStatusWithCell(allocator: std.mem.Allocator) !void {
+    _ = allocator;
+
+    // Show git status
+    try runGitDirect(&[_][]const u8{ "git", "status", "--porcelain" });
+
+    // TODO: Show cell info if registry exists
+    const registry_path = ".trinity/cells/registry.json";
+    if (fileExists(registry_path)) {
+        std.debug.print("\nCell info: TODO - implement\n", .{});
+    }
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Lint Commands
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn lintFile(allocator: std.mem.Allocator, file_path: []const u8) !void {
+    if (!fileExists(file_path)) {
+        try printError("File not found: {s}\n", .{file_path});
+        return error.FileNotFound;
+    }
+
+    const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 1024 * 1024);
+    defer allocator.free(content);
+
+    var errors: usize = 0;
+
+    // Check 1: Language policy (no Cyrillic)
+    if (!validateNoCyrillic(content, file_path)) {
+        try printError("a Language policy: contains Cyrillic\n", .{});
+        errors += 1;
+    } else {
+        std.debug.print("a Language policy: ASCII-only\n", .{});
+    }
+
+    // Check 2: TDD compliance (if .t27 file)
+    if (std.mem.endsWith(u8, file_path, ".t27")) {
+        const context = parseSimple(content, file_path);
+
+        if (context.errors.len > 0) {
+            try printError("a Parse errors: {d}\n", .{context.errors.len});
+            errors += context.errors.len;
+        } else {
+            std.debug.print("a Parse: OK\n", .{});
+        }
+
+        if (!hasTestsOrInvariants(&context.ast_root)) {
+            try printError("a TDD contract: no tests or invariants\n", .{});
+            errors += 1;
+        } else {
+            std.debug.print("a TDD contract: has tests/invariants\n", .{});
+        }
+    }
+
+    if (errors == 0) {
+        std.debug.print("\na {s} is compliant\n", .{file_path});
+    } else {
+        std.debug.print("\na {s} has {d} violation(s)\n", .{ file_path, errors });
+        return error.LintFailed;
+    }
+}
+
+fn lintAll(allocator: std.mem.Allocator) !void {
+    const files = try globSourceFiles(allocator);
+    defer {
+        for (files.items) |f| allocator.free(f);
+        files.deinit();
+    }
+
+    if (files.items.len == 0) {
+        try std.io.getStdOut().writeAll("No source files found\n");
+        return;
+    }
+
+    std.debug.print("Linting {d} file(s)...\n\n", .{files.items.len});
+
+    var errors: usize = 0;
+
+    for (files.items) |file| {
+        if (lintFile(allocator, file)) |_| {} else |_| {
+            errors += 1;
+        }
+    }
+
+    if (errors == 0) {
+        std.debug.print("\na All files are compliant\n", .{});
+    } else {
+        try std.io.getStdErr().writer().print("\na {d} file(s) have violations\n", .{errors});
+        return error.LintFailed;
+    }
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Helper Functions
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn printUsage() !void {
+    try std.io.getStdOut().writeAll(
+        \\tri - Trinity T27 CLI
+        \\
+        \\Usage:
+        \\  tri <command> [arguments]
+        \\
+        \\Commands:
+        \\  spec create <name> [--path <path>]    Create a new spec with TDD template
+        \\  spec validate <spec>                  Validate spec for TDD compliance
+        \\  spec list                             List all specs in project
+        \\
+        \\  gen <spec>                            Generate code from spec
+        \\    [--backend <zig|c|verilog>]       Target backend (default: zig)
+        \\    [--output-dir <dir>]                Output directory
+        \\    [--no-tests]                        Skip test generation
+        \\    [--no-conformance]                  Skip conformance JSON
+        \\  gen --all                             Generate code for all specs
+        \\
+        \\  git commit [--all] [-m "msg"]         Commit with cell validation
+        \\    [--mode strict|normal|local]       Commit mode (default: strict)
+        \\  git push [remote] [branch] [--mode ...] Push with cell validation
+        \\  git status                             Show git status with cell info
+        \\
+        \\  lint [file]                           Check file or all for compliance
+        \\    --all                                Check all source files
+        \\
+        \\  help                                  Show this help message
+        \\
+        \\Environment Variables:
+        \\  TRI_BACKEND                           Default backend for gen (default: zig)
+        \\  TRI_OUTPUT_DIR                         Default output directory
+        \\
+        \\SOUL.md Constitutional Laws:
+        \\  Law #1: Source files MUST NOT contain Cyrillic (docs may)
+        \\  Law #2: Every spec MUST have tests or invariants (no prototype mode)
+        \\
+        \\For more information, see:
+        \\  docs/SOUL.md - Constitutional laws
+        \\  docs/TDD-CONTRACT.md - TDD contract details
+        \\  docs/TRI_SYNTAX_VNEXT.md - Language syntax
+    );
+}
+
+fn printError(msg: []const u8) !void {
+    try std.io.getStdErr().writer().print("{s}\n", .{msg});
+}
+
+fn printErrorFmt(comptime fmt: []const u8, args: anytype) !void {
+    const writer = std.io.getStdErr().writer();
+    try writer.print(fmt, args);
+    try writer.writeByte('\n');
+}
+
+fn fileExists(path: []const u8) bool {
+    std.fs.cwd().openFile(path, .{}) catch |err| {
+        if (err == error.FileNotFound) return false;
+        return true;
+    };
+    return true;
+}
+
+fn isValidSpecName(name: []const u8) bool {
+    if (name.len == 0) return false;
+
+    // Must start with lowercase letter
+    const first = name[0];
+    if (first < 'a' or first > 'z') return false;
+
+    // Only alphanumeric and underscores allowed
+    for (name) |c| {
+        if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_') {
+            continue;
+        }
+        return false;
+    }
+
+    return true;
+}
+
+fn generateSpecTemplate(allocator: std.mem.Allocator, name: []const u8) ![]const u8 {
+    return std.fmt.allocPrint(allocator,
+        \\; {s}.t27 a Specification for {s}
+        \\; phi^2 + 1/phi^2 = 3 | TRINITY
+        \\
+        \\; This file is the source of truth for {s}.
+        \\; Generated code is a derived artifact - DO NOT EDIT generated files.
+        \\;
+        \\; TDD Contract: This spec MUST include at least one test or invariant.
+        \\
+        \\use base::types
+        \\
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        \\; Constants
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        \\
+        \\; Example constant
+        \\const EXAMPLE_CONSTANT = 42
+        \\
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        \\; Data Section
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        \\
+        \\.data
+        \\    .const DATA_INIT 0
+        \\
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        \\; Code Section
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        \\
+        \\.code
+        \\main:
+        \\    ; Your code here
+        \\    HALT
+        \\
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        \\; TDD-Inside-Spec: Tests and Invariants
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        \\
+        \\.test
+        \\    ; example_test
+        \\    ; Verify: example functionality works correctly
+        \\    ; Setup: initialize with EXAMPLE_CONSTANT
+        \\    ; Expected: returns expected value
+        \\
+        \\.invariant
+        \\    ; example_invariant
+        \\    ; For all valid inputs: output is in valid range
+        \\    ; Rationale: Ensures function correctness
+        \\
+        \\.bench
+        \\    ; example_benchmark
+        \\    ; Measure: operations per second
+        \\    ; Target: > 1M ops/sec
+    , .{name, name, name, name});
+}
+
+fn validateNoCyrillic(content: []const u8, file_path: []const u8) bool {
+    // Check if file is in docs/ directory (Cyrillic allowed)
+    if (std.mem.indexOf(u8, file_path, "/docs/") != null or
+        std.mem.startsWith(u8, file_path, "docs/")) {
+        return true;
+    }
+
+    // Scan for Cyrillic characters (U+0400aU+04FF)
+    var i: usize = 0;
+    while (i < content.len) : (i += 1) {
+        const c = content[i];
+
+        // Check for 2-byte UTF-8 Cyrillic starting with 0xD0-0xD4
+        if (c >= 0xD0 and c <= 0xD4) {
+            if (i + 1 < content.len) {
+                const next_c = content[i + 1];
+                const codepoint = (@as(u16, c) << 8) | next_c;
+                // Cyrillic block: U+0400aU+04FF
+                if (codepoint >= 0x0400 and codepoint <= 0x04FF) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+fn hasTestsOrInvariants(ast_root: *const AST.Program) bool {
+    // Check test_section
+    if (ast_root.test_section) |test_section| {
+        if (test_section.test_cases.len > 0) return true;
+    }
+
+    // Check invariant_section
+    if (ast_root.invariant_section) |inv_section| {
+        if (inv_section.invariants.len > 0) return true;
+    }
+
+    // Check spec_decl (high-level TDD)
+    if (ast_root.spec_decl) |spec_decl| {
+        if (spec_decl.test_blocks.len > 0) return true;
+        if (spec_decl.invariants.len > 0) return true;
+    }
+
+    return false;
+}
+
+fn validateTDDCompliance(allocator: std.mem.Allocator, ast_root: *const AST.Program) !std.ArrayList([]const u8) {
+    var errors = std.ArrayList([]const u8).init(allocator);
+
+    if (!hasTestsOrInvariants(ast_root)) {
+        try errors.append(try allocator.dupe(u8, "TDD contract violated: spec must contain at least one 'test' or 'invariant' block"));
+    }
+
+    return errors;
+}
+
+fn printSummary(ast_root: *const AST.Program) !void {
+    try std.io.getStdOut().writer().print(
+        \\Summary:
+        \\  Constants: {d}
+    , .{ast_root.constants.len});
+
+    if (ast_root.spec_decl) |spec| {
+        try std.io.getStdOut().writer().print(
+            \\  Tests (spec-style): {d}
+            \\  Invariants (spec-style): {d}
+        , .{ spec.test_blocks.len, spec.invariants.len });
+    }
+
+    if (ast_root.test_section) |test| {
+        try std.io.getStdOut().writer().print(
+            \\  Tests (assembly-style): {d}
+        , .{test.test_cases.len});
+    }
+
+    if (ast_root.invariant_section) |inv| {
+        try std.io.getStdOut().writer().print(
+            \\  Invariants (assembly-style): {d}
+        , .{inv.invariants.len});
+    }
+
+    try std.io.getStdOut().writeByte('\n');
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Simple Parser (placeholder - would use real parser.t27)
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn parseSimple(content: []const u8, file_path: []const u8) ParseContext {
+    _ = file_path;
+
+    var program = AST.Program{};
+
+    // Simple line-by-line parsing for .test and .invariant sections
+    var lines = std.mem.splitScalar(u8, content, '\n');
+    var in_test = false;
+    var in_invariant = false;
+    var test_cases = std.ArrayList(AST.TestCase).init(std.heap.page_allocator);
+    var invariants = std.ArrayList(AST.Invariant).init(std.heap.page_allocator);
+
+    while (lines.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+
+        if (std.mem.startsWith(u8, trimmed, ".test")) {
+            in_test = true;
+            in_invariant = false;
+        } else if (std.mem.startsWith(u8, trimmed, ".invariant")) {
+            in_invariant = true;
+            in_test = false;
+        } else if (std.mem.startsWith(u8, trimmed, ".") and
+                  !std.mem.startsWith(u8, trimmed, ".test") and
+                  !std.mem.startsWith(u8, trimmed, ".invariant") and
+                  !std.mem.startsWith(u8, trimmed, ".bench")) {
+            in_test = false;
+            in_invariant = false;
+        } else if (in_test and trimmed.len > 0 and !std.mem.startsWith(u8, trimmed, ";")) {
+            // Found a test case (non-comment, non-empty)
+            const name = std.mem.trim(u8, trimmed, " \t\r");
+            test_cases.append(AST.TestCase{
+                .name = name,
+                .verify = "",
+                .setup = "",
+                .expected = "",
+            }) catch {};
+        } else if (in_invariant and trimmed.len > 0 and !std.mem.startsWith(u8, trimmed, ";")) {
+            // Found an invariant
+            const name = std.mem.trim(u8, trimmed, " \t\r");
+            invariants.append(AST.Invariant{
+                .name = name,
+                .statement = "",
+                .rationale = "",
+            }) catch {};
+        }
+    }
+
+    if (test_cases.items.len > 0) {
+        program.test_section = AST.TestSection{
+            .test_cases = test_cases.toOwnedSlice(),
+        };
+    }
+
+    if (invariants.items.len > 0) {
+        program.invariant_section = AST.InvariantSection{
+            .invariants = invariants.toOwnedSlice(),
+        };
+    }
+
+    return ParseContext{
+        .ast_root = program,
+        .errors = &[0]ParseContext.Error{},
+    };
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Code Generation Helpers
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn generateImplementation(allocator: std.mem.Allocator, spec_path: []const u8, ast_root: *const AST.Program, options: GenOptions) ![]const u8 {
+    _ = spec_path;
+    _ = ast_root;
+    _ = options;
+
+    // Placeholder
+    return try allocator.dupe(u8, "// Generated implementation for spec\n");
+}
+
+fn generateTests(allocator: std.mem.Allocator, ast_root: *const AST.Program, options: GenOptions) ![]const u8 {
+    _ = options;
+
+    var output = std.ArrayList(u8).init(allocator);
+    defer output.deinit();
+
+    try output.appendSlice("// Generated tests for spec\n");
+
+    if (ast_root.test_section) |test_section| {
+        for (test_section.test_cases) |test_case| {
+            try output.appendSlice("test \"");
+            try output.appendSlice(test_case.name);
+            try output.appendSlice("\" {\n");
+            try output.appendSlice("    // TODO: implement test\n");
+            try output.appendSlice("}\n\n");
+        }
+    }
+
+    if (ast_root.invariant_section) |inv_section| {
+        for (inv_section.invariants) |inv| {
+            try output.appendSlice("// invariant: ");
+            try output.appendSlice(inv.name);
+            try output.appendSlice("\n");
+        }
+    }
+
+    return output.toOwnedSlice();
+}
+
+fn generateConformance(allocator: std.mem.Allocator, ast_root: *const AST.Program) ![]const u8 {
+    var output = std.ArrayList(u8).init(allocator);
+    defer output.deinit();
+
+    try output.appendSlice("{\n");
+    try output.appendSlice("  \"description\": \"t27 conformance\",\n");
+    try output.appendSlice("  \"test_vectors\": [\n");
+
+    if (ast_root.test_section) |test_section| {
+        for (test_section.test_cases, 0..) |test_case, i| {
+            try output.appendSlice("    {\n");
+            try output.appendSlice("      \"name\": \"");
+            try output.appendSlice(test_case.name);
+            try output.appendSlice("\",\n");
+            try output.appendSlice("      \"verify\": \"");
+            try output.appendSlice(if (test_case.verify.len > 0) test_case.verify else "functionality works correctly");
+            try output.appendSlice("\",\n");
+            try output.appendSlice("      \"expected\": \"");
+            try output.appendSlice(if (test_case.expected.len > 0) test_case.expected else "correct result");
+            try output.appendSlice("\"\n");
+            try output.appendSlice("    }");
+            if (i < test_section.test_cases.len - 1) {
+                try output.appendSlice(",");
+            }
+            try output.appendSlice("\n");
+        }
+    }
+
+    try output.appendSlice("  ]\n");
+    try output.appendSlice("}\n");
+
+    return output.toOwnedSlice();
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// Git Helpers
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn runGitDirect(argv: []const []const u8) !void {
+    const result = std.process.Child.exec(.{
+        .allocator = std.heap.page_allocator,
+        .argv = argv,
+    }) catch |err| {
+        try printErrorFmt("Failed to execute git: {}\n", .{@errorName(err)});
+        return error.GitFailed;
+    };
+    defer result.deinit();
+
+    try std.io.getStdOut().writeAll(result.stdout);
+
+    const term = try result.wait();
+    if (term != .Exited or term.Exited != 0) {
+        try std.io.getStdErr().writeAll(result.stderr);
+        return error.GitFailed;
+    }
+}
+
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// File System Helpers
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+fn globSpecs(allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
+    var spec_files = std.ArrayList([]const u8).init(allocator);
+
+    var dir = std.fs.cwd().openDir("specs") catch |err| {
+        if (err == error.FileNotFound) return spec_files;
+        return err;
+    };
+    defer dir.close();
+
+    var walker = try dir.walk(allocator);
+    defer walker.deinit();
+
+    while (try walker.next()) |entry| {
+        if (entry.kind == .file and std.mem.endsWith(u8, entry.path, ".t27")) {
+            const path = try std.fmt.allocPrint(allocator, "specs/{s}", .{entry.path});
+            try spec_files.append(path);
+        }
+    }
+
+    return spec_files;
+}
+
+fn globSourceFiles(allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
+    var files = std.ArrayList([]const u8).init(allocator);
+
+    // Common source extensions
+    const extensions = [_][]const u8{ ".t27", ".tri", ".zig", ".c", ".h", ".v", ".verilog" };
+
+    // Recursively find files
+    var walker = try std.fs.cwd().walk(allocator, .{
+        .max_depth = 10,
+        .skip_hidden_files = true,
+    }) catch |err| {
+        if (err == error.FileNotFound) return files;
+        return err;
+    };
+    defer walker.deinit();
+
+    while (try walker.next()) |entry| {
+        if (entry.kind == .file) {
+            const path = entry.path;
+            // Skip docs/ directory
+            if (std.mem.indexOf(u8, path, "/docs/") != null) continue;
+            if (std.mem.indexOf(u8, path, "docs/") == 0) continue;
+
+            for (extensions) |ext| {
+                if (std.mem.endsWith(u8, path, ext)) {
+                    try files.append(try allocator.dupe(u8, path));
+                    break;
+                }
+            }
+        }
+    }
+
+    return files;
+}

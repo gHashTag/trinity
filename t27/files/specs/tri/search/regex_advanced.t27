@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Capture groups support | φ² + 1/φ² = 3 | TRINITY
+
+module TriRegexAdvanced;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const RegexFlags = struct {
+        enum : [IgnoreCase, Multiline, DotAll],
+    };
+
+    pub const RegexMatch = struct {
+        matched : "bool",
+        groups : "[]const []const u8",
+        start : "usize",
+        end : "usize",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compile(pattern: []const u8) → void
+    fn compile(pattern: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // match(regex: Regex) → void
+    fn match(regex: Regex) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // replace(regex: Regex) → void
+    fn replace(regex: Regex) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test compile_basic_case
+        given input = default_input()
+        when result = compile(input)
+        then result != undefined
+
+    test match_basic_case
+        given input = default_input()
+        when result = match(input)
+        then result != undefined
+
+    test replace_basic_case
+        given input = default_input()
+        when result = replace(input)
+        then result != undefined
+

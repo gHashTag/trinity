@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Can recover from up to parity_shards/2 erasures | φ² + 1/φ² = 3 | TRINITY
+
+module TriReedSolomon;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const RSCode = struct {
+        data_shards : "usize",
+        parity_shards : "usize",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // encode(data: []const u8) → void
+    fn encode(data: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // decode(shards: []const ?u8) → void
+    fn decode(shards: []const ?u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test encode_basic_case
+        given input = default_input()
+        when result = encode(input)
+        then result != undefined
+
+    test decode_basic_case
+        given input = default_input()
+        when result = decode(input)
+        then result != undefined
+

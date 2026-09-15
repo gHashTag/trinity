@@ -1,0 +1,75 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(log n) amortized, O(n) worst case per operation | φ² + 1/φ² = 3 | TRINITY
+
+module TriSplayTree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SplayTree = struct {
+        generic : "K, V",
+        root : "?*SplayNode",
+        size : "usize",
+    };
+
+    pub const SplayNode = struct {
+        generic : "K, V",
+        key : "K",
+        value : "V",
+        left : "?*SplayNode",
+        right : "?*SplayNode",
+        parent : "?*SplayNode",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init() → SplayTree
+    fn init() -> SplayTree {
+        // TODO: Implement from .tri spec
+    }
+
+    // find(tree: *SplayTree) → void
+    fn find(tree: *SplayTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(tree: *SplayTree) → void
+    fn insert(tree: *SplayTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // delete(tree: *SplayTree) → void
+    fn delete(tree: *SplayTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test find_basic_case
+        given input = default_input()
+        when result = find(input)
+        then result != undefined
+
+    test insert_basic_case
+        given input = default_input()
+        when result = insert(input)
+        then result != undefined
+
+    test delete_basic_case
+        given input = default_input()
+        when result = delete(input)
+        then result != undefined
+

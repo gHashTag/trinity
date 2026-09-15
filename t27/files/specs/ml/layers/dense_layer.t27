@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Row-major weight layout for cache efficiency | φ² + 1/φ² = 3 | TRINITY
+
+module Dense;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const MIN_INPUT_SIZE : u32 = 1;
+    const MAX_INPUT_SIZE : u32 = 4096;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const DenseConfig = struct {
+        input_size : u32,
+        output_size : u32,
+        has_bias : bool,
+        activation : ActivationType,
+    };
+
+    pub const ActivationType = struct {
+        enum_type : "enum",
+        values : ,
+        None : Auto,
+        ReLU : Auto,
+        GELU : Auto,
+        Sigmoid : Auto,
+        Tanh : Auto,
+        Softmax : Auto,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32) → void
+    fn backward(grad_output: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test backward_basic_case
+        given input = default_input()
+        when result = backward(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant dense_constraint_0
+        given input = valid_input()
+        then true // input.size() == config.input_size
+
+    invariant dense_constraint_1
+        given input = valid_input()
+        then true // output.size() == config.output_size
+
+    invariant dense_constraint_2
+        given input = valid_input()
+        then true // weights.size() == input_size * output_size
+
+    invariant dense_constraint_3
+        given input = valid_input()
+        then true // bias.size() == output_size (if has_bias)
+
+    invariant dense_constraint_4
+        given input = valid_input()
+        then true // All inputs must be finite (no NaN/Inf)
+

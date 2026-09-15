@@ -1,0 +1,216 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/numeric/requant_boundary.t27
+// Activation requantizer: the threshold boundary convention.
+//
+// Recorded because Wave 669 had to settle a semantic question with no
+// specification to appeal to. Two independently written implementations of the
+// same rule -- the emitted `activation_requant` RTL and the end-to-end
+// testbench reference in sim/tb_data_check.v -- agreed everywhere except at
+// acc == +-threshold, and nothing in specs/ said which was right.
+module RequantBoundary {
+    const MUTANT : i32 = -1;
+    const MUTANT2 : i32 = -2;
+    const MUTANT3 : i32 = -3;
+
+// 1. Encoding
+// Claim ID: C-requant-000 (PRE_RULE, mirrors the emitted localparams)
+
+    // Balanced trit codes. 0b11 is reserved and must never be produced;
+    // an unreachability property for it already exists in the RTL.
+    const TRIT_N : u2 = 0b00;          // -1
+    const TRIT_Z : u2 = 0b01;          //  0
+    const TRIT_P : u2 = 0b10;          // +1
+    const TRIT_RESERVED : u2 = 0b11;   // never produced
+
+// 2. The boundary convention
+// Claim ID: C-requant-001 (VERIFIED_SW, [simulated] -- NOT measured on FPGA)
+//
+// The boundary is INCLUSIVE on both sides. Provenance: PRE_RULE -- this value
+// was fixed before this spec existed, stated in the RTL as a documented
+// priority chain and asserted by activation_requant's own inline properties.
+// Matching it here is therefore a RECORD, not independent evidence.
+//
+// A PRIORITY CHAIN, not parallel comparisons: a host may program a negative
+// threshold, which makes both comparisons true at once. The chain keeps the
+// output inside the legal alphabet for every input rather than relying on a
+// precondition the host might not honour. That decision predates this spec.
+
+    fn requantize(acc: i16, threshold: i16) -> u2 {
+        if acc >= threshold {
+            return TRIT_P;
+        }
+        if acc <= -threshold {
+            return TRIT_N;
+        }
+        return TRIT_Z;
+    }
+
+// 3. Consequence of the chain under a negative threshold
+// Claim ID: C-requant-002 (VERIFIED_SW by reading + inline properties;
+//                          NO VECTOR -- see scope limits below)
+//
+// Not a claim that a negative threshold is meaningful. A claim that it cannot
+// produce TRIT_RESERVED or an ambiguous encoding: the first arm wins.
+
+    fn negative_threshold_yields_p(acc: i16, threshold: i16) -> bool {
+        if threshold < 0 {
+            return requantize(acc, threshold) == TRIT_P;
+        }
+        return true;
+    }
+
+// 4. Verification record
+// Claim ID: C-requant-003 (VERIFIED_SW, [simulated])
+//
+// 26 configurations, engine output against a reference computed inside the
+// testbench, via `python3 formal/value_sweep.py`. All 26 matched.
+//
+// Seeds 5 and 7 land on acc == -threshold EXACTLY. Before Wave 669 no vector
+// in this campaign ever reached the boundary, because every input and weight
+// was +1 and the accumulator was therefore always 27*chunks -- never within 24
+// of the threshold. A boundary disagreement is visible only from the boundary.
+
+    const VERIFY_CHECKED : u32 = 26;
+    const VERIFY_MATCHED : u32 = 26;
+    const VERIFY_BOUNDARY_REACHED : bool = true;
+    const VERIFY_ACC_MIN_OBSERVED : i16 = -6;
+    const VERIFY_ACC_MAX_OBSERVED : i16 = 81;
+
+// 5. Finding F-requant-001 (RESOLVED)
+//
+// The testbench reference used strict `>` and `<`. It agreed with the design at
+// every other accumulator value in the observed range. The REFERENCE was
+// corrected, not the design.
+//
+// The adjudication is recorded because the direction matters more than the
+// outcome: there was no authority above the two implementations. The design's
+// convention is stated twice in the artifact -- RTL chain plus inline
+// properties -- and the reference agreed with neither. Had the intended
+// semantics been exclusive, the same evidence would have condemned the design.
+// This module now supplies the authority that was missing, so a future
+// disagreement is decidable without re-running the argument.
+
+    const FINDING_SITE : str = "sim/tb_data_check.v ref_trit()";
+    const FINDING_RESOLVED : bool = true;
+
+// 6. Open question Q-requant-001 -- DO NOT GUESS
+//
+// Is INCLUSIVE the INTENDED semantics, or merely the implemented one? This
+// module records what the artifact does and that its two internal statements
+// agree. It does NOT establish that a BitNet-style requantizer ought to round
+// at the boundary this way rather than the other, and no source in this
+// repository settles it. Owner: author.
+
+    const OPEN_QUESTION_DO_NOT_GUESS : bool = true;
+
+// 7. Scope limits -- what this module does NOT establish
+//
+//   * measured on FPGA -- every result here is [simulated] only
+//   * the semantic intent behind the boundary (Q-requant-001)
+//   * thresholds other than 3 -- the sweep holds threshold fixed, because
+//     varying it exercises the testbench's arithmetic rather than the design
+//   * negative thresholds -- C-requant-002 is read from the RTL and its inline
+//     properties and has NO vector in the sweep
+//   * accumulator values outside [-6, +81], the observed range
+
+    const SUPERIORITY_CLAIMED : bool = false;
+    const MEASURED_ON_FPGA : bool = false;
+
+// 8. Tests
+//
+// These execute the rule stated above. They are a RECORD of the convention in
+// section 2, not independent evidence for it: the same author wrote both. What
+// they do buy is that a silent change to `requantize` can no longer pass.
+
+    // The three legal codes are distinct, and none of them is the reserved one.
+    test trit_alphabet_is_distinct
+        then TRIT_N != TRIT_Z
+        and TRIT_Z != TRIT_P
+        and TRIT_N != TRIT_P
+        and TRIT_N != TRIT_RESERVED
+        and TRIT_Z != TRIT_RESERVED
+        and TRIT_P != TRIT_RESERVED
+
+    // C-requant-001. The boundary itself, both sides, at threshold 3 -- the
+    // exact points where the testbench reference disagreed (F-requant-001).
+    test boundary_is_inclusive_both_sides
+        then requantize(3, 3) == TRIT_P
+        and requantize(-3, 3) == TRIT_N
+
+    // One step inside the boundary is zero on both sides.
+    test just_inside_boundary_is_zero
+        then requantize(2, 3) == TRIT_Z
+        and requantize(-2, 3) == TRIT_Z
+        and requantize(0, 3) == TRIT_Z
+
+    // One step outside keeps the sign.
+    test just_outside_boundary_saturates
+        then requantize(4, 3) == TRIT_P
+        and requantize(-4, 3) == TRIT_N
+
+    // Symmetry about zero for a positive threshold: -acc maps to the mirror
+    // code of acc.
+    test positive_threshold_is_symmetric
+        then requantize(7, 3) == TRIT_P
+        and requantize(-7, 3) == TRIT_N
+        and requantize(1, 3) == TRIT_Z
+        and requantize(-1, 3) == TRIT_Z
+
+    // The extremes of the range the sweep actually observed, [-6, +81].
+    test observed_range_endpoints
+        then requantize(VERIFY_ACC_MIN_OBSERVED, 3) == TRIT_N
+        and requantize(VERIFY_ACC_MAX_OBSERVED, 3) == TRIT_P
+
+    // C-requant-002, the part that holds. A negative threshold makes both
+    // comparisons true only on the OVERLAP [threshold, -threshold]; there the
+    // chain's first arm wins, exactly as claimed.
+    test negative_threshold_takes_the_first_arm_on_the_overlap
+        then requantize(-1, -1) == TRIT_P
+        and requantize(0, -1) == TRIT_P
+        and requantize(1, -1) == TRIT_P
+        and negative_threshold_yields_p(0, -1) == true
+
+    // C-requant-002, the part that holds. Below the negative threshold the
+    // arms no longer overlap: the first is false, the second is true, and the
+    // code is N. Still inside the legal alphabet -- never TRIT_RESERVED, which
+    // is what section 3's prose actually claims.
+    test negative_threshold_stays_inside_the_alphabet
+        then requantize(-100, -1) == TRIT_N
+        and requantize(-100, -1) != TRIT_RESERVED
+        and requantize(100, -1) == TRIT_P
+        and requantize(100, -1) != TRIT_RESERVED
+
+    // FINDING F-requant-002 (OPEN). This test FAILS, and it is meant to.
+    //
+    // `negative_threshold_yields_p` guards on `threshold < 0` alone and then
+    // asserts TRIT_P, i.e. it states that ANY negative threshold yields P for
+    // ANY accumulator. It does not. For acc < threshold < 0 only the second arm
+    // is true and the code is N: acc = -100, threshold = -1 returns false.
+    //
+    // Section 3's prose claim -- "it cannot produce TRIT_RESERVED" -- is sound
+    // and is covered by the test above. The FUNCTION encodes a stronger claim
+    // than the prose and that stronger claim is false. The predicate needs the
+    // overlap condition `acc >= threshold` in its guard, or the claim needs
+    // restating. Deciding which is the author's call, so the test is left
+    // failing rather than weakened to match the code.
+    test negative_threshold_yields_p_holds_universally
+        then negative_threshold_yields_p(-100, -1) == true
+
+    // The guard: for a non-negative threshold the predicate is vacuously true
+    // and says nothing about the code produced.
+    test negative_threshold_predicate_is_vacuous_when_non_negative
+        then negative_threshold_yields_p(0, 3) == true
+        and negative_threshold_yields_p(81, 3) == true
+
+    // At threshold 0 the two arms tile the whole range and TRIT_Z is
+    // unreachable: acc >= 0 takes the first arm, acc < 0 satisfies acc <= -0.
+    test zero_threshold_leaves_no_dead_zone
+        then requantize(0, 0) == TRIT_P
+        and requantize(1, 0) == TRIT_P
+        and requantize(-1, 0) == TRIT_N
+
+    // Section 4's own record: every configuration checked also matched.
+    test verification_record_is_complete
+        then VERIFY_CHECKED == VERIFY_MATCHED
+        and VERIFY_BOUNDARY_REACHED == true
+}

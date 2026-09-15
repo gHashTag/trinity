@@ -1,0 +1,223 @@
+// SPDX-License-Identifier: CC0-1.0
+// SANDBOX-012: HTTPS Enforcement
+
+/**
+ * Module: sandbox.https_enforce
+ *
+ * Enforces HTTPS for all API requests.
+ * - Production: redirect HTTP to HTTPS (301 permanent redirect)
+ * - Local: allow HTTP for development
+ * - Uses X-Forwarded-Proto header when behind proxy
+ *
+ * This prevents mixed content and ensures all traffic is encrypted.
+ */
+
+module sandbox.https_enforce;
+
+// ─────────────────────────────────────────────
+// Configuration
+// ─────────────────────────────────────────────
+
+const HTTPS_REDIRECT_STATUS : u16 = 301;
+const HTTPS_SCHEME : &[u8; 5] = b"https";
+const HTTP_SCHEME : &[u8; 4] = b"http";
+const LOCAL_HOSTNAMES : [&[u8; 9]; 3] = [b"localhost", b"127.0.0.1", b"[::1]"];
+
+// ─────────────────────────────────────────────
+// Request Context
+// ─────────────────────────────────────────────
+
+pub struct RequestContext {
+    forwarded_proto: Option<&[u8]>,
+    host: &[u8],
+    is_local: bool,
+}
+
+// ─────────────────────────────────────────────
+// Core Logic
+// ─────────────────────────────────────────────
+
+/**
+ * Determine if a request should be redirected to HTTPS.
+ *
+ * Redirect rules:
+ * 1. Never redirect in local mode (localhost/127.0.0.1/::1)
+ * 2. Never redirect if X-Forwarded-Proto is "https"
+ * 3. Always redirect if X-Forwarded-Proto is "http" or missing
+ *
+ * @param ctx - Request context containing headers and local flag
+ * @return true if redirect to HTTPS is required
+ */
+fn should_redirect(ctx: &RequestContext) -> bool {
+    // Local mode: never redirect
+    if ctx.is_local {
+        return false;
+    }
+
+    match ctx.forwarded_proto {
+        Some(proto) => {
+            // If explicitly set to https, no redirect needed
+            proto == HTTPS_SCHEME
+        },
+        None => true,  // No header = assume HTTP, redirect
+    }
+}
+
+/**
+ * Build HTTPS redirect URL from original HTTP URL.
+ *
+ * @param original_url - Original HTTP URL
+ * @return HTTPS URL
+ */
+fn redirect_url(original_url: &[u8]) -> Vec<u8> {
+    let mut result = Vec::with_capacity(original_url.len() + 1);
+    let scheme_end = if original_url.len() > 7 && &original_url[..7] == b"http://" {
+        7
+    } else if original_url.len() > 8 && &original_url[..8] == b"https://" {
+        8  // Already HTTPS, return as-is
+    } else {
+        0  // No scheme prefix
+    };
+
+    if scheme_end > 0 {
+        result.extend_from_slice(HTTPS_SCHEME);
+        result.extend_from_slice(b"://");
+        result.extend_from_slice(&original_url[scheme_end..]);
+    } else {
+        result.extend_from_slice(original_url);
+    }
+    result
+}
+
+/**
+ * Check if a hostname indicates a local development environment.
+ *
+ * @param host - Hostname to check
+ * @return true if hostname is local
+ */
+fn is_local_hostname(host: &[u8]) -> bool {
+    LOCAL_HOSTNAMES.iter().any(|local| *local == host)
+}
+
+// ─────────────────────────────────────────────
+// Interface
+// ─────────────────────────────────────────────
+
+/**
+ * HTTPS enforcement middleware interface.
+ */
+pub trait HttpsEnforcer {
+    /**
+     * Check if request should redirect and build redirect URL.
+     *
+     * @param ctx - Request context
+     * @return None if no redirect, Some(https_url) if redirect needed
+     */
+    fn enforce(&self, ctx: &RequestContext) -> Option<Vec<u8>>;
+}
+
+// ─────────────────────────────────────────────
+// TDD Tests
+// ─────────────────────────────────────────────
+
+.test {
+    use sandbox.https_enforce;
+
+    fn make_ctx(forwarded_proto: Option<&[u8]>, host: &[u8]) -> RequestContext {
+        RequestContext {
+            forwarded_proto,
+            host,
+            is_local: is_local_hostname(host),
+        }
+    }
+
+    // Test: HTTPS requests are NOT redirected
+    test "https_not_redirected" {
+        input: {
+            ctx: make_ctx(Some(HTTPS_SCHEME), b"api.t27.dev"),
+        };
+        expected: false;
+        description: "Requests with X-Forwarded-Proto: https should not be redirected";
+    }
+
+    // Test: HTTP requests in production ARE redirected
+    test "http_redirected_in_prod" {
+        input: {
+            ctx: make_ctx(Some(HTTP_SCHEME), b"api.t27.dev"),
+        };
+        expected: true;
+        description: "Requests with X-Forwarded-Proto: http should be redirected to HTTPS";
+    }
+
+    // Test: Missing proto header triggers redirect
+    test "no_proto_header_redirected" {
+        input: {
+            ctx: make_ctx(None, b"api.t27.dev"),
+        };
+        expected: true;
+        description: "Requests without X-Forwarded-Proto should be redirected";
+    }
+
+    // Test: Local mode never redirects
+    test "local_mode_never_redirects" {
+        input: {
+            ctx: make_ctx(Some(HTTP_SCHEME), b"localhost"),
+        };
+        expected: false;
+        description: "Requests to localhost should never be redirected";
+    }
+
+    // Test: Redirect URL construction is correct
+    test "redirect_url_correct" {
+        input: {
+            original_url: b"http://api.t27.dev/health",
+        };
+        expected: b"https://api.t27.dev/health";
+        description: "HTTP URL should be converted to HTTPS URL";
+    }
+
+    // Test: HTTPS URL remains unchanged
+    test "https_url_unchanged" {
+        input: {
+            original_url: b"https://api.t27.dev/health",
+        };
+        expected: b"https://api.t27.dev/health";
+        description: "Already HTTPS URL should remain unchanged";
+    }
+
+    // Test: 127.0.0.1 is considered local
+    test "127_0_0_1_is_local" {
+        input: {
+            ctx: make_ctx(Some(HTTP_SCHEME), b"127.0.0.1"),
+        };
+        expected: false;
+        description: "Requests to 127.0.0.1 should never be redirected";
+    }
+
+    // Test: IPv6 localhost is considered local
+    test "ipv6_localhost_is_local" {
+        input: {
+            ctx: make_ctx(Some(HTTP_SCHEME), b"[::1]"),
+        };
+        expected: false;
+        description: "Requests to [::1] should never be redirected";
+    }
+
+    // Test: Port is preserved in redirect
+    test "redirect_preserves_port" {
+        input: {
+            original_url: b"http://api.t27.dev:8080/health",
+        };
+        expected: b"https://api.t27.dev:8080/health";
+        description: "Port number should be preserved in HTTPS redirect";
+    }
+
+    // Test: Query string is preserved in redirect
+    test "redirect_preserves_query" {
+        input: {
+            original_url: b"http://api.t27.dev/health?debug=true",
+        };
+        expected: b"https://api.t27.dev/health?debug=true";
+        description: "Query string should be preserved in HTTPS redirect";
+    }
+}

@@ -1,0 +1,7 @@
+# nn/hslm — Hierarchical Sequence Language Model
+# Status: stub (pending full spec)
+# Ternary-weight LLM architecture for FPGA deployment
+module hslm {
+    export HSLMConfig { d_model: u32, n_heads: u32, n_layers: u32 }
+    export forward(input: TokenSeq, config: HSLMConfig) -> Logits
+}

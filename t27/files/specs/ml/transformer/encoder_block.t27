@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Standard Transformer encoder block with residual connections | φ² + 1/φ² = 3 | TRINITY
+
+module EncoderBlock;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_D_MODEL : u32 = 512;
+    const DEFAULT_N_HEADS : u32 = 8;
+    const DEFAULT_D_FF : u32 = 2048;
+    const DEFAULT_DROPOUT : f32 = 0.1;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const EncoderBlockConfig = struct {
+        d_model : u32,
+        n_heads : u32,
+        d_ff : u32,
+        dropout : f32,
+        use_pre_norm : bool,
+    };
+
+    pub const AttentionOutput = struct {
+        output : []f32,
+        attn_weights : [][]f32,
+    };
+
+    pub const FFNOutput = struct {
+        output : []f32,
+    };
+
+    pub const BlockOutput = struct {
+        output : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // multi_head_attention(query: []f32) → void
+    fn multi_head_attention(query: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // feed_forward(input: []f32) → void
+    fn feed_forward(input: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward(input: []f32) → void
+    fn forward(input: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test multi_head_attention_basic_case
+        given input = default_input()
+        when result = multi_head_attention(input)
+        then result != undefined
+
+    test feed_forward_basic_case
+        given input = default_input()
+        when result = feed_forward(input)
+        then result != undefined
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant encoder_block_constraint_0
+        given input = valid_input()
+        then true // d_model % n_heads == 0
+
+    invariant encoder_block_constraint_1
+        given input = valid_input()
+        then true // d_ff >= d_model
+
+    invariant encoder_block_constraint_2
+        given input = valid_input()
+        then true // name: encoder_block
+
+    invariant encoder_block_constraint_3
+        given input = valid_input()
+        then true // "Vaswani et al. (2017) - Attention Is All You Need"
+
+    invariant encoder_block_constraint_4
+        given input = valid_input()
+        then true // "Baevski et al. (2020) - Revisiting the Self-Attention"
+

@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Prevent co-adaptation of neurons | φ² + 1/φ² = 3 | TRINITY
+
+module Dropout;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_DROP_RATE : f32 = 0.5;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const DropoutConfig = struct {
+        p : f32,
+        inplace : bool,
+        scale_during_training : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32) → void
+    fn backward(grad_output: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test backward_basic_case
+        given input = default_input()
+        when result = backward(input)
+        then result != undefined
+

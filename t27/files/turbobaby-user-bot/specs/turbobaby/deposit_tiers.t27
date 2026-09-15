@@ -1,0 +1,687 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/turbobaby/deposit_tiers.t27 -- the published security-deposit tiers of the TurboBaby fleet
+; Written contract for every surface that shows a deposit: the tier is looked up on the family
+; key and no surface computes one. Measured from data/fleet_seed.json (measured_at 2026-09-12),
+; whose deposit authority is the published tariff source KB_faq, section "Exact price list
+; (from CRM)". Closes issue #18. ASCII only (L3), English identifiers only.
+; --
+; WHAT READS THIS FILE TODAY (measured 2026-09-12): nothing. A grep for ".t27" and for
+; "specs/turbobaby" across *.rs, *.toml, *.py, *.sh, .github/ and Makefile returns no hit, so
+; the sentence above is a contract and not a description of a wiring that exists. The catalog
+; screen renders deposit_thb as it arrives from the API (src/ui/screens/catalog_screen.rs:126,
+; src/ui/components/bike_card.rs:102), and the API is seeded by migrations/082_bikes_seed.sql.
+; FAMILY_DEPOSIT_THB below is therefore a THIRD copy of the deposit column -- after
+; data/fleet_seed.json and migrations/082_bikes_seed.sql -- and a copy is a drift risk (D15).
+; It is here because none of the arithmetic below can be checked without it, and the copy is
+; currently ungated: scripts/verify_fleet_seed.py pins the SQL to the JSON and nothing else --
+; its own docstring says so -- and knows nothing about .t27. Comparing this table to the seed
+; is the next gate to write, not a job something already does. The sibling specs disclose the
+; same gap for their own copies (availability.t27, rental_terms.t27); an undeclared third copy
+; of a money column is exactly the defect D15 names, so it is declared here.
+; --
+; WHY (measured 2026-09-12): the deposit is the sixth heaviest topic in the dialog history the
+; tariff was derived from -- 375 client messages -- and issue #18 asked for
+; deposit_for(engine_cc, class) over three tiers of 3000 / 5000 / 10000-20000. The seed refutes
+; the request in both halves, so this spec does not implement it. Both refutations are recorded
+; here rather than in a review comment, because the wrong shape is the cheaper one to write.
+; --
+; (a) NO SUCH FUNCTION EXISTS. xmax-300 and xmax-300-new are both class "scooter" and both
+;     displacement_cc 300, and they carry deposit_thb 5000 and 7000. A function of
+;     (class, displacement_cc) would have to return two values for one argument pair. The seed
+;     says of the second: "A distinct product from xmax-300, not a trim of it: different
+;     tariff, different deposit." The deposit is therefore a PER-FAMILY published attribute
+;     with a lookup keyed on the family key, the one column that is unique per row. The field
+;     is also named displacement_cc, not engine_cc; the issue misnames it.
+; (b) THE TIERS ARE SIX, NOT THREE. The distinct published deposits are 3000, 5000, 7000,
+;     15000, 20000 and 25000 baht. 10000 occurs in none of the 21 published rows (14 families
+;     in stock, 7 tariff-only), so the issue's top band begins at a number nobody publishes.
+;     Its other two bands fail too: scooters carry 3000, 5000, 7000 AND 25000 (KB_faq classes
+;     the 750cc X-ADV with the scooters), and 300 cc carries 5000, 7000 AND 15000.
+; --
+; Totality and non-overlap are therefore stated over the FAMILY-KEY domain -- every offered
+; family maps to exactly one of the six tiers -- and not over a displacement band that does not
+; exist. A spec asserting a false functional dependency is worse than no spec: the function
+; compiles, its tests pass on whichever rows the author happened to pick, and the first
+; xmax-300-new booking quoted through it under-collects by 7000 - 5000 = 2000 baht.
+; --
+; WHAT THIS SPEC NEVER DOES. It never publishes an individual deposit from a past rental (D14):
+; the array of them is declared with length zero and must stay that way -- only the aggregate
+; tier is public, never a renter's transaction. It never renders an absent deposit as 0:
+; click-125 publishes none, D9 makes absent a dash, so the lookup answers a negative marker
+; that cannot be read as money. It never computes a client price: no discount is applied to a
+; deposit (the 25% / 15% class discounts are RATE discounts), and a rental price comes from the
+; door, never from this file (D11). It never says a family is available: the seven tariff-only
+; families have published deposits and zero units, and they appear below only as evidence that
+; the set of six tiers is closed over them.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module deposit-tiers;
+
+pub const KIND : str = "contract";
+pub const ID : str = "turbobaby/deposit-tiers";
+pub const NAME : str = "TurboBaby deposit tiers";
+; Current t27c does not support brace imports. This names the owner of fleet availability;
+; this contract validates only the lengths and totals of its own deposit tables.
+pub const REUSES_AVAILABILITY_ID : str = "turbobaby/availability";
+pub const SEED : str = "data/fleet_seed.json";
+pub const MEASURED_AT : str = "2026-09-12";
+pub const DEPOSIT_AUTHORITY : str = "KB_faq, section 'Exact price list (from CRM)'";
+pub const CURRENCY : str = "THB";
+
+; --- The six tiers ----------------------------------------------------------------------
+; The closed set of tier values measured in the published seed. The sources publish an AMOUNT
+; per family and no tier name, so a tier is identified by its amount and by its position on the
+; ladder; no grade label is invented here. This is an audit taxonomy, not a transaction allowlist:
+; an authoritative positive amount outside the measured ladder is shown and logged, never snapped.
+pub const TIER_COUNT : u8 = 6;
+pub const TIER_1_THB : i32 = 3000;
+pub const TIER_2_THB : i32 = 5000;
+pub const TIER_3_THB : i32 = 7000;
+pub const TIER_4_THB : i32 = 15000;
+pub const TIER_5_THB : i32 = 20000;
+pub const TIER_6_THB : i32 = 25000;
+pub const TIERS_THB : [6]i32 = [3000, 5000, 7000, 15000, 20000, 25000];
+
+; Ladder geometry, each number derived from the tiers above:
+;   gaps  5000-3000=2000, 7000-5000=2000, 15000-7000=8000, 20000-15000=5000, 25000-20000=5000
+;   sum   2000+2000+8000+5000+5000 = 22000
+;   span  25000-3000 = 22000
+; A minimum gap above zero is what makes the tiers non-overlapping: these are point values,
+; not ranges, so a strictly increasing ladder means no deposit amount can belong to two tiers.
+pub const TIER_GAPS_THB : [5]i32 = [2000, 2000, 8000, 5000, 5000];
+pub const TIER_GAP_MIN_THB : i32 = 2000;
+pub const TIER_GAP_SUM_THB : i32 = 22000;
+pub const TIER_SPAN_THB : i32 = 22000;
+
+; --- Markers, and why they are negative -------------------------------------------------
+; D9: absent stays absent. A lookup that answered 0 for a family whose deposit is unpublished
+; would render as "no deposit required", which is the exact defect D9 was written against. A
+; negative marker cannot be mistaken for an amount of money, and it is not zero.
+pub const DEPOSIT_ABSENT : i32 = -1;
+pub const DEPOSIT_NOT_IN_FLEET : i32 = -2;
+pub const TIER_NONE : u8 = 255;
+
+; --- The family-key domain ---------------------------------------------------------------
+; The deposits of the 14 in-stock families, in seed order. Fleet keys/counts remain owned by
+; availability; the keyed lookup below pins this table without a second shared declaration.
+; click-125 is the only family with no published deposit and the only family not offered (D12).
+pub const FAMILIES_WITH_PUBLISHED_DEPOSIT : u8 = 13;
+pub const FAMILIES_WITHOUT_PUBLISHED_DEPOSIT : u8 = 1;
+pub const NOT_OFFERED_KEYS : [1]str = ["click-125"];
+; -1 in position 0 is DEPOSIT_ABSENT: click-125 publishes no deposit, not a deposit of zero.
+pub const FAMILY_DEPOSIT_THB : [14]i32 = [
+  -1, 3000, 7000, 15000, 5000, 15000, 5000, 7000, 7000, 20000, 20000, 20000, 20000, 25000,
+];
+
+; How many offered families sit on each tier, in tier order. Measured: 3000 x1 (nmax-155),
+; 5000 x2 (forza-300, xmax-300), 7000 x3 (xsr-155, xmax-300-new, adv-350), 15000 x2 (cb-300r,
+; mt-03-300), 20000 x4 (ninja-400, cb-650r, cbr-650r, vulcan-s-650), 25000 x1 (xadv-750).
+; 1+2+3+2+4+1 = 13, which is every offered family: the histogram partitions the domain.
+; --
+; A sum is not a check. Its own total is invariant under any permutation
+; of the six entries, so [2, 1, 3, 2, 4, 1] -- two families at 3000 and one at 5000, which the
+; seed refutes -- would satisfy both and change nothing that fails. families_on_tier() below
+; therefore recounts each rung from FAMILY_DEPOSIT_THB, which is itself pinned row by row
+; against the lookup, and the test compares the recount with each entry of this table.
+pub const TIER_FAMILY_COUNTS : [6]u8 = [1, 2, 3, 2, 4, 1];
+pub const TIER_FAMILY_COUNT_SUM : u8 = 13;
+
+; --- The refutation, as numbers ----------------------------------------------------------
+; The three scooters at 300 cc are forza-300 (5000), xmax-300 (5000) and xmax-300-new (7000):
+; three families, two distinct deposits, one (class, displacement_cc) pair. Two distinct values
+; at one argument pair is precisely what a function may not have, so the count below is the
+; measurement that killed deposit_for(engine_cc, class).
+; --
+; THE TWO AXES OF THE REFUTATION ARE NOT DECLARED HERE. bike-catalog.t27 owns the class algebra
+; (CLASSES, CLASS_SCOOTER, CLASS_MOTORCYCLE, CLASS_COUNT, CLASS_NONE) and the displacement axis
+; (DISPLACEMENTS_CC, the count and the three bands); its own header states that no count is
+; typed twice, and discovery.t27 puts the rule generally -- no owner, limit or exclusion is
+; typed twice. An earlier draft of this file re-declared CLASSES and DISPLACEMENTS_CC verbatim,
+; and the drift that rule exists to prevent had already happened: measured 2026-09-12 the same
+; seven displacements are [7]u16 in bike-catalog.t27 and [7]i16 in ride-game.t27, one fact at
+; two integer widths. A file whose whole argument is that displacement and class are NOT its
+; axis has no business carrying one more copy of either, so both are gone. The class of a family
+; is read from the seed's class column (families[13].class == "scooter" for xadv-750) and cited
+; in prose where it is needed; the displacement of a family is carried by the family key itself
+; ("xadv-750"), which is the one column this spec is keyed on.
+pub const SCOOTER_300CC_FAMILIES : u8 = 3;
+pub const SCOOTER_300CC_DISTINCT_DEPOSITS : u8 = 2;
+; Occurrences of the issue's 10000 tier across all 21 published rows -- recounted from the two
+; tables in this file by published_rows_at_amount(), not asserted against itself.
+pub const DEPOSIT_10000_OCCURRENCES : u8 = 0;
+
+; --- Published in the tariff, zero units in the fleet ------------------------------------
+; Listed so that a reader who finds a tariff without stock does not invent the stock. Their
+; deposits are all drawn from the same six tiers, which is the evidence that the set is closed
+; rather than merely enumerated from the 14 in-stock rows. They must never read as available,
+; and deposit_thb_of_family() deliberately does not answer for them.
+pub const PRICE_LIST_ONLY_UNITS : u8 = 0;
+pub const PRICE_LIST_ONLY_KEYS : [7]str = [
+  "pcx-150", "adv-150", "pcx-160", "adv-160", "rebel-300", "xsr-900", "r7",
+];
+pub const PRICE_LIST_ONLY_DEPOSIT_THB : [7]i32 = [3000, 3000, 5000, 5000, 15000, 20000, 25000];
+
+; --- D14: the aggregate tier is public, the transaction is not ---------------------------
+; The rental-history sheet holds what each renter paid and what was returned. None of it is
+; here, and the empty array is the structural form of that prohibition: a later worker who
+; wants to add one has to change a declared length, which cannot pass as a tidy-up.
+pub const PAST_RENTAL_DEPOSITS_THB : [0]i32 = [];
+pub const PAST_RENTAL_DEPOSIT_RULE : str = "Only the aggregate per-family tier is public. No deposit taken from or returned to an individual renter enters this repository in any form.";
+
+; --- The form of the deposit: money OR the passport, never both --------------------------
+; Quoted from rental_terms.deposit in the seed, byte for byte: DEPOSIT_FORM_RULE is
+; rental_terms.deposit.rule, DEPOSIT_MONEY_METHODS is the first three entries of
+; rental_terms.deposit.accepted, and DEPOSIT_FOREIGN_CURRENCY_RULE is
+; rental_terms.deposit.foreign_currency. They must diff clean against the JSON; a reworded
+; string under a comment that calls itself a quotation is a false provenance claim, and the
+; next reader cannot tell which of the two texts governs.
+; --
+; The accepted list holds four entries, of which three are ways of paying money and the fourth
+; is "passport in place of money" -- so there are two FORMS, not four, and taking both at once
+; is not a stricter policy but a different one. DEPOSIT_FORMS is this file's own naming of those
+; two forms and is not presented as a quotation: the seed names no form at all.
+pub const DEPOSIT_FORMS : [2]str = ["money", "passport"];
+pub const DEPOSIT_FORM_LEGAL_STATES : u8 = 2;
+pub const DEPOSIT_FORM_RULE : str = "Deposit is EITHER money OR the passport - never both.";
+pub const DEPOSIT_MONEY_METHODS : [3]str = ["cash THB", "bank transfer", "USDT"];
+pub const DEPOSIT_FOREIGN_CURRENCY_RULE : str = "Take the model's THB deposit, convert to an approximate USD/EUR equivalent, round to hundreds. Return by the same method and at the same fixed amount that was agreed.";
+; The class and term discounts are RATE discounts. A deposit is quoted at its tier, undiscounted.
+pub const DEPOSIT_DISCOUNT_APPLIES : bool = false;
+
+// ============================================================================
+// Lookups
+//
+// Keyed on the family key, because that is the only key the deposit is a function of.
+// ============================================================================
+
+; The published deposit of an in-stock family, in baht.
+;   >= 0                   the family's tier
+;   DEPOSIT_ABSENT (-1)    the family exists and publishes no deposit (click-125): render a dash
+;   DEPOSIT_NOT_IN_FLEET   the key is not one of the 14 in-stock families; this includes the
+;                          seven tariff-only keys, which have a published deposit but no unit,
+;                          and must not be answered here as though they were rentable
+pub fn deposit_thb_of_family(key: str) i32 {
+    if (key == "click-125") {
+        return DEPOSIT_ABSENT;
+    }
+    if (key == "nmax-155") {
+        return TIER_1_THB;
+    }
+    if (key == "xsr-155") {
+        return TIER_3_THB;
+    }
+    if (key == "cb-300r") {
+        return TIER_4_THB;
+    }
+    if (key == "forza-300") {
+        return TIER_2_THB;
+    }
+    if (key == "mt-03-300") {
+        return TIER_4_THB;
+    }
+    if (key == "xmax-300") {
+        return TIER_2_THB;
+    }
+    if (key == "xmax-300-new") {
+        return TIER_3_THB;
+    }
+    if (key == "adv-350") {
+        return TIER_3_THB;
+    }
+    if (key == "ninja-400") {
+        return TIER_5_THB;
+    }
+    if (key == "cb-650r") {
+        return TIER_5_THB;
+    }
+    if (key == "cbr-650r") {
+        return TIER_5_THB;
+    }
+    if (key == "vulcan-s-650") {
+        return TIER_5_THB;
+    }
+    if (key == "xadv-750") {
+        return TIER_6_THB;
+    }
+    return DEPOSIT_NOT_IN_FLEET;
+}
+
+; Position of an amount on the ladder, or TIER_NONE if the amount is not a published tier.
+; This is what makes "exactly one tier" checkable: an amount either matches one rung or none.
+pub fn tier_index_of(deposit_thb: i32) u8 {
+    if (deposit_thb == TIER_1_THB) {
+        return 0;
+    }
+    if (deposit_thb == TIER_2_THB) {
+        return 1;
+    }
+    if (deposit_thb == TIER_3_THB) {
+        return 2;
+    }
+    if (deposit_thb == TIER_4_THB) {
+        return 3;
+    }
+    if (deposit_thb == TIER_5_THB) {
+        return 4;
+    }
+    if (deposit_thb == TIER_6_THB) {
+        return 5;
+    }
+    return TIER_NONE;
+}
+
+pub fn is_published_tier(deposit_thb: i32) bool {
+    return tier_index_of(deposit_thb) != TIER_NONE;
+}
+
+; Transaction boundary retained from the root contract. A positive authoritative amount is
+; publishable even when it is not one of today's six seed tiers; an unmatched value is an audit
+; event, not permission to rewrite money. Zero and negatives remain absent/invalid under D9.
+pub fn publishable_deposit(deposit_thb: i32) bool {
+    return deposit_thb > 0;
+}
+
+pub fn deposit_needs_tier_log(deposit_thb: i32) bool {
+    return publishable_deposit(deposit_thb) and !is_published_tier(deposit_thb);
+}
+
+; How many of the 14 in-stock families sit on one rung, recounted from the family table rather
+; than read off TIER_FAMILY_COUNTS. This is what turns the histogram from a restatement into a
+; measurement: a permuted table now disagrees with the recount and fails.
+; click-125 carries DEPOSIT_ABSENT, whose tier_index_of is TIER_NONE, so it is counted on no
+; rung -- and passing TIER_NONE as the argument counts exactly the families with no rung at all.
+; The accumulator is u8 because the largest possible answer is 14.
+pub fn families_on_tier(tier_index: u8) u8 {
+    var found : u8 = 0;
+    var i : u8 = 0;
+    while (i < 14) : (i += 1) {
+        if (tier_index_of(FAMILY_DEPOSIT_THB[i]) == tier_index) {
+            found = found + 1;
+        }
+    }
+    return found;
+}
+
+; How many of the 21 published rows -- the 14 in stock plus the 7 tariff-only -- carry one exact
+; amount. The 10000 tier the issue asked for is a claim about all 21 rows, and asserting the
+; constant DEPOSIT_10000_OCCURRENCES against itself proves nothing about them; this counts.
+pub fn published_rows_at_amount(amount_thb: i32) u8 {
+    var found : u8 = 0;
+    var i : u8 = 0;
+    while (i < 14) : (i += 1) {
+        if (FAMILY_DEPOSIT_THB[i] == amount_thb) {
+            found = found + 1;
+        }
+    }
+    var j : u8 = 0;
+    while (j < 7) : (j += 1) {
+        if (PRICE_LIST_ONLY_DEPOSIT_THB[j] == amount_thb) {
+            found = found + 1;
+        }
+    }
+    return found;
+}
+
+; Exactly one of the two forms is held for the duration of a rental. Both is forbidden by the
+; rule; neither means no deposit was taken at all, which is not a rental this shop writes.
+pub fn deposit_form_is_legal(money_taken: bool, passport_held: bool) bool {
+    if (money_taken == true) {
+        if (passport_held == true) {
+            return false;
+        }
+        return true;
+    }
+    if (passport_held == true) {
+        return true;
+    }
+    return false;
+}
+
+// ============================================================================
+// Tests
+//
+// The band boundaries the issue asked for, read off the only axis that exists: the tier
+// ladder, plus one test per distinct displacement so that the displacements the issue named
+// (125, 155, 300, 350, 400, 650, 750) are each exercised -- and so that the two of them which
+// carry more than one deposit say so out loud.
+//
+// Those seven tests do not assert a cc value. The displacement table belongs to
+// bike-catalog.t27 and a local copy would be one more of it; each test instead reaches its
+// families through the family key, the axis this spec is keyed on, and the key carries the
+// displacement in its own name ("nmax-155", "adv-350", "xadv-750"). A test name here states
+// only what its body checks -- the deposits of the families at that displacement.
+// ============================================================================
+
+test the_six_tiers_are_the_closed_set_measured_in_the_seed {
+    assert TIERS_THB.len == TIER_COUNT;
+    assert TIERS_THB[0] == TIER_1_THB;
+    assert TIERS_THB[1] == TIER_2_THB;
+    assert TIERS_THB[2] == TIER_3_THB;
+    assert TIERS_THB[3] == TIER_4_THB;
+    assert TIERS_THB[4] == TIER_5_THB;
+    assert TIERS_THB[5] == TIER_6_THB;
+}
+
+test an_unmatched_positive_deposit_is_shown_and_logged_not_snapped {
+    assert publishable_deposit(6000) == true;
+    assert is_published_tier(6000) == false;
+    assert deposit_needs_tier_log(6000) == true;
+    assert deposit_needs_tier_log(TIER_3_THB) == false;
+    assert publishable_deposit(0) == false;
+    assert publishable_deposit(DEPOSIT_ABSENT) == false;
+}
+
+test the_tier_the_issue_asked_for_is_published_nowhere {
+    assert DEPOSIT_10000_OCCURRENCES == 0;
+    assert is_published_tier(10000) == false;
+    assert tier_index_of(10000) == TIER_NONE;
+    ; ...and the constant is the recount of all 21 published rows, not a number typed twice.
+    assert published_rows_at_amount(10000) == DEPOSIT_10000_OCCURRENCES;
+    assert published_rows_at_amount(10000) == 0;
+}
+
+; The 21 published rows, counted by amount: 20 of them carry one of the six tiers and exactly
+; one carries no deposit at all. 21 is not typed here -- it is the two published counts, and
+; each of those is pinned to the length of its own table elsewhere in this file.
+test the_six_rungs_account_for_every_published_row {
+    assert published_rows_at_amount(TIER_1_THB) + published_rows_at_amount(TIER_2_THB) + published_rows_at_amount(TIER_3_THB) + published_rows_at_amount(TIER_4_THB) + published_rows_at_amount(TIER_5_THB) + published_rows_at_amount(TIER_6_THB) == FAMILY_DEPOSIT_THB.len + PRICE_LIST_ONLY_DEPOSIT_THB.len - FAMILIES_WITHOUT_PUBLISHED_DEPOSIT;
+    assert published_rows_at_amount(DEPOSIT_ABSENT) == FAMILIES_WITHOUT_PUBLISHED_DEPOSIT;
+    assert published_rows_at_amount(0) == 0;
+}
+
+test each_rung_of_the_ladder_is_its_own_index {
+    assert tier_index_of(TIER_1_THB) == 0;
+    assert tier_index_of(TIER_2_THB) == 1;
+    assert tier_index_of(TIER_3_THB) == 2;
+    assert tier_index_of(TIER_4_THB) == 3;
+    assert tier_index_of(TIER_5_THB) == 4;
+    assert tier_index_of(TIER_6_THB) == 5;
+}
+
+test the_gaps_are_the_differences_of_the_tiers_they_separate {
+    assert TIER_GAPS_THB.len == TIER_COUNT - 1;
+    assert TIERS_THB[1] - TIERS_THB[0] == TIER_GAPS_THB[0];
+    assert TIERS_THB[2] - TIERS_THB[1] == TIER_GAPS_THB[1];
+    assert TIERS_THB[3] - TIERS_THB[2] == TIER_GAPS_THB[2];
+    assert TIERS_THB[4] - TIERS_THB[3] == TIER_GAPS_THB[3];
+    assert TIERS_THB[5] - TIERS_THB[4] == TIER_GAPS_THB[4];
+}
+
+test the_pinned_minimum_gap_really_is_the_smallest_one {
+    assert TIER_GAP_MIN_THB <= TIER_GAPS_THB[0];
+    assert TIER_GAP_MIN_THB <= TIER_GAPS_THB[1];
+    assert TIER_GAP_MIN_THB <= TIER_GAPS_THB[2];
+    assert TIER_GAP_MIN_THB <= TIER_GAPS_THB[3];
+    assert TIER_GAP_MIN_THB <= TIER_GAPS_THB[4];
+    assert TIER_GAP_MIN_THB == 2000;
+}
+
+test the_gaps_sum_to_the_span_so_no_rung_is_missing {
+    assert TIER_GAPS_THB[0] + TIER_GAPS_THB[1] + TIER_GAPS_THB[2] + TIER_GAPS_THB[3] + TIER_GAPS_THB[4] == TIER_GAP_SUM_THB;
+    assert TIERS_THB[5] - TIERS_THB[0] == TIER_SPAN_THB;
+    assert TIER_GAP_SUM_THB == TIER_SPAN_THB;
+}
+
+test the_histogram_counts_every_offered_family_once {
+    assert TIER_FAMILY_COUNTS.len == TIER_COUNT;
+    assert TIER_FAMILY_COUNTS[0] + TIER_FAMILY_COUNTS[1] + TIER_FAMILY_COUNTS[2] + TIER_FAMILY_COUNTS[3] + TIER_FAMILY_COUNTS[4] + TIER_FAMILY_COUNTS[5] == TIER_FAMILY_COUNT_SUM;
+    assert TIER_FAMILY_COUNT_SUM == FAMILIES_WITH_PUBLISHED_DEPOSIT;
+    assert FAMILIES_WITH_PUBLISHED_DEPOSIT + FAMILIES_WITHOUT_PUBLISHED_DEPOSIT == FAMILY_DEPOSIT_THB.len;
+}
+
+; The test the sum above cannot be: each rung is recounted from FAMILY_DEPOSIT_THB and compared
+; with the published entry, so a permutation of TIER_FAMILY_COUNTS fails here even though every
+; total still closes. The last two lines close the domain from the other end: one family has no
+; rung (click-125, DEPOSIT_ABSENT), and 13 + 1 is the whole fleet.
+test each_rung_is_recounted_from_the_family_table {
+    assert families_on_tier(0) == TIER_FAMILY_COUNTS[0];
+    assert families_on_tier(1) == TIER_FAMILY_COUNTS[1];
+    assert families_on_tier(2) == TIER_FAMILY_COUNTS[2];
+    assert families_on_tier(3) == TIER_FAMILY_COUNTS[3];
+    assert families_on_tier(4) == TIER_FAMILY_COUNTS[4];
+    assert families_on_tier(5) == TIER_FAMILY_COUNTS[5];
+    assert families_on_tier(TIER_NONE) == FAMILIES_WITHOUT_PUBLISHED_DEPOSIT;
+    assert families_on_tier(0) + families_on_tier(1) + families_on_tier(2) + families_on_tier(3) + families_on_tier(4) + families_on_tier(5) + families_on_tier(TIER_NONE) == FAMILY_DEPOSIT_THB.len;
+}
+
+; The table and the lookup are two statements of one fact, so they are checked against each
+; other row by row. A drift between them is what this test exists to fail on.
+test the_table_and_the_lookup_agree_on_all_fourteen_families {
+    assert FAMILY_DEPOSIT_THB.len == 14;
+    assert deposit_thb_of_family("click-125") == FAMILY_DEPOSIT_THB[0];
+    assert deposit_thb_of_family("nmax-155") == FAMILY_DEPOSIT_THB[1];
+    assert deposit_thb_of_family("xsr-155") == FAMILY_DEPOSIT_THB[2];
+    assert deposit_thb_of_family("cb-300r") == FAMILY_DEPOSIT_THB[3];
+    assert deposit_thb_of_family("forza-300") == FAMILY_DEPOSIT_THB[4];
+    assert deposit_thb_of_family("mt-03-300") == FAMILY_DEPOSIT_THB[5];
+    assert deposit_thb_of_family("xmax-300") == FAMILY_DEPOSIT_THB[6];
+    assert deposit_thb_of_family("xmax-300-new") == FAMILY_DEPOSIT_THB[7];
+    assert deposit_thb_of_family("adv-350") == FAMILY_DEPOSIT_THB[8];
+    assert deposit_thb_of_family("ninja-400") == FAMILY_DEPOSIT_THB[9];
+    assert deposit_thb_of_family("cb-650r") == FAMILY_DEPOSIT_THB[10];
+    assert deposit_thb_of_family("cbr-650r") == FAMILY_DEPOSIT_THB[11];
+    assert deposit_thb_of_family("vulcan-s-650") == FAMILY_DEPOSIT_THB[12];
+    assert deposit_thb_of_family("xadv-750") == FAMILY_DEPOSIT_THB[13];
+}
+
+; Totality, one family at a time: every offered key lands on a rung, never on TIER_NONE.
+test every_offered_family_lands_on_exactly_one_rung {
+    assert tier_index_of(deposit_thb_of_family("nmax-155")) == 0;
+    assert tier_index_of(deposit_thb_of_family("forza-300")) == 1;
+    assert tier_index_of(deposit_thb_of_family("xmax-300")) == 1;
+    assert tier_index_of(deposit_thb_of_family("xsr-155")) == 2;
+    assert tier_index_of(deposit_thb_of_family("xmax-300-new")) == 2;
+    assert tier_index_of(deposit_thb_of_family("adv-350")) == 2;
+    assert tier_index_of(deposit_thb_of_family("cb-300r")) == 3;
+    assert tier_index_of(deposit_thb_of_family("mt-03-300")) == 3;
+    assert tier_index_of(deposit_thb_of_family("ninja-400")) == 4;
+    assert tier_index_of(deposit_thb_of_family("cb-650r")) == 4;
+    assert tier_index_of(deposit_thb_of_family("cbr-650r")) == 4;
+    assert tier_index_of(deposit_thb_of_family("vulcan-s-650")) == 4;
+    assert tier_index_of(deposit_thb_of_family("xadv-750")) == 5;
+}
+
+; ---- one test per displacement the issue named -----------------------------------------
+
+test at_125cc_the_one_family_publishes_no_deposit_and_is_not_offered {
+    assert NOT_OFFERED_KEYS[0] == "click-125";
+    assert deposit_thb_of_family("click-125") == DEPOSIT_ABSENT;
+    assert deposit_thb_of_family("click-125") < 0;
+    assert is_published_tier(DEPOSIT_ABSENT) == false;
+}
+
+test at_155cc_two_families_carry_two_different_tiers {
+    assert deposit_thb_of_family("nmax-155") == 3000;
+    assert deposit_thb_of_family("xsr-155") == 7000;
+    assert deposit_thb_of_family("xsr-155") - deposit_thb_of_family("nmax-155") == 4000;
+}
+
+test at_300cc_five_families_carry_three_different_tiers {
+    assert deposit_thb_of_family("forza-300") == 5000;
+    assert deposit_thb_of_family("xmax-300") == 5000;
+    assert deposit_thb_of_family("xmax-300-new") == 7000;
+    assert deposit_thb_of_family("cb-300r") == 15000;
+    assert deposit_thb_of_family("mt-03-300") == 15000;
+}
+
+test at_350cc_the_one_family_sits_on_the_third_rung {
+    assert deposit_thb_of_family("adv-350") == 7000;
+    assert tier_index_of(deposit_thb_of_family("adv-350")) == 2;
+}
+
+test at_400cc_the_one_family_sits_on_the_fifth_rung {
+    assert deposit_thb_of_family("ninja-400") == 20000;
+    assert tier_index_of(deposit_thb_of_family("ninja-400")) == 4;
+}
+
+test at_650cc_three_families_share_one_tier {
+    assert deposit_thb_of_family("cb-650r") == 20000;
+    assert deposit_thb_of_family("cbr-650r") == 20000;
+    assert deposit_thb_of_family("vulcan-s-650") == 20000;
+}
+
+; The earlier name of this test was "..._is_carried_by_a_scooter" over a body that asserted
+; CLASSES[0] == "scooter" -- that the string "scooter" sits at index 0 of a local class table,
+; which is true of the table and says nothing about this bike. The seed does class the X-ADV
+; with the scooters (families[13].class == "scooter"), and that fact carries the header's
+; refutation of the issue's "scooters are the cheap band"; but the class column is owned by
+; bike-catalog.t27 and is not tabulated here, so the name now claims only what the body checks:
+; exactly one family stands on the top rung, and it is the X-ADV.
+test at_750cc_the_top_rung_is_the_xadv_and_only_the_xadv {
+    assert deposit_thb_of_family("xadv-750") == 25000;
+    assert deposit_thb_of_family("xadv-750") == TIER_6_THB;
+    assert families_on_tier(5) == 1;
+    assert families_on_tier(5) == TIER_FAMILY_COUNTS[5];
+}
+
+; ---- the measurement that forced the shape of this spec --------------------------------
+
+test the_xmax_300_pair_refutes_a_function_of_class_and_displacement {
+    ; Both rows: class "scooter", displacement_cc 300. Different deposits.
+    assert deposit_thb_of_family("xmax-300") == 5000;
+    assert deposit_thb_of_family("xmax-300-new") == 7000;
+    assert deposit_thb_of_family("xmax-300-new") != deposit_thb_of_family("xmax-300");
+    assert deposit_thb_of_family("xmax-300-new") - deposit_thb_of_family("xmax-300") == 2000;
+    assert SCOOTER_300CC_FAMILIES == 3;
+    assert SCOOTER_300CC_DISTINCT_DEPOSITS == 2;
+}
+
+; ---- what the lookup refuses to answer -------------------------------------------------
+
+test a_tariff_only_key_and_an_unknown_key_are_not_answered_here {
+    assert deposit_thb_of_family("pcx-150") == DEPOSIT_NOT_IN_FLEET;
+    assert deposit_thb_of_family("r7") == DEPOSIT_NOT_IN_FLEET;
+    assert deposit_thb_of_family("") == DEPOSIT_NOT_IN_FLEET;
+    assert DEPOSIT_NOT_IN_FLEET < 0;
+    assert PRICE_LIST_ONLY_UNITS == 0;
+}
+
+; Row by row, key beside amount, the way the in-stock table is checked above. Membership in the
+; six-tier set is not enough on its own: it holds under any permutation of the seven amounts,
+; and a permutation is a wrong published deposit -- pcx-150, the cheapest machine in the tariff
+; at 349 THB/day, would carry the R7's 25000 and still pass. These are the seed's
+; price_list_only.families rows in seed order.
+test the_tariff_only_rows_pin_each_key_to_its_own_published_deposit {
+    assert PRICE_LIST_ONLY_KEYS[0] == "pcx-150";
+    assert PRICE_LIST_ONLY_DEPOSIT_THB[0] == TIER_1_THB;
+    assert PRICE_LIST_ONLY_KEYS[1] == "adv-150";
+    assert PRICE_LIST_ONLY_DEPOSIT_THB[1] == TIER_1_THB;
+    assert PRICE_LIST_ONLY_KEYS[2] == "pcx-160";
+    assert PRICE_LIST_ONLY_DEPOSIT_THB[2] == TIER_2_THB;
+    assert PRICE_LIST_ONLY_KEYS[3] == "adv-160";
+    assert PRICE_LIST_ONLY_DEPOSIT_THB[3] == TIER_2_THB;
+    assert PRICE_LIST_ONLY_KEYS[4] == "rebel-300";
+    assert PRICE_LIST_ONLY_DEPOSIT_THB[4] == TIER_4_THB;
+    assert PRICE_LIST_ONLY_KEYS[5] == "xsr-900";
+    assert PRICE_LIST_ONLY_DEPOSIT_THB[5] == TIER_5_THB;
+    assert PRICE_LIST_ONLY_KEYS[6] == "r7";
+    assert PRICE_LIST_ONLY_DEPOSIT_THB[6] == TIER_6_THB;
+    ; No tariff-only family sits on the 7000 rung, which is why the set of six is closed over
+    ; these rows without any of them being the reason a rung exists.
+    assert published_rows_at_amount(TIER_3_THB) == TIER_FAMILY_COUNTS[2];
+}
+
+test the_tariff_only_deposits_are_all_drawn_from_the_same_six_tiers {
+    assert PRICE_LIST_ONLY_KEYS.len == PRICE_LIST_ONLY_DEPOSIT_THB.len;
+    assert PRICE_LIST_ONLY_KEYS.len == 7;
+    assert is_published_tier(PRICE_LIST_ONLY_DEPOSIT_THB[0]) == true;
+    assert is_published_tier(PRICE_LIST_ONLY_DEPOSIT_THB[1]) == true;
+    assert is_published_tier(PRICE_LIST_ONLY_DEPOSIT_THB[2]) == true;
+    assert is_published_tier(PRICE_LIST_ONLY_DEPOSIT_THB[3]) == true;
+    assert is_published_tier(PRICE_LIST_ONLY_DEPOSIT_THB[4]) == true;
+    assert is_published_tier(PRICE_LIST_ONLY_DEPOSIT_THB[5]) == true;
+    assert is_published_tier(PRICE_LIST_ONLY_DEPOSIT_THB[6]) == true;
+}
+
+test zero_is_not_a_tier_and_absent_is_not_zero {
+    assert is_published_tier(0) == false;
+    assert tier_index_of(0) == TIER_NONE;
+    assert DEPOSIT_ABSENT != 0;
+    assert DEPOSIT_ABSENT < 0;
+    assert DEPOSIT_NOT_IN_FLEET != DEPOSIT_ABSENT;
+}
+
+test the_deposit_is_money_or_the_passport_and_never_both {
+    assert deposit_form_is_legal(true, false) == true;
+    assert deposit_form_is_legal(false, true) == true;
+    assert deposit_form_is_legal(true, true) == false;
+    assert deposit_form_is_legal(false, false) == false;
+    assert DEPOSIT_FORMS[0] == "money";
+    assert DEPOSIT_FORMS[1] == "passport";
+}
+
+test no_discount_is_applied_to_a_deposit {
+    assert DEPOSIT_DISCOUNT_APPLIES == false;
+    assert DEPOSIT_MONEY_METHODS.len == 3;
+}
+
+// ============================================================================
+// Invariants
+//
+// The claims about the whole module that no single example carries: the tier set is closed,
+// the family-key domain is total, the tiers do not overlap, the deposit is not a function of
+// (class, displacement_cc), the form is exclusive, and no individual rental is published.
+// ============================================================================
+
+invariant the_six_tiers_are_the_whole_published_seed_set
+  assert TIERS_THB.len == TIER_COUNT
+
+invariant an_unmatched_authoritative_amount_is_not_rewritten_to_a_tier
+  assert publishable_deposit(6000) == true and tier_index_of(6000) == TIER_NONE and deposit_needs_tier_log(6000) == true
+
+; TOTALITY, over the family-key domain rather than a displacement band: every offered family
+; publishes a deposit, so the lookup never has to invent one for a bike that is for rent.
+invariant every_offered_family_has_a_published_tier
+  assert FAMILIES_WITH_PUBLISHED_DEPOSIT == TIER_FAMILY_COUNT_SUM
+
+; ...and the domain is closed: the offered families plus the one without a published deposit
+; are the whole fleet, so no in-stock family falls outside this spec unnoticed.
+invariant the_family_key_domain_is_closed
+  assert FAMILIES_WITH_PUBLISHED_DEPOSIT + FAMILIES_WITHOUT_PUBLISHED_DEPOSIT == FAMILY_DEPOSIT_THB.len
+
+; EXACTLY ONE: the per-tier counts add up to the offered count, so the six tiers partition the
+; offered families -- none counted twice, none left out.
+invariant the_tier_histogram_partitions_the_offered_families
+  assert TIER_FAMILY_COUNT_SUM == FAMILIES_WITH_PUBLISHED_DEPOSIT
+
+; ...and the partition is recounted from the family table rather than restated: the six rungs
+; between them hold every offered family, counted one row at a time by families_on_tier().
+; The published histogram is compared entry by entry in each_rung_is_recounted_from_the_family_table;
+; this is the whole-module form of the same claim.
+invariant the_rungs_recount_to_the_offered_families
+  assert families_on_tier(0) + families_on_tier(1) + families_on_tier(2) + families_on_tier(3) + families_on_tier(4) + families_on_tier(5) == FAMILIES_WITH_PUBLISHED_DEPOSIT
+
+; NON-OVERLAP: the tiers are point values, and the smallest gap between adjacent rungs is
+; positive, so the ladder is strictly increasing and no amount can belong to two tiers.
+invariant the_tiers_do_not_overlap
+  assert TIER_GAP_MIN_THB > 0
+
+; ...and the gaps are the whole ladder, not a subset of it: they sum to the span from the
+; lowest tier to the highest, so a rung cannot be dropped without failing here.
+invariant the_gap_ladder_spans_the_whole_range
+  assert TIER_GAP_SUM_THB == TIER_SPAN_THB
+
+; The refutation of issue #18 as a standing claim rather than a comment: one (class,
+; displacement_cc) pair carries more than one deposit, so no function of those two arguments
+; can exist, and nobody may add one later without this failing.
+invariant deposit_is_not_a_function_of_class_and_displacement
+  assert SCOOTER_300CC_DISTINCT_DEPOSITS > 1
+
+; The amount the issue asked for as its top band is published by no row at all. Counted over
+; the 21 published rows rather than read off DEPOSIT_10000_OCCURRENCES, which would be the
+; constant asserted against its own declaration.
+invariant the_ten_thousand_tier_does_not_exist
+  assert published_rows_at_amount(10000) == 0
+
+; Money or the passport: two forms, and exactly two legal states of the pair. A third state
+; (both) and a fourth (neither) are refused, which is what "never both" means in code.
+invariant the_deposit_form_is_exclusive
+  assert DEPOSIT_FORM_LEGAL_STATES == DEPOSIT_FORMS.len
+
+; D14: only the aggregate tier is public. The length is the prohibition.
+invariant no_individual_rental_deposit_is_published
+  assert PAST_RENTAL_DEPOSITS_THB.len == 0
+
+; D9: an absent deposit is a dash, never a zero. A marker below zero cannot be read as money.
+invariant the_absent_marker_can_never_be_read_as_money
+  assert DEPOSIT_ABSENT < 0

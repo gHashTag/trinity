@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Stable sort | φ² + 1/φ² = 3 | TRINITY
+
+module TriSort;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SortOrder = struct {
+        enum : [Ascending, Descending],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // sort(items: []const T) → void
+    fn sort(items: []const T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // sort_by(items: []const T) → void
+    fn sort_by(items: []const T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test sort_basic_case
+        given input = default_input()
+        when result = sort(input)
+        then result != undefined
+
+    test sort_by_basic_case
+        given input = default_input()
+        when result = sort_by(input)
+        then result != undefined
+

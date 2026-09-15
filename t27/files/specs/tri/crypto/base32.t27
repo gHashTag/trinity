@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// RFC 4648 compliant | φ² + 1/φ² = 3 | TRINITY
+
+module TriBase32;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Base32 = struct {
+        alphabet : []const u8,
+        padding : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // standard() → Base32
+    fn standard() -> Base32 {
+        // TODO: Implement from .tri spec
+    }
+
+    // encode(codec: Base32) → void
+    fn encode(codec: Base32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // decode(codec: Base32) → void
+    fn decode(codec: Base32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test standard_basic_case
+        given input = default_input()
+        when result = standard(input)
+        then result != undefined
+
+    test encode_basic_case
+        given input = default_input()
+        when result = encode(input)
+        then result != undefined
+
+    test decode_basic_case
+        given input = default_input()
+        when result = decode(input)
+        then result != undefined
+

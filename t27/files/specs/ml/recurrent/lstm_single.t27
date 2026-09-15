@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// LSTM solves vanishing gradient problem | φ² + 1/φ² = 3 | TRINITY
+
+module LstmCell;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const FORGET_BIAS_INIT : f32 = 1.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const LSTMConfig = struct {
+        input_size : u32,
+        hidden_size : u32,
+    };
+
+    pub const LSTMState = struct {
+        h : []f32,
+        c : []f32,
+    };
+
+    pub const LSTMWeights = struct {
+        W_ii : []f32,
+        W_hi : []f32,
+        b_i : []f32,
+        W_if : []f32,
+        W_hf : []f32,
+        b_f : []f32,
+        W_ig : []f32,
+        W_hg : []f32,
+        b_g : []f32,
+        W_io : []f32,
+        W_ho : []f32,
+        b_o : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32) → void
+    fn backward(grad_output: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test backward_basic_case
+        given input = default_input()
+        when result = backward(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant lstm_cell_constraint_0
+        given input = valid_input()
+        then true // input.size() == config.input_size
+
+    invariant lstm_cell_constraint_1
+        given input = valid_input()
+        then true // state.h.size() == config.hidden_size
+
+    invariant lstm_cell_constraint_2
+        given input = valid_input()
+        then true // state.c.size() == config.hidden_size
+

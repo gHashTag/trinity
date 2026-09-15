@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Exponential distribution | φ² + 1/φ² = 3 | TRINITY
+
+module TriProbability;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // bernoulli(p: f64) → void
+    fn bernoulli(p: f64) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // binomial(n: usize) → void
+    fn binomial(n: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // poisson(lambda: f64) → void
+    fn poisson(lambda: f64) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // normal(mean: f64) → void
+    fn normal(mean: f64) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // exponential(lambda: f64) → void
+    fn exponential(lambda: f64) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test bernoulli_basic_case
+        given input = default_input()
+        when result = bernoulli(input)
+        then result != undefined
+
+    test binomial_basic_case
+        given input = default_input()
+        when result = binomial(input)
+        then result != undefined
+
+    test poisson_basic_case
+        given input = default_input()
+        when result = poisson(input)
+        then result != undefined
+
+    test normal_basic_case
+        given input = default_input()
+        when result = normal(input)
+        then result != undefined
+
+    test exponential_basic_case
+        given input = default_input()
+        when result = exponential(input)
+        then result != undefined
+

@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Efficient backward recurrence | φ² + 1/φ² = 3 | TRINITY
+
+module Advantage;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_GAMMA : f32 = 0.99;
+    const DEFAULT_LAMBDA : f32 = 0.95;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const GAEConfig = struct {
+        gamma : f32,
+        lambda_ : f32,
+        normalize : bool,
+    };
+
+    pub const TrajectoryBatch = struct {
+        states : [][]f32,
+        actions : [][]f32,
+        rewards : []f32,
+        values : []f32,
+        dones : []bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compute_td_residual(reward: f32) → void
+    fn compute_td_residual(reward: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_gae(rewards: []f32) → void
+    fn compute_gae(rewards: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_returns(rewards: []f32) → void
+    fn compute_returns(rewards: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // normalize_advantages(advantages: []f32) → void
+    fn normalize_advantages(advantages: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test compute_td_residual_basic_case
+        given input = default_input()
+        when result = compute_td_residual(input)
+        then result != undefined
+
+    test compute_gae_basic_case
+        given input = default_input()
+        when result = compute_gae(input)
+        then result != undefined
+
+    test compute_returns_basic_case
+        given input = default_input()
+        when result = compute_returns(input)
+        then result != undefined
+
+    test normalize_advantages_basic_case
+        given input = default_input()
+        when result = normalize_advantages(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant advantage_constraint_0
+        given input = valid_input()
+        then true // 0 <= gamma <= 1
+
+    invariant advantage_constraint_1
+        given input = valid_input()
+        then true // 0 <= lambda_ <= 1
+
+    invariant advantage_constraint_2
+        given input = valid_input()
+        then true // name: gae_formula
+
+    invariant advantage_constraint_3
+        given input = valid_input()
+        then true // name: td_residual
+
+    invariant advantage_constraint_4
+        given input = valid_input()
+        then true // name: gae_recursive
+
+    invariant advantage_constraint_5
+        given input = valid_input()
+        then true // "Schulman et al. (2016) - High-Dimensional Continuous Control Using Generalized Advantage Estimation, arXiv:1506.02438"
+

@@ -1,0 +1,56 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// May return true for items not added (false positive), never false negative | φ² + 1/φ² = 3 | TRINITY
+
+module TriBloomFilter;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BloomFilter = struct {
+        bits : []bool,
+        hash_count : "usize",
+        size : "usize",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(size: usize) → void
+    fn init(size: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // add(filter: *BloomFilter) → void
+    fn add(filter: *BloomFilter) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // contains(filter: *const BloomFilter) → void
+    fn contains(filter: *const BloomFilter) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test add_basic_case
+        given input = default_input()
+        when result = add(input)
+        then result != undefined
+
+    test contains_basic_case
+        given input = default_input()
+        when result = contains(input)
+        then result != undefined
+

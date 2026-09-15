@@ -1,0 +1,522 @@
+// specs/tools/registry.t27
+// Tools Registry Operations
+// φ² + 1/φ² = 3 | TRINITY
+
+module ToolsRegistry {
+    use base::types;
+    use tools::schema;
+
+    // ════════════════════════════════════════════════════════════════════
+    // Registry Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // create creates a new tool registry
+    fn create() -> ToolRegistry {
+        // Implementation: Create empty registry
+    }
+
+    // register registers a tool in the registry
+    fn register(registry: ToolRegistry, tool: ToolDefinition) -> Result<void, ToolError> {
+        // Implementation: Register tool
+    }
+
+    // unregister removes a tool from the registry
+    fn unregister(registry: ToolRegistry, toolID: ToolID) -> Result<ToolDefinition?, ToolError> {
+        // Implementation: Unregister and return tool
+    }
+
+    // get retrieves a tool by ID
+    fn get(registry: ToolRegistry, toolID: ToolID) -> Result<ToolDefinition?, ToolError> {
+        // Implementation: Get tool definition
+    }
+
+    // has checks if a tool is registered
+    fn has(registry: ToolRegistry, toolID: ToolID) -> bool {
+        // Implementation: Check if tool exists
+    }
+
+    // list returns all registered tool IDs
+    fn list(registry: ToolRegistry) -> [ToolID] {
+        // Implementation: List all tool IDs
+    }
+
+    // list_by_category returns tools by category
+    fn list_by_category(registry: ToolRegistry, category: ToolCategory) -> [ToolID] {
+        // Implementation: Filter tools by category
+    }
+
+    // list_allowed returns tools that are allowed
+    fn list_allowed(registry: ToolRegistry) -> [ToolID] {
+        // Implementation: Filter allowed tools
+    }
+
+    // list_dangerous returns tools that are dangerous
+    fn list_dangerous(registry: ToolRegistry) -> [ToolID] {
+        // Implementation: Filter dangerous tools
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Permission Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // set_permission sets the permission for a tool
+    fn set_permission(registry: ToolRegistry, toolID: ToolID, permission: ToolPermission) -> Result<void, ToolError> {
+        // Implementation: Set tool permission
+    }
+
+    // get_permission gets the permission for a tool
+    fn get_permission(registry: ToolRegistry, toolID: ToolID) -> Result<ToolPermission, ToolError> {
+        // Implementation: Get tool permission
+    }
+
+    // allow allows a tool
+    fn allow(registry: ToolRegistry, toolID: ToolID) -> Result<void, ToolError> {
+        // Implementation: Set permission to Allowed
+    }
+
+    // deny denies a tool
+    fn deny(registry: ToolRegistry, toolID: ToolID) -> Result<void, ToolError> {
+        // Implementation: Set permission to Denied
+    }
+
+    // ask sets a tool to require permission
+    fn ask(registry: ToolRegistry, toolID: ToolID) -> Result<void, ToolError> {
+        // Implementation: Set permission to Ask
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Custom Tool Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // register_custom registers a custom tool
+    fn register_custom(registry: ToolRegistry, tool: ToolDefinition) -> Result<void, ToolError> {
+        // Implementation: Register as custom tool
+    }
+
+    // list_custom returns all custom tools
+    fn list_custom(registry: ToolRegistry) -> [ToolID] {
+        // Implementation: List custom tool IDs
+    }
+
+    // unregister_custom removes a custom tool
+    fn unregister_custom(registry: ToolRegistry, toolID: ToolID) -> Result<ToolDefinition?, ToolError> {
+        // Implementation: Unregister custom tool
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Bulk Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // register_all registers multiple tools at once
+    fn register_all(registry: ToolRegistry, tools: [ToolDefinition]) -> Result<u32, ToolError> {
+        // Implementation: Register all tools, return count
+    }
+
+    // set_all_permissions sets permissions for multiple tools
+    fn set_all_permissions(registry: ToolRegistry, permissions: [ToolID: ToolPermission]) -> Result<void, ToolError> {
+        // Implementation: Set permissions for all tools
+    }
+
+    // clear removes all tools from registry
+    fn clear(registry: ToolRegistry) -> void {
+        // Implementation: Clear all tools
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Query Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // find_by_description finds tools by description pattern
+    fn find_by_description(registry: ToolRegistry, pattern: str) -> [ToolID] {
+        // Implementation: Search tools by description
+    }
+
+    // count returns the number of registered tools
+    fn count(registry: ToolRegistry) -> u32 {
+        // Implementation: Count tools
+    }
+
+    // is_empty checks if the registry is empty
+    fn is_empty(registry: ToolRegistry) -> bool {
+        // Implementation: Check if empty
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    test "tool_id_creation" {
+        var id = ToolID("bash");
+        assert(id.0 == "bash");
+    }
+
+    test "call_id_creation" {
+        var id = CallID("call-abc");
+        assert(id.0 == "call-abc");
+    }
+
+    test "registry_creation" {
+        var registry = create();
+        assert(is_empty(registry));
+        assert(count(registry) == 0);
+    }
+
+    test "registry_with_tools" {
+        var registry = create();
+        var tools: [ToolID: ToolDefinition] = {
+            ToolID("bash"): ToolDefinition {
+                id = ToolID("bash"),
+                description = "Execute bash command",
+                parameters = ToolParameters {
+                    properties = {},
+                    required: [],
+                },
+                metadata = ToolMetadata {
+                    category = ToolCategory::Process,
+                    permission = ToolPermission::Ask,
+                    dangerous = true,
+                    experimental = false,
+                    truncated = null,
+                    outputPath = null,
+                },
+            },
+        };
+        registry.tools = tools;
+        assert(!is_empty(registry));
+        assert(count(registry) == 1);
+    }
+
+    test "tool_category_values" {
+        assert(ToolCategory::File as u32 == 0);
+        assert(ToolCategory::Search as u32 == 1);
+        assert(ToolCategory::Process as u32 == 2);
+        assert(ToolCategory::System as u32 == 3);
+        assert(ToolCategory::Network as u32 == 4);
+        assert(ToolCategory::Session as u32 == 5);
+        assert(ToolCategory::Custom as u32 == 6);
+    }
+
+    test "tool_permission_values" {
+        assert(ToolPermission::Allowed as u32 == 0);
+        assert(ToolPermission::Ask as u32 == 1);
+        assert(ToolPermission::Denied as u32 == 2);
+    }
+
+    test "tool_error_values" {
+        assert(ToolError::NotFound as u32 == 0);
+        assert(ToolError::PermissionDenied as u32 == 1);
+        assert(ToolError::InvalidParameters as u32 == 2);
+        assert(ToolError::ExecutionFailed as u32 == 3);
+        assert(ToolError::Timeout as u32 == 4);
+        assert(ToolError::Aborted as u32 == 5);
+        assert(ToolError::NotDefined as u32 == 6);
+    }
+
+    test "tool_definition_bash" {
+        var def = ToolDefinition {
+            id = ToolID("bash"),
+            description = "Execute bash command",
+            parameters = ToolParameters {
+                properties = {},
+                required: [],
+            },
+            metadata = ToolMetadata {
+                category = ToolCategory::Process,
+                permission = ToolPermission::Ask,
+                dangerous = true,
+                experimental = false,
+                truncated = null,
+                outputPath = null,
+            },
+        };
+        assert(def.id.0 == "bash");
+        assert(def.metadata.dangerous);
+        assert(def.metadata.category == ToolCategory::Process);
+    }
+
+    test "tool_definition_read" {
+        var def = ToolDefinition {
+            id = ToolID("read"),
+            description = "Read file contents",
+            parameters = ToolParameters {
+                properties = {},
+                required: [],
+            },
+            metadata = ToolMetadata {
+                category = ToolCategory::File,
+                permission = ToolPermission::Allowed,
+                dangerous = false,
+                experimental = false,
+                truncated = null,
+                outputPath = null,
+            },
+        };
+        assert(def.id.0 == "read");
+        assert(!def.metadata.dangerous);
+        assert(def.metadata.category == ToolCategory::File);
+    }
+
+    test "tool_metadata_allowed" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::File,
+            permission = ToolPermission::Allowed,
+            dangerous = false,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(is_allowed(metadata));
+        assert(!requires_permission(metadata));
+    }
+
+    test "tool_metadata_ask" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::System,
+            permission = ToolPermission::Ask,
+            dangerous = true,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(!is_allowed(metadata));
+        assert(requires_permission(metadata));
+        assert(is_dangerous(metadata));
+    }
+
+    test "tool_metadata_denied" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::System,
+            permission = ToolPermission::Denied,
+            dangerous = true,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(!is_allowed(metadata));
+        assert(!requires_permission(metadata));
+        assert(metadata.permission == ToolPermission::Denied);
+    }
+
+    test "tool_parameters_empty" {
+        var params = ToolParameters {
+            properties = {},
+            required: [],
+        };
+        assert(params.properties.len == 0);
+        assert(params.required.len == 0);
+    }
+
+    test "tool_parameters_with_required" {
+        var props: [str: ParameterSchema] = {
+            "file": ParameterSchema {
+                type = "string",
+                description = "File path",
+                required = true,
+                default = null,
+                enum = null,
+            },
+        };
+        var params = ToolParameters {
+            properties = props,
+            required: ["file"],
+        };
+        assert(params.properties["file"].required);
+        assert(params.required[0] == "file");
+    }
+
+    test "validation_error_creation" {
+        var error = ValidationError {
+            parameter = "file",
+            message = "File not found",
+            code = "NOT_FOUND",
+        };
+        assert(error.parameter == "file");
+        assert(error.code == "NOT_FOUND");
+    }
+
+    test "validation_result_valid" {
+        var result = ValidationResult {
+            valid = true,
+            errors: [],
+        };
+        assert(result.valid);
+    }
+
+    test "validation_result_invalid" {
+        var errors = [
+            ValidationError {
+                parameter = "limit",
+                message = "Must be positive",
+                code = "INVALID_VALUE",
+            },
+        ];
+        var result = ValidationResult {
+            valid = false,
+            errors = errors,
+        };
+        assert(!result.valid);
+        assert(result.errors.len == 1);
+    }
+
+    test "tool_call_creation" {
+        var call = ToolCall {
+            toolID = ToolID("read"),
+            callID = CallID("call-xyz"),
+            parameters = { "file": "test.txt" },
+            timestamp = 1234567890,
+        };
+        assert(call.toolID.0 == "read");
+        assert(call.callID.0 == "call-xyz");
+    }
+
+    test "constants_values" {
+        assert(MAX_OUTPUT_LENGTH == 100000);
+        assert(DEFAULT_TIMEOUT_MS == 120000);
+    }
+
+    test "is_dangerous_true" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::System,
+            permission = ToolPermission::Ask,
+            dangerous = true,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(is_dangerous(metadata));
+    }
+
+    test "is_dangerous_false" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::File,
+            permission = ToolPermission::Allowed,
+            dangerous = false,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(!is_dangerous(metadata));
+    }
+
+    test "requires_permission_true" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::System,
+            permission = ToolPermission::Ask,
+            dangerous = true,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(requires_permission(metadata));
+    }
+
+    test "requires_permission_false" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::File,
+            permission = ToolPermission::Allowed,
+            dangerous = false,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(!requires_permission(metadata));
+    }
+
+    test "is_allowed_true" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::File,
+            permission = ToolPermission::Allowed,
+            dangerous = false,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(is_allowed(metadata));
+    }
+
+    test "is_allowed_false" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::System,
+            permission = ToolPermission::Denied,
+            dangerous = true,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(!is_allowed(metadata));
+    }
+
+    test "tool_metadata_truncated" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::Search,
+            permission = ToolPermission::Allowed,
+            dangerous = false,
+            experimental = false,
+            truncated = true,
+            outputPath = "/tmp/output.txt",
+        };
+        assert(metadata.truncated == true);
+        assert(metadata.outputPath == "/tmp/output.txt");
+    }
+
+    test "tool_metadata_experimental" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::Custom,
+            permission = ToolPermission::Ask,
+            dangerous = false,
+            experimental = true,
+            truncated = null,
+            outputPath = null,
+        };
+        assert(metadata.experimental);
+    }
+
+    test "tool_result_creation" {
+        var metadata = ToolMetadata {
+            category = ToolCategory::File,
+            permission = ToolPermission::Allowed,
+            dangerous = false,
+            experimental = false,
+            truncated = null,
+            outputPath = null,
+        };
+        var result = ToolResult {
+            toolID = ToolID("read"),
+            callID = CallID("call-1"),
+            success = true,
+            title = "File read",
+            output = "content",
+            metadata = metadata,
+            error = null,
+            truncated = false,
+            duration = 50,
+        };
+        assert(result.success);
+        assert(result.duration == 50);
+    }
+
+    test "tool_context_creation" {
+        var ctx = ToolContext {
+            sessionID = SessionSchema::SessionID("sess-1"),
+            messageID = SessionSchema::MessageID("msg-1"),
+            callID = CallID("call-1"),
+            agent = "claude",
+            abort = false,
+            extra = null,
+        };
+        assert(ctx.agent == "claude");
+        assert(!ctx.abort);
+    }
+
+    test "parameter_schema_creation" {
+        var param = ParameterSchema {
+            type = "string",
+            description = "Path",
+            required = true,
+            default = null,
+            enum = null,
+        };
+        assert(param.type == "string");
+        assert(param.required);
+    }
+}

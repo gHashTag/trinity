@@ -1,0 +1,62 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Random level selection | φ² + 1/φ² = 3 | TRINITY
+
+module TriSkipList;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SkipNode(T) = struct {
+        value : "T",
+        forward : []?SkipNode(T),
+        level : "usize",
+    };
+
+    pub const SkipList(T) = struct {
+        head : "SkipNode(T)",
+        max_level : "usize",
+        level : "usize",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(max_level: usize) → void
+    fn init(max_level: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // insert(list: *SkipList(T)) → void
+    fn insert(list: *SkipList(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(list: SkipList(T)) → void
+    fn search(list: SkipList(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test insert_basic_case
+        given input = default_input()
+        when result = insert(input)
+        then result != undefined
+
+    test search_basic_case
+        given input = default_input()
+        when result = search(input)
+        then result != undefined
+

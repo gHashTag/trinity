@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Reader enables implicit environment passing | φ² + 1/φ² = 3 | TRINITY
+
+module TriReader;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Reader(R, T) = struct {
+        run : "fn(R) -> T",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // pure(value: T) → void
+    fn pure(value: T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ask() → Reader(R, R)
+    fn ask() -> Reader(R, R) {
+        // TODO: Implement from .tri spec
+    }
+
+    // asks(fn: Fn(R) -> T) → void
+    fn asks(fn: Fn(R) -> T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // local(fn: Fn(R) -> R) → void
+    fn local(fn: Fn(R) -> R) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test pure_basic_case
+        given input = default_input()
+        when result = pure(input)
+        then result != undefined
+
+    test ask_basic_case
+        given input = default_input()
+        when result = ask(input)
+        then result != undefined
+
+    test asks_basic_case
+        given input = default_input()
+        when result = asks(input)
+        then result != undefined
+
+    test local_basic_case
+        given input = default_input()
+        when result = local(input)
+        then result != undefined
+

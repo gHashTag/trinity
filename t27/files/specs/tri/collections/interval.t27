@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Range operations | φ² + 1/φ² = 3 | TRINITY
+
+module TriInterval;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Interval = struct {
+        start : "i64",
+        end : "i64",
+        inclusive : "bool",
+    };
+
+    pub const IntervalSet = struct {
+        intervals : []Interval,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // create(start: i64) → void
+    fn create(start: i64) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // overlaps(a: Interval) → void
+    fn overlaps(a: Interval) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // union(a: IntervalSet) → void
+    fn union(a: IntervalSet) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test create_basic_case
+        given input = default_input()
+        when result = create(input)
+        then result != undefined
+
+    test overlaps_basic_case
+        given input = default_input()
+        when result = overlaps(input)
+        then result != undefined
+
+    test union_basic_case
+        given input = default_input()
+        when result = union(input)
+        then result != undefined
+

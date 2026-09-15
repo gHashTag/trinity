@@ -1,0 +1,123 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Short-term memory exposed to next layer | φ² + 1/φ² = 3 | TRINITY
+
+module Lstm;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const LSTM_DEFAULT_HIDDEN : u32 = 128;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const LSTMConfig = struct {
+        input_size : u32,
+        hidden_size : u32,
+    };
+
+    pub const LSTMState = struct {
+        h : []f32,
+        c : []f32,
+    };
+
+    pub const LSTMWeights = struct {
+        Wf : []f32,
+        bf : []f32,
+        Wi : []f32,
+        bi : []f32,
+        Wo : []f32,
+        bo : []f32,
+        Wg : []f32,
+        bg : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // init(weights: LSTMWeights) → void
+    fn init(weights: LSTMWeights) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant lstm_constraint_0
+        given input = valid_input()
+        then true // input_size > 0
+
+    invariant lstm_constraint_1
+        given input = valid_input()
+        then true // hidden_size > 0
+
+    invariant lstm_constraint_2
+        given input = valid_input()
+        then true // Wf.size() == (input_size + hidden_size) * hidden_size
+
+    invariant lstm_constraint_3
+        given input = valid_input()
+        then true // Wi.size() == (input_size + hidden_size) * hidden_size
+
+    invariant lstm_constraint_4
+        given input = valid_input()
+        then true // Wo.size() == (input_size + hidden_size) * hidden_size
+
+    invariant lstm_constraint_5
+        given input = valid_input()
+        then true // Wg.size() == (input_size + hidden_size) * hidden_size
+
+    invariant lstm_constraint_6
+        given input = valid_input()
+        then true // bf.size() == hidden_size
+
+    invariant lstm_constraint_7
+        given input = valid_input()
+        then true // bi.size() == hidden_size
+
+    invariant lstm_constraint_8
+        given input = valid_input()
+        then true // bo.size() == hidden_size
+
+    invariant lstm_constraint_9
+        given input = valid_input()
+        then true // bg.size() == hidden_size
+
+    invariant lstm_constraint_10
+        given input = valid_input()
+        then true // "LSTM should learn long-term dependencies (>100 time steps)"
+
+    invariant lstm_constraint_11
+        given input = valid_input()
+        then true // "Forget gate bias initialization to 1.0 improves convergence"
+
+    invariant lstm_constraint_12
+        given input = valid_input()
+        then true // "Cell state acts as linear information highway"
+

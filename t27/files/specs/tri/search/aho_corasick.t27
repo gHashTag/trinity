@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// BFS to build failure links | φ² + 1/φ² = 3 | TRINITY
+
+module TriAhoCorasick;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ACTrieNode = struct {
+        children : [256]?*ACTrieNode,
+        fail : "*ACTrieNode",
+        output : "[]const []const u8",
+        char : "u8",
+    };
+
+    pub const ACAutomaton = struct {
+        root : "*ACTrieNode",
+        patterns : "[]const []const u8",
+        allocator : "std.mem.Allocator",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // build(allocator: std.mem.Allocator) → void
+    fn build(allocator: std.mem.Allocator) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(ac: *ACAutomaton) → void
+    fn search(ac: *ACAutomaton) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(ac: *ACAutomaton) → void
+    fn deinit(ac: *ACAutomaton) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // match() → void
+    fn match() -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test build_basic_case
+        given input = default_input()
+        when result = build(input)
+        then result != undefined
+
+    test search_basic_case
+        given input = default_input()
+        when result = search(input)
+        then result != undefined
+
+    test deinit_basic_case
+        given input = default_input()
+        when result = deinit(input)
+        then result != undefined
+
+    test match_basic_case
+        given input = default_input()
+        when result = match(input)
+        then result != undefined
+

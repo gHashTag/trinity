@@ -1,0 +1,189 @@
+// SPDX-License-Identifier: Apache-2.0
+# TRI-NET API CONTRACT 0 External Integration Surface
+
+## Specification
+
+File-based, read-only API surface that downstream tools (chip-repo CI,
+third-party auditors, formal-methods reviewers) consume to interact with
+TRI-NET artefacts produced by t27 and its sibling chip repos. There is
+no hosted network endpoint in scope.
+
+Human-readable companion: docs/TRI_NET_API.md
+Schema: schemas/tri-net-api-v1.json
+Numeric SSOT: conformance/FORMAT-SPEC-001.json + schemas/numeric-format-v1.json
+
+## Mathematical Foundation
+
+```
+phi^2 + 1/phi^2 = 3 = TRINITY
+```
+
+The API has no math content of its own; it merely shapes how TRI-NET
+artefacts that *do* carry math content are produced and consumed.
+
+## Versioning
+
+```
+schema_version: semver
+    MAJOR change   -> breaking; consumer must opt in
+    MINOR change   -> additive; consumer should ignore unknown fields
+    PATCH change   -> editorial; no semantic change
+current: 1.0
+```
+
+## Artefact Families
+
+### Format registry
+```
+path:    conformance/FORMAT-SPEC-001.json
+schema:  schemas/numeric-format-v1.json
+host:    t27 only (chip repos consume; do not republish)
+law:     L6 CEILING
+```
+
+### NMSE protocol results
+```
+path:    bench/results/nmse-<runner>-<seed>-<iso8601>.json
+schema:  schemas/nmse-protocol-v1.json
+companion_doc: docs/GF16_BFLOAT16_NMSE_PROTOCOL.md
+```
+
+### Toolchain seal
+```
+path:    bootstrap/stage0/FROZEN_HASH
+format:  single SHA-256 hex digest, trailing newline allowed
+law:     L2 GENERATION
+```
+
+### Readiness ladder (programmatic mirror, optional)
+```
+path:    bench/readiness.json   // optional
+schema:  schemas/tri-net-api-v1.json#/$defs/Readiness
+levels:  [ SPEC, RTL, SIM, SYNTH, GDS_TAPEOUT, SILICON ]
+authority: STATUS.md is human-readable SSOT; programmatic mirror is opt-in
+```
+
+### Conformance vectors
+```
+path_glob: conformance/*.json
+families:  gf*_vectors, ar_*, nn_*, sacred_physics*, FORMAT-SPEC-001
+```
+
+### Cross-repo identity (optional)
+```
+path:   tri-net-identity.json   // top level of any TRI-NET-conforming repo
+schema: schemas/tri-net-api-v1.json#/$defs/RepoIdentity
+purpose:
+    lets a consumer enumerate the four products of the line without
+    scraping documentation
+```
+
+## Consumer Contract
+
+```
+must pin a schema MAJOR
+must validate every artefact before treating fields as authoritative
+must fail closed on schema violation
+should verify seal_hash matches bootstrap/stage0/FROZEN_HASH
+should log schema_version in any output
+```
+
+## Producer Contract
+
+```
+must emit only artefacts that validate against the active schema
+must include schema_version at artefact root
+must place extensions under reserved x_extension object
+must cite seal_hash when numeric results are reported
+should publish tri-net-identity.json at repo root
+```
+
+## Tests
+
+```
+test "API: format registry validates" {
+    // conformance/FORMAT-SPEC-001.json validates against
+    // schemas/numeric-format-v1.json
+}
+
+test "API: schema version present" {
+    // Every conforming artefact carries a schema_version field at the
+    // top level; reject otherwise.
+}
+
+test "API: seal hash matches frozen seal" {
+    // A produced artefact whose seal_hash != contents of
+    // bootstrap/stage0/FROZEN_HASH is non-conforming.
+}
+
+test "API: fail-closed on undocumented top-level field" {
+    // Producers cannot add new top-level keys; extensions go under
+    // x_extension or fail validation.
+}
+```
+
+## Invariants
+
+```
+invariant "no hosted endpoint claim" {
+    // No artefact in this API surface claims a hosted runtime exists.
+}
+
+invariant "single source for format registry" {
+    // FORMAT-SPEC-001.json is hosted in t27 only; chip-repo copies are
+    // verbatim mirrors with no schema drift.
+}
+
+invariant "extension namespace" {
+    // Unknown keys must reside under x_extension; otherwise validation
+    // fails.
+}
+
+invariant "L6 CEILING preserved" {
+    // The numeric registry is read-only at the API; changing it
+    // requires a constitutional amendment, not an API change.
+}
+```
+
+## Benchmark
+
+```
+bench "TRI-NET API schema round-trip" {
+    procedure:
+        - for each artefact family above
+        - produce a minimal valid artefact (golden file under
+          bench/api_goldens/) and validate against its schema
+        - mutate one required field; confirm validation fails
+    output: bench/results/api-roundtrip-<iso8601>.json
+    success_criterion: 100% of golden files validate, 100% of mutated
+                       golden files fail validation
+}
+```
+
+## What This API Is Not
+
+```
+- not a hosted HTTP service
+- not an SDK
+- not a control plane for any chip
+- not a place where silicon-bring-up endpoints live
+```
+
+## Cross-links
+
+- docs/TRI_NET_API.md                 (human-readable mirror)
+- docs/TRI_NET_WHITEPAPER.md          (line positioning)
+- schemas/tri-net-api-v1.json         (this API's schema)
+- schemas/numeric-format-v1.json      (numeric SSOT schema)
+- schemas/nmse-protocol-v1.json       (NMSE manifest schema)
+- LINEUP.md                           (the four-product map)
+- STATUS.md                           (readiness ladder)
+- specs/api/c_api_contract.t27        (separate FFI bridge contract)
+- specs/api/sdk_contract.t27          (separate SDK contract)
+
+## R5-HONEST Notes
+
+- API is file-based today; no network endpoint is implied.
+- Schemas describe SHAPE only; they do not promise silicon behaviour.
+- No throughput / latency / energy field is part of the canonical
+  surface today.

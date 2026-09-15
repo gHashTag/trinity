@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Operations return new trees | φ² + 1/φ² = 3 | TRINITY
+
+module TriTree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Tree(T) = struct {
+        is_leaf : bool,
+        value : T,
+        left : "Tree(T)",
+        right : "Tree(T)",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // leaf(value: T) → void
+    fn leaf(value: T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // branch(left: Tree(T)) → void
+    fn branch(left: Tree(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_leaf(tree: Tree(T)) → void
+    fn is_leaf(tree: Tree(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // height(tree: Tree(T)) → void
+    fn height(tree: Tree(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // size(tree: Tree(T)) → void
+    fn size(tree: Tree(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // inorder(tree: Tree(T)) → void
+    fn inorder(tree: Tree(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test leaf_basic_case
+        given input = default_input()
+        when result = leaf(input)
+        then result != undefined
+
+    test branch_basic_case
+        given input = default_input()
+        when result = branch(input)
+        then result != undefined
+
+    test is_leaf_basic_case
+        given input = default_input()
+        when result = is_leaf(input)
+        then result != undefined
+
+    test height_basic_case
+        given input = default_input()
+        when result = height(input)
+        then result != undefined
+
+    test size_basic_case
+        given input = default_input()
+        when result = size(input)
+        then result != undefined
+
+    test inorder_basic_case
+        given input = default_input()
+        when result = inorder(input)
+        then result != undefined
+

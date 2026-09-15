@@ -1,0 +1,165 @@
+// SPDX-License-Identifier: Apache-2.0
+# NN BENCHMARK — Small NN Inference
+
+## Specification
+
+Scientific benchmark for TRI-27 algorithms.
+Tests ternary vs FP16/BF16/GF16 on MNIST-like workload.
+
+## Mathematical Foundation
+
+```
+φ² + 1/φ² = 3 = TRINITY
+```
+
+## Format Conversion
+
+### Ternary Quantization
+
+```
+quantizeTernary(x: f32) -> i2
+    if x > 0.5 return 1
+    if x < -0.5 return -1
+    return 0
+```
+
+### GF16 Encode/Decode
+
+```
+f32ToGf16(x: f32) -> u16
+    Encodes f32 to GF16 (5-bit exp, 9-bit mantissa, sign)
+
+gf16ToF32(x: u16) -> f32
+    Decodes GF16 back to f32
+```
+
+### FP16 Encode/Decode
+
+```
+f32ToFp16(x: f32) -> u16
+    IEEE 754 half precision (5-bit exp, 10-bit mantissa)
+
+fp16ToF32(x: u16) -> f32
+    Decodes FP16 to f32
+```
+
+### BF16 Encode/Decode
+
+```
+f32ToBf16(x: f32) -> u16
+    Brain float (8-bit exp, 7-bit mantissa)
+
+bf16ToF32(x: u16) -> f32
+    Decodes BF16 to f32
+```
+
+## Model Architecture
+
+```
+LayerConfig:
+    input_size: 784    // 28x28 MNIST
+    hidden_size: 128
+    output_size: 10    // digits 0-9
+
+denseLayer(input, weights, bias, output, in_size, out_size) -> void
+    Dense layer with ReLU activation
+
+relu(x: f32) -> f32
+    ReLU activation function
+```
+
+## Forward Pass Implementations
+
+```
+forwardTernary(input, w1, b1, w2, b2, hidden, output, config) -> void
+    Ternary weights {-1, 0, +1}
+
+forwardGf16(input, w1, b1, w2, b2, hidden, output, config) -> void
+    GF16 quantized weights
+
+forwardFp16(input, w1, b1, w2, b2, hidden, output, config) -> void
+    FP16 quantized weights
+
+forwardBf16(input, w1, b1, w2, b2, hidden, output, config) -> void
+    BF16 quantized weights
+```
+
+## MNIST Loading
+
+```
+MnistHeader:
+    magic: u32
+    count: u32
+    rows: u32
+    cols: u32
+
+readMnistImages(filename, allocator) -> struct {
+    data: []f32,
+    count: usize,
+    rows: usize,
+    cols: usize,
+}
+
+readMnistLabels(filename, allocator) -> []u8
+```
+
+## Results Structure
+
+```
+BenchmarkResult:
+    format: []const u8
+    accuracy: f32
+    loss: f32
+    bytes_per_weight: f32
+```
+
+## Accuracy Computation
+
+```
+computeAccuracy(predictions, labels, num_classes) -> f32
+    Returns percentage of correct predictions
+
+mseLoss(predictions, targets) -> f32
+    Returns mean squared error loss
+```
+
+## Tests
+
+```
+test "NN-Bench: quantization roundtrip" {
+    // Verify quantization-dequantization preserves reasonable accuracy
+}
+
+test "NN-Bench: GF16 accuracy" {
+    // GF16 should maintain > 90% accuracy vs f32 baseline
+}
+
+test "NN-Bench: forward pass consistency" {
+    // All formats should produce similar outputs
+}
+```
+
+## Benchmarks
+
+CSV output format:
+```
+format,accuracy,loss,bytes_per_weight
+f32,95.2,0.048,32
+f16_soft,94.8,0.052,16
+gf16_soft,94.9,0.051,16
+ternary,88.5,0.12,2
+```
+
+## Expected Results
+
+| Format | Accuracy | Loss | Bytes/Weight |
+|--------|----------|------|--------------|
+| f32    | ~95.2%   | 0.048 | 32           |
+| f16    | ~94.8%   | 0.052 | 16           |
+| gf16   | ~94.9%   | 0.051 | 16           |
+| ternary| ~88.5%   | 0.12  | 2            |
+
+**Key findings:**
+- GF16 maintains competitive accuracy vs f32 baseline
+- Ternary shows significant accuracy drop due to limited representation
+- All soft implementations have overhead vs hardware f32

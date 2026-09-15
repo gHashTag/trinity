@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// IGLA-Coder P4 Pilot Pretraining at 50-200M parameters | phi^2 + 1/phi^2 = 3 | TRINITY
+
+module IGLAPilotPretraining;
+    use base::types;
+    use math::constants;
+
+    // ===========================================================
+    // 2. Types
+    // ===========================================================
+
+    pub const ModelSize = enum {
+        Tiny_50M,
+        Small_100M,
+        Medium_200M,
+    };
+
+    pub const TrainingConfig = struct {
+        model_size      : ModelSize,
+        batch_size      : u32,
+        learning_rate   : f64,
+        warmup_steps    : u32,
+        max_steps       : u32,
+        seq_len         : u32,
+        vocab_size      : u32,
+    };
+
+    pub const Checkpoint = struct {
+        step        : u32,
+        loss        : f64,
+        perplexity  : f64,
+        timestamp   : u64,
+    };
+
+    // ===========================================================
+    // 3. Core Functions
+    // ===========================================================
+
+    // train(config: TrainingConfig) -> Checkpoint
+    fn train(config: TrainingConfig) -> Checkpoint {
+        // Placeholder: external training framework implementation
+    }
+
+    // evaluate(checkpoint: Checkpoint, eval_dataset: str) -> f64
+    fn evaluate(checkpoint: Checkpoint, eval_dataset: str) -> f64 {
+        // Placeholder: external evaluation harness
+    }
+
+    // save_checkpoint(checkpoint: Checkpoint, path: str) -> void
+    fn save_checkpoint(checkpoint: Checkpoint, path: str) -> void {
+        // Placeholder: external checkpoint saver
+    }
+
+    // load_checkpoint(path: str) -> Checkpoint
+    fn load_checkpoint(path: str) -> Checkpoint {
+        // Placeholder: external checkpoint loader
+    }
+
+    // ===========================================================
+    // 4. Invariants
+    // ===========================================================
+
+bench pilot_loss_finite: loss >= 0 and loss < inf
+    invariant checkpoint_step_nonneg:
+        forall cp : Checkpoint, cp.step >= 0
+
+invariant training_loss_positive:
+        forall cp : Checkpoint, cp.loss >= 0.0
+
+invariant perplexity_gte_one:
+        forall cp : Checkpoint, cp.perplexity >= 1.0
+
+    // ===========================================================
+    // 5. Tests
+    // ===========================================================
+
+    test tiny_model_identity
+        given cfg = TrainingConfig { model_size: ModelSize.Tiny_50M, batch_size: 32, learning_rate: 0.001, warmup_steps: 100, max_steps: 1000, seq_len: 512, vocab_size: 32000 }
+        assert cfg.model_size == ModelSize.Tiny_50M
+
+    test checkpoint_fields_valid
+        given cp = Checkpoint { step: 100, loss: 2.5, perplexity: 12.0, timestamp: 1700000000 }
+        assert cp.step >= 0 && cp.loss >= 0.0 && cp.perplexity >= 1.0
+
+    test lr_decay_monotonic
+        given lr1 = 0.001
+        given lr2 = 0.0005
+        assert lr1 > lr2
+
+    // ===========================================================
+    // 6. Benchmarks
+    // ===========================================================
+
+    bench train_tiny_50m
+        given cfg = TrainingConfig { model_size: ModelSize.Tiny_50M, batch_size: 32, learning_rate: 0.001, warmup_steps: 100, max_steps: 1000, seq_len: 512, vocab_size: 32000 }
+        measure train(cfg)
+        target latency_ms < 3600000.0
+
+    bench eval_perplexity
+        given cp = Checkpoint { step: 500, loss: 2.0, perplexity: 7.4, timestamp: 1700000000 }
+        measure evaluate(cp, "validation_split")
+        target latency_ms < 60000.0

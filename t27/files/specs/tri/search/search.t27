@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(log n) binary search | φ² + 1/φ² = 3 | TRINITY
+
+module TriSearch;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SearchResult = struct {
+        index : "?usize",
+        found : "bool",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // binary(sorted: []const T) → void
+    fn binary(sorted: []const T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // linear(items: []const T) → void
+    fn linear(items: []const T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // lower_bound(sorted: []const T) → void
+    fn lower_bound(sorted: []const T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test binary_basic_case
+        given input = default_input()
+        when result = binary(input)
+        then result != undefined
+
+    test linear_basic_case
+        given input = default_input()
+        when result = linear(input)
+        then result != undefined
+
+    test lower_bound_basic_case
+        given input = default_input()
+        when result = lower_bound(input)
+        then result != undefined
+

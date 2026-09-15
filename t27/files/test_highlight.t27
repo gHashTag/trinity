@@ -1,0 +1,56 @@
+; T27 Syntax Highlighting Test File
+// This tests all syntax elements
+
+pub module test;
+
+; Constants with PHI
+pub const PHI: f64 = 1.6180339887498948482;
+pub const PHI_SQ: f64 = 2.6180339887498948482;
+pub const TRINITY: i8 = 3;
+
+; Ternary types
+pub const Trit = enum(i8) {
+    neg = -1,
+    neu = 0,
+    pos = 1
+}
+
+; Struct with arrays
+pub struct State {
+    trits: [9]Trit,
+    buffer: [_]u8{0} ** 128,
+    phi: f64
+}
+
+; Function with builtins
+pub fn compute_phi(x: i8) f64 {
+    const casted = @intCast(f64, x);
+    return casted * PHI;
+}
+
+; Switch expression
+pub fn invert_trit(a: Trit) Trit {
+    switch (a) {
+        .neg => .pos,
+        .neu => .neu,
+        .pos => .neg
+    }
+}
+
+; For loop with range
+pub fn sum_range(n: i32) i32 {
+    var total: i32 = 0;
+    for (0..n) |i| {
+        total += i;
+    }
+    return total;
+}
+
+; Array literal
+pub const zeros = [16]i8{0};
+
+; Builtin usage
+pub fn test_builtin() void {
+    const result = @as(Trit, .pos);
+    @compileAssert(true, "test");
+}

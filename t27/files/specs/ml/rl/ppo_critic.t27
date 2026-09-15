@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Temporal difference error | φ² + 1/φ² = 3 | TRINITY
+
+module PpoCritic;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_HIDDEN : []u32 = "[64, 64]";
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const CriticConfig = struct {
+        state_dim : u32,
+        hidden_dims : []u32,
+        activation : Activation,
+    };
+
+    pub const Activation = struct {
+        enum : ,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(state: []const f32) → void
+    fn forward(state: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_advantage(rewards: []f32) → void
+    fn compute_advantage(rewards: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_returns(rewards: []f32) → void
+    fn compute_returns(rewards: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // value_loss(predicted_values: []f32) → void
+    fn value_loss(predicted_values: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test compute_advantage_basic_case
+        given input = default_input()
+        when result = compute_advantage(input)
+        then result != undefined
+
+    test compute_returns_basic_case
+        given input = default_input()
+        when result = compute_returns(input)
+        then result != undefined
+
+    test value_loss_basic_case
+        given input = default_input()
+        when result = value_loss(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant ppo_critic_constraint_0
+        given input = valid_input()
+        then true // 0 <= gamma <= 1
+
+    invariant ppo_critic_constraint_1
+        given input = valid_input()
+        then true // 0 <= lambda_ <= 1
+
+    invariant ppo_critic_constraint_2
+        given input = valid_input()
+        then true // name: gae_formula
+
+    invariant ppo_critic_constraint_3
+        given input = valid_input()
+        then true // name: td_error
+
+    invariant ppo_critic_constraint_4
+        given input = valid_input()
+        then true // "Schulman et al. (2016) - High-dimensional continuous control using GAE"
+
+    invariant ppo_critic_constraint_5
+        given input = valid_input()
+        then true // "Schulman et al. (2017) - Proximal Policy Optimization Algorithms"
+

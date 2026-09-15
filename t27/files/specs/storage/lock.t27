@@ -1,0 +1,178 @@
+// specs/storage/lock.t27
+// Locking Primitives for Storage Operations
+// φ² + 1/φ² = 3 | TRINITY
+
+module StorageLock {
+    use base::types;
+    use storage::schema;
+
+    // ════════════════════════════════════════════════════════════════════
+    // Lock State
+    // ════════════════════════════════════════════════════════════════════
+
+    // LockState represents the state of a lock holder
+    struct LockState {
+        key: str,
+        mode: LockMode,
+        owner: str,
+        acquired_at: u64,
+        expires_at: u64,
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Lock Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // acquire_read attempts to acquire a read lock on the given key
+    // Multiple read locks can be held simultaneously
+    // Returns false if lock cannot be acquired immediately
+    fn acquire_read(key: str) -> Result<bool, StorageError> {
+        // Implementation: Try to acquire read lock, return true if acquired
+    }
+
+    // acquire_write attempts to acquire a write lock on the given key
+    // Only one write lock can be held at a time
+    // Returns false if lock cannot be acquired immediately
+    fn acquire_write(key: str) -> Result<bool, StorageError> {
+        // Implementation: Try to acquire write lock, return true if acquired
+    }
+
+    // release releases a lock on the given key
+    fn release(key: str) -> Result<void, StorageError> {
+        // Implementation: Release the lock held by current owner
+    }
+
+    // try_lock attempts to acquire a lock with a timeout
+    // Returns false if lock cannot be acquired within timeout
+    fn try_lock(key: str, mode: LockMode, timeout_ms: u64) -> Result<bool, StorageError> {
+        // Implementation: Retry lock acquisition until timeout
+    }
+
+    // is_locked checks if a key is currently locked
+    fn is_locked(key: str) -> Result<bool, StorageError> {
+        // Implementation: Check if lock exists for the key
+    }
+
+    // get_lock_state returns the current lock state for a key
+    fn get_lock_state(key: str) -> Result<LockState?, StorageError> {
+        // Implementation: Return lock state or null if not locked
+    }
+
+    // wait_for_read waits until a read lock can be acquired
+    fn wait_for_read(key: str) -> Result<void, StorageError> {
+        // Implementation: Block until read lock is available
+    }
+
+    // wait_for_write waits until a write lock can be acquired
+    fn wait_for_write(key: str) -> Result<void, StorageError> {
+        // Implementation: Block until write lock is available
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Lock Management
+    // ════════════════════════════════════════════════════════════════════
+
+    // cleanup_expired removes expired locks
+    fn cleanup_expired() -> Result<void, StorageError> {
+        // Implementation: Remove all locks past their expiry time
+    }
+
+    // get_all_locks returns all active locks
+    fn get_all_locks() -> Result<[LockState], StorageError> {
+        // Implementation: Return list of all currently held locks
+    }
+
+    // force_release forces release of a lock (use with caution)
+    fn force_release(key: str) -> Result<void, StorageError> {
+        // Implementation: Release lock regardless of owner
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    test "acquire_read_returns_true" {
+        // Acquiring a read lock on an unlocked key should succeed
+        var result = acquire_read("test_key");
+        assert(result.is_ok());
+        assert(result.unwrap() == true);
+        _ = release("test_key");
+    }
+
+    test "acquire_write_returns_true" {
+        // Acquiring a write lock on an unlocked key should succeed
+        var result = acquire_write("test_key");
+        assert(result.is_ok());
+        assert(result.unwrap() == true);
+        _ = release("test_key");
+    }
+
+    test "multiple_read_locks_allowed" {
+        // Multiple read locks should be allowed on the same key
+        var result1 = acquire_read("test_key");
+        var result2 = acquire_read("test_key");
+        assert(result1.is_ok());
+        assert(result2.is_ok());
+        assert(result1.unwrap() == true);
+        assert(result2.unwrap() == true);
+        _ = release("test_key");
+        _ = release("test_key");
+    }
+
+    test "write_lock_excludes_read" {
+        // A write lock should prevent acquiring a read lock
+        _ = acquire_write("test_key");
+        var result = acquire_read("test_key");
+        assert(result.is_ok());
+        assert(result.unwrap() == false);
+        _ = release("test_key");
+    }
+
+    test "write_lock_excludes_write" {
+        // A write lock should prevent acquiring another write lock
+        _ = acquire_write("test_key");
+        var result = acquire_write("test_key");
+        assert(result.is_ok());
+        assert(result.unwrap() == false);
+        _ = release("test_key");
+    }
+
+    test "read_lock_excludes_write" {
+        // A read lock should prevent acquiring a write lock
+        _ = acquire_read("test_key");
+        var result = acquire_write("test_key");
+        assert(result.is_ok());
+        assert(result.unwrap() == false);
+        _ = release("test_key");
+    }
+
+    test "release_allows_reacquisition" {
+        // Releasing a lock should allow reacquiring
+        _ = acquire_write("test_key");
+        _ = release("test_key");
+        var result = acquire_write("test_key");
+        assert(result.is_ok());
+        assert(result.unwrap() == true);
+        _ = release("test_key");
+    }
+
+    test "is_locked_returns_correct_state" {
+        // is_locked should return true when locked
+        _ = acquire_write("test_key");
+        var result1 = is_locked("test_key");
+        assert(result1.is_ok());
+        assert(result1.unwrap() == true);
+        _ = release("test_key");
+        var result2 = is_locked("test_key");
+        assert(result2.is_ok());
+        assert(result2.unwrap() == false);
+    }
+
+    test "try_lock_with_timeout" {
+        // try_lock should acquire lock within timeout
+        var result = try_lock("test_key", LockMode::Write, 1000);
+        assert(result.is_ok());
+        assert(result.unwrap() == true);
+        _ = release("test_key");
+    }
+}

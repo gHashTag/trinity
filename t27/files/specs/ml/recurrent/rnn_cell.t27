@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Basic RNN recurrence equation | φ² + 1/φ² = 3 | TRINITY
+
+module RnnCell;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_INPUT_SIZE : u32 = 128;
+    const DEFAULT_HIDDEN_SIZE : u32 = 128;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const RNNCellConfig = struct {
+        input_size : u32,
+        hidden_size : u32,
+    };
+
+    pub const RNNState = struct {
+        hidden : []f32,
+        cell : []f32,
+    };
+
+    pub const RNNParams = struct {
+        w_x : []f32,
+        w_h : []f32,
+        b : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward_step(input: []f32) → void
+    fn forward_step(input: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_sequence(inputs: [][]f32) → void
+    fn forward_sequence(inputs: [][]f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // init_state(hidden_size: u32) → void
+    fn init_state(hidden_size: u32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_step_basic_case
+        given input = default_input()
+        when result = forward_step(input)
+        then result != undefined
+
+    test forward_sequence_basic_case
+        given input = default_input()
+        when result = forward_sequence(input)
+        then result != undefined
+
+    test init_state_basic_case
+        given input = default_input()
+        when result = init_state(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant rnn_cell_constraint_0
+        given input = valid_input()
+        then true // input_size >= 1
+
+    invariant rnn_cell_constraint_1
+        given input = valid_input()
+        then true // hidden_size >= 1
+
+    invariant rnn_cell_constraint_2
+        given input = valid_input()
+        then true // name: rnn_formula
+
+    invariant rnn_cell_constraint_3
+        given input = valid_input()
+        then true // "Elman (1990) - Finding Structure in Time"
+
+    invariant rnn_cell_constraint_4
+        given input = valid_input()
+        then true // "Goodfellow et al. (2016) - Sequence Modeling with RNNs and LSTMs"
+

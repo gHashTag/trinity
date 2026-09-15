@@ -1,0 +1,135 @@
+// SPDX-License-Identifier: Apache-2.0
+// specs/automation/crm-lead-magnet.t27 -- the CRM lead magnet: a person's own Telegram
+// photo redrawn as a vertical 9:16 story portrait and given away free, to show the AI
+// assistant doing something for THEM before anything is sold.
+// Host: 999-multibots-telegraf apps/vibee-editor/render/src/agent/crm-deliver-tool.ts
+//       (the tool crm_deliver_photo, gift mode by default), src/kie-image.ts (editInputFor),
+//       src/agent/tools.ts (leadAvatarUrl: owner session first, bot API second),
+//       src/agent/billing-shared.ts (the op gpt_image_edit and its price).
+// Consumer: the bot src/navigation/helpers/crmMenu.ts (keyboard width rule, prep label).
+// Why a personal artefact: a generic lead magnet is content the person has seen before; a
+// picture WITH THEM in it is opened, kept and forwarded. This spec fixes what the gift is,
+// who pays for it, how the prompt is ordered so the face stays theirs, and how wide a
+// keyboard row may be so the buttons that deliver it can be read on a phone.
+// Claim status: the Kie GPT Image 2.5 contract and price are DOCUMENTED (docs.kie.ai and the
+// public price list, both read 2026-09-13), NOT yet live-probed from this code base.
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module automation::crm_lead_magnet {
+
+    pub const KIND : str = "automation";
+    pub const ID : str = "crm-lead-magnet";
+    pub const REPO : str = "999-multibots-telegraf";
+    pub const VERSION : u8 = 1;
+
+    // ---- What is made ---------------------------------------------------------------------
+    pub const TOOL : str = "crm_deliver_photo";
+    pub const DEFAULT_MODE : str = "gift";  // gift=true unless the owner says gift=false
+    pub const SOURCE : str = "lead-avatar";  // the person's own profile photo, img2img
+    pub const FALLBACK : str = "text-to-image";  // when no photo is readable; said in `source`
+    pub const ASPECT_RATIO : str = "9:16";
+    pub const STORY_PX : str = "1080x1920";
+    pub const TEXT_IN_IMAGE : bool = false;  // the caption carries the words, never the pixels
+
+    // The story frame is covered by app UI. Nothing important lives in these bands, and the
+    // face sits in the central third of the frame.
+    pub const SAFE_ZONE_TOP_PCT : u8 = 14;
+    pub const SAFE_ZONE_BOTTOM_PCT : u8 = 35;
+    pub const SAFE_ZONE_SIDE_PCT : u8 = 6;
+
+    // ---- Which model, and what it costs -----------------------------------------------
+    pub const MODEL : str = "gpt-image-2-5-flare-image-to-image";  // Kie; sunburst = premium tier
+    pub const MODEL_ALT : str = "gpt-image-2-5-sunburst-image-to-image";
+    pub const RESOLUTION : str = "1K";
+    pub const KIE_INPUT_URLS_FIELD : str = "input_urls";  // nano-banana-edit uses image_urls
+    pub const COST_USD : str = "0.03";  // Kie price list, 1K, read 2026-09-13
+    pub const OP : str = "gpt_image_edit";  // the billing op the OWNER is charged
+    pub const OP_TOKENS : u8 = 12;  // ceil(0.03 * 2.0 / 0.005)
+    pub const PAYER : str = "owner";
+    pub const RECIPIENT_CHARGED : bool = false;
+    pub const CHARGE_DEFERRED : bool = false;  // the owner pays at generation, not at the press
+    pub const LIVE_RUN_STATUS : str = "not-yet-run";  // documented + priced, not probed
+
+    // ---- The prompt order -------------------------------------------------------------
+    // Identity FIRST, the owner's scene second, framing last. img2img models weigh the opening
+    // of the prompt most, so "the same person" goes before the scene, phrased as what to KEEP.
+    pub const PROMPT_ORDER : str = "identity,scene,framing";
+    pub const IDENTITY_FIRST : bool = true;
+
+    // ---- The caption ------------------------------------------------------------------
+    pub const CAPTION_ONE_LINE : bool = true;
+    pub const CAPTION_HAS_NAME : bool = true;
+    pub const CAPTION_NAMES_MAKER : bool = true;  // "my AI assistant made this"
+    pub const CAPTION_QUESTIONS : u8 = 1;  // one soft question, the CTA
+    pub const CAPTION_HAS_PRICE : bool = false;
+    pub const CAPTION_HAS_LINK : bool = false;
+    pub const GIFTS_PER_PERSON : u8 = 1;  // the second portrait is a paid service
+
+    // ---- Nothing leaves without the owner's press --------------------------------------
+    pub const SENT_WITHOUT_BUTTON : bool = false;
+    pub const TOUCH_KIND : str = "written";  // a gift is a touch, not a purchase
+    pub const TOUCH_NOTE_PREFIX : str = "gift";  // SELLER_NOTE_PREFIXES.gift in crm-notes.ts
+
+    // ---- The keyboard width rule -----------------------------------------------------
+    // Telegram shares a row's width between its buttons; three Russian labels with an emoji
+    // are cut on a phone, two are readable. Every CRM keyboard passes through `fit`.
+    pub const MAX_BUTTONS_PER_ROW : u8 = 2;
+    pub const HUB_ROWS : u8 = 2;  // list + overview, then sweep
+    pub const PREP_LABEL_DELIVER : str = "gift photo 9:16";
+
+    struct Gift {
+        source: str,  // SOURCE | FALLBACK
+        aspect_ratio: str,
+        model: str,
+        payer: str,
+        recipient_charged: bool,
+        text_in_image: bool,
+    }
+
+    struct Caption {
+        one_line: bool,
+        has_name: bool,
+        names_maker: bool,
+        questions: u8,
+        has_price: bool,
+        has_link: bool,
+    }
+
+    struct KeyboardRow {
+        buttons: u8,
+    }
+
+    test "the gift is drawn from the person's own photo at 9:16 and the recipient pays nothing"
+        const g = Gift { source: "lead-avatar", aspect_ratio: "9:16", model: "gpt-image-2-5-flare-image-to-image", payer: "owner", recipient_charged: false, text_in_image: false };
+        assert(g.source == SOURCE);
+        assert(g.aspect_ratio == ASPECT_RATIO);
+        assert(g.model == MODEL);
+        assert(g.payer == PAYER);
+        assert(!g.recipient_charged);
+        assert(!g.text_in_image);
+
+    test "no readable photo falls back to text-to-image, still 9:16, still a gift"
+        const g = Gift { source: "text-to-image", aspect_ratio: "9:16", model: "image_generate", payer: "owner", recipient_charged: false, text_in_image: false };
+        assert(g.source == FALLBACK);
+        assert(g.aspect_ratio == ASPECT_RATIO);
+        assert(!g.recipient_charged);
+
+    test "the caption names the person and the maker, asks once, sells nothing"
+        const c = Caption { one_line: true, has_name: true, names_maker: true, questions: 1, has_price: false, has_link: false };
+        assert(c.one_line);
+        assert(c.has_name);
+        assert(c.names_maker);
+        assert(c.questions == CAPTION_QUESTIONS);
+        assert(!c.has_price);
+        assert(!c.has_link);
+
+    test "a row of three is split; a row of two stands"
+        const wide = KeyboardRow { buttons: 3 };
+        const fine = KeyboardRow { buttons: 2 };
+        assert(wide.buttons > MAX_BUTTONS_PER_ROW);
+        assert(fine.buttons <= MAX_BUTTONS_PER_ROW);
+
+    test "the price is the documented Kie 1K price with the platform markup"
+        assert(OP_TOKENS == 12);
+        assert(LIVE_RUN_STATUS == "not-yet-run");
+}

@@ -1,0 +1,96 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Lists are immutable — operations return new lists | φ² + 1/φ² = 3 | TRINITY
+
+module TriList;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const List(T) = struct {
+        is_empty : bool,
+        head : T,
+        tail : "List(T)",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty() → List(void)
+    fn empty() -> List(void) {
+        // TODO: Implement from .tri spec
+    }
+
+    // cons(head: T) → void
+    fn cons(head: T) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // head(list: List(T)) → void
+    fn head(list: List(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // tail(list: List(T)) → void
+    fn tail(list: List(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // map(list: List(T)) → void
+    fn map(list: List(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // filter(list: List(T)) → void
+    fn filter(list: List(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // fold(list: List(T)) → void
+    fn fold(list: List(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test empty_basic_case
+        given input = default_input()
+        when result = empty(input)
+        then result != undefined
+
+    test cons_basic_case
+        given input = default_input()
+        when result = cons(input)
+        then result != undefined
+
+    test head_basic_case
+        given input = default_input()
+        when result = head(input)
+        then result != undefined
+
+    test tail_basic_case
+        given input = default_input()
+        when result = tail(input)
+        then result != undefined
+
+    test map_basic_case
+        given input = default_input()
+        when result = map(input)
+        then result != undefined
+
+    test filter_basic_case
+        given input = default_input()
+        when result = filter(input)
+        then result != undefined
+
+    test fold_basic_case
+        given input = default_input()
+        when result = fold(input)
+        then result != undefined
+

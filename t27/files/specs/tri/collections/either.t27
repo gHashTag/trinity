@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Either represents tagged union | φ² + 1/φ² = 3 | TRINITY
+
+module TriEither;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Either(L, R) = struct {
+        is_left : bool,
+        left : L,
+        right : R,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // left(value: L) → void
+    fn left(value: L) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // right(value: R) → void
+    fn right(value: R) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_left(either: Either(L, R)) → void
+    fn is_left(either: Either(L, R)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_right(either: Either(L, R)) → void
+    fn is_right(either: Either(L, R)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // unwrap(either: Either(L, R)) → void
+    fn unwrap(either: Either(L, R)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test left_basic_case
+        given input = default_input()
+        when result = left(input)
+        then result != undefined
+
+    test right_basic_case
+        given input = default_input()
+        when result = right(input)
+        then result != undefined
+
+    test is_left_basic_case
+        given input = default_input()
+        when result = is_left(input)
+        then result != undefined
+
+    test is_right_basic_case
+        given input = default_input()
+        when result = is_right(input)
+        then result != undefined
+
+    test unwrap_basic_case
+        given input = default_input()
+        when result = unwrap(input)
+        then result != undefined
+

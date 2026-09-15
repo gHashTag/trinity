@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Values are parsed as their natural type | φ² + 1/φ² = 3 | TRINITY
+
+module TriConfig;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ConfigValue = struct {
+        string : ?[]const u8,
+        number : ?f64,
+        boolean : ?bool,
+        is_null : bool,
+    };
+
+    pub const ConfigEntry = struct {
+        key : []const u8,
+        value : ConfigValue,
+    };
+
+    pub const Config = struct {
+        entries : []ConfigEntry,
+        error : ?[]const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse(allocator: std.mem.Allocator) → void
+    fn parse(allocator: std.mem.Allocator) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_string(config: Config) → void
+    fn get_string(config: Config) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_number(config: Config) → void
+    fn get_number(config: Config) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get_bool(config: Config) → void
+    fn get_bool(config: Config) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test parse_basic_case
+        given input = default_input()
+        when result = parse(input)
+        then result != undefined
+
+    test get_string_basic_case
+        given input = default_input()
+        when result = get_string(input)
+        then result != undefined
+
+    test get_number_basic_case
+        given input = default_input()
+        when result = get_number(input)
+        then result != undefined
+
+    test get_bool_basic_case
+        given input = default_input()
+        when result = get_bool(input)
+        then result != undefined
+
