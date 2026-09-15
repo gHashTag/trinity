@@ -665,6 +665,24 @@ try {
   await world.deliver(signedIn(ask(world)))
   eq(world.client.getSnapshot().name, 'Ada', 'Retry then works again')
 
+  // whoami refused after the last subscriber left (rule 5): the silent retry
+  // waits for someone looking; nothing is loaded, asked or fetched before.
+  let refuse = null
+  world = fakeWorld({ whoami: () => new Promise((resolve) => { refuse = () => resolve({ ok: false, status: 401, json: async () => ({}) }) }) })
+  const leaving = world.start()
+  world.load()
+  await world.deliver(signedIn(ask(world)))
+  eq(world.log.fetches.length, 1, 'whoami in flight')
+  leaving()
+  eq(world.log.srcs, [null], 'the last subscriber left while whoami was out: the frame is blanked')
+  refuse()
+  await settleAll()
+  eq([world.log.srcs, world.log.bridgePosts.length, world.log.fetches.length, world.timerCount()], [[null], 1, 1, 0], 'whoami refused with nobody looking: no bridge load, no request, no second whoami, no timer')
+  world.start()
+  eq(world.log.srcs.at(-1), bridgeUrl('en'), 'someone looks again: the bridge loads')
+  world.load()
+  eq(world.log.bridgePosts.length, 2, 'and the player is asked for a fresh token')
+
   // whoami offline: signed in, no name.
   world = fakeWorld({ whoami: () => { throw new Error('offline') } })
   world.start()

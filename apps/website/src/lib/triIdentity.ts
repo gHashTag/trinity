@@ -444,11 +444,12 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
       })
       if (run !== whoamiRun) return
       if (res.status === 401) {
-        // Refused once: ask the player for a fresh token, silently. Twice: say so.
+        // Refused once: ask the player for a fresh token, silently, when someone
+        // looks (the chip may have left while whoami was out). Twice: say so.
         forget()
         if (whoamiRetried) return unavailable('whoami_rejected')
         whoamiRetried = true
-        request()
+        later()
         return
       }
       if (res.ok) profile = whoamiProfile(await res.json())
