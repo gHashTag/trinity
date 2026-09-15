@@ -273,18 +273,17 @@ const COPY = {
     swarmUnknown: "STATE —",
     hudNoVerdict: "finished, no verdict",
     idleNothing: "nothing to choose",
-    idleOf: "of",
-    idleIssues: "issues",
+    idleRefused: "round refused",
+    idleChecked: "checked",
     idleStale: "round stale",
     idleStaleDetail: "last decision {age} ago, rounds every {interval}",
-    idleMissingBoundary: "lack a ## Boundary",
+    idleMissingBoundary: "no ## Boundary",
     idleClaimed: "claimed",
     idleCompleted: "done but open",
     idleFileConflict: "touch held files",
-    idleIncompleteSpec: "incomplete spec",
     idleNotFirst: "not first",
     idleOther: "other",
-    idleExample: "example of an issue bees can take",
+    idleExample: "an issue written the way bees can take it",
     unavailable: "BACKEND UNAVAILABLE",
     checking: "CHECKING BACKEND",
     scheduler: "Scheduler",
@@ -628,18 +627,17 @@ const COPY = {
     swarmUnknown: "СОСТОЯНИЕ —",
     hudNoVerdict: "без вердикта",
     idleNothing: "нечего выбрать",
-    idleOf: "из",
-    idleIssues: "задач",
+    idleRefused: "раунд отказал",
+    idleChecked: "проверено",
     idleStale: "раунд устарел",
     idleStaleDetail: "последнее решение {age} назад, раунды каждые {interval}",
     idleMissingBoundary: "без ## Boundary",
     idleClaimed: "заняты",
     idleCompleted: "сделаны и не закрыты",
     idleFileConflict: "задевают занятые файлы",
-    idleIncompleteSpec: "спека неполная",
     idleNotFirst: "не первые",
     idleOther: "прочие",
-    idleExample: "пример задачи, которую пчёлы могут взять",
+    idleExample: "задача в формате, который пчёлы берут",
     unavailable: "BACKEND НЕДОСТУПЕН",
     checking: "ПРОВЕРЯЮ BACKEND",
     scheduler: "Планировщик",
@@ -2395,13 +2393,16 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // Why free slots are idle, from the status already fetched, on the server's
   // clock. Measured 2026-09-15: BEES 0/4 was read as broken bees while the
   // round said "nothing to choose" and 449 of 488 issues had no ## Boundary.
-  const idleNow = idleReason(data, now + (state.offsetMs ?? 0));
+  // Only on a live read: after a failed fetch the hook keeps the last data,
+  // and a kept round would age into "round stale", blaming the scheduler for
+  // a page that cannot see the server.
+  const idleNow = isLive ? idleReason(data, now + (state.offsetMs ?? 0)) : null;
   const idleWhy = idleNow
     ? idleLine(idleNow, {
         idle: c.factoryIdle,
         nothingToChoose: c.idleNothing,
-        of: c.idleOf,
-        issues: c.idleIssues,
+        refused: c.idleRefused,
+        checked: c.idleChecked,
         stale: c.idleStale,
         staleDetail: c.idleStaleDetail,
         unitS: c.unitS,
@@ -2412,7 +2413,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           claimed: c.idleClaimed,
           completed: c.idleCompleted,
           fileConflict: c.idleFileConflict,
-          incompleteSpec: c.idleIncompleteSpec,
           notFirst: c.idleNotFirst,
           other: c.idleOther,
         },
@@ -3144,11 +3144,18 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         <div className="queen27-hud-res queen27-hud-res-bees">
           <i aria-hidden="true">◆</i>
           <small>{c.hudBees}</small>
+          {/* One response for the whole tile: /queen/status's started, unfinished
+              bees over its slots, the reading idleReason takes free slots from.
+              The research poll's reading only when the status carries none. */}
           <strong id="stat-bees">
-            {data ? data.dispatches.running : "—"}/{workers?.capacity ?? "—"}
+            {data?.workers
+              ? `${data.workers.active}/${data.workers.capacity}`
+              : `${data ? data.dispatches.running : "—"}/${workers?.capacity ?? "—"}`}
           </strong>
           <span title={idleWhy?.text}>
-            {idleWhy ? idleWhy.head : `${workers?.idle ?? "—"} ${c.factoryIdle}`}
+            {idleWhy
+              ? idleWhy.head
+              : `${data?.workers ? data.workers.capacity - data.workers.active : (workers?.idle ?? "—")} ${c.factoryIdle}`}
           </span>
         </div>
 

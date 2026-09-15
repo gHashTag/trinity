@@ -309,22 +309,32 @@ export interface SkipCount { key: string; count: number }
 const isCount = (value: unknown): value is number =>
   typeof value === "number" && Number.isInteger(value) && value >= 0;
 
+/** The server's closed category set (queen-public-status.ts, SKIP_CATEGORIES). */
+const SKIP_CATEGORIES = new Set(["claimed", "completed", "missingBoundary", "fileConflict", "incompleteSpec", "notFirst", "other"]);
+
 /**
  * lastTick.skipSummary as counts in wire order. The wire sends
  * { count, issues, more } per category (older servers a bare number); only
- * the count is read. Null when the summary is absent or any entry is
- * unreadable, including a count above skippedCount: a malformed summary says
+ * the count is read. A key outside the server's closed set is filed under
+ * "other", as the server files a sentence it does not know. Null when the
+ * summary is absent, any entry is unreadable, or the counts do not sum to
+ * skippedCount, which the server guarantees they do: a malformed summary says
  * nothing, never a zero.
  */
 export function skipCounts(summary: unknown, skipped: number | null = null): SkipCount[] | null {
   if (!summary || typeof summary !== "object" || Array.isArray(summary)) return null;
   const counts: SkipCount[] = [];
-  for (const [key, value] of Object.entries(summary)) {
+  let total = 0;
+  for (const [wireKey, value] of Object.entries(summary)) {
     const count = value && typeof value === "object" ? (value as { count?: unknown }).count : value;
-    if (!isCount(count) || (skipped !== null && count > skipped)) return null;
-    counts.push({ key, count });
+    if (!isCount(count)) return null;
+    const key = SKIP_CATEGORIES.has(wireKey) ? wireKey : "other";
+    const filed = counts.find((r) => r.key === key);
+    if (filed) filed.count += count;
+    else counts.push({ key, count });
+    total += count;
   }
-  return counts;
+  return skipped !== null && total !== skipped ? null : counts;
 }
 
 /** The refusal queend writes when no candidate survives a round. */
@@ -332,7 +342,7 @@ const NOTHING_TO_CHOOSE = "nothing to choose";
 
 export type IdleReason =
   | { kind: "stale"; free: number; ageSeconds: number; intervalSeconds: number }
-  | { kind: "refused"; free: number; refusal: string; skipped: number | null; counts: SkipCount[] | null };
+  | { kind: "refused"; free: number; refusal: string; checked: number | null; counts: SkipCount[] | null };
 
 /**
  * Why free worker slots started nothing, from /queen/status alone. Measured
@@ -364,23 +374,36 @@ export function idleReason(status: unknown, serverNowMs: number): IdleReason | n
     return { kind: "stale", free, ageSeconds: Math.floor(ageMs / 1000), intervalSeconds: interval };
   }
   if (lastTick.allowed || typeof lastTick.refusal !== "string" || !lastTick.refusal.trim()) return null;
+  if (lastTick.refusal !== NOTHING_TO_CHOOSE) return { kind: "refused", free, refusal: lastTick.refusal, checked: null, counts: null };
+  // skippedCount counts skip LINES, not issues. queend (main.swift, choose)
+  // files "delegatable but ..." and goes on judging the same issue; in a round
+  // that chose nothing, that issue always files " held by " next. So an
+  // incompleteSpec line never blocked anything and counts its issue twice: it
+  // is left out of the reasons and out of how many issues were checked. More
+  // of them than fileConflict lines contradicts the decider, and says nothing.
   const skipped = isCount(lastTick.skippedCount) ? lastTick.skippedCount : null;
-  const counts = lastTick.refusal === NOTHING_TO_CHOOSE ? skipCounts(lastTick.skipSummary, skipped) : null;
-  return { kind: "refused", free, refusal: lastTick.refusal, skipped, counts };
+  const read = skipCounts(lastTick.skipSummary, skipped);
+  const countOf = (key: string) => read?.find((r) => r.key === key)?.count ?? 0;
+  const incomplete = countOf("incompleteSpec");
+  const counts = read && incomplete <= countOf("fileConflict") ? read.filter((r) => r.key !== "incompleteSpec") : null;
+  const checked = counts && skipped !== null ? skipped - incomplete : null;
+  return { kind: "refused", free, refusal: lastTick.refusal, checked, counts };
 }
 
 export interface IdleWords {
   idle: string;
   nothingToChoose: string;
-  of: string;
-  issues: string;
+  /** The tile's word for any other refusal; the line keeps the wire's text. */
+  refused: string;
+  /** Label for how many issues the round checked. */
+  checked: string;
   stale: string;
   /** With {age} and {interval}. */
   staleDetail: string;
   unitS: string;
   unitMin: string;
   unitH: string;
-  /** Words per skip category; an unknown category is spaced, not invented. */
+  /** A label per skip category, printed "label: count", so no count has to agree with a word. */
   reasons: Record<string, string>;
 }
 
@@ -394,39 +417,34 @@ function spanWords(seconds: number, words: IdleWords): string {
 
 /**
  * The idle reason as one line. The head is short enough for the BEES tile:
- * the free slots and the refusal, or "round stale". The tail is what the wire
- * counted: the three largest skip reasons, or the stale tick's age. A refusal
- * prints as the wire wrote it; only queend's fixed "nothing to choose" has
- * words of its own. The example work order is offered only when nothing could
- * be chosen.
+ * the free slots and "nothing to choose", "round refused" or "round stale".
+ * The tail is what the wire counted: how many issues the round checked and
+ * the three largest skip reasons, or the stale tick's age. Any other refusal
+ * prints in the line as the wire wrote it; only queend's fixed "nothing to
+ * choose" has words of its own. The format example is offered only when
+ * issues were skipped for having no ## Boundary.
  */
 export function idleLine(reason: IdleReason, words: IdleWords): IdleLine {
   const lead = `${reason.free} ${words.idle}`;
-  let head: string;
-  let tail: string | null;
   if (reason.kind === "stale") {
-    head = `${lead}: ${words.stale}`;
-    tail = words.staleDetail
+    const head = `${lead}: ${words.stale}`;
+    const tail = words.staleDetail
       .replace("{age}", spanWords(reason.ageSeconds, words))
       .replace("{interval}", spanWords(reason.intervalSeconds, words));
-  } else {
-    head = `${lead}: ${reason.refusal === NOTHING_TO_CHOOSE ? words.nothingToChoose : reason.refusal}`;
-    const top = (reason.counts ?? []).filter((r) => r.count > 0).sort((a, b) => b.count - a.count).slice(0, 3);
-    tail = top.length === 0
-      ? null
-      : top
-          .map((r, i) => {
-            const n = i > 0 ? `${r.count}` : reason.skipped !== null ? `${r.count} ${words.of} ${reason.skipped} ${words.issues}` : `${r.count} ${words.issues}`;
-            const said = Object.prototype.hasOwnProperty.call(words.reasons, r.key) ? words.reasons[r.key] : skipReasonWords(r.key);
-            return `${n} ${said}`;
-          })
-          .join(", ");
+    return { head, tail, text: `${head} — ${tail}`, example: false };
   }
+  if (reason.refusal !== NOTHING_TO_CHOOSE) {
+    return { head: `${lead}: ${words.refused}`, tail: null, text: `${lead}: ${reason.refusal}`, example: false };
+  }
+  const head = `${lead}: ${words.nothingToChoose}`;
+  const top = (reason.counts ?? []).filter((r) => r.count > 0).sort((a, b) => b.count - a.count).slice(0, 3);
+  const said = top.map((r) => `${words.reasons[r.key] ?? words.reasons.other}: ${r.count}`).join(", ");
+  const tail = top.length === 0 ? null : reason.checked !== null ? `${words.checked}: ${reason.checked}; ${said}` : said;
   return {
     head,
     tail,
     text: tail ? `${head} — ${tail}` : head,
-    example: reason.kind === "refused" && reason.refusal === NOTHING_TO_CHOOSE,
+    example: (reason.counts ?? []).some((r) => r.key === "missingBoundary" && r.count > 0),
   };
 }
 
