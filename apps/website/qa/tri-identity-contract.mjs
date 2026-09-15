@@ -305,6 +305,7 @@ function fakeWorld({ origin = GAME_ORIGIN, isTop = true, ancestorOrigins = [], r
   let hidden = false
   let onVisible = null
   let onOnline = null
+  let onReturn = null
   const env = {
     origin, isTop, ancestorOrigins, referrer, parent,
     mountBridge(src, load) { log.mounts.push(src); onLoad = load; return { target: () => bridgeWindow, setVisible: (v) => { visible = v; log.visible.push(v) }, setSrc: (s) => log.srcs.push(s) } },
@@ -317,6 +318,7 @@ function fakeWorld({ origin = GAME_ORIGIN, isTop = true, ancestorOrigins = [], r
     hidden: () => hidden,
     onVisible(h) { onVisible = h },
     onOnline(h) { onOnline = h },
+    onReturn(h) { onReturn = h },
   }
   const client = createTriIdentity(env)
   const settle = async () => { for (let i = 0; i < 5; i++) await new Promise((r) => setImmediate(r)) }
@@ -331,6 +333,8 @@ function fakeWorld({ origin = GAME_ORIGIN, isTop = true, ancestorOrigins = [], r
     advance: (ms) => { clock += ms },
     setHidden: async (value) => { hidden = value; if (!value) onVisible?.(); await settle() },
     online: async () => { onOnline?.(); await settle() },
+    comeBack: async () => { onReturn?.(); await settle() },
+    get returnHandler() { return onReturn },
     get visible() { return visible },
     get handler() { return handler },
     lastNonce: (posts) => posts.at(-1)?.m?.nonce ?? null,
@@ -734,10 +738,35 @@ try {
   eq(world.client.getSnapshot().state, 'signed-out', 'in the Hive the parent is heard')
   world.client.signIn()
   eq(world.log.parentPosts.at(-1), { m: { v: 1, type: 't27-app', kind: 'sign-in' }, t: APP_ORIGIN }, "signing in inside the Hive asks the player (hive.ts isSignInRequest), targeting the app's origin")
+  // The player signs the person in in its own modal and tells the game nothing
+  // (hive.ts only answers requests): the game asks again when the person comes back to it.
+  const hiveAsks = () => world.log.parentPosts.filter((p) => p.m.type === 'tri-identity-request').length
+  const hiveAnswer = async (state) => world.deliver(state === 'signed-in' ? signedIn(world.lastNonce(world.log.parentPosts.filter((p) => p.m.type === 'tri-identity-request'))) : answer(world.lastNonce(world.log.parentPosts.filter((p) => p.m.type === 'tri-identity-request')), state), { source: world.parent })
+  await world.comeBack()
+  eq(hiveAsks(), 2, 'after Sign in, the person coming back to the game asks the player again')
+  await world.comeBack()
+  eq(hiveAsks(), 2, 'a second return while that request is open asks nothing more')
+  await hiveAnswer('signed-out')
+  await world.setHidden(true)
+  await world.comeBack()
+  await world.setHidden(false)
+  eq(hiveAsks(), 2, 'a hidden page asks nothing on a return')
+  await world.comeBack()
+  eq(hiveAsks(), 3, 'still signed out (the modal was only closed): the next return asks again')
+  await hiveAnswer('signed-in')
+  eq([world.client.getSnapshot().state, world.log.fetches.length], ['signed-in', 1], 'signed in inside the player: the chip shows the person')
+  await world.comeBack()
+  eq(hiveAsks(), 3, 'once signed in, coming back asks nothing')
+  world = fakeWorld({ isTop: false, ancestorOrigins: [APP_ORIGIN] })
+  world.start()
+  await world.deliver(answer(world.lastNonce(world.log.parentPosts), 'signed-out'), { source: world.parent })
+  await world.comeBack()
+  eq(world.log.parentPosts.length, 1, 'in the Hive without Sign in, coming back asks nothing')
   world = fakeWorld()
   world.start()
   world.client.signIn()
   eq(world.log.parentPosts.length, 0, 'at top level signing in posts nothing to the parent')
+  eq(world.returnHandler, null, 'at top level nothing listens for a return')
   eq(TRAPPED, [], 'still nothing trapped')
 } finally {
   restore()

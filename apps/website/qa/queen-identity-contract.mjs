@@ -53,11 +53,15 @@
 //      Retry; a trusted click on Retry, the bridge reachable again, gives "Sign in"
 //  16  inside the player and signed out: the chip is a button, and a trusted
 //      click posts {v:1,type:'t27-app',kind:'sign-in'} to the player; the tab stays
+//      (the stub player then opens its login modal over the game, as the Hive does)
 //  17  leaving the Queen blanks the bridge frame; back within the token's life the
 //      person is still shown and the bridge is not loaded again
 //  18  on the TRI tab, Sign in returns to the same screen (tab=tri&screen=crm)
 //  19  390x844 with the consent prompt shown: the rail's TRI command is still the
 //      element under its centre
+//  20  (runs with 16) a trusted click on the stub player's login widget signs in and
+//      closes its modal, telling the game nothing; the pointer coming back over the
+//      game asks again and the chip shows the person, with no navigation or reload
 //
 // Exits 0 on pass, 1 on a failed check, 2 when it could not run (never read as a pass).
 //
@@ -159,16 +163,27 @@ const IMPOSTOR = `<!doctype html><meta charset="utf-8"><title>impostor</title><b
 </script>`
 const HIVE_HOST = (mode) => `<!doctype html><meta charset="utf-8"><title>hive host</title>
 <body style="margin:0" data-asked="0" data-app="[]"><iframe id="game" src="${GAME}/?lang=en&hive=1#/queen?tab=kanban" style="width:1400px;height:860px;border:0;display:block"></iframe>
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center"><button id="widget" style="padding:16px 24px">Log in with Telegram</button></div>
 <script>
+  // As the player's Hive (src/lib/hive.ts, pages/Hive.tsx): each request is answered from the
+  // session held at that moment; a sign-in request opens the login modal over the game, and the
+  // widget signs in and closes it, telling the game nothing.
   const game = document.getElementById('game');
+  const modal = document.getElementById('modal');
+  let mode = ${JSON.stringify(mode)};
+  const messages = (nonce) => ({ 'signed-in': ${identityMessage('nonce', 'signed-in')}, 'signed-out': ${identityMessage('nonce', 'signed-out')} })[mode];
+  document.getElementById('widget').addEventListener('click', (e) => {
+    if (!e.isTrusted) return;
+    mode = 'signed-in';
+    modal.style.display = 'none';
+  });
   addEventListener('message', (e) => {
     if (e.source !== game.contentWindow || e.origin !== 'https://t27.ai') return;
     const d = e.data;
-    if (d && d.type === 't27-app') { document.body.dataset.app = JSON.stringify([...JSON.parse(document.body.dataset.app), d]); return; }
+    if (d && d.type === 't27-app') { document.body.dataset.app = JSON.stringify([...JSON.parse(document.body.dataset.app), d]); if (d.kind === 'sign-in') modal.style.display = 'flex'; return; }
     if (!d || d.type !== 'tri-identity-request') return;
     document.body.dataset.asked = String(Number(document.body.dataset.asked) + 1);
-    const nonce = d.nonce;
-    game.contentWindow.postMessage(${identityMessage('nonce', mode)}, 'https://t27.ai');
+    game.contentWindow.postMessage(messages(d.nonce), 'https://t27.ai');
   });
 </script>`
 const WHOAMI = JSON.stringify({ jsonrpc: '2.0', id: 1, result: { structuredContent: { telegram_id: '144', role: 'owner', профиль: { display_name: 'Ada <b>Stub</b>', first_name: 'Ada', username: 'ada' }, аватар: `${GAME}/stub-avatar.svg` } } })
@@ -557,7 +572,7 @@ try {
       !!unavailable && u.code === 'no_answer' && /TRI did not answer/.test(u.text) && retry?.hit === true && retry.text === 'Retry' && !!back && bridgeDocs() > docs, { u, retry, back, docs: bridgeDocs() - docs })
   }
 
-  if (runs(16)) {
+  if (runs(16) || runs(20)) {
     const host = `${APP}/hive-host?mode=signed-out`
     await load(host)
     const target = await inFrame(`${GAME}/`, `(() => { const c = document.querySelector('[data-tool="identity"]'); if (!c || c.dataset.identity !== 'signed-out') return null; const a = c.querySelector('.queen27-identity-action') ?? c; const r = a.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const u = document.elementFromPoint(x, y);
@@ -573,9 +588,27 @@ try {
     await wait(2500)
     const app = await evaluate(`JSON.parse(document.body.dataset.app || '[]')`).catch((e) => String(e))
     const where = await evaluate('location.href').catch((e) => String(e))
-    record(16, 'inside the player and signed out: the chip is a button, and a trusted click posts {v:1, type:"t27-app", kind:"sign-in"} to the player; the tab stays',
+    if (runs(16)) record(16, 'inside the player and signed out: the chip is a button, and a trusted click posts {v:1, type:"t27-app", kind:"sign-in"} to the player; the tab stays',
       target?.tag === 'BUTTON' && target.hit && topHit === 'IFRAME' && Array.isArray(app) && app.length === 1 && app[0].v === 1 && app[0].type === 't27-app' && app[0].kind === 'sign-in' && where === host,
       { target, topHit, app, where })
+
+    if (runs(20)) {
+      // The player's login modal now covers the game (the stub opened it on the sign-in request).
+      const widget = await evaluate(`(() => { const b = document.getElementById('widget'); const r = b.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; return r.width ? { x, y, hit: document.elementFromPoint(x, y) === b } : null })()`)
+      const askedBefore = await evaluate(`Number(document.body.dataset.asked)`)
+      // A mark on the game document: signing in must neither navigate nor reload it.
+      const marked = await inFrame(`${GAME}/`, `(() => { document.documentElement.dataset.contractMark = 'kept'; return true })()`)
+      if (widget?.hit) await mouse(widget.x, widget.y)
+      const closed = widget?.hit ? await until(`getComputedStyle(document.getElementById('modal')).display === 'none'`, 10000) : null
+      // The pointer comes back over the game, away from where the widget was.
+      if (closed) for (const d of [0, 40]) await call('Input.dispatchMouseEvent', { type: 'mouseMoved', x: gameAt[0] + 300 + d, y: gameAt[1] + 300 + d })
+      const shown = closed ? await inFrame(`${GAME}/`, `(() => { const c = document.querySelector('[data-tool="identity"]'); return c?.dataset.identity === 'signed-in' && c.querySelector('.queen27-identity-name') ? { name: c.querySelector('.queen27-identity-name').textContent, mark: document.documentElement.dataset.contractMark ?? null } : null })()`, 20000) : null
+      const askedAfter = await evaluate(`Number(document.body.dataset.asked)`)
+      const whereAfter = await evaluate('location.href').catch((e) => String(e))
+      record(20, "inside the player: the player's modal signs the person in (a trusted click on its widget) and tells the game nothing; the pointer coming back over the game asks again and the chip shows the person, with no navigation or reload",
+        !!marked && !!widget?.hit && !!closed && shown?.name === 'Ada <b>Stub</b>' && shown.mark === 'kept' && askedAfter > askedBefore && whereAfter === host,
+        { widget, closed, shown, askedBefore, askedAfter, whereAfter })
+    }
   }
 
   if (runs(17)) {

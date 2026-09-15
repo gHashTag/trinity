@@ -11,7 +11,9 @@
 //   player -> game:  {v:1, type:'tri-identity-dismiss', nonce}
 //                    (the person pressed Not now on the consent prompt)
 //   game -> player:  {v:1, type:'t27-app', kind:'sign-in'}
-//                    (only to the player framing the game, its Hive tab)
+//                    (only to the player framing the game, its Hive tab; the player
+//                    signs in in its own modal and says nothing, so the game asks
+//                    again when the person comes back to it)
 //
 // Who answers: when the game is framed by the player (its Hive tab), the parent
 // window. Otherwise a hidden frame of https://app.t27.ai/bridge?lang=<ru|en>,
@@ -113,6 +115,8 @@ export interface IdentityEnv {
   hidden(): boolean
   onVisible(handler: () => void): void
   onOnline(handler: () => void): void
+  /** The person coming back to this document: its window focused, or the pointer entering it. */
+  onReturn(handler: () => void): void
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -311,6 +315,9 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
   let frameSuspect = false
   let consentAsked = false
   let dismissed = false
+  // Sign in was pressed inside the Hive: the player signs in in its own modal
+  // and tells nobody, so the person coming back to the game is the cue to ask.
+  let signInPending = false
   let openNonce: string | null = null
   // Rule 3: here and nowhere else.
   let token: { value: string; telegramId: string; expiresAt: number } | null = null
@@ -464,6 +471,7 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
   }
 
   function apply(reply: IdentityReply) {
+    if (reply.state !== 'signed-out') signInPending = false
     if (reply.state === 'unavailable') {
       whoamiRetried = false
       unavailable(reply.code)
@@ -574,6 +582,9 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
       if (looking() && !dismissed && snapshot.state === 'unavailable' && retriesByItself(snapshot.code)) request()
     })
     if (viaParent) {
+      env.onReturn(() => {
+        if (signInPending && openNonce === null && looking() && !env.hidden()) request()
+      })
       request()
       return
     }
@@ -610,7 +621,9 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
       showFrame()
     },
     signIn() {
-      if (started && viaParent) env.parent.postMessage({ v: 1, type: 't27-app', kind: 'sign-in' }, APP_ORIGIN)
+      if (!started || !viaParent) return
+      env.parent.postMessage({ v: 1, type: 't27-app', kind: 'sign-in' }, APP_ORIGIN)
+      signInPending = true
     },
     inPlayer: () => viaParent,
     setLanguage(next) {
@@ -673,6 +686,10 @@ function browserEnv(): IdentityEnv {
         if (document.visibilityState === 'visible') handler()
       }),
     onOnline: (handler) => window.addEventListener('online', handler),
+    onReturn: (handler) => {
+      window.addEventListener('focus', handler)
+      document.documentElement.addEventListener('pointerenter', handler)
+    },
   }
 }
 
