@@ -1374,6 +1374,19 @@ input:focus-visible {
    the landing's embed, where it was taking 284px of an 826px column and
    leaving the code 332. Scoped under .spec-x like the rest of the Explorer. */
 .spec-x-brief { min-height: 0; }
+/* This box sits in a column flex with min-height:0, so it shrinks under
+   pressure -- and it has nothing to give. Collapsed it is one 36px row, and at
+   370px, where the toolbar above wraps to two lines, it was squeezed to 28px
+   and the summary drew itself over the tab strip below; open it was squeezed
+   from 461px to the same 28px and drew over everything. So it never shrinks,
+   and when open it takes what it needs up to 45vh and scrolls the rest,
+   leaving the tab strip and the code pane their own height. */
+.spec-x-brief.is-collapsible { flex: 0 0 auto; }
+.spec-x-brief.is-collapsible[open] {
+  max-height: 45vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
 .spec-x-brief:not(.is-collapsible) > summary { display: none; }
 .spec-x-brief.is-collapsible > summary {
   display: flex;
