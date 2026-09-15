@@ -77,8 +77,17 @@
   position: absolute;
   inset: 0;
   display: grid;
-  place-items: center;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
   pointer-events: none;
+}
+
+/* The link out beside a slow spinner is the one thing on the overlay a pointer may reach. */
+.queen27-page.is-shell .queen27-tri-loading a {
+  pointer-events: auto;
+  color: #00ff88;
+  font-size: 12px;
 }
 
 .queen27-page.is-shell .queen27-tri.is-nested,

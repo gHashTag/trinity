@@ -3985,6 +3985,29 @@ main:where(.queen27-page.is-shell) section {
   display: none;
 }
 
+/* Thirteen commands with their hints and COLLAPSE take 775 px, so the one-column
+   rail stopped fitting well above 760 px: a 652 px rail at 1366x768 and a
+   684 px one at 1280x800 (measured). COLLAPSE is sticky, so at rest PROJECT sat
+   under it and TRI below the rail's edge, and a click there collapsed the rail
+   instead; collapsed at 1440x813 the TRI glyph was under it too. Below 920 px
+   of height the hints go and the rows tighten, so every command is on screen at
+   rest (at 761 px: a 645 px rail, fourteen ~30 px rows, gaps and padding come to
+   about 520 px). Below 760 px the tile grid further down takes over; it comes
+   later in the file and wins where both apply. The phone's icon row is not this
+   rail. */
+@media (max-height: 919px) {
+  .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd {
+    padding: 0.35rem 0.65rem;
+  }
+  .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd small {
+    display: none;
+  }
+  .queen27-page.is-shell .queen27-hud-command.is-collapsed > .queen27-hud-cmd,
+  .queen27-page.is-shell .queen27-hud-command.is-collapsed > .queen27-hud-cmd-collapse {
+    padding: 0.28rem 0.2rem;
+  }
+}
+
 /* This block sits AFTER the base rail rules on purpose: the container
    selector has the same specificity as the flex base, so source order is
    what lets `display: grid` win below 760 px. */
@@ -4185,8 +4208,10 @@ main:where(.queen27-page.is-shell) section {
   margin-right: 0.3em;
   font-style: normal;
 }
+/* Off reads as a dashed outline, not as faded text: at opacity .55 the muted
+   word fell to about 2.5:1 against the bar (WCAG 1.4.3 asks 4.5:1). */
 .queen27-page.is-shell .queen27-hud-vp-tools button[data-layer][aria-pressed="false"] {
-  opacity: 0.55;
+  border-style: dashed;
 }
 @media (max-width: 900px) {
   .queen27-page.is-shell .queen27-hud-vp-head {
@@ -4325,6 +4350,16 @@ main:where(.queen27-page.is-shell) section {
      lost a module off the bottom. Spanning every track makes the offsets mean
      what they say. */
   grid-area: 1 / 1 / -1 / -1;
+}
+
+/* The header's popovers open over the side panels. The MENU list carries
+   z-index 9, but only inside the header's own stacking context: at 4, level
+   with the rail and the Queen's column and before them in the DOM, the column
+   painted over the open list. Measured with trusted input at 1440x900: the
+   element under every menu item was the Queen's chat header. One level up,
+   and the panels (which start below the bar) still cover nothing of it. */
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
+  z-index: 5;
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
@@ -5335,6 +5370,15 @@ main:where(.queen27-page.is-shell) section {
     max-width: none;
   }
 
+  /* The fixed list only escapes the bar if the bar is not its containing
+     block, and a backdrop-filter makes it one: the matte rule blurs the bar,
+     so the open list was laid out inside the 48 px bar and clipped by its
+     overflow. Measured with trusted taps at 390x844: no item was under the
+     finger. While the list is open the bar goes without its blur. */
+  .queen27-page.is-shell .queen27-hud-top:has(> .queen27-hud-status > .queen27-hud-menu) {
+    backdrop-filter: none;
+  }
+
   .queen27-page.is-shell .queen27-hud-viewport {
     grid-column: 1;
   }
@@ -6321,8 +6365,19 @@ body.queen-shell .queen-starfield-source {
    The field is a fixed, full-shell layer at z-index 0, so it is the ground
    under every tab — which is the point — but its labels, its law line and the
    cards a cell opens belong to the map's own view. A scene that took clicks
-   from under the board would be a scene in the way. */
-.queen27-page.is-shell:not([data-view="comb"]) .queen27-comb-field {
+   from under the board would be a scene in the way.
+   The field alone was not enough. The scene is mounted in .queen-scene-holder,
+   an absolutely positioned overlay of the view body, and a positioned box
+   paints over a tab whose content is not positioned, whatever the DOM order:
+   inside it the catalog layer (position:relative, and the hive's gesture
+   surface) and .queen27-comb still took the pointer. Measured with trusted
+   input on TRI: the element under every screen button was
+   .queen27-comb.is-embedded, then .queen-scene-holder once the comb stopped,
+   and a click or tap chose no screen. So off the comb the holder and every box
+   in it (the hive displays set pointer-events:auto) stop taking the pointer,
+   and so does the canvas engine's comb, which has no holder. */
+.queen27-page.is-shell:not([data-view="comb"]) :is(.queen27-comb-field, .queen-scene-holder, .queen27-comb.is-embedded),
+.queen27-page.is-shell:not([data-view="comb"]) :is(.queen-scene-holder, .queen27-comb.is-embedded) * {
   pointer-events: none;
 }
 

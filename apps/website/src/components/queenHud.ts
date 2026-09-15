@@ -37,6 +37,20 @@ export const HUD_VIEWS: readonly HudView[] = [
 // entry here and nothing else changes.
 export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "t", "p", "r"] as const;
 export const hudKeyOf = (view: HudView): string => HUD_KEYS[HUD_VIEWS.indexOf(view)] ?? "";
+// The physical key behind each HUD_KEYS entry (KeyboardEvent.code), so a
+// shortcut works on any layout: on a Russian layout the r key reports key "к"
+// and code "KeyR".
+export const HUD_CODES: readonly string[] = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0", "KeyT", "KeyP", "KeyR"] as const;
+/** The HUD_KEYS index a key event means, or -1. The physical key decides; a
+ *  keypad digit stays its digit; an event with no code (a script's, some soft
+ *  keyboards') falls back to the character. */
+export function hudKeyIndex(event: { code?: string; key?: string }): number {
+  if (event.code) {
+    const pad = /^Numpad([0-9])$/.exec(event.code);
+    return pad ? HUD_KEYS.indexOf(pad[1]) : HUD_CODES.indexOf(event.code);
+  }
+  return HUD_KEYS.indexOf((event.key ?? "").toLowerCase());
+}
 
 export type Territory = "held" | "neutral" | "fog";
 

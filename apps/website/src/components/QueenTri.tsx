@@ -43,14 +43,18 @@ export interface TriCopy {
   crm: string
   loading: string
   noAnswer: string
+  appError: string
   openApp: string
   frameTitle: string
   insidePlayer: string
   preview: string
 }
 
-/** Without an answer from the app this long after the frame loaded, say so. */
+/** Without an answer from the app this long after the frame was sent to a
+ *  screen (mount or navigation), say so -- whether or not the frame loaded. */
 export const TRI_ANSWER_MS = 8000
+/** Still loading this long after it was sent: offer the link out beside the spinner. */
+export const TRI_SLOW_MS = 3000
 
 const labelOf = (c: TriCopy, group: TriGroup): string =>
   group === 'feed' ? c.feed : group === 'chat' ? c.agent : group === 'ai' ? c.ai : group === 'profile' ? c.profile : c.crm
@@ -121,12 +125,18 @@ export function QueenTri({ c, lang, embedded }: { c: TriCopy; lang: string; embe
   const [loadedNonce, setLoadedNonce] = useState(-1)
   const [answeredNonce, setAnsweredNonce] = useState(-1)
   const [silentNonce, setSilentNonce] = useState(-1)
+  const [slowNonce, setSlowNonce] = useState(-1)
+  const [failure, setFailure] = useState<{ nonce: number; code: string } | null>(null)
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       const message = acceptAppMessage(event, frameRef.current?.contentWindow ?? null)
       if (!message) return
       setAnsweredNonce(frame.nonce)
+      if (message.kind === 'error') {
+        setFailure({ nonce: frame.nonce, code: message.code })
+        return
+      }
       const next = screenOfAppPath(message.path)
       if (!next) return
       const nextPath = triPathOf(next, message.path)
@@ -156,12 +166,19 @@ export function QueenTri({ c, lang, embedded }: { c: TriCopy; lang: string; embe
   }, [frame.nonce, src])
 
   // A frame the app refuses (frame-ancestors) still fires load on Chrome's
-  // error page, so load is not success: the app's own message is.
+  // error page, so load is not success: the app's own message is. A frame
+  // that never loads (a hung document, a cold start) must not wait for load
+  // either: the clock starts when the frame is sent to a screen, and load only
+  // takes the spinner away.
   useEffect(() => {
-    if (loadedNonce !== frame.nonce) return
-    const timer = window.setTimeout(() => setSilentNonce(frame.nonce), TRI_ANSWER_MS)
-    return () => window.clearTimeout(timer)
-  }, [loadedNonce, frame.nonce])
+    const nonce = frame.nonce
+    const slow = window.setTimeout(() => setSlowNonce(nonce), TRI_SLOW_MS)
+    const silent = window.setTimeout(() => setSilentNonce(nonce), TRI_ANSWER_MS)
+    return () => {
+      window.clearTimeout(slow)
+      window.clearTimeout(silent)
+    }
+  }, [frame.nonce])
 
   const nested = useMemo(
     () =>
@@ -202,6 +219,7 @@ export function QueenTri({ c, lang, embedded }: { c: TriCopy; lang: string; embe
 
   const outside = appScreenUrl(screen, path)
   const answered = answeredNonce === frame.nonce
+  const failed = failure && failure.nonce === frame.nonce ? failure : null
   const loading = loadedNonce !== frame.nonce && !answered
   const silent = silentNonce === frame.nonce && !answered
 
@@ -226,19 +244,35 @@ export function QueenTri({ c, lang, embedded }: { c: TriCopy; lang: string; embe
         })}
       </div>
 
-      {silent && (
-        <div className="queen27-tri-noanswer" role="status">
-          <span>{c.noAnswer}</span>
+      {failed ? (
+        <div className="queen27-tri-noanswer is-error" role="alert" data-code={failed.code}>
+          <span>
+            {c.appError} ({failed.code})
+          </span>
           <a href={outside} target="_blank" rel="noopener">
             {c.openApp}
           </a>
         </div>
+      ) : (
+        silent && (
+          <div className="queen27-tri-noanswer" role="status">
+            <span>{c.noAnswer}</span>
+            <a href={outside} target="_blank" rel="noopener">
+              {c.openApp}
+            </a>
+          </div>
+        )
       )}
 
       <div className="queen27-tri-frame-wrap">
         {loading && (
           <div className="queen27-tri-loading">
             <QueenLoading title={c.loading} facts={[outside]} />
+            {slowNonce === frame.nonce && (
+              <a href={outside} target="_blank" rel="noopener">
+                {c.openApp}
+              </a>
+            )}
           </div>
         )}
         {/* src is the first URL only; data-src names the page the frame was last sent to. */}

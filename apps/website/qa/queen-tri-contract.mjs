@@ -34,6 +34,22 @@
 //  14  an embedded Queen (a landing preview, embed=1) pressed with r shows TRI
 //      without a frame and asks app.t27.ai for nothing
 //
+// Checks 15-20 press with TRUSTED input only (CDP Input mouse, touch and key
+// events), because element.click() passes on a control the pointer cannot reach:
+//  15  every TRI screen button is the element under the pointer, and a real
+//      click (1440x900) or tap (390x844) on Agent moves the frame and address
+//  16  at the rail's rest position every command is the element under its
+//      centre (1440x900, 1440x813, 1366x768, 1280x800, 1280x720), a click on
+//      TRI opens it, and the collapsed rail lists TRI and opens it too
+//  17  a hung app document (never loads): the link out shows beside the
+//      spinner after about 3 s, the "did not answer" strip within 8 s
+//  18  an app that posts {kind:'error', code} gets an error strip with the link
+//  19  the key r on a Russian layout (key 'к', code KeyR) opens TRI; turned off
+//      in the menu the digit keys do nothing, also after a reload
+//  20  inactive toggles (a layer off, shortcuts off) keep text contrast >= 4.5:1
+//  21  the open HUD menu: every item is the element under the pointer at
+//      1440x900 and 1280x720 (mouse) and 390x844 (touch)
+//
 // The frame's src attribute is its first URL only; checks read data-src (where
 // TRI sent the frame) and the frame tree (where the frame really is).
 //
@@ -93,14 +109,15 @@ await new Promise((r) => server.listen(0, '127.0.0.1', r))
 const ORIGIN = `http://127.0.0.1:${server.address().port}`
 
 // ---- The stub app ----
-let stubMode = 'answer' // 'answer' | 'silent'
+let stubMode = 'answer' // 'answer' | 'silent' | 'error' | 'hang' (the app page never answers the request)
 const requests = [] // every app.t27.ai URL the page asked for
 const STUB = (mode) => `<!doctype html><meta charset="utf-8"><title>app stub</title>
 <body style="background:#123;color:#fff;font:14px monospace">stub <span id="where"></span>
 <script>
   document.getElementById('where').textContent = location.pathname + location.search;
   const post = (kind, path) => parent.postMessage({ type: 't27-app', kind, path }, '*');
-  ${mode === 'answer' ? "post('ready', location.pathname);" : ''}
+  ${mode === 'answer' || mode === 'error' ? "post('ready', location.pathname);" : ''}
+  ${mode === 'error' ? "setTimeout(() => parent.postMessage({ type: 't27-app', kind: 'error', code: 'boundary' }, '*'), 300);" : ''}
   // The harness (not the game) asks for a route message this way, or for an
   // in-app navigation that pushes or replaces a history entry, as the app's
   // router does. Back inside the frame reports its route too.
@@ -164,7 +181,11 @@ try {
         type = MIME[extname(file)] || 'application/octet-stream'
       } else if (url.origin === APP && url.pathname === '/hive-host') body = HOST(`${GAME}/?lang=en#/queen?tab=tri`)
       else if (url.origin === 'https://t27.ai' && url.pathname === '/host') body = HOST(`${GAME}/?lang=en#/queen?tab=tri`)
-      else { requests.push(request.url); body = STUB(stubMode) }
+      else {
+        requests.push(request.url)
+        if (stubMode === 'hang' && !url.pathname.startsWith('/bridge')) return // left paused: the document never arrives
+        body = STUB(stubMode)
+      }
       send('Fetch.fulfillRequest', { requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: type }], body: Buffer.from(body).toString('base64') }, sessionId).catch(() => {})
     }
   })
@@ -452,6 +473,200 @@ try {
     const preview = await evaluate(`({ preview: !!document.querySelector('.queen27-tri.is-preview'), frames: document.querySelectorAll('iframe.queen27-tri-frame').length })`)
     record(14, 'an embedded Queen pressed with r shows TRI without a frame and asks app.t27.ai for nothing',
       shown && preview.preview && preview.frames === 0 && requests.length === before, { shown, preview, requests: requests.slice(before) })
+  }
+
+  // ---- Trusted input for 15-20: CDP Input events, never element.click() ----
+  const press = async (x, y, touch = false) => {
+    if (touch) {
+      await call('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] })
+      await call('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+    } else for (const type of ['mouseMoved', 'mousePressed', 'mouseReleased']) await call('Input.dispatchMouseEvent', { type, x, y, button: 'left', buttons: type === 'mousePressed' ? 1 : 0, clickCount: 1 })
+  }
+  const key = async (k, code, vk) => { for (const type of ['keyDown', 'keyUp']) await call('Input.dispatchKeyEvent', { type, key: k, code, windowsVirtualKeyCode: vk, ...(type === 'keyDown' ? { text: k } : {}) }) }
+  // Every match: its centre, and whether it is the element under that point.
+  const HIT = (sel) => `[...document.querySelectorAll(${JSON.stringify(sel)})].map((e) => { const r = e.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const u = document.elementFromPoint(x, y);
+    return { id: e.dataset.view ?? e.dataset.screen ?? e.dataset.setting ?? null, x: Math.round(x), y: Math.round(y), self: !!u && (u === e || e.contains(u)), under: u ? (u.tagName.toLowerCase() + '.' + String(u.className).trim().split(/\\s+/).join('.')).slice(0, 70) : null } })`
+  const setSize = async (w, h, touch = false) => {
+    await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: touch })
+    await call('Emulation.setTouchEmulationEnabled', { enabled: touch, maxTouchPoints: touch ? 5 : 1 })
+  }
+  const viewIs = (v, ms = 6000) => until(`document.querySelector('main[data-view]')?.getAttribute('data-view') === ${JSON.stringify(v)}`, ms)
+  const viewNow = () => evaluate(`document.querySelector('main[data-view]')?.getAttribute('data-view')`)
+
+  if (runs(15)) {
+    const out = {}
+    let ok = true
+    for (const [w, h, touch] of [[1440, 900, false], [390, 844, true]]) {
+      await setSize(w, h, touch)
+      await open('#/queen?tab=tri')
+      await until(`!!document.querySelector('.queen27-tri-screen[data-screen="chat"]')`, 20000)
+      await wait(1500)
+      const hits = await evaluate(HIT('.queen27-tri-screen'))
+      const agent = hits.find((b) => b.id === 'chat')
+      if (agent) await press(agent.x, agent.y, touch)
+      const moved = await until(`new URLSearchParams(location.hash.split('?')[1] ?? '').get('screen') === 'chat' && document.querySelector('iframe.queen27-tri-frame')?.dataset.src === ${JSON.stringify(frameUrl('/chat'))}`, 5000)
+      out[`${w}x${h}`] = { covered: hits.filter((b) => !b.self), moved: !!moved }
+      ok = ok && hits.length === 5 && hits.every((b) => b.self) && !!moved
+    }
+    await setSize(1440, 900)
+    record(15, 'trusted input: every TRI screen button is under the pointer, and a real click (1440x900) or tap (390x844) on Agent moves the frame and the address', ok, out)
+  }
+
+  if (runs(16)) {
+    const out = {}
+    let ok = true
+    for (const [w, h] of [[1440, 900], [1440, 813], [1366, 768], [1280, 800], [1280, 720]]) {
+      await setSize(w, h)
+      await open('#/queen?tab=kanban')
+      await wait(1000)
+      const rest = await evaluate(`({ top: document.querySelector('.queen27-hud-command').scrollTop, hits: ${HIT('.queen27-hud-command > .queen27-hud-cmd')} })`)
+      const tri = rest.hits.find((b) => b.id === 'tri')
+      if (tri) await press(tri.x, tri.y)
+      const opened = !!(await viewIs('tri'))
+      const collapse = (await evaluate(HIT('.queen27-hud-command > .queen27-hud-cmd-collapse')))[0]
+      if (collapse) await press(collapse.x, collapse.y)
+      await until(`!!document.querySelector('.queen27-hud-command.is-collapsed')`, 4000)
+      await wait(600)
+      const folded = await evaluate(HIT('.queen27-hud-command.is-collapsed > .queen27-hud-cmd'))
+      const fk = folded.find((b) => b.id === 'kanban')
+      const ft = folded.find((b) => b.id === 'tri')
+      let foldedOpens = false
+      if (fk && ft) {
+        await press(fk.x, fk.y)
+        const k = !!(await viewIs('kanban'))
+        await press(ft.x, ft.y)
+        foldedOpens = k && !!(await viewIs('tri'))
+      }
+      out[`${w}x${h}`] = { top: rest.top, count: rest.hits.length, covered: rest.hits.filter((b) => !b.self), opened, folded: folded.length, foldedCovered: folded.filter((b) => !b.self), foldedOpens }
+      ok = ok && rest.top === 0 && rest.hits.length === HUD_VIEW_COUNT && rest.hits.every((b) => b.self) && opened &&
+        folded.length === HUD_VIEW_COUNT && folded.every((b) => b.self) && foldedOpens
+    }
+    await setSize(1440, 900)
+    record(16, 'trusted input: at rest every rail command is under the pointer at five desktop sizes, TRI opens by click, and the collapsed rail lists TRI and opens it', ok, out)
+  }
+
+  if (runs(17)) {
+    stubMode = 'hang'
+    await open('#/queen?tab=kanban')
+    await evaluate(`location.hash = '#/queen?tab=tri&screen=chat'`)
+    const t0 = Date.now()
+    const link = await until(`(() => { const a = document.querySelector('.queen27-tri-loading a'); return a ? { href: a.getAttribute('href'), target: a.getAttribute('target') } : null })()`, 8000)
+    const linkMs = Date.now() - t0
+    const strip = await until(`(() => { const s = document.querySelector('.queen27-tri-noanswer'); return s ? { href: s.querySelector('a')?.getAttribute('href'), target: s.querySelector('a')?.getAttribute('target') } : null })()`, 12000)
+    const stripMs = Date.now() - t0
+    const s = await state()
+    record(17, 'a hung app document: the link out shows beside the spinner after about 3 s and the "did not answer" strip within 8 s of the frame being sent',
+      link && link.href === `${APP}/chat` && link.target === '_blank' && linkMs >= 2500 && strip && strip.href === `${APP}/chat` && stripMs <= 10000 && s.loading,
+      { link, linkMs, strip, stripMs, loading: s.loading })
+    stubMode = 'answer'
+  }
+
+  if (runs(18)) {
+    stubMode = 'error'
+    await open('#/queen?tab=tri&screen=chat')
+    const err = await until(`(() => { const s = document.querySelector('.queen27-tri-noanswer.is-error'); return s ? { code: s.dataset.code, role: s.getAttribute('role'), href: s.querySelector('a')?.getAttribute('href'), text: s.innerText } : null })()`, 20000)
+    await wait(TRI_WAIT())
+    const s = await state()
+    const silent = await evaluate(`document.querySelectorAll('.queen27-tri-noanswer:not(.is-error)').length`)
+    record(18, 'an app that posts {kind:"error", code:"boundary"} gets an error strip naming the code with the link out, and no "did not answer" strip',
+      err && err.code === 'boundary' && err.role === 'alert' && err.href === `${APP}/chat` && /boundary/.test(err.text) && silent === 0 && !s.loading, { err, silent, loading: s.loading })
+    stubMode = 'answer'
+  }
+
+  if (runs(19)) {
+    const blur = () => evaluate(`document.activeElement?.blur?.(); true`)
+    await open('#/queen?tab=kanban')
+    await blur()
+    await key('к', 'KeyR', 82)
+    const russian = !!(await viewIs('tri'))
+    const toggleShortcuts = async () => {
+      const menu = (await evaluate(HIT('.queen27-hud-menu-btn')))[0]
+      await press(menu.x, menu.y)
+      await until(`!!document.querySelector('[data-setting="key-shortcuts"]')`, 4000)
+      const t = (await evaluate(HIT('[data-setting="key-shortcuts"]')))[0]
+      if (t?.self) await press(t.x, t.y)
+      await wait(400)
+      const pressed = await evaluate(`document.querySelector('[data-setting="key-shortcuts"]')?.getAttribute('aria-pressed') ?? null`)
+      await press(menu.x, menu.y)
+      await wait(300)
+      return { reachable: !!t?.self, pressed }
+    }
+    const off = await toggleShortcuts()
+    await blur()
+    await key('3', 'Digit3', 51)
+    await wait(1500)
+    const offView = await viewNow()
+    await call('Page.reload', {})
+    await until(railReady, 90000)
+    await wait(1500)
+    await blur()
+    await key('3', 'Digit3', 51)
+    await wait(1500)
+    const reloadedView = await viewNow()
+    const on = await toggleShortcuts()
+    await blur()
+    await key('3', 'Digit3', 51)
+    const onAgain = !!(await viewIs('kanban'))
+    record(19, 'key к with code KeyR opens TRI; shortcuts turned off in the menu leave the view alone, also after a reload; turned on, 3 opens kanban again',
+      russian && off.reachable && off.pressed === 'false' && offView === 'tri' && reloadedView === 'tri' && on.pressed === 'true' && onAgain, { russian, off, offView, reloadedView, on, onAgain })
+  }
+
+  if (runs(20)) {
+    // Text contrast of a control over its ground: every background from the
+    // field veil (rgba(2,8,6,.62) over the black sky) outwards in, the text
+    // colour with its alpha and every ancestor's opacity on top.
+    const CONTRAST = (sel) => `(() => {
+      const parse = (c) => { const m = String(c).match(/rgba?\\(([^)]+)\\)/); if (!m) return [0, 0, 0, 0]; const p = m[1].split(/[\\s,/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1] };
+      const over = (top, bottom) => [0, 1, 2].map((i) => top[i] * top[3] + bottom[i] * (1 - top[3])).concat(1);
+      const lum = (c) => { const [r, g, b] = c.slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }); return 0.2126 * r + 0.7152 * g + 0.0722 * b };
+      return [...document.querySelectorAll(${JSON.stringify(sel)})].map((e) => {
+        const texts = [e, ...e.querySelectorAll('span, b, i')].filter((t) => { const r = t.getBoundingClientRect(); return r.width > 0 && r.height > 0 && t.textContent.trim() });
+        const ratios = texts.map((t) => {
+          const chain = []; let opacity = 1;
+          for (let p = t; p; p = p.parentElement) { const cs = getComputedStyle(p); chain.unshift(parse(cs.backgroundColor)); opacity *= Number(cs.opacity) }
+          let bg = over([2, 8, 6, 0.62], [0, 0, 0, 1]); for (const c of chain) bg = over(c, bg);
+          const fc = parse(getComputedStyle(t).color); const fg = over([fc[0], fc[1], fc[2], fc[3] * opacity], bg);
+          const a = lum(fg), b = lum(bg); return Math.round(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)) * 100) / 100 });
+        return { text: e.textContent.trim().slice(0, 30), min: ratios.length ? Math.min(...ratios) : null } }) })()`
+    await open('#/queen')
+    await until(`!!document.querySelector('.queen27-hud-vp-tools button[data-layer]')`, 30000)
+    await wait(1500)
+    const layer = (await evaluate(HIT('.queen27-hud-vp-tools button[data-layer][aria-pressed="true"]')))[0]
+    if (layer?.self) await press(layer.x, layer.y)
+    await until(`!!document.querySelector('.queen27-hud-vp-tools button[data-layer][aria-pressed="false"]')`, 4000)
+    const away = async () => { await call('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 2, y: 450 }); await wait(300) } // no :hover colour on what is measured
+    await away()
+    const layerOff = await evaluate(CONTRAST('.queen27-hud-vp-tools button[data-layer][aria-pressed="false"]'))
+    const menu = (await evaluate(HIT('.queen27-hud-menu-btn')))[0]
+    await press(menu.x, menu.y)
+    const t = (await until(`(() => { const r = ${HIT('[data-setting="key-shortcuts"]')}; return r.length ? r : null })()`, 4000))?.[0]
+    if (t?.self) await press(t.x, t.y)
+    await until(`document.querySelector('[data-setting="key-shortcuts"]')?.getAttribute('aria-pressed') === 'false'`, 4000)
+    await call('Input.dispatchMouseEvent', { type: 'mouseMoved', x: menu.x, y: menu.y })
+    await wait(300)
+    const shortcutsOff = await evaluate(CONTRAST('[data-setting="key-shortcuts"][aria-pressed="false"]'))
+    if (t?.self) await press(t.x, t.y) // back on for whatever runs next in this profile
+    const all = [...layerOff, ...shortcutsOff]
+    record(20, 'inactive toggles (a layer off, key shortcuts off) keep text contrast at least 4.5:1', layerOff.length > 0 && shortcutsOff.length > 0 && all.every((x) => x.min !== null && x.min >= 4.5), { layerOff, shortcutsOff })
+  }
+
+  if (runs(21)) {
+    const out = {}
+    let ok = true
+    for (const [w, h, touch] of [[1440, 900, false], [1280, 720, false], [390, 844, true]]) {
+      await setSize(w, h, touch)
+      await open('#/queen?tab=tri')
+      await wait(1500)
+      const btn = (await evaluate(HIT('.queen27-hud-menu-btn')))[0]
+      if (btn?.self) await press(btn.x, btn.y, touch)
+      await until(`!!document.querySelector('#queen-hud-menu')`, 4000)
+      await wait(500)
+      const items = await evaluate(HIT('#queen-hud-menu > li > button, #queen-hud-menu > li > a'))
+      out[`${w}x${h}`] = { menuButton: !!btn?.self, items: items.length, covered: items.filter((x) => !x.self) }
+      ok = ok && !!btn?.self && items.length >= 4 && items.every((x) => x.self)
+    }
+    await setSize(1440, 900)
+    record(21, 'trusted input: every item of the open HUD menu is under the pointer (1440x900, 1280x720) and the finger (390x844)', ok, out)
   }
 
   const failed = checks.filter((c) => !c.ok)

@@ -21,7 +21,7 @@ import { QueenSectors } from "../components/QueenIntel";
 import { SceneBoundary } from "../components/SceneBoundary";
 import { QueenLoading } from "../components/QueenLoading";
 import {
-  HUD_KEYS,
+  hudKeyIndex,
   HUD_VIEWS,
   decisionDetail,
   rewriteEndpoints,
@@ -71,6 +71,8 @@ const QueenCombBabylon = lazy(() =>
 );
 const ENGINE_FLAG =
   typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("engine") : null;
+// Where the menu keeps "single-key shortcuts off": a local convenience, not a credential.
+const KEY_SHORTCUTS_STORAGE = "queen.hud.key-shortcuts";
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
 import { QueenIdentity } from "../components/QueenIdentity";
@@ -348,6 +350,7 @@ const COPY = {
     triLoading: "Opening app.t27.ai…",
     triNoAnswer: "The app did not answer inside the game: it may not allow t27.ai to frame it yet.",
     triOpenApp: "Open this screen in the app",
+    triAppError: "The app hit an error inside the game.",
     triFrameTitle: "Trinity app",
     triInsidePlayer: "You are already inside the app: TRI is the app, and the app is around this game. Use its tabs.",
     triPreview: "A preview does not load the app. Open TRI in the game itself.",
@@ -510,6 +513,9 @@ const COPY = {
     hudNextRound: "SINCE ROUND",
     hudMenu: "MENU",
     hudLanguage: "EN / RU",
+    hudShortcuts: "KEY SHORTCUTS",
+    hudOn: "ON",
+    hudOff: "OFF",
     hudViews: "VIEWS",
     hudIntel: "INTEL FEED",
     hudLive: "LIVE",
@@ -672,6 +678,7 @@ const COPY = {
     triLoading: "Открываю app.t27.ai…",
     triNoAnswer: "Приложение не ответило внутри игры: возможно, оно ещё не разрешает t27.ai показывать себя во фрейме.",
     triOpenApp: "Открыть этот экран в приложении",
+    triAppError: "Приложение столкнулось с ошибкой внутри игры.",
     triFrameTitle: "Приложение Trinity",
     triInsidePlayer: "Вы уже внутри приложения: TRI — это само приложение, и оно вокруг этой игры. Пользуйтесь его вкладками.",
     triPreview: "Превью не загружает приложение. Откройте TRI в самой игре.",
@@ -836,6 +843,9 @@ const COPY = {
     hudNextRound: "С ПРОШЛОГО ЦИКЛА",
     hudMenu: "МЕНЮ",
     hudLanguage: "EN / RU",
+    hudShortcuts: "КЛАВИШИ",
+    hudOn: "ВКЛ",
+    hudOff: "ВЫКЛ",
     hudViews: "ВИДЫ",
     hudIntel: "ЛЕНТА РАЗВЕДКИ",
     hudLive: "В СЕТИ",
@@ -2052,6 +2062,24 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     setContextOpen(view === "comb" && !isPhone && !sharedCatalog);
   }
   const [menuOpen, setMenuOpen] = useState(false);
+  // Single-key shortcuts (1-0, t, p, r) can be turned off from the menu (WCAG
+  // 2.1.4): a letter typed for something else must not switch the view.
+  const [keyShortcuts, setKeyShortcuts] = useState(() => {
+    try {
+      return window.localStorage.getItem(KEY_SHORTCUTS_STORAGE) !== "off";
+    } catch {
+      return true;
+    }
+  });
+  const toggleKeyShortcuts = () => {
+    const next = !keyShortcuts;
+    setKeyShortcuts(next);
+    try {
+      window.localStorage.setItem(KEY_SHORTCUTS_STORAGE, next ? "on" : "off");
+    } catch {
+      /* storage blocked: this page still follows the choice until it reloads */
+    }
+  };
   const [doctrineOpen, setDoctrineOpen] = useState(false);
   const [roundOpen, setRoundOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -2302,12 +2330,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
         return;
       }
       if (event.altKey || event.ctrlKey || event.metaKey) return;
-      const at = HUD_KEYS.indexOf(event.key.toLowerCase());
+      if (!keyShortcuts) return;
+      // The physical key (event.code): r is TRI on a Russian layout too.
+      const at = hudKeyIndex(event);
       if (at >= 0 && at < HUD_VIEWS.length) setView(HUD_VIEWS[at]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [setView]);
+  }, [setView, keyShortcuts]);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
@@ -2843,6 +2873,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 crm: c.triCrm,
                 loading: c.triLoading,
                 noAnswer: c.triNoAnswer,
+                appError: c.triAppError,
                 openApp: c.triOpenApp,
                 frameTitle: c.triFrameTitle,
                 insidePlayer: c.triInsidePlayer,
@@ -3116,6 +3147,17 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 <button type="button" onClick={toggleLang}>
                   <span>{c.hudLanguage}</span>
                   <b>{lang.toUpperCase()}</b>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  data-setting="key-shortcuts"
+                  aria-pressed={keyShortcuts}
+                  onClick={toggleKeyShortcuts}
+                >
+                  <span>{c.hudShortcuts}</span>
+                  <b>{keyShortcuts ? c.hudOn : c.hudOff}</b>
                 </button>
               </li>
               <li>
