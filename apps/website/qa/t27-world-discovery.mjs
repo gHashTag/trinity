@@ -91,7 +91,7 @@ const merged=d.mergeWorld(base,world,[entry('dmitrii-f-t27/trinity-memory/specs/
 assert.deepEqual(merged.specs.slice(0,2),base.specs,'founding entries stay first and untouched');
 assert.equal(merged.specCount,4);assert.equal(merged.repos.length,3);assert.equal(merged.repos[2].discoveredAt,world.at);
 assert.equal(merged.categories['dmitrii-f-t27/trinity-memory'],2);assert.equal(merged.tags['src/dmitrii-f-t27/trinity-memory'],2);
-assert.deepEqual(Object.keys(merged),['generatedFrom','wasmBytes','specCount','totalLines','categories','repos','duplicatesSkipped','tags','health','backendFailures','featured','totals','discovery','specs'],'manifest keys keep the sync order, discovery before specs');
+assert.deepEqual(Object.keys(merged),['generatedFrom','wasmBytes','specCount','totalLines','categories','repos','duplicatesSkipped','duplicates','tags','health','backendFailures','featured','totals','discovery','specs'],'manifest keys keep the sync order, discovery before specs');
 assert.equal(base.specs.length,2,'the input manifest is not mutated');
 const again=d.mergeWorld(merged,{...world,commit:'d'.repeat(40)},[entry('dmitrii-f-t27/trinity-memory/specs/memory/bridge.t27','dmitrii-f-t27/trinity-memory','module bridge2;')],f);
 assert.equal(again.specCount,3,'re-vendoring a world replaces its entries instead of adding to them');
