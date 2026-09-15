@@ -4264,16 +4264,32 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* The bridge frame (triIdentity.ts) is hidden unless it asks for a click. No
-   display here: the hidden attribute must keep winning. */
+   display here: the hidden attribute must keep winning.
+   On a desktop it sits left of the Queen's column (its chat composer is at the
+   foot) and above the map's control row (29-55 px from the bottom), so neither
+   is under it (measured from 1920x1080 to 1024x768 in every view). The frame
+   hangs on body, outside .queen27-page, so the column's width is repeated from
+   there: --hud-col-w plus two --hud-gap of 10 px, and no column at 1100 px and
+   below. */
 .queen27-identity-bridge {
   position: fixed;
   right: 16px;
-  bottom: 16px;
+  bottom: 64px;
   z-index: 2147483000;
   width: min(360px, calc(100vw - 32px));
   height: 140px;
   border: 1px solid rgba(120, 255, 190, 0.45);
   background: #05070a;
+}
+@media (min-width: 1101px) {
+  .queen27-identity-bridge {
+    right: 320px;
+  }
+}
+@media (min-width: 1280px) {
+  .queen27-identity-bridge {
+    right: 356px;
+  }
 }
 /* On a phone the command rail runs along the bottom (62 px plus the safe area,
    inside 8 px of padding): the prompt sits above it, so the rail stays under

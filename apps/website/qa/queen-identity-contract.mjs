@@ -57,8 +57,11 @@
 //  17  leaving the Queen blanks the bridge frame; back within the token's life the
 //      person is still shown and the bridge is not loaded again
 //  18  on the TRI tab, Sign in returns to the same screen (tab=tri&screen=crm)
-//  19  390x844 with the consent prompt shown: the rail's TRI command is still the
-//      element under its centre
+//  19  the consent prompt shown: at 390x844 the rail's TRI command is still the
+//      element under its centre; at 1440x900, 1280x720, 1200x800 and 1024x768 (comb,
+//      kanban, tri) no control box of the rail, the Queen's column, the quick
+//      commands, the tools row or the map's control row overlaps it, and a trusted
+//      press on the composer input focuses it
 //  20  (runs with 16) a trusted click on the stub player's login widget signs in and
 //      closes its modal, telling the game nothing; the pointer coming back over the
 //      game asks again and the chip shows the person, with no navigation or reload
@@ -650,8 +653,45 @@ try {
     } finally {
       await desktop()
     }
-    record(19, "390x844 with the consent prompt shown: the rail's TRI command is still the element under its centre",
-      hit?.frameHidden === false && hit.inView && hit.hit, { hit })
+    // Desktops: no control of the rail, the Queen's column (its composer), the quick
+    // commands, the tools row or the map's control row lies under the prompt (box
+    // overlap, not only the centre), and a trusted press on the composer input focuses it.
+    const HUD = '.queen27-hud-command, .queen27-hud-intel, .queen27-hud-commands, .queen27-hud-top, .queen27-hud-vp-tools, .queen-catalog-tools, .queen-catalog-search-toggle'
+    const desk = {}
+    let deskOk = true
+    try {
+      for (const [w, h] of [[1440, 900], [1280, 720], [1200, 800], [1024, 768]]) {
+        await call('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false })
+        for (const view of ['comb', 'kanban', 'tri']) {
+          await open(`#/queen?tab=${view}`, { mode: 'consent-required' })
+          await until(frameShown, 30000)
+          await wait(1500)
+          const m = await evaluate(`(() => { const f = document.querySelector('iframe.queen27-identity-bridge'); if (!f || f.hidden) return null; const fr = f.getBoundingClientRect(); const covered = []; let checked = 0;
+            for (const el of document.querySelectorAll('button, a[href], input, textarea, select, [role=button]')) {
+              if (!el.closest(${JSON.stringify(HUD)})) continue; const r = el.getBoundingClientRect(); if (!r.width || !r.height) continue;
+              const cs = getComputedStyle(el); if (cs.visibility === 'hidden') continue; if (r.right <= 0 || r.bottom <= 0 || r.left >= innerWidth || r.top >= innerHeight) continue;
+              checked++;
+              if (r.left < fr.right && r.right > fr.left && r.top < fr.bottom && r.bottom > fr.top) covered.push(el.tagName.toLowerCase() + ' "' + (el.textContent || el.getAttribute('placeholder') || el.getAttribute('aria-label') || '').trim().slice(0, 24) + '"');
+            }
+            const input = [...document.querySelectorAll('.queen27-hud-intel input, .queen27-hud-intel textarea')].find((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.left < innerWidth && r.right > 0 && r.top < innerHeight && r.bottom > 0 });
+            const ir = input ? input.getBoundingClientRect() : null;
+            return { frame: [fr.left, fr.top, fr.width, fr.height].map(Math.round), checked, covered, input: ir ? { x: ir.left + ir.width / 2, y: ir.top + ir.height / 2 } : null } })()`)
+          let composer = null
+          if (m?.input) {
+            await evaluate('document.activeElement?.blur?.(); true')
+            await mouse(m.input.x, m.input.y)
+            await wait(300)
+            composer = await evaluate(`(() => { const a = document.activeElement; return !!a && !!a.closest('.queen27-hud-intel') && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') })()`)
+          }
+          desk[`${w}x${h}/${view}`] = { frame: m?.frame ?? null, checked: m?.checked ?? 0, covered: m?.covered ?? null, composer }
+          deskOk = deskOk && !!m && m.checked > 0 && m.covered.length === 0 && (m.input ? composer === true : w <= 1100)
+        }
+      }
+    } finally {
+      await desktop()
+    }
+    record(19, "the consent prompt shown: at 390x844 the rail's TRI command is still under its centre; at 1440x900, 1280x720, 1200x800 and 1024x768 no control of the rail, the Queen's column, the quick commands, the tools row or the map's control row lies under it, and a trusted press on the composer input focuses it",
+      hit?.frameHidden === false && hit.inView && hit.hit && deskOk, { hit, desk })
   }
 
   const failed = checks.filter((c) => !c.ok)
