@@ -7,23 +7,28 @@
 // service and evil.example are mapped to 127.0.0.1 (where nothing listens on
 // 443), and every request to them is answered by CDP Fetch:
 //   https://app.t27.ai/bridge     a stub bridge answering {v:1,type:'tri-identity'}
-//                                 in the mode this harness sets per page load
+//                                 in the mode this harness sets per page load; its
+//                                 Not now posts {v:1,type:'tri-identity-dismiss',nonce}
+//                                 as bridge.js does. The harness can hold it or refuse it.
 //   https://app.t27.ai/impostor   the right origin, the wrong window
 //   https://evil.example/impostor the wrong origin (loaded into the bridge's own
 //                                 frame, so only the origin check can refuse it)
-//   https://app.t27.ai/hive-host  the player framing the game (its Hive tab)
+//   https://app.t27.ai/hive-host  the player framing the game (its Hive tab),
+//                                 answering signed-in or (?mode=signed-out) signed-out
 //   <render>/mcp                  a stub whoami that records every header it got
 // Site isolation is switched off so framed documents' requests pass through the
 // page's Fetch.
 //
-// Checks, at 1440x900:
+// Checks, at 1440x900 unless stated. Every press a user is claimed to make is
+// trusted CDP input after a hit test (checks 3, 13, 15, 16), because a script
+// click passes on a control the pointer cannot reach:
 //   1  signed-out: the chip is "Sign in", a top-level link to the player's login
 //      returning to the current view; it follows a view change; the bridge frame
-//      is hidden and was asked once with {v:1, type, 32-hex nonce}
-//   2  the same in Russian
-//   3  consent-required: the bridge frame is shown and no chip; a real click in the
-//      frame answers the waiting request's own nonce (as bridge.js does), which
-//      signs in and hides it again
+//      (?lang=en) is hidden and was asked once with {v:1, type, 32-hex nonce}
+//   2  the same in Russian, with the bridge loaded once, in Russian
+//   3  consent-required: the bridge frame is shown and the chip says "Confirm in
+//      TRI"; a real click in the frame answers the waiting request's own nonce
+//      (as bridge.js does), which signs in and hides it again
 //   4  signed-in: name and role from the stubbed whoami, as text; whoami carried
 //      the game token as Bearer and no X-Agent-Key (though the console's agent
 //      key sits in this tab's sessionStorage), no cookie; the token is in no
@@ -37,6 +42,22 @@
 //      bridge is mounted, and the chip shows the person
 //  11  (runs with 3) while the click is awaited, another route of the site hides
 //      the consent frame, and coming back to the Queen shows it again
+//  12  390x844, the bridge's answer held: the chip is there at once as a pending
+//      polite status region (lang en), and keeps its box when "Sign in" comes;
+//      the link's hit area is at least 24 px tall
+//  13  Not now in the bridge (trusted click): the frame hides, the point under it
+//      is the page again, the chip keeps "Confirm in TRI"; a trusted click on the
+//      chip asks again and the prompt comes back
+//  14  expired: "Resume in TRI", a top-level link returning to the view
+//  15  the bridge refused: within the answer deadline "TRI did not answer" with
+//      Retry; a trusted click on Retry, the bridge reachable again, gives "Sign in"
+//  16  inside the player and signed out: the chip is a button, and a trusted
+//      click posts {v:1,type:'t27-app',kind:'sign-in'} to the player; the tab stays
+//  17  leaving the Queen blanks the bridge frame; back within the token's life the
+//      person is still shown and the bridge is not loaded again
+//  18  on the TRI tab, Sign in returns to the same screen (tab=tri&screen=crm)
+//  19  390x844 with the consent prompt shown: the rail's TRI command is still the
+//      element under its centre
 //
 // Exits 0 on pass, 1 on a failed check, 2 when it could not run (never read as a pass).
 //
@@ -85,7 +106,9 @@ const distFile = (pathname) => {
 
 // ---- Stubs ----
 // The states as the player's bridge.js sends them.
-let bridgeMode = 'signed-out' // 'signed-out' | 'consent-required' | 'signed-in' | 'parent-not-web'
+let bridgeMode = 'signed-out' // 'signed-out' | 'consent-required' | 'signed-in' | 'parent-not-web' | 'expired'
+let bridgeHoldMs = 0 // hold the bridge document this long
+let bridgeBlocked = false // refuse the bridge document
 const appRequests = [] // every app.t27.ai URL asked for
 const mcpCalls = [] // every request to the render service
 const identityMessage = (nonce, mode) => mode === 'signed-in'
@@ -94,12 +117,12 @@ const identityMessage = (nonce, mode) => mode === 'signed-in'
     ? `{ v: 1, type: 'tri-identity', nonce: ${nonce}, state: 'unavailable', code: 'game_token_parent_not_web' }`
     : `{ v: 1, type: 'tri-identity', nonce: ${nonce}, state: ${JSON.stringify(mode)} }`
 const BRIDGE = (mode) => `<!doctype html><meta charset="utf-8"><title>bridge stub</title>
-<body style="margin:0;background:#021;color:#9fc;font:13px monospace" data-asked="[]">bridge stub <button id="go" style="margin:12px;padding:10px 16px">Continue as Ada</button>
+<body style="margin:0;background:#021;color:#9fc;font:13px monospace" data-asked="[]">bridge stub <button id="go" style="margin:12px;padding:10px 16px">Continue as Ada</button><button id="no" style="margin:12px 0;padding:10px 16px">Not now</button>
 <script>
   // As bridge.js: the request waiting for the click, answered with its own nonce.
   let pendingNonce = null;
   const answer = (nonce, mode) => {
-    const messages = { 'signed-in': ${identityMessage('nonce', 'signed-in')}, 'signed-out': ${identityMessage('nonce', 'signed-out')}, 'consent-required': ${identityMessage('nonce', 'consent-required')}, 'parent-not-web': ${identityMessage('nonce', 'parent-not-web')} };
+    const messages = { 'signed-in': ${identityMessage('nonce', 'signed-in')}, 'signed-out': ${identityMessage('nonce', 'signed-out')}, 'consent-required': ${identityMessage('nonce', 'consent-required')}, 'parent-not-web': ${identityMessage('nonce', 'parent-not-web')}, 'expired': ${identityMessage('nonce', 'expired')} };
     parent.postMessage(messages[mode], 'https://t27.ai');
   };
   addEventListener('message', (e) => {
@@ -118,6 +141,13 @@ const BRIDGE = (mode) => `<!doctype html><meta charset="utf-8"><title>bridge stu
     pendingNonce = null;
     answer(nonce, 'signed-in');
   });
+  // As bridge.js dismissed(): Not now drops the waiting request and tells the game.
+  document.getElementById('no').addEventListener('click', (e) => {
+    if (!e.isTrusted || pendingNonce === null) return;
+    const nonce = pendingNonce;
+    pendingNonce = null;
+    parent.postMessage({ v: 1, type: 'tri-identity-dismiss', nonce }, 'https://t27.ai');
+  });
 </script>`
 const IMPOSTOR = `<!doctype html><meta charset="utf-8"><title>impostor</title><body>impostor
 <script>
@@ -127,21 +157,39 @@ const IMPOSTOR = `<!doctype html><meta charset="utf-8"><title>impostor</title><b
     document.body.dataset.posted = '1';
   }, 300);
 </script>`
-const HIVE_HOST = `<!doctype html><meta charset="utf-8"><title>hive host</title>
-<body style="margin:0" data-asked="0"><iframe id="game" src="${GAME}/?lang=en&hive=1#/queen?tab=kanban" style="width:1400px;height:860px;border:0"></iframe>
+const HIVE_HOST = (mode) => `<!doctype html><meta charset="utf-8"><title>hive host</title>
+<body style="margin:0" data-asked="0" data-app="[]"><iframe id="game" src="${GAME}/?lang=en&hive=1#/queen?tab=kanban" style="width:1400px;height:860px;border:0;display:block"></iframe>
 <script>
   const game = document.getElementById('game');
   addEventListener('message', (e) => {
     if (e.source !== game.contentWindow || e.origin !== 'https://t27.ai') return;
     const d = e.data;
+    if (d && d.type === 't27-app') { document.body.dataset.app = JSON.stringify([...JSON.parse(document.body.dataset.app), d]); return; }
     if (!d || d.type !== 'tri-identity-request') return;
     document.body.dataset.asked = String(Number(document.body.dataset.asked) + 1);
     const nonce = d.nonce;
-    game.contentWindow.postMessage(${identityMessage('nonce', 'signed-in')}, 'https://t27.ai');
+    game.contentWindow.postMessage(${identityMessage('nonce', mode)}, 'https://t27.ai');
   });
 </script>`
 const WHOAMI = JSON.stringify({ jsonrpc: '2.0', id: 1, result: { structuredContent: { telegram_id: '144', role: 'owner', профиль: { display_name: 'Ada <b>Stub</b>', first_name: 'Ada', username: 'ada' }, аватар: `${GAME}/stub-avatar.svg` } } })
 const AVATAR = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"><circle cx="9" cy="9" r="9" fill="#6c6"/></svg>'
+// Every chip state the page shows, with its box, from the first render (a poll can miss a short pending).
+const CHIP_LOG = `(() => {
+  if (location.hostname !== 't27.ai' || window.top !== window) return;
+  const log = []; Object.defineProperty(window, '__chipLog', { value: log });
+  let last = null;
+  new MutationObserver(() => {
+    const c = document.querySelector('[data-tool="identity"]');
+    const s = c ? c.dataset.identity : null;
+    if (s === last) return;
+    last = s;
+    const r = c ? c.getBoundingClientRect() : null;
+    // The agent button beside it: the whole row moves while the page mounts, the chip within it must not.
+    const a = document.querySelector('[data-tool="agent"]');
+    const ar = a ? a.getBoundingClientRect() : null;
+    log.push({ t: Math.round(performance.now()), state: s, text: c ? c.textContent : null, role: c ? c.getAttribute('role') : null, live: c ? c.getAttribute('aria-live') : null, lang: c ? c.getAttribute('lang') : null, box: r ? [r.left, r.top, r.width, r.height].map(Math.round) : null, agent: ar ? [ar.left, ar.top].map(Math.round) : null });
+  }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-identity'] });
+})();`
 
 const profile = mkdtempSync(join(tmpdir(), 'queen-identity-'))
 const chrome = spawn(CHROME, [
@@ -194,9 +242,14 @@ try {
     }
     if (url.origin === APP) {
       appRequests.push(request.url)
-      if (url.pathname === '/bridge') return fulfill(requestId, 200, html, BRIDGE(bridgeMode))
+      if (url.pathname === '/bridge') {
+        if (bridgeBlocked) return send('Fetch.failRequest', { requestId, errorReason: 'ConnectionRefused' }, sessionId).catch(() => {})
+        const mode = bridgeMode
+        if (bridgeHoldMs) return void setTimeout(() => fulfill(requestId, 200, html, BRIDGE(mode)), bridgeHoldMs)
+        return fulfill(requestId, 200, html, BRIDGE(mode))
+      }
       if (url.pathname === '/impostor') return fulfill(requestId, 200, html, IMPOSTOR)
-      if (url.pathname === '/hive-host') return fulfill(requestId, 200, html, HIVE_HOST)
+      if (url.pathname === '/hive-host') return fulfill(requestId, 200, html, HIVE_HOST(url.searchParams.get('mode') === 'signed-out' ? 'signed-out' : 'signed-in'))
       return fulfill(requestId, 200, html, '<!doctype html><title>app stub</title>')
     }
     if (url.origin === EVIL) return fulfill(requestId, 200, html, IMPOSTOR)
@@ -211,6 +264,7 @@ try {
   })
   await call('Runtime.enable')
   await call('Page.enable')
+  await call('Page.addScriptToEvaluateOnNewDocument', { source: CHIP_LOG })
   await call('Fetch.enable', { patterns: [{ urlPattern: `${GAME}/*` }, { urlPattern: `${APP}/*` }, { urlPattern: `${RENDER}/*` }, { urlPattern: `${EVIL}/*` }] })
 
   const evaluate = async (expression, contextId) => {
@@ -240,16 +294,25 @@ try {
     }
     return null
   }
+  // A trusted press: mouse moved, pressed and released at top-level coordinates.
+  const mouse = async (x, y) => { for (const type of ['mouseMoved', 'mousePressed', 'mouseReleased']) await call('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 }) }
 
   const railReady = `document.querySelectorAll('button.queen27-hud-cmd[data-view]').length > 0 && !!document.querySelector('main[data-view]')`
-  const CHIP = `(() => { const chip = document.querySelector('[data-tool="identity"]'); const frames = [...document.querySelectorAll('iframe.queen27-identity-bridge')]; const f = frames[0];
-    const r = f && !f.hidden ? f.getBoundingClientRect() : null;
-    return { state: chip?.dataset.identity ?? null, text: chip?.textContent ?? null, href: chip?.getAttribute('href') ?? null, target: chip?.getAttribute('target') ?? null,
+  const CHIP = `(() => { const chip = document.querySelector('[data-tool="identity"]'); const action = chip ? chip.querySelector('.queen27-identity-action') : null; const frames = [...document.querySelectorAll('iframe.queen27-identity-bridge')]; const f = frames[0];
+    const r = f && !f.hidden ? f.getBoundingClientRect() : null; const cr = chip ? chip.getBoundingClientRect() : null; const ar = action ? action.getBoundingClientRect() : null;
+    return { state: chip?.dataset.identity ?? null, code: chip?.dataset.code ?? null, text: chip?.textContent ?? null, aria: chip?.getAttribute('role') ?? null, live: chip?.getAttribute('aria-live') ?? null, lang: chip?.getAttribute('lang') ?? null,
+      action: action ? action.tagName.toLowerCase() : null, href: (action ?? chip)?.getAttribute('href') ?? null, target: (action ?? chip)?.getAttribute('target') ?? null,
       name: chip?.querySelector('.queen27-identity-name')?.textContent ?? null, role: chip?.querySelector('.queen27-identity-role')?.textContent ?? null,
       avatar: chip?.querySelector('img')?.getAttribute('src') ?? null, markup: chip ? chip.querySelectorAll('b').length : null,
+      chipBox: cr ? [cr.left, cr.top, cr.width, cr.height].map(Math.round) : null, actionBox: ar ? [ar.left, ar.top, ar.width, ar.height].map(Math.round) : null,
       frames: frames.length, frameSrc: f?.getAttribute('src') ?? null, frameHidden: f ? f.hidden : null,
       frameBox: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] : null } })()`
   const chip = () => evaluate(CHIP)
+  // The chip's action, with what is under its centre.
+  const HIT_ACTION = `(() => { const a = document.querySelector('[data-tool="identity"] .queen27-identity-action') ?? document.querySelector('a[data-tool="identity"]'); if (!a) return null; const r = a.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const u = document.elementFromPoint(x, y);
+    return { x, y, tag: a.tagName, text: a.textContent, href: a.getAttribute('href'), target: a.getAttribute('target'), hit: !!u && (u === a || a.contains(u)), under: u ? u.tagName + '.' + String(u.className).slice(0, 50) : null } })()`
+  const frameShown = `(() => { const f = document.querySelector('iframe.queen27-identity-bridge'); return f && !f.hidden })()`
+  const bridgeDocs = () => appRequests.filter((u) => new URL(u).pathname === '/bridge').length
   let opens = 0
   const open = async (hash, { lang = 'en', mode } = {}) => {
     if (mode) bridgeMode = mode
@@ -258,8 +321,10 @@ try {
   }
   const pushFromBridge = (state) => evaluate(`document.querySelector('iframe.queen27-identity-bridge').contentWindow.postMessage(${JSON.stringify(`harness-push:${state}`)}, '*')`)
   const returnTo = (view) => `${APP}/?return=${encodeURIComponent(`${GAME}/#/queen?tab=${view}`)}`
+  const desktop = () => call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
+  const phone = () => call('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
 
-  await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
+  await desktop()
 
   if (runs(1)) {
     await open('#/queen?tab=kanban', { mode: 'signed-out' })
@@ -268,23 +333,26 @@ try {
     const asked = await inFrame(`${APP}/bridge`, `(() => { const a = JSON.parse(document.body.dataset.asked || '[]'); return a.length ? a : null })()`)
     const request = asked?.[0]
     await evaluate(`document.querySelector('button.queen27-hud-cmd[data-view="map"]').click()`)
-    await until(`document.querySelector('[data-tool="identity"]')?.getAttribute('href') === ${JSON.stringify(returnTo('map'))}`, 20000)
+    await until(`(document.querySelector('[data-tool="identity"] a') ?? document.querySelector('a[data-tool="identity"]'))?.getAttribute('href') === ${JSON.stringify(returnTo('map'))}`, 20000)
     const afterClick = await chip()
-    record(1, 'signed-out: "Sign in" links top-level to the player login returning to the view (and follows a view change); the bridge is hidden and was asked once',
+    record(1, 'signed-out: "Sign in" links top-level to the player login returning to the view (and follows a view change); the bridge (?lang=en) is hidden and was asked once',
       s.state === 'signed-out' && s.text === 'Sign in' && s.href === returnTo('kanban') && s.target === '_top' &&
-      s.frames === 1 && s.frameSrc === `${APP}/bridge` && s.frameHidden === true &&
+      s.frames === 1 && s.frameSrc === `${APP}/bridge?lang=en` && s.frameHidden === true &&
       asked?.length === 1 && request.v === 1 && request.type === 'tri-identity-request' && /^[0-9a-f]{32}$/.test(request.nonce) && Object.keys(request).sort().join() === 'nonce,type,v' &&
       afterClick.href === returnTo('map'), { s, asked, afterClick })
   }
 
   if (runs(2)) {
+    const docs = bridgeDocs()
     await open('#/queen?tab=kanban', { lang: 'ru', mode: 'signed-out' })
     const text = await until(`document.querySelector('[data-tool="identity"][data-identity="signed-out"]')?.textContent`, 30000)
-    record(2, 'signed-out in Russian: "Войти"', text === 'Войти', { text })
+    const s = await chip()
+    await wait(1000)
+    record(2, 'signed-out in Russian: "Войти", the chip in lang ru, the bridge loaded once and in Russian (?lang=ru)',
+      text === 'Войти' && s.lang === 'ru' && s.frameSrc === `${APP}/bridge?lang=ru` && bridgeDocs() - docs === 1, { text, s, docs: appRequests.slice(-4) })
   }
 
   if (runs(3) || runs(11)) {
-    const frameShown = `(() => { const f = document.querySelector('iframe.queen27-identity-bridge'); return f && !f.hidden })()`
     await open('#/queen?tab=kanban', { mode: 'consent-required' })
     await until(frameShown, 30000)
     await wait(500)
@@ -310,12 +378,12 @@ try {
     if (back.frameBox && button) {
       const x = back.frameBox[0] + 1 + button.x
       const y = back.frameBox[1] + 1 + button.y
-      for (const type of ['mousePressed', 'mouseReleased']) await call('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 })
+      await mouse(x, y)
       await until(`document.querySelector('[data-tool="identity"]')?.dataset.identity === 'signed-in'`, 30000)
       clicked = await chip()
     }
-    if (runs(3)) record(3, 'consent-required: the bridge frame is shown and no chip; a real click in it signs in and hides it',
-      shown.state === null && shown.frameHidden === false && shown.frameBox && shown.frameBox[2] > 100 && shown.frameBox[3] > 50 &&
+    if (runs(3)) record(3, 'consent-required: the bridge frame is shown and the chip says "Confirm in TRI"; a real click in it signs in and hides it',
+      shown.state === 'consent-required' && /^Confirm in TRI/.test(shown.text) && shown.frameHidden === false && shown.frameBox && shown.frameBox[2] > 100 && shown.frameBox[3] > 50 &&
       shown.frameBox[0] >= 0 && shown.frameBox[0] + shown.frameBox[2] <= 1440 && shown.frameBox[1] + shown.frameBox[3] <= 900 &&
       clicked?.state === 'signed-in' && clicked.frameHidden === true, { shown, button, clicked })
   }
@@ -365,7 +433,7 @@ try {
         !mcpCalls.slice(before).some((c) => JSON.stringify(c.headers).includes(IMPOSTOR_TOKEN)), { posted, after, calls: mcpCalls.slice(before) })
       // Back to the real bridge for check 7.
       await evaluate(`document.querySelector('iframe.queen27-identity-bridge').contentWindow.location.href = ${JSON.stringify(`${APP}/bridge`)}`)
-      await inFrame(`${APP}/bridge`, `JSON.parse(document.body.dataset.asked || '[]').length > 0`)
+      await inFrame(`${APP}/bridge`, `JSON.parse(document.body.dataset.asked || '[]').length > 0 || document.readyState === 'complete'`)
       await wait(1000)
     }
 
@@ -403,6 +471,154 @@ try {
       inside?.name === 'Ada <b>Stub</b>' && inside.role === 'Owner' && inside.bridges === 0 && asked >= 1 &&
       posts.length >= 1 && posts.every((c) => c.headers.Authorization === `Bearer ${TOKEN}` && !Object.keys(c.headers).some((h) => h.toLowerCase() === 'x-agent-key')),
     { inside, asked, posts })
+  }
+
+  if (runs(12)) {
+    await phone()
+    bridgeHoldMs = 6000
+    try {
+      await open('#/queen?tab=kanban', { mode: 'signed-out' })
+      await until(`document.querySelector('[data-tool="identity"]')?.dataset.identity === 'signed-out'`, 40000)
+      await wait(300)
+    } finally {
+      bridgeHoldMs = 0
+    }
+    const log = await evaluate('window.__chipLog ? JSON.parse(JSON.stringify(window.__chipLog)) : null')
+    const s = await chip()
+    await desktop()
+    const first = log?.find((e) => e.state)
+    const out = log?.find((e) => e.state === 'signed-out')
+    // The row moves while the page mounts (measured: chip and agent button together, 113 -> 156 px),
+    // so the chip keeps its size and its place beside the agent button.
+    const offset = (e) => (e?.box && e.agent ? [e.box[0] - e.agent[0], e.box[1] - e.agent[1]] : null)
+    record(12, '390x844, the answer held: the chip appears at once as a pending polite status (lang en) and keeps its size and place in the row when "Sign in" comes; the link is at least 24 px tall',
+      first?.state === 'pending' && first.role === 'status' && first.live === 'polite' && first.lang === 'en' && /Checking TRI/.test(first.text) &&
+      !!out && out.t - first.t > 1000 && first.box[2] === out.box[2] && first.box[3] === out.box[3] && !!offset(first) && JSON.stringify(offset(first)) === JSON.stringify(offset(out)) &&
+      s.aria === 'status' && s.actionBox && s.actionBox[3] >= 24, { log, s })
+  }
+
+  if (runs(13)) {
+    await open('#/queen?tab=kanban', { mode: 'consent-required' })
+    await until(frameShown, 30000)
+    await wait(800)
+    const shown = await chip()
+    const noButton = await inFrame(`${APP}/bridge`, `(() => { const r = document.getElementById('no')?.getBoundingClientRect(); return r && r.width ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null })()`)
+    const askedBefore = await inFrame(`${APP}/bridge`, `JSON.parse(document.body.dataset.asked || '[]').length`)
+    let press = null
+    let hidden = null
+    let after = null
+    let under = null
+    if (shown.frameBox && noButton) {
+      const x = shown.frameBox[0] + 1 + noButton.x
+      const y = shown.frameBox[1] + 1 + noButton.y
+      press = { x, y, topHit: await evaluate(`document.elementFromPoint(${x}, ${y})?.className ?? null`) }
+      await mouse(x, y)
+      hidden = await until(`(() => { const f = document.querySelector('iframe.queen27-identity-bridge'); return f && f.hidden })()`, 15000)
+      await wait(500)
+      after = await chip()
+      under = await evaluate(`(() => { const e = document.elementFromPoint(${x}, ${y}); return e ? e.tagName + '.' + String(e.className).slice(0, 50) : null })()`)
+    }
+    const hit = hidden ? await evaluate(HIT_ACTION) : null
+    if (hit?.hit) await mouse(hit.x, hit.y)
+    const again = hit?.hit ? await until(frameShown, 20000) : null
+    // The request arrives in the bridge a message later than the click: wait for it.
+    const askedAfter = await inFrame(`${APP}/bridge`, `(() => { const n = JSON.parse(document.body.dataset.asked || '[]').length; return n > ${Number(askedBefore)} ? n : null })()`, 15000)
+    const final = await chip()
+    record(13, 'Not now in the bridge (trusted click): the frame hides and the point under it is the page again; the chip keeps "Confirm in TRI", and a trusted click on it asks again and shows the prompt',
+      shown.state === 'consent-required' && String(press?.topHit).includes('queen27-identity-bridge') &&
+      !!hidden && after?.state === 'consent-required' && /^Confirm in TRI/.test(after.text) && !String(under).startsWith('IFRAME') &&
+      hit?.hit === true && !!again && askedAfter === askedBefore + 1 && final.frameHidden === false, { shown, press, after, under, hit, askedBefore, askedAfter, final })
+  }
+
+  if (runs(14)) {
+    await open('#/queen?tab=kanban', { mode: 'expired' })
+    const seen = await until(`document.querySelector('[data-tool="identity"]')?.dataset.identity === 'expired'`, 30000)
+    const e = await chip()
+    record(14, 'expired: "Resume in TRI", a top-level link to the player login returning to the view; the frame stays hidden',
+      !!seen && e.text === 'Resume in TRI' && e.action === 'a' && e.href === returnTo('kanban') && e.target === '_top' && e.frameHidden === true, { e })
+  }
+
+  if (runs(15)) {
+    bridgeBlocked = true
+    let unavailable = null
+    let u = null
+    try {
+      await open('#/queen?tab=kanban', { mode: 'signed-out' })
+      unavailable = await until(`document.querySelector('[data-tool="identity"]')?.dataset.identity === 'unavailable'`, 30000)
+      u = await chip()
+    } finally {
+      bridgeBlocked = false
+    }
+    const docs = bridgeDocs()
+    const retry = unavailable ? await evaluate(HIT_ACTION) : null
+    if (retry?.hit) await mouse(retry.x, retry.y)
+    const back = retry?.hit ? await until(`document.querySelector('[data-tool="identity"]')?.dataset.identity === 'signed-out'`, 30000) : null
+    record(15, 'the bridge refused: within the answer deadline the chip says "TRI did not answer" with Retry; a trusted click on Retry loads the bridge again and gives "Sign in"',
+      !!unavailable && u.code === 'no_answer' && /TRI did not answer/.test(u.text) && retry?.hit === true && retry.text === 'Retry' && !!back && bridgeDocs() > docs, { u, retry, back, docs: bridgeDocs() - docs })
+  }
+
+  if (runs(16)) {
+    const host = `${APP}/hive-host?mode=signed-out`
+    await load(host)
+    const target = await inFrame(`${GAME}/`, `(() => { const c = document.querySelector('[data-tool="identity"]'); if (!c || c.dataset.identity !== 'signed-out') return null; const a = c.querySelector('.queen27-identity-action') ?? c; const r = a.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const u = document.elementFromPoint(x, y);
+      return { tag: a.tagName, href: a.getAttribute('href'), target: a.getAttribute('target'), x, y, hit: !!u && (u === a || a.contains(u)) } })()`, 150000)
+    const gameAt = await evaluate(`(() => { const r = document.getElementById('game').getBoundingClientRect(); return [r.left, r.top] })()`)
+    let topHit = null
+    if (target?.hit) {
+      const x = gameAt[0] + target.x
+      const y = gameAt[1] + target.y
+      topHit = await evaluate(`document.elementFromPoint(${x}, ${y})?.tagName ?? null`)
+      await mouse(x, y)
+    }
+    await wait(2500)
+    const app = await evaluate(`JSON.parse(document.body.dataset.app || '[]')`).catch((e) => String(e))
+    const where = await evaluate('location.href').catch((e) => String(e))
+    record(16, 'inside the player and signed out: the chip is a button, and a trusted click posts {v:1, type:"t27-app", kind:"sign-in"} to the player; the tab stays',
+      target?.tag === 'BUTTON' && target.hit && topHit === 'IFRAME' && Array.isArray(app) && app.length === 1 && app[0].v === 1 && app[0].type === 't27-app' && app[0].kind === 'sign-in' && where === host,
+      { target, topHit, app, where })
+  }
+
+  if (runs(17)) {
+    await open('#/queen?tab=kanban', { mode: 'signed-in' })
+    await until(`!!document.querySelector('.queen27-identity-name')`, 30000)
+    await wait(1000)
+    const before = await chip()
+    const docs = bridgeDocs()
+    await evaluate(`location.hash = '#/about'`)
+    await until(`!document.querySelector('button.queen27-hud-cmd[data-view]')`, 30000)
+    await wait(1500)
+    const away = await chip()
+    await evaluate(`location.hash = '#/queen?tab=kanban'`)
+    await until(railReady, 120000)
+    await until(`!!document.querySelector('.queen27-identity-name')`, 30000)
+    await wait(1500)
+    const back = await chip()
+    record(17, 'leaving the Queen blanks the bridge frame; back within the token life the person is still shown and the bridge is not loaded again',
+      String(before.frameSrc).startsWith(`${APP}/bridge`) && away.frameSrc === 'about:blank' && back.state === 'signed-in' && back.name === 'Ada <b>Stub</b>' && bridgeDocs() === docs,
+      { before: before.frameSrc, away: away.frameSrc, back, docs: bridgeDocs() - docs })
+  }
+
+  if (runs(18)) {
+    await open('#/queen?tab=tri&screen=crm', { mode: 'signed-out' })
+    const href = await until(`(() => { const c = document.querySelector('[data-tool="identity"]'); if (c?.dataset.identity !== 'signed-out') return null; const a = c.querySelector('a') ?? c; return a.getAttribute('href') })()`, 30000)
+    const expected = `${APP}/?return=${encodeURIComponent(`${GAME}/#/queen?tab=tri&screen=crm`)}`
+    record(18, 'on the TRI tab Sign in returns to the same screen (tab=tri&screen=crm), in the form the player accepts', href === expected, { href, expected })
+  }
+
+  if (runs(19)) {
+    await phone()
+    let hit = null
+    try {
+      await open('#/queen?tab=tri', { mode: 'consent-required' })
+      await until(frameShown, 30000)
+      await wait(1500)
+      hit = await evaluate(`(() => { const b = document.querySelector('button.queen27-hud-cmd[data-view="tri"]'); const f = document.querySelector('iframe.queen27-identity-bridge'); if (!b || !f) return null; const r = b.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const u = document.elementFromPoint(x, y); const fr = f.getBoundingClientRect();
+        return { box: [r.left, r.top, r.width, r.height].map(Math.round), inView: x >= 0 && x <= innerWidth && y >= 0 && y <= innerHeight, hit: !!u && (u === b || b.contains(u)), under: u ? u.tagName + '.' + String(u.className).slice(0, 50) : null, frame: [fr.left, fr.top, fr.width, fr.height].map(Math.round), frameHidden: f.hidden } })()`)
+    } finally {
+      await desktop()
+    }
+    record(19, "390x844 with the consent prompt shown: the rail's TRI command is still the element under its centre",
+      hit?.frameHidden === false && hit.inView && hit.hit, { hit })
   }
 
   const failed = checks.filter((c) => !c.ok)

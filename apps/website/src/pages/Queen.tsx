@@ -361,6 +361,20 @@ const COPY = {
     identityRoleKeeper: "Keeper",
     identityRoleOwner: "Owner",
     identityRoleBee: "Bee",
+    identityPending: "Checking TRI…",
+    identityConfirm: "Confirm in TRI",
+    identityConfirmTitle: "TRI asks you to confirm in the box at the bottom of the page",
+    identityConfirmAgainTitle: "Show the TRI confirmation again",
+    identityResume: "Resume in TRI",
+    identityResumeTitle: "Your TRI sign-in ran out on this page: open TRI to renew it and come back to this view",
+    identityRetry: "Retry",
+    identityOffline: "TRI unreachable",
+    identityNoAnswer: "TRI did not answer",
+    identityBusy: "TRI busy, wait a minute",
+    identityRefused: "TRI refused",
+    identityUnavailable: "Identity unavailable",
+    identityWebOnly: "Identity is on the web version",
+    identityOffSite: "Identity works on t27.ai",
     agentsLoading: "Loading the Explorer…",
     agentsSpecs: "specs",
     agentsSpecCode: "spec+code",
@@ -689,6 +703,20 @@ const COPY = {
     identityRoleKeeper: "Хранитель",
     identityRoleOwner: "Владелец",
     identityRoleBee: "Пчела",
+    identityPending: "Проверяю TRI…",
+    identityConfirm: "Подтвердите в TRI",
+    identityConfirmTitle: "TRI просит подтвердить в окне внизу страницы",
+    identityConfirmAgainTitle: "Показать подтверждение TRI снова",
+    identityResume: "Продолжить в TRI",
+    identityResumeTitle: "Вход в TRI на этой странице истёк: откройте TRI, чтобы обновить его и вернуться к этому виду",
+    identityRetry: "Повторить",
+    identityOffline: "TRI недоступен",
+    identityNoAnswer: "TRI не ответил",
+    identityBusy: "TRI занят, подождите минуту",
+    identityRefused: "TRI отказал",
+    identityUnavailable: "Профиль недоступен",
+    identityWebOnly: "Профиль — в веб-версии",
+    identityOffSite: "Профиль работает на t27.ai",
     agentsLoading: "Загружаем Обозреватель…",
     agentsSpecs: "спек",
     agentsSpecCode: "спека+код",
@@ -1976,6 +2004,32 @@ const EMPTY_EVENTS: QueenActivityEvent[] = [];
 export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={}) {
   const { lang, setLang } = useI18n();
   const c = lang === "ru" ? COPY.ru : COPY.en;
+  const identityCopy = useMemo(
+    () => ({
+      signIn: c.identitySignIn,
+      signInTitle: c.identitySignInTitle,
+      signInAgain: c.identitySignInAgain,
+      signedIn: c.identitySignedIn,
+      roleKeeper: c.identityRoleKeeper,
+      roleOwner: c.identityRoleOwner,
+      roleBee: c.identityRoleBee,
+      pending: c.identityPending,
+      confirm: c.identityConfirm,
+      confirmTitle: c.identityConfirmTitle,
+      confirmAgainTitle: c.identityConfirmAgainTitle,
+      resume: c.identityResume,
+      resumeTitle: c.identityResumeTitle,
+      retry: c.identityRetry,
+      offline: c.identityOffline,
+      noAnswer: c.identityNoAnswer,
+      busy: c.identityBusy,
+      refused: c.identityRefused,
+      unavailable: c.identityUnavailable,
+      webOnly: c.identityWebOnly,
+      offSite: c.identityOffSite,
+    }),
+    [c],
+  );
   const state = useQueenStatus();
   const boardState = useQueenBoard();
   const activityState = useQueenActivity();
@@ -2727,15 +2781,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             {!embedded && (
               <QueenIdentity
                 view={view}
-                c={{
-                  signIn: c.identitySignIn,
-                  signInTitle: c.identitySignInTitle,
-                  signInAgain: c.identitySignInAgain,
-                  signedIn: c.identitySignedIn,
-                  roleKeeper: c.identityRoleKeeper,
-                  roleOwner: c.identityRoleOwner,
-                  roleBee: c.identityRoleBee,
-                }}
+                screen={view === "tri" ? hashParams.get("screen") : null}
+                lang={lang}
+                c={identityCopy}
               />
             )}
             <button

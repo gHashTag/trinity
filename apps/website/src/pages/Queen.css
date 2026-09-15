@@ -4140,28 +4140,108 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* The identity chip (QueenIdentity.tsx) sits in the tools row at a button's size.
-   The row can run out of room, so the chip shrinks there, but never below an
-   avatar, a few letters of the name and the whole role; inside it the name
-   gives way first. */
+   Until someone is signed in it keeps one width, so nothing in the row moves
+   when the answer comes (a skeleton, then Sign in or a reason; measured at
+   390x844 in qa/queen-identity-contract.mjs). Signed in, it may grow for a name
+   and shrinks there when the row runs out of room, never below an avatar, a
+   few letters of the name and the whole role. Its action, a link or a button,
+   fills the chip's height, at least 24 px (WCAG 2.5.8). */
 .queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity {
+  position: relative;
   display: inline-flex;
-  flex: 0 1 auto;
-  min-width: 8.5rem;
+  flex: 0 0 8.5rem;
+  width: 8.5rem;
+  min-height: 24px;
   overflow: hidden;
-  align-items: center;
-  gap: 0.35rem;
-  max-width: 16rem;
-  padding: 0.3rem 0.55rem;
+  align-items: stretch;
+  align-self: stretch;
   border: 1px solid var(--hud-line);
   color: var(--hud-muted);
   font-size: 0.58rem;
   letter-spacing: 0.08em;
   white-space: nowrap;
-  text-decoration: none;
 }
-.queen27-page.is-shell .queen27-hud-vp-tools a.queen27-identity:hover {
-  border-color: var(--hud-line-strong);
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity[data-identity="signed-in"] {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 8.5rem;
+  max-width: 16rem;
+}
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-action {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  min-height: 24px;
+  margin: 0;
+  padding: 0 0.55rem;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+  text-decoration: none;
+  cursor: pointer;
+}
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-action:hover,
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-action:focus-visible {
   color: var(--hud-green);
+}
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-action:focus-visible {
+  outline: 1px solid var(--hud-green);
+  outline-offset: -2px;
+}
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-retry {
+  flex: 0 0 auto;
+  border-left: 1px solid var(--hud-line);
+}
+.queen27-identity-reason {
+  flex: 1 1 auto;
+  align-self: center;
+  min-width: 0;
+  padding: 0 0.55rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.queen27-identity-who {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0 0.55rem;
+  overflow: hidden;
+}
+/* Pending: a quiet bar, still unless motion is welcome; the words are for a screen reader. */
+.queen27-identity-skeleton {
+  flex: 1 1 auto;
+  align-self: center;
+  height: 0.45rem;
+  margin: 0 0.55rem;
+  border-radius: 2px;
+  background: var(--hud-line);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .queen27-identity-skeleton {
+    animation: queen27-identity-wait 1.4s ease-in-out infinite alternate;
+  }
+}
+@keyframes queen27-identity-wait {
+  from { opacity: 0.35; }
+  to { opacity: 0.9; }
+}
+.queen27-identity-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  border: 0;
+  white-space: nowrap;
 }
 .queen27-identity-avatar {
   width: 18px;
@@ -4194,6 +4274,14 @@ main:where(.queen27-page.is-shell) section {
   height: 140px;
   border: 1px solid rgba(120, 255, 190, 0.45);
   background: #05070a;
+}
+/* On a phone the command rail runs along the bottom (62 px plus the safe area,
+   inside 8 px of padding): the prompt sits above it, so the rail stays under
+   the finger (measured at 390x844: it covered the TRI command). */
+@media (max-width: 900px) {
+  .queen27-identity-bridge {
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
 }
 
 .queen27-page.is-shell .queen27-hud-vp-tools button[aria-pressed="true"] {
