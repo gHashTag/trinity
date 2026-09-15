@@ -185,7 +185,9 @@ const at = HUD_VIEWS.indexOf('tri')
 assert.ok(at >= 0, 'HUD_VIEWS includes tri')
 assert.equal(HUD_KEYS[at], 'r', 'TRI opens on r')
 assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tpr')
-// The physical key decides (KeyboardEvent.code), so r opens TRI on a Russian layout too.
+// The typed Latin letter or digit decides, as the rail's badge says; the
+// physical key (KeyboardEvent.code) only when the character is not one, so r
+// opens TRI on a Russian layout too.
 assert.equal(HUD_CODES.length, HUD_KEYS.length, 'every key has its physical code')
 assert.equal(hudKeyIndex({ code: 'KeyR', key: 'к' }), at, 'Russian layout: code KeyR, key к opens TRI')
 assert.equal(hudKeyIndex({ code: 'KeyR', key: 'r' }), at)
@@ -194,7 +196,12 @@ assert.equal(hudKeyIndex({ code: 'KeyP', key: 'з' }), HUD_VIEWS.indexOf('projec
 assert.equal(hudKeyIndex({ code: 'Digit1', key: '!' }), 0, 'a shifted digit is still its digit')
 assert.equal(hudKeyIndex({ code: 'Digit0', key: '0' }), 9)
 assert.equal(hudKeyIndex({ code: 'Numpad2', key: '2' }), 1, 'a keypad digit stays its digit')
-assert.equal(hudKeyIndex({ code: 'KeyO', key: 'r' }), -1, 'Dvorak: the key printed r on another physical key is not the shortcut')
+assert.equal(hudKeyIndex({ code: 'Numpad2', key: 'ArrowDown' }), 1, 'a keypad digit with Num Lock off stays its digit')
+// Dvorak and Colemak put the Latin letters on other keys: the letter typed is the shortcut.
+for (const [layout, key, code, view] of [
+  ['Dvorak', 'r', 'KeyO', 'tri'], ['Dvorak', 'p', 'KeyR', 'project'], ['Dvorak', 't', 'KeyK', 'tools'], ['Dvorak', 'y', 'KeyT', null],
+  ['Colemak', 'p', 'KeyR', 'project'], ['Colemak', 't', 'KeyG', 'tools'], ['Colemak', 'f', 'KeyT', null], ['Colemak', 'R', 'KeyS', 'tri'],
+]) assert.equal(hudKeyIndex({ code, key }), view ? HUD_VIEWS.indexOf(view) : -1, `${layout}: typing ${key} (physical ${code}) opens ${view ?? 'nothing'}`)
 assert.equal(hudKeyIndex({ code: 'KeyK', key: 'к' }), -1)
 assert.equal(hudKeyIndex({ code: '', key: 'r' }), at, 'no code (a scripted event): the character decides')
 assert.equal(hudKeyIndex({ code: '', key: 'к' }), -1)

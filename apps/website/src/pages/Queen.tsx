@@ -2385,7 +2385,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       }
       if (event.altKey || event.ctrlKey || event.metaKey) return;
       if (!keyShortcuts) return;
-      // The physical key (event.code): r is TRI on a Russian layout too.
+      // The typed letter, or the physical key for another script: r is TRI on a Russian layout too.
       const at = hudKeyIndex(event);
       if (at >= 0 && at < HUD_VIEWS.length) setView(HUD_VIEWS[at]);
     };

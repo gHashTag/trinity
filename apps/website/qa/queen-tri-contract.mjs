@@ -44,7 +44,8 @@
 //  17  a hung app document (never loads): from TRI's mount, the link out shows
 //      beside the spinner after about 3 s, the "did not answer" strip after about 8 s
 //  18  an app that posts {kind:'error', code} gets an error strip with the link
-//  19  the key r on a Russian layout (key 'к', code KeyR) opens TRI; turned off
+//  19  the key r on a Russian layout (key 'к', code KeyR) opens TRI, and on Dvorak
+//      the typed p (code KeyR) opens Project and r (code KeyO) TRI; turned off
 //      in the menu the digit keys do nothing, also after a reload
 //  20  inactive toggles (a layer off, shortcuts off) keep text contrast >= 4.5:1
 //  21  the open HUD menu: every item is the element under the pointer at
@@ -589,6 +590,11 @@ try {
     await blur()
     await key('к', 'KeyR', 82)
     const russian = !!(await viewIs('tri'))
+    // Dvorak: p is typed on the physical R key, r on the physical O key.
+    await key('p', 'KeyR', 80)
+    const dvorakP = !!(await viewIs('project'))
+    await key('r', 'KeyO', 82)
+    const dvorakR = !!(await viewIs('tri'))
     const toggleShortcuts = async () => {
       const menu = (await evaluate(HIT('.queen27-hud-menu-btn')))[0]
       await press(menu.x, menu.y)
@@ -617,8 +623,8 @@ try {
     await blur()
     await key('3', 'Digit3', 51)
     const onAgain = !!(await viewIs('kanban'))
-    record(19, 'key к with code KeyR opens TRI; shortcuts turned off in the menu leave the view alone, also after a reload; turned on, 3 opens kanban again',
-      russian && off.reachable && off.pressed === 'false' && offView === 'tri' && reloadedView === 'tri' && on.pressed === 'true' && onAgain, { russian, off, offView, reloadedView, on, onAgain })
+    record(19, 'key к with code KeyR opens TRI; on Dvorak the typed p (code KeyR) opens Project and r (code KeyO) TRI; shortcuts turned off in the menu leave the view alone, also after a reload; turned on, 3 opens kanban again',
+      russian && dvorakP && dvorakR && off.reachable && off.pressed === 'false' && offView === 'tri' && reloadedView === 'tri' && on.pressed === 'true' && onAgain, { russian, dvorakP, dvorakR, off, offView, reloadedView, on, onAgain })
   }
 
   if (runs(20)) {
