@@ -36,7 +36,7 @@ module Formats {
     pub const ExpMin : u16 = 0;
 
     // ========================================================================
-    // 2. GF16 -> f32 (decode)
+    // 2. GF16 → f32 (decode)
     // ========================================================================
     //
     // Converts GF16 encoding to IEEE 754 binary32 floating point.
@@ -61,7 +61,7 @@ module Formats {
     pub fn gf16_to_f32(x: u16) -> gf16;
 
     // ========================================================================
-    // 3. f32 -> GF16 (encode, round-to-nearest)
+    // 3. f32 → GF16 (encode, round-to-nearest)
     // ========================================================================
     //
     // Converts IEEE 754 binary32 floating point to GF16 encoding.

@@ -1,29 +1,29 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/math/pellis_precision_verify.t27
 // Arbitrary precision verification via GMP/MPFR reference
-// NUMERIC-VERIF-001 -- Pre-registered checkpoint for CODATA 2026
+// NUMERIC-VERIF-001 — Pre-registered checkpoint for CODATA 2026
 
 module PellisPrecision {
     use math::constants;
     use math::sacred_physics;
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 1. Golden Ratio at 100 Decimal Digits (pre-computed via GMP)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // phi = (1 + sqrt5) / 2 at 100 decimal places
+    // φ = (1 + √5) / 2 at 100 decimal places
     // Computed once via GMP/mpmath, sealed as constant
     // Reference: mpmath.mpf(1).sqrt(5) + 1) / 2 at 100 digits precision
     const PHI_100DIGITS : string = "1.61803398874989484820458683436563811772030917980576286213544862270526046281890244970720720418939113748475";
 
-    // phi^-^1 = phi - 1 at 100 decimal places
+    // φ⁻¹ = φ - 1 at 100 decimal places
     const PHI_INV_100DIGITS : string = "0.61803398874989484820458683436563811772030917980576286213544862270526046281890244970720720418939113748475";
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 2. Pellis Closed Form at 50 Decimal Digits (pre-registered checkpoint)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // Pellis = 360/phi^2 - 2/phi^3 + (3phi)^-^5
+    // Pellis = 360/φ² - 2/φ³ + (3φ)⁻⁵
     // Pre-registered for CODATA 2026/2030 comparison
     // Computed via GMP: 360/mp.mpf(phi**2) - 2/mp.mpf(phi**3) + (3*phi)**(-5)
     // 50 digits after the decimal point; refresh: python3 scripts/print_pellis_seal_decimal.py 55
@@ -32,12 +32,12 @@ module PellisPrecision {
     // CODATA 2022 reference: 137.035999166(15)
     const ALPHA_INV_CODATA_2022 : string = "137.035999166";
 
-    // f64-style fixed prefix (~=15 significant fractional digits; IEEE rounding)
+    // f64-style fixed prefix (≈15 significant fractional digits; IEEE rounding)
     const PELLIS_FIRST_15_DIGITS : string = "137.035999164765";
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 3. Verification Tests (string compare against pre-computed values)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     struct PellisPrecisionResult {
         phi_f64          : f64,
@@ -53,7 +53,7 @@ module PellisPrecision {
         const phi_sq = phi * phi;
         const phi_cubed = phi * phi * phi;
 
-        // Compute Pellis via f64 (NOT 50-digit accurate -- this test documents limit)
+        // Compute Pellis via f64 (NOT 50-digit accurate — this test documents limit)
         const pellis_f64 = 360.0 / phi_sq - 2.0 / phi_cubed + (3.0 * phi).pow(-5.0);
 
         // Count significant decimal digits of f64 representation
@@ -109,18 +109,18 @@ module PellisPrecision {
         return x.to_string();
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 4. Helper functions
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     fn len(s: string) -> i32 {
         // String length stub - implementation dependent
         return 100; // Placeholder
     }
 
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants for Pellis Precision Verification
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
     test pellis_pre_registered_checkpoint_matches
         given result = pellis_pre_registered_checkpoint()
@@ -161,9 +161,9 @@ module PellisPrecision {
         // This test ensures the formula is documented for reviewers
         then true  // Formula is documented in comments above
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 5. Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant pellis_50_digits_constant
         assert PELLIS_50DIGITS.starts_with("137.035999")
@@ -189,9 +189,9 @@ module PellisPrecision {
     invariant pellis_first_15_digits_extracted_correctly
         assert PELLIS_FIRST_15_DIGITS.starts_with("137.035999164")
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 6. Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench pellis_f64_computation
         measure: nanoseconds to compute pellis_pre_registered_checkpoint()

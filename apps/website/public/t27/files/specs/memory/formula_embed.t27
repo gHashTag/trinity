@@ -108,7 +108,7 @@ pub fn pad_features(features : Features) [EMBEDDING_DIM]Float {
     var i : usize = BASE_FEATURE_COUNT;
     while (i < EMBEDDING_DIM) : (i += 1) {
         const phi_pow = @as(Float, @floatFromInt(i - BASE_FEATURE_COUNT + 1));
-        result[i] = pow(PHI, phi_pow) / 10.0;
+        result[i] = @pow(PHI, phi_pow) / 10.0;
     }
 
     return result;
@@ -118,7 +118,7 @@ pub fn pad_features(features : Features) [EMBEDDING_DIM]Float {
 pub fn embed_formula(formula : Formula) Embedding {
     const features = extract_features(formula);
     var vector = pad_features(features);
-    _ = normalize_l2(&vector);
+    const normalized = normalize_l2(&vector);
 
     return Embedding {
         .vector = vector,
@@ -147,7 +147,7 @@ pub fn embed_query(text : []const u8) [EMBEDDING_DIM]Float {
 pub fn phi_distance(value : Float) Float {
     const log_phi = @log(value) / @log(PHI);
     const nearest = @round(log_phi);
-    const phi_power = pow(PHI, nearest);
+    const phi_power = @pow(PHI, nearest);
     return @abs(value - phi_power) / phi_power;
 }
 

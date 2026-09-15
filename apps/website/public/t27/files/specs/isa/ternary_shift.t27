@@ -3,14 +3,14 @@
 // Ternary Shift and Rotate Operations Specification
 // Ring 067 - Bitwise/Tritwise shift and rotate operations
 // Defines how ternary words are shifted and rotated
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module TernaryShift {
     use base::types;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 1. Shift Constants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Trit values
     const TRIT_NEG : i32 = -1;
@@ -25,13 +25,13 @@ module TernaryShift {
     const SHIFT_LEFT : u8 = 0;
     const SHIFT_RIGHT : u8 = 1;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 2. Shift Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // ternary_shift_left(word: []i32, shift: usize, len: usize) -> bool
+    // ternary_shift_left(word: []i32, shift: usize, len: usize) → bool
     // Shift word left by N trits, fill with zero
-    fn ternary_shift_left(word: []i32, shift: usize, len: usize) -> bool {
+    fn ternary_shift_left(word: []i32, shift: usize, len: usize) → bool {
         if (shift >= len) {
             return false;  // Would shift everything out
         }
@@ -52,9 +52,9 @@ module TernaryShift {
         return true;
     }
 
-    // ternary_shift_right(word: []i32, shift: usize, len: usize) -> bool
+    // ternary_shift_right(word: []i32, shift: usize, len: usize) → bool
     // Shift word right by N trits, fill with zero
-    fn ternary_shift_right(word: []i32, shift: usize, len: usize) -> bool {
+    fn ternary_shift_right(word: []i32, shift: usize, len: usize) → bool {
         if (shift >= len) {
             return false;  // Would shift everything out
         }
@@ -77,13 +77,13 @@ module TernaryShift {
         return true;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 3. Rotate Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // ternary_rotate_left(word: []i32, shift: usize, len: usize) -> void
+    // ternary_rotate_left(word: []i32, shift: usize, len: usize) → void
     // Rotate word left by N trits (circular shift)
-    fn ternary_rotate_left(word: []i32, shift: usize, len: usize) -> void {
+    fn ternary_rotate_left(word: []i32, shift: usize, len: usize) → void {
         if (len == 0) {
             return;
         }
@@ -112,9 +112,9 @@ module TernaryShift {
         }
     }
 
-    // ternary_rotate_right(word: []i32, shift: usize, len: usize) -> void
+    // ternary_rotate_right(word: []i32, shift: usize, len: usize) → void
     // Rotate word right by N trits (circular shift)
-    fn ternary_rotate_right(word: []i32, shift: usize, len: usize) -> void {
+    fn ternary_rotate_right(word: []i32, shift: usize, len: usize) → void {
         if (len == 0) {
             return;
         }
@@ -143,13 +143,13 @@ module TernaryShift {
         }
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 4. Arithmetic Shift (Signed Shift)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // ternary_arithmetic_shift_right(word: []i32, shift: usize, len: usize) -> bool
+    // ternary_arithmetic_shift_right(word: []i32, shift: usize, len: usize) → bool
     // Arithmetic shift right: preserves sign bit
-    fn ternary_arithmetic_shift_right(word: []i32, shift: usize, len: usize) -> bool {
+    fn ternary_arithmetic_shift_right(word: []i32, shift: usize, len: usize) → bool {
         if (len == 0) {
             return false;
         }
@@ -180,13 +180,13 @@ module TernaryShift {
         return true;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 5. Bit/Trit Extraction
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // extract_trits(word: []i32, start: usize, count: usize, result: []i32) -> bool
+    // extract_trits(word: []i32, start: usize, count: usize, result: []i32) → bool
     // Extract N trits starting from position S
-    fn extract_trits(word: []i32, start: usize, count: usize, result: []i32) -> bool {
+    fn extract_trits(word: []i32, start: usize, count: usize, result: []i32) → bool {
         if (start + count > word.len) {
             return false;
         }
@@ -200,9 +200,9 @@ module TernaryShift {
         return true;
     }
 
-    // insert_trits(word: []i32, start: usize, count: usize, values: []i32) -> bool
+    // insert_trits(word: []i32, start: usize, count: usize, values: []i32) → bool
     // Insert N trits starting from position S
-    fn insert_trits(word: []i32, start: usize, count: usize, values: []i32) -> bool {
+    fn insert_trits(word: []i32, start: usize, count: usize, values: []i32) → bool {
         if (start + count > word.len) {
             return false;
         }
@@ -216,9 +216,9 @@ module TernaryShift {
         return true;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 6. TDD - Tests
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test ternary_shift_left_basic
         var word : [5]i32 = [_]i32{TRIT_POS, TRIT_ZERO, TRIT_NEG, TRIT_POS, TRIT_ZERO};
@@ -290,9 +290,9 @@ module TernaryShift {
         assert word[2] == TRIT_NEG
         assert word[3] == TRIT_NEG
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 7. TDD - Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant shift_left_zero_fill
         // Left shift should fill with zeros
@@ -373,9 +373,9 @@ module TernaryShift {
         assert word_pos[4] == TRIT_POS
         assert word_neg[4] == TRIT_NEG
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 8. TDD - Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench shift_left_performance
         // Measure: cycles to perform 1000 left shifts

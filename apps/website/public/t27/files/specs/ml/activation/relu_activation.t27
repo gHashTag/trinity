@@ -27,25 +27,75 @@ module Relu;
 
     // forward(input: []const f32, output: []f32, config: ReLUConfig) → void
     fn forward(input: []const f32, output: []f32, config: ReLUConfig) -> void {
-        // TODO: Implement from .tri spec
+        // Values at or below ZERO take the negative branch, values above ZERO pass through
+        // For negative_slope = 0.0, this gives max(0, x) behavior
+        var i : usize = 0;
+        while (i < input.len) : (i += 1) {
+            if (input[i] > ZERO) {
+                output[i] = input[i];  // Positive branch: identity
+            } else {
+                output[i] = input[i] * config.negative_slope;  // Negative branch: scaled
+            }
+        }
     }
 
     // backward(grad_output: []const f32, input: []const f32, grad_input: []f32, config: ReLUConfig) → void
     fn backward(grad_output: []const f32, input: []const f32, grad_input: []f32, config: ReLUConfig) -> void {
-        // TODO: Implement from .tri spec
+        // The gradient gate is on the forward input, not grad_output - this makes gradients sparse
+        var i : usize = 0;
+        while (i < input.len) : (i += 1) {
+            if (input[i] > ZERO) {
+                grad_input[i] = grad_output[i];  // Positive branch: identity gradient
+            } else {
+                grad_input[i] = grad_output[i] * config.negative_slope;  // Negative branch: scaled gradient
+            }
+        }
     }
+
+    // Note: config.inplace is declared but currently unused by these functions.
+    // The buffers are separate parameters, so the aliasing case is not handled.
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // forward and backward have no bodies, so the rectifier itself cannot be
-    // exercised. The one value the module fixes is the threshold.
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
 
-    test zero_is_the_rectifier_threshold
-        // ReLU hinges at exactly 0, not near it -- the constant is the cut
-        given threshold = ZERO
-        then threshold == 0.0
+    test forward_positive_identity
+        given input = [1.0, 2.0, 3.0]
+        when output = forward(input, ReLUConfig{ .negative_slope = 0.0, .inplace = false })
+        then output[0] == 1.0
+        and output[1] == 2.0
+        and output[2] == 3.0
+
+    test forward_negative_scaling
+        given input = [-1.0, -2.0, -3.0]
+        when output = forward(input, ReLUConfig{ .negative_slope = 0.5, .inplace = false })
+        then output[0] == -0.5
+        and output[1] == -1.0
+        and output[2] == -1.5
+
+    test forward_zero_negative_slope
+        given input = [-1.0, 0.0, 1.0]
+        when output = forward(input, ReLUConfig{ .negative_slope = 0.0, .inplace = false })
+        then output[0] == 0.0
+        and output[1] == 0.0
+        and output[2] == 1.0
+
+    test backward_input_gate
+        given input = [-1.0, 0.0, 1.0]
+        when grad_input = backward([1.0, 1.0, 1.0], input, ReLUConfig{ .negative_slope = 0.5, .inplace = false })
+        then grad_input[0] == 0.5  // grad_output * negative_slope for input <= ZERO
+        and grad_input[1] == 0.5  // grad_output * negative_slope for input == ZERO
+        and grad_input[2] == 1.0  // grad_output for input > ZERO
+
+    test backward_basic_case
+        given input = default_input()
+        when result = backward(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

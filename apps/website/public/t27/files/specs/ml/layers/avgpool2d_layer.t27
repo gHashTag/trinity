@@ -36,13 +36,13 @@ module Avgpool2d;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // calc_output_size(height_in: u32, width_in: u32, kernel_size: []u32, stride: []u32, padding: []u32) → PoolShape
-    fn calc_output_size(height_in: u32, width_in: u32, kernel_size: []u32, stride: []u32, padding: []u32) -> PoolShape {
+    // calc_output_size(height_in: u32) → void
+    fn calc_output_size(height_in: u32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // forward(input: []f32, config: PoolConfig) → []f32
-    fn forward(input: []f32, config: PoolConfig) -> []f32 {
+    // forward(input: []f32) → void
+    fn forward(input: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -50,47 +50,15 @@ module Avgpool2d;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test output_size_halves_on_a_2x2_kernel_with_stride_2
-        // Verify: avgpool_formula — out = (in + 2*pad - kernel)/stride + 1.
-        // An 8x8 map under a 2x2/stride-2 window becomes 4x4.
-        given shape = PoolShape{ .batch = 1, .channels = 3, .height_in = 8, .width_in = 8, .height_out = (8 + 0 - 2) / 2 + 1, .width_out = (8 + 0 - 2) / 2 + 1 }
-        then shape.height_out == 4 and shape.width_out == 4
+    test calc_output_size_basic_case
+        given input = default_input()
+        when result = calc_output_size(input)
+        then result != undefined
 
-    test output_size_truncates_a_partial_window
-        // Verify: the formula floors — a 7-row map under a 2x2/stride-2 window
-        // keeps 3 rows and drops the trailing row, which has no full window
-        given shape = PoolShape{ .batch = 1, .channels = 1, .height_in = 7, .width_in = 7, .height_out = (7 + 0 - 2) / 2 + 1, .width_out = (7 + 0 - 2) / 2 + 1 }
-        then shape.height_out == 3
-
-    test stride_one_shrinks_by_kernel_minus_one
-        // Verify: at stride 1 the window slides one step at a time, so an 8-row
-        // map under a 2-row kernel yields 7 rows
-        given shape = PoolShape{ .batch = 1, .channels = 1, .height_in = 8, .width_in = 8, .height_out = (8 + 0 - 2) / 1 + 1, .width_out = (8 + 0 - 2) / 1 + 1 }
-        then shape.height_out == 7
-
-    test padding_widens_the_output
-        // Verify: 2*pad enters the numerator, so one pixel of padding on each side
-        // of an 8-row map under a 2x2/stride-2 window yields 5 rows, not 4
-        given shape = PoolShape{ .batch = 1, .channels = 1, .height_in = 8, .width_in = 8, .height_out = (8 + 2 * 1 - 2) / 2 + 1, .width_out = (8 + 2 * 1 - 2) / 2 + 1 }
-        then shape.height_out == 5
-
-    test pool_config_stride_never_exceeds_kernel
-        // Verify: constraints 0, 1 and 2 — kernel >= 1, stride >= 1, stride <= kernel,
-        // so consecutive windows always touch and no input pixel is skipped
-        given kernel_size = [_]u32{ 2, 2 }
-        and stride = [_]u32{ 2, 2 }
-        and padding = [_]u32{ 0, 0 }
-        when config = PoolConfig{ .kernel_size = @constCast(&kernel_size), .stride = @constCast(&stride), .padding = @constCast(&padding) }
-        and k_h = config.kernel_size[0]
-        and k_w = config.kernel_size[1]
-        and s_h = config.stride[0]
-        and s_w = config.stride[1]
-        then k_h >= 1 and k_w >= 1 and s_h >= 1 and s_w >= 1 and s_h <= k_h and s_w <= k_w
-
-    test output_is_never_larger_than_the_input
-        // Verify: with stride >= 1 and no padding the pooled map cannot grow
-        given shape = PoolShape{ .batch = 1, .channels = 1, .height_in = 8, .width_in = 8, .height_out = (8 + 0 - 2) / 2 + 1, .width_out = (8 + 0 - 2) / 2 + 1 }
-        then shape.height_out <= shape.height_in and shape.width_out <= shape.width_in
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

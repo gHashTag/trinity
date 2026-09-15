@@ -196,29 +196,29 @@ module TriToT27Converter;
     // ═══════════════════════════════════════════════════════════
 
     test parse_tri_file_parses_name
-        given content = "name: test_algo\nversion: \"1.0\""
+        given content = "name: test_algo\\nversion: \\"1.0\\""
         when spec = parse_tri_file(content)
         then spec.name == "test_algo"
 
     test parse_tri_file_parses_version
-        given content = "name: test\nversion: \"1.2.3\""
+        given content = "name: test\\nversion: \\"1.2.3\\""
         when spec = parse_tri_file(content)
         then spec.version == "1.2.3"
 
     test parse_tri_file_parses_types
-        given content = "name: test\ntypes:\n  - name: MyType\n    fields:\n      - name: field1\n        type: u32"
+        given content = "name: test\\ntypes:\\n  - name: MyType\\n    fields:\\n      - name: field1\\n        type: u32"
         when spec = parse_tri_file(content)
         then spec.types.len == 1
         and   spec.types[0].name == "MyType"
 
     test parse_tri_file_parses_constants
-        given content = "name: test\nconstants:\n  ZERO: 0.0"
+        given content = "name: test\\nconstants:\\n  ZERO: 0.0"
         when spec = parse_tri_file(content)
         then spec.constants.len == 1
         and   spec.constants[0].name == "ZERO"
 
     test parse_tri_file_parses_functions
-        given content = "name: test\nfunctions:\n  - name: forward\n    params: [input: []f32]\n    return: []f32"
+        given content = "name: test\\nfunctions:\\n  - name: forward\\n    params: [input: []f32]\\n    return: []f32"
         when spec = parse_tri_file(content)
         then spec.functions.len == 1
         and   spec.functions[0].name == "forward"
@@ -249,7 +249,16 @@ module TriToT27Converter;
         then result == "DenseLayer"
 
     test generate_t27_creates_valid_structure
-        given spec = TriSpec{ .name = "TestModule", .version = "1.0.0", .description = "Test module", .types = [], .constants = [], .functions = [], .behaviors = [], .constraints = [] }
+        given spec = TriSpec{
+            .name = "TestModule",
+            .version = "1.0.0",
+            .description = "Test module",
+            .types = [],
+            .constants = [],
+            .functions = [],
+            .behaviors = [],
+            .constraints = [],
+        }
         when content = generate_t27(spec)
         then contains_module_declaration(content)
         and   contains_spdx_header(content)

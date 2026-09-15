@@ -2,15 +2,15 @@
 // t27/specs/fpga/spi.t27
 // SPI Master Specification for FPGA
 // Mode 0: CPOL=0, CPHA=0 (SCK idle low, sample on rising edge)
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module SPI_Master;
     // Import base types
     use base::types;
 
-    // ===============================================================
+    // ═══════════════════════════════════════════════════════════════
     // 1. SPI Configuration
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // System clock
     const CLK_FREQ : u32 = 50_000_000;    // 50 MHz
@@ -36,9 +36,9 @@ module SPI_Master;
     const PRESCALER_128 : u8 = 6;
     const PRESCALER_256 : u8 = 7;
 
-    // ===============================================================
+    // ═══════════════════════════════════════════════════════════════
     // 2. SPI State Machine
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // SPI states
     const SPI_IDLE : u8 = 0;
@@ -51,9 +51,9 @@ module SPI_Master;
     const RX_BIT : u8 = 1;
     const WAIT_EDGE : u8 = 2;
 
-    // ===============================================================
+    // ═══════════════════════════════════════════════════════════════
     // 3. SPI Master Unit
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // SPI master state
     struct SPI_Master_Unit {
@@ -98,7 +98,7 @@ module SPI_Master;
         .cs_deassert_cnt = 0,
     };
 
-    // spi_set_prescaler(psc: u8) -> bool
+    // spi_set_prescaler(psc: u8) → bool
     // Set SPI clock prescaler
     fn spi_set_prescaler(psc: u8) -> bool {
         if (psc > PRESCALER_256) {
@@ -108,29 +108,30 @@ module SPI_Master;
         return true;
     }
 
-    // spi_get_prescaler_div() -> u32
+    // spi_get_prescaler_div() → u32
     // Get actual prescaler divider value
     fn spi_get_prescaler_div() -> u32 {
-        match spi.prescaler {
-            PRESCALER_2 => 2u32,
-            PRESCALER_4 => 4u32,
-            PRESCALER_8 => 8u32,
-            PRESCALER_16 => 16u32,
-            PRESCALER_32 => 32u32,
-            PRESCALER_64 => 64u32,
-            PRESCALER_128 => 128u32,
-            PRESCALER_256 => 256u32,
-            _ => 16u32,
-        }
+        // Was a `match` expression, which t27 has never parsed -- the whole
+        // dispatch was silently DROPPED before the #1941 hardening (the fn
+        // was an unimplemented stub). If-chain now.
+        if (spi.prescaler == PRESCALER_2) { return 2; }
+        if (spi.prescaler == PRESCALER_4) { return 4; }
+        if (spi.prescaler == PRESCALER_8) { return 8; }
+        if (spi.prescaler == PRESCALER_16) { return 16; }
+        if (spi.prescaler == PRESCALER_32) { return 32; }
+        if (spi.prescaler == PRESCALER_64) { return 64; }
+        if (spi.prescaler == PRESCALER_128) { return 128; }
+        if (spi.prescaler == PRESCALER_256) { return 256; }
+        return 16;
     }
 
-    // spi_get_sck_freq() -> u32
+    // spi_get_sck_freq() → u32
     // Get SPI SCK frequency
     fn spi_get_sck_freq() -> u32 {
         return CLK_FREQ / spi_get_prescaler_div();
     }
 
-    // spi_set_data_width(width: u8) -> bool
+    // spi_set_data_width(width: u8) → bool
     // Set data width (1-32 bits)
     fn spi_set_data_width(width: u8) -> bool {
         if (width == 0 || width > MAX_DATA_WIDTH) {
@@ -140,13 +141,13 @@ module SPI_Master;
         return true;
     }
 
-    // spi_is_busy() -> bool
+    // spi_is_busy() → bool
     // Check if SPI is busy
     fn spi_is_busy() -> bool {
         return spi.busy;
     }
 
-    // spi_transfer(data: u32) -> bool
+    // spi_transfer(data: u32) → bool
     // Start SPI transfer
     fn spi_transfer(data: u32) -> bool {
         if (spi.busy) {
@@ -161,31 +162,30 @@ module SPI_Master;
         return true;
     }
 
-    // spi_read_rx() -> u32
+    // spi_read_rx() → u32
     // Read received data (lower bits only)
     fn spi_read_rx() -> u32 {
         return spi.rx_data & ((1u32 << spi.data_width) - 1);
     }
 
-    // spi_get_cs() -> bool
+    // spi_get_cs() → bool
     // Get CS line state
     fn spi_get_cs() -> bool {
         return spi.cs_asserted;
     }
 
-    // spi_get_sck() -> bool
+    // spi_get_sck() → bool
     // Get SCK line state (Mode 0: idle low)
     fn spi_get_sck() -> bool {
         // In Mode 0: SCK is low in idle
         // Alternates during transfer
-        match spi.tx_state {
-            TX_BIT => false,   // SCK low (setup)
-            RX_BIT => true,    // SCK high (sample)
-            _ => SPI_CPOL == 0,
-        }
+        // Was a `match` expression (never parsed; silently dropped pre-#1941).
+        if (spi.tx_state == TX_BIT) { return false; }  // SCK low (setup)
+        if (spi.tx_state == RX_BIT) { return true; }   // SCK high (sample)
+        return SPI_CPOL == 0;
     }
 
-    // spi_get_mosi() -> bool
+    // spi_get_mosi() → bool
     // Get MOSI line state
     fn spi_get_mosi() -> bool {
         if (!spi.busy || spi.state != SPI_TRANSFER) {
@@ -194,78 +194,70 @@ module SPI_Master;
         return (spi.tx_data >> (spi.data_width - spi.bit_count - 1)) & 1 == 1;
     }
 
-    // spi_tick() -> void
+    // spi_tick() → void
     // Process one system clock cycle
     fn spi_tick() -> void {
-        match spi.state {
-            SPI_IDLE => {
-                // Do nothing, waiting for transfer
+        // Was a `match` statement (never parsed; the whole FSM tick was
+        // silently dropped pre-#1941). If/else-if chain now.
+        if (spi.state == SPI_CS_ASSERT) {
+            spi.cs_assert_cnt = spi.cs_assert_cnt + 1;
+            if (spi.cs_assert_cnt >= (CS_ASSERT_DELAY * CLK_FREQ / 1_000_000_000)) {
+                spi.cs_assert_cnt = 0;
+                spi.cs_asserted = true;
+                spi.state = SPI_TRANSFER;
+                spi.tx_state = TX_BIT;
             }
-            SPI_CS_ASSERT => {
-                spi.cs_assert_cnt = spi.cs_assert_cnt + 1;
-                if (spi.cs_assert_cnt >= (CS_ASSERT_DELAY * CLK_FREQ / 1_000_000_000)) {
-                    spi.cs_assert_cnt = 0;
-                    spi.cs_asserted = true;
-                    spi.state = SPI_TRANSFER;
-                    spi.tx_state = TX_BIT;
-                }
-            }
-            SPI_TRANSFER => {
-                spi_transfer_bit();
-            }
-            SPI_CS_DEASSERT => {
-                spi.cs_deassert_cnt = spi.cs_deassert_cnt + 1;
-                if (spi.cs_deassert_cnt >= (CS_DEASSERT_DELAY * CLK_FREQ / 1_000_000_000)) {
-                    spi.cs_deassert_cnt = 0;
-                    spi.cs_asserted = false;
-                    spi.state = SPI_IDLE;
-                    spi.busy = false;
-                }
+        } else if (spi.state == SPI_TRANSFER) {
+            spi_transfer_bit();
+        } else if (spi.state == SPI_CS_DEASSERT) {
+            spi.cs_deassert_cnt = spi.cs_deassert_cnt + 1;
+            if (spi.cs_deassert_cnt >= (CS_DEASSERT_DELAY * CLK_FREQ / 1_000_000_000)) {
+                spi.cs_deassert_cnt = 0;
+                spi.cs_asserted = false;
+                spi.state = SPI_IDLE;
+                spi.busy = false;
             }
         }
     }
 
-    // spi_transfer_bit() -> void
+    // spi_transfer_bit() → void
     // Transfer single bit
     fn spi_transfer_bit() -> void {
         const prescaler_div = spi_get_prescaler_div();
         spi.bit_counter = spi.bit_counter + 1;
 
-        match spi.tx_state {
-            TX_BIT => {
-                if (spi.bit_counter >= prescaler_div / 2) {
-                    spi.bit_counter = 0;
-                    spi.tx_state = RX_BIT;
-                }
+        // Was a `match` statement (silently dropped pre-#1941).
+        if (spi.tx_state == TX_BIT) {
+            if (spi.bit_counter >= prescaler_div / 2) {
+                spi.bit_counter = 0;
+                spi.tx_state = RX_BIT;
             }
-            RX_BIT => {
-                if (spi.bit_counter >= prescaler_div / 2) {
-                    // Sample MISO -- in spec-level simulation this is a placeholder;
-                    // Verilog emission reads the actual MISO input pin
-                    const miso_bit = false;
-                    spi.rx_data = (spi.rx_data << 1) | (if miso_bit { 1u32 } else { 0u32 });
-                    spi.bit_count = spi.bit_count + 1;
-                    spi.bit_counter = 0;
+        } else if (spi.tx_state == RX_BIT) {
+            if (spi.bit_counter >= prescaler_div / 2) {
+                // Sample MISO 424 in spec-level simulation this is a placeholder;
+                // Verilog emission reads the actual MISO input pin
+                const miso_bit = false;
+                spi.rx_data = (spi.rx_data << 1) | (if (miso_bit) { 1 } else { 0 });
+                spi.bit_count = spi.bit_count + 1;
+                spi.bit_counter = 0;
 
-                    if (spi.bit_count >= spi.data_width) {
-                        spi.tx_state = WAIT_EDGE;
-                    } else {
-                        spi.tx_state = TX_BIT;
-                    }
+                if (spi.bit_count >= spi.data_width) {
+                    spi.tx_state = WAIT_EDGE;
+                } else {
+                    spi.tx_state = TX_BIT;
                 }
             }
-            WAIT_EDGE => {
-                if (spi.bit_counter >= prescaler_div / 2) {
-                    spi.bit_counter = 0;
-                    spi.state = SPI_CS_DEASSERT;
-                }
+        } else if (spi.tx_state == WAIT_EDGE) {
+            if (spi.bit_counter >= prescaler_div / 2) {
+                spi.bit_counter = 0;
+                spi.state = SPI_CS_DEASSERT;
             }
         }
     }
 
-    // ===========================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants for SPI_Master
-    // ===========================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
 
     test spi_mode_0_configuration
         given cpol = SPI_CPOL

@@ -3,14 +3,14 @@
 // Ternary Memory Specification
 // Ring 089 - Memory operations for ternary architecture
 // Load/store operations with ternary address and data
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module ISAMemoryOps {
     use base::types;
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 1. Memory Constants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Trit values for memory operations
     const TRIT_NEG : i32 = -1;
@@ -31,9 +31,9 @@ module ISAMemoryOps {
     const PERM_WRITE : u8 = 0x2;           // Write permission
     const PERM_EXEC : u8 = 0x4;            // Execute permission
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 2. Memory Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // mem_load(memory: []TernaryWord, addr: u32) -> TernaryWord
     // Load word from memory at address
@@ -84,9 +84,9 @@ module ISAMemoryOps {
         return mem_store(memory, addr, value);
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 3. Block Memory Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // mem_load_block(memory: []TernaryWord, base_addr: u32, count: usize, dest: []TernaryWord) -> bool
     // Load block of memory (count words) from base_addr
@@ -134,9 +134,9 @@ module ISAMemoryOps {
         return true;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 4. Stack Operations (Memory-based)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Stack grows downward from high memory
     const STACK_BASE : u32 = MEM_SIZE - 1;
@@ -169,9 +169,9 @@ module ISAMemoryOps {
         return value;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 5. Address Translation (Basic)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // virt_to_phys(virt_addr: u32, base: u32, limit: u32) -> u32
     // Simple virtual-to-physical address translation
@@ -193,9 +193,9 @@ module ISAMemoryOps {
         return phys_addr;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 6. Memory Protection
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // mem_check_perm(addr: u32, perm: u8, protection_table: []u8) -> bool
     // Check if address has required permission
@@ -218,9 +218,9 @@ module ISAMemoryOps {
         return true;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 7. Memory Copy Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // mem_copy(dst: []TernaryWord, dst_addr: u32, src: []TernaryWord, src_addr: u32, count: usize) -> bool
     // Copy count words from source to destination
@@ -267,9 +267,9 @@ module ISAMemoryOps {
         return true;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 8. Word Operations
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // word_extract_trit(word: TernaryWord, trit_index: usize) -> i32
     // Extract single trit from word (0 = least significant)
@@ -310,9 +310,9 @@ module ISAMemoryOps {
         return result;
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test mem_load_valid_address
         given memory = []TernaryWord{TernaryWord{.raw = 0}, TernaryWord{.raw = 0x123}}

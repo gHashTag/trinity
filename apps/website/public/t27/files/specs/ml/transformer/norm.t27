@@ -201,14 +201,14 @@ module LayerNorm;
         and   state = init(config)
         and   input = [1.0, 2.0, 3.0, 4.0]
         when result = forward(state, input)
-        then approximately_equal_within(compute_variance(result.normalized), 1.0, 1e-4)
+        then approximately_equal(compute_variance(result.normalized), 1.0, 1e-4)
 
     test forward_centers_to_zero_mean
         given config = NormConfig{.hidden_size = 4, .eps = 1e-5, .elementwise_affine = false, .use_phi_init = false, .strand_mode = false}
         and   state = init(config)
         and   input = [1.0, 2.0, 3.0, 4.0]
         when result = forward(state, input)
-        then approximately_equal_within(compute_mean(result.normalized), 0.0, 1e-6)
+        then approximately_equal(compute_mean(result.normalized), 0.0, 1e-6)
 
     test forward_with_affine_applies_gamma_and_beta
         given config = NormConfig{.hidden_size = 2, .eps = 1e-5, .elementwise_affine = true, .use_phi_init = false, .strand_mode = false}
@@ -361,13 +361,13 @@ module LayerNorm;
         and   strands[2].end == 192
 
     invariant phi_constraint_squared
-        then approximately_equal_within(PHI * PHI, PHI + 1.0, 1e-9)
+        then approximately_equal(PHI * PHI, PHI + 1.0, 1e-9)
 
     invariant phi_constraint_reciprocal_sum
-        then approximately_equal_within(PHI * PHI + 1.0 / (PHI * PHI), 3.0, 1e-9)
+        then approximately_equal(PHI * PHI + 1.0 / (PHI * PHI), 3.0, 1e-9)
 
     invariant inv_phi_squared_is_correct
-        then approximately_equal_within(INV_PHI_SQUARED, 1.0 / (PHI * PHI), 1e-9)
+        then approximately_equal(INV_PHI_SQUARED, 1.0 / (PHI * PHI), 1e-9)
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Benchmarks

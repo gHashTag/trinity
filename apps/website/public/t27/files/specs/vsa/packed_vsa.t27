@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Module: Packed VSA Operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module PackedVsa {
     // ========================================================================
@@ -39,7 +39,7 @@ module PackedVsa {
 
     // BundleLookupTable: Precomputed bundle operation results
     // BUNDLE_LUT[a][b] = packed(bundle(unpack(a), unpack(b)))
-    // Uses element-wise sum with threshold (+/-1 normalization)
+    // Uses element-wise sum with threshold (±1 normalization)
     pub const BundleLookupTable : [59049]u8;
 
     // DotLookupTable: Precomputed dot product results
@@ -71,7 +71,7 @@ module PackedVsa {
 
     // packedUnbind(a: &PackedBigInt, b: &PackedBigInt) -> PackedBigInt
     // Unbind operation using bind (since b^2 = 1 for trits)
-    // Unbind: packedBind(a, b) where b in {-1, 1}
+    // Unbind: packedBind(a, b) where b ∈ {-1, 1}
     // Complexity: O(n/5) where n = trit length
     pub fn packedUnbind(a: &PackedBigInt, b: &PackedBigInt) -> PackedBigInt;
 
@@ -150,7 +150,7 @@ module PackedVsa {
         // Verify: Self-similarity equals 1.0
         given vec = randomPackedVector(100, 999)
         and sim = packedCosineSimilarity(&vec, &vec)
-        then abs(sim - 1.0) < 0.001
+        then sim ≈ 1.0
 
     test packed_cosine_orthogonal_is_zero
         // Verify: Orthogonal vectors have similarity ~0
@@ -198,7 +198,7 @@ module PackedVsa {
         assert true;
 
     invariant packed_unbind_inverts_bind
-        // Verify: unbind(bind(a, b), b) ~= a (for valid trits)
+        // Verify: unbind(bind(a, b), b) ≈ a (for valid trits)
         // Unbind is the inverse operation of bind
         assert true;
 
@@ -213,7 +213,7 @@ module PackedVsa {
         assert true;
 
     invariant conversion_roundtrip
-        // Verify: fromHybrid(toHybrid(x)) ~= x
+        // Verify: fromHybrid(toHybrid(x)) ≈ x
         // Conversion must preserve data within tolerance
         assert true;
 

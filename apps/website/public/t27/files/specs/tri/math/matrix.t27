@@ -12,42 +12,42 @@ module TriMatrix;
 
     pub const Matrix = struct {
         data : []f64,
-        rows : usize,
-        cols : usize,
-        allocator : std.mem.Allocator,
+        rows : "usize",
+        cols : "usize",
+        allocator : "std.mem.Allocator",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(allocator: std.mem.Allocator, rows: usize, cols: usize) → Matrix
-    fn init(allocator: std.mem.Allocator, rows: usize, cols: usize) -> Matrix {
+    // init(allocator: std.mem.Allocator) → void
+    fn init(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // get(m: *Matrix, row: usize, col: usize) → f64
-    fn get(m: *Matrix, row: usize, col: usize) -> f64 {
+    // get(m: *Matrix) → void
+    fn get(m: *Matrix) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // set(m: *Matrix, row: usize, col: usize, value: f64) → void
-    fn set(m: *Matrix, row: usize, col: usize, value: f64) -> void {
+    // set(m: *Matrix) → void
+    fn set(m: *Matrix) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // multiply(a: *Matrix, b: *Matrix, allocator: std.mem.Allocator) → Matrix
-    fn multiply(a: *Matrix, b: *Matrix, allocator: std.mem.Allocator) -> Matrix {
+    // multiply(a: *Matrix) → void
+    fn multiply(a: *Matrix) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // transpose(m: *Matrix, allocator: std.mem.Allocator) → Matrix
-    fn transpose(m: *Matrix, allocator: std.mem.Allocator) -> Matrix {
+    // transpose(m: *Matrix) → void
+    fn transpose(m: *Matrix) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // identity(allocator: std.mem.Allocator, size: usize) → Matrix
-    fn identity(allocator: std.mem.Allocator, size: usize) -> Matrix {
+    // identity(allocator: std.mem.Allocator) → void
+    fn identity(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -60,36 +60,38 @@ module TriMatrix;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // Every function above is still `TODO: Implement`, so each one compiles
-    // to `@panic("not yet implemented")`: calling one aborts the test binary.
-    // What this module does state is the layout of Matrix and the signature
-    // of each operation, and that is what these tests hold to.
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
 
-    test matrix_is_a_flat_f64_buffer_with_usize_dimensions
-        given cells = @FieldType(Matrix, "data")
-        then cells == []f64
-        and @FieldType(Matrix, "rows") == usize
-        and @FieldType(Matrix, "cols") == usize
+    test get_basic_case
+        given input = default_input()
+        when result = get(input)
+        then result != undefined
 
-    test matrix_carries_its_own_allocator
-        given a = @FieldType(Matrix, "allocator")
-        then a == std.mem.Allocator
+    test set_basic_case
+        given input = default_input()
+        when result = set(input)
+        then result != undefined
 
-    test init_and_identity_take_an_allocator_and_return_nothing
-        given f = init
-        then @TypeOf(f) == fn (std.mem.Allocator) void
-        and @TypeOf(identity) == fn (std.mem.Allocator) void
+    test multiply_basic_case
+        given input = default_input()
+        when result = multiply(input)
+        then result != undefined
 
-    test get_set_transpose_and_deinit_take_one_matrix_pointer
-        given f = get
-        then @TypeOf(f) == fn (*Matrix) void
-        and @TypeOf(set) == fn (*Matrix) void
-        and @TypeOf(transpose) == fn (*Matrix) void
-        and @TypeOf(deinit) == fn (*Matrix) void
+    test transpose_basic_case
+        given input = default_input()
+        when result = transpose(input)
+        then result != undefined
 
-    // multiply is declared with ONE operand. A product needs two, so this
-    // records the signature as it stands rather than the one it wants.
-    test multiply_is_declared_with_a_single_operand
-        given f = multiply
-        then @TypeOf(f) == fn (*Matrix) void
+    test identity_basic_case
+        given input = default_input()
+        when result = identity(input)
+        then result != undefined
+
+    test deinit_basic_case
+        given input = default_input()
+        when result = deinit(input)
+        then result != undefined
 

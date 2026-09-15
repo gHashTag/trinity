@@ -9,8 +9,8 @@ module VM {
     // ========================================================================
     use base::types;
     use numeric::gf16;
-    use vsa::vsa_core;
-    use ternary::hybrid_arithmetic;
+    use vsa::core;
+    use hybrid_arithmetic;
 
     // ========================================================================
     // 1. VSA Opcodes
@@ -193,44 +193,44 @@ module VM {
             .v_bind => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
-                const binded = vsa_core::bind(src1_vec, src2_vec);
+                const binded = core::bind(src1_vec, src2_vec);
                 result = vm_set_vreg(result, instruction.dst, binded);
             },
             .v_unbind => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
-                const unbound = vsa_core::unbind(src1_vec, src2_vec);
+                const unbound = core::unbind(src1_vec, src2_vec);
                 result = vm_set_vreg(result, instruction.dst, unbound);
             },
             .v_bundle2 => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
-                const bundled = vsa_core::bundle2(src1_vec, src2_vec);
+                const bundled = core::bundle2(src1_vec, src2_vec);
                 result = vm_set_vreg(result, instruction.dst, bundled);
             },
             .v_bundle3 => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
                 const src3_vec = vm_get_vreg(result, instruction.dst);
-                const bundled = vsa_core::bundle3(src1_vec, src2_vec, src3_vec);
+                const bundled = core::bundle3(src1_vec, src2_vec, src3_vec);
                 result = vm_set_vreg(result, instruction.dst, bundled);
             },
             .v_dot => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
-                const result_scalar = vsa_core::dot_product(src1_vec, src2_vec);
+                const result_scalar = core::dot_product(src1_vec, src2_vec);
                 result.registers.s0 = result_scalar;
             },
             .v_cosine => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
-                const result_scalar = vsa_core::cosine_similarity(src1_vec, src2_vec);
+                const result_scalar = core::cosine_similarity(src1_vec, src2_vec);
                 result.registers.f0 = result_scalar;
             },
             .v_hamming => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
-                const result_scalar = vsa_core::hamming_distance(src1_vec, src2_vec);
+                const result_scalar = core::hamming_distance(src1_vec, src2_vec);
                 result.registers.s1 = @as(i64, @intCast(result_scalar));
             },
             .v_add => {
@@ -247,7 +247,7 @@ module VM {
             v_mul => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
-                const multiplied = vsa_core::mul(src1_vec, src2_vec);
+                const multiplied = core::mul(src1_vec, src2_vec);
                 result = vm_set_vreg(result, instruction.dst, multiplied);
             },
             .v_mov => {
@@ -267,19 +267,19 @@ module VM {
             .v_cmp => {
                 const src1_vec = vm_get_vreg(result, instruction.src1);
                 const src2_vec = vm_get_vreg(result, instruction.src2);
-                const distance = vsa_core::hamming_distance(src1_vec, src2_vec);
+                const distance = core::hamming_distance(src1_vec, src2_vec);
                 result.registers.cc_zero = (distance == 0);
                 // Update neg/pos based on comparison
                 // Implementation-specific
             },
             .v_permute => {
                 const src_vec = vm_get_vreg(result, instruction.src1);
-                const permuted = vsa_core::permute(src_vec, instruction.imm);
+                const permuted = core::permute(src_vec, instruction.imm);
                 result = vm_set_vreg(result, instruction.dst, permuted);
             },
             .v_ipermute => {
                 const src_vec = vm_get_vreg(result, instruction.src1);
-                const permuted = vsa_core::inverse_permute(src_vec, instruction.imm);
+                const permuted = core::inverse_permute(src_vec, instruction.imm);
                 result = vm_set_vreg(result, instruction.dst, permuted);
             },
             .nop => {

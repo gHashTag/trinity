@@ -24,38 +24,38 @@ module TriBytes;
         // TODO: Implement from .tri spec
     }
 
-    // from_slice(slice: []const u8) → Bytes
-    fn from_slice(slice: []const u8) -> Bytes {
+    // from_slice(slice: []const u8) → void
+    fn from_slice(slice: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // clone(bytes: Bytes, allocator: std.mem.Allocator) → !Bytes
-    fn clone(bytes: Bytes, allocator: std.mem.Allocator) -> !Bytes {
+    // clone(bytes: Bytes) → void
+    fn clone(bytes: Bytes) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // equals(a: Bytes, b: Bytes) → bool
-    fn equals(a: Bytes, b: Bytes) -> bool {
+    // equals(a: Bytes) → void
+    fn equals(a: Bytes) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // slice(bytes: Bytes, start: usize, end: usize) → Bytes
-    fn slice(bytes: Bytes, start: usize, end: usize) -> Bytes {
+    // slice(bytes: Bytes) → void
+    fn slice(bytes: Bytes) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // concat(a: Bytes, b: Bytes, allocator: std.mem.Allocator) → !Bytes
-    fn concat(a: Bytes, b: Bytes, allocator: std.mem.Allocator) -> !Bytes {
+    // concat(a: Bytes) → void
+    fn concat(a: Bytes) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // index_of(bytes: Bytes, pattern: []const u8) → ?usize
-    fn index_of(bytes: Bytes, pattern: []const u8) -> ?usize {
+    // index_of(bytes: Bytes) → void
+    fn index_of(bytes: Bytes) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // split(bytes: Bytes, delimiter: u8, allocator: std.mem.Allocator) → ![]Bytes
-    fn split(bytes: Bytes, delimiter: u8, allocator: std.mem.Allocator) -> ![]Bytes {
+    // split(bytes: Bytes) → void
+    fn split(bytes: Bytes) -> void {
         // TODO: Implement from .tri spec
     }
 

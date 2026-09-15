@@ -1,6 +1,6 @@
-// parser.t27 -- Parser for TRI-27 Assembly
+// parser.t27 — Parser for TRI-27 Assembly
 // Builds AST from tokens produced by lexer
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module parser {
     using lexer: @import("lexer.t27");
@@ -554,9 +554,9 @@ module parser {
         return null;
     }
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: High-level TDD parsing (spec-style)
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     // Parse spec declaration
     pub fn Parser.parse_spec_decl() SpecDecl {
@@ -780,9 +780,9 @@ module parser {
         }
     }
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Assembly-style TDD parsing (.test, .invariant, .bench)
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     // Parse test section (assembly-style)
     // Format: .test followed by comment-style test definitions
@@ -1035,9 +1035,9 @@ module parser {
         };
     }
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Language Policy: No Cyrillic in Source Files (SOUL.md Law #1)
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     // Validate source file contains no Cyrillic characters
     pub fn Parser.validate_no_cyrillic(source: []const u8, source_file: []const u8) bool {
@@ -1047,7 +1047,7 @@ module parser {
             return true;
         }
 
-        // Scan for Cyrillic characters (U+0400-U+04FF)
+        // Scan for Cyrillic characters (U+0400–U+04FF)
         for (source, 0..) |c, i| {
             // Check for Cyrillic range
             // U+0400 (1040) to U+04FF (1279)
@@ -1055,7 +1055,7 @@ module parser {
                 if (i + 1 < source.len) {
                     const next_c = source[i + 1];
                     const codepoint = (@as(u32, c) << 8) | @as(u32, next_c);
-                    // Cyrillic block: U+0400-U+04FF
+                    // Cyrillic block: U+0400–U+04FF
                     if (codepoint >= 0x0400 and codepoint <= 0x04FF) {
                         self.context.add_error(
                             "Language policy violation: source file contains Cyrillic characters (U+0400-U+04FF). Source files (.t27, .tri, .zig, .c, .v) must be ASCII-only. See SOUL.md Law #1.",
@@ -1095,9 +1095,9 @@ module parser {
         return column;
     }
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Alternative section parsing implementations
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     // Parse field description after field keyword (e.g., "Verify: description text")
     pub fn Parser.parse_field_description() []const u8 {

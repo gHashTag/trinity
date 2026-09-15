@@ -471,6 +471,7 @@ bench "lsp_client_capabilities_default_latency" {
     for (0..1000) |_| {
         result = client_capabilities_default();
     }
+    _ = result;
 }
 
 bench "lsp_init_options_create_latency" {
@@ -481,6 +482,7 @@ bench "lsp_init_options_create_latency" {
     for (0..1000) |_| {
         result = init_options_create("/test/path");
     }
+    _ = result;
 }
 
 bench "lsp_trace_is_enabled_latency" {
@@ -491,6 +493,7 @@ bench "lsp_trace_is_enabled_latency" {
     for (0..1000) |_| {
         result = trace_is_enabled(.messages);
     }
+    _ = result;
 }
 
 bench "lsp_trace_to_string_latency" {
@@ -501,4 +504,5 @@ bench "lsp_trace_to_string_latency" {
     for (0..1000) |_| {
         result = trace_to_string(.verbose);
     }
+    _ = result;
 }

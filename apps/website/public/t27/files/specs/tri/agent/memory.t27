@@ -2,7 +2,7 @@
 // t27/specs/
 //  | φ² + 1/φ² = 3 | TRINITY
 
-module memory;
+module AgentMemory;
     use base::types;
     use math::constants;
 
@@ -10,6 +10,3 @@ module memory;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "memory_smoke_test" {
-        expect(true)
-    }

@@ -16,9 +16,7 @@ module SacredGovernance;
     };
 
     pub const SacredRuleType = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/sacred_governance.tri:32. The converter dropped bare `- name` bullets.
-        enum : [phi_rule, trinity_rule, gematria_rule, evolution_rule, safety_rule],
+        enum : ,
     };
 
     pub const RuleViolation = struct {
@@ -32,9 +30,7 @@ module SacredGovernance;
     };
 
     pub const ViolationSeverity = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/sacred_governance.tri:52. The converter dropped bare `- name` bullets.
-        enum : [warning, error, critical],
+        enum : ,
     };
 
     pub const GovernanceState = struct {
@@ -79,6 +75,3 @@ module SacredGovernance;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "sacred_governance_smoke_test" {
-        expect(true)
-    }

@@ -28,13 +28,13 @@ module TriHex;
         // TODO: Implement from .tri spec
     }
 
-    // encode(codec: Hex, input: []const u8, allocator: std.mem.Allocator) → ![]const u8
-    fn encode(codec: Hex, input: []const u8, allocator: std.mem.Allocator) -> ![]const u8 {
+    // encode(codec: Hex) → void
+    fn encode(codec: Hex) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // decode(input: []const u8, allocator: std.mem.Allocator) → ![]const u8
-    fn decode(input: []const u8, allocator: std.mem.Allocator) -> ![]const u8 {
+    // decode(input: []const u8) → void
+    fn decode(input: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -42,22 +42,23 @@ module TriHex;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // lower_case(), upper_case(), encode() and decode() have no body yet, so
-    // they panic when called; encode(codec) also takes no bytes and returns
-    // none, so the "every byte becomes 2 chars" claim and the
-    // decode(encode(x)) == x round trip cannot be stated yet. The Hex codec
-    // value is what this module states.
+    test lower_case_basic_case
+        given input = default_input()
+        when result = lower_case(input)
+        then result != undefined
 
-    test hex_codec_records_its_letter_case
-        given lower = Hex{.uppercase=false}
-        and upper = Hex{.uppercase=true}
-        then !lower.uppercase
-        and upper.uppercase
+    test upper_case_basic_case
+        given input = default_input()
+        when result = upper_case(input)
+        then result != undefined
 
-    test hex_the_two_codecs_are_distinguishable
-        // one bool is the whole difference between the two codecs the module
-        // names, so it has to actually differ between them
-        given lower = Hex{.uppercase=false}
-        and upper = Hex{.uppercase=true}
-        then lower.uppercase != upper.uppercase
+    test encode_basic_case
+        given input = default_input()
+        when result = encode(input)
+        then result != undefined
+
+    test decode_basic_case
+        given input = default_input()
+        when result = decode(input)
+        then result != undefined
 

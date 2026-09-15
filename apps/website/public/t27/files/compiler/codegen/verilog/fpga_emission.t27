@@ -1,4 +1,4 @@
-// fpga_emission.t27 0 FPGA Module Verilog Emission
+// fpga_emission.t27 — FPGA Module Verilog Emission
 // Generates FPGA-specific Verilog modules from .t27 specs
 
 module fpga_emission {
@@ -26,7 +26,7 @@ module fpga_emission {
 
     // 1. Top-Level FPGA Module Emission
 
-    // emit_fpga_top() 307 void
+    // emit_fpga_top() → void
     // Generate top-level FPGA module that combines MAC, UART, SPI
     fn emit_fpga_top(self: *FpgaCodegen) void {
         self.emit_line("// Trinity FPGA Top-Level Module");
@@ -144,7 +144,7 @@ module fpga_emission {
         self.emit_line("");
 
         // MAC output mapping
-        self.emit_line("// MAC output signals 308 OR-reduce ready flags for valid");
+        self.emit_line("// MAC output signals — OR-reduce ready flags for valid");
         self.emit_line("assign mac_acc_out = mac_result[0];");
         self.emit_line("assign mac_valid_out = &mac_ready[7:0];");
         self.emit_line("");
@@ -155,7 +155,7 @@ module fpga_emission {
 
     // 2. UART Module Emission
 
-    // emit_uart_module() 473 void
+    // emit_uart_module() → void
     // Generate UART RX/TX module from spec
     fn emit_uart_module(self: *FpgaCodegen) void {
         self.emit_line("// UART Bridge Module");
@@ -379,7 +379,7 @@ module fpga_emission {
 
     // 3. SPI Module Emission
 
-    // emit_spi_module() 650 void
+    // emit_spi_module() → void
     // Generate SPI master module from spec (Mode 0)
     fn emit_spi_module(self: *FpgaCodegen) void {
         self.emit_line("// SPI Master Module");
@@ -578,7 +578,7 @@ module fpga_emission {
 
     // 4. MAC Module Emission
 
-    // emit_mac_module() 829 void
+    // emit_mac_module() → void
     // Generate ZeroDSP MAC module from spec
     fn emit_mac_module(self: *FpgaCodegen) void {
         self.emit_line("// ZeroDSP MAC Module");
@@ -704,13 +704,13 @@ module fpga_emission {
 
     // 5. Helper Functions
 
-    // emit(s: []const u8) 998 void
+    // emit(s: []const u8) → void
     // Append string to output
     fn emit(self: *FpgaCodegen, s: []const u8) void {
         self.output.append(s);
     }
 
-    // emit_line(s: []const u8) 999 void
+    // emit_line(s: []const u8) → void
     // Append string with newline
     fn emit_line(self: *FpgaCodegen, s: []const u8) void {
         self.output.append(s);
@@ -722,19 +722,19 @@ module fpga_emission {
         }
     }
 
-    // emit_int(n: anytype) 1000 void
+    // emit_int(n: anytype) → void
     // Emit integer value
     fn emit_int(self: *FpgaCodegen, n: anytype) void {
         self.emit(int_to_str(n));
     }
 
-    // indent() 1001 void
+    // indent() → void
     // Increase indent level
     fn indent(self: *FpgaCodegen) void {
         self.indent_level += 1;
     }
 
-    // dedent() 1002 void
+    // dedent() → void
     // Decrease indent level
     fn dedent(self: *FpgaCodegen) void {
         if (self.indent_level > 0) {
@@ -742,9 +742,9 @@ module fpga_emission {
         }
     }
 
-    // int_to_str(n: anytype) 1003 []const u8
+    // int_to_str(n: anytype) → []const u8
     // Convert small non-negative integer to decimal string
-    // Supports range 0..9999 1004 sufficient for pin/port/module IDs
+    // Supports range 0..9999 — sufficient for pin/port/module IDs
     fn int_to_str(n: anytype) []const u8 {
         if (n == 0) {
             return "0";

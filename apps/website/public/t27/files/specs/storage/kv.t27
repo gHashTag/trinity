@@ -1,14 +1,14 @@
 // specs/storage/kv.t27
 // Key-Value Storage Operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module StorageKv {
     use base::types;
     use storage::schema;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // KV Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // read retrieves a value from storage by key
     // Returns Error if the key does not exist
@@ -46,9 +46,9 @@ module StorageKv {
         // Implementation: Check file existence
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Bulk Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // batch_write writes multiple values atomically
     fn batch_write<T>(entries: [(key: [str], value: T)]) -> Result<void, StorageError> {
@@ -60,9 +60,9 @@ module StorageKv {
         // Implementation: Read all keys, return null for missing keys
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "read_missing_key_returns_error" {
         // Reading a non-existent key should return NotFoundError

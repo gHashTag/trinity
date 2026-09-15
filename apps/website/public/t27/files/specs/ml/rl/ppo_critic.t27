@@ -23,30 +23,30 @@ module PpoCritic;
     };
 
     pub const Activation = struct {
-        enum : [RELU, TANH, GELU],
+        enum : ,
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(state: []const f32, params: []const f32, config: CriticConfig) → f32
-    fn forward(state: []const f32, params: []const f32, config: CriticConfig) -> f32 {
+    // forward(state: []const f32) → void
+    fn forward(state: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // compute_advantage(rewards: []f32, values: []f32, gamma: f32, lambda_: f32) → []f32
-    fn compute_advantage(rewards: []f32, values: []f32, gamma: f32, lambda_: f32) -> []f32 {
+    // compute_advantage(rewards: []f32) → void
+    fn compute_advantage(rewards: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // compute_returns(rewards: []f32, gamma: f32) → []f32
-    fn compute_returns(rewards: []f32, gamma: f32) -> []f32 {
+    // compute_returns(rewards: []f32) → void
+    fn compute_returns(rewards: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // value_loss(predicted_values: []f32, target_values: []f32) → f32
-    fn value_loss(predicted_values: []f32, target_values: []f32) -> f32 {
+    // value_loss(predicted_values: []f32) → void
+    fn value_loss(predicted_values: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -54,26 +54,25 @@ module PpoCritic;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // NOTE: DEFAULT_HIDDEN is declared `[]u32 = "[64, 64]"` -- a string literal
-    // in a slice-of-u32 slot. Any test that names it is a compile error, so the
-    // two-layer default is restated here as a literal instead.
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
 
-    test config_carries_two_hidden_layers_of_sixty_four
-        // Verify: the shape DEFAULT_HIDDEN is meant to describe -- two layers,
-        // 64 units each, sitting between the state input and the scalar value
-        given hidden = [_]u32{ 64, 64 }
-        and cfg = CriticConfig{ .state_dim = 4, .hidden_dims = @constCast(&hidden), .activation = Activation.RELU }
-        then cfg.hidden_dims.len == 2 and cfg.hidden_dims[0] == 64 and cfg.hidden_dims[1] == 64
+    test compute_advantage_basic_case
+        given input = default_input()
+        when result = compute_advantage(input)
+        then result != undefined
 
-    test hidden_depth_is_not_fixed_by_the_config_type
-        // Verify: hidden_dims is a slice, so a one-layer critic and the
-        // two-layer default share one config type -- depth is data, not type
-        given shallow = [_]u32{ 64 }
-        and deep = [_]u32{ 64, 64 }
-        and a = CriticConfig{ .state_dim = 4, .hidden_dims = @constCast(&shallow), .activation = Activation.RELU }
-        and b = CriticConfig{ .state_dim = 4, .hidden_dims = @constCast(&deep), .activation = Activation.RELU }
-        when same_type = @TypeOf(a) == @TypeOf(b)
-        then same_type and a.hidden_dims.len == 1 and b.hidden_dims.len == 2
+    test compute_returns_basic_case
+        given input = default_input()
+        when result = compute_returns(input)
+        then result != undefined
+
+    test value_loss_basic_case
+        given input = default_input()
+        when result = value_loss(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

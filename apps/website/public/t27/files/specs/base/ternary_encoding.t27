@@ -3,14 +3,14 @@
 // Ternary Encoding/Decoding Specification
 // Ring 065 - Encoding schemes for ternary data representation
 // Defines how binary data maps to ternary and vice versa
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module TernaryEncoding {
     use base::types;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 1. Encoding Constants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Trit values
     const TRIT_NEG : i32 = -1;
@@ -27,24 +27,24 @@ module TernaryEncoding {
     const TRITS_PER_BYTE : usize = 6;    // 6 trits = 3^6 = 729 > 256
     const TRITS_PER_NYBBLE : usize = 3;   // 3 trits = 27 > 16
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 2. Bit to Trit Conversion
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // bit_to_trit_pair(bit: u8) -> [2]i32
+    // bit_to_trit_pair(bit: u8) → [2]i32
     // Convert a single bit (0 or 1) to a pair of trits
     // 0 -> [0, 0], 1 -> [1, 0]
-    fn bit_to_trit_pair(bit: u8) -> [2]i32 {
+    fn bit_to_trit_pair(bit: u8) → [2]i32 {
         if (bit == 0) {
             return [_]i32{TRIT_ZERO, TRIT_ZERO};
         }
         return [_]i32{TRIT_POS, TRIT_ZERO};
     }
 
-    // bits_to_trits(bits: u8) -> [3]i32
+    // bits_to_trits(bits: u8) → [3]i32
     // Convert a nibble (4 bits) to 3 trits
     // Maps 0-15 to balanced ternary
-    fn bits_to_trits(bits: u8) -> [3]i32 {
+    fn bits_to_trits(bits: u8) → [3]i32 {
         var result : [3]i32 = [_]i32{TRIT_ZERO, TRIT_ZERO, TRIT_ZERO};
         var value = bits;
         var i : usize = 0;
@@ -64,14 +64,14 @@ module TernaryEncoding {
         return result;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 3. Trit to Bit Conversion
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // trits_to_bits(trits: [3]i32) -> u8
+    // trits_to_bits(trits: [3]i32) → u8
     // Convert 3 trits to a nibble (4 bits)
     // Assumes trits represent a valid value 0-15
-    fn trits_to_bits(trits: [3]i32) -> u8 {
+    fn trits_to_bits(trits: [3]i32) → u8 {
         var result : i32 = 0;
         var power : i32 = 1;
         var i : usize = 0;
@@ -90,14 +90,14 @@ module TernaryEncoding {
         return @as(u8, @intCast(result));
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 4. Byte to Trit Array Conversion
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // byte_to_trits(byte: u8, trits: []i32, len: usize) -> usize
+    // byte_to_trits(byte: u8, trits: []i32, len: usize) → usize
     // Convert a byte to trits
     // Returns number of trits used
-    fn byte_to_trits(byte: u8, trits: []i32, len: usize) -> usize {
+    fn byte_to_trits(byte: u8, trits: []i32, len: usize) → usize {
         // Convert byte (0-255) to balanced ternary
         var value : i32 = @as(i32, @intCast(byte));
         var i : usize = 0;
@@ -128,10 +128,10 @@ module TernaryEncoding {
         return len;
     }
 
-    // trits_to_byte(trits: []i32, len: usize) -> u8
+    // trits_to_byte(trits: []i32, len: usize) → u8
     // Convert trits to a byte
     // Assumes trits represent a valid value 0-255
-    fn trits_to_byte(trits: []i32, len: usize) -> u8 {
+    fn trits_to_byte(trits: []i32, len: usize) → u8 {
         var result : i32 = 0;
         var power : i32 = 1;
         var i : usize = 0;
@@ -150,59 +150,59 @@ module TernaryEncoding {
         return @as(u8, @intCast(result));
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 5. Balanced to Unipolar Conversion
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // balanced_to_unipolar(trit: i32) -> i32
+    // balanced_to_unipolar(trit: i32) → i32
     // Convert balanced ternary trit to unipolar
     // -1 -> 0, 0 -> 1, 1 -> 2
-    fn balanced_to_unipolar(trit: i32) -> i32 {
+    fn balanced_to_unipolar(trit: i32) → i32 {
         return trit + 1;
     }
 
-    // unipolar_to_balanced(trit: i32) -> i32
+    // unipolar_to_balanced(trit: i32) → i32
     // Convert unipolar trit to balanced ternary
     // 0 -> -1, 1 -> 0, 2 -> 1
-    fn unipolar_to_balanced(trit: i32) -> i32 {
+    fn unipolar_to_balanced(trit: i32) → i32 {
         return trit - 1;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 6. String Encoding
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // char_to_trits(c: u8, trits: []i32, len: usize) -> usize
+    // char_to_trits(c: u8, trits: []i32, len: usize) → usize
     // Convert ASCII character to trits
-    fn char_to_trits(c: u8, trits: []i32, len: usize) -> usize {
+    fn char_to_trits(c: u8, trits: []i32, len: usize) → usize {
         return byte_to_trits(c, trits, len);
     }
 
-    // trits_to_char(trits: []i32, len: usize) -> u8
+    // trits_to_char(trits: []i32, len: usize) → u8
     // Convert trits to ASCII character
-    fn trits_to_char(trits: []i32, len: usize) -> u8 {
+    fn trits_to_char(trits: []i32, len: usize) → u8 {
         return trits_to_byte(trits, len);
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 7. Validation
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // is_valid_trit(t: i32) -> bool
+    // is_valid_trit(t: i32) → bool
     // Check if a value is a valid trit
-    fn is_valid_trit(t: i32) -> bool {
+    fn is_valid_trit(t: i32) → bool {
         return t >= TRIT_NEG and t <= TRIT_POS;
     }
 
-    // is_valid_unipolar_trit(t: i32) -> bool
+    // is_valid_unipolar_trit(t: i32) → bool
     // Check if a value is a valid unipolar trit (0, 1, 2)
-    fn is_valid_unipolar_trit(t: i32) -> bool {
+    fn is_valid_unipolar_trit(t: i32) → bool {
         return t >= 0 and t <= 2;
     }
 
-    // validate_trits(trits: []i32, len: usize) -> bool
+    // validate_trits(trits: []i32, len: usize) → bool
     // Validate all trits in an array
-    fn validate_trits(trits: []i32, len: usize) -> bool {
+    fn validate_trits(trits: []i32, len: usize) → bool {
         var i : usize = 0;
         while (i < len) {
             if (!is_valid_trit(trits[i])) {
@@ -213,9 +213,9 @@ module TernaryEncoding {
         return true;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 8. Encoding Metadata
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     struct EncodingInfo {
         encoding_type : u8,
@@ -224,9 +224,9 @@ module TernaryEncoding {
         is_valid : bool,
     }
 
-    // get_encoding_info(trits: []i32, len: usize) -> EncodingInfo
+    // get_encoding_info(trits: []i32, len: usize) → EncodingInfo
     // Get information about a trit encoding
-    fn get_encoding_info(trits: []i32, len: usize) -> EncodingInfo {
+    fn get_encoding_info(trits: []i32, len: usize) → EncodingInfo {
         var info : EncodingInfo = undefined;
         info.encoding_type = ENCODING_BALANCED;
         info.trits_used = len;
@@ -241,9 +241,9 @@ module TernaryEncoding {
         return info;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 9. TDD - Tests
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test bit_to_trit_pair_zero
         const result = bit_to_trit_pair(0);
@@ -319,9 +319,9 @@ module TernaryEncoding {
             i = i + 1;
         }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 10. TDD - Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant balanced_unipolar_roundtrip
         // Converting balanced -> unipolar -> balanced should be identity
@@ -374,9 +374,9 @@ module TernaryEncoding {
         const info = get_encoding_info(&trits, 5);
         assert info.trits_used == 5
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 11. TDD - Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench byte_to_trits_performance
         // Measure: cycles to convert 100 bytes to trits

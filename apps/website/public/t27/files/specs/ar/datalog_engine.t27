@@ -3,8 +3,6 @@
 // Datalog reasoning engine for neuro-symbolic AI
 
 spec DatalogEngine {
-    use tritype-base::Trit;
-
     // Datalog fact structure
     struct Fact {
         predicate: string,

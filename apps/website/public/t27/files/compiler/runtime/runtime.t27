@@ -1,6 +1,6 @@
-// compiler/runtime/runtime.t27 -- T27 Runtime Specification
+// compiler/runtime/runtime.t27 — T27 Runtime Specification
 // Runtime environment for executing t27 programs
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module triruntime {
     using base_types: @import("../../specs/base/types.t27");
@@ -208,9 +208,9 @@ module triruntime {
     }
 }
 
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 // TDD-Inside-Spec: Tests and Invariants for Runtime
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 test test_bootstrap_init_sequence
     // Verify: runtime_init initializes all components in correct order

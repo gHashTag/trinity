@@ -23,7 +23,17 @@ module PipelineE2E {
     fn pipeline_run(stages: []u8, results: []bool, count: *usize) u8 {
         var current : u8 = STAGE_INIT;
         var i : usize = 0;
-        while (i < MAX_PIPELINE_STAGES and current != STAGE_DONE and current != STAGE_FAIL) {
+        // Bound by the BUFFERS, not only by the constant. The loop wrote
+        // stages[0..MAX_PIPELINE_STAGES] whatever length it was handed: with a
+        // zero-length buffer the generated Rust panics on the first write, and
+        // the hand-written model in rings/ring-099-rust has always computed
+        // `stages.len().min(results.len()).min(MAX_PIPELINE_STAGES)`. A buffer
+        // grid over lengths 0, 1, 4 and 8 found 36 of 80 differential cases
+        // disagreeing; before the grid the same pair read 25 of 25 agreeing.
+        var cap : usize = MAX_PIPELINE_STAGES;
+        if (stages.len < cap) { cap = stages.len; }
+        if (results.len < cap) { cap = results.len; }
+        while (i < cap and current != STAGE_DONE and current != STAGE_FAIL) {
             stages[i] = current;
             results[i] = true;
             count.* = i + 1;
@@ -45,7 +55,10 @@ module PipelineE2E {
     fn pipeline_inject_failure(fail_at: u8, stages: []u8, results: []bool, count: *usize) u8 {
         var current : u8 = STAGE_INIT;
         var i : usize = 0;
-        while (i < MAX_PIPELINE_STAGES and current != STAGE_DONE and current != STAGE_FAIL) {
+        var cap2 : usize = MAX_PIPELINE_STAGES;
+        if (stages.len < cap2) { cap2 = stages.len; }
+        if (results.len < cap2) { cap2 = results.len; }
+        while (i < cap2 and current != STAGE_DONE and current != STAGE_FAIL) {
             stages[i] = current;
             if (current == fail_at) {
                 results[i] = false;

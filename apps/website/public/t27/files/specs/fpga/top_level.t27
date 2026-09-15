@@ -2,7 +2,7 @@
 // t27/specs/fpga/top_level.t27
 // ZeroDSP FPGA Top Level Module
 // Integrates MAC and UART for FPGA deployment
-// 01 + 1/23 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module ZeroDSP_TopLevel {
     use base::types;

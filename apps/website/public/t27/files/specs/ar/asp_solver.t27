@@ -366,7 +366,7 @@ spec AspSolver {
         };
 
         let alt_model = AnswerSet {
-            literals: [Literal {name: "p", is_negated: false, args: []},
+            literals: [Literal {name: "p", is_negated: false, args: []}],
             proven: true,
             cost: 1
         };

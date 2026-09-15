@@ -2,7 +2,7 @@
 // t27/specs/
 // | | φ² + 1/φ² = 3 | TRINITY
 
-module Workflow;
+module String;
     use base::types;
     use math::constants;
 
@@ -12,7 +12,7 @@ module Workflow;
 
     pub const WorkflowStep = struct {
         command : String,
-        depends_on : []const []const u8,
+        depends_on : "[]const []const u8",
         condition : ?[]const u8,
     };
 
@@ -25,6 +25,3 @@ module Workflow;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "workflow_smoke_test" {
-        expect(true)
-    }

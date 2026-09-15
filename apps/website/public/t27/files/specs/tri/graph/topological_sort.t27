@@ -5,7 +5,6 @@
 module TriTopological;
     use base::types;
     use math::constants;
-    use TriGraphBfs::Graph;
 
     // ═══════════════════════════════════════════════════════════
     // 2. Types

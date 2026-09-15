@@ -1,4 +1,4 @@
-// testgen.t27 -- Generic Test Generator for TDD-Inside-Spec
+// testgen.t27 — Generic Test Generator for TDD-Inside-Spec
 // Generates test code from spec test blocks for multiple backends
 
 module testgen {
@@ -49,9 +49,9 @@ module testgen {
             self.emit_line("");
             self.emit("const std = @import(\"std\");");
             self.emit_line("");
-            self.emit_line("// ===============================================================");
+            self.emit_line("// ═══════════════════════════════════════════════════════════════");
             self.emit_line("// TDD-Inside-Spec: Generated Tests");
-            self.emit_line("// ===============================================================");
+            self.emit_line("// ═══════════════════════════════════════════════════════════════");
             self.emit_line("");
 
             // Generate from spec_decl (high-level TDD)
@@ -84,9 +84,9 @@ module testgen {
             self.emit_line("");
             self.emit("#include <assert.h>");
             self.emit_line("");
-            self.emit_line("// ===============================================================");
+            self.emit_line("// ═══════════════════════════════════════════════════════════════");
             self.emit_line("// TDD-Inside-Spec: Generated Tests");
-            self.emit_line("// ===============================================================");
+            self.emit_line("// ═══════════════════════════════════════════════════════════════");
             self.emit_line("");
 
             // Generate from spec_decl
@@ -107,9 +107,9 @@ module testgen {
             self.emit("// Verilog testbench generated from ");
             self.emit(self.ast.source_file);
             self.emit_line("");
-            self.emit_line("// ===============================================================");
+            self.emit_line("// ═══════════════════════════════════════════════════════════════");
             self.emit_line("// TDD-Inside-Spec: Generated Testbench");
-            self.emit_line("// ===============================================================");
+            self.emit_line("// ═══════════════════════════════════════════════════════════════");
             self.emit_line("");
 
             self.emit("`timescale 1ns/1ps");
@@ -153,9 +153,9 @@ module testgen {
             self.emit_line("");
             self.emit_line("    use super::*;");
             self.emit_line("");
-            self.emit_line("    // ===============================================================");
+            self.emit_line("    // ═══════════════════════════════════════════════════════════════");
             self.emit_line("    // TDD-Inside-Spec: Generated Tests");
-            self.emit_line("    // ===============================================================");
+            self.emit_line("    // ═══════════════════════════════════════════════════════════════");
             self.emit_line("");
 
             // Generate from spec_decl
@@ -670,9 +670,9 @@ module testgen {
     };
 }
 
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 // TDD-Inside-Spec: Tests and Invariants for TestGen
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 test testgen_new_creates_generator
     // Verify: TestGen.new creates a generator with AST and options

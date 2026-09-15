@@ -3,15 +3,15 @@
 // VSA Similarity Search Specification
 // Ring 062 - Efficient similarity search in hyperdimensional space
 // Defines semantic similarity operations for VSA trit vectors
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module VSASimilaritySearch {
-    use vsa::vsa_core;
+    use vsa::core;
     use math::constants;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 1. Search Configuration
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     const MAX_VECTORS : usize = 10000;
     const TOP_K_DEFAULT : usize = 10;
@@ -37,9 +37,9 @@ module VSASimilaritySearch {
         query_hash : u64,
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 2. Cosine Similarity
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // cosine_similarity(a: []i32, b: []i32, len: usize) -> f64
     // Compute cosine similarity between two trit vectors
@@ -72,9 +72,9 @@ module VSASimilaritySearch {
         return @as(f64, @floatFromInt(dot_product)) / (norm_a_f * norm_b_f);
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 3. Hamming Similarity
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // hamming_similarity(a: []i32, b: []i32, len: usize) -> f64
     // Compute Hamming similarity between two trit vectors
@@ -93,9 +93,9 @@ module VSASimilaritySearch {
         return @as(f64, @floatFromInt(matches)) / @as(f64, @floatFromInt(len));
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 4. Jaccard Index
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // jaccard_index(a: []i32, b: []i32, len: usize) -> f64
     // Compute Jaccard index between two trit vectors
@@ -126,9 +126,9 @@ module VSASimilaritySearch {
         return @as(f64, @floatFromInt(intersection)) / @as(f64, @floatFromInt(union_count));
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 5. Top-K Search
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // find_top_k(query: []i32, vectors: [][]i32, k: usize) -> SearchResults
     // Find top K most similar vectors to query
@@ -210,9 +210,9 @@ module VSASimilaritySearch {
         }
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 6. HNSW-like Approximate Search
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Hierarchical Navigable Small World graph structure
     struct HNSWNode {
@@ -291,9 +291,9 @@ module VSASimilaritySearch {
         return dummy[0..10];
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 7. TDD - Tests
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test cosine_similarity_identical
         var a : [5]i32 = [_]i32{1, 0, -1, 1, 0};
@@ -363,9 +363,9 @@ module VSASimilaritySearch {
         then results.count >= 1
         and results.results[0].index == 0
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 8. TDD - Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant cosine_similarity_bounds
         // Cosine similarity must be in [-1, 1]
@@ -428,9 +428,9 @@ module VSASimilaritySearch {
             assert results.results[0].similarity >= results.results[1].similarity
         }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 9. TDD - Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench cosine_similarity_1000
         // Measure: cycles to compute cosine similarity for 1000-dim vectors

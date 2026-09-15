@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/github/tests/e2e_full_flow.t27
 // End-to-End Full Flow Test for Ring-072 GitHub SSOT
-// Tests: Auth -> Issue -> PR -> Comment -> Sync -> Cleanup
+// Tests: Auth → Issue → PR → Comment → Sync → Cleanup
 // Ring-074 - E2E Tests
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
@@ -19,7 +19,7 @@ module github::tests::e2e_full_flow {
 
         // STEP 2: Create Issue
         const issue_title = "[E2E] Ring-074 test issue";
-        const issue = issues::issue_create(issue_title, "Automated E2E test -- safe to delete");
+        const issue = issues::issue_create(issue_title, "Automated E2E test — safe to delete");
 
         assert(issue.number > 0);
         assert(issue.state == "open");
@@ -54,7 +54,7 @@ module github::tests::e2e_full_flow {
         assert(pr_found == true || pr_found == false);
 
         // STEP 6: Add Comment
-        const comment_body = "E2E test comment -- phi^2 + 1/phi^2 = 3";
+        const comment_body = "E2E test comment — φ² + 1/φ² = 3";
         const comment = comments::comment_create(issue.number, comment_body);
 
         assert(comment.id > 0);
@@ -118,4 +118,3 @@ bench e2e_full_flow_bench
         const sync = sync::full_sync();
         _ = sync;
     }
-}

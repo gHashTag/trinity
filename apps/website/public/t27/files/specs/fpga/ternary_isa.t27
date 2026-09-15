@@ -50,7 +50,6 @@ module TernaryIsa {
         rs1_bits : u32,
         rs2_bits : u32,
         imm_bits : u32,
-        funct_bits : u32,
         total_bits : u32,
     }
 
@@ -97,7 +96,6 @@ module TernaryIsa {
             .rs1_bits = 5,
             .rs2_bits = 5,
             .imm_bits = 0,
-            .funct_bits = 11,
             .total_bits = 32,
         };
     }
@@ -110,7 +108,6 @@ module TernaryIsa {
             .rs1_bits = 5,
             .rs2_bits = 0,
             .imm_bits = 16,
-            .funct_bits = 0,
             .total_bits = 32,
         };
     }
@@ -317,8 +314,13 @@ module TernaryIsa {
 
     fn validate_instr_format(fmt: InstrFormat) -> u32 {
         var errors : u32 = 0;
-        var computed : u32 = fmt.opcode_bits + fmt.rd_bits + fmt.rs1_bits + fmt.rs2_bits + fmt.imm_bits + fmt.funct_bits;
-        if (computed != fmt.total_bits) {
+        var computed : u32 = fmt.opcode_bits + fmt.rd_bits + fmt.rs1_bits + fmt.rs2_bits + fmt.imm_bits;
+        // Fields must FIT the instruction word, not exactly fill it. R-type
+        // legitimately leaves bits 10..0 reserved: assembler.t27 encode_r_type
+        // is (opcode << 26) | (rd << 21) | (rs1 << 16) | (rs2 << 11), i.e.
+        // 6+5+5+5 = 21 used bits of a 32-bit word. Requiring equality made
+        // validate_r_type_format fail on a correct format.
+        if (computed > fmt.total_bits) {
             errors = errors + 1;
         }
         if (fmt.total_bits == 0) {

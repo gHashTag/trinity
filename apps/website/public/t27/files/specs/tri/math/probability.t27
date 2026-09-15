@@ -10,28 +10,28 @@ module TriProbability;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // bernoulli(p: f64, rng: *std.Random.Default) → bool
-    fn bernoulli(p: f64, rng: *std.Random.Default) -> bool {
+    // bernoulli(p: f64) → void
+    fn bernoulli(p: f64) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // binomial(n: usize, p: f64, rng: *std.Random.Default) → usize
-    fn binomial(n: usize, p: f64, rng: *std.Random.Default) -> usize {
+    // binomial(n: usize) → void
+    fn binomial(n: usize) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // poisson(lambda: f64, rng: *std.Random.Default) → usize
-    fn poisson(lambda: f64, rng: *std.Random.Default) -> usize {
+    // poisson(lambda: f64) → void
+    fn poisson(lambda: f64) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // normal(mean: f64, std_dev: f64, rng: *std.Random.Default) → f64
-    fn normal(mean: f64, std_dev: f64, rng: *std.Random.Default) -> f64 {
+    // normal(mean: f64) → void
+    fn normal(mean: f64) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // exponential(lambda: f64, rng: *std.Random.Default) → f64
-    fn exponential(lambda: f64, rng: *std.Random.Default) -> f64 {
+    // exponential(lambda: f64) → void
+    fn exponential(lambda: f64) -> void {
         // TODO: Implement from .tri spec
     }
 

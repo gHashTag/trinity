@@ -1,14 +1,14 @@
 // specs/account/auth.t27
 // Account Authentication Operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module AccountAuth {
     use base::types;
     use account::schema;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Authentication Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // token retrieves a fresh access token for an account
     // Refreshes the token if needed
@@ -36,23 +36,17 @@ module AccountAuth {
         // Implementation: Clear tokens for the account
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Organization Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // orgs returns organizations for an account
     fn orgs(account_id: AccountID) -> Result<[Org], AccountError> {
         // Implementation: Fetch orgs from API using access token
     }
 
-    // AccountOrgs pairs one account with the organizations it belongs to
-    struct AccountOrgs {
-        account: Info,
-        orgs: [Org],
-    }
-
     // orgs_by_account returns all accounts with their orgs
-    fn orgs_by_account() -> Result<[AccountOrgs], AccountError> {
+    fn orgs_by_account() -> Result<[(account: Info, orgs: [Org])], AccountError> {
         // Implementation: Fetch all accounts and their orgs
     }
 
@@ -61,9 +55,9 @@ module AccountAuth {
         // Implementation: Fetch config from API
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // User Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // UserInfo represents user information from API
     struct UserInfo {
@@ -76,9 +70,9 @@ module AccountAuth {
         // Implementation: Fetch user info from API
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Token Management
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // TokenRefreshRequest is the request body for token refresh
     struct TokenRefreshRequest {
@@ -123,9 +117,9 @@ module AccountAuth {
         error_description: str,
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Poll Response Handling
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // parse_poll_result converts a device token response to PollResult
     fn parse_poll_result(response: DeviceTokenErrorResponse) -> PollResult {
@@ -144,9 +138,9 @@ module AccountAuth {
         return PollResult::Error;
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "user_info_creation" {
         var user = UserInfo {

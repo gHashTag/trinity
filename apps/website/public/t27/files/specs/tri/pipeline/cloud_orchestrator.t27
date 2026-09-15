@@ -10,6 +10,3 @@ module CloudOrchestrator;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "cloud_orchestrator_smoke_test" {
-        expect(true)
-    }

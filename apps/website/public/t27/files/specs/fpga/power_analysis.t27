@@ -226,227 +226,188 @@ module PowerAnalysis {
 
     // === Tests ===
 
-    test utilization_creation {
+    test utilization_creation
         given u = utilization(1000, 2000, 10, 8)
         then u.luts == 1000
         and u.ffs == 2000
         and u.brams == 10
         and u.dsps == 8
-    }
 
-    test utilization_full_creation {
+    test utilization_full_creation
         given u = utilization_full(500, 1000, 5, 4, 20, 100)
         then u.luts == 500
         and u.ios == 20
         and u.clock_mhz == 100
-    }
 
-    test zero_utilization_all_zero {
+    test zero_utilization_all_zero
         given u = zero_utilization()
         then u.luts == 0
         and u.ffs == 0
         and total_resources(u) == 0
-    }
 
-    test total_resources_sum {
+    test total_resources_sum
         given u = utilization(1000, 2000, 10, 8)
         then total_resources(u) == 3018
-    }
 
-    test xc7a100t_limits {
+    test xc7a100t_limits
         given lim = xc7a100t_limits()
         then lim.max_luts == 63400
         and lim.max_ffs == 126800
         and lim.max_brams == 135
         and lim.max_dsps == 240
-    }
 
-    test xc7a35t_limits {
+    test xc7a35t_limits
         given lim = xc7a35t_limits()
         then lim.max_luts == 20800
         and lim.name == "xc7a35t"
-    }
 
-    test lut_percent_calc {
+    test lut_percent_calc
         given u = utilization(6340, 0, 0, 0)
         and lim = xc7a100t_limits()
         then lut_percent(u, lim) == 10
-    }
 
-    test overall_percent_calc {
+    test overall_percent_calc
         given u = utilization(6340, 12680, 13, 24)
         and lim = xc7a100t_limits()
         then overall_percent(u, lim) == 10
-    }
 
-    test percent_zero_limits {
+    test percent_zero_limits
         given u = utilization(100, 0, 0, 0)
         and lim = DeviceLimits{.name = "test", .max_luts = 0, .max_ffs = 0, .max_brams = 0, .max_dsps = 0, .max_ios = 0}
         then lut_percent(u, lim) == 0
-    }
 
-    test est_dynamic_power_basic {
+    test est_dynamic_power_basic
         given u = utilization(1000, 2000, 10, 8)
         then est_dynamic_power_mw(u, 12) > 0
-    }
 
-    test est_static_power_basic {
+    test est_static_power_basic
         given u = utilization(1000, 2000, 10, 8)
         then est_static_power_mw(u) > 50
-    }
 
-    test est_total_power_gt_dynamic {
+    test est_total_power_gt_dynamic
         given u = utilization(1000, 2000, 10, 8)
         then est_total_power_mw(u, 12) > est_dynamic_power_mw(u, 12)
-    }
 
-    test est_total_power_gt_static {
+    test est_total_power_gt_static
         given u = utilization(1000, 2000, 10, 8)
         then est_total_power_mw(u, 12) > est_static_power_mw(u)
-    }
 
-    test power_budget_creation {
+    test power_budget_creation
         given b = power_budget(2000)
         then b.target_mw == 2000
         and b.warning_threshold_pct == 80
         and b.critical_threshold_pct == 95
-    }
 
-    test power_pct_of_budget {
+    test power_pct_of_budget
         given b = power_budget(1000)
         then power_pct_of_budget(800, b) == 80
-    }
 
-    test is_within_budget_true {
+    test is_within_budget_true
         given b = power_budget(2000)
         then is_within_budget(1500, b) == true
-    }
 
-    test is_within_budget_false {
+    test is_within_budget_false
         given b = power_budget(1000)
         then is_within_budget(1500, b) == false
-    }
 
-    test is_warning_level {
+    test is_warning_level
         given b = power_budget(1000)
         then is_warning(850, b) == true
-    }
 
-    test is_critical_level {
+    test is_critical_level
         given b = power_budget(1000)
         then is_critical(960, b) == true
-    }
 
-    test is_not_warning_below_threshold {
+    test is_not_warning_below_threshold
         given b = power_budget(1000)
         then is_warning(500, b) == false
-    }
 
-    test default_toggle_rate_value {
+    test default_toggle_rate_value
         then default_toggle_rate() == 12
-    }
 
-    test est_toggle_rate_from_activity {
+    test est_toggle_rate_from_activity
         then est_toggle_rate_from_activity(50) == 50
-    }
 
-    test est_toggle_rate_clamped {
+    test est_toggle_rate_clamped
         then est_toggle_rate_from_activity(150) == 100
-    }
 
-    test clock_domain_power_creation {
+    test clock_domain_power_creation
         given cdp = clock_domain_power("core", 100, 5000, 10000)
         then cdp.domain_name == "core"
         and cdp.clock_mhz == 100
         and cdp.power_mw > 0
-    }
 
-    test total_domain_power_sum {
+    test total_domain_power_sum
         given d1 = clock_domain_power("core", 100, 5000, 10000)
         and d2 = clock_domain_power("io", 50, 1000, 2000)
         and domains = [d1, d2]
         then total_domain_power(domains, 2) > 0
-    }
 
-    test total_domain_power_empty {
+    test total_domain_power_empty
         then total_domain_power([], 0) == 0
-    }
 
-    test validate_utilization_ok {
+    test validate_utilization_ok
         given u = utilization(100, 200, 1, 1)
         then validate_utilization(u) == 0
-    }
 
-    test validate_utilization_zero_clock {
+    test validate_utilization_zero_clock
         given u = Utilization{.luts = 100, .ffs = 200, .brams = 1, .dsps = 1, .ios = 0, .clock_mhz = 0}
         then validate_utilization(u) > 0
-    }
 
-    test validate_budget_ok {
+    test validate_budget_ok
         given b = power_budget(2000)
         then validate_budget(b) == 0
-    }
 
-    test validate_budget_zero_target {
+    test validate_budget_zero_target
         given b = PowerBudget{.target_mw = 0, .warning_threshold_pct = 80, .critical_threshold_pct = 95}
         then validate_budget(b) > 0
-    }
 
-    test validate_budget_inverted_thresholds {
+    test validate_budget_inverted_thresholds
         given b = PowerBudget{.target_mw = 2000, .warning_threshold_pct = 95, .critical_threshold_pct = 80}
         then validate_budget(b) > 0
-    }
 
-    test trinity_fpga_top_power_estimate {
+    test trinity_fpga_top_power_estimate
         given u = utilization_full(15000, 30000, 30, 50, 48, 50)
         var total = est_total_power_mw(u, 12);
         invariant total > 0;
-    }
 
-    test trinity_fpga_top_within_typical_budget {
+    test trinity_fpga_top_within_typical_budget
         given u = utilization_full(15000, 30000, 30, 50, 48, 50)
         and b = power_budget(2000)
         var total = est_total_power_mw(u, 12);
         then is_within_budget(total, b) == true
-    }
 
     // === Invariants ===
 
-    invariant total_resources_non_negative {
+    invariant total_resources_non_negative
         given u = utilization(0, 0, 0, 0)
         assert total_resources(u) >= 0
-    }
 
-    invariant power_estimates_non_negative {
+    invariant power_estimates_non_negative
         given u = utilization(1000, 2000, 10, 8)
         assert est_total_power_mw(u, 12) >= 0
-    }
 
-    invariant percent_within_bounds {
+    invariant percent_within_bounds
         given u = utilization(6340, 0, 0, 0)
         and lim = xc7a100t_limits()
         assert lut_percent(u, lim) <= 100
-    }
 
-    invariant budget_pct_non_negative {
+    invariant budget_pct_non_negative
         given b = power_budget(1000)
         assert power_pct_of_budget(0, b) >= 0
-    }
 
     // === Benchmarks ===
 
-    bench power_analysis_full_latency {
+    bench power_analysis_full_latency
         given u = utilization_full(15000, 30000, 30, 50, 48, 50)
         measure: nanoseconds for est_total_power_mw(u, 12)
         target: < 200ns
-    }
 
-    bench utilization_percent_calc {
+    bench utilization_percent_calc
         given u = utilization_full(6340, 12680, 13, 24, 20, 50)
         and lim = xc7a100t_limits()
         measure: nanoseconds for overall_percent(u, lim)
         target: < 100ns
-    }
 }
 
 // phi^2 + 1/phi^2 = 3 | TRINITY

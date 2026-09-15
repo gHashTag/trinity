@@ -19,18 +19,18 @@ module TriCrypto;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // generate_key_pair(allocator: std.mem.Allocator) → !KeyPair
-    fn generate_key_pair(allocator: std.mem.Allocator) -> !KeyPair {
+    // generate_key_pair(allocator: std.mem.Allocator) → void
+    fn generate_key_pair(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // sha256(data: []const u8, allocator: std.mem.Allocator) → ![]u8
-    fn sha256(data: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+    // sha256(data: []const u8) → void
+    fn sha256(data: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // hmac(key: []const u8, message: []const u8, allocator: std.mem.Allocator) → ![]u8
-    fn hmac(key: []const u8, message: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+    // hmac(key: []const u8) → void
+    fn hmac(key: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 

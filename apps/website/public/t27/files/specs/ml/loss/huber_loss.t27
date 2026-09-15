@@ -18,8 +18,8 @@ module HuberLoss;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(predictions: []const f32, targets: []const f32, delta: f32) → f32
-    fn forward(predictions: []const f32, targets: []const f32, delta: f32) -> f32 {
+    // forward(predictions: []const f32) → void
+    fn forward(predictions: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

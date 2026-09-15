@@ -20,8 +20,8 @@ module TriBuilder;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(capacity: usize, allocator: std.mem.Allocator) → !Builder(T)
-    fn init(capacity: usize, allocator: std.mem.Allocator) -> !Builder(T) {
+    // init(capacity: usize) → void
+    fn init(capacity: usize) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -30,28 +30,28 @@ module TriBuilder;
         // TODO: Implement from .tri spec
     }
 
-    // append(builder: *Builder(T), item: T, allocator: std.mem.Allocator) → !void
-    fn append(builder: *Builder(T), item: T, allocator: std.mem.Allocator) -> !void {
+    // append(builder: *Builder(T)) → void
+    fn append(builder: *Builder(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // append_slice(builder: *Builder(T), slice: []const T, allocator: std.mem.Allocator) → !void
-    fn append_slice(builder: *Builder(T), slice: []const T, allocator: std.mem.Allocator) -> !void {
+    // append_slice(builder: *Builder(T)) → void
+    fn append_slice(builder: *Builder(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // len(builder: Builder(T)) → usize
-    fn len(builder: Builder(T)) -> usize {
+    // len(builder: Builder(T)) → void
+    fn len(builder: Builder(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // capacity(builder: Builder(T)) → usize
-    fn capacity(builder: Builder(T)) -> usize {
+    // capacity(builder: Builder(T)) → void
+    fn capacity(builder: Builder(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // finish(builder: Builder(T), allocator: std.mem.Allocator) → ![]T
-    fn finish(builder: Builder(T), allocator: std.mem.Allocator) -> ![]T {
+    // finish(builder: Builder(T)) → void
+    fn finish(builder: Builder(T)) -> void {
         // TODO: Implement from .tri spec
     }
 

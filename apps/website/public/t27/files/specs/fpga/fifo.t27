@@ -200,16 +200,16 @@ module Fifo {
         if (cfg.name == "") {
             errors = errors + 1;
         }
-        if (cfg.depth == 0 {
+        if (cfg.depth == 0) {
             errors = errors + 1;
         }
-        if (cfg.data_width == 0 {
+        if (cfg.data_width == 0) {
             errors = errors + 1;
         }
-        if (cfg.has_almost_empty and cfg.almost_empty_threshold >= cfg.depth {
+        if (cfg.has_almost_empty and cfg.almost_empty_threshold >= cfg.depth) {
             errors = errors + 1;
         }
-        if (cfg.has_almost_full and cfg.almost_full_threshold >= cfg.depth {
+        if (cfg.has_almost_full and cfg.almost_full_threshold >= cfg.depth) {
             errors = errors + 1;
         }
 

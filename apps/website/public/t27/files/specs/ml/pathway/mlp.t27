@@ -35,13 +35,13 @@ module Mlp;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(input: []const f32, state: MLPState, output: []f32, config: MLPConfig) → void
-    fn forward(input: []const f32, state: MLPState, output: []f32, config: MLPConfig) -> void {
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // init(state: MLPState, config: MLPConfig) → void
-    fn init(state: MLPState, config: MLPConfig) -> void {
+    // init(state: MLPState) → void
+    fn init(state: MLPState) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -49,33 +49,15 @@ module Mlp;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // forward and init have no bodies, so no activation can be checked. The
-    // module does fix the MNIST geometry, which is what the invariants below
-    // describe in comments and never assert.
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
 
-    test mnist_input_is_a_flattened_28x28_image
-        // mlp_constraint_0
-        given input_size = MNIST_INPUT_SIZE
-        then input_size == 784 and input_size == 28 * 28
-
-    test mnist_output_is_one_logit_per_digit
-        // mlp_constraint_1
-        given output_size = MNIST_OUTPUT_SIZE
-        then output_size == 10
-
-    test default_hidden_layer_is_non_empty
-        // mlp_constraint_2
-        given hidden = DEFAULT_HIDDEN_SIZE
-        then hidden > 0
-
-    test default_config_weight_counts_fit_a_u32
-        // mlp_constraint_3 and mlp_constraint_4: w1 is input*hidden, w2 is
-        // hidden*output. 784*128 = 100352 and 128*10 = 1280, both well inside
-        // the u32 the config fields are declared as.
-        given cfg = MLPConfig{ .input_size = MNIST_INPUT_SIZE, .hidden_size = DEFAULT_HIDDEN_SIZE, .output_size = MNIST_OUTPUT_SIZE }
-        and w1_count = cfg.input_size * cfg.hidden_size
-        and w2_count = cfg.hidden_size * cfg.output_size
-        then w1_count == 100352 and w2_count == 1280
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

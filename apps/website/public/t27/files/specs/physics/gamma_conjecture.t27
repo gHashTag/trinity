@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/physics/gamma_conjecture.t27
-// Strand I -- Loop Quantum Gravity
+// Strand I — Loop Quantum Gravity
 // Conjecture GI1: Barbero-Immirzi Parameter from Golden Section
 module GammaConjecture {
     // Import base constants: PHI, PI
     use math::constants;
 
-// -----------------------------------------------------
+// ─────────────────────────────────────────────────────
 // 1. Conjecture GI1 Definition
-// -----------------------------------------------------
+// ─────────────────────────────────────────────────────
 // Claim ID: C-gamma-001 (CONJECTURAL)
 
     // Trinity gamma conjecture: gamma_phi = phi^{-3}
@@ -34,9 +34,9 @@ module GammaConjecture {
     const DELTA_GAMMA_2_1_PERCENT : f64 =
         ((GAMMA_LQG_ALT - GAMMA_LQG_STANDARD).abs() / GAMMA_LQG_STANDARD) * 100.0;
 
-// -----------------------------------------------------
+// ─────────────────────────────────────────────────────
 // 2. Formula Definitions (affected by gamma)
-// -----------------------------------------------------
+// ─────────────────────────────────────────────────────
 // Claim IDs: C-gamma-002 to C-gamma-006
 
     // G1: Newton's constant G = pi^3 * gamma^2 / phi
@@ -73,9 +73,9 @@ module GammaConjecture {
         return (gamma * PI / PHI) * scale;
     }
 
-// -----------------------------------------------------
+// ─────────────────────────────────────────────────────
 // 3. Verification API
-// -----------------------------------------------------
+// ─────────────────────────────────────────────────────
 
     struct GammaConjectureReport {
         gamma_phi_value    : f64;
@@ -113,9 +113,9 @@ module GammaConjecture {
         };
     }
 
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants for Gamma Conjecture GI1
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
     test gamma_phi_from_phi_inverse_cubed
         // Claim: C-gamma-001 (CONJECTURAL), tolerance: CONJECTURAL
@@ -228,8 +228,8 @@ module GammaConjecture {
 
     invariant gamma_phi_structurally_simple
         // Claim: C-gamma-001 (CONJECTURAL), tolerance: CONJECTURAL
-        // gamma_phi = sqrt5 - 2 uses only sqrt5 (from phi) and integer 2
-        // gamma_1 = ln(2)/(pisqrt3) uses ln(2), pi, and sqrt3
+        // γ_φ = √5 − 2 uses only √5 (from φ) and integer 2
+        // γ₁ = ln(2)/(π√3) uses ln(2), π, and √3
         given sqrt5_form = 5.0_f64.sqrt() - 2.0
         and   gamma_phi = GAMMA_PHI
         then abs(gamma_phi - sqrt5_form) < 1e-12

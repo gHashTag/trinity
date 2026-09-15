@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/ternary/bigint.t27
 // TVC BigInt - Balanced Ternary Arbitrary Precision Arithmetic
-// 01234 567891011: V = n 12 3^k 13 14^m 15 16^p 17 e^q
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
+// φ² + 1/φ² = 3 | TRINITY
 //
 // Balanced Ternary representation:
 // - Each trit has value {-1, 0, +1}
-// - Number = Sigma(trit[i] * 3^i) for i = 0..n-1
+// - Number = Σ(trit[i] × 3^i) for i = 0..n-1
 // - No separate sign bit needed (inherent in representation)
 // - Rounding is simpler (truncation = rounding to nearest)
 //
 // Supports:
-// - Arbitrary precision integers up to 3^256 ~= 10^122
+// - Arbitrary precision integers up to 3^256 ≈ 10^122
 // - SIMD-optimized operations (32 trits in parallel)
 // - Karatsuba multiplication O(n^1.585)
 // - Newton-Raphson division for large numbers
@@ -30,7 +30,7 @@ use tritype-base::trit_multiply;
 // Constants
 // ============================================================================
 
-/// Maximum trits for BigInt (supports numbers up to 3^256 ~= 10^122)
+/// Maximum trits for BigInt (supports numbers up to 3^256 ≈ 10^122)
 pub const MAX_TRITS : usize = 256;
 
 /// Trit constants for convenience
@@ -123,7 +123,7 @@ pub const BigInt = struct {
     // ========================================================================
 
     /// Convert BigInt to i64 (may overflow for large numbers)
-    /// Algorithm: Sigma(trit[i] * 3^i)
+    /// Algorithm: Σ(trit[i] × 3^i)
     /// Complexity: O(len)
     pub fn to_i64(self: Self) i64 {
         var result : i64 = 0;
@@ -403,7 +403,7 @@ pub const BigInt = struct {
     /// Karatsuba multiplication for large numbers
     /// Recursively splits numbers: a = a1*3^m + a0, b = b1*3^m + b0
     /// Uses 3 multiplications: z0 = a0*b0, z2 = a1*b1, z1 = (a0+a1)*(b0+b1) - z0 - z2
-    /// Complexity: O(n^log2(3)) ~= O(n^1.585)
+    /// Complexity: O(n^log2(3)) ≈ O(n^1.585)
     fn mul_karatsuba(a: Self, b: Self) Self {
         // Base case: use simple multiplication
         if (a.len <= KARATSUBA_THRESHOLD or b.len <= KARATSUBA_THRESHOLD) {
@@ -488,7 +488,7 @@ pub const BigInt = struct {
 
     /// Compare absolute values
     /// Returns: -1 if |a| < |b|, 0 if |a| == |b|, +1 if |a| > |b|
-    pub fn compare_abs(a: Self, b: Self) i8 {
+    fn compare_abs(a: Self, b: Self) i8 {
         const a_abs = a.abs();
         const b_abs = b.abs();
 
@@ -531,6 +531,11 @@ pub const BigInt = struct {
         }
 
         return cmp;
+    }
+
+    /// Compare absolute values (public wrapper)
+    pub fn compare_abs(a: Self, b: Self) i8 {
+        return a.compare_abs(b);
     }
 
     // ========================================================================

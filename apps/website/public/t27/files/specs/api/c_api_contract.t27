@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-# C API CONTRACT -- Trinity VSA FFI Bridge
+# C API CONTRACT — Trinity VSA FFI Bridge
 
 ## Specification
 
-Zig-backed FFI bridge for Trinity VSA core.
-Exposes real SIMD-accelerated VSA core to C/C++/Python/Swift/Go via FFI.
+// Zig-backed FFI bridge for Trinity VSA core.
+// Exposes real SIMD-accelerated VSA core to C/C++/Python/Swift/Go via FFI.
 
 ## Mathematical Foundation
 
 ```
-phi^2 + 1/phi^2 = 3 = TRINITY
+// φ² + 1/φ² = 3 = TRINITY
 ```
 
 ## Exposed Functions
@@ -17,105 +17,105 @@ phi^2 + 1/phi^2 = 3 = TRINITY
 ### Version
 
 ```
-export fn trinity_vsa_version() -> [*]const u8
-    Returns "0.2.0"
+// export fn trinity_vsa_version() -> [*]const u8
+//     Returns "0.2.0"
 ```
 
 ### Vector Lifecycle
 
 ```
-export fn trinity_vsa_vector_zeros(dim: usize) -> ?*anyopaque
-    Create a zero vector with given dimension
+// export fn trinity_vsa_vector_zeros(dim: usize) -> ?*anyopaque
+//     Create a zero vector with given dimension
 
-export fn trinity_vsa_vector_random(dim: usize, seed: u64) -> ?*anyopaque
-    Create a random hypervector with given dimension and seed
+// export fn trinity_vsa_vector_random(dim: usize, seed: u64) -> ?*anyopaque
+//     Create a random hypervector with given dimension and seed
 
-export fn trinity_vsa_from_array(data: [*]const i8, dim: usize) -> ?*anyopaque
-    Create vector from an array of int8 values (-1, 0, +1)
+// export fn trinity_vsa_from_array(data: [*]const i8, dim: usize) -> ?*anyopaque
+//     Create vector from an array of int8 values (-1, 0, +1)
 
-export fn trinity_vsa_vector_clone(v: ?*anyopaque) -> ?*anyopaque
-    Clone a vector (deep copy)
+// export fn trinity_vsa_vector_clone(v: ?*anyopaque) -> ?*anyopaque
+//     Clone a vector (deep copy)
 
-export fn trinity_vsa_vector_free(v: ?*anyopaque) -> void
-    Free a vector (must be called for every created vector)
+// export fn trinity_vsa_vector_free(v: ?*anyopaque) -> void
+//     Free a vector (must be called for every created vector)
 ```
 
 ### VSA Operations
 
 ```
-export fn trinity_vsa_bind(a, b) -> ?*anyopaque
-    Bind two vectors (element-wise multiplication)
+// export fn trinity_vsa_bind(a, b) -> ?*anyopaque
+//     Bind two vectors (element-wise multiplication)
     bind(a, a) = all +1 (self-inverse)
 
-export fn trinity_vsa_unbind(a, b) -> ?*anyopaque
-    Inverse of bind
+// export fn trinity_vsa_unbind(a, b) -> ?*anyopaque
+//     Inverse of bind
     unbind(bind(a, b), B) = A
 
-export fn trinity_vsa_bundle2(a, b) -> ?*anyopaque
-    Bundle 2 vectors (majority voting)
+// export fn trinity_vsa_bundle2(a, b) -> ?*anyopaque
+//     Bundle 2 vectors (majority voting)
 
-export fn trinity_vsa_bundle3(a, b, c) -> ?*anyopaque
-    Bundle 3 vectors (true majority voting)
+// export fn trinity_vsa_bundle3(a, b, c) -> ?*anyopaque
+//     Bundle 3 vectors (true majority voting)
 
-export fn trinity_vsa_permute(v, k) -> ?*anyopaque
-    Permute vector (cyclic shift by k positions)
+// export fn trinity_vsa_permute(v, k) -> ?*anyopaque
+//     Permute vector (cyclic shift by k positions)
 ```
 
 ### Similarity
 
 ```
-export fn trinity_vsa_cosine_similarity(a, b) -> f64
-    Cosine similarity [-1.0, 1.0]
+// export fn trinity_vsa_cosine_similarity(a, b) -> f64
+//     Cosine similarity [-1.0, 1.0]
 
-export fn trinity_vsa_hamming_distance(a, b) -> usize
-    Hamming distance (number of differing trits)
+// export fn trinity_vsa_hamming_distance(a, b) -> usize
+//     Hamming distance (number of differing trits)
 
-export fn trinity_vsa_dot_product(a, b) -> i64
-    Dot product (sum of element-wise products)
+// export fn trinity_vsa_dot_product(a, b) -> i64
+//     Dot product (sum of element-wise products)
 ```
 
 ### Text Encoding
 
 ```
-export fn trinity_vsa_encode_text(text: [*]const u8, len: usize) -> ?*anyopaque
-    Encode text string to hypervector (for semantic search)
+// export fn trinity_vsa_encode_text(text: [*]const u8, len: usize) -> ?*anyopaque
+//     Encode text string to hypervector (for semantic search)
 
-export fn trinity_vsa_encode_text_words(text: [*]const u8, len: usize) -> ?*anyopaque
-    Encode text using word-level bag-of-words
+// export fn trinity_vsa_encode_text_words(text: [*]const u8, len: usize) -> ?*anyopaque
+//     Encode text using word-level bag-of-words
 
-export fn trinity_vsa_decode_text(v: ?*anyopaque, buf: [*]u8, buf_len: usize) -> usize
-    Decode hypervector back to text
-    Returns number of decoded characters written to buf
+// export fn trinity_vsa_decode_text(v: ?*anyopaque, buf: [*]u8, buf_len: usize) -> usize
+//     Decode hypervector back to text
+//     Returns number of decoded characters written to buf
 ```
 
 ### Vector Access
 
 ```
-export fn trinity_vsa_get_dim(v: ?*anyopaque) -> usize
-    Get vector dimension (number of trits)
+// export fn trinity_vsa_get_dim(v: ?*anyopaque) -> usize
+//     Get vector dimension (number of trits)
 
-export fn trinity_vsa_get_trit(v: ?*anyopaque, index: usize) -> i8
-    Get trit value at index (returns -1, 0, or +1)
+// export fn trinity_vsa_get_trit(v: ?*anyopaque, index: usize) -> i8
+//     Get trit value at index (returns -1, 0, or +1)
 
-export fn trinity_vsa_set_trit(v: ?*anyopaque, index: usize, value: i8) -> void
-    Set trit value at index (value clamped to -1, 0, +1)
+// export fn trinity_vsa_set_trit(v: ?*anyopaque, index: usize, value: i8) -> void
+//     Set trit value at index (value clamped to -1, 0, +1)
 
-export fn trinity_vsa_to_array(v: ?*anyopaque, out: [*]i8, max_len: usize) -> usize
-    Copy trit data to output array
-    Returns number of trits written
+// export fn trinity_vsa_to_array(v: ?*anyopaque, out: [*]i8, max_len: usize) -> usize
+//     Copy trit data to output array
+//     Returns number of trits written
 
-export fn trinity_vsa_max_dim() -> usize
-    Get maximum supported vector dimension
+// export fn trinity_vsa_max_dim() -> usize
+//     Get maximum supported vector dimension
 ```
 
 ## Memory Management
 
-All functions use opaque handles (heap-allocated HybridBigInt).
+// All functions use opaque handles (heap-allocated HybridBigInt).
 
-**Important:**
-- Thread-safe: Each vector is independent. No global state.
-- Ownership: Free must be called for every `trinity_vsa_vector_*` created vector.
-- Error handling: Null return indicates allocation failure.
+// **Important:**
+// - Thread-safe: Each vector is independent. No global state.
+// - Ownership: Free must be called for every `trinity_vsa_vector_*` created vector.
+// - Error handling: Null return indicates allocation failure.
 
 ## Tests
 
@@ -237,6 +237,6 @@ test "C-API: permute" {
 
 ## Notes
 
-- Thread-safety: All functions are thread-safe (no global state)
-- Alignment: Memory allocated via heap allocator (no alignment restrictions)
-- FFI boundary: Uses C calling convention (Zig-specific)
+// - Thread-safety: All functions are thread-safe (no global state)
+// - Alignment: Memory allocated via heap allocator (no alignment restrictions)
+// - FFI boundary: Uses C calling convention (Zig-specific)

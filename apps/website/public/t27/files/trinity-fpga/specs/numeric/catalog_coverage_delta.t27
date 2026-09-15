@@ -7538,7 +7538,7 @@ correction "the gate's own number folded three different things into one" {
   now "the three are counted separately and only a parse defect fails the gate"
   after_the_tekum_fix "15, down from 16"
 
-  liveness_checked "none of the 15 is instantiated or built by anything. Three names appear elsewhere and all three are inert: a comment in trinity_v2.xdc naming a .vibee spec, a workflow COMMENT mentioning trinity_v1_morse.v, and uart_simple.xdc -- which is a single line containing its own absolute path from another machine and another user, /Users/playra/trinity-w1/..., and is a separate small defect of its own"
+  liveness_checked "none of the 15 is instantiated or built by anything. Three names appear elsewhere and all three are inert: a comment in trinity_v2.xdc naming a .vibee spec, a workflow COMMENT mentioning trinity_v1_morse.v, and uart_simple.xdc -- which is a single line containing its own absolute path from another machine and another user, /Users/playom/trinity-fpga/..., and is a separate small defect of its own"
 }
 
 retraction "pass 146 cited an experiment that could not have run" {

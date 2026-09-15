@@ -11,30 +11,30 @@ module TriSet;
     // ═══════════════════════════════════════════════════════════
 
     pub const HashSet(T) = struct {
-        items : std.HashMap(T, void),
+        items : "std.HashMap(T, void)",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(allocator: std.mem.Allocator) → !HashSet(T)
-    fn init(allocator: std.mem.Allocator) -> !HashSet(T) {
+    // init(allocator: std.mem.Allocator) → void
+    fn init(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // add(set: *HashSet(T), item: T, allocator: std.mem.Allocator) → !void
-    fn add(set: *HashSet(T), item: T, allocator: std.mem.Allocator) -> !void {
+    // add(set: *HashSet(T)) → void
+    fn add(set: *HashSet(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // contains(set: HashSet(T), item: T) → bool
-    fn contains(set: HashSet(T), item: T) -> bool {
+    // contains(set: HashSet(T)) → void
+    fn contains(set: HashSet(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // union(a: HashSet(T), b: HashSet(T), allocator: std.mem.Allocator) → !HashSet(T)
-    fn union(a: HashSet(T), b: HashSet(T), allocator: std.mem.Allocator) -> !HashSet(T) {
+    // union(a: HashSet(T)) → void
+    fn union(a: HashSet(T)) -> void {
         // TODO: Implement from .tri spec
     }
 

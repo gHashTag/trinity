@@ -18,23 +18,23 @@ module Tanh;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(x: f32) → f32
-    fn forward(x: f32) -> f32 {
+    // forward(x: f32) → void
+    fn forward(x: f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // forward_batch(input: []f32) → []f32
-    fn forward_batch(input: []f32) -> []f32 {
+    // forward_batch(input: []f32) → void
+    fn forward_batch(input: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // derivative(x: f32) → f32
-    fn derivative(x: f32) -> f32 {
+    // derivative(x: f32) → void
+    fn derivative(x: f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // derivative_from_output(tanh_x: f32) → f32
-    fn derivative_from_output(tanh_x: f32) -> f32 {
+    // derivative_from_output(tanh_x: f32) → void
+    fn derivative_from_output(tanh_x: f32) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -42,12 +42,23 @@ module Tanh;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // All four functions have no bodies, so neither tanh nor its derivative
-    // can be exercised. The module's only decision is that tanh takes no
-    // hyper-parameters, and that is what TanhConfig encodes.
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
 
-    test tanh_config_carries_no_state
-        // the sole field is void, so the config occupies no storage at all
-        given config_size = @sizeOf(TanhConfig)
-        then config_size == 0
+    test forward_batch_basic_case
+        given input = default_input()
+        when result = forward_batch(input)
+        then result != undefined
+
+    test derivative_basic_case
+        given input = default_input()
+        when result = derivative(input)
+        then result != undefined
+
+    test derivative_from_output_basic_case
+        given input = default_input()
+        when result = derivative_from_output(input)
+        then result != undefined
 

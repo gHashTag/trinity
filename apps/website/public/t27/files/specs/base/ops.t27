@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-; ops.t27 -- Trit Operations for t27 Language
+; ops.t27 — Trit Operations for t27 Language
 ; Trit arithmetic: multiply, add, carry, comparison
-; phi^2 + 1/phi^2 = 3 | TRINITY
+; φ² + 1/φ² = 3 | TRINITY
 
 module tritype-ops;
 
@@ -23,8 +23,8 @@ pub const Trit = enum(i8) {
 // ============================================================================
 // Lookup Tables
 // ============================================================================
-// Table size: 9 entries (3*3 for each operand)
-// Indexed as: table[(a+1)*3 + (b+1)] where a,b in {-1,0,+1}
+// Table size: 9 entries (3×3 for each operand)
+// Indexed as: table[(a+1)*3 + (b+1)] where a,b ∈ {-1,0,+1}
 
 // trit_multiply lookup table
 //    -1  0 +1
@@ -49,21 +49,21 @@ pub const carry_table : [9]i8 = [1, 0, 0, 0, 0, 0, 0, 0, -1];
 // Functions
 // ============================================================================
 
-// trit_multiply_table(a: Trit, b: Trit) -> Trit
+// trit_multiply_table(a: Trit, b: Trit) → Trit
 // Fast trit multiplication using lookup table
 pub fn trit_multiply_table(a: Trit, b: Trit) Trit {
     const idx = (@intFromEnum(a) + 1) * 3 + (@intFromEnum(b) + 1);
     return @as(Trit, @enumFromInt(mult_table[idx]));
 }
 
-// trit_add_table(a: Trit, b: Trit) -> Trit
+// trit_add_table(a: Trit, b: Trit) → Trit
 // Fast trit addition using lookup table
 pub fn trit_add_table(a: Trit, b: Trit) Trit {
     const idx = (@intFromEnum(a) + 1) * 3 + (@intFromEnum(b) + 1);
     return @as(Trit, @enumFromInt(add_table[idx]));
 }
 
-// trit_carry_table(a: Trit, b: Trit) -> Trit
+// trit_carry_table(a: Trit, b: Trit) → Trit
 // Fast carry computation using lookup table
 // Returns carry value for trit addition: -1 if a+b < -1, +1 if a+b > +1, else 0
 pub fn trit_carry_table(a: Trit, b: Trit) Trit {
@@ -77,7 +77,7 @@ pub struct AddResult {
     carry_out : Trit,
 }
 
-// trit_add_with_carry(a: Trit, b: Trit, carry_in: Trit) -> AddResult
+// trit_add_with_carry(a: Trit, b: Trit, carry_in: Trit) → AddResult
 // Full ternary addition with carry propagation
 // result = a + b + carry_in
 // carry_out = -1 if result < -1, +1 if result > +1, else 0
@@ -115,7 +115,7 @@ pub fn trit_add_with_carry(a: Trit, b: Trit, carry_in: Trit) AddResult {
     return AddResult{ .result = result, .carry_out = carry };
 }
 
-// trit_compare(a: Trit, b: Trit) -> i8
+// trit_compare(a: Trit, b: Trit) → i8
 // Returns: -1 if a < b, 0 if a == b, +1 if a > b
 pub fn trit_compare(a: Trit, b: Trit) i8 {
     if (a == b) {
@@ -127,7 +127,7 @@ pub fn trit_compare(a: Trit, b: Trit) i8 {
     }
 }
 
-// trit_negate(a: Trit) -> Trit
+// trit_negate(a: Trit) → Trit
 // Returns -a (trit negation)
 // -(-1) = +1, -(0) = 0, -(+1) = -1
 pub fn trit_negate(a: Trit) Trit {
@@ -138,38 +138,38 @@ pub fn trit_negate(a: Trit) Trit {
     };
 }
 
-// trit_abs(a: Trit) -> Trit
+// trit_abs(a: Trit) → Trit
 // Returns |a| (absolute value, always 0 or +1)
 // |-1| = +1, |0| = 0, |+1| = +1
 pub fn trit_abs(a: Trit) Trit {
     return if (a == .neg) .pos else a;
 }
 
-// trit_min(a: Trit, b: Trit) -> Trit
+// trit_min(a: Trit, b: Trit) → Trit
 // Returns min(a, b)
 pub fn trit_min(a: Trit, b: Trit) Trit {
     return if (a == .neg or (a == .zero and b == .pos)) a else b;
 }
 
-// trit_max(a: Trit, b: Trit) -> Trit
+// trit_max(a: Trit, b: Trit) → Trit
 // Returns max(a, b)
 pub fn trit_max(a: Trit, b: Trit) Trit {
     return if (a == .pos or (a == .zero and b == .neg)) a else b;
 }
 
-// trit_subtract(a: Trit, b: Trit) -> Trit
+// trit_subtract(a: Trit, b: Trit) → Trit
 // Returns a - b using a + (-b)
 pub fn trit_subtract(a: Trit, b: Trit) Trit {
     return trit_add_table(a, trit_negate(b));
 }
 
-// trit_sign(a: Trit) -> i8
+// trit_sign(a: Trit) → i8
 // Returns sign of a: -1 if negative, 0 if zero, +1 if positive
 pub fn trit_sign(a: Trit) i8 {
     return @intFromEnum(a);
 }
 
-// trit_clamp(a: Trit, min_val: Trit, max_val: Trit) -> Trit
+// trit_clamp(a: Trit, min_val: Trit, max_val: Trit) → Trit
 // Clamps a to [min_val, max_val] range (requires min_val <= max_val)
 pub fn trit_clamp(a: Trit, min_val: Trit, max_val: Trit) Trit {
     if (trit_compare(a, min_val) < 0) return min_val;
@@ -177,61 +177,61 @@ pub fn trit_clamp(a: Trit, min_val: Trit, max_val: Trit) Trit {
     return a;
 }
 
-// trit_is_negative(a: Trit) -> bool
+// trit_is_negative(a: Trit) → bool
 // Returns true if a is -1
 pub fn trit_is_negative(a: Trit) bool {
     return a == .neg;
 }
 
-// trit_is_zero(a: Trit) -> bool
+// trit_is_zero(a: Trit) → bool
 // Returns true if a is 0
 pub fn trit_is_zero(a: Trit) bool {
     return a == .zero;
 }
 
-// trit_is_positive(a: Trit) -> bool
+// trit_is_positive(a: Trit) → bool
 // Returns true if a is +1
 pub fn trit_is_positive(a: Trit) bool {
     return a == .pos;
 }
 
-// trit_equal(a: Trit, b: Trit) -> bool
+// trit_equal(a: Trit, b: Trit) → bool
 // Returns true if a == b
 pub fn trit_equal(a: Trit, b: Trit) bool {
     return a == b;
 }
 
-// trit_not_equal(a: Trit, b: Trit) -> bool
+// trit_not_equal(a: Trit, b: Trit) → bool
 // Returns true if a != b
 pub fn trit_not_equal(a: Trit, b: Trit) bool {
     return a != b;
 }
 
-// trit_lt(a: Trit, b: Trit) -> bool
+// trit_lt(a: Trit, b: Trit) → bool
 // Returns true if a < b (less than)
 pub fn trit_lt(a: Trit, b: Trit) bool {
     return trit_compare(a, b) < 0;
 }
 
-// trit_le(a: Trit, b: Trit) -> bool
+// trit_le(a: Trit, b: Trit) → bool
 // Returns true if a <= b (less than or equal)
 pub fn trit_le(a: Trit, b: Trit) bool {
     return trit_compare(a, b) <= 0;
 }
 
-// trit_gt(a: Trit, b: Trit) -> bool
+// trit_gt(a: Trit, b: Trit) → bool
 // Returns true if a > b (greater than)
 pub fn trit_gt(a: Trit, b: Trit) bool {
     return trit_compare(a, b) > 0;
 }
 
-// trit_ge(a: Trit, b: Trit) -> bool
+// trit_ge(a: Trit, b: Trit) → bool
 // Returns true if a >= b (greater than or equal)
 pub fn trit_ge(a: Trit, b: Trit) bool {
     return trit_compare(a, b) >= 0;
 }
 
-// trit_multiply_with_carry(a: Trit, b: Trit, carry_in: Trit) -> MultiplyResult
+// trit_multiply_with_carry(a: Trit, b: Trit, carry_in: Trit) → MultiplyResult
 // Full ternary multiplication with carry propagation
 // result = a * b + carry_in
 // carry_out = -1 if result < -1, +1 if result > +1, else 0
@@ -243,15 +243,15 @@ pub fn trit_multiply_with_carry(a: Trit, b: Trit, carry_in: Trit) AddResult {
     return trit_add_with_carry(product, carry_in, .zero);
 }
 
-// trit_reverse(a: Trit) -> Trit
+// trit_reverse(a: Trit) → Trit
 // Returns the multiplicative inverse of a in balanced ternary
 // In balanced ternary: 1^-1 = -1, -1^-1 = -1, 0 has no inverse
 // Returns zero for zero (no inverse for zero)
 pub fn trit_reverse(a: Trit) Trit {
-    return if (a == .zero) .zero else a;  // In balanced ternary, 1 * 1 = 1, -1 * -1 = 1, so reverse of +/-1 is +/-1
+    return if (a == .zero) .zero else a;  // In balanced ternary, 1 * 1 = 1, -1 * -1 = 1, so reverse of ±1 is ±1
 }
 
-// trit_multiply_by_power_of_two(a: Trit, power: u8) -> Trit
+// trit_multiply_by_power_of_two(a: Trit, power: u8) → Trit
 // Multiplies a by 2^n using shifts in balanced ternary
 // Equivalent to adding a to itself n times (for small n)
 pub fn trit_multiply_by_power_of_two(a: Trit, power: u8) Trit {
@@ -269,8 +269,8 @@ pub fn trit_multiply_by_power_of_two(a: Trit, power: u8) Trit {
     return result;
 }
 
-// trit_power(a: Trit, n: u8) -> Trit
-// Raise trit to a small power (n in {0, 1, 2, 3})
+// trit_power(a: Trit, n: u8) → Trit
+// Raise trit to a small power (n ∈ {0, 1, 2, 3})
 // trit_power(x, 0) = +1 (identity element for multiplication)
 // trit_power(x, 1) = x
 // trit_power(x, 2) = x * x
@@ -278,7 +278,7 @@ pub fn trit_multiply_by_power_of_two(a: Trit, power: u8) Trit {
 // For larger powers, the result cycles based on trit properties
 pub fn trit_power(a: Trit, n: u8) Trit {
     if (n == 0) {
-        return .pos;  // x^0 = 1 for any x != 0
+        return .pos;  // x^0 = 1 for any x ≠ 0
     }
     if (n == 1) {
         return a;
@@ -293,47 +293,47 @@ pub fn trit_power(a: Trit, n: u8) Trit {
     return if (n % 2 == 1) .neg else .pos;
 }
 
-// trit_from_bool(b: bool) -> Trit
-// Convert boolean to trit (true -> +1, false -> 0)
+// trit_from_bool(b: bool) → Trit
+// Convert boolean to trit (true → +1, false → 0)
 // Maps boolean logic to balanced ternary
 pub fn trit_from_bool(b: bool) Trit {
     return if (b) .pos else .zero;
 }
 
-// trit_to_bool(a: Trit) -> bool
-// Convert trit to boolean (+1 -> true, others -> false)
+// trit_to_bool(a: Trit) → bool
+// Convert trit to boolean (+1 → true, others → false)
 // Maps trit to binary boolean logic
 pub fn trit_to_bool(a: Trit) bool {
     return a == .pos;
 }
 
-// trit_abs_diff(a: Trit, b: Trit) -> Trit
+// trit_abs_diff(a: Trit, b: Trit) → Trit
 // Compute absolute difference between two trits
 // Returns 0 if equal, 1 if different (both positive)
 pub fn trit_abs_diff(a: Trit, b: Trit) Trit {
     return if (a == b) .zero else .pos;
 }
 
-// trit_cond_swap(cond: Trit, a: Trit, b: Trit) -> Trit
+// trit_cond_swap(cond: Trit, a: Trit, b: Trit) → Trit
 // Conditional swap: return b if cond is +1, else a
 // This is equivalent to trit_select but with swapped semantics
 pub fn trit_cond_swap(cond: Trit, a: Trit, b: Trit) Trit {
     return if (cond == .pos) b else a;
 }
 
-// trit_is_unit(a: Trit) -> bool
+// trit_is_unit(a: Trit) → bool
 // Check if trit is a multiplicative unit (+1)
 pub fn trit_is_unit(a: Trit) bool {
     return a == .pos;
 }
 
-// trit_is_identity(a: Trit) -> bool
+// trit_is_identity(a: Trit) → bool
 // Check if trit is additive identity (0)
 pub fn trit_is_identity(a: Trit) bool {
     return a == .zero;
 }
 
-// trit_is_negated(a: Trit, b: Trit) -> bool
+// trit_is_negated(a: Trit, b: Trit) → bool
 // Check if b is the negation of a
 pub fn trit_is_negated(a: Trit, b: Trit) bool {
     return b == trit_negate(a);
@@ -844,7 +844,7 @@ test "test_trit_multiply_by_power_of_two_identity" {
 }
 
 test "test_trit_power_zero_exponent" {
-    // Verify: x^0 = +1 for any x != 0
+    // Verify: x^0 = +1 for any x ≠ 0
     try std.testing.expectEqual(.pos, trit_power(.neg, 0));
     try std.testing.expectEqual(.pos, trit_power(.pos, 0));
 }
@@ -878,22 +878,22 @@ test "test_trit_power_cube" {
 }
 
 test "test_trit_from_bool_true" {
-    // Verify: true -> +1
+    // Verify: true → +1
     try std.testing.expectEqual(.pos, trit_from_bool(true));
 }
 
 test "test_trit_from_bool_false" {
-    // Verify: false -> 0
+    // Verify: false → 0
     try std.testing.expectEqual(.zero, trit_from_bool(false));
 }
 
 test "test_trit_to_bool_positive" {
-    // Verify: +1 -> true
+    // Verify: +1 → true
     try std.testing.expect(trit_to_bool(.pos));
 }
 
 test "test_trit_to_bool_non_positive" {
-    // Verify: 0 and -1 -> false
+    // Verify: 0 and -1 → false
     try std.testing.expect(!trit_to_bool(.zero));
     try std.testing.expect(!trit_to_bool(.neg));
 }
@@ -913,7 +913,7 @@ test "test_trit_abs_diff_equal" {
 }
 
 test "test_trit_abs_diff_different" {
-    // Verify: |a - b| = 1 for a != b
+    // Verify: |a - b| = 1 for a ≠ b
     try std.testing.expectEqual(.pos, trit_abs_diff(.neg, .zero));
     try std.testing.expectEqual(.pos, trit_abs_diff(.neg, .pos));
     try std.testing.expectEqual(.pos, trit_abs_diff(.zero, .pos));
@@ -1285,6 +1285,7 @@ bench "bench_trit_multiply_table_latency" {
     for (0..1000) |_| {
         result = trit_multiply_table(.pos, .neg);
     }
+    _ = result;
 }
 
 bench "bench_trit_add_table_latency" {
@@ -1295,6 +1296,7 @@ bench "bench_trit_add_table_latency" {
     for (0..1000) |_| {
         result = trit_add_table(.pos, .neg);
     }
+    _ = result;
 }
 
 bench "bench_trit_carry_table_latency" {
@@ -1305,6 +1307,7 @@ bench "bench_trit_carry_table_latency" {
     for (0..1000) |_| {
         result = trit_carry_table(.pos, .pos);
     }
+    _ = result;
 }
 
 bench "bench_trit_add_with_carry_latency" {
@@ -1315,6 +1318,7 @@ bench "bench_trit_add_with_carry_latency" {
     for (0..1000) |_| {
         result = trit_add_with_carry(.pos, .pos, .zero);
     }
+    _ = result;
 }
 
 bench "bench_trit_compare_latency" {
@@ -1325,6 +1329,7 @@ bench "bench_trit_compare_latency" {
     for (0..1000) |_| {
         result = trit_compare(.pos, .neg);
     }
+    _ = result;
 }
 
 bench "bench_trit_min_max_latency" {
@@ -1335,6 +1340,7 @@ bench "bench_trit_min_max_latency" {
     for (0..1000) |_| {
         result = trit_min(.pos, .neg);
     }
+    _ = result;
 }
 
 bench "bench_trit_lt_latency" {
@@ -1345,6 +1351,7 @@ bench "bench_trit_lt_latency" {
     for (0..1000) |_| {
         result = trit_lt(.neg, .pos);
     }
+    _ = result;
 }
 
 bench "bench_trit_le_latency" {
@@ -1355,6 +1362,7 @@ bench "bench_trit_le_latency" {
     for (0..1000) |_| {
         result = trit_le(.neg, .pos);
     }
+    _ = result;
 }
 
 bench "bench_trit_gt_latency" {
@@ -1365,6 +1373,7 @@ bench "bench_trit_gt_latency" {
     for (0..1000) |_| {
         result = trit_gt(.pos, .neg);
     }
+    _ = result;
 }
 
 bench "bench_trit_ge_latency" {
@@ -1375,6 +1384,7 @@ bench "bench_trit_ge_latency" {
     for (0..1000) |_| {
         result = trit_ge(.pos, .neg);
     }
+    _ = result;
 }
 
 bench "bench_trit_multiply_with_carry_latency" {
@@ -1385,6 +1395,7 @@ bench "bench_trit_multiply_with_carry_latency" {
     for (0..1000) |_| {
         result = trit_multiply_with_carry(.pos, .pos, .zero);
     }
+    _ = result;
 }
 
 bench "bench_trit_reverse_latency" {
@@ -1395,6 +1406,7 @@ bench "bench_trit_reverse_latency" {
     for (0..1000) |_| {
         result = trit_reverse(.pos);
     }
+    _ = result;
 }
 
 bench "bench_trit_multiply_by_power_of_two_latency" {
@@ -1405,6 +1417,7 @@ bench "bench_trit_multiply_by_power_of_two_latency" {
     for (0..1000) |_| {
         result = trit_multiply_by_power_of_two(.pos, 1);
     }
+    _ = result;
 }
 
 bench "bench_trit_power_latency" {
@@ -1415,6 +1428,7 @@ bench "bench_trit_power_latency" {
     for (0..1000) |_| {
         result = trit_power(.neg, 2);
     }
+    _ = result;
 }
 
 bench "bench_trit_from_bool_latency" {
@@ -1425,6 +1439,7 @@ bench "bench_trit_from_bool_latency" {
     for (0..1000) |_| {
         result = trit_from_bool(true);
     }
+    _ = result;
 }
 
 bench "bench_trit_to_bool_latency" {
@@ -1435,6 +1450,7 @@ bench "bench_trit_to_bool_latency" {
     for (0..1000) |_| {
         result = trit_to_bool(.pos);
     }
+    _ = result;
 }
 
 bench "bench_trit_abs_diff_latency" {
@@ -1445,6 +1461,7 @@ bench "bench_trit_abs_diff_latency" {
     for (0..1000) |_| {
         result = trit_abs_diff(.pos, .neg);
     }
+    _ = result;
 }
 
 bench "bench_trit_cond_swap_latency" {
@@ -1455,6 +1472,7 @@ bench "bench_trit_cond_swap_latency" {
     for (0..1000) |_| {
         result = trit_cond_swap(.pos, .neg, .zero);
     }
+    _ = result;
 }
 
 bench "bench_trit_is_unit_latency" {
@@ -1465,6 +1483,7 @@ bench "bench_trit_is_unit_latency" {
     for (0..1000) |_| {
         result = trit_is_unit(.pos);
     }
+    _ = result;
 }
 
 bench "bench_trit_is_identity_latency" {
@@ -1475,6 +1494,7 @@ bench "bench_trit_is_identity_latency" {
     for (0..1000) |_| {
         result = trit_is_identity(.zero);
     }
+    _ = result;
 }
 
 bench "bench_trit_is_negated_latency" {
@@ -1485,5 +1505,6 @@ bench "bench_trit_is_negated_latency" {
     for (0..1000) |_| {
         result = trit_is_negated(.neg, .pos);
     }
+    _ = result;
 }
 

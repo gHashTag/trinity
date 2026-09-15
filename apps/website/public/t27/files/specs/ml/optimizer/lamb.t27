@@ -39,18 +39,18 @@ module Lamb;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init_state(num_params: u32) → LAMBState
-    fn init_state(num_params: u32) -> LAMBState {
+    // init_state(num_params: u32) → void
+    fn init_state(num_params: u32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // compute_layer_update(params: []f32, grads: []f32, state: LAMBState, config: LAMBConfig) → []f32
-    fn compute_layer_update(params: []f32, grads: []f32, state: LAMBState, config: LAMBConfig) -> []f32 {
+    // compute_layer_update(params: []f32) → void
+    fn compute_layer_update(params: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // forward(layers: [][]f32, grads: [][]f32, states: []LAMBState, config: LAMBConfig) → [][]f32
-    fn forward(layers: [][]f32, grads: [][]f32, states: []LAMBState, config: LAMBConfig) -> [][]f32 {
+    // forward(layers: [][]f32) → void
+    fn forward(layers: [][]f32) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -58,42 +58,20 @@ module Lamb;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // init_state, compute_layer_update and forward have no bodies, so nothing
-    // about the update rule can be exercised yet. What the module does decide
-    // is its default hyper-parameters, and those are exactly what the
-    // invariants below claim without asserting. Checked here instead.
+    test init_state_basic_case
+        given input = default_input()
+        when result = init_state(input)
+        then result != undefined
 
-    test default_betas_lie_in_the_open_unit_interval
-        // lamb_constraint_0 and lamb_constraint_1
-        given beta1 = DEFAULT_BETA1
-        and beta2 = DEFAULT_BETA2
-        then beta1 > 0.0 and beta1 < 1.0 and beta2 > 0.0 and beta2 < 1.0
+    test compute_layer_update_basic_case
+        given input = default_input()
+        when result = compute_layer_update(input)
+        then result != undefined
 
-    test second_moment_decays_slower_than_first
-        // v accumulates over a longer window than m, so beta2 > beta1
-        given beta1 = DEFAULT_BETA1
-        and beta2 = DEFAULT_BETA2
-        then beta2 > beta1
-
-    test default_epsilon_is_positive_and_well_below_the_step_size
-        // lamb_constraint_2: epsilon only guards the division, it must not
-        // dominate the update
-        given epsilon = DEFAULT_EPSILON
-        and lr = DEFAULT_LR
-        then epsilon > 0.0 and epsilon < lr
-
-    test default_clip_threshold_is_positive
-        // lamb_constraint_3: the trust ratio is clipped from above
-        given clip = DEFAULT_CLIP_THRESHOLD
-        then clip > 0.0
-
-    test default_learning_rate_is_a_positive_fraction
-        given lr = DEFAULT_LR
-        then lr > 0.0 and lr < 1.0
-
-    test default_config_carries_the_declared_defaults
-        given cfg = LAMBConfig{ .learning_rate = DEFAULT_LR, .beta1 = DEFAULT_BETA1, .beta2 = DEFAULT_BETA2, .epsilon = DEFAULT_EPSILON, .weight_decay = 0.0, .clip_threshold = DEFAULT_CLIP_THRESHOLD }
-        then cfg.beta1 > 0.0 and cfg.beta1 < 1.0 and cfg.beta2 > 0.0 and cfg.beta2 < 1.0 and cfg.epsilon > 0.0 and cfg.clip_threshold > 0.0
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

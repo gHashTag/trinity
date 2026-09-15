@@ -44,26 +44,106 @@ function fail(msg) {
   process.exit(1)
 }
 
-if (!existsSync(SPECS_SRC)) fail(`spec corpus not found at ${SPECS_SRC} (set T27_ROOT)`)
-if (!existsSync(WASM_SRC)) fail(`wasm bridge not built.\n  cd ${T27}/bindings/wasm-explorer\n  cargo build --target wasm32-unknown-unknown --release`)
+// Where t27 itself comes from.
+//
+// For a year it came from this line's default: a working copy on one laptop.
+// That is how the library fell 540 specs behind master -- specs/tools (94),
+// bootstrap/tests (90), specs/ternary (60), specs/igla (44), specs/crons (33),
+// specs/agents (27), specs/skills (26) are all on master and none of them were
+// on the branch the last sync happened to be standing on. No workflow could fix
+// it either: CI has no /Users/playom/t27, so the daily scan skipped the
+// repository that holds two thirds of the corpus.
+//
+// So GitHub is the source, like the other four founding repositories, and the
+// local checkout is the opt-in (T27_LOCAL=1) for whoever is changing the
+// compiler and needs to see uncommitted specs on the page.
+const FROM_LOCAL = process.env.T27_LOCAL === '1' || process.env.T27_LOCAL === 'true'
+if (FROM_LOCAL && !existsSync(SPECS_SRC)) fail(`T27_LOCAL is set but no spec corpus at ${SPECS_SRC} (set T27_ROOT)`)
 
-const sha = execFileSync('git', ['-C', T27, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-const shortSha = sha.slice(0, 9)
-const dirty = execFileSync('git', ['-C', T27, 'status', '--porcelain', '--', 'specs', 'chips', 'compiler', 'bootstrap/src/compiler.rs'], { encoding: 'utf8' }).trim()
+// The compiler wasm is built by cargo, which CI does not run either. The copy
+// already vendored beside the corpus is the one the browser loads today, so a
+// spec refresh reuses it and says so; only a compiler change needs the build.
+// Read before the output directory is wiped, not after.
+const VENDORED_WASM = join(OUT_DIR, 't27_compiler.wasm')
+let wasmBuf, wasmFrom
+if (existsSync(WASM_SRC)) { wasmBuf = readFileSync(WASM_SRC); wasmFrom = 'cargo build in the local checkout' }
+else if (existsSync(VENDORED_WASM)) { wasmBuf = readFileSync(VENDORED_WASM); wasmFrom = 'the copy already vendored here' }
+else fail(`no compiler wasm.\n  cd ${T27}/bindings/wasm-explorer\n  cargo build --target wasm32-unknown-unknown --release`)
+
+const gh = (args) => execFileSync('gh', args, { encoding: 'utf8', timeout: 120000, maxBuffer: 60 * 1024 * 1024 }).trim()
+
+// One request, no working copy left behind. Returns the extracted root.
+function tarball(repo, ref) {
+  const dir = mkdtempSync(join(tmpdir(), `t27-${repo.replace(/\W/g, '-')}-`))
+  execFileSync('sh', ['-c',
+    `gh api "repos/gHashTag/${repo}/tarball/${ref}" > "${dir}/a.tar.gz" && tar -xzf "${dir}/a.tar.gz" -C "${dir}"`,
+  ], { stdio: 'ignore' })
+  const inner = execFileSync('sh', ['-c', `ls -d "${dir}"/*/ | head -1`], { encoding: 'utf8' }).trim()
+  return { dir, root: inner.replace(/\/$/, '') }
+}
+
+// Exclusions, all of them copies of files counted elsewhere rather than
+// judgement calls about what deserves to be in the library:
+//   .git/      object store
+//   .claude/   git worktrees -- second checkouts of files already counted
+//   public/t27/files/  THIS corpus, vendored into the website repository. The
+//     trinity tarball carries it, so without this line a refresh vendors its
+//     own output back in: the first run produced 563 "trinity" specs, which
+//     were the previous snapshot of t27 wearing a different path.
+const specFiles = (root) => execFileSync('find', [
+  root, '-name', '*.t27', '-type', 'f',
+  '-not', '-path', `${root}/.git/*`,
+  '-not', '-path', `${root}/.claude/*`,
+  '-not', '-path', '*/public/t27/files/*',
+], { encoding: 'utf8' }).split('\n').filter(Boolean).sort()
+
+const T27_REF = process.env.T27_REF || 'master'
+// The eight-lesson course and hello_world live on a branch that was never
+// merged, so master alone would delete the whole onboarding path from the site.
+// Named refs contribute only the paths the main ref does not have, which means
+// this list retires itself: merge the course and the overlay contributes zero.
+const OVERLAY_REFS = (process.env.T27_OVERLAY_REFS ?? 'fix/reject-vibee-specs').split(',').map((s) => s.trim()).filter(Boolean)
+
+let sha, shortSha, dirty, t27Root, t27Tmp, overlayUsed = []
+if (FROM_LOCAL) {
+  sha = execFileSync('git', ['-C', T27, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  dirty = execFileSync('git', ['-C', T27, 'status', '--porcelain', '--', 'specs', 'chips', 'compiler', 'bootstrap/src/compiler.rs'], { encoding: 'utf8' }).trim()
+  t27Root = T27
+} else {
+  sha = gh(['api', `repos/gHashTag/t27/commits/${T27_REF}`, '--jq', '.sha'])
+  dirty = ''
+  const main = tarball('t27', T27_REF)
+  t27Root = main.root
+  t27Tmp = main.dir
+  // Overlay: copy in only what the main ref is missing, and record what each
+  // one actually contributed rather than claiming the whole branch.
+  const have = new Set(specFiles(t27Root).map((f) => relative(t27Root, f)))
+  for (const ref of OVERLAY_REFS) {
+    let extra
+    try { extra = tarball('t27', ref) } catch { console.log(`  warning: overlay ref ${ref} unreachable, skipped`); continue }
+    const added = []
+    for (const abs of specFiles(extra.root)) {
+      const rel = relative(extra.root, abs)
+      if (have.has(rel)) continue
+      const dest = join(t27Root, rel)
+      mkdirSync(dirname(dest), { recursive: true })
+      writeFileSync(dest, readFileSync(abs))
+      have.add(rel)
+      added.push(rel)
+    }
+    rmSync(extra.dir, { recursive: true, force: true })
+    overlayUsed.push({ ref, commit: gh(['api', `repos/gHashTag/t27/commits/${ref}`, '--jq', '.sha']), added: added.length, paths: added.sort() })
+    console.log(`  overlay ${ref}: ${added.length} path(s) not on ${T27_REF}`)
+  }
+}
+shortSha = sha.slice(0, 9)
 
 // Every .t27 in the repo, not just specs/ -- `chips/` alone holds ~147 real
 // specs, and a corpus that quietly stops at specs/ cannot show a problem living
-// outside it. Two exclusions, both duplicates rather than judgement calls:
-//   .git/     -- object store
-//   .claude/  -- git worktrees, i.e. second checkouts of files already counted
-//                (the same compiler/ast.t27 appears in every worktree)
-const localFiles = execFileSync('find', [
-  T27, '-name', '*.t27', '-type', 'f',
-  '-not', '-path', `${T27}/.git/*`,
-  '-not', '-path', `${T27}/.claude/*`,
-], { encoding: 'utf8' }).split('\n').filter(Boolean).sort()
+// outside it. What is left out is listed at specFiles() above.
+const t27Files = specFiles(t27Root)
 
-if (!localFiles.length) fail('no .t27 files found')
+if (!t27Files.length) fail('no .t27 files found')
 
 // ---------------------------------------------------------------------------
 // Other repositories
@@ -84,30 +164,25 @@ const EXTRA_REPOS = (process.env.T27_SKIP_REMOTE ? [] : [
   'tt-trinity-corona',
 ])
 
-const sources = [{ repo: 't27', root: T27, files: localFiles, commit: null }]
+const sources = [{ repo: 't27', root: t27Root, files: t27Files, commit: FROM_LOCAL ? null : sha, tmp: t27Tmp }]
 
 for (const repo of EXTRA_REPOS) {
   let branch
   try {
-    branch = execFileSync('gh', ['api', `repos/gHashTag/${repo}`, '--jq', '.default_branch'], { encoding: 'utf8' }).trim()
+    branch = gh(['api', `repos/gHashTag/${repo}`, '--jq', '.default_branch'])
   } catch {
     console.log(`  warning: ${repo} unreachable, skipped`)
     continue
   }
-  const sha = execFileSync('gh', ['api', `repos/gHashTag/${repo}/commits/${branch}`, '--jq', '.sha'], { encoding: 'utf8' }).trim()
-  const dir = mkdtempSync(join(tmpdir(), `t27-${repo}-`))
+  const sha = gh(['api', `repos/gHashTag/${repo}/commits/${branch}`, '--jq', '.sha'])
+  let pulled
   try {
-    execFileSync('sh', ['-c',
-      `gh api "repos/gHashTag/${repo}/tarball/${branch}" > "${dir}/a.tar.gz" && tar -xzf "${dir}/a.tar.gz" -C "${dir}"`,
-    ], { stdio: 'ignore' })
+    pulled = tarball(repo, branch)
   } catch {
     console.log(`  warning: ${repo} tarball failed, skipped`)
     continue
   }
-  const inner = execFileSync('sh', ['-c', `ls -d "${dir}"/*/ | head -1`], { encoding: 'utf8' }).trim()
-  const found = execFileSync('find', [inner, '-name', '*.t27', '-type', 'f'], { encoding: 'utf8' })
-    .split('\n').filter(Boolean).sort()
-  sources.push({ repo, root: inner.replace(/\/$/, ''), files: found, commit: sha, tmp: dir })
+  sources.push({ repo, root: pulled.root, files: specFiles(pulled.root), commit: sha, tmp: pulled.dir })
 }
 
 rmSync(OUT_DIR, { recursive: true, force: true })
@@ -116,7 +191,6 @@ mkdirSync(SPECS_OUT, { recursive: true })
 // Run the same wasm the browser runs, here, over the whole corpus. Health has
 // to be known before a row is drawn -- the alternative is compiling 667 specs
 // in the browser just to colour a list, which would take minutes.
-const wasmBuf = readFileSync(WASM_SRC)
 const { instance: wasmInst } = await WebAssembly.instantiate(wasmBuf, {})
 const { memory, t27_alloc, t27_free, t27_analyze } = wasmInst.exports
 
@@ -136,6 +210,11 @@ function analyze(src) {
 const entries = []
 const seenContent = new Map() // content hash -> path already kept
 let duplicates = 0
+// Not just how many, but which. A count cannot answer "does this spec exist
+// anywhere else?", which is the question a reader of a multi-repository corpus
+// actually has -- and the losing bytes are discarded here, so if this list is
+// not written now nothing downstream can reconstruct it.
+const duplicatePairs = []
 
 for (const src of sources) {
 for (const abs of src.files) {
@@ -149,7 +228,7 @@ for (const abs of src.files) {
   // chip repos, so without this the library would carry 147 phantom entries.
   const hash = createHash('sha256').update(text).digest('hex')
   const already = seenContent.get(hash)
-  if (already) { duplicates++; continue }
+  if (already) { duplicates++; duplicatePairs.push({ path: rel, repo: src.repo, sameAs: already }); continue }
   seenContent.set(hash, rel)
 
   const dest = join(SPECS_OUT, rel)
@@ -160,6 +239,49 @@ for (const abs of src.files) {
 }
 }
 
+// The companions a spec cites.
+//
+// A spec's SOURCES names the files it was written from -- a README, a report,
+// a directory -- and scripts/docs-from-specs.mjs refuses a citation it cannot
+// resolve, on the principle that a document may not point at something that is
+// not there. Those files are not .t27, so the loop above skips them, and the
+// first GitHub-sourced refresh deleted the ones a previous hand-vendored commit
+// had put here -- the seven docs/system/*.md a chapter renders, and the reports
+// evidence.t27 cites. They are copied from the same tarball, at the same commit,
+// as the spec that names them.
+//
+// `trinity:`-prefixed paths are resolved against this repository instead and are
+// not vendored, so they are skipped here.
+// Two shapes name a file: a SOURCES list, and a single-string constant such as
+// BODY_EN, whose value is the markdown a docs chapter renders. A value with no
+// extension (DIAGRAM = "ladder", TABLE = "claims") is an identifier, not a path,
+// and is skipped by the extension test below.
+const SOURCES_DECL = /\bSOURCES\s*:\s*\[\d*\]\s*str\s*=\s*\[([^\]]*)\]/
+const STRING_DECL = /\b[A-Z][A-Z0-9_]*\s*:\s*str\s*=\s*"([^"]+)"/g
+const TEXT_FILE = /\.(md|markdown|txt|rst|adoc|csv|json|toml|ya?ml)$/i
+let companions = 0
+for (const src of sources) {
+  for (const abs of src.files) {
+    const text = readFileSync(abs, 'utf8')
+    const decl = SOURCES_DECL.exec(text)
+    const cited = [
+      ...(decl ? [...decl[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]) : []),
+      ...[...text.matchAll(STRING_DECL)].map((m) => m[1]).filter((v) => TEXT_FILE.test(v)),
+    ]
+    for (const rel of cited) {
+      if (rel.startsWith('trinity:') || rel.endsWith('.t27') || rel.includes('..') || rel.startsWith('/')) continue
+      const from = join(src.root, rel)
+      if (!existsSync(from)) continue
+      const dest = join(SPECS_OUT, src.repo === 't27' ? rel : `${src.repo}/${rel}`)
+      if (existsSync(dest)) continue
+      mkdirSync(dirname(dest), { recursive: true })
+      cpSync(from, dest, { recursive: true })
+      companions += 1
+    }
+  }
+}
+if (companions) console.log(`  companions: ${companions} non-spec file(s) cited by SOURCES vendored beside their spec`)
+
 // Tarballs were extracted to temp dirs; nothing should outlive this run.
 for (const s of sources) if (s.tmp) rmSync(s.tmp, { recursive: true, force: true })
 
@@ -169,8 +291,8 @@ for (const s of sources) if (s.tmp) rmSync(s.tmp, { recursive: true, force: true
 const registered = registerDescriptionExceptions(entries, join(WEBSITE, 'qa/language-exceptions.json'))
 if (registered !== null) console.log(`  qa exceptions: ${registered} spec descriptions registered for the RU audit`)
 
-cpSync(WASM_SRC, join(OUT_DIR, 't27_compiler.wasm'))
-const wasmBytes = readFileSync(WASM_SRC).length
+writeFileSync(join(OUT_DIR, 't27_compiler.wasm'), wasmBuf)
+const wasmBytes = wasmBuf.length
 
 // The course comes first, in reading order, and the page opens on its first
 // lesson. Everything else keeps its path order behind them.
@@ -214,26 +336,34 @@ const { totalLines, categories, tags, health, backendFailures, totals } = corpus
 // repositories, and asking the superproject's history about their paths returns
 // "no commit" for files that are perfectly well committed elsewhere. That
 // mistake produced a 46-file false alarm before this was written.
-const DEFAULT_REF = process.env.T27_DEFAULT_REF || 'origin/master'
-let submodulePaths = []
-try {
-  submodulePaths = execFileSync('git', ['-C', T27, 'config', '-f', '.gitmodules', '--get-regexp', 'path'], { encoding: 'utf8' })
-    .split('\n').filter(Boolean).map((line) => line.trim().split(/\s+/)[1]).filter(Boolean)
-} catch {
-  // No .gitmodules is a valid state, not an error.
-}
-const ownedByASubmodule = (rel) => submodulePaths.some((s) => rel === s || rel.startsWith(`${s}/`))
-
+// Sourced from GitHub there is nothing to guess: the overlay loop above copied
+// in exactly the paths the main ref does not have, and kept the list. Sourced
+// from a working copy the question is still open, so it is still asked.
+const DEFAULT_REF = FROM_LOCAL ? (process.env.T27_DEFAULT_REF || 'origin/master') : T27_REF
 const unreachable = []
 let reachableChecked = 0
-for (const e of entries) {
-  if (e.repo !== 't27') continue          // other repos ship a committed tarball sha
-  if (ownedByASubmodule(e.path)) continue // committed in its own repository
-  reachableChecked += 1
+if (!FROM_LOCAL) {
+  reachableChecked = entries.filter((e) => e.repo === 't27').length
+  const overlayPaths = new Set(overlayUsed.flatMap((o) => o.paths))
+  for (const e of entries) if (e.repo === 't27' && overlayPaths.has(e.path)) unreachable.push(e.path)
+} else {
+  let submodulePaths = []
   try {
-    execFileSync('git', ['-C', T27, 'cat-file', '-e', `${DEFAULT_REF}:${e.path}`], { stdio: 'ignore' })
+    submodulePaths = execFileSync('git', ['-C', T27, 'config', '-f', '.gitmodules', '--get-regexp', 'path'], { encoding: 'utf8' })
+      .split('\n').filter(Boolean).map((line) => line.trim().split(/\s+/)[1]).filter(Boolean)
   } catch {
-    unreachable.push(e.path)
+    // No .gitmodules is a valid state, not an error.
+  }
+  const ownedByASubmodule = (rel) => submodulePaths.some((s) => rel === s || rel.startsWith(`${s}/`))
+  for (const e of entries) {
+    if (e.repo !== 't27') continue          // other repos ship a committed tarball sha
+    if (ownedByASubmodule(e.path)) continue // committed in its own repository
+    reachableChecked += 1
+    try {
+      execFileSync('git', ['-C', T27, 'cat-file', '-e', `${DEFAULT_REF}:${e.path}`], { stdio: 'ignore' })
+    } catch {
+      unreachable.push(e.path)
+    }
   }
 }
 unreachable.sort()
@@ -254,6 +384,11 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
     defaultRef: DEFAULT_REF,
     t27SpecsChecked: reachableChecked,
     unreachableFromDefaultRef: unreachable,
+    // How this snapshot was taken, so a reader can tell a reproducible refresh
+    // from one that shipped whatever was on somebody's disk.
+    source: FROM_LOCAL ? 'local working copy' : `github tarball gHashTag/t27@${T27_REF}`,
+    overlayRefs: overlayUsed.map(({ ref, commit, added }) => ({ ref, commit, added })),
+    wasmSource: wasmFrom,
   },
   wasmBytes,
   specCount: entries.length,
@@ -261,6 +396,7 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
   categories,
   repos: sources.map((s) => ({ repo: s.repo, commit: s.commit ?? sha, specs: entries.filter((e) => e.repo === s.repo).length })),
   duplicatesSkipped: duplicates,
+  duplicates: duplicatePairs.sort((x, y) => x.path.localeCompare(y.path)),
   tags,
   health,
   backendFailures,

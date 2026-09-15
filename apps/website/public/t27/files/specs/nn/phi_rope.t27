@@ -41,6 +41,3 @@ algorithm phi_rope {
         { input: dim=4, theta: [1.0, 0.886, 0.618, 0.486] }
     ]
 }
-    test "phi_rope_smoke_test" {
-        expect(true)
-    }

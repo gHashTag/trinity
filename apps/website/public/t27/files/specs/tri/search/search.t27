@@ -11,26 +11,26 @@ module TriSearch;
     // ═══════════════════════════════════════════════════════════
 
     pub const SearchResult = struct {
-        index : ?usize,
-        found : bool,
+        index : "?usize",
+        found : "bool",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // binary(sorted: []const T, target: T) → SearchResult
-    fn binary(sorted: []const T, target: T) -> SearchResult {
+    // binary(sorted: []const T) → void
+    fn binary(sorted: []const T) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // linear(items: []const T, target: T) → SearchResult
-    fn linear(items: []const T, target: T) -> SearchResult {
+    // linear(items: []const T) → void
+    fn linear(items: []const T) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // lower_bound(sorted: []const T, value: T) → usize
-    fn lower_bound(sorted: []const T, value: T) -> usize {
+    // lower_bound(sorted: []const T) → void
+    fn lower_bound(sorted: []const T) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -38,25 +38,18 @@ module TriSearch;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test miss_carries_no_index
-        // Verify: a failed search reports found = false and leaves index null,
-        // so there is no position to misread
-        given miss = SearchResult{ .index = null, .found = false }
-        then miss.found == false and miss.index == null
+    test binary_basic_case
+        given input = default_input()
+        when result = binary(input)
+        then result != undefined
 
-    test hit_carries_the_position
-        // Verify: a successful search reports found = true and an index that
-        // can be unwrapped
-        given hit = SearchResult{ .index = 2, .found = true }
-        then hit.found and hit.index != null and hit.index.? == 2
+    test linear_basic_case
+        given input = default_input()
+        when result = linear(input)
+        then result != undefined
 
-    test found_flag_agrees_with_the_optional_index
-        // Verify: the two fields are redundant -- `found` is exactly
-        // (index != null) on both outcomes, and any result where they disagree
-        // is malformed
-        given miss = SearchResult{ .index = null, .found = false }
-        and hit = SearchResult{ .index = 7, .found = true }
-        when miss_agrees = miss.found == (miss.index != null)
-        and hit_agrees = hit.found == (hit.index != null)
-        then miss_agrees and hit_agrees
+    test lower_bound_basic_case
+        given input = default_input()
+        when result = lower_bound(input)
+        then result != undefined
 

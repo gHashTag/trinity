@@ -11,15 +11,11 @@ module SwarmAgents;
     // ═══════════════════════════════════════════════════════════
 
     pub const AgentType = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/swarm_agents.tri:31. The converter dropped bare `- name` bullets.
-        enum : [architect, codex, evolver, oracle, guardian, herald],
+        variants : ,
     };
 
     pub const AgentStatus = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/swarm_agents.tri:40. The converter dropped bare `- name` bullets.
-        enum : [idle, active, thinking, waiting_consensus, blocked],
+        variants : ,
     };
 
     pub const Agent = struct {
@@ -35,7 +31,7 @@ module SwarmAgents;
 
     pub const Task = struct {
         task_id : String,
-        priority : Float,  // φ-weighted 0-1
+        priority : Float              # φ-weighted 0-1,
         assigned_to : Option<AgentType>,
         status : TaskStatus,
         result : Option<String>,
@@ -43,16 +39,14 @@ module SwarmAgents;
     };
 
     pub const TaskStatus = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/swarm_agents.tri:69. The converter dropped bare `- name` bullets.
-        enum : [pending, assigned, in_progress, completed, failed, awaiting_consensus],
+        variants : ,
     };
 
     pub const SwarmState = struct {
         agents : List<Agent>,
         coordination_mode : CoordinationMode,
-        phi_harmony_score : Float,  // 0-1, target ≥0.95
-        consensus_threshold : Float,  // Default 0.95
+        phi_harmony_score : Float       # 0-1, target ≥0.95,
+        consensus_threshold : Float     # Default 0.95,
         active_tasks : List<Task>,
         completed_tasks : List<Task>,
         iteration_count : Int,
@@ -60,9 +54,7 @@ module SwarmAgents;
     };
 
     pub const CoordinationMode = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/swarm_agents.tri:89. The converter dropped bare `- name` bullets.
-        enum : [parallel, consensus, hierarchical, sacred_circle],
+        variants : ,
     };
 
     pub const ConsensusProposal = struct {
@@ -84,17 +76,15 @@ module SwarmAgents;
     };
 
     pub const ConsensusStatus = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/swarm_agents.tri:114. The converter dropped bare `- name` bullets.
-        enum : [pending, approved, rejected, tie],
+        variants : ,
     };
 
     pub const SwarmHarmonyMetrics = struct {
-        cosine_similarity : Float,  // VSA cosine similarity
-        consensus_rate : Float,  // Approved / Total
-        task_success_rate : Float,  // Completed / Total
-        phi_alignment : Float,  // How aligned with sacred math
-        overall_harmony : Float,  // Combined score 0-1
+        cosine_similarity : Float       # VSA cosine similarity,
+        consensus_rate : Float          # Approved / Total,
+        task_success_rate : Float       # Completed / Total,
+        phi_alignment : Float           # How aligned with sacred math,
+        overall_harmony : Float         # Combined score 0-1,
     };
 
     pub const AgentCommunication = struct {
@@ -107,9 +97,7 @@ module SwarmAgents;
     };
 
     pub const MessageType = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/swarm_agents.tri:138. The converter dropped bare `- name` bullets.
-        enum : [task_request, task_result, consensus_request, consensus_vote, broadcast, alert],
+        variants : ,
     };
 
     pub const SacredPattern = struct {
@@ -137,6 +125,3 @@ module SwarmAgents;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "swarm_agents_smoke_test" {
-        expect(true)
-    }

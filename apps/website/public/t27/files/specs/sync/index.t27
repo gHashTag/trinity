@@ -335,7 +335,7 @@ pub fn delta_replay(state: *IndexState, delta: SyncDelta) ReplayResult {
     var skipped : usize = 0;
     var conflicts : usize = 0;
 
-    for (delta.operations, 0..) |op, i| {
+    for (delta.operations, 0..) |op| {
         // Apply operation (simplified)
         applied += 1;
     }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/math/e8_lie_algebra.t27
-// E8 Exceptional Lie Algebra -- Root System, Cartan Matrix, Eigenvalues
+// E8 Exceptional Lie Algebra — Root System, Cartan Matrix, Eigenvalues
 // Direction A (Priority 2) of PROJECT KEPLER->NEWTON
 //
 // E8 is the largest exceptional simple Lie group. Its root system contains
@@ -16,10 +16,10 @@
 //   5. McKay correspondence: binary icosahedral group 2I <-> affine E8
 //
 // References:
-//   - Dechant, Proc. Roy. Soc. A 472 (2016) -- E8 from icosahedral spinors
-//   - Aschheim, Minkowski Inst. Press (2017) -- E9 eigenvalues contain phi^2
-//   - Humphreys, "Introduction to Lie Algebras" -- standard reference
-//   - Kac, "Infinite-Dimensional Lie Algebras" -- affine E8
+//   - Dechant, Proc. Roy. Soc. A 472 (2016) — E8 from icosahedral spinors
+//   - Aschheim, Minkowski Inst. Press (2017) — E9 eigenvalues contain phi^2
+//   - Humphreys, "Introduction to Lie Algebras" — standard reference
+//   - Kac, "Infinite-Dimensional Lie Algebras" — affine E8
 
 module E8LieAlgebra {
     use math::constants;
@@ -174,7 +174,7 @@ module E8LieAlgebra {
     // E8 roots decompose as: Phi(E8) = H4 + phi*H4
     // Two copies of the 600-cell, scaled by phi
 
-    // H4 exponents: {1, 11, 19, 29} -- subset of E8 exponents
+    // H4 exponents: {1, 11, 19, 29} — subset of E8 exponents
     const H4_EXPONENTS : [4]i64 = [1, 11, 19, 29];
 
     // phi appears because cos(pi/5) = phi/2 connects 5-fold rotation to phi

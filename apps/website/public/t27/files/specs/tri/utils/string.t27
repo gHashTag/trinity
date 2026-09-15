@@ -2,7 +2,7 @@
 // t27/specs/
 //  | φ² + 1/φ² = 3 | TRINITY
 
-module string;
+module TriString;
     use base::types;
     use math::constants;
 
@@ -10,6 +10,3 @@ module string;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "string_smoke_test" {
-        expect(true)
-    }

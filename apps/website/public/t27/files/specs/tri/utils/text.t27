@@ -20,23 +20,23 @@ module TriText;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // word_wrap(allocator: std.mem.Allocator, text: []const u8, width: usize) → ![]u8
-    fn word_wrap(allocator: std.mem.Allocator, text: []const u8, width: usize) -> ![]u8 {
+    // word_wrap(allocator: std.mem.Allocator) → void
+    fn word_wrap(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // count_words(text: []const u8) → usize
-    fn count_words(text: []const u8) -> usize {
+    // count_words(text: []const u8) → void
+    fn count_words(text: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // count_lines(text: []const u8) → usize
-    fn count_lines(text: []const u8) -> usize {
+    // count_lines(text: []const u8) → void
+    fn count_lines(text: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // indent(allocator: std.mem.Allocator, text: []const u8, spaces: usize) → ![]u8
-    fn indent(allocator: std.mem.Allocator, text: []const u8, spaces: usize) -> ![]u8 {
+    // indent(allocator: std.mem.Allocator) → void
+    fn indent(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 

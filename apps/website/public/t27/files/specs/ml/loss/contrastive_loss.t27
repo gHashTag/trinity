@@ -18,8 +18,8 @@ module ContrastiveLoss;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(anchor: []const f32, positive: []const f32, negative: []const f32, margin: f32) → f32
-    fn forward(anchor: []const f32, positive: []const f32, negative: []const f32, margin: f32) -> f32 {
+    // forward(anchor: []const f32) → void
+    fn forward(anchor: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

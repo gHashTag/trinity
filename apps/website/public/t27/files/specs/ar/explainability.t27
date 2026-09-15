@@ -2,6 +2,8 @@
 // spec: Explainability
 // Explainable AI (XAI) mechanisms for neuro-symbolic reasoning
 
+use base::types;
+
 spec Explainability {
     // Explanation structure
     struct Explanation {

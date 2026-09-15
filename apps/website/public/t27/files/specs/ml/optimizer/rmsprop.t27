@@ -26,8 +26,8 @@ module Rmsprop;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // step(grad: []const f32, param: []f32, cache: []f32) → void
-    fn step(grad: []const f32, param: []f32, cache: []f32) -> void {
+    // step(grad: []const f32) → void
+    fn step(grad: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

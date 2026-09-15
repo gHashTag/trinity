@@ -11,11 +11,11 @@ module TriTerminal;
     // ═══════════════════════════════════════════════════════════
 
     pub const Color = struct {
-        enum : [black, red, green, yellow, blue, magenta, cyan, white, default],
+        enum : ,
     };
 
     pub const Style = struct {
-        enum : [bold, dim, italic, underline, reverse],
+        enum : ,
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -27,8 +27,8 @@ module TriTerminal;
         // TODO: Implement from .tri spec
     }
 
-    // colorize(allocator: std.mem.Allocator, text: []const u8, fg: Color) → ![]u8
-    fn colorize(allocator: std.mem.Allocator, text: []const u8, fg: Color) -> ![]u8 {
+    // colorize(allocator: std.mem.Allocator) → void
+    fn colorize(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 

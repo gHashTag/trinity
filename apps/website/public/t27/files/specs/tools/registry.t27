@@ -1,14 +1,14 @@
 // specs/tools/registry.t27
 // Tools Registry Operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module ToolsRegistry {
     use base::types;
     use tools::schema;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Registry Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // create creates a new tool registry
     fn create() -> ToolRegistry {
@@ -55,9 +55,9 @@ module ToolsRegistry {
         // Implementation: Filter dangerous tools
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Permission Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // set_permission sets the permission for a tool
     fn set_permission(registry: ToolRegistry, toolID: ToolID, permission: ToolPermission) -> Result<void, ToolError> {
@@ -84,9 +84,9 @@ module ToolsRegistry {
         // Implementation: Set permission to Ask
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Custom Tool Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // register_custom registers a custom tool
     fn register_custom(registry: ToolRegistry, tool: ToolDefinition) -> Result<void, ToolError> {
@@ -103,9 +103,9 @@ module ToolsRegistry {
         // Implementation: Unregister custom tool
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Bulk Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // register_all registers multiple tools at once
     fn register_all(registry: ToolRegistry, tools: [ToolDefinition]) -> Result<u32, ToolError> {
@@ -122,9 +122,9 @@ module ToolsRegistry {
         // Implementation: Clear all tools
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Query Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // find_by_description finds tools by description pattern
     fn find_by_description(registry: ToolRegistry, pattern: str) -> [ToolID] {
@@ -141,9 +141,9 @@ module ToolsRegistry {
         // Implementation: Check if empty
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "tool_id_creation" {
         var id = ToolID("bash");

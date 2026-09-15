@@ -1,38 +1,122 @@
 // SPDX-License-Identifier: Apache-2.0
-// t27/specs/
-// Accumulates gradient direction for faster convergence | φ² + 1/φ² = 3 | TRINITY
+// t27/specs/ml/optimizer/sgd_momentum.t27
+// SGD with Momentum - φ-damped velocity | φ² + 1/φ² = 3 | TRINITY
 
 module SgdMomentum;
     use base::types;
     use math::constants;
+    use numeric::gf16;
 
     // ═══════════════════════════════════════════════════════════
     // 1. Constants
     // ═══════════════════════════════════════════════════════════
 
-    const DEFAULT_MOMENTUM : f32 = 0.9;
+    const PHI : gf16::GF16 = 1.618033988749895;
+    const DEFAULT_LEARNING_RATE : gf16::GF16 = 0.01;
+    const DEFAULT_MOMENTUM : gf16::GF16 = 0.9;
+    const PHI_DAMPED_MOMENTUM : gf16::GF16 = 0.9 / PHI; // ≈ 0.556
+    const DEFAULT_WEIGHT_DECAY : gf16::GF16 = 0.0;
+    const DEFAULT_NESTEROV : bool = false;
 
     // ═══════════════════════════════════════════════════════════
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    pub const SGDMomentumConfig = struct {
-        learning_rate : f32,
-        momentum : f32,
-        nesterov : bool,
+    pub const SgdMomentumConfig = struct {
+        learning_rate : gf16::GF16,        // η: step size
+        momentum : gf16::GF16,             // μ: momentum coefficient
+        weight_decay : gf16::GF16,         // λ: L2 regularization
+        nesterov : bool,            // Nesterov acceleration
+        use_phi_damping : bool,     // Apply φ-based damping to momentum
+        dampening : gf16::GF16,            // Dampening for momentum (1 - momentum)
+    };
+
+    pub const SgdMomentumState = struct {
+        velocities : []gf16::GF16,         // v_t: accumulated momentum for each parameter
+        param_count : u32,          // Number of parameters being optimized
+        step : u64,                 // Current optimization step
+    };
+
+    pub const OptimizerStepResult = struct {
+        updated_params : []gf16::GF16,     // New parameter values
+        velocities : []gf16::GF16,         // Updated velocities
+        step_norm : gf16::GF16,            // L2 norm of the parameter update
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // step(grad: []const f32, param: []f32, velocity: []f32, lr: f32, mu: f32, nesterov: bool) → void
-    fn step(grad: []const f32, param: []f32, velocity: []f32, lr: f32, mu: f32, nesterov: bool) -> void {
-        // TODO: Implement from .tri spec
+    // init(config: SgdMomentumConfig, param_count: u32) → SgdMomentumState
+    // Initializes optimizer state with zero velocities.
+    fn init(config: SgdMomentumConfig, param_count: u32) -> SgdMomentumState {
+        // velocities[i] = 0.0 for all i
+        // step = 0
+    }
+
+    // step(state: SgdMomentumState, params: []gf16::GF16, grads: []gf16::GF16) → OptimizerStepResult
+    // Performs one optimization step with momentum.
+    fn step(state: SgdMomentumState, params: []gf16::GF16, grads: []gf16::GF16) -> OptimizerStepResult {
+        // If weight_decay > 0:
+        //   grads[i] = grads[i] + weight_decay * params[i]
+        //
+        // v_t = momentum * v_{t-1} + (1 - dampening) * grads[i]
+        //
+        // If nesterov:
+        //   params[i] = params[i] - lr * (momentum * v_t + grads[i])
+        // else:
+        //   params[i] = params[i] - lr * v_t
+        //
+        // If use_phi_damping:
+        //   Apply PHI_DAMPED_MOMENTUM instead of momentum
+    }
+
+    // compute_velocity(velocity: gf16::GF16, grad: gf16::GF16, momentum: gf16::GF16, dampening: gf16::GF16) → f32
+    // Computes new velocity for a single parameter.
+    fn compute_velocity(velocity: gf16::GF16, grad: gf16::GF16, momentum: gf16::GF16, dampening: gf16::GF16) -> gf16::GF16 {
+        // v_new = momentum * v_old + dampening * grad
+    }
+
+    // nesterov_update(param: gf16::GF16, velocity: gf16::GF16, grad: gf16::GF16, lr: gf16::GF16, momentum: gf16::GF16) → f32
+    // Computes Nesterov accelerated parameter update.
+    fn nesterov_update(param: gf16::GF16, velocity: gf16::GF16, grad: gf16::GF16, lr: gf16::GF16, momentum: gf16::GF16) -> gf16::GF16 {
+        // param_new = param - lr * (momentum * velocity + grad)
+    }
+
+    // standard_update(param: gf16::GF16, velocity: gf16::GF16, lr: gf16::GF16) → f32
+    // Computes standard momentum parameter update.
+    fn standard_update(param: gf16::GF16, velocity: gf16::GF16, lr: gf16::GF16) -> gf16::GF16 {
+        // param_new = param - lr * velocity
+    }
+
+    // apply_weight_decay(params: []gf16::GF16, grads: []gf16::GF16, weight_decay: gf16::GF16) → []gf16::GF16
+    // Applies L2 weight decay to gradients.
+    fn apply_weight_decay(params: []gf16::GF16, grads: []gf16::GF16, weight_decay: gf16::GF16) -> []gf16::GF16 {
+        // grads[i] = grads[i] + weight_decay * params[i]
+    }
+
+    // phi_damped_momentum(base_momentum: gf16::GF16) → f32
+    // Applies φ-based damping to momentum coefficient.
+    fn phi_damped_momentum(base_momentum: gf16::GF16) -> gf16::GF16 {
+        // Returns base_momentum / PHI
+    }
+
+    // get_effective_momentum(config: SgdMomentumConfig) → f32
+    // Returns the effective momentum coefficient.
+    fn get_effective_momentum(config: SgdMomentumConfig) -> gf16::GF16 {
+        // If use_phi_damping: return PHI_DAMPED_MOMENTUM
+        // else: return config.momentum
+    }
+
+    // zero_grad(state: SgdMomentumState) → SgdMomentumState
+    // Resets gradients (velocities remain for momentum).
+    fn zero_grad(state: SgdMomentumState) -> SgdMomentumState {
+        // No-op for SGD with momentum (velocities persist)
+        // Returns state unchanged
     }
 
     // ═══════════════════════════════════════════════════════════
-    // TDD: Tests (from .tri behaviors)
+    // TDD: Tests
     // ═══════════════════════════════════════════════════════════
 
     test init_creates_zero_velocities
@@ -191,7 +275,7 @@ module SgdMomentum;
         then result.velocities[0] == 0.5
 
     invariant phi_damped_momentum_constant
-        then approximately_equal_within(PHI_DAMPED_MOMENTUM, 0.9 / PHI, 1e-6)
+        then approximately_equal(PHI_DAMPED_MOMENTUM, 0.9 / PHI, 1e-6)
 
     invariant dampening_equals_one_minus_momentum_by_default
         given config = SgdMomentumConfig{.momentum = 0.9, .dampening = 0.0}

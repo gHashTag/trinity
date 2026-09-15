@@ -11,15 +11,15 @@ module TriState;
     // ═══════════════════════════════════════════════════════════
 
     pub const State(S, T) = struct {
-        run : fn(S) -> (S, T),
+        run : "fn(S) -> (S, T)",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // pure(value: T) → State(S, T)
-    fn pure(value: T) -> State(S, T) {
+    // pure(value: T) → void
+    fn pure(value: T) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -28,13 +28,13 @@ module TriState;
         // TODO: Implement from .tri spec
     }
 
-    // put(state: S) → State(S, void)
-    fn put(state: S) -> State(S, void) {
+    // put(state: S) → void
+    fn put(state: S) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // modify(fn: fn(S) -> S) → State(S, void)
-    fn modify(fn: fn(S) -> S) -> State(S, void) {
+    // modify(fn: Fn(S) -> S) → void
+    fn modify(fn: Fn(S) -> S) -> void {
         // TODO: Implement from .tri spec
     }
 

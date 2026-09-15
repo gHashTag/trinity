@@ -11,9 +11,9 @@ module TriInterval;
     // ═══════════════════════════════════════════════════════════
 
     pub const Interval = struct {
-        start : i64,
-        end : i64,
-        inclusive : bool,
+        start : "i64",
+        end : "i64",
+        inclusive : "bool",
     };
 
     pub const IntervalSet = struct {
@@ -24,18 +24,18 @@ module TriInterval;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // create(start: i64, end: i64) → Interval
-    fn create(start: i64, end: i64) -> Interval {
+    // create(start: i64) → void
+    fn create(start: i64) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // overlaps(a: Interval, b: Interval) → bool
-    fn overlaps(a: Interval, b: Interval) -> bool {
+    // overlaps(a: Interval) → void
+    fn overlaps(a: Interval) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // union(a: IntervalSet, b: IntervalSet, allocator: std.mem.Allocator) → !IntervalSet
-    fn union(a: IntervalSet, b: IntervalSet, allocator: std.mem.Allocator) -> !IntervalSet {
+    // union(a: IntervalSet) → void
+    fn union(a: IntervalSet) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -43,43 +43,18 @@ module TriInterval;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // create/overlaps/union are unimplemented stubs returning void, so no range
-    // algebra can be exercised yet. What the module does declare -- the signed
-    // endpoints, the inclusive flag, and a set of intervals -- is tested here.
+    test create_basic_case
+        given input = default_input()
+        when result = create(input)
+        then result != undefined
 
-    test inclusive_flag_distinguishes_closed_from_half_open
-        // Verify: the same endpoint pair denotes [0,10] or [0,10) depending
-        // only on this flag
-        given closed = Interval{.start=0,.end=10,.inclusive=true}
-        and half_open = Interval{.start=0,.end=10,.inclusive=false}
-        then closed.start == half_open.start and closed.end == half_open.end and closed.inclusive != half_open.inclusive
+    test overlaps_basic_case
+        given input = default_input()
+        when result = overlaps(input)
+        then result != undefined
 
-    test interval_width_is_the_endpoint_difference
-        // Verify: [3,11) spans 8 units
-        given iv = Interval{.start=3,.end=11,.inclusive=false}
-        and width = iv.end - iv.start
-        then width == 8
-
-    test degenerate_interval_is_a_single_point
-        // Verify: start == end, the boundary case, is representable and holds
-        // exactly one point when closed
-        given point = Interval{.start=5,.end=5,.inclusive=true}
-        then point.start == point.end and point.inclusive
-
-    test endpoints_are_signed_so_an_interval_may_straddle_zero
-        // Verify: i64 endpoints, not usize
-        given straddling = Interval{.start=-4,.end=4,.inclusive=true}
-        and width = straddling.end - straddling.start
-        then straddling.start < 0 and width == 8
-
-    test empty_interval_set_holds_no_intervals
-        // Verify: the empty set is the identity for union, and is representable
-        given empty = IntervalSet{.intervals=@constCast(&[_]Interval{})}
-        then empty.intervals.len == 0
-
-    test interval_set_preserves_order_and_arity
-        // Verify: IntervalSet is a plain slice, so two disjoint ranges stay two
-        // ranges in the order given
-        given set = IntervalSet{.intervals=@constCast(&[_]Interval{Interval{.start=0,.end=2,.inclusive=false}, Interval{.start=5,.end=9,.inclusive=false}})}
-        then set.intervals.len == 2 and set.intervals[0].end < set.intervals[1].start
+    test union_basic_case
+        given input = default_input()
+        when result = union(input)
+        then result != undefined
 

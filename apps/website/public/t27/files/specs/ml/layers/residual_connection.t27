@@ -10,8 +10,8 @@ module Residual;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(input: []const f32, sublayer_output: []const f32, gamma: []const f32, beta: []const f32, output: []f32) → void
-    fn forward(input: []const f32, sublayer_output: []const f32, gamma: []const f32, beta: []const f32, output: []f32) -> void {
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

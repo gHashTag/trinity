@@ -1,14 +1,14 @@
 // specs/storage/lock.t27
 // Locking Primitives for Storage Operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module StorageLock {
     use base::types;
     use storage::schema;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Lock State
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // LockState represents the state of a lock holder
     struct LockState {
@@ -19,9 +19,9 @@ module StorageLock {
         expires_at: u64,
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Lock Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // acquire_read attempts to acquire a read lock on the given key
     // Multiple read locks can be held simultaneously
@@ -68,9 +68,9 @@ module StorageLock {
         // Implementation: Block until write lock is available
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Lock Management
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // cleanup_expired removes expired locks
     fn cleanup_expired() -> Result<void, StorageError> {
@@ -87,9 +87,9 @@ module StorageLock {
         // Implementation: Release lock regardless of owner
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "acquire_read_returns_true" {
         // Acquiring a read lock on an unlocked key should succeed

@@ -107,6 +107,14 @@ export interface SpecManifest {
   tags: Record<string, number>
   repos: { repo: string; commit: string; specs: number }[]
   duplicatesSkipped: number
+  /**
+   * The copies behind that count: a file whose bytes were already vendored from
+   * somewhere else, and the path that was kept instead. The losing bytes are
+   * discarded at vendor time, so without this list nothing downstream could say
+   * that a spec lives in more than one repository. Absent on a catalog written
+   * before the list was recorded.
+   */
+  duplicates?: { path: string; repo: string; sameAs: string }[]
   specs: SpecEntry[]
 }
 

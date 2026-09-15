@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/test_framework/property_test_template.t27
-// Ring 052 -- Property-Based Testing Template for GoldenFloat
+// Ring 052 — Property-Based Testing Template for GoldenFloat
 // Standardized PBT patterns following T27-MATH-PHYSICS-TEST-FRAMEWORK-SPEC.md
 
 module PBTTemplate {
     use test_framework::core::{TestResult, Verdict, ToleranceTier, EngineeringStatus};
     use numeric::golden_float::{GF16, GF32};
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 1. PBT Configuration and Generators
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Standard test configuration for property-based tests
     struct PropertyTestConfig {
@@ -33,9 +33,9 @@ module PBTTemplate {
         };
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 2. GoldenFloat Generators
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Generate valid GF16 values with coverage of edge cases
     fn generate_gf16(rng: &mut Random) -> GF16 {
@@ -89,9 +89,9 @@ module PBTTemplate {
         return (generate_gf16(rng), generate_gf16(rng), generate_gf16(rng));
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 3. Property Test Executors
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Universal property: for all valid inputs, property holds
     fn for_all<F>(config: PropertyTestConfig, generator: fn(&mut Random) -> T, property: F) -> TestResult
@@ -174,7 +174,7 @@ module PBTTemplate {
         }
     }
     
-    // Differential property: f(x) ~= g(x) within tolerance
+    // Differential property: f(x) ≈ g(x) within tolerance
     fn differential<F, G>(config: PropertyTestConfig, generator: fn(&mut Random) -> T,
                          f: F, g: G) -> TestResult
         where F: Fn(T) -> U, G: Fn(T) -> U
@@ -222,9 +222,9 @@ module PBTTemplate {
         }
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 4. GoldenFloat-Specific Property Tests
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Property: GF16 addition is commutative
     // Claim: C-gf-001 (GoldenFloat meets stated effective accuracy)
@@ -322,9 +322,9 @@ module PBTTemplate {
         });
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 5. Test Orchestration
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Standard GoldenFloat property test suite
     fn goldenfloat_property_test_suite() -> [TestResult] {
@@ -354,7 +354,7 @@ module PBTTemplate {
         target: < 5000ms
     
     // TDD-Inside-Spec: Verification tests for property test framework
-    // ===========================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
     
     test property_test_config_creation
         given config = default_gf_config()

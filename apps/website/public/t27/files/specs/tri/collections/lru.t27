@@ -11,8 +11,8 @@ module TriLru;
     // ═══════════════════════════════════════════════════════════
 
     pub const LRU(K, V) = struct {
-        capacity : usize,
-        entries : std.HashMap(K, V),
+        capacity : "usize",
+        entries : "std.HashMap(K, V)",
         access_list : []K,
     };
 
@@ -20,18 +20,18 @@ module TriLru;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(capacity: usize, allocator: std.mem.Allocator) → !LRU(K, V)
-    fn init(capacity: usize, allocator: std.mem.Allocator) -> !LRU(K, V) {
+    // init(capacity: usize) → void
+    fn init(capacity: usize) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // get(cache: *LRU(K, V), key: K, allocator: std.mem.Allocator) → ?V
-    fn get(cache: *LRU(K, V), key: K, allocator: std.mem.Allocator) -> ?V {
+    // get(cache: *LRU(K, V)) → void
+    fn get(cache: *LRU(K, V)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // put(cache: *LRU(K, V), key: K, value: V, allocator: std.mem.Allocator) → !void
-    fn put(cache: *LRU(K, V), key: K, value: V, allocator: std.mem.Allocator) -> !void {
+    // put(cache: *LRU(K, V)) → void
+    fn put(cache: *LRU(K, V)) -> void {
         // TODO: Implement from .tri spec
     }
 

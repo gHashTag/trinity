@@ -63,7 +63,7 @@ pub struct ObserverConfig {
 // Functions - State Management
 // ============================================================================
 
-pub fn websocket_state_new() WebSocketState {
+pub fn websocket_state_new() WebSocketState WebSocketState {
     return .ready;
 }
 
@@ -357,7 +357,6 @@ test "test_parse_websocket_message_control" {
     var message = parse_websocket_message(data);
     try std.testing.expectEqual(@as(MessageType, .control), message.type);
     try std.testing.expectEqual(@as(u8, 5), message.data.len);
-}
 
 test "test_create_event_message" {
     var data: []u8 = {0x00};  // Some event

@@ -21,8 +21,8 @@ module MultiHeadAttn;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(query: []const f32, key: []const f32, value: []const f32, output: []f32, config: MHAConfig) → void
-    fn forward(query: []const f32, key: []const f32, value: []const f32, output: []f32, config: MHAConfig) -> void {
+    // forward(query: []const f32) → void
+    fn forward(query: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/physics/sacred_verification.t27
-// KEPLER->NEWTON Sacred Formula Verification Spec
+// KEPLER→NEWTON Sacred Formula Verification Spec
 // Status: Final v1.0
 // Date: 2026-04-06
 //
@@ -19,14 +19,14 @@ module SacredVerification {
     use math::constants;
     use math::sacred_physics;
 
-    // ===============================================================
+    // ═══════════════════════════════════════════════════════════════
     // 1. Sacred Formula Categories
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
 
     // The [planned] 152 Sacred Formulas can be classified into:
-    // - EXACT: Mathematically exact identities (phi^2 + phi^-^2 = 3)
-    // - PHYSICAL: Formulas relating to measured constants (G, Omega_Lambda)
-    // - DERIVED: Values derived from phi (gamma = phi^-^3)
+    // - EXACT: Mathematically exact identities (φ² + φ⁻² = 3)
+    // - PHYSICAL: Formulas relating to measured constants (G, Ω_Λ)
+    // - DERIVED: Values derived from φ (γ = φ⁻³)
     // - CONJECTURAL: Hypotheses not yet proven
 
     enum FormulaCategory {
@@ -47,9 +47,9 @@ module SacredVerification {
         notes        : string,
     }
 
-    // =============================================================
+    // ═════════════════════════════════════════════════════════════
     // 2. Verification Status
-    // ===============================================================
+    // ═══════════════════════════════════════════════════════════════
 
     enum VerificationStatus {
         PASS,        // Within tolerance
@@ -69,9 +69,9 @@ module SacredVerification {
         notes         : string,
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 3. Core Sacred Formulas (EXACT Category)
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
 
     fn phi_identity_results() -> [5]FormulaDefinition {
         return [
@@ -79,7 +79,7 @@ module SacredVerification {
             FormulaDefinition{
                 id           = 1,
                 name         = "TRINITY Identity",
-                formula      = "phi^2 + phi^-^2",
+                formula      = "φ² + φ⁻²",
                 category     = EXACT,
                 expected     = sacred_physics::TRINITY,
                 tolerance    = 1e-12,
@@ -90,40 +90,40 @@ module SacredVerification {
             FormulaDefinition{
                 id           = 2,
                 name         = "Golden Ratio",
-                formula      = "phi",
+                formula      = "φ",
                 category     = EXACT,
                 expected     = sacred_physics::PHI,
                 tolerance    = 1e-15,
                 scale_factor = 1.0,
-                notes        = "Fundamental constant: (1+sqrt5)/2",
+                notes        = "Fundamental constant: (1+√5)/2",
             },
             // Inverse golden ratio
             FormulaDefinition{
                 id           = 3,
                 name         = "Inverse Golden Ratio",
-                formula      = "phi^-^1",
+                formula      = "φ⁻¹",
                 category     = EXACT,
                 expected     = sacred_physics::PHI_INV,
                 tolerance    = 1e-15,
                 scale_factor = 1.0,
                 notes        = "IIT consciousness threshold",
             },
-            // phi squared
+            // φ squared
             FormulaDefinition{
                 id           = 4,
                 name         = "Golden Ratio Squared",
-                formula      = "phi^2",
+                formula      = "φ²",
                 category     = EXACT,
                 expected     = sacred_physics::PHI_SQ,
                 tolerance    = 1e-15,
                 scale_factor = 1.0,
                 notes        = "Appears in CS level theorem",
             },
-            // phi inverse squared
+            // φ inverse squared
             FormulaDefinition{
                 id           = 5,
                 name         = "Inverse Golden Ratio Squared",
-                formula      = "phi^-^2",
+                formula      = "φ⁻²",
                 category     = EXACT,
                 expected     = sacred_physics::PHI_INV_SQ,
                 tolerance    = 1e-15,
@@ -133,9 +133,9 @@ module SacredVerification {
         ];
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 4. Chern-Simons Formulas (EXACT Category)
-    // ===================================================================
+    // ═══════════════════════════════════════════════════════════════════
 
     fn chern_simons_formulas() -> [5]FormulaDefinition {
         return [
@@ -143,63 +143,63 @@ module SacredVerification {
             FormulaDefinition{
                 id           = 10,
                 name         = "Fibonacci Anyon Dimension",
-                formula      = "d_tau = sin(3pi/5)/sin(pi/5)",
+                formula      = "d_τ = sin(3π/5)/sin(π/5)",
                 category     = EXACT,
                 expected     = sacred_physics::PHI,
                 tolerance    = 1e-10,
                 scale_factor = 1.0,
-                notes        = "SU(2)_3 Chern-Simons: d_tau = phi",
+                notes        = "SU(2)₃ Chern-Simons: d_τ = φ",
             },
             // CS level theorem
             FormulaDefinition{
                 id           = 11,
                 name         = "CS Level Theorem",
-                formula      = "k = d_tau^2 + d_tau^-^2",
+                formula      = "k = d_τ² + d_τ⁻²",
                 category     = EXACT,
                 expected     = 3.0,
                 tolerance    = 1e-10,
                 scale_factor = 1.0,
-                notes        = "Chern-Simons level k=3 from phi",
+                notes        = "Chern-Simons level k=3 from φ",
             },
             // Jones polynomial magnitude
             FormulaDefinition{
                 id           = 12,
                 name         = "Jones Polynomial (Trefoil)",
-                formula      = "|V(e^{2pii/5})|^2 = 3 - phi^-^1 = phi^2 - gamma",
+                formula      = "|V(e^{2πi/5})|² = 3 - φ⁻¹ = φ² - γ",
                 category     = EXACT,
-                expected     = 3.0 - sacred_physics::PHI_INV,  // ~= 2.382
+                expected     = 3.0 - sacred_physics::PHI_INV,  // ≈ 2.382
                 tolerance    = 1e-10,
                 scale_factor = 1.0,
-                notes        = "Connects Jones polynomial to phi and gamma (Barbero-Immirzi)",
+                notes        = "Connects Jones polynomial to φ and γ (Barbero-Immirzi)",
             },
             // Fibonacci fusion probability
             FormulaDefinition{
                 id           = 13,
                 name         = "Fibonacci Fusion Sum",
-                formula      = "p_1 + p_tau",
+                formula      = "p_1 + p_τ",
                 category     = EXACT,
                 expected     = 1.0,
                 tolerance    = 1e-10,
                 scale_factor = 1.0,
-                notes        = "tau*tau = 1+tau fusion normalization",
+                notes        = "τ×τ = 1+τ fusion normalization",
             },
             // Braiding phase
             FormulaDefinition{
                 id           = 14,
                 name         = "Fibonacci Braiding Phase",
-                formula      = "R(tau,tau,tau)",
+                formula      = "R(τ,τ,τ)",
                 category     = EXACT,
                 expected     = 4.0 * constants::PI / 5.0,
                 tolerance    = 1e-15,
                 scale_factor = 1.0,
-                notes        = "Topological spin: exp(4pii/5)",
+                notes        = "Topological spin: exp(4πi/5)",
             },
         ];
     }
 
-    // =====================================================================
-    // 5. LQG and gamma Formulas (DERIVED Category)
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // 5. LQG and γ Formulas (DERIVED Category)
+    // ═════════════════════════════════════════════════════════════════════
 
     fn lqg_gamma_formulas() -> [5]FormulaDefinition {
         return [
@@ -207,7 +207,7 @@ module SacredVerification {
             FormulaDefinition{
                 id           = 20,
                 name         = "Barbero-Immirzi Parameter",
-                formula      = "gamma = phi^-^3",
+                formula      = "γ = φ⁻³",
                 category     = DERIVED,
                 expected     = sacred_physics::GAMMA_LQG,
                 tolerance    = 1e-15,
@@ -218,18 +218,18 @@ module SacredVerification {
             FormulaDefinition{
                 id           = 21,
                 name         = "Area Gap (Meissner)",
-                formula      = "Delta = gamma^2 + sqrt(2gamma^2)",
+                formula      = "Δ = γ² + √(2γ²)",
                 category     = DERIVED,
                 expected     = 0.0857,
                 tolerance    = 1e-3,
                 scale_factor = 1.0,
-                notes        = "For gamma = phi^-^3: Delta ~= 0.0857",
+                notes        = "For γ = φ⁻³: Δ ≈ 0.0857",
             },
             // Meissner gap (standard)
             FormulaDefinition{
                 id           = 22,
-                name         = "Meissner Gap (gamma=0.274)",
-                formula      = "Delta(gamma_Meissner)",
+                name         = "Meissner Gap (γ=0.274)",
+                formula      = "Δ(γ_Meissner)",
                 category     = PHYSICAL,
                 expected     = 0.110,
                 tolerance    = 1e-2,
@@ -240,72 +240,72 @@ module SacredVerification {
             FormulaDefinition{
                 id           = 23,
                 name         = "Immirzi Ratio",
-                formula      = "gamma_phi / gamma_Meissner",
+                formula      = "γ_φ / γ_Meissner",
                 category     = DERIVED,
                 expected     = 0.861,
                 tolerance    = 1e-3,
                 scale_factor = 1.0,
-                notes        = "phi^-^3 / 0.274 ~= 0.861 (13.9% gap)",
+                notes        = "φ⁻³ / 0.274 ≈ 0.861 (13.9% gap)",
             },
         ];
     }
 
-    // =====================================================================
-    // 6. E_8 Formulas (EXACT Category)
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // 6. E₈ Formulas (EXACT Category)
+    // ═════════════════════════════════════════════════════════════════════
 
     fn e8_formulas() -> [5]FormulaDefinition {
         return [
-            // E_8 dimension
+            // E₈ dimension
             FormulaDefinition{
                 id           = 30,
-                name         = "E_8 Dimension",
-                formula      = "dim(E_8)",
+                name         = "E₈ Dimension",
+                formula      = "dim(E₈)",
                 category     = EXACT,
                 expected     = 248.0,
                 tolerance    = 0.0,
                 scale_factor = 1.0,
                 notes        = "Adjoint representation dimension",
             },
-            // E_8 root count
+            // E₈ root count
             FormulaDefinition{
                 id           = 31,
-                name         = "E_8 Root Count",
-                formula      = "roots(E_8)",
+                name         = "E₈ Root Count",
+                formula      = "roots(E₈)",
                 category     = EXACT,
                 expected     = 240.0,
                 tolerance    = 0.0,
                 scale_factor = 1.0,
                 notes        = "240 + 8 Cartan = 248",
             },
-            // Cartan eigenvalue lambda_3
+            // Cartan eigenvalue λ₃
             FormulaDefinition{
                 id           = 32,
-                name         = "E_8 Cartan lambda_3",
-                formula      = "lambda_3 = 2 - 2cos(pi/5)",
+                name         = "E₈ Cartan λ₃",
+                formula      = "λ₃ = 2 - 2cos(π/5)",
                 category     = EXACT,
                 expected     = sacred_physics::PHI_INV_SQ,
                 tolerance    = 0.01,
                 scale_factor = 1.0,
-                notes        = "Confirmed: lambda_3 = phi^-^2",
+                notes        = "Confirmed: λ₃ = φ⁻²",
             },
-            // E_8 -> 2D projection
+            // E₈ → 2D projection
             FormulaDefinition{
                 id           = 33,
-                name         = "E_8 -> Golden Icosahedron",
-                formula      = "E_8_2D_quasi_projection",
+                name         = "E₈ → Golden Icosahedron",
+                formula      = "E₈_2D_quasi_projection",
                 category     = EXACT,
                 expected     = 20.0,
                 tolerance    = 0.0,
                 scale_factor = 1.0,
-                notes        = "Koca 2019: E_8 projects to 2D golden structure",
+                notes        = "Koca 2019: E₈ projects to 2D golden structure",
             },
         ];
     }
 
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
     // 7. Physical Constants (PHYSICAL Category - AMBIGUOUS)
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     fn physical_constants_formulas() -> [5]FormulaDefinition {
         return [
@@ -313,29 +313,29 @@ module SacredVerification {
             FormulaDefinition{
                 id           = 40,
                 name         = "Sacred Gravity",
-                formula      = "G = pi^3gamma^2/phi (dimensionless)",
+                formula      = "G = π³γ²/φ (dimensionless)",
                 category     = PHYSICAL,
                 expected     = 1.6e11,
                 tolerance    = 0.2,
                 scale_factor = 1.0,
-                notes        = "10561057  Off by 84% - needs scale factor",
+                notes        = "⚠️  Off by 84% - needs scale factor",
             },
             // Sacred dark energy
             FormulaDefinition{
                 id           = 41,
                 name         = "Sacred Dark Energy",
-                formula      = "Omega_Lambda = gamma^8pi^4/phi^2",
+                formula      = "Ω_Λ = γ⁸π⁴/φ²",
                 category     = PHYSICAL,
                 expected     = sacred_physics::OMEGA_LAMBDA_MEASURED,
                 tolerance    = 0.001,
                 scale_factor = 1.0,
-                notes        = "10661067  Off by 99.9% - computed 1068 0.0009",
+                notes        = "⚠️  Off by 99.9% - computed ≈ 0.0009",
             },
             // Hubble constant
             FormulaDefinition{
                 id           = 42,
                 name         = "Hubble Constant",
-                formula      = "H_0 (sacred)",
+                formula      = "H₀ (sacred)",
                 category     = PHYSICAL,
                 expected     = 70.0,
                 tolerance    = 5.0,
@@ -346,42 +346,42 @@ module SacredVerification {
             FormulaDefinition{
                 id           = 43,
                 name         = "Sacred Gravity (Calibrated)",
-                formula      = "G_calibrated = G_raw * G_SCALE",
+                formula      = "G_calibrated = G_raw × G_SCALE",
                 category     = PHYSICAL,
                 expected     = sacred_physics::G_MEASURED,
                 tolerance    = 0.01,
                 scale_factor = 1.0,
-                notes        = "G_raw ~= 1.068, G_SCALE ~= 6.25e-11",
+                notes        = "G_raw ≈ 1.068, G_SCALE ≈ 6.25e-11",
             },
             // Sacred dark energy (updated)
             FormulaDefinition{
                 id           = 44,
                 name         = "Sacred Dark Energy (Calibrated)",
-                formula      = "Omega_Lambda_calibrated = Omega_Lambda_raw * OMEGA_COARSE_SCALE",
+                formula      = "Ω_Λ_calibrated = Ω_Λ_raw × OMEGA_COARSE_SCALE",
                 category     = PHYSICAL,
                 expected     = sacred_physics::OMEGA_LAMBDA_MEASURED,
                 tolerance    = 0.01,
                 scale_factor = 1.0,
-                notes        = "Omega_Lambda_raw ~= 0.000359, OMEGA_COARSE_SCALE ~= 1909",
+                notes        = "Ω_Λ_raw ≈ 0.000359, OMEGA_COARSE_SCALE ≈ 1909",
             },
         ];
     }
 
-    // =============================================================================================
-    // 8. Scale Factors for Sacred Formulas (Raw -> Calibrated)
-    // =====================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════════
+    // 8. Scale Factors for Sacred Formulas (Raw → Calibrated)
+    // ═════════════════════════════════════════════════════════════════════════════════════
 
     // Gravitational Constant Scale Factor
-    const G_RAW: f64 = 1.06791364671254;  // pi^3 * gamma^2 / phi (dimensionless sacred value)
+    const G_RAW: f64 = 1.06791364671254;  // π³ × γ² / φ (dimensionless sacred value)
     const G_SCALE: f64 = 6.24984990176514e-11;  // G_measured / G_raw
 
     // Dark Energy Density Scale Factor
-    const OMEGA_LAMBDA_RAW: f64 = 0.000358856522493947;  // gamma^8 * pi^4 / phi^2 = pi^4 / phi^2^6
-    const OMEGA_COARSE_SCALE: f64 = 1908.84;  // Omega_Lambda_measured / Omega_Lambda_raw
+    const OMEGA_LAMBDA_RAW: f64 = 0.000358856522493947;  // γ⁸ × π⁴ / φ² = π⁴ / φ²⁶
+    const OMEGA_COARSE_SCALE: f64 = 1908.84;  // Ω_Λ_measured / Ω_Λ_raw
 
-    // =====================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════
     // 9. Verification Functions
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     fn verify_formula(formula: FormulaDefinition, computed: f64) -> VerificationResult {
         const abs_error = computed - formula.expected;
@@ -463,9 +463,9 @@ module SacredVerification {
         };
     }
 
-    // =========================================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants for Sacred Formula Verification
-    // ===================================================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
     test trinity_identity_exact
         given formula = phi_identity_results()[0]
@@ -514,7 +514,7 @@ module SacredVerification {
         then result.status == VerificationStatus::PASS
 
     test sacred_gravity_calibrated_passes
-        // Test: G_calibrated = G_raw * G_SCALE ~= G_measured
+        // Test: G_calibrated = G_raw × G_SCALE ≈ G_measured
         given g_raw = G_RAW
         and   g_scale = G_SCALE
         and   g_measured = sacred_physics::G_MEASURED
@@ -524,7 +524,7 @@ module SacredVerification {
         then rel_error < 0.01  // 1% tolerance for calibrated pipeline
 
     test sacred_dark_energy_calibrated_passes
-        // Test: Omega_Lambda_calibrated = Omega_Lambda_raw * OMEGA_COARSE_SCALE ~= Omega_Lambda_measured
+        // Test: Ω_Λ_calibrated = Ω_Λ_raw × OMEGA_COARSE_SCALE ≈ Ω_Λ_measured
         given omega_raw = OMEGA_LAMBDA_RAW
         and   omega_scale = OMEGA_COARSE_SCALE
         and   omega_measured = sacred_physics::OMEGA_LAMBDA_MEASURED
@@ -534,7 +534,7 @@ module SacredVerification {
         then rel_error < 0.01  // 1% tolerance for calibrated pipeline
 
     test jones_polynomial_identity
-        // Test: |V(e^{2pii/5})|^2 = 3 - phi^-^1 = phi^2 - gamma
+        // Test: |V(e^{2πi/5})|² = 3 - φ⁻¹ = φ² - γ
         given expected = 3.0 - sacred_physics::PHI_INV
         and   gamma = sacred_physics::GAMMA_LQG
         and   alt_expected = sacred_physics::PHI_SQ - gamma

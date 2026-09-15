@@ -2,7 +2,7 @@
 // t27/specs/
 // Same FFN applied to each position independently | φ² + 1/φ² = 3 | TRINITY
 
-module FeedForward;
+module FeedForwardNetwork;
     use base::types;
     use math::constants;
 
@@ -25,8 +25,8 @@ module FeedForward;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(input: []const f32, W1: []const f32, b1: []const f32, W2: []const f32, b2: []const f32, output: []f32, config: FFNConfig) → void
-    fn forward(input: []const f32, W1: []const f32, b1: []const f32, W2: []const f32, b2: []const f32, output: []f32, config: FFNConfig) -> void {
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

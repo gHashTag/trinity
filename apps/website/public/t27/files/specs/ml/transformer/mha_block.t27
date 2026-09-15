@@ -73,7 +73,7 @@ module MHABlock;
 
     // forward(state: BlockState, input: []gf16::GF16) → BlockForwardResult
     // Computes encoder block forward pass.
-    fn forward(state: BlockState, input: []gf16::GF16) -> BlockForwardResult {
+    fn forward(state: BlockState, input: []gf16::GF16) → BlockForwardResult {
         // Pre-LN Architecture (default):
         //   1. norm1_output = LayerNorm(input)
         //   2. attn_output, attn_weights = MHA(norm1_output)

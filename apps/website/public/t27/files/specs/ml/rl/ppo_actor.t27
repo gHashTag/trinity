@@ -27,7 +27,7 @@ module PpoActor;
     };
 
     pub const ActionSpace = struct {
-        enum : [DISCRETE, CONTINUOUS],
+        enum : ,
     };
 
     pub const PolicyOutput = struct {
@@ -39,28 +39,28 @@ module PpoActor;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward_discrete(state: []const f32, params: []const f32, config: ActorConfig) → []f32
-    fn forward_discrete(state: []const f32, params: []const f32, config: ActorConfig) -> []f32 {
+    // forward_discrete(state: []const f32) → void
+    fn forward_discrete(state: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // forward_continuous(state: []const f32, params: []const f32, config: ActorConfig) → PolicyOutput
-    fn forward_continuous(state: []const f32, params: []const f32, config: ActorConfig) -> PolicyOutput {
+    // forward_continuous(state: []const f32) → void
+    fn forward_continuous(state: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // sample_action(policy_output: PolicyOutput, action_space: ActionSpace, deterministic: bool) → []f32
-    fn sample_action(policy_output: PolicyOutput, action_space: ActionSpace, deterministic: bool) -> []f32 {
+    // sample_action(policy_output: PolicyOutput) → void
+    fn sample_action(policy_output: PolicyOutput) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // log_prob(action: []f32, policy_output: PolicyOutput, action_space: ActionSpace) → f32
-    fn log_prob(action: []f32, policy_output: PolicyOutput, action_space: ActionSpace) -> f32 {
+    // log_prob(action: []f32) → void
+    fn log_prob(action: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // entropy(policy_output: PolicyOutput, action_space: ActionSpace) → f32
-    fn entropy(policy_output: PolicyOutput, action_space: ActionSpace) -> f32 {
+    // entropy(policy_output: PolicyOutput) → void
+    fn entropy(policy_output: PolicyOutput) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -68,57 +68,30 @@ module PpoActor;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // forward_discrete/forward_continuous/sample_action/log_prob/entropy are
-    // unimplemented stubs returning void, so no policy can be evaluated or
-    // sampled yet. What the module does declare -- the log-std clamp range, the
-    // initialisation inside it, and the config/output shapes -- is tested here,
-    // including the constraint that the invariants below only state in a
-    // comment.
+    test forward_discrete_basic_case
+        given input = default_input()
+        when result = forward_discrete(input)
+        then result != undefined
 
-    test log_std_clamp_range_brackets_the_initial_value
-        // Verify: ppo_actor_constraint_0 (MIN_LOG_STD <= log_std <=
-        // MAX_LOG_STD) holds for the value the actor starts at
-        then (MIN_LOG_STD <= DEFAULT_INIT_LOG_STD) and (DEFAULT_INIT_LOG_STD <= MAX_LOG_STD)
+    test forward_continuous_basic_case
+        given input = default_input()
+        when result = forward_continuous(input)
+        then result != undefined
 
-    test clamp_range_is_ordered
-        // Verify: the floor really is below the ceiling, so the clamp is
-        // satisfiable
-        then MIN_LOG_STD < MAX_LOG_STD
+    test sample_action_basic_case
+        given input = default_input()
+        when result = sample_action(input)
+        then result != undefined
 
-    test initial_policy_has_unit_standard_deviation
-        // Verify: log_std is a logarithm, so initialising it at 0 means the
-        // Gaussian starts at sigma = 1 -- neither collapsed nor diffuse
-        then @abs(@exp(DEFAULT_INIT_LOG_STD) - 1.0) < 1e-6
+    test log_prob_basic_case
+        given input = default_input()
+        when result = log_prob(input)
+        then result != undefined
 
-    test clamp_floor_is_effectively_deterministic
-        // Verify: exp(-20) is ~2e-9, so the lower bound exists to stop sigma
-        // underflowing to zero rather than to be a usable policy width
-        then @exp(MIN_LOG_STD) < 1e-8
-
-    test clamp_ceiling_leaves_room_to_explore
-        // Verify: exp(2) is ~7.39, several times the unit initialisation
-        then @exp(MAX_LOG_STD) > 7.0
-
-    test the_floor_is_much_further_from_init_than_the_ceiling
-        // Verify: the range is deliberately asymmetric about the
-        // initialisation -- guarding against variance collapse needs far more
-        // headroom than capping exploration does
-        given down = DEFAULT_INIT_LOG_STD - MIN_LOG_STD
-        and up = MAX_LOG_STD - DEFAULT_INIT_LOG_STD
-        then down > up * 5.0
-
-    test config_carries_one_log_std_per_action_dimension
-        // Verify: ActorConfig and PolicyOutput agree on the action dimension,
-        // which is what makes the diagonal Gaussian well formed
-        given cfg = ActorConfig{.state_dim=4,.action_dim=2,.hidden_dims=@constCast(&[_]u32{64,64}),.action_space=ActionSpace.DISCRETE,.init_log_std=DEFAULT_INIT_LOG_STD}
-        and out = PolicyOutput{.logits=@constCast(&[_]f32{0.0,0.0}),.log_std=@constCast(&[_]f32{DEFAULT_INIT_LOG_STD,DEFAULT_INIT_LOG_STD})}
-        then (out.log_std.len == cfg.action_dim) and (out.logits.len == cfg.action_dim)
-
-    test hidden_dims_is_non_empty_for_a_usable_config
-        // Verify: ppo_actor_constraint_2 (len(hidden_dims) >= 1) and
-        // constraint_1 (action_dim >= 1) hold for the config above
-        given cfg = ActorConfig{.state_dim=4,.action_dim=2,.hidden_dims=@constCast(&[_]u32{64,64}),.action_space=ActionSpace.DISCRETE,.init_log_std=DEFAULT_INIT_LOG_STD}
-        then (cfg.hidden_dims.len >= 1) and (cfg.action_dim >= 1)
+    test entropy_basic_case
+        given input = default_input()
+        when result = entropy(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

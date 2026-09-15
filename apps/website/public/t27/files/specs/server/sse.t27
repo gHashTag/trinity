@@ -217,7 +217,7 @@ pub fn event_format(event: SSEEvent) []u8 {
         result = concat(result, "\n");
         result = concat(result, RETRY_FIELD);
         result = concat(result, " ");
-        const retry_val: u32 = @intCast(event.retry.?);
+        const retry_val = @intCast(event.retry.?);
         result = concat(result, int_to_string(retry_val));
     }
 
@@ -260,7 +260,7 @@ pub fn int_to_string(value: u32) []u8 {
 
     while (remaining > 0) {
         const digit = remaining % 10;
-        const char: u8 = @intCast(48 + digit);  // '0' = 48
+        const char = @intCast(48 + digit);  // '0' = 48
         result = concat(&[_]u8{char}, result);
         remaining /= 10;
     }

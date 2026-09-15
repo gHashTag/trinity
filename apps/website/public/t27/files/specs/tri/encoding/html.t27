@@ -11,23 +11,23 @@ module TriHtml;
     // ═══════════════════════════════════════════════════════════
 
     pub const HtmlNode = struct {
-        tag : []const u8,
-        attributes : [td.StringHashMap([]Const u8),
-        children : []HtmlNode,
-        inner_text : []const u8,
+        tag : "[]const u8",
+        attributes : "std.StringHashMap([]const u8)",
+        children : "[]HtmlNode",
+        inner_text : "[]const u8",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // parse(html: []const u8, allocator: std.mem.Allocator) → !HtmlNode
-    fn parse(html: []const u8, allocator: std.mem.Allocator) -> !HtmlNode {
+    // parse(html: []const u8) → void
+    fn parse(html: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // query_selector(node: HtmlNode, selector: []const u8) → ?HtmlNode
-    fn query_selector(node: HtmlNode, selector: []const u8) -> ?HtmlNode {
+    // query_selector(node: HtmlNode) → void
+    fn query_selector(node: HtmlNode) -> void {
         // TODO: Implement from .tri spec
     }
 

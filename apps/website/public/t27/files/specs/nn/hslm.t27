@@ -2,7 +2,7 @@
 // t27/specs/nn/hslm.t27
 // HSLM (Hierarchical Sacred Learning Model) Specification
 // Ternary neural network with sacred constants and VSA attention
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module HSLM {
     // Import base types, math, numeric, and attention
@@ -13,16 +13,16 @@ module HSLM {
     use numeric::gf16;
     use nn::attention;
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 1. HSLM Configuration
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // TRINITY-based architecture
     const NUM_LAYERS : usize = 6;        // 6 transformer-like layers
     const NUM_HEADS : usize = 3;         // 3 attention heads per layer
-    const HEAD_DIM : usize = 81;         // 81 dim per head (3^4)
-    const EMBED_DIM : usize = 243;       // 243 total embedding (3 * 81)
-    const FF_DIM : usize = 972;          // 4 * EMBED_DIM (3^4 * 4)
+    const HEAD_DIM : usize = 81;         // 81 dim per head (3⁴)
+    const EMBED_DIM : usize = 243;       // 243 total embedding (3 × 81)
+    const FF_DIM : usize = 972;          // 4 × EMBED_DIM (3⁴ × 4)
     const CONTEXT_LEN : usize = 81;      // Max sequence length
     const VSA_DIM : usize = 1024;        // VSA hypervector dimension
 
@@ -43,9 +43,9 @@ module HSLM {
     const PHASE_BACKWARD : u8 = 1;  // Backward pass
     const PHASE_UPDATE : u8 = 2;    // Weight update
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 2. HSLM State
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Training/inference mode
     var hslm_mode : u8 = PHASE_FORWARD;
@@ -81,11 +81,11 @@ module HSLM {
         layers : [NUM_LAYERS]LayerWeights,
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 3. HSLM Forward Pass
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // hslm_forward(input, weights, seq_len, output, caches) -> void
+    // hslm_forward(input, weights, seq_len, output, caches) → void
     // Full forward pass through all HSLM layers
     fn hslm_forward(
         input: [][]f64,           // [seq_len][EMBED_DIM]
@@ -129,7 +129,7 @@ module HSLM {
         }
     }
 
-    // hslm_layer_forward(buffers, weights, position, seq_len, cache) -> void
+    // hslm_layer_forward(buffers, weights, position, seq_len, cache) → void
     // Single transformer layer: Attention + FFN with residual connections
     fn hslm_layer_forward(
         buffers: *LayerBuffers,
@@ -191,12 +191,12 @@ module HSLM {
         }
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 4. RMS Normalization
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // rms_norm_forward(x, gamma) -> void (in-place)
-    // RMSNorm: output = (input / sqrt(mean(input^2) + eps)) * gamma
+    // rms_norm_forward(x, gamma) → void (in-place)
+    // RMSNorm: output = (input / sqrt(mean(input²) + eps)) * gamma
     // Uses sacred gamma from math/sacred_physics
     fn rms_norm_forward(x: []f64, gamma: []f64) -> void {
         // Compute mean of squares
@@ -220,11 +220,11 @@ module HSLM {
         }
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 5. Feed-Forward Network
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // ffn_forward(buffers, weights) -> void
+    // ffn_forward(buffers, weights) → void
     // Feed-forward network: Gelu(x @ W1) @ W2
     // Using ternary weights, sacred expansion
     fn ffn_forward(buffers: *LayerBuffers, weights: *LayerWeights) -> void {
@@ -238,7 +238,7 @@ module HSLM {
         ternary_matmul(buffers.ffn_intermediate, weights.w2, buffers.output, FF_DIM, EMBED_DIM);
     }
 
-    // ternary_matmul(input, weights, output, in_dim, out_dim) -> void
+    // ternary_matmul(input, weights, output, in_dim, out_dim) → void
     // Matrix multiplication with ternary weights
     fn ternary_matmul(
         input: []f64,
@@ -270,9 +270,9 @@ module HSLM {
         }
     }
 
-    // gelu_activation(x) -> void (in-place)
-    // GELU: x * Phi(x) where Phi is standard normal CDF
-    // Approximation: x * 0.5 * (1 + tanh(sqrt(2/pi) * (x + 0.044715x^3)))
+    // gelu_activation(x) → void (in-place)
+    // GELU: x * Φ(x) where Φ is standard normal CDF
+    // Approximation: x * 0.5 * (1 + tanh(√(2/π) * (x + 0.044715x³)))
     fn gelu_activation(x: []f64) -> void {
         const sqrt_2_over_pi = sqrt(2.0 / 3.141592653589793);
         var i : usize = 0;
@@ -287,11 +287,11 @@ module HSLM {
         }
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 6. HSLM Backward Pass
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // hslm_backward(grad_output, weights, seq_len, grad_input) -> void
+    // hslm_backward(grad_output, weights, seq_len, grad_input) → void
     // Full backward pass with gradient computation
     fn hslm_backward(
         grad_output: [][]f64,      // [seq_len][EMBED_DIM]
@@ -312,7 +312,7 @@ module HSLM {
         }
     }
 
-    // zero_weight_gradients() -> HSLMWeights
+    // zero_weight_gradients() → HSLMWeights
     // Initialize all weight gradients to zero
     fn zero_weight_gradients() -> HSLMWeights {
         var weights : HSLMWeights = undefined;
@@ -331,7 +331,7 @@ module HSLM {
         return weights;
     }
 
-    // hslm_layer_backward(grads, layer_idx) -> void
+    // hslm_layer_backward(grads, layer_idx) → void
     // Single layer backward: FFN + Attention gradients
     fn hslm_layer_backward(grads: *HSLMWeights, layer_idx: usize) -> void {
         // Gradient flows backward through: residual -> ffn -> norm -> residual -> attn -> norm
@@ -342,7 +342,7 @@ module HSLM {
         attention_backward(grads, layer_idx);
     }
 
-    // ffn_backward(grads, layer_idx) -> void
+    // ffn_backward(grads, layer_idx) → void
     // Backward through FFN: compute gradients for W2, W1, and input
     fn ffn_backward(grads: *HSLMWeights, layer_idx: usize) -> void {
         // Step 1: Gradient through second projection (W2)
@@ -355,7 +355,7 @@ module HSLM {
         ffn_backward_w1(grads, layer_idx);
     }
 
-    // ffn_backward_w2(grads, layer_idx) -> void
+    // ffn_backward_w2(grads, layer_idx) → void
     // Gradient through second FFN projection
     fn ffn_backward_w2(grads: *HSLMWeights, layer_idx: usize) -> void {
         // Gradient: dL/dW2 = dL/dout * x^T
@@ -363,31 +363,31 @@ module HSLM {
         // Implementation depends on stored intermediate values
     }
 
-    // gelu_backward(layer_idx) -> void
+    // gelu_backward(layer_idx) → void
     // Gradient through GELU activation
     fn gelu_backward(layer_idx: usize) -> void {
-        // GELU derivative: dGELU/dx = Phi(x) + x * phi(x)
-        // where phi is standard normal PDF
+        // GELU derivative: dGELU/dx = Φ(x) + x * φ(x)
+        // where φ is standard normal PDF
     }
 
-    // ffn_backward_w1(grads, layer_idx) -> void
+    // ffn_backward_w1(grads, layer_idx) → void
     // Gradient through first FFN projection
     fn ffn_backward_w1(grads: *HSLMWeights, layer_idx: usize) -> void {
         // Gradient: dL/dW1 = dL/dmid * x^T
         // dL/dx = W1^T * dL/dmid
     }
 
-    // attention_backward(grads, layer_idx) -> void
+    // attention_backward(grads, layer_idx) → void
     // Gradient through attention block
     fn attention_backward(grads: *HSLMWeights, layer_idx: usize) -> void {
         // Gradient flows through: output projection -> attention weights -> Q/K/V projections
     }
 
-    // =================================================================
+    // ═════════════════════════════════════════════════════════════════
     // 7. Phase Management
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // hslm_phase(phase: u8) -> void
+    // hslm_phase(phase: u8) → void
     // Switch HSLM phase (forward, backward, update)
     // Used for streaming inference and training
     fn hslm_phase(phase: u8) -> void {
@@ -400,15 +400,15 @@ module HSLM {
         }
     }
 
-    // get_hslm_mode() -> u8
+    // get_hslm_mode() → u8
     // Get current HSLM mode
     fn get_hslm_mode() -> u8 {
         return hslm_mode;
     }
 
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants for HSLM
-    // =======================================================================================================
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
     test hslm_num_layers_is_six
         given layers = NUM_LAYERS

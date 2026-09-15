@@ -10,6 +10,3 @@ module AgentRun;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "agent_run_smoke_test" {
-        expect(true)
-    }

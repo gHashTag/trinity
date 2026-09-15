@@ -41,23 +41,23 @@ module SacActor;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(state: []const f32, params: []const f32, config: SACActorConfig) → PolicyOutput
-    fn forward(state: []const f32, params: []const f32, config: SACActorConfig) -> PolicyOutput {
+    // forward(state: []const f32) → void
+    fn forward(state: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // sample(policy_output: PolicyOutput, deterministic: bool) → SquashedGaussianSample
-    fn sample(policy_output: PolicyOutput, deterministic: bool) -> SquashedGaussianSample {
+    // sample(policy_output: PolicyOutput) → void
+    fn sample(policy_output: PolicyOutput) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // scale_action(action: []f32, action_range: []f32) → []f32
-    fn scale_action(action: []f32, action_range: []f32) -> []f32 {
+    // scale_action(action: []f32) → void
+    fn scale_action(action: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // unscale_action(action: []f32, action_range: []f32) → []f32
-    fn unscale_action(action: []f32, action_range: []f32) -> []f32 {
+    // unscale_action(action: []f32) → void
+    fn unscale_action(action: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -65,37 +65,25 @@ module SacActor;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // forward/sample/scale_action/unscale_action are unimplemented stubs
-    // returning void, so no behavioural assertion is possible yet. These tests
-    // execute the bound constraints that the invariants below only state in
-    // comments. DEFAULT_ACTION_RANGE is deliberately not referenced: it is
-    // declared []f32 but initialised with a string literal, so any use of it is
-    // a type error.
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
 
-    test default_log_std_bounds_are_ordered
-        // Verify: constraint_0 (log_std_min < log_std_max) holds for the defaults
-        given lo = DEFAULT_LOG_STD_MIN
-        and hi = DEFAULT_LOG_STD_MAX
-        then lo < hi
+    test sample_basic_case
+        given input = default_input()
+        when result = sample(input)
+        then result != undefined
 
-    test default_log_std_bounds_give_a_positive_std_range
-        // Verify: exponentiating the clamp bounds yields a usable std range --
-        // exp(-20) is tiny but strictly positive, exp(2) is about 7.389
-        given std_min = @exp(DEFAULT_LOG_STD_MIN)
-        and std_max = @exp(DEFAULT_LOG_STD_MAX)
-        then @abs(std_max - 7.389056) < 1e-3 and std_min > 0.0
+    test scale_action_basic_case
+        given input = default_input()
+        when result = scale_action(input)
+        then result != undefined
 
-    test config_action_range_is_low_then_high
-        // Verify: constraint_1 (action_low < action_high) for the [-1, 1] range
-        // the module documents, through the declared config fields
-        given cfg = SACActorConfig{.state_dim=3,.action_dim=1,.hidden_dims=@constCast(&[_]u32{256,256}),.action_range=@constCast(&[_]f32{-1.0,1.0}),.log_std_min=DEFAULT_LOG_STD_MIN,.log_std_max=DEFAULT_LOG_STD_MAX}
-        then cfg.log_std_min < cfg.log_std_max and cfg.action_range[0] < cfg.action_range[1]
-
-    test squashed_sample_holds_an_action_and_a_log_probability
-        // Verify: SquashedGaussianSample has the declared fields, and a squashed
-        // action sits strictly inside the [-1, 1] range the module documents
-        given s = SquashedGaussianSample{.action=@constCast(&[_]f32{0.999}),.log_prob=-1.5}
-        then s.log_prob < 0.0 and s.action[0] < 1.0 and s.action[0] > -1.0
+    test unscale_action_basic_case
+        given input = default_input()
+        when result = unscale_action(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

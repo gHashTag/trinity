@@ -2,7 +2,7 @@
 // t27/specs/ml/transformer/feed_forward.t27
 // Transformer Feed-Forward Network (FFN) with φ-optimized dimensions | φ² + 1/φ² = 3 | TRINITY
 
-module FeedForward;
+module FeedForwardLayer;
     use base::types;
     use math::constants;
     use numeric::gf16;
@@ -181,7 +181,7 @@ module FeedForward;
     test get_intermediate_size_phi_expansion
         given config = FFNConfig{.hidden_size = 512, .expansion_factor = 0.0, .use_phi_expansion = true}
         when result = get_intermediate_size(config)
-        then approximately_equal_within(result, 512.0 * PHI_EXPANSION_FACTOR, 1.0)
+        then approximately_equal(result, 512.0 * PHI_EXPANSION_FACTOR, 1.0)
 
     test init_creates_correct_dimensions
         given config = FFNConfig{.hidden_size = 128, .expansion_factor = 4.0, .use_bias = true, .use_phi_expansion = false}
@@ -324,10 +324,10 @@ module FeedForward;
         then PHI_EXPANSION_FACTOR < DEFAULT_EXPANSION_FACTOR
 
     invariant phi_squared_is_phi_plus_one
-        then approximately_equal_within(PHI_SQUARED, PHI + 1.0, 1e-9)
+        then approximately_equal(PHI_SQUARED, PHI + 1.0, 1e-9)
 
     invariant inv_phi_plus_phi_equals_one
-        then approximately_equal_within(INV_PHI + PHI, 1.0 + PHI_SQUARED, 1e-9)
+        then approximately_equal(INV_PHI + PHI, 1.0 + PHI_SQUARED, 1e-9)
 
     invariant parameter_count_non_negative
         given config = any_ffn_config()

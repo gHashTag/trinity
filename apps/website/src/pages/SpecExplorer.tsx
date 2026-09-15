@@ -61,11 +61,12 @@ const UI = {
     compiling: 'Analysing…',
     back: '← Home',
     backToLibrary: 'All specs',
+    alsoIn: 'The same bytes are also vendored at:',
     chipTitle: 'ON THE CHIP',
     chipDerived:
       'Derived from what this spec declares: the bit width of every constant, the field layout of every packed struct, and the parameter and return widths of every function. Those are hardware facts the language requires you to state.',
     chipNotSynth:
-      'Not a placed-and-routed netlist. The .t27 → Verilog backend currently emits module shells: of 676 specs, 361 produce Verilog yosys accepts, and every one yields 0 LUTs and 0 flip-flops. There is no cell placement to show, so none is drawn.',
+      'Not a placed-and-routed netlist. The .t27 → Verilog backend emits module shells: in the yosys sweep of 2026-09-06, over a corpus of 676 specs, 361 produced Verilog yosys accepts and every one yielded 0 LUTs and 0 flip-flops. The corpus has grown since; the sweep has not been re-run, so that is the last measurement rather than a count of today. There is no cell placement to show, so none is drawn.',
     chipEmpty:
       'This spec declares nothing with a fixed bit width, so there is no datapath to draw. Nothing is inferred to fill the space.',
     chipConsts: 'constants',
@@ -160,11 +161,12 @@ const UI = {
     compiling: 'Анализ…',
     back: '← На главную',
     backToLibrary: 'Все спеки',
+    alsoIn: 'Те же байты лежат также в:',
     chipTitle: 'НА КРИСТАЛЛЕ',
     chipDerived:
       'Построено из того, что объявляет спека: разрядность каждой константы, раскладка полей каждой packed-структуры, ширины параметров и возврата каждой функции. Это аппаратные факты, которые язык требует указать явно.',
     chipNotSynth:
-      'Это не размещённый и не разведённый нетлист. Бэкенд .t27 → Verilog сейчас выдаёт оболочки модулей: из 676 спек 361 даёт Verilog, который принимает yosys, и каждая — 0 LUT и 0 триггеров. Размещать нечего, поэтому ничего и не нарисовано.',
+      'Это не размещённый и не разведённый нетлист. Бэкенд .t27 → Verilog выдаёт оболочки модулей: в прогоне yosys от 2026-09-06 по корпусу из 676 спек 361 дала Verilog, который принимает yosys, и каждая — 0 LUT и 0 триггеров. Корпус с тех пор вырос, а прогон не повторяли, так что это последнее измерение, а не счёт на сегодня. Размещать нечего, поэтому ничего и не нарисовано.',
     chipEmpty:
       'Эта спека не объявляет ничего с фиксированной разрядностью, поэтому тракт данных рисовать не из чего. Ничего не додумано.',
     chipConsts: 'константы',
@@ -489,10 +491,13 @@ export default function SpecExplorer() {
         const wanted = new URLSearchParams(window.location.hash.split('?')[1] || '').get('spec')
         const target = resolveManifestSpec(m,wanted)
         if (target) {
-          // A deep-linked spec is usually outside the course, and landing on a
-          // filter that excludes the very spec the link named would show an
-          // empty list next to an open file.
-          if (!target.tutorial) setHealthFilter('all')
+          // An address that names a spec is someone asking for the corpus at
+          // that spec, so the library beside it is the whole library. This used
+          // to lift the course filter only for a spec outside the course, and
+          // the homepage frame opens hello_world -- lesson 0 -- so it kept the
+          // course chip on and read "9 specs" beside a map saying 856. The
+          // course default is for an arrival that names nothing.
+          if (wanted) setHealthFilter('all')
           // A shared link names a spec on purpose, so on a phone it opens that
           // spec. The featured-spec fallback does not: nobody asked for it, and
           // the library is the honest landing view.
@@ -514,7 +519,7 @@ export default function SpecExplorer() {
       if (!wanted || wanted === selected?.path) return
       try {
         const target = resolveManifestSpec(manifest, wanted)
-        if (!target.tutorial) setHealthFilter('all')
+        setHealthFilter('all')
         setMobilePane('detail')
         void pickRef.current?.(target)
       } catch {
@@ -551,6 +556,20 @@ export default function SpecExplorer() {
     body.style.paddingBottom = '0px'
     return () => { body.style.paddingBottom = previous }
   }, [embedded])
+
+  // Which specs are also somewhere else, byte for byte. Vendoring keeps the
+  // first copy it sees and discards the rest, so the corpus shows one entry for
+  // a file that may live in four repositories -- true, and until now invisible.
+  // Keyed by the path that was kept, which is the one a reader has open.
+  const copiesOf = useMemo(() => {
+    const index = new Map<string, { path: string; repo: string }[]>()
+    for (const d of manifest?.duplicates ?? []) {
+      const list = index.get(d.sameAs)
+      if (list) list.push({ path: d.path, repo: d.repo })
+      else index.set(d.sameAs, [{ path: d.path, repo: d.repo }])
+    }
+    return index
+  }, [manifest])
 
   const filtered = useMemo(() => {
     if (!manifest) return []
@@ -1393,6 +1412,20 @@ export default function SpecExplorer() {
                     {selected.description && (
                       <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.55, color: '#b9bfc6', maxWidth: 'none' }}>
                         {selected.description}
+                      </p>
+                    )}
+                    {/* The same bytes, somewhere else. One entry can stand for
+                        copies in several repositories, and a reader deciding
+                        where a spec really lives needs to be told that. */}
+                    {(copiesOf.get(selected.path)?.length ?? 0) > 0 && (
+                      <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.5, color: C.golden, maxWidth: 'none' }}>
+                        {ui.alsoIn}{' '}
+                        {copiesOf.get(selected.path)!.map((c, i) => (
+                          <span key={c.path}>
+                            {i > 0 ? ', ' : ''}
+                            <code style={{ fontFamily: C.mono, fontSize: 11 }}>{c.path}</code>
+                          </span>
+                        ))}
                       </p>
                     )}
                     {/* Derived from the compile, not written by hand -- so it

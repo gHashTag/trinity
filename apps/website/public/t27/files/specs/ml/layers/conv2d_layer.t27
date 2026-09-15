@@ -29,7 +29,7 @@ module Conv2d;
     };
 
     pub const PaddingMode = struct {
-        enum_type : Enum,
+        enum_type : "enum",
         values : ,
         Zeros : Auto,
         Reflect : Auto,
@@ -41,13 +41,13 @@ module Conv2d;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(input: []const f32, weights: []const f32, bias: []const f32, output: []f32, config: Conv2DConfig) → void
-    fn forward(input: []const f32, weights: []const f32, bias: []const f32, output: []f32, config: Conv2DConfig) -> void {
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // backward(grad_output: []const f32, input: []const f32, weights: []const f32, grad_input: []f32, grad_weights: []f32, grad_bias: []f32, config: Conv2DConfig) → void
-    fn backward(grad_output: []const f32, input: []const f32, weights: []const f32, grad_input: []f32, grad_weights: []f32, grad_bias: []f32, config: Conv2DConfig) -> void {
+    // backward(grad_output: []const f32) → void
+    fn backward(grad_output: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

@@ -47,24 +47,28 @@ module TriStack;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test empty_stack_holds_no_items
-        // Verify: the boundary is_empty tests for -- an empty stack's backing
-        // slice has length zero
-        given s = Stack(u32){ .items = &[_]u32{} }
-        then s.items.len == 0
+    test empty_basic_case
+        given input = default_input()
+        when result = empty(input)
+        then result != undefined
 
-    test top_of_stack_is_the_highest_index
-        // Verify: last-in-first-out ordering. Items enter at the end of the
-        // slice, so peek reads items[len - 1] and 30 -- pushed last -- is on top
-        given xs = [_]u32{ 10, 20, 30 }
-        and s = Stack(u32){ .items = @constCast(&xs) }
-        then s.items[s.items.len - 1] == 30 and s.items[0] == 10
+    test push_basic_case
+        given input = default_input()
+        when result = push(input)
+        then result != undefined
 
-    test stack_is_generic_over_the_element_type
-        // Verify: Stack(T) stores T, so Stack(u8) and Stack(u32) are two
-        // distinct types rather than one erased container
-        given a = Stack(u8){ .items = &[_]u8{} }
-        when element_type = @TypeOf(a.items)
-        and distinct = Stack(u8) != Stack(u32)
-        then distinct and element_type == []u8
+    test pop_basic_case
+        given input = default_input()
+        when result = pop(input)
+        then result != undefined
+
+    test peek_basic_case
+        given input = default_input()
+        when result = peek(input)
+        then result != undefined
+
+    test is_empty_basic_case
+        given input = default_input()
+        when result = is_empty(input)
+        then result != undefined
 

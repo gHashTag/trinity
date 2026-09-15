@@ -2,7 +2,7 @@
 // t27/specs/
 //  | φ² + 1/φ² = 3 | TRINITY
 
-module experience_hooks;
+module ExperienceHooks;
     use base::types;
     use math::constants;
 
@@ -10,6 +10,3 @@ module experience_hooks;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "experience_hooks_smoke_test" {
-        expect(true)
-    }

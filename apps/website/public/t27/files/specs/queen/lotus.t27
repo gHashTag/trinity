@@ -2,7 +2,7 @@
 // t27/specs/queen/lotus.t27
 // Queen Lotus 6-Phase Orchestration Specification
 // Self-improving agent orchestration with episode-based learning
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module QueenLotus {
     // Import base types, HSLM, and runtime
@@ -10,9 +10,9 @@ module QueenLotus {
     use nn::hslm;
     use compiler::runtime;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 1. Lotus Configuration
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     const NUM_PHASES : usize = 6;            // 6 phases in Lotus cycle
     const EPISODE_BUFFER_SIZE : usize = 100;   // Max episodes in buffer
@@ -45,9 +45,9 @@ module QueenLotus {
     const DELTA_SET : u8 = 2;        // Set parameter
     const DELTA_WAIT : u8 = 3;       // Wait/observe
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 2. Lotus State
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Lotus runtime state
     var current_phase : u8 = PHASE_OBSERVE;
@@ -76,9 +76,9 @@ module QueenLotus {
     var phase_start_time : u64 = 0;
     const PHASE_TIMEOUT_MS : u64 = 5000;  // 5 second timeout per phase
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 3. Data Structures
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Context: system state observation
     struct Context {
@@ -120,11 +120,11 @@ module QueenLotus {
         total_time_ms : u64,
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 4. Main Orchestration
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // lotus_orchestrate() -> CycleResult
+    // lotus_orchestrate() → CycleResult
     // Run complete 6-phase Lotus cycle
     // Returns: context, evaluation, plan, result, outcome
     fn lotus_orchestrate() -> CycleResult {
@@ -154,7 +154,7 @@ module QueenLotus {
         return result;
     }
 
-    // lotus_phase(phase: u8) -> PhaseOutput
+    // lotus_phase(phase: u8) → PhaseOutput
     // Execute a single phase of the Lotus cycle
     fn lotus_phase(phase: u8) -> PhaseOutput {
         current_phase = phase;
@@ -177,9 +177,9 @@ module QueenLotus {
         return PhaseOutput{ .success = false };
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 5. Phase: Observe
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // PhaseOutput wrapper for observe_state
     struct PhaseOutput {
@@ -187,7 +187,7 @@ module QueenLotus {
         data : [256]u8 = [0; 256],
     }
 
-    // observe_state() -> Context
+    // observe_state() → Context
     // Gather current state information
     fn observe_state() -> Context {
         const active_issues = get_active_issues_count();
@@ -201,29 +201,29 @@ module QueenLotus {
         };
     }
 
-    // get_active_issues_count() -> usize
+    // get_active_issues_count() → usize
     // Get number of active issues
     fn get_active_issues_count() -> usize {
         // Query issue tracker
         return 0;  // Placeholder
     }
 
-    // get_system_health() -> f64
+    // get_system_health() → f64
     // Get system health score (0.0 to 1.0)
     fn get_system_health() -> f64 {
         return 1.0;  // Placeholder
     }
 
-    // get_timestamp() -> u64
+    // get_timestamp() → u64
     // Get current timestamp
     fn get_timestamp() -> u64 {
         // Return current time (placeholder)
         return 0;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 6. Phase: Recall
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // RecallEpisode wrapper
     struct RecallEpisode {
@@ -231,7 +231,7 @@ module QueenLotus {
         count : usize,
     }
 
-    // recall_episodes() -> RecallEpisode
+    // recall_episodes() → RecallEpisode
     // Recall relevant episodes from episode buffer
     // Uses HSLM for semantic similarity search
     fn recall_episodes() -> RecallEpisode {
@@ -254,9 +254,9 @@ module QueenLotus {
         };
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 7. Phase: Evaluate
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // EvaluationResult wrapper
     struct EvaluationResult {
@@ -264,7 +264,7 @@ module QueenLotus {
         confidence : f64,
     }
 
-    // evaluate_quality(recalled: RecallEpisode) -> Evaluation
+    // evaluate_quality(recalled: RecallEpisode) → Evaluation
     // Evaluate quality based on episode outcomes
     fn evaluate_quality(recalled: RecallEpisode) -> Evaluation {
         var success_count : u8 = 0;
@@ -322,7 +322,7 @@ module QueenLotus {
         };
     }
 
-    // evaluate_quality_() -> EvaluationResult
+    // evaluate_quality_() → EvaluationResult
     // Wrapper for phase execution
     fn evaluate_quality_() -> EvaluationResult {
         const recalled = recall_episodes();
@@ -333,9 +333,9 @@ module QueenLotus {
         };
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 8. Phase: Plan
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // PlanResult wrapper
     struct PlanResult {
@@ -344,7 +344,7 @@ module QueenLotus {
         target_value : i32,
     }
 
-    // generate_plan(evaluation: Evaluation) -> Plan
+    // generate_plan(evaluation: Evaluation) → Plan
     // Generate action plan based on quality evaluation
     fn generate_plan(evaluation: Evaluation) -> Plan {
         var delta_type : u8 = DELTA_WAIT;
@@ -362,7 +362,7 @@ module QueenLotus {
         };
     }
 
-    // generate_plan_() -> PlanResult
+    // generate_plan_() → PlanResult
     // Wrapper for phase execution
     fn generate_plan_() -> PlanResult {
         const eval = evaluate_quality_();
@@ -381,9 +381,9 @@ module QueenLotus {
         };
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 9. Phase: Act
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // ActionResult wrapper
     struct ActionResult {
@@ -391,7 +391,7 @@ module QueenLotus {
         execution_time_ms : u64,
     }
 
-    // execute_action(plan: Plan) -> Action
+    // execute_action(plan: Plan) → Action
     // Execute the planned action
     fn execute_action(plan: Plan) -> Action {
         var success = false;
@@ -416,7 +416,7 @@ module QueenLotus {
         };
     }
 
-    // execute_action_() -> ActionResult
+    // execute_action_() → ActionResult
     // Wrapper for phase execution
     fn execute_action_() -> ActionResult {
         const plan_result = generate_plan_();
@@ -432,21 +432,21 @@ module QueenLotus {
         };
     }
 
-    // scale_up_resources() -> bool
+    // scale_up_resources() → bool
     // Increase system resources
     fn scale_up_resources() -> bool {
         // Increase agent count, memory allocation, etc.
         return true;
     }
 
-    // scale_down_resources() -> bool
+    // scale_down_resources() → bool
     // Decrease system resources
     fn scale_down_resources() -> bool {
         // Decrease agent count, free memory, etc.
         return true;
     }
 
-    // set_parameter(plan: Plan) -> bool
+    // set_parameter(plan: Plan) → bool
     // Set a policy parameter
     fn set_parameter(plan: Plan) -> bool {
         // Set parameter from plan
@@ -454,9 +454,9 @@ module QueenLotus {
         return true;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 10. Phase: Record
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // RecordResult wrapper
     struct RecordResult {
@@ -464,7 +464,7 @@ module QueenLotus {
         episode_id : usize,
     }
 
-    // record_episode(cycle_result: CycleResult) -> u8
+    // record_episode(cycle_result: CycleResult) → u8
     // Record episode to buffer
     fn record_episode(cycle_result: CycleResult) -> u8 {
         const slot = current_episode % EPISODE_BUFFER_SIZE;
@@ -484,14 +484,14 @@ module QueenLotus {
         return OUTCOME_SUCCESS;  // Placeholder
     }
 
-    // record_episode_() -> RecordResult
+    // record_episode_() → RecordResult
     // Wrapper for phase execution
     fn record_episode_() -> RecordResult {
         const cycle_result = CycleResult{
             .context = observe_state(),
             .evaluation = evaluate_(),
-            .plan = generate_plan(),
-            .action = execute_action(),
+            .plan = generate_plan_(),      // W575: the zero-argument wrapper, like evaluate_() above
+            .action = execute_action_(),   // W575: same -- generate_plan/execute_action each take one argument
             .outcome = OUTCOME_UNKNOWN,
             .total_time_ms = 0,
         };
@@ -504,7 +504,7 @@ module QueenLotus {
         };
     }
 
-    // determine_outcome(result: CycleResult) -> u8
+    // determine_outcome(result: CycleResult) → u8
     // Determine episode outcome based on action success
     fn determine_outcome(result: CycleResult) -> u8 {
         if (result.action.success) {
@@ -514,11 +514,11 @@ module QueenLotus {
         }
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 11. Agent Spawning
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // lotus_spawn(agent_type: u8, count: u8) -> bool
+    // lotus_spawn(agent_type: u8, count: u8) → bool
     // Spawn new agents for orchestration
     fn lotus_spawn(agent_type: u8, count: u8) -> bool {
         var spawned : u8 = 0;
@@ -533,18 +533,18 @@ module QueenLotus {
         return true;
     }
 
-    // spawn_agent(agent_type: u8) -> bool
+    // spawn_agent(agent_type: u8) → bool
     // Spawn a single agent
     fn spawn_agent(agent_type: u8) -> bool {
         // Spawn agent of specified type
         return true;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 12. Phase Management
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // lotus_phase_management() -> bool
+    // lotus_phase_management() → bool
     // Manage phase transitions and timeouts
     fn lotus_phase_management() -> bool {
         if (check_phase_timeout()) {
@@ -554,7 +554,7 @@ module QueenLotus {
         return false;
     }
 
-    // check_phase_timeout() -> bool
+    // check_phase_timeout() → bool
     // Check if current phase has timed out
     fn check_phase_timeout() -> bool {
         const current_time = get_timestamp();
@@ -563,7 +563,7 @@ module QueenLotus {
         return elapsed > PHASE_TIMEOUT_MS;
     }
 
-    // force_phase_transition() -> void
+    // force_phase_transition() → void
     // Force transition to next phase
     fn force_phase_transition() -> void {
         current_phase = current_phase + 1;
@@ -573,9 +573,9 @@ module QueenLotus {
         }
     }
 
-    // =====================================================================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec: Tests and Invariants for QueenLotus
-    // =============================================================================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
     test lotus_num_phases_is_six
         given phases = NUM_PHASES
@@ -671,7 +671,7 @@ module QueenLotus {
     test lotus_set_parameter_updates_policy
         given plan = Plan{.delta_type = DELTA_SET, .target_resource = 5, .target_value = 42}
         and   result = set_parameter(plan)
-        then  policy_state[5] == 42
+        and   then policy_state[5] == 42
 
     test lotus_spawn_zero_agents
         given result = lotus_spawn(0, 0)
@@ -801,3 +801,24 @@ module QueenLotus {
         measure: nanoseconds to record_episode_(true)
         target: < 5000ns
 }
+
+// W708: NO ENTRY POINT. The boundary W697 derived here was WRONG, and it is
+// removed rather than corrected.
+//
+// W697's call-graph-root rule picked `lotus_spawn(agent_type: u8, count: u8)`
+// because it is the only candidate this module has: `lotus_orchestrate()` --
+// the module's actual subject, the six-phase Observe/Recall/Evaluate/Plan/Act/
+// Record cycle -- takes NO parameters, so the rule cannot see it.
+//
+// The pick was mechanically forced and semantically wrong. `lotus_spawn` is a
+// primitive the cycle calls; exposing it as THE hardware boundary says this
+// module is a spawner, which it is not.
+//
+// T197a defended the root rule on the grounds that its two known bad picks were
+// excluded by the width filter (`f64`, `GF4`). This is a third case, and the
+// width filter does NOT help: `(u8, u8) -> bool` is entirely scalar. So the
+// filter composition narrows the failure mode without closing it.
+//
+// A stateful multi-phase cycle whose driver takes no data is not combinational
+// at all. If this module is ever given a boundary it will be `fn on_clock`, and
+// choosing it is a design decision, not a derivation.

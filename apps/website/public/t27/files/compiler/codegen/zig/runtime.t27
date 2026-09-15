@@ -1,14 +1,14 @@
-// runtime.t27 -- Zig Runtime Code Generation
+// runtime.t27 — Zig Runtime Code Generation
 // Generates Zig backend from compiler/runtime/*.t27 specifications
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module zig_runtime {
     using commands: @import("compiler/runtime/commands.t27");
     using validation: @import("compiler/runtime/validation.t27");
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Zig Runtime Generation
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     // Generate main.zig entry point
     pub fn generate_main() []const u8 {
@@ -293,9 +293,9 @@ module zig_runtime {
         return generate_validation_module();
     }
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Code generation entry point
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     // Generate all Zig runtime files
     pub fn generate_runtime_zig() i32 {
@@ -315,9 +315,9 @@ module zig_runtime {
     }
 }
 
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 // TDD-Inside-Spec: Tests and Invariants for Runtime Code Generation
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 test generate_main_contains_header
     const main_zig = zig_runtime.generate_main();

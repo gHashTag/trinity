@@ -12,26 +12,26 @@ module TriSegmentTree;
 
     pub const SegmentTree = struct {
         data : []i64,
-        size : usize,
-        allocator : std.mem.Allocator,
+        size : "usize",
+        allocator : "std.mem.Allocator",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(allocator: std.mem.Allocator, values: []const i64) → SegmentTree
-    fn init(allocator: std.mem.Allocator, values: []const i64) -> SegmentTree {
+    // init(allocator: std.mem.Allocator) → void
+    fn init(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // query(tree: *SegmentTree, left: usize, right: usize) → i64
-    fn query(tree: *SegmentTree, left: usize, right: usize) -> i64 {
+    // query(tree: *SegmentTree) → void
+    fn query(tree: *SegmentTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // update(tree: *SegmentTree, index: usize, value: i64) → void
-    fn update(tree: *SegmentTree, index: usize, value: i64) -> void {
+    // update(tree: *SegmentTree) → void
+    fn update(tree: *SegmentTree) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -44,23 +44,23 @@ module TriSegmentTree;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // Every function above has no body yet, so it panics when called; and
-    // query(tree) names no range while update(tree) names no index or value,
-    // so no sum-query behaviour can be stated until those signatures grow
-    // their arguments. What can be stated is the shape of the tree value.
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
 
-    test segment_tree_empty_state_holds_no_nodes
-        given empty = SegmentTree{.data=&[_]i64{},.size=0,.allocator=std.testing.allocator}
-        then empty.size == 0
-        and empty.data.len == 0
+    test query_basic_case
+        given input = default_input()
+        when result = query(input)
+        then result != undefined
 
-    test segment_tree_node_array_and_size_are_separate_fields
-        // size counts the elements the tree covers; data is the node storage,
-        // and the spec fixes no relation between the two, so this only holds
-        // them to carrying what they were built with
-        given tree = SegmentTree{.data=@constCast(&[_]i64{1,3,2,4}),.size=4,.allocator=std.testing.allocator}
-        then tree.size == 4
-        and tree.data.len == 4
-        and tree.data[0] == 1
-        and tree.data[3] == 4
+    test update_basic_case
+        given input = default_input()
+        when result = update(input)
+        then result != undefined
+
+    test deinit_basic_case
+        given input = default_input()
+        when result = deinit(input)
+        then result != undefined
 

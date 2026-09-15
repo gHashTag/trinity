@@ -1375,13 +1375,17 @@ input:focus-visible {
    leaving the code 332. Scoped under .spec-x like the rest of the Explorer. */
 .spec-x-brief { min-height: 0; }
 /* This box sits in a column flex with min-height:0, so it shrinks under
-   pressure -- and it has nothing to give. Collapsed it is one 36px row, and at
-   370px, where the toolbar above wraps to two lines, it was squeezed to 28px
-   and the summary drew itself over the tab strip below; open it was squeezed
-   from 461px to the same 28px and drew over everything. So it never shrinks,
-   and when open it takes what it needs up to 45vh and scrolls the rest,
-   leaving the tab strip and the code pane their own height. */
-.spec-x-brief.is-collapsible { flex: 0 0 auto; }
+   pressure -- and it has nothing to give. In the embed, collapsed, it is one
+   36px row: at 370px, where the toolbar above wraps to two lines, it was
+   squeezed to 28px and the summary drew itself over the tab strip. On /specs,
+   where it is always open, it was worse -- measured at 404px the box was 0px
+   tall around 636px of content, which then drew straight over the tab strip and
+   the code. The first fix here was scoped to the embed's collapsible variant
+   and left that case exactly as it was.
+   So: no variant shrinks, and any open one takes what it needs up to 45vh and
+   scrolls the rest, leaving the tabs and the code their own height. */
+.spec-x-brief { flex: 0 0 auto; }
+.spec-x-brief:not(.is-collapsible),
 .spec-x-brief.is-collapsible[open] {
   max-height: 45vh;
   overflow: auto;

@@ -43,18 +43,18 @@ module Dqn;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // select_action(state: []const f32, q_network: []const f32, epsilon: f32, config: DQNConfig) → u32
-    fn select_action(state: []const f32, q_network: []const f32, epsilon: f32, config: DQNConfig) -> u32 {
+    // select_action(state: []const f32) → void
+    fn select_action(state: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // train_step(batch: []Transition, q_network: []f32, target_network: []f32, config: DQNConfig) → f32
-    fn train_step(batch: []Transition, q_network: []f32, target_network: []f32, config: DQNConfig) -> f32 {
+    // train_step(batch: []Transition) → void
+    fn train_step(batch: []Transition) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // update_target(q_network: []f32, target_network: []f32) → void
-    fn update_target(q_network: []f32, target_network: []f32) -> void {
+    // update_target(q_network: []f32) → void
+    fn update_target(q_network: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -62,43 +62,20 @@ module Dqn;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test default_gamma_within_unit_interval
-        // Verify: the shipped discount satisfies constraint 0 of this module
-        given gamma = DEFAULT_GAMMA
-        then gamma >= 0.0 and gamma <= 1.0
+    test select_action_basic_case
+        given input = default_input()
+        when result = select_action(input)
+        then result != undefined
 
-    test epsilon_schedule_runs_downhill
-        // Verify: constraint 1 — 0 <= epsilon_end <= epsilon_start <= 1, so the
-        // schedule can only move from exploration towards exploitation
-        given lo = DEFAULT_EPSILON_END
-        and hi = DEFAULT_EPSILON_START
-        then lo >= 0.0 and lo <= hi and hi <= 1.0
+    test train_step_basic_case
+        given input = default_input()
+        when result = train_step(input)
+        then result != undefined
 
-    test epsilon_opens_at_pure_exploration
-        // Verify: epsilon_start is exactly 1, so step 0 picks uniformly at random
-        given hi = DEFAULT_EPSILON_START
-        and err = @abs(hi - 1.0)
-        then err < 1.0e-6
-
-    test epsilon_never_reaches_zero
-        // Verify: epsilon_end stays above 0, so a trained agent keeps a residual
-        // exploration rate rather than becoming fully greedy
-        given lo = DEFAULT_EPSILON_END
-        then lo > 0.0
-
-    test transition_states_have_matching_widths
-        // Verify: state and next_state are the same observation space, so a
-        // well-formed transition carries them at equal length
-        given state = [_]f32{ 0.0, 1.0, 0.0 }
-        and next_state = [_]f32{ 1.0, 0.0, 0.0 }
-        when step = Transition{ .state = @constCast(&state), .action = 1, .reward = -1.0, .next_state = @constCast(&next_state), .done = true }
-        then step.state.len == step.next_state.len and step.action == 1 and step.done
-
-    test config_from_defaults_meets_every_constraint
-        // Verify: a config built straight from the module constants is admissible
-        // under constraints 0, 1 and 2
-        given config = DQNConfig{ .state_dim = 4, .action_dim = 2, .hidden_dims = &.{}, .learning_rate = 0.001, .gamma = DEFAULT_GAMMA, .epsilon_start = DEFAULT_EPSILON_START, .epsilon_end = DEFAULT_EPSILON_END, .epsilon_decay = 0.995, .batch_size = 32, .target_update_freq = 100 }
-        then config.gamma >= 0.0 and config.gamma <= 1.0 and config.epsilon_end <= config.epsilon_start and config.epsilon_decay > 0.0 and config.epsilon_decay <= 1.0
+    test update_target_basic_case
+        given input = default_input()
+        when result = update_target(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

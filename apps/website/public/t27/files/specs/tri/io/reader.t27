@@ -11,15 +11,15 @@ module TriReader;
     // ═══════════════════════════════════════════════════════════
 
     pub const Reader(R, T) = struct {
-        run : fn(R) -> T,
+        run : "fn(R) -> T",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // pure(value: T) → Reader(R, T)
-    fn pure(value: T) -> Reader(R, T) {
+    // pure(value: T) → void
+    fn pure(value: T) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -28,13 +28,13 @@ module TriReader;
         // TODO: Implement from .tri spec
     }
 
-    // asks(fn: fn(R) -> T) → Reader(R, T)
-    fn asks(fn: fn(R) -> T) -> Reader(R, T) {
+    // asks(fn: Fn(R) -> T) → void
+    fn asks(fn: Fn(R) -> T) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // local(fn: fn(R) -> R, reader: Reader(R, T)) → Reader(R, T)
-    fn local(fn: fn(R) -> R, reader: Reader(R, T)) -> Reader(R, T) {
+    // local(fn: Fn(R) -> R) → void
+    fn local(fn: Fn(R) -> R) -> void {
         // TODO: Implement from .tri spec
     }
 

@@ -11,18 +11,18 @@ module TriSplayTree;
     // ═══════════════════════════════════════════════════════════
 
     pub const SplayTree = struct {
-        generic : K, V,
-        root : ?*SplayNode,
-        size : usize,
+        generic : "K, V",
+        root : "?*SplayNode",
+        size : "usize",
     };
 
     pub const SplayNode = struct {
-        generic : K, V,
-        key : K,
-        value : V,
-        left : ?*SplayNode,
-        right : ?*SplayNode,
-        parent : ?*SplayNode,
+        generic : "K, V",
+        key : "K",
+        value : "V",
+        left : "?*SplayNode",
+        right : "?*SplayNode",
+        parent : "?*SplayNode",
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -34,18 +34,18 @@ module TriSplayTree;
         // TODO: Implement from .tri spec
     }
 
-    // find(tree: *SplayTree, key: K) → ?V
-    fn find(tree: *SplayTree, key: K) -> ?V {
+    // find(tree: *SplayTree) → void
+    fn find(tree: *SplayTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // insert(tree: *SplayTree, key: K, value: V) → !void
-    fn insert(tree: *SplayTree, key: K, value: V) -> !void {
+    // insert(tree: *SplayTree) → void
+    fn insert(tree: *SplayTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // delete(tree: *SplayTree, key: K) → bool
-    fn delete(tree: *SplayTree, key: K) -> bool {
+    // delete(tree: *SplayTree) → void
+    fn delete(tree: *SplayTree) -> void {
         // TODO: Implement from .tri spec
     }
 

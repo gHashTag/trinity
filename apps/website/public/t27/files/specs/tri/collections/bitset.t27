@@ -12,41 +12,41 @@ module TriBitset;
 
     pub const Bitset = struct {
         data : []usize,
-        size : usize,
-        allocator : std.mem.Allocator,
+        size : "usize",
+        allocator : "std.mem.Allocator",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(allocator: std.mem.Allocator, bit_count: usize) → Bitset
-    fn init(allocator: std.mem.Allocator, bit_count: usize) -> Bitset {
+    // init(allocator: std.mem.Allocator) → void
+    fn init(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // set(bs: *Bitset, index: usize) → void
-    fn set(bs: *Bitset, index: usize) -> void {
+    // set(bs: *Bitset) → void
+    fn set(bs: *Bitset) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // clear(bs: *Bitset, index: usize) → void
-    fn clear(bs: *Bitset, index: usize) -> void {
+    // clear(bs: *Bitset) → void
+    fn clear(bs: *Bitset) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // test(bs: *Bitset, index: usize) → bool
-    fn test(bs: *Bitset, index: usize) -> bool {
+    // test(bs: *Bitset) → void
+    fn test(bs: *Bitset) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // union(a: *Bitset, b: *Bitset, allocator: std.mem.Allocator) → Bitset
-    fn union(a: *Bitset, b: *Bitset, allocator: std.mem.Allocator) -> Bitset {
+    // union(a: *Bitset) → void
+    fn union(a: *Bitset) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // intersect(a: *Bitset, b: *Bitset, allocator: std.mem.Allocator) → Bitset
-    fn intersect(a: *Bitset, b: *Bitset, allocator: std.mem.Allocator) -> Bitset {
+    // intersect(a: *Bitset) → void
+    fn intersect(a: *Bitset) -> void {
         // TODO: Implement from .tri spec
     }
 

@@ -10,13 +10,13 @@ module TriMergeSort;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // sort(allocator: std.mem.Allocator, values: []i64) → []i64
-    fn sort(allocator: std.mem.Allocator, values: []i64) -> []i64 {
+    // sort(allocator: std.mem.Allocator) → void
+    fn sort(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // sort_in_place(allocator: std.mem.Allocator, values: []i64) → void
-    fn sort_in_place(allocator: std.mem.Allocator, values: []i64) -> void {
+    // sort_in_place(allocator: std.mem.Allocator) → void
+    fn sort_in_place(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 

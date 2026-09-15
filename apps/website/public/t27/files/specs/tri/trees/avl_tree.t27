@@ -11,18 +11,18 @@ module TriAvlTree;
     // ═══════════════════════════════════════════════════════════
 
     pub const AVLTree = struct {
-        generic : K, V,
-        root : ?*AVLNode,
-        size : usize,
+        generic : "K, V",
+        root : "?*AVLNode",
+        size : "usize",
     };
 
     pub const AVLNode = struct {
-        generic : K, V,
-        key : K,
-        value : V,
-        height : i32,
-        left : ?*AVLNode,
-        right : ?*AVLNode,
+        generic : "K, V",
+        key : "K",
+        value : "V",
+        height : "i32",
+        left : "?*AVLNode",
+        right : "?*AVLNode",
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -34,18 +34,18 @@ module TriAvlTree;
         // TODO: Implement from .tri spec
     }
 
-    // insert(tree: *AVLTree, key: K, value: V) → !void
-    fn insert(tree: *AVLTree, key: K, value: V) -> !void {
+    // insert(tree: *AVLTree) → void
+    fn insert(tree: *AVLTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // find(tree: *const AVLTree, key: K) → ?V
-    fn find(tree: *const AVLTree, key: K) -> ?V {
+    // find(tree: *const AVLTree) → void
+    fn find(tree: *const AVLTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // delete(tree: *AVLTree, key: K) → bool
-    fn delete(tree: *AVLTree, key: K) -> bool {
+    // delete(tree: *AVLTree) → void
+    fn delete(tree: *AVLTree) -> void {
         // TODO: Implement from .tri spec
     }
 

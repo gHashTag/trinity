@@ -11,15 +11,11 @@ module BatchRunner;
     // ═══════════════════════════════════════════════════════════
 
     pub const CompileStatus = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/batch_runner.tri:23. The converter dropped bare `- name` bullets.
-        enum : [pass, ast_fail, compile_fail, gen_fail, lint_fail, timeout, skipped],
+        variants : ,
     };
 
     pub const FilterMode = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/batch_runner.tri:33. The converter dropped bare `- name` bullets.
-        enum : [all, lint_pass, lint_fail, changed_only],
+        variants : ,
     };
 
     pub const PipelineResult = struct {

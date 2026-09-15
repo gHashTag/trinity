@@ -1,12 +1,12 @@
-// git.t27 -- Git Integration with Tri Skill Workflow (ADR-002)
+// git.t27 — Git Integration with Tri Skill Workflow (ADR-002)
 // Commands for git operations with skill validation and issue binding
 
 module git_commands {
     using skill_registry: @import("../skill/registry.t27");
 
-    // =========================================================
+    // ═════════════════════════════════════════════════════════
     // Command: tri git commit [--all] [-m "msg"] [--mode strict|normal|local]
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub fn git_commit(all: bool, message: []const u8, mode: []const u8) i32 {
         const registry_path = ".trinity/skills/registry.json";
@@ -125,9 +125,9 @@ module git_commands {
         return 0;
     }
 
-    // =========================================================
+    // ═════════════════════════════════════════════════════════
     // Command: tri git push [<remote> <branch>] [--mode strict|normal|local]
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub fn git_push(remote: []const u8, branch: []const u8, mode: []const u8) i32 {
         const registry_path = ".trinity/skills/registry.json";
@@ -242,9 +242,9 @@ module git_commands {
         return 0;
     }
 
-    // =========================================================
-    // Command: tri git status -- Show git status with skill info
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════
+    // Command: tri git status — Show git status with skill info
+    // ═════════════════════════════════════════════════════════════════════
 
     pub fn git_status_with_skill() i32 {
         const registry_path = ".trinity/skills/registry.json";
@@ -290,9 +290,9 @@ module git_commands {
         return 0;
     }
 
-    // =========================================================
+    // ═════════════════════════════════════════════════════════
     // Helper functions
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     // Find active or last sealed skill from registry
     fn find_active_or_sealed_skill(registry_json: []const u8) ?Skill {
@@ -452,9 +452,9 @@ module git_commands {
         return result;
     }
 
-    // =========================================================
+    // ═════════════════════════════════════════════════════════
     // Type definitions
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const Skill = struct {
         id: []const u8,
@@ -482,9 +482,9 @@ module git_commands {
     };
 }
 
-// ===========================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════
 // TDD-Inside-Spec: Tests and Invariants for Git Integration
-// ===========================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════
 
 test git_commit_requires_registry
     // Mock: registry doesn't exist

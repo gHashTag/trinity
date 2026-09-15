@@ -48,22 +48,28 @@ module TriQueue;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // empty/enqueue/dequeue/peek/is_empty are unimplemented stubs -- each emits
-    // `@panic("not yet implemented")`, so no FIFO behaviour can be exercised.
-    // Queue(T) itself is a real type constructor, and that is testable.
+    test empty_basic_case
+        given input = default_input()
+        when result = empty(input)
+        then result != undefined
 
-    test queue_substitutes_its_element_type
-        // The parameter reaches both fields: Queue(i64) stores i64, not T.
-        then @FieldType(Queue(i64), "front") == []i64
-        and @FieldType(Queue(i64), "back") == []i64
+    test enqueue_basic_case
+        given input = default_input()
+        when result = enqueue(input)
+        then result != undefined
 
-    test distinct_element_types_give_distinct_queues
-        // A generic that ignored T would collapse these to one type.
-        then Queue(i64) != Queue(u8)
-        and Queue(i64) == Queue(i64)
+    test dequeue_basic_case
+        given input = default_input()
+        when result = dequeue(input)
+        then result != undefined
 
-    test queue_is_the_two_stack_shape
-        // front and back only: the amortised FIFO built from two LIFOs.
-        then @typeInfo(Queue(u8)).@"struct".fields.len == 2
-        and @hasField(Queue(u8), "front") and @hasField(Queue(u8), "back")
+    test peek_basic_case
+        given input = default_input()
+        when result = peek(input)
+        then result != undefined
+
+    test is_empty_basic_case
+        given input = default_input()
+        when result = is_empty(input)
+        then result != undefined
 

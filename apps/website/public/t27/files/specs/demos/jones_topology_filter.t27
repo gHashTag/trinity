@@ -5,7 +5,7 @@
 // - Takes a hypervector representing a structure
 // - Computes dot_product similarity with a reference structure
 // - Classifies complexity based on similarity thresholds
-// - Uses a fixed Chern-Simons constant (phi) as reference value
+// - Uses a fixed Chern-Simons constant (φ) as reference value
 // WHAT THIS CODE DOES NOT DO:
 // - Does NOT compute Jones polynomial from input topology
 // - Does NOT provide "topological acceleration"

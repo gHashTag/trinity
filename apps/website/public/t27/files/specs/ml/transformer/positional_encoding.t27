@@ -25,8 +25,8 @@ module PositionalEnc;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(positions: []const u32, embeddings: []f32, config: PosEncConfig) → void
-    fn forward(positions: []const u32, embeddings: []f32, config: PosEncConfig) -> void {
+    // forward(positions: []const u32) → void
+    fn forward(positions: []const u32) -> void {
         // TODO: Implement from .tri spec
     }
 

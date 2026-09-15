@@ -10,33 +10,33 @@ module TriStatistics;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // mean(values: []f64) → f64
-    fn mean(values: []f64) -> f64 {
+    // mean(values: []f64) → void
+    fn mean(values: []f64) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // variance(values: []f64) → f64
-    fn variance(values: []f64) -> f64 {
+    // variance(values: []f64) → void
+    fn variance(values: []f64) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // std_dev(values: []f64) → f64
-    fn std_dev(values: []f64) -> f64 {
+    // std_dev(values: []f64) → void
+    fn std_dev(values: []f64) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // median(allocator: std.mem.Allocator, values: []f64) → f64
-    fn median(allocator: std.mem.Allocator, values: []f64) -> f64 {
+    // median(allocator: std.mem.Allocator) → void
+    fn median(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // percentile(allocator: std.mem.Allocator, values: []f64, p: f64) → f64
-    fn percentile(allocator: std.mem.Allocator, values: []f64, p: f64) -> f64 {
+    // percentile(allocator: std.mem.Allocator) → void
+    fn percentile(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // correlation(x: []f64, y: []f64) → f64
-    fn correlation(x: []f64, y: []f64) -> f64 {
+    // correlation(x: []f64) → void
+    fn correlation(x: []f64) -> void {
         // TODO: Implement from .tri spec
     }
 

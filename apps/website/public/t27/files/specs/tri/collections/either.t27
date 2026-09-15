@@ -20,28 +20,28 @@ module TriEither;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // left(value: L) → Either(L, R)
-    fn left(value: L) -> Either(L, R) {
+    // left(value: L) → void
+    fn left(value: L) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // right(value: R) → Either(L, R)
-    fn right(value: R) -> Either(L, R) {
+    // right(value: R) → void
+    fn right(value: R) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // is_left(either: Either(L, R)) → bool
-    fn is_left(either: Either(L, R)) -> bool {
+    // is_left(either: Either(L, R)) → void
+    fn is_left(either: Either(L, R)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // is_right(either: Either(L, R)) → bool
-    fn is_right(either: Either(L, R)) -> bool {
+    // is_right(either: Either(L, R)) → void
+    fn is_right(either: Either(L, R)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // unwrap(either: Either(L, R), "default_left: L, "default_right: R) → ?T
-    fn unwrap(either: Either(L, R), "default_left: L, "default_right: R) -> ?T {
+    // unwrap(either: Either(L, R)) → void
+    fn unwrap(either: Either(L, R)) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -49,26 +49,28 @@ module TriEither;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // The five constructors and accessors have empty bodies, so no value can
-    // be wrapped or unwrapped yet. What the module has decided is how the two
-    // arms are laid out.
+    test left_basic_case
+        given input = default_input()
+        when result = left(input)
+        then result != undefined
 
-    test the_tag_is_a_plain_bool
-        given e = Either(i64, f64)
-        and tag_type = @FieldType(e, "is_left")
-        then tag_type == bool
+    test right_basic_case
+        given input = default_input()
+        when result = right(input)
+        then result != undefined
 
-    test either_stores_both_arms_side_by_side
-        // this is a struct, not a tagged union: the L and R payloads are both
-        // resident and only is_left says which one is meaningful, so the type
-        // costs at least the sum of the two arms rather than the larger one
-        given total_size = @sizeOf(Either(i64, f64))
-        and both_arms = @sizeOf(i64) + @sizeOf(f64)
-        then total_size >= both_arms
+    test is_left_basic_case
+        given input = default_input()
+        when result = is_left(input)
+        then result != undefined
 
-    test the_two_arms_may_have_different_types
-        given e = Either(i64, f64)
-        and left_type = @FieldType(e, "left")
-        and right_type = @FieldType(e, "right")
-        then left_type == i64 and right_type == f64
+    test is_right_basic_case
+        given input = default_input()
+        when result = is_right(input)
+        then result != undefined
+
+    test unwrap_basic_case
+        given input = default_input()
+        when result = unwrap(input)
+        then result != undefined
 

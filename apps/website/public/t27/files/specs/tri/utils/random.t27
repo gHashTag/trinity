@@ -14,68 +14,75 @@ module TriRandom;
         state : u64,
     };
 
+    const XORSHIFT_MULTIPLIER : u64 = 2685821657736338717;
+    const DEFAULT_SEED : u64 = 88172645463325252;
+
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
     // init(seed: u64) → Rng
     fn init(seed: u64) -> Rng {
-        // TODO: Implement from .tri spec
+        var state : u64 = seed;
+        if state == 0 {
+            state = DEFAULT_SEED;
+        }
+        return Rng { state = state };
     }
 
     // next(rng: *Rng) → u64
     fn next(rng: *Rng) -> u64 {
-        // TODO: Implement from .tri spec
+        var x = rng.state;
+        x ^= x >> 12;
+        x ^= x << 25;
+        x ^= x >> 27;
+        rng.state = x;
+        return x * XORSHIFT_MULTIPLIER;
     }
 
     // range(rng: *Rng, max: u64) → u64
     fn range(rng: *Rng, max: u64) -> u64 {
-        // TODO: Implement from .tri spec
+        if max == 0 {
+            return 0;
+        }
+        var value = next(rng);
+        return value % max;
     }
 
     // range_inclusive(rng: *Rng, min: i64, max: i64) → i64
     fn range_inclusive(rng: *Rng, min: i64, max: i64) -> i64 {
-        // TODO: Implement from .tri spec
+        var range_size = max - min + 1;
+        var value = range(rng, @as(u64, @intCast(range_size)));
+        return @as(i64, @intCast(min)) + @as(i64, @intCast(value));
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test rng_state_is_exactly_one_64_bit_word
-        // Verify: xorshift64* carries all of its state in a single u64 — no
-        // counter, no stream selector, nothing else
-        given width = @sizeOf(Rng)
-        then width == 8
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
 
-    test a_zero_state_is_a_fixed_point_of_the_xorshift
-        // Verify: the three xorshift rounds are xor and shift only, so 0 maps to
-        // 0 forever. init() must therefore refuse or replace seed 0, or next()
-        // returns zero for the rest of the run.
-        given seed = Rng{ .state = 0 }
-        when x1 = seed.state ^ (seed.state >> 12)
-        and x2 = x1 ^ (x1 << 25)
-        and x3 = x2 ^ (x2 >> 27)
-        then x3 == 0
+    test next_basic_case
+        given input = default_input()
+        when result = next(input)
+        then result != undefined
 
-    test a_non_zero_state_leaves_zero_after_one_round
-        // Verify: the same three rounds on the reference seed 88172645463325252
-        // do not collapse, which is what makes the zero case a special case
-        given seed = Rng{ .state = 88172645463325252 }
-        when x1 = seed.state ^ (seed.state >> 12)
-        and x2 = x1 ^ (x1 << 25)
-        and x3 = x2 ^ (x2 >> 27)
-        then x3 != 0
+    test range_basic_case
+        given input = default_input()
+        when result = range(input)
+        then result != undefined
 
-    test a_right_xorshift_composed_with_itself_doubles_its_distance
-        // Verify: for f(x) = x ^ (x >> 12), f(f(x)) = x ^ (x >> 24), because the
-        // two copies of x >> 12 cancel. f is therefore not an involution, and the
-        // inverse of one round needs the shifts 12, 24, 48 applied in turn.
-        given seed = Rng{ .state = 88172645463325252 }
-        when once = seed.state ^ (seed.state >> 12)
-        and twice = once ^ (once >> 12)
-        and expected = seed.state ^ (seed.state >> 24)
-        then twice == expected and twice != seed.state
+    test range_inclusive_basic_case
+        given input = default_input()
+        when result = range_inclusive(input)
+        then result != undefined
+
+    test init_replaces_the_zero_seed
+        given rng = init(0)
+        then rng.state != 0
 
     test the_multiplier_is_the_star_in_xorshift64_star
         // Verify: the output stage multiplies by 2685821657736338717, which is
@@ -94,3 +101,18 @@ module TriRandom;
         and inclusive = hi - lo + 1
         then half_open == 4 and inclusive == 5
 
+    test next_follows_xorshift64_star_algorithm
+        given rng = init(12345)
+        when first = next(rng)
+        and second = next(rng)
+        then first != second
+
+    test range_returns_zero_for_max_zero
+        given rng = init(42)
+        when result = range(rng, 0)
+        then result == 0
+
+    test range_inclusive_handles_single_value_range
+        given rng = init(42)
+        when result = range_inclusive(rng, 5, 5)
+        then result == 5

@@ -183,7 +183,12 @@ assert.equal(tools.counts.triWithActions, tri.filter((t) => t.actions.length).le
 assert.equal(tools.counts.mcpTools, mcp.reduce((n, t) => n + t.tools.length, 0))
 assert.equal(tools.counts.mcpWithTools, mcp.filter((t) => t.tools.length).length)
 assert.equal(tools.counts.mcpExternal, mcp.filter((t) => t.external).length)
-assert.equal(tools.counts.mcpWithTools + tools.counts.mcpExternal, mcp.length, 'every MCP server either lists tools or is external')
+// The claim is the one in the message -- a server nobody can read the tools of
+// must at least say it is somebody else's code. It was written as a sum when
+// every external server happened to list nothing, and mcp/inngest-dev (#994) is
+// both: upstream's binary, and twenty tools recorded from its own tools/list.
+// The counts either side of this line already pin each set on its own.
+for (const s of mcp) assert.ok(s.tools.length || s.external, `${s.id} lists no tools and is not marked external`)
 for (const w of TOOL_WITNESSES) assert.equal(tools.counts.byWitness[w], tools.tools.filter((t) => t.witness === w).length)
 assert.equal(Object.values(tools.groups.triByAgent).flat().length, tri.length + tri.reduce((n, t) => n + Math.max(0, t.agents.length - 1), 0), 'triByAgent lists every tri command once per bound letter, unbound under "-"')
 assert.deepEqual(tools.groups.triByAgent['-'], tri.filter((t) => t.agents.length === 0).map((t) => t.id))

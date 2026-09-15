@@ -6,7 +6,7 @@
 
 module core;
 
-// S Core testing enums and structures
+// § Core testing enums and structures
 
 /// Test verdict/tier classification
 enum Verdict {
@@ -18,7 +18,7 @@ enum Verdict {
 
 /// Test tolerance tier (numeric/physics precision levels)
 enum ToleranceTier {
-    EXACT,              // Mathematical identity (e.g., phi^2 = phi + 1)
+    EXACT,              // Mathematical identity (e.g., φ² = φ + 1)
     WITHIN_UNCERTAINTY,  // Within experimental uncertainty (CODATA)
     EMPIRICAL_FIT,      // Empirical formula, good accuracy
     APPROXIMATION,      // Approximation > experimental uncertainty
@@ -51,7 +51,7 @@ struct TestResult {
 }
 
 /// Sequential gate pipeline with short-circuit
-/// Pattern: parse -> type_check -> semantic -> numeric_stability -> physics_constraint -> audit
+/// Pattern: parse → type_check → semantic → numeric_stability → physics_constraint → audit
 struct GatePipeline {
     parse_ok: bool,
     type_check_ok: bool,  
@@ -77,7 +77,7 @@ impl GatePipeline {
     }
 }
 
-// S Core testing utilities
+// § Core testing utilities
 
 /// Property-based testing: for all x in domain, property holds
 fn for_all<T>(domain: fn() -> T, property: fn(T) -> bool, iterations: u32) -> TestResult {
@@ -168,7 +168,7 @@ fn differential<T>(impl1: fn(T) -> T, impl2: fn(T) -> T, tolerance: f64, test_ca
     }).collect()
 }
 
-// S Test runners and reporting
+// § Test runners and reporting
 
 /// TAP (Test Anything Protocol) output generator
 struct TapReporter {
@@ -232,7 +232,7 @@ impl JsonReporter {
     }
 }
 
-// S Test invariants and properties
+// § Test invariants and properties
 
 /// Sequential gate invariant - enforces strict ordering
 invariant gate_pipeline_sequential(gate: GatePipeline) -> bool {
@@ -249,12 +249,12 @@ invariant gf16_roundtrip_preservation(value: f64) -> bool {
     (decoded - value as f32).abs() < 1e-6
 }
 
-/// Phi algebraic identity: phi^2 = phi + 1 (exact mathematical identity)
+/// Phi algebraic identity: φ² = φ + 1 (exact mathematical identity)
 invariant phi_squared_identity(phi: f64) -> bool {
     (phi * phi - phi - 1.0).abs() < 1e-15  // Exact within floating point precision
 }
 
-// S Test entry point
+// § Test entry point
 fn run_test_suite() -> Vec<TestResult> {
     let mut results = Vec::new();
     

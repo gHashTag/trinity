@@ -39,4 +39,4 @@ pub const GUARD : str = "none";
 pub const SAFE_PROBE : str = "";
 pub const PROBE_RESULT : str = "not-deployed";
 pub const CONTROL : str = "spec+code";
-pub const NOTE : str = "Not on the production Railway build as of 2026-09-09 (deployed_2026_09_09 false in the manifest). RETRIES is not declared in the code, so the Inngest JS SDK v3 default of 4 applies. The same schedule is stated as a cron card, specs/crons ID inngest/999-multibots-telegraf/check-stuck-trainings.";
+pub const NOTE : str = "Not on the production Railway build as of 2026-09-09 (deployed_2026_09_09 false in the manifest). RETRIES is not declared in the code, so the Inngest JS SDK v3 default of 4 applies. The same schedule is stated as a cron card, specs/crons ID inngest/999-multibots-telegraf/check-stuck-trainings. Since host PR #2328 (2026-09-10) a training that Replicate answers 404 for is retired: model_trainings.status set to failed with the fixed error text, one warn to the admin, no event and no user message; two rows from 2025-12-02 had been re-asked every 30 minutes for nine months. Skipped in safe mode. The 404 branch is not yet stated as a step; the code is its only witness.";

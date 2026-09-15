@@ -21,80 +21,150 @@ module TriRing;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // new(capacity: usize) → Ring(T)
-    fn new(capacity: usize) -> Ring(T) {
-        // TODO: Implement from .tri spec
+    // new(capacity: usize) → void
+    fn new(capacity: usize) -> void {
+        var buffer : []T = undefined;
+        buffer = create_buffer(T, capacity);
+        return Ring(T){
+            .buffer = buffer,
+            .head = 0,
+            .tail = 0,
+            .capacity = capacity,
+        };
     }
 
-    // push(ring: Ring(T), value: T) → bool
+    // push(ring: Ring(T)) → void
     fn push(ring: Ring(T), value: T) -> bool {
-        // TODO: Implement from .tri spec
+        if is_full(ring) {
+            return false;
+        }
+        ring.buffer[ring.tail] = value;
+        ring.tail = (ring.tail + 1) % ring.capacity;
+        return true;
     }
 
-    // pop(ring: Ring(T)) → Option(T)
+    // pop(ring: Ring(T)) → void
     fn pop(ring: Ring(T)) -> Option(T) {
-        // TODO: Implement from .tri spec
+        if is_empty(ring) {
+            return Option(T){ .none = {} };
+        }
+        var value : T = ring.buffer[ring.head];
+        ring.head = (ring.head + 1) % ring.capacity;
+        return Option(T){ .some = value };
     }
 
-    // is_empty(ring: Ring(T)) → bool
+    // is_empty(ring: Ring(T)) → void
     fn is_empty(ring: Ring(T)) -> bool {
-        // TODO: Implement from .tri spec
+        return ring.head == ring.tail;
     }
 
-    // is_full(ring: Ring(T)) → bool
+    // is_full(ring: Ring(T)) → void
     fn is_full(ring: Ring(T)) -> bool {
-        // TODO: Implement from .tri spec
+        return (ring.tail + 1) % ring.capacity == ring.head;
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test a_fresh_ring_has_head_and_tail_at_the_same_slot
-        // Verify: the empty case — head == tail is the emptiness test, and the
-        // backing storage is exactly capacity slots wide
-        given storage = [_]u8{ 0, 0, 0, 0 }
-        when ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 0, .capacity = 4 }
-        then ring.head == ring.tail and ring.buffer.len == ring.capacity
+    test new_basic_case
+        given input = default_input()
+        when result = new(input)
+        then result != undefined
 
-    test the_slot_after_the_last_one_is_the_first_one
-        // Verify: the wrap rule — indices advance modulo capacity, so a tail
-        // sitting on the final slot moves to slot 0, not past the end
+    test push_basic_case
+        given input = default_input()
+        when result = push(input)
+        then result != undefined
+
+    test pop_basic_case
+        given input = default_input()
+        when result = pop(input)
+        then result != undefined
+
+    test is_empty_basic_case
+        given input = default_input()
+        when result = is_empty(input)
+        then result != undefined
+
+    test is_full_basic_case
+        given input = default_input()
+        when result = is_full(input)
+        then result != undefined
+
+    test new_creates_ring_with_correct_capacity
+        given capacity = 4
+        and ring = new(capacity)
+        then ring.capacity == capacity and ring.buffer.len == capacity
+
+    test push_advances_tail_and_returns_true_when_not_full
+        given storage = [_]u8{ 0, 0, 0, 0 }
+        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 0, .capacity = 4 }
+        when success = push(ring, 42)
+        then success == true and ring.tail == 1
+
+    test pop_removes_head_and_advances_head_when_not_empty
+        given storage = [_]u8{ 42, 0, 0, 0 }
+        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 1, .capacity = 4 }
+        when result = pop(ring)
+        then result.some == 42 and ring.head == 1
+
+    test is_true_when_head_equals_tail
+        given storage = [_]u8{ 0, 0, 0, 0 }
+        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 2, .tail = 2, .capacity = 4 }
+        when result = is_empty(ring)
+        then result == true
+
+    test is_full_when_tail_plus_one_mod_capacity_equals_head
         given storage = [_]u8{ 0, 0, 0, 0 }
         and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 3, .capacity = 4 }
-        when wrapped = (ring.tail + 1) % ring.capacity
-        then wrapped == 0 and wrapped < ring.buffer.len
+        when result = is_full(ring)
+        then result == true
 
     test occupancy_is_tail_minus_head_modulo_capacity
-        // Verify: the count survives a wrap — head 3, tail 1 in a 4-slot ring
-        // holds two items (slots 3 and 0), not a negative number
         given storage = [_]u8{ 0, 0, 0, 0 }
         and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 3, .tail = 1, .capacity = 4 }
         when used = (ring.tail + ring.capacity - ring.head) % ring.capacity
         then used == 2 and used < ring.capacity
 
-    test occupancy_of_an_unwrapped_ring_is_the_plain_difference
-        // Verify: head 1, tail 3 holds slots 1 and 2 — the same two items,
-        // reached without the modulo doing any work
-        given storage = [_]u8{ 0, 0, 0, 0 }
-        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 1, .tail = 3, .capacity = 4 }
-        when used = (ring.tail + ring.capacity - ring.head) % ring.capacity
-        then used == 2
+    test a_fresh_ring_has_head_and_tail_at_the_same_slot
+        given ring = new(4)
+        then ring.head == 0 and ring.tail == 0
 
     test a_full_ring_and_an_empty_ring_both_show_head_equal_to_tail
-        // Verify: the classic ambiguity — this layout carries no separate count,
-        // so capacity slots of data would be indistinguishable from zero slots.
-        // A correct push must therefore stop at capacity - 1 usable entries.
+        given storage = [_]u8{ 0, 0, 0, 0 }
+        and empty_ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 0, .capacity = 4 }
+        and full_ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 3, .capacity = 4 }
+        when empty_result = is_empty(empty_ring)
+        and full_result = is_full(full_ring)
+        then empty_result == true and full_result == true
+
+    test push_returns_false_when_ring_is_full
+        given storage = [_]u8{ 1, 2, 3, 0 }
+        and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 3, .capacity = 4 }
+        when result = push(ring, 4)
+        then result == false
+
+    test pop_returns_none_when_ring_is_empty
         given storage = [_]u8{ 0, 0, 0, 0 }
         and ring = Ring(u8){ .buffer = @constCast(&storage), .head = 0, .tail = 0, .capacity = 4 }
-        when used = (ring.tail + ring.capacity - ring.head) % ring.capacity
-        and max_distinguishable = ring.capacity - 1
-        then used == 0 and max_distinguishable == 3
+        when result = pop(ring)
+        then result == Option(T){ .none = {} }
 
-    test ring_is_one_type_per_element_type
-        // Verify: Ring is generic over T, so two instantiations at the same
-        // element type are the same type and different element types are not
-        given same = Ring(u8) == Ring(u8)
-        and different = Ring(u8) == Ring(u32)
-        then same and different == false
+    test push_and_pop_maintain_correct_state
+        given ring = new(3)
+        and push1 = push(ring, 1)
+        and push2 = push(ring, 2)
+        and pop1 = pop(ring)
+        and pop2 = pop(ring)
+        then push1 == true and push2 == true and pop1.some == 1 and pop2.some == 2 and is_empty(ring) == true
 
+    test wrap_around_behavior
+        given ring = new(3)
+        and push1 = push(ring, 1)
+        and push2 = push(ring, 2)
+        and push3 = push(ring, 3)
+        and push4 = push(ring, 4)
+        and pop1 = pop(ring)
+        and pop2 = pop(ring)
+        then push1 == true and push2 == true and push3 == true and push4 == false and pop1.some == 1 and pop2.some == 2 and ring.head == 2 and ring.tail == 0

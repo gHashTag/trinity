@@ -235,7 +235,7 @@ pub fn resolver_count(resolver: Resolver) usize {
 
 /// Format service as mDNS name
 pub fn service_format_name(service: ServiceRecord) []u8 {
-    return concat(service.name, ".", service.type);
+    return concat(concat(service.name, "."), service.type);   // W575: `fn concat(a, b)` takes two
 }
 
 /// Format service as full domain name

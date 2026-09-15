@@ -1,0 +1,253 @@
+// SPDX-License-Identifier: Apache-2.0
+module turbobaby-publish-proof;
+
+; specs/turbobaby/publication.t27 -- proof boundary for TurboBaby discovery on t27.ai
+; This contract owns only publication evidence. Domain behavior remains in the other canonical
+; specs under specs/turbobaby, and deployment remains an owner-controlled action outside this
+; repository. A file being parseable is not proof that it was discovered, published, or shown.
+;
+; WHY (measured 2026-09-13). The published t27 world scan accepts public repositories owned by
+; its configured owners, but deliberately skips GitHub repositories marked as formal forks. The
+; TurboBaby repository preserves the upstream content and history as a standalone derivative and
+; reports isFork false, so it can be discovered after canonical files are tracked. Recreating it
+; as a formal fork would make every correct local contract invisible to that scan.
+;
+; There are two independent public surfaces. The spec browser can be proved only by a generated
+; manifest entry plus a deployed module that resolves. The Queen board is still a single-repo
+; surface; showing a TurboBaby issue there requires a multi-repo contract in upstream t27/Trinity
+; code. This repository cannot remove that external blocker, and this file never claims the board
+; or the agent card is live. It only defines the evidence that would make such a claim true.
+;
+; The namespaced owner card is specs/agents/turbobaby.t27 with ID turbobaby/BOT. It intentionally
+; takes no seat in the closed t27 alphabet. Current upstream agent generation recognizes that
+; alphabet schema, not an arbitrary namespaced world, so tracked source is necessary but not yet
+; sufficient public-agent proof. No PII, fleet row, price, or secret belongs in publication data.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+pub const KIND : str = "publication-contract";
+pub const ID : str = "turbobaby/publication";
+pub const NAME : str = "TurboBaby t27 publication evidence";
+pub const WORLD : str = "gHashTag/turbobaby-user-bot";
+pub const CANONICAL_DIRECTORY : str = "specs/turbobaby";
+
+; --- Repository discovery ---------------------------------------------------------------------
+pub const DISCOVERY_OWNER_MATCHES : bool = true;
+pub const REPOSITORY_IS_PUBLIC : bool = true;
+pub const REPOSITORY_IS_FORMAL_FORK : bool = false;
+pub const REPOSITORY_IS_STANDALONE_DERIVATIVE : bool = true;
+pub const WORLD_SCAN_SKIPS_FORMAL_FORKS : bool = true;
+; Published scanner bounds. PROBE_FILES is a one-based window here: a qualifying file may be
+; first through eighth, never ninth. MAX_FILE_BYTES is inclusive, matching the published maximum.
+pub const PROBE_FILES : u8 = 8;
+pub const MAX_FILE_BYTES : u32 = 1048576;
+pub const MIN_DECLARATIONS_PER_PROBED_FILE : u16 = 1;
+
+pub fn scanner_probe_witness_valid(probe_ordinal: u8, probed_file_bytes: u32, declaration_count: u16) bool {
+  return probe_ordinal >= 1 and probe_ordinal <= PROBE_FILES and probed_file_bytes <= MAX_FILE_BYTES and declaration_count >= MIN_DECLARATIONS_PER_PROBED_FILE;
+}
+
+pub fn world_scan_eligible(owner_matches: bool, repository_public: bool, formal_fork: bool, probe_ordinal: u8, probed_file_bytes: u32, declaration_count: u16) bool {
+  return owner_matches and repository_public and !formal_fork and scanner_probe_witness_valid(probe_ordinal, probed_file_bytes, declaration_count);
+}
+
+; A canonical source has to be both in the canonical directory and tracked by Git. An untracked
+; working-tree file is review material, not scanner input, however well it compiles.
+pub fn canonical_source_discoverable(in_canonical_directory: bool, tracked_by_git: bool, declaration_count: u16) bool {
+  return in_canonical_directory and tracked_by_git and declaration_count >= MIN_DECLARATIONS_PER_PROBED_FILE;
+}
+
+; --- Compiler evidence ------------------------------------------------------------------------
+; scripts/verify_t27_specs.py requires a non-empty named module, non-empty AST children, clean
+; JSON typecheck, at least one enumerated test/invariant/bench declaration, and non-empty output
+; from all five public generators. It does not treat a process exit code alone as evidence.
+pub const REQUIRED_GENERATOR_COUNT : u8 = 5;
+pub const TEST_COMMAND_EXECUTES_ASSERTIONS : bool = false;
+pub const COMPILER_EVIDENCE_SCOPE : str = "parse structure, typecheck report, declaration enumeration, and non-empty generator emission";
+
+pub fn parse_evidence_valid(module_named: bool, declaration_count: u16) bool {
+  return module_named and declaration_count >= 1;
+}
+
+pub fn typecheck_evidence_valid(typecheck_ok: bool, error_count: u16, warning_count: u16) bool {
+  return typecheck_ok and error_count == 0 and warning_count == 0;
+}
+
+pub fn test_inventory_evidence_valid(test_declaration_count: u16) bool {
+  return test_declaration_count >= 1;
+}
+
+pub fn five_generators_emitted(zig_nonempty: bool, c_nonempty: bool, rust_nonempty: bool, verilog_nonempty: bool, hir_verilog_nonempty: bool) bool {
+  return zig_nonempty and c_nonempty and rust_nonempty and verilog_nonempty and hir_verilog_nonempty;
+}
+
+pub fn compiler_evidence_complete(parse_valid: bool, typecheck_valid: bool, tests_present: bool, generators_valid: bool) bool {
+  return parse_valid and typecheck_valid and tests_present and generators_valid;
+}
+
+; --- Spec browser proof -----------------------------------------------------------------------
+pub const SPEC_BROWSER_DISCOVERY_AUTOMATIC : bool = true;
+pub const SPEC_BROWSER_DEPLOY_IS_OWNER_GATE : bool = true;
+pub const THIS_FILE_CLAIMS_SPEC_BROWSER_IS_LIVE : bool = false;
+
+pub fn spec_browser_publish_proved(manifest_has_world: bool, manifest_has_module: bool, deployed_route_resolves_module: bool) bool {
+  return manifest_has_world and manifest_has_module and deployed_route_resolves_module;
+}
+
+; --- Namespaced agent proof -------------------------------------------------------------------
+pub const AGENT_CARD_PATH : str = "specs/agents/turbobaby.t27";
+pub const AGENT_CARD_ID : str = "turbobaby/BOT";
+pub const AGENT_CARD_IS_NAMESPACED : bool = true;
+pub const AGENT_CARD_CLAIMS_ALPHABET_SEAT : bool = false;
+pub const CURRENT_UPSTREAM_ACCEPTS_NAMESPACED_AGENT_CARD : bool = false;
+pub const THIS_FILE_CLAIMS_AGENT_CARD_IS_LIVE : bool = false;
+
+pub fn agent_card_source_ready(path_is_namespaced: bool, id_is_namespaced: bool, tracked_by_git: bool) bool {
+  return path_is_namespaced and id_is_namespaced and tracked_by_git;
+}
+
+pub fn agent_card_publish_proved(source_ready: bool, manifest_has_agent_id: bool, deployed_route_resolves_agent: bool) bool {
+  return source_ready and manifest_has_agent_id and deployed_route_resolves_agent;
+}
+
+; --- Queen proof and external gate -------------------------------------------------------------
+pub const QUEEN_BOARD_SUPPORTS_MULTIPLE_REPOSITORIES : bool = false;
+pub const QUEEN_CHANGE_IS_OWNED_BY_THIS_REPOSITORY : bool = false;
+pub const QUEEN_PUBLICATION_IS_EXTERNALLY_BLOCKED : bool = true;
+pub const THIS_FILE_CLAIMS_QUEEN_IS_LIVE : bool = false;
+
+pub fn queen_publish_proved(board_supports_world: bool, board_payload_has_world: bool, board_payload_has_issue: bool, deployed_route_resolves_issue: bool) bool {
+  return board_supports_world and board_payload_has_world and board_payload_has_issue and deployed_route_resolves_issue;
+}
+
+pub fn queen_block_is_external(board_supports_multiple_repositories: bool, change_owned_here: bool) bool {
+  return !board_supports_multiple_repositories and !change_owned_here;
+}
+
+; --- Tests -------------------------------------------------------------------------------------
+
+test this_standalone_derivative_is_scanner_eligible_after_tracking {
+  assert DISCOVERY_OWNER_MATCHES == true;
+  assert REPOSITORY_IS_PUBLIC == true;
+  assert REPOSITORY_IS_FORMAL_FORK == false;
+  assert REPOSITORY_IS_STANDALONE_DERIVATIVE == true;
+  assert world_scan_eligible(true, true, false, 1, 4096, 1) == true;
+}
+
+test a_formal_fork_is_deliberately_not_scanner_eligible {
+  assert WORLD_SCAN_SKIPS_FORMAL_FORKS == true;
+  assert world_scan_eligible(true, true, true, 1, 4096, 20) == false;
+  assert world_scan_eligible(true, false, false, 1, 4096, 20) == false;
+  assert world_scan_eligible(false, true, false, 1, 4096, 20) == false;
+}
+
+test scanner_probe_window_and_file_size_fail_closed {
+  assert PROBE_FILES == 8;
+  assert MAX_FILE_BYTES == 1048576;
+  assert scanner_probe_witness_valid(1, MAX_FILE_BYTES, 1) == true;
+  assert scanner_probe_witness_valid(PROBE_FILES, MAX_FILE_BYTES, 1) == true;
+  assert scanner_probe_witness_valid(0, 4096, 1) == false;
+  assert scanner_probe_witness_valid(PROBE_FILES + 1, 4096, 1) == false;
+  assert scanner_probe_witness_valid(1, MAX_FILE_BYTES + 1, 1) == false;
+  assert scanner_probe_witness_valid(1, 4096, 0) == false;
+}
+
+test untracked_or_empty_canonical_source_is_not_discoverable {
+  assert canonical_source_discoverable(true, true, 1) == true;
+  assert canonical_source_discoverable(true, false, 1) == false;
+  assert canonical_source_discoverable(false, true, 1) == false;
+  assert canonical_source_discoverable(true, true, 0) == false;
+}
+
+test parse_and_typecheck_evidence_is_nonvacuous {
+  assert parse_evidence_valid(true, 1) == true;
+  assert parse_evidence_valid(true, 0) == false;
+  assert parse_evidence_valid(false, 8) == false;
+  assert typecheck_evidence_valid(true, 0, 0) == true;
+  assert typecheck_evidence_valid(true, 1, 0) == false;
+  assert typecheck_evidence_valid(true, 0, 1) == false;
+  assert typecheck_evidence_valid(false, 0, 0) == false;
+}
+
+test tests_must_be_found_and_all_five_generators_must_emit {
+  assert test_inventory_evidence_valid(1) == true;
+  assert test_inventory_evidence_valid(0) == false;
+  assert REQUIRED_GENERATOR_COUNT == 5;
+  assert five_generators_emitted(true, true, true, true, true) == true;
+  assert five_generators_emitted(true, true, true, true, false) == false;
+  assert five_generators_emitted(false, true, true, true, true) == false;
+}
+
+test compiler_evidence_requires_every_independent_lane {
+  assert compiler_evidence_complete(true, true, true, true) == true;
+  assert compiler_evidence_complete(false, true, true, true) == false;
+  assert compiler_evidence_complete(true, false, true, true) == false;
+  assert compiler_evidence_complete(true, true, false, true) == false;
+  assert compiler_evidence_complete(true, true, true, false) == false;
+}
+
+test spec_browser_live_status_requires_deployed_proof {
+  assert SPEC_BROWSER_DISCOVERY_AUTOMATIC == true;
+  assert SPEC_BROWSER_DEPLOY_IS_OWNER_GATE == true;
+  assert THIS_FILE_CLAIMS_SPEC_BROWSER_IS_LIVE == false;
+  assert spec_browser_publish_proved(true, true, true) == true;
+  assert spec_browser_publish_proved(true, true, false) == false;
+}
+
+test namespaced_agent_source_is_not_publication_proof {
+  assert AGENT_CARD_PATH == "specs/agents/turbobaby.t27";
+  assert AGENT_CARD_ID == "turbobaby/BOT";
+  assert AGENT_CARD_IS_NAMESPACED == true;
+  assert AGENT_CARD_CLAIMS_ALPHABET_SEAT == false;
+  assert agent_card_source_ready(true, true, true) == true;
+  assert agent_card_publish_proved(true, false, false) == false;
+  assert CURRENT_UPSTREAM_ACCEPTS_NAMESPACED_AGENT_CARD == false;
+  assert THIS_FILE_CLAIMS_AGENT_CARD_IS_LIVE == false;
+}
+
+test queen_remains_external_until_every_proof_lane_exists {
+  assert QUEEN_BOARD_SUPPORTS_MULTIPLE_REPOSITORIES == false;
+  assert QUEEN_CHANGE_IS_OWNED_BY_THIS_REPOSITORY == false;
+  assert QUEEN_PUBLICATION_IS_EXTERNALLY_BLOCKED == true;
+  assert THIS_FILE_CLAIMS_QUEEN_IS_LIVE == false;
+  assert queen_block_is_external(false, false) == true;
+  assert queen_publish_proved(false, false, false, false) == false;
+  assert queen_publish_proved(true, true, true, true) == true;
+}
+
+test publication_contract_contains_no_domain_payload {
+  assert CANONICAL_DIRECTORY == "specs/turbobaby";
+  assert COMPILER_EVIDENCE_SCOPE == "parse structure, typecheck report, declaration enumeration, and non-empty generator emission";
+  assert TEST_COMMAND_EXECUTES_ASSERTIONS == false;
+}
+
+; --- Invariants --------------------------------------------------------------------------------
+
+invariant formal_forks_remain_ineligible_for_this_scan
+  assert WORLD_SCAN_SKIPS_FORMAL_FORKS == true and world_scan_eligible(true, true, true, 1, 4096, 1) == false
+
+invariant scanner_eligibility_requires_an_early_bounded_probe_witness
+  assert scanner_probe_witness_valid(PROBE_FILES, MAX_FILE_BYTES, 1) == true and scanner_probe_witness_valid(PROBE_FILES + 1, MAX_FILE_BYTES, 1) == false and scanner_probe_witness_valid(PROBE_FILES, MAX_FILE_BYTES + 1, 1) == false
+
+invariant canonical_discovery_requires_a_tracked_nonempty_source
+  assert canonical_source_discoverable(true, true, 1) == true and canonical_source_discoverable(true, false, 1) == false and canonical_source_discoverable(true, true, 0) == false
+
+invariant compiler_evidence_cannot_pass_with_an_empty_ast
+  assert parse_evidence_valid(true, 0) == false
+
+invariant compiler_evidence_cannot_pass_with_a_reported_error_or_warning
+  assert typecheck_evidence_valid(true, 1, 0) == false and typecheck_evidence_valid(true, 0, 1) == false
+
+invariant every_required_generator_must_emit_nonempty_output
+  assert five_generators_emitted(true, true, true, true, true) == true and five_generators_emitted(true, true, true, true, false) == false
+
+invariant a_manifest_entry_alone_is_not_spec_browser_publication
+  assert spec_browser_publish_proved(true, true, false) == false
+
+invariant a_tracked_agent_card_alone_is_not_public_agent_proof
+  assert agent_card_publish_proved(true, false, false) == false
+
+invariant queen_cannot_be_claimed_from_this_repository_alone
+  assert queen_block_is_external(QUEEN_BOARD_SUPPORTS_MULTIPLE_REPOSITORIES, QUEEN_CHANGE_IS_OWNED_BY_THIS_REPOSITORY) == true and THIS_FILE_CLAIMS_QUEEN_IS_LIVE == false
+
+invariant no_public_surface_is_claimed_live_without_external_evidence
+  assert THIS_FILE_CLAIMS_SPEC_BROWSER_IS_LIVE == false and THIS_FILE_CLAIMS_AGENT_CARD_IS_LIVE == false and THIS_FILE_CLAIMS_QUEEN_IS_LIVE == false

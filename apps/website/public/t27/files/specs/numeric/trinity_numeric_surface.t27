@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-; trinity_numeric_surface.t27 -- Public numeric interchange policy (GoldenFloat-first)
-; NUMERIC-STANDARD-001 -- integer-backed GF raw words are the portable surface
+; trinity_numeric_surface.t27 — Public numeric interchange policy (GoldenFloat-first)
+; NUMERIC-STANDARD-001 — integer-backed GF raw words are the portable surface
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 
 module trinity-numeric-surface;
@@ -14,7 +14,7 @@ module trinity-numeric-surface;
 //   helpers. They MUST NOT appear in new **public** structs exported to AR/nn/vsa
 //   unless tagged [BRIDGE] and scheduled for GF migration (see
 //   docs/nona-02-organism/NUMERIC-GF16-DEBT-INVENTORY.md).
-// - **TF3** (u8) and **ternary** trits remain experimental sidecars -- not a
+// - **TF3** (u8) and **ternary** trits remain experimental sidecars — not a
 //   substitute for GF16-primary inference policy.
 // -----------------------------------------------------------------------------
 

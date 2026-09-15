@@ -19,23 +19,23 @@ module TriMaybe;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // pure(value: T) → Maybe(T)
-    fn pure(value: T) -> Maybe(T) {
+    // pure(value: T) → void
+    fn pure(value: T) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // bind(maybe: Maybe(T), fn: fn(T) -> Maybe(U)) → Maybe(U)
-    fn bind(maybe: Maybe(T), fn: fn(T) -> Maybe(U)) -> Maybe(U) {
+    // bind(maybe: Maybe(T)) → void
+    fn bind(maybe: Maybe(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // map(maybe: Maybe(T), fn: fn(T) -> U) → Maybe(U)
-    fn map(maybe: Maybe(T), fn: fn(T) -> U) -> Maybe(U) {
+    // map(maybe: Maybe(T)) → void
+    fn map(maybe: Maybe(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // join(nested: Maybe(Maybe(T))) → Maybe(T)
-    fn join(nested: Maybe(Maybe(T))) -> Maybe(T) {
+    // join(nested: Maybe(Maybe(T))) → void
+    fn join(nested: Maybe(Maybe(T))) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -43,38 +43,23 @@ module TriMaybe;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // pure, bind, map and join are all unimplemented stubs: each one emits
-    // `@panic("not yet implemented")`, so calling any of them aborts the test
-    // binary rather than failing a test. The monad laws cannot be exercised
-    // until they have bodies; what is checkable is the shape they operate on.
+    test pure_basic_case
+        given input = default_input()
+        when result = pure(input)
+        then result != undefined
 
-    test maybe_is_a_flag_beside_a_value_not_a_tagged_union
-        // Two fields: the payload is always materialised, the flag says
-        // whether it means anything. A Maybe over nothing is just the flag.
-        then @typeInfo(Maybe(u32)).@"struct".fields.len == 2
-        and @FieldType(Maybe(u32), "computed") == bool
-        and @FieldType(Maybe(u32), "value") == u32
-        and @sizeOf(Maybe(void)) == 1
+    test bind_basic_case
+        given input = default_input()
+        when result = bind(input)
+        then result != undefined
 
-    test maybe_does_not_get_the_null_pointer_optimization
-        // Zig folds the absent case of ?*u32 into the null pointer itself;
-        // Maybe keeps a separate flag, so it is strictly the wider encoding.
-        then @sizeOf(?*u32) == @sizeOf(*u32)
-        and @sizeOf(Maybe(*u32)) > @sizeOf(*u32)
+    test map_basic_case
+        given input = default_input()
+        when result = map(input)
+        then result != undefined
 
-    test join_flattens_two_layers_of_the_same_shape
-        // join takes Maybe(Maybe(T)): the outer value slot is itself a Maybe,
-        // so flattening is combining two `computed` flags into one.
-        given nested = Maybe(Maybe(u32)){ .computed = true, .value = Maybe(u32){ .computed = true, .value = 7 } }
-        then @FieldType(Maybe(Maybe(u32)), "value") == Maybe(u32)
-        and nested.computed == true
-        and nested.value.computed == true
-        and nested.value.value == 7
-
-    test an_absent_maybe_still_carries_a_value_slot
-        // computed = false does not erase the payload -- the field is always
-        // there, which is why bind must consult the flag before the value.
-        given absent = Maybe(u32){ .computed = false, .value = 0 }
-        then absent.computed == false
-        and @sizeOf(Maybe(u32)) >= @sizeOf(u32)
+    test join_basic_case
+        given input = default_input()
+        when result = join(input)
+        then result != undefined
 

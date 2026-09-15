@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/math/gf_competitive.t27
-// GoldenFloat Competitive Analysis -- GF vs Posit vs IEEE 754
-// MATH-COMPETITIVE-001 -- Decode latency, parallelism, hardware efficiency
+// GoldenFloat Competitive Analysis — GF vs Posit vs IEEE 754
+// MATH-COMPETITIVE-001 — Decode latency, parallelism, hardware efficiency
 //
 // Ring 051: Competitive analysis showing GF's structural advantages
 // Main result: GF has O(1) parallel decode vs Posit's O(N) sequential
@@ -10,9 +10,9 @@ module GFCompetitive {
     use math::constants;
     use math::sacred_physics;
 
-    // ===========================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
     // 1. Decode Complexity Analysis
-    // =========================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     // Decode operation counts (worst case)
     struct DecodeComplexity {
@@ -46,9 +46,9 @@ module GFCompetitive {
         ];
     }
 
-    // ===========================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
     // Tests
-    // =========================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     test "decode_complexity_returns_3_formats" {
         let complexity = decode_complexity();
@@ -80,9 +80,9 @@ module GFCompetitive {
         assert!(complexity[1].steps_sequential > complexity[2].steps_sequential);
     }
 
-    // ===========================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
     // Invariants
-    // =========================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     invariant "decode_complexity_always_returns_3_entries" {
         let complexity = decode_complexity();
@@ -107,9 +107,9 @@ module GFCompetitive {
         }
     }
 
-    // ===========================================================================
+    // ═══════════════════════════════════════════════════════════════════════════
     // Benchmarks
-    // =========================================================================================
+    // ═════════════════════════════════════════════════════════════════════════════════════════
 
     bench "decode_complexity" {
         let iterations = 10000;

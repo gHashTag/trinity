@@ -3,8 +3,6 @@
 // K3 Kleene ternary logic operations for neuro-symbolic reasoning
 
 spec TernaryLogic {
-    use tritype-base::Trit;
-
     // K3 ternary values: True, Unknown, False
     type Trit = Trit
 
@@ -73,7 +71,7 @@ spec TernaryLogic {
     // Resolve two clauses by finding complementary literals
     fn resolve(clause_a: [Trit], clause_b: [Trit]) -> [Trit] {
         let result: [Trit] = [];
-        for i in 0..clause_a.len {
+        for i in range(0, len(clause_a)) {
             let a = clause_a[i];
             let b = clause_b[i];
             // T/F complementary → unknown, otherwise OR

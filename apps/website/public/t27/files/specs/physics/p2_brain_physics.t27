@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-// Module: P2 Brain -- Physics Engine Framework
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// Module: P2 Brain — Physics Engine Framework
+// φ² + 1/φ² = 3 | TRINITY
 
 module P2Brain {
     // ========================================================================
@@ -20,7 +20,7 @@ module P2Brain {
     pub const PHI_INV : gf16 = numeric::phi_ratio::PHI_INV;
     pub const PHI_INV_SQ : gf16 = numeric::phi_ratio::PHI_INV_SQ;
 
-    // Trinity identity: phi^2 + phi^-^2 = 3
+    // Trinity identity: φ² + φ⁻² = 3
     pub const TRINITY_PHI_SQ_INV : gf16 = numeric::phi_ratio::TRINITY_PHI_SQ_INV;
 
     // Planck constant (from physics/sacred_constants.t27)
@@ -89,11 +89,11 @@ module P2Brain {
     // ========================================================================
 
     test state_init_creates_valid_state
-        given state = stateInit(LQGCState{ symbols = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position = 0, carry = 0, overflow = false})
+        given state = stateInit({ symbols: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position: 0, carry: 0, overflow: false})
         then state.symbols[0] == 0
 
     test next_updates_state_correctly
-        given state = stateInit(LQGCState{ symbols = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position = 0, carry = 0, overflow = false})
+        given state = stateInit({ symbols: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position: 0, carry: 0, overflow: false})
         and result = next(state, 0, 0, 0b00000000u8)
         then result.symbols[0] == 0b00000000u8
 
@@ -111,14 +111,14 @@ module P2Brain {
         // Measure: cycles to initialize LQG-CS state
         // Target: < 1000 cycles
         @setEvalBranchQuota(10000);
-        var state = stateInit(LQGCState{ symbols = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position = 0, carry = 0, overflow = false});
+        var state = stateInit({ symbols: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position: 0, carry: 0, overflow: false});
         _ = state;
 
     bench next_transition_latency
         // Measure: cycles for one LQG-CS transition
         // Target: < 500 cycles
         @setEvalBranchQuota(10000);
-        var state = stateInit(LQGCState{ symbols = [0, 0, 0, 0, 0, 0, 0, 0, 0], position = 0, carry = 0, overflow = false});
+        var state = stateInit({ symbols: [0, 0, 0, 0, 0, 0, 0, 0, 0], position: 0, carry: 0, overflow: false});
         _ = next(state, 0, 1);
         _ = state;
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-# HSLM BENCHMARK -- Platform Benchmark Suite
+# HSLM BENCHMARK — Platform Benchmark Suite
 
 ## Specification
 
@@ -16,7 +16,7 @@ VOCAB_SIZE = 8192
 EMBED_DIM = 512
 HIDDEN_DIM = 2048
 NUM_BLOCKS = 3
-ESTIMATED_PARAMS ~= 1.58M ternary parameters
+ESTIMATED_PARAMS ≈ 1.58M ternary parameters
 CONTEXT_LEN = 512
 WARMUP_ITERS = 50
 BENCH_ITERS = 1000
@@ -38,7 +38,7 @@ MATMUL_ITERS = 100_000
 
 ### Part 3: Ternary MatVec bandwidth
 - Scalar vs SIMD comparison
-- Matrix: EMBED_DIM * HIDDEN_DIM (512 * 2048)
+- Matrix: EMBED_DIM × HIDDEN_DIM (512 × 2048)
 - Measures: ns/op, GOPS, speedup
 
 ### Part 4: Memory usage
@@ -78,7 +78,7 @@ printPlatformTable(writer, single, multi) -> void
 
 ```
 test "HSLM-Bench: parameter estimation" {
-    expect(ESTIMATED_PARAMS ~= 1.58M)
+    expect(ESTIMATED_PARAMS ≈ 1.58M)
 }
 
 test "HSLM-Bench: configuration consistency" {

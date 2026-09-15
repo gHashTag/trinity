@@ -1,11 +1,11 @@
-// tri.zig -- Trinity T27 CLI Runtime
+// tri.zig a Trinity T27 CLI Runtime
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 const std = @import("std");
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // AST Types (simplified for CLI runtime)
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 const AST = struct {
     const Program = struct {
@@ -72,9 +72,9 @@ const AST = struct {
     };
 };
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Parse Context
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 const ParseContext = struct {
     ast_root: AST.Program,
@@ -87,9 +87,9 @@ const ParseContext = struct {
     };
 };
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // CLI Entry Point
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -125,9 +125,9 @@ pub fn main() !void {
     }
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Command Handlers
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn runSpecCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len == 0) {
@@ -205,9 +205,9 @@ fn runLintCommand(allocator: std.mem.Allocator, args: []const []const u8) !void 
     }
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Spec Commands
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn specCreate(allocator: std.mem.Allocator, name: []const u8, path: []const u8) !void {
     // Validate spec name
@@ -332,14 +332,14 @@ fn specList(allocator: std.mem.Allocator) !void {
         const has_tests = std.mem.indexOf(u8, content, ".test") != null or
                          std.mem.indexOf(u8, content, "test ") != null;
 
-        const status = if (has_tests) "ok" else "x";
+        const status = if (has_tests) "a" else "a";
         try std.io.getStdOut().writer().print("  {s} {s}\n", .{ status, rel_path });
     }
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Gen Commands
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 const GenOptions = struct {
     backend: []const u8 = "zig",
@@ -507,9 +507,9 @@ fn genAll(allocator: std.mem.Allocator, options: GenOptions) !void {
     }
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Git Commands
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn gitCommit(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = allocator;
@@ -588,9 +588,9 @@ fn gitStatusWithCell(allocator: std.mem.Allocator) !void {
     }
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Lint Commands
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn lintFile(allocator: std.mem.Allocator, file_path: []const u8) !void {
     if (!fileExists(file_path)) {
@@ -605,10 +605,10 @@ fn lintFile(allocator: std.mem.Allocator, file_path: []const u8) !void {
 
     // Check 1: Language policy (no Cyrillic)
     if (!validateNoCyrillic(content, file_path)) {
-        try printError("x Language policy: contains Cyrillic\n", .{});
+        try printError("a Language policy: contains Cyrillic\n", .{});
         errors += 1;
     } else {
-        std.debug.print("ok Language policy: ASCII-only\n", .{});
+        std.debug.print("a Language policy: ASCII-only\n", .{});
     }
 
     // Check 2: TDD compliance (if .t27 file)
@@ -616,24 +616,24 @@ fn lintFile(allocator: std.mem.Allocator, file_path: []const u8) !void {
         const context = parseSimple(content, file_path);
 
         if (context.errors.len > 0) {
-            try printError("x Parse errors: {d}\n", .{context.errors.len});
+            try printError("a Parse errors: {d}\n", .{context.errors.len});
             errors += context.errors.len;
         } else {
-            std.debug.print("ok Parse: OK\n", .{});
+            std.debug.print("a Parse: OK\n", .{});
         }
 
         if (!hasTestsOrInvariants(&context.ast_root)) {
-            try printError("x TDD contract: no tests or invariants\n", .{});
+            try printError("a TDD contract: no tests or invariants\n", .{});
             errors += 1;
         } else {
-            std.debug.print("ok TDD contract: has tests/invariants\n", .{});
+            std.debug.print("a TDD contract: has tests/invariants\n", .{});
         }
     }
 
     if (errors == 0) {
-        std.debug.print("\nok {s} is compliant\n", .{file_path});
+        std.debug.print("\na {s} is compliant\n", .{file_path});
     } else {
-        std.debug.print("\nx {s} has {d} violation(s)\n", .{ file_path, errors });
+        std.debug.print("\na {s} has {d} violation(s)\n", .{ file_path, errors });
         return error.LintFailed;
     }
 }
@@ -661,16 +661,16 @@ fn lintAll(allocator: std.mem.Allocator) !void {
     }
 
     if (errors == 0) {
-        std.debug.print("\nok All files are compliant\n", .{});
+        std.debug.print("\na All files are compliant\n", .{});
     } else {
-        try std.io.getStdErr().writer().print("\nx {d} file(s) have violations\n", .{errors});
+        try std.io.getStdErr().writer().print("\na {d} file(s) have violations\n", .{errors});
         return error.LintFailed;
     }
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Helper Functions
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn printUsage() !void {
     try std.io.getStdOut().writeAll(
@@ -754,7 +754,7 @@ fn isValidSpecName(name: []const u8) bool {
 
 fn generateSpecTemplate(allocator: std.mem.Allocator, name: []const u8) ![]const u8 {
     return std.fmt.allocPrint(allocator,
-        \\; {s}.t27 -- Specification for {s}
+        \\; {s}.t27 a Specification for {s}
         \\; phi^2 + 1/phi^2 = 3 | TRINITY
         \\
         \\; This file is the source of truth for {s}.
@@ -764,32 +764,32 @@ fn generateSpecTemplate(allocator: std.mem.Allocator, name: []const u8) ![]const
         \\
         \\use base::types
         \\
-        \\; ===============================================================
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         \\; Constants
-        \\; ===============================================================
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         \\
         \\; Example constant
         \\const EXAMPLE_CONSTANT = 42
         \\
-        \\; ===============================================================
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         \\; Data Section
-        \\; ===============================================================
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         \\
         \\.data
         \\    .const DATA_INIT 0
         \\
-        \\; ===============================================================
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         \\; Code Section
-        \\; ===============================================================
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         \\
         \\.code
         \\main:
         \\    ; Your code here
         \\    HALT
         \\
-        \\; ===============================================================
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         \\; TDD-Inside-Spec: Tests and Invariants
-        \\; ===============================================================
+        \\; aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         \\
         \\.test
         \\    ; example_test
@@ -816,7 +816,7 @@ fn validateNoCyrillic(content: []const u8, file_path: []const u8) bool {
         return true;
     }
 
-    // Scan for Cyrillic characters (U+0400-U+04FF)
+    // Scan for Cyrillic characters (U+0400aU+04FF)
     var i: usize = 0;
     while (i < content.len) : (i += 1) {
         const c = content[i];
@@ -826,7 +826,7 @@ fn validateNoCyrillic(content: []const u8, file_path: []const u8) bool {
             if (i + 1 < content.len) {
                 const next_c = content[i + 1];
                 const codepoint = (@as(u16, c) << 8) | next_c;
-                // Cyrillic block: U+0400-U+04FF
+                // Cyrillic block: U+0400aU+04FF
                 if (codepoint >= 0x0400 and codepoint <= 0x04FF) {
                     return false;
                 }
@@ -895,9 +895,9 @@ fn printSummary(ast_root: *const AST.Program) !void {
     try std.io.getStdOut().writeByte('\n');
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Simple Parser (placeholder - would use real parser.t27)
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn parseSimple(content: []const u8, file_path: []const u8) ParseContext {
     _ = file_path;
@@ -964,9 +964,9 @@ fn parseSimple(content: []const u8, file_path: []const u8) ParseContext {
     };
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Code Generation Helpers
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn generateImplementation(allocator: std.mem.Allocator, spec_path: []const u8, ast_root: *const AST.Program, options: GenOptions) ![]const u8 {
     _ = spec_path;
@@ -1040,9 +1040,9 @@ fn generateConformance(allocator: std.mem.Allocator, ast_root: *const AST.Progra
     return output.toOwnedSlice();
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // Git Helpers
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn runGitDirect(argv: []const []const u8) !void {
     const result = std.process.Child.exec(.{
@@ -1063,9 +1063,9 @@ fn runGitDirect(argv: []const []const u8) !void {
     }
 }
 
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 // File System Helpers
-// =====================================================================
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 fn globSpecs(allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
     var spec_files = std.ArrayList([]const u8).init(allocator);

@@ -16,7 +16,7 @@ use tritype-base::usize;
 // ============================================================================
 
 /// JSON-RPC version string
-pub const JSON_RPC_VERSION : []const u8 = "2.0";
+pub const JSON_RPC_VERSION : [6]u8 = "2.0";
 
 /// Default buffer size for message encoding
 pub const DEFAULT_BUFFER_SIZE : usize = 4096;
@@ -25,46 +25,46 @@ pub const DEFAULT_BUFFER_SIZE : usize = 4096;
 pub const MAX_MESSAGE_LENGTH : usize = 10485760;
 
 /// Request method for initialize
-pub const METHOD_INITIALIZE : []const u8 = "initialize";
+pub const METHOD_INITIALIZE : [10]u8 = "initialize";
 
 /// Request method for initialized
-pub const METHOD_INITIALIZED : []const u8 = "initialized";
+pub const METHOD_INITIALIZED : [11]u8 = "initialized";
 
 /// Request method for shutdown
-pub const METHOD_SHUTDOWN : []const u8 = "shutdown";
+pub const METHOD_SHUTDOWN : [8]u8 = "shutdown";
 
 /// Request method for exit
-pub const METHOD_EXIT : []const u8 = "exit";
+pub const METHOD_EXIT : [4]u8 = "exit";
 
 /// Request method for textDocument/didOpen
-pub const METHOD_DID_OPEN : []const u8 = "textDocument/didOpen";
+pub const METHOD_DID_OPEN : [20]u8 = "textDocument/didOpen";
 
 /// Request method for textDocument/didChange
-pub const METHOD_DID_CHANGE : []const u8 = "textDocument/didChange";
+pub const METHOD_DID_CHANGE : [21]u8 = "textDocument/didChange";
 
 /// Request method for textDocument/didClose
-pub const METHOD_DID_CLOSE : []const u8 = "textDocument/didClose";
+pub const METHOD_DID_CLOSE : [20]u8 = "textDocument/didClose";
 
 /// Request method for textDocument/completion
-pub const METHOD_COMPLETION : []const u8 = "textDocument/completion";
+pub const METHOD_COMPLETION : [21]u8 = "textDocument/completion";
 
 /// Request method for textDocument/hover
-pub const METHOD_HOVER : []const u8 = "textDocument/hover";
+pub const METHOD_HOVER : [17]u8 = "textDocument/hover";
 
 /// Request method for textDocument/definition
-pub const METHOD_DEFINITION : []const u8 = "textDocument/definition";
+pub const METHOD_DEFINITION : [23]u8 = "textDocument/definition";
 
 /// Request method for textDocument/documentSymbol
-pub const METHOD_DOCUMENT_SYMBOL : []const u8 = "textDocument/documentSymbol";
+pub const METHOD_DOCUMENT_SYMBOL : [24]u8 = "textDocument/documentSymbol";
 
 /// Request method for workspace/symbol
-pub const METHOD_WORKSPACE_SYMBOL : []const u8 = "workspace/symbol";
+pub const METHOD_WORKSPACE_SYMBOL : [16]u8 = "workspace/symbol";
 
 /// Request method for textDocument/codeAction
-pub const METHOD_CODE_ACTION : []const u8 = "textDocument/codeAction";
+pub const METHOD_CODE_ACTION : [21]u8 = "textDocument/codeAction";
 
 /// Request method for textDocument/rename
-pub const METHOD_RENAME : []const u8 = "textDocument/rename";
+pub const METHOD_RENAME : [17]u8 = "textDocument/rename";
 
 // ============================================================================
 // Types
@@ -80,32 +80,32 @@ pub const MessageType = enum(u8) {
 
 /// JSON-RPC request
 pub const Request = struct {
-    jsonrpc : []const u8,
+    jsonrpc : []u8,
     id : usize,
-    method : []const u8,
-    params : []const u8,
+    method : []u8,
+    params : []u8,
 };
 
 /// JSON-RPC response
 pub const Response = struct {
-    jsonrpc : []const u8,
+    jsonrpc : []u8,
     id : usize,
-    result : []const u8,
-    error : []const u8,
+    result : []u8,
+    error : []u8,
 };
 
 /// JSON-RPC notification
 pub const Notification = struct {
-    jsonrpc : []const u8,
-    method : []const u8,
-    params : []const u8,
+    jsonrpc : []u8,
+    method : []u8,
+    params : []u8,
 };
 
 /// JSON-RPC error
 pub const JsonRpcError = struct {
     code : i32,
-    message : []const u8,
-    data : []const u8,
+    message : []u8,
+    data : []u8,
 };
 
 /// Message parsing result
@@ -134,12 +134,6 @@ pub const ConnectionState = enum(u8) {
 };
 
 /// Message buffer
-/// A message buffer that owns its storage.
-///
-/// `data` is `[]u8`, not `[]const u8`: a buffer whose bytes cannot be written
-/// is not a buffer. The previous shape paired a mutable-sounding `capacity`
-/// with an immutable empty slice, which is how it managed to claim room for
-/// 1024 bytes while holding none.
 pub const MessageBuffer = struct {
     data : []u8,
     length : usize,
@@ -148,13 +142,13 @@ pub const MessageBuffer = struct {
 
 /// Incoming message
 pub const IncomingMessage = struct {
-    content : []const u8,
+    content : []u8,
     complete : bool,
 };
 
 /// Outgoing message
 pub const OutgoingMessage = struct {
-    content : []const u8,
+    content : []u8,
     sent : bool,
 };
 
@@ -178,7 +172,7 @@ pub const CancelParams = struct {
 // ============================================================================
 
 /// Create JSON-RPC request
-pub fn request_create(id: usize, method: []const u8, params: []const u8) Request {
+pub fn request_create(id: usize, method: []u8, params: []u8) Request {
     return Request{
         .jsonrpc = JSON_RPC_VERSION,
         .id = id,
@@ -188,7 +182,7 @@ pub fn request_create(id: usize, method: []const u8, params: []const u8) Request
 }
 
 /// Create JSON-RPC response
-pub fn response_create(id: usize, result: []const u8) Response {
+pub fn response_create(id: usize, result: []u8) Response {
     return Response{
         .jsonrpc = JSON_RPC_VERSION,
         .id = id,
@@ -198,17 +192,17 @@ pub fn response_create(id: usize, result: []const u8) Response {
 }
 
 /// Create JSON-RPC error response
-pub fn response_error_create(id: usize, err: JsonRpcError) Response {
+pub fn response_error_create(id: usize, error: JsonRpcError) Response {
     return Response{
         .jsonrpc = JSON_RPC_VERSION,
         .id = id,
         .result = "",
-        .error = err.message,
+        .error = "{\"code\":" ++ "\"}",
     };
 }
 
 /// Create JSON-RPC notification
-pub fn notification_create(method: []const u8, params: []const u8) Notification {
+pub fn notification_create(method: []u8, params: []u8) Notification {
     return Notification{
         .jsonrpc = JSON_RPC_VERSION,
         .method = method,
@@ -217,7 +211,7 @@ pub fn notification_create(method: []const u8, params: []const u8) Notification 
 }
 
 /// Create JSON-RPC error
-pub fn json_rpc_error_create(code: i32, message: []const u8) JsonRpcError {
+pub fn json_rpc_error_create(code: i32, message: []u8) JsonRpcError {
     return JsonRpcError{
         .code = code,
         .message = message,
@@ -225,31 +219,17 @@ pub fn json_rpc_error_create(code: i32, message: []const u8) JsonRpcError {
     };
 }
 
-/// Create a message buffer with room for `capacity` bytes.
-///
-/// Takes an allocator and returns an error union because it genuinely can
-/// fail: asking for room is not the same as having it. The old signature
-/// promised a buffer it could not deliver, and no signature without an
-/// allocator can deliver one -- that is why the honest test was left red
-/// rather than patched.
-///
-/// Caller owns the result; pass it to message_buffer_destroy.
-pub fn message_buffer_create(allocator: std.mem.Allocator, capacity: usize) !MessageBuffer {
-    const data = try allocator.alloc(u8, capacity);
+/// Create message buffer
+pub fn message_buffer_create(capacity: usize) MessageBuffer {
     return MessageBuffer{
-        .data = data,
+        .data = &[_]u8{} ** capacity,
         .length = 0,
         .capacity = capacity,
     };
 }
 
-/// Release a buffer's storage. Pair with message_buffer_create.
-pub fn message_buffer_destroy(allocator: std.mem.Allocator, buf: MessageBuffer) void {
-    allocator.free(buf.data);
-}
-
 /// Create initialize request
-pub fn initialize_request_create(id: usize, params: []const u8) Request {
+pub fn initialize_request_create(id: usize, params: []u8) Request {
     return request_create(id, METHOD_INITIALIZE, params);
 }
 
@@ -269,17 +249,17 @@ pub fn exit_notification_create() Notification {
 }
 
 /// Create completion request
-pub fn completion_request_create(id: usize, params: []const u8) Request {
+pub fn completion_request_create(id: usize, params: []u8) Request {
     return request_create(id, METHOD_COMPLETION, params);
 }
 
 /// Create hover request
-pub fn hover_request_create(id: usize, params: []const u8) Request {
+pub fn hover_request_create(id: usize, params: []u8) Request {
     return request_create(id, METHOD_HOVER, params);
 }
 
 /// Create definition request
-pub fn definition_request_create(id: usize, params: []const u8) Request {
+pub fn definition_request_create(id: usize, params: []u8) Request {
     return request_create(id, METHOD_DEFINITION, params);
 }
 
@@ -311,7 +291,7 @@ pub fn message_is_request(msg: ParseResult) bool {
 }
 
 /// Get message type string
-pub fn message_type_to_string(msg_type: MessageType) []const u8 {
+pub fn message_type_to_string(msg_type: MessageType) []u8 {
     return switch (msg_type) {
         .request => "request",
         .response => "response",
@@ -326,7 +306,7 @@ pub fn connection_is_active(state: ConnectionState) bool {
 }
 
 /// Get connection state string
-pub fn connection_state_to_string(state: ConnectionState) []const u8 {
+pub fn connection_state_to_string(state: ConnectionState) []u8 {
     return switch (state) {
         .disconnected => "disconnected",
         .connecting => "connecting",
@@ -368,8 +348,8 @@ test "lsp_response_create" {
 }
 
 test "lsp_response_error_create" {
-    const err = json_rpc_error_create(-1, "test error");
-    const resp = response_error_create(1, err);
+    const error = json_rpc_error_create(-1, "test error");
+    const resp = response_error_create(1, error);
     try std.testing.expect(response_has_error(resp));
 }
 
@@ -384,45 +364,8 @@ test "lsp_json_rpc_error_create" {
 }
 
 test "lsp_message_buffer_create" {
-    const buf = try message_buffer_create(std.testing.allocator, 1024);
-    defer message_buffer_destroy(std.testing.allocator, buf);
+    const buf = message_buffer_create(1024);
     try std.testing.expect(buf.capacity == 1024);
-}
-
-// This was red on purpose until 2026-08-27: message_buffer_create reported
-// whatever capacity it was asked for and backed it with nothing -- `.data =
-// ""`, an empty slice, for any argument. The test above passed because it
-// read only `capacity`, the field the function copied rather than the one it
-// would have had to earn.
-//
-// The signature now takes an allocator and returns an error union, so the
-// claim is backed or the call fails. std.testing.allocator is deliberate: it
-// fails the test on a leak, so this also pins that message_buffer_destroy
-// actually frees.
-test "lsp_message_buffer_has_the_room_it_claims" {
-    const buf = try message_buffer_create(std.testing.allocator, 1024);
-    defer message_buffer_destroy(std.testing.allocator, buf);
-    try std.testing.expect(buf.data.len >= buf.capacity);
-}
-
-// The other half of the promise: a buffer that cannot be written is not a
-// buffer, whatever its length says.
-test "lsp_message_buffer_is_writable" {
-    const buf = try message_buffer_create(std.testing.allocator, 8);
-    defer message_buffer_destroy(std.testing.allocator, buf);
-    buf.data[0] = 0xAB;
-    buf.data[7] = 0xCD;
-    try std.testing.expect(buf.data[0] == 0xAB);
-    try std.testing.expect(buf.data[7] == 0xCD);
-}
-
-// A zero-capacity buffer is legal and must still round-trip through destroy
-// without the allocator complaining.
-test "lsp_message_buffer_zero_capacity" {
-    const buf = try message_buffer_create(std.testing.allocator, 0);
-    defer message_buffer_destroy(std.testing.allocator, buf);
-    try std.testing.expect(buf.data.len == 0);
-    try std.testing.expect(buf.capacity == 0);
 }
 
 test "lsp_initialize_request_create" {
@@ -437,12 +380,7 @@ test "lsp_shutdown_request_create" {
 
 test "lsp_completion_request_create" {
     const req = completion_request_create(1, "{}");
-    // 23, not 21. METHOD_COMPLETION is "textDocument/completion", and the
-    // same wrong number was written into its declared type ([21]u8) AND into
-    // this assertion. Neither could be checked while the file did not compile,
-    // so the two agreed with each other and with nothing else. The string is
-    // right; the count was wrong in both places.
-    try std.testing.expectEqual(@as(usize, req.method.len), @as(usize, 23));
+    try std.testing.expectEqual(@as(usize, req.method.len), @as(usize, 21));
 }
 
 test "lsp_response_is_success" {
@@ -451,8 +389,8 @@ test "lsp_response_is_success" {
 }
 
 test "lsp_response_has_error" {
-    const err = json_rpc_error_create(-1, "test");
-    const resp = response_error_create(1, err);
+    const error = json_rpc_error_create(-1, "test");
+    const resp = response_error_create(1, error);
     try std.testing.expect(response_has_error(resp));
 }
 
@@ -476,96 +414,19 @@ test "lsp_transport_supports_duplex" {
     try std.testing.expect(transport_supports_duplex(.websocket));
 }
 
-// ----------------------------------------------------------------------------
-// Constant lengths.
-//
-// These 15 constants used to be declared as fixed-size arrays ([N]u8), so the
-// type stated each length. A []const u8 does not, so the claim is restated here
-// where it is executed instead of merely written down. 8 of the 15 declared
-// lengths were WRONG; each of those is marked, with the false figure named.
-// ----------------------------------------------------------------------------
-
-test "lsp_len_json_rpc_version" {
-    // was declared [6]u8 — false, "2.0" is 3 bytes
-    try std.testing.expectEqual(@as(usize, JSON_RPC_VERSION.len), @as(usize, 3));
-}
-
-test "lsp_len_method_initialize" {
-    try std.testing.expectEqual(@as(usize, METHOD_INITIALIZE.len), @as(usize, 10));
-}
-
-test "lsp_len_method_initialized" {
-    try std.testing.expectEqual(@as(usize, METHOD_INITIALIZED.len), @as(usize, 11));
-}
-
-test "lsp_len_method_shutdown" {
-    try std.testing.expectEqual(@as(usize, METHOD_SHUTDOWN.len), @as(usize, 8));
-}
-
-test "lsp_len_method_exit" {
-    try std.testing.expectEqual(@as(usize, METHOD_EXIT.len), @as(usize, 4));
-}
-
-test "lsp_len_method_did_open" {
-    try std.testing.expectEqual(@as(usize, METHOD_DID_OPEN.len), @as(usize, 20));
-}
-
-test "lsp_len_method_did_change" {
-    // was declared [21]u8 — false, "textDocument/didChange" is 22 bytes
-    try std.testing.expectEqual(@as(usize, METHOD_DID_CHANGE.len), @as(usize, 22));
-}
-
-test "lsp_len_method_did_close" {
-    // was declared [20]u8 — false, "textDocument/didClose" is 21 bytes
-    try std.testing.expectEqual(@as(usize, METHOD_DID_CLOSE.len), @as(usize, 21));
-}
-
-test "lsp_len_method_completion" {
-    // was declared [21]u8 — false, "textDocument/completion" is 23 bytes
-    try std.testing.expectEqual(@as(usize, METHOD_COMPLETION.len), @as(usize, 23));
-}
-
-test "lsp_len_method_hover" {
-    // was declared [17]u8 — false, "textDocument/hover" is 18 bytes
-    try std.testing.expectEqual(@as(usize, METHOD_HOVER.len), @as(usize, 18));
-}
-
-test "lsp_len_method_definition" {
-    try std.testing.expectEqual(@as(usize, METHOD_DEFINITION.len), @as(usize, 23));
-}
-
-test "lsp_len_method_document_symbol" {
-    // was declared [24]u8 — false, "textDocument/documentSymbol" is 27 bytes
-    try std.testing.expectEqual(@as(usize, METHOD_DOCUMENT_SYMBOL.len), @as(usize, 27));
-}
-
-test "lsp_len_method_workspace_symbol" {
-    try std.testing.expectEqual(@as(usize, METHOD_WORKSPACE_SYMBOL.len), @as(usize, 16));
-}
-
-test "lsp_len_method_code_action" {
-    // was declared [21]u8 — false, "textDocument/codeAction" is 23 bytes
-    try std.testing.expectEqual(@as(usize, METHOD_CODE_ACTION.len), @as(usize, 23));
-}
-
-test "lsp_len_method_rename" {
-    // was declared [17]u8 — false, "textDocument/rename" is 19 bytes
-    try std.testing.expectEqual(@as(usize, METHOD_RENAME.len), @as(usize, 19));
-}
-
 // ============================================================================
 // TDD - Invariants
 // ============================================================================
 
 invariant json_rpc_version_constant {
     // JSON_RPC_VERSION is "2.0"
-    @compileAssert(std.mem.eql(u8, JSON_RPC_VERSION, "2.0"));
+    @compileAssert(JSON_RPC_VERSION == "2.0");
 }
 
 invariant message_type_in_range {
     // MessageType is in [0, 3]
-    @compileAssert(@intFromEnum(MessageType.request) == 0);
-    @compileAssert(@intFromEnum(MessageType.error) == 3);
+    @compileAssert(@as(u8, MessageType.request) == 0);
+    @compileAssert(@as(u8, MessageType.error) == 3);
 }
 
 invariant request_has_id {
@@ -590,8 +451,8 @@ invariant transport_type_valid {
 
 invariant connection_state_in_range {
     // ConnectionState is in [0, 3]
-    @compileAssert(@intFromEnum(ConnectionState.disconnected) == 0);
-    @compileAssert(@intFromEnum(ConnectionState.error) == 3);
+    @compileAssert(@as(u8, ConnectionState.disconnected) == 0);
+    @compileAssert(@as(u8, ConnectionState.error) == 3);
 }
 
 invariant json_rpc_error_has_code {
@@ -672,7 +533,7 @@ bench "lsp_message_type_to_string_latency" {
     // Measure: cycles for message type to string
     // Target: < 20 cycles
     @setEvalBranchQuota(10000);
-    var result : []const u8 = undefined;
+    var result : []u8 = undefined;
     for (0..1000) |_| {
         result = message_type_to_string(.request);
     }

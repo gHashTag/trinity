@@ -2,6 +2,8 @@
 // spec: CoaPlanning
 // Course of Action (COA) planning for neuro-symbolic reasoning
 
+use base::types;
+
 spec CoaPlanning {
     // COA action types
     enum ActionType {
@@ -37,8 +39,8 @@ spec CoaPlanning {
         steps: [COAStep],
         total_steps: int,
         total_duration: float,
-        verification_status: Trit,
-        proof_trace: ProofTrace,
+        verification_status: Trit
+        proof_trace: ProofTrace
     }
 
     // COA constraint type

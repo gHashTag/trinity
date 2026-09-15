@@ -24,28 +24,28 @@ module TriMap;
         // TODO: Implement from .tri spec
     }
 
-    // singleton(key: K, value: V) → Map(K, V)
-    fn singleton(key: K, value: V) -> Map(K, V) {
+    // singleton(key: K) → void
+    fn singleton(key: K) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // get(map: Map(K, V), key: K) → Option(V)
-    fn get(map: Map(K, V), key: K) -> Option(V) {
+    // get(map: Map(K, V)) → void
+    fn get(map: Map(K, V)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // set(map: Map(K, V), key: K, value: V) → Map(K, V)
-    fn set(map: Map(K, V), key: K, value: V) -> Map(K, V) {
+    // set(map: Map(K, V)) → void
+    fn set(map: Map(K, V)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // keys(map: Map(K, V)) → []K
-    fn keys(map: Map(K, V)) -> []K {
+    // keys(map: Map(K, V)) → void
+    fn keys(map: Map(K, V)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // values(map: Map(K, V)) → []V
-    fn values(map: Map(K, V)) -> []V {
+    // values(map: Map(K, V)) → void
+    fn values(map: Map(K, V)) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -53,20 +53,33 @@ module TriMap;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // All six operations have empty bodies, so no lookup or insertion can be
-    // exercised here. The representation is the part the module has decided,
-    // and these pin it.
+    test empty_basic_case
+        given input = default_input()
+        when result = empty(input)
+        then result != undefined
 
-    test map_keeps_keys_and_values_in_two_parallel_slices
-        given m = Map(u8, i64)
-        and keys_type = @FieldType(m, "keys")
-        and values_type = @FieldType(m, "values")
-        then keys_type == []u8 and values_type == []i64
+    test singleton_basic_case
+        given input = default_input()
+        when result = singleton(input)
+        then result != undefined
 
-    test map_stores_no_shared_length
-        // the struct is exactly two slices, so nothing in the type forces
-        // keys.len == values.len -- callers carry that invariant themselves
-        given total_size = @sizeOf(Map(u8, i64))
-        and slice_size = @sizeOf([]u8)
-        then total_size == 2 * slice_size
+    test get_basic_case
+        given input = default_input()
+        when result = get(input)
+        then result != undefined
+
+    test set_basic_case
+        given input = default_input()
+        when result = set(input)
+        then result != undefined
+
+    test keys_basic_case
+        given input = default_input()
+        when result = keys(input)
+        then result != undefined
+
+    test values_basic_case
+        given input = default_input()
+        when result = values(input)
+        then result != undefined
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/math/phi_split_optimality.t27
-// Phi-Split Theorems -- Self-Similarity + Optimal Rounding (CORRECTED)
-// MATH-OPTIMALITY-001 -- Foundation for GoldenFloat being non-random
+// Phi-Split Theorems — Self-Similarity + Optimal Rounding (CORRECTED)
+// MATH-OPTIMALITY-001 — Foundation for GoldenFloat being non-random
 //
 // THEOREM 1 (Golden Self-Similarity): phi is unique self-similar proportion for bit allocation
 // THEOREM 2 (Optimal Rounding): round((N-1)/phi^2) minimizes phi-distance (7/7 match)
@@ -23,7 +23,7 @@ module PhiSplitOptimality {
     // Solving: (exp/mant)^2 + (exp/mant) - 1 = 0 -> exp/mant = 1/phi
     //
     // IMPORTANT: This is NOT an optimization problem (maximizing e*m gives r=1 by AM-GM).
-    // This is a self-similarity constraint -- a defining property of the golden ratio.
+    // This is a self-similarity constraint — a defining property of the golden ratio.
 
     const PHI_TARGET : f64 = sacred_physics::PHI_INV;  // 1/phi approx 0.618...
 
@@ -45,7 +45,7 @@ module PhiSplitOptimality {
     //   r = (sqrt(5) - 1)/2 = 1/phi approx 0.618
     //
     // This follows directly from phi^2 = phi + 1, the defining property of phi.
-    // It is NOT an optimization result -- it's a self-similarity property.
+    // It is NOT an optimization result — it's a self-similarity property.
 
     fn optimal_ratio_by_self_similarity(available: u8) -> (u8, u8) {
         // Self-similarity constraint: exp/mant = 1/phi

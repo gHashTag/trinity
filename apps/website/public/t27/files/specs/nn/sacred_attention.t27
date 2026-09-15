@@ -44,6 +44,3 @@ algorithm sacred_attention {
         { assert: sacred_scale() > 0.0 && sacred_scale() < 1.0 }
     ]
 }
-    test "sacred_attention_smoke_test" {
-        expect(true)
-    }

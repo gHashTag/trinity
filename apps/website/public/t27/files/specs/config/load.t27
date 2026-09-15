@@ -10,9 +10,7 @@ module config-load;
 // ============================================================================
 
 use std;
-use config-schema::{Config, ValidationResult, PathsConfig, ConfigError,
-                    AgentConfig, ProviderConfig, config_default, error_create,
-                    validation_success, validation_failure, has_api_key};
+use config-schema::{Config, ValidationResult, PathsConfig};
 
 // ============================================================================
 // Constants
@@ -122,7 +120,7 @@ pub fn load_default() LoadResult {
 pub fn load_from_file(path: []u8) LoadResult {
     // Read and parse config file (simplified)
     return LoadResult{
-        .config = config_default(),
+        .config = config_schema::config_default(),
         .source = .file,
         .format = .json,
         .errors = &[_]LoadError{},
@@ -133,7 +131,7 @@ pub fn load_from_file(path: []u8) LoadResult {
 pub fn load_from_env() LoadResult {
     // Read environment variables (simplified)
     return LoadResult{
-        .config = config_default(),
+        .config = config_schema::config_default(),
         .source = .env,
         .format = .json,
         .errors = &[_]LoadError{},
@@ -186,7 +184,7 @@ pub fn merge_multiple(base: Config, others: []Config, strategy: MergeStrategy) M
 
 /// Validate config with context
 pub fn validate(config: Config, context: ValidationContext) ValidationResult {
-    var errors : []ConfigError = &[_]ConfigError{};
+    var errors : []config-schema::ConfigError = &[_]config-schema::ConfigError{};
 
     if (context.check_api_keys) {
         const api_error = validate_api_key(&config.provider);
@@ -210,25 +208,25 @@ pub fn validate(config: Config, context: ValidationContext) ValidationResult {
     }
 
     return if (errors.len > 0)
-        validation_failure(errors)
+        config_schema::validation_failure(errors)
     else
-        validation_success();
+        config_schema::validation_success();
 }
 
 /// Validate provider API key
-pub fn validate_api_key(provider: *ProviderConfig) ?ConfigError {
-    if (!has_api_key(provider.*)) {
-        return error_create("provider.api_key", "API key is required");
+pub fn validate_api_key(provider: *config_schema::ProviderConfig) ?config-schema::ConfigError {
+    if (!config_schema::has_api_key(provider.*)) {
+        return config_schema::error_create("provider.api_key", "API key is required");
     }
     return null;
 }
 
 /// Validate paths configuration
-pub fn validate_paths(paths: *PathsConfig) []ConfigError {
-    var errors : []ConfigError = &[_]ConfigError{};
+pub fn validate_paths(paths: *PathsConfig) []config-schema::ConfigError {
+    var errors : []config-schema::ConfigError = &[_]config-schema::ConfigError{};
 
     if (paths.config_dir.len == 0) {
-        const err = error_create("paths.config_dir", "Config directory is required");
+        const err = config_schema::error_create("paths.config_dir", "Config directory is required");
         errors = append_errors(errors, err);
     }
 
@@ -236,12 +234,12 @@ pub fn validate_paths(paths: *PathsConfig) []ConfigError {
 }
 
 /// Validate agents configuration
-pub fn validate_agents(agents: *[]AgentConfig) []ConfigError {
-    var errors : []ConfigError = &[_]ConfigError{};
+pub fn validate_agents(agents: *[]config-schema::AgentConfig) []config-schema::ConfigError {
+    var errors : []config-schema::ConfigError = &[_]config-schema::ConfigError{};
 
     for (agents) |agent| {
         if (agent.name.len == 0) {
-            const err = error_create("agent.name", "Agent name is required");
+            const err = config_schema::error_create("agent.name", "Agent name is required");
             errors = append_errors(errors, err);
         }
     }
@@ -318,9 +316,9 @@ pub fn get_default_paths() PathsConfig {
 }
 
 /// Append error to slice
-pub fn append_errors(slice: []ConfigError, item: ConfigError) []ConfigError {
-    var result : []ConfigError = slice;
-    var new_slice : []ConfigError = &[_]ConfigError{item};
+pub fn append_errors(slice: []config-schema::ConfigError, item: config-schema::ConfigError) []config-schema::ConfigError {
+    var result : []config-schema::ConfigError = slice;
+    var new_slice : []config-schema::ConfigError = &[_]config-schema::ConfigError{item};
     for (result) |_| {
         new_slice = append_errors_slice(new_slice, _);
     }
@@ -328,16 +326,16 @@ pub fn append_errors(slice: []ConfigError, item: ConfigError) []ConfigError {
 }
 
 /// Append errors slice
-pub fn append_errors_slice(slice: []ConfigError, item: ConfigError) []ConfigError {
-    var result : []ConfigError = slice;
+pub fn append_errors_slice(slice: []config-schema::ConfigError, item: config-schema::ConfigError) []config-schema::ConfigError {
+    var result : []config-schema::ConfigError = slice;
     result = concat_errors(result, item);
     return result;
 }
 
 /// Concatenate errors
-pub fn concat_errors(a: []ConfigError, b: ConfigError) []ConfigError {
-    var result : []ConfigError = a;
-    var new_slice : []ConfigError = &[_]ConfigError{b};
+pub fn concat_errors(a: []config-schema::ConfigError, b: config-schema::ConfigError) []config-schema::ConfigError {
+    var result : []config-schema::ConfigError = a;
+    var new_slice : []config-schema::ConfigError = &[_]config-schema::ConfigError{b};
     for (result) |_| {
         new_slice = append_errors_slice(new_slice, _);
     }
@@ -380,22 +378,22 @@ test "config_load_from_env" {
 }
 
 test "config_merge_replace" {
-    const base = config_default();
-    const overlay = config_default();
+    const base = config_schema::config_default();
+    const overlay = config_schema::config_default();
     const result = merge(base, overlay, .replace);
     try std.testing.expect(result.strategy == .replace);
 }
 
 test "config_merge_keep_existing" {
-    const base = config_default();
-    const overlay = config_default();
+    const base = config_schema::config_default();
+    const overlay = config_schema::config_default();
     const result = merge(base, overlay, .keep_existing);
     try std.testing.expect(result.strategy == .keep_existing);
 }
 
 test "config_merge_merge" {
-    const base = config_default();
-    const overlay = config_default();
+    const base = config_schema::config_default();
+    const overlay = config_schema::config_default();
     const result = merge(base, overlay, .merge);
     try std.testing.expect(result.strategy == .merge);
 }
@@ -413,14 +411,14 @@ test "config_validate_select_context" {
 }
 
 test "config_validate_success" {
-    const config = config_default();
+    const config = config_schema::config_default();
     const context = validation_context_select(false, false, false);
     const result = validate(config, context);
     try std.testing.expect(result.valid);
 }
 
 test "config_validate_failure_missing_api_key" {
-    var config = config_default();
+    var config = config_schema::config_default();
     config.provider.api_key = "";
     const context = validation_context_select(true, false, false);
     const result = validate(config, context);
@@ -428,7 +426,7 @@ test "config_validate_failure_missing_api_key" {
 }
 
 test "config_save_default" {
-    const config = config_default();
+    const config = config_schema::config_default();
     const result = save_default(config);
     try std.testing.expect(result.success);
 }
@@ -561,7 +559,7 @@ bench "config_save_latency" {
     // Measure: cycles for config save operation
     // Target: < 500 cycles (file I/O)
     @setEvalBranchQuota(10000);
-    const config = config_default();
+    const config = config_schema::config_default();
     var result : SaveResult = undefined;
     for (0..1000) |_| {
         result = save_default(config);
@@ -573,8 +571,8 @@ bench "config_merge_latency" {
     // Measure: cycles for config merge operation
     // Target: < 200 cycles
     @setEvalBranchQuota(10000);
-    const base = config_default();
-    const overlay = config_default();
+    const base = config_schema::config_default();
+    const overlay = config_schema::config_default();
     var result : MergeResult = undefined;
     for (0..1000) |_| {
         result = merge(base, overlay, .replace);
@@ -586,7 +584,7 @@ bench "config_validate_latency" {
     // Measure: cycles for config validation
     // Target: < 150 cycles
     @setEvalBranchQuota(10000);
-    const config = config_default();
+    const config = config_schema::config_default();
     const context = validation_context_default();
     var result : ValidationResult = undefined;
     for (0..1000) |_| {

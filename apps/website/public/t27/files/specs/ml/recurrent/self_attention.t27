@@ -40,8 +40,8 @@ module SelfAttention;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(input: []const f32, weights: SelfAttentionWeights, state: SelfAttentionState, config: SelfAttentionConfig) → void
-    fn forward(input: []const f32, weights: SelfAttentionWeights, state: SelfAttentionState, config: SelfAttentionConfig) -> void {
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

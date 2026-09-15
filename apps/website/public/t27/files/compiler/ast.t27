@@ -1,10 +1,10 @@
-// ast.t27 -- Abstract Syntax Tree for TRI-27 Assembly
+// ast.t27 — Abstract Syntax Tree for TRI-27 Assembly
 // This file defines the AST structure used by the t27 compiler
 
 module ast {
-    // =====================================================================
-    // Token types -- enum of all token types (shared between lexer and parser)
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // Token types — enum of all token types (shared between lexer and parser)
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const TokenType = enum(u8) {
         // Punctuation
@@ -103,13 +103,13 @@ module ast {
         When = 96,
         Then = 97,
         Assert = 98,
-        KwAnd = 99,
+        And = 99,
         Expect = 100,
     };
 
-    // =====================================================================
-    // Node types -- enum of all AST node types
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // Node types — enum of all AST node types
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const NodeType = enum(u8) {
         // Program structure
@@ -164,9 +164,9 @@ module ast {
         RuleDecl = 69,           // rule declaration
     };
 
-    // =====================================================================
-    // AST Node -- base structure for all nodes
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // AST Node — base structure for all nodes
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const ASTNode = struct {
         node_type: NodeType,
@@ -175,9 +175,9 @@ module ast {
         source_file: []const u8,
     };
 
-    // =====================================================================
-    // Program -- root node
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // Program — root node
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const Program = struct {
         node: ASTNode,
@@ -192,9 +192,9 @@ module ast {
         imports: [][]const u8,          // Imported modules
     };
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Section structures
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const TestSection = struct {
         node: ASTNode,
@@ -211,9 +211,9 @@ module ast {
         benchmarks: []BenchDecl,
     };
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Constants and Data
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const ConstDef = struct {
         node: ASTNode,
@@ -233,14 +233,14 @@ module ast {
         label: []const u8,
     };
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Code and Instructions
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const CodeSection = struct {
         node: ASTNode,
         instructions: []Instruction,
-        labels: std.StringHashMap(u32),  // Label -> instruction index
+        labels: std.StringHashMap(u32),  // Label → instruction index
     };
 
     pub const Instruction = struct {
@@ -295,11 +295,11 @@ module ast {
         offset: i16,
     };
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec structures
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
-    // TestCase -- a single test case from .test section
+    // TestCase — a single test case from .test section
     // Format: ; test_name ; Verify: description ; Expected: expected outcome
     pub const TestCase = struct {
         node: ASTNode,
@@ -310,7 +310,7 @@ module ast {
         rationale: ?[]const u8,        // Additional rationale (optional)
     };
 
-    // InvariantDecl -- an invariant from .invariant section
+    // InvariantDecl — an invariant from .invariant section
     // Format: ; invariant_name ; Rationale: explanation
     pub const InvariantDecl = struct {
         node: ASTNode,
@@ -319,7 +319,7 @@ module ast {
         rationale: []const u8,          // "Rationale:" explanation
     };
 
-    // BenchDecl -- a benchmark from .bench section
+    // BenchDecl — a benchmark from .bench section
     // Format: ; bench_name ; Measure: what to measure ; Target: target value
     pub const BenchDecl = struct {
         node: ASTNode,
@@ -329,11 +329,11 @@ module ast {
         units: []const u8,              // Units of measurement (e.g., "cycles", "ns", "ops/sec")
     };
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // TDD-Inside-Spec high-level structures (spec-style)
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
-    // SpecDecl -- spec module header declaration
+    // SpecDecl — spec module header declaration
     // Format: spec <name>
     pub const SpecDecl = struct {
         node: ASTNode,
@@ -344,7 +344,7 @@ module ast {
         rules: []RuleDecl,             // rules in spec
     };
 
-    // TestBlock -- a complete test with given/when/then clauses
+    // TestBlock — a complete test with given/when/then clauses
     // Format: test <name> { given ... when ... then ... }
     pub const TestBlock = struct {
         node: ASTNode,
@@ -393,9 +393,9 @@ module ast {
         expression: []const u8,         // expectation expression
     };
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Type information for codegen
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const TypeInfo = struct {
         name: []const u8,
@@ -403,9 +403,9 @@ module ast {
         is_signed: bool,
     };
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Symbol table
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const Symbol = struct {
         name: []const u8,
@@ -444,9 +444,9 @@ module ast {
         }
     };
 
-    // =====================================================================
-    // Compiler context -- passed through all compilation stages
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // Compiler context — passed through all compilation stages
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const CompilerContext = struct {
         ast_root: Program,
@@ -518,9 +518,9 @@ module ast {
     }
 }
 
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 // TDD-Inside-Spec: Tests and Invariants for AST
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 test token_type_eof_value
     try std.testing.expect(@intFromEnum(ast.TokenType.EOF) == 0);

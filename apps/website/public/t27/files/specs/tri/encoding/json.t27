@@ -11,8 +11,8 @@ module TriJson;
     // ═══════════════════════════════════════════════════════════
 
     pub const JsonValue = struct {
-        type : JsonType,
-        data : *JsonValueData,
+        type : "JsonType",
+        data : "*JsonValueData",
     };
 
     pub const JsonType = struct {
@@ -30,18 +30,18 @@ module TriJson;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // parse(text: []const u8, allocator: std.mem.Allocator) → !JsonValue
-    fn parse(text: []const u8, allocator: std.mem.Allocator) -> !JsonValue {
+    // parse(text: []const u8) → void
+    fn parse(text: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // stringify(value: JsonValue, allocator: std.mem.Allocator) → ![]u8
-    fn stringify(value: JsonValue, allocator: std.mem.Allocator) -> ![]u8 {
+    // stringify(value: JsonValue) → void
+    fn stringify(value: JsonValue) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // get(obj: JsonObject, key: []const u8) → ?JsonValue
-    fn get(obj: JsonObject, key: []const u8) -> ?JsonValue {
+    // get(obj: JsonObject) → void
+    fn get(obj: JsonObject) -> void {
         // TODO: Implement from .tri spec
     }
 

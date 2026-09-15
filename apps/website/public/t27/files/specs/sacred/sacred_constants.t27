@@ -11,13 +11,10 @@ module SacredConstants;
     // ═══════════════════════════════════════════════════════════
 
     pub const SacredConstants = struct {
-        // Namespace struct — all members are comptime constants or pure functions
+        note : Namespace struct — all members are comptime constants or pure functions,
     };
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "sacred_constants_smoke_test" {
-        expect(true)
-    }

@@ -11,19 +11,19 @@ module TriRbTree;
     // ═══════════════════════════════════════════════════════════
 
     pub const RBTree = struct {
-        generic : K, V,
-        root : ?*RBNode,
-        size : usize,
+        generic : "K, V",
+        root : "?*RBNode",
+        size : "usize",
     };
 
     pub const RBNode = struct {
-        generic : K, V,
-        key : K,
-        value : V,
-        color : Color,
-        left : ?*RBNode,
-        right : ?*RBNode,
-        parent : ?*RBNode,
+        generic : "K, V",
+        key : "K",
+        value : "V",
+        color : "Color",
+        left : "?*RBNode",
+        right : "?*RBNode",
+        parent : "?*RBNode",
     };
 
     pub const Color = struct {
@@ -39,18 +39,18 @@ module TriRbTree;
         // TODO: Implement from .tri spec
     }
 
-    // insert(tree: *RBTree, key: K, value: V) → !void
-    fn insert(tree: *RBTree, key: K, value: V) -> !void {
+    // insert(tree: *RBTree) → void
+    fn insert(tree: *RBTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // find(tree: *const RBTree, key: K) → ?V
-    fn find(tree: *const RBTree, key: K) -> ?V {
+    // find(tree: *const RBTree) → void
+    fn find(tree: *const RBTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // delete(tree: *RBTree, key: K) → bool
-    fn delete(tree: *RBTree, key: K) -> bool {
+    // delete(tree: *RBTree) → void
+    fn delete(tree: *RBTree) -> void {
         // TODO: Implement from .tri spec
     }
 

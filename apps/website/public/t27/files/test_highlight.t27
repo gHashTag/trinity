@@ -18,7 +18,7 @@ pub const Trit = enum(i8) {
 ; Struct with arrays
 pub struct State {
     trits: [9]Trit,
-    buffer: [128]u8 = [_]u8{0} ** 128,
+    buffer: [_]u8{0} ** 128,
     phi: f64
 }
 
@@ -30,7 +30,7 @@ pub fn compute_phi(x: i8) f64 {
 
 ; Switch expression
 pub fn invert_trit(a: Trit) Trit {
-    return switch (a) {
+    switch (a) {
         .neg => .pos,
         .neu => .neu,
         .pos => .neg

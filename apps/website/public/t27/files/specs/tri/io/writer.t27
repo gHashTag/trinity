@@ -19,23 +19,23 @@ module TriWriter;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // pure(value: T) → Writer(W, T)
-    fn pure(value: T) -> Writer(W, T) {
+    // pure(value: T) → void
+    fn pure(value: T) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // tell(output: W) → Writer(W, void)
-    fn tell(output: W) -> Writer(W, void) {
+    // tell(output: W) → void
+    fn tell(output: W) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // listen(writer: Writer(W, T)) → Writer(W, struct { T, W })
-    fn listen(writer: Writer(W, T)) -> Writer(W, struct { T, W }) {
+    // listen(writer: Writer(W, T)) → void
+    fn listen(writer: Writer(W, T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // censor(fn: fn(W) -> W, writer: Writer(W, T)) → Writer(W, T)
-    fn censor(fn: fn(W) -> W, writer: Writer(W, T)) -> Writer(W, T) {
+    // censor(fn: Fn(W) -> W) → void
+    fn censor(fn: Fn(W) -> W) -> void {
         // TODO: Implement from .tri spec
     }
 

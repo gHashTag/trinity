@@ -10,6 +10,3 @@ module TriSpecParser;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "spec_parser_smoke_test" {
-        expect(true)
-    }

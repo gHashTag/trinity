@@ -11,9 +11,7 @@ module FacultyBoard;
     // ═══════════════════════════════════════════════════════════
 
     pub const Lang = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/faculty_board.tri:20. The converter dropped bare `- name` bullets.
-        enum : [ru, en],
+        variants : ,
     };
 
     pub const FacultySnapshot = struct {
@@ -34,15 +32,11 @@ module FacultyBoard;
     };
 
     pub const Agent = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/faculty_board.tri:44. The converter dropped bare `- name` bullets.
-        enum : [ralph, scholar, mu, oracle, swarm, linter],
+        variants : ,
     };
 
     pub const AgentStatusKind = struct {
-        // Recovered from the upstream spec this file was converted from:
-        // trinity-fpga specs/tri/faculty_board.tri:54. The converter dropped bare `- name` bullets.
-        enum : [up, down, frozen, missing],
+        variants : ,
     };
 
     pub const FacultyDelta = struct {
@@ -57,6 +51,3 @@ module FacultyBoard;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test "faculty_board_smoke_test" {
-        expect(true)
-    }

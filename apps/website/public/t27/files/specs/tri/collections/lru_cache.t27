@@ -11,38 +11,38 @@ module TriLruCache;
     // ═══════════════════════════════════════════════════════════
 
     pub const LRUCache = struct {
-        generic : K, V,
-        capacity : usize,
-        size : usize,
-        head : *Node,
-        tail : *Node,
-        map : HashMap(K, *Node),
+        generic : "K, V",
+        capacity : "usize",
+        size : "usize",
+        head : "*Node",
+        tail : "*Node",
+        map : "HashMap(K, *Node)",
     };
 
     pub const Node = struct {
-        generic : K, V,
-        key : K,
-        value : V,
-        prev : *Node,
-        next : *Node,
+        generic : "K, V",
+        key : "K",
+        value : "V",
+        prev : "*Node",
+        next : "*Node",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(capacity: usize) → LRUCache
-    fn init(capacity: usize) -> LRUCache {
+    // init(capacity: usize) → void
+    fn init(capacity: usize) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // get(cache: *LRUCache, key: K) → ?V
-    fn get(cache: *LRUCache, key: K) -> ?V {
+    // get(cache: *LRUCache) → void
+    fn get(cache: *LRUCache) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // put(cache: *LRUCache, key: K, value: V) → void
-    fn put(cache: *LRUCache, key: K, value: V) -> void {
+    // put(cache: *LRUCache) → void
+    fn put(cache: *LRUCache) -> void {
         // TODO: Implement from .tri spec
     }
 

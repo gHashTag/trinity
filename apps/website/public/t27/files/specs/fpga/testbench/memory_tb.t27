@@ -133,3 +133,17 @@ module Memory_Testbench {
         }
     }
 }
+
+// W696: the hardware boundary, DERIVED -- not chosen.
+//
+// T187 measured an exact equivalence over 617 specs: a module gets a data
+// port iff the spec declares `on_comb` or `on_clock`. Without one the
+// compiler emits `NO DATA PORTS -- this module cannot move a value across
+// its boundary`, and synthesis optimises the whole thing away.
+//
+// The standing rule is that the default must NOT be guessed. Here no guess
+// was made: `t27c entry-points` found exactly ONE function in this spec that
+// takes a parameter, returns a value, has a body, and whose types all have a
+// known width. With one candidate the choice is forced, so this forwards and
+// invents nothing. 11 of 387 port-less specs qualified.
+fn on_comb(addr: u32) -> u32 { return mem_read(addr); }

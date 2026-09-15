@@ -25,7 +25,7 @@ module Dense;
     };
 
     pub const ActivationType = struct {
-        enum_type : Enum,
+        enum_type : "enum",
         values : ,
         None : Auto,
         ReLU : Auto,
@@ -39,13 +39,13 @@ module Dense;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(input: []const f32, weights: []const f32, bias: []const f32, output: []f32, config: DenseConfig) → void
-    fn forward(input: []const f32, weights: []const f32, bias: []const f32, output: []f32, config: DenseConfig) -> void {
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // backward(grad_output: []const f32, input: []const f32, weights: []const f32, grad_input: []f32, grad_weights: []f32, grad_bias: []f32, config: DenseConfig) → void
-    fn backward(grad_output: []const f32, input: []const f32, weights: []const f32, grad_input: []f32, grad_weights: []f32, grad_bias: []f32, config: DenseConfig) -> void {
+    // backward(grad_output: []const f32) → void
+    fn backward(grad_output: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

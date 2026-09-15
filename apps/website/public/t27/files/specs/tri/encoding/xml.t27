@@ -11,23 +11,23 @@ module TriXml;
     // ═══════════════════════════════════════════════════════════
 
     pub const XmlNode = struct {
-        tag : []const u8,
-        attributes : [td.StringHashMap([]Const u8),
-        children : []XmlNode,
-        text : []const u8,
+        tag : "[]const u8",
+        attributes : "std.StringHashMap([]const u8)",
+        children : "[]XmlNode",
+        text : "[]const u8",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // parse(text: []const u8, allocator: std.mem.Allocator) → !XmlNode
-    fn parse(text: []const u8, allocator: std.mem.Allocator) -> !XmlNode {
+    // parse(text: []const u8) → void
+    fn parse(text: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // format(node: XmlNode, allocator: std.mem.Allocator) → ![]u8
-    fn format(node: XmlNode, allocator: std.mem.Allocator) -> ![]u8 {
+    // format(node: XmlNode) → void
+    fn format(node: XmlNode) -> void {
         // TODO: Implement from .tri spec
     }
 

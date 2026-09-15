@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/test_framework/verilog_bench_harness.t27
-// Ring 053 -- Verilog Bench Harness for Hardware-in-the-Loop Testing
+// Ring 053 — Verilog Bench Harness for Hardware-in-the-Loop Testing
 // Integration framework for testing GoldenFloat operations against Verilog RTL
 
 module VerilogBenchHarness {
     use test_framework::core::{TestResult, Verdict, ToleranceTier, EngineeringStatus};
     use numeric::golden_float::{GF16, GF32};
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 1. Verilog Integration Configuration
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Verilog simulation configuration
     struct VerilogConfig {
@@ -59,9 +59,9 @@ module VerilogBenchHarness {
         };
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 2. Test Vector Generation
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Test vector for Verilog simulation
     struct VerilogTestVector {
@@ -180,9 +180,9 @@ module VerilogBenchHarness {
         return vectors;
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 3. Verilog Test Execution
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Verilog simulation result
     struct VerilogSimulationResult {
@@ -265,9 +265,9 @@ module VerilogBenchHarness {
         return results;
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 4. Hardware-Software Co-verification
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Compare software and hardware results
     fn compare_sw_hw_results(sw_results: [TestResult], hw_results: [TestResult]) -> TestResult {
@@ -305,9 +305,9 @@ module VerilogBenchHarness {
         }
     }
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 5. Comprehensive Test Orchestration
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     // Full GoldenFloat hardware verification flow
     fn goldenfloat_hardware_verification() -> [TestResult] {
@@ -351,9 +351,9 @@ module VerilogBenchHarness {
         measure: milliseconds to run goldenfloat_hardware_verification()
         target: < 60000ms
     
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     // 6. TDD-Inside-Spec: Verilog Harness Tests
-    // -----------------------------------------------------
+    // ─────────────────────────────────────────────────────
     
     test verilog_config_creation
         given config = default_verilog_config()

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/math/zamolodchikov_e8.t27
-// Zamolodchikov E8 Integrable Field Theory -- Mass Spectrum
+// Zamolodchikov E8 Integrable Field Theory — Mass Spectrum
 // Direction A/E of PROJECT KEPLER->NEWTON
 //
 // In 1989, Zamolodchikov proved that the 2D Ising CFT perturbed by
 // a magnetic field possesses E8 symmetry with exactly 8 stable particles.
-// Their mass ratios are determined EXACTLY by E8 algebra -- not fitted.
+// Their mass ratios are determined EXACTLY by E8 algebra — not fitted.
 //
 // Key result: m2/m1 = phi (golden ratio). Also m6/m3 = m7/m4 = m8/m5 = phi.
 // This was confirmed experimentally by Coldea et al. (Science 2010)
@@ -20,8 +20,8 @@
 //
 // References:
 //   - Zamolodchikov, Int. J. Mod. Phys. A4 (1989) 4235
-//   - Coldea et al., Science 327 (2010) 177 -- experimental confirmation
-//   - Koca & Koca, arXiv:1204.4567 (2012) -- E8 Gosset circles
+//   - Coldea et al., Science 327 (2010) 177 — experimental confirmation
+//   - Koca & Koca, arXiv:1204.4567 (2012) — E8 Gosset circles
 //   - Fonseca & Zamolodchikov, J. Stat. Phys. 110 (2003) 527
 
 module ZamolodchikovE8 {
@@ -127,7 +127,7 @@ module ZamolodchikovE8 {
     //   MW:      n=162 = 2 * 3^4 (mark 2)
     //   MH:      n=135 = 5 * 3^3 (mark 5)
     //
-    // Non-matching: quark masses (n=199, 167, 149 -- primes)
+    // Non-matching: quark masses (n=199, 167, 149 — primes)
 
     struct MarkDecomposition {
         n: i64;

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/physics/zamolodchikov_4d_conjecture.t27
-// 4D Zamolodchikov Conjecture -- The Breakthrough Hypothesis
+// 4D Zamolodchikov Conjecture — The Breakthrough Hypothesis
 // Direction E of PROJECT KEPLER->NEWTON
 //
 // HYPOTHESIS: A 4D quantum field theory with E8 integrable structure
@@ -29,9 +29,9 @@
 //   - Zamolodchikov, Int. J. Mod. Phys. A4 (1989) 4235
 //   - Seiberg & Witten, Nucl. Phys. B426 (1994) 19-52
 //   - Ashwinkumar et al., arXiv:2309.14412 (2023)
-//   - Beisert et al., arXiv:1012.3982 (2010) -- N=4 SYM integrability review
-//   - Razamat et al., SciPost Phys. 8 (2020) 014 -- rank Q E-string with E8
-//   - Kaushik et al., arXiv:2206.06911 (2024) -- E8 x E8 unification
+//   - Beisert et al., arXiv:1012.3982 (2010) — N=4 SYM integrability review
+//   - Razamat et al., SciPost Phys. 8 (2020) 014 — rank Q E-string with E8
+//   - Kaushik et al., arXiv:2206.06911 (2024) — E8 x E8 unification
 
 module Zamolodchikov4DConjecture {
     use math::constants;

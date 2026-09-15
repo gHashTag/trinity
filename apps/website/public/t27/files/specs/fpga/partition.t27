@@ -81,10 +81,6 @@ module Partition {
         dsp48 : u32,
     }
 
-    // NB: the parameter is `mod_name`, not `module`. `module` is the keyword
-    // that opens a declaration, and a parameter carrying that name aborts the
-    // body parse -- silently, taking every declaration after it, tests
-    // included, out of the emitted module.
     fn assignment(mod_name: &str, fpga: u32, luts: u32, ffs: u32, bram: u32, dsp: u32) -> PartitionAssign {
         return PartitionAssign{
             .module_name = mod_name,
@@ -135,10 +131,7 @@ module Partition {
 
     // === Query ===
 
-    // Read-only over the array, so the parameter is const: `[InterFpgaLink]`
-    // emits a mutable slice, which no expression a test can write will coerce
-    // to, and the test below could not be called at all.
-    fn total_link_bandwidth(links: []const InterFpgaLink, count: u32) -> u32 {
+    fn total_link_bandwidth(links: [InterFpgaLink], count: u32) -> u32 {
         var total : u32 = 0;
         var i : u32 = 0;
         while i < count {
@@ -211,13 +204,9 @@ module Partition {
         then passed(r) == false
 
     test total_link_bandwidth
-        then total_link_bandwidth(&[_]InterFpgaLink{lvds_link(0, 1, 8), lvds_link(1, 2, 4)}, 2) == 12000
-
-    // count, not length, decides how much of the array is summed: the flat
-    // array + count convention means a short count must ignore the tail.
-    test total_link_bandwidth_respects_count
-        then total_link_bandwidth(&[_]InterFpgaLink{lvds_link(0, 1, 8), lvds_link(1, 2, 4)}, 1) == 8000
-        and total_link_bandwidth(&[_]InterFpgaLink{lvds_link(0, 1, 8), lvds_link(1, 2, 4)}, 0) == 0
+        given l1 = lvds_link(0, 1, 8)
+        and l2 = lvds_link(1, 2, 4)
+        then total_link_bandwidth([l1, l2], 2) == 12000
 
     test fpga_util_calc
         given n = arty_a7_node("fpga0")
@@ -238,50 +227,6 @@ module Partition {
     test validate_node_empty
         given n = FpgaNode{.name = "", .device = "xc7a100t", .luts = 0, .ffs = 0, .bram18 = 0, .dsp48 = 0, .io_pins = 0}
         then validate_node(n) > 0
-
-    // Both faults are counted, not just the first one found.
-    test validate_node_counts_every_fault
-        given n = FpgaNode{.name = "", .device = "xc7a100t", .luts = 0, .ffs = 0, .bram18 = 0, .dsp48 = 0, .io_pins = 0}
-        then validate_node(n) == 2
-
-    // The three ends of the utilisation range.
-    test fpga_util_endpoints
-        given n = arty_a7_node("fpga0")
-        then fpga_util(n, 0) == 0
-        and fpga_util(n, 63400) == 100
-
-    // A zero-LUT node would divide by zero; the guard returns 0 instead.
-    test fpga_util_zero_lut_node
-        given n = FpgaNode{.name = "empty", .device = "none", .luts = 0, .ffs = 0, .bram18 = 0, .dsp48 = 0, .io_pins = 0}
-        then fpga_util(n, 1000) == 0
-
-    // Exactly full is 0 remaining, not an underflow.
-    test fpga_remaining_exact_fit
-        given n = arty_a7_node("fpga0")
-        then fpga_remaining(n, 63400) == 0
-        and fpga_remaining(n, 0) == 63400
-
-    // used + remaining == capacity, for any load within capacity.
-    test fpga_remaining_complements_use
-        given n = arty_a7_node("fpga0")
-        then fpga_remaining(n, 20000) + 20000 == n.luts
-
-    // partition_fail carries the error count through and never reports passed.
-    test partition_fail_carries_count
-        given r = partition_fail(3)
-        then r.errors == 3
-        and r.balanced == false
-        and r.num_fpgas == 0
-        and passed(r) == false
-
-    // SERDES is 4 lanes at 6250 Mbps; the protocol tag separates it from LVDS.
-    test serdes_link_shape
-        given s = serdes_link(2, 3)
-        and l = lvds_link(2, 3, 4)
-        then s.width == 4
-        and s.fpga_a == 2
-        and s.fpga_b == 3
-        and s.protocol != l.protocol
 
     // === Invariants ===
 

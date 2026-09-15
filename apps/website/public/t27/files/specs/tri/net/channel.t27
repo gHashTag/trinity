@@ -20,18 +20,18 @@ module TriChannel;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // new_channel(capacity: usize) → Channel(T)
-    fn new_channel(capacity: usize) -> Channel(T) {
+    // new_channel(capacity: usize) → void
+    fn new_channel(capacity: usize) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // send(channel: Channel(T), value: T) → bool
-    fn send(channel: Channel(T), value: T) -> bool {
+    // send(channel: Channel(T)) → void
+    fn send(channel: Channel(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // recv(channel: Channel(T)) → Maybe(T)
-    fn recv(channel: Channel(T)) -> Maybe(T) {
+    // recv(channel: Channel(T)) → void
+    fn recv(channel: Channel(T)) -> void {
         // TODO: Implement from .tri spec
     }
 

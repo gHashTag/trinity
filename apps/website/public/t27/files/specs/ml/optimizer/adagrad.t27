@@ -32,13 +32,13 @@ module Adagrad;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init_state(num_params: u32) → AdagradState
-    fn init_state(num_params: u32) -> AdagradState {
+    // init_state(num_params: u32) → void
+    fn init_state(num_params: u32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // update(params: []f32, grads: []f32, state: AdagradState, config: AdagradConfig) → AdagradState
-    fn update(params: []f32, grads: []f32, state: AdagradState, config: AdagradConfig) -> AdagradState {
+    // update(params: []f32) → void
+    fn update(params: []f32) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -46,41 +46,15 @@ module Adagrad;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // init_state/update are unimplemented stubs returning void, so no
-    // accumulate-then-step behaviour can be exercised yet. What the module does
-    // declare -- the shipped defaults and the config/state shapes -- is tested
-    // here, including the two constraints that the invariants below only state
-    // in a comment.
+    test init_state_basic_case
+        given input = default_input()
+        when result = init_state(input)
+        then result != undefined
 
-    test default_hyperparameters_satisfy_the_declared_constraints
-        // Verify: adagrad_constraint_0 (learning_rate > 0) and
-        // adagrad_constraint_1 (epsilon > 0) hold for the shipped defaults
-        then (DEFAULT_LR > 0.0) and (DEFAULT_EPSILON > 0.0)
-
-    test default_learning_rate_is_one_hundredth
-        // Verify: the published default is pinned, not drifting
-        then @abs(DEFAULT_LR - 0.01) < 1e-9
-
-    test epsilon_is_negligible_against_the_step_size
-        // Verify: epsilon exists only to keep the sqrt denominator away from
-        // zero, so it must sit orders of magnitude under the learning rate
-        // rather than participating in it
-        then DEFAULT_EPSILON < DEFAULT_LR * 1e-4
-
-    test regularisation_is_off_by_default
-        // Verify: weight decay is opt-in, so plain Adagrad is the default
-        then DEFAULT_WEIGHT_DECAY == 0.0
-
-    test config_built_from_the_module_defaults_is_well_formed
-        // Verify: the three constants populate the three config fields
-        given cfg = AdagradConfig{.learning_rate=DEFAULT_LR,.epsilon=DEFAULT_EPSILON,.weight_decay=DEFAULT_WEIGHT_DECAY}
-        then (cfg.learning_rate > 0.0) and (cfg.epsilon > 0.0) and (cfg.weight_decay == 0.0)
-
-    test accumulator_holds_one_running_sum_per_parameter
-        // Verify: AdagradState carries a per-parameter accumulator, which is
-        // what makes the learning rate adaptive per coordinate
-        given state = AdagradState{.sum_squared_grad=@constCast(&[_]f32{0.0,0.0,0.0})}
-        then (state.sum_squared_grad.len == 3) and (state.sum_squared_grad[0] == 0.0)
+    test update_basic_case
+        given input = default_input()
+        when result = update(input)
+        then result != undefined
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

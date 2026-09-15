@@ -11,17 +11,17 @@ module TriBellmanFord;
     // ═══════════════════════════════════════════════════════════
 
     pub const Edge = struct {
-        from : usize,
-        to : usize,
-        weight : i64,
+        from : "usize",
+        to : "usize",
+        weight : "i64",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // shortest_path(edges: []Edge, vertex_count: usize, start: usize, allocator: std.mem.Allocator) → []i64
-    fn shortest_path(edges: []Edge, vertex_count: usize, start: usize, allocator: std.mem.Allocator) -> []i64 {
+    // shortest_path(edges: []Edge) → void
+    fn shortest_path(edges: []Edge) -> void {
         // TODO: Implement from .tri spec
     }
 

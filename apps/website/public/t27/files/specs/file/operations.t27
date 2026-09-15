@@ -1,14 +1,14 @@
 // specs/file/operations.t27
 // File Operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module FileOperations {
     use base::types;
     use file::schema;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Read Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // read reads a file's contents
     fn read(path: str, includeDiff: bool) -> Result<FileContent, FileError> {
@@ -35,9 +35,9 @@ module FileOperations {
         // Implementation: Get file metadata
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Write Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // write writes content to a file
     fn write(path: str, content: str) -> Result<void, FileError> {
@@ -69,14 +69,14 @@ module FileOperations {
         // Implementation: Insert content at line
     }
 
-    // delete_lines removes a line range from a file
-    fn delete_lines(path: str, startLine: u32, endLine: u32) -> Result<void, FileError> {
+    // delete removes lines from a file
+    fn delete(path: str, startLine: u32, endLine: u32) -> Result<void, FileError> {
         // Implementation: Delete line range
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Directory Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // list lists contents of a directory
     fn list(path: str) -> Result<[FileNode], FileError> {
@@ -113,9 +113,9 @@ module FileOperations {
         // Implementation: Delete file
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Ignore Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // is_ignored checks if a path is ignored
     fn is_ignored(path: str, rules: IgnoreRules) -> bool {
@@ -132,9 +132,9 @@ module FileOperations {
         // Implementation: Add ignore pattern
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Path Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // normalize normalizes a file path
     fn normalize(path: str) -> str {
@@ -176,9 +176,9 @@ module FileOperations {
         // Implementation: Resolve path relative to base
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Content Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // detect_type detects content type
     fn detect_type(path: str, content: str) -> ContentType {
@@ -195,9 +195,9 @@ module FileOperations {
         // Implementation: Truncate and add ellipsis
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "file_type_values" {
         assert(FileType::File as u32 == 0);
@@ -329,27 +329,7 @@ module FileOperations {
         assert(DEFAULT_READ_CHUNK == 8192);
     }
 
-    test "file_content_text" {
-        var content = FileContent {
-            type = ContentType::Text,
-            content = "hello",
-            diff = null,
-            mimeType = "text/plain",
-            encoding = null,
-            lineCount = 1,
-        };
-        assert(is_text(content.type));
-    }
 
-    test "file_change_creation" {
-        var change = FileChange {
-            path = "test.txt",
-            status = FileStatus::Modified,
-            additions = 1,
-            deletions = 0,
-        };
-        assert(change.status == FileStatus::Modified);
-    }
 
     test "watcher_handle_creation" {
         var handle = WatcherHandle {
@@ -398,17 +378,7 @@ module FileOperations {
         assert(options.glob?.len == 1);
     }
 
-    test "content_type_values" {
-        assert(ContentType::Text as u32 == 0);
-        assert(ContentType::Binary as u32 == 1);
-        assert(ContentType::Image as u32 == 2);
-    }
 
-    test "file_status_values" {
-        assert(FileStatus::Added as u32 == 0);
-        assert(FileStatus::Deleted as u32 == 1);
-        assert(FileStatus::Modified as u32 == 2);
-    }
 
     test "is_text_true" {
         assert(is_text(ContentType::Text));

@@ -12,36 +12,36 @@ module TriFenwick;
 
     pub const FenwickTree = struct {
         data : []i64,
-        size : usize,
-        allocator : std.mem.Allocator,
+        size : "usize",
+        allocator : "std.mem.Allocator",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(allocator: std.mem.Allocator, size: usize) → FenwickTree
-    fn init(allocator: std.mem.Allocator, size: usize) -> FenwickTree {
+    // init(allocator: std.mem.Allocator) → void
+    fn init(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // build(allocator: std.mem.Allocator, values: []const i64) → FenwickTree
-    fn build(allocator: std.mem.Allocator, values: []const i64) -> FenwickTree {
+    // build(allocator: std.mem.Allocator) → void
+    fn build(allocator: std.mem.Allocator) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // query(tree: *FenwickTree, index: usize) → i64
-    fn query(tree: *FenwickTree, index: usize) -> i64 {
+    // query(tree: *FenwickTree) → void
+    fn query(tree: *FenwickTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // range_query(tree: *FenwickTree, left: usize, right: usize) → i64
-    fn range_query(tree: *FenwickTree, left: usize, right: usize) -> i64 {
+    // range_query(tree: *FenwickTree) → void
+    fn range_query(tree: *FenwickTree) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // update(tree: *FenwickTree, index: usize, delta: i64) → void
-    fn update(tree: *FenwickTree, index: usize, delta: i64) -> void {
+    // update(tree: *FenwickTree) → void
+    fn update(tree: *FenwickTree) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -54,47 +54,33 @@ module TriFenwick;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // Every function above is still `TODO: Implement`, so each one compiles
-    // to `@panic("not yet implemented")`: calling one aborts the test binary.
-    // What this module does state is the layout of FenwickTree, the
-    // least-significant-bit navigation named in the header, and the signature
-    // of each operation, and that is what these tests hold to.
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
 
-    test fenwick_stores_signed_partial_sums_in_a_flat_buffer
-        given cells = @FieldType(FenwickTree, "data")
-        then cells == []i64
-        and @FieldType(FenwickTree, "size") == usize
-        and @FieldType(FenwickTree, "allocator") == std.mem.Allocator
+    test build_basic_case
+        given input = default_input()
+        when result = build(input)
+        then result != undefined
 
-    // The header's rule: an index walks the tree by its lowest set bit,
-    // `i & -i`. Query subtracts it, update adds it, and from index 12
-    // (0b1100) that walk is 12 -> 8 -> 0 downward and 12 -> 16 upward.
-    test lowest_set_bit_of_twelve_is_four
-        given i = @as(i64, 12)
-        then i & -i == 4
+    test query_basic_case
+        given input = default_input()
+        when result = query(input)
+        then result != undefined
 
-    test query_walk_from_twelve_strips_bits_down_to_zero
-        given i = @as(i64, 12)
-        and a = i - (i & -i)
-        then a == 8
-        and a - (a & -a) == 0
+    test range_query_basic_case
+        given input = default_input()
+        when result = range_query(input)
+        then result != undefined
 
-    test update_walk_from_twelve_carries_up_to_sixteen
-        given i = @as(i64, 12)
-        then i + (i & -i) == 16
+    test update_basic_case
+        given input = default_input()
+        when result = update(input)
+        then result != undefined
 
-    test init_and_build_take_an_allocator_and_return_nothing
-        given f = init
-        then @TypeOf(f) == fn (std.mem.Allocator) void
-        and @TypeOf(build) == fn (std.mem.Allocator) void
-
-    // query, range_query and update are declared with the tree alone: no
-    // index, no range bounds, no delta. These record the signatures as they
-    // stand, not the ones the operations need.
-    test query_range_query_update_and_deinit_take_one_tree_pointer
-        given f = query
-        then @TypeOf(f) == fn (*FenwickTree) void
-        and @TypeOf(range_query) == fn (*FenwickTree) void
-        and @TypeOf(update) == fn (*FenwickTree) void
-        and @TypeOf(deinit) == fn (*FenwickTree) void
+    test deinit_basic_case
+        given input = default_input()
+        when result = deinit(input)
+        then result != undefined
 

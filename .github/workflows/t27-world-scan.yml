@@ -11,10 +11,15 @@
 # signal-health-self.yml commits its numbers.
 #
 # Publishing stays with deploy-site.yml, manual on purpose: content is approved
-# before it goes out. The five founding sources are not refreshed here either;
-# they come from a local t27 checkout that carries the teaching course on a
-# branch not yet on t27 master (see sync-t27-specs.mjs), and a re-vendor from
-# GitHub alone would delete it from the site.
+# before it goes out.
+#
+# The five founding sources ARE refreshed here now. They used to be excluded
+# because sync-t27-specs.mjs read a working copy at /Users/playom/t27, which no
+# runner has -- so the repository holding two thirds of the corpus was the one
+# repository this job could not touch, and gHashTag/t27 drifted 540 specs behind
+# its own master while this job ran nightly. It reads GitHub now, and the
+# teaching course, which lives on a branch never merged to master, comes in
+# through a named overlay ref that contributes only the paths master lacks.
 name: t27 world scan
 
 on:
@@ -24,6 +29,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   scan:
@@ -50,6 +56,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # The founding sources first, because this writes the manifest the
+          # vendor step then merges discovered worlds into. It used to be left
+          # out of this job on the grounds that it read a working copy on one
+          # developer's laptop -- which it no longer does, and which is why
+          # gHashTag/t27 sat 540 specs behind its own master while a daily job
+          # claimed to keep the catalog current.
+          node scripts/sync-t27-specs.mjs
           npm run discover -- scan --out "$RUNNER_TEMP/discovery.json"
           npm run discover -- vendor --report "$RUNNER_TEMP/discovery.json"
           npm run core -- index
@@ -79,9 +92,19 @@ jobs:
           npm run check:tools
           npm run check:docs
 
-      - name: Commit if the catalog changed
+      # Ruleset 23148303 ("T27 mandatory work report") requires the status check
+      # "T27 work report" on refs/heads/main and lists no bypass actors, so the
+      # `git push` this step used to end with is rejected with GH013 -- the same
+      # answer a person gets. The way in is the way everyone else takes: a branch,
+      # a pull request, and a report the validator accepts. The report is
+      # generated from the artifacts this run just wrote (scripts/
+      # catalog-work-report.mjs), so it states the refresh that happened rather
+      # than a template.
+      - name: Open or update the catalog pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          set -uo pipefail
+          set -euo pipefail
           git config user.name  't27 world scan'
           git config user.email 'admin@t27.ai'
           git add public/t27 public/skills public/crons public/agents public/tools public/functions public/docs qa/language-exceptions.json
@@ -91,5 +114,27 @@ jobs:
           fi
           N=$(node -e "const m=require('./public/t27/manifest.json');console.log(m.repos.length+' repositories, '+m.specCount+' specs')")
           git commit -q -m "t27 worlds: refresh the catalog ($N)"
-          git push -q
-          echo "- committed: $N" >> "$GITHUB_STEP_SUMMARY"
+          BRANCH=bot/t27-world-scan
+          # The bot's own branch, and only ever this job writes it -- so the
+          # lease is against the copy this run started from, not against a human.
+          git push -q --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+          SHA=$(git rev-parse HEAD)
+          node scripts/catalog-work-report.mjs --head-sha "$SHA" --out "$RUNNER_TEMP/catalog-report.md"
+          PR=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
+          if [ -n "$PR" ]; then
+            # Yesterday's refresh is still open: move it to today's commit and
+            # today's numbers rather than opening a second one beside it.
+            gh pr edit "$PR" --title "t27 worlds: refresh the catalog ($N)" --body-file "$RUNNER_TEMP/catalog-report.md"
+          else
+            gh pr create --base main --head "$BRANCH" \
+              --title "t27 worlds: refresh the catalog ($N)" \
+              --body-file "$RUNNER_TEMP/catalog-report.md"
+            PR=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
+          fi
+          echo "- pushed $BRANCH and opened/updated PR #$PR: $N" >> "$GITHUB_STEP_SUMMARY"
+          # Auto-merge lands it once "T27 work report" goes green. Without the
+          # repository setting it stays an open pull request for a person to
+          # merge, which is a worse outcome but not a failed run.
+          if ! gh pr merge "$PR" --squash --auto; then
+            echo "- auto-merge unavailable; PR #$PR is open and waiting" >> "$GITHUB_STEP_SUMMARY"
+          fi

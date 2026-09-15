@@ -10,8 +10,8 @@ module KlDivergence;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(p: []const f32, q: []const f32) → f32
-    fn forward(p: []const f32, q: []const f32) -> f32 {
+    // forward(p: []const f32) → void
+    fn forward(p: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

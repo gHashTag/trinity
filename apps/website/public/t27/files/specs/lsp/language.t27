@@ -16,52 +16,52 @@ use tritype-base::usize;
 // ============================================================================
 
 /// t27 language ID
-pub const LANG_T27 : []const u8 = "t27";
+pub const LANG_T27 : [3]u8 = "t27";
 
 /// Zig language ID
-pub const LANG_ZIG : []const u8 = "zig";
+pub const LANG_ZIG : [4]u8 = "zig";
 
 /// Python language ID
-pub const LANG_PYTHON : []const u8 = "python";
+pub const LANG_PYTHON : [6]u8 = "python";
 
 /// JavaScript language ID
-pub const LANG_JAVASCRIPT : []const u8 = "javascript";
+pub const LANG_JAVASCRIPT : [10]u8 = "javascript";
 
 /// TypeScript language ID
-pub const LANG_TYPESCRIPT : []const u8 = "typescript";
+pub const LANG_TYPESCRIPT : [10]u8 = "typescript";
 
 /// Markdown language ID
-pub const LANG_MARKDOWN : []const u8 = "markdown";
+pub const LANG_MARKDOWN : [8]u8 = "markdown";
 
 /// JSON language ID
-pub const LANG_JSON : []const u8 = "json";
+pub const LANG_JSON : [4]u8 = "json";
 
 /// YAML language ID
-pub const LANG_YAML : []const u8 = "yaml";
+pub const LANG_YAML : [4]u8 = "yaml";
 
 /// Default file extension for t27
-pub const EXT_T27 : []const u8 = ".t27";
+pub const EXT_T27 : [4]u8 = ".t27";
 
 /// File extension for Zig
-pub const EXT_ZIG : []const u8 = ".zig";
+pub const EXT_ZIG : [4]u8 = ".zig";
 
 /// File extension for Python
-pub const EXT_PYTHON : []const u8 = ".py";
+pub const EXT_PYTHON : [3]u8 = ".py";
 
 /// File extension for JavaScript
-pub const EXT_JAVASCRIPT : []const u8 = ".js";
+pub const EXT_JAVASCRIPT : [3]u8 = ".js";
 
 /// File extension for TypeScript
-pub const EXT_TYPESCRIPT : []const u8 = ".ts";
+pub const EXT_TYPESCRIPT : [3]u8 = ".ts";
 
 /// File extension for Markdown
-pub const EXT_MARKDOWN : []const u8 = ".md";
+pub const EXT_MARKDOWN : [3]u8 = ".md";
 
 /// File extension for JSON
-pub const EXT_JSON : []const u8 = ".json";
+pub const EXT_JSON : [5]u8 = ".json";
 
 /// File extension for YAML
-pub const EXT_YAML : []const u8 = ".yaml";
+pub const EXT_YAML : [4]u8 = ".yaml";
 
 // ============================================================================
 // Types
@@ -69,10 +69,10 @@ pub const EXT_YAML : []const u8 = ".yaml";
 
 /// Language information
 pub const LanguageInfo = struct {
-    id : []const u8,
-    extensions : []const []const u8,
-    aliases : []const []const u8,
-    mime_types : []const []const u8,
+    id : []u8,
+    extensions : [][]u8,
+    aliases : [][]u8,
+    mime_types : [][]u8,
     configuration : LanguageConfiguration,
 };
 
@@ -81,20 +81,20 @@ pub const LanguageConfiguration = struct {
     comments : CommentConfiguration,
     brackets : BracketPair,
     indentation : Indentation,
-    word_pattern : []const u8,
+    word_pattern : []u8,
 };
 
 /// Comment configuration
 pub const CommentConfiguration = struct {
-    line_comment : []const u8,
-    block_comment_start : []const u8,
-    block_comment_end : []const u8,
+    line_comment : []u8,
+    block_comment_start : []u8,
+    block_comment_end : []u8,
 };
 
 /// Bracket pair
 pub const BracketPair = struct {
-    open : []const u8,
-    close : []const u8,
+    open : []u8,
+    close : []u8,
 };
 
 /// Indentation rules
@@ -123,21 +123,21 @@ pub const LanguageFeature = enum(u8) {
 
 /// File association
 pub const FileAssociation = struct {
-    pattern : []const u8,
-    language_id : []const u8,
+    pattern : []u8,
+    language_id : []u8,
 };
 
 /// Language server capability for specific language
 pub const LanguageServerCapability = struct {
-    language_id : []const u8,
-    features : []const LanguageFeature,
+    language_id : []u8,
+    features : []LanguageFeature,
 };
 
 /// Symbol information
 pub const SymbolInfo = struct {
-    name : []const u8,
+    name : []u8,
     kind : SymbolKind,
-    language_id : []const u8,
+    language_id : []u8,
 };
 
 /// Symbol kind
@@ -159,14 +159,14 @@ pub const SymbolKind = enum(u8) {
 
 /// Keyword set for language
 pub const KeywordSet = struct {
-    keywords : []const []const u8,
-    language_id : []const u8,
+    keywords : [][]u8,
+    language_id : []u8,
 };
 
 /// Completion item template for language
 pub const CompletionTemplate = struct {
-    label : []const u8,
-    insert_text : []const u8,
+    label : []u8,
+    insert_text : []u8,
     kind : SymbolKind,
 };
 
@@ -178,9 +178,9 @@ pub const CompletionTemplate = struct {
 pub fn language_info_t27() LanguageInfo {
     return LanguageInfo{
         .id = LANG_T27,
-        .extensions = &[_][]const u8{ EXT_T27 },
-        .aliases = &[_][]const u8{ "ternary" },
-        .mime_types = &[_][]const u8{ "text/x-t27" },
+        .extensions = &[_][]u8{ EXT_T27 },
+        .aliases = &[_][]u8{ "ternary" },
+        .mime_types = &[_][]u8{ "text/x-t27" },
         .configuration = language_configuration_default(),
     };
 }
@@ -189,9 +189,9 @@ pub fn language_info_t27() LanguageInfo {
 pub fn language_info_python() LanguageInfo {
     return LanguageInfo{
         .id = LANG_PYTHON,
-        .extensions = &[_][]const u8{ EXT_PYTHON },
-        .aliases = &[_][]const u8{ "py", "python" },
-        .mime_types = &[_][]const u8{ "text/x-python" },
+        .extensions = &[_][]u8{ EXT_PYTHON },
+        .aliases = &[_][]u8{ "py", "python" },
+        .mime_types = &[_][]u8{ "text/x-python" },
         .configuration = language_configuration_default(),
     };
 }
@@ -200,9 +200,9 @@ pub fn language_info_python() LanguageInfo {
 pub fn language_info_zig() LanguageInfo {
     return LanguageInfo{
         .id = LANG_ZIG,
-        .extensions = &[_][]const u8{ EXT_ZIG },
-        .aliases = &[_][]const u8{ "zig" },
-        .mime_types = &[_][]const u8{ "text/x-zig" },
+        .extensions = &[_][]u8{ EXT_ZIG },
+        .aliases = &[_][]u8{ "zig" },
+        .mime_types = &[_][]u8{ "text/x-zig" },
         .configuration = language_configuration_default(),
     };
 }
@@ -222,7 +222,7 @@ pub fn language_configuration_default() LanguageConfiguration {
 }
 
 /// Create file association
-pub fn file_association_create(pattern: []const u8, language_id: []const u8) FileAssociation {
+pub fn file_association_create(pattern: []u8, language_id: []u8) FileAssociation {
     return FileAssociation{
         .pattern = pattern,
         .language_id = language_id,
@@ -230,16 +230,16 @@ pub fn file_association_create(pattern: []const u8, language_id: []const u8) Fil
 }
 
 /// Get language ID from file extension
-pub fn language_id_from_extension(ext: []const u8) []const u8 {
-    if (std.mem.eql(u8, ext, EXT_T27)) {
+pub fn language_id_from_extension(ext: []u8) []u8 {
+    if (ext == EXT_T27) {
         return LANG_T27;
-    } else if (std.mem.eql(u8, ext, EXT_PYTHON)) {
+    } else if (ext == EXT_PYTHON) {
         return LANG_PYTHON;
-    } else if (std.mem.eql(u8, ext, EXT_ZIG)) {
+    } else if (ext == EXT_ZIG) {
         return LANG_ZIG;
-    } else if (std.mem.eql(u8, ext, EXT_JAVASCRIPT)) {
+    } else if (ext == EXT_JAVASCRIPT) {
         return LANG_JAVASCRIPT;
-    } else if (std.mem.eql(u8, ext, EXT_TYPESCRIPT)) {
+    } else if (ext == EXT_TYPESCRIPT) {
         return LANG_TYPESCRIPT;
     } else {
         return "text";
@@ -247,7 +247,7 @@ pub fn language_id_from_extension(ext: []const u8) []const u8 {
 }
 
 /// Create language server capability
-pub fn language_server_capability_create(language_id: []const u8) LanguageServerCapability {
+pub fn language_server_capability_create(language_id: []u8) LanguageServerCapability {
     return LanguageServerCapability{
         .language_id = language_id,
         .features = &[_]LanguageFeature{
@@ -257,7 +257,7 @@ pub fn language_server_capability_create(language_id: []const u8) LanguageServer
 }
 
 /// Create symbol info
-pub fn symbol_info_create(name: []const u8, kind: SymbolKind, language_id: []const u8) SymbolInfo {
+pub fn symbol_info_create(name: []u8, kind: SymbolKind, language_id: []u8) SymbolInfo {
     return SymbolInfo{
         .name = name,
         .kind = kind,
@@ -266,7 +266,7 @@ pub fn symbol_info_create(name: []const u8, kind: SymbolKind, language_id: []con
 }
 
 /// Create completion template
-pub fn completion_template_create(label: []const u8, insert_text: []const u8, kind: SymbolKind) CompletionTemplate {
+pub fn completion_template_create(label: []u8, insert_text: []u8, kind: SymbolKind) CompletionTemplate {
     return CompletionTemplate{
         .label = label,
         .insert_text = insert_text,
@@ -275,17 +275,17 @@ pub fn completion_template_create(label: []const u8, insert_text: []const u8, ki
 }
 
 /// Check if extension is t27
-pub fn is_t27_extension(ext: []const u8) bool {
-    return std.mem.eql(u8, ext, EXT_T27);
+pub fn is_t27_extension(ext: []u8) bool {
+    return ext == EXT_T27;
 }
 
 /// Check if language is t27
-pub fn is_t27_language(language_id: []const u8) bool {
-    return std.mem.eql(u8, language_id, LANG_T27);
+pub fn is_t27_language(language_id: []u8) bool {
+    return language_id == LANG_T27;
 }
 
 /// Get feature string
-pub fn feature_to_string(feature: LanguageFeature) []const u8 {
+pub fn feature_to_string(feature: LanguageFeature) []u8 {
     return switch (feature) {
         .completion => "completion",
         .hover => "hover",
@@ -305,7 +305,7 @@ pub fn feature_to_string(feature: LanguageFeature) []const u8 {
 }
 
 /// Get symbol kind string
-pub fn symbol_kind_to_string(kind: SymbolKind) []const u8 {
+pub fn symbol_kind_to_string(kind: SymbolKind) []u8 {
     return switch (kind) {
         .file => "file",
         .module => "module",
@@ -339,11 +339,7 @@ test "lsp_language_info_python" {
 
 test "lsp_language_info_zig" {
     const info = language_info_zig();
-    // 3, not 4. LANG_ZIG is "zig" and its declared type was [4]u8 -- four
-    // slots for three characters. The assertion inherited the 4 from the
-    // declaration. Its two siblings of identical shape, expecting 3 for "t27"
-    // and 6 for "python", passed all along.
-    try std.testing.expectEqual(@as(usize, info.id.len), @as(usize, 3));
+    try std.testing.expectEqual(@as(usize, info.id.len), @as(usize, 4));
 }
 
 test "lsp_language_configuration_default" {
@@ -441,14 +437,14 @@ invariant completion_template_has_label {
 
 invariant feature_in_range {
     // LanguageFeature is in [0, 13]
-    @compileAssert(@intFromEnum(LanguageFeature.completion) == 0);
-    @compileAssert(@intFromEnum(LanguageFeature.rename) == 13);
+    @compileAssert(@as(u8, LanguageFeature.completion) == 0);
+    @compileAssert(@as(u8, LanguageFeature.rename) == 13);
 }
 
 invariant symbol_kind_in_range {
     // SymbolKind is in [0, 12]
-    @compileAssert(@intFromEnum(SymbolKind.file) == 0);
-    @compileAssert(@intFromEnum(SymbolKind.type) == 12);
+    @compileAssert(@as(u8, SymbolKind.file) == 0);
+    @compileAssert(@as(u8, SymbolKind.type) == 12);
 }
 
 invariant comment_configuration_valid {
@@ -496,7 +492,7 @@ bench "lsp_language_id_from_extension_latency" {
     // Measure: cycles for language ID lookup
     // Target: < 50 cycles
     @setEvalBranchQuota(10000);
-    var result : []const u8 = undefined;
+    var result : []u8 = undefined;
     for (0..1000) |_| {
         result = language_id_from_extension(EXT_T27);
     }
@@ -507,7 +503,7 @@ bench "lsp_feature_to_string_latency" {
     // Measure: cycles for feature to string conversion
     // Target: < 30 cycles
     @setEvalBranchQuota(10000);
-    var result : []const u8 = undefined;
+    var result : []u8 = undefined;
     for (0..1000) |_| {
         result = feature_to_string(.completion);
     }
@@ -518,7 +514,7 @@ bench "lsp_symbol_kind_to_string_latency" {
     // Measure: cycles for symbol kind to string conversion
     // Target: < 30 cycles
     @setEvalBranchQuota(10000);
-    var result : []const u8 = undefined;
+    var result : []u8 = undefined;
     for (0..1000) |_| {
         result = symbol_kind_to_string(.function);
     }

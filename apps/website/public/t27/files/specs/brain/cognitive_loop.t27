@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-; cognitive_loop.t27 -- sense -> evaluate -> decide -> act -> consolidate (spec-first)
+; cognitive_loop.t27 — sense → evaluate → decide → act → consolidate (spec-first)
 ; Phase timing contract lives in phi_timing.t27; this module holds loop identity constants.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 

@@ -30,8 +30,8 @@ module Adam;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // step(grads: []const f32, params: []f32, m: []f32, v: []f32, t: f32, lr: f32) → void
-    fn step(grads: []const f32, params: []f32, m: []f32, v: []f32, t: f32, lr: f32) -> void {
+    // step(grads: []const f32) → void
+    fn step(grads: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

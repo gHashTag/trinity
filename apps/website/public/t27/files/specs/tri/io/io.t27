@@ -19,23 +19,23 @@ module TriIo;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // pure(value: T) → IO(T)
-    fn pure(value: T) -> IO(T) {
+    // pure(value: T) → void
+    fn pure(value: T) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // map(io: IO(T), fn: fn(T) -> U) → IO(U)
-    fn map(io: IO(T), fn: fn(T) -> U) -> IO(U) {
+    // map(io: IO(T)) → void
+    fn map(io: IO(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // bind(io: IO(T), fn: fn(T) -> IO(U)) → IO(U)
-    fn bind(io: IO(T), fn: fn(T) -> IO(U)) -> IO(U) {
+    // bind(io: IO(T)) → void
+    fn bind(io: IO(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // perform(io: IO(T)) → T
-    fn perform(io: IO(T)) -> T {
+    // perform(io: IO(T)) → void
+    fn perform(io: IO(T)) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -43,24 +43,23 @@ module TriIo;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test a_pure_value_is_not_yet_performed
-        // Verify: the tag that makes the effect type useful -- pure() wraps a
-        // value without running anything, so performed is still false
-        given io = IO(u32){ .performed = false, .value = 7 }
-        then io.performed == false and io.value == 7
+    test pure_basic_case
+        given input = default_input()
+        when result = pure(input)
+        then result != undefined
 
-    test performed_flag_is_the_only_difference_after_perform
-        // Verify: perform() flips the tag and leaves the payload alone -- two
-        // IO values over the same payload differ only in `performed`
-        given pending = IO(u32){ .performed = false, .value = 1 }
-        and done = IO(u32){ .performed = true, .value = 1 }
-        then pending.value == done.value and pending.performed != done.performed
+    test map_basic_case
+        given input = default_input()
+        when result = map(input)
+        then result != undefined
 
-    test io_is_generic_over_the_payload_type
-        // Verify: IO(T) threads T into `value`, so IO(bool) and IO(u32) are
-        // distinct types rather than one erased box
-        given io = IO(bool){ .performed = true, .value = true }
-        when payload_type = @TypeOf(io.value)
-        and distinct = IO(bool) != IO(u32)
-        then distinct and payload_type == bool
+    test bind_basic_case
+        given input = default_input()
+        when result = bind(input)
+        then result != undefined
+
+    test perform_basic_case
+        given input = default_input()
+        when result = perform(input)
+        then result != undefined
 

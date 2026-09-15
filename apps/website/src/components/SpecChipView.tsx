@@ -10,10 +10,12 @@
 // compiler default", and every field carries its own width for that reason.
 //
 // This is NOT a placed-and-routed netlist, and it is not synthesis output. The
-// .t27 -> Verilog backend currently emits module shells: across the 676-spec
-// corpus, 361 produce Verilog that yosys accepts, and every one of them yields
-// 0 LUTs and 0 flip-flops -- the 4-8 cells that appear are IBUF/OBUF pads. So
-// there is no cell placement to show, and drawing one would be an invention.
+// .t27 -> Verilog backend emits module shells: in the yosys sweep of 2026-09-06,
+// across a corpus of 676 specs, 361 produced Verilog that yosys accepts, and
+// every one of them yielded 0 LUTs and 0 flip-flops -- the 4-8 cells that appear
+// are IBUF/OBUF pads. The corpus is larger now and the sweep has not been re-run,
+// so those are the last measured numbers and not a count of today's corpus. There
+// is no cell placement to show, and drawing one would be an invention.
 //
 // What IS drawn is the datapath the declarations force: how many bit lanes each
 // value needs, where a struct's fields sit relative to one another, and which

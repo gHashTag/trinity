@@ -24,7 +24,7 @@ module CrossEntropy;
     };
 
     pub const ReductionType = struct {
-        enum_type : Enum,
+        enum_type : "enum",
         values : ,
         Mean : Auto,
         Sum : Auto,
@@ -35,13 +35,13 @@ module CrossEntropy;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(predictions: []const f32, target: []const f32, output: []f32, config: CrossEntropyConfig) → void
-    fn forward(predictions: []const f32, target: []const f32, output: []f32, config: CrossEntropyConfig) -> void {
+    // forward(predictions: []const f32) → void
+    fn forward(predictions: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // backward(grad_output: []const f32, predictions: []const f32, target: []const f32, grad_input: []f32, config: CrossEntropyConfig) → void
-    fn backward(grad_output: []const f32, predictions: []const f32, target: []const f32, grad_input: []f32, config: CrossEntropyConfig) -> void {
+    // backward(grad_output: []const f32) → void
+    fn backward(grad_output: []const f32) -> void {
         // TODO: Implement from .tri spec
     }
 

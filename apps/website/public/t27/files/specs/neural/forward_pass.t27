@@ -8,7 +8,7 @@
 module forward_pass;
 
 import numeric::gf16;
-import tritype-base::Trit;
+import tritype::Trit;
 import vsa::vsa_core::{bind, unbind, bundle2, bundle3, permute, cosine_similarity};
 
 // ============================================================================
@@ -120,7 +120,7 @@ pub fn single_head_attention(
 }
 
 /// Multi-head forward pass with residual connection
-/// Pipeline: position -> 3-head attention -> bundle3 -> FFN -> residual
+/// Pipeline: position → 3-head attention → bundle3 → FFN → residual
 pub fn forward_pass_multi_head(
     context: &Context,
     roles: &Roles,
@@ -162,7 +162,7 @@ pub fn summarize_context(context: &Context, dim: usize) -> Hypervector {
 }
 
 /// Direct forward pass: just bind(context_summary, role)
-/// Only 1 bind operation -> clean signal
+/// Only 1 bind operation → clean signal
 pub fn forward_pass_direct(
     context: &Context,
     role: &Hypervector,

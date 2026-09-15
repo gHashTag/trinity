@@ -3,8 +3,8 @@
 // Trinity JIT Compiler
 // Compiles VSA operations to native machine code
 //
-// 01234 567891011: V = n 12 3^k 13 14^m 15 16^p 17 e^q
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
+// φ² + 1/φ² = 3 | TRINITY
 //
 // JIT (Just-In-Time) compiler for VSA operations:
 // - Compiles high-level VSA operations to native x86-64 machine code
@@ -351,7 +351,7 @@ pub const JitCompiler = struct {
     }
 
     /// Compile dot product operation
-    /// Generates native code for: return Sigma(a[i] * b[i])
+    /// Generates native code for: return Σ(a[i] * b[i])
     pub fn compile_dot_product(self: *Self, dimension: usize) bool {
         self.reset();
 
@@ -850,6 +850,7 @@ bench "jit_compiler_code_size_latency" {
     for (0..10000) |_| {
         size = compiler.code_size();
     }
+    _ = size;
 }
 
 bench "jit_cache_init_latency" {

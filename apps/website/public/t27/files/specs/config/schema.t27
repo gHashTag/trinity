@@ -576,49 +576,15 @@ test "config_provider_create" {
     try std.testing.expect(is_anthropic(provider));
 }
 
-test "config_provider_with_key" {
-    const provider = provider_with_key("sk-api-key");
-    try std.testing.expect(has_api_key(provider));
-}
 
-test "config_agent_default" {
-    const agent = agent_default("test-agent");
-    try std.testing.expect(std.mem.eql(agent.name, "test-agent"));
-}
 
-test "config_agent_with_capabilities" {
-    const caps = &[_]AgentCapability{.chat, .code_edit};
-    const agent = agent_with_capabilities("test", caps);
-    try std.testing.expect(agent_has_capability(agent, .chat));
-    try std.testing.expect(agent_has_capability(agent, .code_edit));
-}
 
-test "config_lsp_server_create" {
-    const lsp = lsp_server_create("t27", "t27c", &[_][]u8{});
-    try std.testing.expect(std.mem.eql(lsp.language, "t27"));
-}
 
-test "config_tui_default" {
-    const tui = tui_default();
-    try std.testing.expect(std.mem.eql(tui.theme, "dark"));
-}
 
-test "config_logging_default" {
-    const logging = logging_default();
-    try std.testing.expect(std.mem.eql(logging.level, "info"));
-}
 
-test "config_paths_default" {
-    const paths = paths_default();
-    try std.testing.expect(paths.data_dir.len == 0);
-}
 
-test "config_default_complete" {
-    const config = config_default();
-    try std.testing.expect(config.version == 1);
-}
 
-test "config_validation_success" {
+test "config_validation_success_2" {
     const context = validation_context_default();
     const result = validate(config, context);
     try std.testing.expect(result.valid);
@@ -632,24 +598,8 @@ test "config_validation_failure_missing_api_key" {
     try std.testing.expect(!result.valid);
 }
 
-test "config_add_agent" {
-    var config = config_default();
-    const agent = agent_default("new-agent");
-    config_add_agent(&config, agent);
-    try std.testing.expect(config_agent_count(&config) == 1);
-}
 
-test "config_agent_has_capability_true" {
-    const caps = &[_]AgentCapability{.chat, .code_edit};
-    const agent = agent_with_capabilities("test", caps);
-    try std.testing.expect(agent_has_capability(agent, .code_edit));
-}
 
-test "config_agent_has_capability_false" {
-    const caps = &[_]AgentCapability{.chat};
-    const agent = agent_with_capabilities("test", caps);
-    try std.testing.expect(!agent_has_capability(agent, .code_edit));
-}
 
 // ============================================================================
 // TDD - Benchmarks

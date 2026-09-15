@@ -1,4 +1,4 @@
-// gen.t27 -- Code Generation with TDD Validation
+// gen.t27 — Code Generation with TDD Validation
 // Commands for generating code from t27 specs with TDD enforcement
 
 module gen_commands {
@@ -6,9 +6,9 @@ module gen_commands {
     using codegen_zig: @import("../codegen/zig/codegen.t27");
     using testgen: @import("../codegen/testgen.t27");
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Codegen options
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const GenOptions = struct {
         backend: []const u8,           // Target backend (zig, c, verilog, etc.)
@@ -34,9 +34,9 @@ module gen_commands {
         output_format: []const u8,
     };
 
-    // =====================================================================
-    // Command: tri gen <spec> -- Generate code from spec with TDD validation
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // Command: tri gen <spec> — Generate code from spec with TDD validation
+    // ═════════════════════════════════════════════════════════════════════
 
     pub fn gen(spec_path: []const u8, options: GenOptions) i32 {
         // Check if spec exists
@@ -73,9 +73,9 @@ module gen_commands {
             return 1;
         }
 
-        // =====================================================================
+        // ═════════════════════════════════════════════════════════════════════
         // TDD CONTRACT ENFORCEMENT (Per User Requirement: No prototype mode)
-        // =====================================================================
+        // ═════════════════════════════════════════════════════════════════════
         var has_tests = false;
         var test_count: usize = 0;
         var invariant_count: usize = 0;
@@ -130,9 +130,9 @@ module gen_commands {
         print_int(invariant_count);
         error_print(" invariants\n");
 
-        // =====================================================================
+        // ═════════════════════════════════════════════════════════════════════
         // Generate code
-        // =====================================================================
+        // ═════════════════════════════════════════════════════════════════════
 
         // Determine output paths
         const output_dir = if (options.output_dir.len == 0)
@@ -259,9 +259,9 @@ module gen_commands {
         return 0;
     }
 
-    // =====================================================================
-    // Command: tri gen all -- Generate code for all specs in project
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
+    // Command: tri gen all — Generate code for all specs in project
+    // ═════════════════════════════════════════════════════════════════════
 
     pub fn gen_all(options: GenOptions) i32 {
         const spec_files = glob("specs/**/*.t27");
@@ -306,9 +306,9 @@ module gen_commands {
         return if (fail_count > 0) 1 else 0;
     }
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Helper functions
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     // Get basename without extension
     pub fn basename_without_ext(path: []const u8) []const u8 {
@@ -336,9 +336,9 @@ module gen_commands {
         return path[filename_start..end];
     }
 
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
     // Type definitions
-    // =====================================================================
+    // ═════════════════════════════════════════════════════════════════════
 
     pub const Program = struct {
         constants: []Constant,
@@ -435,9 +435,9 @@ module gen_commands {
     };
 }
 
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 // TDD-Inside-Spec: Tests and Invariants for Gen Commands
-// =======================================================================================================
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 test gen_returns_zero_on_success
     // Mock successful generation scenario

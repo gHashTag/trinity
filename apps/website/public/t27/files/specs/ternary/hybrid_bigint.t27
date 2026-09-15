@@ -8,7 +8,7 @@
 module hybrid_bigint;
 
 import numeric::gf16;
-import tritype-base::Trit;
+import tritype::Trit;
 import ternary::bigint;
 
 // ============================================================================

@@ -11,35 +11,35 @@ module TriUtf8;
     // ═══════════════════════════════════════════════════════════
 
     pub const Codepoint = struct {
-        underlying : U21,
+        underlying : "u21",
     };
 
     pub const Rune = struct {
         bytes : [4]u8,
-        len : u8,
+        len : "u8",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // decode(str: []const u8, index: usize) → Rune
-    fn decode(str: []const u8, index: usize) -> Rune {
+    // decode(str: []const u8) → void
+    fn decode(str: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // encode(codepoint: Codepoint, allocator: std.mem.Allocator) → ![]u8
-    fn encode(codepoint: Codepoint, allocator: std.mem.Allocator) -> ![]u8 {
+    // encode(codepoint: Codepoint) → void
+    fn encode(codepoint: Codepoint) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // count_codepoints(str: []const u8) → usize
-    fn count_codepoints(str: []const u8) -> usize {
+    // count_codepoints(str: []const u8) → void
+    fn count_codepoints(str: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // validate(str: []const u8) → bool
-    fn validate(str: []const u8) -> bool {
+    // validate(str: []const u8) → void
+    fn validate(str: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -47,35 +47,23 @@ module TriUtf8;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // decode/encode/count_codepoints/validate are unimplemented stubs returning
-    // void, so no behavioural assertion is possible yet. What the module does
-    // declare -- the width of a codepoint and the size of a rune buffer -- is
-    // tested here at both boundaries.
+    test decode_basic_case
+        given input = default_input()
+        when result = decode(input)
+        then result != undefined
 
-    test codepoint_holds_the_largest_unicode_scalar
-        // Verify: the declared u21 field is wide enough for U+10FFFF, the
-        // highest codepoint Unicode defines
-        given cp = Codepoint{.underlying=0x10FFFF}
-        then cp.underlying == 1114111
+    test encode_basic_case
+        given input = default_input()
+        when result = encode(input)
+        then result != undefined
 
-    test codepoint_holds_the_null_scalar
-        // Verify: U+0000, the boundary at the other end, is representable
-        given cp = Codepoint{.underlying=0}
-        then cp.underlying == 0
+    test count_codepoints_basic_case
+        given input = default_input()
+        when result = count_codepoints(input)
+        then result != undefined
 
-    test rune_buffer_is_four_bytes_the_utf8_maximum
-        // Verify: the declared fixed buffer matches the longest UTF-8 sequence
-        given r = Rune{.bytes=[_]u8{0,0,0,0},.len=0}
-        then r.bytes.len == 4
-
-    test ascii_rune_occupies_one_byte
-        // Verify: an ASCII character uses a single byte of the 4-byte buffer
-        given r = Rune{.bytes=[_]u8{65,0,0,0},.len=1}
-        then r.len == 1 and r.bytes[0] == 65
-
-    test four_byte_rune_fills_the_whole_buffer
-        // Verify: U+10FFFF encodes as F4 8F BF BF -- four bytes, exactly the
-        // declared buffer size
-        given r = Rune{.bytes=[_]u8{0xF4,0x8F,0xBF,0xBF},.len=4}
-        then r.len == 4 and r.bytes[3] == 0xBF
+    test validate_basic_case
+        given input = default_input()
+        when result = validate(input)
+        then result != undefined
 

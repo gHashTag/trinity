@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// IGLA-Coder P8 Integration into t27 and publication | phi^2 + 1/phi^2 = 3 | TRINITY
+
+module IGLAPublication;
+    use base::types;
+    use math::constants;
+
+    // ===========================================================
+    // 2. Types
+    // ===========================================================
+
+    pub const PublicationTarget = enum {
+        arXiv,
+        Zenodo,
+        GitHub_Release,
+        Conference,
+    };
+
+    pub const PublicationArtifact = struct {
+        title       : str,
+        abstract    : str,
+        authors     : [str],
+        keywords    : [str],
+        doi         : str,
+        checksum    : str,
+    };
+
+    pub const IntegrationStatus = enum {
+        Draft,
+        UnderReview,
+        Accepted,
+        Published,
+    };
+
+    // ===========================================================
+    // 3. Core Functions
+    // ===========================================================
+
+    // integrate_igla_coder(checkpoint: str) -> bool
+    fn integrate_igla_coder(checkpoint: str) -> bool {
+        // Placeholder: wire trained checkpoint into t27c compiler pipeline
+    }
+
+    // publish(artifact: PublicationArtifact, target: PublicationTarget) -> IntegrationStatus
+    fn publish(artifact: PublicationArtifact, target: PublicationTarget) -> IntegrationStatus {
+        // Placeholder: external publication workflow
+    }
+
+    // verify_checksum(artifact: PublicationArtifact) -> bool
+    fn verify_checksum(artifact: PublicationArtifact) -> bool {
+        // Placeholder: SHA-256 verification
+    }
+
+    // ===========================================================
+    // 4. Invariants
+    // ===========================================================
+
+bench publication_doi_unique: dois.all_unique
+    invariant artifact_title_nonempty:
+        forall a : PublicationArtifact, a.title.len() > 0
+
+invariant checksum_nonempty:
+        forall a : PublicationArtifact, a.checksum.len() > 0
+
+invariant status_ordered:
+        forall s : IntegrationStatus, s == IntegrationStatus.Draft || s == IntegrationStatus.UnderReview || s == IntegrationStatus.Accepted || s == IntegrationStatus.Published
+
+    // ===========================================================
+    // 5. Tests
+    // ===========================================================
+
+    test publication_target_identity
+        given t = PublicationTarget.arXiv
+        assert t == PublicationTarget.arXiv
+
+    test artifact_fields_valid
+        given a = PublicationArtifact { title: "Trinity IGLA-Coder", abstract: "Ternary RL for RTL", authors: ["Trinity Team"], keywords: ["ternary", "RTL"], doi: "10.0000/zenodo.0", checksum: "sha256:abc123" }
+        assert a.title.len() > 0 && a.checksum.len() > 0
+
+    test status_progression
+        given s1 = IntegrationStatus.Draft
+        given s2 = IntegrationStatus.Published
+        assert s1 != s2
+
+    // ===========================================================
+    // 6. Benchmarks
+    // ===========================================================
+
+    bench integrate_latency
+        given ckpt = "igla_coder_1b_final"
+        measure integrate_igla_coder(ckpt)
+        target latency_ms < 60000.0
+
+    bench publish_pipeline_latency
+        given art = PublicationArtifact { title: "Trinity", abstract: "Abstract", authors: ["T"], keywords: ["k"], doi: "10.0/0", checksum: "sha256:x" }
+        measure publish(art, PublicationTarget.Zenodo)
+        target latency_ms < 120000.0

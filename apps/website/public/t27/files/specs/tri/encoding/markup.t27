@@ -20,13 +20,13 @@ module TriMarkup;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // parse(markdown: []const u8, allocator: std.mem.Allocator) → ![]MarkdownNode
-    fn parse(markdown: []const u8, allocator: std.mem.Allocator) -> ![]MarkdownNode {
+    // parse(markdown: []const u8) → void
+    fn parse(markdown: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // to_html(nodes: []MarkdownNode, allocator: std.mem.Allocator) → ![]u8
-    fn to_html(nodes: []MarkdownNode, allocator: std.mem.Allocator) -> ![]u8 {
+    // to_html(nodes: []MarkdownNode) → void
+    fn to_html(nodes: []MarkdownNode) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -34,19 +34,13 @@ module TriMarkup;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // parse and to_html have empty bodies, so no markdown can be parsed and
-    // no round trip can be checked. These pin the node shape both will use.
+    test parse_basic_case
+        given input = default_input()
+        when result = parse(input)
+        then result != undefined
 
-    test children_are_nodes_held_by_value
-        // the tree nests directly rather than through pointers, so a node owns
-        // its whole subtree
-        given children_type = @FieldType(MarkdownNode, "children")
-        then children_type == []MarkdownNode
-
-    test the_node_tag_and_its_text_are_borrowed_byte_slices
-        // both are const slices, so a node points into the source markdown
-        // instead of copying it
-        given type_field = @FieldType(MarkdownNode, "type")
-        and content_field = @FieldType(MarkdownNode, "content")
-        then type_field == []const u8 and content_field == []const u8
+    test to_html_basic_case
+        given input = default_input()
+        when result = to_html(input)
+        then result != undefined
 

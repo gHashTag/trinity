@@ -12,25 +12,25 @@ module TriHmac;
 
     pub const HMAC = struct {
         opad : [64]u8,
-        inner : SHA256,
+        inner : "SHA256",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(key: []const u8) → HMAC
-    fn init(key: []const u8) -> HMAC {
+    // init(key: []const u8) → void
+    fn init(key: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // update(hmac: *HMAC, data: []const u8) → void
-    fn update(hmac: *HMAC, data: []const u8) -> void {
+    // update(hmac: *HMAC) → void
+    fn update(hmac: *HMAC) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // final(hmac: *HMAC) → [32]u8
-    fn final(hmac: *HMAC) -> [32]u8 {
+    // final(hmac: *HMAC) → void
+    fn final(hmac: *HMAC) -> void {
         // TODO: Implement from .tri spec
     }
 

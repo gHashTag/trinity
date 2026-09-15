@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-; phi_timing.t27 -- phi-structured cognitive cycle timing (spec-first)
+; phi_timing.t27 — phi-structured cognitive cycle timing (spec-first)
 ; Phase duration ratios follow INV-1; integer ms sum may differ slightly from 3*base_ms.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 

@@ -11,13 +11,13 @@ module TriTime;
     // ═══════════════════════════════════════════════════════════
 
     pub const Instant = struct {
-        epoch_seconds : i64,
-        nanos : u32,
+        epoch_seconds : "i64",
+        nanos : "u32",
     };
 
     pub const Duration = struct {
-        seconds : i64,
-        nanos : u32,
+        seconds : "i64",
+        nanos : "u32",
     };
 
     // ═══════════════════════════════════════════════════════════
@@ -29,23 +29,23 @@ module TriTime;
         // TODO: Implement from .tri spec
     }
 
-    // since_epoch(instant: Instant) → Duration
-    fn since_epoch(instant: Instant) -> Duration {
+    // since_epoch(instant: Instant) → void
+    fn since_epoch(instant: Instant) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // add(instant: Instant, duration: Duration) → Instant
-    fn add(instant: Instant, duration: Duration) -> Instant {
+    // add(instant: Instant) → void
+    fn add(instant: Instant) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // sub(a: Instant, b: Instant) → Duration
-    fn sub(a: Instant, b: Instant) -> Duration {
+    // sub(a: Instant) → void
+    fn sub(a: Instant) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // format(instant: Instant, fmt: []const u8, allocator: std.mem.Allocator) → ![]u8
-    fn format(instant: Instant, fmt: []const u8, allocator: std.mem.Allocator) -> ![]u8 {
+    // format(instant: Instant) → void
+    fn format(instant: Instant) -> void {
         // TODO: Implement from .tri spec
     }
 
@@ -53,40 +53,28 @@ module TriTime;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // now, since_epoch, add, sub and format are still `TODO: Implement from
-    // .tri spec` and compile to `@panic`, so none of them is called here. The
-    // split-second representation they all operate on is real and is what the
-    // tests below pin down: whole seconds in a signed field, the sub-second
-    // remainder in an unsigned one that never reaches a full second.
+    test now_basic_case
+        given input = default_input()
+        when result = now(input)
+        then result != undefined
 
-    // The epoch itself. Both fields zero, and the seconds field is signed, so
-    // instants before 1970 are representable rather than clamped.
-    test instant_epoch_and_before
-        given epoch = Instant{ .epoch_seconds = 0, .nanos = 0 }
-        and before = Instant{ .epoch_seconds = -1, .nanos = 0 }
-        then epoch.epoch_seconds == 0
-        and epoch.nanos == 0
-        and before.epoch_seconds < epoch.epoch_seconds
+    test since_epoch_basic_case
+        given input = default_input()
+        when result = since_epoch(input)
+        then result != undefined
 
-    // The nanos field is the sub-second remainder: it holds up to 999_999_999,
-    // one less than a whole second, and u32 has room for it.
-    test instant_nanos_hold_a_sub_second_remainder
-        given tick = Instant{ .epoch_seconds = 1, .nanos = 999999999 }
-        then tick.nanos == 999999999
-        and tick.nanos < 1000000000
+    test add_basic_case
+        given input = default_input()
+        when result = add(input)
+        then result != undefined
 
-    // Duration has the same two-field shape, and its seconds field is signed
-    // too, so the difference of two instants can run either way.
-    test duration_is_signed
-        given forward = Duration{ .seconds = 90, .nanos = 500000000 }
-        and backward = Duration{ .seconds = -90, .nanos = 500000000 }
-        then forward.seconds == 90
-        and backward.seconds == -90
-        and forward.nanos == backward.nanos
+    test sub_basic_case
+        given input = default_input()
+        when result = sub(input)
+        then result != undefined
 
-    // A zero duration is representable and is not a sentinel for anything.
-    test zero_duration_is_representable
-        given d = Duration{ .seconds = 0, .nanos = 0 }
-        then d.seconds == 0
-        and d.nanos == 0
+    test format_basic_case
+        given input = default_input()
+        when result = format(input)
+        then result != undefined
 

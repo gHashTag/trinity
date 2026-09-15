@@ -11,21 +11,21 @@ module TriReedSolomon;
     // ═══════════════════════════════════════════════════════════
 
     pub const RSCode = struct {
-        data_shards : usize,
-        parity_shards : usize,
+        data_shards : "usize",
+        parity_shards : "usize",
     };
 
     // ═══════════════════════════════════════════════════════════
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // encode(data: []const u8, parity_count: usize, allocator: std.mem.Allocator) → ![]u8
-    fn encode(data: []const u8, parity_count: usize, allocator: std.mem.Allocator) -> ![]u8 {
+    // encode(data: []const u8) → void
+    fn encode(data: []const u8) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // decode(shards: []const ?u8, allocator: std.mem.Allocator) → ![]u8
-    fn decode(shards: []const ?u8, allocator: std.mem.Allocator) -> ![]u8 {
+    // decode(shards: []const ?u8) → void
+    fn decode(shards: []const ?u8) -> void {
         // TODO: Implement from .tri spec
     }
 

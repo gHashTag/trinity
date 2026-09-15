@@ -147,14 +147,14 @@ module MultiHeadAttention;
 
     // softmax_attention(scores: []gf16::GF16, dim: u32) → []gf16::GF16
     // Computes softmax over specified dimension.
-    fn softmax_attention(scores: []gf16::GF16, dim: u32) -> []gf16::GF16 {
+    fn softmax_attention(scores: []gf16::GF16, dim: u32) → []gf16::GF16 {
         // exp_scores = exp(scores - max(scores, dim))
         // softmax = exp_scores / sum(exp_scores, dim)
     }
 
     // backward(state: MHAState, result: MHAForwardResult, grad_output: []gf16::GF16) → MHAGradients
     // Computes gradients for backpropagation.
-    fn backward(state: MHAState, result: MHAForwardResult, grad_output: []gf16::GF16) -> MHAGradients {
+    fn backward(state: MHAState, result: MHAForwardResult, grad_output: []gf16::GF16) → MHAGradients {
         // d_O = grad_output
         // d_w_o = O.T @ d_O
         // d_A = d_O @ V.T (before dropout)
@@ -183,13 +183,13 @@ module MultiHeadAttention;
 
     // split_heads(x: []gf16::GF16, num_heads: u32, head_dim: u32) → []gf16::GF16
     // Splits hidden dimension into multiple attention heads.
-    fn split_heads(x: []gf16::GF16, num_heads: u32, head_dim: u32) -> []gf16::GF16 {
+    fn split_heads(x: []gf16::GF16, num_heads: u32, head_dim: u32) → []gf16::GF16 {
         // Reshape from [batch, seq, hidden] to [batch, heads, seq, head_dim]
     }
 
     // create_causal_mask(seq_len: u32) → AttentionMask
     // Creates a causal (lower-triangular) mask.
-    fn create_causal_mask(seq_len: u32) -> AttentionMask {
+    fn create_causal_mask(seq_len: u32) → AttentionMask {
         // mask[i,j] = 0 if j <= i else -inf
     }
 
@@ -276,7 +276,7 @@ module MultiHeadAttention;
     test softmax_sums_to_one
         given scores = [1.0, 2.0, 3.0]
         when result = softmax_attention(scores, 0)
-        then approximately_equal_within(sum(result), 1.0, 1e-4)
+        then approximately_equal(sum(result), 1.0, 1e-4)
 
     test phi_scale_smaller_than_standard
         given head_dim = 64
@@ -288,7 +288,7 @@ module MultiHeadAttention;
         given head_dim = 64
         when result = compute_phi_scale(head_dim)
         and   expected = 1.0 / (sqrt(64.0) * PHI)
-        then approximately_equal_within(result, expected, 1e-6)
+        then approximately_equal(result, expected, 1e-6)
 
     test flash_attention_no_memory_explosion
         given config = MHAConfig{.hidden_size = 128, .num_heads = 8, .use_flash_attention = true}

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/vsa/vsa_core.t27
 // VSA (Vector Symbolic Architecture) Core Operations
-// 01234 567891011: V = n 12 3^k 13 14^m 15 16^p 17 e^q
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
+// φ² + 1/φ² = 3 | TRINITY
 //
 // VSA provides high-dimensional vector operations for:
 // - Symbolic reasoning (bind/unbind for role-filler pairs)
@@ -96,7 +96,7 @@ pub fn bind(a: Hypervector, b: Hypervector) Hypervector {
         } else if (bi == TRIT_ZERO) {
             result[i] = ai;
         } else {
-            // Both non-zero: multiply (both are +/-1)
+            // Both non-zero: multiply (both are ±1)
             result[i] = if (ai == bi) { TRIT_POS } else { TRIT_NEG };
         }
         i = i + 1;
@@ -203,7 +203,7 @@ pub fn inverse_permute(v: Hypervector, shift: usize) Hypervector {
 }
 
 /// Cosine similarity between two hypervectors
-/// Formula: (a*b) / (||a|| * ||b||)
+/// Formula: (a·b) / (||a|| * ||b||)
 /// Range: [-1, 1] where 1 = identical, -1 = opposite
 /// Complexity: O(dim)
 pub fn cosine_similarity(a: Hypervector, b: Hypervector) gf16 {
@@ -281,7 +281,7 @@ pub fn hamming_similarity(a: Hypervector, b: Hypervector) gf16 {
 }
 
 /// Dot product similarity (raw dot product, normalized by dimension)
-/// Formula: (a*b) / dim
+/// Formula: (a·b) / dim
 /// Range: [-1, 1] for unit trits
 /// Complexity: O(dim)
 pub fn dot_similarity(a: Hypervector, b: Hypervector) gf16 {
@@ -301,7 +301,7 @@ pub fn dot_similarity(a: Hypervector, b: Hypervector) gf16 {
 }
 
 /// Vector norm (L2 norm)
-/// Formula: sqrt(Sigma trit[i]^2))
+/// Formula: sqrt(Σ trit[i]²))
 /// For trits, this is sqrt(count of non-zero trits)
 /// Complexity: O(dim)
 pub fn vector_norm(v: Hypervector) gf16 {
@@ -419,7 +419,7 @@ test "vsa_random_vector_deterministic" {
 }
 
 test "vsa_bind_self_inverse" {
-    // Verify bind(a, bind(a, b)) ~= b
+    // Verify bind(a, bind(a, b)) ≈ b
     var a = [_]Trit{TRIT_POS} ** 10;
     var b = [_]Trit{TRIT_NEG} ** 10;
 
@@ -700,7 +700,7 @@ test "vsa_bundle_n_consistency" {
 // ============================================================================
 
 invariant vsa_bind_self_inverse_property {
-    // bind(a, bind(a, b)) ~= b for all a, b
+    // bind(a, bind(a, b)) ≈ b for all a, b
     const dims = [_]usize{ 10, 50 };
     inline for (dims) |dim| {
         var a = random_vector(1, dim);
@@ -813,7 +813,7 @@ invariant vsa_vector_norm_max_value {
     // vector_norm <= sqrt(dim) for trits in {-1, 0, 1}
     const v = random_vector(1, 100);
     const norm = vector_norm(v);
-    @compileAssert(norm <= @sqrt(@as(gf16, @floatCast(v.len))));
+    @compileAssert(norm <= @sqrt(@floatCast(v.len)));
 }
 
 invariant vsa_count_non_zero_accurate {

@@ -13,7 +13,7 @@ module TriList;
     pub const List(T) = struct {
         is_empty : bool,
         head : T,
-        tail : "?*List(T)",
+        tail : "List(T)",
     };
 
     // ═══════════════════════════════════════════════════════════

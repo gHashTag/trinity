@@ -25,23 +25,23 @@ module TriTuple;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // pair(a: A, b: B) → Tuple2(A, B)
-    fn pair(a: A, b: B) -> Tuple2(A, B) {
+    // pair(a: A) → void
+    fn pair(a: A) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // triple(a: A, b: B, c: C) → Tuple3(A, B, C)
-    fn triple(a: A, b: B, c: C) -> Tuple3(A, B, C) {
+    // triple(a: A) → void
+    fn triple(a: A) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // fst(pair: Tuple2(A, B)) → A
-    fn fst(pair: Tuple2(A, B)) -> A {
+    // fst(pair: Tuple2(A, B)) → void
+    fn fst(pair: Tuple2(A, B)) -> void {
         // TODO: Implement from .tri spec
     }
 
-    // snd(pair: Tuple2(A, B)) → B
-    fn snd(pair: Tuple2(A, B)) -> B {
+    // snd(pair: Tuple2(A, B)) → void
+    fn snd(pair: Tuple2(A, B)) -> void {
         // TODO: Implement from .tri spec
     }
 

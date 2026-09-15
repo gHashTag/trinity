@@ -11,9 +11,6 @@ module chimera {
 
     pub fn formula() -> Float {
         // P35_new from PDG 2024: GAMMA.pow(PHI) + PI
-        GAMMA.pow(PHI) + PI
+//         GAMMA.pow(PHI) + PI)
     }
 }
-    test "chimera_best_gamma_smoke_test" {
-        expect(true)
-    }

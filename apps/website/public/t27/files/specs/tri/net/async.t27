@@ -48,38 +48,23 @@ module TriAsync;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    // new_promise, fulfill, await and map are still `TODO: Implement from .tri
-    // spec` and compile to `@panic`, so none of them is called here -- and the
-    // "fulfilled only once" rule cannot be tested until fulfill has a body.
-    // The pair of state bits that rule is built on is real and is what the
-    // tests below pin down.
+    test new_promise_basic_case
+        given input = default_input()
+        when result = new_promise(input)
+        then result != undefined
 
-    // A fresh promise: neither side has fired. The payload slot exists from
-    // the start, so fulfilling never has to allocate.
-    test fresh_promise_is_unfulfilled
-        given p = Promise(i64){ .fulfilled = false, .future = Future(i64){ .completed = false, .value = 0 } }
-        then p.fulfilled == false
-        and p.future.completed == false
+    test fulfill_basic_case
+        given input = default_input()
+        when result = fulfill(input)
+        then result != undefined
 
-    // A fulfilled promise: both bits set, and the value is visible through the
-    // future rather than stored twice.
-    test fulfilled_promise_completes_its_future
-        given p = Promise(i64){ .fulfilled = true, .future = Future(i64){ .completed = true, .value = 99 } }
-        then p.fulfilled == true
-        and p.future.completed == true
-        and p.future.value == 99
+    test await_basic_case
+        given input = default_input()
+        when result = await(input)
+        then result != undefined
 
-    // The producer's bit and the consumer's bit are separate fields. That
-    // separation is what a once-only fulfill checks against: the state the
-    // rule guards is the promise's, not the future's.
-    test promise_and_future_track_state_separately
-        given p = Promise(i64){ .fulfilled = true, .future = Future(i64){ .completed = false, .value = 0 } }
-        then p.fulfilled != p.future.completed
-
-    // Future stands alone and is generic over its payload; it does not need a
-    // promise wrapped around it to hold a completed value.
-    test future_is_generic_and_standalone
-        given f = Future(bool){ .completed = true, .value = true }
-        then f.completed == true
-        and f.value == true
+    test map_basic_case
+        given input = default_input()
+        when result = map(input)
+        then result != undefined
 

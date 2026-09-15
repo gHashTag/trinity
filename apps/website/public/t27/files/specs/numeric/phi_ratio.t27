@@ -1,40 +1,40 @@
 // SPDX-License-Identifier: Apache-2.0
 // t27/specs/numeric/phi_ratio.t27
-// 0-Ratio Proof 1 Derivation of GoldenFloat exp/mantissa split
-// NUMERIC-STANDARD-001 2 Agent 9 (P0)
+// φ-Ratio Proof — Derivation of GoldenFloat exp/mantissa split
+// NUMERIC-STANDARD-001 — Agent 9 (P0)
 
 module PhiRatio {
     // Import sacred constants
     use math::constants;
     use math::sacred_physics;
 
-    // 345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667
+    // ═════════════════════════════════════════════════════════════════
     // 1. Golden Ratio Target for Float Formats
-    // 6869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134135136137138139140
+    // ═════════════════════════════════════════════════════════════════════════
 
     // The ideal exp/mantissa ratio for floating point formats
-    // Derived from sacred physics: 1/141 142 0.618
+    // Derived from sacred physics: 1/φ ≈ 0.618
     const PHI_RATIO_TARGET : f64 = sacred_physics::PHI_INV;  // 0.618...
 
-    // 143144 = 145 + 1 (golden ratio identity)
-    // This gives us: 1/146 = 147 - 1 148 0.618
+    // φ² = φ + 1 (golden ratio identity)
+    // This gives us: 1/φ = φ - 1 ≈ 0.618
     const PHI_SQ : f64 = sacred_physics::PHI * sacred_physics::PHI;
 
-    // 149150151152153154155156157158159160161162163164165166167168169170171172173174175176177178179180181182183184185186187188189190191192193194195196197198199200201202203204205206207208209210211212213
-    // 2. 214-Split Formula 215 Derive optimal exp/mantissa bits
-    // 216217218219220221222223224225226227228229230231232233234235236237238239240241242243244245246247248249250251252253254255256257258259260261262263264265266267268269270271272273274275276277278279280281282283284285286287288
+    // ═════════════════════════════════════════════════════════════════
+    // 2. φ-Split Formula — Derive optimal exp/mantissa bits
+    // ═════════════════════════════════════════════════════════════════════════
 
     // For a floating point format with N bits total (including sign):
     //   bits = sign + exp + mant
     //   sign = 1 (always)
     //   available = N - 1 = exp + mant
     //
-    // The 289-principle states: exp/mant = 1/290
-    //   exp = (available) / (291 + 1)
+    // The φ-principle states: exp/mant = 1/φ
+    //   exp = (available) / (φ + 1)
     //   mant = available - exp
     //
-    // Since 292 + 1 = 293294, we have:
-    //   exp = (N - 1) / 295296
+    // Since φ + 1 = φ², we have:
+    //   exp = (N - 1) / φ²
     //   mant = N - 1 - exp
 
     struct PhiSplitResult {
@@ -48,7 +48,7 @@ module PhiRatio {
         const available = bits - 1;  // Exclude sign bit
         const phi_sq = sacred_physics::PHI * sacred_physics::PHI;
 
-        // exp = round((N-1) / 297298)
+        // exp = round((N-1) / φ²)
         const exp_raw = (available as f64) / phi_sq;
         const exp_bits = round(exp_raw) as u8;
 
@@ -66,9 +66,9 @@ module PhiRatio {
         };
     }
 
-    // 299300301302303304305306307308309310311312313314315316317318319320321322323324325326327328329330331332333334335336337338339340341342343344345346347348349350351352353354355356357358359360361362363
-    // 3. Verify GoldenFloat Family against 364-Split
-    // 365366367368369370371372373374375376377378379380381382383384385386387388389390391392393394395396397398399400401402403404405406407408409410411412413414415416417418419420421422423424425426427428429430431432433434435436437
+    // ═════════════════════════════════════════════════════════════════
+    // 3. Verify GoldenFloat Family against φ-Split
+    // ═════════════════════════════════════════════════════════════════════════
 
     struct FormatComparison {
         name              : string,
@@ -83,7 +83,7 @@ module PhiRatio {
 
     fn verify_phi_split() -> [7]FormatComparison {
         return [
-            // GF4: 438-split gives exp=1, mant=2 439 MATCH
+            // GF4: φ-split gives exp=1, mant=2 → MATCH
             FormatComparison{
                 name = "GF4",
                 bits = 4,
@@ -92,9 +92,9 @@ module PhiRatio {
                 phi_split_exp = 1,
                 phi_split_mant = 2,
                 matches_phi_split = true,
-                tradeoff_note = "Perfect 440-split match",
+                tradeoff_note = "Perfect φ-split match",
             },
-            // GF8: 441-split gives exp=2, mant=5 442 actual is 3/4
+            // GF8: φ-split gives exp=2, mant=5 → actual is 3/4
             FormatComparison{
                 name = "GF8",
                 bits = 8,
@@ -105,7 +105,7 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "Exact match: round(7/φ²)=3",
             },
-            // GF12: 443-split gives exp=3, mant=8 444 actual is 4/7
+            // GF12: φ-split gives exp=3, mant=8 → actual is 4/7
             FormatComparison{
                 name = "GF12",
                 bits = 12,
@@ -116,7 +116,7 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "Exact match: round(11/φ²)=4",
             },
-            // GF16: 445-split gives exp=4, mant=11 446 actual is 6/9
+            // GF16: φ-split gives exp=4, mant=11 → actual is 6/9
             FormatComparison{
                 name = "GF16",
                 bits = 16,
@@ -127,7 +127,7 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "PRIMARY FORMAT: exact match: round(15/φ²)=6",
             },
-            // GF20: 447-split gives exp=5, mant=14 448 actual is 7/12
+            // GF20: φ-split gives exp=5, mant=14 → actual is 7/12
             FormatComparison{
                 name = "GF20",
                 bits = 20,
@@ -138,7 +138,7 @@ module PhiRatio {
                 matches_phi_split = true,
                 tradeoff_note = "Exact match: round(19/φ²)=7",
             },
-            // GF24: 449-split gives exp=6, mant=17 450 actual is 9/14
+            // GF24: φ-split gives exp=6, mant=17 → actual is 9/14
             FormatComparison{
                 name = "GF24",
                 bits = 24,
@@ -147,9 +147,9 @@ module PhiRatio {
                 phi_split_exp = 6,
                 phi_split_mant = 17,
                 matches_phi_split = false,
-                tradeoff_note = "Closer to 451-split than GF16",
+                tradeoff_note = "Closer to φ-split than GF16",
             },
-            // GF32: 452-split gives exp=8, mant=23 453 actual is 12/19
+            // GF32: φ-split gives exp=8, mant=23 → actual is 12/19
             FormatComparison{
                 name = "GF32",
                 bits = 32,
@@ -158,16 +158,16 @@ module PhiRatio {
                 phi_split_exp = 8,
                 phi_split_mant = 23,
                 matches_phi_split = false,
-                tradeoff_note = "Near 454-split with good precision",
+                tradeoff_note = "Near φ-split with good precision",
             },
         ];
     }
 
-    // 455456457458459460461462463464465466467468469470471472473474475476477478479480481482483484485486487488489490491492493494495496497498499500501502503504505506507508509510511512513514515516517518519
+    // ═════════════════════════════════════════════════════════════════
     // 4. Theoretical Proofs
-    // 520521522523524525526527528529530531532533534535536537538539540541542543544545546547548549550551552553554555556557558559560561562563564565566567568569570571572573574575576577578579580581582583584585586587588589590591592
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // Proof that 593-split minimizes information loss
+    // Proof that φ-split minimizes information loss
     // for a given bit budget under scale-invariant assumptions.
 
     fn golden_self_similarity_proof() -> string {
@@ -196,31 +196,31 @@ module PhiRatio {
         //
         // Taking derivative and setting to zero:
         //   d/dr [r * (N/(1+r))^2] = 0
-        //   r = 1/(1+r)  594  r^2 + r - 1 = 0
-        //   r = (sqrt(5) - 1) / 2 = 1/595
+        //   r = 1/(1+r)  →  r^2 + r - 1 = 0
+        //   r = (sqrt(5) - 1) / 2 = 1/φ
         //
-        // Therefore: exp/mant = 1/596 is optimal
-        return "exp/mant = 1/597 maximizes (dynamic_range * precision) for fixed bit budget";
+        // Therefore: exp/mant = 1/φ is optimal
+        return "exp/mant = 1/φ maximizes (dynamic_range * precision) for fixed bit budget";
     }
 
-    // 598599600601602603604605606607608609610611612613614615616617618619620621622623624625626627628629630631632633634635636637638639640641642643644645646647648649650651652653654655656657658659660661662
+    // ═════════════════════════════════════════════════════════════════
     // 5. Connection to Sacred Physics
-    // 663664665666667668669670671672673674675676677678679680681682683684685686687688689690691692693694695696697698699700701702703704705706707708709710711712713714715716717718719720721722723724725726727728729730731732733734735
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // The 736-ratio appears throughout sacred physics:
-    // - Consciousness threshold C = 737738739
-    // - Specious present t = 740741742 seconds
-    // - Neural gamma band f_743 = 744745 * 746 / 747
+    // The φ-ratio appears throughout sacred physics:
+    // - Consciousness threshold C = φ⁻¹
+    // - Specious present t = φ⁻² seconds
+    // - Neural gamma band f_γ = φ³ * π / γ
     //
     // GoldenFloat formats inherit this sacred proportion.
 
     fn sacred_connection() -> string {
-        return "GoldenFloat exp/mant = 1/748 = consciousness threshold = sacred_physics::C_THRESHOLD";
+        return "GoldenFloat exp/mant = 1/φ = consciousness threshold = sacred_physics::C_THRESHOLD";
     }
 
-    // 749750751752753754755756757758759760761762763764765766767768769770771772773774775776777778779780781782783784785786787788789790791792793794795796797798799800801802803804805806807808809810811812813
+    // ═════════════════════════════════════════════════════════════════
     // 6. Utility functions
-    // 814815816817818819820821822823824825826827828829830831832833834835836837838839840841842843844845846847848849850851852853854855856857858859860861862863864865866867868869870871872873874875876877878879880881882883884885886
+    // ═════════════════════════════════════════════════════════════════════════
 
     fn compute_phi_distance(exp_bits: u8, mant_bits: u8) -> f64 {
         const ratio = (exp_bits as f64) / (mant_bits as f64);
@@ -235,9 +235,9 @@ module PhiRatio {
         return phi_split(total_bits);
     }
 
-    // 887888889890891892893894895896897898899900901902903904905906907908909910911912913914915916917918919920921922923924925926927928929930931932933934935936937938939940941942943944945946947948949950951
+    // ═════════════════════════════════════════════════════════════════
     // 7. Round function (stub)
-    // 9529539549559569579589599609619629639649659669679689699709719729739749759769779789799809819829839849859869879889899909919929939949959969979989991000100110021003100410051006100710081009101010111012101310141015101610171018101910201021102210231024
+    // ═════════════════════════════════════════════════════════════════════════
 
     fn round(x: f64) -> f64 {
         // Round to nearest integer (round half away from zero)
@@ -382,9 +382,9 @@ module PhiRatio {
         return (xi - 1) as f64;
     }
 
-    // 1025102610271028102910301031103210331034103510361037103810391040104110421043104410451046104710481049105010511052105310541055105610571058105910601061106210631064106510661067106810691070107110721073107410751076107710781079108010811082108310841085108610871088108910901091109210931094109510961097109810991100110111021103110411051106110711081109111011111112111311141115111611171118111911201121112211231124112511261127
-    // TDD-Inside-Spec: Tests and Invariants for 1128-Ratio
-    // 1129113011311132113311341135113611371138113911401141114211431144114511461147114811491150115111521153115411551156115711581159116011611162116311641165116611671168116911701171117211731174117511761177117811791180118111821183118411851186118711881189119011911192119311941195119611971198119912001201120212031204120512061207120812091210121112121213121412151216121712181219122012211222122312241225122612271228122912301231
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+    // TDD-Inside-Spec: Tests and Invariants for φ-Ratio
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
     test phi_split_for_gf4_perfect_match
         given bits = 4
@@ -419,14 +419,14 @@ module PhiRatio {
 
     test phi_optimality_proof_derivative
         given proof = phi_optimality_proof()
-        when contains_optimal = proof.contains("exp/mant = 1/1232")
+        when contains_optimal = proof.contains("exp/mant = 1/φ")
         then contains_optimal == true
 
     test compute_phi_distance_for_gf16
         given exp = 6
         and   mant = 9
         when distance = compute_phi_distance(exp, mant)
-        then distance > 0.1  // GF16 intentionally deviates for ML range
+        then distance > 0.1  ; GF16 intentionally deviates for ML range
 
     test is_phi_optimal_tolerance_check
         given exp = 4
@@ -602,7 +602,7 @@ module PhiRatio {
         assert forall exp, mant: u8, compute_phi_distance(exp, mant) >= 0.0
 
     invariant phi_optimal_proof_valid
-        assert phi_optimality_proof().contains("1/1233")
+        assert phi_optimality_proof().contains("1/φ")
 
     invariant gf4_format_is_phi_optimal
         assert phi_split(4).phi_dist < 0.01
@@ -649,4 +649,69 @@ module PhiRatio {
     bench compute_phi_distance_throughput
         measure: phi_distance computations per second
         target: > 1M computations/sec
+
+    // =====================================================================
+    // Phase A3 (epic #181) -- L5 Trinity runtime invariant blocks (appended)
+    // phi^2 + phi^-2 = 3 is the ONLY [Verified] phi-fact. f64 tol 1e-14.
+    // =====================================================================
+
+    test test_l5_phi_sq_equals_phi_plus_one
+        // [Verified] phi^2 = phi + 1 -- defining algebraic identity of phi.
+        // L5 canonical. f64 check, tolerance 1e-14.
+        given phi    = sacred_physics::PHI
+        and   phi_sq = PHI_SQ
+        when  diff   = abs(phi_sq - (phi + 1.0))
+        then  diff < 1e-14
+
+    test test_l5_phi_sq_plus_phi_inv_sq_equals_3
+        // [Verified] phi^2 + phi^-2 = 3 -- the ONLY [Verified] phi-fact (L5).
+        // Algebraic proof: phi^2 = phi+1, phi^-2 = 2-phi, sum = 3.
+        // f64 check, tolerance 1e-14. 50-digit audit lives in pellis_verify.t27.
+        given phi     = sacred_physics::PHI
+        and   phi_sq  = PHI_SQ
+        and   phi_inv = 1.0 / phi
+        and   phi_inv2 = phi_inv * phi_inv
+        when  lhs    = phi_sq + phi_inv2
+        and   diff   = abs(lhs - 3.0)
+        then  diff < 1e-14
+
+    test test_l5_phi_inv2_equals_2_minus_phi
+        // Verify the algebraic sub-fact: phi^-2 = 2 - phi (used in the proof above).
+        // [Verified]. f64 check, tolerance 1e-14.
+        given phi      = sacred_physics::PHI
+        and   phi_sq   = PHI_SQ
+        and   phi_inv2 = 1.0 / phi_sq
+        when  diff     = abs(phi_inv2 - (2.0 - phi))
+        then  diff < 1e-14
+
+    // -----------------------------------------------------------------------
+    // Invariants
+    // -----------------------------------------------------------------------
+
+    invariant l5_phi_sq_equals_phi_plus_one
+        // [Verified] L5 law: phi^2 = phi + 1.
+        // Tolerance 1e-14 (f64; 50-digit audit lives in pellis_verify.t27).
+        // This invariant is a RUNTIME GUARD, not the high-precision audit.
+        assert abs(PHI_SQ - (sacred_physics::PHI + 1.0)) < 1e-14
+
+    invariant l5_phi_sq_plus_phi_inv_sq_equals_3
+        // [Verified] L5 law: phi^2 + phi^-2 = 3.
+        // The ONLY [Verified] phi-fact in this codebase (GOLDEN CHAIN Law L5).
+        // All other phi claims are [Open conjecture] with a falsification path.
+        // Tolerance 1e-14 (f64 runtime guard).
+        // 50-digit arbitrary-precision checking belongs to the pellis audit path.
+        assert abs(PHI_SQ + (1.0 / PHI_SQ) - 3.0) < 1e-14
+
+    // -----------------------------------------------------------------------
+    // Benchmark
+    // -----------------------------------------------------------------------
+
+    bench bench_l5_phi_identity_check
+        // Measure cost of evaluating both L5 identities in sequence.
+        // Expected: < 50ns (pure floating-point arithmetic, no allocations).
+        given phi    = sacred_physics::PHI
+        and   phi_sq = PHI_SQ
+        when  _a = abs(phi_sq - (phi + 1.0))
+        and   _b = abs(phi_sq + (1.0 / phi_sq) - 3.0)
+        then elapsed_time_ns < 50
 }

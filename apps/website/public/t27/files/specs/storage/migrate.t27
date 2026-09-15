@@ -1,14 +1,14 @@
 // specs/storage/migrate.t27
 // Data Migration Operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module StorageMigrate {
     use base::types;
     use storage::schema;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Migration Types
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // MigrationStep represents a single migration step
     struct MigrationStep {
@@ -26,9 +26,9 @@ module StorageMigrate {
         last_migration_at: u64?,
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Migration Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // version returns the current migration version
     fn version() -> Result<u32, StorageError> {
@@ -75,9 +75,9 @@ module StorageMigrate {
         // Implementation: Compare current version with available migrations
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Built-in Migrations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // Migration 1: Migrate from legacy project storage
     fn migrate_1_legacy_projects(dir: str) -> Result<void, StorageError> {
@@ -91,43 +91,28 @@ module StorageMigrate {
         // into dedicated session_diff entries
     }
 
-    // No-op rollback, shared by every migration that declares one.
-    //
-    // Both steps wrote `down = |dir| { Result::ok(()) }  // No rollback`.
-    // Zig has NO CLOSURES -- not a lambda, not an anonymous fn -- so a closure
-    // in value position is a parse error and a wall over the whole file. A
-    // named function is the only form the language has, and it is what the
-    // comment already said this was.
-    //
-    // Naming it once rather than twice is not a liberty: the two closures were
-    // character-identical, and a shared no-op reads as deliberate where two
-    // copies read as an oversight.
-    fn migration_no_rollback(dir: str) -> Result<void, StorageError> {
-        return Result::ok(());
-    }
-
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Migration Registry
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     const MIGRATIONS: [MigrationStep] = [
         MigrationStep {
             version = 1,
             name = "legacy_projects",
             up = migrate_1_legacy_projects,
-            down = migration_no_rollback,  // No rollback
+            down = |dir| { Result::ok(()) },  // No rollback
         },
         MigrationStep {
             version = 2,
             name = "session_diffs",
             up = migrate_2_session_diffs,
-            down = migration_no_rollback,  // No rollback
+            down = |dir| { Result::ok(()) },  // No rollback
         },
     ];
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "version_returns_default_zero" {
         // When no migration marker exists, version should return 0

@@ -39,7 +39,7 @@ result READ_ONLY_SCRIPTS_RUN {
   failing 32
 
   failure_causes """
-26 of the 32 fail identically: ROOT = Path("/Users/playra/t27"), an absolute path
+26 of the 32 fail identically: ROOT = Path("/Users/playom/t27"), an absolute path
 into a home directory that is not this machine's. The rest want a required argument
 or an uninstalled module (pysr, an in-tree `contrib` package).
 """
@@ -92,7 +92,7 @@ agreeing codes per format -- stands unqualified.
 
 // ---- Reported, deliberately not fixed -----------------------------------------
 finding THIRTY_TWO_SCRIPTS_POINT_AT_ANOTHER_MACHINE {
-  name     "scripts/ carries 32 files hardcoding /Users/playra/t27"
+  name     "scripts/ carries 32 files hardcoding /Users/playom/t27"
   severity LOW
 
   detail """
@@ -135,7 +135,7 @@ one to notice -- nobody re-reads a limitation to check it is not too modest.
 measurement WRITE_SCRIPTS_RUN {
   method """
 Copied the repo without .git, confirmed first that no script hardcodes a path into
-the live environment -- the only absolute roots present are /Users/playra/t27 and
+the live environment -- the only absolute roots present are /Users/playom/t27 and
 /home/user/workspace, neither of which exists here -- and excluded the one script
 referencing /etc. Then ran the remaining 200 with a 25s ceiling.
 """

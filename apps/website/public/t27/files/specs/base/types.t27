@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-; types.t27 -- Base Types for t27 Language
+; types.t27 — Base Types for t27 Language
 ; Trit, PackedTrit, TernaryWord definitions
-; phi^2 + 1/phi^2 = 3 | TRINITY
+; φ² + 1/φ² = 3 | TRINITY
 
 module tritype-base;
 
@@ -25,14 +25,14 @@ pub const Trit = enum(i8) {
 // ============================================================================
 
 // PackedTrit: 8 trits packed into u8
-// Layout: [t7 t6 t5 t4 t3 t2 t1 t0] where each t in {-1, 0, +1}
-// Encoding: -1 -> 10, 0 -> 00, +1 -> 01 (2 bits per trit)
+// Layout: [t7 t6 t5 t4 t3 t2 t1 t0] where each t ∈ {-1, 0, +1}
+// Encoding: -1 → 10, 0 → 00, +1 → 01 (2 bits per trit)
 // So packed byte: [t7_1 t7_0][t6_1 t6_0]...[t0_1 t0_0]
 pub const PACKED_BITS_PER_TRIT : u8 = 2;
 pub const TRITS_PER_BYTE : u8 = 8;
 
 // Trit value mapping (2-bit to trit)
-// -1 -> 10b = 2, 0 -> 00b = 0, +1 -> 01b = 1
+// -1 → 10b = 2, 0 → 00b = 0, +1 → 01b = 1
 pub const PACKED_NEG : u8 = 2;
 pub const PACKED_ZERO : u8 = 0;
 pub const PACKED_ONE : u8 = 1;
@@ -45,7 +45,7 @@ pub const PackedTrit = u8;  // Type alias
 // ============================================================================
 
 // TernaryWord: 27 trits packed (full Coptic word)
-// Can represent any value in 3^27 ~= 7.6*10^12 states
+// Can represent any value in 3^27 ≈ 7.6×10^12 states
 // Practical use: vector operations, VSA bindings, weight storage
 pub const TRITS_PER_WORD : u8 = 27;
 pub const WORD_BYTES : u8 = 5;   // ceil(27/8) = 5 bytes for 27 trits
@@ -66,7 +66,7 @@ pub struct UnpackResult {
 // Functions
 // ============================================================================
 
-// trit_add(a: Trit, b: Trit) -> Trit
+// trit_add(a: Trit, b: Trit) → Trit
 // Balanced ternary addition
 // Truth table:
 //   -1 + -1 = -1 (carrying overflow handled by TernaryWord)
@@ -94,18 +94,18 @@ pub fn trit_add(a: Trit, b: Trit) Trit {
     };
 }
 
-// trit_multiply(a: Trit, b: Trit) -> Trit
+// trit_multiply(a: Trit, b: Trit) → Trit
 // Balanced ternary multiplication
 // Truth table:
-//   -1 * -1 = +1
-//   -1 * 0 = 0
-//   -1 * +1 = -1
-//    0 * -1 = 0
-//    0 * 0 = 0
-//    0 * +1 = 0
-//   +1 * -1 = -1
-//   +1 * 0 = 0
-//   +1 * +1 = +1
+//   -1 × -1 = +1
+//   -1 × 0 = 0
+//   -1 × +1 = -1
+//    0 × -1 = 0
+//    0 × 0 = 0
+//    0 × +1 = 0
+//   +1 × -1 = -1
+//   +1 × 0 = 0
+//   +1 × +1 = +1
 pub fn trit_multiply(a: Trit, b: Trit) Trit {
     return switch (a) {
         .neg => switch (b) {
@@ -118,8 +118,8 @@ pub fn trit_multiply(a: Trit, b: Trit) Trit {
     };
 }
 
-// trit_negate(a: Trit) -> Trit
-// Negate a trit: -1 -> +1, 0 -> 0, +1 -> -1
+// trit_negate(a: Trit) → Trit
+// Negate a trit: -1 → +1, 0 → 0, +1 → -1
 // Truth table:
 //   trit_negate(-1) = +1
 //   trit_negate(0) = 0
@@ -132,7 +132,7 @@ pub fn trit_negate(a: Trit) Trit {
     };
 }
 
-// trit_to_packed(trit: Trit) -> u8
+// trit_to_packed(trit: Trit) → u8
 // Convert Trit to its 2-bit packed representation
 pub fn trit_to_packed(trit: Trit) u8 {
     return switch (trit) {
@@ -142,7 +142,7 @@ pub fn trit_to_packed(trit: Trit) u8 {
     };
 }
 
-// packed_to_trit(packed: u8) -> Trit
+// packed_to_trit(packed: u8) → Trit
 // Convert 2-bit packed representation to Trit
 pub fn packed_to_trit(packed: u8) Trit {
     return switch (packed & TRIT_MASK) {
@@ -153,7 +153,7 @@ pub fn packed_to_trit(packed: u8) Trit {
     };
 }
 
-// pack_trit(trit: Trit, position: u8, packed: PackedTrit) -> PackedTrit
+// pack_trit(trit: Trit, position: u8, packed: PackedTrit) → PackedTrit
 // Pack a single trit into PackedTrit at given position (0-7)
 // Returns updated packed value or error sentinel (0xFF) for invalid position
 pub fn pack_trit(trit: Trit, position: u8, packed: PackedTrit) PackedTrit {
@@ -162,7 +162,7 @@ pub fn pack_trit(trit: Trit, position: u8, packed: PackedTrit) PackedTrit {
     }
 
     const encoding = trit_to_packed(trit);
-    const bit_pos: u3 = @intCast(position * PACKED_BITS_PER_TRIT);
+    const bit_pos = position * PACKED_BITS_PER_TRIT;
 
     // Clear 2 bits at position
     const mask: u8 = ~(TRIT_MASK << bit_pos);
@@ -174,24 +174,24 @@ pub fn pack_trit(trit: Trit, position: u8, packed: PackedTrit) PackedTrit {
     return result;
 }
 
-// unpack_trit(position: u8, packed: PackedTrit) -> UnpackResult
+// unpack_trit(position: u8, packed: PackedTrit) → UnpackResult
 // Extract a single trit from PackedTrit at given position (0-7)
 pub fn unpack_trit(position: u8, packed: PackedTrit) UnpackResult {
     if (position >= TRITS_PER_BYTE) {
         return UnpackResult{ .value = .zero, .valid = false };
     }
 
-    const bit_pos: u3 = @intCast(position * PACKED_BITS_PER_TRIT);
+    const bit_pos = position * PACKED_BITS_PER_TRIT;
     const encoding = (packed >> bit_pos) & TRIT_MASK;
     const value = packed_to_trit(encoding);
 
     return UnpackResult{ .value = value, .valid = true };
 }
 
-// ternary_word_pack(src: []Trit, count: u8) -> TernaryWord
+// ternary_word_pack(src: []Trit, count: u8) → TernaryWord
 // Pack count trits into TernaryWord (max 27 trits)
 // Returns error sentinel ([0xFF]*5) for count > 27
-pub fn ternary_word_pack(src: []const Trit, count: u8) TernaryWord {
+pub fn ternary_word_pack(src: []Trit, count: u8) TernaryWord {
     if (count > TRITS_PER_WORD) {
         return [_]u8{0xFF} ** WORD_BYTES;
     }
@@ -228,7 +228,7 @@ pub fn ternary_word_unpack(word: TernaryWord, count: u8) []Trit {
     return result[0..valid_count];
 }
 
-// trit_compare(a: Trit, b: Trit) -> i8
+// trit_compare(a: Trit, b: Trit) → i8
 // Compare two trits: -1 if a < b, 0 if a == b, +1 if a > b
 pub fn trit_compare(a: Trit, b: Trit) i8 {
     if (a == b) {
@@ -240,25 +240,25 @@ pub fn trit_compare(a: Trit, b: Trit) i8 {
     }
 }
 
-// trit_min(a: Trit, b: Trit) -> Trit
+// trit_min(a: Trit, b: Trit) → Trit
 // Returns the minimum of two trits
 pub fn trit_min(a: Trit, b: Trit) Trit {
     return if (a == .neg or (a == .zero and b == .pos)) a else b;
 }
 
-// trit_max(a: Trit, b: Trit) -> Trit
+// trit_max(a: Trit, b: Trit) → Trit
 // Returns the maximum of two trits
 pub fn trit_max(a: Trit, b: Trit) Trit {
     return if (a == .pos or (a == .zero and b == .neg)) a else b;
 }
 
-// trit_abs(a: Trit) -> Trit
+// trit_abs(a: Trit) → Trit
 // Absolute value of a trit (always 0 or +1)
 pub fn trit_abs(a: Trit) Trit {
     return if (a == .neg) .pos else a;
 }
 
-// trit_from_i8(value: i8) -> Trit
+// trit_from_i8(value: i8) → Trit
 // Safe conversion from i8 to Trit, clamping to valid range [-1, 0, +1]
 // Returns .zero for values outside valid range
 pub fn trit_from_i8(value: i8) Trit {
@@ -270,7 +270,7 @@ pub fn trit_from_i8(value: i8) Trit {
     };
 }
 
-// trit_and(a: Trit, b: Trit) -> Trit
+// trit_and(a: Trit, b: Trit) → Trit
 // Logical AND for trits (treating .pos as true, others as false)
 // Truth table:
 //   .neg & .neg = .neg
@@ -287,7 +287,7 @@ pub fn trit_and(a: Trit, b: Trit) Trit {
     };
 }
 
-// trit_or(a: Trit, b: Trit) -> Trit
+// trit_or(a: Trit, b: Trit) → Trit
 // Logical OR for trits (treating .pos as true, others as false)
 // Truth table:
 //   .neg | .neg = .neg
@@ -304,7 +304,7 @@ pub fn trit_or(a: Trit, b: Trit) Trit {
     };
 }
 
-// trit_xor(a: Trit, b: Trit) -> Trit
+// trit_xor(a: Trit, b: Trit) → Trit
 // Logical XOR for trits (treating .pos as true, others as false)
 // Truth table:
 //   .neg ^ .neg = .neg
@@ -317,7 +317,7 @@ pub fn trit_xor(a: Trit, b: Trit) Trit {
     return if (a == b) if (a == .neg) .neg else .zero else .pos;
 }
 
-// trit_not(a: Trit) -> Trit
+// trit_not(a: Trit) → Trit
 // Logical NOT for trits (treating .pos as true, others as false)
 // Truth table:
 //   !.neg = .pos
@@ -327,14 +327,14 @@ pub fn trit_not(a: Trit) Trit {
     return if (a == .pos) .zero else .pos;
 }
 
-// trit_select(condition: Trit, a: Trit, b: Trit) -> Trit
+// trit_select(condition: Trit, a: Trit, b: Trit) → Trit
 // Ternary selection: return a if condition is .pos, else b
 // Uses .pos as "true", all other values select b
 pub fn trit_select(condition: Trit, a: Trit, b: Trit) Trit {
     return if (condition == .pos) a else b;
 }
 
-// packed_trit_count(packed: PackedTrit, value: Trit) -> u8
+// packed_trit_count(packed: PackedTrit, value: Trit) → u8
 // Count occurrences of a specific trit value in PackedTrit
 pub fn packed_trit_count(packed: PackedTrit, value: Trit) u8 {
     var count: u8 = 0;
@@ -347,26 +347,26 @@ pub fn packed_trit_count(packed: PackedTrit, value: Trit) u8 {
     return count;
 }
 
-// packed_trit_all_equal(packed: PackedTrit, value: Trit) -> bool
+// packed_trit_all_equal(packed: PackedTrit, value: Trit) → bool
 // Check if all trits in PackedTrit equal a specific value
 pub fn packed_trit_all_equal(packed: PackedTrit, value: Trit) bool {
     return packed_trit_count(packed, value) == TRITS_PER_BYTE;
 }
 
-// packed_trit_is_zero(packed: PackedTrit) -> bool
+// packed_trit_is_zero(packed: PackedTrit) → bool
 // Check if all trits in PackedTrit are zero
 pub fn packed_trit_is_zero(packed: PackedTrit) bool {
     return packed_trit_all_equal(packed, .zero);
 }
 
-// packed_trit_is_all_same(packed: PackedTrit) -> bool
+// packed_trit_is_all_same(packed: PackedTrit) → bool
 // Check if all trits in PackedTrit are the same (any value)
 pub fn packed_trit_is_all_same(packed: PackedTrit) bool {
     const first = unpack_trit(0, packed).value;
     return packed_trit_all_equal(packed, first);
 }
 
-// packed_trit_nand(a: PackedTrit, b: PackedTrit) -> PackedTrit
+// packed_trit_nand(a: PackedTrit, b: PackedTrit) → PackedTrit
 // Element-wise NAND operation on two PackedTrit values
 pub fn packed_trit_nand(a: PackedTrit, b: PackedTrit) PackedTrit {
     var result: PackedTrit = 0;
@@ -380,7 +380,7 @@ pub fn packed_trit_nand(a: PackedTrit, b: PackedTrit) PackedTrit {
     return result;
 }
 
-// packed_trit_nor(a: PackedTrit, b: PackedTrit) -> PackedTrit
+// packed_trit_nor(a: PackedTrit, b: PackedTrit) → PackedTrit
 // Element-wise NOR operation on two PackedTrit values
 pub fn packed_trit_nor(a: PackedTrit, b: PackedTrit) PackedTrit {
     var result: PackedTrit = 0;
@@ -394,7 +394,7 @@ pub fn packed_trit_nor(a: PackedTrit, b: PackedTrit) PackedTrit {
     return result;
 }
 
-// packed_trit_xnor(a: PackedTrit, b: PackedTrit) -> PackedTrit
+// packed_trit_xnor(a: PackedTrit, b: PackedTrit) → PackedTrit
 // Element-wise XNOR operation on two PackedTrit values
 // Returns pos when trits are equal, neg when different
 pub fn packed_trit_xnor(a: PackedTrit, b: PackedTrit) PackedTrit {
@@ -409,7 +409,7 @@ pub fn packed_trit_xnor(a: PackedTrit, b: PackedTrit) PackedTrit {
     return result;
 }
 
-// packed_trit_shift_left(packed: PackedTrit, shift: u8) -> PackedTrit
+// packed_trit_shift_left(packed: PackedTrit, shift: u8) → PackedTrit
 // Left shift packed trits by shift positions (fills with zeros)
 // shift must be in [0, 8]
 pub fn packed_trit_shift_left(packed: PackedTrit, shift: u8) PackedTrit {
@@ -423,7 +423,7 @@ pub fn packed_trit_shift_left(packed: PackedTrit, shift: u8) PackedTrit {
     var result: PackedTrit = 0;
     for (0..TRITS_PER_BYTE) |i| {
         if (i >= shift) {
-            const src_pos: u8 = @intCast(i - shift);
+            const src_pos = @intCast(i - shift);
             const src_trit = unpack_trit(src_pos, packed).value;
             result = pack_trit(src_trit, @intCast(i), result);
         }
@@ -432,7 +432,7 @@ pub fn packed_trit_shift_left(packed: PackedTrit, shift: u8) PackedTrit {
     return result;
 }
 
-// packed_trit_shift_right(packed: PackedTrit, shift: u8) -> PackedTrit
+// packed_trit_shift_right(packed: PackedTrit, shift: u8) → PackedTrit
 // Right shift packed trits by shift positions (fills with zeros)
 // shift must be in [0, 8]
 pub fn packed_trit_shift_right(packed: PackedTrit, shift: u8) PackedTrit {
@@ -445,7 +445,7 @@ pub fn packed_trit_shift_right(packed: PackedTrit, shift: u8) PackedTrit {
 
     var result: PackedTrit = 0;
     for (0..TRITS_PER_BYTE) |i| {
-        const dst_pos: u8 = @intCast(i + shift);
+        const dst_pos = @intCast(i + shift);
         if (dst_pos < TRITS_PER_BYTE) {
             const src_trit = unpack_trit(@intCast(i), packed).value;
             result = pack_trit(src_trit, dst_pos, result);
@@ -455,7 +455,7 @@ pub fn packed_trit_shift_right(packed: PackedTrit, shift: u8) PackedTrit {
     return result;
 }
 
-// packed_trit_rotate_left(packed: PackedTrit, rotate: u8) -> PackedTrit
+// packed_trit_rotate_left(packed: PackedTrit, rotate: u8) → PackedTrit
 // Left rotate packed trits by rotate positions (circular shift)
 // rotate must be in [0, 7]
 pub fn packed_trit_rotate_left(packed: PackedTrit, rotate: u8) PackedTrit {
@@ -467,7 +467,7 @@ pub fn packed_trit_rotate_left(packed: PackedTrit, rotate: u8) PackedTrit {
     var result: PackedTrit = 0;
 
     for (0..TRITS_PER_BYTE) |i| {
-        const src_pos: u8 = @intCast((i + TRITS_PER_BYTE - shift) % TRITS_PER_BYTE);
+        const src_pos = @intCast((i + TRITS_PER_BYTE - shift) % TRITS_PER_BYTE);
         const src_trit = unpack_trit(src_pos, packed).value;
         result = pack_trit(src_trit, @intCast(i), result);
     }
@@ -475,7 +475,7 @@ pub fn packed_trit_rotate_left(packed: PackedTrit, rotate: u8) PackedTrit {
     return result;
 }
 
-// packed_trit_rotate_right(packed: PackedTrit, rotate: u8) -> PackedTrit
+// packed_trit_rotate_right(packed: PackedTrit, rotate: u8) → PackedTrit
 // Right rotate packed trits by rotate positions (circular shift)
 // rotate must be in [0, 7]
 pub fn packed_trit_rotate_right(packed: PackedTrit, rotate: u8) PackedTrit {
@@ -487,7 +487,7 @@ pub fn packed_trit_rotate_right(packed: PackedTrit, rotate: u8) PackedTrit {
     var result: PackedTrit = 0;
 
     for (0..TRITS_PER_BYTE) |i| {
-        const src_pos: u8 = @intCast((i + shift) % TRITS_PER_BYTE);
+        const src_pos = @intCast((i + shift) % TRITS_PER_BYTE);
         const src_trit = unpack_trit(src_pos, packed).value;
         result = pack_trit(src_trit, @intCast(i), result);
     }
@@ -495,12 +495,12 @@ pub fn packed_trit_rotate_right(packed: PackedTrit, rotate: u8) PackedTrit {
     return result;
 }
 
-// ternary_word_is_zero(word: TernaryWord) -> bool
+// ternary_word_is_zero(word: TernaryWord) → bool
 // Check if all 27 trits in TernaryWord are zero
 pub fn ternary_word_is_zero(word: TernaryWord) bool {
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         if (unpacked.valid and unpacked.value != .zero) {
             return false;
@@ -509,13 +509,13 @@ pub fn ternary_word_is_zero(word: TernaryWord) bool {
     return true;
 }
 
-// ternary_word_count(word: TernaryWord, value: Trit) -> u8
+// ternary_word_count(word: TernaryWord, value: Trit) → u8
 // Count occurrences of a specific trit value in TernaryWord
 pub fn ternary_word_count(word: TernaryWord, value: Trit) u8 {
     var count: u8 = 0;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         if (unpacked.valid and unpacked.value == value) {
             count += 1;
@@ -524,7 +524,7 @@ pub fn ternary_word_count(word: TernaryWord, value: Trit) u8 {
     return count;
 }
 
-// ternary_word_eq(a: TernaryWord, b: TernaryWord) -> bool
+// ternary_word_eq(a: TernaryWord, b: TernaryWord) → bool
 // Compare two TernaryWords for equality
 pub fn ternary_word_eq(a: TernaryWord, b: TernaryWord) bool {
     for (0..WORD_BYTES) |i| {
@@ -535,13 +535,13 @@ pub fn ternary_word_eq(a: TernaryWord, b: TernaryWord) bool {
     return true;
 }
 
-// ternary_word_negate(word: TernaryWord) -> TernaryWord
+// ternary_word_negate(word: TernaryWord) → TernaryWord
 // Negate all trits in TernaryWord
 pub fn ternary_word_negate(word: TernaryWord) TernaryWord {
     var result: TernaryWord = undefined;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         const negated = trit_negate(unpacked.value);
         result[byte_idx] = pack_trit(negated, trit_pos, result[byte_idx]);
@@ -549,7 +549,7 @@ pub fn ternary_word_negate(word: TernaryWord) TernaryWord {
     return result;
 }
 
-// ternary_word_is_all_same(word: TernaryWord) -> bool
+// ternary_word_is_all_same(word: TernaryWord) → bool
 // Check if all 27 trits in TernaryWord are the same value
 pub fn ternary_word_is_all_same(word: TernaryWord) bool {
     const first = unpack_trit(0, word[0]).value;
@@ -597,8 +597,7 @@ test "test_pack_unpack_roundtrip" {
 
 test "test_pack_trit_all_positions" {
     // Verify: pack_trit works for all valid positions (0-7)
-    for (0..8) |i| {
-        const pos: u8 = @intCast(i);
+    for (0..8) |pos| {
         const packed = pack_trit(.pos, pos, 0);
         const unpacked = unpack_trit(pos, packed);
         try std.testing.expectEqual(@as(Trit, .pos), unpacked.value);
@@ -1061,7 +1060,7 @@ test "test_ternary_word_count_all_same" {
     var word: TernaryWord = [_]u8{0} ** WORD_BYTES;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos = @intCast(i % TRITS_PER_BYTE);
         word[byte_idx] = pack_trit(.neg, trit_pos, word[byte_idx]);
     }
     try std.testing.expectEqual(TRITS_PER_WORD, ternary_word_count(word, .neg));
@@ -1110,7 +1109,7 @@ test "test_ternary_word_is_all_same_true" {
     var word: TernaryWord = [_]u8{0} ** WORD_BYTES;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos = @intCast(i % TRITS_PER_BYTE);
         word[byte_idx] = pack_trit(.pos, trit_pos, word[byte_idx]);
     }
     try std.testing.expect(ternary_word_is_all_same(word));

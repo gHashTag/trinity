@@ -137,8 +137,31 @@ module Simulator {
         if (cfg.clock_freq_hz == 0) {
             return 0;
         }
-        return cycles * 1000000000 / cfg.clock_freq_hz;
+        // `cycles * 1000000000` overflows u32 for cycles >= 5: at cycles=100
+        // the product is 100_000_000_000 against a u32 max of 4_294_967_295.
+        // Widen the intermediate to u64 -- and then SATURATE, because the
+        // result is not always small: at 2_000_000_000 cycles on a 100 MHz
+        // clock it is 20_000_000_000, and a bare `as u32` wraps it to
+        // 2_820_130_816. The hand-written model in rings/ring-090-rust, which
+        // this spec is supposed to define, has always had that guard; the spec
+        // did not, and the two disagreed on 126 of 1190 differential cases.
+        var ns : u64 = (cycles as u64) * 1000000000 / (cfg.clock_freq_hz as u64);
+        if (ns > 4294967295) {
+            return 4294967295;
+        }
+        return ns as u32;
     }
+
+    // The case that made the spec and rings/ring-090-rust disagree: at
+    // 2_000_000_000 cycles on the default 100 MHz clock the nanosecond count is
+    // 20_000_000_000, and a bare `as u32` wraps it to 2_820_130_816.
+    test "sim_time_ns_saturates_instead_of_wrapping"
+        const cfg = sim_config("sat", 0);
+        assert(sim_time_ns(cfg, 2000000000) == 4294967295);
+
+    test "sim_time_ns_is_exact_below_the_ceiling"
+        const cfg2 = sim_config("exact", 0);
+        assert(sim_time_ns(cfg2, 100) == 1000);
 
     fn sim_time_us(cfg: SimConfig, cycles: u32) -> u32 {
         return sim_time_ns(cfg, cycles) / 1000;
@@ -152,7 +175,9 @@ module Simulator {
         if (cfg.clock_freq_hz == 0) {
             return 0;
         }
-        return ns * cfg.clock_freq_hz / 1000000000;
+        // Same overflow as sim_time_ns, inverted: at ns=1000 and a 100 MHz
+        // clock the product is 100_000_000_000, far past the u32 max.
+        return ((ns as u64) * (cfg.clock_freq_hz as u64) / 1000000000) as u32;
     }
 
     fn has_errors(r: SimResult) -> bool {

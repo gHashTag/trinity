@@ -1,14 +1,14 @@
 // specs/git/operations.t27
 // Git Command Operations
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module GitOperations {
     use base::types;
     use git::schema;
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Core Git Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // run executes a git command with the given arguments
     fn run(args: [str], opts: Options) -> Result<Result, GitError> {
@@ -90,9 +90,9 @@ module GitOperations {
         // Implementation: Run git remote get-url name
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Branch Operations
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     // branch_list returns all local branches
     fn branch_list(cwd: str) -> Result<[str], GitError> {
@@ -109,9 +109,9 @@ module GitOperations {
         // Implementation: Run git branch [-D|-d] name
     }
 
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
     // Tests
-    // ====================================================================
+    // ════════════════════════════════════════════════════════════════════
 
     test "run_with_valid_args" {
         var opts = Options {
@@ -137,7 +137,7 @@ module GitOperations {
     test "options_construction" {
         var opts = Options {
             cwd = "/path/to/repo",
-            env = [["PATH", "/usr/bin"], ["HOME", "/home/user"]],
+            env = [("PATH", "/usr/bin"), ("HOME", "/home/user")],
         };
         assert(opts.cwd == "/path/to/repo");
         assert(opts.env.len == 2);

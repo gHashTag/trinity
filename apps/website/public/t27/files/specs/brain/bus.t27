@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-; bus.t27 -- inter-region messaging contract (spec-first)
+; bus.t27 — inter-region messaging contract (spec-first)
 ; Message shapes and routing rules expand with region specs.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 

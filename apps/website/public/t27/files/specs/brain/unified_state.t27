@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-; unified_state.t27 -- Trinity Brain unified state (spec-first)
+; unified_state.t27 — Trinity Brain unified state (spec-first)
 ; Normative types for Strand VI. Zig/C/Verilog are generated under gen/ via t27c.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 

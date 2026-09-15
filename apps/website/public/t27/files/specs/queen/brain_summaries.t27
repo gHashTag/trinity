@@ -3,14 +3,14 @@
 // Queen Brain Summaries Pipeline Specification
 // Ring 061 - Episode summarization for Queen brain
 // Defines how experience episodes are aggregated into summaries
-// phi^2 + 1/phi^2 = 3 | TRINITY
+// φ² + 1/φ² = 3 | TRINITY
 
 module BrainSummaries {
     use queen::lotus;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 1. Summary Configuration
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     const MAX_EPISODES_PER_SUMMARY : usize = 50;
     const SUMMARY_RETENTION_DAYS : usize = 90;
@@ -22,9 +22,9 @@ module BrainSummaries {
     const SUMMARY_TYPE_RING : u8 = 2;
     const SUMMARY_TYPE_PHASE : u8 = 3;
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 2. Summary Data Structures
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     // Brain summary record
     struct BrainSummary {
@@ -72,11 +72,11 @@ module BrainSummaries {
         last_summary_id : usize,
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 3. Episode Aggregation
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // aggregate_episodes() -> BrainSummary
+    // aggregate_episodes() → BrainSummary
     // Aggregate episodes into a summary
     fn aggregate_episodes(episodes: []lotus.Episode, summary_type: u8) -> BrainSummary {
         var summary : BrainSummary = undefined;
@@ -136,11 +136,11 @@ module BrainSummaries {
         return summary;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 4. Quality Assessment
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // determine_quality() -> u8
+    // determine_quality() → u8
     // Determine overall quality from metrics
     fn determine_quality(summary: BrainSummary) -> u8 {
         const success_rate : f64;
@@ -161,11 +161,11 @@ module BrainSummaries {
         }
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 5. Summary Persistence
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // save_summary() -> bool
+    // save_summary() → bool
     // Save summary to persistent storage
     fn save_summary(summary: BrainSummary, path: []u8) -> bool {
         // Implementation: serialize and write to file
@@ -173,7 +173,7 @@ module BrainSummaries {
         return true;
     }
 
-    // load_summary() -> BrainSummary
+    // load_summary() → BrainSummary
     // Load summary from persistent storage
     fn load_summary(summary_id: usize) -> BrainSummary {
         var summary : BrainSummary = undefined;
@@ -181,11 +181,11 @@ module BrainSummaries {
         return summary;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 6. Summary Generation
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
-    // generate_daily_summary() -> BrainSummary
+    // generate_daily_summary() → BrainSummary
     // Generate daily summary of episodes
     fn generate_daily_summary(day_start: u64, day_end: u64) -> BrainSummary {
         var episodes : [MAX_EPISODES_PER_SUMMARY]lotus.Episode;
@@ -201,7 +201,7 @@ module BrainSummaries {
         return summary;
     }
 
-    // generate_ring_summary() -> BrainSummary
+    // generate_ring_summary() → BrainSummary
     // Generate summary for a specific ring
     fn generate_ring_summary(ring_number: usize) -> BrainSummary {
         var episodes : [MAX_EPISODES_PER_SUMMARY]lotus.Episode;
@@ -217,7 +217,7 @@ module BrainSummaries {
         return summary;
     }
 
-    // generate_phase_summary() -> BrainSummary
+    // generate_phase_summary() → BrainSummary
     // Generate summary for a phase
     fn generate_phase_summary(phase_number: u8, ring_start: usize, ring_end: usize) -> BrainSummary {
         var episodes : [MAX_EPISODES_PER_SUMMARY]lotus.Episode;
@@ -234,9 +234,9 @@ module BrainSummaries {
         return summary;
     }
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 7. TDD - Tests
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     test aggregate_empty_episodes
         var episodes : [0]lotus.Episode = undefined;
@@ -305,9 +305,9 @@ module BrainSummaries {
         when quality = determine_quality(summary)
         then quality == lotus.QUALITY_BAD
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 8. TDD - Invariants
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     invariant summary_totals_consistency
         // Total cycles should equal sum of successful and failed
@@ -356,9 +356,9 @@ module BrainSummaries {
         const summary = aggregate_episodes(&episodes, SUMMARY_TYPE_DAILY);
         assert summary.max_cycle_time_ms >= summary.min_cycle_time_ms
 
-    // =====================================================
+    // ═════════════════════════════════════════════════════
     // 9. TDD - Benchmarks
-    // =========================================================================
+    // ═════════════════════════════════════════════════════════════════════════
 
     bench aggregate_50_episodes
         // Measure: cycles to aggregate 50 episodes
