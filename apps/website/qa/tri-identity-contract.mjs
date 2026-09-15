@@ -459,6 +459,26 @@ try {
   await world.fire(IDENTITY_ANSWER_MS)
   eq([world.client.getSnapshot(), world.log.bridgePosts.length], [{ state: 'unavailable', code: 'no_answer' }, 0], 'a bridge that never loads ends the pending chip after 10 s')
 
+  // A slow bridge is not a broken one (a cold visit on a slow link: its document
+  // takes longer than the deadline). The chip says so, but the frame is not
+  // reloaded by the retry or by Retry, and it is asked as soon as it loads.
+  world = fakeWorld()
+  world.start()
+  await world.fire(IDENTITY_ANSWER_MS)
+  eq(world.client.getSnapshot(), { state: 'unavailable', code: 'no_answer' }, 'a bridge still loading at the deadline: no answer on the chip')
+  world.load()
+  eq(world.log.bridgePosts.length, 1, 'the slow bridge is asked as soon as it loads, not at the next retry')
+  await world.deliver(answer(ask(world), 'signed-out'))
+  eq([world.client.getSnapshot(), world.log.mounts.length, world.log.srcs, world.timerCount()], [{ state: 'signed-out' }, 1, [], 0], 'and its answer is heard: one load, nothing left running')
+  world = fakeWorld()
+  world.start()
+  await world.fire(IDENTITY_ANSWER_MS)
+  await world.fire(5000)
+  world.client.retry()
+  eq([world.log.mounts.length, world.log.srcs, world.log.bridgePosts.length], [1, [], 0], 'the retry and Retry leave a loading bridge loading: no reload')
+  world.load()
+  eq(world.log.bridgePosts.length, 1, 'and it is asked once it loads')
+
   // Back off on failures that may pass: 5 s, 15 s, 60 s, 300 s, 300 s.
   world = fakeWorld()
   world.start()

@@ -343,8 +343,9 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
       if (nonce === null ? !askOnLoad : openNonce !== nonce) return
       // A late answer is refused from here on.
       openNonce = null
-      askOnLoad = false
-      frameSuspect = !viaParent
+      // Still loading is slow, not broken: the load asks. Loaded and silent may
+      // be an error page: the next ask loads the bridge again.
+      if (nonce !== null) frameSuspect = !viaParent
       unavailable('no_answer')
     }, IDENTITY_ANSWER_MS)
   }
@@ -364,7 +365,7 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
     owed = false
     if (viaParent) return post()
     if (!frame) return
-    if (frameState === 'blank' || frameSuspect) {
+    if (frameState === 'blank' || (frameSuspect && frameState === 'loaded')) {
       frameSuspect = false
       frameState = 'loading'
       openNonce = null
@@ -382,6 +383,7 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
 
   function onBridgeLoad() {
     frameState = 'loaded'
+    frameSuspect = false
     if (!askOnLoad) return
     askOnLoad = false
     post()
