@@ -71,10 +71,17 @@ jobs:
           # this map" while the same build served from /trinity/ worked. Copying
           # the directories rather than named files means the next data file
           # arrives without anyone remembering to add a line here.
-          for dir in t27 queen wasm fonts; do
-            [ -d "apps/website/dist/$dir" ] || continue
+          # Every directory the build produced, not a list of the ones that
+          # existed when this was written. The name list said t27 queen wasm
+          # fonts while dist also held agents crons docs functions skills tools
+          # -- the six generated catalogs behind the Explorer tabs -- so those
+          # were live on the apex only because someone had copied them by hand,
+          # and the next clean deploy would have 404ed them.
+          for path in apps/website/dist/*/; do
+            dir=$(basename "$path")
+            [ "$dir" = assets ] && continue   # copied above, then pruned
             mkdir -p "ghio/$dir"
-            cp -R "apps/website/dist/$dir/." "ghio/$dir/"
+            cp -R "$path." "ghio/$dir/"
           done
           node - <<'EOF'
           const {readFileSync, readdirSync, unlinkSync} = require('node:fs');
