@@ -414,9 +414,24 @@ export const marked = {
   fields: record.length,
   /** Fields a case that still stands pays for. */
   measured: record.filter((r) => r.anchoredTo.some((a) => a !== 'withdrawn')).length,
-  /** Fields whose only anchor is the case this document withdrew. */
+  /**
+   * Fields whose only anchor is the COUNT this document withdrew -- the
+   * defective-row count in a conformance vector set. No case was withdrawn;
+   * all three still stand. Calling it a withdrawn case misnames what was
+   * retracted, on a page whose whole subject is naming that correctly.
+   */
   onWithdrawn: record.filter((r) => r.anchoredTo.every((a) => a === 'withdrawn') && r.anchoredTo.length > 0).length,
 }
+
+/**
+ * The two marks, in one place. The table derives its glyph per row; the prose
+ * used to type `†` beside it, and drifted -- the sent document's open question
+ * called the withdrawn-anchor field `†` while the table drew `‡` and the note
+ * below it said that row is counted apart. Prose disagreeing with its own table
+ * is the exact defect this document exists to condemn, so the glyph is read
+ * from here by both and can no longer be typed twice.
+ */
+export const MARK = { anchored: '†', onWithdrawn: '‡' } as const
 
 export const questions: Bi[] = [
   {
@@ -424,8 +439,8 @@ export const questions: Bi[] = [
     ru: 'Место ли этой таблице в самом позиционном документе — или в отдельном документе о требованиях к отчётности, на который он ссылается?',
   },
   {
-    en: `${marked.fields} fields is a large ask for a first revision. If the team wants a shorter list, which failure is it willing to leave undetectable? I would defend the ${marked.measured} marked † that rest on a case that still stands before the rest; a further ${marked.onWithdrawn} is marked † on the strength of a case this document has since withdrawn, and I would not defend it at all.`,
-    ru: `${marked.fields} полей — много для первой редакции. Если группа хочет короче, какой отказ она готова оставить необнаружимым? Я защищал бы прежде всего ${marked.measured} помеченных †, стоящих на случае, который ещё держится; ещё ${marked.onWithdrawn} поле помечено † силой случая, который этот документ с тех пор отозвал, и его я защищать не стал бы вовсе.`,
+    en: `${marked.fields} fields is a large ask for a first revision. If the team wants a shorter list, which failure is it willing to leave undetectable? I would defend the ${marked.measured} marked ${MARK.anchored} that rest on a case that still stands before the rest; a further ${marked.onWithdrawn} carries ${MARK.onWithdrawn} rather than ${MARK.anchored}, anchored only to a count this document has since withdrawn, and that one I would not defend at all.`,
+    ru: `${marked.fields} полей — много для первой редакции. Если группа хочет короче, какой отказ она готова оставить необнаружимым? Я защищал бы прежде всего ${marked.measured} помеченных ${MARK.anchored}, стоящих на случае, который ещё держится; ещё ${marked.onWithdrawn} поле несёт ${MARK.onWithdrawn}, а не ${MARK.anchored}: за ним стоит только число, которое этот документ с тех пор отозвал, и его я защищать не стал бы вовсе.`,
   },
   {
     en: 'The measurement-boundary row has independent support: George Williams raised exactly this objection on the list on 8 September, about an energy figure whose envelope excluded memory fetching until the appendix. I have asked him to co-sign that row. It is his objection before it is my table.',

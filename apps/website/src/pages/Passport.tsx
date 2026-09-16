@@ -7,7 +7,9 @@
 // reasons: /passport is the record itself (what a reviewer checks), and
 // /passport/research is the evidence behind it (what licenses us to propose it).
 // Both render src/content/passport.ts and nothing else -- no number is typed in
-// this file, and each case names the artefact it came from.
+// this file, and each case names the artefact it came from. The two marks come
+// from there as well: they were the one thing this file still spelled out, and
+// the prose spelled them out too, so they drifted.
 //
 // The Queen's shell mounts the same component at ?tab=passport&embed=1, so the
 // map, the page and the message to the working group are one text.
@@ -16,7 +18,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 import {
-  meta, standing, scope, problem, cases, record, anchorNote,
+  meta, standing, scope, problem, cases, record, anchorNote, MARK,
   practices, cost, questions, withdrawn, type Bi,
 } from '../content/passport'
 import { systems, survey, limits } from '../content/passportRecords'
@@ -63,9 +65,10 @@ const T = {
   },
   source: { en: 'source', ru: 'источник' },
   anchored: { en: 'rests on a measured case that still stands', ru: 'опирается на измеренный случай, который ещё держится' },
-  // Kept separate from †: the case behind this one was withdrawn by this same
-  // document, so counting its mark with the others would overstate the footing.
-  onWithdrawn: { en: 'rests only on a case this document withdrew', ru: 'опирается только на случай, отозванный этим документом' },
+  // Kept separate from †: what was withdrawn here is a COUNT, not a case --
+  // all three cases still stand. Nothing measured pays for this row, so
+  // counting its mark with the others would overstate the footing.
+  onWithdrawn: { en: 'rests only on a count this document withdrew', ru: 'опирается только на число, отозванное этим документом' },
   survey: { en: 'Filled for seven published results', ru: 'Заполнено по семи опубликованным результатам' },
   surveyLede: {
     en: 'The last open question asks whether anyone would try filling this record for one real result. Rather than wait for an answer, we filled it — against seven results other people published, five of them neuromorphic parts, one a benchmark framework, and one a control drawn from a body that already operates formal disclosure rules.',
@@ -139,7 +142,7 @@ export default function Passport({ face = 'record' }: { face?: 'record' | 'resea
                           <th scope="row">
                             {L(r.field)}
                             {r.anchoredTo.length > 0 && (
-                              <abbr title={L(onWithdrawn ? T.onWithdrawn : T.anchored)}> {onWithdrawn ? '‡' : '†'}</abbr>
+                              <abbr title={L(onWithdrawn ? T.onWithdrawn : T.anchored)}> {onWithdrawn ? MARK.onWithdrawn : MARK.anchored}</abbr>
                             )}
                           </th>
                           <td>{L(r.what)}</td>

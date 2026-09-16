@@ -15,7 +15,7 @@
 // Node 22 needs --experimental-strip-types to import the TypeScript modules.
 
 import { readFileSync } from "node:fs";
-import { cases, record, marked, questions, anchorNote, meta, standing } from "../src/content/passport.ts";
+import { cases, record, marked, questions, anchorNote, meta, standing, MARK } from "../src/content/passport.ts";
 import { axes, plotted, area } from "../src/content/passportExamples.ts";
 import { systems, coverage, tally, blindSpots, survey, limits } from "../src/content/passportRecords.ts";
 
@@ -53,14 +53,27 @@ const surviving = record.filter((r) => r.anchoredTo.some((a) => a !== "withdrawn
 const onlyWithdrawn = record.filter((r) => r.anchoredTo.length > 0 && r.anchoredTo.every((a) => a === "withdrawn")).length;
 check(marked.fields === record.length && marked.fields === 14, "fourteen fields, counted from the array and not typed beside it");
 check(marked.measured === surviving && marked.measured === 5, "five fields rest on a case that still stands");
-check(marked.onWithdrawn === onlyWithdrawn && marked.onWithdrawn === 1, "one field rests only on the case this document withdrew");
+check(marked.onWithdrawn === onlyWithdrawn && marked.onWithdrawn === 1, "one field rests only on the count this document withdrew");
 check(marked.measured + marked.onWithdrawn === 6, "six fields are marked in total — the sent document says four, and that is the defect this derivation exists to prevent");
 check(record.every((r) => r.anchoredTo.every((a) => ["1", "2", "3", "withdrawn"].includes(a))), "every anchor names a case that exists");
 for (const q of [questions[1].en, questions[1].ru]) {
   check(q.includes(String(marked.fields)) && q.includes(String(marked.measured)) && q.includes(String(marked.onWithdrawn)), "the open question quotes the derived counts, in both languages");
 }
-check(anchorNote.en.includes("‡") && anchorNote.ru.includes("‡"), "the note explains the second mark, in both languages");
-check(/onWithdrawn \? '‡' : '†'/.test(page), "the table renders the two marks apart");
+check(anchorNote.en.includes(MARK.onWithdrawn) && anchorNote.ru.includes(MARK.onWithdrawn), "the note explains the second mark, in both languages");
+check(MARK.anchored !== MARK.onWithdrawn, "the two marks are two different glyphs");
+check(/onWithdrawn \? MARK\.onWithdrawn : MARK\.anchored/.test(page), "the table renders the two marks apart, reading both from MARK");
+
+// The defect this pair exists to stop, and the reason MARK is a constant at all:
+// the sent document's open question called the withdrawn-anchor field †, while
+// the table drew ‡ for it and the note underneath said that row is counted apart
+// from the † rows. Prose contradicting its own table, in a document whose thesis
+// is that prose must not. Typing the glyph anywhere but MARK lets it happen again.
+for (const [lang, q] of [["English", questions[1].en], ["Russian", questions[1].ru]]) {
+  check(q.includes(MARK.onWithdrawn), `${lang}: the open question gives the withdrawn-anchor field its own mark, not †`);
+  const anchoredMarks = q.split(MARK.anchored).length - 1;
+  check(anchoredMarks === 2, `${lang}: † appears for the ${marked.measured} anchored fields and once to say the sixth is not one of them`);
+}
+check(!page.includes(`'${MARK.anchored}'`) && !page.includes(`'${MARK.onWithdrawn}'`), "the page types neither glyph as a literal");
 
 // ---- 3. The survey matrix lines up with the table it tests ------------------
 check(coverage.length === record.length, `the matrix has ${coverage.length} rows for ${record.length} fields`);
