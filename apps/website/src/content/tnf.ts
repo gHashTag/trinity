@@ -85,10 +85,10 @@ export const hero = {
       tag: 'measured' as Tag,
     },
     {
-      value: '0.1797',
-      unit: 'MHz/LUT',
-      label: { en: 'Throughput per area, 20 range-bearing formats', ru: 'Пропускная способность на площадь, 20 форматов с диапазоном' },
-      note: { en: '+10.2% over binary32 (0.1631); 6.1× over posit32 (0.0295)', ru: '+10.2% к binary32 (0.1631); 6.1× к posit32 (0.0295)' },
+      value: '463',
+      unit: 'LUT',
+      label: { en: 'Whole ternary neuron, 20 range-bearing formats', ru: 'Целый тернарный нейрон, 20 форматов с диапазоном' },
+      note: { en: 'Against binary32 472 LUT (a 1.9% edge, stated as a tie) and posit32 953 LUT', ru: 'Против binary32 — 472 LUT (перевес 1.9%, считаем ничьёй) и posit32 — 953 LUT' },
       tag: 'measured' as Tag,
     },
     {
@@ -136,8 +136,8 @@ export const claim = {
       n: '2',
       name: { en: 'Forced, not chosen', ru: 'Вынужденность, а не выбор' },
       body: {
-        en: 'The alphabet radix is the only r > 1 with r² = r + 1 (Theorem 25). The E/M split is the solution of a maximisation with the range constraint active (Theorem 23). Once the workload range is measured, there is no free parameter left to tune.',
-        ru: 'Основание алфавита — единственное r > 1 с r² = r + 1 (Теорема 25). Разбиение E/M — решение задачи максимизации с активным ограничением диапазона (Теорема 23). Как только диапазон нагрузки измерен, свободного параметра для тюнинга не остаётся.',
+        en: 'The alphabet radix is the only r > 1 with r² = r + 1 (Uniqueness of the golden alphabet within the lattice-closure class). The E/M split is the solution of a maximisation with the range constraint active (Theorem 23). Once the workload range is measured, there is no free parameter left to tune.',
+        ru: 'Основание алфавита — единственное r > 1 с r² = r + 1 (теорема «Уникальность золотого алфавита в классе замыкания решётки»). Разбиение E/M — решение задачи максимизации с активным ограничением диапазона (Теорема 23). Как только диапазон нагрузки измерен, свободного параметра для тюнинга не остаётся.',
       },
       tag: 'proved' as Tag,
     },
@@ -145,8 +145,8 @@ export const claim = {
       n: '3',
       name: { en: 'Predictive', ru: 'Предсказательность' },
       body: {
-        en: 'Mean relative error is a closed form in one number, the mantissa width: E[|rel err|] = ½·E[1/s]·2^−(M+1), independent of the exponent (Theorem 1). Predicted 0.3861 on our workload; measured 0.3756 on average across eight rungs, spread 0.369–0.390. The accumulator can therefore be sized before it is built.',
-        ru: 'Средняя относительная ошибка — замкнутая форма от одного числа, ширины мантиссы: E[|отн. ошибка|] = ½·E[1/s]·2^−(M+1), независимо от экспоненты (Теорема 1). Предсказание 0.3861 на нашей нагрузке; измерено в среднем 0.3756 на восьми ступенях, разброс 0.369–0.390. Значит, аккумулятор можно отмерить до того, как он построен.',
+        en: 'Mean relative error is a closed form in one number, the mantissa width: E[|rel err|] = ½·E[1/s]·2^−(M+1), independent of the exponent (Theorem 1). Predicted 0.3466 for a uniform significand; the eight measured rungs average 0.3700, spread 0.34–0.49. The accumulator can therefore be sized before it is built.',
+        ru: 'Средняя относительная ошибка — замкнутая форма от одного числа, ширины мантиссы: E[|отн. ошибка|] = ½·E[1/s]·2^−(M+1), независимо от экспоненты (Теорема 1). Предсказание 0.3466 при равномерной значащей; восемь измеренных ступеней дают в среднем 0.3700, разброс 0.34–0.49. Значит, аккумулятор можно отмерить до того, как он построен.',
       },
       tag: 'measured' as Tag,
     },
@@ -199,8 +199,8 @@ export const formats = {
       {
         h: { en: 'Uniqueness of the golden alphabet', ru: 'Уникальность золотого алфавита' },
         b: {
-          en: 'Require that the product of two weights be expressible in the additive lattice the datapath already computes — that is r² = r + 1 — and r = φ follows uniquely (Theorem 25).',
-          ru: 'Потребуем, чтобы произведение двух весов выражалось в аддитивной решётке, которую датапуть уже считает, то есть r² = r + 1 — и r = φ следует единственно (Теорема 25).',
+          en: 'Require that the product of two weights be expressible in the additive lattice the datapath already computes — that is r² = r + 1 — and r = φ follows uniquely (Uniqueness of the golden alphabet within the lattice-closure class).',
+          ru: 'Потребуем, чтобы произведение двух весов выражалось в аддитивной решётке, которую датапуть уже считает, то есть r² = r + 1 — и r = φ следует единственно (теорема «Уникальность золотого алфавита в классе замыкания решётки»).',
         },
         tag: 'proved' as Tag,
       },
@@ -252,26 +252,31 @@ export const frontier = {
     en: 'GFTernary lands at 66 LUT where the bare wire is 112: decoding a two-bit alphabet lets the synthesiser simplify the register downstream. Against posit32 that is 7.8× in area and 19.9× in frequency.',
     ru: 'GFTernary даёт 66 LUT там, где голый провод — 112: декод двухбитного алфавита позволяет синтезатору упростить регистр ниже по потоку. Против posit32 это 7.8× по площади и 19.9× по частоте.',
   },
+  // Ordered by area, ascending. The MHz/LUT column this table used to carry is
+  // withdrawn: LUT count is identical across all five seeds, while the frequency
+  // it divided by is not, so the ranking it produced was a ranking of seeds. The
+  // rank column went with it -- eleven of the twenty formats are shown, and a
+  // position among twenty cannot be read off eleven rows.
   neuronCaption: {
-    en: 'One ternary neuron, whole accumulator observable — throughput per area, MHz per LUT',
-    ru: 'Один тернарный нейрон, весь аккумулятор наблюдаем — пропускная способность на площадь, МГц на LUT',
+    en: 'One ternary neuron, whole accumulator observable — by area, eleven of the twenty formats',
+    ru: 'Один тернарный нейрон, весь аккумулятор наблюдаем — по площади, одиннадцать форматов из двадцати',
   },
   neuron: [
-    { rank: 1, name: 'GFTernary', lut: 463, tpa: 0.1797, ours: true },
-    { rank: 2, name: 'binary32', lut: 472, tpa: 0.1631, ours: false },
-    { rank: 3, name: 'fp8 e5m2', lut: 480, tpa: 0.1397, ours: false },
-    { rank: 4, name: 'VAX F', lut: 527, tpa: 0.1395, ours: false },
-    { rank: 5, name: 'fp8 e4m3', lut: 485, tpa: 0.1382, ours: false },
-    { rank: 6, name: 'GF10', lut: 533, tpa: 0.1354, ours: true },
-    { rank: 7, name: 'binary16', lut: 522, tpa: 0.1213, ours: false },
-    { rank: 10, name: 'TNF32', lut: 569, tpa: 0.1176, ours: true },
-    { rank: 12, name: 'TNF16', lut: 565, tpa: 0.1173, ours: true },
-    { rank: 17, name: 'takum16', lut: 789, tpa: 0.0747, ours: false },
-    { rank: 20, name: 'posit32', lut: 953, tpa: 0.0295, ours: false },
+    { name: 'GFTernary', lut: 463, ours: true },
+    { name: 'binary32', lut: 472, ours: false },
+    { name: 'fp8 e5m2', lut: 480, ours: false },
+    { name: 'fp8 e4m3', lut: 485, ours: false },
+    { name: 'binary16', lut: 522, ours: false },
+    { name: 'VAX F', lut: 527, ours: false },
+    { name: 'GF10', lut: 533, ours: true },
+    { name: 'TNF16', lut: 565, ours: true },
+    { name: 'TNF32', lut: 569, ours: true },
+    { name: 'takum16', lut: 789, ours: false },
+    { name: 'posit32', lut: 953, ours: false },
   ],
   neuronNote: {
-    en: '8 of the 20 slots are ours (GFTernary, TNF, BNF, GF families). The advantage over the next format is +10.2%; over the last, 6.1×. The claim that survives on buyable silicon is about fixed fields: no regime codec, no exponent to compute.',
-    ru: '8 из 20 позиций — наши (GFTernary, TNF, BNF, семейства GF). Преимущество над следующим форматом +10.2%, над последним — 6.1×. На покупаемом кремнии выживает заявление про фиксированные поля: нет regime-кодека, нет экспоненты для вычисления.',
+    en: '8 of the 20 slots are ours (GFTernary, TNF, BNF, GF families). Read this table by area: 463 LUT against 472 for binary32 and 953 for posit32 — LUT count is bit-identical across all five seeds, while up to 37 of the 210 pairwise throughput verdicts change winner from seed to seed. The 9-LUT edge over binary32 is 1.9% and is stated as a tie, not a win. What survives on a buyable FPGA part is the claim about fixed fields: no regime codec, no exponent to compute.',
+    ru: '8 из 20 позиций — наши (GFTernary, TNF, BNF, семейства GF). Читайте эту таблицу по площади: 463 LUT против 472 у binary32 и 953 у posit32 — счёт LUT побитово одинаков на всех пяти сидах, тогда как до 37 из 210 попарных вердиктов по пропускной способности меняют победителя от сида к сиду. Перевес в 9 LUT над binary32 — это 1.9%, и мы считаем это ничьёй, а не победой. На покупаемой FPGA-микросхеме выживает заявление про фиксированные поля: нет regime-кодека, нет экспоненты для вычисления.',
   },
   ops: {
     title: { en: 'What an operation costs', ru: 'Сколько стоит операция' },
@@ -344,7 +349,7 @@ export const theorems = {
       id: 'T1',
       name: { en: 'Precision law', ru: 'Закон точности' },
       stmt: { en: 'E[|rel err|] = ½·E[1/s]·2^−(M+1), independent of the exponent. Constants: ½ln2 = 0.3466 for a uniform significand on [1,2), ½(2ln2)⁻¹ = 0.3607 under Benford.', ru: 'E[|отн. ошибка|] = ½·E[1/s]·2^−(M+1), независимо от экспоненты. Константы: ½ln2 = 0.3466 при равномерной значащей на [1,2), ½(2ln2)⁻¹ = 0.3607 по Бенфорду.' },
-      why: { en: 'Predicted 0.3861, measured 0.3756 across eight rungs. This is what makes the accumulator sizeable before it is built.', ru: 'Предсказано 0.3861, измерено 0.3756 на восьми ступенях. Именно это позволяет отмерить аккумулятор до постройки.' },
+      why: { en: 'Predicted 0.3466, measured 0.3700 on average across eight rungs, spread 0.34–0.49. This is what makes the accumulator sizeable before it is built.', ru: 'Предсказано 0.3466, измерено в среднем 0.3700 на восьми ступенях, разброс 0.34–0.49. Именно это позволяет отмерить аккумулятор до постройки.' },
       tag: 'measured' as Tag,
     },
     {
@@ -484,7 +489,7 @@ export const theorems = {
       id: 'T21',
       name: { en: 'The binary scale is the unique implementable optimum', ru: 'Бинарная шкала — единственный реализуемый оптимум' },
       stmt: { en: 'Scaling is a shift if and only if the radix is 2. Corollary 21: between the shift and φ there is nothing.', ru: 'Шкалирование есть сдвиг ⟺ основание равно 2. Следствие 21: между сдвигом и φ ничего нет.' },
-      why: { en: 'Together with T25 this closes the radix question from both sides: 2 for the scale, φ for the alphabet, and no third option in between.', ru: 'Вместе с Т25 это закрывает вопрос основания с двух сторон: 2 для шкалы, φ для алфавита, и никакого третьего варианта между ними.' },
+      why: { en: 'Together with the uniqueness of the golden alphabet this closes the radix question from both sides: 2 for the scale, φ for the alphabet, and no third option in between.', ru: 'Вместе с уникальностью золотого алфавита это закрывает вопрос основания с двух сторон: 2 для шкалы, φ для алфавита, и никакого третьего варианта между ними.' },
       tag: 'proved' as Tag,
     },
     {
@@ -772,8 +777,8 @@ export const landscape = {
       url: 'https://posithub.org/docs/Posits4.pdf',
       kind: 'context' as const,
       line: {
-        en: 'The reference tapered family. Measured here, not argued about: posit16 at 302 LUT and 62.39 MHz isolated, posit32 at 953 LUT and 0.0295 MHz/LUT in the neuron. Its narrowing is −0.254 bits per binade. Taper is paid in latency rather than area: all fourteen fixed-field formats sit above all three tapered ones in frequency, while in area they overlap.',
-        ru: 'Референсное tapered-семейство. Здесь оно измерено, а не обсуждается: posit16 — 302 LUT и 62.39 МГц изолированно, posit32 — 953 LUT и 0.0295 МГц/LUT в нейроне. Сужение — −0.254 бита на бинаду. Taper платится задержкой, а не площадью: все четырнадцать фиксированно-полевых форматов выше всех трёх tapered по частоте, тогда как по площади они перекрываются.',
+        en: 'The reference tapered family. Measured here, not argued about: posit16 at 302 LUT isolated, posit32 at 953 LUT in the neuron against GFTernary\'s 463. Its narrowing is −0.254 bits per binade. The area cost is the finding; the frequency comparison that used to stand beside it is withdrawn, because verdicts on that axis change winner between seeds.',
+        ru: 'Референсное tapered-семейство. Здесь оно измерено, а не обсуждается: posit16 — 302 LUT изолированно, posit32 — 953 LUT в нейроне против 463 у GFTernary. Сужение — −0.254 бита на бинаду. Находка — это цена по площади; сравнение по частоте, стоявшее рядом, отозвано: вердикты на этой оси меняют победителя от сида к сиду.',
       },
     },
     {
@@ -855,8 +860,8 @@ export const findings = {
       n: '01',
       h: { en: 'A theorem-chosen radix against an empirically chosen one', ru: 'Основание, выбранное теоремой, против выбранного эмпирически' },
       b: {
-        en: 'AetherFloat (26 Feb 2026) removes the hidden leading bit, base-2 normalisation and sign-magnitude coding to escape the AMAX block-scaling penalty — the same ground we stand on. The difference is not the outcome but the warrant: their quad-radix is proposed, ours is forced. T25 gives r² = r + 1 as the only closure condition, and T27 enumerates every multiply-free scale by companion-matrix sparsity. We can state what cannot exist; an empirical radix cannot.',
-        ru: 'AetherFloat (26.02.2026) убирает скрытый ведущий бит, нормализацию по основанию 2 и sign-magnitude кодирование, чтобы уйти от штрафа блочного масштабирования AMAX — это та же земля, на которой стоим мы. Разница не в результате, а в основании права: их quad-radix предложен, наш — вынужден. Т25 даёт r² = r + 1 как единственное условие замкнутости, Т27 перечисляет все multiply-free шкалы по разрежённости companion-матрицы. Мы можем сказать, чего существовать не может; эмпирический радикс — не может.',
+        en: 'AetherFloat (26 Feb 2026) removes the hidden leading bit, base-2 normalisation and sign-magnitude coding to escape the AMAX block-scaling penalty — the same ground we stand on. The difference is not the outcome but the warrant: their quad-radix is proposed, ours is forced. The uniqueness theorem gives r² = r + 1 as the only closure condition, and the companion-matrix enumeration covers every multiply-free scale by sparsity. We can state what cannot exist; an empirical radix cannot.',
+        ru: 'AetherFloat (26.02.2026) убирает скрытый ведущий бит, нормализацию по основанию 2 и sign-magnitude кодирование, чтобы уйти от штрафа блочного масштабирования AMAX — это та же земля, на которой стоим мы. Разница не в результате, а в основании права: их quad-radix предложен, наш — вынужден. Теорема единственности даёт r² = r + 1 как единственное условие замкнутости, а перечисление по разрежённости companion-матрицы покрывает все multiply-free шкалы. Мы можем сказать, чего существовать не может; эмпирический радикс — не может.',
       },
       tag: 'proved' as Tag,
       refs: [{ label: 'AetherFloat · arXiv:2603.08741', url: 'https://arxiv.org/abs/2603.08741' }],

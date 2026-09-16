@@ -210,6 +210,21 @@ export const MODULES = [
       body: 'Приложение app.t27.ai внутри игры. Каждый экран — настоящая страница приложения во фрейме: лента, агент, ИИ-конвейер от сценария через голос, фото, липсинк и видео к редактору, профиль и CRM владельца. Экран записан в адресе (?tab=tri&screen=chat, а для одного профиля ещё path=), поэтому ссылка его открывает, а перезагрузка сохраняет. На t27.ai Telegram не даёт своему входу загрузиться внутри чужого сайта, поэтому экраны, которым нужен человек, говорят об этом и ведут в само приложение; лента работает для всех. Пока приложение не разрешит t27.ai показывать себя во фрейме, экран не отвечает и говорит об этом. Открывается буквой r.',
     },
   },
+  {
+    tab: 'passport',
+    key: 'b',
+    glyph: '▤',
+    en: {
+      name: 'PASSPORT',
+      hint: 'What must travel with a result (key b)',
+      body: 'The record a reported result has to carry so that a reader who holds neither the part nor the workload can tell whether two numbers differ because the systems do or because the conditions did — fourteen fields, proposed for team review to the OCP neuromorphic working group on 16 September 2026, and proposed is all it is: nobody has agreed to include it. Four fields are marked †, meaning a measured failure of our own pays for them: one set of weights that read as two models 4.44 standard errors apart, two artefacts differing in 43.70 percent of their parameters behind a metric that moved 0.084 of a standard error, and one function whose two implementations differed 5.4× in LUTs over the field widths rather than the algorithm. The cases are not neuromorphic and no silicon exists; both are stated on the page rather than smoothed. The numbers this document used to carry and no longer can are listed too, with the reason each was withdrawn. Opens on the letter b.',
+    },
+    ru: {
+      name: 'ПАСПОРТ',
+      hint: 'Что обязано ехать вместе с результатом (клавиша b)',
+      body: 'Запись, которую обязан нести опубликованный результат, чтобы читатель, у которого нет ни микросхемы, ни нагрузки, мог понять: два числа расходятся потому, что различаются системы, — или потому, что различались условия. Четырнадцать полей, поданных на рассмотрение рабочей группы OCP по нейроморфным вычислениям 16 сентября 2026 года, и поданных — это всё: включить их никто пока не согласился. Четыре поля помечены †: за них платит наш собственный измеренный промах — один набор весов, прочитанный как две модели в 4.44 стандартной ошибки друг от друга; два артефакта, различающиеся в 43,70 процента параметров за метрикой, сдвинувшейся на 0.084 стандартной ошибки; и одна функция, чьи две реализации разошлись в 5,4 раза по LUT из-за ширин полей, а не из-за алгоритма. Случаи не нейроморфные, и кремния не существует; и то и другое сказано на странице, а не сглажено. Числа, которые документ носил и больше носить не может, перечислены там же — с причиной, по которой каждое отозвано. Открывается буквой b.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

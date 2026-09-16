@@ -64,6 +64,9 @@ const AboutAuthor = lazy(() => import('./pages/AboutAuthor.tsx'))
 const Resources = lazy(() => import('./pages/Resources.tsx'))
 const Foundry = lazy(() => import('./pages/Foundry.tsx'))
 const Queen = lazy(() => import('./pages/QueenUniverse.tsx'))
+// The PASSPORT: the record proposed to the OCP neuromorphic working group, and
+// the three measured cases behind it. One component, two faces.
+const Passport = lazy(() => import('./pages/Passport.tsx'))
 // Blog exports two components rather than a default, so the module has to be
 // unwrapped into the shape lazy() expects.
 const BlogIndex = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogIndex })))
@@ -125,6 +128,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/foundry" element={<Foundry />} />
             <Route path="/club" element={<Navigate to="/foundry" replace />} />
             <Route path="/queen" element={<Queen />} />
+            <Route path="/passport" element={<Passport face="record" />} />
+            <Route path="/passport/research" element={<Passport face="research" />} />
             <Route path="/canvas" element={<TrinityCanvas />} />
             <Route path="/quantum" element={<QuantumLab />} />
             <Route path="/lab" element={<QuantumLab />} />

@@ -78,6 +78,7 @@ const ENGINE_FLAG =
 const KEY_SHORTCUTS_STORAGE = "queen.hud.key-shortcuts";
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
+import Passport from "./Passport";
 import { QueenIdentity } from "../components/QueenIdentity";
 import { hashParamsOf, tabAddress } from "../lib/triScreens";
 import {
@@ -359,6 +360,10 @@ const COPY = {
     projectSources: "sources pinned",
     triView: "TRI",
     triHint: "The app inside the game: feed, agent, AI generation, profile and CRM (key r)",
+    // The fourteenth view: the record proposed to the OCP neuromorphic working
+    // group, and the three measured cases of ours that pay for it.
+    passportView: "PASSPORT",
+    passportHint: "What must travel with a result: the record proposed to the OCP working group (key b)",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -713,6 +718,8 @@ const COPY = {
     projectSources: "источников закреплено",
     triView: "TRI",
     triHint: "Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)",
+    passportView: "ПАСПОРТ",
+    passportHint: "Что обязано ехать вместе с результатом: запись, поданная в рабочую группу OCP (клавиша b)",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -2547,6 +2554,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // Thirteenth, on the letter r (HUD_KEYS[12]; digits spent, t is TOOLS, p is
     // PROJECT): TRI, the app at app.t27.ai inside the game, one screen per address.
     { view: "tri" as const, glyph: "△", label: c.triView, hint: c.triHint },
+    { view: "passport" as const, glyph: "▤", label: c.passportView, hint: c.passportHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -2999,6 +3007,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 preview: c.triPreview,
               }}
             />
+          ) : boardView === "passport" ? (
+            // The record itself, not a frame of it: the page and this view read
+            // one content module, so the working group and the map cannot drift.
+            <Passport face={hashParams.get("face") === "research" ? "research" : "record"} />
           ) : boardView === "comb" ? (
             null
           ) : boardView === "research" ? (
