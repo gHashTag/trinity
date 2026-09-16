@@ -272,15 +272,39 @@ export function whoamiProfile(body: unknown): Pick<Identity, 'name' | 'avatar' |
 }
 
 /**
+ * The views the PLAYER will follow a return to -- QUEEN_VIEWS in
+ * gHashTag/999-multibots-telegraf apps/vibee-editor/player/src/lib/returnTarget.ts,
+ * on its `main`, which is what is deployed.
+ *
+ * This is a list in another repository, and the two go out of step the moment a
+ * view is added here: the player refuses a `?tab=` it does not know, and
+ * `returnTargetOf` answers null -- not the comb, NOTHING. The person signs in
+ * and is left in the player, never returned to the game at all.
+ *
+ * So the gate is the player's list, not ours. A view the player has not been
+ * told about returns to the comb, which every version of the player accepts.
+ * Worse than landing back on the page you left, better than not landing.
+ *
+ * PASSPORT is the first view in this position: it was added here as the
+ * fourteenth HUD view and the player's list still ends at `tri`. Adding
+ * 'passport' there and deploying the player is what restores its exact return.
+ */
+export const PLAYER_VIEWS: readonly string[] = [
+  'comb', 'specs', 'kanban', 'map', 'factory', 'research', 'skills',
+  'crons', 'agents', 'functions', 'tools', 'project', 'tri',
+] as const
+
+/**
  * The top-level sign-in link: the player's login, with a return to a fixed
  * Queen route. The player (gHashTag/999-multibots-telegraf
  * apps/vibee-editor/player/src/lib/returnTarget.ts) accepts exactly
  * https://t27.ai/#/queen, ?tab=<view> and ?tab=tri&screen=<screen>. So: one
- * route per view, and on the TRI tab its screen (none for its first screen,
- * the way the Queen's own address carries none). No ids, no path, no embed.
+ * route per view it knows, and on the TRI tab its screen (none for its first
+ * screen, the way the Queen's own address carries none). No ids, no path, no
+ * embed.
  */
 export function signInHref(view: string, views: readonly string[], screen?: string | null, screens: readonly string[] = []): string {
-  const tab = view !== 'comb' && views.includes(view) && /^[a-z]+$/.test(view) ? view : null
+  const tab = view !== 'comb' && views.includes(view) && PLAYER_VIEWS.includes(view) && /^[a-z]+$/.test(view) ? view : null
   let route = tab ? `${GAME_ORIGIN}/#/queen?tab=${tab}` : `${GAME_ORIGIN}/#/queen`
   if (tab === 'tri' && typeof screen === 'string' && screen !== screens[0] && screens.includes(screen) && /^[a-z]{1,16}$/.test(screen)) route += `&screen=${screen}`
   return `${APP_ORIGIN}/?return=${encodeURIComponent(route)}`

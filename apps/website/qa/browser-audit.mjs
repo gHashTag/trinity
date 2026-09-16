@@ -18,6 +18,12 @@ export const ROUTES = [
   // Signed out, /clients renders only its sign-in screen — which is exactly
   // what an audit should see: no credential, no data, fully dictionary-driven.
   'clients',
+  // Both faces of the passport, because they do not share a layout: the record
+  // face puts its figures straight into the section and the research face wraps
+  // each one with the case it belongs to. The wrapper was a flex item nobody had
+  // told to shrink, and it pushed 149px of sideways scroll onto a phone while
+  // this audit reported PASS across 33 routes — it had never visited either one.
+  'passport', 'passport/research',
 ]
 
 const CHROME_CANDIDATES = [

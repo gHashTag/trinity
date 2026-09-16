@@ -19,6 +19,10 @@ import {
   meta, standing, scope, problem, cases, record, anchorNote,
   practices, cost, questions, withdrawn, type Bi,
 } from '../content/passport'
+import { systems, survey, limits } from '../content/passportRecords'
+import {
+  FigureSeparation, FigureArea, FigureFooting, FigureCoverage,
+} from '../components/PassportFigures'
 import './passport.css'
 
 function useL() {
@@ -58,7 +62,17 @@ const T = {
     ru: 'Числа, которые этот документ носил и больше не носит, оставлены на виду намеренно. Документ о происхождении данных, тихо убравший их, совершил бы ровно ту ошибку, которую описывает.',
   },
   source: { en: 'source', ru: 'источник' },
-  anchored: { en: 'rests on a measured case', ru: 'опирается на измеренный случай' },
+  anchored: { en: 'rests on a measured case that still stands', ru: 'опирается на измеренный случай, который ещё держится' },
+  // Kept separate from †: the case behind this one was withdrawn by this same
+  // document, so counting its mark with the others would overstate the footing.
+  onWithdrawn: { en: 'rests only on a case this document withdrew', ru: 'опирается только на случай, отозванный этим документом' },
+  survey: { en: 'Filled for seven published results', ru: 'Заполнено по семи опубликованным результатам' },
+  surveyLede: {
+    en: 'The last open question asks whether anyone would try filling this record for one real result. Rather than wait for an answer, we filled it — against seven results other people published, five of them neuromorphic parts, one a benchmark framework, and one a control drawn from a body that already operates formal disclosure rules.',
+    ru: 'Последний открытый вопрос спрашивает, попробует ли кто-нибудь заполнить эту запись для одного настоящего результата. Вместо того чтобы ждать ответа, мы её заполнили — по семи результатам, опубликованным другими: пять нейроморфных микросхем, один бенчмарк-фреймворк и один контроль из организации, которая уже применяет формальные правила раскрытия.',
+  },
+  sources: { en: 'The seven records, and where each was read', ru: 'Семь записей и где каждая прочитана' },
+  limits: { en: 'What this does not establish', ru: 'Чего это не устанавливает' },
 }
 
 export default function Passport({ face = 'record' }: { face?: 'record' | 'research' }) {
@@ -115,20 +129,58 @@ export default function Passport({ face = 'record' }: { face?: 'record' | 'resea
                     </tr>
                   </thead>
                   <tbody>
-                    {record.map((r) => (
-                      <tr key={r.field.en}>
-                        <th scope="row">
-                          {L(r.field)}
-                          {r.anchored && <abbr title={L(T.anchored)}> †</abbr>}
-                        </th>
-                        <td>{L(r.what)}</td>
-                        <td className="pp-absence">{L(r.absence)}</td>
-                      </tr>
-                    ))}
+                    {record.map((r) => {
+                      // Two marks, not one: a field whose only case was withdrawn
+                      // is still anchored to something, but not to something that
+                      // still stands, and the table should not hide the difference.
+                      const onWithdrawn = r.anchoredTo.length > 0 && r.anchoredTo.every((a) => a === 'withdrawn')
+                      return (
+                        <tr key={r.field.en}>
+                          <th scope="row">
+                            {L(r.field)}
+                            {r.anchoredTo.length > 0 && (
+                              <abbr title={L(onWithdrawn ? T.onWithdrawn : T.anchored)}> {onWithdrawn ? '‡' : '†'}</abbr>
+                            )}
+                          </th>
+                          <td>{L(r.what)}</td>
+                          <td className="pp-absence">{L(r.absence)}</td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
               <p className="pp-note">{L(anchorNote)}</p>
+              <FigureFooting lang={key} />
+            </motion.section>
+
+            <motion.section {...fade} className="pp-sec">
+              <h2>{L(T.survey)}</h2>
+              <p className="pp-lede">{L(T.surveyLede)}</p>
+              <FigureCoverage lang={key} />
+              {survey.map((s) => (
+                <div key={s.h.en} className="pp-practice">
+                  <strong>{L(s.h)}</strong>
+                  <p>{L(s.b)}</p>
+                </div>
+              ))}
+
+              <h3 className="pp-subh">{L(T.sources)}</h3>
+              <ul className="pp-sources">
+                {systems.map((s) => (
+                  <li key={s.label} className={s.control ? 'is-control' : undefined}>
+                    <strong>{L(s.full)}</strong>
+                    <p>{L(s.headline)}</p>
+                    <p className="pp-case-src">
+                      {L(T.source)}: {L(s.source)}{' '}
+                      <a href={s.url} target="_blank" rel="noreferrer noopener">{s.url}</a>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+
+              <h3 className="pp-subh">{L(T.limits)}</h3>
+              <p className="pp-note">{L(limits)}</p>
             </motion.section>
 
             <motion.section {...fade} className="pp-sec">
@@ -158,18 +210,24 @@ export default function Passport({ face = 'record' }: { face?: 'record' | 'resea
             <motion.section {...fade} className="pp-sec">
               <h2>{L(T.cases)}</h2>
               <p className="pp-lede">{L(T.casesLede)}</p>
-              {cases.map((c) => (
-                <article key={c.n} className="pp-case">
-                  <header>
-                    <span className="pp-case-n">{c.n}</span>
-                    <span className="pp-chip pp-chip-kind">{L(c.kind)}</span>
-                    <h3>{L(c.title)}</h3>
-                  </header>
-                  <p className="pp-case-setup">{L(c.setup)}</p>
-                  <p className="pp-case-finding">{L(c.finding)}</p>
-                  <p className="pp-case-moral">{L(c.moral)}</p>
-                  <p className="pp-case-src">{L(T.source)}: {c.source}</p>
-                </article>
+              {cases.map((c, i) => (
+                <div key={c.n}>
+                  <article className="pp-case">
+                    <header>
+                      <span className="pp-case-n">{c.n}</span>
+                      <span className="pp-chip pp-chip-kind">{L(c.kind)}</span>
+                      <h3>{L(c.title)}</h3>
+                    </header>
+                    <p className="pp-case-setup">{L(c.setup)}</p>
+                    <p className="pp-case-finding">{L(c.finding)}</p>
+                    <p className="pp-case-moral">{L(c.moral)}</p>
+                    <p className="pp-case-src">{L(T.source)}: {c.source}</p>
+                  </article>
+                  {/* Figure 1 plots cases 1 and 2 together, so it follows the second
+                      of them; figure 2 belongs to case 3 alone and follows it. */}
+                  {i === 1 && <FigureSeparation lang={key} />}
+                  {i === 2 && <FigureArea lang={key} />}
+                </div>
               ))}
             </motion.section>
 

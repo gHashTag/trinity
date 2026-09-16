@@ -161,10 +161,18 @@ export const cases: {
   },
 ]
 
-/** The record itself. `anchored` marks the fields a measured case above pays for (†). */
-export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] = [
+/**
+ * Which case pays for a field. `'withdrawn'` names the vector-set defect count
+ * this document itself withdrew: the field it anchors is still marked †, but the
+ * case behind it no longer stands, and the figures say so rather than counting it
+ * with the rest.
+ */
+export type CaseRef = '1' | '2' | '3' | 'withdrawn'
+
+/** The record itself. `anchoredTo` names the cases above that pay for a field (†). */
+export const record: { field: Bi; what: Bi; absence: Bi; anchoredTo: CaseRef[] }[] = [
   {
-    anchored: true,
+    anchoredTo: ['2'],
     field: { en: 'Artifact identity', ru: 'Тождество артефакта' },
     what: {
       en: 'SHA-256 of the deployed weights, program image and mapped network as placed, taken after deployment; digest of the initial state where the system was trained or adapted',
@@ -176,8 +184,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: true,
-    field: { en: 'Stimulus identity and sampling plan', ru: 'Тождество стимула и план выборки' },
+    anchoredTo: ['1'],
+    field: {
+      en: 'Stimulus identity and sampling plan', ru: 'Тождество стимула и план выборки' },
     what: {
       en: 'SHA-256 of the stimulus set or event trace; window, trial and sample counts, and the fraction of the full set covered',
       ru: 'SHA-256 набора стимулов или трассы событий; число окон, испытаний и отсчётов и доля покрытого полного набора',
@@ -188,8 +197,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: false,
-    field: { en: 'Activity', ru: 'Активность' },
+    anchoredTo: [],
+    field: {
+      en: 'Activity', ru: 'Активность' },
     what: {
       en: 'Event or spike count and rate over the measured run, from a named hardware counter or named simulator event, not inferred from nominal sparsity',
       ru: 'Число и частота событий или спайков за измеряемый прогон — с названного аппаратного счётчика или названного события симулятора, а не выведенные из номинальной разреженности',
@@ -200,8 +210,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: false,
-    field: { en: 'Device instance and population', ru: 'Экземпляр прибора и популяция' },
+    anchoredTo: [],
+    field: {
+      en: 'Device instance and population', ru: 'Экземпляр прибора и популяция' },
     what: {
       en: 'Part number, board or die serial, calibration and programming state; number of distinct instances measured and the spread across them; where a lot or serial is not disclosed, that is recorded as withheld rather than left blank',
       ru: 'Номер изделия, серийный номер платы или кристалла, состояние калибровки и программирования; число измеренных разных экземпляров и разброс между ними; если партия или серийный номер не раскрываются, это записывается как «не раскрыто», а не оставляется пустым',
@@ -212,8 +223,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: false,
-    field: { en: 'Environment', ru: 'Среда' },
+    anchoredTo: [],
+    field: {
+      en: 'Environment', ru: 'Среда' },
     what: {
       en: 'Ambient or junction temperature, stating which and whether measured or nominal; supply voltages; and the tolerance held through the run',
       ru: 'Температура среды или перехода — с указанием, какая и измерена ли она или номинальная; напряжения питания; выдержанный за прогон допуск',
@@ -224,7 +236,7 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: false,
+    anchoredTo: [],
     field: {
       en: 'Measurement boundary and operating point',
       ru: 'Граница измерения и рабочая точка',
@@ -239,8 +251,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: false,
-    field: { en: 'Model and timing configuration', ru: 'Модель и конфигурация времени' },
+    anchoredTo: [],
+    field: {
+      en: 'Model and timing configuration', ru: 'Модель и конфигурация времени' },
     what: {
       en: 'Neuron and synapse model, timestep, spike or event encoding, fan-in and fan-out limits, and any elements disabled for yield',
       ru: 'Модель нейрона и синапса, шаг времени, кодирование спайков или событий, пределы fan-in и fan-out и любые элементы, отключённые ради выхода годных',
@@ -251,8 +264,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: false,
-    field: { en: 'System configuration', ru: 'Конфигурация системы' },
+    anchoredTo: [],
+    field: {
+      en: 'System configuration', ru: 'Конфигурация системы' },
     what: {
       en: 'Number of parts, topology, partitioning and placement across cores and dies, and traffic crossing the measured boundary',
       ru: 'Число микросхем, топология, разбиение и размещение по ядрам и кристаллам и трафик, пересекающий измеряемую границу',
@@ -263,8 +277,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: true,
-    field: { en: 'Build and host arithmetic', ru: 'Сборка и арифметика хоста' },
+    anchoredTo: ['2'],
+    field: {
+      en: 'Build and host arithmetic', ru: 'Сборка и арифметика хоста' },
     what: {
       en: 'Compiler, synthesis and place-and-route versions and seeds; dependency-graph digest; the instruction set architecture of every machine used to train, map or calibrate; contraction and reduction-order settings',
       ru: 'Версии и сиды компилятора, синтеза и place-and-route; хеш графа зависимостей; архитектура набора команд каждой машины, на которой обучали, отображали или калибровали; настройки свёртки и порядка редукции',
@@ -275,8 +290,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: true,
-    field: { en: 'Interface representation', ru: 'Представление на интерфейсе' },
+    anchoredTo: ['3'],
+    field: {
+      en: 'Interface representation', ru: 'Представление на интерфейсе' },
     what: {
       en: 'Number format, field widths, rounding and special-value handling at each measured boundary, by reference to a versioned specification with bit-exact conformance vectors, never a format name alone',
       ru: 'Числовой формат, ширины полей, округление и обработка особых значений на каждой измеряемой границе — ссылкой на версионированную спецификацию с побитово точными conformance-векторами, и никогда одним лишь именем формата',
@@ -287,8 +303,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: false,
-    field: { en: 'Adaptation and state at start', ru: 'Адаптация и состояние на старте' },
+    anchoredTo: [],
+    field: {
+      en: 'Adaptation and state at start', ru: 'Адаптация и состояние на старте' },
     what: {
       en: 'Warm or cold start, state retained from prior runs, on-line learning enabled or not, exposure order, updates applied before the run, and the earlier tasks re-measured afterwards',
       ru: 'Горячий или холодный старт, состояние, сохранённое от прежних прогонов, включено ли онлайн-обучение, порядок предъявления, обновления, применённые до прогона, и перемеренные после него прежние задачи',
@@ -299,8 +316,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: true,
-    field: { en: 'Uncertainty', ru: 'Неопределённость' },
+    anchoredTo: ['1', '2'],
+    field: {
+      en: 'Uncertainty', ru: 'Неопределённость' },
     what: {
       en: 'Per-reading standard error, repeat count, and expanded uncertainty with its coverage factor, stating whether the expanded figure derives from the same readings; for multi-instance figures, the between-instance component',
       ru: 'Стандартная ошибка отсчёта, число повторов и расширенная неопределённость с коэффициентом охвата — с указанием, выведена ли расширенная из тех же отсчётов; для многоэкземплярных чисел — межэкземплярная составляющая',
@@ -311,8 +329,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: true,
-    field: { en: 'Specification version and manifest', ru: 'Версия спецификации и манифест' },
+    anchoredTo: ['withdrawn'],
+    field: {
+      en: 'Specification version and manifest', ru: 'Версия спецификации и манифест' },
     what: {
       en: 'Version identifier and manifest digest of the vector set, harness and scoring code; superseded revisions retained rather than overwritten',
       ru: 'Идентификатор версии и хеш манифеста набора векторов, обвязки и кода подсчёта; вытесненные ревизии сохраняются, а не перезаписываются',
@@ -323,8 +342,9 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
     },
   },
   {
-    anchored: false,
-    field: { en: 'Reference implementation', ru: 'Эталонная реализация' },
+    anchoredTo: [],
+    field: {
+      en: 'Reference implementation', ru: 'Эталонная реализация' },
     what: {
       en: 'The non-event-driven baseline compared against, recorded under the same fields, this one excepted',
       ru: 'Несобытийная база сравнения, записанная по тем же полям, кроме этого',
@@ -337,8 +357,8 @@ export const record: { field: Bi; what: Bi; absence: Bi; anchored: boolean }[] =
 ]
 
 export const anchorNote: Bi = {
-  en: '† Anchored to one of the three cases. Those cases come from a language-model training pipeline and from an FPGA prototype, not from neuromorphic parts, and transfer by analogy of failure mode. Unmarked fields follow from the argument and are not, in this document, backed by a measurement.',
-  ru: '† Опирается на один из трёх случаев. Эти случаи взяты из конвейера обучения языковой модели и из FPGA-прототипа, а не из нейроморфных микросхем, и переносятся по аналогии режима отказа. Непомеченные поля следуют из рассуждения и в этом документе измерением не подкреплены.',
+  en: '† Anchored to one of the three cases. Those cases come from a language-model training pipeline and from an FPGA prototype, not from neuromorphic parts, and transfer by analogy of failure mode. ‡ Anchored only to the vector-set defect count this document has since withdrawn: the field still belongs in the table, but nothing measured is currently paying for it, and it is counted apart from the † rows rather than with them. Unmarked fields follow from the argument and are not, in this document, backed by a measurement.',
+  ru: '† Опирается на один из трёх случаев. Эти случаи взяты из конвейера обучения языковой модели и из FPGA-прототипа, а не из нейроморфных микросхем, и переносятся по аналогии режима отказа. ‡ Опирается только на число дефектных векторов, которое этот документ с тех пор отозвал: поле остаётся в таблице по праву, но ничего измеренного за него сейчас не платит, и считается оно отдельно от строк с †, а не вместе с ними. Непомеченные поля следуют из рассуждения и в этом документе измерением не подкреплены.',
 }
 
 export const practices: { h: Bi; b: Bi }[] = [
@@ -386,14 +406,26 @@ export const cost: Bi[] = [
   },
 ]
 
+/**
+ * The counts the prose quotes, read off the table rather than typed beside it.
+ * The 16 September submission typed them, and got one wrong — see `withdrawn`.
+ */
+export const marked = {
+  fields: record.length,
+  /** Fields a case that still stands pays for. */
+  measured: record.filter((r) => r.anchoredTo.some((a) => a !== 'withdrawn')).length,
+  /** Fields whose only anchor is the case this document withdrew. */
+  onWithdrawn: record.filter((r) => r.anchoredTo.every((a) => a === 'withdrawn') && r.anchoredTo.length > 0).length,
+}
+
 export const questions: Bi[] = [
   {
     en: 'Does the table belong in this position statement at all, or in a separate reporting-requirements deliverable that this statement cites?',
     ru: 'Место ли этой таблице в самом позиционном документе — или в отдельном документе о требованиях к отчётности, на который он ссылается?',
   },
   {
-    en: 'Fourteen fields is a large ask for a first revision. If the team wants a shorter list, which failure is it willing to leave undetectable? I would defend the four marked † that rest on measured cases before the rest.',
-    ru: 'Четырнадцать полей — много для первой редакции. Если группа хочет короче, какой отказ она готова оставить необнаружимым? Я защищал бы прежде всего четыре помеченных †, стоящих на измеренных случаях.',
+    en: `${marked.fields} fields is a large ask for a first revision. If the team wants a shorter list, which failure is it willing to leave undetectable? I would defend the ${marked.measured} marked † that rest on a case that still stands before the rest; a further ${marked.onWithdrawn} is marked † on the strength of a case this document has since withdrawn, and I would not defend it at all.`,
+    ru: `${marked.fields} полей — много для первой редакции. Если группа хочет короче, какой отказ она готова оставить необнаружимым? Я защищал бы прежде всего ${marked.measured} помеченных †, стоящих на случае, который ещё держится; ещё ${marked.onWithdrawn} поле помечено † силой случая, который этот документ с тех пор отозвал, и его я защищать не стал бы вовсе.`,
   },
   {
     en: 'The measurement-boundary row has independent support: George Williams raised exactly this objection on the list on 8 September, about an energy figure whose envelope excluded memory fetching until the appendix. I have asked him to co-sign that row. It is his objection before it is my table.',
@@ -435,6 +467,16 @@ export const withdrawn: { claim: Bi; why: Bi }[] = [
     why: {
       en: 'It could not be verified. A document about provenance does not carry an unchecked citation.',
       ru: 'Проверить её не удалось. Документ о происхождении данных не носит непроверенную ссылку.',
+    },
+  },
+  {
+    claim: {
+      en: '“the four marked †” — the count of anchored fields, as submitted on 16 September',
+      ru: '«четыре помеченных †» — число опирающихся полей, как подано 16 сентября',
+    },
+    why: {
+      en: `The table marks six, not four. Five rest on a case that still stands — artifact identity and build arithmetic on case 2, stimulus identity on case 1, interface representation on case 3, uncertainty on cases 1 and 2. The sixth, specification version and manifest, is anchored only to the defective-vector-set count this document itself withdrew, so its † is worth less than the others and is now counted apart. The counts on this page are read off the table (see \`marked\`) and can no longer drift from it; the sent document still says four, and a correction is owed on it.`,
+      ru: `Таблица помечает шесть, а не четыре. Пять стоят на случае, который ещё держится: тождество артефакта и арифметика сборки — на случае 2, тождество стимула — на случае 1, представление на интерфейсе — на случае 3, неопределённость — на случаях 1 и 2. Шестое, версия спецификации и манифест, опирается только на число дефектных векторов, которое этот документ сам и отозвал, — его † стоит меньше прочих и теперь считается отдельно. Числа на этой странице читаются из самой таблицы (см. \`marked\`) и разойтись с ней больше не могут; в отправленном документе по-прежнему стоит «четыре», и по нему причитается поправка.`,
     },
   },
 ]

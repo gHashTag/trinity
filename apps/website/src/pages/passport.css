@@ -4,6 +4,17 @@
 .pp {
   padding: 5rem 1.25rem 6rem;
   color: var(--text, #e8e4dc);
+  /* Every accent below was written `var(--accent, #d4af37)` by an author who
+     believed the fallback would apply. It never did: index.css sets --accent
+     to #00FF88 on :root, so the fallback is dead and the page rendered green.
+     That went unseen until the figures arrived hard-coded gold and the two
+     halves of one page disagreed. Declaring the token here is the fix, and it
+     is scoped -- 586 elements inside .pp were probed and the 19 that move are
+     all .pp-* accents: the warn chip, the active face, the scope rule, the six
+     dagger marks, the figure captions, the seven source links, the control.
+     Gold and not the site green because green is the explorer's word for
+     healthy and live, and this document is neither: it is proposed. */
+  --accent: #d4af37;
 }
 .pp-wrap {
   max-width: 62rem;
@@ -90,6 +101,26 @@
   opacity: 0.85;
 }
 
+/* .pp-sec is a flex container (the site's global section rule), so its children
+   are flex items and default to min-width: auto -- they refuse to shrink below
+   their content. Without this a scroller does not scroll: it widens, and the
+   whole page takes the sideways scroll instead of the one box that asked for it.
+
+   The rule names every child rather than .pp-scroll and .pp-fig alone, because
+   naming those two was the first fix and it missed. Figures 1 and 2 sit inside
+   a wrapper that keeps a case and its plate together, and that wrapper was the
+   flex item; .pp-fig had min-width: 0 and was still handed 672px. It cost 149px
+   of page overflow on the research face at 375px, and it went unseen because I
+   measured the record face and reported the result for both. No flex item of
+   .pp-sec is ever the thing that should decide how wide the page is. */
+.pp-sec > *,
+.pp-scroll,
+.pp-fig { min-width: 0; max-width: 100%; }
+/* align-items: center sizes a flex item to its content, so the figure frame
+   came out narrower than the paragraphs it sits between. It is a block of the
+   argument, not an inset, so it takes the measure of the prose. */
+.pp-fig { width: 100%; }
+
 .pp-scroll { overflow-x: auto; margin-bottom: 1rem; }
 .pp-table {
   width: 100%;
@@ -159,6 +190,31 @@
   margin: 0;
 }
 
+/* Sub-heading inside a section: the survey has three parts under one h2. */
+.pp-subh {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin: 2.4rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* The seven surveyed records. Every entry carries its own link, because a page
+   that grades other people's disclosure has to be checkable against theirs. */
+.pp-sources { list-style: none; padding: 0; margin: 0; }
+.pp-sources li {
+  border-left: 2px solid rgba(255, 255, 255, 0.14);
+  padding-left: 1rem;
+  margin-bottom: 1.3rem;
+}
+.pp-sources li.is-control { border-left-color: var(--accent, #d4af37); }
+.pp-sources strong { display: block; margin-bottom: 0.3rem; font-size: 0.95rem; }
+.pp-sources p { margin: 0 0 0.3rem; opacity: 0.8; font-size: 0.92rem; }
+.pp-sources a { color: var(--accent, #d4af37); text-decoration: none; word-break: break-all; }
+.pp-sources a:hover { text-decoration: underline; }
+
 .pp-withdrawn {
   border-left: 2px solid rgba(255, 255, 255, 0.2);
   padding-left: 1rem;
@@ -180,6 +236,38 @@
   letter-spacing: 0.06em;
 }
 .pp-foot a:hover { opacity: 1; }
+
+/* The figures. A plate a shade above the page, a numbered caption, and the
+   source line in mono — the same frame the system documentation uses, so a
+   reader who has seen one figure on this site has seen this one. */
+.pp-fig {
+  margin: 2rem 0 2.5rem;
+  padding: 1rem 1rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.pp-fig-plate { overflow-x: auto; }
+/* min-width, not width alone: all four viewBoxes are 700 units wide, so a phone
+   would otherwise scale an 11-unit label down to about five pixels. The same
+   escape the table takes above — scroll the plate sideways, keep the type
+   legible — and the mobile audit forgives an element inside a scroller that
+   really scrolls. */
+.pp-fig-plate svg { display: block; width: 100%; min-width: 40rem; height: auto; }
+.pp-fig-cap {
+  margin-top: 0.85rem;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  opacity: 0.88;
+}
+.pp-fig-cap b { color: var(--accent, #d4af37); }
+.pp-fig-src {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  opacity: 0.5;
+  letter-spacing: 0.02em;
+}
 
 /* Inside the Queen's shell the views are stacked in one grid cell on top of the
    hive scene. A record read through a hex field is not read: this view owns its

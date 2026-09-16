@@ -47,6 +47,7 @@ import {
   chipOf,
   whoamiProfile,
   signInHref,
+  PLAYER_VIEWS,
   createTriIdentity,
 } from '../src/lib/triIdentity.ts'
 import { APP_ORIGIN as TRI_APP_ORIGIN, TRI_SCREENS } from '../src/lib/triScreens.ts'
@@ -170,10 +171,12 @@ for (const code of ['network', 'no_answer', 'game_token_rate_limited', 'http_429
 for (const code of [undefined, '', 'game_token_credential_rejected', 'game_token_parent_not_web', 'game_token_launch_bots_unset', 'whoami_rejected', 'no_token', 'bad_response', 'not_t27', 'http_401', 'http_404', 'http_5000', 'http_50']) ok(!retriesByItself(code), `${JSON.stringify(code)} waits for a person`)
 
 // ---- 6. The sign-in link ----
-// Copied from gHashTag/999-multibots-telegraf apps/vibee-editor/player/src/lib/returnTarget.ts
-// (branch feat/auth-best-wave1-player, 01b0d61ed): the only returns the player follows.
+// The player's half of this, from gHashTag/999-multibots-telegraf
+// apps/vibee-editor/player/src/lib/returnTarget.ts on `main` (what is deployed):
+// the only returns it follows. PLAYER_VIEWS is IMPORTED from triIdentity.ts and
+// no longer restated here -- a third copy of a list that already exists in two
+// repositories is how they drift without anyone being told.
 const PLAYER_SHAPE = /^https:\/\/t27\.ai\/#\/queen(?:\?tab=([a-z]{1,16})(?:&screen=([a-z]{1,16}))?)?$/
-const PLAYER_VIEWS = ['comb', 'specs', 'kanban', 'map', 'factory', 'research', 'skills', 'crons', 'agents', 'functions', 'tools', 'project', 'tri']
 const PLAYER_SCREENS = ['feed', 'chat', 'script', 'audio', 'image', 'avatar', 'video', 'editor', 'profile', 'crm']
 const playerReturnTargetOf = (raw) => {
   if (typeof raw !== 'string' || raw.length > 128) return null
@@ -190,7 +193,19 @@ const playerReturnTargetOf = (raw) => {
   return id ? `${queen}?tab=${view}&screen=${id}` : null
 }
 const SCREEN_IDS = TRI_SCREENS.map((entry) => entry.screen)
-eq([...HUD_VIEWS].sort(), [...PLAYER_VIEWS].sort(), "the player's copy of the views is the Queen's list")
+// The two lists are no longer required to be EQUAL, and that is a repair, not a
+// relaxation. Equality could only ever be restored by editing the copy this file
+// used to hold -- which would have turned the gate green while the deployed
+// player still refused the new view, and refused it by answering null: the
+// person is not returned to the game at all. What is actually required:
+//
+//   1. The player never knows a view the Queen does not have. That direction is
+//      a real defect and still fails here.
+//   2. The views the player does NOT know are named, below, with what it costs.
+//      A new one appearing unannounced fails this gate exactly as before.
+const UNKNOWN_TO_PLAYER = HUD_VIEWS.filter((view) => !PLAYER_VIEWS.includes(view))
+eq(PLAYER_VIEWS.filter((view) => !HUD_VIEWS.includes(view)), [], 'the player follows no view the Queen does not have')
+eq([...UNKNOWN_TO_PLAYER], ['passport'], 'the views the deployed player has not been told about, and no others')
 eq([...SCREEN_IDS].sort(), [...PLAYER_SCREENS].sort(), "the player's copy of the TRI screens is the Queen's table")
 
 const returns = new Set()
@@ -199,7 +214,9 @@ for (const view of HUD_VIEWS) {
   eq(href.origin + href.pathname, `${APP_ORIGIN}/`, `${view}: the player's login`)
   eq([...href.searchParams.keys()], ['return'], `${view}: one parameter`)
   const back = href.searchParams.get('return')
-  eq(back, view === 'comb' ? `${GAME_ORIGIN}/#/queen` : `${GAME_ORIGIN}/#/queen?tab=${view}`, `${view}: returns to its view`)
+  const carried = view !== 'comb' && PLAYER_VIEWS.includes(view)
+  eq(back, carried ? `${GAME_ORIGIN}/#/queen?tab=${view}` : `${GAME_ORIGIN}/#/queen`,
+    carried ? `${view}: returns to its view` : `${view}: the player cannot follow it, so it returns to the comb`)
   eq(playerReturnTargetOf(back), back, `${view}: the player accepts the return as it is`)
   returns.add(back)
 }
@@ -226,7 +243,9 @@ for (const hostile of ['tri&screen=crm', 'kanban&embed=1', 'profile/144022504', 
 eq(new URL(signInHref('constructor', HUD_VIEWS)).searchParams.get('return'), `${GAME_ORIGIN}/#/queen`, 'an object key is not a view')
 eq(new URL(signInHref('nope', HUD_VIEWS)).searchParams.get('return'), `${GAME_ORIGIN}/#/queen`, 'an unknown view returns to the comb')
 ok([...returns].every((r) => r.startsWith(`${GAME_ORIGIN}/#/queen`) && !/embed|screen|path|lead|\d/.test(r.slice(GAME_ORIGIN.length))), 'no view return carries embed, a screen, a path or an id')
-eq(returns.size, HUD_VIEWS.length, 'one fixed route per view')
+// One route per view the PLAYER knows -- the views it does not know share the
+// comb's return, so the count follows its list, not ours.
+eq(returns.size, PLAYER_VIEWS.length, 'one fixed route per view the player follows')
 
 // ---- 7. The chip: one next step for every code ----
 // The codes the client can receive: the render server's /api/auth/game-token

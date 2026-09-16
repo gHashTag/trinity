@@ -128,6 +128,14 @@ jobs:
       # stale round called stale. Pure, no browser.
       - name: Queen idle reason
         run: npm run check:queen-idle
+      # The PASSPORT argues a result is worthless without the record of how it
+      # was taken, so its own figures must not drift from its own prose: every
+      # plotted quantity carries the literal the text prints for it, in both
+      # languages; the † counts are derived from the table, not typed beside it;
+      # and the seven-record survey keeps its shape, including the finding that
+      # the control is the only column with no absent field. Pure, no browser.
+      - name: Passport figures
+        run: npm run check:passport
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from
