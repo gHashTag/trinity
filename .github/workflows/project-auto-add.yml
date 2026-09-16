@@ -13,6 +13,10 @@ on:
 
 jobs:
   add-to-project:
+    # Pull requests from forks run without repository secrets, so PROJECT_TOKEN is
+    # empty there and the action fails with "Input required and not supplied:
+    # github-token". Skip those runs instead of failing them.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/add-to-project@v1.0.2
