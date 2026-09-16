@@ -1,0 +1,93 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// ReLU activation for hidden layers | φ² + 1/φ² = 3 | TRINITY
+
+module Mlp;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const MNIST_INPUT_SIZE : u32 = 784;
+    const MNIST_OUTPUT_SIZE : u32 = 10;
+    const DEFAULT_HIDDEN_SIZE : u32 = 128;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const MLPConfig = struct {
+        input_size : u32,
+        hidden_size : u32,
+        output_size : u32,
+    };
+
+    pub const MLPState = struct {
+        w1 : []f32,
+        b1 : []f32,
+        w2 : []f32,
+        b2 : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32) → void
+    fn forward(input: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // init(state: MLPState) → void
+    fn init(state: MLPState) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant mlp_constraint_0
+        given input = valid_input()
+        then true // input_size == MNIST_INPUT_SIZE (784)
+
+    invariant mlp_constraint_1
+        given input = valid_input()
+        then true // output_size == MNIST_OUTPUT_SIZE (10)
+
+    invariant mlp_constraint_2
+        given input = valid_input()
+        then true // hidden_size > 0
+
+    invariant mlp_constraint_3
+        given input = valid_input()
+        then true // w1.size() == input_size * hidden_size
+
+    invariant mlp_constraint_4
+        given input = valid_input()
+        then true // w2.size() == hidden_size * output_size
+
+    invariant mlp_constraint_5
+        given input = valid_input()
+        then true // b1.size() == hidden_size
+
+    invariant mlp_constraint_6
+        given input = valid_input()
+        then true // b2.size() == output_size
+

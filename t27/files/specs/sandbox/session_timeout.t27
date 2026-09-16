@@ -1,0 +1,194 @@
+// SPDX-License-Identifier: CC0-1.0
+// SANDBOX-010: Session Timeout Enforcement
+
+/**
+ * Module: sandbox.session_timeout
+ *
+ * Enforces maximum session lifetime for Railway sandbox resources.
+ * Sessions exceeding max duration are automatically terminated
+ * to prevent resource waste and slot exhaustion.
+ */
+
+module sandbox.session_timeout;
+
+import timestamp;
+
+// ─────────────────────────────────────────────
+// Session Type Definition
+// ─────────────────────────────────────────────
+
+/**
+ * Common Session type for sandbox management.
+ * Shared between .t27 specifications and TypeScript backend.
+ */
+pub struct Session {
+    id: [u8; 32],
+    name: [u8; 64],
+    status: SessionStatus,
+    created_at: Timestamp,
+    updated_at: Timestamp,
+}
+
+/**
+ * Timestamp type for session tracking.
+ */
+pub struct Timestamp {
+    ms: u64,
+}
+
+/**
+ * Session status enum matching TypeScript/PostgreSQL conventions.
+ */
+pub enum SessionStatus {
+    Starting = "starting",
+    Active = "active",
+    Failed = "failed",
+    Terminating = "terminating",
+    Deleted = "deleted",
+}
+
+// ─────────────────────────────────────────────
+// Configuration
+// ─────────────────────────────────────────────
+
+const DEFAULT_MAX_SESSION_DURATION_MS : u64 = 3_600_000; // 1 hour
+
+/**
+ * Check if a session has exceeded its maximum allowed duration.
+ *
+ * @param session - The session to check
+ * @param max_duration_ms - Maximum allowed duration in milliseconds
+ * @return true if session should be terminated
+ */
+fn should_terminate_session(
+    session: &Session,
+    max_duration_ms: u64,
+) -> bool {
+    if session.status != SessionStatus.Active {
+        return false;
+    }
+
+    let elapsed = timestamp.now_ms() - session.created_at.ms;
+    elapsed > max_duration_ms
+}
+
+// ─────────────────────────────────────────────
+// Interface
+// ─────────────────────────────────────────────
+
+/**
+ * Session timeout check interface for sandbox health service.
+ */
+pub trait TimeoutChecker {
+    /**
+     * Check if a session exceeds max duration and mark for termination.
+     *
+     * @param session - The session to evaluate
+     * @return true if termination is required
+     */
+    fn check_timeout(&self, session: &Session) -> bool;
+}
+
+// ─────────────────────────────────────────────
+// TDD Tests
+// ─────────────────────────────────────────────
+
+.test {
+    use sandbox.session_timeout;
+
+    // Test: Session exceeds max duration should be terminated
+    test "terminate_session_exceeded_duration" {
+        input: {
+            session: Session {
+                id: [0x01, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Active,
+                created_at: Timestamp { ms: 4_000_000_000 },
+                updated_at: Timestamp { ms: 4_000_000_000 },
+            },
+            max_duration_ms: 3_600_000,
+        };
+        expected: true;
+        description: "Session older than max duration should be marked for termination";
+    }
+
+    // Test: Session within max duration should NOT be terminated
+    test "session_within_max_duration" {
+        input: {
+            session: Session {
+                id: [0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Active,
+                created_at: Timestamp { ms: 2_000_000_000 },
+                updated_at: Timestamp { ms: 2_000_000_000 },
+            },
+            max_duration_ms: 3_600_000,
+        };
+        expected: false;
+        description: "Session within max duration should not be terminated";
+    }
+
+    // Test: Non-active session should NOT be terminated
+    test "non_active_session_ignored" {
+        input: {
+            session: Session {
+                id: [0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Starting,
+                created_at: Timestamp { ms: 2_000_000_000 },
+                updated_at: Timestamp { ms: 2_000_000_000 },
+            },
+            max_duration_ms: 3_600_000,
+        };
+        expected: false;
+        description: "Non-active sessions should not be terminated even if old";
+    }
+
+    // Test: Failed session should NOT be terminated
+    test "failed_session_ignored" {
+        input: {
+            session: Session {
+                id: [0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Failed,
+                created_at: Timestamp { ms: 2_000_000_000 },
+                updated_at: Timestamp { ms: 2_000_000_000 },
+            },
+            max_duration_ms: 3_600_000,
+        };
+        expected: false;
+        description: "Failed sessions should not be terminated";
+    }
+
+    // Test: Deleted session should NOT be terminated
+    test "deleted_session_ignored" {
+        input: {
+            session: Session {
+                id: [0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Deleted,
+                created_at: Timestamp { ms: 2_000_000_000 },
+                updated_at: Timestamp { ms: 2_000_000_000 },
+            },
+            max_duration_ms: 3_600_000,
+        };
+        expected: false;
+        description: "Deleted sessions should not be terminated";
+    }
+
+    // Test: Terminating session should NOT be terminated (already in process)
+    test "terminating_session_ignored" {
+        input: {
+            session: Session {
+                id: [0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                name: [0x74, 0x65, 0x73, 0x74, 0x6e, 0x73, 0x73, 0x74, 0x74, 0x00],
+                status: SessionStatus.Terminating,
+                created_at: Timestamp { ms: 2_000_000_000 },
+                updated_at: Timestamp { ms: 2_000_000_000 },
+            },
+            max_duration_ms: 3_600_000,
+        };
+        expected: false;
+        description: "Terminating sessions should not be terminated (already in process)";
+    }
+}

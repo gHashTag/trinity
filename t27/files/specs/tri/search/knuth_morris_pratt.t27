@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// O(n + m) time where n=text length, m=pattern length | φ² + 1/φ² = 3 | TRINITY
+
+module TriKmp;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const KMPPrefix = struct {
+        table : []usize,
+        pattern : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // build_prefix(pattern: []const u8) → void
+    fn build_prefix(pattern: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(text: []const u8) → void
+    fn search(text: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test build_prefix_basic_case
+        given input = default_input()
+        when result = build_prefix(input)
+        then result != undefined
+
+    test search_basic_case
+        given input = default_input()
+        when result = search(input)
+        then result != undefined
+

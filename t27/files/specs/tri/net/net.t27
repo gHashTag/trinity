@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Supports both IPv4 and IPv6 | φ² + 1/φ² = 3 | TRINITY
+
+module TriNet;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const IpAddress = struct {
+        is_v6 : bool,
+        bytes : [16]u8,
+    };
+
+    pub const SocketAddr = struct {
+        ip : IpAddress,
+        port : u16,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse_ip(addr: []const u8) → void
+    fn parse_ip(addr: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_localhost(addr: IpAddress) → void
+    fn is_localhost(addr: IpAddress) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_valid_port(port: u16) → void
+    fn is_valid_port(port: u16) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test parse_ip_basic_case
+        given input = default_input()
+        when result = parse_ip(input)
+        then result != undefined
+
+    test is_localhost_basic_case
+        given input = default_input()
+        when result = is_localhost(input)
+        then result != undefined
+
+    test is_valid_port_basic_case
+        given input = default_input()
+        when result = is_valid_port(input)
+        then result != undefined
+

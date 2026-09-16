@@ -1,0 +1,85 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Operations return new maps | φ² + 1/φ² = 3 | TRINITY
+
+module TriMap;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Map(K, V) = struct {
+        keys : []K,
+        values : []V,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // empty() → Map(K, V)
+    fn empty() -> Map(K, V) {
+        // TODO: Implement from .tri spec
+    }
+
+    // singleton(key: K) → void
+    fn singleton(key: K) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(map: Map(K, V)) → void
+    fn get(map: Map(K, V)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // set(map: Map(K, V)) → void
+    fn set(map: Map(K, V)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // keys(map: Map(K, V)) → void
+    fn keys(map: Map(K, V)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // values(map: Map(K, V)) → void
+    fn values(map: Map(K, V)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test empty_basic_case
+        given input = default_input()
+        when result = empty(input)
+        then result != undefined
+
+    test singleton_basic_case
+        given input = default_input()
+        when result = singleton(input)
+        then result != undefined
+
+    test get_basic_case
+        given input = default_input()
+        when result = get(input)
+        then result != undefined
+
+    test set_basic_case
+        given input = default_input()
+        when result = set(input)
+        then result != undefined
+
+    test keys_basic_case
+        given input = default_input()
+        when result = keys(input)
+        then result != undefined
+
+    test values_basic_case
+        given input = default_input()
+        when result = values(input)
+        then result != undefined
+

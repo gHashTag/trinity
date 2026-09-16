@@ -1,0 +1,196 @@
+// specs/account/repo.t27
+// Account Repository Operations
+// φ² + 1/φ² = 3 | TRINITY
+
+module AccountRepo {
+    use base::types;
+
+    // ════════════════════════════════════════════════════════════════════
+    // Type Definitions
+    // ════════════════════════════════════════════════════════════════════
+
+    struct AccountID(str);
+    struct OrgID(str);
+    struct AccessToken(str);
+    struct RefreshToken(str);
+
+    struct Info {
+        id: AccountID,
+        email: str,
+        url: str,
+        active_org_id: OrgID?,
+    }
+
+    enum AccountError {
+        Repo = 0,
+        Service = 1,
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Input Types
+    // ════════════════════════════════════════════════════════════════════
+
+    struct PersistTokenInput {
+        account_id: AccountID,
+        access_token: AccessToken,
+        refresh_token: RefreshToken,
+        expiry: u64?,
+    }
+
+    struct PersistAccountInput {
+        id: AccountID,
+        email: str,
+        url: str,
+        access_token: AccessToken,
+        refresh_token: RefreshToken,
+        expiry: u64,
+        org_id: OrgID?,
+    }
+
+    struct AccountRow {
+        id: AccountID,
+        email: str,
+        url: str,
+        access_token: AccessToken,
+        refresh_token: RefreshToken,
+        token_expiry: u64?,
+    }
+
+    struct AccountState {
+        id: u32,
+        active_account_id: AccountID?,
+        active_org_id: OrgID?,
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Constants
+    // ════════════════════════════════════════════════════════════════════
+
+    const ACCOUNT_STATE_ID: u32 = 1;
+
+    // ════════════════════════════════════════════════════════════════════
+    // Repository Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    fn active() -> Result<Info?, AccountError> {
+    }
+
+    fn list() -> Result<[Info], AccountError> {
+    }
+
+    fn remove(account_id: AccountID) -> Result<void, AccountError> {
+    }
+
+    fn set_active(account_id: AccountID, org_id: OrgID?) -> Result<void, AccountError> {
+    }
+
+    fn get_row(account_id: AccountID) -> Result<AccountRow?, AccountError> {
+    }
+
+    fn persist_token(input: PersistTokenInput) -> Result<void, AccountError> {
+    }
+
+    fn persist_account(input: PersistAccountInput) -> Result<void, AccountError> {
+    }
+
+    fn get_state() -> Result<AccountState, AccountError> {
+    }
+
+    fn set_state(state: AccountState) -> Result<void, AccountError> {
+    }
+
+    fn clear_active() -> Result<void, AccountError> {
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    test "account_row_creation" {
+        var row = AccountRow {
+            id = AccountID("user-123"),
+            email = "user@example.com",
+            url = "https://example.com",
+            access_token = AccessToken("token"),
+            refresh_token = RefreshToken("refresh"),
+            token_expiry = null,
+        };
+        assert(row.id.0 == "user-123");
+        assert(row.email == "user@example.com");
+    }
+
+    test "account_state_creation" {
+        var state = AccountState {
+            id = 1,
+            active_account_id = AccountID("user-123"),
+            active_org_id = OrgID("org-456"),
+        };
+        assert(state.id == 1);
+        assert(state.active_account_id?.0 == "user-123");
+    }
+
+    test "persist_token_input_creation" {
+        var input = PersistTokenInput {
+            account_id = AccountID("user-123"),
+            access_token = AccessToken("new-token"),
+            refresh_token = RefreshToken("new-refresh"),
+            expiry = 3600000,
+        };
+        assert(input.account_id.0 == "user-123");
+        assert(input.expiry == 3600000);
+    }
+
+    test "persist_account_input_creation" {
+        var input = PersistAccountInput {
+            id = AccountID("user-123"),
+            email = "user@example.com",
+            url = "https://example.com",
+            access_token = AccessToken("token"),
+            refresh_token = RefreshToken("refresh"),
+            expiry = 3600000,
+            org_id = OrgID("org-456"),
+        };
+        assert(input.id.0 == "user-123");
+        assert(input.org_id?.0 == "org-456");
+    }
+
+    test "account_state_id_constant" {
+        assert(ACCOUNT_STATE_ID == 1);
+    }
+
+    test "clear_active_state_no_active_account" {
+        var state = AccountState {
+            id = 1,
+            active_account_id = null,
+            active_org_id = null,
+        };
+        assert(state.active_account_id == null);
+    }
+
+    test "account_error_types" {
+        var repo_err = AccountError::Repo;
+        var service_err = AccountError::Service;
+        assert(repo_err as u32 == 0);
+        assert(service_err as u32 == 1);
+    }
+
+    test "info_with_null_org" {
+        var info = Info {
+            id = AccountID("user-123"),
+            email = "user@example.com",
+            url = "https://example.com",
+            active_org_id = null,
+        };
+        assert(info.active_org_id == null);
+    }
+
+    test "info_with_org" {
+        var info = Info {
+            id = AccountID("user-123"),
+            email = "user@example.com",
+            url = "https://example.com",
+            active_org_id = OrgID("org-456"),
+        };
+        assert(info.active_org_id?.0 == "org-456");
+    }
+}

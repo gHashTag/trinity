@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// When at capacity, remove least recently used item | φ² + 1/φ² = 3 | TRINITY
+
+module TriLruCache;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const LRUCache = struct {
+        generic : "K, V",
+        capacity : "usize",
+        size : "usize",
+        head : "*Node",
+        tail : "*Node",
+        map : "HashMap(K, *Node)",
+    };
+
+    pub const Node = struct {
+        generic : "K, V",
+        key : "K",
+        value : "V",
+        prev : "*Node",
+        next : "*Node",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(capacity: usize) → void
+    fn init(capacity: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(cache: *LRUCache) → void
+    fn get(cache: *LRUCache) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // put(cache: *LRUCache) → void
+    fn put(cache: *LRUCache) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test get_basic_case
+        given input = default_input()
+        when result = get(input)
+        then result != undefined
+
+    test put_basic_case
+        given input = default_input()
+        when result = put(input)
+        then result != undefined
+

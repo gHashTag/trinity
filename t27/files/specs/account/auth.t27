@@ -1,0 +1,271 @@
+// specs/account/auth.t27
+// Account Authentication Operations
+// φ² + 1/φ² = 3 | TRINITY
+
+module AccountAuth {
+    use base::types;
+    use account::schema;
+
+    // ════════════════════════════════════════════════════════════════════
+    // Authentication Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // token retrieves a fresh access token for an account
+    // Refreshes the token if needed
+    fn token(account_id: AccountID) -> Result<AccessToken?, AccountError> {
+        // Implementation: Get account row, check freshness, refresh if needed
+    }
+
+    // refresh refreshes the access token for an account
+    fn refresh(account_id: AccountID) -> Result<AccessToken, AccountError> {
+        // Implementation: Use refresh token to get new access token
+    }
+
+    // login initiates a device code authentication flow
+    fn login(server: str) -> Result<Login, AccountError> {
+        // Implementation: Request device code from auth server
+    }
+
+    // poll checks the status of a pending device auth
+    fn poll(login: Login) -> Result<PollResult, AccountError> {
+        // Implementation: Poll auth server for completion
+    }
+
+    // logout terminates the current session
+    fn logout(account_id: AccountID) -> Result<void, AccountError> {
+        // Implementation: Clear tokens for the account
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Organization Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // orgs returns organizations for an account
+    fn orgs(account_id: AccountID) -> Result<[Org], AccountError> {
+        // Implementation: Fetch orgs from API using access token
+    }
+
+    // orgs_by_account returns all accounts with their orgs
+    fn orgs_by_account() -> Result<[(account: Info, orgs: [Org])], AccountError> {
+        // Implementation: Fetch all accounts and their orgs
+    }
+
+    // config retrieves configuration for an account/org
+    fn config(account_id: AccountID, org_id: OrgID) -> Result<[str: any]?, AccountError> {
+        // Implementation: Fetch config from API
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // User Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // UserInfo represents user information from API
+    struct UserInfo {
+        id: AccountID,
+        email: str,
+    }
+
+    // get_user retrieves user information for an account
+    fn get_user(account_id: AccountID) -> Result<UserInfo, AccountError> {
+        // Implementation: Fetch user info from API
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Token Management
+    // ════════════════════════════════════════════════════════════════════
+
+    // TokenRefreshRequest is the request body for token refresh
+    struct TokenRefreshRequest {
+        grant_type: str,
+        refresh_token: RefreshToken,
+        client_id: str,
+    }
+
+    // DeviceTokenRequest is the request body for device token
+    struct DeviceTokenRequest {
+        grant_type: str,
+        device_code: DeviceCode,
+        client_id: str,
+    }
+
+    // DeviceAuthResponse is the response from device code request
+    struct DeviceAuthResponse {
+        device_code: DeviceCode,
+        user_code: UserCode,
+        verification_uri_complete: str,
+        expires_in: u64,
+        interval: u64,
+    }
+
+    // TokenRefreshResponse is the response from token refresh
+    struct TokenRefreshResponse {
+        access_token: AccessToken,
+        refresh_token: RefreshToken,
+        expires_in: u64,
+    }
+
+    // DeviceTokenSuccessResponse is the successful device token response
+    struct DeviceTokenSuccessResponse {
+        access_token: AccessToken,
+        refresh_token: RefreshToken,
+        expires_in: u64,
+    }
+
+    // DeviceTokenErrorResponse is the error device token response
+    struct DeviceTokenErrorResponse {
+        error: str,
+        error_description: str,
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Poll Response Handling
+    // ════════════════════════════════════════════════════════════════════
+
+    // parse_poll_result converts a device token response to PollResult
+    fn parse_poll_result(response: DeviceTokenErrorResponse) -> PollResult {
+        if (response.error == "authorization_pending") {
+            return PollResult::Pending;
+        }
+        if (response.error == "slow_down") {
+            return PollResult::Slow;
+        }
+        if (response.error == "expired_token") {
+            return PollResult::Expired;
+        }
+        if (response.error == "access_denied") {
+            return PollResult::Denied;
+        }
+        return PollResult::Error;
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    test "user_info_creation" {
+        var user = UserInfo {
+            id = AccountID("user-123"),
+            email = "user@example.com",
+        };
+        assert(user.id.0 == "user-123");
+        assert(user.email == "user@example.com");
+    }
+
+    test "token_refresh_request_creation" {
+        var request = TokenRefreshRequest {
+            grant_type = "refresh_token",
+            refresh_token = RefreshToken("refresh-token"),
+            client_id = "opencode-cli",
+        };
+        assert(request.grant_type == "refresh_token");
+        assert(request.client_id == "opencode-cli");
+    }
+
+    test "device_token_request_creation" {
+        var request = DeviceTokenRequest {
+            grant_type = "urn:ietf:params:oauth:grant-type:device_code",
+            device_code = DeviceCode("device-code"),
+            client_id = "opencode-cli",
+        };
+        assert(request.grant_type == "urn:ietf:params:oauth:grant-type:device_code");
+    }
+
+    test "device_auth_response_creation" {
+        var response = DeviceAuthResponse {
+            device_code = DeviceCode("device-code"),
+            user_code = UserCode("ABCD-1234"),
+            verification_uri_complete = "https://example.com/auth",
+            expires_in = 300,
+            interval = 5,
+        };
+        assert(response.user_code.0 == "ABCD-1234");
+        assert(response.expires_in == 300);
+    }
+
+    test "token_refresh_response_creation" {
+        var response = TokenRefreshResponse {
+            access_token = AccessToken("new-token"),
+            refresh_token = RefreshToken("new-refresh"),
+            expires_in = 3600,
+        };
+        assert(response.access_token.0 == "new-token");
+        assert(response.expires_in == 3600);
+    }
+
+    test "device_token_error_response_creation" {
+        var response = DeviceTokenErrorResponse {
+            error = "authorization_pending",
+            error_description = "Waiting for user",
+        };
+        assert(response.error == "authorization_pending");
+    }
+
+    test "parse_poll_result_pending" {
+        var response = DeviceTokenErrorResponse {
+            error = "authorization_pending",
+            error_description = "",
+        };
+        var result = parse_poll_result(response);
+        assert(result == PollResult::Pending);
+    }
+
+    test "parse_poll_result_slow" {
+        var response = DeviceTokenErrorResponse {
+            error = "slow_down",
+            error_description = "",
+        };
+        var result = parse_poll_result(response);
+        assert(result == PollResult::Slow);
+    }
+
+    test "parse_poll_result_expired" {
+        var response = DeviceTokenErrorResponse {
+            error = "expired_token",
+            error_description = "",
+        };
+        var result = parse_poll_result(response);
+        assert(result == PollResult::Expired);
+    }
+
+    test "parse_poll_result_denied" {
+        var response = DeviceTokenErrorResponse {
+            error = "access_denied",
+            error_description = "",
+        };
+        var result = parse_poll_result(response);
+        assert(result == PollResult::Denied);
+    }
+
+    test "parse_poll_result_error" {
+        var response = DeviceTokenErrorResponse {
+            error = "unknown_error",
+            error_description = "",
+        };
+        var result = parse_poll_result(response);
+        assert(result == PollResult::Error);
+    }
+
+    test "org_creation" {
+        var org = Org {
+            id = OrgID("org-456"),
+            name = "Acme Inc",
+        };
+        assert(org.id.0 == "org-456");
+        assert(org.name == "Acme Inc");
+    }
+
+    test "poll_result_enum_values" {
+        assert(PollResult::Success as u32 == 0);
+        assert(PollResult::Pending as u32 == 1);
+        assert(PollResult::Slow as u32 == 2);
+        assert(PollResult::Expired as u32 == 3);
+        assert(PollResult::Denied as u32 == 4);
+        assert(PollResult::Error as u32 == 5);
+    }
+
+    test "constants_values" {
+        assert(CLIENT_ID == "opencode-cli");
+        assert(EAGER_REFRESH_THRESHOLD_MINUTES == 5);
+        assert(DEFAULT_POLL_INTERVAL_MS == 5000);
+    }
+}

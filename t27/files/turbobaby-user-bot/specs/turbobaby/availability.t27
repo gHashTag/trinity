@@ -1,0 +1,570 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/turbobaby/availability.t27 -- what "available" counts, and everything it refuses to count
+; Source of truth for the availability half of issue #4's `bike_units` table (the status set and
+; the derived per-family count), for the availability filter of the catalog API (#8), and for the
+; "unavailable rather than hidden" rule the detail screen (#9) renders. Every number below is read
+; from data/fleet_seed.json (measured_at 2026-09-12) or from DECISIONS.md, and each carries where
+; it comes from. Nothing here is computed from a price and nothing is parsed out of prose.
+; ASCII only (L3), English only (LANG-EN).
+; --
+; WHY (measured 2026-09-12): the fleet is 37 units, 11 rented and 26 at base, and 11 + 26 == 37
+; exactly. That equality is the reason this is a spec and not a comment. The internal register's
+; own HEADER claims 38 units, 11 rented, 27 at base -- and 11 + 27 == 38 closes just as neatly.
+; Two triples, both internally consistent, one unit apart; only the 37 rows that actually exist
+; choose between them, and the seed chose the rows (data/fleet_seed.json, "discrepancy"). So the
+; totality check alone cannot tell a correct fleet from a fleet seeded off the header: the count
+; has to be pinned to the measured rows, which is what the invariants below do. An availability
+; number wrong by one unit is a double-booked bike, and double-booking is the failure availability
+; exists to prevent.
+; --
+; WHERE THE ISSUE IS REFUTED: #19 asks for an invariant about a "reserved" unit. No source in this
+; repository has a reserved status. The shipped schema enumerates exactly four wire values --
+; available, rented, service, retired (migrations/078_bike_units.sql:32) -- and the register
+; measures two of them: 11 rented, 26 at base, leaving 37 - 11 - 26 = 0 units in any third class.
+; A booking hold cannot become a reserved UNIT either: D8 puts the cart line's catalog_id on the
+; FAMILY key, because a customer books a model and the shop assigns the unit, so no unit row
+; exists for a hold to sit on. RESERVED is therefore recorded as absent with a note -- the form
+; specs/agents/turbobaby.t27 already uses for the alphabet seat it cannot honestly claim -- and
+; the acceptance criterion is met by something stronger than the invariant asked for:
+; available_count matches the AVAILABLE discriminant and nothing else, so rented, service,
+; retired, and any status a later migration adds under any name are excluded by construction
+; instead of by a deny-list this file must maintain.
+; --
+; WHERE THE ISSUE IS REFUTED A SECOND TIME (D17): #4's brief specifies the column as
+; status ENUM('available','rented','service','sold'). The shipped migration declares
+; CHECK (status IN ('available','rented','service','retired')) -- migrations/078_bike_units.sql:32
+; -- and explains the choice at 078:16-19: service and retired exist so a unit can leave the
+; available pool without being deleted and orphaning its service history in 080. Every other
+; source in the tree agrees with the migration rather than with the brief: src/api/bikes.rs:452
+; declares UNIT_STATUS_RETIRED and its test the_four_statuses_match_the_check_constraint pins the
+; four-value array, src/db/entities/bike_unit.rs:40 and src/db/bikes.rs:42 restate it,
+; scripts/verify_fleet_seed.py:59 parses no other value, src/ui/screens/admin_screen.rs:485
+; renders it, and the sibling spec specs/bike_catalog.t27:59 already writes "retired". The string
+; "sold" appears nowhere in this repository as a unit status. So this file follows the migration:
+; D17 makes an issue a brief and not a measurement, and the earlier revision of this spec took the
+; fourth value from #4's PROSE and then labelled it a measurement. The cost is not cosmetic -- a
+; backend writing STATUS_NAMES[3] into bike_units.status would hand Postgres a value the column
+; rejects with a 23514 CHECK violation. This is the twin of the engine_cc / displacement_cc trap
+; D17 already records for #18.
+; --
+; WHY AVAILABLE IS NOT ZERO: the discriminants start at 1 and 0 means unset. D9 records three
+; constructs in this tree that turn an unknown into a confident zero, one of them fail-open by
+; design. A fixed-length slot array is a fourth: xmax-300-new writes 7 of 10 slots and leaves 3
+; zeroed, and had AVAILABLE been the zero those 3 would have read as bookable bikes. The direction
+; of the residual error is deliberate: an unrecognised code counts as not available, which costs a
+; booking, rather than as available, which double-books one.
+; --
+; WHAT THIS FILE NEVER DOES: it holds no renter identity, and that absence is the model rather
+; than an omission -- D14 forbids names, handles, phone numbers, key codes, plate numbers and
+; free-text notes anywhere in this repository, fixtures included, so a slot is the NN of a
+; synthetic <family-key>-NN label and carries one status and nothing else. It holds no dates and
+; no calendar: a status is a fact about now, while the term lives on the cart line (D8) and in
+; rental_terms (#17). And it never prices anything. A family with zero available units still shows
+; its published rate rather than hiding it (#4) -- and a family with no published rate at all,
+; which is click-125 and only click-125, renders a dash rather than a zero, an average or a
+; "from" (the seed's field_notes on null) -- while the client-facing number is still the one the
+; door returns: never computed here, never a "from", never a range, never silence (D11).
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module availability;
+
+pub const KIND : str = "availability";
+pub const ID : str = "turbobaby/availability";
+pub const NAME : str = "Unit availability";
+pub const SOURCE : str = "data/fleet_seed.json";
+pub const MEASURED_AT : str = "2026-09-12";
+
+; --- The status set -------------------------------------------------------------------------
+; The four wire values are the CHECK constraint of migrations/078_bike_units.sql:32:
+; status TEXT CHECK (status IN ('available','rented','service','retired')). NOT #4's brief, which
+; spells the fourth value 'sold' -- see the second refutation in the header. The u8 codes here
+; are this spec's own ordinals and they start at ONE, because zero is what an unwritten slot in
+; a fixed-length array already holds (see the header).
+; The codes are written as plain constants rather than as an enum type on purpose: the corpus
+; carries two incompatible spellings for an enum member inside an assert -- `ErrorCode::Success`
+; in specs/enrichment/youtube_transcript.t27 against the leading-dot form used elsewhere -- and a
+; discriminant that spells differently in two backends is a discriminant that can drift.
+pub const STATUS_UNSET : u8 = 0;
+pub const STATUS_AVAILABLE : u8 = 1;
+pub const STATUS_RENTED : u8 = 2;
+pub const STATUS_SERVICE : u8 = 3;
+pub const STATUS_RETIRED : u8 = 4;
+; Indexed by code minus one; the string is what the database column stores.
+pub const STATUS_NAMES : [4]str = ["available", "rented", "service", "retired"];
+
+; #19's "reserved". Empty because no source names it, with the reason stated rather than implied.
+pub const RESERVED_STATUS : str = "";
+pub const RESERVED_STATUS_NOTE : str = "Issue #19 asks for a reserved status; nothing in this repository has one. migrations/078_bike_units.sql:32 enumerates four wire values and reserved is not among them, and D8 puts a booking hold on the family key rather than on a unit, so no unit row exists for a hold to occupy. available_count matches AVAILABLE exactly, which excludes a held unit whatever a later migration calls it.";
+
+; --- The measured fleet ---------------------------------------------------------------------
+; 14 in-stock families in the seed's own order, so a diff against data/fleet_seed.json reads
+; line for line. This table is a SECOND copy of the seed's counts and a copy is a drift risk
+; (D15). It is here because the arithmetic cannot be checked without it, and the copy is
+; currently ungated: scripts/verify_fleet_seed.py pins migrations/082_bikes_seed.sql to the JSON
+; and knows nothing about .t27, so comparing this table to the seed is the next gate to write,
+; not a job something already does.
+pub const FAMILY_KEYS : [14]str = [
+  "click-125", "nmax-155", "xsr-155", "cb-300r", "forza-300", "mt-03-300", "xmax-300",
+  "xmax-300-new", "adv-350", "ninja-400", "cb-650r", "cbr-650r", "vulcan-s-650", "xadv-750",
+];
+pub const FAMILY_UNITS : [14]u8 = [1, 10, 2, 1, 1, 1, 3, 7, 5, 1, 1, 1, 1, 2];
+pub const FAMILY_RENTED : [14]u8 = [1, 5, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1];
+pub const FAMILY_AVAILABLE : [14]u8 = [0, 5, 1, 1, 0, 0, 3, 6, 5, 1, 1, 1, 1, 1];
+
+; seed "totals". These are the published figures the three columns above must reproduce.
+pub const FAMILIES_IN_STOCK : u8 = 14;
+pub const FAMILIES_OFFERED : u8 = 13;
+pub const FLEET_UNITS : u8 = 37;
+pub const FLEET_RENTED : u8 = 11;
+pub const FLEET_AVAILABLE : u8 = 26;
+; Derived from the family rows: eleven families are both offered and have at least one unit.
+pub const BOOKABLE_FAMILIES : u8 = 11;
+; FORZA 300 and MT-03 are in stock but all their units are out. The old root spec called this
+; "no stock"; that name was retired because total stock and current availability are different.
+pub const OFFERED_WITH_ZERO_AVAILABLE_FAMILIES : u8 = 2;
+pub const OFFERED_OUT_ON_CONTRACT_KEYS : [2]str = ["forza-300", "mt-03-300"];
+; 37 - 11 - 26 = 0. No unit in the register is in service or retired; both statuses are declared
+; because 078 declares them, and both have zero measured instances today.
+pub const MEASURED_SERVICE_OR_RETIRED_UNITS : u8 = 0;
+
+; seed "discrepancy": the register header against the rows that exist. Recorded, not resolved.
+pub const REGISTER_HEADER_UNITS : u8 = 38;
+pub const REGISTER_HEADER_RENTED : u8 = 11;
+pub const REGISTER_HEADER_AT_BASE : u8 = 27;
+
+; DECISIONS.md D6: two units read `overdue` on the operations sheet. Both are still counted in
+; the 37 as either rented or at base, so service-due is a second axis over a unit, not a status
+; on it -- and it is admin-only, because a public badge we cannot keep accurate is the kind of
+; number D9 forbids.
+pub const SERVICE_DUE_UNITS : u8 = 2;
+
+; seed "price_list_only": 7 families published in the tariff with ZERO units. With the 13 in-stock
+; families that carry a published rate they are the 13 + 7 = 20 families the tariff NAMES --
+; click-125 is the fourteenth in-stock family and the tariff does not name it, because its
+; base_rate_thb_day and deposit_thb are both null ("Rate and deposit are null because no rentable
+; tariff is published for it") and the seed's own totals.families_without_published_rate is 1. The
+; single CLICK 125 figure anywhere, 187/day on the seasonal grid, is recorded in the seed's
+; reconciliation.unresolved as "stale, not a tariff", so it is not one either. 21 is therefore the
+; number of families in the SEED (14 in stock + 7 price-list-only), not in the tariff; 7 of 21
+; seeded families is exactly a third, while 7 of the 20 the tariff names is 35%. They are the
+; reason the empty set must answer zero rather than raise: an empty unit set is the normal,
+; permanent state of a third of the seeded catalog, not an error condition.
+pub const PRICE_LIST_ONLY_FAMILIES : u8 = 7;
+pub const PRICE_LIST_ONLY_UNITS : u8 = 0;
+
+; D12 lifecycle. CLICK 125's only unit is still rented on a contract predating the closure; it
+; is not at the office and has zero units available. The seasonal-grid number is stale evidence,
+; not a tariff, and can never be quoted.
+pub const CLICK_125_CLOSED_ON : str = "2026-09-12";
+pub const CLICK_125_EXISTING_RENTAL_CONTINUES : bool = true;
+pub const CLICK_125_STALE_GRID_RATE_THB : u16 = 187;
+pub const CLICK_125_STALE_GRID_IS_QUOTABLE : bool = false;
+
+; The owner's suggested alternatives. Only nmax-155 is in the physical fleet today; the two
+; tariff-only rows have zero units and therefore fail the same bookability predicate.
+pub const CLICK_125_REDIRECTS : [3]str = ["pcx-150", "adv-150", "nmax-155"];
+pub const CLICK_125_REDIRECT_UNITS_AVAILABLE : [3]u8 = [0, 0, 5];
+
+; A file snapshot may rule a family out, but only a live shop check may confirm availability.
+pub const FILE_MAY_RULE_OUT : bool = true;
+pub const FILE_MAY_CONFIRM : bool = false;
+pub const CONFIRMATION_AUTHORITY : str = "a live check with the shop";
+
+; The largest family in the seed is nmax-155 at 10 units, so 10 slots hold any family today.
+; The invariants below keep this honest, and they SCAN the whole table rather than quoting one
+; row: a family that grows past the capacity invalidates the signature of available_count, and
+; that must fail here rather than silently truncate a count. This constant is also the clamp
+; available_count applies and the width of the slot fixtures, and the invariants pin all three
+; together -- raising it without widening the [10]u8 arrays would clamp past the end of them.
+pub const MAX_UNITS_PER_FAMILY : u8 = 10;
+
+; --- The unit row ---------------------------------------------------------------------------
+; Two fields, and the interesting thing about them is the fields that are missing. `slot` is the
+; NN of the synthetic <family-key>-NN label; `status` is one field holding one code, which is why
+; "a unit occupies exactly one status" is structural here and not merely asserted. There is no
+; renter, no plate, no key code and no note (D14). One packed struct per module: a second breaks
+; the Verilog-from-HIR backend with an empty duplicate-signal name (t27#3283).
+pub const UnitSlot = packed struct {
+    slot : u8,
+    status : u8,
+};
+
+pub const SLOT_LABEL_EXAMPLE : str = "nmax-155-01";
+
+; --- Functions ------------------------------------------------------------------------------
+
+; A code inside the declared set. STATUS_UNSET is deliberately outside it.
+pub fn status_is_known(status: u8) bool {
+    return status >= STATUS_AVAILABLE and status <= STATUS_RETIRED;
+}
+
+; The one question the customer app asks a unit. Exact match, never a range, never a default.
+pub fn is_available(status: u8) bool {
+    return status == STATUS_AVAILABLE;
+}
+
+; How many of the four classes a single code falls into. Exactly one for a known status and zero
+; for anything else -- the "exactly one status" claim in the form a machine can check. A code
+; that hit two classes would be a unit that is both available and rented.
+pub fn status_class_hits(status: u8) u8 {
+    var hits : u8 = 0;
+    if (status == STATUS_AVAILABLE) {
+        hits += @as(u8, 1);
+    }
+    if (status == STATUS_RENTED) {
+        hits += @as(u8, 1);
+    }
+    if (status == STATUS_SERVICE) {
+        hits += @as(u8, 1);
+    }
+    if (status == STATUS_RETIRED) {
+        hits += @as(u8, 1);
+    }
+    return hits;
+}
+
+; Availability of a family, derived from its slots -- #4: count(units WHERE status='available').
+; `used` is the size of the set, so an empty family passes 0 and gets 0 back: no error, no
+; special case, no sentinel. The bound is clamped because a caller's count is not evidence about
+; the array, and the count is safe under either mistake -- a `used` that is too large reads
+; unwritten slots, and an unwritten slot is STATUS_UNSET, which is not available.
+pub fn available_count(slots: [10]u8, used: u8) u8 {
+    const n = if (used > MAX_UNITS_PER_FAMILY) MAX_UNITS_PER_FAMILY else used;
+    var found : u8 = 0;
+    var i : u8 = 0;
+    while (i < n) {
+        if (slots[i] == STATUS_AVAILABLE) {
+            found += @as(u8, 1);
+        }
+        i += @as(u8, 1);
+    }
+    return found;
+}
+
+; D12: CLICK 125 is closed to NEW rentals while one unit stays out on an older contract. Being
+; offered is a property of the family and being available is a property of a unit, so the offer
+; gate multiplies the count rather than replacing it. Today the two axes cannot disagree --
+; click-125 has 0 available units -- and this function is what keeps that from being load-bearing.
+pub fn offerable_count(available: u8, offered: bool) u8 {
+    if (!offered) {
+        return 0;
+    }
+    return available;
+}
+
+; Boolean form shared by pricing and catalog consumers. Both conjuncts live here so no caller
+; reconstructs only half of the rule.
+pub fn has_an_available_unit(units_available: u8) bool {
+    return units_available >= 1;
+}
+
+pub fn is_bookable(offered: bool, units_available: u8) bool {
+    return offered and has_an_available_unit(units_available);
+}
+
+pub const REASON_BOOKABLE : u8 = 0;
+pub const REASON_NOT_OFFERED : u8 = 1;
+pub const REASON_NO_UNITS : u8 = 2;
+pub const REASON_NEITHER : u8 = 3;
+pub const REASON_NAMES : [4]str = ["bookable", "not_offered", "no_units_available", "not_offered_and_no_units"];
+
+pub fn unbookable_reason(offered: bool, units_available: u8) u8 {
+    if (is_bookable(offered, units_available)) {
+        return REASON_BOOKABLE;
+    }
+    if (!offered and !has_an_available_unit(units_available)) {
+        return REASON_NEITHER;
+    }
+    if (!offered) {
+        return REASON_NOT_OFFERED;
+    }
+    return REASON_NO_UNITS;
+}
+
+pub fn may_confirm(offered: bool, units_available: u8, checked_with_shop: bool) bool {
+    return is_bookable(offered, units_available) and checked_with_shop;
+}
+
+pub fn usable_click_redirect_count() u8 {
+    var found : u8 = 0;
+    var i : u8 = 0;
+    while (i < CLICK_125_REDIRECTS.len) {
+        if (is_bookable(true, CLICK_125_REDIRECT_UNITS_AVAILABLE[i])) {
+            found += @as(u8, 1);
+        }
+        i += @as(u8, 1);
+    }
+    return found;
+}
+
+; Sum one column of the measured table. The largest column total is 37, far below the u8 rail,
+; so the accumulator needs no wider width and no cast.
+pub fn sum_column(counts: [14]u8) u8 {
+    var total : u8 = 0;
+    var i : u8 = 0;
+    while (i < FAMILIES_IN_STOCK) {
+        total = total + counts[i];
+        i += @as(u8, 1);
+    }
+    return total;
+}
+
+; Every family's own three numbers must close: units == rented + available. A unit counted in
+; both classes breaks its row, and so does a unit counted in neither.
+pub fn verify_family_rows_close() bool {
+    var i : u8 = 0;
+    while (i < FAMILIES_IN_STOCK) {
+        if (FAMILY_UNITS[i] != FAMILY_RENTED[i] + FAMILY_AVAILABLE[i]) {
+            return false;
+        }
+        i += @as(u8, 1);
+    }
+    return true;
+}
+
+; The largest number of units any family holds, SCANNED rather than quoted. The capacity claim
+; above names nmax-155 at 10, and a name goes stale silently: adv-350 or xmax-300-new growing
+; past 10 leaves a one-row assert green while available_count clamps the eleventh slot out of
+; every count. Returning the maximum rather than a bool buys the second invariant below -- that
+; the family this file NAMES as the largest still is -- so neither the capacity nor the comment
+; that justifies it can drift alone.
+pub fn largest_family_units() u8 {
+    var largest : u8 = 0;
+    var i : u8 = 0;
+    while (i < FAMILIES_IN_STOCK) {
+        if (FAMILY_UNITS[i] > largest) {
+            largest = FAMILY_UNITS[i];
+        }
+        i += @as(u8, 1);
+    }
+    return largest;
+}
+
+; --- Fixtures -------------------------------------------------------------------------------
+; Not pub: the surface of this spec is the status set, the table and the functions. The slot
+; codes are written as their literal ordinals and every test ties the literal back to its named
+; discriminant, so renumbering a status fails a test instead of quietly testing another one.
+; --
+; The seed publishes COUNTS, not a per-slot assignment: which of the ten NMAX units is out is
+; not a number this repository holds, and it would be a renter fact if it were. The order inside
+; these fixtures is therefore arbitrary and only the multiset is claimed.
+
+; The empty fleet: no units at all. This is the shape of all 7 price-list-only families.
+const NO_UNITS : [10]u8 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+; forza-300: 1 unit, rented (seed: units_total 1, units_rented 1, units_available 0).
+const FORZA_300_SLOTS : [10]u8 = [2, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+; nmax-155: 10 units, 5 at base and 5 out (seed: 10 / 5 / 5). The mixed family.
+const NMAX_155_SLOTS : [10]u8 = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2];
+; xmax-300-new: 7 units, 6 at base and 1 out (seed: 7 / 1 / 6). Three slots stay unwritten.
+const XMAX_300_NEW_SLOTS : [10]u8 = [1, 1, 1, 1, 1, 1, 2, 0, 0, 0];
+
+; --- Tests ----------------------------------------------------------------------------------
+
+test the_empty_fleet_counts_zero_and_is_not_an_error {
+    assert available_count(NO_UNITS, 0) == 0;
+    // and the same answer when the caller's count is wrong in the unsafe direction
+    assert available_count(NO_UNITS, 10) == 0;
+    // 7 real families are in exactly this state: a published tariff over zero stock
+    assert PRICE_LIST_ONLY_FAMILIES == 7;
+    assert PRICE_LIST_ONLY_UNITS == 0;
+    assert available_count(NO_UNITS, PRICE_LIST_ONLY_UNITS) == 0;
+}
+
+test forza_300_is_an_all_rented_family {
+    assert FAMILY_KEYS[4] == "forza-300";
+    assert FAMILY_UNITS[4] == 1;
+    assert FAMILY_RENTED[4] == 1;
+    assert FAMILY_AVAILABLE[4] == 0;
+    assert FORZA_300_SLOTS[0] == STATUS_RENTED;
+    assert available_count(FORZA_300_SLOTS, 1) == 0;
+    // mt-03-300 is the second family of this shape, 1 unit and 0 available
+    assert FAMILY_KEYS[5] == "mt-03-300";
+    assert FAMILY_UNITS[5] == 1;
+    assert FAMILY_AVAILABLE[5] == 0;
+}
+
+test nmax_155_is_a_mixed_family {
+    assert FAMILY_KEYS[1] == "nmax-155";
+    assert FAMILY_UNITS[1] == 10;
+    assert FAMILY_RENTED[1] == 5;
+    assert FAMILY_AVAILABLE[1] == 5;
+    assert NMAX_155_SLOTS[0] == STATUS_AVAILABLE;
+    assert NMAX_155_SLOTS[9] == STATUS_RENTED;
+    assert available_count(NMAX_155_SLOTS, 10) == FAMILY_AVAILABLE[1];
+}
+
+test xmax_300_new_counts_seven_slots_and_not_its_capacity {
+    assert FAMILY_KEYS[7] == "xmax-300-new";
+    assert FAMILY_UNITS[7] == 7;
+    assert FAMILY_RENTED[7] == 1;
+    assert FAMILY_AVAILABLE[7] == 6;
+    assert available_count(XMAX_300_NEW_SLOTS, 7) == 6;
+    // the three unwritten slots stay out of the count even at full capacity: this is the case
+    // that would have read 9 available had AVAILABLE been the zero code
+    assert available_count(XMAX_300_NEW_SLOTS, 10) == 6;
+}
+
+test a_unit_falls_into_exactly_one_class {
+    assert status_class_hits(STATUS_AVAILABLE) == 1;
+    assert status_class_hits(STATUS_RENTED) == 1;
+    assert status_class_hits(STATUS_SERVICE) == 1;
+    assert status_class_hits(STATUS_RETIRED) == 1;
+}
+
+test an_unknown_code_is_in_no_class_and_is_never_available {
+    assert status_class_hits(STATUS_UNSET) == 0;
+    // 200 stands for any code outside the declared set, including one a later migration adds
+    assert status_class_hits(200) == 0;
+    assert is_available(STATUS_UNSET) == false;
+    assert is_available(200) == false;
+    assert status_is_known(STATUS_UNSET) == false;
+    assert status_is_known(STATUS_RETIRED) == true;
+}
+
+test the_four_wire_values_are_the_check_constraint_of_078 {
+    assert STATUS_NAMES[0] == "available";
+    assert STATUS_NAMES[1] == "rented";
+    assert STATUS_NAMES[2] == "service";
+    // "retired", not #4's "sold": migrations/078_bike_units.sql:32 is the column, and the column
+    // rejects "sold" with a 23514 CHECK violation. See the second refutation in the header.
+    assert STATUS_NAMES[3] == "retired";
+    // and none of them is "reserved"
+    assert RESERVED_STATUS == "";
+}
+
+test the_table_reproduces_the_published_totals {
+    assert sum_column(FAMILY_UNITS) == FLEET_UNITS;
+    assert sum_column(FAMILY_RENTED) == FLEET_RENTED;
+    assert sum_column(FAMILY_AVAILABLE) == FLEET_AVAILABLE;
+    assert FLEET_UNITS == 37;
+    assert FLEET_RENTED == 11;
+    assert FLEET_AVAILABLE == 26;
+    assert FAMILY_KEYS.len == 14;
+    assert FAMILIES_IN_STOCK == 14;
+}
+
+test the_register_header_claims_a_unit_that_has_no_row {
+    assert REGISTER_HEADER_UNITS == 38;
+    assert REGISTER_HEADER_AT_BASE == 27;
+    assert REGISTER_HEADER_UNITS - FLEET_UNITS == 1;
+    // the header closes on its own arithmetic, which is why the totals had to be pinned to the
+    // rows: 11 + 27 == 38 is as consistent as 11 + 26 == 37 and it is wrong by one bike
+    assert REGISTER_HEADER_RENTED + REGISTER_HEADER_AT_BASE == REGISTER_HEADER_UNITS;
+    assert FLEET_RENTED == REGISTER_HEADER_RENTED;
+}
+
+test service_due_is_a_second_axis_and_not_a_status {
+    assert SERVICE_DUE_UNITS == 2;
+    // both overdue units are still counted in the 37 as rented or at base, so no unit sits in
+    // STATUS_SERVICE: 37 - 11 - 26 = 0
+    assert MEASURED_SERVICE_OR_RETIRED_UNITS == 0;
+    assert FLEET_UNITS - FLEET_RENTED - FLEET_AVAILABLE == MEASURED_SERVICE_OR_RETIRED_UNITS;
+    assert SERVICE_DUE_UNITS > MEASURED_SERVICE_OR_RETIRED_UNITS;
+}
+
+test click_125_offers_nothing_by_two_independent_rules {
+    assert FAMILY_KEYS[0] == "click-125";
+    // the measured rule: it has no unit at base
+    assert FAMILY_AVAILABLE[0] == 0;
+    assert offerable_count(FAMILY_AVAILABLE[0], false) == 0;
+    // the decided rule (D12): it would still offer nothing if its unit came back
+    assert offerable_count(1, false) == 0;
+    // and the gate does not otherwise touch the count
+    assert offerable_count(FAMILY_AVAILABLE[1], true) == 5;
+    assert FAMILIES_IN_STOCK - FAMILIES_OFFERED == 1;
+    assert FAMILY_RENTED[0] == 1;
+    assert CLICK_125_EXISTING_RENTAL_CONTINUES == true;
+    assert CLICK_125_STALE_GRID_IS_QUOTABLE == false;
+}
+
+test bookability_reasons_and_redirects_share_one_owner {
+    assert is_bookable(true, 1) == true;
+    assert unbookable_reason(true, 1) == REASON_BOOKABLE;
+    assert unbookable_reason(false, 1) == REASON_NOT_OFFERED;
+    assert unbookable_reason(true, 0) == REASON_NO_UNITS;
+    assert unbookable_reason(false, 0) == REASON_NEITHER;
+    assert usable_click_redirect_count() == 1;
+    assert may_confirm(true, 1, false) == false;
+    assert may_confirm(true, 1, true) == true;
+}
+
+test the_capacity_is_scanned_from_the_table_and_not_quoted {
+    // the measured maximum today, found by walking all 14 rows rather than reading row 1
+    assert largest_family_units() == 10;
+    assert largest_family_units() == MAX_UNITS_PER_FAMILY;
+    // it is nmax-155 that carries it, which is the claim the capacity comment makes
+    assert largest_family_units() == FAMILY_UNITS[1];
+    // the scan is not fooled by a later row: adv-350 at index 8 is the second largest at 5, and
+    // a one-row assert on index 1 would stay green whatever index 8 became
+    assert FAMILY_KEYS[8] == "adv-350";
+    assert FAMILY_UNITS[8] == 5;
+    assert largest_family_units() > FAMILY_UNITS[8];
+}
+
+; --- Invariants -----------------------------------------------------------------------------
+
+; The acceptance criterion of #19. A unit counted in both classes would push the sum past the
+; total; 11 + 26 is exactly 37, so no unit is in two classes and none is in neither.
+invariant no_unit_is_both_available_and_rented
+    assert FLEET_RENTED + FLEET_AVAILABLE == FLEET_UNITS
+
+; The same claim per family rather than over the fleet, where a compensating pair of errors
+; cannot hide: units == rented + available, fourteen times.
+invariant every_family_row_closes
+    assert verify_family_rows_close() == true
+
+invariant available_and_rented_are_different_codes
+    assert STATUS_AVAILABLE != STATUS_RENTED
+
+; Zero is not a status, so the unwritten remainder of a slot array is not a fleet of free bikes.
+invariant zero_is_not_available
+    assert STATUS_AVAILABLE > STATUS_UNSET
+
+invariant the_status_set_is_closed_at_four
+    assert STATUS_NAMES.len == 4
+
+; A held unit is excluded by construction rather than by name: nothing in this repository has a
+; reserved status, and available_count matches AVAILABLE alone.
+invariant reserved_is_not_a_status_in_this_repository
+    assert RESERVED_STATUS == ""
+
+; A published tariff over zero stock can never read as available: the empty set has no slot to
+; count. 7 of the 20 families the tariff names are permanently in that state -- a third of the
+; 21 the seed holds, which is a different denominator and is named as the seed above.
+invariant a_tariff_line_without_units_is_not_stock
+    assert PRICE_LIST_ONLY_UNITS == 0
+
+invariant confirmation_requires_a_live_check
+    assert FILE_MAY_CONFIRM == false and may_confirm(true, 1, false) == false
+
+invariant click_is_rented_unavailable_and_not_quotable
+    assert FAMILY_RENTED[0] == 1 and FAMILY_AVAILABLE[0] == 0 and CLICK_125_STALE_GRID_IS_QUOTABLE == false
+
+; The seeded fleet is the rows that exist, deliberately one short of the header's claim.
+invariant the_fleet_is_the_rows_and_not_the_header
+    assert FLEET_UNITS < REGISTER_HEADER_UNITS
+
+; The floor a counting gate needs (D16): the capacity must still hold EVERY family, which is the
+; claim this invariant used to name and not the one it made. It asserted the capacity against
+; FAMILY_UNITS[1] alone, so adv-350 or xmax-300-new growing to 11 left it green -- 10 >= 10 still
+; holds -- while available_count clamped the eleventh slot out of the count and returned a number
+; short by one, a bike the customer app would never see. D16's rule is that a gate must be able to
+; see the failure it exists to catch, and a one-row example cannot see thirteen of the fourteen
+; ways this one arrives. The scan below can.
+invariant the_slot_capacity_holds_every_family
+    assert largest_family_units() <= MAX_UNITS_PER_FAMILY
+
+; D16 again: a scan that found nothing passes vacuously, so the capacity is also pinned to the
+; row the file NAMES as the largest. If another family overtakes nmax-155 this fails and the
+; comment above MAX_UNITS_PER_FAMILY gets reread, instead of quietly becoming false.
+invariant the_named_largest_family_is_still_the_largest
+    assert largest_family_units() == FAMILY_UNITS[1]
+
+; The third face of the same constant: it is the clamp available_count applies AND the width of
+; the slot arrays it walks. Naming it in the clamp removed one hand-copied 10 (D15) but created a
+; new way to be wrong -- raising it to 12 without widening the [10]u8 fixtures would clamp two
+; slots past the end of them, and an array length cannot be named in a type position anywhere in
+; this corpus. Pinning it to a fixture's length closes that: the fixtures are what the signature
+; accepts, so this holds the constant, the clamp and the signature together.
+invariant the_capacity_is_the_width_of_the_slot_arrays
+    assert NO_UNITS.len == MAX_UNITS_PER_FAMILY

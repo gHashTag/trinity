@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free tree | φ² + 1/φ² = 3 | TRINITY
+
+module TriKdTree;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const KDNode = struct {
+        point : []f64,
+        axis : "usize",
+        left : "?KDNode",
+        right : "?KDNode",
+    };
+
+    pub const KDTree = struct {
+        root : "?KDNode",
+        k : "usize",
+        allocator : "std.mem.Allocator",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator) → void
+    fn init(allocator: std.mem.Allocator) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // build(allocator: std.mem.Allocator) → void
+    fn build(allocator: std.mem.Allocator) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // nearest(tree: *KDTree) → void
+    fn nearest(tree: *KDTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // range(tree: *KDTree) → void
+    fn range(tree: *KDTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(tree: *KDTree) → void
+    fn deinit(tree: *KDTree) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test build_basic_case
+        given input = default_input()
+        when result = build(input)
+        then result != undefined
+
+    test nearest_basic_case
+        given input = default_input()
+        when result = nearest(input)
+        then result != undefined
+
+    test range_basic_case
+        given input = default_input()
+        when result = range(input)
+        then result != undefined
+
+    test deinit_basic_case
+        given input = default_input()
+        when result = deinit(input)
+        then result != undefined
+

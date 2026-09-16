@@ -1,0 +1,496 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/turbobaby/rental_terms.t27 -- the rental term ladder, the published term-discount
+; bands, and the one rounding rule every total is built from.
+; Canonical source of truth for the INTEGER basis-point form of the term arithmetic that D15
+; puts in src/trios/pricing.rs, so the Axum server and the Dioxus/WASM client are checked against
+; one written contract instead of against each other. The earlier specs/rental_terms.t27 states
+; the same bands in f64. Its declarations have now been semantically classified in
+; docs/t27-semantic-merge-matrix.md and this canonical file is the chosen owner; the root twin
+; remains temporarily as a reviewable compatibility snapshot, not as a second authority.
+; Transcribed from data/fleet_seed.json (measured_at 2026-09-12):
+; term_discount_bands, reconciliation.checks, and the NMAX 155 row of families. Nothing
+; below is a client price; see WHAT THIS NEVER DOES. ASCII only (L3), English only.
+; --
+; WHY (measured 2026-09-12). Of the 710 client dialogs / 31245 messages behind KB_faq,
+; 481 messages are about dates and term -- the fifth topic by volume, above deposit (375)
+; and availability (180) -- and the term rule lived in no file in this repository.
+; Writing it down measured three things issue #17 could not know.
+; --
+; 1. THE BANDS ARE INTERVALS, NOT MULTIPLIERS: week [0.06, 0.15], two_weeks
+;    [0.15, 0.25], month [0.35, 0.50]. The issue asks for an invariant that a longer term
+;    carries a LOWER daily rate, and reads as though the discount for a longer term were
+;    strictly greater. That is FALSE at one edge: week's ceiling of 0.15 IS two_weeks'
+;    floor of 0.15, so the consecutive bands touch and are not disjoint. A week at its
+;    best published discount and a fortnight at its worst carry the SAME daily rate --
+;    382 THB on the 449 NMAX 155 tariff, pinned in a test below. The claim this file
+;    states is therefore NON-INCREASING (>=, not >), stated on a well-defined
+;    representative of each band: floor against floor and ceiling against ceiling.
+;    The touching is not a defect in the tariff. A band is a negotiating range that a
+;    human closes inside, not a formula; adjacent ranges that share an endpoint leave no
+;    term unpriced, whereas disjoint ranges would. The other junction is the one with a
+;    hole in it: two_weeks' ceiling 0.25 to month's floor 0.35 is a gap of 0.10 that the
+;    tariff publishes nothing for, and that gap is pinned below too.
+; --
+; 2. SIX RUNGS AGAINST THREE BANDS, AND FOUR RUNGS WITH NO BAND AT ALL.
+;    observed_terms_days is [7, 30, 90, 120, 150, 180], which DOES match the issue's
+;    "7 days, 1, 3, 4, 5, 6 months" at 30 days to the month (90/30 = 3, 180/30 = 6). The
+;    days are used here because they are unambiguous. But no band is published beyond the
+;    month, so four of the six rungs -- 90, 120, 150 and 180 -- have NO published discount
+;    at all. This file READS the month band as "a month or longer" (band_index_for_days),
+;    and under that reading those four rungs inherit the 30-day rung's rate and the ladder
+;    comes out FLAT from 30 days on. The flat tail is therefore a property of the READING,
+;    not of the tariff, so it is not independent evidence about monotonicity: only the
+;    touching edge in (1) is, and that one is published. The reading is recorded here, and
+;    made explicit in the function, precisely so that nobody mistakes it for a measurement.
+; --
+; 3. THE BANDS REPRODUCE NO PUBLISHED PRICE -- AND THE TWO POSSIBLE BASES DISAGREE ABOUT
+;    HOW BADLY. 12 of the 14 in-stock families publish both a daily tariff and a monthly
+;    low-season figure. Measured AGAINST THE PRE-CLASS-DISCOUNT BASE TARIFF, the per-day
+;    discount each pair implies runs from 0.618 (FORZA 300: 7900/30 = 263.33 against a 690
+;    tariff) to 0.665 (NINJA 400: 11900/30 = 396.67 against 1185) -- all 12 above the month
+;    band's 0.50 ceiling, not one inside the band. But the seed nowhere states whether
+;    monthly_low_season_thb is PRE or POST class discount, and the base tariff is the very
+;    number field_notes.base_rate_thb_day and D11 forbid using as a client rate. On the
+;    post-class-discount basis the same 12 pairs imply 0.491 to 0.606, and TWO of them fall
+;    INSIDE the published month band: FORZA 300 at 0.4911 (263.33 against 690 x 0.75 =
+;    517.50) and XMAX 300 at 0.4993 (296.67 against 592.50). FORZA 300 is the same family
+;    that supplies the 0.618 extremum above. So this arithmetic does not settle the question
+;    either way, and it reverses between two bases of which the seed publishes neither --
+;    which is itself the reason a band is not a price. Both bases are pinned in a test below.
+;    On NMAX 155, applying the month band at its most generous published bound to the
+;    PRE-class-discount 449 gives 225 x 30 = 6750 against a published 5000, 1750 THB apart;
+;    applying the same bound to the class-discounted 337/day -- the seed's own reconciled
+;    grid figure -- gives 169 x 30 = 5070, 70 THB apart. A quantity whose size moves by a
+;    factor of 25 with an unpublished assumption is not a price. Season and term are
+;    different axes, and that is exactly the point -- this arithmetic is an audit
+;    instrument, not a price path.
+; --
+; WHAT THIS NEVER DOES: it never produces a client quote. D11 -- the client-facing price
+; is the number the door (the owner's live sheet) returns; when the door is silent the
+; bot says a human quotes this price and emits NO number at all: not exact, not a "from"
+; number, not an average, not a range, and not silence either. Every function here is
+; named audit_ for that reason, BANDS_PRODUCE_CLIENT_QUOTES is pinned false by an
+; invariant, and no function takes a term alone and returns a price: a discount in basis
+; points must be supplied by the caller, because the tariff publishes a range and a range
+; is not a number. It pins the TERM axis and the rounding only: how the term discount
+; COMPOSES with the class discount is unspecified by the seed and is therefore left open
+; here, pinned open by a constant rather than closed by a guess -- see THE COMPOSITION.
+; It also holds no customer, no contract and no payment history (D14): the totals below are
+; pinned against the published tariff of one catalogue model and against the six
+; reconciliation rows, and against nothing else.
+; --
+; A cheap check this file deliberately does not rely on: that the totals "look right".
+; Any total is self-consistent with the function that produced it, so agreeing with
+; itself proves nothing -- the same way a licence file named .t27 compiles. The rounding
+; test therefore reproduces the six grid figures MEASURED by someone else (704, 749, 518,
+; 593, 337, 2091) from the six published base tariffs, and half-down would miss three.
+; Those six figures are pinned a second time in specs/pricing_honesty.t27, over f64 through
+; round_half_up_baht and through the RECONCILED_DOOR_THB row loop. That is named here rather
+; than left for a reader to discover by grepping for 704: the route in this file is integer
+; basis points, one fused scale-and-round with no float anywhere, so the two specs reach the
+; same externally measured column by two different arithmetics. Two arithmetics agreeing
+; with one outside measurement is worth having; two copies of one arithmetic would not be.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module rental-terms;
+
+pub const KIND : str = "terms";
+pub const ID : str = "turbobaby/rental-terms";
+pub const NAME : str = "TurboBaby rental term ladder and term-discount bands";
+; Current t27c does not support brace imports. This metadata records that pricing honesty owns
+; the live door authority; rental terms neither imports nor redeclares that fact.
+pub const REUSES_PRICING_ID : str = "turbobaby/pricing-honesty";
+pub const SOURCE : str = "data/fleet_seed.json";
+pub const SOURCE_MEASURED_AT : str = "2026-09-12";
+pub const TARIFF_SOURCE_ID : str = "KB_faq";
+; D15: one implementation of the price arithmetic. This spec is the written contract for the
+; part of it named below in THE COMPOSITION -- the term axis and the rounding -- and not for
+; all three of D15's jobs.
+pub const IMPLEMENTATION : str = "src/trios/pricing.rs";
+
+; --- THE ROOT TWIN: retained until the declaration matrix is independently reviewed --------
+; specs/rental_terms.t27 carries the legacy ID below and states the same tariff in f64. The
+; merge matrix maps its interval lookup to band_index_for_days, its f64 bounds to the exact BP
+; bounds here, its monthly non-derivation to the two monthly audit tests, and its class-discount
+; helpers to the separate pricing axis. That resolves ownership without pretending the two
+; rounding paths are identical: this file rounds the daily rate before multiplying; the legacy
+; diagnostic rounded the total. The root file is not deleted in this wave so reviewers can
+; verify every mapped declaration before removal.
+pub const TWIN_SPEC_PATH : str = "specs/rental_terms.t27";
+pub const TWIN_SPEC_ID : str = "turbobaby/rental_terms";
+pub const TWIN_ENCODING : str = "legacy f64 fractions mapped to canonical integer basis points";
+pub const TWIN_MERGE_MATRIX : str = "docs/t27-semantic-merge-matrix.md";
+pub const TWIN_IS_RESOLVED : bool = true;
+
+; --- D11, the rule that outranks everything in this file ----------------------------------
+; These bands never become a client quote. The door answers, or a human does.
+pub const BANDS_PRODUCE_CLIENT_QUOTES : bool = false;
+pub const ON_SILENCE : str = "no number; a human quotes this price";
+
+; --- the term ladder, in days -------------------------------------------------------------
+; Exactly term_discount_bands.observed_terms_days. Days, not months: the issue names
+; "7 days, 1, 3, 4, 5, 6 months" and the two ladders agree at 30 days to the month, but
+; only the days are unambiguous, so the days are what is pinned.
+pub const TERM_DAYS : [6]i32 = [7, 30, 90, 120, 150, 180];
+pub const DAYS_PER_WEEK : i32 = 7;
+; 2 x 7. The fortnight is the two_weeks band's own name in days; it is NOT a rung of the
+; measured ladder -- no observed term falls between 7 and 30 days.
+pub const DAYS_PER_FORTNIGHT : i32 = 14;
+; The conversion that makes the issue's month ladder equal the measured days: 30, 90, 120,
+; 150 and 180 divided by 30 give 1, 3, 4, 5 and 6.
+pub const DAYS_PER_MONTH : i32 = 30;
+
+; --- the three published bands, as intervals ----------------------------------------------
+; Basis points, because a band bound is a fraction and this language pins integer widths.
+; Read straight off term_discount_bands: 0.06 x 10000 = 600, 0.15 -> 1500, 0.25 -> 2500,
+; 0.35 -> 3500, 0.50 -> 5000. An integer bound cannot drift by a rounding mode, and
+; nothing here needs a float.
+pub const BP_ONE : i32 = 10000;
+pub const BAND_NAMES : [3]str = ["week", "two_weeks", "month"];
+pub const WEEK_MIN_DISCOUNT_BP : i32 = 600;
+pub const WEEK_MAX_DISCOUNT_BP : i32 = 1500;
+pub const TWO_WEEKS_MIN_DISCOUNT_BP : i32 = 1500;
+pub const TWO_WEEKS_MAX_DISCOUNT_BP : i32 = 2500;
+pub const MONTH_MIN_DISCOUNT_BP : i32 = 3500;
+pub const MONTH_MAX_DISCOUNT_BP : i32 = 5000;
+; Below a week the tariff publishes no term band at all. That is an absence, not a zero:
+; a short rental is charged at the tariff the door quotes, and this file does not invent a
+; band for it (D9: absent stays absent).
+pub const BAND_NONE : i8 = -1;
+
+; --- the one tariff this file computes with -----------------------------------------------
+; NMAX 155: 449 THB/day published base (PRE class discount -- rendering it as a client
+; price without the class discount overstates every scooter by 33%), the largest family in
+; the fleet at 10 of 37 units, and one of the six reconciliation rows. A reference for
+; arithmetic, never a quote. Its published monthly low-season figure is carried too, because
+; it is the measurement the month band fails to reproduce on EITHER basis -- 6750 against it
+; pre class discount, 5070 post -- and a bound that misses the published figure both ways is
+; not a price on either.
+pub const REF_MODEL : str = "NMAX 155";
+pub const REF_BASE_THB_DAY : i32 = 449;
+pub const REF_MONTHLY_LOW_SEASON_THB : i32 = 5000;
+
+; --- the arithmetic -----------------------------------------------------------------------
+
+; Half-up to the baht, integers only: scale by the net basis points, then divide by BP_ONE
+; with half a unit added first, which is what half-up IS for a non-negative number --
+; (2n + d) / 2d under a truncating divide. Every operand here is non-negative, so the
+; truncation is a floor, which is what the added half requires. The scale and the round are
+; one step on purpose: that is what makes this the integer form rather than a second copy of
+; specs/pricing_honesty.t27's round_half_up_baht, which rounds an f64 that someone else has
+; already scaled.
+; Half-up is measured, not chosen: every one of the six reconciliation rows is the base
+; tariff x 0.75 rounded half-up (748.5 -> 749, 592.5 -> 593, 517.5 -> 518), and half-down
+; would miss three of the six.
+; An absent or negative tariff never reaches this function. D9's honesty filter drops it
+; upstream and a family with no published rate is not priced at all -- CLICK 125 is the
+; single instance (totals.families_without_published_rate = 1) and it is closed to new
+; rentals anyway (D12).
+pub fn audit_daily_thb(base_thb_day: i32, discount_bp: i32) i32 {
+    const scaled = base_thb_day * (BP_ONE - discount_bp);
+    return (scaled * 2 + BP_ONE) / (BP_ONE * 2);
+}
+
+; The total cost of a term. The ORDER is pinned here rather than left to the caller: round
+; the daily rate to the baht FIRST, then multiply by the days. The owner's own sheet works
+; that way -- its stale CLICK row reads 187/day and 935 for 5 nights, and 187 x 5 = 935
+; exactly, a rounded per-day figure times nights. (Cited for the shape of the arithmetic
+; only; that row is stale as a tariff, see pricing_policy.not_offered.)
+; The order is worth a decision: rounding the total instead gives 291.85 x 30 = 8755.5 ->
+; 8756 where this gives 292 x 30 = 8760, a 4 THB divergence on one month of one model.
+; Note what is NOT claimed: the total is not monotone in the term. A longer term costs
+; more in total. It is the per-DAY rate that never rises.
+pub fn audit_total_thb(base_thb_day: i32, discount_bp: i32, days: i32) i32 {
+    return audit_daily_thb(base_thb_day, discount_bp) * days;
+}
+
+; --- THE COMPOSITION, and why it is left open ---------------------------------------------
+; D15 gives src/trios/pricing.rs three jobs: the class discount, the term discount, and
+; half-up rounding to the baht. This file is the written contract for the term axis and the
+; rounding. How the two discounts COMPOSE is deliberately NOT pinned, because the seed does
+; not publish it: class_discounts and term_discount_bands are two tables with no stated order
+; between them, and audit_daily_thb takes exactly one discount for that reason.
+; The question is not academic, and it is larger than the one this file did settle. On the
+; reference tariff at the month ceiling, applying the class discount first and rounding at
+; each step gives 337 then 169/day; one combined factor (0.75 x 0.50 = 0.375, so 6250 bp
+; net) gives 168/day. That is 1 THB/day and 30 THB on a month, against the 4 THB divergence
+; of the day-versus-total order above -- and the day-versus-total order was pinnable only
+; because the owner's sheet showed which way it worked. Nothing shows which way this one
+; works, so it is pinned OPEN: the constant below fails an invariant if it is ever flipped
+; to true without a published rule and a test behind it.
+pub const CLASS_TERM_COMPOSITION_IS_PINNED : bool = false;
+
+; Which published band a term of `days` falls in, or BAND_NONE.
+; This mapping is a READING of the band names, not a published rule: the seed names the
+; bands week / two_weeks / month and publishes no assignment table. The two absences at the
+; two ends are NOT treated alike, and the difference is a choice rather than a measurement.
+; Below a week, no published band name could cover the term at all, so the answer is
+; BAND_NONE (D9: absent stays absent). Beyond a month, the term has exactly one candidate
+; name and the shop demonstrably rents 90, 120, 150 and 180 days, so the month band is read
+; as "a month or longer" and extended over them. That extension is what makes the tail flat
+; from 30 days on; it does not prove the tail flat, because the tariff publishes nothing
+; there. The function exists so that the ladder and the bands can be checked against each
+; other instead of drifting apart, and so that the reading is explicit where a reader can
+; see it. The door assigns the real discount (D11).
+pub fn band_index_for_days(days: i32) i8 {
+    if (days < DAYS_PER_WEEK) {
+        return BAND_NONE;
+    }
+    if (days < DAYS_PER_FORTNIGHT) {
+        return 0;
+    }
+    if (days < DAYS_PER_MONTH) {
+        return 1;
+    }
+    return 2;
+}
+
+; --- tests --------------------------------------------------------------------------------
+
+; The rounding rule is checked against figures this file did not compute: the per-day
+; column of reconciliation.checks, produced by the owner's quote sheet. The 2500 bp input is
+; the 0.25 scooter class discount, appearing here as the measured INPUT of the one rule this
+; file owns -- the rounding -- and not as a rate this file publishes; a fixture is not a
+; second copy of a rate. Where the class discount IS declared, measured today: D15 gives the
+; arithmetic one home in src/trios/pricing.rs, and two specs in this tree already declare the
+; 0.25 as a constant -- specs/rental_terms.t27 (SCOOTER_DISCOUNT, and CLASS_DISCOUNT_VALUES)
+; and specs/pricing_honesty.t27 (SCOOTER_DISCOUNT_AT_RECONCILIATION). No spec in
+; specs/turbobaby/ declares it, and this file does not make itself the third that does.
+; Note also what 2500 is NOT here. TWO_WEEKS_MAX_DISCOUNT_BP above is also 2500, so
+; audit_daily_thb(449, 2500) == 337 below is reachable down the class axis and down the term
+; axis alike. The two figures coincide as arithmetic, not as meaning; see THE COMPOSITION.
+test the_rounding_rule_reproduces_the_six_measured_grid_figures {
+    assert audit_daily_thb(939, 2500) == 704;
+    assert audit_daily_thb(998, 2500) == 749;
+    assert audit_daily_thb(690, 2500) == 518;
+    assert audit_daily_thb(790, 2500) == 593;
+    assert audit_daily_thb(449, 2500) == 337;
+    assert audit_daily_thb(2788, 2500) == 2091;
+}
+
+; Term length one: 7 days, TERM_DAYS[0], the week band at each bound.
+; 449 x 0.94 = 422.06 -> 422/day, x 7 = 2954. 449 x 0.85 = 381.65 -> 382/day, x 7 = 2674.
+test the_week_total_is_pinned_at_both_band_bounds {
+    assert audit_daily_thb(REF_BASE_THB_DAY, WEEK_MIN_DISCOUNT_BP) == 422;
+    assert audit_total_thb(REF_BASE_THB_DAY, WEEK_MIN_DISCOUNT_BP, TERM_DAYS[0]) == 2954;
+    assert audit_daily_thb(REF_BASE_THB_DAY, WEEK_MAX_DISCOUNT_BP) == 382;
+    assert audit_total_thb(REF_BASE_THB_DAY, WEEK_MAX_DISCOUNT_BP, TERM_DAYS[0]) == 2674;
+}
+
+; Term length two: 30 days, TERM_DAYS[1], the month band at each bound.
+; 449 x 0.65 = 291.85 -> 292/day, x 30 = 8760. 449 x 0.50 = 224.5 -> 225/day, x 30 = 6750.
+; The second line is where half-up earns its keep: half-down would give 224 and 6720.
+test the_month_total_is_pinned_at_both_band_bounds {
+    assert audit_daily_thb(REF_BASE_THB_DAY, MONTH_MIN_DISCOUNT_BP) == 292;
+    assert audit_total_thb(REF_BASE_THB_DAY, MONTH_MIN_DISCOUNT_BP, TERM_DAYS[1]) == 8760;
+    assert audit_daily_thb(REF_BASE_THB_DAY, MONTH_MAX_DISCOUNT_BP) == 225;
+    assert audit_total_thb(REF_BASE_THB_DAY, MONTH_MAX_DISCOUNT_BP, TERM_DAYS[1]) == 6750;
+}
+
+; Term length three: 180 days, TERM_DAYS[5], the longest observed term. Under this file's
+; reading it shares the month band with the 30-day rung, so the per-day rate is the SAME 292
+; and 225 and only the day count changes: 292 x 180 = 52560, 225 x 180 = 40500. This is the
+; flat tail as arithmetic -- arithmetic over a reading, not over a published band.
+test the_six_month_total_is_pinned_and_reuses_the_month_rate {
+    assert audit_total_thb(REF_BASE_THB_DAY, MONTH_MIN_DISCOUNT_BP, TERM_DAYS[5]) == 52560;
+    assert audit_total_thb(REF_BASE_THB_DAY, MONTH_MAX_DISCOUNT_BP, TERM_DAYS[5]) == 40500;
+}
+
+; The fortnight, 14 days, is the band's name rather than an observed rung.
+; 449 x 0.85 = 381.65 -> 382/day, x 14 = 5348. 449 x 0.75 = 336.75 -> 337/day, x 14 = 4718.
+test the_fortnight_total_is_pinned_at_both_band_bounds {
+    assert audit_total_thb(REF_BASE_THB_DAY, TWO_WEEKS_MIN_DISCOUNT_BP, DAYS_PER_FORTNIGHT) == 5348;
+    assert audit_total_thb(REF_BASE_THB_DAY, TWO_WEEKS_MAX_DISCOUNT_BP, DAYS_PER_FORTNIGHT) == 4718;
+}
+
+; The edge that refutes the issue's wording. The bands touch at 0.15, so a week at its best
+; published discount and a fortnight at its worst are the same 382 THB/day. Non-increasing
+; holds; strictly decreasing does not. The totals differ only because the days differ.
+test the_touching_edge_gives_two_terms_one_daily_rate {
+    assert audit_daily_thb(REF_BASE_THB_DAY, WEEK_MAX_DISCOUNT_BP) == audit_daily_thb(REF_BASE_THB_DAY, TWO_WEEKS_MIN_DISCOUNT_BP);
+    assert audit_total_thb(REF_BASE_THB_DAY, WEEK_MAX_DISCOUNT_BP, DAYS_PER_WEEK) == 2674;
+    assert audit_total_thb(REF_BASE_THB_DAY, TWO_WEEKS_MIN_DISCOUNT_BP, DAYS_PER_FORTNIGHT) == 5348;
+}
+
+; The two discounts, composed the two available ways, on the reference tariff at the month
+; ceiling. 2500 bp is the class discount and 5000 bp the term bound; 6250 bp is the single
+; net factor for the same pair (0.75 x 0.50 = 0.375). The answers differ by a baht a day.
+; This is pinned so that "the composition is unspecified" cannot quietly become "the
+; composition does not matter": the seed publishes no order, and the order is worth 30 THB a
+; month -- more than the day-versus-total order this file did pin.
+test composing_the_class_and_term_discounts_is_order_dependent {
+    assert audit_daily_thb(audit_daily_thb(REF_BASE_THB_DAY, 2500), MONTH_MAX_DISCOUNT_BP) == 169;
+    assert audit_daily_thb(REF_BASE_THB_DAY, 6250) == 168;
+}
+
+; Each band is a well-formed interval, and the floors themselves climb. Ordered bounds are
+; what makes "the representative of each band" well defined at all.
+test every_band_is_a_well_formed_and_ordered_interval {
+    assert WEEK_MIN_DISCOUNT_BP <= WEEK_MAX_DISCOUNT_BP;
+    assert TWO_WEEKS_MIN_DISCOUNT_BP <= TWO_WEEKS_MAX_DISCOUNT_BP;
+    assert MONTH_MIN_DISCOUNT_BP <= MONTH_MAX_DISCOUNT_BP;
+    assert WEEK_MIN_DISCOUNT_BP <= TWO_WEEKS_MIN_DISCOUNT_BP;
+    assert TWO_WEEKS_MIN_DISCOUNT_BP <= MONTH_MIN_DISCOUNT_BP;
+}
+
+test the_measured_ladder_is_strictly_increasing {
+    assert TERM_DAYS[0] < TERM_DAYS[1];
+    assert TERM_DAYS[1] < TERM_DAYS[2];
+    assert TERM_DAYS[2] < TERM_DAYS[3];
+    assert TERM_DAYS[3] < TERM_DAYS[4];
+    assert TERM_DAYS[4] < TERM_DAYS[5];
+}
+
+; The issue's ladder in months and the seed's ladder in days are the same ladder. Checked
+; rather than assumed, because the agreement is what licensed using the days. The week rung
+; is not restated here: the last invariant in this file carries it as a module-wide claim,
+; and one claim is typed once.
+test the_issue_ladder_in_months_equals_the_measured_days {
+    assert TERM_DAYS[1] == DAYS_PER_MONTH;
+    assert TERM_DAYS[2] == DAYS_PER_MONTH * 3;
+    assert TERM_DAYS[3] == DAYS_PER_MONTH * 4;
+    assert TERM_DAYS[4] == DAYS_PER_MONTH * 5;
+    assert TERM_DAYS[5] == DAYS_PER_MONTH * 6;
+}
+
+; Six rungs, three bands, and one band with no rung in it. The 90 and 180 day answers are
+; this file's reading of "month", not a published assignment (see band_index_for_days).
+test the_bands_and_the_ladder_line_up {
+    assert band_index_for_days(TERM_DAYS[0]) == 0;
+    assert band_index_for_days(DAYS_PER_FORTNIGHT) == 1;
+    assert band_index_for_days(TERM_DAYS[1]) == 2;
+    assert band_index_for_days(TERM_DAYS[2]) == 2;
+    assert band_index_for_days(TERM_DAYS[5]) == 2;
+}
+
+; The measurement that keeps this file honest about what it is, on BOTH bases, because the
+; seed publishes neither. Applying the month band at its most generous published bound to
+; the PRE-class-discount reference tariff gives 6750 for 30 days against a published 5000 --
+; 1750 THB apart. Applying the same bound to the class-discounted 337/day, which is the
+; seed's own reconciled grid figure for this model, gives 5070 -- 70 THB apart. The gap the
+; band leaves is therefore either 1750 or 70 depending on an assumption nobody published,
+; and "the closest the band can get" is not a sentence this file may write. A band is not a
+; price, and no caller may present one as a quote.
+test the_month_band_cannot_reproduce_the_published_monthly_price {
+    assert audit_total_thb(REF_BASE_THB_DAY, MONTH_MAX_DISCOUNT_BP, DAYS_PER_MONTH) == 6750;
+    assert audit_total_thb(REF_BASE_THB_DAY, MONTH_MAX_DISCOUNT_BP, DAYS_PER_MONTH) - REF_MONTHLY_LOW_SEASON_THB == 1750;
+    assert audit_total_thb(audit_daily_thb(REF_BASE_THB_DAY, 2500), MONTH_MAX_DISCOUNT_BP, DAYS_PER_MONTH) == 5070;
+    assert audit_total_thb(audit_daily_thb(REF_BASE_THB_DAY, 2500), MONTH_MAX_DISCOUNT_BP, DAYS_PER_MONTH) - REF_MONTHLY_LOW_SEASON_THB == 70;
+}
+
+; The two families whose verdict REVERSES between the two bases, in integers. 7900 and 8900
+; are the published monthly low-season figures of FORZA 300 and XMAX 300; 690 and 790 are
+; their published pre-discount tariffs; audit_daily_thb(base, 2500) is their class-discounted
+; per-day rate, 518 and 593, already pinned above from the reconciliation grid. Measured
+; inputs, not a second copy of the price list: nothing here is a client-facing number, only
+; an implied discount compared against a published bound.
+; Against the pre-discount tariff both imply far more than the 5000 bp ceiling. Against the
+; class-discounted rate both land INSIDE the published month band. Same seed, same two
+; families, two bases, opposite answers -- and the seed does not say which basis is right.
+test the_two_bases_disagree_about_whether_the_month_band_contains_the_monthly_price {
+    assert BP_ONE - (7900 * BP_ONE) / (DAYS_PER_MONTH * 690) == 6184;
+    assert BP_ONE - (8900 * BP_ONE) / (DAYS_PER_MONTH * 790) == 6245;
+    assert BP_ONE - (7900 * BP_ONE) / (DAYS_PER_MONTH * audit_daily_thb(690, 2500)) == 4917;
+    assert BP_ONE - (8900 * BP_ONE) / (DAYS_PER_MONTH * audit_daily_thb(790, 2500)) == 4998;
+    assert 6184 > MONTH_MAX_DISCOUNT_BP;
+    assert 6245 > MONTH_MAX_DISCOUNT_BP;
+    assert 4917 < MONTH_MAX_DISCOUNT_BP;
+    assert 4917 > MONTH_MIN_DISCOUNT_BP;
+    assert 4998 < MONTH_MAX_DISCOUNT_BP;
+    assert 4998 > MONTH_MIN_DISCOUNT_BP;
+}
+
+; --- invariants ---------------------------------------------------------------------------
+; Claims about the whole module that no single example carries.
+
+; The ladder and the band list are the measured ones. A rung or a band silently dropped
+; fails here instead of passing as a tidy-up: a count of zero is always a bug (D16), and a
+; count of five would mean this spec had quietly stopped describing the tariff.
+invariant the_measured_ladder_holds_six_rungs
+  assert TERM_DAYS.len == 6
+
+invariant the_published_bands_are_three
+  assert BAND_NAMES.len == 3
+
+; THE MONOTONICITY CLAIM, in the only form the tariff supports: the daily rate is
+; NON-INCREASING as the term lengthens, stated on a well-defined representative of each
+; band -- floor against floor, then ceiling against ceiling.
+; Stated THROUGH audit_daily_thb, at the rounded baht, on purpose. The same claim written as
+; REF_BASE_THB_DAY * (BP_ONE - X) >= REF_BASE_THB_DAY * (BP_ONE - Y) would scale both sides
+; by one positive constant and reduce to X <= Y, which is a comparison of two named bounds
+; and is already pinned by every_band_is_a_well_formed_and_ordered_interval above; it would
+; also say nothing about the function that the runtimes actually call. In the form below the
+; rounding is inside the claim, so an edit to audit_daily_thb that broke the order -- a
+; half-down divide, a sign slip in the net basis points -- fails here.
+; What is claimed and what is not: the unrounded order follows from the bound order for every
+; non-negative tariff, while the four asserts below are pinned on the one reference tariff,
+; because that is the tariff this file computes with.
+invariant the_rounded_daily_rate_never_rises_from_the_week_floor_to_the_fortnight_floor
+  assert audit_daily_thb(REF_BASE_THB_DAY, WEEK_MIN_DISCOUNT_BP) >= audit_daily_thb(REF_BASE_THB_DAY, TWO_WEEKS_MIN_DISCOUNT_BP)
+
+invariant the_rounded_daily_rate_never_rises_from_the_fortnight_floor_to_the_month_floor
+  assert audit_daily_thb(REF_BASE_THB_DAY, TWO_WEEKS_MIN_DISCOUNT_BP) >= audit_daily_thb(REF_BASE_THB_DAY, MONTH_MIN_DISCOUNT_BP)
+
+invariant the_rounded_daily_rate_never_rises_from_the_week_ceiling_to_the_fortnight_ceiling
+  assert audit_daily_thb(REF_BASE_THB_DAY, WEEK_MAX_DISCOUNT_BP) >= audit_daily_thb(REF_BASE_THB_DAY, TWO_WEEKS_MAX_DISCOUNT_BP)
+
+invariant the_rounded_daily_rate_never_rises_from_the_fortnight_ceiling_to_the_month_ceiling
+  assert audit_daily_thb(REF_BASE_THB_DAY, TWO_WEEKS_MAX_DISCOUNT_BP) >= audit_daily_thb(REF_BASE_THB_DAY, MONTH_MAX_DISCOUNT_BP)
+
+; The flat tail, as a claim about the reading rather than about the tariff: under
+; band_index_for_days every rung from the month on answers with one band, so all four
+; unpublished rungs answer exactly as the 30-day rung does. If the reading is ever narrowed
+; -- the honest alternative is BAND_NONE beyond a month, since the tariff publishes nothing
+; there -- this invariant is the thing that has to change, which is where the decision
+; belongs.
+invariant every_rung_from_the_month_on_shares_one_band
+  assert band_index_for_days(TERM_DAYS[1]) == band_index_for_days(TERM_DAYS[5])
+
+; The other end of the same question, and the one the tariff does answer: one day short of
+; the first published band there is no band, not a zero discount (D9). Stated against
+; DAYS_PER_WEEK rather than against the literal 6, so that it follows the band if the band
+; ever moves.
+invariant a_term_one_day_short_of_the_first_band_has_no_band
+  assert band_index_for_days(DAYS_PER_WEEK - 1) == BAND_NONE
+
+; Why the inequality above is >= and not >. The first two bands SHARE an endpoint at 1500
+; bp (0.15), so one daily rate serves the longest week and the shortest fortnight. This is
+; pinned as an invariant precisely because it is the fact that refutes the stricter claim:
+; if a later edit separated the bands, the stricter claim would become available and this
+; assert would be the thing that had to be deleted to get there.
+invariant the_week_and_fortnight_bands_touch_at_fifteen_percent
+  assert WEEK_MAX_DISCOUNT_BP == TWO_WEEKS_MIN_DISCOUNT_BP
+
+; The other junction has a hole, not a shared endpoint: 0.35 - 0.25 = 0.10, 1000 bp that
+; the tariff publishes nothing for. Recorded rather than closed by interpolation, the same
+; way the unpublished delivery areas render as a dash instead of a number derived from
+; Bangtao. The three bands are not a partition of anything.
+invariant the_fortnight_and_month_bands_leave_a_gap
+  assert MONTH_MIN_DISCOUNT_BP - TWO_WEEKS_MAX_DISCOUNT_BP == 1000
+
+; D11, mechanically. Nothing in this file may be served to a client as a price: the
+; functions pin arithmetic, and the door quotes. Flipping this constant to true is the one
+; edit that would turn an audit instrument into an invented quote, so it fails here.
+invariant no_band_ever_becomes_a_client_quote
+  assert BANDS_PRODUCE_CLIENT_QUOTES == false
+
+; The scope of the file, mechanically. The term axis is pinned; the composition with the
+; class discount is not, because the seed publishes no order between the two tables. Same
+; tripwire shape as the line above: flipping this to true without a published rule and a test
+; behind it fails here rather than passing as a tidy-up.
+invariant the_class_and_term_composition_is_left_open
+  assert CLASS_TERM_COMPOSITION_IS_PINNED == false
+
+; The legacy snapshot keeps its old ID so discovery cannot silently content-dedupe it with the
+; canonical owner while it is under review.
+invariant the_root_snapshot_carries_a_legacy_id
+  assert ID != TWIN_SPEC_ID
+
+; Ownership is no longer ambiguous: this ID and the declaration matrix name the survivor.
+invariant the_twin_semantic_merge_is_resolved
+  assert TWIN_IS_RESOLVED == true and TWIN_MERGE_MATRIX == "docs/t27-semantic-merge-matrix.md"
+
+; The shortest published band starts at a week, so the ladder's first rung is a week and
+; anything shorter has no band. Absent stays absent (D9); it is not a zero discount.
+invariant the_ladder_starts_where_the_first_band_starts
+  assert TERM_DAYS[0] == DAYS_PER_WEEK

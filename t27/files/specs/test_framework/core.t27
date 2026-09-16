@@ -1,0 +1,317 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27 Math/Physics Test Framework - Core
+//
+// Ring 050: Test framework core per T27-MATH-PHYSICS-TEST-FRAMEWORK-SPEC.md
+// Provides fundamental testing constructs for scientific computing
+
+module core;
+
+// § Core testing enums and structures
+
+/// Test verdict/tier classification
+enum Verdict {
+    CLEAN,
+    FAIL, 
+    PARTIAL,
+    SKIP
+}
+
+/// Test tolerance tier (numeric/physics precision levels)
+enum ToleranceTier {
+    EXACT,              // Mathematical identity (e.g., φ² = φ + 1)
+    WITHIN_UNCERTAINTY,  // Within experimental uncertainty (CODATA)
+    EMPIRICAL_FIT,      // Empirical formula, good accuracy
+    APPROXIMATION,      // Approximation > experimental uncertainty
+    FALSIFIED_AS_EXACT, // Cannot claim as exact vs experiment
+    CONJECTURAL,        // Hypothesis, insufficient verification
+    UNTTESTED           // Not yet checked quantitatively
+}
+
+/// Engineering status for toolchain tests  
+enum EngineeringStatus {
+    proved,     // Theorem or machine-checked proof in-repo
+    tested,     // Automated test / conformance fails if violated
+    empirical,  // Observed in practice; not formal proof
+    conjectural, // Open or partial
+    deprecated  // Superseded; history only
+}
+
+/// Test result container
+struct TestResult {
+    name: string,
+    verdict: Verdict,
+    tolerance: ToleranceTier,
+    engineering: EngineeringStatus,
+    claim_id: Option<string>,  // Link to RESEARCH_CLAIMS.md
+    input: any,
+    expected: any,
+    actual: any,
+    delta: Option<f64>,
+    message: Option<string>
+}
+
+/// Sequential gate pipeline with short-circuit
+/// Pattern: parse → type_check → semantic → numeric_stability → physics_constraint → audit
+struct GatePipeline {
+    parse_ok: bool,
+    type_check_ok: bool,  
+    semantic_ok: bool,
+    numeric_stability_ok: bool,
+    physics_constraint_ok: bool,
+    audit_ok: bool
+}
+
+impl GatePipeline {
+    // Sequential evaluation - if gate N fails, gates N+1... are not evaluated
+    fn run_sequential(self) -> bool {
+        self.parse_ok &&
+        (if self.parse_ok { self.type_check_ok } else { false }) &&
+        (if self.parse_ok && self.type_check_ok { self.semantic_ok } else { false }) &&
+        (if self.parse_ok && self.type_check_ok && self.semantic_ok { self.numeric_stability_ok } else { false }) &&
+        (if self.parse_ok && self.type_check_ok && self.semantic_ok && self.numeric_stability_ok { self.physics_constraint_ok } else { false }) &&
+        (if self.parse_ok && self.type_check_ok && self.semantic_ok && self.numeric_stability_ok && self.physics_constraint_ok { self.audit_ok } else { false })
+    }
+    
+    fn verdict(self) -> Verdict {
+        if self.run_sequential() { Verdict::CLEAN } else { Verdict::FAIL }
+    }
+}
+
+// § Core testing utilities
+
+/// Property-based testing: for all x in domain, property holds
+fn for_all<T>(domain: fn() -> T, property: fn(T) -> bool, iterations: u32) -> TestResult {
+    let mut failures = 0u32;
+    let mut last_failure = None;
+    
+    for i in 0..iterations {
+        let input = domain();
+        if !property(input) {
+            failures += 1;
+            last_failure = Some(input);
+        }
+    }
+    
+    let verdict = if failures == 0 { Verdict::CLEAN } else { Verdict::FAIL };
+    let message = if failures > 0 { 
+        Some(format!("{} failures in {} iterations (last failure: {:?})", failures, iterations, last_failure)) 
+    } else { None };
+    
+    TestResult {
+        name: format!("for_all_{} iterations", iterations),
+        verdict,
+        tolerance: ToleranceTier::EXACT,
+        engineering: EngineeringStatus::tested,
+        claim_id: None,
+        input: iterations,
+        expected: 0u32,
+        actual: failures,
+        delta: None,
+        message
+    }
+}
+
+/// Metamorphic testing: if input(x) produces y, then input(f(x)) should produce g(y)
+fn metamorphic<T, R>(input: fn(T) -> R, transform: fn(T) -> T, relation: fn(R, R) -> bool, test_cases: Vec<T>) -> Vec<TestResult> {
+    test_cases.iter().map(|x| {
+        let y1 = input(*x);
+        let x_transformed = transform(*x);
+        let y2 = input(x_transformed);
+        
+        let relation_holds = relation(y1, y2);
+        let verdict = if relation_holds { Verdict::CLEAN } else { Verdict::FAIL };
+        
+        TestResult {
+            name: format!("metamorphic_{:?}", x),
+            verdict,
+            tolerance: ToleranceTier::EXACT,
+            engineering: EngineeringStatus::tested,
+            claim_id: None,
+            input: *x,
+            expected: y1,
+            actual: y2,
+            delta: None,
+            message: if !relation_holds { Some("Metamorphic relation violated") } else { None }
+        }
+    }).collect()
+}
+
+/// Differential testing: compare two implementations for equality within tolerance
+fn differential<T>(impl1: fn(T) -> T, impl2: fn(T) -> T, tolerance: f64, test_cases: Vec<T>) -> Vec<TestResult> {
+    test_cases.iter().map(|x| {
+        let result1 = impl1(*x);
+        let result2 = impl2(*x);
+        
+        // For numeric types, check relative difference
+        let delta = match (result1, result2) {
+            (f64::INF(a), f64::INF(b)) => 0.0,
+            (f64::INF(a), b) => f64::INFINITY,
+            (a, f64::INF(b)) => f64::INFINITY,
+            (a, b) => (a - b).abs() / a.abs().max(b.abs()).max(1e-15)
+        };
+        
+        let verdict = if delta <= tolerance { Verdict::CLEAN } else { Verdict::FAIL };
+        let tol_tier = if tolerance == 0.0 { ToleranceTier::EXACT } else { ToleranceTier::WITHIN_UNCERTAINTY };
+        
+        TestResult {
+            name: format!("differential_{:?}", x),
+            verdict,
+            tolerance: tol_tier,
+            engineering: EngineeringStatus::empirical,
+            claim_id: None,
+            input: *x,
+            expected: result1,
+            actual: result2,
+            delta: Some(delta),
+            message: if delta > tolerance { Some(format!("Delta {} exceeds tolerance {}", delta, tolerance)) } else { None }
+        }
+    }).collect()
+}
+
+// § Test runners and reporting
+
+/// TAP (Test Anything Protocol) output generator
+struct TapReporter {
+    results: Vec<TestResult>
+}
+
+impl TapReporter {
+    fn new(results: Vec<TestResult>) -> TapReporter {
+        TapReporter { results }
+    }
+    
+    fn generate_tap(self) -> string {
+        let total = self.results.len();
+        let mut output = format!("1..{}\n", total);
+        
+        for (i, result) in self.results.iter().enumerate() {
+            let status = match result.verdict {
+                Verdict::CLEAN => "ok",
+                Verdict::PARTIAL => "ok # TODO",
+                Verdict::SKIP => "ok # SKIP",
+                Verdict::FAIL => "not ok"
+            };
+            
+            output.push_str(&format!("{} {} - {}\n", status, i + 1, result.name));
+            
+            if result.verdict == Verdict::FAIL {
+                if let Some(ref msg) = result.message {
+                    output.push_str(&format!("  ---\n  {}\n  ...\n", msg));
+                }
+            }
+        }
+        
+        output
+    }
+}
+
+/// JSON test report generator
+struct JsonReporter {
+    results: Vec<TestResult>
+}
+
+impl JsonReporter {
+    fn new(results: Vec<TestResult>) -> JsonReporter {
+        JsonReporter { results }
+    }
+    
+    fn generate_json(self) -> string {
+        // Simplified JSON generation
+        let total = self.results.len();
+        let passed = self.results.iter().filter(|r| r.verdict == Verdict::CLEAN).count();
+        let failed = self.results.iter().filter(|r| r.verdict == Verdict::FAIL).count();
+        let skipped = self.results.iter().filter(|r| r.verdict == Verdict::SKIP).count();
+        
+        format!(r#"{{
+  "total": {},
+  "passed": {},
+  "failed": {},
+  "skipped": {},
+  "results": []
+}}"#, total, passed, failed, skipped)
+    }
+}
+
+// § Test invariants and properties
+
+/// Sequential gate invariant - enforces strict ordering
+invariant gate_pipeline_sequential(gate: GatePipeline) -> bool {
+    gate.run_sequential() == (gate.parse_ok && gate.type_check_ok && gate.semantic_ok && 
+                              gate.numeric_stability_ok && gate.physics_constraint_ok && gate.audit_ok)
+}
+
+/// GoldenFloat identity property: for any GF number, round-trip conversion preserves value
+invariant gf16_roundtrip_preservation(value: f64) -> bool {
+    // This would call actual GF16 encode/decode functions
+    // For now, this is a placeholder showing the invariant structure
+    let encoded = gf16_encode_f32(value as f32);
+    let decoded = gf16_decode_to_f32(encoded);
+    (decoded - value as f32).abs() < 1e-6
+}
+
+/// Phi algebraic identity: φ² = φ + 1 (exact mathematical identity)
+invariant phi_squared_identity(phi: f64) -> bool {
+    (phi * phi - phi - 1.0).abs() < 1e-15  // Exact within floating point precision
+}
+
+// § Test entry point
+fn run_test_suite() -> Vec<TestResult> {
+    let mut results = Vec::new();
+    
+    // Example: Test GF4 exhaustive properties
+    // This would generate all 16 GF4 values and test commutativity, associativity, etc.
+    let gf4_exhaustive_results = test_gf4_exhaustive();
+    results.extend(gf4_exhaustive_results);
+    
+    // Example: Test phi identities
+    let phi = 1.618033988749895;  // Golden ratio
+    results.push(TestResult {
+        name: "phi_squared_identity".to_string(),
+        verdict: if phi_squared_identity(phi) { Verdict::CLEAN } else { Verdict::FAIL },
+        tolerance: ToleranceTier::EXACT,
+        engineering: EngineeringStatus::proved,
+        claim_id: Some("C-phi-001".to_string()),
+        input: phi,
+        expected: phi + 1.0,
+        actual: phi * phi,
+        delta: Some((phi * phi - phi - 1.0).abs()),
+        message: None
+    });
+    
+    results
+}
+
+// Test helpers (would be expanded based on actual GF implementations)
+fn test_gf4_exhaustive() -> Vec<TestResult> {
+    // Placeholder for GF4 exhaustive testing
+    // In reality, this would enumerate all 16 GF4 values and test all binary operations
+    vec![]
+}
+
+fn gf16_encode_f32(value: f32) -> u16 {
+    // Placeholder for actual GF16 encoding
+    0u16
+}
+
+fn gf16_decode_to_f32(encoded: u16) -> f32 {
+    // Placeholder for actual GF16 decoding  
+    0.0f32
+}
+
+test {
+    let suite_results = run_test_suite();
+    
+    // Check that all tests pass
+    let failed_count = suite_results.iter().filter(|r| r.verdict == Verdict::FAIL).count();
+    assert!(failed_count == 0, "Test suite had {} failures", failed_count);
+    
+    // Generate TAP output
+    let tap_reporter = TapReporter::new(suite_results.clone());
+    let tap_output = tap_reporter.generate_tap();
+    println!("TAP Output:\n{}", tap_output);
+    
+    // Generate JSON output  
+    let json_reporter = JsonReporter::new(suite_results);
+    let json_output = json_reporter.generate_json();
+    println!("JSON Output:\n{}", json_output);
+}

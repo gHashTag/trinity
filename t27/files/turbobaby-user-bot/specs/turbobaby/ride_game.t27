@@ -1,0 +1,547 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/turbobaby/ride_game.t27 -- how the biker game reads its handling out of the real fleet
+; Source of truth for the two things issues #20, #13 and #12 ask to be stated once: the
+; handling map (top speed from displacement_cc, steering from class) and the rule that the
+; game may mount only a family the catalog actually has free. Every MEASURED number below is
+; read from data/fleet_seed.json (measured_at 2026-09-12) or derived from it in a visible
+; step -- but not every number below is measured, and this sentence is scoped so that nobody
+; cites it for one that is not. Five are CHOSEN and appear in no source: SPEED_INTERCEPT_GU,
+; SPEED_PER_CC_GU, the two steer rates, and the STEER_RATE_NO_SUCH_CLASS sentinel. Each says
+; CHOSEN at its own declaration and is grounded nowhere else, here or anywhere. Two more are
+; conventions of the rule rather than quantities -- the class codes 0 and 1, which name
+; positions in CLASS_NAMES, and the MIN_UNITS_AVAILABLE_TO_RIDE floor of 1 -- and they are
+; not measurements either. Decisions come from DECISIONS.md. ASCII only (L3), English
+; identifiers only (LANG-EN).
+; --
+; WHY (measured 2026-09-12). The seed holds 14 families in stock, 13 of them offered, and
+; exactly 11 with a free unit on the measurement day. That 11 was computed, not guessed:
+; the units_available of those eleven sum 5+1+1+3+6+5+1+1+1+1+1 = 26, which is the seed's
+; own totals.units_available. Against that, the published tariff carries 7 FURTHER families
+; -- pcx-150, adv-150, pcx-160, adv-160, rebel-300, xsr-900, r7 -- with ZERO units in the
+; yard, and click-125, which the owner closed to new rentals (D12) and for which no rate is
+; published at all. A game that keeps its own roster therefore has 8 machines it can invite a
+; customer to ride and nobody can EVER hand over -- those 7 plus click-125, which is the same
+; 8 bike_catalog.t27 counts -- and 2 more that nobody could hand over on the measurement day:
+; forza-300 and mt-03-300, offered but units_available 0 of 1, the pair named in
+; EXCLUDED_NONE_FREE below. 8 + 2 = 10 of the 21 known families, which is 21 - 11 and agrees
+; with the partition further down. The 8 is permanent and the 10 is an instant; a roster held
+; in the game gets both wrong, the first for ever and the second by tomorrow. That is why the
+; subset rule below is an invariant and not a comment. The handling half has its own number:
+; the fleet spans 125 cc to 750 cc, a factor of 6.0, and if every in-game bike handled
+; identically that whole span would be decorative (issue #13).
+; --
+; TWO PLACES WHERE THIS FILE CONTRADICTS ITS ISSUE, ON PURPOSE.
+; 1. Issue #20 writes top_speed(engine_cc). There is no engine_cc field anywhere in the
+;    seed; the field is displacement_cc. The seed wins and the parameter is named for it.
+; 2. Issue #20 asks that top speed be "strictly increasing in displacement across the
+;    tested families". No function of displacement can satisfy that reading: cb-650r,
+;    cbr-650r and vulcan-s-650 are three DISTINCT families at displacement_cc 650, so any
+;    two of them must share a top speed. Strict increase is
+;    therefore stated where it is true -- as a property of the FUNCTION over distinct
+;    displacements -- and the three tested families are chosen with distinct displacements:
+;    nmax-155 (155), xmax-300 (300), cb-650r (650). The three-way 650 tie gets a test of
+;    its own so it reads as the intended consequence of a pure function, not as a gap.
+; --
+; WHAT THIS SPEC NEVER DOES. It never produces a client-facing price, and it declares no
+; price constant or tariff amount anywhere (D11). SPEED and STEER
+; are game units, and no source in this repository publishes a road top speed for any family,
+; so labelling them km/h would be inventing a measurement -- the move D11 forbids. It never
+; invents a bike: there is no fallback family, and with nothing free the game shows a named
+; empty state rather than mounting something. It never breaks the 650 tie with the `body`
+; field (naked / sport / cruiser): the field is real, but nothing measured says by how much
+; a cruiser should differ from a naked, and a per-family nudge is exactly the hand-tuned
+; magic number issue #13 rules out. And it never derives handling from the class discounts
+; (scooter 0.25, motorcycle 0.15): those are the only per-class numbers the seed publishes
+; and they are prices, so deriving a steering rate from one would dress a design choice as
+; a measurement. Where a number here is chosen rather than measured, the comment says so.
+; --
+; WHAT THIS FILE RESTATES, AND WHOSE IT IS. specs/turbobaby/bike_catalog.t27 is the authority
+; for the two class discriminants and for the displacement domain; it says so itself, naming
+; this handling model (#13) as one of its three readers. The names and widths below are
+; therefore ITS names and widths, not new ones: CLASS_SCOOTER 0, CLASS_MOTORCYCLE 1 and the
+; non-class sentinel CLASS_NONE 255; DISPLACEMENTS_CC as [7]u16; and the reported extremes
+; DISPLACEMENT_MIN_CC / DISPLACEMENT_MAX_CC. Cited by NAME and never by line: that file was
+; edited while this paragraph was being written and its line numbers moved, so a line
+; citation here would have shipped already stale. An earlier draft of this file had the
+; array as [7]i16, the extremes as CC_MIN / CC_MAX, and no CLASS_NONE at all -- a second copy
+; of the algebra wearing different clothes and harder to see because both copies were specs.
+; cc is unsigned there for a
+; stated reason (a u8 stops at 255, so a 300 would arrive as 44 and look plausible), so
+; top_speed takes u16 and returns u16; steering keeps i16 because it must carry -1.
+; --
+; IMPLEMENTATION RECONCILIATION (2026-09-13). assets/game/ride.js now evaluates this exact
+; affine top-speed function and the same closed two-class steering lookup before it mounts a
+; rider. An unrecognised class or unusable displacement returns null, so neither can become a
+; playable bike. The renderer then applies one named, CHOSEN game-speed-to-world conversion
+; to every family and one named, CHOSEN game-steer-to-world conversion to every family.
+; Acceleration derives only from that converted top speed; lean derives only from the
+; canonical steering rate. `body` selects a silhouette and never trims physics. Those global
+; rendering conversions are deliberately outside this game-unit contract: they change how
+; the shared result is expressed in the Three.js world, not which catalog inputs determine
+; it. There is therefore no per-body or per-family handling copy left to diverge.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module ride-game;
+
+pub const KIND : str = "game";
+pub const ID : str = "turbobaby/ride-game";
+pub const NAME : str = "TurboBaby ride game handling";
+pub const WORLD : str = "gHashTag/turbobaby-user-bot";
+pub const SEED : str = "data/fleet_seed.json";
+pub const MEASURED_AT : str = "2026-09-12";
+
+; --- Units ---------------------------------------------------------------------------------
+; Named so that no reader can mistake them for something a customer is told. A game speed
+; unit is not a kilometre per hour and not a baht.
+pub const SPEED_UNIT : str = "game speed unit (gu); not km/h";
+pub const STEER_UNIT : str = "game steer unit per second (su/s); not degrees";
+
+; --- Top speed: a function of displacement alone --------------------------------------------
+; The seven distinct displacements the fleet actually contains, ascending; the name, the
+; width and the values are bike_catalog.t27's DISPLACEMENTS_CC, restated and not redesigned.
+; Seven, not fourteen, and here is the whole of the collapse, measured family by family over
+; the seed: 650 carries three families (cb-650r, cbr-650r, vulcan-s-650), 300 carries five
+; (cb-300r, forza-300, mt-03-300, xmax-300, xmax-300-new) and 155 carries two (nmax-155,
+; xsr-155). That is 2 + 4 + 1 = 7 rows repeating a value already in the list, and 14 - 7 = 7
+; values left. The other four values -- 125, 350, 400 and 750 -- have one family each, and
+; 3 + 5 + 2 + 4 = 14 families, so no row is counted twice and none is missing.
+pub const DISPLACEMENTS_CC : [7]u16 = [125, 155, 300, 350, 400, 650, 750];
+; Measured extremes of the fleet of 2026-09-12, under bike_catalog.t27's names for them.
+; Reported, never used as a bound: the next machine the shop buys must not be rejected here.
+pub const DISPLACEMENT_MIN_CC : u16 = 125;
+pub const DISPLACEMENT_MAX_CC : u16 = 750;
+
+; SPEED_INTERCEPT_GU is CHOSEN, not measured. A purely proportional map would put the
+; 750 at 750/125 = 6.0x the 125 and leave the small scooter unplayable next to it; the
+; intercept compresses the fleet's speed ratio to 1150/525 = 2.19x. Both ratios are
+; arithmetic on seed displacements, and the choice is the intercept, nothing else.
+pub const SPEED_INTERCEPT_GU : u16 = 400;
+; The slope, CHOSEN like the intercept and measured nowhere. Positive, so the function is
+; strictly increasing in displacement; one gu per cc, so equal displacement gives equal top
+; speed and nothing else can enter the result.
+pub const SPEED_PER_CC_GU : u16 = 1;
+
+; top_speed is a function of a NUMBER, not of a family. It is defined at 125 because 125 is
+; a displacement; that does not make click-125 rideable -- rideability is a property of a
+; family and is decided by the rule further down. cc is u16 because that is the width the
+; catalog stores it in; a top speed is a magnitude and never negative, so it is u16 too, and
+; the lane carries no signed value that a mixed-width expression could lose. Range:
+; 400 + 750 = 1150 at the largest engine in stock, far inside u16.
+pub fn top_speed(displacement_cc: u16) u16 {
+    return SPEED_INTERCEPT_GU + SPEED_PER_CC_GU * displacement_cc;
+}
+
+; --- Steering: a function of class, and the class set is closed ------------------------------
+; The seed forces the domain: `class` takes exactly two values over all 14 in-stock families
+; and all 7 price-list-only ones. Codes rather than strings so the mapping is total and
+; checkable; CLASS_NAMES holds the seed's own spelling.
+pub const CLASS_COUNT : u8 = 2;
+pub const CLASS_NAMES : [2]str = ["scooter", "motorcycle"];
+pub const CLASS_SCOOTER : u8 = 0;
+pub const CLASS_MOTORCYCLE : u8 = 1;
+; Not a class, and not invented here: bike_catalog.t27's own CLASS_NONE, restated so this
+; file does not grow a second convention for "no such class". 255 is the widest value a u8
+; holds and cannot collide with either discriminant. It is a CLASS code; the rate a caller
+; gets back for it is STEER_RATE_NO_SUCH_CLASS below, a different number with a different
+; job, and the test further down pins that CLASS_NONE goes in and that sentinel comes out.
+pub const CLASS_NONE : u8 = 255;
+
+; The DIRECTION is grounded: KB_faq recommends the scooter nmax-155 to beginners and for
+; city use, and every family in the seed's sport recommendation list (ninja-400, cbr-650r,
+; mt-03-300) is a motorcycle -- so the quicker, more forgiving steering belongs with the
+; scooters. The MAGNITUDES, 120 against 90, are a chosen 4:3. Nothing in the sources
+; measures a steering rate, and this comment is the whole of their provenance.
+pub const STEER_RATE_SCOOTER_SU : i16 = 120;
+pub const STEER_RATE_MOTORCYCLE_SU : i16 = 90;
+; Not a rate and not a fallback, and CHOSEN: no source measures it, and -1 is picked only
+; because it is outside every playable value. A negative sentinel, so a caller that skips
+; the check gets an unusable number instead of a playable default class. There is no third
+; class to fall back to and none is invented here. This is why the steering lane is i16
+; while the top-speed lane is u16: a steer rate has to be able to be negative.
+pub const STEER_RATE_NO_SUCH_CLASS : i16 = -1;
+
+pub fn steer_rate(class_code: u8) i16 {
+    if (class_code == CLASS_SCOOTER) {
+        return STEER_RATE_SCOOTER_SU;
+    }
+    if (class_code == CLASS_MOTORCYCLE) {
+        return STEER_RATE_MOTORCYCLE_SU;
+    }
+    return STEER_RATE_NO_SUCH_CLASS;
+}
+
+; --- The mapping, in one place ---------------------------------------------------------------
+; Issue #13 asks for the mapping as one pure function of the catalog fields. This is it: the
+; two catalog fields in, the two tunables out, no table in between. The two fields keep the
+; widths of the lanes that produce them, so nothing is widened or re-signed on the way out.
+pub const Handling = packed struct {
+    top_speed_gu : u16,
+    steer_rate_su : i16,
+};
+
+pub fn handling(displacement_cc: u16, class_code: u8) Handling {
+    return Handling{ .top_speed_gu = top_speed(displacement_cc), .steer_rate_su = steer_rate(class_code) };
+}
+
+; --- Which families may be ridden ------------------------------------------------------------
+; The request behind this spec is "bikers with the bikes that are actually in stock". The
+; rule is read at mount time from the API, never from a list held in the game.
+pub const RIDEABLE_SOURCE : str = "/api/bikes?available_only=true";
+pub const RIDEABLE_RULE : str = "offered == true AND units_available >= MIN_UNITS_AVAILABLE_TO_RIDE, re-read at mount time";
+pub const MIN_UNITS_AVAILABLE_TO_RIDE : u8 = 1;
+
+; The 14 in-stock families, in the seed's own `families` order so an index here is a line
+; there. This is the catalog the rideable set must be a subset of.
+pub const CATALOG_KEYS : [14]str = [
+  "click-125", "nmax-155", "xsr-155", "cb-300r", "forza-300", "mt-03-300", "xmax-300",
+  "xmax-300-new", "adv-350", "ninja-400", "cb-650r", "cbr-650r", "vulcan-s-650", "xadv-750",
+];
+
+; What the rule returned on the seed's measurement day. This array is the WITNESS of the
+; measurement, not a roster: availability moves every time a bike goes out, so a game that
+; read this list instead of the API would eventually offer a rented machine. The witness is
+; here so the subset invariant has something to check.
+pub const RIDEABLE_KEYS : [11]str = [
+  "nmax-155", "xsr-155", "cb-300r", "xmax-300", "xmax-300-new", "adv-350", "ninja-400",
+  "cb-650r", "cbr-650r", "vulcan-s-650", "xadv-750",
+];
+pub const RIDEABLE_FAMILIES_AT_MEASURED_AT : u8 = 11;
+pub const RIDEABLE_UNITS_AT_MEASURED_AT : u8 = 26;
+
+; The two reasons a family in the catalog is not rideable. Together with RIDEABLE_KEYS these
+; partition CATALOG_KEYS: 11 + 1 + 2 = 14, and every rideable key's position in the catalog
+; is named one by one in every_rideable_family_is_in_the_catalog below.
+; click-125: offered false, and base_rate_thb_day / deposit_thb are null -- no published
+; tariff at all (D12, and D9: absent stays absent).
+pub const EXCLUDED_NOT_OFFERED : [1]str = ["click-125"];
+; forza-300 and mt-03-300: offered, but units_available 0 of 1 on the measurement day. They
+; are excluded at this instant by the rule, not forbidden for ever.
+pub const EXCLUDED_NONE_FREE : [2]str = ["forza-300", "mt-03-300"];
+
+; The 7 families published in the tariff with no units in the fleet. They are not in
+; CATALOG_KEYS at all, so they can never be rideable -- and the reason is arithmetic, not a
+; blacklist: their total unit count is zero, which cannot reach
+; MIN_UNITS_AVAILABLE_TO_RIDE. Named here so a later reader who finds a tariff without
+; stock does not invent the stock.
+pub const PRICE_LIST_ONLY_KEYS : [7]str = [
+  "pcx-150", "adv-150", "pcx-160", "adv-160", "rebel-300", "xsr-900", "r7",
+];
+pub const PRICE_LIST_ONLY_UNITS_TOTAL : u8 = 0;
+
+; --- No invented bike -------------------------------------------------------------------------
+pub const HAS_FALLBACK_FAMILY : bool = false;
+pub const FALLBACK_FAMILY : str = "";
+pub const ON_NONE_RIDEABLE : str = "show a named empty state and mount no bike";
+pub const LABEL_TEXT_SOURCE : str = "brand, model and variant_label from the catalog row";
+
+; --- The root review snapshot, semantically merged -------------------------------------------
+; specs/ride_game.t27 also recorded the causal direction of the replacement: the retired
+; garden wrote game state from the order path and manufactured a non-empty state. The Ride
+; game does neither. These are behavior boundaries, not nostalgia: without them a later
+; checkout hook could make a game failure fail a purchase again.
+pub const REPLACES_GARDEN_PATH : str = "src/trios/garden.rs";
+pub const LEGACY_GARDEN_WROTE_FROM_ORDER : bool = true;
+pub const LEGACY_GARDEN_FORCED_NONEMPTY_STATE : bool = true;
+pub const RIDE_WRITES_TO_ORDER_PATH : bool = false;
+pub const RIDE_EMITS_CLIENT_PRICE : bool = false;
+
+; The review snapshot used four copied rows and two copied boolean rosters. They are not
+; copied here: CATALOG_KEYS, RIDEABLE_KEYS and both EXCLUDED arrays above already witness the
+; complete seed. availability.t27 owns the offered-and-positive-stock conjunction and supplies
+; one boolean; duplicating that arithmetic here would give it a second owner. The snapshot's
+; unique negative case survives as selected_row_respects_live_gate: a hand-held roster that
+; selects a row rejected by availability is itself rejected, while an unselected row has no
+; claim to validate.
+pub const RIDE_BOOKABILITY_OWNER_ID : str = "turbobaby/availability";
+pub const RIDE_BOOKABILITY_INPUT : str = "is_bookable(offered, units_available) from the availability contract";
+
+pub fn selected_row_respects_live_gate(selected: bool, bookable_by_availability: bool) bool {
+  if (!selected) {
+    return true;
+  }
+  return bookable_by_availability;
+}
+
+; Empty and unavailable are different player-visible outcomes, but both mount zero riders.
+; Module import, roster fetch and renderer start are separate failure boundaries in the live
+; bridge. A failure at any one is unavailable; a successful empty filtered roster is empty.
+pub const ROSTER_OUTCOME_READY : u8 = 0;
+pub const ROSTER_OUTCOME_EMPTY : u8 = 1;
+pub const ROSTER_OUTCOME_UNAVAILABLE : u8 = 2;
+pub const ROSTER_OUTCOME_COUNT : u8 = 3;
+pub const EMPTY_STATE_MESSAGE_KEY : str = "ride_game.empty_roster";
+pub const UNAVAILABLE_STATE_MESSAGE_KEY : str = "ride_game.roster_unavailable";
+
+pub fn roster_outcome(module_loaded: bool, fetch_succeeded: bool, engine_started: bool, rideable_count: u8) u8 {
+  if (!module_loaded or !fetch_succeeded) {
+    return ROSTER_OUTCOME_UNAVAILABLE;
+  }
+  if (rideable_count == 0) {
+    return ROSTER_OUTCOME_EMPTY;
+  }
+  if (!engine_started) {
+    return ROSTER_OUTCOME_UNAVAILABLE;
+  }
+  return ROSTER_OUTCOME_READY;
+}
+
+pub fn mounted_rider_count(outcome: u8, rideable_count: u8) u8 {
+  if (outcome != ROSTER_OUTCOME_READY) {
+    return 0;
+  }
+  return rideable_count;
+}
+
+pub fn ride_can_start(outcome: u8, rideable_count: u8) bool {
+  return outcome == ROSTER_OUTCOME_READY and mounted_rider_count(outcome, rideable_count) >= 1;
+}
+
+; --- Tests -------------------------------------------------------------------------------------
+
+test the_module_names_its_own_world {
+  assert KIND == "game";
+  assert ID == "turbobaby/ride-game";
+  assert WORLD == "gHashTag/turbobaby-user-bot";
+  assert MEASURED_AT == "2026-09-12";
+}
+
+; The three families issue #20 asks to be pinned, chosen with DISTINCT displacements for the
+; reason given in the header. Both classes are covered: nmax-155 and xmax-300 are scooters,
+; cb-650r is a motorcycle. Each cc is the family's displacement_cc as the seed records it.
+test handling_of_three_real_families {
+  ; nmax-155, scooter, displacement_cc 155
+  assert top_speed(155) == 555;
+  assert steer_rate(CLASS_SCOOTER) == 120;
+  ; xmax-300, scooter, displacement_cc 300
+  assert top_speed(300) == 700;
+  ; cb-650r, motorcycle, displacement_cc 650
+  assert top_speed(650) == 1050;
+  assert steer_rate(CLASS_MOTORCYCLE) == 90;
+  ; and across these three distinct displacements the top speed does increase strictly
+  assert top_speed(155) < top_speed(300);
+  assert top_speed(300) < top_speed(650);
+}
+
+; The whole domain the fleet exhibits, as a ladder. Six strict steps over seven values.
+test every_distinct_displacement_climbs {
+  assert DISPLACEMENTS_CC[0] == 125;
+  assert DISPLACEMENTS_CC[6] == 750;
+  assert top_speed(125) == 525;
+  assert top_speed(155) == 555;
+  assert top_speed(300) == 700;
+  assert top_speed(350) == 750;
+  assert top_speed(400) == 800;
+  assert top_speed(650) == 1050;
+  assert top_speed(750) == 1150;
+  assert top_speed(125) < top_speed(155);
+  assert top_speed(155) < top_speed(300);
+  assert top_speed(300) < top_speed(350);
+  assert top_speed(350) < top_speed(400);
+  assert top_speed(400) < top_speed(650);
+  assert top_speed(650) < top_speed(750);
+}
+
+; The tie the issue's acceptance criterion could not accommodate, pinned as intended
+; behaviour. These three families share a displacement and a class, so they share one
+; handling pair, and this spec does not reach for `body` to separate them.
+test the_three_650_families_share_one_handling_pair {
+  assert CATALOG_KEYS[10] == "cb-650r";
+  assert CATALOG_KEYS[11] == "cbr-650r";
+  assert CATALOG_KEYS[12] == "vulcan-s-650";
+  assert top_speed(650) == 1050;
+  assert steer_rate(CLASS_MOTORCYCLE) == 90;
+}
+
+; Issue #13's acceptance: the smallest and the largest engine must measurably differ. They
+; differ in top speed by exactly the displacement span. They do NOT differ in steering, and
+; that is the seed's doing rather than an oversight: KB_faq classes the 750 X-ADV with the
+; scooters, so both rows read class scooter. click-125 is also not rideable at all, which is
+; why this is an arithmetic check on the function and not a claim about a playable bike.
+test the_smallest_and_largest_engines_differ {
+  assert top_speed(125) == 525;
+  assert top_speed(750) == 1150;
+  assert top_speed(DISPLACEMENT_MAX_CC) - top_speed(DISPLACEMENT_MIN_CC) == 625;
+  assert DISPLACEMENT_MAX_CC - DISPLACEMENT_MIN_CC == 625;
+}
+
+test steer_rate_separates_the_two_classes {
+  assert CLASS_NAMES[0] == "scooter";
+  assert CLASS_NAMES[1] == "motorcycle";
+  assert steer_rate(CLASS_SCOOTER) == STEER_RATE_SCOOTER_SU;
+  assert steer_rate(CLASS_MOTORCYCLE) == STEER_RATE_MOTORCYCLE_SU;
+  assert steer_rate(CLASS_SCOOTER) > steer_rate(CLASS_MOTORCYCLE);
+}
+
+; Two unknown codes, not one: 2 is the first value past the domain, and CLASS_NONE is the
+; code the catalog spec's own guard returns. This spec answers a number nobody can ride with;
+; ride.js expresses the same refusal as null before any rider can mount.
+test an_unknown_class_is_refused_not_defaulted {
+  assert steer_rate(2) == STEER_RATE_NO_SUCH_CLASS;
+  assert steer_rate(2) < 0;
+  assert steer_rate(CLASS_NONE) == STEER_RATE_NO_SUCH_CLASS;
+  assert CLASS_NONE == 255;
+  assert CLASS_NONE > CLASS_MOTORCYCLE;
+  assert STEER_RATE_SCOOTER_SU > 0;
+  assert STEER_RATE_MOTORCYCLE_SU > 0;
+}
+
+test the_mapping_is_one_function {
+  const h = handling(155, CLASS_SCOOTER);
+  assert h.top_speed_gu == 555;
+  assert h.steer_rate_su == 120;
+}
+
+; The subset claim, witnessed key by key: every rideable family, and the catalog row it came
+; from. Eleven lines, no membership operator, nothing implied.
+test every_rideable_family_is_in_the_catalog {
+  assert RIDEABLE_KEYS[0] == CATALOG_KEYS[1];
+  assert RIDEABLE_KEYS[1] == CATALOG_KEYS[2];
+  assert RIDEABLE_KEYS[2] == CATALOG_KEYS[3];
+  assert RIDEABLE_KEYS[3] == CATALOG_KEYS[6];
+  assert RIDEABLE_KEYS[4] == CATALOG_KEYS[7];
+  assert RIDEABLE_KEYS[5] == CATALOG_KEYS[8];
+  assert RIDEABLE_KEYS[6] == CATALOG_KEYS[9];
+  assert RIDEABLE_KEYS[7] == CATALOG_KEYS[10];
+  assert RIDEABLE_KEYS[8] == CATALOG_KEYS[11];
+  assert RIDEABLE_KEYS[9] == CATALOG_KEYS[12];
+  assert RIDEABLE_KEYS[10] == CATALOG_KEYS[13];
+}
+
+; The three catalog rows the rule leaves out, named rather than counted, with the seed's
+; reason attached in the comments above each array.
+test the_families_excluded_from_riding_are_named {
+  assert EXCLUDED_NOT_OFFERED[0] == "click-125";
+  assert EXCLUDED_NOT_OFFERED[0] == CATALOG_KEYS[0];
+  assert EXCLUDED_NONE_FREE[0] == "forza-300";
+  assert EXCLUDED_NONE_FREE[0] == CATALOG_KEYS[4];
+  assert EXCLUDED_NONE_FREE[1] == "mt-03-300";
+  assert EXCLUDED_NONE_FREE[1] == CATALOG_KEYS[5];
+}
+
+test the_price_list_only_families_can_never_be_ridden {
+  assert PRICE_LIST_ONLY_KEYS[0] == "pcx-150";
+  assert PRICE_LIST_ONLY_KEYS[6] == "r7";
+  assert PRICE_LIST_ONLY_KEYS.len == 7;
+  assert PRICE_LIST_ONLY_UNITS_TOTAL == 0;
+  assert PRICE_LIST_ONLY_UNITS_TOTAL < MIN_UNITS_AVAILABLE_TO_RIDE;
+}
+
+test the_measured_counts_are_the_seeds_own {
+  assert RIDEABLE_FAMILIES_AT_MEASURED_AT == 11;
+  ; 5+1+1+3+6+5+1+1+1+1+1, which is the seed's totals.units_available
+  assert RIDEABLE_UNITS_AT_MEASURED_AT == 26;
+  assert RIDEABLE_KEYS.len == RIDEABLE_FAMILIES_AT_MEASURED_AT;
+}
+
+test the_game_offers_no_bike_it_cannot_hand_over {
+  assert HAS_FALLBACK_FAMILY == false;
+  assert FALLBACK_FAMILY == "";
+  assert ON_NONE_RIDEABLE == "show a named empty state and mount no bike";
+  assert LABEL_TEXT_SOURCE == "brand, model and variant_label from the catalog row";
+}
+
+test live_row_gate_requires_offer_and_stock {
+  assert RIDE_BOOKABILITY_OWNER_ID == "turbobaby/availability";
+  assert RIDEABLE_RULE == "offered == true AND units_available >= MIN_UNITS_AVAILABLE_TO_RIDE, re-read at mount time";
+  assert MIN_UNITS_AVAILABLE_TO_RIDE == 1;
+  assert selected_row_respects_live_gate(true, true) == true;
+  assert selected_row_respects_live_gate(true, false) == false;
+}
+
+test a_drifted_selection_is_rejected_by_the_live_gate {
+  assert EXCLUDED_NONE_FREE[0] == "forza-300";
+  assert selected_row_respects_live_gate(true, true) == true;
+  assert selected_row_respects_live_gate(true, false) == false;
+  assert selected_row_respects_live_gate(false, false) == true;
+}
+
+test empty_and_unavailable_are_explicit_zero_rider_states {
+  assert roster_outcome(true, true, true, 1) == ROSTER_OUTCOME_READY;
+  assert roster_outcome(true, true, true, 0) == ROSTER_OUTCOME_EMPTY;
+  assert roster_outcome(true, true, false, 0) == ROSTER_OUTCOME_EMPTY;
+  assert roster_outcome(false, true, true, 1) == ROSTER_OUTCOME_UNAVAILABLE;
+  assert roster_outcome(true, false, true, 1) == ROSTER_OUTCOME_UNAVAILABLE;
+  assert roster_outcome(true, true, false, 1) == ROSTER_OUTCOME_UNAVAILABLE;
+  assert mounted_rider_count(ROSTER_OUTCOME_READY, 11) == 11;
+  assert mounted_rider_count(ROSTER_OUTCOME_EMPTY, 0) == 0;
+  assert mounted_rider_count(ROSTER_OUTCOME_UNAVAILABLE, 11) == 0;
+  assert ride_can_start(ROSTER_OUTCOME_READY, 1) == true;
+  assert ride_can_start(ROSTER_OUTCOME_EMPTY, 0) == false;
+  assert ride_can_start(ROSTER_OUTCOME_UNAVAILABLE, 11) == false;
+}
+
+test the_replacement_has_no_checkout_or_price_side_effect {
+  assert LEGACY_GARDEN_WROTE_FROM_ORDER == true;
+  assert LEGACY_GARDEN_FORCED_NONEMPTY_STATE == true;
+  assert RIDE_WRITES_TO_ORDER_PATH == false;
+  assert RIDE_EMITS_CLIENT_PRICE == false;
+  assert HAS_FALLBACK_FAMILY == false;
+}
+
+; --- Invariants ---------------------------------------------------------------------------------
+
+; The issue's acceptance criterion, stated where it is true: strictly increasing in
+; displacement is a property of the function, and a positive slope is the whole of it. It
+; cannot be stated across families, because three families share displacement 650.
+invariant top_speed_is_strictly_increasing_in_displacement
+  assert SPEED_PER_CC_GU >= 1
+
+; The load-bearing one. RIDEABLE_KEYS, EXCLUDED_NOT_OFFERED and EXCLUDED_NONE_FREE
+; partition CATALOG_KEYS -- each key appears in exactly one of the three, and the position
+; of every rideable key in the catalog is witnessed in the test above -- so this sum says
+; that nothing rideable came from outside the catalog. A key added to the game without a
+; catalog row breaks the arithmetic here instead of shipping as a playable bike.
+invariant the_rideable_set_is_a_subset_of_the_catalog
+  assert RIDEABLE_KEYS.len + EXCLUDED_NOT_OFFERED.len + EXCLUDED_NONE_FREE.len == CATALOG_KEYS.len
+
+; A count of zero is always a bug (D16): if the catalog array is ever emptied by a tidy-up,
+; the subset invariant above would hold vacuously with an empty game. Pinning the seed's own
+; families_in_stock stops that.
+invariant the_catalog_holds_the_whole_in_stock_fleet
+  assert CATALOG_KEYS.len == 14
+
+; Why the 7 price-list-only families are excluded by the rule itself and need no blacklist:
+; zero units can never satisfy the availability floor.
+invariant a_family_with_no_unit_can_never_be_ridden
+  assert PRICE_LIST_ONLY_UNITS_TOTAL < MIN_UNITS_AVAILABLE_TO_RIDE
+
+invariant ride_handling_class_map_is_total
+  assert CLASS_NAMES.len == CLASS_COUNT
+
+invariant an_unknown_class_yields_no_playable_rate
+  assert STEER_RATE_NO_SUCH_CLASS < 0
+
+invariant the_game_never_invents_a_bike
+  assert HAS_FALLBACK_FAMILY == false
+
+invariant the_measured_displacement_domain_is_seven_wide
+  assert DISPLACEMENTS_CC.len == 7
+
+; The extremes are the ends of the array and not two numbers typed beside it, so a fleet
+; change that edits one without the other cannot pass. This is the claim the old CC_MIN /
+; CC_MAX names made nowhere.
+invariant the_reported_extremes_are_the_ends_of_the_domain
+  assert DISPLACEMENTS_CC[0] == DISPLACEMENT_MIN_CC
+
+invariant the_largest_reported_extreme_is_the_last_of_the_domain
+  assert DISPLACEMENTS_CC[6] == DISPLACEMENT_MAX_CC
+
+; The sentinel restated from bike_catalog.t27 earns its width here: it must sit outside the
+; class domain, or the guard would alias onto a real class and hand back a playable rate.
+invariant the_non_class_sentinel_cannot_collide_with_a_class
+  assert CLASS_NONE > CLASS_MOTORCYCLE
+
+invariant a_selected_row_requires_both_offer_and_positive_stock
+  assert selected_row_respects_live_gate(true, true) == true and selected_row_respects_live_gate(true, false) == false
+
+invariant an_empty_roster_mounts_no_default_rider
+  assert mounted_rider_count(ROSTER_OUTCOME_EMPTY, 0) == 0 and HAS_FALLBACK_FAMILY == false
+
+invariant an_unavailable_roster_cannot_mount_a_rider
+  assert mounted_rider_count(ROSTER_OUTCOME_UNAVAILABLE, RIDEABLE_FAMILIES_AT_MEASURED_AT) == 0
+
+invariant the_ride_game_cannot_write_to_checkout
+  assert RIDE_WRITES_TO_ORDER_PATH == false
+
+invariant the_ride_game_is_not_a_price_surface
+  assert RIDE_EMITS_CLIENT_PRICE == false

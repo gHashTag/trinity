@@ -1,0 +1,126 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Probability ratio between policies | φ² + 1/φ² = 3 | TRINITY
+
+module PpoClipLoss;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_CLIP_EPSILON : f32 = 0.2;
+    const DEFAULT_ENTROPY_COEF : f32 = 0.01;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const PPOClipConfig = struct {
+        clip_epsilon : f32,
+        entropy_coef : f32,
+        value_clip_coef : f32,
+    };
+
+    pub const PPOBatch = struct {
+        states : [][]f32,
+        actions : [][]f32,
+        old_log_probs : []f32,
+        advantages : []f32,
+        returns : []f32,
+        values : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compute_ratio(new_log_prob: f32) → void
+    fn compute_ratio(new_log_prob: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // clipped_surrogate(ratio: f32) → void
+    fn clipped_surrogate(ratio: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // policy_loss(ratios: []f32) → void
+    fn policy_loss(ratios: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // entropy_loss(entropies: []f32) → void
+    fn entropy_loss(entropies: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // value_loss(predicted_values: []f32) → void
+    fn value_loss(predicted_values: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // total_loss(policy_loss_value: f32) → void
+    fn total_loss(policy_loss_value: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test compute_ratio_basic_case
+        given input = default_input()
+        when result = compute_ratio(input)
+        then result != undefined
+
+    test clipped_surrogate_basic_case
+        given input = default_input()
+        when result = clipped_surrogate(input)
+        then result != undefined
+
+    test policy_loss_basic_case
+        given input = default_input()
+        when result = policy_loss(input)
+        then result != undefined
+
+    test entropy_loss_basic_case
+        given input = default_input()
+        when result = entropy_loss(input)
+        then result != undefined
+
+    test value_loss_basic_case
+        given input = default_input()
+        when result = value_loss(input)
+        then result != undefined
+
+    test total_loss_basic_case
+        given input = default_input()
+        when result = total_loss(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant ppo_clip_loss_constraint_0
+        given input = valid_input()
+        then true // 0 < clip_epsilon <= 1 (typically 0.1-0.3)
+
+    invariant ppo_clip_loss_constraint_1
+        given input = valid_input()
+        then true // entropy_coef >= 0
+
+    invariant ppo_clip_loss_constraint_2
+        given input = valid_input()
+        then true // name: ppo_objective
+
+    invariant ppo_clip_loss_constraint_3
+        given input = valid_input()
+        then true // name: probability_ratio
+
+    invariant ppo_clip_loss_constraint_4
+        given input = valid_input()
+        then true // "Schulman et al. (2017) - Proximal Policy Optimization Algorithms, arXiv:1707.06347"
+

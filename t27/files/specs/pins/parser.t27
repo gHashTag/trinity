@@ -1,0 +1,583 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/pins/parser.t27
+// Pins Parser for Trinity t27
+// Parse .t27 pin specifications into Pins IR
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module PinsParser {
+    use base::types;
+    use base::ops;
+    use pins::ir;
+    
+    // Lexer tokens for pin specifications
+    enum PinToken {
+        IDENTIFIER(String),
+        STRING(String),
+        NUMBER(u32),
+        COLON,           // :
+        EQUALS,          // =
+        COMMA,           // ,
+        SEMICOLON,       // ;
+        LEFT_BRACE,      // {
+        RIGHT_BRACE,     // }
+        LEFT_BRACKET,    // [
+        RIGHT_BRACKET,   // ]
+        LEFT_PAREN,      // (
+        RIGHT_PAREN,     // )
+        ARROW,           // ->
+        DOT,             // .
+        AT,              // @
+        HASH,            // #
+        EOF,
+    }
+    
+    // AST Node Types
+    enum AstNode {
+        Module {
+            name: String,
+            signals: Vec<SignalDecl>,
+            constraints: Vec<Constraint>,
+        },
+        
+        SignalDecl {
+            name: String,
+            type: SignalType,
+            location: Option<PinLocation>,
+            iostandard: Option<IoStandard>,
+        },
+        
+        Constraint {
+            target: String,
+            value: ConstraintValue,
+        },
+        
+        SignalType {
+            base: BaseType,
+            width: Option<u32>,
+        },
+        
+        BaseType {
+            name: String,
+        },
+        
+        PinLocation {
+            package_pin: String,
+            bank: Option<u8>,
+        },
+        
+        IoStandard {
+            name: String,
+            voltage: Option<String>,
+            drive_strength: Option<u8>,
+        },
+        
+        ConstraintValue {
+            literal: Option<String>,
+            number: Option<u32>,
+        },
+    }
+    
+    // Parser State
+    struct Parser {
+        tokens: Vec<PinToken>,
+        current: usize,
+        current_module: Option<String>,
+    }
+    
+    // Parser Implementation
+    impl Parser {
+        fn new(tokens: Vec<PinToken>) -> Self {
+            Self {
+                tokens,
+                current: 0,
+                current_module: None,
+            }
+        }
+        
+        fn parse(&mut self) -> Result<AstNode, ParseError> {
+            self.parse_module()
+        }
+        
+        fn parse_module(&mut self) -> Result<AstNode, ParseError> {
+            // Parse module declaration
+            self.expect_keyword("module")?;
+            let name = self.expect_identifier()?;
+            self.expect_token(PinToken::LEFT_BRACE)?;
+            
+            let mut signals = Vec::new();
+            let mut constraints = Vec::new();
+            
+            while !self.match_token(PinToken::RIGHT_BRACE) && !self.is_at_end() {
+                if self.match_keyword("signal") {
+                    let signal = self.parse_signal_decl()?;
+                    signals.push(signal);
+                } else if self.match_keyword("constraint") {
+                    let constraint = self.parse_constraint()?;
+                    constraints.push(constraint);
+                } else {
+                    return self.error("Expected 'signal' or 'constraint'");
+                }
+            }
+            
+            self.consume_token(PinToken::RIGHT_BRACE)?;
+            
+            Ok(AstNode::Module {
+                name,
+                signals,
+                constraints,
+            })
+        }
+        
+        fn parse_signal_decl(&mut self) -> Result<AstNode, ParseError> {
+            self.expect_keyword("signal")?;
+            let name = self.expect_identifier()?;
+            self.expect_token(PinToken::COLON)?;
+            
+            let type_node = self.parse_signal_type()?;
+            
+            let mut location = None;
+            let mut iostandard = None;
+            
+            // Parse optional attributes
+            while self.match_token(PinToken::AT) {
+                if self.match_keyword("location") {
+                    location = Some(self.parse_pin_location()?);
+                } else if self.match_keyword("iostd") {
+                    iostandard = Some(self.parse_io_standard()?);
+                } else {
+                    return self.error("Expected 'location' or 'iostd'");
+                }
+            }
+            
+            self.expect_token(PinToken::SEMICOLON)?;
+            
+            Ok(AstNode::SignalDecl {
+                name,
+                type: type_node,
+                location,
+                iostandard,
+            })
+        }
+        
+        fn parse_signal_type(&mut self) -> Result<SignalType, ParseError> {
+            let base_name = self.expect_identifier()?;
+            
+            let mut width = None;
+            if self.match_token(PinToken::LEFT_BRACKET) {
+                let width_num = self.expect_number()?;
+                width = Some(width_num);
+                self.expect_token(PinToken::RIGHT_BRACKET)?;
+            }
+            
+            Ok(SignalType {
+                base: BaseType { name: base_name },
+                width,
+            })
+        }
+        
+        fn parse_pin_location(&mut self) -> Result<PinLocation, ParseError> {
+            self.expect_token(PinToken::LEFT_PAREN)?;
+            let package_pin = self.expect_string()?;
+            
+            let mut bank = None;
+            if self.match_token(PinToken::COMMA) {
+                let bank_num = self.expect_number()?;
+                bank = Some(bank_num as u8);
+            }
+            
+            self.expect_token(PinToken::RIGHT_PAREN)?;
+            
+            Ok(PinLocation {
+                package_pin,
+                bank,
+            })
+        }
+        
+        fn parse_io_standard(&mut self) -> Result<IoStandard, ParseError> {
+            self.expect_token(PinToken::LEFT_PAREN)?;
+            let name = self.expect_identifier()?;
+            
+            let mut voltage = None;
+            let mut drive_strength = None;
+            
+            if self.match_token(PinToken::COMMA) {
+                voltage = Some(self.expect_string()?);
+                if self.match_token(PinToken::COMMA) {
+                    let strength = self.expect_number()?;
+                    drive_strength = Some(strength as u8);
+                }
+            }
+            
+            self.expect_token(PinToken::RIGHT_PAREN)?;
+            
+            Ok(IoStandard {
+                name,
+                voltage,
+                drive_strength,
+            })
+        }
+        
+        fn parse_constraint(&mut self) -> Result<AstNode, ParseError> {
+            self.expect_keyword("constraint")?;
+            let target = self.expect_identifier()?;
+            self.expect_token(PinToken::EQUALS)?;
+            
+            let value = if self.match_token(PinToken::STRING) {
+                ConstraintValue {
+                    literal: Some(self.last_string_value()),
+                    number: None,
+                }
+            } else {
+                let num = self.expect_number()?;
+                ConstraintValue {
+                    literal: None,
+                    number: Some(num),
+                }
+            };
+            
+            self.expect_token(PinToken::SEMICOLON)?;
+            
+            Ok(AstNode::Constraint {
+                target,
+                value,
+            })
+        }
+        
+        // Helper methods
+        fn is_at_end(&self) -> bool {
+            self.current >= self.tokens.len()
+        }
+        
+        fn peek(&self) -> Option<&PinToken> {
+            self.tokens.get(self.current)
+        }
+        
+        fn consume_token(&mut self) -> Option<PinToken> {
+            if self.is_at_end() {
+                None
+            } else {
+                self.current += 1;
+                Some(self.tokens[self.current - 1].clone())
+            }
+        }
+        
+        fn match_token(&mut self, token: PinToken) -> bool {
+            if let Some(peeked) = self.peek() {
+                if std::mem::discriminant(peeked) == std::mem::discriminant(&token) {
+                    self.consume_token();
+                    return true;
+                }
+            }
+            false
+        }
+        
+        fn expect_token(&mut self, token: PinToken) -> Result<(), ParseError> {
+            if self.match_token(token) {
+                Ok(())
+            } else {
+                self.error(&format!("Expected {:?}", token))
+            }
+        }
+        
+        fn match_keyword(&mut self, keyword: &str) -> bool {
+            if let Some(PinToken::IDENTIFIER(id)) = self.peek() {
+                if id == keyword {
+                    self.consume_token();
+                    return true;
+                }
+            }
+            false
+        }
+        
+        fn expect_keyword(&mut self, keyword: &str) -> Result<String, ParseError> {
+            if let Some(PinToken::IDENTIFIER(id)) = self.consume_token() {
+                if id == keyword {
+                    return Ok(id);
+                }
+            }
+            self.error(&format!("Expected keyword '{}'", keyword))
+        }
+        
+        fn expect_identifier(&mut self) -> Result<String, ParseError> {
+            match self.consume_token() {
+                Some(PinToken::IDENTIFIER(id)) => Ok(id),
+                _ => self.error("Expected identifier"),
+            }
+        }
+        
+        fn expect_string(&mut self) -> Result<String, ParseError> {
+            match self.consume_token() {
+                Some(PinToken::STRING(s)) => Ok(s),
+                _ => self.error("Expected string"),
+            }
+        }
+        
+        fn expect_number(&mut self) -> Result<u32, ParseError> {
+            match self.consume_token() {
+                Some(PinToken::NUMBER(n)) => Ok(n),
+                _ => this.error("Expected number"),
+            }
+        }
+        
+        fn last_string_value(&self) -> String {
+            // Implementation would get last string token value
+            String::new() // Placeholder
+        }
+        
+        fn error(&self, message: &str) -> Result<T, E> {
+            Err(ParseError {
+                message: message.to_string(),
+                position: self.current,
+            })
+        }
+    }
+    
+    // Error Types
+    struct ParseError {
+        message: String,
+        position: usize,
+    }
+    
+    // Lexer Implementation
+    struct Lexer {
+        input: String,
+        position: usize,
+    }
+    
+    impl Lexer {
+        fn new(input: String) -> Self {
+            Self {
+                input,
+                position: 0,
+            }
+        }
+        
+        fn tokenize(&mut self) -> Result<Vec<PinToken>, LexError> {
+            let mut tokens = Vec::new();
+            
+            while !self.is_at_end() {
+                self.skip_whitespace();
+                
+                if self.is_at_end() {
+                    break;
+                }
+                
+                let token = self.scan_token()?;
+                tokens.push(token);
+            }
+            
+            tokens.push(PinToken::EOF);
+            Ok(tokens)
+        }
+        
+        fn scan_token(&mut self) -> Result<PinToken, LexError> {
+            let c = self.advance();
+            
+            match c {
+                ':' => Ok(PinToken::COLON),
+                '=' => Ok(PinToken::EQUALS),
+                ',' => Ok(PinToken::COMMA),
+                ';' => Ok(PinToken::SEMICOLON),
+                '{' => Ok(PinToken::LEFT_BRACE),
+                '}' => Ok(PinToken::RIGHT_BRACE),
+                '[' => Ok(PinToken::LEFT_BRACKET),
+                ']' => Ok(PinToken::RIGHT_BRACKET),
+                '(' => Ok(PinToken::LEFT_PAREN),
+                ')' => Ok(PinToken::RIGHT_PAREN),
+                '@' => Ok(PinToken::AT),
+                '#' => Ok(PinToken::HASH),
+                '-' => {
+                    if self.match_char('>') {
+                        Ok(PinToken::ARROW)
+                    } else {
+                        Err(LexError::UnexpectedCharacter(c))
+                    }
+                },
+                '"' => self.string(),
+                '0'..='9' => self.number(),
+                'a'..='z' | 'A'..='Z' | '_' => self.identifier(),
+                _ => Err(LexError::UnexpectedCharacter(c)),
+            }
+        }
+        
+        fn string(&mut self) -> Result<PinToken, LexError> {
+            let mut literal = String::new();
+            
+            while self.peek() != Some('"') && !self.is_at_end() {
+                literal.push(self.advance());
+            }
+            
+            if self.is_at_end() {
+                return Err(LexError::UnterminatedString);
+            }
+            
+            self.advance(); // Consume closing "
+            Ok(PinToken::STRING(literal))
+        }
+        
+        fn number(&mut self) -> Result<PinToken, LexError> {
+            let mut number = String::new();
+            
+            while self.peek().map_or(false, |c| c.is_ascii_digit()) {
+                number.push(self.advance());
+            }
+            
+            let value = number.parse::<u32>().map_err(|_| LexError::InvalidNumber)?;
+            Ok(PinToken::NUMBER(value))
+        }
+        
+        fn identifier(&mut self) -> Result<PinToken, LexError> {
+            let mut ident = String::new();
+            
+            while self.peek().map_or(false, |c| c.is_ascii_alphanumeric() || c == '_') {
+                ident.push(self.advance());
+            }
+            
+            Ok(PinToken::IDENTIFIER(ident))
+        }
+        
+        // Helper methods for lexer
+        fn advance(&mut self) -> char {
+            let c = self.input.chars().nth(self.position).unwrap();
+            self.position += 1;
+            c
+        }
+        
+        fn peek(&self) -> Option<char> {
+            self.input.chars().nth(self.position)
+        }
+        
+        fn match_char(&mut self, expected: char) -> bool {
+            if self.peek() == Some(expected) {
+                self.advance();
+                true
+            } else {
+                false
+            }
+        }
+        
+        fn is_at_end(&self) -> bool {
+            self.position >= self.input.len()
+        }
+        
+        fn skip_whitespace(&mut self) {
+            while self.peek().map_or(false, |c| c.is_ascii_whitespace()) {
+                self.advance();
+            }
+        }
+    }
+    
+    // Lexer Error
+    struct LexError {
+        kind: LexErrorKind,
+    }
+    
+    enum LexErrorKind {
+        UnexpectedCharacter(char),
+        UnterminatedString,
+        InvalidNumber,
+    }
+    
+    // Main entry point
+    fn parse_pins_spec(input: &str) -> Result<AstNode, ParseError> {
+        let mut lexer = Lexer::new(input.to_string());
+        let tokens = lexer.tokenize()?;
+        
+        let mut parser = Parser::new(tokens);
+        parser.parse()
+    }
+    
+    // Tests
+    test: {
+        test_basic_parsing: {
+            description: "Parse basic pin specification",
+            input: r#"
+                module test_board {
+                    signal clk : clock @location("E3", 34);
+                    signal data : data[8] @location("D4", 35);
+                    constraint clock_freq = 12_000_000;
+                }
+            "#,
+            
+            expect: {
+                ast: parse_pins_spec(input),
+                module_name: "test_board",
+                signal_count: 2,
+                constraint_count: 1,
+            }
+        },
+        
+        test_io_standard_parsing: {
+            description: "Parse pin with IO standard",
+            input: r#"
+                module board_with_iostd {
+                    signal uart_tx : uart @location("T15", 34) @iostd("LVCMOS33", "3.3", 8);
+                }
+            "#,
+            
+            expect: {
+                ast: parse_pins_spec(input),
+                has_io_standard: true,
+                voltage: "3.3",
+                drive_strength: 8,
+            }
+        },
+        
+        test_error_handling: {
+            description: "Handle parsing errors gracefully",
+            input: "module invalid { signal : }",
+            
+            expect: {
+                result: parse_pins_spec(input),
+                is_error: true,
+                error_contains: "Expected",
+            }
+        },
+    }
+    
+    // Invariants
+    invariant: {
+        parser_robustness: {
+            description: "Parser must handle all valid pin specifications",
+            check: "All test cases pass without panics"
+        },
+        
+        ast_consistency: {
+            description: "Generated AST must be consistent",
+            check: "No duplicate signal names, valid references"
+        },
+        
+        error_recovery: {
+            description: "Parser must provide meaningful error messages",
+            check: "Error position and description are accurate"
+        },
+    }
+    
+    // Documentation
+    documentation: {
+        title: "Pins Parser Specification",
+        description: "Parse .t27 pin specifications into Pins Intermediate Representation",
+        
+        syntax_example: r#"
+            module board_name {
+                signal signal_name : type @location("pin", bank);
+                signal array : type[width] @location("pin", bank);
+                constraint constraint_name = value;
+            }
+        "#,
+        
+        supported_types: [
+            "clock", "reset", "uart", "spi", "i2c", "gpio", "led", "button"
+        ],
+        
+        iostandards: [
+            "LVCMOS33", "LVCMOS18", "LVCMOS25", "LVCMOS15", "LVTTL", "SSTL"
+        ],
+        
+        error_handling: "All parsing errors provide position and descriptive message",
+        
+        integration: "This parser replaces pins_parser.zig in bootstrap pipeline"
+    }
+}
+
+// φ² + 1/φ² = 3 | TRINITY

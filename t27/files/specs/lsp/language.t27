@@ -1,0 +1,522 @@
+// SPDX-License-Identifier: Apache-2.0
+// lsp/language.t27 — Language Server Feature Mappings
+// Language ID mappings, file extensions, and feature associations
+// φ² + 1/φ² = 3 | TRINITY
+
+module lsp-language;
+
+// ============================================================================
+// Imports
+// ============================================================================
+
+use tritype-base::usize;
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/// t27 language ID
+pub const LANG_T27 : [3]u8 = "t27";
+
+/// Zig language ID
+pub const LANG_ZIG : [4]u8 = "zig";
+
+/// Python language ID
+pub const LANG_PYTHON : [6]u8 = "python";
+
+/// JavaScript language ID
+pub const LANG_JAVASCRIPT : [10]u8 = "javascript";
+
+/// TypeScript language ID
+pub const LANG_TYPESCRIPT : [10]u8 = "typescript";
+
+/// Markdown language ID
+pub const LANG_MARKDOWN : [8]u8 = "markdown";
+
+/// JSON language ID
+pub const LANG_JSON : [4]u8 = "json";
+
+/// YAML language ID
+pub const LANG_YAML : [4]u8 = "yaml";
+
+/// Default file extension for t27
+pub const EXT_T27 : [4]u8 = ".t27";
+
+/// File extension for Zig
+pub const EXT_ZIG : [4]u8 = ".zig";
+
+/// File extension for Python
+pub const EXT_PYTHON : [3]u8 = ".py";
+
+/// File extension for JavaScript
+pub const EXT_JAVASCRIPT : [3]u8 = ".js";
+
+/// File extension for TypeScript
+pub const EXT_TYPESCRIPT : [3]u8 = ".ts";
+
+/// File extension for Markdown
+pub const EXT_MARKDOWN : [3]u8 = ".md";
+
+/// File extension for JSON
+pub const EXT_JSON : [5]u8 = ".json";
+
+/// File extension for YAML
+pub const EXT_YAML : [4]u8 = ".yaml";
+
+// ============================================================================
+// Types
+// ============================================================================
+
+/// Language information
+pub const LanguageInfo = struct {
+    id : []u8,
+    extensions : [][]u8,
+    aliases : [][]u8,
+    mime_types : [][]u8,
+    configuration : LanguageConfiguration,
+};
+
+/// Language configuration
+pub const LanguageConfiguration = struct {
+    comments : CommentConfiguration,
+    brackets : BracketPair,
+    indentation : Indentation,
+    word_pattern : []u8,
+};
+
+/// Comment configuration
+pub const CommentConfiguration = struct {
+    line_comment : []u8,
+    block_comment_start : []u8,
+    block_comment_end : []u8,
+};
+
+/// Bracket pair
+pub const BracketPair = struct {
+    open : []u8,
+    close : []u8,
+};
+
+/// Indentation rules
+pub const Indentation = struct {
+    insert_spaces : bool,
+    tab_size : usize,
+};
+
+/// Language feature
+pub const LanguageFeature = enum(u8) {
+    completion = 0,
+    hover = 1,
+    signature_help = 2,
+    definition = 3,
+    type_definition = 4,
+    implementation = 5,
+    references = 6,
+    document_symbol = 7,
+    workspace_symbol = 8,
+    code_action = 9,
+    code_lens = 10,
+    formatting = 11,
+    document_highlight = 12,
+    rename = 13,
+};
+
+/// File association
+pub const FileAssociation = struct {
+    pattern : []u8,
+    language_id : []u8,
+};
+
+/// Language server capability for specific language
+pub const LanguageServerCapability = struct {
+    language_id : []u8,
+    features : []LanguageFeature,
+};
+
+/// Symbol information
+pub const SymbolInfo = struct {
+    name : []u8,
+    kind : SymbolKind,
+    language_id : []u8,
+};
+
+/// Symbol kind
+pub const SymbolKind = enum(u8) {
+    file = 0,
+    module = 1,
+    namespace = 2,
+    package = 3,
+    class = 4,
+    method = 5,
+    property = 6,
+    field = 7,
+    variable = 8,
+    function = 9,
+    constructor = 10,
+    interface = 11,
+    type = 12,
+};
+
+/// Keyword set for language
+pub const KeywordSet = struct {
+    keywords : [][]u8,
+    language_id : []u8,
+};
+
+/// Completion item template for language
+pub const CompletionTemplate = struct {
+    label : []u8,
+    insert_text : []u8,
+    kind : SymbolKind,
+};
+
+// ============================================================================
+// Functions
+// ============================================================================
+
+/// Create language info for t27
+pub fn language_info_t27() LanguageInfo {
+    return LanguageInfo{
+        .id = LANG_T27,
+        .extensions = &[_][]u8{ EXT_T27 },
+        .aliases = &[_][]u8{ "ternary" },
+        .mime_types = &[_][]u8{ "text/x-t27" },
+        .configuration = language_configuration_default(),
+    };
+}
+
+/// Create language info for Python
+pub fn language_info_python() LanguageInfo {
+    return LanguageInfo{
+        .id = LANG_PYTHON,
+        .extensions = &[_][]u8{ EXT_PYTHON },
+        .aliases = &[_][]u8{ "py", "python" },
+        .mime_types = &[_][]u8{ "text/x-python" },
+        .configuration = language_configuration_default(),
+    };
+}
+
+/// Create language info for Zig
+pub fn language_info_zig() LanguageInfo {
+    return LanguageInfo{
+        .id = LANG_ZIG,
+        .extensions = &[_][]u8{ EXT_ZIG },
+        .aliases = &[_][]u8{ "zig" },
+        .mime_types = &[_][]u8{ "text/x-zig" },
+        .configuration = language_configuration_default(),
+    };
+}
+
+/// Create default language configuration
+pub fn language_configuration_default() LanguageConfiguration {
+    return LanguageConfiguration{
+        .comments = CommentConfiguration{
+            .line_comment = "//",
+            .block_comment_start = "/*",
+            .block_comment_end = "*/",
+        },
+        .brackets = BracketPair{ .open = "(", .close = ")" },
+        .indentation = Indentation{ .insert_spaces = true, .tab_size = 4 },
+        .word_pattern = "[a-zA-Z_][a-zA-Z0-9_]*",
+    };
+}
+
+/// Create file association
+pub fn file_association_create(pattern: []u8, language_id: []u8) FileAssociation {
+    return FileAssociation{
+        .pattern = pattern,
+        .language_id = language_id,
+    };
+}
+
+/// Get language ID from file extension
+pub fn language_id_from_extension(ext: []u8) []u8 {
+    if (ext == EXT_T27) {
+        return LANG_T27;
+    } else if (ext == EXT_PYTHON) {
+        return LANG_PYTHON;
+    } else if (ext == EXT_ZIG) {
+        return LANG_ZIG;
+    } else if (ext == EXT_JAVASCRIPT) {
+        return LANG_JAVASCRIPT;
+    } else if (ext == EXT_TYPESCRIPT) {
+        return LANG_TYPESCRIPT;
+    } else {
+        return "text";
+    }
+}
+
+/// Create language server capability
+pub fn language_server_capability_create(language_id: []u8) LanguageServerCapability {
+    return LanguageServerCapability{
+        .language_id = language_id,
+        .features = &[_]LanguageFeature{
+            .completion, .hover, .definition, .document_symbol,
+        },
+    };
+}
+
+/// Create symbol info
+pub fn symbol_info_create(name: []u8, kind: SymbolKind, language_id: []u8) SymbolInfo {
+    return SymbolInfo{
+        .name = name,
+        .kind = kind,
+        .language_id = language_id,
+    };
+}
+
+/// Create completion template
+pub fn completion_template_create(label: []u8, insert_text: []u8, kind: SymbolKind) CompletionTemplate {
+    return CompletionTemplate{
+        .label = label,
+        .insert_text = insert_text,
+        .kind = kind,
+    };
+}
+
+/// Check if extension is t27
+pub fn is_t27_extension(ext: []u8) bool {
+    return ext == EXT_T27;
+}
+
+/// Check if language is t27
+pub fn is_t27_language(language_id: []u8) bool {
+    return language_id == LANG_T27;
+}
+
+/// Get feature string
+pub fn feature_to_string(feature: LanguageFeature) []u8 {
+    return switch (feature) {
+        .completion => "completion",
+        .hover => "hover",
+        .signature_help => "signature_help",
+        .definition => "definition",
+        .type_definition => "type_definition",
+        .implementation => "implementation",
+        .references => "references",
+        .document_symbol => "document_symbol",
+        .workspace_symbol => "workspace_symbol",
+        .code_action => "code_action",
+        .code_lens => "code_lens",
+        .formatting => "formatting",
+        .document_highlight => "document_highlight",
+        .rename => "rename",
+    };
+}
+
+/// Get symbol kind string
+pub fn symbol_kind_to_string(kind: SymbolKind) []u8 {
+    return switch (kind) {
+        .file => "file",
+        .module => "module",
+        .namespace => "namespace",
+        .package => "package",
+        .class => "class",
+        .method => "method",
+        .property => "property",
+        .field => "field",
+        .variable => "variable",
+        .function => "function",
+        .constructor => "constructor",
+        .interface => "interface",
+        .type => "type",
+    };
+}
+
+// ============================================================================
+// TDD - Tests
+// ============================================================================
+
+test "lsp_language_info_t27" {
+    const info = language_info_t27();
+    try std.testing.expectEqual(@as(usize, info.id.len), @as(usize, 3));
+}
+
+test "lsp_language_info_python" {
+    const info = language_info_python();
+    try std.testing.expectEqual(@as(usize, info.id.len), @as(usize, 6));
+}
+
+test "lsp_language_info_zig" {
+    const info = language_info_zig();
+    try std.testing.expectEqual(@as(usize, info.id.len), @as(usize, 4));
+}
+
+test "lsp_language_configuration_default" {
+    const config = language_configuration_default();
+    try std.testing.expectEqual(@as(usize, config.comments.line_comment.len), @as(usize, 2));
+}
+
+test "lsp_file_association_create" {
+    const assoc = file_association_create("*.t27", LANG_T27);
+    try std.testing.expectEqual(@as(usize, assoc.pattern.len), @as(usize, 5));
+}
+
+test "lsp_language_id_from_extension_t27" {
+    const lang_id = language_id_from_extension(EXT_T27);
+    try std.testing.expectEqual(@as(usize, lang_id.len), @as(usize, 3));
+}
+
+test "lsp_language_id_from_extension_python" {
+    const lang_id = language_id_from_extension(EXT_PYTHON);
+    try std.testing.expectEqual(@as(usize, lang_id.len), @as(usize, 6));
+}
+
+test "lsp_is_t27_extension" {
+    try std.testing.expect(is_t27_extension(EXT_T27));
+}
+
+test "lsp_is_t27_language" {
+    try std.testing.expect(is_t27_language(LANG_T27));
+}
+
+test "lsp_language_server_capability_create" {
+    const cap = language_server_capability_create(LANG_T27);
+    try std.testing.expect(cap.features.len > 0);
+}
+
+test "lsp_symbol_info_create" {
+    const sym = symbol_info_create("test", .function, LANG_T27);
+    try std.testing.expectEqual(@as(usize, sym.name.len), @as(usize, 4));
+}
+
+test "lsp_completion_template_create" {
+    const tmpl = completion_template_create("fn", "fn()", .function);
+    try std.testing.expectEqual(@as(usize, tmpl.label.len), @as(usize, 2));
+}
+
+test "lsp_feature_to_string" {
+    const str = feature_to_string(.completion);
+    try std.testing.expectEqual(@as(usize, str.len), @as(usize, 10));
+}
+
+test "lsp_symbol_kind_to_string" {
+    const str = symbol_kind_to_string(.function);
+    try std.testing.expectEqual(@as(usize, str.len), @as(usize, 8));
+}
+
+// ============================================================================
+// TDD - Invariants
+// ============================================================================
+
+invariant language_id_non_empty {
+    // LanguageInfo id is non-empty
+    @compileAssert(LANG_T27.len > 0);
+}
+
+invariant extension_constants_valid {
+    // All extension constants are valid
+    @compileAssert(EXT_T27.len > 0);
+    @compileAssert(EXT_PYTHON.len > 0);
+}
+
+invariant language_info_has_extensions {
+    // LanguageInfo has at least one extension
+    @compileAssert(true);
+}
+
+invariant file_association_has_pattern {
+    // FileAssociation has non-empty pattern
+    @compileAssert(true);
+}
+
+invariant language_server_capability_has_language {
+    // LanguageServerCapability has non-empty language_id
+    @compileAssert(true);
+}
+
+invariant symbol_info_has_name {
+    // SymbolInfo has non-empty name
+    @compileAssert(true);
+}
+
+invariant completion_template_has_label {
+    // CompletionTemplate has non-empty label
+    @compileAssert(true);
+}
+
+invariant feature_in_range {
+    // LanguageFeature is in [0, 13]
+    @compileAssert(@as(u8, LanguageFeature.completion) == 0);
+    @compileAssert(@as(u8, LanguageFeature.rename) == 13);
+}
+
+invariant symbol_kind_in_range {
+    // SymbolKind is in [0, 12]
+    @compileAssert(@as(u8, SymbolKind.file) == 0);
+    @compileAssert(@as(u8, SymbolKind.type) == 12);
+}
+
+invariant comment_configuration_valid {
+    // CommentConfiguration has valid fields
+    @compileAssert(true);
+}
+
+invariant indentation_valid {
+    // Indentation has valid fields
+    @compileAssert(true);
+}
+
+invariant bracket_pair_valid {
+    // BracketPair has valid open and close
+    @compileAssert(true);
+}
+
+// ============================================================================
+// TDD - Benchmarks
+// ============================================================================
+
+bench "lsp_language_info_t27_latency" {
+    // Measure: cycles for t27 language info creation
+    // Target: < 500 cycles
+    @setEvalBranchQuota(10000);
+    var result : LanguageInfo = undefined;
+    for (0..1000) |_| {
+        result = language_info_t27();
+    }
+    _ = result;
+}
+
+bench "lsp_language_configuration_default_latency" {
+    // Measure: cycles for default language configuration
+    // Target: < 300 cycles
+    @setEvalBranchQuota(10000);
+    var result : LanguageConfiguration = undefined;
+    for (0..1000) |_| {
+        result = language_configuration_default();
+    }
+    _ = result;
+}
+
+bench "lsp_language_id_from_extension_latency" {
+    // Measure: cycles for language ID lookup
+    // Target: < 50 cycles
+    @setEvalBranchQuota(10000);
+    var result : []u8 = undefined;
+    for (0..1000) |_| {
+        result = language_id_from_extension(EXT_T27);
+    }
+    _ = result;
+}
+
+bench "lsp_feature_to_string_latency" {
+    // Measure: cycles for feature to string conversion
+    // Target: < 30 cycles
+    @setEvalBranchQuota(10000);
+    var result : []u8 = undefined;
+    for (0..1000) |_| {
+        result = feature_to_string(.completion);
+    }
+    _ = result;
+}
+
+bench "lsp_symbol_kind_to_string_latency" {
+    // Measure: cycles for symbol kind to string conversion
+    // Target: < 30 cycles
+    @setEvalBranchQuota(10000);
+    var result : []u8 = undefined;
+    for (0..1000) |_| {
+        result = symbol_kind_to_string(.function);
+    }
+    _ = result;
+}

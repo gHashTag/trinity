@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Promises can only be fulfilled once | φ² + 1/φ² = 3 | TRINITY
+
+module TriAsync;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Future(T) = struct {
+        completed : bool,
+        value : T,
+    };
+
+    pub const Promise(T) = struct {
+        fulfilled : bool,
+        future : "Future(T)",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // new_promise() → Promise(T)
+    fn new_promise() -> Promise(T) {
+        // TODO: Implement from .tri spec
+    }
+
+    // fulfill(promise: Promise(T)) → void
+    fn fulfill(promise: Promise(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // await(future: Future(T)) → void
+    fn await(future: Future(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // map(future: Future(T)) → void
+    fn map(future: Future(T)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test new_promise_basic_case
+        given input = default_input()
+        when result = new_promise(input)
+        then result != undefined
+
+    test fulfill_basic_case
+        given input = default_input()
+        when result = fulfill(input)
+        then result != undefined
+
+    test await_basic_case
+        given input = default_input()
+        when result = await(input)
+        then result != undefined
+
+    test map_basic_case
+        given input = default_input()
+        when result = map(input)
+        then result != undefined
+

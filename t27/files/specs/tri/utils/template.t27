@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// {{variable}} syntax | φ² + 1/φ² = 3 | TRINITY
+
+module TriTemplate;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Template = struct {
+        parts : []TemplatePart,
+    };
+
+    pub const TemplatePart = struct {
+        is_literal : "bool",
+        text : []const u8,
+        variable : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compile(source: []const u8) → void
+    fn compile(source: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // render(template: Template) → void
+    fn render(template: Template) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test compile_basic_case
+        given input = default_input()
+        when result = compile(input)
+        then result != undefined
+
+    test render_basic_case
+        given input = default_input()
+        when result = render(input)
+        then result != undefined
+

@@ -1,0 +1,215 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free all nodes | φ² + 1/φ² = 3 | TRINITY
+
+module TriLinkedList;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ListNode = struct {
+        value : "T",
+        prev : "?ListNode",
+        next : "?ListNode",
+    };
+
+    pub const LinkedList = struct {
+        head : "?ListNode",
+        tail : "?ListNode",
+        length : "usize",
+        allocator : "std.mem.Allocator",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init() → LinkedList
+    fn init() -> LinkedList {
+        // Caller fills allocator before first append
+        return LinkedList { head: null, tail: null, length: 0, allocator: undefined };
+    }
+
+    // append(list: *LinkedList) → void
+    fn append(list: *LinkedList) -> void {
+        // Allocate node through list.allocator
+        const node = list.allocator.alloc(ListNode) one;
+        node.value = 0; // Default value - caller should set before append
+        node.prev = list.tail;
+        node.next = null;
+        
+        if (list.tail != null) {
+            list.tail.next = node;
+        } else {
+            // List was empty, set head too
+            list.head = node;
+        }
+        
+        list.tail = node;
+        list.length = list.length + 1;
+    }
+
+    // prepend(list: *LinkedList) → void
+    fn prepend(list: *LinkedList) -> void {
+        // Allocate node through list.allocator
+        const node = list.allocator.alloc(ListNode) one;
+        node.value = 0; // Default value - caller should set before prepend
+        node.next = list.head;
+        node.prev = null;
+        
+        if (list.head != null) {
+            list.head.prev = node;
+        } else {
+            // List was empty, set tail too
+            list.tail = node;
+        }
+        
+        list.head = node;
+        list.length = list.length + 1;
+    }
+
+    // remove(list: *LinkedList) → void
+    fn remove(list: *LinkedList) -> void {
+        // Find first node with value 0 - caller should set target before remove
+        var current = list.head;
+        while (current != null) {
+            if (current.value == 0) {
+                // Found the node to remove
+                if (current.prev != null) {
+                    current.prev.next = current.next;
+                } else {
+                    // Removing head node
+                    list.head = current.next;
+                }
+                
+                if (current.next != null) {
+                    current.next.prev = current.prev;
+                } else {
+                    // Removing tail node
+                    list.tail = current.prev;
+                }
+                
+                // Free the node through list.allocator
+                list.allocator.free(current);
+                list.length = list.length - 1;
+                
+                return;
+            }
+            current = current.next;
+        }
+        
+        // No node with value 0 found, do nothing
+    }
+
+    // deinit(list: *LinkedList) → void
+    fn deinit(list: *LinkedList) -> void {
+        // Walk the chain from head freeing every node through list.allocator
+        var current = list.head;
+        while (current != null) {
+            const next = current.next; // Capture next before freeing current
+            list.allocator.free(current);
+            current = next;
+        }
+        
+        // Leave head null, tail null, length 0
+        list.head = null;
+        list.tail = null;
+        list.length = 0;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_creates_empty_list
+        given list = init()
+        then list.head == null
+        and list.tail == null
+        and list.length == 0
+
+    test append_to_empty_list_sets_both_ends
+        given list = init()
+        and   append(&list)
+        then list.length == 1
+        and  list.head != null
+        and  list.head == list.tail
+        and  list.head.prev == null
+        and  list.head.next == null
+
+    test append_to_nonempty_list_adds_to_tail
+        given list = init()
+        and   append(&list)
+        and   append(&list)
+        then list.length == 2
+        and  list.head != null
+        and  list.tail != null
+        and  list.head.next == list.tail
+        and  list.tail.prev == list.head
+
+    test prepend_to_empty_list_sets_both_ends
+        given list = init()
+        and   prepend(&list)
+        then list.length == 1
+        and  list.head != null
+        and  list.head == list.tail
+        and  list.head.prev == null
+        and  list.head.next == null
+
+    test prepend_to_nonempty_list_adds_to_head
+        given list = init()
+        and   prepend(&list)
+        and   prepend(&list)
+        then list.length == 2
+        and  list.head != null
+        and  list.tail != null
+        and  list.head.next == list.tail
+        and  list.tail.prev == list.head
+
+    test remove_from_empty_list_does_nothing
+        given list = init()
+        and   remove(&list)
+        then list.length == 0
+        and  list.head == null
+        and  list.tail == null
+
+    test remove_head_from_single_node_list
+        given list = init()
+        and   append(&list)
+        and   append(&list)  // Add another node to make it non-empty
+        and   remove(&list)
+        then list.length == 1
+        and  list.head != null
+        and  list.head.next == null
+        and  list.head.prev == null
+        and  list.head == list.tail
+
+    test remove_from_nonempty_list
+        given list = init()
+        and   append(&list)
+        and   append(&list)
+        and   append(&list)
+        and   remove(&list)
+        then list.length == 2
+        and  list.head != null
+        and  list.tail != null
+
+    test deinit_empty_list_does_nothing
+        given list = init()
+        and   deinit(&list)
+        then list.length == 0
+        and  list.head == null
+        and  list.tail == null
+
+    test deinit_nonempty_list_frees_all_nodes
+        given list = init()
+        and   append(&list)
+        and   append(&list)
+        and   append(&list)
+        and   deinit(&list)
+        then list.length == 0
+        and  list.head == null
+        and  list.tail == null
+

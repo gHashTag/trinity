@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Reparameterization for gradient estimation | φ² + 1/φ² = 3 | TRINITY
+
+module PpoActor;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_INIT_LOG_STD : f32 = 0.0;
+    const MIN_LOG_STD : f32 = -20.0;
+    const MAX_LOG_STD : f32 = 2.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ActorConfig = struct {
+        state_dim : u32,
+        action_dim : u32,
+        hidden_dims : []u32,
+        action_space : ActionSpace,
+        init_log_std : f32,
+    };
+
+    pub const ActionSpace = struct {
+        enum : ,
+    };
+
+    pub const PolicyOutput = struct {
+        logits : []f32,
+        log_std : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward_discrete(state: []const f32) → void
+    fn forward_discrete(state: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // forward_continuous(state: []const f32) → void
+    fn forward_continuous(state: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // sample_action(policy_output: PolicyOutput) → void
+    fn sample_action(policy_output: PolicyOutput) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // log_prob(action: []f32) → void
+    fn log_prob(action: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // entropy(policy_output: PolicyOutput) → void
+    fn entropy(policy_output: PolicyOutput) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_discrete_basic_case
+        given input = default_input()
+        when result = forward_discrete(input)
+        then result != undefined
+
+    test forward_continuous_basic_case
+        given input = default_input()
+        when result = forward_continuous(input)
+        then result != undefined
+
+    test sample_action_basic_case
+        given input = default_input()
+        when result = sample_action(input)
+        then result != undefined
+
+    test log_prob_basic_case
+        given input = default_input()
+        when result = log_prob(input)
+        then result != undefined
+
+    test entropy_basic_case
+        given input = default_input()
+        when result = entropy(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant ppo_actor_constraint_0
+        given input = valid_input()
+        then true // MIN_LOG_STD <= log_std <= MAX_LOG_STD
+
+    invariant ppo_actor_constraint_1
+        given input = valid_input()
+        then true // action_dim >= 1
+
+    invariant ppo_actor_constraint_2
+        given input = valid_input()
+        then true // len(hidden_dims) >= 1
+
+    invariant ppo_actor_constraint_3
+        given input = valid_input()
+        then true // name: gaussian_log_prob
+
+    invariant ppo_actor_constraint_4
+        given input = valid_input()
+        then true // name: reparameterization
+
+    invariant ppo_actor_constraint_5
+        given input = valid_input()
+        then true // "Schulman et al. (2017) - Proximal Policy Optimization"
+
+    invariant ppo_actor_constraint_6
+        given input = valid_input()
+        then true // "Haarnoja et al. (2018) - Soft Actor-Critic"
+

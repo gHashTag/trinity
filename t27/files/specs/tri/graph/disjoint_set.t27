@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Attach shorter tree under taller tree root | φ² + 1/φ² = 3 | TRINITY
+
+module TriDisjointSet;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const DisjointSet = struct {
+        parent : []usize,
+        rank : []usize,
+        count : "usize",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(size: usize) → void
+    fn init(size: usize) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // find(ds: *DisjointSet) → void
+    fn find(ds: *DisjointSet) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // union(ds: *DisjointSet) → void
+    fn union(ds: *DisjointSet) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // connected(ds: *const DisjointSet) → void
+    fn connected(ds: *const DisjointSet) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test find_basic_case
+        given input = default_input()
+        when result = find(input)
+        then result != undefined
+
+    test union_basic_case
+        given input = default_input()
+        when result = union(input)
+        then result != undefined
+
+    test connected_basic_case
+        given input = default_input()
+        when result = connected(input)
+        then result != undefined
+

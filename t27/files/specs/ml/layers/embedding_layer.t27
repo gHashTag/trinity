@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Embeddings are learned parameters | φ² + 1/φ² = 3 | TRINITY
+
+module Embedding;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_D_MODEL : u32 = 64;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const EmbeddingConfig = struct {
+        vocab_size : u32,
+        d_model : u32,
+    };
+
+    pub const EmbeddingWeights = struct {
+        W : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(token_ids: []const u32) → void
+    fn forward(token_ids: []const u32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // init(weights: EmbeddingWeights) → void
+    fn init(weights: EmbeddingWeights) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant embedding_constraint_0
+        given input = valid_input()
+        then true // vocab_size > 0
+
+    invariant embedding_constraint_1
+        given input = valid_input()
+        then true // d_model > 0
+
+    invariant embedding_constraint_2
+        given input = valid_input()
+        then true // W.size() == vocab_size * d_model
+
+    invariant embedding_constraint_3
+        given input = valid_input()
+        then true // token_ids must be in [0, vocab_size)
+
+    invariant embedding_constraint_4
+        given input = valid_input()
+        then true // "Embedding dimension affects model capacity"
+
+    invariant embedding_constraint_5
+        given input = valid_input()
+        then true // "Larger vocab requires larger d_model"
+
+    invariant embedding_constraint_6
+        given input = valid_input()
+        then true // "Pre-trained embeddings transfer well"
+

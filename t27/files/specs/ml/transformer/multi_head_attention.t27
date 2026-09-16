@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Multiple heads compute independently in parallel | φ² + 1/φ² = 3 | TRINITY
+
+module MultiHeadAttn;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const MHAConfig = struct {
+        d_model : u32,
+        num_heads : u32,
+        d_k : u32,
+        causal : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(query: []const f32) → void
+    fn forward(query: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+

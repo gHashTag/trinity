@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Uses sin/cos at different frequencies for each dimension | φ² + 1/φ² = 3 | TRINITY
+
+module PositionalEnc;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_MAX_LEN : u32 = 2048;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const PosEncConfig = struct {
+        d_model : u32,
+        max_len : u32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(positions: []const u32) → void
+    fn forward(positions: []const u32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+

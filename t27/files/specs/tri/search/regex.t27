@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Limited regex syntax | φ² + 1/φ² = 3 | TRINITY
+
+module TriRegex;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Regex = struct {
+        pattern : []const u8,
+        compiled : "bool",
+    };
+
+    pub const Match = struct {
+        start : "usize",
+        end : "usize",
+        groups : "[]const []const u8",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compile(pattern: []const u8) → void
+    fn compile(pattern: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // match(regex: Regex) → void
+    fn match(regex: Regex) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // find_all(regex: Regex) → void
+    fn find_all(regex: Regex) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test compile_basic_case
+        given input = default_input()
+        when result = compile(input)
+        then result != undefined
+
+    test match_basic_case
+        given input = default_input()
+        when result = match(input)
+        then result != undefined
+
+    test find_all_basic_case
+        given input = default_input()
+        when result = find_all(input)
+        then result != undefined
+

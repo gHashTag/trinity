@@ -1,0 +1,175 @@
+// specs/git/operations.t27
+// Git Command Operations
+// φ² + 1/φ² = 3 | TRINITY
+
+module GitOperations {
+    use base::types;
+    use git::schema;
+
+    // ════════════════════════════════════════════════════════════════════
+    // Core Git Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // run executes a git command with the given arguments
+    fn run(args: [str], opts: Options) -> Result<Result, GitError> {
+        // Implementation: Spawn git process with args, return Result
+    }
+
+    // branch returns the current branch name
+    fn branch(cwd: str) -> Result<str?, GitError> {
+        // Implementation: Run git symbolic-ref --short HEAD
+    }
+
+    // prefix returns the git directory prefix (relative to repo root)
+    fn prefix(cwd: str) -> Result<str, GitError> {
+        // Implementation: Run git rev-parse --show-prefix
+    }
+
+    // default_branch returns the default branch for the repository
+    fn default_branch(cwd: str) -> Result<Base?, GitError> {
+        // Implementation: Check remote HEAD, then configured, then main/master
+    }
+
+    // has_head checks if the repository has a HEAD commit
+    fn has_head(cwd: str) -> Result<bool, GitError> {
+        // Implementation: Run git rev-parse --verify HEAD
+    }
+
+    // merge_base returns the merge base commit between two refs
+    fn merge_base(cwd: str, base: str, head: str?) -> Result<str?, GitError> {
+        // Implementation: Run git merge-base base head
+    }
+
+    // show returns the contents of a file at a specific ref
+    fn show(cwd: str, ref: str, file: str, prefix: str?) -> Result<str, GitError> {
+        // Implementation: Run git show ref:file
+    }
+
+    // rev_parse returns the full commit hash for a ref
+    fn rev_parse(cwd: str, ref: str) -> Result<str, GitError> {
+        // Implementation: Run git rev-parse ref
+    }
+
+    // checkout switches to a branch or commit
+    fn checkout(cwd: str, target: str) -> Result<void, GitError> {
+        // Implementation: Run git checkout target
+    }
+
+    // fetch retrieves changes from a remote
+    fn fetch(cwd: str, remote: str?) -> Result<void, GitError> {
+        // Implementation: Run git fetch [remote]
+    }
+
+    // pull fetches and merges changes from a remote
+    fn pull(cwd: str, remote: str?, branch: str?) -> Result<void, GitError> {
+        // Implementation: Run git pull [remote [branch]]
+    }
+
+    // commit creates a new commit
+    fn commit(cwd: str, message: str) -> Result<str, GitError> {
+        // Implementation: Run git commit -m message
+    }
+
+    // add stages files for commit
+    fn add(cwd: str, paths: [str]) -> Result<void, GitError> {
+        // Implementation: Run git add paths...
+    }
+
+    // reset resets the repository state
+    fn reset(cwd: str, mode: str, ref: str) -> Result<void, GitError> {
+        // Implementation: Run git reset --mode ref
+    }
+
+    // remote_list returns all configured remotes
+    fn remote_list(cwd: str) -> Result<[str], GitError> {
+        // Implementation: Run git remote
+    }
+
+    // remote_url returns the URL for a remote
+    fn remote_url(cwd: str, name: str) -> Result<str, GitError> {
+        // Implementation: Run git remote get-url name
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Branch Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // branch_list returns all local branches
+    fn branch_list(cwd: str) -> Result<[str], GitError> {
+        // Implementation: Run git branch --format=%(refname:short)
+    }
+
+    // branch_create creates a new branch
+    fn branch_create(cwd: str, name: str, start_point: str?) -> Result<void, GitError> {
+        // Implementation: Run git branch name [start_point]
+    }
+
+    // branch_delete deletes a branch
+    fn branch_delete(cwd: str, name: str, force: bool) -> Result<void, GitError> {
+        // Implementation: Run git branch [-D|-d] name
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    test "run_with_valid_args" {
+        var opts = Options {
+            cwd = "/tmp",
+            env = [],
+        };
+        var result = run(["--version"], opts);
+        // Should succeed with exit code 0
+        assert(result.is_ok());
+    }
+
+    test "run_with_invalid_args" {
+        var opts = Options {
+            cwd = "/tmp",
+            env = [],
+        };
+        var result = run(["invalid-command"], opts);
+        // Should fail with non-zero exit code
+        assert(result.is_ok());
+        assert(result.unwrap().exit_code != 0);
+    }
+
+    test "options_construction" {
+        var opts = Options {
+            cwd = "/path/to/repo",
+            env = [("PATH", "/usr/bin"), ("HOME", "/home/user")],
+        };
+        assert(opts.cwd == "/path/to/repo");
+        assert(opts.env.len == 2);
+    }
+
+    test "result_construction" {
+        var result = Result {
+            exit_code = 0,
+            text = "output",
+            stdout = ['o', 'u', 't'],
+            stderr = [],
+        };
+        assert(result.exit_code == 0);
+        assert(result.text == "output");
+        assert(result.stdout.len == 3);
+    }
+
+    test "git_flags_includes_autocrlf_false" {
+        // Verify core.autocrlf=false is in flags
+        assert(GIT_FLAGS.contains("core.autocrlf=false"));
+    }
+
+    test "git_flags_includes_quotepath_false" {
+        // Verify core.quotepath=false is in flags
+        assert(GIT_FLAGS.contains("core.quotepath=false"));
+    }
+
+    test "default_branch_main_constant" {
+        assert(DEFAULT_BRANCH_MAIN == "main");
+    }
+
+    test "default_branch_master_constant" {
+        assert(DEFAULT_BRANCH_MASTER == "master");
+    }
+}

@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Alpha channel support | φ² + 1/φ² = 3 | TRINITY
+
+module TriColor;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Color = struct {
+        r : "u8",
+        g : "u8",
+        b : "u8",
+        a : "u8",
+    };
+
+    pub const ColorSpace = struct {
+        enum : [RGB, HSV, HSL, LAB],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // rgb(r: u8) → void
+    fn rgb(r: u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // to_hex(color: Color) → void
+    fn to_hex(color: Color) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // blend(a: Color) → void
+    fn blend(a: Color) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test rgb_basic_case
+        given input = default_input()
+        when result = rgb(input)
+        then result != undefined
+
+    test to_hex_basic_case
+        given input = default_input()
+        when result = to_hex(input)
+        then result != undefined
+
+    test blend_basic_case
+        given input = default_input()
+        when result = blend(input)
+        then result != undefined
+

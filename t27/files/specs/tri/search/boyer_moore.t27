@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Skip sections of text using bad character rule | φ² + 1/φ² = 3 | TRINITY
+
+module TriBoyerMoore;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const BMBadChar = struct {
+        table : [256]usize,
+        pattern_len : "usize",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // build_bad_char(pattern: []const u8) → void
+    fn build_bad_char(pattern: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // search(text: []const u8) → void
+    fn search(text: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test build_bad_char_basic_case
+        given input = default_input()
+        when result = build_bad_char(input)
+        then result != undefined
+
+    test search_basic_case
+        given input = default_input()
+        when result = search(input)
+        then result != undefined
+

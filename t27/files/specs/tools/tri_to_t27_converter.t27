@@ -1,0 +1,414 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/tools/tri_to_t27_converter.t27
+// Converts .tri (YAML-like) specs to .t27 (Zig-like TDD) format | φ² + 1/φ² = 3 | TRINITY
+
+module TriToT27Converter;
+    use base::types;
+    use io::file;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const SPDX_HEADER : []const u8 = "// SPDX-License-Identifier: Apache-2.0\n";
+    const TRINITY_FOOTER : []const u8 = "// φ² + 1/φ² = 3 | TRINITY\n";
+    const VERSION : u32 = 1_0000; // 1.0.0
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const TriSpec = struct {
+        name : []const u8,
+        version : []const u8,
+        description : []const u8,
+        types : []TriType,
+        constants : []TriConstant,
+        functions : []TriFunction,
+        behaviors : []Behavior,
+        constraints : []Constraint,
+    };
+
+    pub const TriType = struct {
+        name : []const u8,
+        fields : []TriField,
+        is_pub : bool,
+    };
+
+    pub const TriField = struct {
+        name : []const u8,
+        field_type : []const u8,
+        is_optional : bool,
+    };
+
+    pub const TriConstant = struct {
+        name : []const u8,
+        value : []const u8,
+        const_type : []const u8,
+    };
+
+    pub const TriFunction = struct {
+        name : []const u8,
+        params : []FunctionParam,
+        return_type : []const u8,
+        description : []const u8,
+    };
+
+    pub const FunctionParam = struct {
+        name : []const u8,
+        param_type : []const u8,
+    };
+
+    pub const Behavior = struct {
+        name : []const u8,
+        description : []const u8,
+    };
+
+    pub const Constraint = struct {
+        name : []const u8,
+        description : []const u8,
+    };
+
+    pub const Route = struct {
+        source : []const u8,
+        target : []const u8,
+    };
+
+    pub const MigrationStats = struct {
+        total_files : u32,
+        converted_files : u32,
+        failed_files : u32,
+        skipped_files : u32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse_tri_file(content: []const u8) → TriSpec
+    // Parses a .tri file content and returns the structured specification.
+    fn parse_tri_file(content: []const u8) -> TriSpec {
+        // Line-based parsing handling sections:
+        // - name: module name
+        // - types: struct definitions with fields
+        // - constants: constant declarations
+        // - functions: function signatures
+        // - behaviors: test case descriptions
+        // - constraints: invariant requirements
+    }
+
+    // parse_type_line(line: []const u8) → TriField
+    // Parses a single type field line (e.g., "is_v6 : bool").
+    fn parse_type_line(line: []const u8) -> TriField {
+    }
+
+    // convert_type(tri_type: []const u8) → []const u8
+    // Converts .tri type syntax to .t27 syntax.
+    // - "[16]u8" remains "[16]u8"
+    // - "?IpAddress" becomes "?IpAddress"
+    // - "Option(T)" becomes "?T"
+    fn convert_type(tri_type: []const u8) -> []const u8 {
+    }
+
+    // generate_t27(spec: TriSpec) → []const u8
+    // Generates complete .t27 file content from TriSpec.
+    fn generate_t27(spec: TriSpec) -> []const u8 {
+        // Output structure:
+        // 1. Header (SPDX + module declaration)
+        // 2. Use statements
+        // 3. Constants section
+        // 4. Types section
+        // 5. Core Functions section
+        // 6. TDD Tests section (from behaviors)
+        // 7. TDD Invariants section (from constraints)
+    }
+
+    // route_file(source_path: []const u8) → []const u8
+    // Determines the target path for a .tri file based on routing table.
+    fn route_file(source_path: []const u8) -> []const u8 {
+        // Routing table mapping:
+        // algo/relu.tri              → ml/activation/relu_activation.t27
+        // algo/dense.tri              → ml/layers/dense_layer.t27
+        // algo/lstm.tri               → ml/recurrent/lstm_cell.t27
+        // algo/multi_head_attn.tri    → ml/transformer/multi_head_attention.t27
+        // algo/sgd.tri                → ml/optimizer/sgd.t27
+        // algo/adam.tri               → ml/optimizer/adam.t27
+        // algo/mse_loss.tri           → ml/loss/mse_loss.t27
+        // algo/dqn.tri                → ml/rl/dqn.t27
+        // tri/tri_list.tri            → tri/collections/list.t27
+        // tri/tri_map.tri             → tri/collections/map.t27
+        // tri/tri_set.tri             → tri/collections/set.t27
+        // tri/tri_queue.tri           → tri/collections/queue.t27
+        // tri/tri_stack.tri           → tri/collections/stack.t27
+        // tri/tri_avl_tree.tri        → tri/trees/avl_tree.t27
+        // tri/tri_b_tree.tri          → tri/trees/b_tree.t27
+        // tri/tri_rb_tree.tri         → tri/trees/red_black_tree.t27
+        // tri/tri_quick_sort.tri      → tri/sort/quick_sort.t27
+        // tri/tri_merge_sort.tri      → tri/sort/merge_sort.t27
+        // tri/tri_sha256.tri          → tri/crypto/sha256.t27
+        // tri/tri_http.tri            → tri/net/http.t27
+        // tri/tri_fs.tri              → tri/io/fs.t27
+    }
+
+    // write_output(path: []const u8, content: []const u8) → void
+    // Writes converted content to the target file.
+    fn write_output(path: []const u8, content: []const u8) -> void {
+        // Creates parent directories if they don't exist
+        // Writes content with UTF-8 encoding
+    }
+
+    // run_migration(source_dir: []const u8, target_dir: []const u8) → MigrationStats
+    // Main entry point for bulk conversion.
+    fn run_migration(source_dir: []const u8, target_dir: []const u8) -> MigrationStats {
+        // 1. Scan source directory for .tri files
+        // 2. For each .tri file:
+        //    a. Read content
+        //    b. Parse using parse_tri_file
+        //    c. Generate .t27 using generate_t27
+        //    d. Determine target path using route_file
+        //    e. Write using write_output
+        // 3. Return statistics
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // 4. Utility Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // snake_to_pascal_case(name: []const u8) → []const u8
+    // Converts snake_case to PascalCase for module names.
+    fn snake_to_pascal_case(name: []const u8) -> []const u8 {
+        // "tri_list" → "TriList"
+        // "dense_layer" → "DenseLayer"
+    }
+
+    // sanitize_description(desc: []const u8) → []const u8
+    // Removes or escapes characters that could break .t27 syntax.
+    fn sanitize_description(desc: []const u8) -> []const u8 {
+    }
+
+    // is_valid_t27_syntax(content: []const u8) → bool
+    // Validates that generated content follows .t27 syntax rules.
+    fn is_valid_t27_syntax(content: []const u8) -> bool {
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests
+    // ═══════════════════════════════════════════════════════════
+
+    test parse_tri_file_parses_name
+        given content = "name: test_algo\\nversion: \\"1.0\\""
+        when spec = parse_tri_file(content)
+        then spec.name == "test_algo"
+
+    test parse_tri_file_parses_version
+        given content = "name: test\\nversion: \\"1.2.3\\""
+        when spec = parse_tri_file(content)
+        then spec.version == "1.2.3"
+
+    test parse_tri_file_parses_types
+        given content = "name: test\\ntypes:\\n  - name: MyType\\n    fields:\\n      - name: field1\\n        type: u32"
+        when spec = parse_tri_file(content)
+        then spec.types.len == 1
+        and   spec.types[0].name == "MyType"
+
+    test parse_tri_file_parses_constants
+        given content = "name: test\\nconstants:\\n  ZERO: 0.0"
+        when spec = parse_tri_file(content)
+        then spec.constants.len == 1
+        and   spec.constants[0].name == "ZERO"
+
+    test parse_tri_file_parses_functions
+        given content = "name: test\\nfunctions:\\n  - name: forward\\n    params: [input: []f32]\\n    return: []f32"
+        when spec = parse_tri_file(content)
+        then spec.functions.len == 1
+        and   spec.functions[0].name == "forward"
+
+    test convert_type_preserves_array_syntax
+        given input = "[16]u8"
+        when result = convert_type(input)
+        then result == "[16]u8"
+
+    test convert_type_preserves_optional_syntax
+        given input = "?IpAddress"
+        when result = convert_type(input)
+        then result == "?IpAddress"
+
+    test convert_type_converts_option_syntax
+        given input = "Option(T)"
+        when result = convert_type(input)
+        then result == "?T"
+
+    test snake_to_pascal_case_basic
+        given input = "tri_list"
+        when result = snake_to_pascal_case(input)
+        then result == "TriList"
+
+    test snake_to_pascal_case_multi_word
+        given input = "dense_layer"
+        when result = snake_to_pascal_case(input)
+        then result == "DenseLayer"
+
+    test generate_t27_creates_valid_structure
+        given spec = TriSpec{
+            .name = "TestModule",
+            .version = "1.0.0",
+            .description = "Test module",
+            .types = [],
+            .constants = [],
+            .functions = [],
+            .behaviors = [],
+            .constraints = [],
+        }
+        when content = generate_t27(spec)
+        then contains_module_declaration(content)
+        and   contains_spdx_header(content)
+        and   contains_trinity_footer(content)
+
+    test route_file_maps_algo_relu
+        given input = "algo/relu.tri"
+        when result = route_file(input)
+        then result == "ml/activation/relu_activation.t27"
+
+    test route_file maps_algo_dense
+        given input = "algo/dense.tri"
+        when result = route_file(input)
+        then result == "ml/layers/dense_layer.t27"
+
+    test route_file_maps_tri_list
+        given input = "tri/tri_list.tri"
+        when result = route_file(input)
+        then result == "tri/collections/list.t27"
+
+    test route_file_maps_tri_avl_tree
+        given input = "tri/tri_avl_tree.tri"
+        when result = route_file(input)
+        then result == "tri/trees/avl_tree.t27"
+
+    test route_file_maps_tri_sha256
+        given input = "tri/tri_sha256.tri"
+        when result = route_file(input)
+        then result == "tri/crypto/sha256.t27"
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants
+    // ═══════════════════════════════════════════════════════════
+
+    invariant converter_output_is_ascii
+        given content = any_tri_spec()
+        when t27 = generate_t27(content)
+        then all_bytes_are_ascii(t27)
+
+    invariant converter_output_has_module_decl
+        given content = valid_tri_spec()
+        when t27 = generate_t27(content)
+        then contains_module_declaration(t27)
+
+    invariant converter_output_has_spdx_header
+        given content = valid_tri_spec()
+        when t27 = generate_t27(content)
+        then contains_spdx_header(t27)
+
+    invariant converter_preserves_all_functions
+        given content = tri_with_n_functions(10)
+        when t27 = generate_t27(content)
+        then function_count(t27) == 10
+
+    invariant converter_preserves_all_types
+        given content = tri_with_n_types(5)
+        when t27 = generate_t27(content)
+        then type_count(t27) == 5
+
+    invariant converter_includes_tests_from_behaviors
+        given content = tri_with_behaviors(3)
+        when t27 = generate_t27(content)
+        then test_count(t27) == 3
+
+    invariant converter_includes_invariants_from_constraints
+        given content = tri_with_constraints(2)
+        when t27 = generate_t27(content)
+        then invariant_count(t27) == 2
+
+    invariant converter_output_no_unsafe_without_comment
+        given content = safe_tri_spec()
+        when t27 = generate_t27(content)
+        then contains_no_unsafe(t27)
+        or    unsafe_has_safety_comment(t27)
+
+    invariant route_output_is_valid_path
+        given input = any_valid_tri_filename()
+        when result = route_file(input)
+        then path_components_valid(result)
+        and   extension_is_t27(result)
+
+    invariant migration_stats_are_consistent
+        given stats = run_migration("/source", "/target")
+        then stats.total_files == stats.converted_files + stats.failed_files + stats.skipped_files
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Benchmarks
+    // ═══════════════════════════════════════════════════════════
+
+    bench parse_tri_file_small
+        given input = small_tri_spec() // ~10 lines
+        when result = parse_tri_file(input)
+        then elapsed_time_ms < 1
+
+    bench parse_tri_file_medium
+        given input = medium_tri_spec() // ~100 lines
+        when result = parse_tri_file(input)
+        then elapsed_time_ms < 5
+
+    bench parse_tri_file_large
+        given input = large_tri_spec() // ~500 lines
+        when result = parse_tri_file(input)
+        then elapsed_time_ms < 25
+
+    bench generate_t27_small
+        given input = small_tri_spec()
+        when result = generate_t27(parse_tri_file(input))
+        then elapsed_time_ms < 1
+
+    bench generate_t27_medium
+        given input = medium_tri_spec()
+        when result = generate_t27(parse_tri_file(input))
+        then elapsed_time_ms < 5
+
+    bench convert_type
+        given input = "[16]u8"
+        when result = convert_type(input)
+        then elapsed_time_ns < 100
+
+    bench route_file
+        given input = "algo/relu.tri"
+        when result = route_file(input)
+        then elapsed_time_ns < 100
+
+    // ═══════════════════════════════════════════════════════════
+    // Implementation Notes
+    // ═══════════════════════════════════════════════════════════
+    //
+    // Bootstrap Implementation:
+    //   - This specification defines the contract for the converter
+    //   - Bootstrap implementation is in tools/converter/ (Rust)
+    //   - The Rust tool MUST conform to this .t27 specification
+    //
+    // Parsing Strategy:
+    //   - Use line-by-line parsing (not pure YAML parser)
+    //   - Handle indentation-sensitive field declarations
+    //   - Support both YAML-style (- name:) and direct (name:) syntax
+    //
+    // Type Mapping (.tri → .t27):
+    //   - "[N]type" → "[N]type" (arrays)
+    //   - "?Type" → "?Type" (optionals)
+    //   - "Option(T)" → "?T" (optionals)
+    //   - "[]" → "[]const" (slices)
+    //
+    // Section Mapping (.tri → .t27):
+    //   - name: xxx → module Xxx;
+    //   - types: → pub const Xxx = struct { ... };
+    //   - constants: → const XXX: type = value;
+    //   - functions: → fn xxx(params) -> ret { ... }
+    //   - behaviors: → test xxx_... (TDD)
+    //   - constraints: → invariant xxx_... (TDD)
+    //
+    // ═══════════════════════════════════════════════════════════

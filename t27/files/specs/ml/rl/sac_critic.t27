@@ -1,0 +1,113 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Clipped double Q-learning | φ² + 1/φ² = 3 | TRINITY
+
+module SacCritic;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_TAU : f32 = 0.005;
+    const DEFAULT_GAMMA : f32 = 0.99;
+    const DEFAULT_INIT_WEIGHT : f32 = 0.003;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SACCriticConfig = struct {
+        state_dim : u32,
+        action_dim : u32,
+        hidden_dims : []u32,
+        init_weight : f32,
+    };
+
+    pub const TwinQOutput = struct {
+        q1 : f32,
+        q2 : f32,
+    };
+
+    pub const TargetQUpdate = struct {
+        tau : f32,
+        gamma : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(state: []const f32) → void
+    fn forward(state: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // compute_target(reward: f32) → void
+    fn compute_target(reward: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // q_loss(q1_pred: f32) → void
+    fn q_loss(q1_pred: f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // soft_update_target(source_params: []f32) → void
+    fn soft_update_target(source_params: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test compute_target_basic_case
+        given input = default_input()
+        when result = compute_target(input)
+        then result != undefined
+
+    test q_loss_basic_case
+        given input = default_input()
+        when result = q_loss(input)
+        then result != undefined
+
+    test soft_update_target_basic_case
+        given input = default_input()
+        when result = soft_update_target(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant sac_critic_constraint_0
+        given input = valid_input()
+        then true // 0 < tau << 1 (typically 0.005)
+
+    invariant sac_critic_constraint_1
+        given input = valid_input()
+        then true // 0 <= gamma <= 1
+
+    invariant sac_critic_constraint_2
+        given input = valid_input()
+        then true // name: sac_target
+
+    invariant sac_critic_constraint_3
+        given input = valid_input()
+        then true // name: clipped_double_q
+
+    invariant sac_critic_constraint_4
+        given input = valid_input()
+        then true // "Fujimoto et al. (2018) - Addressing Function Approximation Error in Actor-Critic Methods (TD3)"
+
+    invariant sac_critic_constraint_5
+        given input = valid_input()
+        then true // "Haarnoja et al. (2018) - Soft Actor-Critic: Off-Policy Maximum Entropy Deep RL"
+

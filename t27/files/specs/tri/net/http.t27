@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Standard HTTP status codes | φ² + 1/φ² = 3 | TRINITY
+
+module TriHttp;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const HttpMethod = struct {
+        enum : ,
+    };
+
+    pub const HttpStatus = struct {
+        code : u16,
+        reason : []const u8,
+    };
+
+    pub const Url = struct {
+        scheme : ?[]const u8,
+        host : ?[]const u8,
+        port : ?u16,
+        path : []const u8,
+        query : ?[]const u8,
+        fragment : ?[]const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // method_to_string(method: HttpMethod) → void
+    fn method_to_string(method: HttpMethod) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // status_from_code(code: u16) → void
+    fn status_from_code(code: u16) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_success(code: u16) → void
+    fn is_success(code: u16) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_redirect(code: u16) → void
+    fn is_redirect(code: u16) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_client_error(code: u16) → void
+    fn is_client_error(code: u16) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_server_error(code: u16) → void
+    fn is_server_error(code: u16) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // parse_url(allocator: std.mem.Allocator) → void
+    fn parse_url(allocator: std.mem.Allocator) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test method_to_string_basic_case
+        given input = default_input()
+        when result = method_to_string(input)
+        then result != undefined
+
+    test status_from_code_basic_case
+        given input = default_input()
+        when result = status_from_code(input)
+        then result != undefined
+
+    test is_success_basic_case
+        given input = default_input()
+        when result = is_success(input)
+        then result != undefined
+
+    test is_redirect_basic_case
+        given input = default_input()
+        when result = is_redirect(input)
+        then result != undefined
+
+    test is_client_error_basic_case
+        given input = default_input()
+        when result = is_client_error(input)
+        then result != undefined
+
+    test is_server_error_basic_case
+        given input = default_input()
+        when result = is_server_error(input)
+        then result != undefined
+
+    test parse_url_basic_case
+        given input = default_input()
+        when result = parse_url(input)
+        then result != undefined
+

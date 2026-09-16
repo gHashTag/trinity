@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Memory-efficient attention for long sequences | φ² + 1/φ² = 3 | TRINITY
+
+module Attention;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const SCALE_FACTOR : f32 = 0.0;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const AttentionConfig = struct {
+        d_model : u32,
+        num_heads : u32,
+        dropout : f32,
+        causal : bool,
+    };
+
+    pub const AttentionOutput = struct {
+        output : []f32,
+        weights : []f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(query: []const f32) → void
+    fn forward(query: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // backward(grad_output: []const f32) → void
+    fn backward(grad_output: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test backward_basic_case
+        given input = default_input()
+        when result = backward(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant attention_constraint_0
+        given input = valid_input()
+        then true // d_model % num_heads == 0
+
+    invariant attention_constraint_1
+        given input = valid_input()
+        then true // 0 <= dropout < 1
+
+    invariant attention_constraint_2
+        given input = valid_input()
+        then true // query.shape == key.shape == value.shape
+

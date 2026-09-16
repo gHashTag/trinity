@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// RMSprop optimizer with moving average of squared gradients | φ² + 1/φ² = 3 | TRINITY
+
+module Rmsprop;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_DECAY : f32 = 0.9;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const RMSpropConfig = struct {
+        learning_rate : f32,
+        decay : f32,
+        epsilon : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // step(grad: []const f32) → void
+    fn step(grad: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test step_basic_case
+        given input = default_input()
+        when result = step(input)
+        then result != undefined
+

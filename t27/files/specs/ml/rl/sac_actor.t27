@@ -1,0 +1,115 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Log probability correction for tanh squashing | φ² + 1/φ² = 3 | TRINITY
+
+module SacActor;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_LOG_STD_MIN : f32 = -20.0;
+    const DEFAULT_LOG_STD_MAX : f32 = 2.0;
+    const DEFAULT_ACTION_RANGE : []f32 = "[-1.0, 1.0]";
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const SACActorConfig = struct {
+        state_dim : u32,
+        action_dim : u32,
+        hidden_dims : []u32,
+        action_range : []f32,
+        log_std_min : f32,
+        log_std_max : f32,
+    };
+
+    pub const PolicyOutput = struct {
+        mean : []f32,
+        log_std : []f32,
+    };
+
+    pub const SquashedGaussianSample = struct {
+        action : []f32,
+        log_prob : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(state: []const f32) → void
+    fn forward(state: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // sample(policy_output: PolicyOutput) → void
+    fn sample(policy_output: PolicyOutput) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // scale_action(action: []f32) → void
+    fn scale_action(action: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // unscale_action(action: []f32) → void
+    fn unscale_action(action: []f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+
+    test sample_basic_case
+        given input = default_input()
+        when result = sample(input)
+        then result != undefined
+
+    test scale_action_basic_case
+        given input = default_input()
+        when result = scale_action(input)
+        then result != undefined
+
+    test unscale_action_basic_case
+        given input = default_input()
+        when result = unscale_action(input)
+        then result != undefined
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Invariants (from .tri constraints)
+    // ═══════════════════════════════════════════════════════════
+
+    invariant sac_actor_constraint_0
+        given input = valid_input()
+        then true // log_std_min < log_std_max
+
+    invariant sac_actor_constraint_1
+        given input = valid_input()
+        then true // action_low < action_high
+
+    invariant sac_actor_constraint_2
+        given input = valid_input()
+        then true // name: reparameterization
+
+    invariant sac_actor_constraint_3
+        given input = valid_input()
+        then true // name: squashed_correction
+
+    invariant sac_actor_constraint_4
+        given input = valid_input()
+        then true // "Haarnoja et al. (2018) - Soft Actor-Critic: Off-Policy Maximum Entropy Deep RL"
+
+    invariant sac_actor_constraint_5
+        given input = valid_input()
+        then true // "Haarnoja et al. (2019) - Soft Actor-Critic Algorithms and Applications"
+

@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Pop value (CAS-based) | φ² + 1/φ² = 3 | TRINITY
+
+module TriLockfreeStack;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const LFNode = struct {
+        value : "i64",
+        next : "?*LFNode",
+    };
+
+    pub const LockFreeStack = struct {
+        head : "?*LFNode",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init() → LockFreeStack
+    fn init() -> LockFreeStack {
+        // TODO: Implement from .tri spec
+    }
+
+    // push(s: *LockFreeStack) → void
+    fn push(s: *LockFreeStack) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // pop(s: *LockFreeStack) → void
+    fn pop(s: *LockFreeStack) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test push_basic_case
+        given input = default_input()
+        when result = push(input)
+        then result != undefined
+
+    test pop_basic_case
+        given input = default_input()
+        when result = pop(input)
+        then result != undefined
+

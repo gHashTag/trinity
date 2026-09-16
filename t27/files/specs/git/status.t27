@@ -1,0 +1,188 @@
+// specs/git/status.t27
+// Git Status Operations
+// φ² + 1/φ² = 3 | TRINITY
+
+module GitStatus {
+    use base::types;
+    use git::schema;
+
+    // ════════════════════════════════════════════════════════════════════
+    // Status Operations
+    // ════════════════════════════════════════════════════════════════════
+
+    // status returns the working tree status
+    fn status(cwd: str) -> Result<[Item], GitError> {
+        // Implementation: Run git status --porcelain=v1 --untracked-files=all
+    }
+
+    // is_clean checks if the working tree has no changes
+    fn is_clean(cwd: str) -> Result<bool, GitError> {
+        // Implementation: Run git diff --quiet && git diff --cached --quiet
+    }
+
+    // status_short returns short format status
+    fn status_short(cwd: str) -> Result<str, GitError> {
+        // Implementation: Run git status --short
+    }
+
+    // status_long returns detailed status information
+    fn status_long(cwd: str) -> Result<str, GitError> {
+        // Implementation: Run git status --long
+    }
+
+    // status_ignored returns ignored files
+    fn status_ignored(cwd: str) -> Result<[str], GitError> {
+        // Implementation: Run git status --ignored
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Status Filtering
+    // ════════════════════════════════════════════════════════════════════
+
+    // filter_by_status filters items by their status kind
+    fn filter_by_status(items: [Item], kind: Kind) -> [Item] {
+        // Implementation: Return items matching the given kind
+    }
+
+    // filter_by_pattern filters items by file path pattern
+    fn filter_by_pattern(items: [Item], pattern: str) -> [Item] {
+        // Implementation: Return items whose file path matches pattern
+    }
+
+    // filter_added returns only added files
+    fn filter_added(items: [Item]) -> [Item] {
+        return filter_by_status(items, Kind::Added);
+    }
+
+    // filter_deleted returns only deleted files
+    fn filter_deleted(items: [Item]) -> [Item] {
+        return filter_by_status(items, Kind::Deleted);
+    }
+
+    // filter_modified returns only modified files
+    fn filter_modified(items: [Item]) -> [Item] {
+        return filter_by_status(items, Kind::Modified);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Status Aggregation
+    // ════════════════════════════════════════════════════════════════════
+
+    // count_by_kind counts items by their status kind
+    fn count_by_kind(items: [Item]) -> (added: u32, deleted: u32, modified: u32) {
+        // Implementation: Count items in each category
+    }
+
+    // get_changed_files returns all changed file paths
+    fn get_changed_files(items: [Item]) -> [str] {
+        // Implementation: Extract file paths from items
+    }
+
+    // has_changes checks if there are any changes
+    fn has_changes(items: [Item]) -> bool {
+        // Implementation: Return true if items is not empty
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    test "item_creation" {
+        var item = Item {
+            file = "src/test.t27",
+            code = "M",
+            status = Kind::Modified,
+        };
+        assert(item.file == "src/test.t27");
+        assert(item.status == Kind::Modified);
+    }
+
+    test "filter_added_filters_correctly" {
+        var items = [
+            Item { file = "a.t27", code = "A", status = Kind::Added },
+            Item { file = "b.t27", code = "M", status = Kind::Modified },
+            Item { file = "c.t27", code = "D", status = Kind::Deleted },
+            Item { file = "d.t27", code = "??", status = Kind::Added },
+        ];
+        var added = filter_added(items);
+        assert(added.len == 2);
+        assert(added[0].file == "a.t27");
+        assert(added[1].file == "d.t27");
+    }
+
+    test "filter_deleted_filters_correctly" {
+        var items = [
+            Item { file = "a.t27", code = "A", status = Kind::Added },
+            Item { file = "b.t27", code = "D", status = Kind::Deleted },
+            Item { file = "c.t27", code = "M", status = Kind::Modified },
+        ];
+        var deleted = filter_deleted(items);
+        assert(deleted.len == 1);
+        assert(deleted[0].file == "b.t27");
+    }
+
+    test "filter_modified_filters_correctly" {
+        var items = [
+            Item { file = "a.t27", code = "A", status = Kind::Added },
+            Item { file = "b.t27", code = "M", status = Kind::Modified },
+            Item { file = "c.t27", code = "D", status = Kind::Deleted },
+        ];
+        var modified = filter_modified(items);
+        assert(modified.len == 1);
+        assert(modified[0].file == "b.t27");
+    }
+
+    test "count_by_kind_counts_correctly" {
+        var items = [
+            Item { file = "a.t27", code = "A", status = Kind::Added },
+            Item { file = "b.t27", code = "M", status = Kind::Modified },
+            Item { file = "c.t27", code = "D", status = Kind::Deleted },
+            Item { file = "d.t27", code = "??", status = Kind::Added },
+        ];
+        var counts = count_by_kind(items);
+        assert(counts.added == 2);
+        assert(counts.deleted == 1);
+        assert(counts.modified == 1);
+    }
+
+    test "get_changed_files_extracts_paths" {
+        var items = [
+            Item { file = "src/a.t27", code = "M", status = Kind::Modified },
+            Item { file = "src/b.t27", code = "A", status = Kind::Added },
+        ];
+        var files = get_changed_files(items);
+        assert(files.len == 2);
+        assert(files.contains("src/a.t27"));
+        assert(files.contains("src/b.t27"));
+    }
+
+    test "has_changes_detects_changes" {
+        var items = [
+            Item { file = "a.t27", code = "M", status = Kind::Modified },
+        ];
+        assert(has_changes(items));
+    }
+
+    test "has_changes_detects_no_changes" {
+        var items: [Item] = [];
+        assert(!has_changes(items));
+    }
+
+    test "status_code_parsing" {
+        // Test that status codes are parsed correctly
+        var added = parse_kind("A ");
+        assert(added == Kind::Added);
+
+        var deleted = parse_kind("D ");
+        assert(deleted == Kind::Deleted);
+
+        var modified = parse_kind("M ");
+        assert(modified == Kind::Modified);
+
+        var untracked = parse_kind("??");
+        assert(untracked == Kind::Added);
+
+        var unmerged = parse_kind("UU");
+        assert(unmerged == Kind::Modified);
+    }
+}

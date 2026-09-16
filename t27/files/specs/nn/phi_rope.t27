@@ -1,0 +1,43 @@
+// specs/nn/phi_rope.t27
+// φ-RoPE: Rotary Position Embedding using Golden Ratio
+// θ_i = PHI^(-2i/d) instead of standard 10000^(-2i/d)
+
+algorithm phi_rope {
+    module: brain.prefrontal.rotary_temporal
+
+    strand_i: {
+        phi_identity: "theta_i = PHI^(-2i/d)",
+        numeric_format: GF16,
+        PHI: 1.6180339887498948
+    }
+
+    strand_ii: {
+        brain_region: prefrontal_cortex,
+        biological_analog: "mPFC temporal context encoding"
+    }
+
+    strand_iii: {
+        t27_target: "nn/phi_rope",
+        backends: [rust, zig, c, verilog]
+    }
+
+    complexity: O(d)
+
+    inputs:  [x: Float[seq, dim], position: Int]
+    outputs: [x_rotated: Float[seq, dim]]
+
+    notes: |
+        for i in 0..dim/2:
+            theta = PHI.pow(-2.0 * i / dim)
+            angle = position * theta
+            x_rotated[2i]   = x[2i]*cos(angle) - x[2i+1]*sin(angle)
+            x_rotated[2i+1] = x[2i]*sin(angle) + x[2i+1]*cos(angle)
+
+    invariants: [orthogonality_preserved, phi_decay_monotone]
+
+    tests: [
+        { input: pos=0, assert: x_rotated == x },
+        { input: dim=81, assert: theta[0] == 1.0 },
+        { input: dim=4, theta: [1.0, 0.886, 0.618, 0.486] }
+    ]
+}

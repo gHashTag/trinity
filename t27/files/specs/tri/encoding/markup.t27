@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Common markdown subset | φ² + 1/φ² = 3 | TRINITY
+
+module TriMarkup;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const MarkdownNode = struct {
+        type : []const u8,
+        content : []const u8,
+        children : []MarkdownNode,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // parse(markdown: []const u8) → void
+    fn parse(markdown: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // to_html(nodes: []MarkdownNode) → void
+    fn to_html(nodes: []MarkdownNode) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test parse_basic_case
+        given input = default_input()
+        when result = parse(input)
+        then result != undefined
+
+    test to_html_basic_case
+        given input = default_input()
+        when result = to_html(input)
+        then result != undefined
+

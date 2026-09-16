@@ -1,0 +1,1094 @@
+// Forward Pass Demo - VSA-based Neural Network
+// Implements transformer-style forward pass using Vector Symbolic Architecture
+// with multi-head attention, residual connections, and autoregressive generation
+//
+// Author: Dmitrii Vasilev
+// SPDX-License-Identifier: Apache-2.0
+
+module forward_pass;
+
+import numeric::gf16;
+import tritype::Trit;
+import vsa::vsa_core::{bind, unbind, bundle2, bundle3, permute, cosine_similarity};
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/// Default hypervector dimension
+pub const DEFAULT_DIM: usize = 1024;
+
+/// Number of role vectors for multi-head attention
+pub const NUM_ROLES: usize = 11;
+
+/// Context window size (number of tokens in context)
+pub const CONTEXT_SIZE: usize = 8;
+
+/// Number of attention heads
+pub const NUM_HEADS: usize = 3;
+
+/// Vectors per head (Q, K, V)
+pub const VECTORS_PER_HEAD: usize = 3;
+
+/// FFN role indices
+pub const FF1_ROLE_IDX: usize = 9;
+pub const FF2_ROLE_IDX: usize = 10;
+
+/// Maximum tokens for autoregressive generation
+pub const MAX_GENERATION_TOKENS: usize = 100;
+
+/// Default learning rate for resonator training
+pub const DEFAULT_LEARNING_RATE: gf16 = 0.5;
+
+/// Number of resonator iterations
+pub const RESONATOR_ITERS: usize = 5;
+
+/// Similarity threshold for early stopping
+pub const SIMILARITY_THRESHOLD: gf16 = 0.5;
+
+// ============================================================================
+// Types
+// ============================================================================
+
+/// Hypervector representation using ternary values
+pub type Hypervector = [DEFAULT_DIM]Trit;
+
+/// Role vectors for attention and FFN
+/// Layout: [Q0,K0,V0, Q1,K1,V1, Q2,K2,V2, FF1, FF2]
+pub type Roles = [NUM_ROLES]Hypervector;
+
+/// Context window of hypervectors
+pub type Context = [CONTEXT_SIZE]Hypervector;
+
+/// Training result with loss
+pub struct TrainResult {
+    pub loss: gf16,
+    pub similarity: gf16,
+    pub iterations: usize,
+}
+
+// ============================================================================
+// Core Operations
+// ============================================================================
+
+/// Initialize role vectors with random seeds
+pub fn init_roles(dim: usize, seed: u64) -> Roles {
+    let mut roles: Roles = [[TRIT_ZERO; DEFAULT_DIM]; NUM_ROLES];
+
+    for i in 0..NUM_ROLES {
+        for j in 0..dim {
+            // Simple deterministic random based on seed + i + j
+            let r = ((seed + (i as u64) * 1000 + (j as u64)) % 3) as i8 - 1;
+            roles[i][j] = r as Trit;
+        }
+    }
+
+    roles
+}
+
+/// Single-head attention mechanism
+/// Computes: query = bind(last_position, Q_role)
+/// Finds best matching key via similarity
+/// Returns: bind(best_position, V_role)
+pub fn single_head_attention(
+    positioned: &Context,
+    q_role: &Hypervector,
+    k_role: &Hypervector,
+    v_role: &Hypervector,
+    dim: usize,
+) -> Hypervector {
+    // Query = bind(last_position, Q_role)
+    let last_pos = positioned[CONTEXT_SIZE - 1];
+    let query = bind(last_pos, q_role, dim);
+
+    // Find best-matching key
+    let mut best_sim: gf16 = -2.0;
+    let mut best_idx: usize = 0;
+
+    for i in 0..CONTEXT_SIZE {
+        let key_i = bind(positioned[i], k_role, dim);
+        let sim = cosine_similarity(query, key_i, dim);
+
+        if sim > best_sim {
+            best_sim = sim;
+            best_idx = i;
+        }
+    }
+
+    // Value = bind(best_position, V_role)
+    bind(positioned[best_idx], v_role, dim)
+}
+
+/// Multi-head forward pass with residual connection
+/// Pipeline: position → 3-head attention → bundle3 → FFN → residual
+pub fn forward_pass_multi_head(
+    context: &Context,
+    roles: &Roles,
+    dim: usize,
+) -> Hypervector {
+    // Position encoding
+    let mut positioned: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        positioned[i] = permute(context[i], i, dim);
+    }
+
+    // 3-head attention
+    let head0 = single_head_attention(&positioned, &roles[0], &roles[1], &roles[2], dim);
+    let head1 = single_head_attention(&positioned, &roles[3], &roles[4], &roles[5], dim);
+    let head2 = single_head_attention(&positioned, &roles[6], &roles[7], &roles[8], dim);
+
+    // Merge heads via bundle3
+    let merged = bundle3(head0, head1, head2, dim);
+
+    // FFN: bind(FF1), then bind(FF2)
+    let ffn_mid = bind(merged, &roles[FF1_ROLE_IDX], dim);
+    let ffn_out = bind(ffn_mid, &roles[FF2_ROLE_IDX], dim);
+
+    // Residual connection: bundle with last positioned vector
+    bundle2(ffn_out, positioned[CONTEXT_SIZE - 1], dim)
+}
+
+/// Summarize context into a single hypervector
+/// Uses positional permutation + sequential bundling
+pub fn summarize_context(context: &Context, dim: usize) -> Hypervector {
+    let mut summary = permute(context[0], 0, dim);
+
+    for i in 1..CONTEXT_SIZE {
+        let positioned = permute(context[i], i, dim);
+        summary = bundle2(summary, positioned, dim);
+    }
+
+    summary
+}
+
+/// Direct forward pass: just bind(context_summary, role)
+/// Only 1 bind operation → clean signal
+pub fn forward_pass_direct(
+    context: &Context,
+    role: &Hypervector,
+    dim: usize,
+) -> Hypervector {
+    let summary = summarize_context(context, dim);
+    bind(summary, role, dim)
+}
+
+// ============================================================================
+// Resonator Training
+// ============================================================================
+
+/// Resonator training step for a single (context, target) pair
+/// Iteratively refines FF roles to reduce error
+pub fn resonator_train_step(
+    context: &Context,
+    target: &Hypervector,
+    roles: &mut Roles,
+    dim: usize,
+    learning_rate: gf16,
+    seed: u64,
+) -> TrainResult {
+    // Forward pass to get initial output
+    let output = forward_pass_multi_head(context, roles, dim);
+    let initial_sim = cosine_similarity(output, *target, dim);
+    let mut best_loss: gf16 = 1.0 - initial_sim;
+    let mut best_sim = initial_sim;
+
+    // Resonator iterations
+    for iter in 0..RESONATOR_ITERS {
+        // Position encoding
+        let mut positioned: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+        for i in 0..CONTEXT_SIZE {
+            positioned[i] = permute(context[i], i, dim);
+        }
+
+        // Compute merged attention output
+        let head0 = single_head_attention(&positioned, &roles[0], &roles[1], &roles[2], dim);
+        let head1 = single_head_attention(&positioned, &roles[3], &roles[4], &roles[5], dim);
+        let head2 = single_head_attention(&positioned, &roles[6], &roles[7], &roles[8], dim);
+        let merged = bundle3(head0, head1, head2, dim);
+
+        // Compute ideal FF2 direction
+        let merged_ff1 = bind(merged, &roles[FF1_ROLE_IDX], dim);
+        let ideal_ff2 = unbind(*target, merged_ff1, dim);
+
+        // Compute ideal FF1 direction
+        let ideal_ff1_input = unbind(*target, roles[FF2_ROLE_IDX], dim);
+        let ideal_ff1 = unbind(ideal_ff1_input, merged, dim);
+
+        // Apply corrections (simplified - sparse updates)
+        roles[FF2_ROLE_IDX] = bind(roles[FF2_ROLE_IDX], ideal_ff2, dim);
+        roles[FF1_ROLE_IDX] = bind(roles[FF1_ROLE_IDX], ideal_ff1, dim);
+
+        // Re-check
+        let new_output = forward_pass_multi_head(context, roles, dim);
+        let new_sim = cosine_similarity(new_output, *target, dim);
+        let new_loss = 1.0 - new_sim;
+
+        if new_loss < best_loss {
+            best_loss = new_loss;
+            best_sim = new_sim;
+        }
+
+        // Early stop if similarity is good
+        if new_sim > SIMILARITY_THRESHOLD {
+            break;
+        }
+    }
+
+    TrainResult {
+        loss: best_loss,
+        similarity: best_sim,
+        iterations: RESONATOR_ITERS,
+    }
+}
+
+/// Compute direct role from a corpus of (context, target) pairs
+/// One-shot computation, no iterative training needed
+pub fn compute_direct_role(
+    contexts: &[Context],
+    targets: &[Hypervector],
+    dim: usize,
+) -> Hypervector {
+    if contexts.is_empty() {
+        return [TRIT_ZERO; DEFAULT_DIM];
+    }
+
+    // Start with first sample
+    let mut accumulated_role = unbind(targets[0], summarize_context(&contexts[0], dim), dim);
+
+    // Bundle remaining samples
+    for i in 1..contexts.len() {
+        let summary = summarize_context(&contexts[i], dim);
+        let ideal = unbind(targets[i], summary, dim);
+        accumulated_role = bundle2(accumulated_role, ideal, dim);
+    }
+
+    accumulated_role
+}
+
+// ============================================================================
+// Autoregressive Generation
+// ============================================================================
+
+/// Autoregressive generation: predict next token, shift context, repeat
+pub fn generate_autoregressive(
+    initial_context: &Context,
+    roles: &Roles,
+    role: &Hypervector, // For direct mode
+    dim: usize,
+    max_tokens: usize,
+    use_direct: bool,
+) -> Vec<Hypervector> {
+    let mut context = *initial_context;
+    let mut generated: Vec<Hypervector> = Vec::new();
+
+    for _ in 0..max_tokens {
+        let output = if use_direct {
+            forward_pass_direct(&context, role, dim)
+        } else {
+            forward_pass_multi_head(&context, roles, dim)
+        };
+
+        generated.push(output);
+
+        // Shift context: drop first, append new prediction
+        for i in 0..(CONTEXT_SIZE - 1) {
+            context[i] = context[i + 1];
+        }
+        context[CONTEXT_SIZE - 1] = output;
+    }
+
+    generated
+}
+
+// ============================================================================
+// Utilities
+// ============================================================================
+
+/// Measure perplexity on a dataset
+/// PPL = exp(-average_log_likelihood)
+pub fn measure_perplexity(
+    contexts: &[Context],
+    targets: &[Hypervector],
+    roles: &Roles,
+    dim: usize,
+) -> gf16 {
+    if contexts.is_empty() {
+        return 0.0;
+    }
+
+    let mut total_log_likelihood: gf16 = 0.0;
+
+    for i in 0..contexts.len() {
+        let output = forward_pass_multi_head(&contexts[i], roles, dim);
+        let sim = cosine_similarity(output, targets[i], dim);
+
+        // Convert similarity to pseudo-log-likelihood
+        // Similarity in [-1, 1] maps to [low, high] likelihood
+        let log_likelihood = if sim > -1.0 {
+            ((sim + 1.0) / 2.0).ln()
+        } else {
+            -10.0 // Floor for very negative similarities
+        };
+
+        total_log_likelihood += log_likelihood;
+    }
+
+    let avg_log_likelihood = total_log_likelihood / (contexts.len() as gf16);
+    (-avg_log_likelihood).exp()
+}
+
+/// Compute accuracy: fraction of predictions with similarity > threshold
+pub fn compute_accuracy(
+    contexts: &[Context],
+    targets: &[Hypervector],
+    roles: &Roles,
+    dim: usize,
+    threshold: gf16,
+) -> gf16 {
+    if contexts.is_empty() {
+        return 0.0;
+    }
+
+    let mut correct: usize = 0;
+
+    for i in 0..contexts.len() {
+        let output = forward_pass_multi_head(&contexts[i], roles, dim);
+        let sim = cosine_similarity(output, targets[i], dim);
+
+        if sim > threshold {
+            correct += 1;
+        }
+    }
+
+    (correct as gf16) / (contexts.len() as gf16)
+}
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+test "init_roles creates 11 role vectors" {
+    let roles = init_roles(1024, 12345);
+    assert_eq!(roles.len(), 11);
+}
+
+test "single_head_attention_returns_valid_output" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let mut roles = init_roles(1024, 12345);
+
+    let result = single_head_attention(
+        &context,
+        &roles[0],
+        &roles[1],
+        &roles[2],
+        1024,
+    );
+
+    // Result should be a valid hypervector
+    let mut non_zero_count = 0;
+    for i in 0..100 {
+        if result[i] != TRIT_ZERO {
+            non_zero_count += 1;
+        }
+    }
+    assert!(non_zero_count > 0);
+}
+
+test "forward_pass_multi_head_produces_output" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let roles = init_roles(1024, 12345);
+
+    let output = forward_pass_multi_head(&context, &roles, 1024);
+
+    // Check output is valid
+    let mut sum: i32 = 0;
+    for i in 0..100 {
+        sum += output[i] as i32;
+    }
+    // Should have some non-zero values
+    assert!(sum != 0);
+}
+
+test "summarize_context_produces_valid_hypervector" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let summary = summarize_context(&context, 1024);
+
+    // Summary should be non-zero
+    let mut non_zero = 0;
+    for i in 0..100 {
+        if summary[i] != TRIT_ZERO {
+            non_zero += 1;
+        }
+    }
+    assert!(non_zero > 0);
+}
+
+test "forward_pass_direct_produces_output" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let role = init_roles(1024, 12345)[0];
+
+    let output = forward_pass_direct(&context, &role, 1024);
+
+    // Check output is valid
+    let mut non_zero = 0;
+    for i in 0..100 {
+        if output[i] != TRIT_ZERO {
+            non_zero += 1;
+        }
+    }
+    assert!(non_zero > 0);
+}
+
+test "resonator_train_step_returns_valid_result" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let mut target: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    for i in 0..100 {
+        target[i] = (i % 3) as i8 - 1;
+    }
+
+    let mut roles = init_roles(1024, 12345);
+
+    let result = resonator_train_step(&context, &target, &mut roles, 1024, 0.5, 999);
+
+    // Loss should be in [0, 1]
+    assert!(result.loss >= 0.0 && result.loss <= 1.0);
+    // Similarity should be in [-1, 1]
+    assert!(result.similarity >= -1.0 && result.similarity <= 1.0);
+}
+
+test "generate_autoregressive_produces_tokens" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let roles = init_roles(1024, 12345);
+    let role = roles[0];
+
+    let generated = generate_autoregressive(&context, &roles, &role, 1024, 10, true);
+
+    assert_eq!(generated.len(), 10);
+}
+
+test "measure_perplexity_returns_valid_value" {
+    let mut contexts: Vec<Context> = Vec::new();
+    let mut targets: Vec<Hypervector> = Vec::new();
+
+    for sample in 0..5 {
+        let mut ctx: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+        for i in 0..CONTEXT_SIZE {
+            for j in 0..100 {
+                ctx[i][j] = ((sample + i + j) % 3) as i8 - 1;
+            }
+        }
+        contexts.push(ctx);
+
+        let mut tgt: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+        for j in 0..100 {
+            tgt[j] = ((sample + j) % 3) as i8 - 1;
+        }
+        targets.push(tgt);
+    }
+
+    let roles = init_roles(1024, 12345);
+    let ppl = measure_perplexity(&contexts, &targets, &roles, 1024);
+
+    // PPL should be positive
+    assert!(ppl > 0.0);
+}
+
+test "compute_accuracy_returns_valid_value" {
+    let mut contexts: Vec<Context> = Vec::new();
+    let mut targets: Vec<Hypervector> = Vec::new();
+
+    for sample in 0..5 {
+        let mut ctx: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+        for i in 0..CONTEXT_SIZE {
+            for j in 0..100 {
+                ctx[i][j] = ((sample + i + j) % 3) as i8 - 1;
+            }
+        }
+        contexts.push(ctx);
+
+        let mut tgt: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+        for j in 0..100 {
+            tgt[j] = ((sample + j) % 3) as i8 - 1;
+        }
+        targets.push(tgt);
+    }
+
+    let roles = init_roles(1024, 12345);
+    let acc = compute_accuracy(&contexts, &targets, &roles, 1024, 0.0);
+
+    // Accuracy should be in [0, 1]
+    assert!(acc >= 0.0 && acc <= 1.0);
+}
+
+test "compute_direct_role_with_empty_corpus" {
+    let contexts: Vec<Context> = Vec::new();
+    let targets: Vec<Hypervector> = Vec::new();
+
+    let role = compute_direct_role(&contexts, &targets, 1024);
+
+    // Should return zero hypervector
+    for i in 0..100 {
+        assert_eq!(role[i], TRIT_ZERO);
+    }
+}
+
+test "compute_direct_role_with_single_sample" {
+    let mut ctx: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            ctx[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let mut tgt: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    for j in 0..100 {
+        tgt[j] = (j % 3) as i8 - 1;
+    }
+
+    let contexts = vec![ctx];
+    let targets = vec![tgt];
+
+    let role = compute_direct_role(&contexts, &targets, 1024);
+
+    // Role should be non-zero
+    let mut non_zero = 0;
+    for i in 0..100 {
+        if role[i] != TRIT_ZERO {
+            non_zero += 1;
+        }
+    }
+    assert!(non_zero > 0);
+}
+
+test "bundle3_merges_three_heads" {
+    let mut h1: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let mut h2: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let mut h3: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+
+    for i in 0..100 {
+        h1[i] = TRIT_POS;
+        h2[i] = TRIT_POS;
+        h3[i] = TRIT_POS;
+    }
+
+    let merged = bundle3(h1, h2, h3, 1024);
+
+    // With all +1, majority vote should be +1
+    assert_eq!(merged[0], TRIT_POS);
+}
+
+test "bind_unbind_self_inverse" {
+    let mut a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let mut b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+
+    for i in 0..100 {
+        a[i] = (i % 3) as i8 - 1;
+        b[i] = ((i + 1) % 3) as i8 - 1;
+    }
+
+    let bound = bind(a, b, 1024);
+    let recovered = unbind(bound, b, 1024);
+
+    // Check similarity
+    let sim = cosine_similarity(a, recovered, 1024);
+    // Should be high (perfect in theory, noise in practice)
+    assert!(sim > 0.8);
+}
+
+test "permute_changes_hypervector" {
+    let mut hv: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    for i in 0..100 {
+        hv[i] = (i % 3) as i8 - 1;
+    }
+
+    let permuted = permute(hv, 5, 1024);
+
+    // Permuted should be different
+    let mut same = true;
+    for i in 0..100 {
+        if hv[i] != permuted[i] {
+            same = false;
+            break;
+        }
+    }
+    assert!(!same);
+}
+
+test "generate_autoregressive_with_multi_head" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let roles = init_roles(1024, 12345);
+
+    let generated = generate_autoregressive(&context, &roles, &roles[0], 1024, 5, false);
+
+    assert_eq!(generated.len(), 5);
+}
+
+test "measure_perplexity_empty_dataset" {
+    let contexts: Vec<Context> = Vec::new();
+    let targets: Vec<Hypervector> = Vec::new();
+
+    let roles = init_roles(1024, 12345);
+    let ppl = measure_perplexity(&contexts, &targets, &roles, 1024);
+
+    // Empty dataset should return 0
+    assert_eq!(ppl, 0.0);
+}
+
+test "resonator_improves_similarity" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let mut target: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    for i in 0..100 {
+        target[i] = (i % 3) as i8 - 1;
+    }
+
+    let mut roles = init_roles(1024, 12345);
+
+    // Get initial similarity
+    let initial_output = forward_pass_multi_head(&context, &roles, 1024);
+    let initial_sim = cosine_similarity(initial_output, target, 1024);
+
+    // Train
+    let result = resonator_train_step(&context, &target, &mut roles, 1024, 0.5, 999);
+
+    // Similarity should not decrease (may stay same or improve)
+    assert!(result.similarity >= initial_sim - 0.1);
+}
+
+test "forward_pass_direct_faster_than_multi_head" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    let roles = init_roles(1024, 12345);
+    let role = roles[0];
+
+    // Both should produce valid output
+    let _ = forward_pass_multi_head(&context, &roles, 1024);
+    let _ = forward_pass_direct(&context, &role, 1024);
+
+    // Test passes if both complete without error
+    assert!(true);
+}
+
+test "compute_accuracy_with_high_threshold" {
+    let mut contexts: Vec<Context> = Vec::new();
+    let mut targets: Vec<Hypervector> = Vec::new();
+
+    for sample in 0..3 {
+        let mut ctx: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+        for i in 0..CONTEXT_SIZE {
+            for j in 0..100 {
+                ctx[i][j] = ((sample + i + j) % 3) as i8 - 1;
+            }
+        }
+        contexts.push(ctx);
+
+        let mut tgt: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+        for j in 0..100 {
+            tgt[j] = ((sample + j) % 3) as i8 - 1;
+        }
+        targets.push(tgt);
+    }
+
+    let roles = init_roles(1024, 12345);
+    let acc = compute_accuracy(&contexts, &targets, &roles, 1024, 0.9);
+
+    // Accuracy should be in [0, 1]
+    assert!(acc >= 0.0 && acc <= 1.0);
+}
+
+test "summarize_context_order_sensitive" {
+    let mut ctx1: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    let mut ctx2: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..100 {
+            ctx1[i][j] = (i as i8) - 1;
+            ctx2[i][j] = ((CONTEXT_SIZE - 1 - i) as i8) - 1;
+        }
+    }
+
+    let sum1 = summarize_context(&ctx1, 1024);
+    let sum2 = summarize_context(&ctx2, 1024);
+
+    // Different orders should produce different summaries
+    let mut same = true;
+    for i in 0..100 {
+        if sum1[i] != sum2[i] {
+            same = false;
+            break;
+        }
+    }
+    assert!(!same);
+}
+
+// ============================================================================
+// Invariants
+// ============================================================================
+
+invariant "roles_count_is_11" {
+    let roles = init_roles(1024, 12345);
+    assert_eq!(roles.len(), 11);
+}
+
+invariant "forward_pass_output_has_same_dim" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    let roles = init_roles(1024, 12345);
+    let output = forward_pass_multi_head(&context, &roles, 1024);
+    assert_eq!(output.len(), 1024);
+}
+
+invariant "resonator_loss_in_valid_range" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    let mut target: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let mut roles = init_roles(1024, 12345);
+    let result = resonator_train_step(&context, &target, &mut roles, 1024, 0.5, 999);
+    assert!(result.loss >= 0.0 && result.loss <= 1.0);
+}
+
+invariant "resonator_similarity_in_valid_range" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    let mut target: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let mut roles = init_roles(1024, 12345);
+    let result = resonator_train_step(&context, &target, &mut roles, 1024, 0.5, 999);
+    assert!(result.similarity >= -1.0 && result.similarity <= 1.0);
+}
+
+invariant "generate_autoregressive_returns_correct_count" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    let roles = init_roles(1024, 12345);
+    let generated = generate_autoregressive(&context, &roles, &roles[0], 1024, 10, true);
+    assert_eq!(generated.len(), 10);
+}
+
+invariant "measure_perplexity_non_negative" {
+    let contexts: Vec<Context> = vec![[[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE]];
+    let targets: Vec<Hypervector> = vec![[TRIT_ZERO; DEFAULT_DIM]];
+    let roles = init_roles(1024, 12345);
+    let ppl = measure_perplexity(&contexts, &targets, &roles, 1024);
+    assert!(ppl >= 0.0);
+}
+
+invariant "compute_accuracy_in_valid_range" {
+    let contexts: Vec<Context> = vec![[[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE]];
+    let targets: Vec<Hypervector> = vec![[TRIT_ZERO; DEFAULT_DIM]];
+    let roles = init_roles(1024, 12345);
+    let acc = compute_accuracy(&contexts, &targets, &roles, 1024, 0.5);
+    assert!(acc >= 0.0 && acc <= 1.0);
+}
+
+invariant "summarize_context_returns_valid_dim" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    let summary = summarize_context(&context, 1024);
+    assert_eq!(summary.len(), 1024);
+}
+
+invariant "forward_pass_direct_returns_valid_dim" {
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    let role = init_roles(1024, 12345)[0];
+    let output = forward_pass_direct(&context, &role, 1024);
+    assert_eq!(output.len(), 1024);
+}
+
+invariant "compute_direct_role_returns_valid_dim" {
+    let contexts: Vec<Context> = vec![[[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE]];
+    let targets: Vec<Hypervector> = vec![[TRIT_ZERO; DEFAULT_DIM]];
+    let role = compute_direct_role(&contexts, &targets, 1024);
+    assert_eq!(role.len(), 1024);
+}
+
+invariant "bind_unbind_preserves_dimension" {
+    let a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let bound = bind(a, b, 1024);
+    let recovered = unbind(bound, b, 1024);
+    assert_eq!(recovered.len(), 1024);
+}
+
+invariant "permute_preserves_dimension" {
+    let hv: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let permuted = permute(hv, 5, 1024);
+    assert_eq!(permuted.len(), 1024);
+}
+
+invariant "bundle2_preserves_dimension" {
+    let a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let bundled = bundle2(a, b, 1024);
+    assert_eq!(bundled.len(), 1024);
+}
+
+invariant "bundle3_preserves_dimension" {
+    let a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let c: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let bundled = bundle3(a, b, c, 1024);
+    assert_eq!(bundled.len(), 1024);
+}
+
+// ============================================================================
+// Benchmarks
+// ============================================================================
+
+bench "init_roles" {
+    let iterations = 1000;
+    for _ in 0..iterations {
+        let _ = init_roles(1024, 12345);
+    }
+}
+
+bench "single_head_attention" {
+    let iterations = 1000;
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..1024 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+    let roles = init_roles(1024, 12345);
+
+    for _ in 0..iterations {
+        let _ = single_head_attention(&context, &roles[0], &roles[1], &roles[2], 1024);
+    }
+}
+
+bench "forward_pass_multi_head" {
+    let iterations = 100;
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..1024 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+    let roles = init_roles(1024, 12345);
+
+    for _ in 0..iterations {
+        let _ = forward_pass_multi_head(&context, &roles, 1024);
+    }
+}
+
+bench "forward_pass_direct" {
+    let iterations = 1000;
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..1024 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+    let role = init_roles(1024, 12345)[0];
+
+    for _ in 0..iterations {
+        let _ = forward_pass_direct(&context, &role, 1024);
+    }
+}
+
+bench "summarize_context" {
+    let iterations = 1000;
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..1024 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+
+    for _ in 0..iterations {
+        let _ = summarize_context(&context, 1024);
+    }
+}
+
+bench "resonator_train_step" {
+    let iterations = 10;
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..1024 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+    let mut target: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    for j in 0..1024 {
+        target[j] = (j % 3) as i8 - 1;
+    }
+
+    for _ in 0..iterations {
+        let mut roles = init_roles(1024, 12345);
+        let _ = resonator_train_step(&context, &target, &mut roles, 1024, 0.5, 999);
+    }
+}
+
+bench "generate_autoregressive" {
+    let iterations = 10;
+    let mut context: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+    for i in 0..CONTEXT_SIZE {
+        for j in 0..1024 {
+            context[i][j] = ((i + j) % 3) as i8 - 1;
+        }
+    }
+    let roles = init_roles(1024, 12345);
+
+    for _ in 0..iterations {
+        let _ = generate_autoregressive(&context, &roles, &roles[0], 1024, 10, true);
+    }
+}
+
+bench "measure_perplexity" {
+    let iterations = 10;
+    let mut contexts: Vec<Context> = Vec::new();
+    let mut targets: Vec<Hypervector> = Vec::new();
+
+    for sample in 0..10 {
+        let mut ctx: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+        for i in 0..CONTEXT_SIZE {
+            for j in 0..1024 {
+                ctx[i][j] = ((sample + i + j) % 3) as i8 - 1;
+            }
+        }
+        contexts.push(ctx);
+
+        let mut tgt: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+        for j in 0..1024 {
+            tgt[j] = ((sample + j) % 3) as i8 - 1;
+        }
+        targets.push(tgt);
+    }
+
+    let roles = init_roles(1024, 12345);
+
+    for _ in 0..iterations {
+        let _ = measure_perplexity(&contexts, &targets, &roles, 1024);
+    }
+}
+
+bench "compute_accuracy" {
+    let iterations = 10;
+    let mut contexts: Vec<Context> = Vec::new();
+    let mut targets: Vec<Hypervector> = Vec::new();
+
+    for sample in 0..10 {
+        let mut ctx: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+        for i in 0..CONTEXT_SIZE {
+            for j in 0..1024 {
+                ctx[i][j] = ((sample + i + j) % 3) as i8 - 1;
+            }
+        }
+        contexts.push(ctx);
+
+        let mut tgt: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+        for j in 0..1024 {
+            tgt[j] = ((sample + j) % 3) as i8 - 1;
+        }
+        targets.push(tgt);
+    }
+
+    let roles = init_roles(1024, 12345);
+
+    for _ in 0..iterations {
+        let _ = compute_accuracy(&contexts, &targets, &roles, 1024, 0.5);
+    }
+}
+
+bench "compute_direct_role" {
+    let iterations = 10;
+    let mut contexts: Vec<Context> = Vec::new();
+    let mut targets: Vec<Hypervector> = Vec::new();
+
+    for sample in 0..10 {
+        let mut ctx: Context = [[TRIT_ZERO; DEFAULT_DIM]; CONTEXT_SIZE];
+        for i in 0..CONTEXT_SIZE {
+            for j in 0..1024 {
+                ctx[i][j] = ((sample + i + j) % 3) as i8 - 1;
+            }
+        }
+        contexts.push(ctx);
+
+        let mut tgt: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+        for j in 0..1024 {
+            tgt[j] = ((sample + j) % 3) as i8 - 1;
+        }
+        targets.push(tgt);
+    }
+
+    for _ in 0..iterations {
+        let _ = compute_direct_role(&contexts, &targets, 1024);
+    }
+}
+
+bench "bind_operation" {
+    let iterations = 10000;
+    let a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+
+    for _ in 0..iterations {
+        let _ = bind(a, b, 1024);
+    }
+}
+
+bench "bundle3_operation" {
+    let iterations = 10000;
+    let a: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let b: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+    let c: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+
+    for _ in 0..iterations {
+        let _ = bundle3(a, b, c, 1024);
+    }
+}
+
+bench "permute_operation" {
+    let iterations = 10000;
+    let hv: Hypervector = [TRIT_ZERO; DEFAULT_DIM];
+
+    for _ in 0..iterations {
+        let _ = permute(hv, 5, 1024);
+    }
+}

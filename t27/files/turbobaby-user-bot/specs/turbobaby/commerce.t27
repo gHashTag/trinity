@@ -1,0 +1,411 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/turbobaby/commerce.t27 -- cart, checkout, order, and replay safety for bike deals
+; This contract owns the transactional seam that the catalog and pricing contracts stop before:
+; a cart is locked, exactly one deal shape is selected, an authoritative quote is snapshotted,
+; fulfillment is admissible, an idempotency key chooses create/replay/conflict, and a committed
+; order makes the cart terminal. It covers both rental and sale without pretending they are the
+; same payload. D7 fixes the spelling `fulfillment`; D8 fixes a rental line on a family rather
+; than a physical unit; D9 and D11 forbid checkout from manufacturing a missing number.
+; --
+; WHY (measured 2026-09-13): the repository already has a durable order-idempotency table and a
+; transaction that records its key with the order. It also has two tagged bike deal shapes, one
+; rental and one sale. What the six canonical domain specs do not own is the join between those
+; facts: which cart state permits the write, how a same-key retry differs from a conflicting
+; payload, when the quote becomes immutable, and which fulfillment prerequisites are required.
+; Without one contract, a retry can create a second order or a stale cart can cross checkout with
+; a quote that was never authorized.
+; --
+; REUSE, NOT RESTATEMENT: price_authorized is the entire answer supplied by the price authority;
+; upstream_bookable is the entire rental answer supplied by availability; upstream_saleable is
+; the equivalent decision supplied by the sale owner. No price number, discount, stock count,
+; deposit amount, location, or tariff appears here. Quote identity, revision, expiry, and scope
+; are transport booleans: the snapshot retains the authoritative answer but this file does not
+; recompute it. Fulfillment similarly consumes pickup_allowed and delivery_allowed decisions
+; instead of copying geographic or operational rules.
+; --
+; WHAT THIS FILE NEVER DOES: it never carries a customer identity, contact field, unit identifier,
+; payment credential, source-sheet detail, or historical transaction fixture. It does not assign
+; a bike unit, calculate a rental total, derive a sale price, convert a deposit, or decide live
+; availability. A failed transaction leaves no durable idempotency record, and a committed order
+; cannot replace its quote snapshot. Both are expressed as executable gates below.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module commerce;
+
+pub const KIND : str = "contract";
+pub const ID : str = "turbobaby/commerce";
+pub const NAME : str = "TurboBaby commerce transaction contract";
+pub const IMPLEMENTATION_BOUNDARY : str = "cart -> checkout lock -> committed order";
+
+; Exactly one tagged deal shape per bike line.
+pub const DEAL_INVALID : u8 = 0;
+pub const DEAL_RENTAL : u8 = 1;
+pub const DEAL_SALE : u8 = 2;
+pub const DEAL_NAMES : [2]str = ["bike_rental", "bike_sale"];
+
+; Cart lifecycle. Converted and abandoned are terminal; a failed locked checkout may reopen.
+pub const CART_STATE_INVALID : u8 = 0;
+pub const CART_STATE_OPEN : u8 = 1;
+pub const CART_STATE_LOCKED : u8 = 2;
+pub const CART_STATE_CONVERTED : u8 = 3;
+pub const CART_STATE_ABANDONED : u8 = 4;
+pub const CART_STATE_NAMES : [4]str = ["open", "locked", "converted", "abandoned"];
+
+; Fulfillment discriminants are protocol shape only. Eligibility comes from upstream booleans.
+pub const FULFILLMENT_INVALID : u8 = 0;
+pub const FULFILLMENT_PICKUP : u8 = 1;
+pub const FULFILLMENT_DELIVERY : u8 = 2;
+pub const FULFILLMENT_NAMES : [2]str = ["pickup", "delivery"];
+
+; Idempotency decisions. A replay returns the prior committed order and never writes another one.
+pub const IDEM_REJECT_KEY : u8 = 1;
+pub const IDEM_CREATE_NEW : u8 = 2;
+pub const IDEM_RETURN_PRIOR : u8 = 3;
+pub const IDEM_IN_PROGRESS : u8 = 4;
+pub const IDEM_CONFLICT : u8 = 5;
+pub const IDEM_DECISION_COUNT : u8 = 5;
+
+; Checkout decisions are internal outcomes, not prices and not order status strings.
+pub const CHECKOUT_READY : u8 = 1;
+pub const CHECKOUT_BAD_DEAL : u8 = 2;
+pub const CHECKOUT_BAD_CART_STATE : u8 = 3;
+pub const CHECKOUT_PRICE_UNAUTHORIZED : u8 = 4;
+pub const CHECKOUT_NOT_FULFILLABLE : u8 = 5;
+pub const CHECKOUT_QUOTE_INVALID : u8 = 6;
+pub const CHECKOUT_FULFILLMENT_INVALID : u8 = 7;
+pub const CHECKOUT_IDEMPOTENCY_BLOCKED : u8 = 8;
+pub const CHECKOUT_RETURN_PRIOR : u8 = 9;
+
+pub const QUOTE_SNAPSHOT_RULE : str = "authorized quote identity, revision, scope and expiry are frozen before commit";
+pub const IDEMPOTENCY_COMMIT_RULE : str = "the key and order become durable in the same successful transaction";
+
+pub fn commerce_deal_is_known(deal_kind: u8) bool {
+    return deal_kind == DEAL_RENTAL or deal_kind == DEAL_SALE;
+}
+
+; The tagged union shape: rental payload or sale payload, never both and never neither.
+pub fn commerce_deal_shape_valid(deal_kind: u8, rental_payload_present: bool, sale_payload_present: bool) bool {
+    if (deal_kind == DEAL_RENTAL) {
+        return rental_payload_present and !sale_payload_present;
+    }
+    if (deal_kind == DEAL_SALE) {
+        return sale_payload_present and !rental_payload_present;
+    }
+    return false;
+}
+
+; Availability and sale eligibility remain upstream facts. This function selects which one the
+; deal discriminant consumes and refuses an unknown deal instead of falling back to either.
+pub fn commerce_deal_fulfillable(deal_kind: u8, upstream_bookable: bool, upstream_saleable: bool) bool {
+    if (deal_kind == DEAL_RENTAL) {
+        return upstream_bookable;
+    }
+    if (deal_kind == DEAL_SALE) {
+        return upstream_saleable;
+    }
+    return false;
+}
+
+pub fn commerce_cart_state_is_known(state: u8) bool {
+    return state >= CART_STATE_OPEN and state <= CART_STATE_ABANDONED;
+}
+
+; A lock may roll back to open after failure. Conversion requires the transaction to have
+; committed. Converted and abandoned carts are terminal, apart from idempotent same-state reads.
+pub fn commerce_cart_transition_allowed(from_state: u8, to_state: u8, transaction_committed: bool) bool {
+    if (!commerce_cart_state_is_known(from_state) or !commerce_cart_state_is_known(to_state)) {
+        return false;
+    }
+    if (from_state == to_state) {
+        return true;
+    }
+    if (from_state == CART_STATE_OPEN) {
+        return to_state == CART_STATE_LOCKED or to_state == CART_STATE_ABANDONED;
+    }
+    if (from_state == CART_STATE_LOCKED) {
+        if (to_state == CART_STATE_OPEN) {
+            return true;
+        }
+        if (to_state == CART_STATE_CONVERTED) {
+            return transaction_committed;
+        }
+    }
+    return false;
+}
+
+; No amount is inspected here. `price_authorized` is the result of the pricing owner. Identity,
+; revision, scope, and expiry keep that decision bound to this exact line and checkout attempt.
+pub fn commerce_quote_snapshot_valid(snapshot_id_valid: bool, revision_present: bool, price_authorized: bool, scope_matches: bool, not_expired: bool) bool {
+    return snapshot_id_valid and revision_present and price_authorized and scope_matches and not_expired;
+}
+
+pub fn commerce_quote_snapshot_may_replace(cart_state: u8, order_exists: bool) bool {
+    return cart_state == CART_STATE_OPEN and !order_exists;
+}
+
+; Pickup ignores destination readiness but still needs upstream pickup approval. Delivery needs
+; both upstream approval and a complete destination handoff. Unknown modes fail closed.
+pub fn commerce_fulfillment_valid(mode: u8, pickup_allowed: bool, delivery_allowed: bool, delivery_destination_ready: bool) bool {
+    if (mode == FULFILLMENT_PICKUP) {
+        return pickup_allowed;
+    }
+    if (mode == FULFILLMENT_DELIVERY) {
+        return delivery_allowed and delivery_destination_ready;
+    }
+    return false;
+}
+
+; The key is claimed inside the same transaction as the order. `prior_committed` distinguishes a
+; safe replay from a concurrent request whose result is not durable yet.
+pub fn commerce_idempotency_decision(key_valid: bool, key_seen: bool, payload_matches: bool, prior_committed: bool) u8 {
+    if (!key_valid) {
+        return IDEM_REJECT_KEY;
+    }
+    if (!key_seen) {
+        return IDEM_CREATE_NEW;
+    }
+    if (!payload_matches) {
+        return IDEM_CONFLICT;
+    }
+    if (prior_committed) {
+        return IDEM_RETURN_PRIOR;
+    }
+    return IDEM_IN_PROGRESS;
+}
+
+pub fn commerce_idempotency_permits_write(idempotency_decision: u8) bool {
+    return idempotency_decision == IDEM_CREATE_NEW;
+}
+
+pub fn commerce_idempotency_returns_prior(idempotency_decision: u8) bool {
+    return idempotency_decision == IDEM_RETURN_PRIOR;
+}
+
+; Transactional persistence in one bit: rollback removes both the order and the key record.
+pub fn commerce_idempotency_record_is_durable(transaction_committed: bool) bool {
+    return transaction_committed;
+}
+
+; The checkout join. It consumes decisions from the shape, price, availability/sale, quote,
+; fulfillment, and idempotency owners; it performs none of their underlying computations.
+pub fn commerce_checkout_decision(deal_kind: u8, cart_state: u8, shape_valid: bool, price_authorized: bool, upstream_fulfillable: bool, quote_snapshot_valid: bool, fulfillment_valid: bool, idempotency_decision: u8) u8 {
+    ; A committed replay is already proven to have the same payload. It must return before the
+    ; cart and domain gates: the first commit converted the cart and may have consumed the last
+    ; available unit, so re-running those gates would make a successful retry look unavailable.
+    if (commerce_idempotency_returns_prior(idempotency_decision)) {
+        return CHECKOUT_RETURN_PRIOR;
+    }
+    if (!commerce_idempotency_permits_write(idempotency_decision)) {
+        return CHECKOUT_IDEMPOTENCY_BLOCKED;
+    }
+    if (!commerce_deal_is_known(deal_kind) or !shape_valid) {
+        return CHECKOUT_BAD_DEAL;
+    }
+    if (cart_state != CART_STATE_LOCKED) {
+        return CHECKOUT_BAD_CART_STATE;
+    }
+    if (!price_authorized) {
+        return CHECKOUT_PRICE_UNAUTHORIZED;
+    }
+    if (!upstream_fulfillable) {
+        return CHECKOUT_NOT_FULFILLABLE;
+    }
+    if (!quote_snapshot_valid) {
+        return CHECKOUT_QUOTE_INVALID;
+    }
+    if (!fulfillment_valid) {
+        return CHECKOUT_FULFILLMENT_INVALID;
+    }
+    return CHECKOUT_READY;
+}
+
+pub fn commerce_checkout_may_commit(checkout_decision: u8) bool {
+    return checkout_decision == CHECKOUT_READY;
+}
+
+; Order-status vocabulary remains in the order owner. This gate takes only three facts about a
+; requested transition: whether the current state is terminal, whether this is an idempotent
+; same-state write, and whether the order owner authorizes the edge.
+pub fn commerce_order_transition_allowed(current_is_terminal: bool, same_state: bool, transition_authorized: bool) bool {
+    if (same_state) {
+        return true;
+    }
+    if (current_is_terminal) {
+        return false;
+    }
+    return transition_authorized;
+}
+
+test commerce_deal_discriminant_accepts_exactly_rental_or_sale {
+    assert commerce_deal_is_known(DEAL_RENTAL) == true;
+    assert commerce_deal_is_known(DEAL_SALE) == true;
+    assert commerce_deal_is_known(DEAL_INVALID) == false;
+    assert commerce_deal_is_known(3) == false;
+    assert DEAL_NAMES[0] == "bike_rental";
+    assert DEAL_NAMES[1] == "bike_sale";
+}
+
+test commerce_deal_shape_is_exclusive {
+    assert commerce_deal_shape_valid(DEAL_RENTAL, true, false) == true;
+    assert commerce_deal_shape_valid(DEAL_SALE, false, true) == true;
+    assert commerce_deal_shape_valid(DEAL_RENTAL, true, true) == false;
+    assert commerce_deal_shape_valid(DEAL_SALE, true, true) == false;
+    assert commerce_deal_shape_valid(DEAL_RENTAL, false, false) == false;
+    assert commerce_deal_shape_valid(DEAL_INVALID, true, false) == false;
+}
+
+test commerce_fulfillability_consumes_upstream_decisions_without_recomputing_them {
+    assert commerce_deal_fulfillable(DEAL_RENTAL, true, false) == true;
+    assert commerce_deal_fulfillable(DEAL_RENTAL, false, true) == false;
+    assert commerce_deal_fulfillable(DEAL_SALE, false, true) == true;
+    assert commerce_deal_fulfillable(DEAL_SALE, true, false) == false;
+    assert commerce_deal_fulfillable(DEAL_INVALID, true, true) == false;
+}
+
+test commerce_cart_state_machine_locks_commits_rolls_back_and_stays_terminal {
+    assert commerce_cart_transition_allowed(CART_STATE_OPEN, CART_STATE_LOCKED, false) == true;
+    assert commerce_cart_transition_allowed(CART_STATE_OPEN, CART_STATE_ABANDONED, false) == true;
+    assert commerce_cart_transition_allowed(CART_STATE_LOCKED, CART_STATE_OPEN, false) == true;
+    assert commerce_cart_transition_allowed(CART_STATE_LOCKED, CART_STATE_CONVERTED, false) == false;
+    assert commerce_cart_transition_allowed(CART_STATE_LOCKED, CART_STATE_CONVERTED, true) == true;
+    assert commerce_cart_transition_allowed(CART_STATE_CONVERTED, CART_STATE_OPEN, true) == false;
+    assert commerce_cart_transition_allowed(CART_STATE_ABANDONED, CART_STATE_LOCKED, true) == false;
+}
+
+test commerce_cart_same_state_retry_is_idempotent_only_for_known_states {
+    assert commerce_cart_transition_allowed(CART_STATE_OPEN, CART_STATE_OPEN, false) == true;
+    assert commerce_cart_transition_allowed(CART_STATE_LOCKED, CART_STATE_LOCKED, false) == true;
+    assert commerce_cart_transition_allowed(CART_STATE_CONVERTED, CART_STATE_CONVERTED, false) == true;
+    assert commerce_cart_transition_allowed(CART_STATE_INVALID, CART_STATE_INVALID, false) == false;
+}
+
+test commerce_quote_snapshot_requires_every_authority_property {
+    assert commerce_quote_snapshot_valid(true, true, true, true, true) == true;
+    assert commerce_quote_snapshot_valid(false, true, true, true, true) == false;
+    assert commerce_quote_snapshot_valid(true, false, true, true, true) == false;
+    assert commerce_quote_snapshot_valid(true, true, false, true, true) == false;
+    assert commerce_quote_snapshot_valid(true, true, true, false, true) == false;
+    assert commerce_quote_snapshot_valid(true, true, true, true, false) == false;
+}
+
+test commerce_quote_snapshot_can_refresh_only_before_checkout_lock {
+    assert commerce_quote_snapshot_may_replace(CART_STATE_OPEN, false) == true;
+    assert commerce_quote_snapshot_may_replace(CART_STATE_LOCKED, false) == false;
+    assert commerce_quote_snapshot_may_replace(CART_STATE_CONVERTED, true) == false;
+    assert commerce_quote_snapshot_may_replace(CART_STATE_OPEN, true) == false;
+}
+
+test commerce_fulfillment_checks_mode_specific_upstream_gates {
+    assert commerce_fulfillment_valid(FULFILLMENT_PICKUP, true, false, false) == true;
+    assert commerce_fulfillment_valid(FULFILLMENT_PICKUP, false, true, true) == false;
+    assert commerce_fulfillment_valid(FULFILLMENT_DELIVERY, false, true, true) == true;
+    assert commerce_fulfillment_valid(FULFILLMENT_DELIVERY, true, true, false) == false;
+    assert commerce_fulfillment_valid(FULFILLMENT_DELIVERY, true, false, true) == false;
+    assert commerce_fulfillment_valid(FULFILLMENT_INVALID, true, true, true) == false;
+}
+
+test commerce_idempotency_distinguishes_new_replay_in_progress_and_conflict {
+    assert commerce_idempotency_decision(false, false, false, false) == IDEM_REJECT_KEY;
+    assert commerce_idempotency_decision(true, false, false, false) == IDEM_CREATE_NEW;
+    assert commerce_idempotency_decision(true, true, true, true) == IDEM_RETURN_PRIOR;
+    assert commerce_idempotency_decision(true, true, true, false) == IDEM_IN_PROGRESS;
+    assert commerce_idempotency_decision(true, true, false, true) == IDEM_CONFLICT;
+}
+
+test commerce_only_a_new_key_permits_a_write_and_replay_returns_prior {
+    assert commerce_idempotency_permits_write(IDEM_CREATE_NEW) == true;
+    assert commerce_idempotency_permits_write(IDEM_RETURN_PRIOR) == false;
+    assert commerce_idempotency_permits_write(IDEM_IN_PROGRESS) == false;
+    assert commerce_idempotency_permits_write(IDEM_CONFLICT) == false;
+    assert commerce_idempotency_returns_prior(IDEM_RETURN_PRIOR) == true;
+    assert commerce_idempotency_returns_prior(IDEM_CREATE_NEW) == false;
+}
+
+; A retry happens after the first order consumed the availability and converted the cart. The
+; committed result must therefore win before current cart, quote, or inventory gates run.
+test commerce_committed_replay_short_circuits_changed_world_state {
+    assert commerce_checkout_decision(DEAL_INVALID, CART_STATE_CONVERTED, false, false, false, false, false, IDEM_RETURN_PRIOR) == CHECKOUT_RETURN_PRIOR;
+    assert commerce_checkout_may_commit(CHECKOUT_RETURN_PRIOR) == false;
+}
+
+test commerce_idempotency_record_is_atomic_with_commit {
+    assert commerce_idempotency_record_is_durable(false) == false;
+    assert commerce_idempotency_record_is_durable(true) == true;
+}
+
+test commerce_checkout_accepts_a_complete_rental_without_seeing_domain_arithmetic {
+    const upstream_fulfillable = commerce_deal_fulfillable(DEAL_RENTAL, true, false);
+    const shape_valid = commerce_deal_shape_valid(DEAL_RENTAL, true, false);
+    const quote_valid = commerce_quote_snapshot_valid(true, true, true, true, true);
+    const fulfillment_valid = commerce_fulfillment_valid(FULFILLMENT_PICKUP, true, false, false);
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_LOCKED, shape_valid, true, upstream_fulfillable, quote_valid, fulfillment_valid, IDEM_CREATE_NEW) == CHECKOUT_READY;
+}
+
+test commerce_checkout_accepts_sale_only_through_the_sale_upstream_gate {
+    const upstream_fulfillable = commerce_deal_fulfillable(DEAL_SALE, false, true);
+    const shape_valid = commerce_deal_shape_valid(DEAL_SALE, false, true);
+    const quote_valid = commerce_quote_snapshot_valid(true, true, true, true, true);
+    const fulfillment_valid = commerce_fulfillment_valid(FULFILLMENT_PICKUP, true, false, false);
+    assert commerce_checkout_decision(DEAL_SALE, CART_STATE_LOCKED, shape_valid, true, upstream_fulfillable, quote_valid, fulfillment_valid, IDEM_CREATE_NEW) == CHECKOUT_READY;
+    assert commerce_deal_fulfillable(DEAL_SALE, true, false) == false;
+}
+
+test commerce_checkout_refusal_precedence_is_stable {
+    assert commerce_checkout_decision(DEAL_INVALID, CART_STATE_OPEN, false, false, false, false, false, IDEM_REJECT_KEY) == CHECKOUT_IDEMPOTENCY_BLOCKED;
+    assert commerce_checkout_decision(DEAL_INVALID, CART_STATE_OPEN, false, false, false, false, false, IDEM_CREATE_NEW) == CHECKOUT_BAD_DEAL;
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_OPEN, true, true, true, true, true, IDEM_CREATE_NEW) == CHECKOUT_BAD_CART_STATE;
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_LOCKED, true, false, true, true, true, IDEM_CREATE_NEW) == CHECKOUT_PRICE_UNAUTHORIZED;
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_LOCKED, true, true, false, true, true, IDEM_CREATE_NEW) == CHECKOUT_NOT_FULFILLABLE;
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_LOCKED, true, true, true, false, true, IDEM_CREATE_NEW) == CHECKOUT_QUOTE_INVALID;
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_LOCKED, true, true, true, true, false, IDEM_CREATE_NEW) == CHECKOUT_FULFILLMENT_INVALID;
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_LOCKED, true, true, true, true, true, IDEM_IN_PROGRESS) == CHECKOUT_IDEMPOTENCY_BLOCKED;
+}
+
+test commerce_only_ready_checkout_may_commit {
+    assert commerce_checkout_may_commit(CHECKOUT_READY) == true;
+    assert commerce_checkout_may_commit(CHECKOUT_RETURN_PRIOR) == false;
+    assert commerce_checkout_may_commit(CHECKOUT_BAD_DEAL) == false;
+    assert commerce_checkout_may_commit(CHECKOUT_PRICE_UNAUTHORIZED) == false;
+    assert commerce_checkout_may_commit(CHECKOUT_IDEMPOTENCY_BLOCKED) == false;
+}
+
+test commerce_order_transition_refuses_mutation_after_terminal_state {
+    assert commerce_order_transition_allowed(false, false, true) == true;
+    assert commerce_order_transition_allowed(false, false, false) == false;
+    assert commerce_order_transition_allowed(false, true, false) == true;
+    assert commerce_order_transition_allowed(true, true, false) == true;
+    assert commerce_order_transition_allowed(true, false, true) == false;
+}
+
+invariant commerce_deal_domain_has_exactly_two_shapes
+    assert DEAL_NAMES.len == 2 and DEAL_RENTAL != DEAL_SALE
+
+invariant commerce_mixed_rental_and_sale_payload_is_unrepresentable
+    assert commerce_deal_shape_valid(DEAL_RENTAL, true, true) == false and commerce_deal_shape_valid(DEAL_SALE, true, true) == false
+
+invariant commerce_terminal_cart_states_never_reopen
+    assert commerce_cart_transition_allowed(CART_STATE_CONVERTED, CART_STATE_OPEN, true) == false and commerce_cart_transition_allowed(CART_STATE_ABANDONED, CART_STATE_OPEN, true) == false
+
+invariant commerce_quote_cannot_be_replaced_after_order_creation
+    assert commerce_quote_snapshot_may_replace(CART_STATE_CONVERTED, true) == false
+
+invariant commerce_unauthorized_price_never_reaches_commit
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_LOCKED, true, false, true, true, true, IDEM_CREATE_NEW) == CHECKOUT_PRICE_UNAUTHORIZED
+
+invariant commerce_unbookable_rental_never_reaches_commit
+    assert commerce_checkout_decision(DEAL_RENTAL, CART_STATE_LOCKED, true, true, commerce_deal_fulfillable(DEAL_RENTAL, false, false), true, true, IDEM_CREATE_NEW) == CHECKOUT_NOT_FULFILLABLE
+
+invariant commerce_replay_never_creates_a_second_order
+    assert commerce_idempotency_permits_write(commerce_idempotency_decision(true, true, true, true)) == false and commerce_idempotency_returns_prior(commerce_idempotency_decision(true, true, true, true)) == true
+
+invariant commerce_committed_replay_precedes_current_cart_and_inventory_state
+    assert commerce_checkout_decision(DEAL_INVALID, CART_STATE_CONVERTED, false, false, false, false, false, IDEM_RETURN_PRIOR) == CHECKOUT_RETURN_PRIOR
+
+invariant commerce_failed_transaction_persists_no_idempotency_record
+    assert commerce_idempotency_record_is_durable(false) == false
+
+invariant commerce_delivery_without_ready_destination_never_reaches_checkout
+    assert commerce_fulfillment_valid(FULFILLMENT_DELIVERY, true, true, false) == false
+
+invariant commerce_refused_checkout_has_no_commit_path
+    assert commerce_checkout_may_commit(CHECKOUT_PRICE_UNAUTHORIZED) == false and commerce_checkout_may_commit(CHECKOUT_NOT_FULFILLABLE) == false and commerce_checkout_may_commit(CHECKOUT_IDEMPOTENCY_BLOCKED) == false

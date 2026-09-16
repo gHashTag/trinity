@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Adam adapts learning rate per parameter | φ² + 1/φ² = 3 | TRINITY
+
+module Adam;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_BETA1 : f32 = 0.9;
+    const DEFAULT_BETA2 : f32 = 0.999;
+    const DEFAULT_EPSILON : f32 = 1e-8;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const AdamConfig = struct {
+        learning_rate : f32,
+        beta1 : f32,
+        beta2 : f32,
+        epsilon : f32,
+        weight_decay : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // step(grads: []const f32) → void
+    fn step(grads: []const f32) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test step_basic_case
+        given input = default_input()
+        when result = step(input)
+        then result != undefined
+

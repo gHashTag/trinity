@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Check if point satisfies curve equation | φ² + 1/φ² = 3 | TRINITY
+
+module TriEcc;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const ECPoint = struct {
+        x : "f64",
+        y : "f64",
+        is_infinity : "bool",
+    };
+
+    pub const EllipticCurve = struct {
+        a : "f64",
+        b : "f64",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // add(curve: *EllipticCurve) → void
+    fn add(curve: *EllipticCurve) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // multiply(curve: *EllipticCurve) → void
+    fn multiply(curve: *EllipticCurve) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // is_on_curve(curve: *EllipticCurve) → void
+    fn is_on_curve(curve: *EllipticCurve) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test add_basic_case
+        given input = default_input()
+        when result = add(input)
+        then result != undefined
+
+    test multiply_basic_case
+        given input = default_input()
+        when result = multiply(input)
+        then result != undefined
+
+    test is_on_curve_basic_case
+        given input = default_input()
+        when result = is_on_curve(input)
+        then result != undefined
+

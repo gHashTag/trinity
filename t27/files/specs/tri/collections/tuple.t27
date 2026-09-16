@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Combines multiple types | φ² + 1/φ² = 3 | TRINITY
+
+module TriTuple;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Tuple2(A, B) = struct {
+        first : A,
+        second : B,
+    };
+
+    pub const Tuple3(A, B, C) = struct {
+        first : A,
+        second : B,
+        third : C,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // pair(a: A) → void
+    fn pair(a: A) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // triple(a: A) → void
+    fn triple(a: A) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // fst(pair: Tuple2(A, B)) → void
+    fn fst(pair: Tuple2(A, B)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // snd(pair: Tuple2(A, B)) → void
+    fn snd(pair: Tuple2(A, B)) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test pair_basic_case
+        given input = default_input()
+        when result = pair(input)
+        then result != undefined
+
+    test triple_basic_case
+        given input = default_input()
+        when result = triple(input)
+        then result != undefined
+
+    test fst_basic_case
+        given input = default_input()
+        when result = fst(input)
+        then result != undefined
+
+    test snd_basic_case
+        given input = default_input()
+        when result = snd(input)
+        then result != undefined
+

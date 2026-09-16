@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Monotonic clock | φ² + 1/φ² = 3 | TRINITY
+
+module TriTime;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Instant = struct {
+        epoch_seconds : "i64",
+        nanos : "u32",
+    };
+
+    pub const Duration = struct {
+        seconds : "i64",
+        nanos : "u32",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // now() → Instant
+    fn now() -> Instant {
+        // TODO: Implement from .tri spec
+    }
+
+    // since_epoch(instant: Instant) → void
+    fn since_epoch(instant: Instant) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // add(instant: Instant) → void
+    fn add(instant: Instant) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // sub(a: Instant) → void
+    fn sub(a: Instant) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // format(instant: Instant) → void
+    fn format(instant: Instant) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test now_basic_case
+        given input = default_input()
+        when result = now(input)
+        then result != undefined
+
+    test since_epoch_basic_case
+        given input = default_input()
+        when result = since_epoch(input)
+        then result != undefined
+
+    test add_basic_case
+        given input = default_input()
+        when result = add(input)
+        then result != undefined
+
+    test sub_basic_case
+        given input = default_input()
+        when result = sub(input)
+        then result != undefined
+
+    test format_basic_case
+        given input = default_input()
+        when result = format(input)
+        then result != undefined
+

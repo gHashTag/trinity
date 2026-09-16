@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Every byte becomes 2 chars | φ² + 1/φ² = 3 | TRINITY
+
+module TriHex;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Hex = struct {
+        uppercase : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // lower_case() → Hex
+    fn lower_case() -> Hex {
+        // TODO: Implement from .tri spec
+    }
+
+    // upper_case() → Hex
+    fn upper_case() -> Hex {
+        // TODO: Implement from .tri spec
+    }
+
+    // encode(codec: Hex) → void
+    fn encode(codec: Hex) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // decode(input: []const u8) → void
+    fn decode(input: []const u8) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test lower_case_basic_case
+        given input = default_input()
+        when result = lower_case(input)
+        then result != undefined
+
+    test upper_case_basic_case
+        given input = default_input()
+        when result = upper_case(input)
+        then result != undefined
+
+    test encode_basic_case
+        given input = default_input()
+        when result = encode(input)
+        then result != undefined
+
+    test decode_basic_case
+        given input = default_input()
+        when result = decode(input)
+        then result != undefined
+

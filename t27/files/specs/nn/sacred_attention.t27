@@ -1,0 +1,46 @@
+// specs/nn/sacred_attention.t27
+// Sacred Attention: Multi-head attention with φ-based scaling
+// scale = head_dim^(-PHI^3) instead of standard 1/sqrt(head_dim)
+
+algorithm sacred_attention {
+    module: brain.prefrontal.parallel_attention
+
+    strand_i: {
+        phi_identity: "scale = head_dim^(-PHI^3)",
+        n_heads: 3,
+        head_dim: 81,
+        embed_dim: 243,
+        numeric_format: GF16
+    }
+
+    strand_ii: {
+        brain_region: prefrontal_cortex,
+        biological_analog: "dlPFC parallel attention streams"
+    }
+
+    strand_iii: {
+        t27_target: "nn/sacred_attention",
+        backends: [rust, zig, c, verilog]
+    }
+
+    complexity: O(n^2 * d)
+
+    inputs:  [x: Float[B, seq, 243]]
+    outputs: [out: Float[B, seq, 243]]
+
+    depends: [phi_rope]
+
+    notes: |
+        scale = head_dim^(-PHI^3)
+        Q,K,V = x @ Wq, x @ Wk, x @ Wv
+        scores = (Q @ K^T) * scale
+        attn   = softmax(scores)
+        out    = (attn @ V) @ Wo
+
+    invariants: [scale_in_0_1, n_heads_times_head_dim_eq_embed_dim]
+
+    tests: [
+        { assert: N_HEADS * HEAD_DIM == EMBED_DIM },
+        { assert: sacred_scale() > 0.0 && sacred_scale() < 1.0 }
+    ]
+}

@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Free matrix | φ² + 1/φ² = 3 | TRINITY
+
+module TriMatrix;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Matrix = struct {
+        data : []f64,
+        rows : "usize",
+        cols : "usize",
+        allocator : "std.mem.Allocator",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(allocator: std.mem.Allocator) → void
+    fn init(allocator: std.mem.Allocator) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // get(m: *Matrix) → void
+    fn get(m: *Matrix) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // set(m: *Matrix) → void
+    fn set(m: *Matrix) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // multiply(a: *Matrix) → void
+    fn multiply(a: *Matrix) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // transpose(m: *Matrix) → void
+    fn transpose(m: *Matrix) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // identity(allocator: std.mem.Allocator) → void
+    fn identity(allocator: std.mem.Allocator) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // deinit(m: *Matrix) → void
+    fn deinit(m: *Matrix) -> void {
+        // TODO: Implement from .tri spec
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test init_basic_case
+        given input = default_input()
+        when result = init(input)
+        then result != undefined
+
+    test get_basic_case
+        given input = default_input()
+        when result = get(input)
+        then result != undefined
+
+    test set_basic_case
+        given input = default_input()
+        when result = set(input)
+        then result != undefined
+
+    test multiply_basic_case
+        given input = default_input()
+        when result = multiply(input)
+        then result != undefined
+
+    test transpose_basic_case
+        given input = default_input()
+        when result = transpose(input)
+        then result != undefined
+
+    test identity_basic_case
+        given input = default_input()
+        when result = identity(input)
+        then result != undefined
+
+    test deinit_basic_case
+        given input = default_input()
+        when result = deinit(input)
+        then result != undefined
+
