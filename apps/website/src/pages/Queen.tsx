@@ -73,6 +73,7 @@ const ENGINE_FLAG =
   typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("engine") : null;
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
+import { QueenLanes } from "../components/QueenLanes";
 import { QueenIdentity } from "../components/QueenIdentity";
 import { hashParamsOf, tabAddress } from "../lib/triScreens";
 import {
@@ -157,6 +158,14 @@ interface ResearchGraph {
 
 interface QueenStatus {
   status: "ok";
+  /** Lane occupancy as the swarm reports it. Occupancy, not throughput: a
+      refused turn holds a lane exactly like a working one (see QueenLanes). */
+  workers?: {
+    capacity: number;
+    active: number;
+    idle: number;
+    utilization: number;
+  } | null;
   /** The swarm's own word for its state on the wire (working, idle, …). */
   swarmState?: string | null;
   scheduler: {
@@ -339,6 +348,11 @@ const COPY = {
     projectSources: "sources pinned",
     triView: "TRI",
     triHint: "The app inside the game: feed, agent, AI generation, profile and CRM (key r)",
+    lanesView: "LANES",
+    lanesHint: "How many bees can work at once, and whether they are working (key l)",
+    lanesDirective: "LANES",
+    lanesDirectiveBody:
+      "Capacity is live provider keys times the lanes each may open. Utilisation counts occupied lanes — a refused turn occupies one too, so it is printed beside the evidence, never instead of it.",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -663,6 +677,11 @@ const COPY = {
     projectSources: "источников закреплено",
     triView: "TRI",
     triHint: "Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)",
+    lanesView: "ПОЛОСЫ",
+    lanesHint: "Сколько пчёл работают одновременно и работают ли вообще (клавиша l)",
+    lanesDirective: "ПОЛОСЫ",
+    lanesDirectiveBody:
+      "Ёмкость — живые ключи провайдера, умноженные на полосы каждого. Загрузка считает занятые полосы, а отказной ход занимает полосу тоже, поэтому она печатается рядом со свидетельством, а не вместо него.",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -2405,6 +2424,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // Thirteenth, on the letter r (HUD_KEYS[12]; digits spent, t is TOOLS, p is
     // PROJECT): TRI, the app at app.t27.ai inside the game, one screen per address.
     { view: "tri" as const, glyph: "△", label: c.triView, hint: c.triHint },
+    { view: "lanes" as const, glyph: "≡", label: c.lanesView, hint: c.lanesHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -2829,6 +2849,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 projectRu: c.projectRu,
                 projectSources: c.projectSources,
               }}
+            />
+          ) : boardView === "lanes" ? (
+            <QueenLanes
+              status={state.data}
+              error={state.error}
+              c={{ directive: c.lanesDirective, directiveBody: c.lanesDirectiveBody }}
             />
           ) : boardView === "tri" ? (
             <QueenTri

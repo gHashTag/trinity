@@ -360,7 +360,12 @@ assert.ok(triModule && HUD_VIEWS.includes('tri'), 'TRI (the app inside the game)
 assert.equal(triModule.key, 'r', 'TRI opens on r: digits spent, t is TOOLS, p is PROJECT')
 assert.ok(triModule.en.hint.includes('(key r)') && triModule.ru.hint.includes('(клавиша r)'), 'TRI names its letter key in both hints')
 for (const lang of ['en', 'ru']) assert.ok(triModule[lang].name && triModule[lang].body.length > 40, `tri: ${lang} copy missing`)
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tpr', 'the rail keys are 1-9, 0, t, p, r in that order')
+const lanesModule = MODULES.find((m) => m.tab === 'lanes')
+assert.ok(lanesModule && HUD_VIEWS.includes('lanes'), 'LANES (the swarm\'s width) is a module and a view')
+assert.equal(lanesModule.key, 'l', 'LANES opens on l: digits spent, t is TOOLS, p is PROJECT, r is TRI')
+assert.ok(lanesModule.en.hint.includes('(key l)') && lanesModule.ru.hint.includes('(клавиша l)'), 'LANES names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(lanesModule[lang].name && lanesModule[lang].body.length > 40, `lanes: ${lang} copy missing`)
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprl', 'the rail keys are 1-9, 0, t, p, r, l in that order')
 
 // 6. Translations are connected through .t27 contract specs, never hardcoded.
 //    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists

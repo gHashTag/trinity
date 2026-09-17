@@ -210,6 +210,21 @@ export const MODULES = [
       body: 'Приложение app.t27.ai внутри игры. Каждый экран — настоящая страница приложения во фрейме: лента, агент, ИИ-конвейер от сценария через голос, фото, липсинк и видео к редактору, профиль и CRM владельца. Экран записан в адресе (?tab=tri&screen=chat, а для одного профиля ещё path=), поэтому ссылка его открывает, а перезагрузка сохраняет. На t27.ai Telegram не даёт своему входу загрузиться внутри чужого сайта, поэтому экраны, которым нужен человек, говорят об этом и ведут в само приложение; лента работает для всех. Пока приложение не разрешит t27.ai показывать себя во фрейме, экран не отвечает и говорит об этом. Открывается буквой r.',
     },
   },
+  {
+    tab: 'lanes',
+    key: 'l',
+    glyph: '≡',
+    en: {
+      name: 'LANES',
+      hint: 'How many bees can work at once, and whether they are working (key l)',
+      body: 'The swarm\'s width, and the one question the width cannot answer. Capacity is the number of provider keys that answer times the lanes each key may open — a worker ceiling cannot conjure a lane a key does not pay for. Beside the utilisation figure the view prints the evidence for whether it is work at all: a turn refused in under a second never reached the provider, and a starved swarm reports its best utilisation ever, because a refusal occupies a lane exactly like a real turn. It also states how a player widens the swarm — a donated key adds quota, which is the actual currency — and how XP is earned for it: per turn that reached a branch, never per dispatch. No field on this page accepts a provider key and none ever will; it is a public static page, and a secret typed into it is a secret published. The digits are spent, so this view opens on the letter l.',
+    },
+    ru: {
+      name: 'ПОЛОСЫ',
+      hint: 'Сколько пчёл работают одновременно и работают ли вообще (клавиша l)',
+      body: 'Ширина роя и единственный вопрос, на который ширина не отвечает. Ёмкость — это число отвечающих ключей провайдера, умноженное на число полос, разрешённых одному ключу: потолок воркеров не создаст полосу, за которую не платит ключ. Рядом с цифрой загрузки вид печатает свидетельство того, работа ли это вообще: ход, отказанный быстрее секунды, до провайдера не дошёл, а голодающий рой показывает лучшую загрузку в своей истории, потому что отказ занимает полосу так же, как настоящий ход. Здесь же сказано, чем игрок расширяет рой — отданный ключ добавляет квоту, а квота и есть настоящая валюта — и как за это начисляется XP: за ход, дошедший до ветки, и никогда за диспатч. Ни одно поле этой страницы не принимает ключ провайдера и не будет: это публичная статическая страница, а секрет, введённый в неё, — секрет опубликованный. Цифры заняты, поэтому вид открывается буквой l.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];
