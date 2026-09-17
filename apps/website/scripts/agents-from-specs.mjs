@@ -101,7 +101,10 @@ export const FN_TRIGGERS = ['event', 'cron']
 export const FN_ON_FAILURE = ['admin-telegram', 'log', 'refund+notify']
 export const FN_SIDE_EFFECTS = ['charges-balance', 'paid-api', 'messages-user', 'messages-owners', 'messages-admin', 'db-write', 'external-webhook', 'none']
 export const FN_PROBE_RESULTS = ['COMPLETED', 'FAILED-at-guard', 'skipped', 'not-deployed']
-export const FN_CONTROLS = ['spec+code', 'spec-only', 'code-only']
+// 'code-only/unregistered' (t27 specs/functions/README.md, 2026-09-17): the code
+// exists in the bot tree but is withdrawn from registerFunctions.ts and not served;
+// the spec's NOTE says why. The bot manifest uses the same value for `control`.
+export const FN_CONTROLS = ['spec+code', 'spec-only', 'code-only', 'code-only/unregistered']
 export const T27_REPO_URL = 'https://github.com/gHashTag/t27'
 // Repo root of gHashTag/trinity (BUNDLE_PATH is repo-relative).
 export const REPO_ROOT = resolve(SITE, '..', '..')
