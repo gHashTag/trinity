@@ -1,4 +1,5 @@
 #!/usr/bin/expect -f
+# Credentials come from the AMD_USER and AMD_PASS environment variables. Never commit them.
 # Vivado AuthTokenGen automation (auth only)
 set timeout 300
 
@@ -6,9 +7,9 @@ set timeout 300
 puts "=== Generating Auth Token ==="
 spawn /vivado/installer/xsetup -b AuthTokenGen
 expect "E-mail Address:"
-send "999aigents@gmail.com\r"
+send "$env(AMD_USER)\r"
 expect "Password:"
-send "TNzL7xAn0GpbwUcHsDwLYsVD4DReIQDm4d!\r"
+send "$env(AMD_PASS)\r"
 expect {
     "Saved authentication token file successfully" {
         puts "\n=== AUTH TOKEN GENERATED ==="
