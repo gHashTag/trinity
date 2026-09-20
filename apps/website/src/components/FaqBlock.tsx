@@ -112,9 +112,9 @@ export default function FaqBlock() {
           <p>{t.lede}</p>
         </header>
 
-        <dl className="faq-block-list">
+        <dl className="faq-block-list site-card-row">
           {t.items.map((item) => (
-            <div className="faq-block-item" key={item.q}>
+            <div className="faq-block-item site-card" key={item.q}>
               <dt>{item.q}</dt>
               <dd>
                 <p>{item.a}</p>

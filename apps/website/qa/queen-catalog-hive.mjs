@@ -43,6 +43,19 @@ const source=readFileSync('src/components/QueenCombBabylon.tsx','utf8');
 assert.ok(source.includes('catalogLayer'),'the shared data layer must use the existing Babylon renderer');
 const ui=readFileSync('src/components/QueenCatalogHive.tsx','utf8');
 assert.doesNotMatch(ui,/target="_blank"|window\.open/,'the collaboration flow stays inside the game');
+// A click on a cell opens the cell, at the size of the display. The 320px aside
+// that used to sit beside a moving map is gone rather than hidden, and the stage
+// is handed everything only the hive holds: the catalog's specs, the agent
+// packet, and the observer that redraws the map cell from the live GitHub read.
+const stage=readFileSync('src/components/QueenCellStage.tsx','utf8');
+assert.match(ui,/<QueenCellStage[^>]+number=\{focus\.number\}/,'a focused cell opens as the full-screen stage');
+assert.doesNotMatch(ui,/QueenCatalogInspector/,'the aside is replaced, not left beside the stage');
+for(const [prop,why] of [['specs=','the catalog spec links come from the hive, which holds the atlas'],['onSpec=','a spec on the stage still opens in the explorer'],['packet=','COPY TO AGENT survives the move'],['onObserved=','the live GitHub read still redraws the map cell']])assert.ok(ui.includes(prop),why);
+assert.doesNotMatch(stage,/target="_blank"|window\.open/,'the stage keeps the collaboration flow inside the game too');
+assert.match(stage,/role="dialog" aria-modal="true"/,'the close-up is a dialog, so Escape and focus behave');
+assert.match(stage,/collab\.capabilities\.comment && \(/,'the GitHub write button exists only while the service says it can write');
+assert.match(stage,/loadWorldIssueDetailsCached\(repo, number, abort\.signal, retry > 0\)/,'reopening a cell reuses the cached read; only Retry spends a request');
+assert.match(stage,/live\.boardRead \? '—' : '…'/,'a figure the board has not answered for is a dash, never a fabricated zero');
 const css=readFileSync('src/pages/Queen.css','utf8');
 const surface=css.match(/\.queen-hive-display:is\(\[data-kind="spec"\],\[data-task-tone="honey"\]\) \{([^}]+)\}/)[1];
 assert.doesNotMatch(surface,/gradient|blur\(/);assert.match(surface,/backdrop-filter:none/);

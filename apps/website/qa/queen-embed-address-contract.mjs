@@ -1,7 +1,15 @@
 // Does the Queen's address name the card each embedded Explorer shows?
 //
 // Seven Queen tabs frame an Explorer: SPECS, SKILLS, CRONS, AGENTS, FUNCTIONS, TOOLS
-// and PROJECT (the system docs). Measured on t27.ai before lib/queenEmbed: a pick
+// and PROJECT (the system docs). Six of those seven are one module now: only SPECS
+// and PROJECT are buttons on the rail, and skills, crons, agents, tools and functions
+// are rungs of the ladder inside SPECS (components/QueenLadder). They are still tabs
+// in the address and still open on their old keys, so every check below is unchanged
+// except for where the button lives and what the rail lights. Two different things
+// are called a ladder here: the Queen's, `.queen27-ladder-step`, and the Explorer's
+// own cross-links inside a frame, `.spec-x-ladder` -- E exercises the second.
+//
+// Measured on t27.ai before lib/queenEmbed: a pick
 // inside a frame changed only the frame's own hash, so a reload, a shared link or the
 // language toggle opened the default card; #/queen?tab=skills&skill=... opened the
 // default skill; and the ladder link Skills inside the agents frame put the Skill
@@ -132,6 +140,7 @@ const nonce = String(process.pid);
 
 const TOP = `(() => ({ hash: location.hash, search: location.search, params: Object.fromEntries(new URLSearchParams(location.hash.split('?')[1] || '')),
   view: document.querySelector('main[data-view]')?.getAttribute('data-view') ?? null, active: document.querySelector('button.queen27-hud-cmd.is-active')?.dataset.view ?? null,
+  rung: document.querySelector('.queen27-ladder-step.is-active')?.dataset.layer ?? null,
   jump: document.querySelector('.queen27-docs-jump.is-active')?.textContent ?? null, histLen: history.length, frames: document.querySelectorAll('iframe.queen27-specs-frame').length, lang: document.documentElement.lang }))()`;
 // The frame as it is on screen: its route, the item marked current, the docs heading.
 const FRAME = `(() => { const f = document.querySelector('iframe.queen27-specs-frame'); if (!f) return null; let w, d; try { w = f.contentWindow; d = w && w.document; if (!d || !d.body) return null; } catch { return null }
@@ -234,7 +243,10 @@ try {
   if (ladder) await p.clickAt(ladder.x, ladder.y);
   await p.until(`(() => { const t = ${TOP}; const f = ${FRAME}; return t.view === 'skills' && f && f.route === 'skills' && f.current.length > 0 })()`, 90000); await wait(1500);
   const tE = await top(), fE = await frame();
-  record('E the ladder link Skills in the agents frame switches the Queen to SKILLS (rail, address, title, frame agree)', !!ladder && beforeE.view === 'agents' && tE.params.tab === 'skills' && tE.view === 'skills' && tE.active === 'skills' && fE?.title === TITLE.skills && fE?.route === 'skills' && tE.frames === 1, { ladder, before: beforeE, top: tE, frame: fE });
+  // SKILLS is no longer a rail button: it is the second rung of the ladder inside
+  // SPECS, so the rail lights SPECS and the ladder marks skills. Both are checked --
+  // the whole point of E is that every surface agrees about where you are.
+  record('E the ladder link Skills in the agents frame switches the Queen to SKILLS (rail, ladder, address, title, frame agree)', !!ladder && beforeE.view === 'agents' && tE.params.tab === 'skills' && tE.view === 'skills' && tE.active === 'specs' && tE.rung === 'skills' && fE?.title === TITLE.skills && fE?.route === 'skills' && tE.frames === 1, { ladder, before: beforeE, top: tE, frame: fE });
 
   // F. A skill chip inside an agent card opens that skill in the SKILLS tab.
   const chip = ids.chip;
@@ -243,7 +255,7 @@ try {
   if (chipBox) await p.clickAt(chipBox.x, chipBox.y);
   const opened = !!chipBox && (await waitShows('skills', chip.skill, 90000));
   const tF = await top();
-  record('F a skill chip in an agent card opens that skill in the SKILLS tab and names it in the address', opened && tF.params.tab === 'skills' && tF.params.skill === chip.skill && tF.active === 'skills', { chip, onAgent, chipBox, top: tF, frame: await frame() });
+  record('F a skill chip in an agent card opens that skill in the SKILLS tab and names it in the address', opened && tF.params.tab === 'skills' && tF.params.skill === chip.skill && tF.active === 'specs' && tF.rung === 'skills', { chip, onAgent, chipBox, top: tF, frame: await frame() });
 
   // G. A PROJECT chapter jump is in the address and survives a reload.
   await shell(url('g', 'tab=project'));
@@ -299,7 +311,9 @@ try {
   await waitShows('skills', ids.other.skills); await wait(1000);
   const h0 = (await top()).histLen;
   for (const v of ['crons', 'agents']) {
-    await p.evaluate(`document.querySelector('button.queen27-hud-cmd[data-view="${v}"]').click()`);
+    // CRONS and AGENTS are rungs of the ladder now, not rail buttons; a switch is
+    // a switch wherever its button lives, so take whichever of the two is there.
+    await p.evaluate(`void (document.querySelector('button.queen27-hud-cmd[data-view="${v}"]') || document.querySelector('.queen27-ladder-step[data-layer="${v}"]')).click()`);
     await p.until(`(() => { const f = ${FRAME}; return f && f.route === '${v}' })()`, 120000); await wait(1000);
   }
   const tJ1 = await top();

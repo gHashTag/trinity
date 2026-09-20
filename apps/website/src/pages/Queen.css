@@ -5760,6 +5760,146 @@ main:where(.queen27-page.is-shell) section {
   background: rgba(255, 215, 0, 0.05);
 }
 
+/* --------------------------------------------------------------------------
+   The LADDER — sub-navigation of the SPECS module.
+   components/QueenLadder.tsx
+
+   Six layers that used to be six of the rail's fourteen buttons. Here they get
+   the room the rail could not give them: the label is read at the body size
+   rather than the rail's 0.6rem caption, and the rung number says out loud that
+   this is an order, not a set. Any number of rows may sit above the frame now
+   (ladder, directive, faces), so .has-ladder drops the fixed grid-template-rows
+   of the views above for a column flex where the frame simply takes the rest.
+   -------------------------------------------------------------------------- */
+
+.queen27-page.is-shell .queen27-specs.has-ladder,
+.queen27-page.is-shell .queen27-specs.has-ladder.has-jumps {
+  display: flex;
+  flex-direction: column;
+  grid-template-rows: none;
+}
+
+.queen27-page.is-shell .queen27-specs.has-ladder > .queen27-specs-frame-wrap,
+.queen27-page.is-shell .queen27-specs.has-ladder > .mcp-view {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-ladder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.18);
+  background: linear-gradient(180deg, rgba(0, 255, 136, 0.05), rgba(2, 8, 6, 0.9));
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+/* The six share the row: each is sized to its own name and then stretches into
+   what is left, so the ladder is one bar across the module rather than six
+   buttons and a ragged gap. Measured: the six at their intrinsic width come to
+   643px of a 707px column on a 1440px screen, so they stretch into one 50px row
+   and a narrower column wraps them -- which flex-wrap above makes read as two
+   rows rather than an overflow. The sizes here are what brought 869px down to
+   692px; loosening them puts FUNCTIONS back on a second row. */
+.queen27-page.is-shell .queen27-ladder-step {
+  display: inline-flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 0.42rem 0.45rem;
+  border: 1px solid var(--hud-line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--hud-muted);
+  font: inherit;
+  cursor: pointer;
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+/* The rung number: the ladder's order, stated. */
+.queen27-page.is-shell .queen27-ladder-step > em {
+  font-family: var(--hud-mono);
+  font-size: 0.6rem;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  color: rgba(0, 255, 136, 0.45);
+}
+
+.queen27-page.is-shell .queen27-ladder-step > i {
+  font-style: normal;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.queen27-page.is-shell .queen27-ladder-step > b {
+  font-family: var(--hud-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-page.is-shell .queen27-ladder-step > kbd {
+  font-family: var(--hud-mono);
+  font-size: 0.55rem;
+  padding: 0.04rem 0.22rem;
+  border: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  opacity: 0.7;
+}
+
+.queen27-page.is-shell .queen27-ladder-step:hover {
+  border-color: var(--hud-line-strong);
+  color: var(--hud-green);
+  background: rgba(0, 255, 136, 0.04);
+}
+
+.queen27-page.is-shell .queen27-ladder-step.is-active {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+  background: rgba(255, 215, 0, 0.07);
+}
+
+.queen27-page.is-shell .queen27-ladder-step.is-active > em {
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-ladder-step.is-active > kbd {
+  border-color: rgba(255, 215, 0, 0.45);
+  color: var(--hud-gold);
+  opacity: 1;
+}
+
+/* A phone has no room for the key hint or the rung number; the glyph and the
+   name are what a thumb needs, and the row scrolls rather than wrapping to
+   three lines of buttons over a 581px view. */
+@media (max-width: 720px) {
+  .queen27-page.is-shell .queen27-ladder {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 6px 8px;
+  }
+
+  .queen27-page.is-shell .queen27-ladder-step {
+    flex: 0 0 auto;
+    padding: 0.36rem 0.6rem;
+    gap: 6px;
+  }
+
+  .queen27-page.is-shell .queen27-ladder-step > em,
+  .queen27-page.is-shell .queen27-ladder-step > kbd {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-ladder-step > b {
+    font-size: 0.7rem;
+  }
+}
+
 /* In the column it reads as a stack, not as a strip across the top. */
 .queen27-page.is-shell .queen27-hud-intel .queen27-specs-strip {
   display: grid;

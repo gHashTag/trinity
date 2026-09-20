@@ -150,7 +150,7 @@ export default function AgiGameBlock() {
           <p>{t.lede}</p>
         </header>
 
-        <div className="agi-game-live" data-state={live.kind}>
+        <div className="agi-game-live site-card" data-state={live.kind}>
           <span className="agi-game-live-label">{t.liveLabel}</span>
           <p className="agi-game-figures">
             <strong>{live.kind === 'figures' ? live.refused : '—'}</strong>
@@ -161,9 +161,9 @@ export default function AgiGameBlock() {
           {note && <p className="agi-game-note">{note}</p>}
         </div>
 
-        <ol className="agi-game-moves">
+        <ol className="agi-game-moves site-card-row">
           {t.moves.map((move) => (
-            <li key={move.n}>
+            <li className="site-card" key={move.n}>
               <span className="agi-move-n">{move.n}</span>
               <strong>{move.name}</strong>
               <p>{move.body}</p>

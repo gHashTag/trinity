@@ -17,7 +17,7 @@
 // intel feed, i.e. another view's content -- and the frame takes the height
 // back. Narrow screens have no such column, so there the directive stays put.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { QueenLoading } from './QueenLoading'
 import { useQueenExplorerFrame } from './useQueenExplorerFrame'
 import { FEATURED_SPEC as FEATURED, type ExplorerTab } from '../lib/queenEmbed'
@@ -92,7 +92,7 @@ export function QueenSpecsDirective({ c, collapsible = false }: { c: SpecsCopy; 
   )
 }
 
-export function QueenSpecs({ c, showDirective = true, onNavigate }: { c: SpecsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void }) {
+export function QueenSpecs({ c, showDirective = true, onNavigate, ladder }: { c: SpecsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void; ladder?: ReactNode }) {
   const [ready, setReady] = useState(false)
   // The spec in the frame is the spec= of the Queen address (lib/queenEmbed); with
   // none, the featured one. The frame carries ?lang= in its search, where the i18n
@@ -102,7 +102,8 @@ export function QueenSpecs({ c, showDirective = true, onNavigate }: { c: SpecsCo
   const frame = useQueenExplorerFrame('specs', onNavigate, frameRef)
 
   return (
-    <div className="queen27-specs" data-directive={showDirective ? 'above' : 'aside'}>
+    <div className={`queen27-specs${ladder ? ' has-ladder' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>
+      {ladder}
       {showDirective && <QueenSpecsDirective c={c} collapsible />}
 
       <div className="queen27-specs-frame-wrap">

@@ -58,6 +58,33 @@ export function hudKeyIndex(event: { code?: string; key?: string }): number {
   return pad ? HUD_KEYS.indexOf(pad[1]) : HUD_CODES.indexOf(code);
 }
 
+// The ladder, and the one place it is written down as a list.
+//
+// Specs, Skills, Crons, Agents, Tools and Functions are six layers of one
+// thing: every card in each of them is stated by a .t27 spec, and each layer
+// names the one below it. They were six buttons of a fourteen-button rail, so
+// the rail read as fourteen unrelated instruments and the ladder -- which the
+// site states in prose on three pages -- was nowhere visible in the shell.
+// They are now one module: SPECS holds the other five, and the rail switches
+// between nine things instead of fourteen.
+//
+// Order is the ladder's own, bottom to top; it is what the sub-navigation draws.
+export const SPEC_LAYERS = ["specs", "skills", "crons", "agents", "tools", "functions"] as const;
+export type SpecLayer = (typeof SPEC_LAYERS)[number];
+export const isSpecLayer = (value: string): value is SpecLayer =>
+  (SPEC_LAYERS as readonly string[]).includes(value);
+
+// The rail: the nine modules that are not a layer of the ladder, plus SPECS,
+// which is its door. Every one of the fourteen names stays a valid `?tab=` --
+// a link, a bookmark and a keyboard shortcut that named a layer still lands on
+// that layer -- so this list is what the rail *draws*, not what the address
+// accepts. The address vocabulary is still HUD_VIEWS.
+export const RAIL_VIEWS: readonly HudView[] = HUD_VIEWS.filter(
+  (view) => view === "specs" || !isSpecLayer(view),
+);
+/** The rail button a view lights. A ladder layer lights SPECS, which is where it now lives. */
+export const railViewOf = (view: HudView): HudView => (isSpecLayer(view) ? "specs" : view);
+
 export type Territory = "held" | "neutral" | "fog";
 
 export interface HudColumn {

@@ -57,7 +57,7 @@ try{
   const updated=await analyzeCached(hello,revised);
   assert.equal(updated.sourceBytes,Buffer.byteLength(revised),'same path with new bytes must not reuse old analysis');
 }finally{globalThis.fetch=fetchOriginal;}
-const viewer=readFileSync('src/components/QueenCatalogInspector.tsx','utf8').split('export function QueenCatalogSpec')[1];
+const viewer=readFileSync('src/components/QueenCatalogSpec.tsx','utf8').split('export function QueenCatalogSpec')[1];
 assert.match(viewer,/<iframe/);assert.match(viewer,/specExplorerHash/);
 assert.doesNotMatch(viewer,/fetch\(|<pre|window\.open|_blank/,'the hive embeds the central Explorer, not another source implementation');
 console.log(`Central spec catalog: PASS (${count} exact source links, identity, SHA pinning, fail-closed paths, embedded Explorer)`);

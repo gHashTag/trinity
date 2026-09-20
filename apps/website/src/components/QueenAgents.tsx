@@ -11,7 +11,7 @@
 // backed by code, how many cards have code and no spec yet, and how many the
 // compiler accepted. It counts; it does not grade.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
 import { useQueenExplorerFrame } from './useQueenExplorerFrame'
@@ -150,7 +150,7 @@ export function QueenAgentsDirective({ kind, c, collapsible = false }: { kind: A
   )
 }
 
-export function QueenAgents({ kind, c, showDirective = true, onNavigate }: { kind: AgentsKind; c: AgentsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void }) {
+export function QueenAgents({ kind, c, showDirective = true, onNavigate, ladder }: { kind: AgentsKind; c: AgentsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void; ladder?: ReactNode }) {
   const { lang } = useI18n()
   const [ready, setReady] = useState(false)
   // The card in the frame is the card in the Queen address: skill=, cron=, agent=,
@@ -168,7 +168,8 @@ export function QueenAgents({ kind, c, showDirective = true, onNavigate }: { kin
   const showMcp = hasFaces && face === 'mcp'
 
   return (
-    <div className={`queen27-specs${kind === 'project' || hasFaces ? ' has-jumps' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>
+    <div className={`queen27-specs${kind === 'project' || hasFaces ? ' has-jumps' : ''}${ladder ? ' has-ladder' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>
+      {ladder}
       {showDirective && <QueenAgentsDirective kind={kind} c={c} collapsible />}
 
       {hasFaces && (

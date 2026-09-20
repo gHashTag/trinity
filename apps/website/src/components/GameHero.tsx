@@ -19,7 +19,7 @@ import './GameHero.css'
 // follows it.
 const COPY = {
   en: {
-    wordmark: 'TERNARY NETWORK FLOATS',
+    wordmark: 'TRINITY S³AI',
     title: 'the core is a game, and the board is public',
     lede: 'Every cell on the map is a .t27 spec or the GitHub issue that pays for it. Take one, write the spec that generates it, compile it with the real compiler, send it. That is the whole contribution process, and it is the whole game.',
     play: 'How to play',
@@ -27,7 +27,7 @@ const COPY = {
     number: 'The number behind it →',
   },
   ru: {
-    wordmark: 'ТЕРНАРНЫЕ СЕТЕВЫЕ ЧИСЛА',
+    wordmark: 'TRINITY S³AI',
     title: 'ядро — это игра, и доска открыта',
     lede: 'Каждая сота на карте — спека .t27 или задача GitHub, которая за неё платит. Возьмите одну, напишите спеку, которая её порождает, скомпилируйте настоящим компилятором, отправьте. Это весь процесс контрибуции — и вся игра.',
     play: 'Как играть',

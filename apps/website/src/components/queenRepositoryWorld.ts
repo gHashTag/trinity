@@ -69,7 +69,23 @@ export async function loadWorldIssue(repo:string,number:number,signal:AbortSigna
   const row=await loadWorldIssueDetails(repo,number,signal,fetcher);
   return row.state==='open'?row:null;
 }
-/** Inspector preserves closed issues; backlog callers keep the open-only wrapper. */
+// A cell can be opened, closed and opened again in seconds, and anonymous
+// GitHub allows sixty reads an hour for the whole visit. One minute of memory
+// per issue is what keeps a second look from costing a second request; a
+// deliberate reload asks for `fresh` and pays for it. The cache lived in the
+// inspector aside until the stage replaced it, and it is shared rather than
+// copied because two caches of the same reads is how they drift.
+const detailsCache=new Map<string,{at:number;row:WorldIssue}>();
+const DETAILS_TTL_MS=60_000,DETAILS_MAX=100;
+export async function loadWorldIssueDetailsCached(repo:string,number:number,signal:AbortSignal,fresh=false,fetcher:Fetcher=fetch) {
+  const key=`${repo}#${number}`,cached=detailsCache.get(key);
+  if(!fresh&&cached&&Date.now()-cached.at<DETAILS_TTL_MS)return cached.row;
+  const row=await loadWorldIssueDetails(repo,number,signal,fetcher);
+  if(detailsCache.size>=DETAILS_MAX)detailsCache.delete(detailsCache.keys().next().value!);
+  detailsCache.set(key,{at:Date.now(),row});
+  return row;
+}
+/** The stage preserves closed issues; backlog callers keep the open-only wrapper. */
 export async function loadWorldIssueDetails(repo:string,number:number,signal:AbortSignal,fetcher:Fetcher=fetch) {
   if(!Number.isSafeInteger(number)||number<1)throw new Error('invalid-issue');
   const response=await githubRead(repo,`/issues/${number}`,signal,fetcher),raw:unknown=await response.json();

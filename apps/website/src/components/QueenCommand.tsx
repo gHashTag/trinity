@@ -1,18 +1,23 @@
 import { useEffect, useRef, type CSSProperties } from "react";
-import { HUD_KEYS, type HudView } from "./queenHud";
+import { type HudView } from "./queenHud";
 
 // The COMMAND PANEL of the one-screen HUD: the view switches (one per entry in
-// HUD_VIEWS) stacked down the left edge (or, on a phone, laid out as an icon
+// RAIL_VIEWS) stacked down the left edge (or, on a phone, laid out as an icon
 // row inside the bottom bar) and a collapse toggle. Switching a view is the only
 // thing a button here does; nothing acts on the Queen. The key shown on each
-// button is the keyboard shortcut the shell binds (HUD_KEYS at the item's
-// position: 1-9, 0, p), not a figure from the wire.
+// button is the keyboard shortcut the shell binds, and it travels on the item
+// (hudKeyOf) rather than being read from the item's position: the rail is nine
+// buttons over a fourteen-name address, because the five ladder layers are
+// reached inside SPECS, and a position would have printed the wrong letter on
+// every button after it.
 
 export interface CommandItem {
   view: HudView;
   glyph: string;
   label: string;
   hint: string;
+  /** The keyboard shortcut this view answers (queenHud.hudKeyOf). */
+  hotkey: string;
 }
 
 export interface QueenCommandLabels {
@@ -82,9 +87,9 @@ export function QueenCommandPanel({
         } as CSSProperties
       }
     >
-      {items.map((item, index) => {
+      {items.map((item) => {
         const active = item.view === view;
-        const key = HUD_KEYS[index] ?? "";
+        const key = item.hotkey;
         return (
           <button
             type="button"

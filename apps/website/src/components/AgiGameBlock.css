@@ -1,9 +1,10 @@
 /* Same construction as the play block below it: auto-fit columns whose count
-   the width decides, 1px gaps over a border-coloured bed, and no breakpoint
-   doing the deciding. The one departure is the live strip, which is a reading
-   from the supervisor and so is set apart from the prose around it. */
+   the width decides, and no breakpoint doing the deciding. The cards themselves
+   are .site-card in styles/card.css -- neutral surface, one rule for the whole
+   site. The one departure is the live strip, which is a reading from the
+   supervisor and so is set apart from the prose around it. */
 .agi-game {
-  border-top: 1px solid rgba(0, 255, 136, 0.24);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: #020605;
   color: var(--text, #e7f7fa);
 }
@@ -40,24 +41,22 @@
 .agi-game-head p {
   margin: 0;
   color: #a8c1ba;
-  font-size: clamp(0.9rem, 1.6vw, 1rem);
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
   line-height: 1.6;
 }
 
 /* The reading. A dash here is data, not a layout accident, so it is given the
-   same weight as a number rather than being hidden when the server is quiet. */
+   same weight as a number rather than being hidden when the server is quiet.
+   Surface and border come from .site-card; only the spacing is local. */
 .agi-game-live {
   display: grid;
   gap: 0.6rem;
-  padding: clamp(1rem, 2.4vw, 1.4rem);
-  border: 1px solid rgba(0, 255, 136, 0.16);
-  background: rgba(0, 255, 136, 0.04);
 }
 
 .agi-game-live-label {
   color: #ffd45a;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.64rem;
+  font-size: 0.74rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
@@ -73,14 +72,14 @@
 .agi-game-figures strong {
   color: #00ff88;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  font-size: clamp(1.6rem, 3.6vw, 2.3rem);
   font-weight: 500;
   line-height: 1;
 }
 
 .agi-game-figures span {
   color: #a8c1ba;
-  font-size: 0.82rem;
+  font-size: clamp(0.92rem, 1.5vw, 1.02rem);
   line-height: 1.5;
   margin-right: 0.5rem;
 }
@@ -88,45 +87,32 @@
 .agi-game-note {
   margin: 0;
   color: #7f968f;
-  font-size: 0.78rem;
+  font-size: clamp(0.86rem, 1.4vw, 0.95rem);
   line-height: 1.6;
-}
-
-.agi-game-moves {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-  gap: 1px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid rgba(0, 255, 136, 0.16);
-  background: rgba(0, 255, 136, 0.16);
 }
 
 .agi-game-moves > li {
   display: grid;
   align-content: start;
-  gap: 0.5rem;
-  padding: clamp(1.1rem, 2.4vw, 1.5rem);
-  background: #020605;
+  gap: 0.6rem;
 }
 
 .agi-move-n {
   color: #00ff88;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   letter-spacing: 0.2em;
 }
 
 .agi-game-moves strong {
-  font-size: 1rem;
+  font-size: clamp(1.15rem, 2.1vw, 1.35rem);
   font-weight: 500;
 }
 
 .agi-game-moves p {
   margin: 0;
   color: #a8c1ba;
-  font-size: 0.82rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
   line-height: 1.65;
 }
 
@@ -134,7 +120,7 @@
   justify-self: start;
   color: #00ff88;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   letter-spacing: 0.12em;
   text-decoration: none;
   text-transform: uppercase;
@@ -160,7 +146,7 @@
 .agi-game-why p {
   margin: 0;
   color: #a8c1ba;
-  font-size: 0.86rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
   line-height: 1.7;
 }
 
@@ -169,7 +155,7 @@
   margin-top: 0.3rem;
   color: #ffd45a;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   letter-spacing: 0.12em;
   text-decoration: none;
   text-transform: uppercase;

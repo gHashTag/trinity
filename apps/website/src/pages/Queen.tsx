@@ -20,9 +20,15 @@ import { QueenFactory } from "../components/QueenFactory";
 import { QueenSectors } from "../components/QueenIntel";
 import { SceneBoundary } from "../components/SceneBoundary";
 import { QueenLoading } from "../components/QueenLoading";
+import { QueenLadder, type LadderLayer } from "../components/QueenLadder";
 import {
   hudKeyIndex,
+  hudKeyOf,
   HUD_VIEWS,
+  RAIL_VIEWS,
+  SPEC_LAYERS,
+  railViewOf,
+  isSpecLayer,
   decisionDetail,
   rewriteEndpoints,
   roundStrip,
@@ -326,6 +332,9 @@ const COPY = {
     combHint: "The board as a field of marks",
     specsView: "SPECS",
     specsHint: "The corpus she is generated from",
+    // The SPECS module's own sub-navigation: the six layers of the ladder,
+    // which used to be six buttons of the rail.
+    ladderAria: "The ladder: specs, skills, crons, agents, tools, functions",
     skillsView: "SKILLS",
     skillsHint: "Agent skills, each stated by a .t27 spec",
     cronsView: "CRONS",
@@ -684,6 +693,7 @@ const COPY = {
     combHint: "Доска как поле из меток",
     specsView: "СПЕКИ",
     specsHint: "Корпус, из которого её порождают",
+    ladderAria: "Лестница: спеки, скиллы, кроны, агенты, инструменты, функции",
     skillsView: "СКИЛЛЫ",
     skillsHint: "Скиллы агентов, каждый заявлен спекой .t27",
     cronsView: "КРОНЫ",
@@ -2523,39 +2533,63 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     else setIntelExpanded((expanded) => !expanded);
   };
 
-  const commandItems = [
+  // Every view, with the glyph and the key it has always answered. The rail
+  // draws the nine in RAIL_VIEWS; the six layers of the ladder are drawn by the
+  // SPECS module's own sub-navigation instead (components/QueenLadder), which is
+  // why five of these entries no longer appear on the left edge. Keys are
+  // unchanged and come from hudKeyOf, so 7 is still SKILLS and t still TOOLS —
+  // they now open SPECS standing on that layer.
+  const viewItems = [
     { view: "comb" as const, glyph: "▽", label: c.combView, hint: c.combHint },
     // Second, directly after the comb: the corpus is the Queen's core, not an
-    // appendix to the board views.
+    // appendix to the board views — and now the door to the whole ladder.
     { view: "specs" as const, glyph: "⬡", label: c.specsView, hint: c.specsHint },
     { view: "kanban" as const, glyph: "▦", label: c.kanbanView, hint: c.kanbanHint },
     { view: "map" as const, glyph: "⌘", label: c.mapView, hint: c.mapHint },
     { view: "factory" as const, glyph: "⚙", label: c.factoryView, hint: c.factoryHint },
     { view: "research" as const, glyph: "◈", label: c.tech, hint: c.researchHint },
-    // Seventh and eighth: the agents' skills and schedules, each a catalog
-    // generated from .t27 specs, opened whole like the corpus is.
+    // The agents' skills and schedules, each a catalog generated from .t27
+    // specs, opened whole like the corpus is. Layers of the ladder: inside SPECS.
     { view: "skills" as const, glyph: "⟁", label: c.skillsView, hint: c.skillsHint },
     { view: "crons" as const, glyph: "◷", label: c.cronsView, hint: c.cronsHint },
-    // Ninth: the agents themselves — the fourth layer, who holds the skills
+    // The agents themselves — the fourth layer, who holds the skills
     // under SOUL.md and AGENTS.md, with their experience joined by evidence.
     { view: "agents" as const, glyph: "Ω", label: c.agentsView, hint: c.agentsHint },
-    // Tenth: the functions — where a spec meets a running
-    // service, witnessed by the vendored manifest and read live once a minute.
+    // The functions — where a spec meets a running service, witnessed by the
+    // vendored manifest and read live once a minute.
     { view: "functions" as const, glyph: "ƒ", label: c.functionsView, hint: c.functionsHint },
-    // Eleventh (key t; the digits are exhausted): the tools — what every agent should know: the
-    // tri CLI and the MCP servers, each read from its spec and its source.
+    // The tools — what every agent should know: the tri CLI and the MCP
+    // servers, each read from its spec and its source.
     { view: "tools" as const, glyph: "⟐", label: c.toolsView, hint: c.toolsHint },
-    // Twelfth, on the letter p (HUD_KEYS[11]; the digits are spent, t is TOOLS): the
-    // system documentation — the project, the rules of the game for its
-    // agents, and the system in detail, framed from #/docs.
+    // On the letter p (the digits are spent, t is TOOLS): the system
+    // documentation — the project, the rules of the game for its agents, and
+    // the system in detail, framed from #/docs.
     { view: "project" as const, glyph: "§", label: c.projectView, hint: c.projectHint },
-    // Thirteenth, on the letter r (HUD_KEYS[12]; digits spent, t is TOOLS, p is
-    // PROJECT): TRI, the app at app.t27.ai inside the game, one screen per address.
+    // On the letter r (digits spent, t is TOOLS, p is PROJECT): TRI, the app at
+    // app.t27.ai inside the game, one screen per address.
     { view: "tri" as const, glyph: "△", label: c.triView, hint: c.triHint },
     { view: "passport" as const, glyph: "▤", label: c.passportView, hint: c.passportHint },
-  ];
-  const viewLabel =
-    commandItems.find((item) => item.view === view)?.label ?? c.combView;
+  ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
+  const commandItems = viewItems.filter((item) =>
+    (RAIL_VIEWS as readonly string[]).includes(item.view),
+  );
+  // The ladder's rungs, in the ladder's own order (queenHud.SPEC_LAYERS) rather
+  // than the rail's — Tools is the fifth layer and Functions the sixth, which
+  // the rail's key order had the other way round — with the labels the rail used
+  // to print for them.
+  const ladderItems: LadderLayer[] = SPEC_LAYERS.map((layer) => {
+    const item = viewItems.find((entry) => entry.view === layer)!;
+    return { layer, glyph: item.glyph, label: item.label, hint: item.hint };
+  });
+  const viewLabel = viewItems.find((item) => item.view === view)?.label ?? c.combView;
+  const ladderNav = (
+    <QueenLadder
+      layers={ladderItems}
+      current={view}
+      onSelect={setView}
+      aria={c.ladderAria}
+    />
+  );
   const doctrine = [
     { n: "01", title: c.spec, copy: c.specCopy, tone: "" },
     { n: "02", title: c.queen, copy: c.queenCopy, tone: "is-queen" },
@@ -2952,6 +2986,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenSpecs
               showDirective={isNarrow}
               onNavigate={setView}
+              ladder={ladderNav}
               c={{
                 directive: c.specsDirective,
                 directiveBody: c.specsDirectiveBody,
@@ -2967,6 +3002,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               kind={boardView}
               showDirective={isNarrow}
               onNavigate={setView}
+              // PROJECT is the system documentation, not a layer of the ladder:
+              // it keeps its own rail button and gets no rung row.
+              ladder={isSpecLayer(boardView) ? ladderNav : undefined}
               c={{
                 directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
                 directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,
@@ -3396,7 +3434,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       {!isPhone && (
         <QueenCommandPanel
           items={commandItems}
-          view={view}
+          // A ladder layer lights SPECS: it is not on the rail any more, it is
+          // inside the module the rail's second button opens.
+          view={railViewOf(view)}
           onSelect={setView}
           collapsed={commandCollapsed}
           onToggleCollapsed={() => setCommandCollapsed((collapsed) => !collapsed)}
@@ -3459,7 +3499,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           <>
             <QueenCommandPanel
               items={commandItems}
-              view={view}
+              // Same rule as the desktop rail: a ladder layer lights SPECS,
+              // which is the button that now holds it.
+              view={railViewOf(view)}
               onSelect={setView}
               collapsed={false}
               onToggleCollapsed={() => undefined}
