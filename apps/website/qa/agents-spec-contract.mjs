@@ -417,6 +417,45 @@ for (const m of MODULES) {
   assert.ok(group, `module '${m.tab}' is in none of the index's three groups, so its card is drawn nowhere`)
 }
 assert.match(modulesBlock, /modules\.map\(\(module\)/, 'the index no longer draws a card for every module in a group')
+// lib/queenModules opens by calling itself "the only place their identity is
+// written down", and it was not: the shell types each module's name a second
+// time into its own COPY deck, once per language, and draws the rail from that
+// copy. Twenty-eight strings with no test between them and their one home. It
+// went wrong the ordinary way -- the English name was shortened to TECH TREE
+// and the Russian stayed the long DEREVO TEHNOLOGIY for a release, so the same
+// module was two different modules depending on the language chosen.
+//
+// The shell is not made to import MODULES here: its deck is one object the
+// whole page reads and unpicking it is a change with no test behind it. What
+// is checked instead is the property that was actually lost -- the two homes
+// agree -- which is cheap, catches the drift on the commit that writes it, and
+// leaves the refactor to be done on purpose rather than in passing.
+const shell = src('pages/Queen.tsx')
+const deck = (lang) => {
+  const at = shell.indexOf(`\n  ${lang}: {`)
+  assert.ok(at > 0, `the shell's COPY has no ${lang} deck, so the rail's labels cannot be read`)
+  const end = lang === 'en' ? shell.indexOf('\n  ru: {') : shell.indexOf('\n} as const;')
+  return shell.slice(at, end > at ? end : undefined)
+}
+const DECKS = { en: deck('en'), ru: deck('ru') }
+let railed = 0
+for (const m of MODULES) {
+  const entry = shell.match(new RegExp(`\\{ view: "${m.tab}" as const, glyph: "([^"]+)", label: c\\.(\\w+),`))
+  assert.ok(entry, `the shell draws no rail entry for module '${m.tab}', so its key opens nothing`)
+  railed += 1
+  const [, glyph, key] = entry
+  assert.equal(glyph, m.glyph, `module '${m.tab}' is drawn with '${glyph}' on the rail and '${m.glyph}' on the homepage`)
+  for (const lang of ['en', 'ru']) {
+    const said = DECKS[lang].match(new RegExp(`\\n    ${key}: "([^"]*)"`))
+    assert.ok(said, `the shell's ${lang} deck has no '${key}', which the rail asks it for`)
+    assert.equal(
+      said[1],
+      m[lang].name,
+      `module '${m.tab}' is "${said[1]}" on the ${lang} rail and "${m[lang].name}" in lib/queenModules: rename it in both or in neither`,
+    )
+  }
+}
+assert.equal(railed, MODULES.length, 'not every module has a rail entry in the shell')
 // The line loses its colour and its rule to any `.block p` selector unless the
 // class outranks one: the reason it is written twice.
 assert.match(readFileSync(new URL('../src/components/PlayLine.css', import.meta.url), 'utf8'), /\.play-line\.play-line \{/, 'the play line style no longer outranks the block paragraph rules it sits inside')
