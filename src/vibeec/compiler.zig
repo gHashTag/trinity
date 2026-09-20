@@ -471,7 +471,7 @@ pub fn main() !u8 {
 }
 
 fn printSimpleHelp() void {
-    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const stdout = std.io.getStdOut().writer();
     stdout.print(
         \\
         \\  ╔═══════════════════════════════════════════════════════════╗
@@ -510,7 +510,7 @@ fn printSimpleHelp() void {
 }
 
 fn printVersion() void {
-    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const stdout = std.io.getStdOut().writer();
     stdout.print(
         \\VIBEEC v22.0.0
         \\φ = 1.618033988749895

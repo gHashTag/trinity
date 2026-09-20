@@ -284,10 +284,10 @@ pub const TypeChecker = struct {
         is_dirty: bool,
     };
 
-    pub fn init(allocator: Allocator) !Self {
+    pub fn init(allocator: Allocator) Self {
         return Self{
             .allocator = allocator,
-            .registry = try TypeRegistry.init(allocator),
+            .registry = TypeRegistry.init(allocator),
             .cache = StringHashMap(CacheEntry).init(allocator),
             .current_version = 0,
             .cache_hits = 0,
