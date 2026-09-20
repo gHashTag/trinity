@@ -10,10 +10,20 @@ name: Build Compiler Release
 # -- on v10.1.0 the surviving body advertised files the run had not produced.
 # `compiler-v*` was already in this list, so a separate namespace was always the
 # intent; this just stops the two from racing.
+#
+# The pull_request trigger is not decoration. Nothing on any pull request built
+# src/vibeec, so the tree drifted out of step with zig 0.15 unobserved and the
+# first thing to notice was a release tag -- which is the worst possible moment.
+# The create-release job below is gated on refs/tags, so a pull request builds
+# the four binaries and publishes nothing.
 on:
   push:
     tags:
       - 'compiler-v*'
+  pull_request:
+    paths:
+      - 'src/vibeec/**'
+      - '.github/workflows/build-compiler-release.yml'
   workflow_dispatch:
 
 env:
