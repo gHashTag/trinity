@@ -220,7 +220,22 @@ assert.deepEqual(hints, [tri.en.hint, tri.ru.hint], 'COPY triHint (en, ru) equal
 assert.match(queen, /view: "tri" as const/, 'the rail lists TRI')
 assert.match(queen, /boardView === "tri" \? \(\s*<QueenTri/, 'the view body renders QueenTri')
 assert.match(queen, /tabAddress\(window\.location\.hash, next\)/, 'the shell writes its tab from the live hash')
-assert.match(read('src/App.tsx'), /module\.tab !== 'tri'/, 'the landing renders no TRI preview (it would load the whole app for every visitor)')
+// The landing used to map every module and filter TRI back out, so this asked
+// the source for the expression `module.tab !== 'tri'`. The full-size previews
+// are an allowlist now -- SHOWCASE -- and that expression is gone, which turned
+// a live property into a red check about a deleted line. The property is the
+// same and states better against the list: TRI is not one of the modules the
+// front page draws at full size, because its preview would load a whole
+// third-party app for everyone who scrolled past it.
+const app = read('src/App.tsx')
+const showcase = app.match(/^const SHOWCASE = \[([^\]]*)\] as const$/m)
+assert.ok(showcase, 'the landing no longer names its full-size previews in a SHOWCASE list')
+const showcased = [...showcase[1].matchAll(/'([a-z]+)'/g)].map((m) => m[1])
+assert.ok(showcased.length > 0, 'SHOWCASE is empty, so the landing draws no module at full size')
+for (const tab of showcased) {
+  assert.ok(MODULES.some((m) => m.tab === tab), `SHOWCASE names '${tab}', which is not a module`)
+}
+assert.ok(!showcased.includes('tri'), 'the landing renders no TRI preview (it would load the whole app for every visitor)')
 const component = read('src/components/QueenTri.tsx')
 assert.doesNotMatch(component, /\.postMessage\(/, 'TRI never posts into the app frame')
 assert.match(component, /triAddress\(window\.location\.hash/, 'TRI writes its screen from the live hash')
