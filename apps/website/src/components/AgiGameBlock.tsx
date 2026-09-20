@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { idleReason, serverOffsetMs } from './queenHud'
 import { BOUNDARY_EXAMPLE_ISSUE, QUEEN_API } from '../lib/queenApi'
+import { MOTTO } from '../lib/motto'
 import './AgiGameBlock.css'
 
 // What the game is for, and the three moves it actually has.
@@ -33,14 +34,14 @@ const COPY = {
     moves: [
       {
         n: '01',
-        name: 'Play',
+        name: MOTTO.en.verbs[0],
         body: 'Take a cell and write the .t27 spec that generates it. The board, the compiler and the review queue are the ones the swarm itself uses — there is no visitor mode, and no separate contribution process to learn.',
         cta: 'The four moves',
         link: '#play',
       },
       {
         n: '02',
-        name: 'Direct',
+        name: MOTTO.en.verbs[1],
         body: 'The Queen refuses any issue whose body names no boundary — no list of the paths an agent may touch. Writing that boundary is what turns a dead card into work a swarm can take, and the refusal count above is the scoreboard: it falls when yours lands. The move costs no compute at all, which is exactly why it cannot be automated away from you.',
         cta: 'A boundary done right',
         link: BOUNDARY_EXAMPLE_ISSUE,
@@ -48,7 +49,7 @@ const COPY = {
       },
       {
         n: '03',
-        name: 'Earn',
+        name: MOTTO.en.verbs[2],
         body: 'An accepted turn is recorded against the name that made it, as a non-transferable integer, and it will stay one. Attach a tradable token to a unit of proof and the cheapest way to make units becomes renting the compute this network exists to replace. So the counters are real and the wallet is not: every one of them is watch-only today, and this page would rather say so than imply otherwise.',
       },
     ],
@@ -70,14 +71,14 @@ const COPY = {
     moves: [
       {
         n: '01',
-        name: 'Играй',
+        name: MOTTO.ru.verbs[0],
         body: 'Возьмите соту и напишите спеку .t27, которая её порождает. Доска, компилятор и очередь ревью — те же самые, которыми пользуется сам рой: режима гостя нет, и отдельного процесса контрибуции учить не нужно.',
         cta: 'Четыре хода',
         link: '#play',
       },
       {
         n: '02',
-        name: 'Управляй',
+        name: MOTTO.ru.verbs[1],
         body: 'Королева отказывает любой задаче, в теле которой не названа граница — список путей, к которым агенту можно прикасаться. Написать эту границу и значит превратить мёртвую карточку в работу, которую рой способен взять; счётчик отказов наверху и есть табло — он падает, когда ваша граница доезжает. Ход не стоит ни секунды вычислений, и именно поэтому его нельзя автоматизировать в обход вас.',
         cta: 'Граница, написанная как надо',
         link: BOUNDARY_EXAMPLE_ISSUE,
@@ -85,7 +86,7 @@ const COPY = {
       },
       {
         n: '03',
-        name: 'Зарабатывай',
+        name: MOTTO.ru.verbs[2],
         body: 'Принятый ход записывается на имя того, кто его сделал, непередаваемым целым числом — и останется таким. Привяжите к единице доказательства торгуемый токен, и самым дешёвым способом делать единицы станет аренда тех самых вычислений, ради замены которых сеть и существует. Поэтому счётчики настоящие, а кошелька нет: сегодня каждый из них — только для чтения, и страница скорее скажет это прямо, чем намекнёт на обратное.',
       },
     ],

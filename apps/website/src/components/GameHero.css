@@ -22,8 +22,22 @@
   letter-spacing: clamp(0.146em, 0.618vw, 0.236em);
 }
 
+/* The motto, directly under the mark it captions. Gold rather than the body
+   colour, because it is the one line on this screen that is a claim about the
+   game rather than a description of the page, and it should read as a mark's
+   caption reads: smaller than the headline, louder than the wordmark.
+   `text-transform` does the shouting so lib/motto can hold ordinary words. */
+.game-hero-motto {
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: clamp(0.66rem, 1.5vw, 0.8rem);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 .game-hero h1 {
-  max-width: 20ch;
+  max-width: 26ch;
   margin: 0;
   font-size: clamp(1.7rem, 5.2vw, 3.2rem);
   font-weight: 300;

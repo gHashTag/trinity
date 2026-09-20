@@ -367,10 +367,7 @@ for (const m of MODULES) {
 // ...and the homepage actually shows it. Three blocks mount the line: the one
 // every module shares, and the two hand-written ones (the comb's and the
 // corpus's) that draw their own description but take the move from the same
-// record. TRI is the one module with no block at all -- its preview would load
-// a whole third-party app for every visitor -- so its play line is written and
-// deliberately unmounted, and App.tsx is checked to be leaving out those three
-// and no others.
+// record.
 const src = (name) => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8')
 const modulePage = src('components/ModuleHeroBlock.tsx')
 assert.match(modulePage, /<PlayLine>\{m\.play\}<\/PlayLine>/, 'the shared module block does not render the play line')
@@ -382,12 +379,54 @@ for (const [file, tab] of [['components/QueenHeroBlock.tsx', 'comb'], ['componen
     `${file} writes its own description but does not take ${tab}'s play line from the module record`,
   )
 }
+// Reachability, which is the property that actually matters and the one the
+// homepage lost. It used to render every module but three as a full-size block:
+// eighteen consecutive screens of one layout, which is why the showcase is now
+// a named few. A named few is only safe if nothing falls out of the page with
+// it, so the invariant checked here is not "these three are omitted" but "every
+// module is reachable": the showcase names blocks, ModulesBlock draws a card
+// for each of MODULES, and between them no module is unreachable from the
+// homepage. Add a fifteenth module to lib/queenModules and it appears in the
+// index without anyone touching App.tsx; delete the index and this fails.
 const app = src('App.tsx')
-const omitted = [...app.matchAll(/module\.tab !== '([a-z]+)'/g)].map((match) => match[1])
-assert.deepEqual(omitted, ['comb', 'specs', 'tri'], 'the homepage leaves out a different set of modules than the two with their own blocks plus TRI')
+const showcase = app.match(/const SHOWCASE = \[([^\]]*)\]/)
+assert.ok(showcase, 'the homepage no longer names its showcase modules in one list')
+const shown = [...showcase[1].matchAll(/'([a-z]+)'/g)].map((match) => match[1])
+for (const tab of shown) {
+  assert.ok(MODULES.some((m) => m.tab === tab), `the homepage showcases '${tab}', which is not a module`)
+  assert.ok(tab !== 'comb' && tab !== 'specs', `'${tab}' has a block of its own; showcasing it would render it twice`)
+}
+assert.match(app, /<ModulesBlock \/>/, 'the homepage does not mount the index, so every module the showcase leaves out is unreachable')
+assert.match(src('components/ModulesBlock.tsx'), /MODULES\.map\(/, 'the index no longer draws a card for every module, so the homepage can silently drop one')
 // The line loses its colour and its rule to any `.block p` selector unless the
 // class outranks one: the reason it is written twice.
 assert.match(readFileSync(new URL('../src/components/PlayLine.css', import.meta.url), 'utf8'), /\.play-line\.play-line \{/, 'the play line style no longer outranks the block paragraph rules it sits inside')
+
+// The motto is one wording in three places -- the mark's caption, the head of
+// the headline, and the names of the three moves. Three copies of three words
+// is the classic way for a site to end up saying "Direct" in the hero and
+// "Govern" in the body, so none of the three is allowed to type them: each
+// reads lib/motto. This checks that they still do, in both languages.
+const motto = src('lib/motto.ts')
+for (const lang of ['en', 'ru']) {
+  const block = motto.match(new RegExp(`${lang}: \\{[\\s\\S]*?verbs: \\[([^\\]]*)\\]`))
+  assert.ok(block, `lib/motto names no ${lang} verbs`)
+  assert.equal([...block[1].matchAll(/'[^']+'/g)].length, 3, `the ${lang} motto is not three verbs`)
+  assert.match(motto, new RegExp(`${lang}: \\{[\\s\\S]*?caption: '`), `lib/motto gives ${lang} no caption for the mark`)
+  assert.match(motto, new RegExp(`${lang}: \\{[\\s\\S]*?headline: '`), `lib/motto gives ${lang} no headline opening`)
+}
+const hero = src('components/GameHero.tsx')
+assert.match(hero, /className="game-hero-motto">\{motto\.caption\}/, 'the mark has lost its caption, or the caption is no longer the motto')
+assert.match(hero, /<h1 id="game-hero-title">\{motto\.headline\}/, 'the headline no longer opens with the motto')
+const agi = src('components/AgiGameBlock.tsx')
+for (const lang of ['en', 'ru']) {
+  for (const i of [0, 1, 2]) {
+    assert.ok(
+      agi.includes(`name: MOTTO.${lang}.verbs[${i}]`),
+      `the ${lang} move ${i + 1} is typed into AgiGameBlock instead of read from the motto`,
+    )
+  }
+}
 
 assert.equal(MODULES.length, HUD_VIEWS.length, 'every module is a view and every view a module')
 assert.ok(HUD_KEYS.length >= HUD_VIEWS.length, 'every view has a key')

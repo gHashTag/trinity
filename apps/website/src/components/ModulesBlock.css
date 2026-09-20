@@ -122,11 +122,22 @@
   letter-spacing: 0.04em;
 }
 
+/* An index is scanned, not read. The bodies in lib/queenModules are written for
+   a module's own full-size block and some run to a paragraph of many lines --
+   PASSPORT's alone is longer than this whole card is tall -- so on the card they
+   are clamped to five lines and the module's own view carries the rest. The
+   text is clamped, not truncated in the data: the same string still reaches the
+   block that shows it whole, and a screen reader still gets all of it. */
 .modules-card > p {
   margin: 0;
   color: #a8c1ba;
   font-size: 0.82rem;
   line-height: 1.65;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  overflow: hidden;
 }
 
 .modules-card-open {
