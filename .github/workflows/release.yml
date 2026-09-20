@@ -35,8 +35,7 @@ jobs:
 
       - name: Build Trinity (Linux amd64)
         run: |
-          zig build -Dtarget=x86_64-linux-gnu.2.35 -Drelease-safe=true
-          zig build vibee -Dtarget=x86_64-linux-gnu.2.35 -Drelease-safe=true
+          zig build -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseSafe
 
       - name: Create archive
         run: |
@@ -68,8 +67,7 @@ jobs:
 
       - name: Build Trinity (Linux arm64)
         run: |
-          zig build -Dtarget=aarch64-linux-gnu.2.35 -Drelease-safe=true
-          zig build vibee -Dtarget=aarch64-linux-gnu.2.35 -Drelease-safe=true
+          zig build -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseSafe
 
       - name: Create archive
         run: |
@@ -101,8 +99,7 @@ jobs:
 
       - name: Build Trinity (macOS amd64)
         run: |
-          zig build -Dtarget=x86_64-macos-none -Drelease-safe=true
-          zig build vibee -Dtarget=x86_64-macos-none -Drelease-safe=true
+          zig build -Dtarget=x86_64-macos-none -Doptimize=ReleaseSafe
 
       - name: Create archive
         run: |
@@ -134,8 +131,7 @@ jobs:
 
       - name: Build Trinity (macOS arm64)
         run: |
-          zig build -Dtarget=aarch64-macos-none -Drelease-safe=true
-          zig build vibee -Dtarget=aarch64-macos-none -Drelease-safe=true
+          zig build -Dtarget=aarch64-macos-none -Doptimize=ReleaseSafe
 
       - name: Create archive
         run: |
@@ -167,8 +163,7 @@ jobs:
 
       - name: Build Trinity (Windows amd64)
         run: |
-          zig build -Dtarget=x86_64-windows-gnu -Drelease-safe=true
-          zig build vibee -Dtarget=x86_64-windows-gnu -Drelease-safe=true
+          zig build -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseSafe
 
       - name: Create archive
         run: |
@@ -183,8 +178,14 @@ jobs:
           name: windows-amd64
           path: trinity-windows-amd64.zip
 
+  # The step below publishes with make_latest: true under github.ref_name. On a
+  # workflow_dispatch that name is a BRANCH, so dispatching this workflow to test
+  # a build would publish a release called fix/release-build and make it the
+  # latest one users are offered. The five build jobs are the part worth testing
+  # by hand; publishing is only ever the tag's job.
   release:
     name: Create Release
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [build-linux-amd64, build-linux-arm64, build-macos-amd64, build-macos-arm64, build-windows]
     runs-on: ubuntu-latest
     permissions:
