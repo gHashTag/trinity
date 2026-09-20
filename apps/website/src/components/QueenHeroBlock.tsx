@@ -1,6 +1,8 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n/context'
+import { MODULES } from '../lib/queenModules'
 import { validateAtlas, type UniverseAtlas } from '../lib/queenUniverseAtlas'
+import PlayLine from './PlayLine'
 import type { CombHandle } from './queenHud'
 import './QueenHeroBlock.css'
 
@@ -66,6 +68,11 @@ export default function QueenHeroBlock() {
           <span className="queen-hero-block-eyebrow">{t.eyebrow}</span>
           <h2 id="queen-hero-title">{t.title}</h2>
           <p>{t.body}</p>
+          {/* The move itself comes from the module record, not from the copy
+              above: this block writes its own description because it mounts the
+              live scene, but what the comb is FOR is one sentence and belongs in
+              one place. */}
+          <PlayLine>{MODULES.find((module) => module.tab === 'comb')![lang].play}</PlayLine>
           <div className="queen-hero-block-actions">
             <a className="queen-hero-block-primary" href="#/queen">{t.map}</a>
             <a className="queen-hero-block-secondary" href="#/queen?view=core">{t.core}</a>

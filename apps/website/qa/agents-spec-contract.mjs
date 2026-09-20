@@ -347,6 +347,48 @@ for (const tab of ['skills', 'crons', 'agents', 'functions', 'tools', 'project']
   assert.equal(HUD_KEYS[HUD_VIEWS.indexOf(tab)], m.key, `${tab}: the key on the card (${m.key}) is not the keyboard key`)
   for (const lang of ['en', 'ru']) assert.ok(m[lang].name && m[lang].hint && m[lang].body.length > 40, `${tab}: ${lang} copy missing`)
 }
+// Every module says what it is for, not only what it shows, and says it once.
+// `body` describes the view; `play` is the reason a person is standing in front
+// of it. A missing one leaves a paragraph about someone else's instrument, and
+// a duplicated one is this repository's oldest defect — a list copied by hand
+// until two of its entries say the same thing about different things.
+const plays = new Map()
+for (const m of MODULES) {
+  for (const lang of ['en', 'ru']) {
+    const play = m[lang].play
+    assert.ok(typeof play === 'string' && play.length > 40, `${m.tab}: ${lang} play line missing or too short to say anything`)
+    assert.notEqual(play, m[lang].body, `${m.tab}: ${lang} play repeats the body instead of giving the reason`)
+    const seen = plays.get(`${lang}:${play}`)
+    assert.equal(seen, undefined, `${m.tab}: ${lang} play is the same sentence as ${seen}'s`)
+    plays.set(`${lang}:${play}`, m.tab)
+  }
+}
+
+// ...and the homepage actually shows it. Three blocks mount the line: the one
+// every module shares, and the two hand-written ones (the comb's and the
+// corpus's) that draw their own description but take the move from the same
+// record. TRI is the one module with no block at all -- its preview would load
+// a whole third-party app for every visitor -- so its play line is written and
+// deliberately unmounted, and App.tsx is checked to be leaving out those three
+// and no others.
+const src = (name) => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8')
+const modulePage = src('components/ModuleHeroBlock.tsx')
+assert.match(modulePage, /<PlayLine>\{m\.play\}<\/PlayLine>/, 'the shared module block does not render the play line')
+for (const [file, tab] of [['components/QueenHeroBlock.tsx', 'comb'], ['components/SpecHeroBlock.tsx', 'specs']]) {
+  const text = src(file)
+  assert.match(
+    text,
+    new RegExp(`<PlayLine>\\{MODULES\\.find\\(\\(module\\) => module\\.tab === '${tab}'\\)!\\[lang\\]\\.play\\}</PlayLine>`),
+    `${file} writes its own description but does not take ${tab}'s play line from the module record`,
+  )
+}
+const app = src('App.tsx')
+const omitted = [...app.matchAll(/module\.tab !== '([a-z]+)'/g)].map((match) => match[1])
+assert.deepEqual(omitted, ['comb', 'specs', 'tri'], 'the homepage leaves out a different set of modules than the two with their own blocks plus TRI')
+// The line loses its colour and its rule to any `.block p` selector unless the
+// class outranks one: the reason it is written twice.
+assert.match(readFileSync(new URL('../src/components/PlayLine.css', import.meta.url), 'utf8'), /\.play-line\.play-line \{/, 'the play line style no longer outranks the block paragraph rules it sits inside')
+
 assert.equal(MODULES.length, HUD_VIEWS.length, 'every module is a view and every view a module')
 assert.ok(HUD_KEYS.length >= HUD_VIEWS.length, 'every view has a key')
 assert.equal(new Set(HUD_KEYS).size, HUD_KEYS.length, 'keys are unique')

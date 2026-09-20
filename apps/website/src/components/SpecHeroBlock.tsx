@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n/context'
+import { MODULES } from '../lib/queenModules'
 import { specExplorerHash } from '../lib/specCatalog'
 import { loadManifest } from '../lib/t27Compiler'
+import PlayLine from './PlayLine'
 import './SpecHeroBlock.css'
 
 // The landing shows the Spec Explorer itself, the same way the Queen inspector
@@ -56,6 +58,10 @@ export default function SpecHeroBlock() {
           </div>
           <div className="spec-hero-block-aside">
             <p>{t.body}</p>
+            {/* As in the comb's block: this block writes its own description
+                because it mounts the Explorer itself, but the move belongs to
+                the module record. */}
+            <PlayLine>{MODULES.find((module) => module.tab === 'specs')![lang].play}</PlayLine>
             <div className="spec-hero-block-actions">
               <a className="spec-hero-block-primary" href={full}>{t.open}</a>
               <a className="spec-hero-block-secondary" href="#/specs">{specCount === null ? t.all : `${t.all} (${specCount})`}</a>

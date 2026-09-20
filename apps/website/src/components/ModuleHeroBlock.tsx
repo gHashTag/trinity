@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n/context'
 import { MODULES, type QueenModuleTab } from '../lib/queenModules'
+import PlayLine from './PlayLine'
 import './ModuleHeroBlock.css'
 
 // A module of the shell, presented the way the hive and the Spec Explorer are:
@@ -64,6 +65,7 @@ export default function ModuleHeroBlock({ tab }: { tab: QueenModuleTab }) {
           </div>
           <div className="module-hero-aside">
             <p>{m.body}</p>
+            <PlayLine>{m.play}</PlayLine>
             <div className="module-hero-actions">
               <a className="module-hero-primary" href={`#/queen?tab=${tab}`}>
                 {t.open}
