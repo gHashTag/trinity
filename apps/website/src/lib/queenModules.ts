@@ -225,6 +225,21 @@ export const MODULES = [
       body: 'Запись, которую обязан нести опубликованный результат, чтобы читатель, у которого нет ни микросхемы, ни нагрузки, мог понять: два числа расходятся потому, что различаются системы, — или потому, что различались условия. Четырнадцать полей, поданных на рассмотрение рабочей группы OCP по нейроморфным вычислениям 16 сентября 2026 года, и поданных — это всё: включить их никто пока не согласился. Пять полей помечены †: за них платит наш собственный измеренный промах — один набор весов, прочитанный как две модели в 4.44 стандартной ошибки друг от друга; два артефакта, различающиеся в 43,70 процента параметров за метрикой, сдвинувшейся на 0.084 стандартной ошибки; и одна функция, чьи две реализации разошлись в 5,4 раза по LUT из-за ширин полей, а не из-за алгоритма. Шестое несёт ‡ — оно стоит только на случае, который этот документ сам и отозвал, и считается отдельно, а не тихо вместе со всеми; в версии, отправленной рабочей группе, стоит «четыре», и это просто неверно — по ней причитается поправка. Случаи не нейроморфные, и кремния не существует; и то и другое сказано на странице, а не сглажено. С тех пор запись заполнена по семи результатам, опубликованным другими: 98 клеток, 5 раскрыто, 65 частично, 28 отсутствует, — и контроль, взятый из организации, которая уже применяет правила раскрытия, единственная колонка вообще без пробелов. Открывается буквой b.',
     },
   },
+  {
+    tab: 'mcp',
+    key: 'm',
+    glyph: '🔌',
+    en: {
+      name: 'MCP',
+      hint: 'The live fleet of MCP servers, probed (key m)',
+      body: 'Every Model Context Protocol server this machine can reach, read live from a local hub rather than from the repository — so the list is what answers now, not what was once declared. Each card carries the transport, which config registered it, how many tools the server advertises and how long the handshake took. Three states, not two: online (it answered and the answer parsed), reachable (it answered, the body did not parse — browseros-neo does exactly this, and calling it dead would be wrong), and offline with the reason printed as the probe saw it. Values from the configs are never published: an argument after a token flag and anything shaped like a secret are redacted, and env and header entries are reported as key names only; a server holding a secret is marked with a lock, which is a mark and not a leak. TOOLS (key t) is the other half of the question — what a tool is declared to be; this is whether it is there. The inventory names private projects, so it is read over loopback from your own machine and is never part of the published site: with the hub down this view says so and prints the command to start it, rather than drawing an empty catalogue.',
+    },
+    ru: {
+      name: 'MCP',
+      hint: 'Живой парк MCP-серверов, с опросом (клавиша m)',
+      body: 'Все серверы Model Context Protocol, до которых эта машина может дотянуться, прочитанные живьём с локального хаба, а не из репозитория, — то есть список показывает, что отвечает сейчас, а не что когда-то объявили. На карточке: транспорт, в каком конфиге сервер прописан, сколько инструментов он заявляет и сколько заняло рукопожатие. Состояний три, а не два: online (ответил, и ответ разобрался), reachable (ответил, но тело не разобралось — именно так ведёт себя browseros-neo, и записать его в мёртвые было бы неверно) и offline с причиной ровно в том виде, в каком её увидела проба. Значения из конфигов наружу не уходят: аргумент после флага токена и всё, похожее на секрет, заменяются на «отредактировано», а из env и headers публикуются только имена ключей; сервер с секретом помечается замком — это пометка, а не утечка. ИНСТРУМЕНТЫ (клавиша t) отвечают на другую половину вопроса — чем инструмент объявлен; здесь — есть ли он на самом деле. Инвентарь называет приватные проекты, поэтому читается по петлевому адресу с вашей же машины и никогда не входит в опубликованный сайт: если хаб не запущен, вкладка честно это говорит и печатает команду запуска, а не рисует пустой каталог.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

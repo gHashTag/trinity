@@ -365,7 +365,12 @@ assert.ok(passportModule && HUD_VIEWS.includes('passport'), 'PASSPORT (the recor
 assert.equal(passportModule.key, 'b', 'PASSPORT opens on b: digits spent, t is TOOLS, p is PROJECT, r is TRI')
 assert.ok(passportModule.en.hint.includes('(key b)') && passportModule.ru.hint.includes('(клавиша b)'), 'PASSPORT names its letter key in both hints')
 for (const lang of ['en', 'ru']) assert.ok(passportModule[lang].name && passportModule[lang].body.length > 40, `passport: ${lang} copy missing`)
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprb', 'the rail keys are 1-9, 0, t, p, r, b in that order')
+const mcpModule = MODULES.find((m) => m.tab === 'mcp')
+assert.ok(mcpModule && HUD_VIEWS.includes('mcp'), 'MCP (the fleet as it answers now) is a module and a view')
+assert.equal(mcpModule.key, 'm', 'MCP opens on m: digits spent, t is TOOLS, p is PROJECT, r is TRI, b is PASSPORT')
+assert.ok(mcpModule.en.hint.includes('(key m)') && mcpModule.ru.hint.includes('(клавиша m)'), 'MCP names its letter key in both hints')
+for (const lang of ['en', 'ru']) assert.ok(mcpModule[lang].name && mcpModule[lang].body.length > 40, `mcp: ${lang} copy missing`)
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbm', 'the rail keys are 1-9, 0, t, p, r, b, m in that order')
 
 // 6. Translations are connected through .t27 contract specs, never hardcoded.
 //    Every specs/i18n/*.t27 the corpus carries is in both catalogs' i18n lists

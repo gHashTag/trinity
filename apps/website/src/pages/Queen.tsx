@@ -79,6 +79,7 @@ const KEY_SHORTCUTS_STORAGE = "queen.hud.key-shortcuts";
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
 import Passport from "./Passport";
+import { QueenMcp, mcpCopy } from "../components/QueenMcp";
 import { QueenIdentity } from "../components/QueenIdentity";
 import { hashParamsOf, tabAddress } from "../lib/triScreens";
 import {
@@ -364,6 +365,10 @@ const COPY = {
     // group, and the three measured cases of ours that pay for it.
     passportView: "PASSPORT",
     passportHint: "What must travel with a result: the record proposed to the OCP working group (key b)",
+    // The fifteenth view: TOOLS says what a tool is declared to be, this says
+    // whether it answers right now. Read from a hub on the owner's machine.
+    mcpView: "MCP",
+    mcpHint: "The live fleet of MCP servers, probed rather than declared (key m)",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -720,6 +725,8 @@ const COPY = {
     triHint: "Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)",
     passportView: "ПАСПОРТ",
     passportHint: "Что обязано ехать вместе с результатом: запись, поданная в рабочую группу OCP (клавиша b)",
+    mcpView: "MCP",
+    mcpHint: "Живой парк MCP-серверов: не объявлено, а опрошено (клавиша m)",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -2555,6 +2562,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // PROJECT): TRI, the app at app.t27.ai inside the game, one screen per address.
     { view: "tri" as const, glyph: "△", label: c.triView, hint: c.triHint },
     { view: "passport" as const, glyph: "▤", label: c.passportView, hint: c.passportHint },
+    // Fifteenth, on the letter m (HUD_KEYS[14]): the MCP fleet as it answers
+    // now, read over loopback from the owner's own hub. Deliberately the last
+    // entry — it is the only view whose data never ships with the site.
+    { view: "mcp" as const, glyph: "🔌", label: c.mcpView, hint: c.mcpHint },
   ];
   const viewLabel =
     commandItems.find((item) => item.view === view)?.label ?? c.combView;
@@ -3011,6 +3022,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             // The record itself, not a frame of it: the page and this view read
             // one content module, so the working group and the map cannot drift.
             <Passport face={hashParams.get("face") === "research" ? "research" : "record"} />
+          ) : boardView === "mcp" ? (
+            // Its own copy table travels with the component: "answering" and the
+            // hub-down command are this view's vocabulary and nothing else's.
+            <QueenMcp c={mcpCopy(lang)} lang={lang} />
           ) : boardView === "comb" ? (
             null
           ) : boardView === "research" ? (
