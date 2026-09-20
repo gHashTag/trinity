@@ -114,16 +114,16 @@ export const MODULES = [
     key: '6',
     glyph: '◈',
     en: {
-      name: 'TECHNOLOGY TREE',
-      hint: 'Canonical evidence graph',
-      body: 'Research as a graph with prerequisites: what is seeded, what is locked behind what, and what is being researched now — with the evidence each node rests on, and nothing claimed that has none.',
-      play: 'Where a claim has to show its evidence before it is drawn at all. Read it to see what the project believes it has proved, and on what.',
+      name: 'TECH TREE',
+      hint: 'How the .t27 language got here',
+      body: 'The evolution of the .t27 language as a graph with prerequisites: the seed compiler, the constructs the corpus actually uses, the checks each spec passes, the five backends it generates to, the repositories that have adopted it, and the silicon path — every node carrying the count it rests on, read from the corpus index the site ships.',
+      play: 'Where a claim has to show its evidence before it is drawn at all. Read it to see how far the language has got, measured on 1407 specs rather than asserted.',
     },
     ru: {
       name: 'ДЕРЕВО ТЕХНОЛОГИЙ',
-      hint: 'Канонический граф свидетельств',
-      body: 'Исследования как граф с предпосылками: что засеяно, что за чем закрыто и что исследуется сейчас — со свидетельством под каждым узлом, и без утверждений, под которыми его нет.',
-      play: 'Место, где утверждение обязано предъявить свидетельство, прежде чем его вообще нарисуют. Здесь видно, что проект считает доказанным — и на чём.',
+      hint: 'Как язык .t27 дошёл до этого места',
+      body: 'Эволюция языка .t27 как граф с предпосылками: компилятор-семя, конструкции, которые корпус действительно использует, проверки, которые проходит каждая спека, пять бэкендов, в которые она порождается, репозитории, принявшие язык, и путь к кремнию — у каждого узла стоит число, на котором он держится, прочитанное из индекса корпуса, который сайт отдаёт вместе со страницей.',
+      play: 'Место, где утверждение обязано предъявить свидетельство, прежде чем его вообще нарисуют. Здесь видно, как далеко ушёл язык — измеренно на 1407 спеках, а не заявлено.',
     },
   },
   {

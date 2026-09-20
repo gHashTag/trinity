@@ -114,6 +114,7 @@ import "./queen-phone.css";
 // The address moved to lib/queenApi so the homepage can ask the same server
 // this page asks, rather than carry a second copy of the literal.
 import { BOUNDARY_EXAMPLE_ISSUE, QUEEN_API } from "../lib/queenApi";
+import { deriveT27Evolution } from "../lib/t27Evolution";
 const LIVE_POLL_MS = 5_000;
 const FOUNDATION_POLL_MS = 60_000;
 const MODULES_POLL_MS = 15_000;
@@ -522,10 +523,10 @@ const COPY = {
       "Queen judges the evidence, rejects weak work and accepts only a passing result.",
     merge: "ACCEPT / MERGE",
     mergeCopy: "Approved work enters the repository with an auditable trail.",
-    tech: "TECHNOLOGY TREE",
-    techTitle: "Research opens the next capabilities.",
+    tech: "TECH TREE",
+    techTitle: "The .t27 language, and what each step of it cost.",
     techCopy:
-      "This is the existing TRINITY research graph. Select a technology to see its prerequisites and what it unlocks next.",
+      "The evolution of the language, read from the corpus index this page already ships: the seed compiler, the constructs the specs use, the checks they pass, the backends they generate to, the repositories that adopted them, and the silicon path. Select a node to see its evidence, its prerequisites and what it unlocks.",
     researched: "researched",
     researching: "researching",
     available: "available next",
@@ -538,9 +539,12 @@ const COPY = {
     activeResearch: "active research",
     nextAvailable: "available next",
     evidence: "Evidence",
-    graphLive: "LIVE EVIDENCE GRAPH",
-    graphOffline: "RESEARCH GRAPH OFFLINE",
-    graphLoading: "Syncing the TRINITY graph…",
+    // The tree draws the .t27 language, and it is read out of the corpus index
+    // this site ships. Saying "the TRINITY graph" here described the supervisor
+    // wire the tab used to draw, and was the only sentence a reader saw while
+    // the index loaded.
+    graphOffline: "T27 CORPUS INDEX OFFLINE",
+    graphLoading: "Reading the .t27 index…",
     workerPool: "A2A RESEARCH WORKERS",
     workerPoolCopy: "Each paid slot can carry one isolated Bee without sharing a rate limit.",
     slotsBusy: "slots busy",
@@ -882,9 +886,9 @@ const COPY = {
     mergeCopy:
       "Одобренная работа попадает в репозиторий с полным следом доказательств.",
     tech: "ДЕРЕВО ТЕХНОЛОГИЙ",
-    techTitle: "Исследования открывают следующие возможности.",
+    techTitle: "Язык .t27 и цена каждого его шага.",
     techCopy:
-      "Это существующий граф исследований TRINITY. Выберите технологию, чтобы увидеть зависимости и что она откроет дальше.",
+      "Эволюция языка, прочитанная из индекса корпуса, который эта страница и так отдаёт: компилятор-семя, конструкции, которые используют спеки, проверки, которые они проходят, бэкенды, в которые они порождаются, репозитории, принявшие их, и путь к кремнию. Выберите узел, чтобы увидеть его свидетельство, зависимости и то, что он откроет дальше.",
     researched: "исследовано",
     researching: "изучается",
     available: "доступно дальше",
@@ -897,9 +901,8 @@ const COPY = {
     activeResearch: "активных исследований",
     nextAvailable: "доступно дальше",
     evidence: "Доказательство",
-    graphLive: "ЖИВОЙ ГРАФ ДОКАЗАТЕЛЬСТВ",
-    graphOffline: "ГРАФ ИССЛЕДОВАНИЙ НЕДОСТУПЕН",
-    graphLoading: "Загрузка графа…",
+    graphOffline: "ИНДЕКС КОРПУСА .T27 НЕДОСТУПЕН",
+    graphLoading: "Чтение индекса .t27…",
     workerPool: "A2A ВОРКЕРЫ ИССЛЕДОВАНИЙ",
     workerPoolCopy:
       "Каждый оплаченный слот несёт одну изолированную Bee и не делит rate limit с соседями.",
@@ -1072,23 +1075,57 @@ function useQueenModules(): { data: { repo?: string; commit: string | null; gene
 }
 
 /**
+ * The vendored corpus index, fetched once for the whole page.
+ *
+ * It is 1.4 MB, and two different parts of this page read it: the hive's
+ * coverage and the tech tree's evolution. Asking for it twice would put two
+ * concurrent requests for the same megabyte on the wire, because the HTTP cache
+ * can only serve the second one after the first has finished. The promise is
+ * module-level rather than component-level for the same reason: a remount must
+ * not start a third.
+ *
+ * A failed read stays null, and every caller must read null as "unknown".
+ */
+let t27ManifestPromise: Promise<unknown> | null = null;
+
+/**
+ * The corpus index, fetched once for the whole page. Its failure is reported
+ * separately from the supervisor's: the TECH TREE is drawn from this file, so
+ * a tree with no index is offline even while the wire is healthy, and a tree
+ * with an index is complete even while the wire is down.
+ */
+function useT27Manifest(): { manifest: unknown; error: string | null } {
+  const [manifest, setManifest] = useState<unknown>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    t27ManifestPromise ??= fetch("t27/manifest.json", {
+      headers: { Accept: "application/json" },
+      cache: "default",
+    }).then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json() as Promise<unknown>;
+    });
+    t27ManifestPromise
+      .then((next) => { if (active) { setManifest(next); setError(null); } })
+      .catch((nextError: unknown) => {
+        t27ManifestPromise = null;
+        if (active) {
+          setError(nextError instanceof Error ? nextError.message : String(nextError));
+        }
+      });
+    return () => { active = false; };
+  }, []);
+  return { manifest, error };
+}
+
+/**
  * Bind corpus claims to the displayed module snapshot, not to the board repo.
  * Retain raw data so a repo change cannot reuse the previous repo's coverage.
  * Failed/unavailable reads remain explicitly unknown.
  */
 function useT27Coverage(repository: string | null): ReadonlySet<string> | null {
-  const [manifest, setManifest] = useState<unknown>(null);
-  useEffect(() => {
-    let active = true;
-    fetch("t27/manifest.json", { headers: { Accept: "application/json" }, cache: "default" })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json() as Promise<unknown>;
-      })
-      .then((next) => { if (active) setManifest(next); })
-      .catch(() => {});
-    return () => { active = false; };
-  }, []);
+  const { manifest } = useT27Manifest();
   return useMemo(() => hiveCoverageFromManifest(manifest, repository), [manifest, repository]);
 }
 
@@ -1225,14 +1262,39 @@ function useQueenActivity(): {
   return { data, error };
 }
 
-function useQueenResearch(): {
+/**
+ * The tech tree, and the live pool that works on it.
+ *
+ * These are two different subjects and they now come from two different places,
+ * because one of them kept taking the other down with it. The GRAPH is the
+ * evolution of the .t27 language, derived from the corpus index this bundle
+ * already ships (public/t27/manifest.json, dated and attributed to a commit of
+ * gHashTag/t27) -- see deriveT27Evolution, which reads every count it prints.
+ * The WORKERS, the runtime status and the agent bootstrap are the supervisor's
+ * and only the supervisor knows them, so they still come off the wire.
+ *
+ * Before this the tree was the supervisor's own research graph, which meant a
+ * supervisor that was not answering -- 502, then no answer at all, measured
+ * 2026-09-20 -- left the tab drawing RESEARCH GRAPH OFFLINE over an empty
+ * console. The language's own history does not stop when a container restarts,
+ * and it is the thing this page is about.
+ *
+ * `error` is still the wire's error and still says when the live half is out;
+ * the tree draws regardless.
+ */
+function useQueenResearch(lang: string): {
   data: ResearchGraph | null;
+  /** The .t27 evolution only: null when the corpus index did not load. */
+  tree: ResearchGraph | null;
   error: string | null;
+  /** Why the TECH TREE has nothing to draw -- the index, not the supervisor. */
+  sourceError: string | null;
   syncedAt: Date | null;
 } {
-  const [data, setData] = useState<ResearchGraph | null>(null);
+  const [live, setLive] = useState<ResearchGraph | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [syncedAt, setSyncedAt] = useState<Date | null>(null);
+  const { manifest, error: sourceError } = useT27Manifest();
 
   useEffect(() => {
     let active = true;
@@ -1245,7 +1307,7 @@ function useQueenResearch(): {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const next = (await response.json()) as ResearchGraph;
         if (active) {
-          setData(next);
+          setLive(next);
           setError(null);
           setSyncedAt(new Date());
         }
@@ -1266,7 +1328,37 @@ function useQueenResearch(): {
     };
   }, []);
 
-  return { data, error, syncedAt };
+  const evolution = useMemo(
+    () => deriveT27Evolution(manifest, lang),
+    [manifest, lang],
+  );
+
+  const data = useMemo<ResearchGraph | null>(() => {
+    if (!evolution) return live;
+    return {
+      nodes: evolution.nodes,
+      edges: evolution.edges,
+      layers: evolution.layers,
+      summary: evolution.summary,
+      runtime: live?.runtime ?? { status: "offline" },
+      workers: live?.workers ?? {
+        capacity: 0,
+        active: 0,
+        idle: 0,
+        utilization: 0,
+        slots: [],
+      },
+      agentBootstrap: live?.agentBootstrap ?? fallbackBootstrap(),
+    };
+  }, [evolution, live]);
+
+  // The tab's subject is the language. Without the index there is no tree to
+  // draw, and drawing the supervisor's task graph in its place would put a
+  // different subject under the same heading -- which is what this tab used to
+  // do, and the reason the rename was asked for.
+  const tree = evolution ? data : null;
+
+  return { data, tree, error, sourceError, syncedAt };
 }
 
 function useQueenHardware(): {
@@ -1422,6 +1514,10 @@ function activityLabel(event: QueenActivityEvent, lang: string) {
 const LAYER_COPY: Record<FieldLayer, "hudLayerFoundation" | "hudLayerCastle" | "hudLayerCode"> = { foundation: "hudLayerFoundation", castle: "hudLayerCastle", code: "hudLayerCode" };
 const LAYER_GLYPH: Record<FieldLayer, string> = { foundation: "⬢", castle: "♜", code: "▦" };
 
+// One colour and one glyph per layer. The first six were the supervisor's own
+// research layers; the four after them are the .t27 evolution's, and they are
+// listed here for the same reason the others are -- a layer with no entry draws
+// a white diamond, which is legible but says nothing about where it sits.
 const LAYER_DESIGN: Record<string, { color: string; icon: string }> = {
   seed: { color: "#00ff88", icon: "◆" },
   ring: { color: "#7dffbf", icon: "◎" },
@@ -1429,7 +1525,34 @@ const LAYER_DESIGN: Record<string, { color: string; icon: string }> = {
   runtime: { color: "#29d7ff", icon: "◈" },
   supervisor: { color: "#ff4fb8", icon: "♛" },
   interface: { color: "#b69cff", icon: "▦" },
+  language: { color: "#7dffbf", icon: "⟐" },
+  check: { color: "#29d7ff", icon: "✓" },
+  backend: { color: "#b69cff", icon: "⇥" },
+  adoption: { color: "#ff4fb8", icon: "◎" },
 };
+
+// The column caption above each layer. It used to print the layer id, which is
+// an English word sitting on a Russian page; the four evolution layers made
+// that visible enough to fix. An unknown layer still prints its id, because a
+// caption that is merely untranslated is better than no caption at all.
+const LAYER_CAPTION: Record<string, { en: string; ru: string }> = {
+  seed: { en: "seed", ru: "семя" },
+  ring: { en: "ring", ru: "кольцо" },
+  silicon: { en: "silicon", ru: "кремний" },
+  runtime: { en: "runtime", ru: "исполнение" },
+  supervisor: { en: "supervisor", ru: "супервизор" },
+  interface: { en: "interface", ru: "интерфейс" },
+  language: { en: "language", ru: "язык" },
+  check: { en: "checks", ru: "проверки" },
+  backend: { en: "backends", ru: "бэкенды" },
+  adoption: { en: "adoption", ru: "принятие" },
+};
+
+function layerCaption(layer: string, lang: string): string {
+  const caption = LAYER_CAPTION[layer];
+  if (!caption) return layer;
+  return lang === "ru" ? caption.ru : caption.en;
+}
 
 function fallbackBootstrap(): ResearchGraph["agentBootstrap"] {
   return {
@@ -1722,7 +1845,7 @@ function TechnologyTree({
                     } as CSSProperties}
                   >
                     <span aria-hidden="true">{design.icon}</span>
-                    <b>{layer}</b>
+                    <b>{layerCaption(layer, lang)}</b>
                   </div>
                 );
               })}
@@ -2084,7 +2207,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const state = useQueenStatus();
   const boardState = useQueenBoard();
   const activityState = useQueenActivity();
-  const researchState = useQueenResearch();
+  const researchState = useQueenResearch(lang);
   const hardwareState = useQueenHardware();
   // A tab is addressable, in both directions. The landing presents every module
   // and links to each, and a link that lands on the comb whatever it said would
@@ -2209,6 +2332,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   const repo = board?.repo ?? null;
   const pulse = board?.pulse;
   const research = researchState.data;
+  // The HUD's RESEARCH figure is the tech tree's own figure, so the strip and
+  // the tab it opens never print two different percentages.
+  const tree = researchState.tree;
   const workers = research?.workers ?? null;
   const hardware = hardwareState.data;
   const cards = board?.cards ?? EMPTY_CARDS;
@@ -3102,8 +3228,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           ) : boardView === "research" ? (
             <TechnologyTree
               c={c}
-              graph={researchState.data}
-              error={researchState.error}
+              graph={researchState.tree}
+              error={researchState.sourceError}
               lang={lang}
               embedded
             />
@@ -3301,12 +3427,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           <i aria-hidden="true">◈</i>
           <small>{c.hudResearch}</small>
           <strong id="stat-research">
-            {research ? `${research.summary.percentage}%` : "—"}
+            {tree ? `${tree.summary.percentage}%` : "—"}
           </strong>
           <span>
-            {research
-              ? `${research.summary.researched}/${research.summary.total}`
-              : researchState.error
+            {tree
+              ? `${tree.summary.researched}/${tree.summary.total}`
+              : researchState.sourceError
                 ? c.graphOffline
                 : c.graphLoading}
           </span>

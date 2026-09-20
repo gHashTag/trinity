@@ -156,6 +156,14 @@ jobs:
       # source. The scan itself runs against GitHub in t27-world-scan.yml.
       - name: t27 world discovery
         run: npm run check:discovery
+      # The TECH TREE draws the evolution of the .t27 language itself, so every
+      # number in it has to come out of public/t27/manifest.json rather than out
+      # of a literal. The gate executes the derivation against the shipped index
+      # and then against a corpus a third the size, and requires the drawing to
+      # move. It also holds the silicon node to what an index of specs can say.
+      # Pure, no browser.
+      - name: t27 evolution tree
+        run: npm run check:t27-evolution
 
       - name: Build
         run: npx vite build

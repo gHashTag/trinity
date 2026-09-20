@@ -2400,7 +2400,11 @@
 
 .queen27-tech-console {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(270px, 0.34fr);
+  /* The detail panel took a third of the console -- 358px of a 1053px board --
+     and it holds six short fields. The tree is the thing being read, and the
+     tree is the thing that was scrolling sideways, so the panel gets the width
+     its longest field needs and the tree gets the rest. */
+  grid-template-columns: minmax(0, 1fr) minmax(232px, 0.22fr);
   min-height: 720px;
   border: 1px solid var(--border);
   background: var(--border);
