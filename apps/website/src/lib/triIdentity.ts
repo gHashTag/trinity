@@ -722,6 +722,14 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
   function start() {
     if (started) return
     started = true
+    // Whether we are inside the player is a fact about the DOCUMENT, not about
+    // which credential we end up using, so it is established before either
+    // path. Left until after the app-session branch it would stay false there,
+    // and `inPlayer()` -- which the page asks to decide what chrome to draw --
+    // would answer "top-level" for a board sitting in a frame. signIn() would
+    // go quietly dead with it, since it posts to a parent it no longer knows
+    // it has.
+    viaParent = framedByPlayer(env)
     // The app's own copy of the board reads the session it is sitting in. This
     // is checked BEFORE rule 1, which is about the bridge: on app.t27.ai rule 1
     // is false and would otherwise publish not_t27 for a person who is signed
@@ -735,7 +743,6 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
       publish({ state: 'unavailable', code: 'not_t27' })
       return
     }
-    viaParent = framedByPlayer(env)
     env.onMessage(onMessage)
     env.onVisible(() => {
       if (owed && looking() && !dismissed) request()

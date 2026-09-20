@@ -182,6 +182,21 @@ assert.ok(
     "board publishes not_t27 for a person who is signed in"
 )
 
+// Being inside the player is a fact about the DOCUMENT, so it must be settled
+// before either credential path -- otherwise a framed board on the app's own
+// origin takes the app-session branch with viaParent still false, and
+// `inPlayer()` answers "top-level" for a page sitting in a frame while
+// signIn() posts to a parent it no longer knows it has. Neither failure throws;
+// both just draw the wrong thing, which is why it is asserted rather than
+// remembered.
+const framed = identity.indexOf('viaParent = framedByPlayer(env)')
+assert.notEqual(framed, -1, 'start() no longer computes viaParent -- update this gate')
+assert.ok(
+  framed < consults,
+  'viaParent must be settled before the app-session branch returns, or a framed ' +
+    'board on app.t27.ai reports itself as top-level'
+)
+
 console.log(
   `app-session-identity: ${HERE.length} addresses read the app session, ` +
     `${ELSEWHERE.length} leave it to the bridge, ${SIGNED_OUT.length} ways to be signed out`
