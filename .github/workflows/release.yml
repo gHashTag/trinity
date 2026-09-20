@@ -85,7 +85,12 @@ jobs:
 
   build-macos-amd64:
     name: Build macOS (amd64)
-    runs-on: macos-13
+    # Was macos-13, which sat queued for the whole of a 50-minute run while
+    # every other job finished -- that image is on its way out and there is no
+    # reason to wait for it. The target here is already -Dtarget=x86_64-macos-none,
+    # so this was never a native build: zig cross-compiles it from the arm64
+    # image, which is also the one with an SDK zig 0.15.2 can read.
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -153,9 +158,20 @@ jobs:
           name: macos-arm64
           path: trinity-macos-arm64.tar.gz
 
+  # Kept, and expected to fail. 17 files in this tree cannot compile for
+  # x86_64-windows: std.posix.getenv is a @compileError there because Windows
+  # environment strings are WTF-16, std.process.ArgIterator wants
+  # initWithAllocator, several @ptrFromInt sites pass a comptime_int where
+  # *anyopaque is required, and src/jit_arm64.zig is an arm64 JIT. That is a
+  # portability project across the source, not a line in this file.
+  #
+  # continue-on-error, not deletion: a job that runs and fails says Windows is
+  # unsupported and shows exactly why, every release. A deleted job says
+  # nothing, and the next person re-derives it from scratch.
   build-windows:
     name: Build Windows (amd64)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -192,7 +208,10 @@ jobs:
   release:
     name: Create Release
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-linux-amd64, build-linux-arm64, build-macos-amd64, build-macos-arm64, build-windows]
+    # build-windows is deliberately absent: it is allowed to fail, and whether
+    # `needs` treats a continue-on-error failure as satisfied is not something
+    # to bet a release on. It ships nothing, so it gates nothing.
+    needs: [build-linux-amd64, build-linux-arm64, build-macos-amd64, build-macos-arm64]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -240,7 +259,14 @@ jobs:
             | Linux | ARM64 | `trinity-linux-arm64.tar.gz` |
             | macOS | AMD64 (Intel) | `trinity-macos-amd64.tar.gz` |
             | macOS | ARM64 (Apple Silicon) | `trinity-macos-arm64.tar.gz` |
-            | Windows | AMD64 | `trinity-windows-amd64.zip` |
+
+            **There is no Windows build.** The Windows job runs and is expected
+            to fail: 17 source files use POSIX-only APIs that zig refuses to
+            compile for that target — `std.posix.getenv` (WTF-16 environment
+            strings), `ArgIterator.init` where Windows needs
+            `initWithAllocator`, and `src/jit_arm64.zig`, which is an arm64 JIT.
+            Listing a file here that the build cannot produce would be the only
+            thing worse than not shipping it.
 
             ### Verification
 
