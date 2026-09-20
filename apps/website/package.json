@@ -74,6 +74,7 @@
     "check:queen-tri": "node qa/queen-tri-contract.mjs",
     "check:tri-identity": "node --experimental-strip-types qa/tri-identity-contract.mjs",
     "check:queen-identity": "node qa/queen-identity-contract.mjs",
+    "check:queen-redirect": "node --experimental-strip-types qa/queen-redirect-contract.mjs",
     "test:sync-skills": "node --test scripts/sync-skills.test.mjs scripts/skills-core.test.mjs",
     "test:sync-crons": "node --test scripts/sync-crons.test.mjs",
     "check:agents": "node --experimental-strip-types qa/agents-spec-contract.mjs",

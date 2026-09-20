@@ -123,6 +123,14 @@ jobs:
       # memory only; whoami never carries X-Agent-Key. Pure, no browser.
       - name: TRI identity
         run: npm run check:tri-identity
+      # The Queen board moved to app.t27.ai/queen/, and #/queen here hands its
+      # visitors over. app.t27.ai builds THIS bundle, so the redirect code runs
+      # at the destination too: keyed on the route alone it would send that page
+      # to itself for ever, and the board would be unreachable at the only
+      # address that serves it. The gate calls the decision with both origins as
+      # input and re-feeds every answer to prove it settles. Pure, no browser.
+      - name: Queen board moved
+        run: npm run check:queen-redirect
       # Why free bees are idle, read from /queen/status alone: real snapshots
       # and malformed ones through the pure reader, no fabricated zeros, a
       # stale round called stale. Pure, no browser.

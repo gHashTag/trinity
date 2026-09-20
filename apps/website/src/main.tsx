@@ -10,7 +10,22 @@ import App from './App.tsx'
 import { I18nProvider } from './i18n/context.tsx'
 import GlobalStarfield from './components/GlobalStarfield.tsx'
 import { handExplorerLinksToQueen } from './lib/queenFrame'
+import { redirectLegacyQueen } from './lib/legacyQueenRedirect'
 import { triIdentity } from './lib/triIdentity'
+
+// THE QUEEN MOVED to https://app.t27.ai/queen/, which now builds this same
+// bundle and serves the board on the app's own origin. #/queen here is the old
+// address and hands its visitors over.
+//
+// Decided first, before anything below costs a request. location.replace() does
+// not halt this module — the document keeps executing until the navigation
+// commits — so `leaving` is carried down to the identity bridge, which would
+// otherwise fetch a cross-origin document for a page that is on its way out.
+//
+// Why this cannot simply key on the route: app.t27.ai/queen/ runs this code
+// too. See src/lib/legacyQueenRedirect.ts and qa/queen-redirect-contract.mjs,
+// which calls the decision with both origins as input.
+const leaving = redirectLegacyQueen()
 
 // In a Queen tab's frame, a link to another Explorer switches the Queen's tab instead
 // of navigating the frame under a rail that names a different one.
@@ -28,7 +43,7 @@ handExplorerLinksToQueen()
   const hash = window.location.hash
   const params = new URLSearchParams(hash.split('?')[1] ?? '')
   const view = params.get('view')
-  if (/^#\/queen(?:\?|$)/.test(hash) && params.get('embed') !== '1' && !params.has('repo') && view !== 'atlas' && view !== 'core') {
+  if (!leaving && /^#\/queen(?:\?|$)/.test(hash) && params.get('embed') !== '1' && !params.has('repo') && view !== 'atlas' && view !== 'core') {
     const asked = new URLSearchParams(window.location.search).get('lang')
     let lang = asked && ['en', 'ru', 'de', 'zh', 'es'].includes(asked) ? asked : null
     if (!lang) {
