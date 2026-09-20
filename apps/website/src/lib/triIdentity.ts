@@ -2,8 +2,9 @@
 // without this page ever holding the player's session.
 //
 // The player on https://app.t27.ai is the only credential holder. It mints a
-// game token (300 s, v:2, audience https://t27.ai, accepted by /mcp for whoami
-// and hive_pulse only) and hands it to this page by postMessage:
+// game token (300 s, v:2, audience https://t27.ai, accepted by /mcp for a short
+// list of read-only tools: whoami, hive_pulse, and whatever PLAYER_TOOLS below
+// names) and hands it to this page by postMessage:
 //
 //   game -> player:  {v:1, type:'tri-identity-request', nonce}
 //   player -> game:  {v:1, type:'tri-identity', nonce, state, game_token?, expires_in?, telegram_id?, code?}
@@ -21,22 +22,41 @@
 // ('consent-required'), the person has not said Not now, and something on
 // screen subscribes (the Queen's chip): leaving the Queen hides it.
 //
+// SINCE THE BOARD MOVED there is a second source, and it is the simpler one:
+// on https://app.t27.ai/queen/ this bundle is same-origin with the player and
+// reads the app's own session directly (appSessionIdentity.ts). No frame, no
+// nonce, no consent prompt, no game token — and no choice about it either, as
+// the bridge's frame-ancestors is exactly https://t27.ai and never 'self', so
+// the apparatus below cannot run there at all. Everything from "Who answers"
+// down describes the bridge path, which is still how t27.ai works.
+//
 // THE RULES THIS FILE KEEPS (qa/tri-identity-contract.mjs holds it to them):
-//   1. Active on https://t27.ai only. Any other origin stays anonymous.
+//   1. The BRIDGE is asked only from https://t27.ai. Any other origin stays
+//      anonymous unless it is the app's own copy of the board, which has the
+//      session in reach and is held to rule 3 and rule 4 just the same
+//      (qa/app-session-identity-contract.mjs).
 //   2. A message counts only from https://app.t27.ai AND from the one window asked
 //      (the parent, or the bridge frame), with the nonce of the open request or
 //      nonce null (a dismiss: the open nonce only).
 //   3. The game token lives in this module's memory: never storage, never a
 //      URL, never a log, never the published snapshot.
-//   4. whoami goes out with credentials 'omit' and exactly two headers,
-//      Content-Type and Authorization. Never X-Agent-Key: the console's agent
-//      key (crmClient.ts) is a different path and never meets this one.
+//   4. Everything this module sends — whoami, and a component's call through
+//      callAsPlayer — goes out with credentials 'omit' and exactly two headers,
+//      Content-Type and Authorization. Never the console's own identity header:
+//      that agent key (crmClient.ts) names a person with far more authority
+//      than a player has, it is a different path, and the two never meet. Its
+//      header is not spelled out here on purpose — the gate asserts the literal
+//      is absent from this file, which is a rule with no judgement in it and
+//      therefore no way to erode.
 //   5. Nobody looking, nothing running: with no subscriber the renewal and
 //      retry timers stop and the bridge frame is blanked (unless it holds a
 //      prompt waiting for its click). A hidden page asks nothing by itself.
 //
 // Everything that touches the browser comes in through IdentityEnv, so the
 // contract drives the same code with fakes.
+
+import { mcpPayload } from './mcpAnswer.ts'
+import { appSessionFromWindow, type AppSessionVerdict } from './appSessionIdentity.ts'
 
 export const GAME_ORIGIN = 'https://t27.ai'
 export const APP_ORIGIN = 'https://app.t27.ai'
@@ -49,6 +69,45 @@ export const IDENTITY_ANSWER_MS = 10000
 export const RENEW_BEFORE_S = 30
 /** whoami is abandoned after this long: signed in, name unknown. */
 export const WHOAMI_TIMEOUT_MS = 5000
+/**
+ * A component's call through callAsPlayer is abandoned after this long.
+ *
+ * Longer than whoami's five seconds because it is a different kind of wait:
+ * whoami decides whether a name appears beside an avatar and the page is
+ * already usable without it, while a board call is the panel itself. Still
+ * short enough that a lane says "the hive did not answer" rather than sitting
+ * on a spinner: an unanswered question has to become a sentence on screen.
+ */
+export const PLAYER_CALL_TIMEOUT_MS = 8000
+
+/**
+ * What a page may ask /mcp for with the GAME token, and nothing else.
+ *
+ * The same refusal crmClient.ts makes for the console's credential, in the same
+ * place and for the same reason: BEFORE a request leaves. A credential holder
+ * that sends whatever tool name it is handed has a blast radius of "whatever
+ * the service happens to accept today", and this one is handed to a web page.
+ *
+ * whoami is deliberately absent: it is this module's own call, made once per
+ * person from loadProfile, not something a component asks for.
+ */
+export const PLAYER_TOOLS = ['hive_board'] as const
+export type PlayerTool = (typeof PLAYER_TOOLS)[number]
+
+/**
+ * What a component gets back from callAsPlayer: the body the service answered,
+ * or which of the three things went wrong. Never the token, never a Response
+ * whose headers could be read back.
+ *
+ * The three failures are three different sentences on screen and must not be
+ * collapsed into one: 'signed-out' means nobody asked (the token is gone or has
+ * run out, and the chip is what fixes it), 'refused' means the hive said no to
+ * this person (nothing the page can retry its way out of), 'offline' means the
+ * question did not get an answer (worth asking again).
+ */
+export type PlayerCall =
+  | { ok: true; body: unknown }
+  | { ok: false; reason: 'signed-out' | 'refused' | 'offline' }
 /** Pauses before asking again after a failure that may pass by itself; the last one repeats. */
 export const RETRY_BACKOFF_S = [5, 15, 60, 300] as const
 
@@ -117,6 +176,15 @@ export interface IdentityEnv {
   onOnline(handler: () => void): void
   /** The person coming back to this document: its window focused, or the pointer entering it. */
   onReturn(handler: () => void): void
+  /**
+   * The app's own session, when this document is the board's copy on
+   * app.t27.ai. See appSessionIdentity.ts: there the bridge is not merely
+   * redundant but impossible, and the credential is simply in reach.
+   *
+   * Optional, and absent means `{source:'bridge'}` — every existing caller
+   * and every fixture written before the move keeps the behaviour it had.
+   */
+  appSession?(): AppSessionVerdict
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -130,7 +198,14 @@ const originOf = (url: string): string | null => {
   }
 }
 
-/** Rule 1. */
+/**
+ * Rule 1: the bridge is for the game's origin and no other.
+ *
+ * This is about the BRIDGE, not about identity. Since the board moved, the
+ * app's own copy has a second and better source — the session it is already
+ * sitting in (appSessionIdentity.ts) — which needs no bridge and could not use
+ * one if it wanted to.
+ */
 export function identityActiveOn(origin: string): boolean {
   return origin === GAME_ORIGIN
 }
@@ -146,6 +221,14 @@ export function framedByPlayer({ isTop, ancestorOrigins, referrer }: Pick<Identi
 export function bridgeUrl(lang: string): string {
   return `${BRIDGE_URL}?lang=${lang === 'ru' ? 'ru' : 'en'}`
 }
+
+/**
+ * Stands in for the telegram_id on the app-session path, where nobody sends
+ * one: the bridge's reply carries an id, a session read does not. It is used
+ * only to notice "same person as last time" (`profileFor`), never sent
+ * anywhere and never shown — whoami is what names the person there.
+ */
+const APP_SESSION_PERSON = 'app-session'
 
 const TOKEN_SHAPE = /^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){0,4}$/
 const CODE_SHAPE = /^[a-z0-9_]{1,64}$/
@@ -240,17 +323,10 @@ export function chipOf(identity: Pick<Identity, 'state' | 'code'>): Chip {
 
 /** name, avatar (https only) and role from a whoami answer; nothing it does not recognise. */
 export function whoamiProfile(body: unknown): Pick<Identity, 'name' | 'avatar' | 'role'> {
-  const result = isRecord(body) && isRecord(body.result) ? body.result : null
-  if (!result) return {}
-  let data: unknown = result.structuredContent
-  if (data === undefined && Array.isArray(result.content)) {
-    const text = result.content.find((c): c is { type: string; text: string } => isRecord(c) && c.type === 'text' && typeof c.text === 'string')?.text
-    try {
-      data = text === undefined ? undefined : JSON.parse(text)
-    } catch {
-      data = undefined
-    }
-  }
+  // Where the payload lives is mcpAnswer's business, not this module's: three
+  // files used to know the structuredContent-or-text-block rule and a fourth
+  // was about to learn it. Anything that is not an object is not a profile.
+  const data = mcpPayload(isRecord(body) ? body.result : undefined)
   if (!isRecord(data)) return {}
   const profile = isRecord(data['профиль']) ? data['профиль'] : {}
   const name = [profile.display_name, profile.first_name, profile.username]
@@ -323,12 +399,29 @@ export interface TriIdentity {
   setLanguage(lang: string): void
   /** Start before the first subscriber: mount the bridge and ask once, so the answer is there when the chip is. */
   prime(): void
+  /**
+   * Ask /mcp for one of PLAYER_TOOLS as the person who is signed in.
+   *
+   * The token ACTS here; it does not travel. There is no accessor for it on
+   * this interface and there must not be one — the moment a component can read
+   * the string, rule 3 is kept by everybody who imports this file instead of by
+   * this file, and a rule with that many keepers is a rule with none. So a
+   * caller says what it wants asked and gets a body back, exactly the shape
+   * crmClient.ts settled on for the other credential.
+   */
+  callAsPlayer(tool: PlayerTool, args?: Record<string, unknown>): Promise<PlayerCall>
 }
 
 export function createTriIdentity(env: IdentityEnv): TriIdentity {
   let snapshot: Identity = { state: 'pending' }
   const listeners = new Set<() => void>()
   let started = false
+  /**
+   * The app-session path has published a signed-in person. Kept so that a
+   * re-read at expiry which finds the session still alive renews quietly
+   * instead of republishing signed-in and making the chip flicker.
+   */
+  let startedFromApp = false
   let viaParent = false
   let lang: 'ru' | 'en' = 'en'
   let frame: BridgeFrame | null = null
@@ -590,9 +683,54 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
     request()
   }
 
+  /**
+   * THE BOARD, ON THE APP'S OWN ORIGIN.
+   *
+   * No frame, no nonce, no consent prompt and no 300 s game token: the person
+   * is inside their own app, and the credential is in this document's reach
+   * (appSessionIdentity.ts explains why that is allowed here and nowhere
+   * else). The rest of the module is unchanged — the token still lives in this
+   * closure only, whoami still fetches the name, and the snapshot still never
+   * carries either.
+   *
+   * Re-read at expiry rather than refreshed: refreshing is the player's job
+   * and it does it in its own documents, of which this is not one. If a
+   * sibling document renewed the session the next read finds it; if nobody
+   * did, the person is signed out, which is the truth.
+   */
+  function startFromAppSession(app: Extract<AppSessionVerdict, { source: 'app-session' }>) {
+    if (app.state === 'signed-out') {
+      forget()
+      publish({ state: app.code === 'expired' ? 'expired' : 'signed-out' })
+      return
+    }
+    token = { value: app.token, telegramId: APP_SESSION_PERSON, expiresAt: app.expiresAt }
+    const left = app.expiresAt - env.now()
+    stopTimer(renewTimer)
+    renewTimer = env.setTimeout(() => {
+      startedFromApp = false
+      const again = env.appSession?.() ?? { source: 'bridge' as const }
+      if (again.source === 'app-session') startFromAppSession(again)
+    }, Math.max(left, 0))
+    if (startedFromApp) return
+    startedFromApp = true
+    profileFor = APP_SESSION_PERSON
+    publish({ state: 'signed-in' })
+    void loadProfile(token.value)
+  }
+
   function start() {
     if (started) return
     started = true
+    // The app's own copy of the board reads the session it is sitting in. This
+    // is checked BEFORE rule 1, which is about the bridge: on app.t27.ai rule 1
+    // is false and would otherwise publish not_t27 for a person who is signed
+    // in two documents away.
+    const app = env.appSession?.() ?? { source: 'bridge' as const }
+    if (app.source === 'app-session') {
+      startFromAppSession(app)
+      return
+    }
     if (!identityActiveOn(env.origin)) {
       publish({ state: 'unavailable', code: 'not_t27' })
       return
@@ -663,6 +801,45 @@ export function createTriIdentity(env: IdentityEnv): TriIdentity {
       if (askOnLoad) deadline(null)
     },
     prime: start,
+    async callAsPlayer(tool, args = {}) {
+      // Refused before a request is made, the way crmClient refuses a tool that
+      // can reach a person: a name this credential may not open never reaches
+      // the wire, so a bug in a page cannot become a call the service has to
+      // judge. 'refused' rather than an exception — the caller's job here is to
+      // put a sentence on a screen, not to handle a thrown string.
+      if (!(PLAYER_TOOLS as readonly string[]).includes(tool)) return { ok: false, reason: 'refused' }
+      // No token, or one that has run out. This is NOT the same answer as a
+      // refusal and the caller must be able to tell them apart: "sign in again"
+      // and "the hive does not open this to you" are different next steps, and
+      // showing the second when the first is true sends a person looking for a
+      // permission they already have.
+      if (!token || token.expiresAt <= env.now()) return { ok: false, reason: 'signed-out' }
+      const abort = new AbortController()
+      const giveUp = env.setTimeout(() => abort.abort(), PLAYER_CALL_TIMEOUT_MS)
+      try {
+        const res = await env.fetch(`${RENDER_BASE}/mcp`, {
+          method: 'POST',
+          credentials: 'omit',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token.value}` },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: tool, arguments: args } }),
+          signal: abort.signal,
+        })
+        // 401 is this token, 403 is this person: both are "not for you", and
+        // neither is fixed by asking again in five seconds. A 401 does not
+        // forget the token here — the renewal above owns its life, and a board
+        // call is not evidence about an identity whoami already established.
+        if (res.status === 401 || res.status === 403) return { ok: false, reason: 'refused' }
+        if (!res.ok) return { ok: false, reason: 'offline' }
+        return { ok: true, body: await res.json() }
+      } catch {
+        // Aborted, offline, or a body that is not JSON: the question did not
+        // come back. Nothing here distinguishes those for the caller, because
+        // nothing it could do about them differs.
+        return { ok: false, reason: 'offline' }
+      } finally {
+        env.clearTimeout(giveUp)
+      }
+    },
   }
 }
 
@@ -695,6 +872,7 @@ function browserEnv(): IdentityEnv {
       }
     },
     onMessage: (handler) => window.addEventListener('message', handler),
+    appSession: appSessionFromWindow,
     fetch: (url, init) => window.fetch(url, init),
     setTimeout: (fn, ms) => window.setTimeout(fn, ms),
     clearTimeout: (id) => window.clearTimeout(id),

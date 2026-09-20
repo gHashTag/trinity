@@ -210,8 +210,13 @@ const DECLARED = [
   // the Queen's own log: the board's events and the conversation about them
   '.queen-chat-log',
   '.queen27-hud-menu', '.queen27-hud-round-pop',
-  // the views
-  '.queen27-cards', '.queen27-kanban', '.queen27-mission-map',
+  // the views. The kanban's second lane -- the signed-in visitor's own clients
+  // -- scrolls sideways exactly as the first one does, and is named here in its
+  // own right rather than left to be covered by the .queen27-kanban it also
+  // carries: this list is the declaration, and a scroll owner that is declared
+  // only as a side effect of sharing a class is one nobody has declared.
+  // It does not appear in this gate's own runs, which are signed out.
+  '.queen27-cards', '.queen27-kanban', '.queen27-clients-lane', '.queen27-mission-map',
   '.queen27-factory', '.queen27-factory-bays ol',
   '.queen27-tech', '.queen27-tech-console', '.queen27-tech-map', '.queen27-tech-details',
   '.queen27-city-build-queue ol', '.queen27-hardware-foundry ol', '.queen27-city-console ol',

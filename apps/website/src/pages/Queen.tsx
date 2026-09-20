@@ -89,6 +89,8 @@ import { QueenTri } from "../components/QueenTri";
 import Passport from "./Passport";
 import { QueenIdentity } from "../components/QueenIdentity";
 import { hashParamsOf, tabAddress } from "../lib/triScreens";
+import { triIdentity } from "../lib/triIdentity";
+import { clientsLane, loadHiveBoard, type ClientsLane, type HiveBoard, type HiveBoardReason } from "../lib/hiveBoard";
 import {
   REVIEW_STATES,
   publicIssueTitle,
@@ -116,6 +118,12 @@ import "./queen-phone.css";
 import { BOUNDARY_EXAMPLE_ISSUE, QUEEN_API } from "../lib/queenApi";
 import { deriveT27Evolution } from "../lib/t27Evolution";
 const LIVE_POLL_MS = 5_000;
+// The clients lane is asked far less often than the public board. It is one
+// person's pipeline, not a swarm that moves every few seconds, and every ask
+// spends the game token — which is minted for 300 s at a time and renewed for
+// as long as somebody is looking. Thirty seconds keeps the lane fresh enough
+// to trust without making the kanban tab a reason to hold a credential awake.
+const HIVE_BOARD_POLL_MS = 30_000;
 const FOUNDATION_POLL_MS = 60_000;
 const MODULES_POLL_MS = 15_000;
 const ACTIVITY_POLL_MS = 2_000;
@@ -496,6 +504,27 @@ const COPY = {
     empty: "Nothing here",
     criteria: "criteria",
     missing: "needs",
+    // The two lanes of the kanban. TASKS is the public board and is the same
+    // for everybody, signed in or not; CLIENTS appears only for a signed-in
+    // person and holds only what the hive answered for them. The lane words
+    // below are drawn ONLY when the second lane exists — signed out, the page
+    // is the board it always was, with no heading announcing an absence.
+    laneTasks: "TASKS",
+    laneClients: "CLIENTS",
+    clientsLaneAria: "Clients board",
+    clientsNarrow: "Narrow to",
+    clientsNarrowAll: "All",
+    clientsNarrowed: "the hive already narrowed this board",
+    clientsPending: "Asking the hive…",
+    clientsRefused: "The hive did not open this board to you.",
+    clientsOffline: "The hive did not answer. Asking again.",
+    clientsUnreadable: "The hive answered something this page cannot read.",
+    clientsEmpty: "No one on your board yet.",
+    clientsNoName: "no name",
+    clientsPaid: "paid",
+    clientsWaiting: "waiting for a reply",
+    clientsQuiet: "days quiet",
+    clientsTouched: "last touch",
     command: "LIVE COMMAND ROOM",
     commandTitle: "Queen reviews the swarm herself.",
     commandCopy:
@@ -857,6 +886,26 @@ const COPY = {
     empty: "Здесь пусто",
     criteria: "критерия",
     missing: "нужно",
+    // Две полосы канбана. ЗАДАЧИ — публичная доска, одна для всех; КЛИЕНТЫ
+    // появляются только у вошедшего и показывают только то, что улей ответил
+    // именно ему. Слова ниже рисуются ТОЛЬКО когда вторая полоса есть: без
+    // входа страница остаётся той же доской, и заголовок не объявляет пустоту.
+    laneTasks: "ЗАДАЧИ",
+    laneClients: "КЛИЕНТЫ",
+    clientsLaneAria: "Доска клиентов",
+    clientsNarrow: "Сузить до",
+    clientsNarrowAll: "Все",
+    clientsNarrowed: "улей уже сузил эту доску",
+    clientsPending: "Спрашиваем улей…",
+    clientsRefused: "Улей не открыл вам эту доску.",
+    clientsOffline: "Улей не ответил. Спросим ещё раз.",
+    clientsUnreadable: "Улей ответил тем, что эта страница не может прочитать.",
+    clientsEmpty: "На вашей доске пока никого.",
+    clientsNoName: "без имени",
+    clientsPaid: "оплатил",
+    clientsWaiting: "ждёт ответа",
+    clientsQuiet: "дней тишины",
+    clientsTouched: "последний контакт",
     command: "ЖИВОЙ КОМАНДНЫЙ ЦЕНТР",
     commandTitle: "Королева сама ревьюит работу роя.",
     commandCopy:
@@ -1212,6 +1261,72 @@ function useQueenBoard(): {
   }, []);
 
   return { data, error, syncedAt };
+}
+
+/**
+ * The clients lane's data: hive_board, asked as the person who is signed in.
+ *
+ * Signed out, this hook asks nothing and holds nothing, and the kanban has no
+ * second lane at all — not an empty one, not a locked one. That is the whole
+ * of the signed-out behaviour, and it is enforced here rather than in the view
+ * because a view that receives a board has already been handed the data.
+ *
+ * `enabled` is the kanban being on screen. A tab nobody is looking at does not
+ * spend a credential, and the token's own renewal already stops when nothing
+ * subscribes (src/lib/triIdentity.ts, rule 5).
+ *
+ * What a failure does to the board it already has is not one rule but two:
+ *   - refused, or signed out: the board is DROPPED. The hive has just said
+ *     this person may not see it; leaving yesterday's rows on screen would be
+ *     showing exactly what was refused.
+ *   - offline, or unreadable: the board is KEPT. Nothing was said about who
+ *     may see what — the question simply did not come back — and blanking a
+ *     correct panel because one poll missed is its own kind of lie.
+ */
+function useHiveBoard(enabled: boolean): {
+  /**
+   * Whether anything client-scoped may be drawn at all: a person the hive has
+   * identified, on a board that is on screen. The view's single gate hangs off
+   * this, so "signed out" and "not looking" cannot each be forgotten
+   * separately.
+   */
+  showing: boolean;
+  board: HiveBoard | null;
+  reason: HiveBoardReason | null;
+} {
+  const identity = triIdentity();
+  const me = useSyncExternalStore(identity.subscribe, identity.getSnapshot);
+  const signedIn = me.state === "signed-in";
+  const [board, setBoard] = useState<HiveBoard | null>(null);
+  const [reason, setReason] = useState<HiveBoardReason | null>(null);
+
+  useEffect(() => {
+    if (!enabled || !signedIn) {
+      setBoard(null);
+      setReason(null);
+      return;
+    }
+    let active = true;
+    const read = async () => {
+      const answer = await loadHiveBoard(identity);
+      if (!active) return;
+      if (answer.ok) {
+        setBoard(answer.board);
+        setReason(null);
+        return;
+      }
+      setReason(answer.reason);
+      if (answer.reason === "refused" || answer.reason === "signed-out") setBoard(null);
+    };
+    void read();
+    const timer = window.setInterval(read, HIVE_BOARD_POLL_MS);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [enabled, identity, signedIn]);
+
+  return { showing: enabled && signedIn, board, reason };
 }
 
 function useQueenActivity(): {
@@ -1992,8 +2107,58 @@ function TechnologyTree({
   );
 }
 
+/**
+ * What the page hands the board about the signed-in visitor's own pipeline.
+ *
+ * Null means SIGNED OUT, and it is the whole of the signed-out behaviour. Not
+ * "signed out so the lane is empty" — there is no lane, no heading, no count
+ * and no sentence explaining an absence. `lane` null inside a non-null panel is
+ * the other absence: somebody is signed in and the hive has not answered yet,
+ * or answered with a refusal, which is a thing worth saying to the person it is
+ * about.
+ */
+interface ClientsPanel {
+  lane: ClientsLane | null;
+  reason: HiveBoardReason | null;
+}
+
+/**
+ * The reason the clients lane has nothing new, in the reader's language — or
+ * null when there is nothing to say.
+ *
+ * One function rather than a sentence chosen at each of the two places it is
+ * needed (the note when there is no board, the tooltip when the board on screen
+ * is older than we would like): two copies of a four-way mapping is two chances
+ * for a refusal to start reading as an outage on one of them.
+ */
+function clientsReasonSentence(reason: HiveBoardReason | null, c: Copy): string | null {
+  switch (reason) {
+    case "refused":
+      return c.clientsRefused;
+    case "offline":
+      return c.clientsOffline;
+    case "unreadable":
+      return c.clientsUnreadable;
+    // 'signed-out' is the identity chip's sentence and not the board's: the chip
+    // already says sign in again, and this lane is about to vanish along with
+    // the token that was the reason for drawing it.
+    default:
+      return null;
+  }
+}
+
 // The kanban and the mission map, byte-identical in markup to the board views
 // the page rendered before the HUD; they now live inside the viewport.
+//
+// The kanban has two lanes now: TASKS, which is the public board every visitor
+// has always seen, and CLIENTS, which is the people this particular signed-in
+// visitor answers for. The second lane appears only when `clients` is non-null,
+// which happens only for somebody the hive has already identified — so for a
+// signed-out reader this component still renders exactly one element, the same
+// `.queen27-kanban` it rendered before this feature, with no lane heading above
+// it and nothing after it. That is deliberate twice over: a visitor cannot be
+// shown a board they are not on, and an empty lane is itself a statement
+// ("you have no clients") that we have no right to make about a stranger.
 function KanbanView({
   columns,
   cards,
@@ -2002,6 +2167,8 @@ function KanbanView({
   loaded,
   c,
   lang,
+  clients,
+  onNarrow,
 }: {
   columns: QueenColumn[];
   cards: QueenCard[];
@@ -2011,16 +2178,63 @@ function KanbanView({
   loaded: boolean;
   c: Copy;
   lang: string;
+  /** The signed-in visitor's own pipeline. Null is signed out: see above. */
+  clients: ClientsPanel | null;
+  /** The view's own narrowing. It never reaches the hive; see lib/hiveBoard.ts. */
+  onNarrow: (key: string | null) => void;
 }) {
+  const lane = clients?.lane ?? null;
+  const sentence = clientsReasonSentence(clients?.reason ?? null, c);
+  // With a board on screen the reason goes in the tooltip, exactly where the
+  // task lane already puts `error`: a board that is still true is not worth
+  // hiding behind a banner about the network. With no board the reason IS the
+  // content, and the fallback is "asking" — before the first answer there is no
+  // reason at all, and silence with a spinner's worth of words is honest.
+  // A board that arrived empty says so once, in a sentence, instead of seven
+  // columns each repeating that they are empty.
+  const note = !clients
+    ? null
+    : !lane
+      ? (sentence ?? c.clientsPending)
+      : lane.shown === 0
+        ? c.clientsEmpty
+        : null;
+  const stale = lane ? sentence : null;
+  const scopeLine = lane
+    ? [
+        lane.scope.role === "keeper"
+          ? c.identityRoleKeeper
+          : lane.scope.role === "owner"
+            ? c.identityRoleOwner
+            : lane.scope.role === "bee"
+              ? c.identityRoleBee
+              : // A role this build has not met yet: the hive's own description
+                // of the scope is better than a word we made up for it.
+                lane.scope.label,
+        ...lane.scope.bots,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : null;
   return (
-    <motion.div
-      className="queen27-kanban"
-      role="region"
-      aria-label={c.kanbanView}
-      tabIndex={0}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
+    <>
+      {clients && (
+        // The lane heads only exist when there are two lanes to tell apart. One
+        // lane needs no label, and adding one for a signed-out reader would put
+        // a word about clients on a page that has no clients on it.
+        <div className="queen27-lane-head">
+          <h3>{c.laneTasks}</h3>
+          <span title={error ?? undefined}>{loaded ? cards.length : "—"}</span>
+        </div>
+      )}
+      <motion.div
+        className="queen27-kanban"
+        role="region"
+        aria-label={c.kanbanView}
+        tabIndex={0}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
       {columns.map((column) => {
         const columnCards = cards.filter((card) => card.column === column.key);
         return (
@@ -2082,7 +2296,127 @@ function KanbanView({
           </motion.article>
         );
       })}
-    </motion.div>
+      </motion.div>
+      {clients && (
+        <>
+          <div className="queen27-lane-head" title={lane?.howToRead ?? undefined}>
+            <h3>{c.laneClients}</h3>
+            {/* A count of the cards on this screen, and never anything else. The
+                hive sends a count on every column and every filter option and
+                this page throws all of them away (lib/hiveBoard.ts says why):
+                a number describing rows that were not sent is a description of
+                other people's clients, which is the one thing a bee may not
+                have. And when there is no board at all the count is an em dash,
+                not a zero — the same way the task lane reads before its first
+                answer. Nobody is told they have nothing until somebody has
+                actually said so. */}
+            <span title={stale ?? undefined}>{lane ? lane.shown : "—"}</span>
+            {scopeLine && <small>{scopeLine}</small>}
+            {lane && lane.options.length > 0 && (
+              // Narrowing happens HERE, on what already arrived, and the chosen
+              // key never goes back to the hive. The server has already decided
+              // what this person may see; a control that re-asks with a name in
+              // its hand is a control that can be made to ask for a different
+              // name. A filter that can only ever hide is a filter that cannot
+              // be turned into a question.
+              <label className="queen27-lane-filter">
+                <span>{c.clientsNarrow}</span>
+                <select
+                  value={lane.narrow ?? ""}
+                  onChange={(event) => onNarrow(event.target.value || null)}
+                >
+                  <option value="">{c.clientsNarrowAll}</option>
+                  {lane.options.map((option) => (
+                    <option key={option.key} value={option.key}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {lane?.applied && (
+              // The hive's own narrowing, which nothing on this page can widen.
+              // Said out loud, because a board that is a subset and does not
+              // admit it is a board that reads as the whole of somebody's work.
+              <small>
+                {c.clientsNarrowed}: {lane.applied}
+              </small>
+            )}
+          </div>
+          <motion.div
+            className="queen27-kanban queen27-clients-lane"
+            role="region"
+            aria-label={c.clientsLaneAria}
+            tabIndex={0}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {lane && lane.shown > 0
+              ? lane.groups.map((group) => (
+                  <motion.article
+                    className={`queen27-column is-${group.column.key}`}
+                    key={group.column.key}
+                    layout
+                  >
+                    <header title={stale ?? undefined}>
+                      <h3>{group.column.title}</h3>
+                      <span>{group.cards.length}</span>
+                    </header>
+                    <div className="queen27-cards">
+                      {group.cards.map((card) => (
+                        <motion.div
+                          className="queen27-card"
+                          key={card.id}
+                          layout
+                          layoutId={`hive-client-${card.id}`}
+                          transition={{
+                            type: "spring",
+                            stiffness: 320,
+                            damping: 30,
+                          }}
+                        >
+                          <div className="queen27-card-topline">
+                            <b>{card.bot || "—"}</b>
+                            {card.waitingForReply && (
+                              <span className="queen27-card-signal">
+                                <i />
+                                {c.clientsWaiting}
+                              </span>
+                            )}
+                          </div>
+                          {/* Names and bot handles are OTHER PEOPLE'S TEXT,
+                              arriving from a remote service. React puts them on
+                              the page as text nodes; nothing here builds markup
+                              out of them and nothing treats them as an
+                              instruction. */}
+                          <strong>{card.name || c.clientsNoName}</strong>
+                          {card.paid && <span>{c.clientsPaid}</span>}
+                          {/* A silence the hive did not measure is not a silence
+                              of zero days, and "0 days quiet" would read as "we
+                              spoke today" about somebody nobody has spoken to.
+                              Unmeasured means the line is not drawn. */}
+                          {card.quietDays !== null && (
+                            <span>
+                              {card.quietDays} {c.clientsQuiet}
+                            </span>
+                          )}
+                          {card.lastTouchAt && (
+                            <span>
+                              {c.clientsTouched}: {formatMoment(card.lastTouchAt, lang)}
+                            </span>
+                          )}
+                        </motion.div>
+                      ))}
+                      {group.cards.length === 0 && <em>{c.empty}</em>}
+                    </div>
+                  </motion.article>
+                ))
+              : null}
+            {note && <em className="queen27-lane-note">{note}</em>}
+          </motion.div>
+        </>
+      )}
+    </>
   );
 }
 
@@ -2390,6 +2724,20 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   }
   const events: HudEvent[] = activityState.data?.events ?? EMPTY_EVENTS;
   const boardColumns = board?.columns ?? FALLBACK_COLUMNS;
+  // The board's second lane. Asked for only while the kanban is on screen, and
+  // answered only for somebody the hive has identified — `showing` carries both
+  // of those facts, so the view has ONE thing to check rather than two it could
+  // forget separately. The narrowing is this page's own state and stays here:
+  // it never becomes an argument to the hive (src/lib/hiveBoard.ts).
+  const hive = useHiveBoard(boardView === "kanban");
+  const [clientsNarrow, setClientsNarrow] = useState<string | null>(null);
+  const clientsPanel = useMemo<ClientsPanel | null>(
+    () =>
+      hive.showing
+        ? { lane: clientsLane(hive.board, clientsNarrow, lang), reason: hive.reason }
+        : null,
+    [hive.showing, hive.board, hive.reason, clientsNarrow, lang],
+  );
   const runningCards = useMemo(
     () => cards.filter((card) => card.column === "running"),
     [cards],
@@ -3143,6 +3491,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 loaded={board !== null}
                 c={c}
                 lang={lang}
+                clients={clientsPanel}
+                onNarrow={setClientsNarrow}
               />
             </div>
           ) : boardView === "map" ? (

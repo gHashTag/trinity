@@ -53,6 +53,7 @@ import {
 import { APP_ORIGIN as TRI_APP_ORIGIN, TRI_SCREENS } from '../src/lib/triScreens.ts'
 import { RENDER_BASE as CRM_RENDER_BASE } from '../src/lib/crmClient.ts'
 import { HUD_VIEWS } from '../src/components/queenHud.ts'
+import { TOKEN, signedIn, WHOAMI, TRAPPED, trapGlobals, fakeWorld, settleAll } from './fixtures/identity-world.mjs'
 
 const read = (rel) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8')
 let checks = 0
@@ -87,8 +88,6 @@ ok(!framedByPlayer({ isTop: false, referrer: 'not a url' }), 'an unparseable ref
 
 // ---- 3. The message filter ----
 const bridge = { name: 'bridge' }
-const TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJ2IjoyfQ.c2lnbmF0dXJl'
-const signedIn = (nonce) => ({ v: 1, type: 'tri-identity', nonce, state: 'signed-in', game_token: TOKEN, expires_in: 300, telegram_id: '144022504' })
 const msg = (data, over = {}) => ({ origin: APP_ORIGIN, source: bridge, data, ...over })
 const N = 'a'.repeat(32)
 eq(acceptIdentityMessage(msg(signedIn(N)), bridge, N), { state: 'signed-in', nonce: N, gameToken: TOKEN, expiresIn: 300, telegramId: '144022504' }, 'the answer to the open request')
@@ -152,7 +151,6 @@ for (const [name, event, source, open] of [
 ]) eq(acceptDismissMessage(event, source, open), null, `dismiss refused: ${name}`)
 
 // ---- whoami's answer ----
-const WHOAMI = { jsonrpc: '2.0', id: 1, result: { structuredContent: { telegram_id: '144022504', role: 'owner', профиль: { display_name: 'Ada', first_name: 'A', username: 'ada' }, аватар: 'https://cdn.example/ada.jpg' } } }
 eq(whoamiProfile(WHOAMI), { name: 'Ada', avatar: 'https://cdn.example/ada.jpg', role: 'owner' }, 'structured whoami')
 eq(whoamiProfile({ result: { content: [{ type: 'text', text: JSON.stringify(WHOAMI.result.structuredContent) }] } }), { name: 'Ada', avatar: 'https://cdn.example/ada.jpg', role: 'owner' }, 'text whoami')
 eq(whoamiProfile({ result: { structuredContent: { role: 'god', профиль: { first_name: ' ', username: 'bee' }, аватар: 'javascript:alert(1)' } } }), { name: 'bee', avatar: undefined, role: undefined }, 'an unknown role, a script avatar and a blank name are dropped')
@@ -289,79 +287,12 @@ for (const [input, expected] of CHIPS) {
 for (const state of ['pending', ...IDENTITY_STATES]) ok(chipOf({ state }).kind, `every state has a chip: ${state}`)
 
 // ---- The client, against fakes ----
-const TRAPPED = []
-function trapGlobals() {
-  const names = ['window', 'document', 'localStorage', 'sessionStorage', 'indexedDB', 'location', 'history', 'navigator']
-  const saved = names.map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)])
-  for (const name of names) {
-    Object.defineProperty(globalThis, name, { configurable: true, get() { TRAPPED.push(name); throw new Error(`triIdentity touched ${name}`) } })
-  }
-  const consoleSaved = {}
-  for (const level of ['log', 'info', 'warn', 'error', 'debug']) {
-    consoleSaved[level] = console[level]
-    console[level] = (...args) => { TRAPPED.push(`console.${level}:${args.map(String).join(' ')}`) }
-  }
-  return () => {
-    for (const [name, descriptor] of saved) {
-      if (descriptor) Object.defineProperty(globalThis, name, descriptor)
-      else delete globalThis[name]
-    }
-    Object.assign(console, consoleSaved)
-  }
-}
-
-function fakeWorld({ origin = GAME_ORIGIN, isTop = true, ancestorOrigins = [], referrer = '', whoami = () => ({ ok: true, status: 200, json: async () => WHOAMI }) } = {}) {
-  const log = { bridgePosts: [], parentPosts: [], mounts: [], srcs: [], fetches: [], visible: [], snapshots: [] }
-  const bridgeWindow = { postMessage: (m, t) => log.bridgePosts.push({ m, t }) }
-  const parent = { postMessage: (m, t) => log.parentPosts.push({ m, t }) }
-  const timers = new Map()
-  let nextTimer = 1
-  let handler = null
-  let onLoad = null
-  let visible = false
-  let n = 0
-  let clock = 1_000_000
-  let hidden = false
-  let onVisible = null
-  let onOnline = null
-  let onReturn = null
-  const env = {
-    origin, isTop, ancestorOrigins, referrer, parent,
-    mountBridge(src, load) { log.mounts.push(src); onLoad = load; return { target: () => bridgeWindow, setVisible: (v) => { visible = v; log.visible.push(v) }, setSrc: (s) => log.srcs.push(s) } },
-    onMessage(h) { handler = h },
-    fetch: async (url, init) => { log.fetches.push({ url, init }); return whoami(url, init) },
-    setTimeout(fn, ms) { const id = nextTimer++; timers.set(id, { fn, ms }); return id },
-    clearTimeout(id) { timers.delete(id) },
-    nonce: () => (++n).toString(16).padStart(32, '0'),
-    now: () => clock,
-    hidden: () => hidden,
-    onVisible(h) { onVisible = h },
-    onOnline(h) { onOnline = h },
-    onReturn(h) { onReturn = h },
-  }
-  const client = createTriIdentity(env)
-  const settle = async () => { for (let i = 0; i < 5; i++) await new Promise((r) => setImmediate(r)) }
-  return {
-    log, bridgeWindow, parent, client,
-    start: () => client.subscribe(() => log.snapshots.push(client.getSnapshot())),
-    load: () => onLoad?.(),
-    deliver: async (data, over = {}) => { handler?.({ origin: APP_ORIGIN, source: bridgeWindow, data, ...over }); await settle() },
-    timer: (ms) => [...timers.values()].filter((t) => t.ms === ms),
-    timerCount: () => timers.size,
-    fire: async (ms) => { for (const [id, t] of [...timers]) if (t.ms === ms) { timers.delete(id); t.fn() } await settle() },
-    advance: (ms) => { clock += ms },
-    setHidden: async (value) => { hidden = value; if (!value) onVisible?.(); await settle() },
-    online: async () => { onOnline?.(); await settle() },
-    comeBack: async () => { onReturn?.(); await settle() },
-    get returnHandler() { return onReturn },
-    get visible() { return visible },
-    get handler() { return handler },
-    lastNonce: (posts) => posts.at(-1)?.m?.nonce ?? null,
-  }
-}
+// The world itself is qa/fixtures/identity-world.mjs: the same fake parent,
+// bridge, timers, clock and fetch are what qa/hive-board-contract.mjs needs to
+// reach a signed-in person, and a second copy of a handshake is a second
+// version of it. This gate still owns every assertion about it.
 const ask = (world) => world.lastNonce(world.log.bridgePosts)
 const answer = (nonce, state, extra = {}) => ({ v: 1, type: 'tri-identity', nonce, state, ...extra })
-const settleAll = async () => { for (let i = 0; i < 5; i++) await new Promise((r) => setImmediate(r)) }
 
 const restore = trapGlobals()
 let world

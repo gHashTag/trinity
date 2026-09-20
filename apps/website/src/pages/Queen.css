@@ -5785,7 +5785,13 @@ main:where(.queen27-page.is-shell) section {
   min-height: 0;
 }
 
-.queen27-page.is-shell .queen27-board-stack > .queen27-ladder {
+/* The board's row, and the two lane headings that only exist once there are two
+   lanes to tell apart, all take exactly what they ask for. Named on the same
+   rule as the row rather than on one of their own: they are the same kind of
+   thing to this stack -- a line of chrome above a view -- and two rules saying
+   `flex: 0 0 auto` is one more place for that to stop being true. */
+.queen27-page.is-shell .queen27-board-stack > .queen27-ladder,
+.queen27-page.is-shell .queen27-board-stack > .queen27-lane-head {
   flex: 0 0 auto;
 }
 
@@ -6967,4 +6973,112 @@ body.queen-shell .queen-starfield-source {
      kept it in place — a fixed layer is loose in the page instead, and a
      repository name near the top edge was drawn over the status bar. */
   z-index: 2;
+}
+
+/* ── The board's second lane: the signed-in visitor's own clients ──
+   It IS the kanban, and carries that class, so the frame, the veil over the
+   hive, the scrollbar, the column and card styling and the phone layout are
+   each stated once and apply to both lanes. A parallel set of rules for a
+   board that looks identical is a board that stops looking identical the first
+   time one of them is touched.
+   What differs is the column count, and it is not a constant: the hive names
+   the columns it has, a stage this build has never met still has to be drawn,
+   and a stage nobody is in still has to hold its place. So the columns are
+   automatic -- as many as arrive, each no narrower than a card needs to be
+   legible, and the lane scrolls sideways when they do not fit, which is what
+   the six fixed ones already do. */
+.queen27-clients-lane {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(210px, 1fr);
+}
+
+.queen27-page.is-shell .queen27-clients-lane {
+  grid-auto-columns: minmax(160px, 1fr);
+}
+
+@media (max-width: 760px) {
+  .queen27-clients-lane {
+    grid-auto-columns: minmax(78vw, 1fr);
+  }
+}
+
+/* The sentence a lane says when it has no cards to show: asking, refused, no
+   answer, unreadable, or a board that really is empty. It sits in the lane's
+   own grid, which has no columns at that moment, so it is the only thing in it
+   -- the same place the task lane's per-column `em` sits, wearing the same
+   quiet type. */
+.queen27-lane-note {
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+/* The heading over a lane. Only drawn when there are two lanes, so the public
+   board keeps the shape it has always had: the row, then the board, and
+   nothing between them. */
+.queen27-lane-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0.4rem;
+  min-width: 0;
+}
+
+.queen27-lane-head h3 {
+  margin: 0;
+  color: var(--q-green);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.queen27-lane-head > span {
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.queen27-lane-head small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The narrowing control. Last in the row and pushed to the far end, because it
+   acts on the lane rather than describing it. */
+.queen27-lane-filter {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.queen27-lane-filter select {
+  max-width: 12rem;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  background: #050505;
+}
+
+.queen27-page.is-shell .queen27-lane-head {
+  padding-inline: var(--hud-gap, 0.5rem);
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+}
+
+.queen27-page.is-shell .queen27-lane-filter select {
+  border-color: var(--hud-line);
+  background: var(--hud-panel);
 }

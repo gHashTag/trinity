@@ -123,6 +123,16 @@ jobs:
       # memory only; whoami never carries X-Agent-Key. Pure, no browser.
       - name: TRI identity
         run: npm run check:tri-identity
+      # The Queen's kanban grew a second lane, and it is the first thing on that
+      # page that differs per person. Signed in, it asks the hive for the
+      # clients this visitor answers for — on the game token, one identity
+      # header, no cookies, and without the tool's `client` argument, so a
+      # control on the page can narrow what arrived but never ask for somebody
+      # else. Signed out, the markup is the public board's and nothing more: no
+      # lane, no count, not even a label. Asserted against the real modules and
+      # the page parsed with the real parser. Pure, no browser.
+      - name: Hive board is per person
+        run: npm run check:hive-board
       # The Queen board moved to app.t27.ai/queen/, and #/queen here hands its
       # visitors over. app.t27.ai builds THIS bundle, so the redirect code runs
       # at the destination too: keyed on the route alone it would send that page
@@ -131,6 +141,17 @@ jobs:
       # input and re-feeds every answer to prove it settles. Pure, no browser.
       - name: Queen board moved
         run: npm run check:queen-redirect
+      # The other half of that move. At the destination the bridge above is not
+      # merely unnecessary, it is impossible: rule 1 is false off t27.ai, the
+      # bridge answers only a t27.ai parent, and nginx serves it with
+      # frame-ancestors https://t27.ai and never 'self'. So the redirect alone
+      # would have handed every visitor a board they could never sign in to.
+      # On app.t27.ai/queen/ the bundle is same-origin with the player and
+      # reads its session directly -- which is a stronger credential than the
+      # game token, so this holds it to the same rules and to one more: an
+      # empty store is signed OUT, not broken. Pure, no browser.
+      - name: Identity at the board's new home
+        run: npm run check:app-session-identity
       # Why free bees are idle, read from /queen/status alone: real snapshots
       # and malformed ones through the pure reader, no fabricated zeros, a
       # stale round called stale. Pure, no browser.
