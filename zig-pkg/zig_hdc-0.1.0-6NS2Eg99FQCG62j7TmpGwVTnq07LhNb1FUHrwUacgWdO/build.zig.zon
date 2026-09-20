@@ -1,0 +1,13 @@
+.{
+    .name = .zig_hdc,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.15.0",
+    .fingerprint = 0xd11dbef912b6d4e8,
+    .paths = .{ "src", "build.zig", "build.zig.zon" },
+    .dependencies = .{
+        .zig_golden_float = .{
+            .url = "https://github.com/gHashTag/zig-golden-float/archive/e7ce32885de2a8c50b7b6a3030d0592202145dd1.tar.gz",
+            .hash = "golden_float-2.1.0-h7LKhUUNCwAtKVHQ56wjridCZVwXY7_oxT2hXD9xCDdF",
+        },
+    },
+}
