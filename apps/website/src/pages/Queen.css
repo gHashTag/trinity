@@ -4645,6 +4645,27 @@ main:where(.queen27-page.is-shell) section {
     --hud-col-w: 110px;
   }
 
+  /* — and a button is 97x34 in the head's own band, not a 110x674 strip down
+     the side of the board. Two things followed from going on treating it as a
+     column. The body reserved 130px of width for the whole height of the
+     screen, so the board was drawn into 933px of 1343 and its last lane was
+     cut off at the edge. And the strip itself — transparent, unfrosted,
+     painting nothing — was still an overlay above the field, so it took the
+     clicks aimed through it at whatever was underneath.
+
+     Measured stowed on KANBAN at 1343x788: the button ends at y=128 and the
+     body starts at y=210, so nothing below the head was ever behind it. The
+     width reserve becomes the gap, and the column is as tall as what it
+     holds. The head keeps its own inset, so the worlds row still stops short
+     of the button. */
+  .queen27-page.is-shell:has(.queen-chat-tab) .queen27-hud-viewport > .queen27-hud-vp-body {
+    padding-right: var(--hud-gap);
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel:has(> .queen-chat-tab) {
+    bottom: auto;
+  }
+
 
 
   /* The sector tile keeps the bar's rhythm rather than a panel's. */
@@ -5743,6 +5764,35 @@ main:where(.queen27-page.is-shell) section {
   min-height: 0;
 }
 
+/* The board's three readings under the board's own row.
+   The viewport body is a one-cell grid -- every view is placed in the same
+   cell, stacked over the scene -- so a row and the view it switches cannot be
+   two children of it without landing on top of each other. They are one child,
+   and this is the column they share: the row takes what it asks for, the view
+   takes the rest. The views declare `height: 100%` for the grid cell they used
+   to be placed in directly, which in a flex column would be 100% of a height
+   that is itself being computed from them; `height: auto` with `flex: 1 1 auto`
+   is the same intent stated the way this parent can answer. */
+.queen27-page.is-shell .queen27-board-stack {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.queen27-page.is-shell .queen27-board-stack > .queen27-ladder {
+  flex: 0 0 auto;
+}
+
+.queen27-page.is-shell .queen27-board-stack > .queen27-kanban,
+.queen27-page.is-shell .queen27-board-stack > .queen27-mission-map,
+.queen27-page.is-shell .queen27-board-stack > .queen27-factory {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
+
 /* One row, always, at every width and on every one of the six layers. It used
    to wrap, and a wrapping tab bar is a tab bar whose height is a function of
    the window: 49px here, 86px there, and the Explorer under it jumping by 37px
@@ -5862,9 +5912,14 @@ main:where(.queen27-page.is-shell) section {
    badges are 108px of that -- so dropping them is the difference between the
    whole ladder being visible and the reader having to scroll to find FUNCTIONS.
    Nothing is lost: the key is still in the tooltip, still on the rail's own
-   button for SPECS, and still the key that works. */
+   button for SPECS, and still the key that works.
+
+   Asked of the specs family alone. This row is now drawn for the board too, and
+   three members across the module's whole width are nowhere near crowded -- at
+   1343px they have 1053px for three -- so the same rule was hiding 3, 4 and 5
+   to solve a crush that is not happening there. */
 @media (max-width: 1499px) {
-  .queen27-page.is-shell .queen27-ladder-step > kbd {
+  .queen27-page.is-shell .queen27-ladder[data-family="specs"] .queen27-ladder-step > kbd {
     display: none;
   }
 }
@@ -6205,8 +6260,16 @@ body.queen-shell .queen-universe {
     height: 56px;
   }
 
+  /* The band above the content is the floating head and the gap under it, and
+     nothing else. It used to be 116px: the head's 40, a 10px gap, then 56px
+     and another 10 held for the quick-command row — which no component in this
+     page renders, on any tab. SPECS had already been excused from it, in its
+     own rule below, so the six ladder layers got the 66px back and the other
+     eight views went on reserving empty sky. Measured on KANBAN at 1343x788:
+     the head ended at y=134 and the board began at y=210. One rule for every
+     tab, and the reserve is what is actually drawn. */
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
-    padding-top: calc(var(--hud-chrome-top) + 116px);
+    padding-top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
   }
 }
 
@@ -6378,6 +6441,22 @@ body.queen-shell .phi-starfield {
 .queen27-page.is-shell .queen27-factory-bays > div,
 .queen27-page.is-shell .queen27-factory-bays li {
   background: rgba(4, 7, 5, 0.5);
+}
+
+/* The bay strip's own ground. On the page `background: var(--border)` is how a
+   1px grid is drawn: the children paint over it and what stays visible is the
+   gap between them. There is one bay and the row is the width of the screen,
+   so what stayed visible was the row — 8% white twice over, the strip and the
+   list inside it, as a pale band laid across the HUD. Measured on FACTORY at
+   1343x788: it ran the full 1053px of the board. Here the gap is the panel the
+   strip sits on, and its rule is the HUD's hairline like every other. */
+.queen27-page.is-shell .queen27-factory-bays,
+.queen27-page.is-shell .queen27-factory-bays ol {
+  background: transparent;
+}
+
+.queen27-page.is-shell .queen27-factory-bays {
+  border-bottom-color: var(--hud-line);
 }
 
 /* The scene's boundary. It is a panel of the HUD like any other — the map is
@@ -6568,6 +6647,14 @@ body.queen-shell .phi-starfield {
 .queen27-page.is-shell .queen27-kanban {
   gap: var(--hud-gap);
   background: transparent;
+  /* Six lanes, and the board at 1343x788 is 1053 wide. At a 210px floor the six
+     ask for 1310: DONE was cut down the middle by the right edge and DROPPED
+     was not on the screen at all, behind a horizontal scroll that nothing in
+     the row tells you is there. A floor is for legibility, not for holding a
+     width the screen does not have — at 160px the six ask for 1010 and the
+     whole board is visible, and below that the row still scrolls rather than
+     crushing a title. */
+  grid-template-columns: repeat(6, minmax(160px, 1fr));
 }
 
 .queen27-page.is-shell .queen27-column {
@@ -6686,22 +6773,13 @@ body.queen-shell .queen-starfield-source {
 
 /* The specs view is not the map, and the map's controls do not act on it:
    copy-to-agent, fit view, the zoom pair, fullscreen — every one of them
-   addresses a scene that is not on this screen. The row goes here, and the
-   Explorer is given back the 66px it stood in.
+   addresses a scene that is not on this screen. The row is hidden here.
 
-   Asked of data-rail-view, not data-view: the SPECS module has six layers and
-   this was true of all six, but the attribute it used reads the layer, so only
-   the first of them got the room back. On SKILLS, CRONS, AGENTS, TOOLS and
-   FUNCTIONS the body went on reserving 56px of command row and a 10px gap for
-   a row React does not render there — 66px of empty sky above the ladder, and
-   66px off the height of every Explorer. */
+   The padding this rule used to carry has moved: it is now what every view
+   gets, stated once beside the head it measures. */
 @media (min-width: 901px) {
   .queen27-page.is-shell[data-rail-view="specs"] .queen27-hud-viewport > .queen27-hud-commands {
     display: none;
-  }
-
-  .queen27-page.is-shell[data-rail-view="specs"] .queen27-hud-viewport > .queen27-hud-vp-body {
-    padding-top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
   }
 }
 

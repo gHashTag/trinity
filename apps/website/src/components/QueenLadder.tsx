@@ -1,4 +1,4 @@
-// The sub-navigation of the SPECS module: the six layers of the ladder.
+// The sub-navigation a module draws for the views it holds.
 //
 // SPECS, SKILLS, CRONS, AGENTS, TOOLS and FUNCTIONS used to be six of the
 // rail's fourteen buttons, side by side with the comb and the kanban board as
@@ -8,16 +8,22 @@
 // place in the shell where the ladder is drawn as a ladder -- numbered, in
 // order, with the layer you are standing on marked.
 //
-// A button is the Queen's own `setView`, so a layer is still a tab in the
-// address (#/queen?tab=agents&agent=E) and still opens on its old key. Nothing
-// about deep links, the keyboard or the Explorer frames changed; only where the
-// button lives.
+// The board asks the same of its three: KANBAN, MISSION MAP and FACTORY are
+// three readings of the one board, so KANBAN carries them here rather than the
+// rail carrying three buttons for one subject. One row, one style, one place a
+// family is drawn -- which is why this component is a family's row and not the
+// ladder's alone, and why what it takes is a HudView rather than a SpecLayer.
+//
+// A button is the Queen's own `setView`, so a member is still a tab in the
+// address (#/queen?tab=agents&agent=E, #/queen?tab=map) and still opens on its
+// old key. Nothing about deep links, the keyboard or the Explorer frames
+// changed; only where the button lives.
 
 import type { LadderCounts } from '../lib/agentSpecs'
-import { SPEC_LAYERS, hudKeyOf, type HudView, type SpecLayer } from './queenHud'
+import { SPEC_LAYERS, hudKeyOf, type HudView } from './queenHud'
 
 export interface LadderLayer {
-  layer: SpecLayer
+  layer: HudView
   glyph: string
   label: string
   hint: string
@@ -29,16 +35,20 @@ export function QueenLadder({
   onSelect,
   aria,
   counts,
+  family = 'specs',
 }: {
   layers: readonly LadderLayer[]
   current: HudView
-  onSelect: (layer: SpecLayer) => void
+  onSelect: (layer: HudView) => void
   aria: string
-  /** How many each layer holds; null until the catalog answers, and on failure. */
+  /** How many each layer holds; null until the catalog answers, and on failure.
+   *  The board has no such number, and draws the row without one. */
   counts?: LadderCounts | null
+  /** Which family this row is, for anything that needs to tell them apart. */
+  family?: 'specs' | 'board'
 }) {
   return (
-    <nav className="queen27-ladder" aria-label={aria}>
+    <nav className="queen27-ladder" data-family={family} aria-label={aria}>
       {layers.map((item, index) => {
         const active = item.layer === current
         const key = hudKeyOf(item.layer)
@@ -46,7 +56,7 @@ export function QueenLadder({
         // fetch late, so the element is always drawn and the CSS reserves its
         // width -- a number appearing into a row that then rewraps is the jump
         // this change exists to remove.
-        const count = counts ? counts[item.layer] : null
+        const count = counts && item.layer in counts ? counts[item.layer as keyof LadderCounts] : null
         return (
           <button
             type="button"

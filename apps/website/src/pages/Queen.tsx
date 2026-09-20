@@ -28,6 +28,7 @@ import {
   HUD_VIEWS,
   RAIL_VIEWS,
   SPEC_LAYERS,
+  BOARD_VIEWS,
   railViewOf,
   isSpecLayer,
   decisionDetail,
@@ -329,6 +330,9 @@ const COPY = {
     kanbanHint: "Operational columns",
     mapHint: "Strategic lifecycle sectors",
     factoryHint: "Live engineering production",
+    // The KANBAN module's own sub-navigation: three readings of the one board,
+    // which used to be three buttons of the rail.
+    boardAria: "The board: kanban, mission map, factory",
     combView: "COMB",
     combHint: "The board as a field of marks",
     specsView: "SPECS",
@@ -690,6 +694,7 @@ const COPY = {
     kanbanHint: "Операционные колонки",
     mapHint: "Стратегические сектора цикла",
     factoryHint: "Живое инженерное производство",
+    boardAria: "Доска: канбан, карта миссий, фабрика",
     combView: "СОТЫ",
     combHint: "Доска как поле из меток",
     specsView: "СПЕКИ",
@@ -2551,11 +2556,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   };
 
   // Every view, with the glyph and the key it has always answered. The rail
-  // draws the nine in RAIL_VIEWS; the six layers of the ladder are drawn by the
-  // SPECS module's own sub-navigation instead (components/QueenLadder), which is
-  // why five of these entries no longer appear on the left edge. Keys are
-  // unchanged and come from hudKeyOf, so 7 is still SKILLS and t still TOOLS —
-  // they now open SPECS standing on that layer.
+  // draws the seven in RAIL_VIEWS; the five layers below SPECS and the two
+  // board views beside KANBAN are drawn by their own module's sub-navigation
+  // instead (components/QueenLadder), which is why seven of these entries no
+  // longer appear on the left edge. Keys are unchanged and come from hudKeyOf,
+  // so 7 is still SKILLS, t still TOOLS and 4 still MISSION MAP — they now open
+  // the module that holds them, standing on that view.
   const viewItems = [
     { view: "comb" as const, glyph: "▽", label: c.combView, hint: c.combHint },
     // Second, directly after the comb: the corpus is the Queen's core, not an
@@ -2598,6 +2604,16 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     const item = viewItems.find((entry) => entry.view === layer)!;
     return { layer, glyph: item.glyph, label: item.label, hint: item.hint };
   });
+  // The board's three readings, in the board's own order (queenHud.BOARD_VIEWS):
+  // the columns, the same cards as ground, and what the swarm is producing on
+  // them. Built exactly as the ladder's rungs are, from the same view entries,
+  // so the two rows cannot disagree about a label or a key. No counts: the
+  // ladder's numbers are how many cards a catalog holds, and the three board
+  // views all hold the one board.
+  const boardItems: LadderLayer[] = BOARD_VIEWS.map((member) => {
+    const item = viewItems.find((entry) => entry.view === member)!;
+    return { layer: member, glyph: item.glyph, label: item.label, hint: item.hint };
+  });
   const viewLabel = viewItems.find((item) => item.view === view)?.label ?? c.combView;
   const ladderNav = (
     <QueenLadder
@@ -2607,6 +2623,9 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       aria={c.ladderAria}
       counts={ladderCounts}
     />
+  );
+  const boardNav = (
+    <QueenLadder layers={boardItems} current={view} onSelect={setView} aria={c.boardAria} family="board" />
   );
   const doctrine = [
     { n: "01", title: c.spec, copy: c.specCopy, tone: "" },
@@ -2982,26 +3001,37 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               view. One preview on the homepage boots one context, which is what
               the hive block booted before there were six blocks. */}
           {(!embedded || boardView === "comb") && hiveScene}
+          {/* KANBAN, MISSION MAP and FACTORY are one module now, so each of the
+              three is drawn under the board's own row (boardNav) rather than
+              from a rail button of its own. The body is a one-cell grid — every
+              view is stacked in it, over the scene — so the row and the view it
+              switches share one cell as a column. */}
           {boardView === "kanban" ? (
-            <KanbanView
-              columns={boardColumns}
-              cards={cards}
-              repo={repo}
-              error={boardState.error}
-              loaded={board !== null}
-              c={c}
-              lang={lang}
-            />
+            <div className="queen27-board-stack">
+              {boardNav}
+              <KanbanView
+                columns={boardColumns}
+                cards={cards}
+                repo={repo}
+                error={boardState.error}
+                loaded={board !== null}
+                c={c}
+                lang={lang}
+              />
+            </div>
           ) : boardView === "map" ? (
-            <MissionMapView
-              columns={boardColumns}
-              cards={cards}
-              repo={repo}
-              error={boardState.error}
-              loaded={board !== null}
-              c={c}
-              lang={lang}
-            />
+            <div className="queen27-board-stack">
+              {boardNav}
+              <MissionMapView
+                columns={boardColumns}
+                cards={cards}
+                repo={repo}
+                error={boardState.error}
+                loaded={board !== null}
+                c={c}
+                lang={lang}
+              />
+            </div>
           ) : boardView === "specs" ? (
             <QueenSpecs
               showDirective={isNarrow}
@@ -3078,54 +3108,57 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               embedded
             />
           ) : (
-            <QueenFactory
-              workers={researchState.data?.workers ?? null}
-              researchNodes={researchState.data?.nodes ?? []}
-              researchEdges={researchState.data?.edges ?? []}
-              researchLayers={researchState.data?.layers ?? []}
-              researchError={researchState.error}
-              hardware={hardwareState.data}
-              hardwareError={hardwareState.error}
-              error={boardState.error ?? researchState.error}
-              labels={{
-                aria: c.factoryView,
-                flow: c.factoryFlow,
-                throughput: c.factoryThroughput,
-                queueDensity: c.factoryQueueDensity,
-                workerBays: c.factoryWorkerBays,
-                active: c.executing,
-                idle: c.factoryIdle,
-                station: c.factoryStation,
-                modules: c.factoryModules,
-                empty: c.empty,
-                offline: c.factoryOffline,
-                criteria: c.criteria,
-                missing: c.missing,
-                openIssue: c.factoryOpenIssue,
-                selectedModule: c.factorySelectedModule,
-                liveContract: c.factoryLiveContract,
-                cityTitle: c.cityTitle,
-                cityCopy: c.cityCopy,
-                cityDistricts: c.cityDistricts,
-                cityLaboratories: c.cityLaboratories,
-                citySelected: c.citySelected,
-                cityEvidence: c.cityEvidence,
-                cityOffline: c.cityOffline,
-                cityBuildTitle: c.cityBuildTitle,
-                cityComplete: c.cityComplete,
-                cityAssembling: c.cityAssembling,
-                cityBlueprint: c.cityBlueprint,
-                citySealed: c.citySealed,
-                cityDependencies: c.cityDependencies,
-                foundryTitle: c.foundryTitle,
-                foundryVerified: c.foundryVerified,
-                foundryUnavailable: c.foundryUnavailable,
-                foundryTotal: c.foundryTotal,
-                foundryOnline: c.foundryOnline,
-                foundryProgrammed: c.foundryProgrammed,
-                foundryKey: c.foundryKey,
-              }}
-            />
+            <div className="queen27-board-stack">
+              {boardNav}
+              <QueenFactory
+                workers={researchState.data?.workers ?? null}
+                researchNodes={researchState.data?.nodes ?? []}
+                researchEdges={researchState.data?.edges ?? []}
+                researchLayers={researchState.data?.layers ?? []}
+                researchError={researchState.error}
+                hardware={hardwareState.data}
+                hardwareError={hardwareState.error}
+                error={boardState.error ?? researchState.error}
+                labels={{
+                  aria: c.factoryView,
+                  flow: c.factoryFlow,
+                  throughput: c.factoryThroughput,
+                  queueDensity: c.factoryQueueDensity,
+                  workerBays: c.factoryWorkerBays,
+                  active: c.executing,
+                  idle: c.factoryIdle,
+                  station: c.factoryStation,
+                  modules: c.factoryModules,
+                  empty: c.empty,
+                  offline: c.factoryOffline,
+                  criteria: c.criteria,
+                  missing: c.missing,
+                  openIssue: c.factoryOpenIssue,
+                  selectedModule: c.factorySelectedModule,
+                  liveContract: c.factoryLiveContract,
+                  cityTitle: c.cityTitle,
+                  cityCopy: c.cityCopy,
+                  cityDistricts: c.cityDistricts,
+                  cityLaboratories: c.cityLaboratories,
+                  citySelected: c.citySelected,
+                  cityEvidence: c.cityEvidence,
+                  cityOffline: c.cityOffline,
+                  cityBuildTitle: c.cityBuildTitle,
+                  cityComplete: c.cityComplete,
+                  cityAssembling: c.cityAssembling,
+                  cityBlueprint: c.cityBlueprint,
+                  citySealed: c.citySealed,
+                  cityDependencies: c.cityDependencies,
+                  foundryTitle: c.foundryTitle,
+                  foundryVerified: c.foundryVerified,
+                  foundryUnavailable: c.foundryUnavailable,
+                  foundryTotal: c.foundryTotal,
+                  foundryOnline: c.foundryOnline,
+                  foundryProgrammed: c.foundryProgrammed,
+                  foundryKey: c.foundryKey,
+                }}
+              />
+            </div>
           )}
         </div>
 

@@ -74,16 +74,43 @@ export type SpecLayer = (typeof SPEC_LAYERS)[number];
 export const isSpecLayer = (value: string): value is SpecLayer =>
   (SPEC_LAYERS as readonly string[]).includes(value);
 
-// The rail: the nine modules that are not a layer of the ladder, plus SPECS,
-// which is its door. Every one of the fourteen names stays a valid `?tab=` --
-// a link, a bookmark and a keyboard shortcut that named a layer still lands on
-// that layer -- so this list is what the rail *draws*, not what the address
-// accepts. The address vocabulary is still HUD_VIEWS.
-export const RAIL_VIEWS: readonly HudView[] = HUD_VIEWS.filter(
-  (view) => view === "specs" || !isSpecLayer(view),
-);
-/** The rail button a view lights. A ladder layer lights SPECS, which is where it now lives. */
-export const railViewOf = (view: HudView): HudView => (isSpecLayer(view) ? "specs" : view);
+// The board, and the one place its three views are written down as a list.
+//
+// Kanban, Mission Map and Factory are three readings of one subject: the board
+// the swarm works. The kanban draws its columns, the map draws the same cards
+// as sectors of ground (measured 2026-09-20: the same BACKLOG count and the
+// same issue numbers, laid out differently), and the factory draws what the
+// Bees are producing on it. As three rail buttons they asked the reader to
+// choose between three words for one thing before being shown any of it. They
+// are now one module: KANBAN holds the other two, exactly as SPECS holds its
+// layers.
+//
+// Order is the board's own -- columns, then ground, then production -- and it
+// is what the sub-navigation draws.
+export const BOARD_VIEWS = ["kanban", "map", "factory"] as const;
+export type BoardView = (typeof BOARD_VIEWS)[number];
+export const isBoardView = (value: string): value is BoardView =>
+  (BOARD_VIEWS as readonly string[]).includes(value);
+
+/**
+ * A view the rail does not draw, because another module holds it: every rung
+ * of the ladder below SPECS, and every board view beside KANBAN. Written once,
+ * as the negation of "is the door of its own family", so a family cannot grow
+ * a member the rail then draws twice.
+ */
+const isFolded = (view: HudView): boolean =>
+  (isSpecLayer(view) && view !== SPEC_LAYERS[0]) ||
+  (isBoardView(view) && view !== BOARD_VIEWS[0]);
+
+// The rail: the modules that hold no other, plus SPECS and KANBAN, which are
+// the doors of the two that do. Every one of the fourteen names stays a valid
+// `?tab=` -- a link, a bookmark and a keyboard shortcut that named a layer or a
+// board view still lands on it -- so this list is what the rail *draws*, not
+// what the address accepts. The address vocabulary is still HUD_VIEWS.
+export const RAIL_VIEWS: readonly HudView[] = HUD_VIEWS.filter((view) => !isFolded(view));
+/** The rail button a view lights: a ladder layer lights SPECS, a board view KANBAN. */
+export const railViewOf = (view: HudView): HudView =>
+  isSpecLayer(view) ? SPEC_LAYERS[0] : isBoardView(view) ? BOARD_VIEWS[0] : view;
 
 export type Territory = "held" | "neutral" | "fog";
 
