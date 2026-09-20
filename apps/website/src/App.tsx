@@ -7,6 +7,7 @@ import SpecHeroBlock from './components/SpecHeroBlock'
 import ModuleHeroBlock from './components/ModuleHeroBlock'
 import { MODULES } from './lib/queenModules'
 import PlayBlock from './components/PlayBlock'
+import AgiGameBlock from './components/AgiGameBlock'
 
 // Главная — это игра. Первый экран: карта, на которой лежат спеки, затем сама
 // спека, затем шесть модулей, каждый показан собой же.
@@ -38,6 +39,12 @@ export default function App() {
       {/* The mark first, and then in one line what the site is. The number the
           game exists to build lives on /trinity and is linked from here. */}
       <GameHero />
+      {/* Why a swarm is worth directing, before how to contribute to it. It
+          carries the move the site never named — writing the boundary that
+          lets the Queen dispatch an issue — and the supervisor's own refusal
+          count as the evidence that the move is needed. Its first card hands
+          the reader down to PlayBlock, so it sits above it. */}
+      <AgiGameBlock />
       {/* The point of the front door: a developer arrives, and the four moves
           that put a cell of the core in their hands are named before the
           modules are. The core is built by playing it. */}

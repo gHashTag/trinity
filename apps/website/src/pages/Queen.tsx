@@ -103,11 +103,9 @@ import "./Queen.css";
 // the phone's chrome, after Queen.css so that at equal specificity it wins
 import "./queen-phone.css";
 
-const DEFAULT_QUEEN_API =
-  "https://trios-agent-server-production.up.railway.app";
-const QUEEN_API = (
-  (import.meta.env.VITE_QUEEN_API as string | undefined) ?? DEFAULT_QUEEN_API
-).replace(/\/+$/, "");
+// The address moved to lib/queenApi so the homepage can ask the same server
+// this page asks, rather than carry a second copy of the literal.
+import { BOUNDARY_EXAMPLE_ISSUE, QUEEN_API } from "../lib/queenApi";
 const LIVE_POLL_MS = 5_000;
 const FOUNDATION_POLL_MS = 60_000;
 const MODULES_POLL_MS = 15_000;
@@ -2917,7 +2915,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             {idleWhy.example && (
               <>
                 {" · "}
-                <a href="https://github.com/gHashTag/t27/issues/3587" target="_blank" rel="noreferrer">
+                <a href={BOUNDARY_EXAMPLE_ISSUE} target="_blank" rel="noreferrer">
                   {c.idleExample}
                 </a>
               </>

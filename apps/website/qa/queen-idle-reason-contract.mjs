@@ -174,7 +174,15 @@ for (const [label, value] of [
 const src = readFileSync(new URL("../src/pages/Queen.tsx", import.meta.url), "utf8");
 check(/const isLive = state\.kind === "ready";/.test(src) && /const idleNow = isLive \? idleReason\(data, now \+ \(state\.offsetMs \?\? 0\)\) : null;/.test(src) && /idleLine\(/.test(src), "Queen.tsx reads the idle reason only from a live status (a kept copy after a failed fetch says nothing), on the server's clock");
 check((src.match(/idleReason\(/g) || []).length === 1, "no second, ungated call of idleReason");
-check(/className="queen27-hud-idle"/.test(src) && /\{idleWhy\.example && \(/.test(src) && /href="https:\/\/github\.com\/gHashTag\/t27\/issues\/3587"/.test(src), "the line has its own element; the format example is behind idleWhy.example");
+// The exemplar URL moved to src/lib/queenApi.ts when a second surface (the
+// homepage's DIRECT card) started pointing at the same issue: a literal copied
+// into two files is one that has moved in one of them. The check follows it
+// rather than loosening — the page must still render it behind
+// idleWhy.example, and the constant it renders must still be that issue.
+const api = readFileSync(new URL("../src/lib/queenApi.ts", import.meta.url), "utf8");
+check(/className="queen27-hud-idle"/.test(src) && /\{idleWhy\.example && \(/.test(src) && /href=\{BOUNDARY_EXAMPLE_ISSUE\}/.test(src), "the line has its own element; the format example is behind idleWhy.example");
+check(/import \{[^}]*BOUNDARY_EXAMPLE_ISSUE[^}]*\} from "\.\.\/lib\/queenApi";/.test(src), "the page takes the exemplar from lib/queenApi rather than carrying its own copy");
+check(/export const BOUNDARY_EXAMPLE_ISSUE = "https:\/\/github\.com\/gHashTag\/t27\/issues\/3587";/.test(api), "lib/queenApi names the exemplar issue, and it is the one this contract was written about");
 check(/idleExample:\s*"an issue written the way bees can take it"/.test(src) && /idleExample:\s*"задача в формате, который пчёлы берут"/.test(src), "the link is labelled as a format, not as an issue bees can take now, in both languages");
 check(/idleRefused:\s*"round refused"/.test(src) && /idleRefused:\s*"раунд отказал"/.test(src) && /idleChecked:\s*"checked"/.test(src) && /idleChecked:\s*"проверено"/.test(src) && /idleMissingBoundary:\s*"no ## Boundary"/.test(src) && /idleMissingBoundary:\s*"без ## Boundary"/.test(src), "the page's words are the ones this contract formats with");
 check(!/idleIncompleteSpec|idleOf:|idleIssues:/.test(src), "no word for incompleteSpec in the idle copy, and no 'issues' noun for a count of lines");
