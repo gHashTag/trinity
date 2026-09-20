@@ -196,8 +196,8 @@ export default function Footer() {
                   </a>
                 </li>
                 {/* One contact address, and the only one that can actually receive
-                    mail: t27.dev has no MX records at all, so every admin@t27.dev
-                    link on this site was undeliverable. */}
+                    mail. The old .dev domain this site used to link has no MX
+                    records at all, so those links were silently undeliverable. */}
                 <li>
                   <a href="mailto:admin@t27.ai" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.85 }} aria-label="Send email to admin@t27.ai">
                     admin@t27.ai

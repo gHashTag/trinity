@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n/context'
+import QueenMcp from './QueenMcp'
 import './Queen.css'
 
 // The queen's panels read a backend that this site does not contain. t27.ai is
@@ -49,6 +50,7 @@ const RU = {
   kingdomBrain: '🧠 Мозг (ветвь I)',
   kingdomBody: '💪 Тело (ветвь II)',
   kingdomSpirit: '🔮 Дух (ветвь III)',
+  kingdomMcp: '🔌 MCP',
   title: '👑 Queen Trinity',
   subtitle: 'Самоулучшающийся контейнер · φ² + 1/φ² = 3',
   body: '💪 Тело',
@@ -285,12 +287,13 @@ function BrainInventory() {
   )
 }
 
-type Kingdom = 'brain' | 'body' | 'spirit'
+type Kingdom = 'brain' | 'body' | 'spirit' | 'mcp'
 
 const KINGDOMS: { key: Kingdom; label: string }[] = [
   { key: 'brain', label: '🧠 Brain (Strand I)' },
   { key: 'body', label: '💪 Body (Strand II)' },
   { key: 'spirit', label: '🔮 Spirit (Strand III)' },
+  { key: 'mcp', label: '🔌 MCP' },
 ]
 
 export default function Queen() {
@@ -321,13 +324,15 @@ export default function Queen() {
             aria-pressed={kingdom === k.key}
           >
             {c
-              ? (k.key === 'brain' ? c.kingdomBrain : k.key === 'body' ? c.kingdomBody : c.kingdomSpirit)
+              ? (k.key === 'brain' ? c.kingdomBrain : k.key === 'body' ? c.kingdomBody : k.key === 'spirit' ? c.kingdomSpirit : c.kingdomMcp)
               : k.label}
           </button>
         ))}
       </nav>
 
-      {!connected && <BrainOffline reason={health.error} />}
+      {/* The MCP catalog reads its own hub, not the queen's brain, so the
+          brain-offline banner would be beside the point on that tab. */}
+      {!connected && kingdom !== 'mcp' && <BrainOffline reason={health.error} />}
 
       {kingdom === 'brain' && (
         <>
@@ -347,6 +352,8 @@ export default function Queen() {
           </p>
         </section>
       )}
+
+      {kingdom === 'mcp' && <QueenMcp />}
 
       {kingdom === 'spirit' && (
         <section className="queen-card">

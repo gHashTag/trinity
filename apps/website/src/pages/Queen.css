@@ -160,3 +160,129 @@
 .queen-episode p { margin: 0.4rem 0; line-height: 1.5; }
 .queen-episode .ok { color: #4caf50; }
 .queen-episode .bad { color: #e05252; }
+
+/* --- MCP catalog tab ---------------------------------------------------- */
+
+.mcp-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
+}
+
+.mcp-search {
+  flex: 1 1 240px;
+  min-width: 200px;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--border, #2a2a32);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.mcp-search:focus { outline: none; border-color: var(--accent, #7c5cff); }
+.mcp-filters { margin-bottom: 0; }
+.mcp-filters button { padding: 0.45rem 0.8rem; font-size: 0.88rem; }
+.mcp-stamp { margin: 1rem 0 0; font-size: 0.85rem; }
+
+.mcp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.mcp-card {
+  border-left-width: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.1rem;
+}
+
+.mcp-border-online { border-left-color: #4caf50; }
+.mcp-border-reachable { border-left-color: #ff9800; }
+.mcp-border-offline { border-left-color: #e05252; }
+
+.mcp-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.mcp-card-head h3 { margin: 0; font-size: 1.05rem; }
+
+.mcp-pill { font-size: 0.78rem; white-space: nowrap; }
+.mcp-online { color: #4caf50; }
+.mcp-reachable { color: #ff9800; }
+.mcp-offline { color: #e05252; }
+
+.mcp-meta,
+.mcp-count,
+.mcp-error,
+.mcp-origins {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted, #9a9aa2);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.mcp-count { color: var(--text, #e8e8ea); }
+.mcp-error { color: #e05252; }
+
+.mcp-meta code,
+.mcp-tools code,
+.mcp-origins code {
+  padding: 0.08rem 0.3rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.92em;
+}
+
+.mcp-tools {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.mcp-tools li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--text-muted, #9a9aa2);
+}
+
+.mcp-tools li span { flex: 1 1 140px; }
+
+.mcp-more {
+  align-self: flex-start;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--border, #2a2a32);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.mcp-more:hover { border-color: var(--accent, #7c5cff); }
+
+.mcp-origins { border-top: 1px solid var(--border, #2a2a32); padding-top: 0.5rem; margin-top: auto; }
+.mcp-secret { color: #ff9800; }
+
+/* A site-wide rule centres and shrink-wraps the children of a <section>, which
+   collapsed the summary metrics to one 150px column. The catalog header takes
+   the full card width back without touching that rule for other pages. */
+.mcp-summary { align-items: stretch; text-align: left; }
+.mcp-summary > * { width: 100%; }
+.mcp-summary .queen-metrics { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.mcp-summary .mcp-controls > .queen-button { width: auto; }
