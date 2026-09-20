@@ -29,13 +29,37 @@ const ROUTE = '#/queen';
 const SHOTS = '/tmp/hud-shots';
 const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600], [390, 844]];
 const VIEWS = ['comb', 'kanban', 'map', 'factory', 'research'];
-// The rail draws one button per view, so its count is read from HUD_VIEWS
-// itself (src/components/queenHud.ts), not pinned: #980 added PROJECT as the
-// twelfth view and left this gate expecting 11.
-const HUD_VIEW_COUNT = (readFileSync(join(ROOT, 'src/components/queenHud.ts'), 'utf8')
-  .match(/export const HUD_VIEWS[^=]*=\s*\[([\s\S]*?)\]\s*as const/)?.[1]
-  .match(/^\s*"[a-z]+",/gm) ?? []).length;
-if (HUD_VIEW_COUNT < 1) {
+// The rail used to draw one button per view, so this counted HUD_VIEWS and
+// compared. That stopped being the shape of the thing: SPECS has long stood for
+// six layers behind one button, and KANBAN now stands for itself, MAP and
+// FACTORY the same way. Fourteen views, seven buttons -- and a gate that reads
+// only HUD_VIEWS reports the fold as seven missing buttons.
+//
+// So read the fold from the same declarations the app folds by, and count what
+// the rail is actually supposed to draw. Both lists are still read rather than
+// pinned, which is what stopped this gate expecting eleven when #980 added the
+// twelfth view.
+const HUD_SOURCE = readFileSync(join(ROOT, 'src/components/queenHud.ts'), 'utf8');
+const readList = (name, pattern) => {
+  const body = HUD_SOURCE.match(pattern)?.[1];
+  if (!body) {
+    console.error(`  could not read ${name} from src/components/queenHud.ts`);
+    process.exit(1);
+  }
+  return [...body.matchAll(/"([a-z]+)"/g)].map((m) => m[1]);
+};
+const HUD_VIEWS = readList('HUD_VIEWS', /export const HUD_VIEWS[^=]*=\s*\[([\s\S]*?)\]\s*as const/);
+const SPEC_LAYERS = readList('SPEC_LAYERS', /export const SPEC_LAYERS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+const BOARD_VIEWS = readList('BOARD_VIEWS', /export const BOARD_VIEWS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+// A family's first entry is the button; the rest are behind it. This mirrors
+// isFolded in queenHud.ts, which is the one place the app decides it.
+const FOLD = new Map();
+for (const family of [SPEC_LAYERS, BOARD_VIEWS]) {
+  for (const view of family.slice(1)) FOLD.set(view, family[0]);
+}
+const RAIL_VIEWS = HUD_VIEWS.filter((view) => !FOLD.has(view));
+const RAIL_VIEW_COUNT = RAIL_VIEWS.length;
+if (HUD_VIEWS.length < 1 || RAIL_VIEW_COUNT < 1) {
   console.error('  could not read HUD_VIEWS from src/components/queenHud.ts');
   process.exit(1);
 }
@@ -193,6 +217,11 @@ const DECLARED = [
   '.queen27-city-build-queue ol', '.queen27-hardware-foundry ol', '.queen27-city-console ol',
   '.queen27-city-head dl', '.queen27-city-build-queue dl', '.queen27-hardware-foundry dl', '.queen27-factory-command dl',
   '.queen27-activity-stream ol', '.queen27-flow-grid',
+  // the sub-navigation row: one line at every width, scrolling sideways when
+  // the rungs are wider than the module -- overflow-x:auto with the bar hidden,
+  // which is the declaration. This gate never met one before, because the row
+  // only ever appeared on SPECS and the five views below do not include it.
+  '.queen27-ladder',
 ].join(', ');
 // designed clippers: overflow:hidden boxes whose content is meant to be cut
 const CLIPPERS = [
@@ -228,7 +257,16 @@ const PROBE = (phone) => `(() => {
   // 4. Exactly one view rendered.
   const body = shell.querySelector('.queen27-hud-vp-body');
   A(!!body, 'VIEWPORT BODY MISSING');
-  const views = body ? body.querySelectorAll(':scope > .queen27-comb, :scope > .queen27-kanban, :scope > .queen27-mission-map, :scope > .queen27-factory, :scope > .queen27-tech') : [];
+  // A view is a child of the body, or of the board stack inside it -- the body
+  // is a one-cell grid, so a sub-navigation row and the view under it have to
+  // arrive as a single child. Matching only direct children counted zero views
+  // on any tab that had grown a row above it, and reported a rendered board as
+  // a board that had not rendered at all.
+  const viewSel = '.queen27-comb, .queen27-kanban, .queen27-mission-map, .queen27-factory, .queen27-tech';
+  const views = body
+    ? [...body.children].flatMap(child =>
+        child.matches(viewSel) ? [child] : [...child.querySelectorAll(':scope > ' + viewSel)])
+    : [];
   A(views.length === 1, 'NOT EXACTLY ONE VIEW RENDERED', views.length);
 
   // 5. Every overflowing element inside the shell is a declared scroller or a designed truncation.
@@ -330,10 +368,18 @@ const PROBE = (phone) => `(() => {
   return { fail, counts, zeros, live, rawErrors, round: (document.getElementById('stat-round') || {}).textContent || '' };
 })()`;
 
+// Reaching a view is two clicks when the view is folded: its family's button on
+// the rail, then its own rung on the sub-navigation row that button opens. MAP
+// and FACTORY have no rail button of their own any more, and asking the rail for
+// one reported them as missing rather than as folded.
 const CLICK = (view) => `(() => {
-  const b = document.querySelector('.queen27-hud-command .queen27-hud-cmd[data-view="${view}"]');
-  if (!b) return false;
-  b.click();
+  const rail = document.querySelector('.queen27-hud-command .queen27-hud-cmd[data-view="${FOLD.get(view) ?? view}"]');
+  if (!rail) return false;
+  rail.click();
+  ${FOLD.has(view) ? `
+  const rung = document.querySelector('.queen27-ladder .queen27-ladder-step[data-layer="${view}"]');
+  if (!rung) return false;
+  rung.click();` : ''}
   return true;
 })()`;
 
@@ -399,9 +445,11 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     const { fail, counts } = result;
     const zero = [];
     if (counts.shell !== 1) zero.push('shell');
-    // one command button per view: HUD_VIEW_COUNT is read from src/components/queenHud.ts HUD_VIEWS,
-    // and qa/agents-spec-contract.mjs holds that list to the modules.
-    if (counts.commands !== HUD_VIEW_COUNT) zero.push(`commands=${counts.commands} (HUD_VIEWS has ${HUD_VIEW_COUNT})`);
+    // one command button per RAIL view: the folded views are reached from the
+    // sub-navigation row inside their family's button, not from the rail. Both
+    // lists come from src/components/queenHud.ts, and qa/agents-spec-contract.mjs
+    // holds HUD_VIEWS itself to the modules.
+    if (counts.commands !== RAIL_VIEW_COUNT) zero.push(`commands=${counts.commands} (the rail draws ${RAIL_VIEW_COUNT} of ${HUD_VIEWS.length} views)`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
     if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
     if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);

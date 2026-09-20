@@ -5791,6 +5791,12 @@ main:where(.queen27-page.is-shell) section {
   flex: 1 1 auto;
   height: auto;
   min-height: 0;
+  /* And sideways, for the same reason. A flex item's automatic minimum size is
+     its content, so on a 390px phone the map and the factory held the stack
+     open 4px wider than the module and pushed that overflow up to the stack --
+     which is not a scroller and so had nowhere to put it. Both views scroll
+     their own content; this lets them, instead of widening what contains them. */
+  min-width: 0;
 }
 
 /* One row, always, at every width and on every one of the six layers. It used
