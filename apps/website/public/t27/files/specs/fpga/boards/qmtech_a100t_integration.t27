@@ -85,6 +85,12 @@ module QMTech_A100T_Integration {
         invariant QMTECH_PINS.uart_rx_pin == "T14";
     }
 
+    test test_on_comb {
+        var result : u32 = on_comb(CLOCK_FREQ_HZ, UART_BAUD);
+        invariant result == calc_baud_divisor(CLOCK_FREQ_HZ, UART_BAUD);
+        invariant result == 6;
+    }
+
     invariant clock_positive : CLOCK_FREQ_HZ > 0;
     invariant baud_valid : UART_BAUD > 0 && UART_BAUD <= 921600;
     invariant board_name_set : BOARD_NAME != "";

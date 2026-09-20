@@ -212,8 +212,12 @@ module ZeroDSP_TopLevel {
     bench system_ready_latency
         measure: nanoseconds to system_ready()
         target: < 20ns
+        // Implementation: call the function to measure its latency
+        system_ready()
 
     bench system_reset_latency
         measure: nanoseconds to system_reset()
         target: < 100ns
+        // Implementation: call the function to measure its latency
+        system_reset()
 }

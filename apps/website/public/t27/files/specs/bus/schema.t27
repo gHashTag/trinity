@@ -416,6 +416,12 @@ test "bus_event_result_create" {
     try std.testing.expect(result.success == true);
 }
 
+test "bus_event_result_error" {
+    const result = event_result_error("test error message");
+    try std.testing.expect(result.success == false);
+    try std.testing.expectEqualStrings(result.error, "test error message");
+}
+
 test "bus_topic_pattern_create" {
     const pattern = topic_pattern_create("test/*");
     try std.testing.expectEqual(@as(usize, pattern.pattern.len), @as(usize, 6));

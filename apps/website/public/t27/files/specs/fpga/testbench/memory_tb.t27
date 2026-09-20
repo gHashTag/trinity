@@ -119,6 +119,18 @@ module Memory_Testbench {
 
     invariant mem_size_positive : MEM_SIZE > 0;
 
+    test test_tick_toggles_clock {
+        reset();
+        // Clock should start in false state after reset
+        invariant clk == false;
+        // After first tick, clock should be true
+        tick();
+        invariant clk == true;
+        // After second tick, clock should be false again
+        tick();
+        invariant clk == false;
+    }
+
     bench bench_memory_bandwidth {
         reset();
         var i : u32 = 0;

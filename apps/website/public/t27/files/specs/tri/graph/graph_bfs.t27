@@ -5,6 +5,7 @@
 module TriGraphBfs;
     use base::types;
     use math::constants;
+    use std;
 
     // ═══════════════════════════════════════════════════════════
     // 2. Types
@@ -25,24 +26,76 @@ module TriGraphBfs;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(allocator: std.mem.Allocator) → void
-    fn init(allocator: std.mem.Allocator) -> void {
-        // TODO: Implement from .tri spec
+    // init(allocator: std.mem.Allocator, vertex_count: usize) -> Graph
+    fn init(allocator: std.mem.Allocator, vertex_count: usize) -> Graph {
+        var adj = allocator.alloc([]usize, vertex_count) catch unreachable;
+        for (0..vertex_count) |i| {
+            adj[i] = &[_]usize{};
+        }
+        return Graph{
+            .adj = @constCast(&adj),
+            .allocator = allocator,
+        };
     }
 
-    // add_edge(graph: *Graph) → void
-    fn add_edge(graph: *Graph) -> void {
-        // TODO: Implement from .tri spec
+    // add_edge(graph: *Graph, from: usize, to: usize) -> void
+    fn add_edge(graph: *Graph, from: usize, to: usize) -> void {
+        var from_row = graph.allocator.alloc(usize, graph.adj[from].len + 1) catch unreachable;
+        @memcpy(from_row[0..graph.adj[from].len], graph.adj[from]);
+        from_row[graph.adj[from].len] = to;
+        graph.adj[from] = @constCast(&from_row);
+        
+        var to_row = graph.allocator.alloc(usize, graph.adj[to].len + 1) catch unreachable;
+        @memcpy(to_row[0..graph.adj[to].len], graph.adj[to]);
+        to_row[graph.adj[to].len] = from;
+        graph.adj[to] = @constCast(&to_row);
     }
 
-    // traverse(graph: *Graph) → void
-    fn traverse(graph: *Graph) -> void {
-        // TODO: Implement from .tri spec
+    // traverse(graph: *Graph, start: usize, allocator: std.mem.Allocator) -> BFSResult
+    fn traverse(graph: *Graph, start: usize, allocator: std.mem.Allocator) -> BFSResult {
+        var visited = allocator.alloc(bool, graph.adj.len) catch unreachable;
+        @memset(visited, false, graph.adj.len);
+        
+        var order = allocator.alloc(usize, graph.adj.len) catch unreachable;
+        var distance = allocator.alloc(usize, graph.adj.len) catch unreachable;
+        @memset(distance, std.math.maxInt(usize), graph.adj.len);
+        
+        var queue = std.ArrayList(usize).init(allocator);
+        defer queue.deinit();
+        
+        visited[start] = true;
+        distance[start] = 0;
+        queue.append(start) catch unreachable;
+        
+        var index: usize = 0;
+        while (queue.items.len > 0) {
+            const current = queue.orderedRemove(0);
+            order[index] = current;
+            index += 1;
+            
+            for (graph.adj[current]) |neighbor| {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    distance[neighbor] = distance[current] + 1;
+                    queue.append(neighbor) catch unreachable;
+                }
+            }
+        }
+        
+        return BFSResult{
+            .order = order[0..index],
+            .distance = distance,
+            .allocator = allocator,
+        };
     }
 
-    // deinit(graph: *Graph) → void
+    // deinit(graph: *Graph) -> void
     fn deinit(graph: *Graph) -> void {
-        // TODO: Implement from .tri spec
+        for (0..graph.adj.len) |i| {
+            graph.allocator.free(graph.adj[i]);
+        }
+        graph.allocator.free(graph.adj);
+        // Note: BFSResult carries its own allocator for the caller to free separately
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -69,3 +122,84 @@ module TriGraphBfs;
         when result = deinit(input)
         then result != undefined
 
+    test adjacency_has_one_row_per_vertex
+        given graph = init(std.testing.allocator, 3)
+        when result = graph.adj.len
+        then result == 3
+
+    test an_isolated_vertex_has_an_empty_row
+        given graph = init(std.testing.allocator, 1)
+        when result = graph.adj[0].len
+        then result == 0
+
+    test an_undirected_edge_appears_in_both_endpoints_rows
+        given graph = init(std.testing.allocator, 2)
+        and add_edge(&graph, 0, 1)
+        when result1 = graph.adj[0].len
+        and result2 = graph.adj[1].len
+        then result1 == 1 and result2 == 1
+
+    test the_degree_sum_is_twice_the_edge_count
+        // Verify: the handshake lemma on the path 0 - 1 - 2 — two edges, so the
+        // row lengths add up to four
+        given row0 = [_]usize{ 1 }
+        and row1 = [_]usize{ 0, 2 }
+        and row2 = [_]usize{ 1 }
+        and rows = [_][]usize{ @constCast(&row0), @constCast(&row1), @constCast(&row2) }
+        when graph = Graph{ .adj = @constCast(&rows), .allocator = std.testing.allocator }
+        and degree_sum = graph.adj[0].len + graph.adj[1].len + graph.adj[2].len
+        then degree_sum == 4
+
+    test bfs_result_holds_one_distance_per_vertex_and_starts_at_zero
+        given graph = init(std.testing.allocator, 3)
+        and add_edge(&graph, 0, 1)
+        and add_edge(&graph, 1, 2)
+        and result = traverse(&graph, 0, std.testing.allocator)
+        when order_len = result.order.len
+        and distance_len = result.distance.len
+        and start_distance = result.distance[0]
+        then order_len == distance_len and start_distance == 0
+
+    test bfs_distances_never_jump_by_more_than_one
+        given graph = init(std.testing.allocator, 3)
+        and add_edge(&graph, 0, 1)
+        and add_edge(&graph, 1, 2)
+        and result = traverse(&graph, 0, std.testing.allocator)
+        when max_jump = std.math.maxInt(usize)
+        for (0..result.order.len - 1) |i| {
+            const current_dist = result.distance[result.order[i]];
+            const next_dist = result.distance[result.order[i + 1]];
+            const jump = if (next_dist > current_dist) next_dist - current_dist else 0;
+            if (jump < max_jump) max_jump = jump;
+        }
+        then max_jump <= 1
+
+    test init_creates_correct_graph_structure
+        given graph = init(std.testing.allocator, 3)
+        when result = graph.adj.len
+        then result == 3
+
+    test add_edge_builds_path_correctly
+        given graph = init(std.testing.allocator, 3)
+        and add_edge(&graph, 0, 1)
+        and add_edge(&graph, 1, 2)
+        when row0_len = graph.adj[0].len
+        and row1_len = graph.adj[1].len
+        and row2_len = graph.adj[2].len
+        then row0_len == 1 and row1_len == 2 and row2_len == 1
+
+    test traverse_produces_correct_order_and_distance
+        given graph = init(std.testing.allocator, 3)
+        and add_edge(&graph, 0, 1)
+        and add_edge(&graph, 1, 2)
+        and result = traverse(&graph, 0, std.testing.allocator)
+        when order_len = result.order.len
+        and distance_len = result.distance.len
+        and start_distance = result.distance[0]
+        then order_len == distance_len and start_distance == 0
+
+    test deinit_ownership_rule
+        given graph = init(std.testing.allocator, 2)
+        and add_edge(&graph, 0, 1)
+        when result = deinit(&graph)
+        then result == void

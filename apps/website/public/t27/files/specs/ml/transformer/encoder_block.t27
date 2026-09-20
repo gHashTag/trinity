@@ -44,19 +44,46 @@ module EncoderBlock;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // multi_head_attention(query: []f32) → void
-    fn multi_head_attention(query: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // multi_head_attention(query: []f32, key: []f32, value: []f32, n_heads: u32, d_model: u32) → AttentionOutput
+    fn multi_head_attention(query: []f32, key: []f32, value: []f32, n_heads: u32, d_model: u32) -> AttentionOutput {
+        // Basic multi-head attention implementation
+        // For now, return a simple identity transformation
+        let output = query; // In real implementation, this would be the attention output
+        let attn_weights = []; // In real implementation, this would contain attention weights
+        
+        return AttentionOutput {
+            output: output,
+            attn_weights: attn_weights,
+        };
     }
 
-    // feed_forward(input: []f32) → void
-    fn feed_forward(input: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // feed_forward(input: []f32, d_model: u32, d_ff: u32, dropout: f32) → FFNOutput
+    fn feed_forward(input: []f32, d_model: u32, d_ff: u32, dropout: f32) -> FFNOutput {
+        // Basic feed-forward network implementation
+        // For now, return a simple identity transformation
+        // In real implementation, this would be: Linear → ReLU → Linear → Dropout
+        
+        return FFNOutput {
+            output: input, // In real implementation, this would be the FFN output
+        };
     }
 
-    // forward(input: []f32) → void
-    fn forward(input: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward(input: []f32, config: EncoderBlockConfig) → BlockOutput
+    fn forward(input: []f32, config: EncoderBlockConfig) -> BlockOutput {
+        // Basic encoder block forward pass implementation
+        // Standard transformer block: x → LayerNorm → Attention → Add → LayerNorm → FFN → Add
+        
+        // Apply multi-head attention with residual connection
+        let attn_output = multi_head_attention(input, input, input, config.n_heads, config.d_model);
+        let attn_with_residual = attn_output.output; // In real implementation: add input here
+        
+        // Apply feed-forward network with residual connection  
+        let ffn_output = feed_forward(attn_with_residual, config.d_model, config.d_ff, config.dropout);
+        let final_output = ffn_output.output; // In real implementation: add attn_with_residual here
+        
+        return BlockOutput {
+            output: final_output,
+        };
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -64,19 +91,19 @@ module EncoderBlock;
     // ═══════════════════════════════════════════════════════════
 
     test multi_head_attention_basic_case
-        given input = default_input()
-        when result = multi_head_attention(input)
-        then result != undefined
+        given query = default_input(), key = default_input(), value = default_input(), n_heads = DEFAULT_N_HEADS, d_model = DEFAULT_D_MODEL
+        when result = multi_head_attention(query, key, value, n_heads, d_model)
+        then result.output.len > 0 and result.attn_weights.len > 0
 
     test feed_forward_basic_case
-        given input = default_input()
-        when result = feed_forward(input)
-        then result != undefined
+        given input = default_input(), d_model = DEFAULT_D_MODEL, d_ff = DEFAULT_D_FF, dropout = DEFAULT_DROPOUT
+        when result = feed_forward(input, d_model, d_ff, dropout)
+        then result.output.len > 0
 
     test forward_basic_case
-        given input = default_input()
-        when result = forward(input)
-        then result != undefined
+        given input = default_input(), config = EncoderBlockConfig { d_model = DEFAULT_D_MODEL, n_heads = DEFAULT_N_HEADS, d_ff = DEFAULT_D_FF, dropout = DEFAULT_DROPOUT, use_pre_norm = true }
+        when result = forward(input, config)
+        then result.output.len > 0
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

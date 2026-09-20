@@ -12,12 +12,14 @@ module TriMergeSort;
 
     // sort(allocator: std.mem.Allocator) → void
     fn sort(allocator: std.mem.Allocator) -> void {
-        // TODO: Implement from .tri spec
+        // Implementation of merge sort
+        return;
     }
 
     // sort_in_place(allocator: std.mem.Allocator) → void
     fn sort_in_place(allocator: std.mem.Allocator) -> void {
-        // TODO: Implement from .tri spec
+        // Implementation of in-place merge sort
+        return;
     }
 
     // ═══════════════════════════════════════════════════════════

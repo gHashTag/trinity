@@ -17,40 +17,66 @@ module TriBloomFilter;
     };
 
     // ═══════════════════════════════════════════════════════════
-    // 3. Core Functions
+    // 3. Helper Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(size: usize) → void
-    fn init(size: usize) -> void {
-        // TODO: Implement from .tri spec
+    // Simple hash function for bloom filter
+    fn hash_function(data: []const u8, seed: usize, size: usize) -> usize {
+        let hash = 0;
+        for i in 0..data.len {
+            hash = hash * 31 + data[i] as usize;
+        }
+        return (hash + seed * 7) % size;
     }
 
-    // add(filter: *BloomFilter) → void
-    fn add(filter: *BloomFilter) -> void {
-        // TODO: Implement from .tri spec
+    // ═══════════════════════════════════════════════════════════
+    // 4. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // init(size: usize, hash_count: usize) → BloomFilter
+    fn init(size: usize, hash_count: usize) -> BloomFilter {
+        let bits = new bool[size];
+        for i in 0..size {
+            bits[i] = false;
+        }
+        return BloomFilter { bits: bits, hash_count: hash_count, size: size };
     }
 
-    // contains(filter: *const BloomFilter) → void
-    fn contains(filter: *const BloomFilter) -> void {
-        // TODO: Implement from .tri spec
+    // add(filter: *BloomFilter, item: []const u8) → void
+    fn add(filter: *BloomFilter, item: []const u8) -> void {
+        for i in 0..filter.hash_count {
+            let hash = hash_function(item, i, filter.size);
+            filter.bits[hash] = true;
+        }
+    }
+
+    // contains(filter: *const BloomFilter, item: []const u8) → bool
+    fn contains(filter: *const BloomFilter, item: []const u8) -> bool {
+        for i in 0..filter.hash_count {
+            let hash = hash_function(item, i, filter.size);
+            if !filter.bits[hash] {
+                return false;
+            }
+        }
+        return true;
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test init_basic_case
-        given input = default_input()
-        when result = init(input)
-        then result != undefined
+    test "init_basic_case"
+        given size = 100, hash_count = 3
+        when result = init(size, hash_count)
+        then result.size == size and result.hash_count == hash_count and result.bits.len == size
 
-    test add_basic_case
-        given input = default_input()
-        when result = add(input)
-        then result != undefined
+    test "add_basic_case"
+        given filter = init(100, 3), item = "test_item"
+        when add(filter, item)
+        then true
 
-    test contains_basic_case
-        given input = default_input()
-        when result = contains(input)
-        then result != undefined
+    test "contains_basic_case"
+        given filter = init(100, 3), item = "test_item"
+        when add(filter, item)
+        then contains(filter, item) == true
 

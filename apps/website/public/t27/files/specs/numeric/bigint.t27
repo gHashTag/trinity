@@ -47,14 +47,54 @@ module BigInt {
     // Create zero BigInt
     // Returns BigInt with len=1, trits[0]=0
     // Complexity: O(1)
-    pub fn zero() -> TVCBigInt;
+    pub fn zero() -> TVCBigInt {
+        var result = TVCBigInt {
+            trits: [0; MAX_TRITS],
+            len: 1
+        };
+        result.trits[0] = 0;
+        result
+    }
 
     // fromI64(value: i64) -> TVCBigInt
     // Create BigInt from signed 64-bit integer
     // Converts using balanced ternary division
     // Returns BigInt with normalized trits
     // Complexity: O(n) where n = number of trits needed
-    pub fn fromI64(value: i64) -> TVCBigInt;
+    pub fn fromI64(value: i64) -> TVCBigInt {
+        var result = TVCBigInt {
+            trits: [0; MAX_TRITS],
+            len: 0
+        };
+        
+        var remaining = value;
+        var i = 0;
+        
+        if remaining == 0 {
+            result.len = 1;
+            result.trits[0] = 0;
+            return result;
+        }
+        
+        while remaining != 0 and i < MAX_TRITS {
+            var remainder = remaining % 3;
+            remaining = remaining / 3;
+            
+            if remainder == 2 {
+                remainder = -1;
+                remaining += 1;
+            } else if remainder == -2 {
+                remainder = 1;
+                remaining -= 1;
+            }
+            
+            result.trits[i] = remainder as i8;
+            i += 1;
+        }
+        
+        result.len = i;
+        result
+    }
 
     // ========================================================================
     // 4. Conversion Functions
@@ -64,13 +104,35 @@ module BigInt {
     // Convert BigInt to signed 64-bit integer
     // May overflow for large numbers
     // Complexity: O(n) where n = bigint.len
-    pub fn toI64(bigint: &TVCBigInt) -> i64;
+    pub fn toI64(bigint: &TVCBigInt) -> i64 {
+        var result = 0i64;
+        
+        for i in 0..bigint.len {
+            var power = 1i64;
+            for j in 0..i {
+                power *= 3;
+            }
+            result += bigint.trits[i] as i64 * power;
+        }
+        
+        result
+    }
 
     // normalize(bigint: &TVCBigInt)
     // Remove leading zero trits
     // Updates len to exclude leading zeros
     // Complexity: O(n) where n = current len
-    pub fn normalize(bigint: &TVCBigInt);
+    pub fn normalize(bigint: &TVCBigInt) {
+        // Find the first non-zero trit from the end
+        var new_len = bigint.len;
+        while new_len > 1 and bigint.trits[new_len - 1] == 0 {
+            new_len -= 1;
+        }
+        
+        // Note: In T27, we cannot directly modify the len field through a reference
+        // This function would need to return a new normalized TVCBigInt or be handled
+        // differently in the language. This is a conceptual implementation.
+    }
 
     // ========================================================================
     // 5. Comparison Functions
@@ -80,19 +142,68 @@ module BigInt {
     // Check if BigInt equals zero
     // Returns true if len=1 and trits[0]=0
     // Complexity: O(1)
-    pub fn isZero(bigint: &TVCBigInt) -> bool;
+    pub fn isZero(bigint: &TVCBigInt) -> bool {
+        bigint.len == 1 and bigint.trits[0] == 0
+    }
 
     // isNegative(bigint: &TVCBigInt) -> bool
     // Check if BigInt is negative
     // In balanced ternary, sign is most significant non-zero trit
     // Complexity: O(1)
-    pub fn isNegative(bigint: &TVCBigInt) -> bool;
+    pub fn isNegative(bigint: &TVCBigInt) -> bool {
+        if bigint.len == 0 {
+            return false;
+        }
+        // Find the most significant non-zero trit
+        var i = bigint.len - 1;
+        while i >= 0 {
+            if bigint.trits[i] != 0 {
+                return bigint.trits[i] < 0;
+            }
+            i -= 1;
+        }
+        false // All zeros
+    }
 
     // compareAbs(a: &TVCBigInt, b: &TVCBigInt) -> i8
     // Compare absolute values of two BigInts
     // Returns: -1 if |a| < |b|, 0 if equal, 1 if |a| > |b|
     // Complexity: O(n) where n = max(len of a, len of b)
-    pub fn compareAbs(a: &TVCBigInt, b: &TVCBigInt) -> i8;
+    pub fn compareAbs(a: &TVCBigInt, b: &TVCBigInt) -> i8 {
+        var len_a = a.len;
+        var len_b = b.len;
+        
+        // Remove leading zeros for comparison
+        while len_a > 1 and a.trits[len_a - 1] == 0 {
+            len_a -= 1;
+        }
+        while len_b > 1 and b.trits[len_b - 1] == 0 {
+            len_b -= 1;
+        }
+        
+        // Compare lengths first
+        if len_a < len_b {
+            return -1;
+        } else if len_a > len_b {
+            return 1;
+        }
+        
+        // Same length, compare trits from most significant to least
+        var i = len_a - 1;
+        while i >= 0 {
+            var trit_a = if i < a.len { a.trits[i] } else { 0 };
+            var trit_b = if i < b.len { b.trits[i] } else { 0 };
+            
+            if trit_a < trit_b {
+                return -1;
+            } else if trit_a > trit_b {
+                return 1;
+            }
+            i -= 1;
+        }
+        
+        0 // Equal
+    }
 
     // ========================================================================
     // 6. Arithmetic Operations
@@ -103,25 +214,76 @@ module BigInt {
     // Uses balanced ternary addition with carry propagation
     // Returns normalized sum
     // Complexity: O(n) where n = max(len of a, len of b)
-    pub fn addScalar(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt;
+    pub fn addScalar(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt {
+        var result = TVCBigInt {
+            trits: [0; MAX_TRITS],
+            len: 0
+        };
+        
+        var max_len = if a.len > b.len { a.len } else { b.len };
+        var carry = 0i32;
+        
+        for i in 0..max_len {
+            var trit_a = if i < a.len { a.trits[i] as i32 } else { 0 };
+            var trit_b = if i < b.len { b.trits[i] as i32 } else { 0 };
+            
+            var sum = trit_a + trit_b + carry;
+            carry = 0;
+            
+            // Convert sum to balanced ternary digit
+            if sum > 1 {
+                carry = 1;
+                sum -= 3;
+            } else if sum < -1 {
+                carry = -1;
+                sum += 3;
+            }
+            
+            result.trits[i] = sum as i8;
+            result.len = i + 1;
+        }
+        
+        // Handle final carry
+        if carry != 0 {
+            if result.len < MAX_TRITS {
+                result.trits[result.len] = carry as i8;
+                result.len += 1;
+            }
+            // If we run out of space, the number is too large
+        }
+        
+        result
+    }
 
     // sub(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt
     // Subtract b from a
     // Implemented as a + negate(b)
     // Complexity: O(n) where n = max(len of a, len of b)
-    pub fn sub(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt;
+    pub fn sub(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt {
+        // TODO: Implement in part 2
+        // Placeholder implementation
+        zero()
+    }
 
     // negate(bigint: &TVCBigInt) -> TVCBigInt
     // Negate BigInt (flip all trit signs)
     // Used for subtraction: a - b = a + negate(b)
     // Complexity: O(n) where n = bigint.len
-    pub fn negate(bigint: &TVCBigInt) -> TVCBigInt;
+    pub fn negate(bigint: &TVCBigInt) -> TVCBigInt {
+        // TODO: Implement in part 2
+        // Placeholder implementation
+        zero()
+    }
 
     // abs(bigint: &TVCBigInt) -> TVCBigInt
     // Get absolute value
     // Returns bigint if non-negative, else negated bigint
     // Complexity: O(n) where n = bigint.len
-    pub fn abs(bigint: &TVCBigInt) -> TVCBigInt;
+    pub fn abs(bigint: &TVCBigInt) -> TVCBigInt {
+        // TODO: Implement in part 2
+        // Placeholder implementation
+        zero()
+    }
 
     // ========================================================================
     // 7. Multiplication Operations
@@ -132,20 +294,32 @@ module BigInt {
     // Uses O(n*m) elementary multiplications with carry
     // Suitable for small numbers (below KARATSUBA_THRESHOLD)
     // Complexity: O(n*m) where n,m are operand lengths
-    pub fn mulSimple(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt;
+    pub fn mulSimple(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt {
+        // TODO: Implement in part 2
+        // Placeholder implementation
+        zero()
+    }
 
     // mulKaratsuba(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt
     // Karatsuba multiplication for large numbers
     // Splits numbers, computes partial products, combines efficiently
     // Complexity: O(n^1.585) vs O(n^2) for simple multiplication
     // Only used for numbers above KARATSUBA_THRESHOLD
-    pub fn mulKaratsuba(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt;
+    pub fn mulKaratsuba(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt {
+        // TODO: Implement in part 2
+        // Placeholder implementation
+        zero()
+    }
 
     // mul(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt
     // Multiply two BigInts with optimal algorithm
     // Uses Karatsuba for large numbers, simple for small numbers
     // Complexity: O(n^1.585) for large, O(n*m) for small
-    pub fn mul(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt;
+    pub fn mul(a: &TVCBigInt, b: &TVCBigInt) -> TVCBigInt {
+        // TODO: Implement in part 2
+        // Placeholder implementation
+        zero()
+    }
 
     // ========================================================================
     // TDD - Tests
@@ -253,6 +427,87 @@ module BigInt {
         and big = fromI64(original)
         and result = toI64(&big)
         then result == original
+
+    // Tests for implemented functions
+    test zero_creates_zero_bigint
+        // Verify: zero() creates a proper zero BigInt
+        given zero_val = zero()
+        then isZero(&zero_val) and zero_val.len == 1
+
+    test from_i64_creates_correct_positive
+        // Verify: fromI64 creates correct positive BigInt
+        given big = fromI64(42)
+        then toI64(&big) == 42 and !isNegative(&big)
+
+    test from_i64_creates_correct_negative
+        // Verify: fromI64 creates correct negative BigInt
+        given big = fromI64(-42)
+        then toI64(&big) == -42 and isNegative(&big)
+
+    test from_i64_creates_zero
+        // Verify: fromI64(0) creates zero BigInt
+        given big = fromI64(0)
+        then isZero(&big)
+
+    test is_zero_detection
+        // Verify: isZero correctly identifies zero
+        given zero_val = zero()
+        and non_zero = fromI64(42)
+        then isZero(&zero_val) and !isZero(&non_zero)
+
+    test is_negative_detection
+        // Verify: isNegative correctly identifies negative numbers
+        given negative = fromI64(-42)
+        and positive = fromI64(42)
+        and zero_val = zero()
+        then isNegative(&negative) and !isNegative(&positive) and !isNegative(&zero_val)
+
+    test compare_abs_less_than
+        // Verify: compareAbs returns -1 for smaller absolute value
+        given smaller = fromI64(5)
+        and larger = fromI64(7)
+        then compareAbs(&smaller, &larger) == -1
+
+    test compare_abs_greater_than
+        // Verify: compareAbs returns 1 for larger absolute value
+        given larger = fromI64(7)
+        and smaller = fromI64(5)
+        then compareAbs(&larger, &smaller) == 1
+
+    test compare_abs_equal
+        // Verify: compareAbs returns 0 for equal absolute values
+        given a = fromI64(42)
+        and b = fromI64(42)
+        then compareAbs(&a, &b) == 0
+
+    test add_scalar_commutative
+        // Verify: addScalar is commutative
+        given a = fromI64(5)
+        and b = fromI64(7)
+        and sum1 = addScalar(&a, &b)
+        and sum2 = addScalar(&b, &a)
+        then toI64(&sum1) == toI64(&sum2)
+
+    test add_scalar_with_zero
+        // Verify: addScalar with zero returns the other number
+        given a = fromI64(42)
+        and zero_val = zero()
+        and sum = addScalar(&a, &zero_val)
+        then toI64(&sum) == 42
+
+    test add_scalar_positive_numbers
+        // Verify: addScalar correctly adds positive numbers
+        given a = fromI64(20)
+        and b = fromI64(22)
+        and sum = addScalar(&a, &b)
+        then toI64(&sum) == 42
+
+    test add_scalar_negative_numbers
+        // Verify: addScalar correctly adds negative numbers
+        given a = fromI64(-20)
+        and b = fromI64(-22)
+        and sum = addScalar(&a, &b)
+        then toI64(&sum) == -42
 
     // ========================================================================
     // TDD - Invariants

@@ -30,24 +30,160 @@ module BinaryCe;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // sigmoid(x: f32) → void
-    fn sigmoid(x: f32) -> void {
-        // TODO: Implement from .tri spec
+    // sigmoid(x: f32) → f32
+    fn sigmoid(x: f32) -> f32 {
+        // Simple sigmoid approximation using rational function
+        if (x > 6.0) return 1.0;
+        if (x < -6.0) return 0.0;
+        
+        var abs_x = x;
+        if (abs_x < 0.0) abs_x = -abs_x;
+        
+        // Polynomial approximation for sigmoid
+        var p = 0.3178722 + abs_x * (0.3655024 + abs_x * (0.1811160 + abs_x * (0.0443368 + abs_x * 0.0086892)));
+        var p_inv = 1.0 / p;
+        
+        if (x > 0.0) {
+            return 1.0 - p_inv;
+        } else {
+            return p_inv;
+        }
     }
 
-    // forward(predictions: []f32) → void
-    fn forward(predictions: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // Helper function for log approximation
+    fn log_approx(x: f32) -> f32 {
+        // Simple log approximation for x in (0, 1]
+        if (x <= 0.0) return 10.0; // Large number for invalid input
+        if (x >= 1.0) return 0.0;
+        
+        // Polynomial approximation for log(x) around x=1
+        var t = 1.0 - x;
+        if (t > 0.5) {
+            // For x < 0.5, use log(x) = -log(1/x)
+            return -log_approx(1.0 / x);
+        }
+        
+        // Taylor series: log(1-t) = -t - t^2/2 - t^3/3 - ...
+        var result = -t;
+        var t2 = t * t;
+        var t3 = t2 * t;
+        var t4 = t3 * t;
+        
+        result = result - t2 * 0.5 - t3 * 0.333333 - t4 * 0.25;
+        return result;
     }
 
-    // forward_batch(predictions: [][]f32) → void
-    fn forward_batch(predictions: [][]f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward(predictions: []f32, targets: []f32, config: BinaryCEConfig) → f32
+    fn forward(predictions: []f32, targets: []f32, config: BinaryCEConfig) -> f32 {
+        var loss: f32 = 0.0;
+        var i: f32 = 0.0;
+        while (i < predictions.size) {
+            var pred: f32 = predictions[f32(i)];
+            var target: f32 = targets[f32(i)];
+            i = i + 1.0;
+            
+            // Apply sigmoid if needed
+            if (config.from_logits) {
+                pred = sigmoid(pred);
+            }
+            
+            // Clip predictions to avoid numerical issues
+            pred = pred + config.epsilon;
+            if (pred > 1.0 - config.epsilon) {
+                pred = 1.0 - config.epsilon;
+            }
+            
+            // Simplified binary cross-entropy approximation
+            if (target > 0.5) {
+                // Target is 1, loss is -log(pred)
+                loss = loss + -log_approx(pred);
+            } else {
+                // Target is 0, loss is -log(1-pred)
+                loss = loss + -log_approx(1.0 - pred);
+            }
+        }
+        
+        // Apply reduction (mean)
+        return loss / f32(predictions.size);
     }
 
-    // gradient(predictions: []f32) → void
-    fn gradient(predictions: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward_batch(predictions: [][]f32, targets: []f32, config: BinaryCEConfig) → f32
+    fn forward_batch(predictions: [][]f32, targets: []f32, config: BinaryCEConfig) -> f32 {
+        var total_loss: f32 = 0.0;
+        var total_samples: f32 = 0.0;
+        
+        var batch_idx: f32 = 0.0;
+        while (batch_idx < predictions.size) {
+            var batch_preds = predictions[f32(batch_idx)];
+            var i: f32 = 0.0;
+            while (i < batch_preds.size) {
+                var pred: f32 = batch_preds[f32(i)];
+                var target: f32 = targets[f32(batch_idx) * batch_preds.size + f32(i)];
+                i = i + 1.0;
+                
+                // Apply sigmoid if needed
+                if (config.from_logits) {
+                    pred = sigmoid(pred);
+                }
+                
+                // Clip predictions to avoid numerical issues
+                pred = pred + config.epsilon;
+                if (pred > 1.0 - config.epsilon) {
+                    pred = 1.0 - config.epsilon;
+                }
+                
+                // Simplified binary cross-entropy approximation
+                if (target > 0.5) {
+                    // Target is 1, loss is -log(pred)
+                    total_loss = total_loss + -log_approx(pred);
+                } else {
+                    // Target is 0, loss is -log(1-pred)
+                    total_loss = total_loss + -log_approx(1.0 - pred);
+                }
+            }
+            
+            total_samples = total_samples + f32(batch_preds.size);
+        }
+        
+        // Apply reduction (mean across all samples)
+        return total_loss / total_samples;
+    }
+
+    // gradient(predictions: []f32, targets: []f32, config: BinaryCEConfig) → []f32
+    fn gradient(predictions: []f32, targets: []f32, config: BinaryCEConfig) -> []f32 {
+        var grads: []f32 = new f32[predictions.size];
+        var i: f32 = 0.0;
+        while (i < predictions.size) {
+            var pred: f32 = predictions[f32(i)];
+            var target: f32 = targets[f32(i)];
+            i = i + 1.0;
+            var pred: f32 = predictions[i];
+            var target: f32 = targets[i];
+            
+            // Apply sigmoid if needed
+            if (config.from_logits) {
+                pred = sigmoid(pred);
+            }
+            
+            // Clip predictions to avoid division by zero
+            pred = pred + config.epsilon;
+            if (pred > 1.0 - config.epsilon) {
+                pred = 1.0 - config.epsilon;
+            }
+            
+            // Compute gradient
+            if (config.from_logits) {
+                // For logits, gradient is (pred - target)
+                grads[i] = pred - target;
+            } else {
+                // For probabilities, gradient is -(target/pred + (1-target)/(1-pred))
+                var inv_pred = 1.0 / pred;
+                var inv_1_minus_pred = 1.0 / (1.0 - pred);
+                grads[i] = -(target * inv_pred + (1.0 - target) * inv_1_minus_pred);
+            }
+        }
+        
+        return grads;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -55,24 +191,54 @@ module BinaryCe;
     // ═══════════════════════════════════════════════════════════
 
     test sigmoid_basic_case
-        given input = default_input()
+        given input = 0.0
         when result = sigmoid(input)
-        then result != undefined
+        then abs(result - 0.5) < 1e-6
+
+    test sigmoid_positive_input
+        given input = 1.0
+        when result = sigmoid(input)
+        then result > 0.5 and result < 1.0
+
+    test sigmoid_negative_input
+        given input = -1.0
+        when result = sigmoid(input)
+        then result > 0.0 and result < 0.5
 
     test forward_basic_case
-        given input = default_input()
-        when result = forward(input)
-        then result != undefined
+        given predictions = [0.8, 0.3, 0.9]
+        given targets = [1.0, 0.0, 1.0]
+        given config = BinaryCEConfig{from_logits: false, epsilon: 1e-7, reduction: undefined}
+        when result = forward(predictions, targets, config)
+        then result > 0.0
+
+    test forward_from_logits_case
+        given predictions = [2.0, -1.0, 3.0]
+        given targets = [1.0, 0.0, 1.0]
+        given config = BinaryCEConfig{from_logits: true, epsilon: 1e-7, reduction: undefined}
+        when result = forward(predictions, targets, config)
+        then result > 0.0
 
     test forward_batch_basic_case
-        given input = default_input()
-        when result = forward_batch(input)
-        then result != undefined
+        given predictions = [[0.8, 0.3], [0.9, 0.1]]
+        given targets = [1.0, 0.0, 1.0, 0.0]
+        given config = BinaryCEConfig{from_logits: false, epsilon: 1e-7, reduction: undefined}
+        when result = forward_batch(predictions, targets, config)
+        then result > 0.0
 
     test gradient_basic_case
-        given input = default_input()
-        when result = gradient(input)
-        then result != undefined
+        given predictions = [0.8, 0.3, 0.9]
+        given targets = [1.0, 0.0, 1.0]
+        given config = BinaryCEConfig{from_logits: false, epsilon: 1e-7, reduction: undefined}
+        when result = gradient(predictions, targets, config)
+        then result.length == 3 and result[0] < 0.0 and result[1] > 0.0 and result[2] < 0.0
+
+    test gradient_from_logits_case
+        given predictions = [2.0, -1.0, 3.0]
+        given targets = [1.0, 0.0, 1.0]
+        given config = BinaryCEConfig{from_logits: true, epsilon: 1e-7, reduction: undefined}
+        when result = gradient(predictions, targets, config)
+        then result.length == 3
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

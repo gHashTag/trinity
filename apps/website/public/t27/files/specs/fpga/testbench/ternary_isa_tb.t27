@@ -131,6 +131,15 @@ module Ternary_ISA_Testbench {
         invariant flag_negative == true;
     }
 
+    test test_tick {
+        reset();
+        var initial_clk : bool = clk;
+        tick();
+        invariant clk != initial_clk;
+        tick();
+        invariant clk == initial_clk;
+    }
+
     invariant trit_range : TRIT_POS == 1 && TRIT_NEG == -1 && TRIT_ZERO == 0;
 
     bench bench_ternary_alu {

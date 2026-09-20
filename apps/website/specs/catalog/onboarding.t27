@@ -59,32 +59,56 @@ pub const READ_ABOUT : [9]str = ["every spec: path, module, size, health, token 
 ; --- The compiler, which is the part worth knowing ------------------------------------------
 ; The whole language is available to any agent with an HTTP client and a WebAssembly runtime.
 ; No install, no account, no key. Fetch it, hand it a spec, get back an AST, a token stream,
-; a typecheck verdict and the generated C, Rust, Zig and Verilog.
+; a typecheck verdict and the generated C, Rust, Zig, Verilog and JavaScript.
 pub const COMPILER : str = "https://t27.ai/t27/t27_compiler.wasm";
-pub const COMPILER_EXPORTS : [3]str = ["t27_alloc", "t27_analyze", "t27_free"];
+; Every export of the binary at the address above, and the generator checks this list
+; against the wasm it is about to publish rather than against itself.
+pub const COMPILER_EXPORTS : [5]str = ["memory", "t27_alloc", "t27_analyze", "t27_analyze_named", "t27_free"];
 ; The calling convention, because an ABI nobody writes down is an ABI nobody uses:
 ; t27_alloc(len) returns a pointer; copy the UTF-8 source into it; t27_analyze(ptr, len)
 ; returns a pointer to a little-endian u32 length followed by that many bytes of JSON;
-; t27_free(outPtr, 4 + len) when done.
+; t27_free(outPtr, 4 + len) when done. t27_analyze_named(ptr, len, namePtr, nameLen) is the
+; same call with a file name attached, so diagnostics can say which file they are about; it
+; was added beside t27_analyze and did not replace it, because a browser can be holding
+; yesterday's bundle.
 pub const COMPILER_ABI : str = "t27_alloc(len)->ptr; write source; t27_analyze(ptr,len)->outPtr; read u32 LE length at outPtr then that many bytes of JSON; t27_free(outPtr, 4+length)";
+
+; The backends, named exactly as the manifest's backendFailures keys them, so a count taken
+; from this file and a count taken from LIVE_TRUTH cannot disagree. verilog_hir is the second
+; Verilog path, through the HIR, not a sixth language.
+pub const BACKENDS : [6]str = ["zig", "c", "rust", "verilog", "verilog_hir", "js"];
+pub const BACKENDS_NOTE : str = "five of the six lower functions as well as declarations; js emits declarations only -- const, enum and struct -- and names every fn, test, bench and invariant it skipped in a comment rather than dropping it silently";
 ; Offered, not required: every address in READ is JSON that needs none of this.
 pub const REQUIRES_RUNNING_OUR_CODE : bool = false;
 
 ; --- The corpus on the day this was written --------------------------------------------------
-pub const MEASURED_AT : str = "2026-09-20";
-pub const SPEC_COUNT : u16 = 1407;
-pub const SPEC_LINES : u32 = 353899;
+pub const MEASURED_AT : str = "2026-09-21";
+pub const SPEC_COUNT : u16 = 1413;
+pub const SPEC_LINES : u32 = 372144;
 ; Health as the manifest reports it. The three add up to SPEC_COUNT, and the test below says so.
-pub const HEALTH_OK : u16 = 1002;
-pub const HEALTH_WARN : u16 = 399;
-pub const HEALTH_FAIL : u16 = 6;
+; These moved a long way on 2026-09-21, and the cause was the instrument, not the corpus: the
+; wasm served here until then was built from no committed source, and it accepted anything.
+; Fed a Zig file, a Markdown file or a string literal left open, it answered typecheck.ok and
+; emitted C, Rust, Verilog and Zig. The binary now served is built from bootstrap/src, and it
+; reads what is actually in the file. Nothing in the corpus got worse; it got measured.
+pub const HEALTH_OK : u16 = 975;
+pub const HEALTH_WARN : u16 = 100;
+pub const HEALTH_FAIL : u16 = 338;
 ; Repositories the manifest was built from, and the worlds the scan found on GitHub.
 pub const REPO_COUNT : u8 = 10;
 pub const WORLD_COUNT : u8 = 5;
-; "fail" is two different things wearing one label: a spec that never parsed (no backend ran,
-; so its clean counters mean nothing ran, not that nothing went wrong), and a spec that parsed
-; and then lost a backend. Do not report the second count as the first.
+; "fail" is several different things wearing one label: a spec that never parsed (no backend
+; ran, so its clean counters mean nothing ran, not that nothing went wrong), and a spec that
+; parsed and then lost a backend. Do not report the second count as the first, and do not read
+; the total as "338 broken specs" -- measured on 2026-09-21, 145 of the 338 are not t27 at all:
+; 68 are Zig source, 49 are an older `spec Name { }` dialect, 14 are Markdown prose and 23 are
+; fixtures this repository damages on purpose so the compiler has something to reject. Counting
+; them as specs is what the extension does, not what the contents are.
 pub const HEALTH_FAIL_NOTE : str = "health=fail covers both a spec that did not parse and a spec whose backend failed; the manifest's backendFailures separates them";
+; The largest single class, and the youngest: js is a declarations-only backend, so a const
+; whose initialiser is an expression rather than a literal has nothing for it to emit and it
+; says so by name. Those files parse, typecheck and emit five other languages.
+pub const HEALTH_FAIL_JS_ONLY : u16 = 122;
 
 ; --- The game --------------------------------------------------------------------------------
 pub const GAME : str = "Queen Hive";
@@ -136,6 +160,10 @@ pub const ASKS_TO_ACT_ALONE : bool = false;
 test health_accounts_for_every_spec {
     assert HEALTH_OK + HEALTH_WARN + HEALTH_FAIL == SPEC_COUNT;
     assert HEALTH_FAIL > 0;
+    // The qualifier is part of the count, not a footnote to it: js-only failures are a subset
+    // of fail, so a reading of HEALTH_FAIL that ignores them is reading a smaller number wrong.
+    assert HEALTH_FAIL_JS_ONLY < HEALTH_FAIL;
+    assert HEALTH_FAIL_JS_ONLY > 0;
 }
 
 test the_cycle_is_five_steps_in_order {
@@ -184,6 +212,15 @@ test the_generated_files_are_the_two_addresses {
     assert GENERATED[1] == "public/agents.t27";
     assert DOC == "https://t27.ai/agents.t27";
     assert DOC_ALIAS == "https://t27.ai/llms.txt";
+}
+
+test the_abi_and_the_backends_are_named_not_implied {
+    assert COMPILER_EXPORTS[0] == "memory";
+    assert COMPILER_EXPORTS[1] == "t27_alloc";
+    assert COMPILER_EXPORTS[2] == "t27_analyze";
+    assert COMPILER_EXPORTS[4] == "t27_free";
+    assert BACKENDS[5] == "js";
+    assert BACKENDS_NOTE != "";
 }
 
 test the_read_endpoints_are_paired_with_their_descriptions {

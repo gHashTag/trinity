@@ -18,37 +18,63 @@ module Sigmoid;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(x: f32) → void
-    fn forward(x: f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward(x: f32) → f32
+    fn forward(x: f32) -> f32 {
+        // Numerically stable split to avoid overflow:
+        // For x >= 0: 1 / (1 + exp(-x))
+        // For x < 0: exp(x) / (1 + exp(x))
+        // Both branches are mathematically equivalent but the second avoids exp(large positive)
+        if (x >= 0.0) {
+            return 1.0 / (1.0 + @exp(-x));
+        } else {
+            return @exp(x) / (1.0 + @exp(x));
+        }
     }
 
-    // forward_batch(input: []f32) → void
-    fn forward_batch(input: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward_batch(input: []f32) → []f32
+    fn forward_batch(input: []f32) -> []f32 {
+        // In-place map over input: alias input and return it
+        // This is safe because we're only reading from input and writing to the same locations
+        let i = 0;
+        while (i < input.len) {
+            input[i] = forward(input[i]);
+            i += 1;
+        }
+        return input;
     }
 
-    // derivative(sigmoid_x: f32) → void
-    fn derivative(sigmoid_x: f32) -> void {
-        // TODO: Implement from .tri spec
+    // derivative(sigmoid_x: f32) → f32
+    fn derivative(sigmoid_x: f32) -> f32 {
+        // Derivative computed from output: σ'(x) = σ(x) * (1 - σ(x))
+        return sigmoid_x * (1.0 - sigmoid_x);
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test forward_basic_case
-        given input = default_input()
-        when result = forward(input)
-        then result != undefined
+    test sigmoid_has_no_tunable_parameter
+        given size = @sizeOf(SigmoidConfig)
+        then size == 0
 
-    test forward_batch_basic_case
-        given input = default_input()
-        when result = forward_batch(input)
-        then result != undefined
+    test sigmoid_config_is_a_placeholder_not_an_empty_struct
+        given fields = std.meta.fields(SigmoidConfig)
+        then (fields.len == 1) and (fields[0].type == void)
 
-    test derivative_basic_case
-        given input = default_input()
-        when result = derivative(input)
-        then result != undefined
+    test forward_at_zero_is_one_half
+        given y = forward(0.0)
+        then @abs(y - 0.5) < 1e-6
 
+    test forward_confined_to_unit_interval
+        given pos_large = forward(10.0)
+        given neg_large = forward(-10.0)
+        then (pos_large > 0.0) and (pos_large < 1.0) and (neg_large > 0.0) and (neg_large < 1.0)
+
+    test derivative_at_zero_is_maximum
+        given dy = derivative(forward(0.0))
+        then @abs(dy - 0.25) < 1e-6
+
+    test forward_batch_preserves_length
+        given input = []f32{0.0, 1.0, -1.0, 2.0, -2.0}
+        given result = forward_batch(input)
+        then result.len == input.len

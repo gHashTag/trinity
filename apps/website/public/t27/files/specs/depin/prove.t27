@@ -4,6 +4,7 @@
 // phi^2 + phi^-2 = 3 | TRINITY
 
 module depin.prove;
+    use tri::crypto::sha256::TriSha256;
 
 // ============================================================================
 // Types
@@ -47,34 +48,231 @@ pub struct MiningEpoch {
 
 pub fn derive_phi_challenge(epoch: u64, node_id: &[u8; 32]) [u8; 16] {
     // SHA256("TRI_PHI_CHALLENGE_V1" || epoch_le || node_id)[..16]
+    var hasher = TriSha256.init();
+    _ = hasher.update("TRI_PHI_CHALLENGE_V1");
+    var epoch_bytes: [8]u8 = @bytesOf(epoch, .Little);
+    _ = hasher.update(&epoch_bytes);
+    _ = hasher.update(node_id);
+    var hash = hasher.final();
+    return hash[0..16];
 }
 
 pub fn verify_phi_response(challenge: &[u8; 16], response: &[u8; 4], node_id: &[u8; 32]) bool {
     // gf16_dot4(challenge[..4], node_id[..4]) == response
+    var challenge_prefix: [4]u8 = [_]u8{ challenge[0], challenge[1], challenge[2], challenge[3] };
+    var node_id_prefix: [4]u8 = [_]u8{ node_id[0], node_id[1], node_id[2], node_id[3] };
+    var dot = gf16_dot4(&challenge_prefix, &node_id_prefix);
+    var i: usize = 0;
+    while (i < 4) {
+        if (dot[i] != response[i]) return false;
+        i += 1;
+    }
+    return true;
 }
 
 pub fn gf16_mul(a: u8, b: u8) u8 {
     // GF(2^4) multiplication, reduction polynomial 0x3 (x^4 + x + 1)
+    var result: u8 = 0;
+    var aa: u8 = a & 0xF;
+    var bb: u8 = b & 0xF;
+    while (bb != 0) {
+        if ((bb & 1) != 0) {
+            result ^= aa;
+        }
+        var carry = aa & 0x8;
+        aa = aa << 1;
+        if (carry != 0) {
+            aa ^= 0x3; // reduction polynomial x^4 + x + 1 = 0x13, but we shifted so it's 0x3
+        }
+        bb = bb >> 1;
+    }
+    return result & 0xF;
 }
 
 pub fn gf16_dot4(w: &[u8; 4], x: &[u8; 4]) [u8; 4] {
     // Element-wise GF16 multiplication of 4-element vectors
+    var result: [4]u8 = [_]u8{0, 0, 0, 0};
+    var i: usize = 0;
+    while (i < 4) {
+        result[i] = gf16_mul(w[i], x[i]);
+        i += 1;
+    }
+    return result;
+}
+
+fn compute_champion_weights() [[u8; 16]; 16] {
+    // CHAMPION_WEIGHTS[i][j] = SHA256("TRI_PHI_CHAMPION_SEED_V1" || i_le8)[j*2] >> 4
+    var weights: [[u8; 16]; 16] = [_][[u8; 16]; 16]{ [_]u8{0} ** 16 } ** 16;
+    var i: usize = 0;
+    while (i < 16) {
+        var data: [40]u8 = [_]u8{0} ** 40; // "TRI_PHI_CHAMPION_SEED_V1" (24) + i_le8 (8) + padding
+        // Copy prefix
+        var prefix = "TRI_PHI_CHAMPION_SEED_V1";
+        var p: usize = 0;
+        while (p < 24) {
+            data[p] = prefix[p];
+            p += 1;
+        }
+        // Write i as little-endian u64
+        var ii: u64 = @as(u64, @intCast(i));
+        data[24] = @truncate(ii);
+        data[25] = @truncate(ii >> 8);
+        data[26] = @truncate(ii >> 16);
+        data[27] = @truncate(ii >> 24);
+        data[28] = @truncate(ii >> 32);
+        data[29] = @truncate(ii >> 40);
+        data[30] = @truncate(ii >> 48);
+        data[31] = @truncate(ii >> 56);
+        // Hash
+        var hash = TriSha256.hash(&data[0..32]);
+        // Extract high nibbles
+        var j: usize = 0;
+        while (j < 16) {
+            weights[i][j] = (hash[j * 2] >> 4) & 0xF;
+            j += 1;
+        }
+        i += 1;
+    }
+    return weights;
 }
 
 pub fn derive_phi_challenge_v2(epoch: u64, node_id: &[u8; 32]) [[u8; 16]; 16] {
     // 16 rows, each = SHA256("TRI_PHI_CHALLENGE_V2" || epoch_le8 || node_id || row_index)[j*2] >> 4
+    var result: [[u8; 16]; 16] = [_][[u8; 16]; 16]{ [_]u8{0} ** 16 } ** 16;
+    var i: usize = 0;
+    while (i < 16) {
+        var data: [72]u8 = [_]u8{0} ** 72; // "TRI_PHI_CHALLENGE_V2" (22) + epoch_le8 (8) + node_id (32) + i_le8 (8) + padding
+        // Copy prefix
+        var prefix = "TRI_PHI_CHALLENGE_V2";
+        var p: usize = 0;
+        while (p < 22) {
+            data[p] = prefix[p];
+            p += 1;
+        }
+        // Write epoch as little-endian u64
+        data[22] = @truncate(epoch);
+        data[23] = @truncate(epoch >> 8);
+        data[24] = @truncate(epoch >> 16);
+        data[25] = @truncate(epoch >> 24);
+        data[26] = @truncate(epoch >> 32);
+        data[27] = @truncate(epoch >> 40);
+        data[28] = @truncate(epoch >> 48);
+        data[29] = @truncate(epoch >> 56);
+        // Copy node_id
+        var n: usize = 0;
+        while (n < 32) {
+            data[30 + n] = node_id[n];
+            n += 1;
+        }
+        // Write i as little-endian u64
+        var ii: u64 = @as(u64, @intCast(i));
+        data[62] = @truncate(ii);
+        data[63] = @truncate(ii >> 8);
+        data[64] = @truncate(ii >> 16);
+        data[65] = @truncate(ii >> 24);
+        data[66] = @truncate(ii >> 32);
+        data[67] = @truncate(ii >> 40);
+        data[68] = @truncate(ii >> 48);
+        data[69] = @truncate(ii >> 56);
+        // Hash
+        var hash = TriSha256.hash(&data[0..70]);
+        // Extract high nibbles
+        var j: usize = 0;
+        while (j < 16) {
+            result[i][j] = (hash[j * 2] >> 4) & 0xF;
+            j += 1;
+        }
+        i += 1;
+    }
+    return result;
+}
+
+fn compute_champion_weights() [[u8; 16]; 16] {
+    // CHAMPION_WEIGHTS[i][j] = SHA256("TRI_PHI_CHAMPION_SEED_V1" || i_le8)[j*2] >> 4
+    var result: [[u8; 16]; 16] = [_][[u8; 16]; 16]{ [_]u8{0} ** 16 } ** 16;
+    var seed_prefix: [32]u8 = [_]u8{0} ** 32;
+    // "TRI_PHI_CHAMPION_SEED_V1" is 24 bytes
+    @memcpy(&seed_prefix[0], "TRI_PHI_CHAMPION_SEED_V1", 24);
+    var i: usize = 0;
+    while (i < 16) {
+        // Create input: prefix (24) + i_le8 (8) = 32 bytes
+        var input: [32]u8 = seed_prefix;
+        // Write i as little-endian 8 bytes at offset 24
+        input[24] = (i as u8);
+        input[25] = 0;
+        input[26] = 0;
+        input[27] = 0;
+        input[28] = 0;
+        input[29] = 0;
+        input[30] = 0;
+        input[31] = 0;
+        var hash = TriSha256.hash(&input);
+        var j: usize = 0;
+        while (j < 16) {
+            // Take byte j*2, high nibble
+            result[i][j] = (hash[j * 2] >> 4) & 0xF;
+            j += 1;
+        }
+        i += 1;
+    }
+    return result;
 }
 
 pub fn compute_phi_response_v2(challenge: &[[u8; 16]; 16]) [u8; 32] {
     // SHA256(pack(gf16_matmul(CHAMPION_WEIGHTS, challenge)))
+    var weights = compute_champion_weights();
+    var mat = gf16_matmul(&weights, challenge);
+    // Pack the 16x16 matrix of 4-bit values into 128 bytes (16*16*4 bits = 128 bytes)
+    var packed: [128]u8 = [_]u8{0} ** 128;
+    var idx: usize = 0;
+    var i: usize = 0;
+    while (i < 16) {
+        var j: usize = 0;
+        while (j < 16) {
+            // Two 4-bit values per byte
+            var byte_idx = (i * 16 + j) / 2;
+            if ((j & 1) == 0) {
+                packed[byte_idx] = (mat[i][j] & 0xF);
+            } else {
+                packed[byte_idx] |= ((mat[i][j] & 0xF) << 4);
+            }
+            j += 1;
+        }
+        i += 1;
+    }
+    return TriSha256.hash(&packed);
 }
 
 pub fn verify_phi_response_v2(challenge: &[[u8; 16]; 16], response: &[u8; 32]) bool {
     // compute_phi_response_v2(challenge) == response
+    var computed = compute_phi_response_v2(challenge);
+    var i: usize = 0;
+    while (i < 32) {
+        if (computed[i] != response[i]) return false;
+        i += 1;
+    }
+    return true;
 }
 
 pub fn gf16_matmul(a: &[[u8; 16]; 16], b: &[[u8; 16]; 16]) [[u8; 16]; 16] {
     // 16x16 GF(2^4) matrix multiplication
+    var result: [[u8; 16]; 16] = [_][[u8; 16]; 16]{ [_]u8{0} ** 16 } ** 16;
+    var i: usize = 0;
+    while (i < 16) {
+        var j: usize = 0;
+        while (j < 16) {
+            var sum: u8 = 0;
+            var k: usize = 0;
+            while (k < 16) {
+                sum ^= gf16_mul(a[i][k], b[k][j]);
+                k += 1;
+            }
+            result[i][j] = sum;
+            j += 1;
+        }
+        i += 1;
+    }
+    return result;
 }
 
 pub fn pack_gf16_matrix(m: &[[u8; 16]; 16]) [u8; 128] {
@@ -171,6 +369,10 @@ test "test_post_prove_v2_valid" {
 
 test "test_post_prove_v2_wrong_response" {
     // POST /prove version=2 with wrong phi_response returns phi_challenge_mismatch
+}
+
+test "test_gf16_matmul_associative" {
+    // gf16_matmul(a, gf16_matmul(b, c)) == gf16_matmul(gf16_matmul(a, b), c)
 }
 
 // ============================================================================

@@ -39,11 +39,17 @@
 // full coverage if COVERAGE_REQUIRED) and emits summary/name as {en, <locale>}
 // plus an `i18n` list with the coverage per catalog. No locale is hardcoded.
 //
-// Compiler quirks this file depends on (verified against the vendored wasm):
-//   * a string literal comes back as ExprLiteral{value:'"..."'} -- the value
-//     keeps its quotes, so it is JSON-parsed, not trimmed;
-//   * an array literal comes back as ExprIdentifier{name:'["a","b"]'} -- the
-//     whole literal in the identifier's name, again JSON-parseable;
+// Compiler shapes this file depends on (measured against the vendored wasm):
+//   * a string literal comes back as ExprLiteral{nodeKind:'string', value}, and
+//     the value is already unquoted and unescaped. The NODE says it is a string,
+//     so `: str = "8080"` is the text 8080 and never the number;
+//   * an array literal comes back as ExprArrayLiteral{children:[...]}, one
+//     literal node per element;
+//   * both differed in the artifact vendored before #4471 -- a string kept its
+//     quotes and escapes, an array arrived as an ExprIdentifier whose *name*
+//     was a JSON document -- which is why `constsOf` used to JSON.parse the raw
+//     text, and why it broke on the day the page got a compiler built from the
+//     compiler's own source. That binary is gone; those shapes are refused;
 //   * the JSON the wasm returns carries every non-ASCII byte as a separate
 //     char code < 256 (UTF-8 bytes read as Latin-1). `decodeBytes` undoes that
 //     only when every char code fits a byte, so already-correct text is left
@@ -141,29 +147,73 @@ export function decodeBytes(text) {
   }
 }
 
-/** Every `pub const` of the module, from the AST, as `{ name: { type, value } }`. */
+/**
+ * One literal of a `const` initialiser, as the compiler describes it.
+ *
+ * A string is identified by its node — `nodeKind: "string"` — and never by what
+ * its text looks like, so `pub const PORT : str = "8080"` is the string `8080`
+ * and not the number. Its `value` arrives already unquoted and unescaped.
+ */
+export function literalValue(expr, name = 'literal') {
+  if (expr.kind === 'ExprArrayLiteral') return (expr.children ?? []).map((el) => literalValue(el, name))
+  if (expr.kind !== 'ExprLiteral') throw new Error(`${name}: unsupported expression kind ${expr.kind}`)
+  const raw = decodeBytes(expr.value ?? '')
+  // `pub const ENTRY : str = "";` arrives with no `value` key at all -- the
+  // field is omitted when the text is empty. `nodeKind` is what carries the
+  // type, so for a string absent text is empty text. For anything else a node
+  // with no value is a node this function cannot read, and says so.
+  if (expr.nodeKind === 'string') return raw
+  if (expr.value === undefined) throw new Error(`${name}: literal carries no value`)
+  if (raw === 'true') return true
+  if (raw === 'false') return false
+  // Integers and decimal floats. Hex, binary expressions, struct literals and
+  // calls appear elsewhere in the corpus and are deliberately still refused:
+  // this function reads declarations, it does not evaluate them.
+  if (/^-?\d+(\.\d+)?$/.test(raw)) return Number(raw)
+  throw new Error(`${name}: unsupported literal ${JSON.stringify(raw)}`)
+}
+
+/**
+ * Every `pub const` of the module, from the AST, as `{ name: { type, value } }`.
+ *
+ * The artifact this site vendored before #4471 described all three literal
+ * shapes differently: a string kept its quotes and backslash escapes, an array
+ * arrived as an *identifier* whose `name` was a JSON document, and nothing
+ * marked a string as one. `JSON.parse` on the raw text was how this function
+ * coped with that, and it is why the function broke on the day the page finally
+ * got a compiler built from the compiler's own source. Those shapes are not
+ * accepted here: that binary was built from no committed source, and it is gone
+ * from the tree as of this change. A spec that does not match what the compiler
+ * emits should fail loudly rather than be guessed at.
+ */
 export function constsOf(analysis) {
   const out = {}
   const decls = (analysis.ast?.children ?? []).filter((n) => n.kind === 'ConstDecl')
   for (const d of decls) {
     const expr = d.children?.[0]
     if (!expr) continue
-    let value
-    if (expr.kind === 'ExprLiteral') {
-      const raw = decodeBytes(expr.value)
-      if (raw === 'true') value = true
-      else if (raw === 'false') value = false
-      else if (/^-?\d+$/.test(raw)) value = Number(raw)
-      else value = JSON.parse(raw)
-    } else if (expr.kind === 'ExprIdentifier') {
-      value = JSON.parse(decodeBytes(expr.name))
-    } else {
-      throw new Error(`${d.name}: unsupported expression kind ${expr.kind}`)
-    }
     if (d.name in out) throw new Error(`duplicate constant ${d.name}`)
-    out[d.name] = { type: d.type, value, pub: d.pub === true }
+    out[d.name] = { type: d.type, value: literalValue(expr, d.name), pub: d.pub === true }
   }
   return out
+}
+
+/**
+ * The compiler's own words for why a file is not clean.
+ *
+ * A verdict says `hirOk: false`; this says `parse error in fn 'x' near line 127:
+ * Unexpected token in expression: Semicolon (';')`. The loaders below used to
+ * print the verdict and then a dozen `missing KIND` lines -- true, and never the
+ * reason. The message is the compiler's, quoted, not a guess at what it meant.
+ */
+export function compilerErrors(analysis) {
+  const out = []
+  if (analysis.astError) out.push(analysis.astError)
+  if (analysis.hir?.ok === false && analysis.hir.error) out.push(analysis.hir.error)
+  for (const e of analysis.typecheck?.errors ?? []) out.push(e)
+  // A parse failure reaches both `astError` and `hir.error` with the same text, so the
+  // unfiltered list prints it twice and reads like two problems. One fact, said once.
+  return [...new Set(out)]
 }
 
 export function verdictOf(analysis) {

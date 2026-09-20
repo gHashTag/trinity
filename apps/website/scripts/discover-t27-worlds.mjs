@@ -34,7 +34,7 @@ import { execFileSync } from 'node:child_process'
 import { dirname, join, relative, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { SITE, checkSchema, constsOf, loadCompiler, sha256 } from './agents-from-specs.mjs'
+import { SITE, checkSchema, compilerErrors, constsOf, loadCompiler, sha256 } from './agents-from-specs.mjs'
 import { runSpecTests } from './viewport-from-spec.mjs'
 import { corpusAggregates, corpusEntry, registerDescriptionExceptions } from './t27-corpus.mjs'
 
@@ -64,7 +64,7 @@ export function loadDiscoverySpec(analyze, specText, file = SPEC) {
   const problems = []
   if (/[^\x00-\x7f]/.test(specText)) problems.push(`${file}: non-ASCII byte in the spec (L3)`)
   const analysis = analyze(specText)
-  if (analysis.astError) problems.push(`${file}: ${analysis.astError}`)
+  problems.push(...compilerErrors(analysis).map((m) => `${file}: ${m}`))
   const moduleName = analysis.ast?.name ?? null
   if (moduleName !== EXPECTED_MODULE) problems.push(`${file}: module must be ${EXPECTED_MODULE}, is ${moduleName}`)
   const dropped = (analysis.discarded?.length ?? 0) + (analysis.lexerDiscarded?.length ?? 0) + (analysis.swallowed?.length ?? 0)

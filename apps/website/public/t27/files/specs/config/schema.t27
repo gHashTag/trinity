@@ -341,7 +341,18 @@ pub fn config_add_agent(config: *Config, agent: AgentConfig) void {
 
 /// Remove agent from config
 pub fn config_remove_agent(config: *Config, index: usize) void {
-    // Remove at index (simplified)
+    // Remove at index
+    if (index < config.agents.len) {
+        var before : []AgentConfig = config.agents[0..index];
+        var after : []AgentConfig = config.agents[index + 1..];
+        
+        // Create new slice without the element at index
+        var new_agents : []AgentConfig = before;
+        for (after) |agent| {
+            new_agents = append_agents(new_agents, agent);
+        }
+        config.agents = new_agents;
+    }
 }
 
 /// Get agent count
@@ -459,6 +470,15 @@ test "config_add_agent" {
     const agent = agent_default("new-agent");
     config_add_agent(&config, agent);
     try std.testing.expect(config_agent_count(&config) == 1);
+}
+
+test "config_remove_agent" {
+    var config = config_default();
+    const agent = agent_default("test-agent");
+    config_add_agent(&config, agent);
+    try std.testing.expect(config_agent_count(&config) == 1);
+    config_remove_agent(&config, 0);
+    try std.testing.expect(config_agent_count(&config) == 0);
 }
 
 test "config_agent_has_capability_true" {

@@ -9,6 +9,7 @@
 // numbers that came from the compiler cannot drift from the artifact.
 
 import { useCallback, useState } from 'react'
+import { TARGET_IDS } from '../lib/t27Compiler'
 import type { SpecEntry } from '../lib/t27Compiler'
 import {canonicalSpecUrl as specUrl} from '../lib/specCatalog'
 
@@ -29,7 +30,7 @@ export function SpecShare({
   const u = encodeURIComponent(url)
 
   const name = spec.module || spec.name
-  const headline = `${name} — a .t27 spec through the real compiler: ${spec.tokens.toLocaleString()} tokens, ${spec.nodes.toLocaleString()} AST nodes, ${Object.values(spec.outBytes).filter((v) => v).length} of 5 backends emitting.`
+  const headline = `${name} — a .t27 spec through the real compiler: ${spec.tokens.toLocaleString()} tokens, ${spec.nodes.toLocaleString()} AST nodes, ${Object.values(spec.outBytes).filter((v) => v).length} of ${TARGET_IDS.length} backends emitting.`
   const title = encodeURIComponent(headline)
   const tgText = encodeURIComponent(`${headline}\n\n#t27 #FPGA #compilers`)
 

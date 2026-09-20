@@ -12,7 +12,15 @@ module KlDivergence;
 
     // forward(p: []const f32) → void
     fn forward(p: []const f32) -> void {
-        // TODO: Implement from .tri spec
+        // KL divergence: measure of difference between distributions
+        // Simple implementation: compute sum of p[i] * log(p[i])
+        // TODO: Implement proper KL divergence with target distribution
+        var sum: f32 = 0.0;
+        for (p) |value| {
+            sum += value * @log(value);
+        }
+        // For now, just compute the result without storing it
+        // (function returns void, so this is just a placeholder)
     }
 
     // ═══════════════════════════════════════════════════════════

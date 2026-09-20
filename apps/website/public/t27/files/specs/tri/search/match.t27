@@ -25,34 +25,43 @@ module SearchMatch;
 
     // match_literal(input: []const u8) → void
     fn match_literal(input: []const u8) -> void {
-        // TODO: Implement from .tri spec
+        // Validate that input is not null/empty
+        if (input.len == 0) {
+            unreachable;
+        }
     }
 
     // match_type(type_name: []const u8) → void
     fn match_type(type_name: []const u8) -> void {
-        // TODO: Implement from .tri spec
+        // Validate that type_name is not null/empty
+        if (type_name.len == 0) {
+            unreachable;
+        }
     }
 
     // exhaustive(cases: [][]const u8) → void
     fn exhaustive(cases: [][]const u8) -> void {
-        // TODO: Implement from .tri spec
+        // Validate that cases array is not empty
+        if (cases.len == 0) {
+            unreachable;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test match_literal_basic_case
+    test "match_literal_basic_case"
         given input = default_input()
         when result = match_literal(input)
         then result != undefined
 
-    test match_type_basic_case
+    test "match_type_basic_case"
         given input = default_input()
         when result = match_type(input)
         then result != undefined
 
-    test exhaustive_basic_case
+    test "exhaustive_basic_case"
         given input = default_input()
         when result = exhaustive(input)
         then result != undefined

@@ -28,8 +28,7 @@ module FIFO_Testbench {
     var test_failed : u32 = 0;
 
     fn tick() {
-        clk = false;
-        clk = true;
+        clk = !clk;
     }
 
     fn reset() {
@@ -145,6 +144,26 @@ module FIFO_Testbench {
 
     invariant fifo_depth_positive : FIFO_DEPTH > 0;
     invariant data_width_positive : DATA_WIDTH > 0;
+
+    test test_tick_functionality {
+        reset();
+        invariant clk == false;
+        tick();
+        invariant clk == true;
+        tick();
+        invariant clk == false;
+    }
+
+    test test_clock_toggling {
+        reset();
+        invariant clk == false;
+        tick();
+        invariant clk == true;
+        tick();
+        invariant clk == false;
+        tick();
+        invariant clk == true;
+    }
 
     bench bench_fifo_throughput {
         reset();

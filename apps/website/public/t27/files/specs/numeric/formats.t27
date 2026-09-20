@@ -58,7 +58,7 @@ module Formats {
     //      value = (-1)^s * (1 + m/2^9) * 2^(e - Bias)
     //
     // Complexity: O(1)
-    pub fn gf16_to_f32(x: u16) -> gf16;
+    pub fn gf16_to_f32(x: u16) -> gf16 { }
 
     // ========================================================================
     // 3. f32 → GF16 (encode, round-to-nearest)
@@ -76,7 +76,7 @@ module Formats {
     //   6. Check underflow/overflow
     //
     // Complexity: O(1)
-    pub fn f32_to_gf16(a: f32) -> u16;
+    pub fn f32_to_gf16(a: f32) -> u16 { }
 
     // ========================================================================
     // 4. Ternary Quantization
@@ -98,14 +98,14 @@ module Formats {
     //   - Otherwise: return 0
     //
     // Complexity: O(1)
-    pub fn f32_to_ternary(x: f32) -> Trit;
+    pub fn f32_to_ternary(x: f32) -> Trit { }
 
     // ternary_to_f32(t: Trit) -> gf16
     // Convert ternary to f32
     //
     // Mapping: -1 -> -1.0, 0 -> 0.0, +1 -> 1.0
     // Complexity: O(1)
-    pub fn ternary_to_f32(t: Trit) -> gf16;
+    pub fn ternary_to_f32(t: Trit) -> gf16 { }
 
     // ========================================================================
     // 5. Format Enum
@@ -123,7 +123,7 @@ module Formats {
     // Returns byte size for each format
     //
     // Complexity: O(1)
-    pub fn format_bytes(fmt: Format) -> usize;
+    pub fn format_bytes(fmt: Format) -> usize { }
 
     // ========================================================================
     // 6. Quantization Utility
@@ -133,7 +133,7 @@ module Formats {
     // Quantize f32 to target format
     //
     // Complexity: O(1)
-    pub fn quantize_value(x: f32, fmt: Format) -> gf16;
+    pub fn quantize_value(x: f32, fmt: Format) -> gf16 { }
 
     // ========================================================================
     // TDD - Tests

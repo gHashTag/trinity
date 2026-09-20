@@ -37,17 +37,34 @@ module IGLARoadmap;
 
     // next_phase(current: Phase) -> Phase
     fn next_phase(current: Phase) -> Phase {
-        // Placeholder: external roadmap tracker
+        match current {
+            Phase.P4_Pilot => Phase.P5_Harness,
+            Phase.P5_Harness => Phase.P6_ScaleUp,
+            Phase.P6_ScaleUp => Phase.P7_LowBit,
+            Phase.P7_LowBit => Phase.P8_Integration,
+            Phase.P8_Integration => Phase.P8_Integration, // Terminal phase
+        }
     }
 
     // progress(status: RoadmapStatus) -> f64
     fn progress(status: RoadmapStatus) -> f64 {
-        // Placeholder: external progress calculator
+        if status.milestones.len() == 0 {
+            return 0.0;
+        }
+        
+        let completed = 0;
+        for m in status.milestones {
+            if m.completed {
+                completed += 1;
+            }
+        }
+        
+        return (completed as f64) / (status.milestones.len() as f64) * 100.0;
     }
 
     // is_blocked(m: Milestone) -> bool
     fn is_blocked(m: Milestone) -> bool {
-        // Placeholder: external blocker check
+        return m.blockers.len() > 0;
     }
 
     // ===========================================================
@@ -68,17 +85,44 @@ invariant roadmap_step_monotonic:
     // 5. Tests
     // ===========================================================
 
-    test phase_identity
+    test "phase_identity"
         given p = Phase.P4_Pilot
         assert p == Phase.P4_Pilot
 
-    test milestone_completion_valid
+    test "milestone_completion_valid"
         given m = Milestone { phase: Phase.P5_Harness, completed: false, checkpoint: "specs/igla/evaluation/multi_lang_harness.t27", blockers: ["compute_budget"] }
         assert m.checkpoint.len() > 0
 
-    test roadmap_progress_nonnegative
+    test "roadmap_progress_nonnegative"
         given s = RoadmapStatus { current_phase: Phase.P4_Pilot, milestones: [], overall_pct: 0.0 }
         assert s.overall_pct >= 0.0
+
+    test "next_phase_progression"
+        given current = Phase.P4_Pilot
+        assert next_phase(current) == Phase.P5_Harness
+
+    test "progress_calculation_empty"
+        given s = RoadmapStatus { current_phase: Phase.P4_Pilot, milestones: [], overall_pct: 0.0 }
+        assert progress(s) == 0.0
+
+    test "progress_calculation_partial"
+        given s = RoadmapStatus { 
+            current_phase: Phase.P4_Pilot, 
+            milestones: [
+                Milestone { phase: Phase.P4_Pilot, completed: true, checkpoint: "test1", blockers: [] },
+                Milestone { phase: Phase.P4_Pilot, completed: false, checkpoint: "test2", blockers: [] }
+            ], 
+            overall_pct: 0.0 
+        }
+        assert progress(s) == 50.0
+
+    test "is_blocked_true"
+        given m = Milestone { phase: Phase.P5_Harness, completed: false, checkpoint: "test", blockers: ["compute_budget"] }
+        assert is_blocked(m) == true
+
+    test "is_blocked_false"
+        given m = Milestone { phase: Phase.P5_Harness, completed: false, checkpoint: "test", blockers: [] }
+        assert is_blocked(m) == false
 
     // ===========================================================
     // 6. Benchmarks

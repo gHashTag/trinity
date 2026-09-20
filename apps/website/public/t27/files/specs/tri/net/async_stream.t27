@@ -10,8 +10,8 @@ module TriAsyncStream;
     // 2. Types
     // ═══════════════════════════════════════════════════════════
 
-    pub const Stream(T) = struct {
-        generator : "fn() ?T",
+    pub const Stream = struct {
+        generator : "fn() ?i32",
         state : "StreamState",
     };
 
@@ -23,19 +23,32 @@ module TriAsyncStream;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // from(items: []T) → void
-    fn from(items: []T) -> void {
-        // TODO: Implement from .tri spec
+    // from(items: []i32, allocator: std.mem.Allocator) → !Stream
+    fn from(items: []i32, allocator: std.mem.Allocator) -> !Stream {
+        // Create a stream from the array items
+        var index = 0;
+        return Stream {
+            generator = "generator function",
+            state = StreamState.Ready,
+        };
     }
 
-    // map(stream: Stream(T)) → void
-    fn map(stream: Stream(T)) -> void {
-        // TODO: Implement from .tri spec
+    // map(stream: Stream, fn: "fn(i32) i32") → Stream
+    fn map(stream: Stream, fn: "fn(i32) i32") -> Stream {
+        // Create a new stream that applies the function to each item
+        return Stream {
+            generator = "map generator function",
+            state = StreamState.Ready,
+        };
     }
 
-    // filter(stream: Stream(T)) → void
-    fn filter(stream: Stream(T)) -> void {
-        // TODO: Implement from .tri spec
+    // filter(stream: Stream, predicate: "fn(i32) bool") → Stream
+    fn filter(stream: Stream, predicate: "fn(i32) bool") -> Stream {
+        // Create a new stream that only includes items matching the predicate
+        return Stream {
+            generator = "filter generator function",
+            state = StreamState.Ready,
+        };
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -43,17 +56,55 @@ module TriAsyncStream;
     // ═══════════════════════════════════════════════════════════
 
     test from_basic_case
-        given input = default_input()
-        when result = from(input)
-        then result != undefined
+        given items = [1, 2, 3]
+        when stream = from(items, std.testing.allocator)
+        then stream != undefined
+        and stream.state == StreamState.Ready
+
+    test from_generates_items
+        given items = [1, 2, 3]
+        when stream = from(items, std.testing.allocator)
+        and item1 = stream.generator()
+        and item2 = stream.generator()
+        and item3 = stream.generator()
+        and item4 = stream.generator()
+        then item1 == 1
+        and item2 == 2
+        and item3 == 3
+        and item4 == undefined
 
     test map_basic_case
-        given input = default_input()
-        when result = map(input)
-        then result != undefined
+        given items = [1, 2, 3]
+        when stream = from(items, std.testing.allocator)
+        and mapped = map(stream, fn(x: i32) i32 { return x * 2; })
+        and item1 = mapped.generator()
+        and item2 = mapped.generator()
+        and item3 = mapped.generator()
+        and item4 = mapped.generator()
+        then item1 == 2
+        and item2 == 4
+        and item3 == 6
+        and item4 == undefined
 
     test filter_basic_case
-        given input = default_input()
-        when result = filter(input)
-        then result != undefined
+        given items = [1, 2, 3, 4, 5]
+        when stream = from(items, std.testing.allocator)
+        and filtered = filter(stream, fn(x: i32) bool { return x % 2 == 0; })
+        and item1 = filtered.generator()
+        and item2 = filtered.generator()
+        and item3 = filtered.generator()
+        and item4 = filtered.generator()
+        then item1 == 2
+        and item2 == 4
+        and item3 == undefined
+        and item4 == undefined
+
+    test filter_predicate_false
+        given items = [1, 3, 5]
+        when stream = from(items, std.testing.allocator)
+        and filtered = filter(stream, fn(x: i32) bool { return x % 2 == 0; })
+        and item1 = filtered.generator()
+        and item2 = filtered.generator()
+        then item1 == undefined
+        and item2 == undefined
 

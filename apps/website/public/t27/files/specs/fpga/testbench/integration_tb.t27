@@ -110,6 +110,13 @@ module Integration_Testbench {
 
     invariant num_modules_positive : NUM_MODULES > 0;
 
+    test test_tick_function {
+        reset();
+        var initial_clk : bool = clk;
+        tick();
+        invariant clk == !initial_clk;
+    }
+
     bench bench_integration_throughput {
         reset();
         var i : u32 = 0;

@@ -19,7 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SITE, checkSchema, constsOf, decodeBytes, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
+import { SITE, checkSchema, compilerErrors, constsOf, literalValue, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
 
 const WASM = 'public/t27/t27_compiler.wasm'
 export const VIEWPORT_SPEC = 'public/t27/files/specs/ui/viewport.t27'
@@ -45,18 +45,14 @@ export const TIER_NAMES = ['phone', 'tablet', 'desktop', 'wide']
 // array constant, and the binary operators are the integer and comparison operators the
 // spec uses. Anything else is a failure, never a silent pass.
 // ---------------------------------------------------------------------------
-function literal(raw) {
-  const text = decodeBytes(raw)
-  if (text === 'true') return true
-  if (text === 'false') return false
-  if (/^-?\d+$/.test(text)) return Number(text)
-  return JSON.parse(text)
-}
-
 export function evalExpr(node, env) {
   switch (node.kind) {
+    // The same decoder the constants go through, not a second copy of it: a
+    // string is a string because the node says so, and `assert X == "8080"`
+    // must mean what `pub const X : str = "8080"` means.
     case 'ExprLiteral':
-      return literal(node.value)
+    case 'ExprArrayLiteral':
+      return literalValue(node)
     case 'ExprIdentifier': {
       if (!(node.name in env)) throw new Error(`unknown identifier ${node.name}`)
       return env[node.name]
@@ -253,6 +249,7 @@ export async function buildViewport({ specText, analyze }) {
   const verdict = verdictOf(analysis)
   const file = VIEWPORT_SPEC.replace(/^public\/t27\/files\//, '')
   if (!verdict.typecheckOk || verdict.discarded > 0 || !verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(verdict)})`)
+  problems.push(...compilerErrors(analysis).map((m) => `${file}: ${m}`))
   if (/[^\x00-\x7f]/.test(specText)) problems.push(`${file}: non-ASCII byte in the spec (L3)`)
   const moduleName = analysis.ast?.name ?? null
   if (moduleName !== EXPECTED_MODULE) problems.push(`${file}: module must be ${EXPECTED_MODULE}, is ${moduleName}`)

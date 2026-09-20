@@ -124,10 +124,10 @@ pub fn connection_new(url: []u8) SSEConnection {
 pub fn client_new(url: []u8) SSEClient {
     return SSEClient{
         .connection = connection_new(url),
-        .on_message = fn(e: SSEEvent) void { },
-        .on_error = fn(msg: []u8) void { },
-        .on_open = fn() void { },
-        .on_close = fn(code: SSECloseCode, msg: []u8) void { },
+        .on_message = null,
+        .on_error = null,
+        .on_open = null,
+        .on_close = null,
     };
 }
 
@@ -275,7 +275,11 @@ pub fn server_add_client(server: *SEServer, client: SSEClient) void {
 
 /// Remove client from server
 pub fn server_remove_client(server: *SEServer, client_index: usize) void {
-    // Remove at index (simplified)
+    if (client_index < server.clients.len) {
+        var before : []SSEClient = server.clients[0..client_index];
+        var after : []SSEClient = server.clients[client_index + 1 ..];
+        server.clients = before ++ after;
+    }
 }
 
 /// Send event to all clients
@@ -391,6 +395,32 @@ test "sse_int_to_string_zero" {
 test "sse_int_to_string_positive" {
     const result = int_to_string(42);
     try std.testing.expect(std.mem.eql(result, "42"));
+}
+
+test "sse_server_remove_client" {
+    var server = SEServer{
+        .clients = &[_]SSEClient{},
+        .heartbeat_interval_ms = HEARTBEAT_INTERVAL_MS,
+    };
+    
+    const client1 = client_new("http://localhost/events1");
+    const client2 = client_new("http://localhost/events2");
+    const client3 = client_new("http://localhost/events3");
+    
+    server_add_client(&server, client1);
+    server_add_client(&server, client2);
+    server_add_client(&server, client3);
+    
+    try std.testing.expect(server.clients.len == 3);
+    
+    server_remove_client(&server, 1);
+    try std.testing.expect(server.clients.len == 2);
+    
+    server_remove_client(&server, 0);
+    try std.testing.expect(server.clients.len == 1);
+    
+    server_remove_client(&server, 0);
+    try std.testing.expect(server.clients.len == 0);
 }
 
 // ============================================================================

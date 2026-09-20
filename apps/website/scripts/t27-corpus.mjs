@@ -137,7 +137,7 @@ export function summarise(kinds, entry, health) {
   const emitted = Object.entries(entry.outBytes).filter(([, v]) => v !== null && v > 0)
   if (emitted.length) {
     const biggest = emitted.sort((a, b) => b[1] - a[1])[0]
-    parts.push(`Emits ${emitted.length} of 5 backends; largest is ${TARGET_LABEL[biggest[0]] || biggest[0]} at ${fmtBytes(biggest[1])}.`)
+    parts.push(`Emits ${emitted.length} of ${Object.keys(TARGET_LABEL).length} backends; largest is ${TARGET_LABEL[biggest[0]] || biggest[0]} at ${fmtBytes(biggest[1])}.`)
   }
 
   if (health === 'fail') {
@@ -154,7 +154,12 @@ export function summarise(kinds, entry, health) {
   return parts.join(' ')
 }
 
-export const TARGET_LABEL = { zig: 'Zig', verilog: 'Verilog', verilog_hir: 'Verilog (HIR)', c: 'C', rust: 'Rust' }
+// The sixth copy of this list, and the last one that has to be written by hand:
+// node runs this file directly, so it cannot import TARGET_IDS from
+// src/lib/t27Compiler.ts, which is where the five bundled copies now come from.
+// Nothing below reads its LENGTH as a digit any more, so the two can disagree
+// about a name but no longer about a count.
+export const TARGET_LABEL = { zig: 'Zig', verilog: 'Verilog', verilog_hir: 'Verilog (HIR)', c: 'C', rust: 'Rust', js: 'JavaScript' }
 
 export function listy(a) {
   if (a.length <= 1) return a[0] || ''

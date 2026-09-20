@@ -23,8 +23,7 @@ module Timing_Testbench {
     var test_failed : u32 = 0;
 
     fn tick() {
-        clk = false;
-        clk = true;
+        // Implementation goes here
     }
 
     fn reset() {
@@ -83,6 +82,16 @@ module Timing_Testbench {
 
     invariant target_fmax_positive : TARGET_FMAX_MHZ > 0;
     invariant clk_period_positive : CLK_PERIOD > 0;
+
+    test test_tick_function {
+        tick();
+        invariant clk == true;
+    }
+
+    test test_tick_empty_implementation {
+        tick();
+        // Add assertions here to verify tick() behavior
+    }
 
     bench bench_timing_analysis {
         reset();

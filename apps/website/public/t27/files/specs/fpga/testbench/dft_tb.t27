@@ -116,6 +116,11 @@ module DFT_Testbench {
         invariant total == 512;
     }
 
+    test test_tick {
+        tick();
+        invariant clk == true;
+    }
+
     invariant scan_chain_positive : SCAN_CHAIN_LENGTH > 0;
     invariant bist_pattern_positive : BIST_PATTERN_LENGTH > 0;
 

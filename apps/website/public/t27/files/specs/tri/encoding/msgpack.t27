@@ -29,14 +29,25 @@ module TriMsgpack;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // encode(value: MsgPackValue) → void
-    fn encode(value: MsgPackValue) -> void {
-        // TODO: Implement from .tri spec
+    // encode(value: MsgPackValue, allocator: std.mem.Allocator) → ![]u8
+    fn encode(value: MsgPackValue, allocator: std.mem.Allocator) -> ![]u8 {
+        // Simple implementation - return empty slice for now
+        return &[_]u8{};
     }
 
-    // decode(data: []const u8) → void
-    fn decode(data: []const u8) -> void {
-        // TODO: Implement from .tri spec
+    // decode(data: []const u8, allocator: std.mem.Allocator) → !MsgPackValue
+    fn decode(data: []const u8, allocator: std.mem.Allocator) -> !MsgPackValue {
+        // Simple implementation - return default value for now
+        return MsgPackValue{
+            .type = .Nil,
+            .int_value = 0,
+            .uint_value = 0,
+            .float_value = 0.0,
+            .str_value = "",
+            .bin_value = "",
+            .array_value = undefined,
+            .map_value = undefined,
+        };
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -45,11 +56,11 @@ module TriMsgpack;
 
     test encode_basic_case
         given input = default_input()
-        when result = encode(input)
+        when result = encode(input, std.testing.allocator)
         then result != undefined
 
     test decode_basic_case
         given input = default_input()
-        when result = decode(input)
+        when result = decode(input, std.testing.allocator)
         then result != undefined
 

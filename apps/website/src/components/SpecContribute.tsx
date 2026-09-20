@@ -16,6 +16,7 @@
 // past URL length limits well before it got there. The button opens the file
 // for editing and the visitor pastes -- honest about what it can do.
 
+import { TARGET_IDS } from '../lib/t27Compiler'
 import type { SpecEntry, T27Analysis } from '../lib/t27Compiler'
 import { canonicalSpecUrl as specUrl } from '../lib/specCatalog'
 
@@ -75,7 +76,7 @@ export function SpecContribute({
     `| AST nodes | ${spec.nodes.toLocaleString()} (depth ${spec.depth}) |`,
     `| type errors | ${spec.tcErrors} |`,
     `| dropped by recovery | ${spec.loss} |`,
-    `| backends emitting | ${Object.values(spec.outBytes).filter((v) => v).length} of 5 |`,
+    `| backends emitting | ${Object.values(spec.outBytes).filter((v) => v).length} of ${TARGET_IDS.length} |`,
     '',
     problems.length ? `### Problems\n\n- ${problems.join('\n- ')}` : '### Observation\n\nNothing failed; filing for discussion.',
     firstBackendError ? `\n\`\`\`\n${firstBackendError}\n\`\`\`` : '',

@@ -58,8 +58,35 @@ module AXI4_Testbench {
     var test_failed : u32 = 0;
 
     fn tick() {
-        clk = false;
-        clk = true;
+        // Toggle clock
+        clk = !clk;
+        
+        // Handle write address channel
+        if aw_valid && aw_ready {
+            aw_ready = false;
+        }
+        
+        // Handle write data channel  
+        if w_valid && w_ready {
+            w_ready = false;
+        }
+        
+        // Handle write response channel
+        if b_valid && b_ready {
+            b_valid = false;
+            b_ready = false;
+        }
+        
+        // Handle read address channel
+        if ar_valid && ar_ready {
+            ar_ready = false;
+        }
+        
+        // Handle read data channel
+        if r_valid && r_ready {
+            r_valid = false;
+            r_ready = false;
+        }
     }
 
     fn reset() {
@@ -157,6 +184,11 @@ module AXI4_Testbench {
 
     test test_burst_len_zero_means_single {
         invariant MAX_BURST_LEN == 256;
+    }
+
+    test "test_tick_function" {
+        // Test that tick() function can be called without errors
+        tick();
     }
 
     invariant data_width_power_of_2 : DATA_WIDTH == 32 || DATA_WIDTH == 64;

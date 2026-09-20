@@ -3,6 +3,16 @@
 // The wasm module is `bootstrap/src/compiler.rs` built for
 // wasm32-unknown-unknown -- the same code the CLI runs, not a reimplementation.
 // See apps/website/scripts/sync-t27-specs.mjs for how the artifact gets here.
+//
+// That sentence was an ASPIRATION until 2026-09-21. The artifact vendored here
+// had no source in any repository -- `git log -S t27_analyze` across t27 finds
+// nothing -- so the sync script's build step silently fell through to the copy
+// already on disk on every single run, and the binary drifted away from the
+// compiler for as long as nobody could rebuild it. Measured against the CLI on
+// the 1408-spec corpus, the old artifact printed an AST, a type verdict and
+// five generated backends for 214 specs that `t27c parse` REFUSES, and its Zig
+// output disagreed with `t27c gen` on all 40 specs sampled. The source now
+// lives at `bindings/wasm-explorer/` in t27 and both numbers are zero.
 
 import {resolveManifestSpec,specExplorerHash} from './specCatalog.ts'
 
@@ -56,6 +66,24 @@ export interface T27Analysis {
   targets: Record<string, T27Target>
   error?: string
 }
+
+/**
+ * The backends the compiler offers, in the order the page shows them.
+ *
+ * One list, because there were six: the layer strip, the stage bars, the
+ * metrics row, the manifest's labels, and three sentences that printed "of 5"
+ * as a literal digit. Adding the JavaScript backend made every one of them
+ * wrong on the same afternoon -- which is the whole argument against writing a
+ * list down twice.
+ *
+ * `scripts/t27-corpus.mjs` cannot import this: it is run by node at sync time,
+ * not bundled. It keeps its own `TARGET_LABEL` and derives its count from that
+ * rather than from a digit, so the two lists can still disagree about NAMES but
+ * no longer about how many there are.
+ */
+export const TARGET_IDS = ['zig', 'verilog', 'verilog_hir', 'c', 'rust', 'js'] as const
+
+export type TargetId = (typeof TARGET_IDS)[number]
 
 export type Health = 'ok' | 'warn' | 'fail'
 
@@ -123,6 +151,15 @@ interface Exports {
   t27_alloc: (len: number) => number
   t27_free: (ptr: number, len: number) => void
   t27_analyze: (ptr: number, len: number) => number
+  /**
+   * Same analysis, told the file's name.
+   *
+   * `gen-js` writes the source file into the header of what it emits, so
+   * without this the page shows a module claiming to come from `spec.t27` and
+   * the reader cannot reproduce it at the CLI. Optional because a browser
+   * holding a cached older wasm must keep working rather than throw.
+   */
+  t27_analyze_named?: (ptr: number, len: number, namePtr: number, nameLen: number) => number
 }
 
 let modulePromise: Promise<Exports> | null = null
@@ -143,8 +180,14 @@ export function loadCompiler(): Promise<Exports> {
   return modulePromise
 }
 
-/** Run one .t27 source through every pipeline layer. */
-export async function analyze(source: string): Promise<T27Analysis> {
+/**
+ * Run one .t27 source through every pipeline layer.
+ *
+ * `name` is the spec's corpus path when there is one. It reaches the JavaScript
+ * backend's header and nothing else, so an edited buffer with no path is not a
+ * degraded case -- it just names itself.
+ */
+export async function analyze(source: string, name?: string): Promise<T27Analysis> {
   const wasm = await loadCompiler()
   const bytes = new TextEncoder().encode(source)
   const inPtr = wasm.t27_alloc(bytes.length)
@@ -152,7 +195,15 @@ export async function analyze(source: string): Promise<T27Analysis> {
 
   // t27_analyze takes ownership of the input allocation and returns a
   // length-prefixed blob: [u32 LE byte length][utf8 json].
-  const outPtr = wasm.t27_analyze(inPtr, bytes.length)
+  let outPtr: number
+  if (name && wasm.t27_analyze_named) {
+    const nb = new TextEncoder().encode(name)
+    const namePtr = wasm.t27_alloc(nb.length)
+    new Uint8Array(wasm.memory.buffer, namePtr, nb.length).set(nb)
+    outPtr = wasm.t27_analyze_named(inPtr, bytes.length, namePtr, nb.length)
+  } else {
+    outPtr = wasm.t27_analyze(inPtr, bytes.length)
+  }
   const len = new DataView(wasm.memory.buffer).getUint32(outPtr, true)
   const json = new TextDecoder().decode(new Uint8Array(wasm.memory.buffer, outPtr + 4, len))
   wasm.t27_free(outPtr, 4 + len)
@@ -177,7 +228,7 @@ export function cachedAnalysis(path: string,source?:string): T27Analysis | undef
 export async function analyzeCached(path: string, source: string): Promise<T27Analysis> {
   const hit = cache.get(path)
   if (hit?.source===source) return hit.result
-  const r = await analyze(source)
+  const r = await analyze(source, path)
   // Plain FIFO eviction: these are a few hundred KB each at worst and the
   // access pattern here has no reuse structure worth modelling.
   if (cache.size >= CACHE_MAX) {

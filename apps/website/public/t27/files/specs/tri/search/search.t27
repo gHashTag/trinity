@@ -19,37 +19,74 @@ module TriSearch;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // binary(sorted: []const T) → void
-    fn binary(sorted: []const T) -> void {
-        // TODO: Implement from .tri spec
+    // binary(sorted: []const T, target: T) → SearchResult
+    fn binary(sorted: []const T, target: T) -> SearchResult {
+        // Binary search implementation
+        let mut left = 0;
+        let mut right = sorted.len;
+        
+        while (left < right) {
+            let mid = left + (right - left) / 2;
+            if (sorted[mid] == target) {
+                return SearchResult { index: mid, found: true };
+            } else if (sorted[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        
+        return SearchResult { index: undefined, found: false };
     }
 
-    // linear(items: []const T) → void
-    fn linear(items: []const T) -> void {
-        // TODO: Implement from .tri spec
+    // linear(items: []const T, target: T) → SearchResult
+    fn linear(items: []const T, target: T) -> SearchResult {
+        // Linear search implementation
+        let mut i = 0;
+        while (i < items.len) {
+            if (items[i] == target) {
+                return SearchResult { index: i, found: true };
+            }
+            i = i + 1;
+        }
+        
+        return SearchResult { index: undefined, found: false };
     }
 
-    // lower_bound(sorted: []const T) → void
-    fn lower_bound(sorted: []const T) -> void {
-        // TODO: Implement from .tri spec
+    // lower_bound(sorted: []const T, value: T) → usize
+    fn lower_bound(sorted: []const T, value: T) -> usize {
+        // Lower bound implementation - returns first index where element >= value
+        let mut left = 0;
+        let mut right = sorted.len;
+        
+        while (left < right) {
+            let mid = left + (right - left) / 2;
+            if (sorted[mid] < value) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        
+        return left;
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test binary_basic_case
-        given input = default_input()
-        when result = binary(input)
-        then result != undefined
+    test "binary_basic_case"
+        given input = [1, 2, 3, 4, 5], target = 3
+        when result = binary(input, target)
+        then result.found == true and result.index == 2
 
-    test linear_basic_case
-        given input = default_input()
-        when result = linear(input)
-        then result != undefined
+    test "linear_basic_case"
+        given input = [10, 20, 30, 40, 50], target = 30
+        when result = linear(input, target)
+        then result.found == true and result.index == 2
 
-    test lower_bound_basic_case
-        given input = default_input()
-        when result = lower_bound(input)
-        then result != undefined
+    test "lower_bound_basic_case"
+        given input = [1, 3, 5, 7, 9], value = 4
+        when result = lower_bound(input, value)
+        then result == 2
 

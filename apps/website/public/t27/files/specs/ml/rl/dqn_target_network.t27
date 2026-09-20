@@ -31,19 +31,26 @@ module DqnTarget;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // hard_update(source: []f32) → void
-    fn hard_update(source: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // hard_update(source: []f32, target: []f32) → void
+    fn hard_update(source: []f32, target: []f32) -> void {
+        // Copy source network weights to target network
+        for i in 0..source.length {
+            target[i] = source[i];
+        }
     }
 
-    // soft_update(source: []f32) → void
-    fn soft_update(source: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // soft_update(source: []f32, target: []f32, tau: f32) → void
+    fn soft_update(source: []f32, target: []f32, tau: f32) -> void {
+        // Polyak averaging: target = tau * source + (1 - tau) * target
+        for i in 0..source.length {
+            target[i] = tau * source[i] + (1.0 - tau) * target[i];
+        }
     }
 
-    // should_update(step: u32) → void
-    fn should_update(step: u32) -> void {
-        // TODO: Implement from .tri spec
+    // should_update(step: u32, config: TargetUpdateConfig) → bool
+    fn should_update(step: u32, config: TargetUpdateConfig) -> bool {
+        // Update based on configured frequency and method
+        return step % config.update_freq == 0;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -51,18 +58,18 @@ module DqnTarget;
     // ═══════════════════════════════════════════════════════════
 
     test hard_update_basic_case
-        given input = default_input()
-        when result = hard_update(input)
+        given source = default_input(), target = default_input()
+        when result = hard_update(source, target)
         then result != undefined
 
     test soft_update_basic_case
-        given input = default_input()
-        when result = soft_update(input)
+        given source = default_input(), target = default_input(), tau = DEFAULT_TAU
+        when result = soft_update(source, target, tau)
         then result != undefined
 
     test should_update_basic_case
-        given input = default_input()
-        when result = should_update(input)
+        given step = 1000u32, config = TargetUpdateConfig { method = UpdateMethod, tau = DEFAULT_TAU, update_freq = DEFAULT_UPDATE_FREQ }
+        when result = should_update(step, config)
         then result != undefined
 
     // ═══════════════════════════════════════════════════════════

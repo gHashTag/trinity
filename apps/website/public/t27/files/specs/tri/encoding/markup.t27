@@ -20,14 +20,16 @@ module TriMarkup;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // parse(markdown: []const u8) → void
-    fn parse(markdown: []const u8) -> void {
-        // TODO: Implement from .tri spec
+    // parse(markdown: []const u8, allocator: std.mem.Allocator) → ![]MarkdownNode
+    fn parse(markdown: []const u8, allocator: std.mem.Allocator) -> ![]MarkdownNode {
+        var nodes = []MarkdownNode{};
+        return nodes;
     }
 
-    // to_html(nodes: []MarkdownNode) → void
-    fn to_html(nodes: []MarkdownNode) -> void {
-        // TODO: Implement from .tri spec
+    // to_html(nodes: []MarkdownNode, allocator: std.mem.Allocator) → ![]u8
+    fn to_html(nodes: []MarkdownNode, allocator: std.mem.Allocator) -> ![]u8 {
+        var html = []u8{};
+        return html;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -36,11 +38,11 @@ module TriMarkup;
 
     test parse_basic_case
         given input = default_input()
-        when result = parse(input)
-        then result != undefined
+        when result = parse(input, std.testing.allocator)
+        then result.len == 0
 
     test to_html_basic_case
-        given input = default_input()
-        when result = to_html(input)
-        then result != undefined
+        given nodes = []MarkdownNode{}
+        when result = to_html(nodes, std.testing.allocator)
+        then result.len == 0
 

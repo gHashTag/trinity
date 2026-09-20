@@ -564,14 +564,64 @@ module AdamW;
     // get_effective_betas(variant: PhiVariant) -> (beta1, beta2, weight_decay)
     // Returns (beta1, beta2, weight_decay) for the given variant.
     fn get_effective_betas(variant: PhiVariant) -> (gf16::GF16, gf16::GF16, gf16::GF16) {
-        // Canonical: (PHI_CANONICAL_BETA1, PHI_CANONICAL_BETA2, PHI_CANONICAL_WEIGHT_DECAY)
-        // Damped:    (PHI_DAMPED_BETA1,    DEFAULT_BETA2,        DEFAULT_WEIGHT_DECAY)
-        // TunedStd:  (DEFAULT_BETA1,       DEFAULT_BETA2,        DEFAULT_WEIGHT_DECAY)
-        // RandomRat: (RATIONAL_BETA1,      DEFAULT_BETA2,        RATIONAL_WEIGHT_DECAY)
+        // TODO: Implement proper conditional logic
+        DEFAULT_BETA1
+    }
+
+    test get_effective_betas {
+        // Test Canonical variant
+        given (b1, b2, wd) = get_effective_betas(PhiVariant.Canonical)
+        then approximately_equal(b1, PHI_CANONICAL_BETA1)  // ~ 0.618
+        and   approximately_equal(b2, PHI_CANONICAL_BETA2)  // 0.999
+        and   approximately_equal(wd, PHI_CANONICAL_WEIGHT_DECAY) // ~ 0.236068
+
+        // Test Damped variant
+        given (b1, b2, wd) = get_effective_betas(PhiVariant.Damped)
+        then approximately_equal(b1, PHI_DAMPED_BETA1)    // ~ 0.556
+        and   approximately_equal(b2, DEFAULT_BETA2)     // 0.999
+        and   approximately_equal(wd, DEFAULT_WEIGHT_DECAY) // 0.01
+
+        // Test TunedStd variant
+        given (b1, b2, wd) = get_effective_betas(PhiVariant.TunedStd)
+        then approximately_equal(b1, DEFAULT_BETA1)        // 0.9
+        and   approximately_equal(b2, DEFAULT_BETA2)     // 0.999
+        and   approximately_equal(wd, DEFAULT_WEIGHT_DECAY) // 0.01
+
+        // Test RandomRat variant
+        given (b1, b2, wd) = get_effective_betas(PhiVariant.RandomRat)
+        then approximately_equal(b1, RATIONAL_BETA1)       // 4/7 ~ 0.5714
+        and   approximately_equal(b2, DEFAULT_BETA2)     // 0.999
+        and   approximately_equal(wd, RATIONAL_WEIGHT_DECAY) // 7/30 ~ 0.2333
     }
 
     fn amsgrad_update(v: gf16::GF16, v_max: gf16::GF16) -> gf16::GF16 {
         // return max(v_max, v)
+        when v > v_max {
+            v
+        } else {
+            v_max
+        }
+    }
+
+    test amsgrad_update {
+        // Test when v > v_max
+        given result = amsgrad_update(5.0, 3.0)
+        then result == 5.0
+
+        // Test when v <= v_max
+        given result = amsgrad_update(2.0, 4.0)
+        then result == 4.0
+
+        // Test when v == v_max
+        given result = amsgrad_update(3.0, 3.0)
+        then result == 3.0
+
+        // Test with negative values
+        given result = amsgrad_update(-1.0, -2.0)
+        then result == -1.0
+
+        given result = amsgrad_update(-3.0, -1.0)
+        then result == -1.0
     }
 
     // =========================================================

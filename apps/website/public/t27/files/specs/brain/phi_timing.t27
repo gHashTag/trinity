@@ -77,3 +77,23 @@ test "phi_timing_ratio_decide_over_sense_equals_phi_sq" {
     const ratio = decide / sense;
     try std.testing.expectApproxEqAbs(PHI * PHI, ratio, 0.15);
 }
+
+test "phi_timing_total_cycle_sums_phases" {
+    const timing = phi_timing_init();
+    const total = phi_timing_total_cycle(timing);
+    const sum_phases = phi_timing_phase_duration(timing, .sense) +
+        phi_timing_phase_duration(timing, .evaluate) +
+        phi_timing_phase_duration(timing, .decide) +
+        phi_timing_phase_duration(timing, .act) +
+        phi_timing_phase_duration(timing, .consolidate);
+    try std.testing.expectEqual(sum_phases, total);
+}
+
+test "phi_timing_total_cycle_matches_float_approx" {
+    const timing = phi_timing_init();
+    const total_int = phi_timing_total_cycle(timing);
+    const total_float = phi_timing_total_cycle_ms_float(timing);
+    const total_int_as_float = @as(f64, @floatFromInt(total_int));
+    // Integer sum of rounded phases may differ from float total by a few ms
+    try std.testing.expectApproxEqAbs(total_float, total_int_as_float, 5.0);
+}

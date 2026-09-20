@@ -109,6 +109,11 @@ module Bridge_Testbench {
         invariant ok == true;
     }
 
+    test "test_tick" {
+        tick();
+        invariant clk == true;
+    }
+
     invariant bridge_width_positive : BRIDGE_WIDTH > 0;
     invariant fifo_depth_power_of_2 : FIFO_DEPTH > 0;
 

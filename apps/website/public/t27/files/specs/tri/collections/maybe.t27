@@ -19,47 +19,137 @@ module TriMaybe;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // pure(value: T) → void
-    fn pure(value: T) -> void {
-        // TODO: Implement from .tri spec
+    // Helper for creating absent Maybe values
+    fn nothing() -> Maybe(T) {
+        return Maybe(T){ .computed = false, .value = undefined };
     }
 
-    // bind(maybe: Maybe(T)) → void
-    fn bind(maybe: Maybe(T)) -> void {
-        // TODO: Implement from .tri spec
+    // pure(value: T) → Maybe(T)
+    fn pure(value: T) -> Maybe(T) {
+        // The unit: always present, carries the value through unchanged
+        return Maybe(T){ .computed = true, .value = value };
     }
 
-    // map(maybe: Maybe(T)) → void
-    fn map(maybe: Maybe(T)) -> void {
-        // TODO: Implement from .tri spec
+    // bind(maybe: Maybe(T), f: fn(T) -> Maybe(T)) → Maybe(T)
+    fn bind(maybe: Maybe(T), f: fn(T) -> Maybe(T)) -> Maybe(T) {
+        // The sequencer: short-circuits on absence, chains computations on presence
+        if (maybe.computed == false) {
+            return nothing();
+        }
+        return f(maybe.value);
     }
 
-    // join(nested: Maybe(Maybe(T))) → void
-    fn join(nested: Maybe(Maybe(T))) -> void {
-        // TODO: Implement from .tri spec
+    // map(maybe: Maybe(T), f: fn(T) -> T) → Maybe(T)
+    fn map(maybe: Maybe(T), f: fn(T) -> T) -> Maybe(T) {
+        // Apply a plain function under the wrapper: absent in, absent out
+        if (maybe.computed == false) {
+            return nothing();
+        }
+        // map(m, f) equals bind(m, x -> pure(f(x)))
+        return Maybe(T){ .computed = true, .value = f(maybe.value) };
+    }
+
+    // join(nested: Maybe(Maybe(T))) → Maybe(T)
+    fn join(nested: Maybe(Maybe(T))) -> Maybe(T) {
+        // Collapse exactly one layer: absent outer yields absent, present outer yields inner
+        if (nested.computed == false) {
+            return nothing();
+        }
+        return nested.value;
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test pure_basic_case
-        given input = default_input()
-        when result = pure(input)
-        then result != undefined
+    test "pure_marks_its_result_computed" {
+        var m = pure(7);
+        assert(m.computed == true);
+        assert(m.value == 7);
+    }
 
-    test bind_basic_case
-        given input = default_input()
-        when result = bind(input)
-        then result != undefined
+    test "pure_of_zero_is_still_present" {
+        var m = pure(0);
+        assert(m.computed == true);
+        assert(m.value == 0);
+    }
 
-    test map_basic_case
-        given input = default_input()
-        when result = map(input)
-        then result != undefined
+    test "pure_of_empty_is_still_present" {
+        var m = pure("");
+        assert(m.computed == true);
+        assert(m.value == "");
+    }
 
-    test join_basic_case
-        given input = default_input()
-        when result = join(input)
-        then result != undefined
+    test "bind_on_an_absent_maybe_short_circuits" {
+        var absent = Maybe(i64){ .computed = false, .value = undefined };
+        var out = bind(absent, pure);
+        assert(out.computed == false);
+    }
+
+    test "bind_on_present_maybe_returns_function_result" {
+        var present = pure(42);
+        var out = bind(present, fn(x: i64) -> Maybe(i64) { return pure(x * 2); });
+        assert(out.computed == true);
+        assert(out.value == 84);
+    }
+
+    test "bind_preserves_absence_from_function" {
+        var present = pure(42);
+        var out = bind(present, fn(x: i64) -> Maybe(i64) { return nothing(); });
+        assert(out.computed == false);
+    }
+
+    test "bind_right_identity_present" {
+        var m = pure(42);
+        var out = bind(m, pure);
+        assert(out.computed == true);
+        assert(out.value == 42);
+    }
+
+    test "bind_right_identity_absent" {
+        var absent = Maybe(i64){ .computed = false, .value = undefined };
+        var out = bind(absent, pure);
+        assert(out.computed == false);
+    }
+
+    test "map_on_an_absent_maybe_stays_absent" {
+        var absent = Maybe(i64){ .computed = false, .value = undefined };
+        var out = map(absent, fn(x: i64) -> i64 { return x * 2; });
+        assert(out.computed == false);
+    }
+
+    test "map_on_present_maybe_applies_function_once" {
+        var present = pure(21);
+        var out = map(present, fn(x: i64) -> i64 { return x * 2; });
+        assert(out.computed == true);
+        assert(out.value == 42);
+    }
+
+    test "map_keeps_computed_true" {
+        var present = pure(-5);
+        var out = map(present, fn(x: i64) -> i64 { return x + 10; });
+        assert(out.computed == true);
+        assert(out.value == 5);
+    }
+
+    test "join_of_present_outer_with_present_inner_yields_inner" {
+        var inner = pure(42);
+        var nested = pure(inner);
+        var result = join(nested);
+        assert(result.computed == true);
+        assert(result.value == 42);
+    }
+
+    test "join_of_absent_outer_is_absent" {
+        var nested = Maybe(Maybe(i64)){ .computed = false, .value = undefined };
+        var result = join(nested);
+        assert(result.computed == false);
+    }
+
+    test "join_of_present_outer_with_absent_inner_is_absent" {
+        var inner = Maybe(i64){ .computed = false, .value = undefined };
+        var nested = pure(inner);
+        var result = join(nested);
+        assert(result.computed == false);
+    }
 

@@ -67,10 +67,19 @@ test('a false assert in the spec is a build failure even though typecheck.ok sta
 })
 
 test('a `;` comment inside a test block is reported, not silently skipped', async () => {
+  // A `;` line is a statement, not a comment -- `//` is the comment. The artifact vendored
+  // before #4471 parsed it as an empty statement and the loader caught it downstream, as a
+  // statement that was `not an assert` (measured 2026-09-12). The compiler's own build
+  // refuses the function outright and names the token and the line (measured 2026-09-21).
+  // Either way the file does not build silently, so the assertion is on that contract and
+  // on the compiler having said WHY -- a bare `hirOk: false` verdict would pass the first
+  // of these checks and tell a reader nothing.
   const src = vendored.replace('test breakpoints_are_monotone {\n', 'test breakpoints_are_monotone {\n    ; this is a comment the parser reads as a statement\n')
   assert.notEqual(src, vendored)
   const out = await buildViewport({ specText: src, analyze })
-  assert.ok(out.problems.some((p) => /not an assert/.test(p)), out.problems.join('\n'))
+  assert.equal(out.ts, null, 'nothing is emitted from a spec that does not parse')
+  assert.ok(out.problems.some((p) => /Semicolon|not an assert/.test(p)), out.problems.join('\n'))
+  assert.ok(out.problems.some((p) => /breakpoints_are_monotone/.test(p)), 'the offending test is named')
 })
 
 test('a matrix tier that disagrees with the bounds is refused', async () => {

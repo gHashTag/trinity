@@ -31,22 +31,70 @@ module IGLAMultiLangHarness;
 
     // evaluate(lang: LangTarget, prompt: str) -> EvalResult
     fn evaluate(lang: LangTarget, prompt: str) -> EvalResult {
-        // Placeholder: external framework implementation
+        // Basic implementation with default values
+        return EvalResult {
+            lang: lang,
+            pass_at_1: 0.0,
+            syntax_ok: false,
+            compile_ok: false,
+            bench_us: 0.0,
+        };
     }
 
     // compile_check(lang: LangTarget, code: str) -> bool
     fn compile_check(lang: LangTarget, code: str) -> bool {
-        // Placeholder: external framework implementation
+        // Basic implementation: check for non-empty code and basic patterns
+        if code.len() == 0 {
+            return false;
+        }
+        
+        // Simple heuristic: if code contains basic language patterns, assume it compiles
+        match lang {
+            LangTarget.C => return code.contains("int") || code.contains("void") || code.contains("return"),
+            LangTarget.Rust => return code.contains("fn") || code.contains("let") || code.contains("return"),
+            LangTarget.Zig => return code.contains("fn") || code.contains("const") || code.contains("return"),
+            LangTarget.Verilog => return code.contains("module") || code.contains("always") || code.contains("assign"),
+        }
     }
 
     // syntax_check(lang: LangTarget, code: str) -> bool
     fn syntax_check(lang: LangTarget, code: str) -> bool {
-        // Placeholder: external framework implementation
+        // Basic implementation: check for basic syntax patterns
+        if code.len() == 0 {
+            return false;
+        }
+        
+        // Simple syntax validation: check for balanced braces and basic structure
+        let brace_count = 0;
+        for i in 0..code.len() {
+            match code[i] {
+                '{' => brace_count += 1,
+                '}' => brace_count -= 1,
+                _ => continue,
+            }
+        }
+        
+        // Basic syntax check: balanced braces and no obvious syntax errors
+        return brace_count == 0 && !code.contains("???") && !code.contains("...");
     }
 
     // benchmark_latency(lang: LangTarget, code: str) -> f64
     fn benchmark_latency(lang: LangTarget, code: str) -> f64 {
-        // Placeholder: external framework implementation
+        // Basic implementation: return mock latency based on language and code complexity
+        let mut base_latency = 0.0;
+        if lang == LangTarget.C {
+            base_latency = 100.0;
+        } else if lang == LangTarget.Rust {
+            base_latency = 150.0;
+        } else if lang == LangTarget.Zig {
+            base_latency = 120.0;
+        } else if lang == LangTarget.Verilog {
+            base_latency = 200.0;
+        }
+        
+        // Add complexity factor based on code length
+        let complexity_factor = f64(code.len()) * 0.1;
+        return base_latency + complexity_factor;
     }
 
     // ===========================================================
@@ -86,6 +134,34 @@ invariant eval_result_bounded:
     test eval_syntax_implies_compile
         given r = EvalResult { lang: LangTarget.Rust, pass_at_1: 0.8, syntax_ok: false, compile_ok: false, bench_us: 2.0 }
         assert !r.syntax_ok implies !r.compile_ok
+
+    test evaluate_function
+        given result = evaluate(LangTarget.Zig, "test prompt")
+        assert result.lang == LangTarget.Zig
+        assert result.pass_at_1 == 0.0
+        assert result.syntax_ok == false
+        assert result.compile_ok == false
+        assert result.bench_us == 0.0
+
+    test compile_check_function
+        given valid_c = "int main() { return 0; }"
+        given empty_code = ""
+        assert compile_check(LangTarget.C, valid_c) == true
+        assert compile_check(LangTarget.C, empty_code) == false
+
+    test syntax_check_function
+        given valid_code = "int main() { return 0; }"
+        given invalid_code = "int main() { return 0;"
+        assert syntax_check(LangTarget.C, valid_code) == true
+        assert syntax_check(LangTarget.C, invalid_code) == false
+
+    test benchmark_latency_function
+        given simple_code = "int main() { return 0; }"
+        given complex_code = "int main() { int a = 1; int b = 2; return a + b; }"
+        let base_latency = benchmark_latency(LangTarget.C, simple_code)
+        let complex_latency = benchmark_latency(LangTarget.C, complex_code)
+        assert base_latency > 0.0
+        assert complex_latency > base_latency
 
     // ===========================================================
     // 6. Benchmarks

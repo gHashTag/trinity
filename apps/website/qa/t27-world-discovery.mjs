@@ -20,11 +20,17 @@ assert.equal(f.FOUNDING.length,5);
 // A spec whose own assert fails must not load: typecheck.ok stays true for `assert 1 > 2`.
 const broken=d.loadDiscoverySpec(analyze,specText.replace('assert MIN_DECLARATIONS >= 1;','assert MIN_DECLARATIONS >= 2;'));
 assert.ok(broken.problems.some(p=>/assert/.test(p)),'a failing spec test is a problem, not a warning');
-// A bare `;` line is a statement to the vendored compiler, not a comment: ahead of `module`
-// it makes the parser drop the module line (measured 2026-09-12 while writing this spec).
+// A bare `;` line is a statement, not a comment. Ahead of `module` the artifact vendored
+// before #4471 dropped the module line and still reported `typecheck.ok` with zero errors
+// (measured 2026-09-12 while writing this spec) -- the silent form of the defect, caught
+// here only because the loader counts discards. The compiler's own build refuses the file
+// and names the token instead (measured 2026-09-21: `Unexpected token in expression:
+// Semicolon (';')`). Louder, same contract, so the assertion is on the contract.
 const bare=specText.replace('module catalog_discovery;',';\nmodule catalog_discovery;');
 assert.notEqual(bare,specText,'the fixture found the module line');
-assert.ok(d.loadDiscoverySpec(analyze,bare).problems.some(p=>/dropped/.test(p)),'a bare ; line is reported, not silently discarded');
+const bareProblems=d.loadDiscoverySpec(analyze,bare).problems;
+assert.ok(bareProblems.some(p=>/Semicolon/.test(p)),'a bare ; line is reported, not silently discarded');
+assert.ok(bareProblems.some(p=>/module must be/.test(p)),'and the module it swallowed is named');
 assert.ok(d.loadDiscoverySpec(analyze,specText.replace('module catalog_discovery;','module other;')).problems.some(p=>/module/.test(p)));
 
 // The manifest's founding sources are exactly the spec's FOUNDING list.

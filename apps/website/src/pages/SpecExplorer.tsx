@@ -38,6 +38,7 @@ import {
   loadSpecSource,
   prefetchSpec,
   type Health,
+  type TargetId,
   type SpecEntry,
   type SpecManifest,
   type T27Analysis,
@@ -295,10 +296,19 @@ const LAYERS = [
   { id: 'verilog_hir', kind: 'target' },
   { id: 'c', kind: 'target' },
   { id: 'rust', kind: 'target' },
+  { id: 'js', kind: 'target' },
   { id: 'chip', kind: 'chip' },
 ] as const
 
 type LayerId = (typeof LAYERS)[number]['id']
+
+// LAYERS stays written out -- half of it is not a backend, and a spread of
+// TARGET_IDS would widen every `id` to `string` and take LayerId with it. So
+// the list is checked instead of derived: add a backend without a layer to show
+// it in and this line stops compiling. LAYER_LABEL, being a Record<LayerId,_>,
+// already refuses a layer with no name.
+const _everyBackendHasALayer: TargetId extends LayerId ? true : never = true
+void _everyBackendHasALayer
 
 const LAYER_LABEL: Record<LayerId, string> = {
   source: 'Source',
@@ -311,6 +321,7 @@ const LAYER_LABEL: Record<LayerId, string> = {
   verilog_hir: 'Verilog (HIR)',
   c: 'C',
   rust: 'Rust',
+  js: 'JavaScript',
   chip: 'Chip',
 }
 
@@ -804,7 +815,7 @@ export default function SpecExplorer() {
     if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, 'verilog')
     if (activeTarget?.ok && activeTarget.code) {
       const langOf: Record<string, string> = {
-        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust',
+        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust', js: 'js',
       }
       return highlightCode(activeTarget.code, langOf[layer] || 'plain')
     }

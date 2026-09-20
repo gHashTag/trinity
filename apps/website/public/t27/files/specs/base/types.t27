@@ -423,7 +423,7 @@ pub fn packed_trit_shift_left(packed: PackedTrit, shift: u8) PackedTrit {
     var result: PackedTrit = 0;
     for (0..TRITS_PER_BYTE) |i| {
         if (i >= shift) {
-            const src_pos = @intCast(i - shift);
+            const src_pos: u8 = @intCast(i - shift);
             const src_trit = unpack_trit(src_pos, packed).value;
             result = pack_trit(src_trit, @intCast(i), result);
         }
@@ -445,7 +445,7 @@ pub fn packed_trit_shift_right(packed: PackedTrit, shift: u8) PackedTrit {
 
     var result: PackedTrit = 0;
     for (0..TRITS_PER_BYTE) |i| {
-        const dst_pos = @intCast(i + shift);
+        const dst_pos: u8 = @intCast(i + shift);
         if (dst_pos < TRITS_PER_BYTE) {
             const src_trit = unpack_trit(@intCast(i), packed).value;
             result = pack_trit(src_trit, dst_pos, result);
@@ -467,7 +467,7 @@ pub fn packed_trit_rotate_left(packed: PackedTrit, rotate: u8) PackedTrit {
     var result: PackedTrit = 0;
 
     for (0..TRITS_PER_BYTE) |i| {
-        const src_pos = @intCast((i + TRITS_PER_BYTE - shift) % TRITS_PER_BYTE);
+        const src_pos: u8 = @intCast((i + TRITS_PER_BYTE - shift) % TRITS_PER_BYTE);
         const src_trit = unpack_trit(src_pos, packed).value;
         result = pack_trit(src_trit, @intCast(i), result);
     }
@@ -487,7 +487,7 @@ pub fn packed_trit_rotate_right(packed: PackedTrit, rotate: u8) PackedTrit {
     var result: PackedTrit = 0;
 
     for (0..TRITS_PER_BYTE) |i| {
-        const src_pos = @intCast((i + shift) % TRITS_PER_BYTE);
+        const src_pos: u8 = @intCast((i + shift) % TRITS_PER_BYTE);
         const src_trit = unpack_trit(src_pos, packed).value;
         result = pack_trit(src_trit, @intCast(i), result);
     }
@@ -500,7 +500,7 @@ pub fn packed_trit_rotate_right(packed: PackedTrit, rotate: u8) PackedTrit {
 pub fn ternary_word_is_zero(word: TernaryWord) bool {
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         if (unpacked.valid and unpacked.value != .zero) {
             return false;
@@ -515,7 +515,7 @@ pub fn ternary_word_count(word: TernaryWord, value: Trit) u8 {
     var count: u8 = 0;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         if (unpacked.valid and unpacked.value == value) {
             count += 1;
@@ -541,7 +541,7 @@ pub fn ternary_word_negate(word: TernaryWord) TernaryWord {
     var result: TernaryWord = undefined;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         const negated = trit_negate(unpacked.value);
         result[byte_idx] = pack_trit(negated, trit_pos, result[byte_idx]);
@@ -1060,7 +1060,7 @@ test "test_ternary_word_count_all_same" {
     var word: TernaryWord = [_]u8{0} ** WORD_BYTES;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         word[byte_idx] = pack_trit(.neg, trit_pos, word[byte_idx]);
     }
     try std.testing.expectEqual(TRITS_PER_WORD, ternary_word_count(word, .neg));
@@ -1109,7 +1109,7 @@ test "test_ternary_word_is_all_same_true" {
     var word: TernaryWord = [_]u8{0} ** WORD_BYTES;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         word[byte_idx] = pack_trit(.pos, trit_pos, word[byte_idx]);
     }
     try std.testing.expect(ternary_word_is_all_same(word));

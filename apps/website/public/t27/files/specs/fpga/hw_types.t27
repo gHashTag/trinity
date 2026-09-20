@@ -290,6 +290,12 @@ module HwTypes {
     test is_connectable_clock_mismatch
         then is_connectable(hw_clock(), hw_bool()) == false
 
+    test verilog_range_multi_bit
+        then verilog_range(hw_uint(8)) == true
+
+    test verilog_range_single_bit
+        then verilog_range(hw_bool()) == false
+
     // === Invariants ===
 
     invariant bool_width_is_1

@@ -21,8 +21,8 @@ module TriRing;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // new(capacity: usize) → void
-    fn new(capacity: usize) -> void {
+    // new(capacity: usize) → Ring(T)
+    fn new(capacity: usize) -> Ring(T) {
         var buffer : []T = undefined;
         buffer = create_buffer(T, capacity);
         return Ring(T){

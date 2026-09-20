@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // onboarding-from-spec.mjs -- the agent-facing surface of t27.ai, from `specs/catalog/onboarding.t27`.
 //
-// Reads the vendored `public/t27/files/specs/catalog/onboarding.t27` through the real compiler
+// Reads `apps/website/specs/catalog/onboarding.t27` through the real compiler
 // (`t27_compiler.wasm`), checks the constant schema, evaluates every `test` block of the spec,
 // and writes the two files the site serves to anything that crawls it:
 //
@@ -24,11 +24,23 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { CYRILLIC, SITE, checkSchema, constsOf, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
+import { CYRILLIC, SITE, checkSchema, compilerErrors, constsOf, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
 import { runSpecTests } from './viewport-from-spec.mjs'
 
 const WASM = 'public/t27/t27_compiler.wasm'
-export const ONBOARDING_SPEC = 'public/t27/files/specs/catalog/onboarding.t27'
+// LIVE_TRUTH in the spec points at this file's published copy. The spec's snapshot constants
+// are checked against it, so "the manifest supersedes these counts" is enforced, not asserted.
+const MANIFEST = 'public/t27/manifest.json'
+// This spec is ours, and it lives outside `public/t27/`. That directory is the
+// vendored mirror of the t27 corpus: `sync-t27-specs.mjs` wipes and rewrites it
+// from the tarballs, so a file that is in no t27 ref does not survive a refresh.
+// It sat there for one day and would have been deleted by the first complete
+// sync, taking /llms.txt and /agents.t27 down with it. It belongs here anyway --
+// its numbers are measured from trinity's manifest by trinity's generator behind
+// trinity's gate, so a home upstream would mean a cross-repo PR every time the
+// corpus moves. Nothing reads it but this file: `renderDoc` embeds the whole
+// spec text into the published document, so the raw path is a label, not a URL.
+export const ONBOARDING_SPEC = 'specs/catalog/onboarding.t27'
 export const DOC_OUT = 'public/agents.t27'
 export const LLMS_OUT = 'public/llms.txt'
 export const EXPECTED_MODULE = 'catalog_onboarding'
@@ -39,8 +51,9 @@ export const ONBOARDING_REQUIRED = {
   SITE: 'str', DOC: 'str', DOC_ALIAS: 'str', LIVE_TRUTH: 'str', RAW_PREFIX: 'str',
   READ: 'arr', READ_ABOUT: 'arr',
   COMPILER: 'str', COMPILER_EXPORTS: 'arr', COMPILER_ABI: 'str', REQUIRES_RUNNING_OUR_CODE: 'bool',
+  BACKENDS: 'arr', BACKENDS_NOTE: 'str',
   MEASURED_AT: 'str', SPEC_COUNT: 'u16', SPEC_LINES: 'u32',
-  HEALTH_OK: 'u16', HEALTH_WARN: 'u16', HEALTH_FAIL: 'u16', HEALTH_FAIL_NOTE: 'str',
+  HEALTH_OK: 'u16', HEALTH_WARN: 'u16', HEALTH_FAIL: 'u16', HEALTH_FAIL_NOTE: 'str', HEALTH_FAIL_JS_ONLY: 'u16',
   REPO_COUNT: 'u8', WORLD_COUNT: 'u8',
   GAME: 'str', GAME_DOC: 'str', GAME_BOARD: 'str', WIN_CONDITION: 'str',
   CAMPAIGN: 'str', CAMPAIGN_NOTE: 'str', CYCLE: 'arr', CYCLE_ABOUT: 'arr',
@@ -119,11 +132,49 @@ export function semanticProblems(f, file) {
 }
 
 // ---------------------------------------------------------------------------
+// The corpus snapshot, checked against the corpus.
+//
+// The spec writes down a day's counts and says LIVE_TRUTH supersedes them. That was true of
+// the wording and false of the numbers: nothing compared them to anything. Its own test only
+// asserts OK+WARN+FAIL == SPEC_COUNT, which held for 1002+399+6=1407 and holds just as well
+// for the triple that replaced it -- so a corpus refresh could move every figure and leave a
+// green gate publishing the old ones at the address the document calls live truth.
+//
+// So read the manifest that is about to be published and compare. The message names the value
+// to write, because a gate that says "wrong" without saying "this" gets fixed by guessing.
+// ---------------------------------------------------------------------------
+export function corpusProblems(f, file, manifest) {
+  const p = []
+  const backends = [...new Set(manifest.specs.flatMap((s) => Object.keys(s.outBytes ?? {})))].sort()
+  const want = {
+    SPEC_COUNT: manifest.specCount,
+    SPEC_LINES: manifest.totalLines,
+    HEALTH_OK: manifest.health.ok,
+    HEALTH_WARN: manifest.health.warn,
+    HEALTH_FAIL: manifest.health.fail,
+    REPO_COUNT: manifest.repos.length,
+    WORLD_COUNT: manifest.discovery.worlds.length,
+    // The share of health=fail that is one backend declining to emit, on a file the other
+    // five accepted. Counted here rather than typed into the spec, because the number it
+    // qualifies is the one a reader is most likely to misread as "338 broken specs".
+    HEALTH_FAIL_JS_ONLY: manifest.specs.filter((s) => (s.failedBackends ?? []).join() === 'js').length,
+  }
+  for (const [k, v] of Object.entries(want)) {
+    if (f[k] !== v) p.push(`${file}: ${k} says ${f[k]}, the manifest says ${v} -- write ${v}`)
+  }
+  const named = [...(f.BACKENDS ?? [])].sort()
+  if (JSON.stringify(named) !== JSON.stringify(backends)) {
+    p.push(`${file}: BACKENDS is ${JSON.stringify(named)}, the manifest emits ${JSON.stringify(backends)}`)
+  }
+  return p
+}
+
+// ---------------------------------------------------------------------------
 // Emission. Deterministic: the same spec bytes give the same document.
 // ---------------------------------------------------------------------------
 export function renderDoc(specText, specSha) {
   return `; GENERATED by apps/website/scripts/onboarding-from-spec.mjs (gHashTag/trinity)
-; from specs/catalog/onboarding.t27, sha256 ${specSha}
+; from ${ONBOARDING_SPEC}, sha256 ${specSha}
 ; Served as ${ORIGIN}agents.t27 and ${ORIGIN}llms.txt -- the same bytes at both addresses.
 ; Do not edit either file: edit the spec and re-run the generator.
 
@@ -140,12 +191,13 @@ ${specText}`
 // ---------------------------------------------------------------------------
 // Build.
 // ---------------------------------------------------------------------------
-export async function buildOnboarding({ specText, analyze }) {
+export async function buildOnboarding({ specText, analyze, shippedExports = null, manifest = null }) {
   const problems = []
-  const file = ONBOARDING_SPEC.replace(/^public\/t27\/files\//, '')
+  const file = ONBOARDING_SPEC
   const analysis = analyze(specText)
   const verdict = verdictOf(analysis)
   if (!verdict.typecheckOk || verdict.discarded > 0 || !verdict.hirOk) problems.push(`${file}: compiler verdict not clean (${JSON.stringify(verdict)})`)
+  problems.push(...compilerErrors(analysis).map((m) => `${file}: ${m}`))
   if (/[^\x00-\x7f]/.test(specText)) problems.push(`${file}: non-ASCII byte in the spec (L3)`)
   if (CYRILLIC.test(specText)) problems.push(`${file}: Cyrillic in the spec (LANG-EN)`)
   const moduleName = analysis.ast?.name ?? null
@@ -159,6 +211,16 @@ export async function buildOnboarding({ specText, analyze }) {
   let tests = { tests: 0, asserts: 0, failures: [] }
   if (problems.length === 0) {
     problems.push(...semanticProblems(f, file))
+    // COMPILER_EXPORTS is an ABI promise about a binary we serve, so ask the binary
+    // rather than the schema. `semanticProblems` only checks that three names are
+    // present in the list; it cannot tell whether the wasm at COMPILER still has
+    // them, and an agent that fetches it finds out the hard way.
+    if (shippedExports) {
+      for (const name of f.COMPILER_EXPORTS ?? []) {
+        if (!shippedExports.includes(name)) problems.push(`${file}: COMPILER_EXPORTS names ${name}, which ${WASM} does not export`)
+      }
+    }
+    if (manifest) problems.push(...corpusProblems(f, file, manifest))
     tests = runSpecTests(analysis, f)
     if (tests.tests === 0) problems.push(`${file}: no test block; the spec must test its own claims`)
     problems.push(...tests.failures.map((m) => `${file}: test ${m}`))
@@ -183,10 +245,16 @@ async function main() {
   const check = process.argv.includes('--check')
   const json = process.argv.includes('--json')
   const specPath = join(SITE, ONBOARDING_SPEC)
-  if (!existsSync(specPath)) { console.error(`onboarding-from-spec: ${ONBOARDING_SPEC} is not vendored`); process.exit(1) }
-  const analyze = await loadCompiler(readFileSync(join(SITE, WASM)))
+  if (!existsSync(specPath)) { console.error(`onboarding-from-spec: ${ONBOARDING_SPEC} is missing`); process.exit(1) }
+  const wasmBytes = readFileSync(join(SITE, WASM))
+  const analyze = await loadCompiler(wasmBytes)
+  const { instance } = await WebAssembly.instantiate(wasmBytes, {})
+  const shippedExports = Object.keys(instance.exports)
+  const manifestPath = join(SITE, MANIFEST)
+  if (!existsSync(manifestPath)) { console.error(`onboarding-from-spec: ${MANIFEST} is missing; the corpus snapshot cannot be checked against anything`); process.exit(1) }
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
   const specText = readFileSync(specPath, 'utf8')
-  const out = await buildOnboarding({ specText, analyze })
+  const out = await buildOnboarding({ specText, analyze, shippedExports, manifest })
   if (out.problems.length) {
     console.error(`onboarding-from-spec: ${out.problems.length} problem(s)`)
     for (const p of out.problems) console.error('  ' + p)
