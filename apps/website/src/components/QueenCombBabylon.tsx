@@ -203,7 +203,10 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     fieldRoot.rotation.x = Math.PI / 2;
     // the wall's world centre: the root maps comb (x, z) to world (x, -z)
     const centreWorld = new Vector3(centre.x, -centre.z, 0);
-    const camera = new ArcRotateCamera("cam", Math.PI / 2, Math.PI / 2, 4000, centreWorld.clone(), scene);
+    // the user, 2026-09-07: "картинки вниз головой! поверни на 180"
+    // spin the camera 180° about the wall's centre so the player sees
+    // the comb right-side up (the author draws it that way).
+    const camera = new ArcRotateCamera("cam", Math.PI * 1.5, Math.PI / 2, 4000, centreWorld.clone(), scene);
     // the wall is a plane, not a mesh: a screen point becomes a comb point by
     // solving the picking ray against z = 0, the plane the comb is drawn on
     const pickRay = new Ray(Vector3.Zero(), Vector3.Up(), Number.MAX_VALUE);
