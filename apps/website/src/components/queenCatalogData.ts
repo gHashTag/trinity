@@ -128,3 +128,37 @@ export function catalogFocusView(map:CatalogHive,index:number,halfWidth:number,h
     hiveFocusZoom(S_CELL*position.scale*width/(halfWidth*2),width*(1-inset.right),height*(1-inset.bottom));
   return {x:(region?.x??position.x)+(region?0:inset.right*halfWidth/zoom),y:(region?.y??position.y)-(region?0:inset.bottom*halfHeight/zoom),zoom};
 }
+
+/** The rectangle a region label may occupy, in the label layer's own coordinates.
+ *
+ * In the shell the layer is fixed at inset 0, because Babylon projects a cell to
+ * CSS pixels of the render viewport and that viewport is the window -- so the
+ * layer has to share the window's origin or every label lands displaced by the
+ * body's padding. The cost is that the layer's own box is the window too, and
+ * "clamp the label inside the layer" then clamped it inside the window: with the
+ * tabs moved up, two repository names were placed at y=25 and y=40, underneath
+ * the translucent status bar, where they read as garbled text over the counters.
+ *
+ * The field is the map's own box -- the layer the labels belong to -- less the
+ * toolbar floating over whichever edge it is anchored to. Off the shell, where
+ * the label layer already starts below the toolbar, every edge resolves to the
+ * layer's own box and nothing moves.
+ */
+export function catalogLabelField(
+  box:{left:number;top:number;width:number;height:number},
+  layer:{left:number;top:number;right:number;bottom:number}|null,
+  bar:{top:number;bottom:number}|null,
+) {
+  let left=0,top=0,right=box.width,bottom=box.height;
+  if(layer){
+    left=Math.max(0,layer.left-box.left);
+    top=Math.max(0,layer.top-box.top);
+    right=Math.min(box.width,layer.right-box.left);
+    bottom=Math.min(box.height,layer.bottom-box.top);
+  }
+  if(layer&&bar){
+    if(bar.top-layer.top<=layer.bottom-bar.bottom)top=Math.max(top,Math.min(bottom,bar.bottom-box.top));
+    else bottom=Math.min(bottom,Math.max(top,bar.top-box.top));
+  }
+  return {left,top,right,bottom};
+}

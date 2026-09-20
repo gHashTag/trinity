@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {catalogHive,catalogIssueRows,catalogFocus,catalogFocusHash,catalogPortalSize} from '../src/components/queenCatalogData.ts';
+import {catalogHive,catalogIssueRows,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize} from '../src/components/queenCatalogData.ts';
 import {placeHiveDisplays} from '../src/components/queenHiveDisplay.ts';
 const atlas=JSON.parse(readFileSync('public/t27/universe-atlas.json','utf8'));
 const manifest=JSON.parse(readFileSync('public/t27/manifest.json','utf8'));
@@ -65,4 +65,27 @@ assert.doesNotMatch(source,/catalogGlass\.alpha/,'zoom must not restore the opaq
 assert.equal(catalogPortalSize(4).width,16,'zooming out shrinks portals with the hive');
 assert.equal(catalogPortalSize(4).readable,false,'tiny portals do not draw overflowing labels');
 assert.equal(catalogPortalSize(40).width,136);assert.equal(catalogPortalSize(NaN).width,0);
+// A region label lands on the map, never on the chrome floating over it. In the
+// shell the label layer is fixed at inset 0, because Babylon projects a cell to
+// CSS pixels of the render viewport and that viewport is the window: the layer
+// has to share the window's origin or every label is displaced by the body's
+// padding. Clamping a label "inside the layer" then clamped it inside the
+// WINDOW, and once the tabs moved up to the top edge two repository names were
+// placed at y=25 and y=40 -- underneath the translucent status bar, where they
+// read as garbled text over its counters. The free rectangle is the map's own
+// box, less the toolbar floating over whichever edge it is anchored to.
+const shellField=catalogLabelField({left:0,top:0,width:1343,height:788},{left:270,top:144,right:1323,bottom:758},{top:685,bottom:768});
+assert.deepEqual(shellField,{left:270,top:144,right:1323,bottom:685},'in the shell the field is the map box, less the toolbar anchored to its bottom');
+assert.ok(shellField.top>84,'the field starts below the status bar (20..84), which is exactly where the stray labels were drawn');
+// A toolbar anchored to the top pushes the top edge down instead.
+assert.deepEqual(catalogLabelField({left:0,top:0,width:1343,height:788},{left:270,top:144,right:1323,bottom:758},{top:150,bottom:190}),{left:270,top:190,right:1323,bottom:758});
+// Off the shell the layer is the labels' own parent and the toolbar sits above
+// them in the headroom: every edge resolves to the labels' own box, nothing moves.
+assert.deepEqual(catalogLabelField({left:0,top:112,width:900,height:500},{left:0,top:0,right:900,bottom:612},{top:60,bottom:104}),{left:0,top:0,right:900,bottom:500});
+// Nothing measured yet is the box itself -- what the old code always used.
+assert.deepEqual(catalogLabelField({left:0,top:0,width:900,height:500},null,null),{left:0,top:0,right:900,bottom:500});
+assert.deepEqual(catalogLabelField({left:0,top:0,width:900,height:500},{left:10,top:20,right:400,bottom:300},null),{left:10,top:20,right:400,bottom:300});
+// And the placement clamps against those edges, not against a width and height
+// that silently start at the window's origin.
+for(const edge of ['field.left+half+4','field.right-half-4','field.top+regionHeight+4','field.bottom-4'])assert.ok(ui.includes(edge),`the label placement clamps to ${edge}`);
 console.log(`Catalog hive: PASS (${specs.length} real specs, ${repos.length} contributing repos, exact source edges, no fake issue identity)`);

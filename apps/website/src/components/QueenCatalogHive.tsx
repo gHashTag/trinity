@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useRef,useState,type Ref,type CSSProperties} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import {QueenCombBabylon} from './QueenCombBabylon';
-import {catalogUniverse,catalogFocus,catalogFocusHash,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
+import {catalogUniverse,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
 import {QueenCatalogSpec} from './QueenCatalogSpec';
 import QueenCellStage,{type CellSpecLink} from './QueenCellStage';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
@@ -28,9 +28,9 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
   // trinity-fpga rendered at left:-31 and read as "ity-fpga". The label box is
   // clamped into the measured layer instead.
   const labels=useRef<HTMLDivElement>(null);
-  const [field,setField]=useState({width:0,height:0});
+  const [field,setField]=useState({left:0,top:0,right:0,bottom:0});
   const [regionHeight,setRegionHeight]=useState(49);
-  useEffect(()=>{const node=labels.current;if(!node)return;const measure=()=>setField(prev=>prev.width===node.clientWidth&&prev.height===node.clientHeight?prev:{width:node.clientWidth,height:node.clientHeight});const observer=new ResizeObserver(measure);observer.observe(node);measure();return()=>observer.disconnect();},[]);
+  useEffect(()=>{const node=labels.current;if(!node)return;const measure=()=>{const box=node.getBoundingClientRect();const next=catalogLabelField({left:box.left,top:box.top,width:box.width,height:box.height},node.parentElement?.getBoundingClientRect()??null,toolbar.current?.getBoundingClientRect()??null);setField(prev=>prev.left===next.left&&prev.top===next.top&&prev.right===next.right&&prev.bottom===next.bottom?prev:next);};const observer=new ResizeObserver(measure);observer.observe(node);if(node.parentElement)observer.observe(node.parentElement);if(toolbar.current)observer.observe(toolbar.current);measure();return()=>observer.disconnect();},[]);
   const [selected,setSelected]=useState<number|null>(null),[projections,setProjections]=useState<HiveDisplayProjection[]>([]),[query,setQuery]=useState(''),[limit,setLimit]=useState(8),[packet,setPacket]=useState(''),[copied,setCopied]=useState(false);
   const [regionProjections,setRegionProjections]=useState<HiveDisplayProjection[]>([]);
   const resource=selected===null?null:map.cells[selected];
@@ -49,8 +49,9 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       const row=map.cells[p.index];
       if(row?.kind!=='repo')return [];
       const cap=Math.max(90,Math.min(200,p.width)),half=cap/2;
-      const x=field.width>=cap+8?Math.min(Math.max(p.x,half+4),field.width-half-4):p.x;
-      const floor=regionHeight+4,ceil=field.height?field.height-4:Number.POSITIVE_INFINITY;
+      const width=field.right-field.left,height=field.bottom-field.top;
+      const x=width>=cap+8?Math.min(Math.max(p.x,field.left+half+4),field.right-half-4):p.x;
+      const floor=field.top+regionHeight+4,ceil=height?field.bottom-4:Number.POSITIVE_INFINITY;
       for(const lift of lifts){
         const y=Math.min(Math.max(p.y+lift,floor),ceil);
         if(lift&&Math.abs(y-p.y)<Math.abs(lift)-0.5)continue;      // the clamp swallowed the lift, so it is not a new slot
