@@ -4,12 +4,16 @@
 
 name: Build Compiler Release
 
+# NOT 'v*'. This workflow publishes its own release body with its own asset
+# table, and so does Binary Release (release.yml). On a v* tag both fired
+# against the same tag and whichever finished last overwrote the other's notes
+# -- on v10.1.0 the surviving body advertised files the run had not produced.
+# `compiler-v*` was already in this list, so a separate namespace was always the
+# intent; this just stops the two from racing.
 on:
   push:
     tags:
-      - 'v*'
       - 'compiler-v*'
-      - '!ext-v*'
   workflow_dispatch:
 
 env:
@@ -25,9 +29,9 @@ jobs:
         target: [x86_64-linux-gnu, aarch64-linux-gnu]
         include:
           - target: x86_64-linux-gnu
-            binary_name: vibee-linux-x86_64
+            binary_name: vibeec-linux-x86_64
           - target: aarch64-linux-gnu
-            binary_name: vibee-linux-aarch64
+            binary_name: vibeec-linux-aarch64
 
     steps:
       - name: Checkout
@@ -36,7 +40,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Zig
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v2
         with:
           version: ${{ env.ZIG_VERSION }}
 
@@ -47,10 +51,13 @@ jobs:
           cp zig-out/bin/vibeec ../../${{ matrix.binary_name }}
           chmod +x ../../${{ matrix.binary_name }}
 
+      # Only x86_64 is native on this runner; the aarch64 build cannot be
+      # executed here. Where it CAN run, it has to run: `|| echo "continuing"`
+      # made this step incapable of failing, which is not a smoke test.
       - name: Test binary (if native)
         run: |
           if [[ "${{ matrix.target }}" == "x86_64-linux-gnu" ]]; then
-            ./${{ matrix.binary_name }} --version 2>/dev/null || echo "Version check failed but continuing"
+            ./${{ matrix.binary_name }} --version
           fi
 
       - name: Upload artifact
@@ -62,23 +69,28 @@ jobs:
 
   build-macos:
     name: Build macOS (${{ matrix.target }})
-    runs-on: macos-latest
+    # NOT macos-latest. That image is macOS 26.6 with the Xcode 26.6 SDK, and
+    # zig 0.15.2 cannot link its own build runner against libc there -- every
+    # libSystem symbol comes back undefined from build_zcu.o, before any of this
+    # repository's code is looked at. Measured 2026-09-20: macos-14 (Xcode 15.4)
+    # links it, macos-latest does not. Same pin, same reason, as release.yml.
+    runs-on: macos-14
     strategy:
       fail-fast: false
       matrix:
         target: [x86_64-macos, aarch64-macos]
         include:
           - target: x86_64-macos
-            binary_name: vibee-macos-x86_64
+            binary_name: vibeec-macos-x86_64
           - target: aarch64-macos
-            binary_name: vibee-macos-arm64
+            binary_name: vibeec-macos-arm64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Zig
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v2
         with:
           version: ${{ env.ZIG_VERSION }}
 
@@ -89,9 +101,15 @@ jobs:
           cp zig-out/bin/vibeec ../../${{ matrix.binary_name }}
           chmod +x ../../${{ matrix.binary_name }}
 
-      - name: Test binary
+      # macos-14 is an arm64 runner, so only the aarch64 build is native here.
+      # The old version of this step ran unconditionally and swallowed the
+      # failure, which is how an x86_64 binary that cannot execute on this
+      # machine passed a "test binary" step on every release.
+      - name: Test binary (if native)
         run: |
-          ./${{ matrix.binary_name }} --version 2>/dev/null || echo "Version check failed but continuing"
+          if [[ "${{ matrix.target }}" == "aarch64-macos" ]]; then
+            ./${{ matrix.binary_name }} --version
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -115,20 +133,24 @@ jobs:
 
       - name: List artifacts
         run: |
-          find . -type f -name "vibee-*" | xargs ls -la
+          find . -type f -name "vibeec-*" | xargs ls -la
 
       - name: Create checksums
         run: |
-          for f in vibee-*; do
+          for f in vibeec-*; do
             sha256sum "$f" > "$f.sha256"
           done
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          # The compiler is not the repository's headline artifact -- Binary
+          # Release is. Leaving this at the action's default (true) would make a
+          # compiler-v* tag the release users are offered on the front page.
+          make_latest: false
           files: |
-            vibee-*
-            vibee-*.sha256
+            vibeec-*
+            vibeec-*.sha256
           body: |
             ## VIBEE Compiler ${{ github.ref_name }}
 
@@ -138,39 +160,43 @@ jobs:
 
             | Platform | Architecture | Binary |
             |----------|--------------|--------|
-            | Linux | x86_64 | `vibee-linux-x86_64` |
-            | Linux | ARM64 (aarch64) | `vibee-linux-aarch64` |
-            | macOS | x86_64 (Intel) | `vibee-macos-x86_64` |
-            | macOS | ARM64 (Apple Silicon) | `vibee-macos-arm64` |
+            | Linux | x86_64 | `vibeec-linux-x86_64` |
+            | Linux | ARM64 (aarch64) | `vibeec-linux-aarch64` |
+            | macOS | x86_64 (Intel) | `vibeec-macos-x86_64` |
+            | macOS | ARM64 (Apple Silicon) | `vibeec-macos-arm64` |
+
+            This is `vibeec`, the compiler built from `src/vibeec`. It is not the
+            `vibee` binary shipped by Binary Release — that one comes from the
+            top-level build. The files used to be named `vibee-*` here, which
+            made two different programs look like one.
 
             ### Installation
 
             ```bash
             # Download appropriate binary
-            curl -LO https://github.com/gHashTag/vibee-lang/releases/download/${{ github.ref_name }}/vibee-linux-x86_64
+            curl -LO https://github.com/gHashTag/trinity/releases/download/${{ github.ref_name }}/vibeec-linux-x86_64
 
             # Make executable
-            chmod +x vibee-linux-x86_64
+            chmod +x vibeec-linux-x86_64
 
             # Move to PATH
-            sudo mv vibee-linux-x86_64 /usr/local/bin/vibee
+            sudo mv vibeec-linux-x86_64 /usr/local/bin/vibeec
             ```
 
             ### Verification
 
             ```bash
             # Check SHA256
-            sha256sum -c vibee-linux-x86_64.sha256
+            sha256sum -c vibeec-linux-x86_64.sha256
 
             # Test
-            vibee --version
-            vibee --help
+            vibeec --version
+            vibeec --help
             ```
 
             ### Notes
             - All binaries built with `-Doptimize=ReleaseSafe` (safe for all CPUs)
-            - Zig 0.13.0 used for compilation
-            - Docker image also available: `ghcr.io/ghashtag/vibee`
+            - Compiled with Zig ${{ env.ZIG_VERSION }}
 
             **Golden Chain is closed. KOSCHEI is immortal.**
           draft: false
