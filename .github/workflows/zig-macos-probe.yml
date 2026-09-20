@@ -14,7 +14,12 @@
 # linking a five-byte program against libc before touching build.zig.
 name: zig macOS probe
 
+# A workflow_dispatch is only offered for files that already exist on the
+# default branch, and this one deliberately never lands there. Push is the
+# trigger that runs a workflow from the branch that carries it.
 on:
+  push:
+    branches: [fix/release-build]
   workflow_dispatch:
 
 jobs:
