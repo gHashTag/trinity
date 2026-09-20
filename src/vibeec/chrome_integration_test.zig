@@ -6,8 +6,8 @@ const std = @import("std");
 const chrome_launcher = @import("chrome_launcher.zig");
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
-    const stderr = std.io.getStdErr().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const stderr = std.fs.File.stderr().deprecatedWriter();
 
     const allocator = std.heap.page_allocator;
 

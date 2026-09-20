@@ -183,7 +183,7 @@ pub const Compiler = struct {
         // Phase 1: Parse
         const parse_start = std.time.nanoTimestamp();
         var spec = self.parser.parse(source) catch |err| {
-            var writer = error_reporter.ColorWriter.init(std.io.getStdOut().writer().any(), true);
+            var writer = error_reporter.ColorWriter.init(std.fs.File.stdout().deprecatedWriter().any(), true);
             try writer.printColored(.red, "Parse error: {}\n", .{err});
             try writer.printColored(.yellow, "   Run './bin/vibeec validate <file>' for detailed validation\n", .{});
             return CompileResult{
@@ -204,7 +204,7 @@ pub const Compiler = struct {
         if (self.options.enable_type_check) {
             const tc_start = std.time.nanoTimestamp();
             var tc_result = self.type_checker.check(&spec) catch |err| {
-                const stderr = std.io.getStdErr().writer();
+                const stderr = std.fs.File.stderr().deprecatedWriter();
                 var writer = error_reporter.ColorWriter.init(stderr.any(), true);
                 try writer.printColored(.red, "Type check error: {}\n", .{err});
                 try writer.printColored(.yellow, "   Run './bin/vibeec gen <file> --no-type-check' to skip\n", .{});
@@ -226,7 +226,7 @@ pub const Compiler = struct {
 
             if (!tc_result.success) {
                 metrics.error_count = @intCast(tc_result.errors.items.len);
-                const stderr = std.io.getStdErr().writer();
+                const stderr = std.fs.File.stderr().deprecatedWriter();
                 var writer = error_reporter.ColorWriter.init(stderr.any(), true);
                 try writer.printColored(.red, "Type check failed: {} errors\n", .{tc_result.errors.items.len});
                 try writer.printColored(.yellow, "   Suggestion: Use '--no-type-check' for complex nested structures\n", .{});
@@ -236,7 +236,7 @@ pub const Compiler = struct {
         // Phase 3: Code Generation
         const cg_start = std.time.nanoTimestamp();
         var cg = CodegenV4.init(self.allocator, self.options.target) catch |err| {
-            var writer = error_reporter.ColorWriter.init(std.io.getStdOut().writer().any(), true);
+            var writer = error_reporter.ColorWriter.init(std.fs.File.stdout().deprecatedWriter().any(), true);
             try writer.printColored(.red, "Codegen init error: {}\n", .{err});
             return CompileResult{
                 .success = false,
@@ -251,7 +251,7 @@ pub const Compiler = struct {
         defer cg.deinit();
 
         const gen_result = cg.generate(&spec) catch |err| {
-            var writer = error_reporter.ColorWriter.init(std.io.getStdOut().writer().any(), true);
+            var writer = error_reporter.ColorWriter.init(std.fs.File.stdout().deprecatedWriter().any(), true);
             try writer.printColored(.red, "Codegen generate error: {}\n", .{err});
             try writer.printColored(.yellow, "   Suggestion: Check specification syntax and required fields\n", .{});
             return CompileResult{
@@ -390,7 +390,7 @@ pub fn main() !u8 {
         defer @constCast(&result).deinit();
 
         if (result.success) {
-            const stdout = std.io.getStdOut().writer();
+            const stdout = std.fs.File.stdout().deprecatedWriter();
             try stdout.print("✓ Compiled {s} successfully\n", .{input_path});
 
             // Write output files
@@ -425,7 +425,7 @@ pub fn main() !u8 {
             }
             return 0;
         } else {
-            const stdout = std.io.getStdOut().writer();
+            const stdout = std.fs.File.stdout().deprecatedWriter();
             var writer = error_reporter.ColorWriter.init(stdout.any(), true);
 
             try writer.printColored(.red, "✗ Failed to compile {s}\n", .{input_path});
@@ -521,7 +521,7 @@ fn printVersion() void {
 }
 
 fn printPASInfo() void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
     stdout.print(
         \\
         \\  PAS DAEMONS - Predictive Algorithmic Systematics
@@ -548,7 +548,7 @@ fn printPhiInfo() void {
     const inv_phi_sq = 1.0 / phi_sq;
     const golden = phi_sq + inv_phi_sq;
 
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
     stdout.print(
         \\
         \\  SACRED CONSTANTS
@@ -563,7 +563,7 @@ fn printPhiInfo() void {
 }
 
 fn evalTernary(expr: []const u8) void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
     stdout.print(
         \\
         \\  TERNARY EVAL: {s}
@@ -581,7 +581,7 @@ fn evalTernary(expr: []const u8) void {
 }
 
 fn printAgentStatus() void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
 
     // Check API keys
     const anthropic_key = std.posix.getenv("ANTHROPIC_API_KEY");
@@ -627,7 +627,7 @@ fn printAgentStatus() void {
 }
 
 fn printConfig() void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
 
     const anthropic_key = std.posix.getenv("ANTHROPIC_API_KEY");
     const openai_key = std.posix.getenv("OPENAI_API_KEY");
@@ -678,8 +678,8 @@ fn printConfig() void {
 
 fn runChat(allocator: std.mem.Allocator) !u8 {
     _ = allocator;
-    const stdout = std.io.getStdOut().writer();
-    const stdin = std.io.getStdIn().reader();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const stdin = std.fs.File.stdin().deprecatedReader();
 
     // Check for API keys
     const anthropic_key = std.posix.getenv("ANTHROPIC_API_KEY");
@@ -805,7 +805,7 @@ fn runChat(allocator: std.mem.Allocator) !u8 {
 }
 
 fn printChatHelp() void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
     stdout.print(
         \\
         \\  CHAT COMMANDS
@@ -844,7 +844,7 @@ fn launchAgent(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     child.stderr_behavior = .Inherit;
 
     _ = child.spawnAndWait() catch |err| {
-        const stdout = std.io.getStdOut().writer();
+        const stdout = std.fs.File.stdout().deprecatedWriter();
         stdout.print("Failed to launch agent: {}\n", .{err}) catch {};
         stdout.print("\nRun directly: ./bin/vibee-agent\n", .{}) catch {};
         return 1;

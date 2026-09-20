@@ -127,7 +127,7 @@ pub const REPL = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator, force_color: ?bool) Self {
-        const stdout = std.io.getStdOut().writer().any();
+        const stdout = std.fs.File.stdout().deprecatedWriter().any();
         return Self{
             .allocator = allocator,
             .writer = ColorWriter.init(stdout, force_color),
@@ -148,7 +148,7 @@ pub const REPL = struct {
 
         try self.printBanner();
 
-        const stdin = std.io.getStdIn().reader();
+        const stdin = std.fs.File.stdin().deprecatedReader();
         var buf: [4096]u8 = undefined;
 
         while (self.running) {

@@ -78,7 +78,7 @@ pub const ColorWriter = struct {
 
     fn detectTty() bool {
         // Check if stdout is a TTY
-        const stdout = std.io.getStdOut();
+        const stdout = std.fs.File.stdout();
         return std.io.tty.detectConfig(stdout) != .no_color;
     }
 

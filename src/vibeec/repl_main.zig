@@ -25,8 +25,8 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const stdout = std.io.getStdOut().writer();
-    const stdin = std.io.getStdIn().reader();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const stdin = std.fs.File.stdin().deprecatedReader();
 
     // Banner
     try stdout.print(

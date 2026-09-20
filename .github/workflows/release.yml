@@ -42,8 +42,9 @@ jobs:
           mkdir -p release
           cp zig-out/bin/tri release/tri-linux-amd64
           cp zig-out/bin/vibee release/vibee-linux-amd64
-          chmod +x release/tri-linux-amd64 release/vibee-linux-amd64
-          tar czf trinity-linux-amd64.tar.gz -C release tri-linux-amd64 vibee-linux-amd64
+          cp zig-out/bin/firebird release/firebird-linux-amd64
+          chmod +x release/tri-linux-amd64 release/vibee-linux-amd64 release/firebird-linux-amd64
+          tar czf trinity-linux-amd64.tar.gz -C release tri-linux-amd64 vibee-linux-amd64 firebird-linux-amd64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -74,8 +75,9 @@ jobs:
           mkdir -p release
           cp zig-out/bin/tri release/tri-linux-arm64
           cp zig-out/bin/vibee release/vibee-linux-arm64
-          chmod +x release/tri-linux-arm64 release/vibee-linux-arm64
-          tar czf trinity-linux-arm64.tar.gz -C release tri-linux-arm64 vibee-linux-arm64
+          cp zig-out/bin/firebird release/firebird-linux-arm64
+          chmod +x release/tri-linux-arm64 release/vibee-linux-arm64 release/firebird-linux-arm64
+          tar czf trinity-linux-arm64.tar.gz -C release tri-linux-arm64 vibee-linux-arm64 firebird-linux-arm64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -111,8 +113,9 @@ jobs:
           mkdir -p release
           cp zig-out/bin/tri release/tri-macos-amd64
           cp zig-out/bin/vibee release/vibee-macos-amd64
-          chmod +x release/tri-macos-amd64 release/vibee-macos-amd64
-          tar czf trinity-macos-amd64.tar.gz -C release tri-macos-amd64 vibee-macos-amd64
+          cp zig-out/bin/firebird release/firebird-macos-amd64
+          chmod +x release/tri-macos-amd64 release/vibee-macos-amd64 release/firebird-macos-amd64
+          tar czf trinity-macos-amd64.tar.gz -C release tri-macos-amd64 vibee-macos-amd64 firebird-macos-amd64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -149,8 +152,9 @@ jobs:
           mkdir -p release
           cp zig-out/bin/tri release/tri-macos-arm64
           cp zig-out/bin/vibee release/vibee-macos-arm64
-          chmod +x release/tri-macos-arm64 release/vibee-macos-arm64
-          tar czf trinity-macos-arm64.tar.gz -C release tri-macos-arm64 vibee-macos-arm64
+          cp zig-out/bin/firebird release/firebird-macos-arm64
+          chmod +x release/tri-macos-arm64 release/vibee-macos-arm64 release/firebird-macos-arm64
+          tar czf trinity-macos-arm64.tar.gz -C release tri-macos-arm64 vibee-macos-arm64 firebird-macos-arm64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -192,7 +196,8 @@ jobs:
           mkdir -p release
           cp zig-out/bin/tri.exe release/tri-windows-amd64.exe
           cp zig-out/bin/vibee.exe release/vibee-windows-amd64.exe
-          zip trinity-windows-amd64.zip release/tri-windows-amd64.exe release/vibee-windows-amd64.exe
+          cp zig-out/bin/firebird.exe release/firebird-windows-amd64.exe
+          zip trinity-windows-amd64.zip release/tri-windows-amd64.exe release/vibee-windows-amd64.exe release/firebird-windows-amd64.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -293,6 +298,7 @@ jobs:
 
             - **TRI** - Unified Trinity CLI (chat, code, pipeline, all commands)
             - **VIBEE** - VIBEE compiler (spec → Zig/Verilog)
+            - **FIREBIRD** - Firebird CLI (`src/firebird`, built ReleaseFast)
 
             ### Documentation
 

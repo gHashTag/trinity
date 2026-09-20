@@ -117,7 +117,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
 
     try stdout.writeAll("\n");
     try stdout.writeAll("═══════════════════════════════════════════════════════════════════════════════\n");
