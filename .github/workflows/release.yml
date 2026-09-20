@@ -35,7 +35,7 @@ jobs:
 
       - name: Build Trinity (Linux amd64)
         run: |
-          zig build -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseSafe
+          zig build -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
@@ -67,7 +67,7 @@ jobs:
 
       - name: Build Trinity (Linux arm64)
         run: |
-          zig build -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseSafe
+          zig build -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
@@ -99,7 +99,7 @@ jobs:
 
       - name: Build Trinity (macOS amd64)
         run: |
-          zig build -Dtarget=x86_64-macos-none -Doptimize=ReleaseSafe
+          zig build -Dtarget=x86_64-macos-none -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
@@ -117,7 +117,13 @@ jobs:
 
   build-macos-arm64:
     name: Build macOS (arm64)
-    runs-on: macos-latest
+    # NOT macos-latest. That image is macOS 26.6 with the Xcode 26.6 SDK, and
+    # zig 0.15.2 cannot link `pub fn main() void {}` against libc there: every
+    # libSystem symbol comes back undefined, which is the failure this whole
+    # workflow has been dying of. Measured 2026-09-20 on all three images --
+    # macos-14 (Xcode 15.4) links it and runs the build runner; macos-latest
+    # fails both. Pinned until ZIG_VERSION moves to a zig that knows SDK 26.
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -131,7 +137,7 @@ jobs:
 
       - name: Build Trinity (macOS arm64)
         run: |
-          zig build -Dtarget=aarch64-macos-none -Doptimize=ReleaseSafe
+          zig build -Dtarget=aarch64-macos-none -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
@@ -163,7 +169,7 @@ jobs:
 
       - name: Build Trinity (Windows amd64)
         run: |
-          zig build -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseSafe
+          zig build -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
