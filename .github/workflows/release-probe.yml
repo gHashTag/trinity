@@ -1,0 +1,45 @@
+# Temporary instrument, deleted before this branch merges.
+#
+# Two questions the release workflows cannot answer by reading:
+#   1. Does the default build step actually install `firebird`, or only
+#      tri + vibee? trinity-binary-release.yml copies it with a `[ -f ] ||
+#      echo "not found"` guard, which is how that workflow shipped archives
+#      nobody checked.
+#   2. What is the FULL error list for src/vibeec? Zig analyses lazily, so
+#      the four errors reported on the v10.1.1 tag are only the first wave.
+name: release probe
+
+on:
+  push:
+    branches: [fix/release-workflows]
+  workflow_dispatch:
+
+env:
+  ZIG_VERSION: 0.15.2
+
+jobs:
+  bins:
+    name: what the default step installs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+      - run: |
+          zig build -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseSafe -Dci=true
+          echo "=== zig-out/bin"
+          ls -la zig-out/bin/
+
+  vibeec:
+    name: every error in src/vibeec
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+      - run: |
+          cd src/vibeec
+          zig build -Doptimize=Debug 2>&1 | tail -120
