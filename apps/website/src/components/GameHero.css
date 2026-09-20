@@ -19,8 +19,10 @@
    TERNARY NETWORK FLOATS -- in a line small enough to be chrome, which left the
    screen with no product name on it at all: the claim moved to /trinity with
    the rest of the arithmetic, and what stands under the mark now is what the
-   thing is called. Large enough to be the second thing read after the mark,
-   and still under the headline, which is what the visitor is here to act on. */
+   thing is called. It is now the largest type on the screen -- 4rem against the
+   headline's 3.2rem -- and bold against the headline's 300, because the product
+   name outranks the sentence describing it on the screen that introduces both.
+   (It was the other way round, and the note here still said so for a while.) */
 .game-hero-wordmark {
   color: var(--text, #e7f7fa);
   font-size: clamp(1.9rem, 6.4vw, 4rem);
