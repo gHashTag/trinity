@@ -70,6 +70,70 @@ body.explorer-shell > #root {
   flex: 0 0 auto;
 }
 
+/* Every layer's name on the page. The strip wraps here exactly as it wraps on
+   the desktop, and for the reason SpecExplorer records there: a row that
+   scrolls sideways hides whatever is past its right edge from anyone who does
+   not think to drag it. Measured at 390px the eleven tabs want 908px, so one
+   scrolling line would have kept Verilog, Verilog (HIR), C, Rust and Chip --
+   five of the eleven, and every one of them a backend -- off screen behind a
+   gesture, with a fade as the only hint. Wrapping shows all eleven.
+
+   What wrapping used to cost is fixed below rather than avoided: the strip
+   underlines itself with a border under each tab, which reads as one rule
+   under a single row and as stray rules through the middle of three. */
+
+/* A tab is a pill on these tiers: bordered on four sides, and the strip draws
+   no underline at all. border-color is one shorthand and it beats both inline
+   declarations (border: 1px solid transparent, then border-bottom: 1px solid
+   <border>), so the active tab stays the brighter of the two without either
+   colour being written a second time. */
+.spec-x[data-tier='phone'] .spec-x-tabs > button,
+.spec-x[data-tier='tablet'] .spec-x-tabs > button {
+  /* !important: both the border and the border-bottom are set inline. */
+  border-color: rgba(0, 255, 136, 0.1) !important;
+  border-radius: 5px !important;
+  /* 12px each side over eleven tabs is 264px of a 362px line. At 8px the strip
+     is one row shorter. */
+  padding: 6px 8px !important;
+}
+.spec-x[data-tier='phone'] .spec-x-tabs > button[aria-current='true'],
+.spec-x[data-tier='tablet'] .spec-x-tabs > button[aria-current='true'] {
+  border-color: rgba(0, 255, 136, 0.34) !important;
+}
+/* Rows sit apart now that each tab is a closed box; the inline gap: 2 was
+   spacing for a single line. */
+.spec-x[data-tier='phone'] .spec-x-tabs,
+.spec-x[data-tier='tablet'] .spec-x-tabs {
+  row-gap: 4px;
+  column-gap: 4px;
+}
+
+/* The tablet reads the code the way the phone does: <main> scrolls, and the pane
+   asks for a readable height instead of taking what is left. Measured at 700x1000
+   before this, the pane was 29px -- one line of a 98-line spec, in a column that
+   did not scroll, so the other 97 were unreachable. The phone gets this shape from
+   its own ternary in SpecExplorer; the tablet needs only these two declarations
+   because it keeps the library beside it and its chrome is otherwise the desktop's. */
+.spec-x[data-tier='tablet'] main {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.spec-x[data-tier='tablet'] .spec-x-body {
+  /* !important: the box carries an inline flex:1 / min-height:0 for the desktop
+     column, and an inline declaration outranks any class selector. Without it the
+     rule silently loses and the pane stays at the 121px this was written to fix. */
+  flex: none !important;
+  min-height: 70vh !important;
+}
+
+/* RUN is fixed to the bottom-right on a phone (48px tall, 16px up, plus the home
+   indicator). <main> is the scroller there, so without this the last lines of
+   every spec finish underneath the button and cannot be read at any scroll
+   position. The reserve is the button box plus a 12px gap. */
+.spec-x[data-tier='phone'] main {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+
 /* One pane, one width. A nowrap note chip ("not in the vendored corpus
    manifest yet ...", ~500px at 11px mono) would otherwise set the pane's
    min-content and push it past a 390px viewport: the pane then scrolls
@@ -80,6 +144,11 @@ body.explorer-shell > #root {
   min-width: 0;
   max-width: 100%;
   overflow-x: hidden;
+  /* !important: the pane carries an inline border-radius of 0 6px 6px. The
+     square top-left corner is where the first tab welds onto the pane on the
+     desktop; the tabs are free-standing pills here, so it is a notch against
+     nothing. */
+  border-top-left-radius: 6px !important;
 }
 .spec-x[data-tier='phone'] .spec-x-note,
 .spec-x[data-tier='tablet'] .spec-x-note {

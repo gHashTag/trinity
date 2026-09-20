@@ -13,7 +13,7 @@
 // `embed` mode (prop, or ?embed=1) drops the site header and the outer chrome so
 // the Queen's PROJECT view can frame the page whole.
 
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useParams } from 'react-router-dom'
 import { useI18n } from '../i18n/context'
 import { usePageMeta } from '../hooks/usePageMeta'
@@ -49,6 +49,7 @@ const UI = {
     table: 'Table',
     generatedFrom: 'Generated from',
     rows: 'rows',
+    scrollHint: 'Scroll the table sideways to see the rest of the columns.',
     fallback: 'This chapter has no translation yet; the English body is shown (FALLBACK = en).',
     pinned: 'Links pinned at',
     compiler: 'compiler wasm',
@@ -82,6 +83,7 @@ const UI = {
     table: 'Таблица',
     generatedFrom: 'Порождена из',
     rows: 'строк',
+    scrollHint: 'Таблица прокручивается по горизонтали — так видны остальные колонки.',
     fallback: 'У этой главы пока нет перевода; показан английский текст (FALLBACK = en).',
     pinned: 'Ссылки закреплены за',
     compiler: 'wasm компилятора',
@@ -129,6 +131,57 @@ const PRINT_CSS = `
 .sysdocs-toc a:hover { background: rgba(0,255,136,0.08); }
 .sysdocs-toc a.is-current { color: ${C.accent}; background: rgba(0,255,136,0.10); }
 .sysdocs-toc a.is-section { font-size: 12px; color: ${C.muted}; padding-left: 22px; }
+
+/* Table cell type lives in these classes rather than in inline style={{}} on each
+   cell: an inline font-size cannot be overridden by a media query without
+   !important, so with the sizes inline the page had no way to answer a phone. */
+.sysdocs-tag { font-family: ${C.mono}; font-size: 11px; border: 1px solid; padding: 1px 6px; border-radius: 10px; white-space: nowrap; }
+.sysdocs-mono { font-family: ${C.mono}; font-size: 12px; }
+.sysdocs-monolist { font-family: ${C.mono}; font-size: 11.5px; }
+.sysdocs-steps { margin: 0; padding-left: 16px; }
+.sysdocs-steps li { font-size: 12px; }
+
+/* The generated tables are wider than a phone: chapter 1's is 762px of content in
+   a 330px column at 390px viewport. It already scrolled -- with nothing on screen
+   to say so, which reads as a clipped layout rather than as a gesture. Nor could
+   any document-level measurement find it: body { overflow-x: hidden } in index.css
+   pins documentElement.scrollWidth to the viewport, so the page reports a 0px
+   overflow while 432px of table sit off the edge.
+   Fade the right edge and name the gesture, as .tnf-scroll does for the landing
+   tables. Whether either is needed is a fact about the rendered table, not about
+   the viewport, so the element is measured -- see TableView. */
+.sysdocs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@supports (mask-image: linear-gradient(90deg, #000, transparent)) {
+  .sysdocs-scroll.is-scrollable { mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%); }
+}
+/* No font-size: the hint inherits the prose size (.sysdocs-prose p wins on
+   specificity anyway). It is an instruction to the reader, not one of the meta
+   stubs that stay small, so it is set like the text around it. */
+.sysdocs-scrollhint { font-family: ${C.mono}; color: ${C.muted}; margin: 5px 0 0; }
+
+@media (max-width: 640px) {
+  /* Prose and the tables are read through; at 390px they were set at 12.5-12.76px,
+     below what this site uses anywhere else for running text. The meta lines that
+     stay small -- sha256 stubs, pinned commits, source paths -- are annotations
+     you look up, not text you read, and they keep their size deliberately.
+     The tables are deliberately NOT wrapped to fit: overflow-wrap: anywhere on
+     the cells does make them fit, and it was measured -- the tooling table then lays
+     its eight columns out at 33-52px each, one or two characters to a line. A table
+     you can push sideways stays readable; a table folded into character-wide
+     columns does not. So the cells keep their width and the box scrolls -- see
+     .sysdocs-scroll. Prose is the opposite case: a 47-character path such as
+     trinity:apps/website/src/data/siliconHistory.ts has a whole line to break in,
+     and it is data -- nothing shorter can be substituted for it. */
+  .sysdocs-prose code { font-size: 1em; }
+  .sysdocs-table { font-size: 13.5px; }
+  .sysdocs-prose a, .sysdocs-prose pre { overflow-wrap: anywhere; }
+  .sysdocs-toc a { font-size: 14px; }
+  .sysdocs-toc a.is-section { font-size: 13px; }
+  /* 13px is this site's declared floor of readability -- tnf.css sets --f-2 to
+     it and says so. The meta cells stay the smallest thing on the page, but not
+     smaller than the floor: 248 of the tooling table's cells are this class. */
+  .sysdocs-tag, .sysdocs-mono, .sysdocs-monolist, .sysdocs-steps li { font-size: 13px; }
+}
 @media print {
   html, body { background: #fff !important; color: #000 !important; }
   .sysdocs-root, .sysdocs-root * { color: #000 !important; background: transparent !important; box-shadow: none !important; }
@@ -136,6 +189,10 @@ const PRINT_CSS = `
   .sysdocs-main { overflow: visible !important; height: auto !important; padding: 0 !important; max-width: none !important; }
   .sysdocs-figure svg text { fill: #000 !important; }
   .sysdocs-figure svg [stroke] { stroke: #333 !important; }
+  /* On paper the whole table is on the page; the edge fade would print as a
+     bleached column and the hint would name a gesture nobody can make. */
+  .sysdocs-scroll { mask-image: none !important; overflow: visible !important; max-height: none !important; }
+  .sysdocs-scrollhint { display: none !important; }
   .sysdocs-figure, .sysdocs-table { break-inside: avoid; page-break-inside: avoid; }
   .sysdocs-table th, .sysdocs-table td { border-color: #999 !important; }
   .sysdocs-prose code { border: 1px solid #bbb; }
@@ -174,31 +231,51 @@ function BlocksView({ blocks }: { blocks: Block[] }) {
 
 function cell(col: string, v: unknown): React.ReactNode {
   if (v === null || v === undefined) return <span style={{ color: C.muted }}>—</span>
-  if (col === 'tag') return <span style={{ fontFamily: C.mono, fontSize: 11, color: TAG_COLOR[String(v)] ?? C.text, border: `1px solid ${TAG_COLOR[String(v)] ?? C.border}`, padding: '1px 6px', borderRadius: 10, whiteSpace: 'nowrap' }}>[{String(v)}]</span>
+  if (col === 'tag') return <span className="sysdocs-tag" style={{ color: TAG_COLOR[String(v)] ?? C.text, borderColor: TAG_COLOR[String(v)] ?? C.border }}>[{String(v)}]</span>
   if (typeof v === 'boolean') return <span style={{ color: v ? C.accent : C.muted, fontFamily: C.mono }}>{v ? 'yes' : 'no'}</span>
   if (Array.isArray(v)) {
-    if (col === 'steps') return <ul style={{ margin: 0, paddingLeft: 16 }}>{v.map((s, i) => <li key={i} style={{ fontSize: 12 }}>{String(s)}</li>)}</ul>
-    return v.length ? <span style={{ fontFamily: C.mono, fontSize: 11.5 }}>{v.map(String).join(', ')}</span> : <span style={{ color: C.muted }}>—</span>
+    if (col === 'steps') return <ul className="sysdocs-steps">{v.map((s, i) => <li key={i}>{String(s)}</li>)}</ul>
+    return v.length ? <span className="sysdocs-monolist">{v.map(String).join(', ')}</span> : <span style={{ color: C.muted }}>—</span>
   }
   if (typeof v === 'number') return <span style={{ fontFamily: C.mono }}>{v}</span>
   const s = String(v)
-  if (/^[\w./:@-]+$/.test(s) && (col === 'id' || col === 'source' || col === 'dir' || col === 'law' || col === 'letter' || col === 'register' || col === 'repo' || col === 'witness' || col === 'family')) return <span style={{ fontFamily: C.mono, fontSize: 12 }}>{s}</span>
+  if (/^[\w./:@-]+$/.test(s) && (col === 'id' || col === 'source' || col === 'dir' || col === 'law' || col === 'letter' || col === 'register' || col === 'repo' || col === 'witness' || col === 'family')) return <span className="sysdocs-mono">{s}</span>
   return s
 }
 
 function TableView({ table, n, ui, cols }: { table: DocTable; n: number; ui: Ui; cols: Record<string, string> }) {
+  const scroll = useRef<HTMLDivElement>(null)
+  const [scrollable, setScrollable] = useState(false)
+
+  // Ask the rendered table, not the viewport: a three-column table fits on a phone
+  // and a fifteen-column one overflows a laptop, so a width breakpoint would both
+  // promise a gesture that does nothing and stay silent where one is needed.
+  // The inner table is observed as well as the box -- web fonts land after first
+  // paint and change the content width without changing the column it sits in.
+  useEffect(() => {
+    const el = scroll.current
+    if (!el) return
+    const measure = () => setScrollable(el.scrollWidth > el.clientWidth + 1)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    if (el.firstElementChild) ro.observe(el.firstElementChild)
+    return () => ro.disconnect()
+  }, [table])
+
   return (
     <div className="sysdocs-tablewrap" style={{ margin: '18px 0' }}>
       <div style={{ fontSize: 13, marginBottom: 6 }}>
         <b style={{ color: C.golden }}>{ui.table} {n}.</b>{' '}
         <span style={{ fontFamily: C.mono, color: C.muted, fontSize: 12 }}>{table.kind} · {table.rows.length} {ui.rows}</span>
       </div>
-      <div style={{ overflowX: 'auto', maxHeight: 520, overflowY: 'auto', border: `1px solid ${C.border}`, borderRadius: 6 }}>
+      <div ref={scroll} className={`sysdocs-scroll${scrollable ? ' is-scrollable' : ''}`} style={{ maxHeight: 520, overflowY: 'auto', border: `1px solid ${C.border}`, borderRadius: 6 }}>
         <table className="sysdocs-table">
           <thead><tr>{table.columns.map((c) => <th key={c}>{cols[c] ?? c}</th>)}</tr></thead>
           <tbody>{table.rows.map((r, i) => <tr key={i}>{table.columns.map((c) => <td key={c}>{cell(c, r[c])}</td>)}</tr>)}</tbody>
         </table>
       </div>
+      {scrollable && <p className="sysdocs-scrollhint">{ui.scrollHint}</p>}
       <div style={{ fontFamily: C.mono, fontSize: 11, color: C.muted, marginTop: 4 }}>{ui.generatedFrom}: {table.source}{table.note ? ` · ${table.note}` : ''}</div>
     </div>
   )
