@@ -87,7 +87,10 @@ export default function QueenUniverse() {
 
   return <div className="queen-universe" data-world={repo}>
     {slot ? createPortal(nav, slot) : shellIsComing ? null : nav}
-    <div className="queen-universe-content"><Suspense fallback={<p role="status">{c.loading}</p>}>
+    {/* The wait is the shell's own loader, not a sentence. A line of text
+        appearing on a black page reads as an error message; the mark and the
+        bar read as work in progress, which is what this is. */}
+    <div className="queen-universe-content"><Suspense fallback={<QueenLoading label={c.loading}/>}>
       {/* Loading is not failing. This paragraph carried the error class either
           way, so every cold load opened with the failure colour on a black
           page — which reads as "it did not load", because that is what it
@@ -149,7 +152,7 @@ function RepositoryWorld({repo,lang}:{repo:string;lang:'en'|'ru'}) {
     </div>
     {error&&<p className="queen-world-error" role="alert">{snapshot?c.stale:c.failed}: {errorCopy(error,c)}</p>}
     <div className="queen-world-stage" data-source="github-public" aria-busy={busy}>
-      {!snapshot?<p role="status">{busy?c.loading:c.failed}</p>:rows.length===0?<p>{snapshot.meta.issuesEnabled?c.empty:c.disabled}</p>:view==='hive'?<Suspense fallback={<p>{c.loading}</p>}><Hive displays={displays} cards={cards} workers={null} events={EMPTY_EVENTS} handleRef={handle} lang={lang} signalHealth={{board:error?'stale':'live',activity:'unknown'}} layers={{foundation:true,castle:false,code:false}}/></Suspense>:<div className="queen-world-list">{rows.map(row=><a key={row.key} href={`https://github.com/${repo}/issues/${row.number}`} target="_blank" rel="noopener noreferrer"><b>#{row.number}</b><span data-lang-exempt="github-title">{row.title}</span><small>{row.state==='closed'?(lang==='ru'?'Закрыта · T27 не подтверждено':'Closed · T27 unproven'):row.state==='dropped'?(lang==='ru'?'Отложена':'Paused'):(lang==='ru'?'Открыта':'Open')}</small></a>)}</div>}
+      {!snapshot?(busy?<QueenLoading label={c.loading}/>:<p role="status">{c.failed}</p>):rows.length===0?<p>{snapshot.meta.issuesEnabled?c.empty:c.disabled}</p>:view==='hive'?<Suspense fallback={<QueenLoading label={c.loading}/>}><Hive displays={displays} cards={cards} workers={null} events={EMPTY_EVENTS} handleRef={handle} lang={lang} signalHealth={{board:error?'stale':'live',activity:'unknown'}} layers={{foundation:true,castle:false,code:false}}/></Suspense>:<div className="queen-world-list">{rows.map(row=><a key={row.key} href={`https://github.com/${repo}/issues/${row.number}`} target="_blank" rel="noopener noreferrer"><b>#{row.number}</b><span data-lang-exempt="github-title">{row.title}</span><small>{row.state==='closed'?(lang==='ru'?'Закрыта · T27 не подтверждено':'Closed · T27 unproven'):row.state==='dropped'?(lang==='ru'?'Отложена':'Paused'):(lang==='ru'?'Открыта':'Open')}</small></a>)}</div>}
     </div>
     <footer><span>{c.scope}</span><time dateTime={snapshot?.at}>{snapshot?new Date(snapshot.at).toLocaleTimeString(lang):'—'}</time></footer>
   </main>;

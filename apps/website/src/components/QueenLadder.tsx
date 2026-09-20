@@ -13,6 +13,7 @@
 // about deep links, the keyboard or the Explorer frames changed; only where the
 // button lives.
 
+import type { LadderCounts } from '../lib/agentSpecs'
 import { SPEC_LAYERS, hudKeyOf, type HudView, type SpecLayer } from './queenHud'
 
 export interface LadderLayer {
@@ -27,17 +28,25 @@ export function QueenLadder({
   current,
   onSelect,
   aria,
+  counts,
 }: {
   layers: readonly LadderLayer[]
   current: HudView
   onSelect: (layer: SpecLayer) => void
   aria: string
+  /** How many each layer holds; null until the catalog answers, and on failure. */
+  counts?: LadderCounts | null
 }) {
   return (
     <nav className="queen27-ladder" aria-label={aria}>
       {layers.map((item, index) => {
         const active = item.layer === current
         const key = hudKeyOf(item.layer)
+        // The count the Explorer's own strip used to carry. It arrives one
+        // fetch late, so the element is always drawn and the CSS reserves its
+        // width -- a number appearing into a row that then rewraps is the jump
+        // this change exists to remove.
+        const count = counts ? counts[item.layer] : null
         return (
           <button
             type="button"
@@ -46,12 +55,15 @@ export function QueenLadder({
             data-layer={item.layer}
             aria-pressed={active}
             aria-current={active ? 'page' : undefined}
-            title={`${key} · ${item.label} — ${item.hint}`}
+            title={`${key} · ${item.label}${count === null ? '' : ` · ${count}`} — ${item.hint}`}
             onClick={() => onSelect(item.layer)}
           >
             <em aria-hidden="true">{index + 1}</em>
             <i aria-hidden="true">{item.glyph}</i>
             <b>{item.label}</b>
+            <span className="queen27-ladder-count" data-lang-exempt="live">
+              {count === null ? '' : count}
+            </span>
             <kbd aria-hidden="true">{key}</kbd>
           </button>
         )

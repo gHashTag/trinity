@@ -213,7 +213,8 @@ export function QueenAgents({ kind, c, showDirective = true, onNavigate, ladder 
       <div className="queen27-specs-frame-wrap" hidden={showMcp}>
         {!ready && (
           <div className="queen27-specs-loading">
-            <QueenLoading title={c.loading} facts={[kind === 'project' ? 'specs/docs/system.t27' : `specs/${kind}/*.t27`]} />
+            {/* The mark and the bar, no words: see components/QueenLoading. */}
+            <QueenLoading label={c.loading} />
           </div>
         )}
         <iframe

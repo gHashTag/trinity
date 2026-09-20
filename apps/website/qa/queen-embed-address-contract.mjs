@@ -5,9 +5,10 @@
 // and PROJECT are buttons on the rail, and skills, crons, agents, tools and functions
 // are rungs of the ladder inside SPECS (components/QueenLadder). They are still tabs
 // in the address and still open on their old keys, so every check below is unchanged
-// except for where the button lives and what the rail lights. Two different things
-// are called a ladder here: the Queen's, `.queen27-ladder-step`, and the Explorer's
-// own cross-links inside a frame, `.spec-x-ladder` -- E exercises the second.
+// except for where the button lives and what the rail lights. There is one ladder on
+// the page now -- the Queen's, `.queen27-ladder-step`, exercised by E and J. The
+// Explorers' own `.spec-x-ladder` strip is not drawn when they are embedded; their
+// cross-links from inside a frame are exercised by F, from a chip in an agent card.
 //
 // Measured on t27.ai before lib/queenEmbed: a pick
 // inside a frame changed only the frame's own hash, so a reload, a shared link or the
@@ -22,8 +23,11 @@
 // link to another Explorer switches the Queen's tab; an address without a card takes
 // the frame's; a refused id falls back to the default; an unknown chapter is corrected
 // to the chapter on show, while an unknown skill keeps the Explorer's own not-found
-// card. Every step starts from a state that differs from what it asserts, so no check
-// passes because the frame already showed the thing.
+// card. And one thing about the wait rather than the address: a framed Explorer must
+// never draw the pre-mount hero, because the shell already draws a loader over the
+// frame and the two together were two loaders (M). Every step starts from a state that
+// differs from what it asserts, so no check passes because the frame already showed
+// the thing.
 //
 //   npm run check:queen-embed                         build, then check
 //   npm run check:queen-embed -- --no-build           reuse dist/
@@ -113,6 +117,22 @@ try {
   const errors = [];
   listeners.push((m) => { if (m.sessionId === sessionId && m.method === 'Runtime.exceptionThrown') { const d = m.params.exceptionDetails; errors.push((d.exception?.description ?? d.text).split('\n').slice(0, 3).join(' | ')); } });
   await call('Runtime.enable'); await call('Page.enable');
+  // Installed in every document this target loads, framed ones included, before
+  // any of its own script runs. The pre-mount hero (#boot in index.html) is the
+  // right thing for a reader, a crawler or a browser with no script, and the
+  // wrong thing inside the Queen's shell, which already draws one loader over
+  // the frame: the wait then showed two at once. It was hidden twice before it
+  // was actually hidden -- once reading location.search for an embed=1 that
+  // lives in the hash, once with a `hidden` attribute that #boot's own id rule
+  // outweighed -- so what is watched here is whether the thing was DRAWN, not
+  // whether the page meant to hide it.
+  // Counted only once the document has finished parsing: the rule that hides the
+  // hero is stated at the end of the body, and a frame that lands while the
+  // parser is still short of it is not what anybody saw. The defect this
+  // catches held the hero up for the whole of React's boot -- a second or more
+  // with readyState past 'loading' -- so a check that starts there is sharper,
+  // not looser.
+  await call('Page.addScriptToEvaluateOnNewDocument', { source: `if (window.self !== window.top) { window.__bootDrawn = false; window.__bootFrames = 0; const tick = () => { const b = document.getElementById('boot'); if (!b) return; if (document.readyState !== 'loading' && getComputedStyle(b).display !== 'none' && b.getBoundingClientRect().height > 0) { window.__bootDrawn = true; window.__bootFrames += 1; } requestAnimationFrame(tick); }; requestAnimationFrame(tick); }` });
   const evaluate = async (expr) => {
     const r = await Promise.race([
       call('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true }),
@@ -235,18 +255,28 @@ try {
   const tD2 = await top();
   record('D the language toggle writes ?lang= to the address, and a reload keeps the language', searchLang === 'ru' && tD.lang === 'ru' && tD2.lang === 'ru', { searchAfterToggle: tD.search, langAfterToggle: tD.lang, afterReload: { search: tD2.search, lang: tD2.lang } });
 
-  // E. A ladder link inside the agents frame switches the Queen tab.
+  // E. The Skills rung switches the Queen's tab from agents, and every surface agrees.
+  //
+  // This used to click the Explorer's own `.spec-x-ladder` link inside the agents
+  // frame. That strip is no longer drawn when an Explorer is embedded: the Queen
+  // draws the one ladder on the page, and five of the six Explorers drawing a second
+  // one inside their frame was both a duplicate row and the reason the module jumped
+  // by its height when you moved between SPECS (which never drew it) and any other
+  // layer. The surface E is about -- a cross-link from one Explorer to another --
+  // survives as the rung, so E now clicks the rung. The assertion is unchanged and is
+  // the point of the check: after the switch the rail, the ladder, the address, the
+  // frame's title and the frame's route all name the same place. The frame's own
+  // cross-links are still exercised by F, from a chip inside an agent card.
   await shell(url('e', 'tab=agents'));
-  await p.until(`(() => { const f = ${FRAME}; return f && f.route === 'agents' && f.current.length > 0 && !!document.querySelector('iframe.queen27-specs-frame').contentDocument.querySelector('.spec-x-ladder a[href^="#/skills"]') })()`, 120000); await wait(1000);
+  await p.until(`(() => { const f = ${FRAME}; return f && f.route === 'agents' && f.current.length > 0 && !!document.querySelector('.queen27-ladder-step[data-layer="skills"]') })()`, 120000); await wait(1000);
   const beforeE = await top();
-  const ladder = await frameBox('.spec-x-ladder a[href^="#/skills"]');
-  if (ladder) await p.clickAt(ladder.x, ladder.y);
+  const ladder = await p.evaluate(`(() => { const b = document.querySelector('.queen27-ladder-step[data-layer="skills"]'); if (!b) return null; b.click(); return { layer: b.dataset.layer, wasActive: b.classList.contains('is-active') } })()`);
   await p.until(`(() => { const t = ${TOP}; const f = ${FRAME}; return t.view === 'skills' && f && f.route === 'skills' && f.current.length > 0 })()`, 90000); await wait(1500);
   const tE = await top(), fE = await frame();
   // SKILLS is no longer a rail button: it is the second rung of the ladder inside
   // SPECS, so the rail lights SPECS and the ladder marks skills. Both are checked --
   // the whole point of E is that every surface agrees about where you are.
-  record('E the ladder link Skills in the agents frame switches the Queen to SKILLS (rail, ladder, address, title, frame agree)', !!ladder && beforeE.view === 'agents' && tE.params.tab === 'skills' && tE.view === 'skills' && tE.active === 'specs' && tE.rung === 'skills' && fE?.title === TITLE.skills && fE?.route === 'skills' && tE.frames === 1, { ladder, before: beforeE, top: tE, frame: fE });
+  record('E the Skills rung switches the Queen from AGENTS to SKILLS (rail, ladder, address, title, frame agree)', !!ladder && ladder.wasActive === false && beforeE.view === 'agents' && tE.params.tab === 'skills' && tE.view === 'skills' && tE.active === 'specs' && tE.rung === 'skills' && fE?.title === TITLE.skills && fE?.route === 'skills' && tE.frames === 1, { ladder, before: beforeE, top: tE, frame: fE });
 
   // F. A skill chip inside an agent card opens that skill in the SKILLS tab.
   const chip = ids.chip;
@@ -322,6 +352,12 @@ try {
   await p.until(`(${TOP}).params.tab === 'agents'`, 30000); await p.until(`(() => { const f = ${FRAME}; return f && f.route === 'agents' })()`, 90000); await wait(1500);
   const tJ = await top(), fJ = await frame();
   record('J tab switches add no history entries and drop the old card, and Back after an outside navigation returns to the tab and its Explorer', tJ1.histLen === h0 && tJ1.params.skill === undefined && tJ.params.tab === 'agents' && tJ.view === 'agents' && fJ?.route === 'agents' && fJ?.title === TITLE.agents, { h0, afterSwitches: tJ1, top: tJ, frame: fJ });
+
+  // ── M: one loader over a loading frame, not two ──
+  await shell(url('m', 'tab=specs'));
+  await p.until(`(() => { const f = ${FRAME}; return f && f.route === 'specs' && f.current.length > 0 })()`, 120000);
+  const boot = await p.evaluate(`(() => { const f = document.querySelector('iframe.queen27-specs-frame'); if (!f) return null; const w = f.contentWindow; return { drawn: w.__bootDrawn, frames: w.__bootFrames, watched: typeof w.__bootDrawn === 'boolean', hero: !!w.document.getElementById('boot') } })()`);
+  record('M the framed Explorer never draws the pre-mount hero, so the wait shows one loader and not two', boot?.watched === true && boot.drawn === false, { boot });
 
   record('no uncaught exceptions', p.errors.length === 0, { errors: p.errors.slice(0, 8) });
 } catch (e) {

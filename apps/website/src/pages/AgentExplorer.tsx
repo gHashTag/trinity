@@ -410,7 +410,8 @@ export default function AgentExplorer() {
           phone={phone}
         />
       )}
-      <LayerLadder steps={ladderSteps} caption={ui.ladder} />
+      {/* One ladder per screen -- see components/LayerLadder. */}
+      {!embedded && <LayerLadder steps={ladderSteps} caption={ui.ladder} />}
 
       <div style={{ flex: 1, display: 'flex', minHeight: 0, minWidth: 0 }}>
         {showList && (

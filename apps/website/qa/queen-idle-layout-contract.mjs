@@ -1,10 +1,16 @@
-// Queen idle-line layout contract, in a real browser. The line that says why
-// free bees are idle (queen27-hud-idle) sits among the map's controls, and in
-// its first version it took taps it had no right to: on a phone it lay over
+// Queen idle-reason layout contract, in a real browser. Why free bees are idle
+// used to be a line floating over the top of the map (queen27-hud-idle), and it
+// spent four rounds being moved out from under something: on a phone it lay over
 // TRI's screen tabs and the specs view's first disclosure, on a landscape phone
-// over every map tool, and on a desktop over the head's bottom rule
-// (measured 2026-09-16 with trusted input). The words are
-// qa/queen-idle-reason-contract.mjs; this is where they are drawn.
+// over every map tool, on a desktop over the head's bottom rule, and last over
+// the SPECS ladder and the Explorer's search field beneath it (measured
+// 2026-09-16 and 2026-09-20 with trusted input). A notification that has to be
+// re-placed every time the page gains a row is in the wrong place, so on
+// 2026-09-20 it was removed: the reason belongs to the round, the round's BEES
+// tile is in the header, and the tile was already printing the same words. It
+// now carries all of it -- the head in the line, the sentence in `title`, and
+// the example issue as a link. The words are qa/queen-idle-reason-contract.mjs;
+// this is where they are drawn.
 //
 // Builds the site (unless --no-build; --dist <dir> serves another build) and
 // drives the installed Chrome over CDP. The build is served AS https://t27.ai
@@ -12,18 +18,20 @@
 // only its real size there; /queen/status is answered with the committed
 // healthy-idle snapshot, decidedAt moved to 30 s ago on every poll. Every tap
 // claimed below is trusted CDP input after a hit test.
-//   1  1440x900 and 1280x720, en and ru: the line is on screen, unclipped, and
-//      starts at or below the head's bottom (1 px of rounding)
+//   0  at every size: no floating line exists, and the map's body starts where
+//      the head ends -- nothing is inserted between them
+//   1  1440x900 and 1280x720, en and ru: the reason is drawn in the BEES tile,
+//      unclipped, inside the header's box, and reachable by a hit test
 //   2  1440x900 with the rail collapsed by a trusted click, then 390x844: the
-//      line is inside the window
-//   3  390x844, en and ru: the line lies between the head and the body, the page
-//      is one screen, and TRI's screen tabs and the specs view's first
+//      tile is inside the window
+//   3  390x844, en and ru: the page is one screen, the reason folds away with
+//      every other tile's sub-line (it is still in the page for hover and for a
+//      screen reader), and TRI's screen tabs and the specs view's first
 //      disclosure are topmost at all five sample points; in en a trusted tap on
 //      TRI's second tab switches it, and one on the disclosure opens it
-//   4  844x390: no line is drawn, every map tool and the identity chip inside the
-//      window is topmost, and a trusted tap on the foundation layer toggles it
-//   5  /queen/status starts failing: the line goes, though the page keeps the
-//      last status it read (a kept round would age into "round stale")
+//   4  844x390: every map tool and the identity chip inside the window is
+//      topmost, and a trusted tap on the foundation layer toggles it
+//   5  /queen/status starts failing: the tile claims no reason
 //   node qa/queen-idle-layout-contract.mjs [--no-build] [--dist <dir>]
 import { execSync, spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -34,7 +42,7 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const argAt = (flag) => { const i = process.argv.indexOf(flag); return i > 0 ? process.argv[i + 1] : null; };
 const DIST = resolve(argAt('--dist') ?? join(ROOT, 'dist'));
 const CHROME = [process.env.CHROME_PATH, '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium', '/usr/bin/google-chrome', '/usr/bin/chromium'].filter(Boolean).find((p) => existsSync(p));
-if (!CHROME) { console.log('  no Chrome found — skipping the idle-line layout check.'); process.exit(0); }
+if (!CHROME) { console.log('  no Chrome found — skipping the idle-reason layout check.'); process.exit(0); }
 if (!process.argv.includes('--no-build') && !argAt('--dist')) { console.log('  building…'); execSync('npx vite build', { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] }); }
 
 const SNAP = JSON.parse(readFileSync(new URL('./fixtures/queen-status/healthy-idle-2026-09-15T1250Z.json', import.meta.url), 'utf8'));
@@ -90,7 +98,9 @@ try {
     await size(w, h);
     await call('Page.navigate', { url: `${ORIGIN}/?lang=${lang}&idle-layout=${process.pid}-${tag}#/queen` });
     if (!(await until(ready, 150000))) throw new Error(`the Queen never rendered at ${w}x${h} ${lang}`);
-    await until(`!!document.querySelector('.queen27-hud-idle')`, 30000);
+    // The reason is a poll behind the count: the tile renders with the bees, the
+    // words arrive with the round it explains.
+    await until(`!!document.querySelector('.queen27-hud-res-bees .queen27-hud-idle-why[data-idle]')`, 30000);
     await wait(2500);
   };
   const view = async (name) => {
@@ -102,7 +112,30 @@ try {
   const GEOM = `const R = (e) => { if (!e) return null; const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); return cs.display === 'none' || r.width === 0 ? null : { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; };
     const own = (e) => { const r = e.getBoundingClientRect(); return [[.5,.5],[.15,.2],[.85,.2],[.15,.8],[.85,.8]].filter(([fx, fy]) => { const u = document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy); return !!u && (u === e || e.contains(u)); }).length; };
     const centre = (e) => { const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };`;
-  const boxes = () => evaluate(`(() => { ${GEOM} const line = document.querySelector('.queen27-hud-idle'); return { line: R(line), head: R(document.querySelector('.queen27-hud-vp-head')), body: R(document.querySelector('.queen27-hud-vp-body')), clipped: !!line && (line.scrollWidth > line.clientWidth + 1 || line.scrollHeight > line.clientHeight + 1), text: line ? line.textContent.trim() : null, iw: innerWidth, ih: innerHeight, sh: document.documentElement.scrollHeight }; })()`);
+  // `subs` is every tile's sub-line, drawn or not: on a narrow screen the header
+  // folds them all away together, and "all or none" is the invariant — a reason
+  // that survived that fold would be the one line left shouting in a row of
+  // names and numbers.
+  const boxes = () => evaluate(`(() => { ${GEOM} const why = document.querySelector('.queen27-hud-res-bees .queen27-hud-idle-why');
+    const subs = [...document.querySelectorAll('.queen27-hud-top > .queen27-hud-res > span:not(.queen27-hud-pill)')];
+    return { why: R(why), tile: R(document.querySelector('.queen27-hud-res-bees')), top: R(document.querySelector('.queen27-hud-top')),
+      head: R(document.querySelector('.queen27-hud-vp-head')), body: R(document.querySelector('.queen27-hud-vp-body')),
+      floating: !!document.querySelector('.queen27-hud-idle'),
+      inPage: !!why, drawnSubs: subs.filter((e) => !!R(e)).length, subs: subs.length,
+      clipped: !!why && (why.scrollWidth > why.clientWidth + 1 || why.scrollHeight > why.clientHeight + 1),
+      own: why && R(why) ? own(why) : null, title: why ? why.getAttribute('title') : null,
+      text: why ? why.textContent.trim() : null, iw: innerWidth, ih: innerHeight, sh: document.documentElement.scrollHeight }; })()`);
+  // 0, asserted wherever the page is measured: the float is gone, and the body
+  // starts where the head ends.
+  const noFloat = (b, where) => {
+    check(!b.floating, `${where}: no line floats over the map (.queen27-hud-idle is not in the page)`);
+    // Not "the body starts at the head's bottom": on a desktop the head floats
+    // over the map and the body runs under it, and only on a phone do the two
+    // sit in flow. What must hold either way is that nothing has been inserted
+    // between them -- a row of its own would push the body below the head, which
+    // is exactly what the floating line did on a phone.
+    check(!!b.head && !!b.body && b.body.t <= b.head.b + 1, `${where}: nothing is inserted between the head and the body (head to ${b.head?.b}, body from ${b.body?.t})`);
+  };
 
   // 1. desktop
   for (const lang of ['en', 'ru']) {
@@ -111,8 +144,10 @@ try {
       await size(w, h); await wait(1500);
       const b = await boxes();
       const where = `${w}x${h} ${lang}`;
-      check(!!b.line && b.line.l >= 0 && b.line.r <= b.iw && b.line.t >= 0 && b.line.b <= b.ih && !b.clipped, `${where}: the idle line is on screen and unclipped ("${(b.text ?? '').slice(0, 60)}…")`);
-      check(!!b.line && !!b.head && b.line.t + 1 >= b.head.b, `${where}: the line starts at or below the head's bottom (line ${b.line?.t}, head ${b.head?.b})`);
+      noFloat(b, where);
+      check(!!b.why && !!b.tile && b.why.l >= b.tile.l - 1 && b.why.r <= b.tile.r + 1 && b.why.t >= b.tile.t - 1 && b.why.b <= b.tile.b + 1 && !b.clipped, `${where}: the reason is drawn inside the BEES tile, unclipped ("${(b.text ?? '').slice(0, 60)}")`);
+      check(!!b.why && b.why.l >= 0 && b.why.r <= b.iw && b.why.t >= 0 && b.why.b <= b.ih && b.own === 5, `${where}: it is on screen and topmost at 5 of 5 points (got ${b.own})`);
+      check(!!b.title && b.title.length > (b.text ?? '').length, `${where}: the whole sentence is on the tile for hover and for a screen reader ("${(b.title ?? '').slice(0, 70)}")`);
     }
     if (lang !== 'en') continue;
     // 2. collapsed on a desktop, then narrowed to a phone
@@ -124,7 +159,7 @@ try {
       check(!!(await until(`!!document.querySelector('main.is-command-collapsed')`, 5000)), 'a trusted click collapses the rail');
       await size(390, 844); await wait(2500);
       const b = await boxes();
-      check(!!b.line && b.line.l >= 0 && b.line.r <= b.iw + 0.5, `collapsed at 1440, then 390x844: the line is inside the window (${b.line?.l}-${b.line?.r} of ${b.iw})`);
+      check(!!b.tile && b.tile.l >= 0 && b.tile.r <= b.iw + 0.5, `collapsed at 1440, then 390x844: the BEES tile is inside the window (${b.tile?.l}-${b.tile?.r} of ${b.iw})`);
       await size(1440, 900); await wait(800);
       const again = await evaluate(`(() => { const b = document.querySelector('nav.queen27-hud-command > button.queen27-hud-cmd-collapse'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
       if (again) { await tap(again.x, again.y); await wait(800); }
@@ -139,8 +174,9 @@ try {
     const specs = await evaluate(`(() => { ${GEOM} const s = document.querySelector('.queen27-hud-vp-body details > summary'); return s ? { own: own(s), ...centre(s), open: s.parentElement.open, text: s.textContent.trim().slice(0, 30) } : null; })()`);
     const b = await boxes();
     const where = `390x844 ${lang}`;
-    check(!!b.line && !!b.head && !!b.body && b.line.t + 1 >= b.head.b && b.body.t + 1 >= b.line.b, `${where}: the line lies between the head and the body (head to ${b.head?.b}, line ${b.line?.t}-${b.line?.b}, body from ${b.body?.t})`);
-    check(b.sh <= b.ih && !!b.line && b.line.l >= 0 && b.line.r <= b.iw, `${where}: one screen (document ${b.sh} of ${b.ih}), the line inside the window`);
+    noFloat(b, where);
+    check(b.inPage && (b.drawnSubs === 0 || b.drawnSubs === b.subs), `${where}: the reason is in the page, and the tiles' ${b.subs} sub-lines are all drawn or all folded away together (${b.drawnSubs} drawn)`);
+    check(b.sh <= b.ih && !!b.tile && b.tile.l >= 0 && b.tile.r <= b.iw, `${where}: one screen (document ${b.sh} of ${b.ih}), the BEES tile inside the window`);
     check(specs?.own === 5, `${where}: the specs view's first disclosure ("${specs?.text}") is topmost at 5 of 5 points (got ${specs?.own})`);
     if (lang === 'en' && specs?.own) {
       await tap(specs.x, specs.y); await wait(1200);
@@ -152,7 +188,10 @@ try {
     check(tabs.length > 1 && tabs.every((t) => t.own === 5), `${where}: all ${tabs.length} of TRI's screen tabs are topmost at 5 of 5 points (${tabs.map((t) => `${t.text} ${t.own}`).join(', ')})`);
     if (lang === 'en' && tabs.length > 1) {
       const target = tabs.find((t) => !t.active) ?? tabs[1];
-      await tap(target.x, target.y); await wait(1500);
+      await tap(target.x, target.y);
+      // TRI's screens fetch before they mark themselves current, so the class
+      // arrives a moment after the tap rather than with it.
+      await until(`document.querySelector('button.queen27-tri-screen.is-active')?.textContent.trim() === ${JSON.stringify(target.text)}`, 10000);
       const active = await evaluate(`document.querySelector('button.queen27-tri-screen.is-active')?.textContent.trim() ?? null`);
       check(active === target.text, `${where}: a trusted tap on "${target.text}" switches TRI to it (active: "${active}")`);
     }
@@ -161,11 +200,11 @@ try {
   // 4. phone landscape
   await load(844, 390, 'en', 'landscape');
   await view('comb');
-  const land = await evaluate(`(() => { ${GEOM} const line = document.querySelector('.queen27-hud-idle');
+  noFloat(await boxes(), '844x390');
+  const land = await evaluate(`(() => { ${GEOM}
     const els = [...document.querySelectorAll('.queen27-hud-vp-tools button, .queen27-hud-vp-tools .queen27-identity')].filter((e) => { const r = R(e); return r && r.l >= 0 && r.r <= innerWidth && r.t >= 0 && r.b <= innerHeight; });
     const layer = document.querySelector('.queen27-hud-vp-tools button[data-layer]');
-    return { present: !!line, drawn: !!R(line), items: els.map((e) => ({ k: e.getAttribute('data-tool') || e.getAttribute('data-layer') || e.className.split(' ')[0], own: own(e) })), layer: layer ? { ...centre(layer), own: own(layer), pressed: layer.getAttribute('aria-pressed') } : null }; })()`);
-  check(land.present && !land.drawn, '844x390: the idle line is in the page but not drawn');
+    return { items: els.map((e) => ({ k: e.getAttribute('data-tool') || e.getAttribute('data-layer') || e.className.split(' ')[0], own: own(e) })), layer: layer ? { ...centre(layer), own: own(layer), pressed: layer.getAttribute('aria-pressed') } : null }; })()`);
   check(land.items.length >= 5 && land.items.every((i) => i.own === 5), `844x390: all ${land.items.length} map tools and the identity chip are topmost at 5 of 5 points (${land.items.filter((i) => i.own !== 5).map((i) => `${i.k} ${i.own}`).join(', ') || 'none short'})`);
   if (land.layer?.own) {
     await tap(land.layer.x, land.layer.y); await wait(1000);
@@ -175,15 +214,15 @@ try {
 
   // 5. the status endpoint fails: the kept status explains nothing
   await load(1440, 900, 'en', 'failing');
-  check(!!(await evaluate(`!!document.querySelector('.queen27-hud-idle')`)), 'live: the idle line is shown');
+  check(!!(await evaluate(`!!document.querySelector('.queen27-hud-res-bees .queen27-hud-idle-why[data-idle]')`)), 'live: the tile carries a reason');
   statusFails = true;
-  const gone = await until(`!document.querySelector('.queen27-hud-idle') && !document.querySelector('#stat-status.is-live')`, 30000);
-  const bees = await evaluate(`document.querySelector('.queen27-hud-res-bees > span')?.textContent.trim() ?? null`);
-  check(!!gone && !/nothing to choose|round stale/.test(bees ?? ''), `after /queen/status fails: no idle line, and the BEES tile claims no reason (sub-line "${bees}")`);
+  const gone = await until(`!document.querySelector('.queen27-hud-res-bees .queen27-hud-idle-why[data-idle]') && !document.querySelector('#stat-status.is-live')`, 30000);
+  const bees = await evaluate(`document.querySelector('.queen27-hud-res-bees .queen27-hud-idle-why')?.textContent.trim() ?? null`);
+  check(!!gone && !/nothing to choose|round stale/.test(bees ?? ''), `after /queen/status fails: the BEES tile claims no reason (sub-line "${bees}")`);
 } catch (e) {
   check(false, `harness: ${e && e.message}`);
 }
 clearTimeout(watchdog);
 cleanup();
-if (fails.length) { console.log(`Queen idle-line layout contract: FAIL (${fails.length} of ${checks})`); process.exit(1); }
-console.log(`Queen idle-line layout contract: PASS (${checks} checks)`);
+if (fails.length) { console.log(`Queen idle-reason layout contract: FAIL (${fails.length} of ${checks})`); process.exit(1); }
+console.log(`Queen idle-reason layout contract: PASS (${checks} checks)`);

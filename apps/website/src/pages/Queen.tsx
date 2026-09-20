@@ -21,6 +21,7 @@ import { QueenSectors } from "../components/QueenIntel";
 import { SceneBoundary } from "../components/SceneBoundary";
 import { QueenLoading } from "../components/QueenLoading";
 import { QueenLadder, type LadderLayer } from "../components/QueenLadder";
+import { loadLadderCounts, type LadderCounts } from "../lib/agentSpecs";
 import {
   hudKeyIndex,
   hudKeyOf,
@@ -2472,6 +2473,22 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
+  // How many each layer of the ladder holds. The Explorers used to print these
+  // in a strip of their own inside the frame; that strip was a second ladder on
+  // the same screen, so it is gone and the numbers stand on the rungs instead.
+  // The shell is a different document from the frames and cannot read what they
+  // loaded, so it fetches the smallest catalog itself. A failure leaves the
+  // rungs without numbers, which is what they had before.
+  const [ladderCounts, setLadderCounts] = useState<LadderCounts | null>(null);
+  useEffect(() => {
+    let live = true;
+    void loadLadderCounts().then(
+      (counts) => { if (live) setLadderCounts(counts); },
+      () => {},
+    );
+    return () => { live = false; };
+  }, []);
+
   useEffect(
     () => () => {
       if (agentCopyTimer.current !== null) {
@@ -2588,6 +2605,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
       current={view}
       onSelect={setView}
       aria={c.ladderAria}
+      counts={ladderCounts}
     />
   );
   const doctrine = [
@@ -2787,6 +2805,13 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     <main
       className={`queen27-page is-shell${commandCollapsed ? " is-command-collapsed" : ""}${isFullscreen ? " is-bare" : ""}${embedded ? " is-embed" : ""}`}
       data-view={view}
+      // Which module the reader is in, as against which layer of it: for the
+      // six layers of the ladder this is "specs" for all six. A rule that
+      // wants "inside the SPECS module" -- the map's command row does not
+      // belong there, and the body must not reserve its height -- asks this,
+      // not data-view, which said "specs" on one of the six and left the other
+      // five reserving 66px for a row that is not rendered on any of them.
+      data-rail-view={railViewOf(view)}
     >
       <section
         className="queen27-hud-viewport"
@@ -2943,19 +2968,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           </div>
         </header>
 
-        {idleWhy && (
-          <p className="queen27-hud-idle" data-idle={idleNow?.kind}>
-            <span>{idleWhy.text}</span>
-            {idleWhy.example && (
-              <>
-                {" · "}
-                <a href={BOUNDARY_EXAMPLE_ISSUE} target="_blank" rel="noreferrer">
-                  {c.idleExample}
-                </a>
-              </>
-            )}
-          </p>
-        )}
+        {/* Why free bees are idle used to be a line floating here, over the top
+            of the map. It is a notification about the round, and the round's tile
+            is in the header -- where the same words were already printed, short,
+            beside the count they are about. Two places said it; the floating one
+            was the one that covered the ladder, the Explorer's search field and,
+            on a phone, the controls under it, and it was removed rather than
+            moved a third time. The full sentence and the example issue went to
+            the tile, so nothing it carried was lost. */}
         <div className="queen27-hud-vp-body">
           {/* Embedded, the scene is skipped — a page of previews would be a page
               of WebGL contexts — except on the comb, where the scene IS the
@@ -3200,10 +3220,28 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               ? `${data.workers.active}/${data.workers.capacity}`
               : `${data ? data.dispatches.running : "—"}/${workers?.capacity ?? "—"}`}
           </strong>
-          <span title={idleWhy?.text}>
-            {idleWhy
-              ? idleWhy.head
-              : `${data?.workers ? data.workers.capacity - data.workers.active : (workers?.idle ?? "—")} ${c.factoryIdle}`}
+          {/* The whole reason lives here now: the head short enough for the tile,
+              the sentence on hover and for a screen reader, and -- when the
+              reason is a brief no bee can take -- the example issue one click
+              away, which is what the line that floated over the map carried.
+              The link goes INSIDE the span rather than replacing it: the header's
+              narrow-screen rules fold a tile's sub-line away by `> span`, and an
+              anchor in its place would have been the one sub-line that stayed
+              when the tiles are down to a name and a number. */}
+          <span
+            className="queen27-hud-idle-why"
+            data-idle={idleNow?.kind}
+            title={idleWhy?.example ? `${idleWhy.text} · ${c.idleExample}` : idleWhy?.text}
+          >
+            {idleWhy?.example ? (
+              <a href={BOUNDARY_EXAMPLE_ISSUE} target="_blank" rel="noreferrer">
+                {idleWhy.head}
+              </a>
+            ) : idleWhy ? (
+              idleWhy.head
+            ) : (
+              `${data?.workers ? data.workers.capacity - data.workers.active : (workers?.idle ?? "—")} ${c.factoryIdle}`
+            )}
           </span>
         </div>
 

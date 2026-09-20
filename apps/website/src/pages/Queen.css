@@ -3388,6 +3388,15 @@ body.queen-shell .sticky-cta {
      reservation was 52px of empty sky above the header. What is left is the
      rhythm the sides already keep: a gap, the bar, a gap. */
   --hud-chrome-top: calc(var(--hud-gap) * 2 + var(--hud-bar-h));
+  /* The ground under NAVIGATION, as against under a panel. Everything in this
+     shell lets the map through, and for content that is the point; for the two
+     rows you steer with -- the viewport head and the ladder -- it meant a red
+     sector could drift under a button and take its label with it (measured on
+     the SPECS layer at 1343px: hexes across GAME-HOME, IDENTITY and the first
+     three rungs). A control whose name is legible only when the map is
+     somewhere else is not a control. Darker than --hud-panel and stated once,
+     because the two rows sit one above the other and must read as one band. */
+  --hud-nav: rgba(2, 8, 6, 0.86);
   --hud-ground: transparent;
   --hud-mono: "JetBrains Mono", ui-monospace, monospace;
   --hud-notch: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
@@ -4675,6 +4684,11 @@ main:where(.queen27-page.is-shell) section {
   top: var(--hud-chrome-top);
   right: calc(var(--hud-col-w) + var(--hud-gap) * 2 + var(--hud-cmds-w));
   left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
+  /* Floating over the field, so it needs the navigation ground -- the same one
+     the ladder directly beneath it takes, so the two read as one band rather
+     than a lit row over a transparent one. */
+  background: var(--hud-nav);
+  backdrop-filter: blur(6px);
 }
 
 .queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-vp-head {
@@ -5573,86 +5587,30 @@ main:where(.queen27-page.is-shell) section {
   }
 }
 
-/* ---- why free bees are idle (2026-09-15) ----------------------------------
+/* ---- why free bees are idle (2026-09-15, moved into the tile 2026-09-20) ---
    BEES 0/4 was read as broken bees while the round had said "nothing to
-   choose". On a desktop the line floats under the map's head, over the top
-   edge of the field, and wraps rather than being cut: the head itself is one
-   row that clips anything taller. Its top is the head as served from t27.ai,
-   42px (measured 1440x900 and 1280x720, en and ru: the identity chip is 28px
-   there, and the head's bottom rule is its last pixel; 40px covered that
-   rule). qa/queen-idle-layout-contract.mjs holds the line at or below the
-   head. */
-.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-idle {
-  position: absolute;
-  z-index: 3;
-  grid-area: 1 / 1 / -1 / -1;
-  top: calc(var(--hud-chrome-top) + 42px);
-  right: calc(var(--hud-col-w) + var(--hud-gap) * 2);
-  left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
-  align-self: start;
-  margin: 0;
-  padding: 0.3rem 0.6rem;
-  border: 1px solid var(--hud-line);
-  background: #000000b8;
+   choose", so the reason was drawn twice: short in the BEES tile, and in full
+   on a line floating under the map's head. The floating one spent four rounds
+   being moved out from under something -- the head's bottom rule, a phone's
+   screen tabs, a landscape phone's map tools, and finally the SPECS ladder and
+   the Explorer's search field under it. A notification that has to be re-placed
+   every time the page gains a row is in the wrong place. The tile keeps the
+   whole reason: the head in the line, the sentence on hover and for a screen
+   reader, and the example issue as the link the floating line carried.
+   qa/queen-idle-layout-contract.mjs now holds it there. */
+.queen27-page.is-shell .queen27-hud-idle-why[data-idle] {
   color: var(--hud-gold);
-  font-size: 0.66rem;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
 }
 
-/* Desktop only: at 0,5,0 it outranked the phone block, and a page collapsed at
-   1440 then narrowed to 390 pushed the line 84px out of the window. */
-@media (min-width: 901px) {
-  .queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-idle {
-    left: 84px;
-  }
-}
-
-.queen27-page.is-shell .queen27-hud-idle a {
-  color: var(--hud-cyan);
+.queen27-page.is-shell .queen27-hud-idle-why > a {
+  color: inherit;
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.queen27-page.is-shell .queen27-hud-idle a:focus-visible {
+.queen27-page.is-shell .queen27-hud-idle-why > a:focus-visible {
   outline: 2px solid var(--hud-cyan);
   outline-offset: 2px;
-}
-
-.queen27-page.is-shell.is-bare .queen27-hud-idle {
-  display: none;
-}
-
-/* On a phone the line is a row of its own between the head and the body.
-   Laid over the top of the body's row it took the taps meant for what starts
-   there (measured 390x844 on t27.ai: TRI's screen tabs, and the first
-   disclosure of the specs, skills and crons views), so the body gives up the
-   line's height instead and the page stays one screen. Portrait, or tall
-   enough; a landscape phone is the next block. */
-@media (max-width: 900px) and (orientation: portrait), (max-width: 900px) and (min-height: 501px) {
-  .queen27-page.is-shell .queen27-hud-viewport:has(> .queen27-hud-idle) {
-    grid-template-rows: auto auto minmax(0, 1fr);
-  }
-
-  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-idle {
-    position: static;
-    grid-area: 2 / 1 / 3 / -1;
-    margin: var(--hud-gap) var(--hud-gap) 0;
-  }
-
-  .queen27-page.is-shell .queen27-hud-viewport:has(> .queen27-hud-idle) > .queen27-hud-vp-body {
-    grid-area: 3 / 1 / -1 / -1;
-  }
-}
-
-/* A landscape phone has no row to give. Its head is a 40px band whose tools
-   spill below it (measured 844x390: tools at y 126-154 under a head ending at
-   124), and the line over that band took every tool and the identity chip.
-   The line is not shown there. The BEES tile's sub-line is hidden at that
-   size as well, so this orientation says what it said before the line. */
-@media (max-height: 500px) and (orientation: landscape) {
-  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-idle {
-    display: none;
-  }
 }
 
 /* ---- a round's resolution moment (loop cycle 004, P1-1) ------------------- */
@@ -5785,15 +5743,35 @@ main:where(.queen27-page.is-shell) section {
   min-height: 0;
 }
 
+/* One row, always, at every width and on every one of the six layers. It used
+   to wrap, and a wrapping tab bar is a tab bar whose height is a function of
+   the window: 49px here, 86px there, and the Explorer under it jumping by 37px
+   between two screens showing the same thing. When the six do not fit, the row
+   scrolls -- which is what the head row directly above it already does, so the
+   two rows of chrome now behave the same way rather than each inventing its
+   own answer to the same question. */
 .queen27-page.is-shell .queen27-ladder {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 8px 12px;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 8px 10px;
   border-bottom: 1px solid rgba(0, 255, 136, 0.18);
-  background: linear-gradient(180deg, rgba(0, 255, 136, 0.05), rgba(2, 8, 6, 0.9));
+  /* Green sheen over the navigation ground, not instead of it: the gradient
+     used to start at 5% green on nothing, so the top half of the row was the
+     map and the rungs' names were read against whatever drifted under them. */
+  background:
+    linear-gradient(180deg, rgba(0, 255, 136, 0.06), rgba(0, 255, 136, 0)),
+    var(--hud-nav);
+  backdrop-filter: blur(6px);
   min-width: 0;
   flex: 0 0 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.queen27-page.is-shell .queen27-ladder::-webkit-scrollbar {
+  display: none;
 }
 
 /* The six share the row: each is sized to its own name and then stretches into
@@ -5802,14 +5780,23 @@ main:where(.queen27-page.is-shell) section {
    643px of a 707px column on a 1440px screen, so they stretch into one 50px row
    and a narrower column wraps them -- which flex-wrap above makes read as two
    rows rather than an overflow. The sizes here are what brought 869px down to
-   692px; loosening them puts FUNCTIONS back on a second row. */
+   692px; loosening them puts FUNCTIONS back on a second row.
+
+   The counts moved onto the rungs from the strip the Explorers used to draw
+   inside the frame, and 1407 is four digits: that put the six back over the
+   column and FUNCTIONS back on the second row at 1343px. The padding and the
+   two gaps here are tightened by exactly what the counts cost, so the wrap
+   threshold is where it was. */
 .queen27-page.is-shell .queen27-ladder-step {
   display: inline-flex;
-  flex: 1 1 auto;
+  /* Grow into a wide row, never shrink out of a narrow one: a rung that
+     shrinks clips its own name, and the name is the whole point. Past the
+     point where growing stops the row scrolls instead. */
+  flex: 1 0 auto;
   justify-content: center;
   align-items: center;
-  gap: 5px;
-  padding: 0.42rem 0.45rem;
+  gap: 4px;
+  padding: 0.42rem 0.3rem;
   border: 1px solid var(--hud-line);
   background: rgba(255, 255, 255, 0.02);
   color: var(--hud-muted);
@@ -5843,6 +5830,24 @@ main:where(.queen27-page.is-shell) section {
   white-space: nowrap;
 }
 
+/* How many the layer holds -- the number the Explorer's own strip used to print
+   inside the frame. It arrives one fetch after the row is drawn, so the span is
+   always in the DOM and `min-width` holds its place: a four-digit count (Specs
+   is in the thousands) appearing into a row sized without it re-flexed all six
+   rungs and could push FUNCTIONS onto a second line. 3.2ch is four monospace
+   digits at this size; the empty state is therefore the same width as the full
+   one, and nothing moves when the catalog answers. (3.2ch was three digits and
+   Specs is 1407.) */
+.queen27-page.is-shell .queen27-ladder-count {
+  min-width: 4ch;
+  font-family: var(--hud-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-align: right;
+  color: #ffd45a;
+  font-variant-numeric: tabular-nums;
+}
+
 .queen27-page.is-shell .queen27-ladder-step > kbd {
   font-family: var(--hud-mono);
   font-size: 0.55rem;
@@ -5850,6 +5855,18 @@ main:where(.queen27-page.is-shell) section {
   border: 1px solid var(--hud-line);
   color: var(--hud-muted);
   opacity: 0.7;
+}
+
+/* The key badge is the first thing to go when the six stop fitting. Measured at
+   1343px: the six want 781px of the 687px the module's column has, and the six
+   badges are 108px of that -- so dropping them is the difference between the
+   whole ladder being visible and the reader having to scroll to find FUNCTIONS.
+   Nothing is lost: the key is still in the tooltip, still on the rail's own
+   button for SPECS, and still the key that works. */
+@media (max-width: 1499px) {
+  .queen27-page.is-shell .queen27-ladder-step > kbd {
+    display: none;
+  }
 }
 
 .queen27-page.is-shell .queen27-ladder-step:hover {
@@ -6067,6 +6084,23 @@ main:where(.queen27-page.is-shell) section {
    sheet over the sky the other two float on. */
 .queen27-page.is-shell .queen27-specs-frame {
   background: transparent;
+}
+
+/* Letting the map through is not the same as having no ground. The kanban, the
+   factory and the mission map each take a scrim below -- a dark veil the map is
+   still read through -- and the specs frame was the one view that took none: its
+   document is transparent and the wrap behind it was transparent too, so six
+   layers of dense catalog text (a list of 1407 names, a source pane, tag chips)
+   were set directly on a moving hex field with red sectors crossing them.
+   Measured on the SPECS layer at 1343px: the chips and the source gutter sit on
+   live hexes.
+
+   The same veil as the kanban, on the wrap rather than the frame: the frame
+   holds another document and cannot be reached from here, while the wrap is the
+   element directly beneath it in this one. The map still shows through, at the
+   strength every other view already shows it. */
+.queen27-page.is-shell .queen27-specs-frame-wrap {
+  background: rgba(2, 8, 6, 0.42);
 }
 
 .queen27-page.is-shell .queen27-kanban {
@@ -6653,13 +6687,20 @@ body.queen-shell .queen-starfield-source {
 /* The specs view is not the map, and the map's controls do not act on it:
    copy-to-agent, fit view, the zoom pair, fullscreen — every one of them
    addresses a scene that is not on this screen. The row goes here, and the
-   Explorer is given back the 66px it stood in. */
+   Explorer is given back the 66px it stood in.
+
+   Asked of data-rail-view, not data-view: the SPECS module has six layers and
+   this was true of all six, but the attribute it used reads the layer, so only
+   the first of them got the room back. On SKILLS, CRONS, AGENTS, TOOLS and
+   FUNCTIONS the body went on reserving 56px of command row and a 10px gap for
+   a row React does not render there — 66px of empty sky above the ladder, and
+   66px off the height of every Explorer. */
 @media (min-width: 901px) {
-  .queen27-page.is-shell[data-view="specs"] .queen27-hud-viewport > .queen27-hud-commands {
+  .queen27-page.is-shell[data-rail-view="specs"] .queen27-hud-viewport > .queen27-hud-commands {
     display: none;
   }
 
-  .queen27-page.is-shell[data-view="specs"] .queen27-hud-viewport > .queen27-hud-vp-body {
+  .queen27-page.is-shell[data-rail-view="specs"] .queen27-hud-viewport > .queen27-hud-vp-body {
     padding-top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
   }
 }
@@ -6810,7 +6851,7 @@ body.queen-shell .queen-starfield-source {
    markup rather than hidden here — four previews each booting Babylon is four
    more WebGL contexts on one page. */
 .queen27-page.is-shell.is-embed .queen27-hud-viewport
-  > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-vp-head, .queen27-hud-idle, .queen27-hud-bottom, .queen27-context-chip) {
+  > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-vp-head, .queen27-hud-bottom, .queen27-context-chip) {
   display: none;
 }
 

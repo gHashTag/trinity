@@ -180,7 +180,13 @@ check((src.match(/idleReason\(/g) || []).length === 1, "no second, ungated call 
 // rather than loosening — the page must still render it behind
 // idleWhy.example, and the constant it renders must still be that issue.
 const api = readFileSync(new URL("../src/lib/queenApi.ts", import.meta.url), "utf8");
-check(/className="queen27-hud-idle"/.test(src) && /\{idleWhy\.example && \(/.test(src) && /href=\{BOUNDARY_EXAMPLE_ISSUE\}/.test(src), "the line has its own element; the format example is behind idleWhy.example");
+// The reason stopped being a line floating over the map on 2026-09-20 and became
+// the BEES tile's sub-line, where the same head was already printed; the element
+// is queen27-hud-idle-why, the whole sentence is its title, and the format
+// example is the head made a link. qa/queen-idle-layout-contract.mjs holds it
+// there and proves nothing floats over the map's controls any more.
+check(/className="queen27-hud-idle-why"/.test(src) && !/className="queen27-hud-idle"/.test(src) && /idleWhy\?\.example \? \(/.test(src) && /href=\{BOUNDARY_EXAMPLE_ISSUE\}/.test(src), "the reason is the BEES tile's sub-line, and nothing floats over the map; the format example is behind idleWhy.example");
+check(/title=\{idleWhy\?\.example \? `\$\{idleWhy\.text\} · \$\{c\.idleExample\}` : idleWhy\?\.text\}/.test(src), "the whole sentence stays on the tile, for hover and for a screen reader");
 check(/import \{[^}]*BOUNDARY_EXAMPLE_ISSUE[^}]*\} from "\.\.\/lib\/queenApi";/.test(src), "the page takes the exemplar from lib/queenApi rather than carrying its own copy");
 check(/export const BOUNDARY_EXAMPLE_ISSUE = "https:\/\/github\.com\/gHashTag\/t27\/issues\/3587";/.test(api), "lib/queenApi names the exemplar issue, and it is the one this contract was written about");
 check(/idleExample:\s*"an issue written the way bees can take it"/.test(src) && /idleExample:\s*"задача в формате, который пчёлы берут"/.test(src), "the link is labelled as a format, not as an issue bees can take now, in both languages");

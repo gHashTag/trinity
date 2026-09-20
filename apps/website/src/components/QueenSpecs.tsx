@@ -107,7 +107,8 @@ export function QueenSpecs({ c, showDirective = true, onNavigate, ladder }: { c:
       {showDirective && <QueenSpecsDirective c={c} collapsible />}
 
       <div className="queen27-specs-frame-wrap">
-        {!ready && <div className="queen27-specs-loading"><QueenLoading title={c.loading} facts={[`${FEATURED.split('/').at(-1)}`]}/></div>}
+        {/* The mark and the bar, no words: see components/QueenLoading. */}
+        {!ready && <div className="queen27-specs-loading"><QueenLoading label={c.loading}/></div>}
         <iframe
           key={frame.frameKey}
           ref={frameRef}

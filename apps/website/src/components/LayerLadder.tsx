@@ -4,6 +4,20 @@
 // catalog the page already loaded (spec-agents.json carries `ladder`). The
 // counts are generated, never typed here; a layer whose count the catalog
 // could not measure shows `—` rather than a remembered number.
+//
+// ONE LADDER PER SCREEN. This is the ladder an Explorer draws when it is a page
+// of its own, standing at its own address. Inside the Queen's SPECS module the
+// Explorer is an iframe under components/QueenLadder, which is the same six
+// layers as buttons -- so drawing this one there put two ladders on one screen,
+// one above the other, and the reader had to be told twice which layer they
+// were on. Worse, five of the six Explorers drew it and the Spec Explorer did
+// not, so every move between SPECS and any other layer shifted the frame's
+// contents by this strip's height: that is the jump.
+//
+// So every caller renders it under `!embedded`, and the counts it carries are
+// lifted onto the Queen's own rungs (loadLadderCounts in lib/agentSpecs), which
+// is why nothing is lost by hiding it. The flag is already on the page -- the
+// Explorers gate their ExplorerHeader on it for the same reason.
 
 import { C } from '../lib/explorerTheme'
 
