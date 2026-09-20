@@ -8,7 +8,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.array_list.Managed;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED CONSTANTS
@@ -400,9 +400,9 @@ pub const ErrorReporter = struct {
     pub fn init(allocator: Allocator, source: []const u8, file_name: []const u8) !Self {
         var self = Self{
             .allocator = allocator,
-            .diagnostics = std.ArrayList(Diagnostic).init(allocator),
+            .diagnostics = ArrayList(Diagnostic).init(allocator),
             .source = source,
-            .source_lines = std.ArrayList([]const u8).init(allocator),
+            .source_lines = ArrayList([]const u8).init(allocator),
             .file_name = file_name,
             .error_count = 0,
             .warning_count = 0,

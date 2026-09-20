@@ -1638,14 +1638,14 @@ pub const KVBlock = struct {
 pub const BlockTable = struct {
     allocator: std.mem.Allocator,
     seq_id: usize,
-    block_ids: std.ArrayList(usize), // List of block IDs for this sequence
+    block_ids: std.array_list.Managed(usize), // List of block IDs for this sequence
     num_tokens: usize, // Total tokens in sequence
 
     pub fn init(allocator: std.mem.Allocator, seq_id: usize) BlockTable {
         return BlockTable{
             .allocator = allocator,
             .seq_id = seq_id,
-            .block_ids = std.ArrayList(usize).init(allocator),
+            .block_ids = std.array_list.Managed(usize).init(allocator),
             .num_tokens = 0,
         };
     }
@@ -2492,7 +2492,7 @@ pub const ChunkedRequest = struct {
     allocator: std.mem.Allocator,
     request_id: u64,
     prompt_tokens: []const u32,
-    chunks: std.ArrayList(PrefillChunk),
+    chunks: std.array_list.Managed(PrefillChunk),
     completed_chunks: usize,
     current_chunk: usize,
     prefill_complete: bool,
@@ -2503,7 +2503,7 @@ pub const ChunkedRequest = struct {
             .allocator = allocator,
             .request_id = request_id,
             .prompt_tokens = prompt_tokens,
-            .chunks = std.ArrayList(PrefillChunk).init(allocator),
+            .chunks = std.array_list.Managed(PrefillChunk).init(allocator),
             .completed_chunks = 0,
             .current_chunk = 0,
             .prefill_complete = false,
@@ -2583,7 +2583,7 @@ pub const ChunkedRequest = struct {
 pub const ChunkedPrefillScheduler = struct {
     allocator: std.mem.Allocator,
     config: ChunkedPrefillConfig,
-    requests: std.ArrayList(*ChunkedRequest),
+    requests: std.array_list.Managed(*ChunkedRequest),
 
     // Statistics
     total_chunks_processed: usize,
@@ -2593,7 +2593,7 @@ pub const ChunkedPrefillScheduler = struct {
         return .{
             .allocator = allocator,
             .config = config,
-            .requests = std.ArrayList(*ChunkedRequest).init(allocator),
+            .requests = std.array_list.Managed(*ChunkedRequest).init(allocator),
             .total_chunks_processed = 0,
             .total_tokens_prefilled = 0,
         };
@@ -2616,8 +2616,8 @@ pub const ChunkedPrefillScheduler = struct {
     }
 
     /// Schedule next batch of chunks (round-robin fairness)
-    pub fn scheduleNextBatch(self: *ChunkedPrefillScheduler) std.ArrayList(*PrefillChunk) {
-        var batch = std.ArrayList(*PrefillChunk).init(self.allocator);
+    pub fn scheduleNextBatch(self: *ChunkedPrefillScheduler) std.array_list.Managed(*PrefillChunk) {
+        var batch = std.array_list.Managed(*PrefillChunk).init(self.allocator);
 
         // Round-robin: take one chunk from each request
         var chunks_added: usize = 0;
@@ -2647,7 +2647,7 @@ pub const ChunkedPrefillScheduler = struct {
     }
 
     /// Process a batch of chunks (simulate)
-    pub fn processBatch(self: *ChunkedPrefillScheduler, batch: *std.ArrayList(*PrefillChunk)) void {
+    pub fn processBatch(self: *ChunkedPrefillScheduler, batch: *std.array_list.Managed(*PrefillChunk)) void {
         for (batch.items) |chunk| {
             // Find owning request and mark complete
             for (self.requests.items) |req| {
@@ -2664,8 +2664,8 @@ pub const ChunkedPrefillScheduler = struct {
     }
 
     /// Remove completed requests
-    pub fn removeCompleted(self: *ChunkedPrefillScheduler) std.ArrayList(*ChunkedRequest) {
-        var completed = std.ArrayList(*ChunkedRequest).init(self.allocator);
+    pub fn removeCompleted(self: *ChunkedPrefillScheduler) std.array_list.Managed(*ChunkedRequest) {
+        var completed = std.array_list.Managed(*ChunkedRequest).init(self.allocator);
 
         var i: usize = 0;
         while (i < self.requests.items.len) {

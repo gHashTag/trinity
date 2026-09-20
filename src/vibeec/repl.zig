@@ -8,7 +8,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+const ArrayList = std.array_list.Managed;
 const error_reporter = @import("error_reporter.zig");
 const ColorWriter = error_reporter.ColorWriter;
 const Color = error_reporter.Color;

@@ -9,7 +9,15 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
+// std.ArrayList became the UNMANAGED list in zig 0.15, so `.init(allocator)` is
+// gone from it and every call site here would have to start passing an
+// allocator to append/deinit/toOwnedSlice. std.array_list.Managed is the old
+// type under its new name -- same API, so this is a rename, not a migration.
+// The migration is real work and this tree is doing it file by file: the files
+// already through it say `const ArrayList = std.ArrayListUnmanaged;` at this
+// line (parser_v3, type_checker, verilog_codegen, gen_vibee_parser,
+// gen_parser_types). The ones that still say Managed have not been done yet.
+const ArrayList = std.array_list.Managed;
 
 // Import all compiler components
 const parser = @import("parser_v3.zig");
@@ -824,7 +832,7 @@ fn printChatHelp() void {
 
 fn launchAgent(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     // Build command for vibee-agent
-    var argv = std.ArrayList([]const u8).init(allocator);
+    var argv = std.array_list.Managed([]const u8).init(allocator);
     defer argv.deinit();
 
     // Find the agent script relative to the binary
