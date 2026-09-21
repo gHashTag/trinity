@@ -7052,19 +7052,50 @@ body.queen-shell .queen-starfield-source {
    acts on the lane rather than describing it. */
 .queen27-lane-filter {
   display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
   margin-left: auto;
+  /* A keeper is offered one chip per client on the platform. The row wraps, and
+     past a few lines of them it scrolls rather than pushing the board down the
+     page: the filter is how you get to the board, not a thing to scroll past. */
+  max-height: 4.6rem;
+  overflow-y: auto;
   color: var(--muted);
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
 
-.queen27-lane-filter select {
-  max-width: 12rem;
-  padding: 0.2rem 0.35rem;
+.queen27-chip {
+  padding: 0.15rem 0.45rem;
   border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  background: #050505;
+  cursor: pointer;
+}
+
+.queen27-chip:hover {
+  color: var(--text);
+}
+
+/* The pressed state IS the accessible state: one attribute, so the styling and
+   the screen reader cannot come to disagree about which clients are shown. */
+.queen27-chip[aria-pressed="true"] {
+  border-color: var(--gold, #d9a441);
+  color: #050505;
+  background: var(--gold, #d9a441);
+}
+
+.queen27-lane-search {
+  max-width: 9rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   color: var(--text);
   font: inherit;
   letter-spacing: normal;
@@ -7078,7 +7109,8 @@ body.queen-shell .queen-starfield-source {
   font-family: var(--hud-mono);
 }
 
-.queen27-page.is-shell .queen27-lane-filter select {
+.queen27-page.is-shell .queen27-chip,
+.queen27-page.is-shell .queen27-lane-search {
   border-color: var(--hud-line);
   background: var(--hud-panel);
 }

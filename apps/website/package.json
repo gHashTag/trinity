@@ -74,6 +74,7 @@
     "check:queen-tri": "node qa/queen-tri-contract.mjs",
     "check:tri-identity": "node --experimental-strip-types qa/tri-identity-contract.mjs",
     "check:hive-board": "node --experimental-strip-types qa/hive-board-contract.mjs",
+    "check:clients-filter": "node --experimental-strip-types qa/clients-filter-contract.mjs",
     "check:queen-identity": "node qa/queen-identity-contract.mjs",
     "check:queen-redirect": "node --experimental-strip-types qa/queen-redirect-contract.mjs",
     "check:app-session-identity": "node --experimental-strip-types qa/app-session-identity-contract.mjs",

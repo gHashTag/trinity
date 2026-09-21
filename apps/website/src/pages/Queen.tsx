@@ -514,6 +514,7 @@ const COPY = {
     clientsLaneAria: "Clients board",
     clientsNarrow: "Narrow to",
     clientsNarrowAll: "All",
+    clientsNarrowSearch: "find a person",
     clientsNarrowed: "the hive already narrowed this board",
     clientsPending: "Asking the hive…",
     clientsRefused: "The hive did not open this board to you.",
@@ -895,6 +896,7 @@ const COPY = {
     clientsLaneAria: "Доска клиентов",
     clientsNarrow: "Сузить до",
     clientsNarrowAll: "Все",
+    clientsNarrowSearch: "найти человека",
     clientsNarrowed: "улей уже сузил эту доску",
     clientsPending: "Спрашиваем улей…",
     clientsRefused: "Улей не открыл вам эту доску.",
@@ -2169,6 +2171,8 @@ function KanbanView({
   lang,
   clients,
   onNarrow,
+  search,
+  onSearch,
 }: {
   columns: QueenColumn[];
   cards: QueenCard[];
@@ -2180,8 +2184,14 @@ function KanbanView({
   lang: string;
   /** The signed-in visitor's own pipeline. Null is signed out: see above. */
   clients: ClientsPanel | null;
-  /** The view's own narrowing. It never reaches the hive; see lib/hiveBoard.ts. */
-  onNarrow: (key: string | null) => void;
+  /**
+   * The view's own narrowing: the clients being watched, empty for all of
+   * them. It never reaches the hive; see lib/hiveBoard.ts.
+   */
+  onNarrow: (keys: string[]) => void;
+  /** What has been typed into the find box. Also never leaves this page. */
+  search: string;
+  onSearch: (text: string) => void;
 }) {
   const lane = clients?.lane ?? null;
   const sentence = clientsReasonSentence(clients?.reason ?? null, c);
@@ -2313,26 +2323,65 @@ function KanbanView({
             <span title={stale ?? undefined}>{lane ? lane.shown : "—"}</span>
             {scopeLine && <small>{scopeLine}</small>}
             {lane && lane.options.length > 0 && (
-              // Narrowing happens HERE, on what already arrived, and the chosen
-              // key never goes back to the hive. The server has already decided
-              // what this person may see; a control that re-asks with a name in
-              // its hand is a control that can be made to ask for a different
-              // name. A filter that can only ever hide is a filter that cannot
-              // be turned into a question.
-              <label className="queen27-lane-filter">
+              // Narrowing happens HERE, on what already arrived, and no key and
+              // no typed character goes back to the hive. The server has
+              // already decided what this person may see; a control that
+              // re-asks with a name in its hand is a control that can be made
+              // to ask for a different name. A filter that can only ever hide
+              // is a filter that cannot be turned into a question.
+              //
+              // Toggles rather than a dropdown because the question is "these
+              // three clients" and a dropdown can only answer "this one". They
+              // are buttons with aria-pressed, not checkboxes dressed as chips:
+              // the state a screen reader reads is the state the styling shows,
+              // because they are the same attribute.
+              <div
+                className="queen27-lane-filter"
+                role="group"
+                aria-label={c.clientsNarrow}
+              >
                 <span>{c.clientsNarrow}</span>
-                <select
-                  value={lane.narrow ?? ""}
-                  onChange={(event) => onNarrow(event.target.value || null)}
+                <button
+                  type="button"
+                  className="queen27-chip"
+                  aria-pressed={lane.narrow.length === 0}
+                  onClick={() => onNarrow([])}
                 >
-                  <option value="">{c.clientsNarrowAll}</option>
-                  {lane.options.map((option) => (
-                    <option key={option.key} value={option.key}>
+                  {c.clientsNarrowAll}
+                </button>
+                {lane.options.map((option) => {
+                  const on = lane.narrow.includes(option.key);
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      className="queen27-chip"
+                      aria-pressed={on}
+                      onClick={() =>
+                        onNarrow(
+                          on
+                            ? lane.narrow.filter((key) => key !== option.key)
+                            : [...lane.narrow, option.key],
+                        )
+                      }
+                    >
                       {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                    </button>
+                  );
+                })}
+                {/* A keeper is sent the whole platform, and no row of chips
+                    finds one person in it. This types over the cards already in
+                    hand — name, bot, id — and is the same kind of hiding the
+                    chips do. */}
+                <input
+                  className="queen27-lane-search"
+                  type="search"
+                  value={search}
+                  placeholder={c.clientsNarrowSearch}
+                  aria-label={c.clientsNarrowSearch}
+                  onChange={(event) => onSearch(event.target.value)}
+                />
+              </div>
             )}
             {lane?.applied && (
               // The hive's own narrowing, which nothing on this page can widen.
@@ -2730,13 +2779,20 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // forget separately. The narrowing is this page's own state and stays here:
   // it never becomes an argument to the hive (src/lib/hiveBoard.ts).
   const hive = useHiveBoard(boardView === "kanban");
-  const [clientsNarrow, setClientsNarrow] = useState<string | null>(null);
+  // Empty is ALL of them, which is why the initial state is an empty array and
+  // not a list of everything: a board that started by listing the clients it
+  // was watching would be one refresh away from silently watching fewer.
+  const [clientsNarrow, setClientsNarrow] = useState<string[]>([]);
+  const [clientsSearch, setClientsSearch] = useState("");
   const clientsPanel = useMemo<ClientsPanel | null>(
     () =>
       hive.showing
-        ? { lane: clientsLane(hive.board, clientsNarrow, lang), reason: hive.reason }
+        ? {
+            lane: clientsLane(hive.board, clientsNarrow, lang, clientsSearch),
+            reason: hive.reason,
+          }
         : null,
-    [hive.showing, hive.board, hive.reason, clientsNarrow, lang],
+    [hive.showing, hive.board, hive.reason, clientsNarrow, clientsSearch, lang],
   );
   const runningCards = useMemo(
     () => cards.filter((card) => card.column === "running"),
@@ -3493,6 +3549,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 lang={lang}
                 clients={clientsPanel}
                 onNarrow={setClientsNarrow}
+                search={clientsSearch}
+                onSearch={setClientsSearch}
               />
             </div>
           ) : boardView === "map" ? (

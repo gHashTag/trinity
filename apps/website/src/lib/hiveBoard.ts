@@ -42,6 +42,17 @@
  * on a page can only ever show a subset of what already arrived. A filter that
  * re-asks is a filter that can be made to ask for something else.
  *
+ * That is why the two controls here are a SET of keys and a search string
+ * rather than one key. The owner asked to watch "all client movement, or a
+ * chosen few" — several clients at once — and the obvious way to serve it is a
+ * request naming them. Naming them locally is the same view with none of the
+ * authority: whatever the set, the result is a subset of one answer the server
+ * already decided to send, and no combination of chips and typing can produce a
+ * row that did not arrive. Both controls are also the reason the server's own
+ * scoping is the ONLY scoping: a keeper is sent the whole platform and hides
+ * what they are not looking at; an owner is sent their own bots and can hide
+ * within those; a bee is sent nothing and has nothing to hide.
+ *
  * Everything that comes back is DATA from a remote service — names and bot
  * handles are other people's text. React renders them as text nodes; nothing
  * here builds markup, and nothing here is ever treated as an instruction.
@@ -135,6 +146,15 @@ const days = (value: unknown): number | null =>
 const moment = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null)
 
 const HIVE_ROLES_KNOWN = new Set<string>(['keeper', 'owner', 'bee'])
+
+/**
+ * A typed search, made comparable: trimmed, folded to lower case, and capped
+ * at the length of the longest thing it could match. Capped because this string
+ * comes from a keyboard and is compared against every card on a keeper's board;
+ * folded because nobody types a client's name with the capitals the CRM has.
+ */
+const fold = (value: string): string =>
+  typeof value === 'string' ? value.trim().slice(0, 64).toLowerCase() : ''
 
 /**
  * Read one `hive_board` answer. Pure: no clock, no network, no globals — which
@@ -240,8 +260,15 @@ export interface ClientsLane {
   groups: LaneGroup[]
   /** The choices offered by the control. Never more than the server sent. */
   options: FilterOption[]
-  /** The view's narrowing: one option key, or null for all of them. */
-  narrow: string | null
+  /**
+   * The view's narrowing: the offered keys actually chosen, in the order they
+   * were chosen. EMPTY MEANS ALL, never none — an empty set of favourites is
+   * the question "show me everything", and answering it with a blank board is
+   * the one reading of this field that is a bug rather than a policy.
+   */
+  narrow: string[]
+  /** The search actually applied: trimmed, folded, capped. Matches locally or not at all. */
+  search: string
   /** The server's own narrowing, which no control here can widen. */
   applied: string | null
   howToRead: string | null
@@ -258,17 +285,43 @@ export interface ClientsLane {
  * board exactly as it was before this feature, because there is nothing to
  * hide when there is nothing rendered.
  */
-export function clientsLane(board: HiveBoard | null, narrow: string | null, lang: string): ClientsLane | null {
+export function clientsLane(
+  board: HiveBoard | null,
+  // One key is a list of one. Spelled in the type rather than left to a caller
+  // to remember, because the failure of the other choice is silent: a bare
+  // string spreads into its own letters, none of which is an offered key, and
+  // the board would quietly widen back to everything instead of narrowing.
+  narrow: readonly string[] | string | null,
+  lang: string,
+  search = '',
+): ClientsLane | null {
   if (!board) return null
   const locale = lang === 'ru' ? 'ru' : 'en'
 
   // A narrowing to something the server never offered is not a narrowing; it is
   // a key from somewhere else, and honouring it would let a control describe a
-  // set the server did not answer for. Ignoring it shows everything that
-  // arrived, which is by definition still within what this person may see.
+  // set the server did not answer for. Such a key is dropped ON ITS OWN: the
+  // offered keys beside it still narrow, because throwing away the whole
+  // selection over one bad member would turn a stray key into a way of widening
+  // the board back out to everything.
   const offered = new Set(board.filter.available.map((option) => option.key))
-  const applied = narrow && offered.has(narrow) ? narrow : null
-  const cards = applied ? board.cards.filter((card) => card.bot === applied || card.id === applied) : board.cards
+  const asked = typeof narrow === 'string' ? [narrow] : (narrow ?? [])
+  const picked = [...new Set(asked)].filter((key) => offered.has(key))
+  const chosen = new Set(picked)
+  const needle = fold(search)
+  const cards = board.cards.filter((card) => {
+    // Several keys are a union of subsets, which is still a subset. `card.id`
+    // is matched as well as `card.bot` because the hive may offer a person
+    // rather than a bot as an option, and a key it offered must select
+    // something or the control would list a choice that does nothing.
+    if (chosen.size > 0 && !chosen.has(card.bot) && !chosen.has(card.id)) return false
+    if (!needle) return true
+    return (
+      card.name.toLowerCase().includes(needle) ||
+      card.bot.toLowerCase().includes(needle) ||
+      card.id.toLowerCase().includes(needle)
+    )
+  })
 
   // The server's order, plus any stage its column list did not mention but its
   // cards used, plus crmModel's order when it sent no columns at all. A card
@@ -301,7 +354,8 @@ export function clientsLane(board: HiveBoard | null, narrow: string | null, lang
     scope: board.scope,
     groups,
     options: board.filter.available,
-    narrow: applied,
+    narrow: picked,
+    search: needle,
     applied: board.filter.applied,
     howToRead: board.howToRead,
     shown: cards.length,
