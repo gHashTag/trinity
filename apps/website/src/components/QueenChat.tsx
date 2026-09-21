@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ChatInput from './chat/ChatInput'
 import ChatMessage from './chat/ChatMessage'
 import { NotSignedIn, type ChatResponse } from '../services/chatApi'
+import { AgentSignedOut, askBrowserAgent } from '../lib/queenBrowser'
+import { appSessionFromWindow } from '../lib/appSessionIdentity'
 import { askQueen, queenCaller, queenHealth, queenModelName } from '../services/queenModel'
 import { signInHref } from '../lib/triIdentity'
 import { HUD_VIEWS, type HudEvent, type HudEventKind } from './queenHud'
@@ -85,6 +87,15 @@ const copy = {
 
 // The chat contract carries a message and nothing else, so what she is looking
 // at travels as a prefix rather than as a field the backend does not have.
+const browserAgentEnv = {
+  fetch: (url: string, init: { method: 'POST'; credentials: 'omit'; headers: Record<string, string>; body: string }) =>
+    window.fetch(url, init),
+  token: () => {
+    const s = appSessionFromWindow()
+    return s.source === 'app-session' && s.state === 'signed-in' ? s.token : null
+  },
+}
+
 function contextLine(ctx: QueenChatContext, subject: HudEvent | null): string {
   const parts = [`view=${ctx.view}`]
   if (ctx.repo) parts.push(`repo=${ctx.repo}`)
@@ -191,13 +202,31 @@ export default function QueenChat({
     setTurns((prev) => [...prev, { kind: 'turn', at, role: 'user', content: question }])
     setWaited(0)
     setBusy(true)
-    askQueen(`[${line}]${quoted ? ` ${quoted}` : ''} ${question}`)
+    // On the BROWSER tab the question goes to the person's own agent, which
+    // holds the browser tools; everywhere else, to the Queen as before
+    // (lib/queenBrowser.ts, askBrowserAgent, says why).
+    const history = turns
+      .filter((turn) => turn.source !== 'offline')
+      .map((turn) => ({ role: turn.role, content: turn.content }))
+    const asked: Promise<ChatResponse> =
+      context.view === 'browser'
+        ? askBrowserAgent(browserAgentEnv, history, question, lang).then((a) => ({
+            response: a.text,
+            // The tools she used ride under the answer: the person watched the
+            // clicks happen, and this names them.
+            source: [a.model ?? 'agent', ...(a.tools.length > 0 ? [[...new Set(a.tools)].join(', ')] : [])].join(' · '),
+            confidence: 0,
+            latency_us: Math.round((Date.now() - at) * 1000),
+            tool_name: a.tools.length > 0 ? a.tools.join(', ') : undefined,
+          }))
+        : askQueen(`[${line}]${quoted ? ` ${quoted}` : ''} ${question}`)
+    asked
       .then((res) => setTurns((prev) => [...prev, { kind: 'turn', at: Date.now(), role: 'assistant', ...res, content: res.response }]))
       .catch((error: unknown) => {
         // Signed out is not the Queen failing, and must not be reported as one:
         // she is answering other people at this moment. The panel closes the
         // input and says where to go instead.
-        if (error instanceof NotSignedIn) { setSignedIn(false); return }
+        if (error instanceof NotSignedIn || error instanceof AgentSignedOut) { setSignedIn(false); return }
         setLive(false)
         // Why, when there is a why. Her server reports a quota or a refusal in
         // words, and the proxy passes them through; a bare "did not answer"
@@ -206,7 +235,7 @@ export default function QueenChat({
         setTurns((prev) => [...prev, { kind: 'turn', at: Date.now(), role: 'assistant', content: said ? `${t.failed} ${said}` : t.failed, source: 'offline', confidence: 0 }])
       })
       .finally(() => setBusy(false))
-  }, [busy, context, subject, describe, t.failed])
+  }, [busy, context, subject, describe, t.failed, turns, lang])
 
   if (!open) {
     return (

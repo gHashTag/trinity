@@ -15,6 +15,11 @@ import {
   frameSrcOf,
   panelMode,
   viewOf,
+  agentMessages,
+  askBrowserAgent,
+  readAgentStream,
+  AgentSignedOut,
+  HISTORY_TURNS,
 } from '../src/lib/queenBrowser.ts'
 import { HUD_VIEWS, hudKeyOf } from '../src/components/queenHud.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
@@ -123,6 +128,55 @@ assert.equal(mod.key, 'w')
   assert.ok(live && /background:\s*#000/.test(live[1]), 'the live window sits on an opaque ground')
   const hide = /\[data-view="browser"\][^{]*\.queen-scene-holder[^{]*\{([^}]*)\}/.exec(css)
   assert.ok(hide && /visibility:\s*hidden/.test(hide[1]), 'on this view the hive scene is hidden, not drawn over the window')
+}
+
+// 7. The Queen drives the browser: the question reaches the person's own
+//    agent WITH the tab it was asked from, and its stream is read right.
+{
+  const msgs = agentMessages([], 'open t27.ai', 'en')
+  assert.equal(msgs.length, 1)
+  assert.match(msgs[0].content, /BROWSER tab/, 'the agent is told which tab the person is on')
+  assert.match(msgs[0].content, /browser_\*/, 'and that the browser tools are the ones to use')
+  assert.match(msgs[0].content, /open t27\.ai$/, 'the question itself is last, untouched')
+  assert.match(agentMessages([], 'x', 'ru')[0].content, /вкладки BROWSER/)
+
+  const long = Array.from({ length: 20 }, (_, i) => ({ role: i % 2 ? 'assistant' : 'user', content: `turn ${i}` }))
+  const withHistory = agentMessages([...long, { role: 'assistant', content: '  ' }], 'and now click it', 'en')
+  assert.equal(withHistory.length, HISTORY_TURNS + 1, 'earlier turns ride along, bounded')
+  assert.equal(withHistory[0].content, `turn ${20 - HISTORY_TURNS}`, 'the most recent ones')
+
+  const stream = [
+    '{"тип":"ход","id":"1"}',
+    '{"тип":"провайдер","id":"zai","model":"glm-5.3"}',
+    '{"тип":"размышление","текст":"let me look"}',
+    '{"тип":"инструмент","имя":"browser_status","аргументы":"{}"}',
+    'not json',
+    '{"тип":"текст","текст":"Three tabs "}',
+    '{"тип":"текст","текст":"are open."}',
+    '{"тип":"готово","витков":2}',
+  ].join('\n')
+  const a = readAgentStream(stream)
+  assert.equal(a.text, 'Three tabs are open.', 'thinking is not part of the answer')
+  assert.deepEqual(a.tools, ['browser_status'])
+  assert.equal(a.model, 'zai/glm-5.3')
+  assert.equal(readAgentStream('{"тип":"ошибка","текст":"provider 429"}').error, 'provider 429')
+
+  const calls = []
+  const env = (status, body) => ({
+    token: () => 'tok-9',
+    fetch: async (url, init) => { calls.push({ url, init }); return { ok: status < 300, status, text: async () => body } },
+  })
+  const got = await askBrowserAgent(env(200, stream), [], 'which tabs?', 'en')
+  assert.equal(got.text, 'Three tabs are open.')
+  const [{ url, init }] = calls
+  assert.equal(url, `${BROKER_BASE}/api/agent/chat`)
+  assert.equal(init.credentials, 'omit')
+  assert.equal(init.headers.Authorization, 'Bearer tok-9')
+  assert.ok(!init.body.includes('tok-9'), 'the token rides in the header only')
+  assert.match(JSON.parse(init.body).messages.at(-1).content, /BROWSER tab[\s\S]*which tabs\?$/)
+  await assert.rejects(askBrowserAgent(env(401, ''), [], 'x', 'en'), AgentSignedOut)
+  await assert.rejects(askBrowserAgent({ ...env(200, stream), token: () => null }, [], 'x', 'en'), AgentSignedOut)
+  await assert.rejects(askBrowserAgent(env(200, '{"тип":"ошибка","текст":"provider 429"}'), [], 'x', 'en'), /provider 429/)
 }
 
 console.log('queen-browser contract: ok')
