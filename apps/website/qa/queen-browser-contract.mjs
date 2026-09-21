@@ -8,6 +8,7 @@
 //   node --experimental-strip-types qa/queen-browser-contract.mjs
 
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import {
   BROKER_BASE,
   callBroker,
@@ -104,5 +105,24 @@ assert.equal(hudKeyOf('browser'), 'w')
 const mod = MODULES.find((m) => m.tab === 'browser')
 assert.ok(mod, 'a module entry, so the homepage and ?tab= know it')
 assert.equal(mod.key, 'w')
+
+// 6. The panel paints ABOVE the hive. The scene is an absolutely positioned
+//    layer and paints over unpositioned content; shipped without this, the
+//    comb covered the live window on app.t27.ai. A stylesheet is the only
+//    place this lives, so the stylesheet is what is checked -- the rule for
+//    the panel itself, not any line that merely mentions it.
+{
+  const css = readFileSync(new URL('../src/components/QueenBrowser.css', import.meta.url), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+  const panel = /\.queen27-page\.is-shell \.queen27-browser\s*\{([^}]*)\}/.exec(css)
+  assert.ok(panel, 'the panel has its own rule')
+  assert.match(panel[1], /position:\s*relative/, 'the panel is positioned, or the hive paints over it')
+  const z = /z-index:\s*(\d+)/.exec(panel[1])
+  assert.ok(z && Number(z[1]) >= 1, 'the panel stacks above the scene holder')
+  const live = /\.queen27-browser\.is-live\s*\{([^}]*)\}/.exec(css)
+  assert.ok(live && /background:\s*#000/.test(live[1]), 'the live window sits on an opaque ground')
+  const hide = /\[data-view="browser"\][^{]*\.queen-scene-holder[^{]*\{([^}]*)\}/.exec(css)
+  assert.ok(hide && /visibility:\s*hidden/.test(hide[1]), 'on this view the hive scene is hidden, not drawn over the window')
+}
 
 console.log('queen-browser contract: ok')

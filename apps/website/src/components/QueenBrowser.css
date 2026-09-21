@@ -1,5 +1,21 @@
-/* BROWSER: the person's own remote browser, one frame, one quiet bar. */
+/* BROWSER: the person's own remote browser, one frame, one quiet bar.
+
+   POSITIONED, AND ABOVE THE HIVE. The hive's scene lives in
+   .queen-scene-holder, an absolutely positioned layer of the view body, and a
+   positioned box paints over any content that is not positioned, whatever the
+   DOM order (Queen.css says so where it takes the scene's pointer away). First
+   shipped without this: the owner opened the tab on app.t27.ai and saw the
+   comb drawn straight over the live window -- the pod's toolbar dimmed under
+   red sectors, the picture nowhere. TRI escapes the same way, with a
+   positioned frame wrap. The map is scenery; a window a person types into is
+   not something to read it through.
+
+   z-index stays low on purpose: the HUD's top bar and its menu sit at 5-9 in
+   the same page, and a browser window above the menu would swallow it. The
+   hive is taken out of the way instead, below. */
 .queen27-page.is-shell .queen27-browser {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -7,7 +23,13 @@
   gap: 6px;
 }
 
+.queen27-page.is-shell .queen27-browser.is-live {
+  background: #000;
+}
+
 .queen27-page.is-shell .queen27-browser.is-note {
+  background: var(--hud-veil, rgba(2, 8, 6, 0.6));
+  backdrop-filter: blur(6px);
   align-items: flex-start;
   justify-content: center;
   gap: 12px;
@@ -76,10 +98,19 @@
 }
 
 .queen27-page.is-shell .queen27-browser-frame {
+  display: block;
   flex: 1 1 auto;
   width: 100%;
   min-height: 0;
   border: 1px solid rgba(0, 255, 136, 0.22);
   border-radius: 6px;
   background: #000;
+}
+
+/* Behind a live browser the hive is not scenery, it is interference: its
+   faces sit at z-index 6 inside the scene holder, above any panel that stays
+   under the menu. On this view alone the scene is hidden -- visibility, not
+   display, so the engine is not torn down and the comb comes back as it was. */
+.queen27-page.is-shell[data-view="browser"] :is(.queen-scene-holder, .queen27-comb-field, .queen27-comb.is-embedded) {
+  visibility: hidden;
 }
