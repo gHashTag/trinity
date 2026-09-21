@@ -178,7 +178,7 @@
   list-style: none;
   border: 1px solid rgba(0, 255, 136, 0.22);
   border-radius: 6px;
-  background: rgba(2, 8, 6, 0.85);
+  background: rgb(2, 8, 6);
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
   line-height: 1.45;
