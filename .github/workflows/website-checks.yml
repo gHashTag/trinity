@@ -140,6 +140,16 @@ jobs:
       # request count does not move however many times the board is filtered.
       - name: The clients filter can only ever hide
         run: npm run check:clients-filter
+      # The task lane grew the same kind of control, over what a card is ABOUT
+      # rather than whose it is, and it is held to the same property: the cards
+      # drawn are a SUBSET of the cards that arrived, for every selection
+      # including ones no reader can produce. The second half is the colours.
+      # The wire carries no labels, so direction is read from the title the page
+      # was already sent -- which means a card that said nothing, like the bare
+      # `#1234` the hive sends for finished work, must come out `other` and not
+      # be quietly painted as code. A colour is read as a fact. Pure, no browser.
+      - name: The direction filter can only ever hide
+        run: npm run check:queen-direction
       # The Queen board moved to app.t27.ai/queen/, and #/queen here hands its
       # visitors over. app.t27.ai builds THIS bundle, so the redirect code runs
       # at the destination too: keyed on the route alone it would send that page

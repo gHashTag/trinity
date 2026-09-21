@@ -69,6 +69,14 @@ import {
   verifyHardwareEnvelope,
   type VerifiedHardwareRegistry,
 } from "../components/queenHardwareRegistry";
+import {
+  directionColor,
+  directionCounts,
+  directionLabel,
+  directionOf,
+  narrowByDirection,
+  type DirectionKey,
+} from "../lib/queenDirection";
 import { TrinityLogo } from "../components/TrinityLogo";
 import type {UniverseAtlas} from '../lib/queenUniverseAtlas';
 const QueenCatalogHive=lazy(()=>import('../components/QueenCatalogHive').then(m=>({default:m.QueenCatalogHive})));
@@ -510,6 +518,11 @@ const COPY = {
     // below are drawn ONLY when the second lane exists — signed out, the page
     // is the board it always was, with no heading announcing an absence.
     laneTasks: "TASKS",
+    // The direction chips. The names of the directions themselves are not
+    // here: they travel with the rules that decide them, in
+    // lib/queenDirection.ts, so a new direction cannot arrive without both.
+    tasksDirection: "Direction",
+    tasksDirectionAll: "All",
     laneClients: "CLIENTS",
     clientsLaneAria: "Clients board",
     clientsNarrow: "Narrow to",
@@ -892,6 +905,10 @@ const COPY = {
     // именно ему. Слова ниже рисуются ТОЛЬКО когда вторая полоса есть: без
     // входа страница остаётся той же доской, и заголовок не объявляет пустоту.
     laneTasks: "ЗАДАЧИ",
+    // The Russian names of the directions are not here either: they sit on the
+    // same entries as the rules, in lib/queenDirection.ts.
+    tasksDirection: "Направление",
+    tasksDirectionAll: "Все",
     laneClients: "КЛИЕНТЫ",
     clientsLaneAria: "Доска клиентов",
     clientsNarrow: "Сузить до",
@@ -2193,6 +2210,26 @@ function KanbanView({
   search: string;
   onSearch: (text: string) => void;
 }) {
+  // Which directions the reader is looking at, empty for all of them. It lives
+  // here and nowhere else: it is a property of this screen, not of the visitor,
+  // not of the URL, and above all not of the request — lib/queenDirection.ts
+  // says why a chip that can only hide is a chip that cannot be made to ask.
+  const [directions, setDirections] = useState<DirectionKey[]>([]);
+  // The chips count the WHOLE board, not the narrowed one, so the numbers stay
+  // still while the reader clicks. A count that changed on every click would be
+  // counting the click rather than the work.
+  const tally = useMemo(() => directionCounts(cards), [cards]);
+  const shownCards = useMemo(
+    () => narrowByDirection(cards, directions),
+    [cards, directions],
+  );
+  const toggleDirection = useCallback((key: DirectionKey) => {
+    setDirections((current) =>
+      current.includes(key)
+        ? current.filter((other) => other !== key)
+        : [...current, key],
+    );
+  }, []);
   const lane = clients?.lane ?? null;
   const sentence = clientsReasonSentence(clients?.reason ?? null, c);
   // With a board on screen the reason goes in the tooltip, exactly where the
@@ -2234,7 +2271,56 @@ function KanbanView({
         // a word about clients on a page that has no clients on it.
         <div className="queen27-lane-head">
           <h3>{c.laneTasks}</h3>
-          <span title={error ?? undefined}>{loaded ? cards.length : "—"}</span>
+          <span title={error ?? undefined}>{loaded ? shownCards.length : "—"}</span>
+        </div>
+      )}
+      {tally.length > 1 && (
+        // The direction chips, and unlike the clients lane they are here for
+        // EVERYONE — signed in or not. Nothing about them describes a person:
+        // they sort the public board by what its cards are about, so there is
+        // no reader for whom they would be a statement about somebody else.
+        //
+        // One chip per direction the board actually contains, never one per
+        // direction the table knows about, and the row disappears entirely if
+        // everything on screen is the same thing. A chip that can only ever
+        // show the same board is a control that lies about having an effect.
+        //
+        // Its own class and not the clients row's, though they are drawn alike:
+        // that class is counted by qa/clients-filter-contract.mjs to prove the
+        // ONE clients filter sits inside the sign-in check, and a second
+        // element wearing it would read as one that escaped.
+        //
+        // The count on each chip is the point of the design: the reader is not
+        // told "there is a CONTENT direction", they are told it holds four
+        // cards. That is what makes the distribution visible instead of
+        // decorative.
+        <div
+          className="queen27-dir-filter"
+          role="group"
+          aria-label={c.tasksDirection}
+        >
+          <span>{c.tasksDirection}</span>
+          <button
+            type="button"
+            className="queen27-chip"
+            aria-pressed={directions.length === 0}
+            onClick={() => setDirections([])}
+          >
+            {c.tasksDirectionAll} <small>{cards.length}</small>
+          </button>
+          {tally.map(({ key, count }) => (
+            <button
+              key={key}
+              type="button"
+              className="queen27-chip queen27-dir-chip"
+              style={{ "--queen-dir": directionColor(key) } as CSSProperties}
+              aria-pressed={directions.includes(key)}
+              onClick={() => toggleDirection(key)}
+            >
+              <i aria-hidden="true" />
+              {directionLabel(key, lang)} <small>{count}</small>
+            </button>
+          ))}
         </div>
       )}
       <motion.div
@@ -2246,7 +2332,11 @@ function KanbanView({
         animate={{ opacity: 1 }}
       >
       {columns.map((column) => {
-        const columnCards = cards.filter((card) => card.column === column.key);
+        // Narrowed first, then split by column, so a column header counts what
+        // is under it rather than what would have been there without the chips.
+        const columnCards = shownCards.filter(
+          (card) => card.column === column.key,
+        );
         return (
           <motion.article
             className={`queen27-column is-${column.key}`}
@@ -2259,9 +2349,18 @@ function KanbanView({
             </header>
             <small>{column.blurb}</small>
             <div className="queen27-cards">
-              {columnCards.map((card) => (
+              {columnCards.map((card) => {
+                const direction = directionOf(card.title);
+                return (
                 <motion.a
                   className="queen27-card"
+                  // The colour rides on an attribute and a custom property, and
+                  // the left border is deliberately untouched: that border
+                  // already says which column the card is in, and two meanings
+                  // on one edge is one meaning lost. Direction gets the tint,
+                  // the right-hand rule and the dot — its own channel.
+                  data-dir={direction}
+                  style={{ "--queen-dir": directionColor(direction) } as CSSProperties}
                   href={`https://github.com/${repo}/issues/${card.number}`}
                   target="_blank"
                   rel="noreferrer"
@@ -2276,6 +2375,14 @@ function KanbanView({
                 >
                   <div className="queen27-card-topline">
                     <b>#{card.number}</b>
+                    {/* The name in words, next to the dot, on every card. A
+                        reader who cannot tell this orange from this red loses
+                        nothing: the colour is a shortcut for people who have
+                        it, never the only way to know. */}
+                    <span className="queen27-dir-tag">
+                      <i aria-hidden="true" />
+                      {directionLabel(direction, lang)}
+                    </span>
                     {(column.key === "running" ||
                       column.key === "review") && (
                       <span className="queen27-card-signal">
@@ -2298,7 +2405,8 @@ function KanbanView({
                     </span>
                   )}
                 </motion.a>
-              ))}
+                );
+              })}
               {columnCards.length === 0 && (
                 <em title={error ?? undefined}>{loaded ? c.empty : "—"}</em>
               )}

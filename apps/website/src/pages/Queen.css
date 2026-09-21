@@ -834,6 +834,144 @@
   border-left-color: #2a6;
 }
 
+/* ── DIRECTION ──────────────────────────────────────────────────────────────
+   What a card is ABOUT, as a colour, beside what column it is in.
+
+   The left border above is already spoken for: it is the column, and it is the
+   only thing on the card that moves when work moves. So direction gets its own
+   channel and never touches it — an inset rule down the RIGHT edge, a faint
+   tint of the whole card, and a dot. Each card hands its colour in as
+   --queen-dir from src/lib/queenDirection.ts, so this stylesheet holds no list
+   of directions and cannot fall out of step with the one that does. There is
+   deliberately no fallback colour on any var() below: a fallback IS a second
+   copy of the palette, and qa/queen-direction-contract.mjs fails the build if
+   one appears here — which is how the greys that used to sit in these
+   parentheses were found.
+
+   Everything coloured here is also written here in words, next to the colour.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* The chips sit above the board rather than inside a lane head, so they take no
+   auto margin, and they do not scroll: there are seven of them at most, and
+   they are the legend for the colours below. */
+.queen27-dir-filter {
+  margin: 0 0 0.6rem;
+}
+
+.queen27-dir-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+.queen27-dir-chip > i {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--queen-dir);
+  box-shadow: 0 0 8px var(--queen-dir);
+}
+
+.queen27-dir-filter .queen27-chip small {
+  opacity: 0.65;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: inherit;
+}
+
+/* A pressed direction chip wears ITS OWN colour, not the shared gold of the
+   generic pressed chip, so the legend and the cards it selects are the same
+   colour. It comes after that rule on purpose — same specificity, later wins. */
+.queen27-dir-chip[aria-pressed="true"] {
+  border-color: var(--queen-dir);
+  color: #050505;
+  background: var(--queen-dir);
+}
+
+.queen27-dir-chip[aria-pressed="true"] > i {
+  background: #050505;
+  box-shadow: none;
+}
+
+/* The tint is an inset shadow and not a border, so turning it on moves nothing:
+   a filter that reflows the board costs the reader the place they were looking
+   at. 7% keeps the card a dark card — this is a hue, not a highlight.
+
+   THE SECOND SELECTOR IS NOT A DUPLICATE. The shell layout states
+   `.queen27-page.is-shell .queen27-card { background: transparent }` far below,
+   and it means it: "one layer of ground, not two", the column carries the veil
+   and the card adds nothing. That rule is 0,3,0 and this one was 0,2,0, so the
+   tint was being thrown away on every card of the live board — the dot, the tag
+   and the right edge rendered and the colour did not. Measured in the browser,
+   not guessed. Naming the shell explicitly wins the cascade whatever the source
+   order, and qa/queen-direction-contract.mjs fails the build if this selector
+   goes missing again.
+
+   It also keeps the shell's argument intact. The mix is against `transparent`,
+   not against the old card's white: this adds ONE layer, the hue itself at 7%,
+   over whatever ground the layout chose. It is not a second veil. */
+.queen27-card[data-dir],
+.queen27-page.is-shell .queen27-card[data-dir] {
+  background: color-mix(in srgb, var(--queen-dir) 7%, transparent);
+  box-shadow: inset -3px 0 0 var(--queen-dir);
+}
+
+.queen27-card[data-dir]:hover,
+.queen27-page.is-shell .queen27-card[data-dir]:hover {
+  border-color: var(--queen-dir);
+  background: color-mix(in srgb, var(--queen-dir) 16%, transparent);
+}
+
+/* The topline was a one-line row with the issue number at the left and, on the
+   few cards that have one, a signal at the right. Putting a third thing in it
+   broke both: measured on the live board at six columns beside the chat panel,
+   a card is 126px wide, and 90 of 90 cards wrapped `#3573` onto two lines and
+   clipped the word HARDWARE mid-letter.
+
+   So the row wraps as a row. The number keeps its own line whole and the tag
+   drops beneath it when the column is too narrow to hold both — a card one line
+   taller, rather than a number broken in half and a direction that cannot be
+   read. Wide columns still show all three side by side, which is the common
+   case; this only spends the line where the space genuinely is not there. */
+.queen27-card-topline {
+  flex-wrap: wrap;
+  row-gap: 0.2rem;
+}
+
+.queen27-card-topline > b {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* `margin-right: auto` and not a third slot in the topline's space-between: the
+   number and the direction belong together at the left, and the running/review
+   signal keeps the right edge it has always had. `min-width: 0` is what lets
+   the ellipsis below ever happen — a flex item refuses to shrink past its
+   content without it, which is how the clipping above got on screen. */
+.queen27-card .queen27-dir-tag {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 8rem;
+  align-items: center;
+  gap: 0.3rem;
+  margin-right: auto;
+  overflow: hidden;
+  color: var(--queen-dir);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-card .queen27-dir-tag i {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+}
+
 .queen27-card strong {
   font-size: 0.86rem;
   font-weight: 500;
@@ -7050,21 +7188,33 @@ body.queen-shell .queen-starfield-source {
 
 /* The narrowing control. Last in the row and pushed to the far end, because it
    acts on the lane rather than describing it. */
-.queen27-lane-filter {
+/* Two rows of chips, one shape. They share the look and nothing else: the
+   clients row is about PEOPLE and exists only for a signed-in reader, the
+   direction row is about SUBJECTS and is there for everyone. They are two class
+   names rather than one for a reason that is checked —
+   qa/clients-filter-contract.mjs counts the elements carrying the clients class
+   and requires the single one it finds to sit inside the signed-in conditional.
+   Borrowing that class for the public row would have made that count read 2 and
+   the gate read "a clients filter escaped the sign-in check". */
+.queen27-lane-filter,
+.queen27-dir-filter {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.queen27-lane-filter {
   margin-left: auto;
   /* A keeper is offered one chip per client on the platform. The row wraps, and
      past a few lines of them it scrolls rather than pushing the board down the
      page: the filter is how you get to the board, not a thing to scroll past. */
   max-height: 4.6rem;
   overflow-y: auto;
-  color: var(--muted);
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
 }
 
 .queen27-chip {
