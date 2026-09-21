@@ -24,6 +24,8 @@ import {
   frameStateOf,
   shouldReread,
   WINDOW_EVENT,
+  readJournal,
+  journalLine,
 } from '../src/lib/queenBrowser.ts'
 import { HUD_VIEWS, hudKeyOf, RAIL_VIEWS, railViewOf, BOARD_VIEWS, PROJECT_VIEWS } from '../src/components/queenHud.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
@@ -245,6 +247,41 @@ assert.ok(RAIL_VIEWS.includes('browser') && RAIL_VIEWS.includes('project') && RA
   assert.equal(shouldReread('stuck'), true)
   assert.equal(shouldReread('connected'), false)
   assert.equal(WINDOW_EVENT, 't27-browser', 'the name the window posts (render skin.ts)')
+}
+
+// 11. What the agent did, under the window: read with the token in one
+//     header, never throwing, and said in the person's language.
+{
+  const calls = []
+  const env = (status, body, token = 'tok-j') => ({
+    token: () => token,
+    fetch: async (url, init) => { calls.push({ url, init }); return { ok: status < 300, status, json: async () => body } },
+  })
+  const steps = [{ at: '2026-09-22T09:00:05Z', tool: 'browser_screenshot', ok: true, ms: 1300, detail: { seen: 'Google sign-in' } }]
+  assert.deepEqual(await readJournal(env(200, { ok: true, steps })), steps)
+  assert.equal(calls[0].url, `${BROKER_BASE}/api/browser/journal?limit=6`)
+  assert.equal(calls[0].init.method, 'GET')
+  assert.equal(calls[0].init.credentials, 'omit')
+  assert.equal(calls[0].init.headers.Authorization, 'Bearer tok-j')
+  assert.equal(await readJournal(env(401, {})), null, 'a refusal is no journal, not an error')
+  const before = calls.length
+  assert.equal(await readJournal(env(200, {}, null)), null)
+  assert.equal(calls.length, before, 'no token: nothing is asked')
+  assert.equal(await readJournal({ token: () => 't', fetch: async () => { throw new Error('down') } }), null)
+
+  const line = (tool, detail, ok = true, lang = 'ru') => journalLine({ at: '2026-09-22T09:00:05Z', tool, ok, ms: 1, detail }, lang)
+  assert.equal(line('browser_screenshot', { seen: 'Google sign-in' }).text, 'Google sign-in')
+  assert.equal(line('browser_screenshot', { seen: 'x' }).verb, 'посмотрел')
+  assert.equal(line('browser_screenshot', { seen: 'x' }, true, 'en').verb, 'looked')
+  assert.equal(line('browser_screenshot', { seenPending: true }).text, 'описание готовится')
+  assert.equal(line('browser_open', { url: 'https://t27.ai/' }).text, 'https://t27.ai/')
+  assert.equal(line('browser_type', { chars: 15 }).text, '15 симв.')
+  assert.equal(line('browser_type', { chars: 15 }, true, 'en').text, '15 chars')
+  const failed = line('browser_click', { x: 1, y: 2, error: 'needs permission' }, false)
+  assert.equal(failed.ok, false)
+  assert.equal(failed.text, 'needs permission', 'the error is what matters on a failed step')
+  assert.equal(line('browser_unknown', {}).verb, 'browser_unknown', 'an unknown tool keeps its own name')
+  assert.match(line('browser_status', { pages: 5 }).time, /^\d\d:\d\d:\d\d$/)
 }
 
 console.log('queen-browser contract: ok')

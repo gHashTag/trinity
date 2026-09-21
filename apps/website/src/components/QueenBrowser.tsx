@@ -9,6 +9,10 @@ import {
   callBroker,
   frameSrcOf,
   frameStateOf,
+  journalLine,
+  readJournal,
+  JOURNAL_POLL_MS,
+  type JournalStep,
   shouldReread,
   panelMode,
   type BrokerCall,
@@ -30,6 +34,7 @@ export interface BrowserCopy {
   retry: string
   frameTitle: string
   passwords: string
+  journal: string
 }
 
 const brokerEnv = {
@@ -41,7 +46,7 @@ const brokerEnv = {
   },
 }
 
-export function QueenBrowser({ c, embedded }: { c: BrowserCopy; embedded: boolean }) {
+export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; embedded: boolean; lang?: 'ru' | 'en' }) {
   const nested = useMemo(
     () =>
       insidePlayer({
@@ -86,6 +91,26 @@ export function QueenBrowser({ c, embedded }: { c: BrowserCopy; embedded: boolea
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
   }, [mode, act])
+
+  // What the agent did in this browser (lib/queenBrowser.ts readJournal),
+  // read while the window is live and the tab is on screen.
+  const [journal, setJournal] = useState<JournalStep[]>([])
+  const live = view?.state === 'live'
+  useEffect(() => {
+    if (!live) return
+    let stopped = false
+    const pull = async () => {
+      if (document.visibilityState !== 'visible') return
+      const steps = await readJournal(brokerEnv)
+      if (!stopped && steps) setJournal(steps)
+    }
+    void pull()
+    const timer = window.setInterval(() => void pull(), JOURNAL_POLL_MS)
+    return () => {
+      stopped = true
+      window.clearInterval(timer)
+    }
+  }, [live])
 
   // A pod that is still starting is asked again until it answers otherwise.
   useEffect(() => {
@@ -162,6 +187,18 @@ export function QueenBrowser({ c, embedded }: { c: BrowserCopy; embedded: boolea
           title={c.frameTitle}
           allow="clipboard-read; clipboard-write; fullscreen"
         />
+        {journal.length > 0 ? (
+          <ol className="queen27-browser-journal" aria-label={c.journal}>
+            {journal.map((step, i) => {
+              const line = journalLine(step, lang)
+              return (
+                <li key={`${step.at}:${i}`} className={line.ok ? '' : 'is-error'}>
+                  <time>{line.time}</time> <b>{line.verb}</b> <span>{line.text}</span>
+                </li>
+              )
+            })}
+          </ol>
+        ) : null}
       </div>
     )
   }

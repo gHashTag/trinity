@@ -414,6 +414,7 @@ const COPY = {
     browserRetry: "Try again",
     browserFrameTitle: "Your browser",
     browserPasswords: "Type passwords yourself, inside the window. Nobody else sees them, the agent included.",
+    browserJournal: "What the agent did here",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -828,6 +829,7 @@ const COPY = {
     browserRetry: "Ещё раз",
     browserFrameTitle: "Ваш браузер",
     browserPasswords: "Пароли вводите сами, внутри окна. Их не видит никто, включая агента.",
+    browserJournal: "Что здесь делал агент",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -3973,6 +3975,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           ) : boardView === "browser" ? (
             <QueenBrowser
               embedded={embedded}
+              lang={lang === 'ru' ? 'ru' : 'en'}
               c={{
                 preview: c.browserPreview,
                 nested: c.browserNested,
@@ -3987,6 +3990,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 retry: c.browserRetry,
                 frameTitle: c.browserFrameTitle,
                 passwords: c.browserPasswords,
+                journal: c.browserJournal,
               }}
             />
           ) : boardView === "comb" ? (

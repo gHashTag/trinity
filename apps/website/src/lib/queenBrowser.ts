@@ -330,3 +330,79 @@ export function frameStateOf(
 }
 
 export const shouldReread = (state: FrameState | null): boolean => state === 'reconnecting' || state === 'stuck'
+
+/* ────────────────────────────────────────────────────────────────────────
+ * WHAT THE AGENT DID HERE, UNDER THE WINDOW.
+ *
+ * The render keeps a journal of every browser tool call (999-multibots-
+ * telegraf, render/src/browser/journal.ts): tool, ok, how long, and facts
+ * already stripped of anything private -- typed text by length, addresses
+ * without their query. The panel shows the last few, so the person sees not
+ * only the page but what the agent did to it and what it saw. Browserbase
+ * shows the same beside its live view.
+ * ──────────────────────────────────────────────────────────────────────── */
+export const JOURNAL_SHOWN = 6
+export const JOURNAL_POLL_MS = 5000
+
+export interface JournalStep {
+  at: string
+  tool: string
+  ok: boolean
+  ms: number
+  detail: Record<string, unknown>
+}
+
+/** The journal, newest first; null when it cannot be read (never throws). */
+export async function readJournal(env: BrokerEnv, limit = JOURNAL_SHOWN): Promise<JournalStep[] | null> {
+  const token = env.token()
+  if (!token) return null
+  try {
+    const res = await env.fetch(`${BROKER_BASE}/api/browser/journal?limit=${limit}`, {
+      method: 'GET',
+      credentials: 'omit',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) return null
+    const body = (await res.json()) as { ok?: boolean; steps?: unknown }
+    return Array.isArray(body?.steps) ? (body.steps as JournalStep[]) : null
+  } catch {
+    return null
+  }
+}
+
+const VERB: Record<string, { ru: string; en: string }> = {
+  browser_open: { ru: 'открыл', en: 'opened' },
+  browser_read: { ru: 'прочитал', en: 'read' },
+  browser_screenshot: { ru: 'посмотрел', en: 'looked' },
+  browser_click: { ru: 'нажал', en: 'clicked' },
+  browser_type: { ru: 'напечатал', en: 'typed' },
+  browser_evaluate: { ru: 'выполнил код', en: 'ran code' },
+  browser_status: { ru: 'проверил вкладки', en: 'checked tabs' },
+  browser_close_tab: { ru: 'закрыл вкладку', en: 'closed a tab' },
+  browser_ask_permission: { ru: 'спросил разрешения', en: 'asked permission' },
+}
+
+/**
+ * One line for a step, in the person's language. Pure. What it can say is
+ * only what the journal kept -- never typed text, which it does not have.
+ */
+export function journalLine(step: JournalStep, lang: 'ru' | 'en'): { time: string; verb: string; text: string; ok: boolean } {
+  const d = step.detail ?? {}
+  const verb = VERB[step.tool]?.[lang] ?? step.tool
+  const chars = lang === 'ru' ? 'симв.' : 'chars'
+  let text = ''
+  if (typeof d.error === 'string') text = d.error
+  else if (typeof d.seen === 'string') text = d.seen
+  else if (d.seenPending === true) text = lang === 'ru' ? 'описание готовится' : 'description on its way'
+  else if (typeof d.url === 'string') text = d.url
+  else if (typeof d.title === 'string') text = d.title
+  else if (typeof d.what === 'string') text = d.what
+  else if (typeof d.chars === 'number') text = `${d.chars} ${chars}`
+  else if (typeof d.x === 'number' && typeof d.y === 'number') text = `${d.x}, ${d.y}`
+  else if (typeof d.pages === 'number') text = String(d.pages)
+  const t = new Date(step.at)
+  const time = Number.isNaN(t.getTime())
+    ? ''
+    : `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}:${String(t.getSeconds()).padStart(2, '0')}`
+  return { time, verb, text: text.slice(0, 140), ok: step.ok !== false }
+}

@@ -167,3 +167,33 @@
 .queen27-page.is-shell[data-view="browser"] :is(.queen-scene-holder, .queen27-comb-field, .queen27-comb.is-embedded) {
   visibility: hidden;
 }
+
+/* What the agent did here: a few quiet lines under the window. */
+.queen27-page.is-shell .queen27-browser-journal {
+  flex: 0 0 auto;
+  max-height: 8.5em;
+  margin: 0;
+  padding: 6px 10px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid rgba(0, 255, 136, 0.22);
+  border-radius: 6px;
+  background: rgba(2, 8, 6, 0.85);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted, #8b9490);
+}
+.queen27-page.is-shell .queen27-browser-journal li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.queen27-page.is-shell .queen27-browser-journal b {
+  color: #00ff88;
+  font-weight: 500;
+}
+.queen27-page.is-shell .queen27-browser-journal li.is-error b,
+.queen27-page.is-shell .queen27-browser-journal li.is-error span {
+  color: #ff6b6b;
+}
