@@ -21,6 +21,9 @@ import {
   readAgentBody,
   AgentSignedOut,
   HISTORY_TURNS,
+  frameStateOf,
+  shouldReread,
+  WINDOW_EVENT,
 } from '../src/lib/queenBrowser.ts'
 import { HUD_VIEWS, hudKeyOf, RAIL_VIEWS, railViewOf, BOARD_VIEWS, PROJECT_VIEWS } from '../src/components/queenHud.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
@@ -227,5 +230,21 @@ for (const folded of ['research', 'passport']) {
 assert.equal(railViewOf('research'), 'kanban')
 assert.equal(railViewOf('passport'), 'project')
 assert.ok(RAIL_VIEWS.includes('browser') && RAIL_VIEWS.includes('project') && RAIL_VIEWS.includes('tri'))
+
+// 10. The window's word about its connection: from our frame and origin only.
+{
+  const APPO = 'https://app.t27.ai'
+  const fw = {}
+  const e = (o = {}) => ({ origin: APPO, source: fw, data: { source: WINDOW_EVENT, state: 'stuck' }, ...o })
+  assert.equal(frameStateOf(e(), fw, APPO), 'stuck')
+  assert.equal(frameStateOf(e({ origin: 'https://evil.example' }), fw, APPO), null, 'another origin is ignored')
+  assert.equal(frameStateOf(e({ source: {} }), fw, APPO), null, 'another frame is ignored')
+  assert.equal(frameStateOf(e({ data: { source: 'x', state: 'stuck' } }), fw, APPO), null)
+  assert.equal(frameStateOf(e({ data: { source: WINDOW_EVENT, state: 'boom' } }), fw, APPO), null)
+  assert.equal(shouldReread('reconnecting'), true)
+  assert.equal(shouldReread('stuck'), true)
+  assert.equal(shouldReread('connected'), false)
+  assert.equal(WINDOW_EVENT, 't27-browser', 'the name the window posts (render skin.ts)')
+}
 
 console.log('queen-browser contract: ok')

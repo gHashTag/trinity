@@ -303,3 +303,30 @@ export async function askBrowserAgent(
   if (!answer.text && answer.error) throw new Error(answer.error)
   return answer
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+ * THE WINDOW SAYS WHEN ITS CONNECTION IS LOST.
+ *
+ * The viewer at /live/<id> posts { source: 't27-browser', state } to its
+ * parent: reconnecting, stuck, connected (999-multibots-telegraf,
+ * render/src/browser/skin.ts WINDOW_EVENT). A lost connection may be a
+ * session that ended, so the panel reads the state again instead of keeping
+ * a frozen frame. Accepted only from our own origin and our own frame.
+ * ──────────────────────────────────────────────────────────────────────── */
+export const WINDOW_EVENT = 't27-browser'
+export type FrameState = 'reconnecting' | 'stuck' | 'connected'
+const FRAME_STATES: readonly FrameState[] = ['reconnecting', 'stuck', 'connected']
+
+export function frameStateOf(
+  event: { origin: string; source: unknown; data: unknown },
+  frameWindow: unknown,
+  ownOrigin: string,
+): FrameState | null {
+  if (event.origin !== ownOrigin) return null
+  if (!frameWindow || event.source !== frameWindow) return null
+  const d = event.data as { source?: unknown; state?: unknown } | null
+  if (!d || typeof d !== 'object' || d.source !== WINDOW_EVENT) return null
+  return FRAME_STATES.includes(d.state as FrameState) ? (d.state as FrameState) : null
+}
+
+export const shouldReread = (state: FrameState | null): boolean => state === 'reconnecting' || state === 'stuck'

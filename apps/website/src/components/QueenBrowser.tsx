@@ -1,6 +1,6 @@
 // BROWSER: the person's own remote browser as a view of the Queen. Decisions
 // live in lib/queenBrowser.ts; this file only draws them.
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { appSessionFromWindow } from '../lib/appSessionIdentity'
 import { insidePlayer } from '../lib/triScreens'
 import {
@@ -8,6 +8,8 @@ import {
   STARTING_POLL_MS,
   callBroker,
   frameSrcOf,
+  frameStateOf,
+  shouldReread,
   panelMode,
   type BrokerCall,
   type BrowserView,
@@ -71,6 +73,18 @@ export function QueenBrowser({ c, embedded }: { c: BrowserCopy; embedded: boolea
   // Read on arrival -- never open. Opening wakes a pod; only a press does that.
   useEffect(() => {
     if (mode === 'ready') void act('read')
+  }, [mode, act])
+
+  // The window says when its connection is lost (lib/queenBrowser.ts): a lost
+  // connection may be a session that ended, so ask again.
+  const frame = useRef<HTMLIFrameElement | null>(null)
+  useEffect(() => {
+    if (mode !== 'ready') return
+    const onMessage = (e: MessageEvent) => {
+      if (shouldReread(frameStateOf(e, frame.current?.contentWindow, window.location.origin))) void act('read')
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
   }, [mode, act])
 
   // A pod that is still starting is asked again until it answers otherwise.
@@ -142,6 +156,7 @@ export function QueenBrowser({ c, embedded }: { c: BrowserCopy; embedded: boolea
           </button>
         </div>
         <iframe
+          ref={frame}
           className="queen27-browser-frame"
           src={src}
           title={c.frameTitle}
