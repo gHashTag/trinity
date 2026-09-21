@@ -14,7 +14,7 @@ import { QueenAgents } from "../components/QueenAgents";
 import { SELECTION_KEY, isExplorerTab } from "../lib/queenEmbed";
 import { hiveFeedHealth, hiveDisplayRecords, hiveSameRepositorySnapshot, placeHiveDisplays, type HiveDisplay } from "../components/queenHiveDisplay";
 import { QueenComb } from "../components/QueenComb";
-import { QueenCommandPanel } from "../components/QueenCommand";
+import { QueenCommandPanel, type CommandItem } from "../components/QueenCommand";
 import { QueenContext } from "../components/QueenContext";
 import { QueenFactory } from "../components/QueenFactory";
 import { QueenSectors } from "../components/QueenIntel";
@@ -29,6 +29,7 @@ import {
   RAIL_VIEWS,
   SPEC_LAYERS,
   BOARD_VIEWS,
+  PROJECT_VIEWS,
   railViewOf,
   isSpecLayer,
   decisionDetail,
@@ -97,7 +98,7 @@ import { QueenTri } from "../components/QueenTri";
 import Passport from "./Passport";
 import { QueenBrowser } from "../components/QueenBrowser";
 import { QueenIdentity } from "../components/QueenIdentity";
-import { hashParamsOf, tabAddress } from "../lib/triScreens";
+import { TRI_BUTTONS, hashParamsOf, tabAddress, triAddress, triGroupOf, triScreenOf } from "../lib/triScreens";
 import { triIdentity } from "../lib/triIdentity";
 import { clientsLane, loadHiveBoard, type ClientsLane, type HiveBoard, type HiveBoardReason } from "../lib/hiveBoard";
 import {
@@ -3403,9 +3404,36 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     { view: "passport" as const, glyph: "▤", label: c.passportView, hint: c.passportHint },
     { view: "browser" as const, glyph: "◍", label: c.browserView, hint: c.browserHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
-  const commandItems = viewItems.filter((item) =>
-    (RAIL_VIEWS as readonly string[]).includes(item.view),
-  );
+  // TRI is drawn as one button per screen, owner's word 2026-09-21: every
+  // screen of the app its own tab. The first keeps TRI's key; the rest are
+  // reached by the rail. The address underneath is still ?tab=tri&screen=.
+  const triGroupNow = triGroupOf(triScreenOf(hashParams.get("screen")));
+  const triRail: Record<string, { glyph: string; label: string }> = {
+    feed: { glyph: "▣", label: c.triFeed },
+    chat: { glyph: "✦", label: c.triAgent },
+    script: { glyph: "✧", label: c.triAi },
+    profile: { glyph: "◐", label: c.triProfile },
+    crm: { glyph: "☰", label: c.triCrm },
+  };
+  const commandItems: CommandItem[] = viewItems
+    .filter((item) => (RAIL_VIEWS as readonly string[]).includes(item.view))
+    .flatMap((item): CommandItem[] =>
+      item.view !== "tri"
+        ? [item]
+        : TRI_BUTTONS.map((screen, i): CommandItem => ({
+            ...item,
+            glyph: triRail[screen]?.glyph ?? item.glyph,
+            label: (triRail[screen]?.label ?? screen).toUpperCase(),
+            hint: `TRI · ${triRail[screen]?.label ?? screen}`,
+            hotkey: i === 0 ? item.hotkey : "",
+            screen,
+            current: triGroupOf(screen) === triGroupNow,
+          })),
+    );
+  const selectTriScreen = (screen: string) => {
+    setBoardView("tri");
+    setHashParams(() => triAddress(window.location.hash, triScreenOf(screen), null), { replace: true });
+  };
   // The ladder's rungs, in the ladder's own order (queenHud.SPEC_LAYERS) rather
   // than the rail's — Tools is the fifth layer and Functions the sixth, which
   // the rail's key order had the other way round — with the labels the rail used
@@ -3436,6 +3464,14 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   );
   const boardNav = (
     <QueenLadder layers={boardItems} current={view} onSelect={setView} aria={c.boardAria} family="board" />
+  );
+  // PROJECT and the PASSPORT beside it, drawn exactly as the board's row is.
+  const projectItems: LadderLayer[] = PROJECT_VIEWS.map((member) => {
+    const item = viewItems.find((entry) => entry.view === member)!;
+    return { layer: member, glyph: item.glyph, label: item.label, hint: item.hint };
+  });
+  const projectNav = (
+    <QueenLadder layers={projectItems} current={view} onSelect={setView} aria={c.projectView} family="project" />
   );
   const doctrine = [
     { n: "01", title: c.spec, copy: c.specCopy, tone: "" },
@@ -3873,7 +3909,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               onNavigate={setView}
               // PROJECT is the system documentation, not a layer of the ladder:
               // it keeps its own rail button and gets no rung row.
-              ladder={isSpecLayer(boardView) ? ladderNav : undefined}
+              ladder={isSpecLayer(boardView) ? ladderNav : boardView === "project" ? projectNav : undefined}
               c={{
                 directive: boardView === "skills" ? c.skillsDirective : boardView === "crons" ? c.cronsDirective : boardView === "functions" ? c.functionsDirective : boardView === "tools" ? c.toolsDirective : boardView === "project" ? c.projectDirective : c.agentsDirective,
                 directiveBody: boardView === "skills" ? c.skillsDirectiveBody : boardView === "crons" ? c.cronsDirectiveBody : boardView === "functions" ? c.functionsDirectiveBody : boardView === "tools" ? c.toolsDirectiveBody : boardView === "project" ? c.projectDirectiveBody : c.agentsDirectiveBody,
@@ -3915,7 +3951,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           ) : boardView === "passport" ? (
             // The record itself, not a frame of it: the page and this view read
             // one content module, so the working group and the map cannot drift.
-            <Passport face={hashParams.get("face") === "research" ? "research" : "record"} />
+            <div className="queen27-board-stack">
+              {projectNav}
+              <Passport face={hashParams.get("face") === "research" ? "research" : "record"} />
+            </div>
           ) : boardView === "browser" ? (
             <QueenBrowser
               embedded={embedded}
@@ -3938,13 +3977,16 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           ) : boardView === "comb" ? (
             null
           ) : boardView === "research" ? (
-            <TechnologyTree
-              c={c}
-              graph={researchState.tree}
-              error={researchState.sourceError}
-              lang={lang}
-              embedded
-            />
+            <div className="queen27-board-stack">
+              {boardNav}
+              <TechnologyTree
+                c={c}
+                graph={researchState.tree}
+                error={researchState.sourceError}
+                lang={lang}
+                embedded
+              />
+            </div>
           ) : (
             <div className="queen27-board-stack">
               {boardNav}
@@ -4347,6 +4389,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           // inside the module the rail's second button opens.
           view={railViewOf(view)}
           onSelect={setView}
+          onSelectScreen={selectTriScreen}
           collapsed={commandCollapsed}
           onToggleCollapsed={() => setCommandCollapsed((collapsed) => !collapsed)}
           labels={{ aria: c.hudViews, collapse: c.hudCollapse, expand: c.hudExpand }}
@@ -4412,6 +4455,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
               // which is the button that now holds it.
               view={railViewOf(view)}
               onSelect={setView}
+              onSelectScreen={selectTriScreen}
               collapsed={false}
               onToggleCollapsed={() => undefined}
               compact

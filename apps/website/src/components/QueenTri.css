@@ -113,3 +113,11 @@
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px;
 }
+
+/* Every TRI screen is its own rail tab now (owner, 2026-09-21), so the row
+   of screen buttons above the frame would be the same five choices twice.
+   Hidden, not removed: the rail writes the same ?tab=tri&screen= address the
+   row did, and the row's buttons stay the one place the contracts drive. */
+.queen27-page.is-shell .queen27-tri-screens {
+  display: none;
+}

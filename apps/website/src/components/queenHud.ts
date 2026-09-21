@@ -91,10 +91,20 @@ export const isSpecLayer = (value: string): value is SpecLayer =>
 //
 // Order is the board's own -- columns, then ground, then production -- and it
 // is what the sub-navigation draws.
-export const BOARD_VIEWS = ["kanban", "map", "factory"] as const;
+// TECH TREE joined the board on the owner's word, 2026-09-21: it is read
+// beside the columns, not as a rail button of its own.
+export const BOARD_VIEWS = ["kanban", "map", "factory", "research"] as const;
 export type BoardView = (typeof BOARD_VIEWS)[number];
 export const isBoardView = (value: string): value is BoardView =>
   (BOARD_VIEWS as readonly string[]).includes(value);
+
+// The project, and the record beside it. PASSPORT moved inside PROJECT on the
+// owner's word, 2026-09-21: the disclosure record is part of how the project
+// describes itself, not an instrument of its own. Same shape as the board.
+export const PROJECT_VIEWS = ["project", "passport"] as const;
+export type ProjectView = (typeof PROJECT_VIEWS)[number];
+export const isProjectView = (value: string): value is ProjectView =>
+  (PROJECT_VIEWS as readonly string[]).includes(value);
 
 /**
  * A view the rail does not draw, because another module holds it: every rung
@@ -104,7 +114,8 @@ export const isBoardView = (value: string): value is BoardView =>
  */
 const isFolded = (view: HudView): boolean =>
   (isSpecLayer(view) && view !== SPEC_LAYERS[0]) ||
-  (isBoardView(view) && view !== BOARD_VIEWS[0]);
+  (isBoardView(view) && view !== BOARD_VIEWS[0]) ||
+  (isProjectView(view) && view !== PROJECT_VIEWS[0]);
 
 // The rail: the modules that hold no other, plus SPECS and KANBAN, which are
 // the doors of the two that do. Every one of the fourteen names stays a valid
@@ -114,7 +125,7 @@ const isFolded = (view: HudView): boolean =>
 export const RAIL_VIEWS: readonly HudView[] = HUD_VIEWS.filter((view) => !isFolded(view));
 /** The rail button a view lights: a ladder layer lights SPECS, a board view KANBAN. */
 export const railViewOf = (view: HudView): HudView =>
-  isSpecLayer(view) ? SPEC_LAYERS[0] : isBoardView(view) ? BOARD_VIEWS[0] : view;
+  isSpecLayer(view) ? SPEC_LAYERS[0] : isBoardView(view) ? BOARD_VIEWS[0] : isProjectView(view) ? PROJECT_VIEWS[0] : view;
 
 export type Territory = "held" | "neutral" | "fog";
 

@@ -21,7 +21,7 @@ import {
   AgentSignedOut,
   HISTORY_TURNS,
 } from '../src/lib/queenBrowser.ts'
-import { HUD_VIEWS, hudKeyOf } from '../src/components/queenHud.ts'
+import { HUD_VIEWS, hudKeyOf, RAIL_VIEWS, railViewOf, BOARD_VIEWS, PROJECT_VIEWS } from '../src/components/queenHud.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 
 const APP = 'https://app.t27.ai'
@@ -178,5 +178,18 @@ assert.equal(mod.key, 'w')
   await assert.rejects(askBrowserAgent({ ...env(200, stream), token: () => null }, [], 'x', 'en'), AgentSignedOut)
   await assert.rejects(askBrowserAgent(env(200, '{"тип":"ошибка","текст":"provider 429"}'), [], 'x', 'en'), /provider 429/)
 }
+
+// 8. The rail as the owner laid it out, 2026-09-21: TECH TREE inside KANBAN,
+//    PASSPORT inside PROJECT. Both stay valid addresses; the rail lights the
+//    family's door for them.
+assert.ok(BOARD_VIEWS.includes('research'))
+assert.deepEqual([...PROJECT_VIEWS], ['project', 'passport'])
+for (const folded of ['research', 'passport']) {
+  assert.ok(HUD_VIEWS.includes(folded), `${folded} is still an address`)
+  assert.ok(!RAIL_VIEWS.includes(folded), `${folded} is not its own rail button`)
+}
+assert.equal(railViewOf('research'), 'kanban')
+assert.equal(railViewOf('passport'), 'project')
+assert.ok(RAIL_VIEWS.includes('browser') && RAIL_VIEWS.includes('project') && RAIL_VIEWS.includes('tri'))
 
 console.log('queen-browser contract: ok')

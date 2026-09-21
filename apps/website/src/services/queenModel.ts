@@ -9,6 +9,7 @@
 // readable by anyone who opens the site, so a hosted model is reached through a
 // proxy that holds the key, never from this file.
 import { sendMessage, checkHealth, NotSignedIn, type ChatResponse } from './chatApi.ts'
+import { AgentSignedOut, askBrowserAgent, type ChatTurn } from '../lib/queenBrowser.ts'
 import { appSessionFromWindow, type AppSessionVerdict } from '../lib/appSessionIdentity.ts'
 
 const OLLAMA_URL = import.meta.env?.VITE_QUEEN_OLLAMA_URL || 'http://localhost:11434'
@@ -109,4 +110,40 @@ export function askQueen(message: string): Promise<ChatResponse> {
   const caller = queenCaller()
   if (!caller.signedIn) return Promise.reject(new NotSignedIn())
   return sendMessage({ message }, caller.authorization)
+}
+
+/**
+ * On the BROWSER tab: the question goes to the person's own agent, which
+ * holds the browser tools (lib/queenBrowser.ts says why). The token is read
+ * here, at the moment of the question, exactly as askQueen reads it -- the
+ * panel is handed an answer, never the credential.
+ */
+export async function askQueenInBrowser(
+  history: readonly ChatTurn[],
+  question: string,
+  lang: 'ru' | 'en',
+): Promise<ChatResponse> {
+  const caller = queenCaller()
+  if (!caller.signedIn) throw new NotSignedIn()
+  const bearer = caller.authorization.replace(/^Bearer /, '')
+  const started = Date.now()
+  try {
+    const a = await askBrowserAgent(
+      { fetch: (url, init) => fetch(url, init), token: () => bearer },
+      history,
+      question,
+      lang,
+    )
+    return {
+      response: a.text,
+      // The tools she used ride under the answer: the person watched the
+      // clicks happen, and this names them.
+      source: [a.model ?? 'agent', ...(a.tools.length > 0 ? [[...new Set(a.tools)].join(', ')] : [])].join(' · '),
+      confidence: 0,
+      latency_us: Math.round((Date.now() - started) * 1000),
+    }
+  } catch (error) {
+    if (error instanceof AgentSignedOut) throw new NotSignedIn()
+    throw error
+  }
 }

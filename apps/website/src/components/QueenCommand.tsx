@@ -18,6 +18,15 @@ export interface CommandItem {
   hint: string;
   /** The keyboard shortcut this view answers (queenHud.hudKeyOf). */
   hotkey: string;
+  /**
+   * A button that opens one screen of TRI rather than a whole view. The owner
+   * asked, 2026-09-21, for every TRI screen to be a tab of its own; the
+   * address stays `?tab=tri&screen=<screen>`, so links, the player's return
+   * and the TRI contracts keep working, and only the rail changes.
+   */
+  screen?: string;
+  /** Lit when this is the screen TRI is on (set by the shell). */
+  current?: boolean;
 }
 
 export interface QueenCommandLabels {
@@ -31,6 +40,8 @@ export interface QueenCommandProps {
   items: CommandItem[];
   view: HudView;
   onSelect: (view: HudView) => void;
+  /** A TRI screen button was pressed. */
+  onSelectScreen?: (screen: string) => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
   /** Phone mode: an icon row, no hints, no collapse button. */
@@ -42,6 +53,7 @@ export function QueenCommandPanel({
   items,
   view,
   onSelect,
+  onSelectScreen,
   collapsed,
   onToggleCollapsed,
   compact = false,
@@ -88,24 +100,25 @@ export function QueenCommandPanel({
       }
     >
       {items.map((item) => {
-        const active = item.view === view;
+        const active = item.screen ? item.view === view && item.current === true : item.view === view;
         const key = item.hotkey;
         return (
           <button
             type="button"
-            key={item.view}
+            key={item.screen ? `${item.view}:${item.screen}` : item.view}
             className={`queen27-hud-cmd${active ? " is-active" : ""}`}
             data-view={item.view}
+            data-screen={item.screen}
             aria-pressed={active}
-            title={`${key} · ${item.label}`}
-            onClick={() => onSelect(item.view)}
+            title={key ? `${key} · ${item.label}` : item.label}
+            onClick={() => (item.screen && onSelectScreen ? onSelectScreen(item.screen) : onSelect(item.view))}
           >
             <i aria-hidden="true">{item.glyph}</i>
             <span>
               <b>{item.label}</b>
               <small>{item.hint}</small>
             </span>
-            <kbd aria-hidden="true">{key}</kbd>
+            {key ? <kbd aria-hidden="true">{key}</kbd> : null}
           </button>
         );
       })}
