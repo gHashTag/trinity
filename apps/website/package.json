@@ -79,6 +79,7 @@
     "check:queen-identity": "node qa/queen-identity-contract.mjs",
     "check:queen-redirect": "node --experimental-strip-types qa/queen-redirect-contract.mjs",
     "check:app-session-identity": "node --experimental-strip-types qa/app-session-identity-contract.mjs",
+    "check:queen-browser": "node --experimental-strip-types qa/queen-browser-contract.mjs",
     "check:queen-chat-gate": "node --experimental-strip-types qa/queen-chat-gate-contract.mjs",
     "check:queen-chat-tabs": "node --experimental-strip-types qa/queen-chat-tabs-contract.mjs",
     "check:queen-contrast": "node --experimental-strip-types qa/queen-contrast-contract.mjs",

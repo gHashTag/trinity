@@ -504,7 +504,7 @@ assert.ok(passportModule && HUD_VIEWS.includes('passport'), 'PASSPORT (the recor
 assert.equal(passportModule.key, 'b', 'PASSPORT opens on b: digits spent, t is TOOLS, p is PROJECT, r is TRI')
 assert.ok(passportModule.en.hint.includes('(key b)') && passportModule.ru.hint.includes('(клавиша b)'), 'PASSPORT names its letter key in both hints')
 for (const lang of ['en', 'ru']) assert.ok(passportModule[lang].name && passportModule[lang].body.length > 40, `passport: ${lang} copy missing`)
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprb', 'the rail keys are 1-9, 0, t, p, r, b in that order')
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbw', 'the rail keys are 1-9, 0, t, p, r, b, w in that order')
 
 // The rail is no longer the whole vocabulary. HUD_VIEWS stays the fourteen
 // addresses -- every ?tab=, every key, every module card -- while the rail draws

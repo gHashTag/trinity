@@ -203,7 +203,11 @@ const SCREEN_IDS = TRI_SCREENS.map((entry) => entry.screen)
 //      A new one appearing unannounced fails this gate exactly as before.
 const UNKNOWN_TO_PLAYER = HUD_VIEWS.filter((view) => !PLAYER_VIEWS.includes(view))
 eq(PLAYER_VIEWS.filter((view) => !HUD_VIEWS.includes(view)), [], 'the player follows no view the Queen does not have')
-eq([...UNKNOWN_TO_PLAYER], ['passport'], 'the views the deployed player has not been told about, and no others')
+// BROWSER costs the same as PASSPORT: signing in from it returns to the comb,
+// one press away from the browser. Its own sign-in link points into the app
+// directly (lib/queenBrowser.ts APP_BROWSER_URL), so the person who wants the
+// browser has a way there that does not depend on the return.
+eq([...UNKNOWN_TO_PLAYER], ['passport', 'browser'], 'the views the deployed player has not been told about, and no others')
 eq([...SCREEN_IDS].sort(), [...PLAYER_SCREENS].sort(), "the player's copy of the TRI screens is the Queen's table")
 
 const returns = new Set()

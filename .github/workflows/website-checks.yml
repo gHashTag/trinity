@@ -173,6 +173,11 @@ jobs:
       # empty store is signed OUT, not broken. Pure, no browser.
       - name: Identity at the board's new home
         run: npm run check:app-session-identity
+      # The person's own remote browser as a view: a preview never touches a
+      # pod, reading never opens one, the token rides only in a header, and
+      # only our own /live/ is framed. Pure, no browser.
+      - name: The BROWSER view
+        run: npm run check:queen-browser
       # What that identity is FOR. The owner's rule, 2026-09-20: only registered
       # people write to the Queen. The gate that holds it is the proxy's, not
       # this bundle's -- a rule shipped in a public bundle is a suggestion -- and

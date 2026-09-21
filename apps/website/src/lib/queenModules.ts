@@ -262,6 +262,23 @@ export const MODULES = [
       play: 'Место, где интерес сообщества выходит за пределы этого репозитория. Запись о раскрытии, поданная в отраслевую рабочую группу и пока никем не принятая: её разбор — или её заполнение по вашему собственному опубликованному результату — это вклад, не трогающий код.',
     },
   },
+  {
+    tab: 'browser',
+    key: 'w',
+    glyph: '◍',
+    en: {
+      name: 'BROWSER',
+      hint: 'Your own browser, the one your agent drives (key w)',
+      body: 'Your own real browser, running on a server: your profile, your logins, your cookies. It is the same browser the app\'s Browser tab shows and your agent drives -- not a copy -- so every click the agent makes happens here in front of you, and you can take the wheel at any moment. Passwords are typed by you inside the window and go straight into it. Opening it starts a machine, so this view only reads its state until you press Open. Works when signed in to the app at app.t27.ai. Opens on the letter w.',
+      play: 'Where you watch your agent work and take over. Open it, sign in to a site yourself, then let the agent carry on in the same window.',
+    },
+    ru: {
+      name: 'БРАУЗЕР',
+      hint: 'Ваш собственный браузер, которым водит ваш агент (клавиша w)',
+      body: 'Ваш собственный настоящий браузер на сервере: ваш профиль, ваши входы, ваши cookies. Это тот же браузер, что во вкладке «Браузер» приложения и которым водит ваш агент, — не копия, поэтому каждое нажатие агента происходит здесь у вас на глазах, и руль можно взять в любой момент. Пароли вы вводите сами внутри окна, и они уходят прямо в него. Открытие запускает машину, поэтому до нажатия «Открыть» этот вид только читает состояние. Работает, когда вы вошли в приложение на app.t27.ai. Открывается буквой w.',
+      play: 'Место, где видно, как работает агент, и где его можно подменить. Откройте, войдите на сайт сами — и пусть агент продолжает в том же окне.',
+    },
+  },
 ] as const
 
 export type QueenModule = (typeof MODULES)[number];

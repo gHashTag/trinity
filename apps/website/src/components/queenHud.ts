@@ -7,7 +7,7 @@
 // derivable from these types, the number does not exist yet and the panel
 // must say so rather than invent it.
 
-export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents" | "functions" | "tools" | "project" | "tri" | "passport";
+export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents" | "functions" | "tools" | "project" | "tri" | "passport" | "browser";
 // In command-panel order: the key that opens a view is HUD_KEYS at the same
 // position, and `?tab=` accepts exactly these names. Kept identical to
 // lib/queenModules (qa/agents-spec-contract.mjs checks the two lists agree), so
@@ -35,17 +35,21 @@ export const HUD_VIEWS: readonly HudView[] = [
   // of our own that pay for it. (The digits are spent; t is TOOLS, p is PROJECT,
   // r is TRI.)
   "passport",
+  // Fifteenth, on the letter w (web): the person's own remote browser -- the
+  // same pod the app's Browser tab shows and the agent drives, framed here
+  // because the board and the app share one origin (lib/queenBrowser.ts).
+  "browser",
 ] as const;
 // The keyboard shortcut per view, by position: the digits 1-9, then 0, then
 // letters once the digits are spent. The rail prints HUD_KEYS[i] on button i and
 // the shell binds exactly these keys; a tenth or eleventh view takes the next
 // entry here and nothing else changes.
-export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "t", "p", "r", "b"] as const;
+export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "t", "p", "r", "b", "w"] as const;
 export const hudKeyOf = (view: HudView): string => HUD_KEYS[HUD_VIEWS.indexOf(view)] ?? "";
 // The physical key behind each HUD_KEYS entry (KeyboardEvent.code), for a
 // character that is not a Latin letter or digit: on a Russian layout the r key
 // reports key "к" and code "KeyR".
-export const HUD_CODES: readonly string[] = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0", "KeyT", "KeyP", "KeyR", "KeyB"] as const;
+export const HUD_CODES: readonly string[] = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0", "KeyT", "KeyP", "KeyR", "KeyB", "KeyW"] as const;
 /** The HUD_KEYS index a key event means, or -1. A typed Latin letter or digit
  *  decides, as the rail's badge says (Dvorak and Colemak put them on other
  *  keys); anything else (another script, a shifted digit, a keypad key with Num

@@ -95,6 +95,7 @@ const KEY_SHORTCUTS_STORAGE = "queen.hud.key-shortcuts";
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
 import Passport from "./Passport";
+import { QueenBrowser } from "../components/QueenBrowser";
 import { QueenIdentity } from "../components/QueenIdentity";
 import { hashParamsOf, tabAddress } from "../lib/triScreens";
 import { triIdentity } from "../lib/triIdentity";
@@ -393,6 +394,22 @@ const COPY = {
     // group, and the three measured cases of ours that pay for it.
     passportView: "PASSPORT",
     passportHint: "What must travel with a result: the record proposed to the OCP working group (key b)",
+    // The fifteenth view: the person's own remote browser, the one the agent drives.
+    browserView: "BROWSER",
+    browserHint: "Your own browser, the one your agent drives (key w)",
+    browserPreview: "Your own browser on a server, the one your agent drives. It opens on the board itself, never in a preview.",
+    browserNested: "You are already inside the app, and the app has its own Browser tab.",
+    browserSignin: "Your browser belongs to your account. Sign in to the app, then come back to this tab.",
+    browserOpenInApp: "Open in the app",
+    browserNone: "Your browser is closed. Opening it starts a machine for you; your logins are kept between openings.",
+    browserOpen: "Open browser",
+    browserStarting: "Starting your browser...",
+    browserUnavailable: "Browsers are not running on this server right now.",
+    browserClose: "Close (logins kept)",
+    browserFailed: "The browser service did not answer.",
+    browserRetry: "Try again",
+    browserFrameTitle: "Your browser",
+    browserPasswords: "Type passwords yourself, inside the window. Nobody else sees them, the agent included.",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -790,6 +807,21 @@ const COPY = {
     triHint: "Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)",
     passportView: "ПАСПОРТ",
     passportHint: "Что обязано ехать вместе с результатом: запись, поданная в рабочую группу OCP (клавиша b)",
+    browserView: "БРАУЗЕР",
+    browserHint: "Ваш собственный браузер, которым водит ваш агент (клавиша w)",
+    browserPreview: "Ваш собственный браузер на сервере, которым водит ваш агент. Открывается на самой доске, никогда в превью.",
+    browserNested: "Вы уже внутри приложения, а у приложения есть своя вкладка «Браузер».",
+    browserSignin: "Браузер принадлежит вашему аккаунту. Войдите в приложение и вернитесь на эту вкладку.",
+    browserOpenInApp: "Открыть в приложении",
+    browserNone: "Браузер закрыт. Открытие запускает для вас машину; входы сохраняются между открытиями.",
+    browserOpen: "Открыть браузер",
+    browserStarting: "Запускаю ваш браузер...",
+    browserUnavailable: "Браузеры на этом сервере сейчас не запущены.",
+    browserClose: "Закрыть (входы сохранятся)",
+    browserFailed: "Сервис браузера не ответил.",
+    browserRetry: "Ещё раз",
+    browserFrameTitle: "Ваш браузер",
+    browserPasswords: "Пароли вводите сами, внутри окна. Их не видит никто, включая агента.",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -3369,6 +3401,7 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     // app.t27.ai inside the game, one screen per address.
     { view: "tri" as const, glyph: "△", label: c.triView, hint: c.triHint },
     { view: "passport" as const, glyph: "▤", label: c.passportView, hint: c.passportHint },
+    { view: "browser" as const, glyph: "◍", label: c.browserView, hint: c.browserHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
   const commandItems = viewItems.filter((item) =>
     (RAIL_VIEWS as readonly string[]).includes(item.view),
@@ -3883,6 +3916,25 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             // The record itself, not a frame of it: the page and this view read
             // one content module, so the working group and the map cannot drift.
             <Passport face={hashParams.get("face") === "research" ? "research" : "record"} />
+          ) : boardView === "browser" ? (
+            <QueenBrowser
+              embedded={embedded}
+              c={{
+                preview: c.browserPreview,
+                nested: c.browserNested,
+                signin: c.browserSignin,
+                openInApp: c.browserOpenInApp,
+                none: c.browserNone,
+                open: c.browserOpen,
+                starting: c.browserStarting,
+                unavailable: c.browserUnavailable,
+                close: c.browserClose,
+                failed: c.browserFailed,
+                retry: c.browserRetry,
+                frameTitle: c.browserFrameTitle,
+                passwords: c.browserPasswords,
+              }}
+            />
           ) : boardView === "comb" ? (
             null
           ) : boardView === "research" ? (

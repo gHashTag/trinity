@@ -1,0 +1,108 @@
+// The BROWSER view: the person's own remote browser inside the Queen.
+//
+// Calls the decisions in src/lib/queenBrowser.ts with real inputs and a fetch
+// that records what it was asked. Each rule below is one a wrong edit would
+// break quietly: a preview that wakes a pod, a token in a URL, a frame of an
+// address whose cookie is third-party.
+//
+//   node --experimental-strip-types qa/queen-browser-contract.mjs
+
+import assert from 'node:assert/strict'
+import {
+  BROKER_BASE,
+  callBroker,
+  frameSrcOf,
+  panelMode,
+  viewOf,
+} from '../src/lib/queenBrowser.ts'
+import { HUD_VIEWS, hudKeyOf } from '../src/components/queenHud.ts'
+import { MODULES } from '../src/lib/queenModules.ts'
+
+const APP = 'https://app.t27.ai'
+const signedIn = { source: 'app-session', state: 'signed-in', token: 'tok-123', expiresAt: 1 }
+const signedOut = { source: 'app-session', state: 'signed-out', code: 'no_session' }
+const bridge = { source: 'bridge' }
+
+// 1. The panel's mode. A preview never becomes ready, even signed in: the
+//    homepage renders many previews and none may touch a person's browser.
+assert.equal(panelMode({ embedded: true, nested: false, session: signedIn }), 'preview')
+assert.equal(panelMode({ embedded: false, nested: true, session: signedIn }), 'nested')
+assert.equal(panelMode({ embedded: false, nested: false, session: signedIn }), 'ready')
+assert.equal(panelMode({ embedded: false, nested: false, session: signedOut }), 'signin')
+// Off the app's origin there is no first-party /live/, whatever else is true.
+assert.equal(panelMode({ embedded: false, nested: false, session: bridge }), 'signin')
+
+// 2. The broker call: one header, credentials omitted, the token nowhere else.
+function recorder(status, body) {
+  const calls = []
+  return {
+    calls,
+    env: {
+      token: () => 'tok-123',
+      fetch: async (url, init) => {
+        calls.push({ url, init })
+        return { ok: status >= 200 && status < 300, status, json: async () => body }
+      },
+    },
+  }
+}
+
+{
+  const r = recorder(200, { ok: true, state: 'live', sessionId: 's1', viewUrl: '/live/s1?t=v' })
+  const view = await callBroker(r.env, 'read')
+  assert.deepEqual(view, { state: 'live', sessionId: 's1', viewUrl: '/live/s1?t=v' })
+  assert.equal(r.calls.length, 1)
+  const [{ url, init }] = r.calls
+  assert.equal(url, `${BROKER_BASE}/api/browser/session`)
+  assert.equal(init.method, 'GET', 'reading never opens a browser')
+  assert.equal(init.credentials, 'omit')
+  assert.equal(init.headers.Authorization, 'Bearer tok-123')
+  assert.ok(!url.includes('tok-123'), 'the token never rides in a URL')
+}
+
+{
+  const r = recorder(200, { state: 'starting' })
+  await callBroker(r.env, 'open')
+  assert.equal(r.calls[0].init.method, 'POST')
+  const c = recorder(200, { state: 'none' })
+  await callBroker(c.env, 'close')
+  assert.equal(c.calls[0].init.method, 'DELETE', 'close keeps the logins: the session door, not the profile door')
+  assert.ok(!c.calls[0].url.includes('/profile'), 'this view never wipes a profile')
+}
+
+// No token: nothing is sent at all.
+{
+  const r = recorder(200, {})
+  r.env.token = () => null
+  assert.deepEqual(await callBroker(r.env, 'open'), { state: 'signin' })
+  assert.equal(r.calls.length, 0)
+}
+
+// The two by-design refusals are states; anything else is a failure.
+assert.deepEqual(await callBroker(recorder(401, {}).env, 'read'), { state: 'signin' })
+assert.deepEqual(await callBroker(recorder(503, {}).env, 'read'), { state: 'unavailable' })
+await assert.rejects(callBroker(recorder(500, {}).env, 'read'))
+
+// 3. The broker's words, narrowed: an unknown state is `none`, never a blank.
+assert.deepEqual(viewOf({ state: 'hibernating' }), { state: 'none' })
+assert.deepEqual(viewOf(null), { state: 'none' })
+assert.deepEqual(viewOf({ state: 'live', viewUrl: 42 }), { state: 'live' })
+
+// 4. What may be framed: our own origin, under /live/, and nothing else.
+assert.equal(frameSrcOf('/live/s1?t=v', APP), `${APP}/live/s1?t=v`)
+assert.equal(frameSrcOf(`${APP}/live/s1`, APP), `${APP}/live/s1`)
+assert.equal(frameSrcOf('https://vibee-render-production.up.railway.app/live/s1', APP), null, 'a third-party cookie forgets the person')
+assert.equal(frameSrcOf('//evil.example/live/x', APP), null)
+assert.equal(frameSrcOf('/queen/', APP), null, 'only a viewer window is framed')
+assert.equal(frameSrcOf('/live/../api/browser/profile', APP), null, 'a path that climbs out of /live/ is not a viewer')
+assert.equal(frameSrcOf('javascript:alert(1)', APP), null)
+assert.equal(frameSrcOf(undefined, APP), null)
+
+// 5. The view is a real module: in the rail, on its key, on the homepage.
+assert.ok(HUD_VIEWS.includes('browser'))
+assert.equal(hudKeyOf('browser'), 'w')
+const mod = MODULES.find((m) => m.tab === 'browser')
+assert.ok(mod, 'a module entry, so the homepage and ?tab= know it')
+assert.equal(mod.key, 'w')
+
+console.log('queen-browser contract: ok')

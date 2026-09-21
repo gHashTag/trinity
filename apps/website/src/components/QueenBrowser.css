@@ -1,0 +1,85 @@
+/* BROWSER: the person's own remote browser, one frame, one quiet bar. */
+.queen27-page.is-shell .queen27-browser {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  gap: 6px;
+}
+
+.queen27-page.is-shell .queen27-browser.is-note {
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  color: var(--muted, #8b9490);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.queen27-page.is-shell .queen27-browser.is-note p {
+  margin: 0;
+  max-width: 56ch;
+}
+
+.queen27-page.is-shell .queen27-browser-bar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-browser-hint {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted, #8b9490);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+}
+
+.queen27-page.is-shell .queen27-browser-btn {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #00ff88;
+  border-radius: 6px;
+  background: rgba(0, 255, 136, 0.08);
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.queen27-page.is-shell .queen27-browser-btn.is-quiet {
+  border-color: rgba(0, 255, 136, 0.22);
+  background: rgba(2, 8, 6, 0.6);
+  color: var(--muted, #8b9490);
+}
+
+.queen27-page.is-shell .queen27-browser-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.queen27-page.is-shell .queen27-browser-link {
+  color: #00ff88;
+  font-size: 12px;
+}
+
+.queen27-page.is-shell .queen27-browser-frame {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border: 1px solid rgba(0, 255, 136, 0.22);
+  border-radius: 6px;
+  background: #000;
+}
