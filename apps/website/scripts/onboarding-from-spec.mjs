@@ -52,6 +52,7 @@ export const ONBOARDING_REQUIRED = {
   READ: 'arr', READ_ABOUT: 'arr',
   COMPILER: 'str', COMPILER_EXPORTS: 'arr', COMPILER_ABI: 'str', REQUIRES_RUNNING_OUR_CODE: 'bool',
   BACKENDS: 'arr', BACKENDS_NOTE: 'str',
+  TS_SHARES_THE_JS_VALUE_LAYER: 'bool', JS_TS_DIVERGENCES: 'u16',
   MEASURED_AT: 'str', SPEC_COUNT: 'u16', SPEC_LINES: 'u32',
   HEALTH_OK: 'u16', HEALTH_WARN: 'u16', HEALTH_FAIL: 'u16', HEALTH_FAIL_NOTE: 'str', HEALTH_FAIL_JS_ONLY: 'u16',
   REPO_COUNT: 'u8', WORLD_COUNT: 'u8',
@@ -143,6 +144,13 @@ export function semanticProblems(f, file) {
 // So read the manifest that is about to be published and compare. The message names the value
 // to write, because a gate that says "wrong" without saying "this" gets fixed by guessing.
 // ---------------------------------------------------------------------------
+
+// The backends that emit declarations and nothing else -- const, enum, struct -- and name
+// every fn, test, bench and invariant they skipped in a comment. A spec that only these
+// decline is not a broken spec; it is a spec with a body, which is most of them.
+const DECLARATIONS_ONLY = ['js', 'ts']
+const sameSet = (a, b) => a.length === b.length && [...a].sort().join() === [...b].sort().join()
+
 export function corpusProblems(f, file, manifest) {
   const p = []
   const backends = [...new Set(manifest.specs.flatMap((s) => Object.keys(s.outBytes ?? {})))].sort()
@@ -154,10 +162,28 @@ export function corpusProblems(f, file, manifest) {
     HEALTH_FAIL: manifest.health.fail,
     REPO_COUNT: manifest.repos.length,
     WORLD_COUNT: manifest.discovery.worlds.length,
-    // The share of health=fail that is one backend declining to emit, on a file the other
-    // five accepted. Counted here rather than typed into the spec, because the number it
-    // qualifies is the one a reader is most likely to misread as "338 broken specs".
-    HEALTH_FAIL_JS_ONLY: manifest.specs.filter((s) => (s.failedBackends ?? []).join() === 'js').length,
+    // The share of health=fail that is the declarations-only backends declining to emit, on
+    // a file the other five accepted. Counted here rather than typed into the spec, because
+    // the number it qualifies is the one a reader is most likely to misread as "338 broken
+    // specs".
+    //
+    // This test was `join() === 'js'` while js was the only backend of its kind. gen-ts made
+    // that silently read 0 -- every such spec now lists BOTH, so an exact-match on one name
+    // matches nothing, and the constant would have been "corrected" to zero by a generator
+    // that was measuring the wrong set. Compare against DECLARATIONS_ONLY instead, so the
+    // next backend of this kind is a one-word edit there and not a wrong number here.
+    HEALTH_FAIL_JS_ONLY: manifest.specs.filter((s) => sameSet(s.failedBackends ?? [], DECLARATIONS_ONLY)).length,
+  }
+  // The spec claims codegen_ts shares codegen_js's value layer. That is falsifiable over the
+  // corpus and therefore gets falsified here rather than believed: a spec that loses one of
+  // the two and keeps the other is drift, whatever the comment upstream says.
+  const divergent = manifest.specs.filter((s) => {
+    const failed = new Set(s.failedBackends ?? [])
+    return failed.has('js') !== failed.has('ts')
+  })
+  if (f.JS_TS_DIVERGENCES !== divergent.length) {
+    p.push(`${file}: JS_TS_DIVERGENCES says ${f.JS_TS_DIVERGENCES}, the manifest has ${divergent.length}` +
+      (divergent.length ? ` (e.g. ${divergent.slice(0, 3).map((s) => s.path).join(', ')})` : ''))
   }
   for (const [k, v] of Object.entries(want)) {
     if (f[k] !== v) p.push(`${file}: ${k} says ${f[k]}, the manifest says ${v} -- write ${v}`)

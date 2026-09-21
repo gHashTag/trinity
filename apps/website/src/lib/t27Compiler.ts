@@ -80,8 +80,11 @@ export interface T27Analysis {
  * not bundled. It keeps its own `TARGET_LABEL` and derives its count from that
  * rather than from a digit, so the two lists can still disagree about NAMES but
  * no longer about how many there are.
+ *
+ * TypeScript arrived the next day and cost one word on this line plus a label,
+ * which is the only evidence that the consolidation above was worth doing.
  */
-export const TARGET_IDS = ['zig', 'verilog', 'verilog_hir', 'c', 'rust', 'js'] as const
+export const TARGET_IDS = ['zig', 'verilog', 'verilog_hir', 'c', 'rust', 'js', 'ts'] as const
 
 export type TargetId = (typeof TARGET_IDS)[number]
 

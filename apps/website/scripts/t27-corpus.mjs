@@ -154,12 +154,20 @@ export function summarise(kinds, entry, health) {
   return parts.join(' ')
 }
 
-// The sixth copy of this list, and the last one that has to be written by hand:
-// node runs this file directly, so it cannot import TARGET_IDS from
-// src/lib/t27Compiler.ts, which is where the five bundled copies now come from.
-// Nothing below reads its LENGTH as a digit any more, so the two can disagree
-// about a name but no longer about a count.
-export const TARGET_LABEL = { zig: 'Zig', verilog: 'Verilog', verilog_hir: 'Verilog (HIR)', c: 'C', rust: 'Rust', js: 'JavaScript' }
+// The one copy of this list that still has to be written by hand: node runs this
+// file directly, so it cannot import TARGET_IDS from src/lib/t27Compiler.ts,
+// which is where every bundled reader gets it.
+//
+// This comment used to count the copies -- "the sixth", "the five bundled" --
+// and then concede that the two lists "can disagree about a name". Both halves
+// were the same mistake: a number maintained by hand, and a gap left open
+// because only the count was guarded. Adding gen-ts went straight through it; a
+// seventh id with no label here is not a crash, just a blank tab.
+//
+// qa/t27-evolution-contract.mjs now checks this object and TARGET_IDS against
+// the backend names in public/t27/manifest.json -- what the vendored compiler
+// actually emitted over the corpus. Nothing here is counted any more.
+export const TARGET_LABEL = { zig: 'Zig', verilog: 'Verilog', verilog_hir: 'Verilog (HIR)', c: 'C', rust: 'Rust', js: 'JavaScript', ts: 'TypeScript' }
 
 export function listy(a) {
   if (a.length <= 1) return a[0] || ''

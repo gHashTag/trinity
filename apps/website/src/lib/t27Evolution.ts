@@ -1,6 +1,8 @@
 /**
  * The TECH TREE's subject: how the .t27 language got from a seed compiler to
- * five backends and ten repositories -- derived, not asserted.
+ * the backends and repositories it has now -- derived, not asserted. (This
+ * sentence used to say "five backends". It was a literal in a file whose whole
+ * claim is that it holds none, and it went stale the day a sixth landed.)
  *
  * The tree used to draw whatever /queen/public-research returned. That endpoint
  * is the supervisor's, it describes the supervisor's own research, and when the
@@ -231,17 +233,26 @@ export function deriveT27Evolution(
   // it. They have to: publicResearchText replaces any label whose script does
   // not match the page, so a bare "gen-rust" on the Russian page would be drawn
   // as "Технология gen-rust" and the backend's actual name would be lost.
+  // `after` is the node this one hangs from. Two of them do not hang from the
+  // typechecker, and neither edge is a drawing decision: the HIR path reaches
+  // Verilog through gen-verilog, and gen-ts is built ON gen-js -- TypeScript's
+  // syntax for a value IS JavaScript's, so upstream `codegen_ts.rs` calls
+  // `codegen_js.rs` for every literal, escape and name it prints. The edge in
+  // this graph is the call in the compiler.
   const backends = [
-    { id: "gen-rust", key: "rust", en: "gen-rust", ru: "бэкенд gen-rust" },
-    { id: "gen-zig", key: "zig", en: "gen (Zig)", ru: "бэкенд gen (Zig)" },
-    { id: "gen-c", key: "c", en: "gen-c", ru: "бэкенд gen-c" },
-    { id: "gen-verilog", key: "verilog", en: "gen-verilog", ru: "бэкенд gen-verilog" },
+    { id: "gen-rust", key: "rust", en: "gen-rust", ru: "бэкенд gen-rust", after: "typecheck" },
+    { id: "gen-zig", key: "zig", en: "gen (Zig)", ru: "бэкенд gen (Zig)", after: "typecheck" },
+    { id: "gen-c", key: "c", en: "gen-c", ru: "бэкенд gen-c", after: "typecheck" },
+    { id: "gen-verilog", key: "verilog", en: "gen-verilog", ru: "бэкенд gen-verilog", after: "typecheck" },
     {
       id: "gen-verilog-hir",
       key: "verilog_hir",
       en: "verilog HIR",
       ru: "бэкенд verilog HIR",
+      after: "gen-verilog",
     },
+    { id: "gen-js", key: "js", en: "gen-js", ru: "бэкенд gen-js", after: "typecheck" },
+    { id: "gen-ts", key: "ts", en: "gen-ts", ru: "бэкенд gen-ts", after: "gen-js" },
   ].map((backend) => ({ ...backend, count: countBackend(specs, backend.key) }));
 
   const repos = countRepos(specs);
@@ -387,7 +398,7 @@ export function deriveT27Evolution(
       evidence: ru
         ? `${n(backend.count.generated)} спек из ${n(specCount)} порождают вывод для этого бэкенда, всего ${n(backend.count.bytes)} байт; индекс записывает ${n(backend.count.failed)} отказов.`
         : `${n(backend.count.generated)} of ${n(specCount)} specs generate output for this backend, ${n(backend.count.bytes)} bytes in all; the index records ${n(backend.count.failed)} failures.`,
-      prerequisites: backend.key === "verilog_hir" ? ["gen-verilog"] : ["typecheck"],
+      prerequisites: [backend.after],
       measured: backend.count.generated > 0,
       failures: backend.count.failed,
       warnings: 0,

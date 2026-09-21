@@ -48,14 +48,14 @@ export const MODULES = [
     en: {
       name: 'SPECS',
       hint: 'The corpus she is generated from',
-      body: 'The Spec Explorer, embedded whole: search the corpus, read a spec, and watch it become tokens, an AST, types, HIR, and five target languages — Zig, Verilog, C, Rust and a chip. Editing here is a draft, not an accepted spec.',
-      play: 'Where you write. The real compiler runs on what you type here, so you can watch your spec become Zig, Verilog, C and Rust before you send a line of it anywhere.',
+      body: 'The Spec Explorer, embedded whole: search the corpus, read a spec, and watch it become tokens, an AST, types, HIR, and every target it reaches — Zig, Verilog, C, Rust, JavaScript, TypeScript and a chip. Editing here is a draft, not an accepted spec.',
+      play: 'Where you write. The real compiler runs on what you type here, so you can watch your spec become Zig, Verilog, C, Rust, JavaScript and TypeScript before you send a line of it anywhere.',
     },
     ru: {
       name: 'СПЕКИ',
       hint: 'Корпус, из которого она порождена',
-      body: 'Обозреватель спек целиком: поиск по корпусу, чтение спеки и её превращение в токены, AST, типы, HIR и пять целевых языков — Zig, Verilog, C, Rust и чип. Правка здесь — черновик, а не принятая спека.',
-      play: 'Место письма. Здесь на ваш текст работает настоящий компилятор, и спеку можно увидеть на Zig, Verilog, C и Rust ещё до того, как вы куда-то её отправите.',
+      body: 'Обозреватель спек целиком: поиск по корпусу, чтение спеки и её превращение в токены, AST, типы, HIR и все цели, до которых она доходит, — Zig, Verilog, C, Rust, JavaScript, TypeScript и чип. Правка здесь — черновик, а не принятая спека.',
+      play: 'Место письма. Здесь на ваш текст работает настоящий компилятор, и спеку можно увидеть на Zig, Verilog, C, Rust, JavaScript и TypeScript ещё до того, как вы куда-то её отправите.',
     },
   },
   {
@@ -116,14 +116,14 @@ export const MODULES = [
     en: {
       name: 'TECH TREE',
       hint: 'How the .t27 language got here',
-      body: 'The evolution of the .t27 language as a graph with prerequisites: the seed compiler, the constructs the corpus actually uses, the checks each spec passes, the five backends it generates to, the repositories that have adopted it, and the silicon path — every node carrying the count it rests on, read from the corpus index the site ships.',
-      play: 'Where a claim has to show its evidence before it is drawn at all. Read it to see how far the language has got, measured on 1407 specs rather than asserted.',
+      body: 'The evolution of the .t27 language as a graph with prerequisites: the seed compiler, the constructs the corpus actually uses, the checks each spec passes, the backends it generates to, the repositories that have adopted it, and the silicon path — every node carrying the count it rests on, read from the corpus index the site ships.',
+      play: 'Where a claim has to show its evidence before it is drawn at all. Read it to see how far the language has got, counted off the corpus index on the page rather than asserted here.',
     },
     ru: {
       name: 'ТЕХ-ДЕРЕВО',
       hint: 'Как язык .t27 дошёл до этого места',
-      body: 'Эволюция языка .t27 как граф с предпосылками: компилятор-семя, конструкции, которые корпус действительно использует, проверки, которые проходит каждая спека, пять бэкендов, в которые она порождается, репозитории, принявшие язык, и путь к кремнию — у каждого узла стоит число, на котором он держится, прочитанное из индекса корпуса, который сайт отдаёт вместе со страницей.',
-      play: 'Место, где утверждение обязано предъявить свидетельство, прежде чем его вообще нарисуют. Здесь видно, как далеко ушёл язык — измеренно на 1407 спеках, а не заявлено.',
+      body: 'Эволюция языка .t27 как граф с предпосылками: компилятор-семя, конструкции, которые корпус действительно использует, проверки, которые проходит каждая спека, бэкенды, в которые она порождается, репозитории, принявшие язык, и путь к кремнию — у каждого узла стоит число, на котором он держится, прочитанное из индекса корпуса, который сайт отдаёт вместе со страницей.',
+      play: 'Место, где утверждение обязано предъявить свидетельство, прежде чем его вообще нарисуют. Здесь видно, как далеко ушёл язык — число посчитано по индексу корпуса на самой странице, а не вписано сюда руками.',
     },
   },
   {

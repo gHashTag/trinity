@@ -54,7 +54,7 @@ const UI = {
     subtitle: 'Every .t27 spec, layer by layer',
     metaTitle: 'Spec Explorer',
     metaDescription:
-      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and five codegen backends.',
+      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and every codegen backend.',
     search: 'Search specs',
     allCategories: 'All categories',
     specs: 'specs',
@@ -154,7 +154,7 @@ const UI = {
     subtitle: 'Каждая .t27-спека, слой за слоем',
     metaTitle: 'Обозреватель спек',
     metaDescription:
-      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и пять бэкендов кодогенерации.',
+      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и все бэкенды кодогенерации.',
     search: 'Поиск по спекам',
     allCategories: 'Все категории',
     specs: 'спек',
@@ -297,6 +297,7 @@ const LAYERS = [
   { id: 'c', kind: 'target' },
   { id: 'rust', kind: 'target' },
   { id: 'js', kind: 'target' },
+  { id: 'ts', kind: 'target' },
   { id: 'chip', kind: 'chip' },
 ] as const
 
@@ -322,6 +323,7 @@ const LAYER_LABEL: Record<LayerId, string> = {
   c: 'C',
   rust: 'Rust',
   js: 'JavaScript',
+  ts: 'TypeScript',
   chip: 'Chip',
 }
 
@@ -815,7 +817,7 @@ export default function SpecExplorer() {
     if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, 'verilog')
     if (activeTarget?.ok && activeTarget.code) {
       const langOf: Record<string, string> = {
-        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust', js: 'js',
+        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust', js: 'js', ts: 'ts',
       }
       return highlightCode(activeTarget.code, langOf[layer] || 'plain')
     }

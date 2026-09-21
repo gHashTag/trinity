@@ -93,13 +93,32 @@ const gh = (args) => execFileSync('gh', args, { encoding: 'utf8', timeout: 12000
 // `slug` is owner/name. It used to be a bare name with `gHashTag/` welded in
 // here, which is why a corpus repo owned by anyone else could not be fetched at
 // all -- see EXTRA_REPOS below for what that cost.
+//
+// Three attempts, not one. These are large downloads -- trinity-fpga alone is
+// 353 MB over about a minute and a half -- and on 2026-09-21 one of them failed
+// once. That single hiccup cost the manifest all 64 of that repository's specs,
+// and the run still exited 0. Backoff is 2s, 6s: long enough to outlast a
+// transient refusal, short enough that a genuinely dead repository is not
+// waited on for minutes.
 function tarball(slug, ref) {
   const dir = mkdtempSync(join(tmpdir(), `t27-${slug.replace(/\W/g, '-')}-`))
-  execFileSync('sh', ['-c',
-    `gh api "repos/${slug}/tarball/${ref}" > "${dir}/a.tar.gz" && tar -xzf "${dir}/a.tar.gz" -C "${dir}"`,
-  ], { stdio: 'ignore' })
-  const inner = execFileSync('sh', ['-c', `ls -d "${dir}"/*/ | head -1`], { encoding: 'utf8' }).trim()
-  return { dir, root: inner.replace(/\/$/, '') }
+  let last
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      execFileSync('sh', ['-c',
+        `gh api "repos/${slug}/tarball/${ref}" > "${dir}/a.tar.gz" && tar -xzf "${dir}/a.tar.gz" -C "${dir}"`,
+      ], { stdio: 'ignore' })
+      const inner = execFileSync('sh', ['-c', `ls -d "${dir}"/*/ | head -1`], { encoding: 'utf8' }).trim()
+      return { dir, root: inner.replace(/\/$/, '') }
+    } catch (e) {
+      last = e
+      if (attempt < 3) {
+        console.log(`  ${slug}: tarball attempt ${attempt} failed, retrying`)
+        execFileSync('sleep', [String(attempt * 2 + (attempt - 1) * 2)])
+      }
+    }
+  }
+  throw last
 }
 
 // Exclusions, all of them copies of files counted elsewhere rather than
@@ -207,19 +226,34 @@ const sources = [{ repo: 't27', root: t27Root, files: t27Files, commit: FROM_LOC
 for (const slug of EXTRA_REPOS) {
   const [owner, name] = slug.split('/')
   const repo = owner === 'gHashTag' ? name : slug
+  // A skip used to be a `console.log` and a `continue`, and the run still
+  // exited 0. On 2026-09-21 that printed one warning line and wrote a manifest
+  // missing 64 specs -- a whole repository -- which is a corpus that lies about
+  // its own size, published, with nothing red anywhere. A source named in
+  // EXTRA_REPOS that cannot be read is a failed sync, not a smaller corpus.
+  //
+  // The escape hatch is deliberate and narrow: a repository that is genuinely
+  // gone should be DELETED FROM THE LIST above, which is a decision a person
+  // makes once, in a diff, rather than a warning nobody reads every run.
+  // T27_ALLOW_MISSING is for reproducing an old manifest offline.
+  const ALLOW_MISSING = process.env.T27_ALLOW_MISSING === '1'
+  const lost = (what, e) => {
+    if (!ALLOW_MISSING) fail(`${slug} ${what}.\n  A source in EXTRA_REPOS that cannot be read is a failed sync.\n  If the repository is gone, remove it from EXTRA_REPOS in this file.\n  To reproduce an older manifest anyway: T27_ALLOW_MISSING=1\n  ${e?.message ?? ''}`)
+    console.log(`  warning: ${slug} ${what}, skipped (T27_ALLOW_MISSING=1)`)
+  }
   let branch
   try {
     branch = gh(['api', `repos/${slug}`, '--jq', '.default_branch'])
-  } catch {
-    console.log(`  warning: ${slug} unreachable, skipped`)
+  } catch (e) {
+    lost('unreachable', e)
     continue
   }
   const sha = gh(['api', `repos/${slug}/commits/${branch}`, '--jq', '.sha'])
   let pulled
   try {
     pulled = tarball(slug, branch)
-  } catch {
-    console.log(`  warning: ${slug} tarball failed, skipped`)
+  } catch (e) {
+    lost('tarball failed after 3 attempts', e)
     continue
   }
   sources.push({ repo, root: pulled.root, files: specFiles(pulled.root), commit: sha, tmp: pulled.dir })
