@@ -133,6 +133,13 @@ jobs:
       # the page parsed with the real parser. Pure, no browser.
       - name: Hive board is per person
         run: npm run check:hive-board
+      # The lane's filter can watch several clients at once and search within
+      # them, which is two more ways for a control to describe rows the server
+      # did not send. One property over every hostile input anyone has thought
+      # of: the cards drawn are a SUBSET of the cards that arrived, and the
+      # request count does not move however many times the board is filtered.
+      - name: The clients filter can only ever hide
+        run: npm run check:clients-filter
       # The Queen board moved to app.t27.ai/queen/, and #/queen here hands its
       # visitors over. app.t27.ai builds THIS bundle, so the redirect code runs
       # at the destination too: keyed on the route alone it would send that page
