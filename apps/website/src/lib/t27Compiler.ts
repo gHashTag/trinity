@@ -90,6 +90,19 @@ export type TargetId = (typeof TARGET_IDS)[number]
 
 export type Health = 'ok' | 'warn' | 'fail'
 
+/**
+ * What a `.t27` file is, from the compiler's own classifier
+ * (`bootstrap/src/source_kind.rs`, reached through the wasm bridge).
+ *
+ * `unclassified` is a grab-bag and not a synonym for prose: it holds TRI-27
+ * assembly, fixtures whose `module` line was damaged on purpose, and files that
+ * open at a `const`. Do not render it as "not code".
+ *
+ * This is not a prediction about compiling. 31 non-`source` files in the corpus
+ * compile cleanly; plenty of `source` files do not.
+ */
+export type SourceKind = 'source' | 'alt-syntax' | 'not-code' | 'mixed' | 'unclassified'
+
 export interface SpecEntry {
   path: string
   category: string
@@ -99,8 +112,16 @@ export interface SpecEntry {
   bytes: number
   /** Leading comment block of the spec, boilerplate stripped. */
   description: string | null
-  /** Precomputed at sync time by running this same compiler over the corpus. */
+  /**
+   * Precomputed at sync time by running this same compiler over the corpus.
+   *
+   * Measured for every entry including non-`source` ones, so opening a Markdown
+   * document still shows what the compiler did with it. The corpus-wide counts
+   * in `SpecManifest.health` are over `source` entries only.
+   */
   health: Health
+  /** What this file is, before anything asks whether it compiles. */
+  sourceKind: SourceKind
   tokens: number
   nodes: number
   depth: number
@@ -130,7 +151,17 @@ export interface SpecManifest {
   specCount: number
   totalLines: number
   categories: Record<string, number>
+  /**
+   * Health over the `source` entries only -- these three sum to
+   * `specCount - notSource.total`, not to `specCount`.
+   */
   health: Record<Health, number>
+  /**
+   * The files under a `.t27` extension that are not compilation units. Absent
+   * on a catalog written before the classifier crossed the wasm boundary, in
+   * which case `health` is over everything and sums to `specCount`.
+   */
+  notSource?: { total: number; byKind: Record<string, number>; byHealth: Record<Health, number> }
   backendFailures: Record<string, number>
   featured: string
   totals: { tokens: number; nodes: number; lossAffected: number; tcAffected: number }

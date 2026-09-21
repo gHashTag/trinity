@@ -2,7 +2,7 @@
 module turbobaby-ride-lifecycle;
 
 ; specs/turbobaby/ride_runtime.t27 -- lifecycle contract for one TurboBaby Ride run
-; This contract owns the runtime edges that do not belong in ride_game.t27's catalog and
+; This contract owns the runtime edges that do not belong in turbobaby/ride-game's catalog and
 ; handling model: horizontal control, terminal collisions, event classification, once-only
 ; score submission, generation guards, teardown, and the client side of a star award.
 ;
@@ -15,7 +15,7 @@ module turbobaby-ride-lifecycle;
 ; zero remains a valid completed run; event kind, not a positive score threshold, identifies it.
 ;
 ; OWNERSHIP. This file consumes three decisions as booleans and does not restate their data:
-; roster eligibility comes from ride_game.t27, identity comes from the host, and the server
+; roster eligibility comes from turbobaby/ride-game, identity comes from the host, and the server
 ; decides whether a requested star award is accepted or capped. It contains no fleet rows, no
 ; handling constants, no award cap, no price, and no person-level data. Runtime implementation:
 ; assets/game/ride.js and src/ui/screens/ride_screen.rs. Regression witness:
@@ -30,10 +30,38 @@ pub const GAME_IMPLEMENTATION : str = "assets/game/ride.js";
 pub const HOST_IMPLEMENTATION : str = "src/ui/screens/ride_screen.rs";
 pub const REGRESSION_WITNESS : str = "tests/ride_asset_wiring.rs";
 
+; --- The neighbour contract, named by owner and by declaration ---------------------------------
+; turbobaby/ride-game was named four times in the prose above and in no constant at all until
+; 2026-09-21, so the edge existed only as a file name a reader had to happen to notice. The other
+; side already carried it: ride-game declares REUSES_RIDE_RUNTIME_ID and pins this file's path, so
+; a grep for the pair found one direction and not the other, and a one-way edge is the shape a
+; missing edge and a real one share.
+; Named by OWNER ID and by the DECLARATION NAMES this file consumes, never by a line in that
+; file. A line into a sibling goes stale on the sibling's next edit and says nothing when it does:
+; ride_game.t27 grew by 450 lines on 2026-09-21 without one character of this contract changing.
+; WHAT CROSSES IS A BOOLEAN, NEVER A TABLE. No fleet row, no handling constant and no roster is
+; restated here, and the two contracts do NOT agree on one of the four boundaries they both
+; classify: an empty filtered roster is EVENT_UNAVAILABLE with reason UNAVAILABLE_EMPTY here and
+; ROSTER_OUTCOME_EMPTY there, a player-visible state that is not a failure. That difference is a
+; boundary between two contracts rather than a drift between a copy and an owner, so it is named
+; and not pinned: an invariant that tried to hold ride-game's numbers would be this file
+; legislating for another.
+pub const REUSES_RIDE_GAME_ID : str = "turbobaby/ride-game";
+pub const ROSTER_RULE_DECLARATION : str = "RIDEABLE_RULE, declared by the ride-game contract";
+pub const HANDLING_MAP_DECLARATION : str = "handling, the closed map declared by the ride-game contract";
+pub const STEER_RATE_DECLARATION : str = "steer_rate, the class-dependent rate declared by the ride-game contract";
+pub const ROSTER_OUTCOME_DECLARATION : str = "roster_outcome, the player-visible classification declared by the ride-game contract";
+pub const THIS_FILE_RESTATES_A_RIDE_GAME_TABLE : bool = false;
+pub const EMPTY_ROSTER_IS_CLASSIFIED_DIFFERENTLY_HERE : bool = true;
+; The day the four declaration names above were read in the owner's file and found to exist and to
+; mean what these sentences claim. It is a date of verification, not a claim that nothing has moved
+; since: only a new reading can say that.
+pub const NEIGHBOUR_EDGE_VERIFIED_AT : str = "2026-09-21";
+
 ; --- Input -------------------------------------------------------------------------------------
 ; The browser helper supplies a normalized horizontal value. Clamp again at the test seam so a
 ; synthetic caller cannot steer past the road contract. These are normalized control units, not
-; steering physics; the class-dependent rate stays in ride_game.t27.
+; steering physics; the class-dependent rate stays in turbobaby/ride-game, in its steer_rate.
 pub const CONTROL_LEFT : i16 = -100;
 pub const CONTROL_CENTER : i16 = 0;
 pub const CONTROL_RIGHT : i16 = 100;
@@ -49,7 +77,8 @@ pub fn clamp_horizontal_control(value: i16) i16 {
 }
 
 ; The runtime receives roster decisions, rather than rebuilding the offered and stock rule.
-; handling_ready is likewise a result owned by ride_game.t27's closed handling map.
+; handling_ready is likewise a result owned by turbobaby/ride-game's closed handling map, which
+; that contract declares as handling.
 pub fn runtime_may_mount(roster_resolved: bool, has_rideable_family: bool, handling_ready: bool) bool {
   return roster_resolved and has_rideable_family and handling_ready;
 }
@@ -241,6 +270,30 @@ test teardown_requires_all_three_cleanup_actions {
   assert cleanup_is_complete(true, true, false) == false;
 }
 
+; The edge, asserted rather than merely written. Without an import form a REUSES_ string is the
+; only way one contract names another's territory, and a string nothing checks is a comment with a
+; type. The inequality is the cheap guard against a copy-paste that would point the edge back here.
+test the_ride_game_edge_is_named_by_owner_and_declaration {
+  assert REUSES_RIDE_GAME_ID == "turbobaby/ride-game";
+  assert REUSES_RIDE_GAME_ID != ID;
+  assert NEIGHBOUR_EDGE_VERIFIED_AT == "2026-09-21";
+  assert ROSTER_RULE_DECLARATION == "RIDEABLE_RULE, declared by the ride-game contract";
+  assert HANDLING_MAP_DECLARATION == "handling, the closed map declared by the ride-game contract";
+  assert STEER_RATE_DECLARATION == "steer_rate, the class-dependent rate declared by the ride-game contract";
+  assert ROSTER_OUTCOME_DECLARATION == "roster_outcome, the player-visible classification declared by the ride-game contract";
+  assert THIS_FILE_RESTATES_A_RIDE_GAME_TABLE == false;
+}
+
+; The boundary the two contracts answer differently, pinned on THIS side only. An empty roster is a
+; known unavailable reason here; what it is called on the other side is that contract's to say.
+test the_empty_roster_boundary_is_this_files_answer_and_not_the_neighbours {
+  assert EMPTY_ROSTER_IS_CLASSIFIED_DIFFERENTLY_HERE == true;
+  assert unavailable_reason_is_known(UNAVAILABLE_EMPTY) == true;
+  assert event_for_start_result(true, true, false, true) == EVENT_UNAVAILABLE;
+  assert UNAVAILABLE_EMPTY != UNAVAILABLE_IMPORT;
+  assert UNAVAILABLE_REASON_COUNT == 4;
+}
+
 ; --- Invariants --------------------------------------------------------------------------------
 
 invariant horizontal_control_has_a_closed_normalized_range
@@ -272,3 +325,8 @@ invariant a_detached_host_cannot_mount
 
 invariant cleanup_must_stop_drop_and_invalidate
   assert cleanup_is_complete(true, true, true) == true and cleanup_is_complete(false, true, true) == false and cleanup_is_complete(true, false, true) == false and cleanup_is_complete(true, true, false) == false
+
+; The edge names somebody else and copies nothing of theirs. Both halves have to hold: an edge that
+; pointed at this file would be a loop, and an edge that carried a table would be a second owner.
+invariant the_neighbour_edge_names_another_contract_and_copies_no_table
+  assert REUSES_RIDE_GAME_ID != ID and THIS_FILE_RESTATES_A_RIDE_GAME_TABLE == false and EMPTY_ROSTER_IS_CLASSIFIED_DIFFERENTLY_HERE == true

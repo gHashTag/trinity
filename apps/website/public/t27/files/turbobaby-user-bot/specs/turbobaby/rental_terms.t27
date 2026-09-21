@@ -3,10 +3,19 @@
 ; bands, and the one rounding rule every total is built from.
 ; Canonical source of truth for the INTEGER basis-point form of the term arithmetic that D15
 ; puts in src/trios/pricing.rs, so the Axum server and the Dioxus/WASM client are checked against
-; one written contract instead of against each other. The earlier specs/rental_terms.t27 states
-; the same bands in f64. Its declarations have now been semantically classified in
-; docs/t27-semantic-merge-matrix.md and this canonical file is the chosen owner; the root twin
-; remains temporarily as a reviewable compatibility snapshot, not as a second authority.
+; one written contract instead of against each other. An earlier working-tree draft at
+; specs/rental_terms.t27 stated the same bands in f64; its declarations were semantically
+; classified in docs/t27-semantic-merge-matrix.md and this canonical file is the chosen owner.
+; That draft is GONE and no reviewer can reopen it: it was never tracked, so it is not in the
+; history either (git log --all -- specs/rental_terms.t27 prints nothing, re-verified 2026-09-21
+; and still empty). The COUNT that used to stand beside that fact has not held: this sentence
+; said specs/ holds twelve tracked files, and on 2026-09-21 it holds FORTY-THREE --
+; specs/agents/turbobaby.t27 plus the 42 under specs/turbobaby/. The corpus more than tripled
+; and the sentence went on stating twelve, which is why the live count is pinned below as
+; CORPUS_FILES rather than left in prose. What the number was there to support is unchanged and
+; is the part worth checking: there is still no root-level .t27 in specs/ at all. The TWIN_* constants
+; below name the path it occupied and the matrix that absorbed it -- not a second authority,
+; and not a file that still exists.
 ; Transcribed from data/fleet_seed.json (measured_at 2026-09-12):
 ; term_discount_bands, reconciliation.checks, and the NMAX 155 row of families. Nothing
 ; below is a client price; see WHAT THIS NEVER DOES. ASCII only (L3), English only.
@@ -72,9 +81,11 @@
 ; named audit_ for that reason, BANDS_PRODUCE_CLIENT_QUOTES is pinned false by an
 ; invariant, and no function takes a term alone and returns a price: a discount in basis
 ; points must be supplied by the caller, because the tariff publishes a range and a range
-; is not a number. It pins the TERM axis and the rounding only: how the term discount
-; COMPOSES with the class discount is unspecified by the seed and is therefore left open
-; here, pinned open by a constant rather than closed by a guess -- see THE COMPOSITION.
+; is not a number. It pins the TERM axis, the rounding, and -- since 2026-09-20 -- the two
+; published CLASS RATES, which until that date were declared in no canonical contract at all.
+; What it still does not pin is how the two discounts COMPOSE: that is unspecified by the seed
+; and is therefore left open here, pinned open by a constant rather than closed by a guess --
+; see THE CLASS TABLE and THE COMPOSITION.
 ; It also holds no customer, no contract and no payment history (D14): the totals below are
 ; pinned against the published tariff of one catalogue model and against the six
 ; reconciliation rows, and against nothing else.
@@ -84,12 +95,23 @@
 ; itself proves nothing -- the same way a licence file named .t27 compiles. The rounding
 ; test therefore reproduces the six grid figures MEASURED by someone else (704, 749, 518,
 ; 593, 337, 2091) from the six published base tariffs, and half-down would miss three.
-; Those six figures are pinned a second time in specs/pricing_honesty.t27, over f64 through
-; round_half_up_baht and through the RECONCILED_DOOR_THB row loop. That is named here rather
-; than left for a reader to discover by grepping for 704: the route in this file is integer
-; basis points, one fused scale-and-round with no float anywhere, so the two specs reach the
-; same externally measured column by two different arithmetics. Two arithmetics agreeing
-; with one outside measurement is worth having; two copies of one arithmetic would not be.
+; An earlier revision of this paragraph claimed those six figures are pinned a second time in
+; specs/pricing_honesty.t27, through round_half_up_baht and a RECONCILED_DOOR_THB row loop.
+; Measured 2026-09-20 both halves were false, and re-measured 2026-09-21 over the 43-file corpus
+; the first still is: grep -rn RECONCILED_DOOR_THB specs/ matches only this file's own two lines
+; and no other file. The second half needs one correction. It said pricing_honesty.t27 contains
+; NONE of the six figures; it contains ONE of them. 337 appears there twice -- once against an
+; orders.rs reconciliation gap of 0.4 baht, and once in a sentence that credits this contract's
+; audit_daily_thb with pinning 449 at 2500 bp to 337. Neither is a second reproduction of the
+; measured column: the first is a different quantity and the second points back here by name.
+; So the conclusion holds and its supporting absence does not, which is stated in that order on
+; purpose -- a reader who finds the 337 must not conclude the paragraph was bluffing about the
+; rest. The other five figures (704, 749, 518, 593, 2091) appear in that file nowhere. The
+; second pinning lived in the deleted f64 draft and went with it. So this file is the ONLY
+; place the externally measured column is reproduced, and the cross-check the old paragraph
+; advertised does not exist. That is stated rather than quietly dropped, because a reader who
+; believed it would go looking for a second arithmetic that is not there. One arithmetic
+; against one outside measurement is what this file actually offers.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 
 module rental-terms;
@@ -100,6 +122,13 @@ pub const NAME : str = "TurboBaby rental term ladder and term-discount bands";
 ; Current t27c does not support brace imports. This metadata records that pricing honesty owns
 ; the live door authority; rental terms neither imports nor redeclares that fact.
 pub const REUSES_PRICING_ID : str = "turbobaby/pricing-honesty";
+; The same device for the class axis. bike-catalog.t27 owns the class algebra -- CLASSES,
+; CLASS_SCOOTER, CLASS_MOTORCYCLE, CLASS_COUNT, CLASS_NONE -- and says so in its own header.
+; The class-discount table below is therefore keyed on the seed's own class STRINGS, which are
+; the literal keys of class_discounts and the literal values of families[].class, and it
+; declares no second copy of that algebra: no discriminant, no count, no class-name array.
+; Named by ID and never by line, because a line citation ages and this one would age fast.
+pub const REUSES_CATALOG_ID : str = "turbobaby/bike-catalog";
 pub const SOURCE : str = "data/fleet_seed.json";
 pub const SOURCE_MEASURED_AT : str = "2026-09-12";
 pub const TARIFF_SOURCE_ID : str = "KB_faq";
@@ -114,13 +143,26 @@ pub const IMPLEMENTATION : str = "src/trios/pricing.rs";
 ; bounds here, its monthly non-derivation to the two monthly audit tests, and its class-discount
 ; helpers to the separate pricing axis. That resolves ownership without pretending the two
 ; rounding paths are identical: this file rounds the daily rate before multiplying; the legacy
-; diagnostic rounded the total. The root file is not deleted in this wave so reviewers can
-; verify every mapped declaration before removal.
+; diagnostic rounded the total. The draft itself is gone and was never tracked, so the matrix
+; is now the only record of it; TWIN_SPEC_PATH is the path it occupied, kept so the mapping
+; stays greppable, and TWIN_IS_RESOLVED means every one of its declarations has an outcome --
+; not that a file was removed.
 pub const TWIN_SPEC_PATH : str = "specs/rental_terms.t27";
 pub const TWIN_SPEC_ID : str = "turbobaby/rental_terms";
 pub const TWIN_ENCODING : str = "legacy f64 fractions mapped to canonical integer basis points";
 pub const TWIN_MERGE_MATRIX : str = "docs/t27-semantic-merge-matrix.md";
 pub const TWIN_IS_RESOLVED : bool = true;
+; The corpus this file measures itself against, as a number rather than as a word. Two
+; paragraphs above counted it in prose -- "twelve tracked files", "the eleven files under
+; specs/turbobaby/" -- and both were true when written and wrong by 2026-09-21. A word cannot
+; fail; this can. CORPUS_ROOT_T27_FILES is the claim those counts were actually supporting: the
+; deleted draft's slot at the root of specs/ is still empty, and that is what makes
+; TWIN_SPEC_PATH a former address rather than a competing authority.
+pub const CORPUS_FILES : u8 = 43;
+pub const CORPUS_FILES_UNDER_TURBOBABY : u8 = 42;
+pub const CORPUS_FILES_UNDER_AGENTS : u8 = 1;
+pub const CORPUS_ROOT_T27_FILES : u8 = 0;
+pub const CORPUS_MEASURED_AT : str = "2026-09-21";
 
 ; --- D11, the rule that outranks everything in this file ----------------------------------
 ; These bands never become a client quote. The door answers, or a human does.
@@ -157,6 +199,52 @@ pub const MONTH_MAX_DISCOUNT_BP : i32 = 5000;
 ; a short rental is charged at the tariff the door quotes, and this file does not invent a
 ; band for it (D9: absent stays absent).
 pub const BAND_NONE : i8 = -1;
+
+; --- THE CLASS TABLE: the other published discount axis -----------------------------------
+; data/fleet_seed.json "class_discounts", lines 105-109 as measured 2026-09-20: scooter 0.25
+; on line 107, motorcycle 0.15 on line 108, under a $comment stating that the base rates in
+; families are PRE-discount. On the basis-point axis this file already owns: 0.25 -> 2500 and
+; 0.15 -> 1500. EXACT, not rounded -- both fractions are exact multiples of 1/10000, and the
+; test below proves that in integers instead of asserting it in a comment.
+; Stored the same way downstream: migrations/079_rental_terms.sql inserts the same two pairs
+; and CHECKs class IN ('scooter', 'motorcycle'), so the two published classes are a closed set
+; in the database as well as in the seed.
+; --
+; WHY THIS FILE, measured 2026-09-20. Until this edit the value was declared in NO canonical
+; contract: grep -rnE "SCOOTER_DISCOUNT|MOTORCYCLE_DISCOUNT" over specs/ returned nothing but
+; the stale paragraph in this file's own test section, which named two root-level specs as the
+; declaration sites. Those files are gone, so a published rate was travelling in prose only --
+; pricing_honesty.t27 and ride_game.t27 each mention "scooter 0.25, motorcycle 0.15" in a
+; comment, and a comment is not a declaration. The rate is pinned here because this file
+; already owns the integer form of the discount arithmetic; the class algebra it is keyed on
+; stays bike-catalog.t27's (REUSES_CATALOG_ID). The correction is in the tests section below.
+; RE-MEASURED 2026-09-21 over the 43-file corpus, and the absence still holds: that grep matches
+; three lines, all of them in this file. One thing has changed in this file's favour and is
+; recorded because a re-measurement that only ever confirms is not a re-measurement --
+; turbobaby/ride-game now carries a declared CLASS_DISCOUNT_QUOTE_NOTE which states that it
+; declares no class discount and names turbobaby/rental-terms as the owner of
+; SCOOTER_CLASS_DISCOUNT_BP and MOTORCYCLE_CLASS_DISCOUNT_BP. The prose-only travel described
+; above has therefore ended on both sides: the rate is declared here, and the neighbour that
+; used to mention it in a comment now points at this file by ID instead.
+pub const SCOOTER_CLASS_DISCOUNT_BP : i32 = 2500;
+pub const MOTORCYCLE_CLASS_DISCOUNT_BP : i32 = 1500;
+; Fails closed. 0 means "this input publishes no class discount", NOT "a discount of zero":
+; handed to audit_daily_thb it returns the tariff unchanged, which is the 33% scooter
+; overstatement D9 and D11 forbid, and a test below pins exactly that trap so the sentinel
+; cannot be mistaken for a rate. The runtime says the same in its own words -- src/db/bikes.rs
+; discount_for_class returns an Option, and its doc calls None "the caller's cue that no price
+; may be computed - not a cue to fall back to no discount". A caller BRANCHES on this value.
+pub const CLASS_DISCOUNT_NONE : i32 = 0;
+; A measured asymmetry between the two rates, 2026-09-20. All six rows of
+; reconciliation.checks -- XMAX 300 NEW, ADV 350, FORZA 300, XMAX 300, NMAX 155, XADV 750 --
+; read class "scooter" in families[], so the 2500 is corroborated against the owner's own
+; quote sheet six times over and the 1500 is corroborated by no row of that grid at all.
+; That does not leave the 1500 unevidenced: field_notes.base_rate_thb_day says displaying the
+; tariff raw "overstates every scooter by 33% and every motorcycle by 18%", an independent
+; sentence in the same seed, and both figures are recomputed from these two constants in a
+; test below. Declared false rather than left unsaid, so that nobody reads the six-row
+; reconciliation as covering both rates.
+pub const MOTORCYCLE_RATE_IS_GRID_RECONCILED : bool = false;
 
 ; --- the one tariff this file computes with -----------------------------------------------
 ; NMAX 155: 449 THB/day published base (PRE class discount -- rendering it as a client
@@ -245,20 +333,64 @@ pub fn band_index_for_days(days: i32) i8 {
     return 2;
 }
 
+; The published discount for a class, in basis points, or CLASS_DISCOUNT_NONE.
+; Keyed on the seed's class string, because that is the key class_discounts is published
+; under; the u8 discriminants are bike-catalog.t27's and are deliberately not mirrored here.
+; Total over the two published classes and closed everywhere else: an unrecognised class -- a
+; misspelling, a different case, a body name, a family key, an empty string -- never yields a
+; discount, because inventing one would be the same offence as inventing a price (D9, D11).
+; Note which way the failure falls. Returning CLASS_DISCOUNT_NONE is safe only if the caller
+; branches on it; passing it through to the arithmetic quotes the PRE-discount tariff, which
+; is the very overstatement the class discount exists to prevent.
+pub fn class_discount_bp(class_name: str) i32 {
+    if (class_name == "scooter") {
+        return SCOOTER_CLASS_DISCOUNT_BP;
+    }
+    if (class_name == "motorcycle") {
+        return MOTORCYCLE_CLASS_DISCOUNT_BP;
+    }
+    return CLASS_DISCOUNT_NONE;
+}
+
 ; --- tests --------------------------------------------------------------------------------
 
 ; The rounding rule is checked against figures this file did not compute: the per-day
 ; column of reconciliation.checks, produced by the owner's quote sheet. The 2500 bp input is
 ; the 0.25 scooter class discount, appearing here as the measured INPUT of the one rule this
 ; file owns -- the rounding -- and not as a rate this file publishes; a fixture is not a
-; second copy of a rate. Where the class discount IS declared, measured today: D15 gives the
-; arithmetic one home in src/trios/pricing.rs, and two specs in this tree already declare the
-; 0.25 as a constant -- specs/rental_terms.t27 (SCOOTER_DISCOUNT, and CLASS_DISCOUNT_VALUES)
-; and specs/pricing_honesty.t27 (SCOOTER_DISCOUNT_AT_RECONCILIATION). No spec in
-; specs/turbobaby/ declares it, and this file does not make itself the third that does.
+; second copy of a rate -- though the rate itself now has a home here too, as
+; SCOOTER_CLASS_DISCOUNT_BP in THE CLASS TABLE above. The literals stay in this test on
+; purpose: the lookup is exercised against the same measured column by a separate test, so the
+; two routes check each other instead of being merged into one.
+; --
+; WHAT STOOD HERE WAS FALSE, corrected 2026-09-20. The paragraph this replaces said the 0.25
+; was already declared as a constant by two other specs in this tree -- specs/rental_terms.t27
+; (SCOOTER_DISCOUNT, CLASS_DISCOUNT_VALUES) and specs/pricing_honesty.t27
+; (SCOOTER_DISCOUNT_AT_RECONCILIATION) -- and concluded that this file must not become a third
+; declaration site. Every clause of that has stopped being true. Both root-level files were
+; deleted in the merge. (The inventory in this sentence was measured when the corpus was
+; smaller and said eleven files under specs/turbobaby/; re-measured 2026-09-21, find specs -type f
+; returns 43 -- specs/agents/turbobaby.t27 and the 42 under specs/turbobaby/, and nothing else.
+; The correction matters here more than most places, because this paragraph's whole subject is a
+; note that outlived its evidence, and a stale count inside it would be the same defect a second
+; time.) Neither constant name survives anywhere, and
+; a grep for them over specs/ still matches only the two paragraphs of this file that record the
+; correction -- this one and the one in THE CLASS TABLE, three lines in total, re-measured
+; 2026-09-21. So the rate was not declared twice,
+; it was declared NOWHERE, and the note explaining its absence outlived the files it pointed
+; at and went on authorising that absence in their name. A reason that cites
+; deleted evidence is worse than no reason, because it reads as though it had been checked.
+; What is true now: this file is the SINGLE declaration site, chosen because it already owns
+; the integer basis-point form of this arithmetic and because the six rows below are the
+; measurement that corroborates the scooter rate. D15 still gives the runtime arithmetic one
+; home in src/trios/pricing.rs; that is an implementation, not a declaration of the rate.
+; --
 ; Note also what 2500 is NOT here. TWO_WEEKS_MAX_DISCOUNT_BP above is also 2500, so
 ; audit_daily_thb(449, 2500) == 337 below is reachable down the class axis and down the term
 ; axis alike. The two figures coincide as arithmetic, not as meaning; see THE COMPOSITION.
+; The same coincidence runs on the other rate too: MOTORCYCLE_CLASS_DISCOUNT_BP is 1500, which
+; is WEEK_MAX_DISCOUNT_BP and TWO_WEEKS_MIN_DISCOUNT_BP as well. Two axes, one integer, three
+; meanings -- which is why the composition is left open below rather than guessed at.
 test the_rounding_rule_reproduces_the_six_measured_grid_figures {
     assert audit_daily_thb(939, 2500) == 704;
     assert audit_daily_thb(998, 2500) == 749;
@@ -400,6 +532,108 @@ test the_two_bases_disagree_about_whether_the_month_band_contains_the_monthly_pr
     assert 4998 > MONTH_MIN_DISCOUNT_BP;
 }
 
+; --- THE CLASS TABLE, checked -------------------------------------------------------------
+
+; The two published rates, and the lookup that serves them. 2500 and 1500 are
+; data/fleet_seed.json lines 107 and 108 at 10000 basis points to the unit. The ordering
+; assert is not decoration: the seed discounts scooters HARDER than motorcycles, which is the
+; opposite of the intuition that the more expensive class gets the bigger cut, and a silent
+; swap of the two literals would otherwise typecheck and read plausibly.
+test the_published_class_discounts_are_pinned_from_the_seed {
+    assert SCOOTER_CLASS_DISCOUNT_BP == 2500;
+    assert MOTORCYCLE_CLASS_DISCOUNT_BP == 1500;
+    assert class_discount_bp("scooter") == SCOOTER_CLASS_DISCOUNT_BP;
+    assert class_discount_bp("motorcycle") == MOTORCYCLE_CLASS_DISCOUNT_BP;
+    assert SCOOTER_CLASS_DISCOUNT_BP > MOTORCYCLE_CLASS_DISCOUNT_BP;
+}
+
+; The basis points ARE the published fractions, proved in integers rather than asserted in a
+; comment: 0.25 is 1/4 exactly, so 2500 x 4 must be one whole unit; 0.15 is 3/20 exactly, so
+; 1500 x 20 must be three. Both hold with no remainder, which is what licenses calling the
+; conversion exact instead of rounded. Written as a multiplication on purpose -- dividing
+; 10000 by 4 would also pass if BP_ONE were wrong, because the error would cancel.
+test the_class_basis_points_equal_the_seed_fractions_exactly {
+    assert SCOOTER_CLASS_DISCOUNT_BP * 4 == BP_ONE;
+    assert MOTORCYCLE_CLASS_DISCOUNT_BP * 20 == BP_ONE * 3;
+}
+
+; Closed on everything else. Five ways to miss, all of them things a caller plausibly holds:
+; an empty string, the wrong case, a plural, a synonym the seed does not use, and a family key
+; from the catalogue. None yields a discount. This is the fail-closed half of the contract.
+test an_unrecognised_class_never_yields_a_discount {
+    assert class_discount_bp("") == CLASS_DISCOUNT_NONE;
+    assert class_discount_bp("Scooter") == CLASS_DISCOUNT_NONE;
+    assert class_discount_bp("scooters") == CLASS_DISCOUNT_NONE;
+    assert class_discount_bp("motorbike") == CLASS_DISCOUNT_NONE;
+    assert class_discount_bp("nmax-155") == CLASS_DISCOUNT_NONE;
+}
+
+; The trap the sentinel sets, pinned so it cannot be walked into quietly. CLASS_DISCOUNT_NONE
+; is 0, and 0 basis points is arithmetically "charge the full tariff": handed to
+; audit_daily_thb it gives back REF_BASE_THB_DAY unchanged, the PRE-discount 449 that
+; field_notes.base_rate_thb_day says overstates a scooter by 33%. So an unknown class that is
+; passed through instead of branched on does not merely fail to discount -- it quotes the one
+; number D11 forbids. The last assert is the contrast: a KNOWN class always moves the number.
+; The literal 0 is pinned HERE and nowhere else. Every other line about the sentinel compares
+; against CLASS_DISCOUNT_NONE on both sides, so all of them keep passing if the sentinel is
+; moved -- including the audit_daily_thb line, because 1 bp off 449 still rounds back to 449.
+; Without this one assert the whole sentinel story would be unfalsifiable.
+test the_unset_class_sentinel_is_not_a_zero_discount {
+    assert CLASS_DISCOUNT_NONE == 0;
+    assert class_discount_bp("moped") == CLASS_DISCOUNT_NONE;
+    assert audit_daily_thb(REF_BASE_THB_DAY, CLASS_DISCOUNT_NONE) == REF_BASE_THB_DAY;
+    assert audit_daily_thb(REF_BASE_THB_DAY, class_discount_bp("scooter")) < REF_BASE_THB_DAY;
+}
+
+; The lookup reproduces the externally measured column. Three of the six reconciliation rows
+; are re-run with the discount coming from class_discount_bp instead of a literal, so the new
+; declaration is tied to a number the owner's quote sheet produced and this file did not: 939
+; -> 704, 449 -> 337, 2788 -> 2091. All six of those rows are scooters, which is the whole of
+; the grid's evidence about the class axis, and MOTORCYCLE_RATE_IS_GRID_RECONCILED records
+; that the other rate gets none of it.
+test the_class_lookup_reproduces_the_seed_reconciled_grid {
+    assert audit_daily_thb(939, class_discount_bp("scooter")) == 704;
+    assert audit_daily_thb(REF_BASE_THB_DAY, class_discount_bp("scooter")) == 337;
+    assert audit_daily_thb(2788, class_discount_bp("scooter")) == 2091;
+    assert MOTORCYCLE_RATE_IS_GRID_RECONCILED == false;
+}
+
+; The one piece of evidence the motorcycle rate does have, recomputed. field_notes in the same
+; seed says quoting the raw tariff "overstates every scooter by 33% and every motorcycle by
+; 18%". An overstatement is the base over the discounted rate, less one: BP_ONE x BP_ONE
+; divided by the net, minus BP_ONE. That gives 3333 bp and 1764 bp -- 33.33% and 17.64%,
+; which are the seed's 33% and its 18% rounded. This is a genuine second source: the sentence
+; is written independently of the class_discounts block, and it agrees with both constants.
+; Integer division truncates here, which is why the asserts name 3333 and 1764 rather than the
+; seed's rounded pair; the rounding is the field note's, not this file's.
+test the_seed_field_note_overstatement_corroborates_both_class_rates {
+    assert (BP_ONE * BP_ONE) / (BP_ONE - SCOOTER_CLASS_DISCOUNT_BP) - BP_ONE == 3333;
+    assert (BP_ONE * BP_ONE) / (BP_ONE - MOTORCYCLE_CLASS_DISCOUNT_BP) - BP_ONE == 1764;
+}
+
+; The composition stays OPEN, now tied to the lookup so the two cannot drift apart. A class
+; discount is not a total and not a daily rate for a term: 337 is the reference tariff with
+; the scooter rate applied and nothing else, and the moment a term is added the answer depends
+; on an order the seed never published -- 169 stepwise against 168 as one fused factor. The
+; first assert is the tripwire; the last three are why it is still set.
+test a_class_discount_alone_is_not_a_total {
+    assert CLASS_TERM_COMPOSITION_IS_PINNED == false;
+    assert audit_daily_thb(REF_BASE_THB_DAY, class_discount_bp("scooter")) == 337;
+    assert audit_daily_thb(audit_daily_thb(REF_BASE_THB_DAY, class_discount_bp("scooter")), MONTH_MAX_DISCOUNT_BP) == 169;
+    assert audit_daily_thb(REF_BASE_THB_DAY, 6250) == 168;
+}
+
+; Both ownership edges, asserted rather than merely declared. Without imports a REUSES_* string
+; is the only way this file names another contract's territory, and a string nothing checks is
+; a comment with a type. The last two asserts are the point of the edge: the owner named is
+; someone ELSE, so a copy-paste that pointed one of them back at this module would fail here.
+test the_named_owners_are_the_ones_this_file_defers_to {
+    assert REUSES_PRICING_ID == "turbobaby/pricing-honesty";
+    assert REUSES_CATALOG_ID == "turbobaby/bike-catalog";
+    assert REUSES_PRICING_ID != ID;
+    assert REUSES_CATALOG_ID != ID;
+}
+
 ; --- invariants ---------------------------------------------------------------------------
 ; Claims about the whole module that no single example carries.
 
@@ -490,7 +724,38 @@ invariant the_root_snapshot_carries_a_legacy_id
 invariant the_twin_semantic_merge_is_resolved
   assert TWIN_IS_RESOLVED == true and TWIN_MERGE_MATRIX == "docs/t27-semantic-merge-matrix.md"
 
+; The corpus size, so the next growth spurt breaks an assert instead of quietly falsifying two
+; paragraphs of this header the way the last one did.
+invariant the_corpus_count_is_the_sum_of_its_two_directories
+  assert CORPUS_FILES_UNDER_TURBOBABY + CORPUS_FILES_UNDER_AGENTS == CORPUS_FILES
+
+; The claim the stale counts were supporting, and the only one that has to stay true for
+; TWIN_SPEC_PATH to be a former address: the root of specs/ holds no .t27.
+invariant the_deleted_drafts_slot_is_still_empty
+  assert CORPUS_ROOT_T27_FILES == 0
+
 ; The shortest published band starts at a week, so the ladder's first rung is a week and
 ; anything shorter has no band. Absent stays absent (D9); it is not a zero discount.
 invariant the_ladder_starts_where_the_first_band_starts
   assert TERM_DAYS[0] == DAYS_PER_WEEK
+
+; THE CLASS TABLE IS TOTAL over exactly the classes the seed publishes. Both keys answer, and
+; both answer with their own rate -- a lookup that fell through to the sentinel for a
+; published class would be the silent version of losing the rate again, which is the defect
+; this table was added to repair.
+invariant the_class_discount_table_is_total_over_the_classes_the_seed_publishes
+  assert class_discount_bp("scooter") == SCOOTER_CLASS_DISCOUNT_BP and class_discount_bp("motorcycle") == MOTORCYCLE_CLASS_DISCOUNT_BP
+
+; And closed everywhere else: nothing outside those two keys ever yields a discount. Stated
+; against CLASS_DISCOUNT_NONE rather than against 0, so that it follows the sentinel if the
+; sentinel ever moves off zero.
+invariant the_class_discount_table_yields_nothing_for_any_other_input
+  assert class_discount_bp("moped") == CLASS_DISCOUNT_NONE and class_discount_bp("") == CLASS_DISCOUNT_NONE
+
+; Neither published rate may be zero. This is the specific regression that the deleted root
+; twins allowed: with no declaration anywhere, every caller's class discount was effectively
+; absent, and absent reads as the full tariff. A rate that went to the sentinel value would
+; reproduce that state while still looking like a table.
+invariant a_published_class_rate_is_never_the_unset_sentinel
+  assert SCOOTER_CLASS_DISCOUNT_BP != CLASS_DISCOUNT_NONE and MOTORCYCLE_CLASS_DISCOUNT_BP != CLASS_DISCOUNT_NONE
+

@@ -409,3 +409,456 @@ invariant commerce_delivery_without_ready_destination_never_reaches_checkout
 
 invariant commerce_refused_checkout_has_no_commit_path
     assert commerce_checkout_may_commit(CHECKOUT_PRICE_UNAUTHORIZED) == false and commerce_checkout_may_commit(CHECKOUT_NOT_FULFILLABLE) == false and commerce_checkout_may_commit(CHECKOUT_IDEMPOTENCY_BLOCKED) == false
+
+; ============================================================================================
+; EPIC #28: THREE OBLIGATIONS THE EPIC STATES AND NO CONTRACT OWNED
+; --
+; WHY (measured 2026-09-20; the absence RE-MEASURED 2026-09-21 over the corpus as it now
+; stands, 43 files): three sentences of epic #28 had no owner anywhere in this corpus, and they
+; still have none outside this file. The corpus has grown since the first measurement, so the
+; absence was re-run rather than carried forward -- an absence that was true when written is the
+; one claim a reader never re-checks. Today grep over specs/ finds "#28" in this file alone, the
+; concurrent-capacity sentence in this file alone, and the client-price sentence in this file
+; alone. The one contract that could have absorbed the second sentence explicitly does not:
+; turbobaby/cart-persistence says in its own header that it owns the distance between the cart
+; machine turbobaby/commerce declares and the two tables the repository ships, which defers the
+; machine itself back here.
+; The first -- client-submitted prices, deposits, fees and totals are never authoritative -- is
+; obeyed all over the shipped order path and written down in no contract. The second is D8's
+; dated line identity, which lived in a decision record and a migration only. The third --
+; concurrent overlapping rentals cannot exceed available capacity -- is a FAMILY-level rule that
+; the availability contract cannot state, because it counts units at a point in time and knows
+; no window at all. All three belong here: this is the file that already owns the cart, the
+; quote snapshot and the checkout join, and none of them needs a number this file must not hold.
+; --
+; WHERE THE ISSUE IS REFUTED: the capacity sentence reads as a guarantee the code already makes,
+; and it is not one. src/api/orders.rs:648-652 says in its own words that the fleet check
+; reserves nothing and that there is no reservation table in the schema, and
+; src/api/orders.rs:708-716 logs a shortfall at info level and lets the order through. What is
+; added below is therefore a PREDICATE over inputs, and the absent mechanism is a named refusal
+; rather than a silence. The authority sentence is also narrower in the shipped code than it
+; sounds: a claimed total is compared against the server's own figure, a fee has no field to
+; arrive in at all, and a deposit is only bounded. That third one is a gap, and it is declared
+; below instead of being papered over by a rule that nothing enforces.
+; --
+; WHAT THIS SECTION NEVER DOES: it names no price, no deposit amount, no fee, no fleet row and
+; no customer, so the promise the header makes is still true after it. Units of a family are an
+; abstract integer owned by the availability contract; a rental window is an abstract pair of day
+; ordinals and no calendar arithmetic happens here; a family key is an opaque string. No lock
+; name, no hold table, no timeout and no expiry is invented: where the repository ships none,
+; the absence itself is the declaration.
+
+; Current t27c does not support brace imports. Bookability of a family is the availability
+; contract's entire answer; the dated rules below consume it through the `upstream_bookable`
+; argument the checkout join already takes, and this file restates no status name of its own.
+pub const REUSES_AVAILABILITY_ID : str = "turbobaby/availability";
+
+; --------------------------------------------------------------------------------------------
+; (1) AN AMOUNT WHOSE ORIGIN IS THE BROWSER IS INPUT, NEVER AUTHORITY
+; --------------------------------------------------------------------------------------------
+; Measured in the shipped create-order path, 2026-09-20:
+;   src/api/orders.rs:56 and :63      `subtotal` and `total` arrive in the request body as f64.
+;   src/api/orders.rs:69-73           the struct does not deny unknown fields, so a key the
+;                                     server has no field for is dropped, not rejected.
+;   src/api/orders.rs:210-217         the server recomputes the total it expects and refuses a
+;                                     body whose total differs from it by more than a hundredth.
+;   src/api/orders.rs:845-849         a bike line's `unit_price` is overwritten with nothing at
+;                                     all rather than trusted: the client's figure is erased.
+;   src/api/orders.rs:997, 1047-1068  the claimed subtotal is compared against the catalog's own
+;                                     sum, and a disagreement is a refusal plus an audit row.
+;   src/api/orders.rs:463-469         the server's expected figure is never echoed back, so the
+;                                     client cannot probe its way to the authoritative number.
+;   src/api/orders.rs:1167-1179       the bonus ceiling is read from configuration, not the body.
+;   src/api/orders.rs:1794            a delivery fee shown to a customer is read from the zone
+;                                     row; there is no fee field in the request at all.
+; None of that arithmetic belongs to this contract. What belongs here is the one rule all of it
+; obeys, stated over the quote-snapshot model this file already owns.
+
+pub const AMOUNT_ORIGIN_UNSET : u8 = 0;
+pub const AMOUNT_ORIGIN_BROWSER : u8 = 1;
+pub const AMOUNT_ORIGIN_QUOTE_SNAPSHOT : u8 = 2;
+pub const AMOUNT_ORIGIN_NAMES : [2]str = ["browser", "quote_snapshot"];
+pub const CLIENT_AMOUNT_RULE : str = "an amount whose origin is the browser is input; the authoritative amount is the snapshotted quote";
+
+; The three browser figures epic #28 names, as subjects of that rule.
+pub const CLIENT_AMOUNT_INVALID : u8 = 0;
+pub const CLIENT_AMOUNT_TOTAL : u8 = 1;
+pub const CLIENT_AMOUNT_DEPOSIT : u8 = 2;
+pub const CLIENT_AMOUNT_EXTRA_FEE : u8 = 3;
+pub const CLIENT_AMOUNT_NAMES : [3]str = ["total", "deposit", "extra_fee"];
+
+; How each one is disarmed. Not one of the three branches promotes a browser figure to
+; authority; they differ only in what the path does with it after refusing it that status.
+pub const DISPOSITION_INVALID : u8 = 0;
+pub const DISPOSITION_COMPARED : u8 = 1;
+pub const DISPOSITION_BOUNDED : u8 = 2;
+pub const DISPOSITION_IGNORED : u8 = 3;
+pub const DISPOSITION_NAMES : [3]str = ["compared", "bounded", "ignored"];
+
+pub fn commerce_amount_origin_is_known(origin: u8) bool {
+    return origin == AMOUNT_ORIGIN_BROWSER or origin == AMOUNT_ORIGIN_QUOTE_SNAPSHOT;
+}
+
+pub fn commerce_amount_is_authoritative(origin: u8) bool {
+    return origin == AMOUNT_ORIGIN_QUOTE_SNAPSHOT;
+}
+
+; Which figure a commit is allowed to use. `client_amount_present` is accepted and then never
+; read: both of its values give the same answer, which is what "never authoritative" looks like
+; written as code instead of as prose. With no valid snapshot there is no authoritative amount
+; at all, and the browser's figure does not inherit the vacancy.
+pub fn commerce_authoritative_amount_origin(client_amount_present: bool, snapshot_valid: bool) u8 {
+    if (snapshot_valid) {
+        return AMOUNT_ORIGIN_QUOTE_SNAPSHOT;
+    }
+    return AMOUNT_ORIGIN_UNSET;
+}
+
+pub fn commerce_client_amount_is_known(subject: u8) bool {
+    return subject >= CLIENT_AMOUNT_TOTAL and subject <= CLIENT_AMOUNT_EXTRA_FEE;
+}
+
+pub fn commerce_client_amount_disposition(subject: u8) u8 {
+    if (subject == CLIENT_AMOUNT_TOTAL) {
+        return DISPOSITION_COMPARED;
+    }
+    if (subject == CLIENT_AMOUNT_DEPOSIT) {
+        return DISPOSITION_BOUNDED;
+    }
+    if (subject == CLIENT_AMOUNT_EXTRA_FEE) {
+        return DISPOSITION_IGNORED;
+    }
+    return DISPOSITION_INVALID;
+}
+
+; Denying a figure authority is not denying the request, and the two must not be run together. A
+; compared figure refuses only when it disagrees with the server's own number; a bounded or an
+; ignored figure refuses nothing ever. In all three cases the browser's number stays input.
+pub fn commerce_client_amount_refuses_request(disposition: u8, disagrees: bool) bool {
+    if (disposition == DISPOSITION_COMPARED) {
+        return disagrees;
+    }
+    return false;
+}
+
+; Whether the attempt proceeds is the existing checkout decision's answer, and that decision
+; takes no browser figure as an argument anywhere in its signature.
+pub fn commerce_request_may_proceed_despite_client_amount(checkout_decision: u8) bool {
+    return commerce_checkout_may_commit(checkout_decision);
+}
+
+; The honest edge of obligation (1), declared rather than hidden behind the rule above. A
+; lowered deposit is bounded and recorded, and nothing compares it against a server-side figure.
+pub const CLIENT_DEPOSIT_RECONCILIATION_IS_NOT_SHIPPED : bool = true;
+pub const CLIENT_DEPOSIT_RECONCILIATION_NOTE : str = "A client deposit is bounded at src/api/orders.rs:344-352 and derived from nothing (src/api/orders.rs:267-270), so a lowered one is recorded rather than refused. The quoted rate has a reconciliation - src/api/orders.rs:624-637 detects a divergence of one baht or more and is pure by construction, src/api/orders.rs:736-741 logs what it found, and neither side is corrected - and the deposit has no equivalent anywhere in the path. The figure exists: bikes.deposit_thb (migrations/077_bikes.sql:44) is mapped at src/db/bikes.rs:78 and is already in hand at src/api/orders.rs:729-734, the very place the rate is reconciled and the deposit is not. What is missing is the comparison, not the number.";
+
+; --------------------------------------------------------------------------------------------
+; (2) DATED RENTAL LINE IDENTITY -- DECISIONS.md D8 AND ITS AMENDMENT
+; --------------------------------------------------------------------------------------------
+; DECISIONS.md:82-92 (D8) puts the cart rental line on the FAMILY key, never on a unit
+; (DECISIONS.md:88-89, echoed at migrations/081_cart_rental_lines.sql:9-11), and widens the line
+; key to include the window. DECISIONS.md:94-114 (the amendment) records what that widening
+; breaks. Both are implemented in one migration:
+;   migrations/059_cart_tables.sql:24            the original key, three columns, no dates.
+;   migrations/081_cart_rental_lines.sql:82-84   the widened key: those three columns plus both
+;                                                ends of the window.
+;   migrations/081_cart_rental_lines.sql:106-111 the window arrives as a pair and in order; a
+;                                                half-dated line is refused by a CHECK.
+;   migrations/081_cart_rental_lines.sql:128-130 the partial unique index that keeps two UNDATED
+;                                                lines of one family from becoming two rows,
+;                                                which the widened key alone stopped preventing
+;                                                because Postgres compares NULLs in a UNIQUE as
+;                                                distinct.
+;   src/api/cart.rs:75-85 and 125-131            the upsert repeats that predicate, because a
+;                                                partial index cannot be inferred from the
+;                                                columns alone.
+; What follows is the rule, not the schema: no table, no column and no index name is a value
+; here, and bookability of the family over that window stays with the availability contract.
+
+pub const RENTAL_LINE_IDENTITY : [3]str = ["family_key", "rental_start", "rental_end"];
+pub const RENTAL_LINE_KEY_IS_A_FAMILY : bool = true;
+pub const RENTAL_LINE_KEY_IS_A_UNIT : bool = false;
+pub const D8_MIGRATION : str = "migrations/081_cart_rental_lines.sql";
+pub const D8_IDENTITY_RULE : str = "one family with two different windows is two lines; one family with no window at all is one line";
+
+pub fn commerce_line_is_dated(start_present: bool, end_present: bool) bool {
+    return start_present and end_present;
+}
+
+; A window is a pair or it is absent. A half-dated line is neither: it would collide with
+; nothing and grow a duplicate on every click, so it is not a legal line at all.
+pub fn commerce_line_window_shape_valid(start_present: bool, end_present: bool, end_not_before_start: bool) bool {
+    if (!start_present and !end_present) {
+        return true;
+    }
+    if (start_present and end_present) {
+        return end_not_before_start;
+    }
+    return false;
+}
+
+; Day ordinals, compared and never arithmetic: this contract does not know a calendar.
+pub fn commerce_rental_window_differs(a_start: i32, a_end: i32, b_start: i32, b_end: i32) bool {
+    if (a_start == b_start and a_end == b_end) {
+        return false;
+    }
+    return true;
+}
+
+pub fn commerce_rental_line_same_identity(a_family: str, a_start: i32, a_end: i32, b_family: str, b_start: i32, b_end: i32) bool {
+    if (a_family == b_family) {
+        if (commerce_rental_window_differs(a_start, a_end, b_start, b_end)) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+; One function for both halves of the amendment. Same family, both dated, different windows: two
+; lines, which is the whole point of the widening. Same family, both undated: one line, which is
+; what the partial index restores. One dated and one undated: two lines, because a line whose
+; dates the customer has not picked yet is still a legal line.
+pub fn commerce_cart_lines_may_coexist(a_family: str, a_dated: bool, a_start: i32, a_end: i32, b_family: str, b_dated: bool, b_start: i32, b_end: i32) bool {
+    if (a_family == b_family) {
+        if (a_dated and b_dated) {
+            return commerce_rental_window_differs(a_start, a_end, b_start, b_end);
+        }
+        if (!a_dated and !b_dated) {
+            return false;
+        }
+        return true;
+    }
+    return true;
+}
+
+; --------------------------------------------------------------------------------------------
+; (3) FAMILY-LEVEL DATED CAPACITY
+; --------------------------------------------------------------------------------------------
+; Because D8 puts the line on the family, the capacity question is a COUNT of units of one
+; family over one overlapping window, and not a lock on one machine. The count of units is the
+; availability contract's number and arrives here as an abstract integer; the count of confirmed
+; overlapping rentals is an input this repository cannot yet supply, and that is declared below
+; rather than assumed. The predicate is pure and answers whenever both inputs are given.
+
+pub const CAPACITY_SUBJECT : str = "family";
+pub const CAPACITY_IS_A_FAMILY_COUNT : bool = true;
+pub const CAPACITY_IS_A_UNIT_LOCK : bool = false;
+pub const CAPACITY_UNITS_INPUT : str = "units of one family available over the window, supplied by the availability contract";
+
+; One more rental is admissible only while the family still has a unit left over the window.
+; A count that cannot be true is refused rather than read as headroom.
+pub fn commerce_family_capacity_admits(units_available: i32, confirmed_overlapping: i32) bool {
+    if (units_available <= 0) {
+        return false;
+    }
+    if (confirmed_overlapping < 0) {
+        return false;
+    }
+    return (confirmed_overlapping + 1) <= units_available;
+}
+
+pub fn commerce_family_capacity_remaining(units_available: i32, confirmed_overlapping: i32) i32 {
+    if (units_available <= 0) {
+        return 0;
+    }
+    if (confirmed_overlapping < 0) {
+        return 0;
+    }
+    if (confirmed_overlapping >= units_available) {
+        return 0;
+    }
+    return units_available - confirmed_overlapping;
+}
+
+; The two named refusals of obligation (3), each checked in the places a mechanism would have to
+; appear before it was written down.
+pub const OVERLAP_RESERVATION_IS_NOT_SHIPPED : bool = true;
+pub const OVERLAP_RESERVATION_NOTE : str = "Nothing in this repository holds a unit while a window is being confirmed. src/api/orders.rs:648-652 states that the fleet check reserves nothing and that there is no reservation table in the schema; src/api/orders.rs:708-716 logs a shortfall at info level and lets the order through. Migrations 077-086 add bikes, units, rental terms, service records, seeds, images, the sale flag and the dated cart line of 081, and none of them declares a hold row, an expiry column or an exclusion constraint. turbobaby/availability records the same absence from the unit side, in RESERVED_STATUS (declared empty) and RESERVED_STATUS_NOTE: the four wire values of migrations/078_bike_units.sql:32 carry no reserved status. That edge is named by owner and declaration rather than by line number, because a line into a sibling contract goes stale the day that contract is edited and this one already had. What is missing is the mechanism, not the rule: a hold with an owner and an expiry, and a decision on whether an unconfirmed cart line consumes capacity. No lock name and no timeout is invented here in its place.";
+pub const CONFIRMED_OVERLAP_COUNT_IS_NOT_DERIVABLE : bool = true;
+pub const CONFIRMED_OVERLAP_COUNT_NOTE : str = "No shipped code counts the rentals of a family that overlap a window. migrations/081_cart_rental_lines.sql:132-136 adds an index by rental date for the availability check that would need that count, and says so in its own comment, but no query reads it: rental_start and rental_end appear in src/api/cart.rs only inside the partial-index predicate of the undated upsert, and the order path reads units at base today (src/api/orders.rs:708) rather than over a range. The second argument of commerce_family_capacity_admits is therefore an input this repository cannot yet produce. What is missing is the overlap query and a decision on which order statuses count as confirmed.";
+
+; --------------------------------------------------------------------------------------------
+; Executable gates for the three obligations.
+; --------------------------------------------------------------------------------------------
+
+test commerce_an_amount_from_the_browser_is_input_and_the_snapshot_is_authority {
+    assert commerce_amount_is_authoritative(AMOUNT_ORIGIN_BROWSER) == false;
+    assert commerce_amount_is_authoritative(AMOUNT_ORIGIN_QUOTE_SNAPSHOT) == true;
+    assert commerce_amount_is_authoritative(AMOUNT_ORIGIN_UNSET) == false;
+    assert commerce_amount_origin_is_known(AMOUNT_ORIGIN_BROWSER) == true;
+    assert commerce_amount_origin_is_known(AMOUNT_ORIGIN_QUOTE_SNAPSHOT) == true;
+    assert commerce_amount_origin_is_known(AMOUNT_ORIGIN_UNSET) == false;
+    assert AMOUNT_ORIGIN_NAMES[0] == "browser";
+    assert AMOUNT_ORIGIN_NAMES[1] == "quote_snapshot";
+}
+
+test commerce_the_payload_figure_does_not_move_the_authority {
+    assert commerce_authoritative_amount_origin(true, true) == AMOUNT_ORIGIN_QUOTE_SNAPSHOT;
+    assert commerce_authoritative_amount_origin(false, true) == AMOUNT_ORIGIN_QUOTE_SNAPSHOT;
+    assert commerce_authoritative_amount_origin(true, false) == AMOUNT_ORIGIN_UNSET;
+    assert commerce_authoritative_amount_origin(false, false) == AMOUNT_ORIGIN_UNSET;
+    assert commerce_authoritative_amount_origin(true, false) != AMOUNT_ORIGIN_BROWSER;
+}
+
+; The request epic #28 describes: a body claiming a lower total, a lower deposit and a fee the
+; server has no field for. Each arrives from the browser, so each is refused authority; the
+; request's own fate belongs to the checkout gates, which read none of the three.
+test commerce_a_lower_total_a_lower_deposit_and_an_extra_fee_are_each_input_only {
+    const lower_total = AMOUNT_ORIGIN_BROWSER;
+    const lower_deposit = AMOUNT_ORIGIN_BROWSER;
+    const extra_fee = AMOUNT_ORIGIN_BROWSER;
+    assert commerce_amount_is_authoritative(lower_total) == false;
+    assert commerce_amount_is_authoritative(lower_deposit) == false;
+    assert commerce_amount_is_authoritative(extra_fee) == false;
+    assert commerce_client_amount_is_known(CLIENT_AMOUNT_TOTAL) == true;
+    assert commerce_client_amount_is_known(CLIENT_AMOUNT_DEPOSIT) == true;
+    assert commerce_client_amount_is_known(CLIENT_AMOUNT_EXTRA_FEE) == true;
+    assert commerce_client_amount_is_known(CLIENT_AMOUNT_INVALID) == false;
+    assert commerce_client_amount_is_known(4) == false;
+    assert commerce_request_may_proceed_despite_client_amount(CHECKOUT_READY) == true;
+    assert commerce_request_may_proceed_despite_client_amount(CHECKOUT_PRICE_UNAUTHORIZED) == false;
+    assert commerce_authoritative_amount_origin(true, true) == AMOUNT_ORIGIN_QUOTE_SNAPSHOT;
+}
+
+test commerce_each_client_figure_is_disarmed_in_its_own_way {
+    assert commerce_client_amount_disposition(CLIENT_AMOUNT_TOTAL) == DISPOSITION_COMPARED;
+    assert commerce_client_amount_disposition(CLIENT_AMOUNT_DEPOSIT) == DISPOSITION_BOUNDED;
+    assert commerce_client_amount_disposition(CLIENT_AMOUNT_EXTRA_FEE) == DISPOSITION_IGNORED;
+    assert commerce_client_amount_disposition(CLIENT_AMOUNT_INVALID) == DISPOSITION_INVALID;
+    assert commerce_client_amount_refuses_request(DISPOSITION_COMPARED, true) == true;
+    assert commerce_client_amount_refuses_request(DISPOSITION_COMPARED, false) == false;
+    assert commerce_client_amount_refuses_request(DISPOSITION_BOUNDED, true) == false;
+    assert commerce_client_amount_refuses_request(DISPOSITION_IGNORED, true) == false;
+    assert DISPOSITION_NAMES[0] == "compared";
+    assert DISPOSITION_NAMES[1] == "bounded";
+    assert DISPOSITION_NAMES[2] == "ignored";
+    assert CLIENT_AMOUNT_NAMES[0] == "total";
+    assert CLIENT_AMOUNT_NAMES[1] == "deposit";
+    assert CLIENT_AMOUNT_NAMES[2] == "extra_fee";
+}
+
+test commerce_the_unreconciled_deposit_is_declared_and_not_claimed_as_enforced {
+    assert CLIENT_DEPOSIT_RECONCILIATION_IS_NOT_SHIPPED == true;
+    assert commerce_client_amount_disposition(CLIENT_AMOUNT_DEPOSIT) == DISPOSITION_BOUNDED;
+    assert commerce_client_amount_disposition(CLIENT_AMOUNT_DEPOSIT) != DISPOSITION_COMPARED;
+    assert commerce_amount_is_authoritative(AMOUNT_ORIGIN_BROWSER) == false;
+}
+
+test commerce_a_rental_line_is_identified_by_its_family_and_its_window {
+    assert RENTAL_LINE_IDENTITY.len == 3;
+    assert RENTAL_LINE_IDENTITY[0] == "family_key";
+    assert RENTAL_LINE_IDENTITY[1] == "rental_start";
+    assert RENTAL_LINE_IDENTITY[2] == "rental_end";
+    assert RENTAL_LINE_KEY_IS_A_FAMILY == true;
+    assert RENTAL_LINE_KEY_IS_A_UNIT == false;
+    assert commerce_rental_line_same_identity("nmax-155", 1, 7, "nmax-155", 1, 7) == true;
+    assert commerce_rental_line_same_identity("nmax-155", 1, 7, "nmax-155", 30, 37) == false;
+    assert commerce_rental_line_same_identity("nmax-155", 1, 7, "pcx-150", 1, 7) == false;
+    assert D8_MIGRATION == "migrations/081_cart_rental_lines.sql";
+}
+
+test commerce_two_windows_of_one_family_are_two_lines_and_two_undated_lines_are_one {
+    assert commerce_cart_lines_may_coexist("nmax-155", true, 1, 7, "nmax-155", true, 30, 37) == true;
+    assert commerce_cart_lines_may_coexist("nmax-155", true, 1, 7, "nmax-155", true, 1, 7) == false;
+    assert commerce_cart_lines_may_coexist("nmax-155", false, 0, 0, "nmax-155", false, 0, 0) == false;
+    assert commerce_cart_lines_may_coexist("nmax-155", true, 1, 7, "nmax-155", false, 0, 0) == true;
+    assert commerce_cart_lines_may_coexist("nmax-155", false, 0, 0, "pcx-150", false, 0, 0) == true;
+    assert commerce_rental_window_differs(1, 7, 1, 7) == false;
+    assert commerce_rental_window_differs(1, 7, 1, 8) == true;
+    assert commerce_rental_window_differs(1, 7, 2, 7) == true;
+}
+
+test commerce_a_half_dated_line_is_not_a_line {
+    assert commerce_line_window_shape_valid(false, false, false) == true;
+    assert commerce_line_window_shape_valid(true, true, true) == true;
+    assert commerce_line_window_shape_valid(true, true, false) == false;
+    assert commerce_line_window_shape_valid(true, false, true) == false;
+    assert commerce_line_window_shape_valid(false, true, true) == false;
+    assert commerce_line_is_dated(true, true) == true;
+    assert commerce_line_is_dated(true, false) == false;
+    assert commerce_line_is_dated(false, true) == false;
+    assert commerce_line_is_dated(false, false) == false;
+}
+
+test commerce_bookability_over_a_window_stays_with_the_availability_owner {
+    assert REUSES_AVAILABILITY_ID == "turbobaby/availability";
+    assert commerce_deal_fulfillable(DEAL_RENTAL, true, false) == true;
+    assert commerce_deal_fulfillable(DEAL_RENTAL, false, true) == false;
+}
+
+test commerce_capacity_is_a_family_count_over_an_overlapping_window {
+    assert CAPACITY_IS_A_FAMILY_COUNT == true;
+    assert CAPACITY_IS_A_UNIT_LOCK == false;
+    assert CAPACITY_SUBJECT == "family";
+    assert commerce_family_capacity_admits(3, 0) == true;
+    assert commerce_family_capacity_admits(3, 1) == true;
+    assert commerce_family_capacity_admits(3, 2) == true;
+    assert commerce_family_capacity_admits(3, 3) == false;
+    assert commerce_family_capacity_admits(3, 4) == false;
+    assert commerce_family_capacity_admits(0, 0) == false;
+    assert commerce_family_capacity_admits(3, -1) == false;
+    assert commerce_family_capacity_admits(-1, 0) == false;
+}
+
+test commerce_capacity_headroom_and_admission_agree_at_every_edge {
+    assert commerce_family_capacity_remaining(3, 0) == 3;
+    assert commerce_family_capacity_remaining(3, 2) == 1;
+    assert commerce_family_capacity_remaining(3, 3) == 0;
+    assert commerce_family_capacity_remaining(3, 4) == 0;
+    assert commerce_family_capacity_remaining(0, 0) == 0;
+    assert commerce_family_capacity_remaining(3, -1) == 0;
+    assert commerce_family_capacity_remaining(1, 0) == 1;
+    assert commerce_family_capacity_admits(1, 0) == true;
+    assert commerce_family_capacity_admits(1, 1) == false;
+    assert commerce_family_capacity_remaining(1, 1) == 0;
+}
+
+test commerce_the_repository_ships_no_reservation_and_this_file_invents_none {
+    assert OVERLAP_RESERVATION_IS_NOT_SHIPPED == true;
+    assert CONFIRMED_OVERLAP_COUNT_IS_NOT_DERIVABLE == true;
+    assert CAPACITY_IS_A_UNIT_LOCK == false;
+    assert commerce_family_capacity_admits(3, 2) == true;
+}
+
+invariant commerce_a_browser_figure_is_never_the_authoritative_amount
+    assert commerce_amount_is_authoritative(AMOUNT_ORIGIN_BROWSER) == false and commerce_authoritative_amount_origin(true, true) == AMOUNT_ORIGIN_QUOTE_SNAPSHOT
+
+invariant commerce_the_payload_cannot_change_which_origin_is_authoritative
+    assert commerce_authoritative_amount_origin(true, true) == commerce_authoritative_amount_origin(false, true) and commerce_authoritative_amount_origin(true, false) == commerce_authoritative_amount_origin(false, false)
+
+invariant commerce_an_absent_snapshot_never_promotes_the_browser
+    assert commerce_authoritative_amount_origin(true, false) == AMOUNT_ORIGIN_UNSET
+
+invariant commerce_refusing_a_figure_authority_is_not_refusing_the_request
+    assert commerce_client_amount_refuses_request(DISPOSITION_BOUNDED, true) == false and commerce_client_amount_refuses_request(DISPOSITION_IGNORED, true) == false
+
+invariant commerce_a_rental_line_is_never_identified_by_a_unit
+    assert RENTAL_LINE_KEY_IS_A_UNIT == false and RENTAL_LINE_KEY_IS_A_FAMILY == true
+
+invariant commerce_one_family_with_two_windows_is_two_lines
+    assert commerce_cart_lines_may_coexist("nmax-155", true, 1, 7, "nmax-155", true, 30, 37) == true
+
+invariant commerce_one_family_with_no_window_is_one_line
+    assert commerce_cart_lines_may_coexist("nmax-155", false, 0, 0, "nmax-155", false, 0, 0) == false
+
+invariant commerce_the_window_is_a_pair_or_it_is_absent
+    assert commerce_line_window_shape_valid(true, false, true) == false and commerce_line_window_shape_valid(false, true, true) == false
+
+invariant commerce_availability_owns_bookability
+    assert REUSES_AVAILABILITY_ID == "turbobaby/availability"
+
+invariant commerce_capacity_refuses_the_rental_that_would_exceed_it
+    assert commerce_family_capacity_admits(3, 3) == false and commerce_family_capacity_admits(3, 4) == false
+
+invariant commerce_capacity_admits_while_a_unit_is_left
+    assert commerce_family_capacity_admits(3, 2) == true and commerce_family_capacity_remaining(3, 2) == 1
+
+invariant commerce_an_empty_family_admits_nothing
+    assert commerce_family_capacity_admits(0, 0) == false and commerce_family_capacity_remaining(0, 0) == 0
+
+invariant commerce_capacity_is_counted_on_the_family_and_not_locked_on_a_unit
+    assert CAPACITY_IS_A_FAMILY_COUNT == true and CAPACITY_IS_A_UNIT_LOCK == false
+
+invariant commerce_no_reservation_mechanism_is_invented_here
+    assert OVERLAP_RESERVATION_IS_NOT_SHIPPED == true and CONFIRMED_OVERLAP_COUNT_IS_NOT_DERIVABLE == true

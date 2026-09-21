@@ -1,0 +1,170 @@
+# Alert rules for Woody Weed Bot.
+#
+# Design:
+#   - SLO-based multi-window burn-rate alerts (Google SRE Workbook ch. 5).
+#     Two windows must both breach to fire → precision over recall; no
+#     paging on 30-second blips.
+#   - Plus infrastructure alerts for the things only this service knows
+#     about (DB pool saturation, rate-limit spikes).
+#
+# Severity convention:
+#   - severity=page → wake someone up
+#   - severity=ticket → file an incident, deal in business hours
+#
+# Depends on the recording rules in prometheus-recording-rules.yaml.
+
+groups:
+  # ── SLO burn-rate (availability 99.5 %, error budget 0.5 %) ─────────
+  - name: turbobaby_bot_slo_burn
+    rules:
+      - alert: WoodyWeedBotFastBurnCritical
+        # 14.4x burn → 30-day budget gone in 50 hours if sustained.
+        # Long window (1h) catches sustained issues; short window (5m)
+        # confirms we're still bleeding right now, not just historically.
+        expr: |
+          wwb:burn_rate:1h > 14.4
+          and
+          wwb:burn_rate:5m > 14.4
+        for: 2m
+        labels:
+          severity: page
+          slo: availability
+        annotations:
+          summary: "Woody Weed Bot is burning error budget very fast (>14.4x)"
+          description: |
+            5xx error ratio over both 1h and 5m windows is >14.4x
+            the sustainable rate (>7.2 %/req over 5m).
+            At this rate the 30-day error budget exhausts in ~50 hours.
+          runbook: "Check db_pool_acquire_failed_total + DB pool gauges; tail logs filtered by request_id."
+
+      - alert: WoodyWeedBotMediumBurnHigh
+        # 6x burn → 30-day budget gone in 5 days if sustained.
+        # 6h + 30m windows per Google SRE workbook.
+        expr: |
+          wwb:burn_rate:6h > 6
+          and
+          wwb:burn_rate:30m > 6
+        for: 15m
+        labels:
+          severity: page
+          slo: availability
+        annotations:
+          summary: "Woody Weed Bot is burning error budget fast (>6x)"
+          description: "Sustained 5xx > 3 % over both 6h and 30m. Budget exhausts in ~5 days."
+
+      - alert: WoodyWeedBotSlowBurnTicket
+        # 1x burn over a long window: not urgent, but trending bad.
+        expr: |
+          wwb:burn_rate:6h > 1
+        for: 6h
+        labels:
+          severity: ticket
+          slo: availability
+        annotations:
+          summary: "Woody Weed Bot error rate trending above SLO"
+          description: "Over 6h, error ratio has averaged above the 0.5 % SLO budget. Investigate this week."
+
+  # ── DB pool saturation (cycle #6 instrumentation) ───────────────────
+  - name: turbobaby_bot_db_pool
+    rules:
+      - alert: DBPoolAcquireFailing
+        # Any non-zero rate is bad — pool.get() returning Err means
+        # requests are now failing with 500 because of pool exhaustion
+        # or connection-creation breakage.
+        expr: |
+          sum(rate(db_pool_acquire_failed_total[5m])) > 0
+        for: 2m
+        labels:
+          severity: page
+          component: database
+        annotations:
+          summary: "DB pool acquire returning errors"
+          description: "db_pool_acquire_failed_total is non-zero for 2+ minutes. Likely pool exhaustion or DB outage."
+
+      - alert: DBPoolQueueBacklog
+        # Sustained queue depth → not enough connections for current load.
+        # Threshold of 3 chosen because pool size is 16; 3+ waiting means
+        # ≈20 % over capacity.
+        expr: |
+          db_pool_waiting > 3
+        for: 5m
+        labels:
+          severity: ticket
+          component: database
+        annotations:
+          summary: "DB pool has sustained waiters (>3 for 5m)"
+          description: "Consider raising DB_POOL_MAX_SIZE or finding the slow query."
+
+      - alert: DBPoolNearCapacity
+        # Soft warning: pool > 90 % utilised.
+        expr: |
+          (db_pool_size - db_pool_available) / db_pool_max_size > 0.9
+        for: 10m
+        labels:
+          severity: ticket
+          component: database
+        annotations:
+          summary: "DB pool > 90 % utilised for 10m"
+
+  # ── Abuse / rate-limit events ───────────────────────────────────────
+  - name: turbobaby_bot_abuse
+    rules:
+      - alert: AdminLoginRateLimitSpike
+        # Sustained rate-limit blocks on /admin/login = active brute-force.
+        # Single attempts are noise; > 1/min sustained means scripted.
+        expr: |
+          sum(rate(rate_limit_blocked_total{endpoint="admin_login"}[5m])) > 0.0167
+        for: 5m
+        labels:
+          severity: page
+          component: security
+        annotations:
+          summary: "Active brute-force on /admin/login"
+          description: "Rate-limit blocks > 1/min sustained for 5m. Check logs for source IPs."
+
+      - alert: AnonOrderRateLimitSpike
+        expr: |
+          sum(rate(rate_limit_blocked_total{endpoint="anon_order"}[5m])) > 0.0334
+        for: 10m
+        labels:
+          severity: ticket
+          component: abuse
+        annotations:
+          summary: "Anonymous-order spam detected"
+          description: "Anonymous order rate-limit blocks > 2/min for 10m."
+
+  # ── Latency ─────────────────────────────────────────────────────────
+  - name: turbobaby_bot_latency
+    rules:
+      - alert: HighRequestLatencyP99
+        # p99 latency > 1s for any path sustained 10m. Per-path so the
+        # alert tells you which route is slow.
+        expr: |
+          wwb:request_latency_p99:5m > 1
+        for: 10m
+        labels:
+          severity: ticket
+          slo: latency
+        annotations:
+          summary: "p99 latency > 1s on {{ $labels.path }}"
+          description: "5-min p99 latency exceeded 1 second sustained for 10 minutes."
+
+  # ── Schema drift (DB behind on migrations) ──────────────────────────
+  - name: turbobaby_bot_schema
+    rules:
+      - alert: WoodyWeedBotSchemaDrift
+        # Set once at startup by Database::missing_critical_columns(): the
+        # number of expected catalog columns absent from the live DB. > 0
+        # means prod is behind on migrations — catalog endpoints (e.g.
+        # /api/sets) degrade/500 until migrations are applied + redeployed.
+        # This is the alert that would have caught the 2026-06 /api/sets 500
+        # at deploy time instead of via a user-reported 5xx.
+        expr: |
+          schema_missing_columns > 0
+        for: 2m
+        labels:
+          severity: ticket
+          component: schema
+        annotations:
+          summary: "Live DB missing {{ $value }} expected catalog column(s)"
+          description: "Prod DB is behind on migrations. Check startup logs for the named columns (SCHEMA SELF-CHECK), apply migrations, and redeploy. Catalog endpoints degrade gracefully meanwhile."

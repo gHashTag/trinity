@@ -261,6 +261,16 @@ export function corpusEntry(rel, repo, text, analyze) {
     // Output size per backend, so the library can show what a spec actually
     // produces without re-running the compiler.
     outBytes: a ? Object.fromEntries(Object.entries(a.targets).map(([k, v]) => [k, v.ok ? v.bytes : null])) : {},
+    // What this file IS, straight from the compiler's own classifier -- the
+    // same function `t27c classify` runs, reached through the wasm bridge
+    // rather than re-derived here, because three earlier reimplementations of
+    // it each produced a different number.
+    //
+    // Defaults to `source` on purpose. A compiler too old to answer, or one
+    // that threw before it could, must not move a file out of the spec count:
+    // a file leaves only when the classifier positively says it is not a
+    // module, never on missing information.
+    sourceKind: a?.sourceKind ?? 'source',
     repo,
     kinds,
   }
@@ -269,12 +279,40 @@ export function corpusEntry(rel, repo, text, analyze) {
   return entry
 }
 
+/** Whether an entry is an ordinary compilation unit -- see `sourceKind` above. */
+export const isSourceEntry = (e) => (e.sourceKind ?? 'source') === 'source'
+
 /** The corpus-wide counts the manifest carries, from the entries in their manifest order. */
 export function corpusAggregates(entries) {
   const byCategory = {}
   for (const e of entries) byCategory[e.category] = (byCategory[e.category] || 0) + 1
+  // Health is counted over SOURCE FILES ONLY, and this is the whole point of
+  // asking what a file is.
+  //
+  // A `.t27` extension is a filename, not a type declaration. The corpus holds
+  // 46 Markdown documents, 66 files that are neither module nor spec nor
+  // Markdown -- TRI-27 assembly listings whose every line opens with `;`,
+  // fixtures under `bootstrap/tests/fixtures/damage/` that exist to be damaged
+  // -- and 8 in the older `spec X { }` surface. The parser answers about all of
+  // them the only way it can, and counting that answer as a broken spec was
+  // 81 of the 218 red chips on 2026-09-21: a number that could never go down,
+  // because nothing was wrong.
+  //
+  // The per-entry `health` is NOT rewritten. It stays exactly what the compiler
+  // measured, so a reader who opens one of these files still sees what happened
+  // to it. Only the denominator changes, and the files that leave are counted
+  // in `notSource` rather than dropped -- 31 of them compile cleanly, which is
+  // a fact about them worth keeping and not a reason to call them specs.
   const health = { ok: 0, warn: 0, fail: 0 }
-  for (const e of entries) health[e.health]++
+  for (const e of entries) if (isSourceEntry(e)) health[e.health]++
+  const notSource = { total: 0, byKind: {}, byHealth: { ok: 0, warn: 0, fail: 0 } }
+  for (const e of entries) {
+    if (isSourceEntry(e)) continue
+    notSource.total++
+    const k = e.sourceKind ?? 'unclassified'
+    notSource.byKind[k] = (notSource.byKind[k] || 0) + 1
+    notSource.byHealth[e.health]++
+  }
   const backendFailures = {}
   for (const e of entries) for (const b of e.failedBackends) backendFailures[b] = (backendFailures[b] || 0) + 1
   return {
@@ -291,6 +329,7 @@ export function corpusAggregates(entries) {
       ).sort((a, b) => (a[0] === b[0] ? 0 : b[1] - a[1] || a[0].localeCompare(b[0]))),
     ),
     health,
+    notSource,
     backendFailures,
     totals: {
       tokens: entries.reduce((a, e) => a + e.tokens, 0),

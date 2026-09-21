@@ -1,8 +1,13 @@
 # TurboBaby `.t27` semantic merge matrix
 
-Measured against the working tree on 2026-09-13. Ten files under `specs/turbobaby/` are the
-canonical contract owners; `specs/agents/turbobaby.t27` is the independently namespaced owner
-card. The six same-named drafts that previously lived directly under `specs/` were exhaustively
+Measured against the working tree on 2026-09-13. This document is the HISTORY of one merge: the
+six same-named drafts that once lived directly under `specs/` against the canonical files that
+absorbed them. Its counts describe that moment and are deliberately not updated as the corpus
+grows -- for the corpus as it stands today (43 tracked specs on 2026-09-21) read
+[`t27-contract-map.md`](t27-contract-map.md), which is the index this file is not.
+
+At the time of the merge, ten files under `specs/turbobaby/` were the canonical contract owners;
+`specs/agents/turbobaby.t27` is the independently namespaced owner card. The six same-named drafts that previously lived directly under `specs/` were exhaustively
 mapped below and then removed. They were never a second authority, and keeping them after the
 merge would recreate the ambiguity this review was intended to eliminate.
 
@@ -118,9 +123,13 @@ These owners fill gaps found after the six-draft merge; they do not copy domain 
 ## Ownership graph and remaining contracts
 
 `bike_catalog -> availability`, `pricing_honesty -> availability`,
-`deposit_tiers -> availability`, and `rental_terms -> pricing_honesty` are explicit ownership
-metadata edges. The pinned compiler does not yet provide a sound cross-file import form, so
-the contracts exchange abstract inputs and do not pretend that brace imports resolve.
+`deposit_tiers -> availability`, and `rental_terms -> pricing_honesty` were the four explicit
+ownership metadata edges at the time of the merge. The pinned compiler does not yet provide a
+sound cross-file import form, so the contracts exchange abstract inputs and do not pretend that
+brace imports resolve. The graph has since grown to 210 edge mentions across 43 specs, every one
+resolving to a declared `ID`; it is tabulated in [`t27-contract-map.md`](t27-contract-map.md)
+rather than maintained here, because a four-edge list in a history document reads as the whole
+graph and stopped being one.
 
 The deferred FX/refund and divergence/logging rows above remain follow-ups because neither the
 Drive evidence nor the published `.t27` corpus supplies a safe executable formula. They are not
@@ -129,8 +138,9 @@ decisions as inputs.
 
 ## Compiler evidence
 
-Run `T27C=/absolute/path/to/t27c python3 scripts/verify_t27_specs.py -v`. The manifest contains
-all ten canonical contracts and the tracked owner-agent card. Recursive discovery rejects an
+Run `T27C=/absolute/path/to/t27c python3 scripts/verify_t27_specs.py -v`. The manifest contained
+all ten canonical contracts and the tracked owner-agent card when this was written; measured
+2026-09-21 it contains 43 entries, and the gate's rules below are unchanged. Recursive discovery rejects an
 unmanifested nested spec instead of silently skipping it. For every entry the gate enforces
 ASCII, tracking (unless local `--allow-untracked` is explicit), unique non-empty module and ID,
 no malformed use declaration, a per-file declaration floor, successful JSON typechecking with
