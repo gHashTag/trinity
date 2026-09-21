@@ -18,6 +18,7 @@ import {
   agentMessages,
   askBrowserAgent,
   readAgentStream,
+  readAgentBody,
   AgentSignedOut,
   HISTORY_TURNS,
 } from '../src/lib/queenBrowser.ts'
@@ -177,6 +178,41 @@ assert.equal(mod.key, 'w')
   await assert.rejects(askBrowserAgent(env(401, ''), [], 'x', 'en'), AgentSignedOut)
   await assert.rejects(askBrowserAgent({ ...env(200, stream), token: () => null }, [], 'x', 'en'), AgentSignedOut)
   await assert.rejects(askBrowserAgent(env(200, '{"тип":"ошибка","текст":"provider 429"}'), [], 'x', 'en'), /provider 429/)
+}
+
+// 9. The steps are seen as they happen: the stream is read as it arrives,
+//    even when a chunk ends mid-line or mid-letter.
+{
+  const lines = [
+    '{"тип":"провайдер","id":"zai","model":"glm-5.3"}',
+    '{"тип":"инструмент","имя":"browser_open","аргументы":"{}"}',
+    '{"тип":"инструмент","имя":"browser_click","аргументы":"{}"}',
+    '{"тип":"текст","текст":"Открыла t27.ai"}',
+    '{"тип":"готово"}',
+  ].join('\n') + '\n'
+  const bytes = new TextEncoder().encode(lines)
+  // Cut into 7-byte chunks: Cyrillic letters are 2 bytes, so some split.
+  const chunks = []
+  for (let i = 0; i < bytes.length; i += 7) chunks.push(bytes.slice(i, i + 7))
+  const body = () => new ReadableStream({ start(c) { chunks.forEach((x) => c.enqueue(x)); c.close() } })
+  const seen = []
+  const a = await readAgentBody(body(), (soFar) => seen.push(soFar))
+  assert.equal(a.text, 'Открыла t27.ai', 'no letter broken by a chunk boundary')
+  assert.deepEqual(a.tools, ['browser_open', 'browser_click'])
+  const firstTool = seen.findIndex((p) => p.tools.length === 1)
+  const firstText = seen.findIndex((p) => p.text !== '')
+  assert.ok(firstTool >= 0 && firstTool < firstText, 'the step is shown before the answer arrives')
+  seen[firstTool].tools.push('mutated')
+  assert.deepEqual(a.tools, ['browser_open', 'browser_click'], 'progress hands out copies')
+
+  const progress = []
+  const env = {
+    token: () => 't',
+    fetch: async () => ({ ok: true, status: 200, text: async () => { throw new Error('read as a whole') }, body: body() }),
+  }
+  const got = await askBrowserAgent(env, [], 'q', 'ru', (p) => progress.push(p.tools.length))
+  assert.equal(got.text, 'Открыла t27.ai', 'a response with a body is streamed, not read whole')
+  assert.ok(progress.includes(2))
 }
 
 // 8. The rail as the owner laid it out, 2026-09-21: TECH TREE inside KANBAN,

@@ -9,7 +9,7 @@
 // readable by anyone who opens the site, so a hosted model is reached through a
 // proxy that holds the key, never from this file.
 import { sendMessage, checkHealth, NotSignedIn, type ChatResponse } from './chatApi.ts'
-import { AgentSignedOut, askBrowserAgent, type ChatTurn } from '../lib/queenBrowser.ts'
+import { AgentSignedOut, askBrowserAgent, type AgentAnswer, type ChatTurn } from '../lib/queenBrowser.ts'
 import { appSessionFromWindow, type AppSessionVerdict } from '../lib/appSessionIdentity.ts'
 
 const OLLAMA_URL = import.meta.env?.VITE_QUEEN_OLLAMA_URL || 'http://localhost:11434'
@@ -122,6 +122,7 @@ export async function askQueenInBrowser(
   history: readonly ChatTurn[],
   question: string,
   lang: 'ru' | 'en',
+  onProgress?: (soFar: AgentAnswer) => void,
 ): Promise<ChatResponse> {
   const caller = queenCaller()
   if (!caller.signedIn) throw new NotSignedIn()
@@ -133,6 +134,7 @@ export async function askQueenInBrowser(
       history,
       question,
       lang,
+      onProgress,
     )
     return {
       response: a.text,

@@ -208,20 +208,56 @@ export interface AgentAnswer {
  */
 export function readAgentStream(raw: string): AgentAnswer {
   const answer: AgentAnswer = { text: '', tools: [], model: null, error: null }
-  for (const line of raw.split('\n')) {
-    if (!line.trim()) continue
-    let e: Record<string, unknown>
-    try {
-      e = JSON.parse(line)
-    } catch {
-      continue
-    }
-    const kind = e['тип']
-    if (kind === 'текст' && typeof e['текст'] === 'string') answer.text += e['текст']
-    else if (kind === 'инструмент' && typeof e['имя'] === 'string') answer.tools.push(e['имя'])
-    else if (kind === 'провайдер' && typeof e.id === 'string') answer.model = typeof e.model === 'string' ? `${e.id}/${e.model}` : e.id
-    else if (kind === 'ошибка' && typeof e['текст'] === 'string') answer.error = e['текст']
+  for (const line of raw.split('\n')) readAgentLine(answer, line)
+  answer.text = answer.text.trim()
+  return answer
+}
+
+/** One NDJSON line into the answer so far. Returns true when it changed. */
+export function readAgentLine(answer: AgentAnswer, line: string): boolean {
+  if (!line.trim()) return false
+  let e: Record<string, unknown>
+  try {
+    e = JSON.parse(line)
+  } catch {
+    return false
   }
+  const kind = e['тип']
+  if (kind === 'текст' && typeof e['текст'] === 'string') answer.text += e['текст']
+  else if (kind === 'инструмент' && typeof e['имя'] === 'string') answer.tools.push(e['имя'])
+  else if (kind === 'провайдер' && typeof e.id === 'string') answer.model = typeof e.model === 'string' ? `${e.id}/${e.model}` : e.id
+  else if (kind === 'ошибка' && typeof e['текст'] === 'string') answer.error = e['текст']
+  else return false
+  return true
+}
+
+/**
+ * The same reading, as the bytes arrive. The owner, 2026-09-21: the steps
+ * should be seen while she works -- "opening...", "clicking..." -- not only
+ * the answer at the end. `onProgress` gets a copy after every event that
+ * changed something; a line split across two chunks waits for its end.
+ */
+export async function readAgentBody(
+  body: ReadableStream<Uint8Array>,
+  onProgress?: (soFar: AgentAnswer) => void,
+): Promise<AgentAnswer> {
+  const answer: AgentAnswer = { text: '', tools: [], model: null, error: null }
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let rest = ''
+  const take = (line: string) => {
+    if (readAgentLine(answer, line) && onProgress) onProgress({ ...answer, tools: [...answer.tools] })
+  }
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) break
+    rest += decoder.decode(value, { stream: true })
+    const lines = rest.split('\n')
+    rest = lines.pop() ?? ''
+    for (const line of lines) take(line)
+  }
+  rest += decoder.decode()
+  take(rest)
   answer.text = answer.text.trim()
   return answer
 }
@@ -232,7 +268,7 @@ export interface AgentEnv {
   fetch(
     url: string,
     init: { method: 'POST'; credentials: 'omit'; headers: Record<string, string>; body: string },
-  ): Promise<{ ok: boolean; status: number; text(): Promise<string> }>
+  ): Promise<{ ok: boolean; status: number; text(): Promise<string>; body?: ReadableStream<Uint8Array> | null }>
   token(): string | null
 }
 
@@ -246,6 +282,7 @@ export async function askBrowserAgent(
   history: readonly ChatTurn[],
   question: string,
   lang: 'ru' | 'en',
+  onProgress?: (soFar: AgentAnswer) => void,
 ): Promise<AgentAnswer> {
   const token = env.token()
   if (!token) throw new AgentSignedOut()
@@ -256,9 +293,13 @@ export async function askBrowserAgent(
     body: JSON.stringify({ messages: agentMessages(history, question, lang) }),
   })
   if (res.status === 401) throw new AgentSignedOut()
-  const raw = await res.text().catch(() => '')
-  if (!res.ok) throw new Error(`agent ${res.status}${raw ? `: ${raw.slice(0, 300)}` : ''}`)
-  const answer = readAgentStream(raw)
+  if (!res.ok) {
+    const raw = await res.text().catch(() => '')
+    throw new Error(`agent ${res.status}${raw ? `: ${raw.slice(0, 300)}` : ''}`)
+  }
+  const answer = res.body
+    ? await readAgentBody(res.body, onProgress)
+    : readAgentStream(await res.text().catch(() => ''))
   if (!answer.text && answer.error) throw new Error(answer.error)
   return answer
 }
