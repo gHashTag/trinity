@@ -9,11 +9,22 @@
   gap: 6px;
 }
 
+/* The row carries the ground and the low pass for the whole strip, and the
+   screen buttons inside it carry neither. That is one compositing layer rather
+   than one per screen, and it covers the 4px gaps and the scroll gutter as
+   well — which a thicker ground on each button never would have. The buttons
+   keep their own 0.6 veil on top of this; 0.6 over 0.72 is about 17% of the
+   field, already low-passed by the row, which is depth and not texture. */
 .queen27-page.is-shell .queen27-tri-screens {
   display: flex;
   flex: 0 0 auto;
   gap: 4px;
   min-width: 0;
+  padding: 2px;
+  border-radius: 0.5rem;
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   scrollbar-width: thin;
@@ -48,7 +59,12 @@
   padding: 8px 12px;
   border: 1px solid rgba(240, 160, 32, 0.45);
   border-radius: 6px;
+  /* A sibling of the screens row, not a child of it, so the row's frosting does
+     not reach here and this banner pays for its own. It is the one surface on
+     the tab that has to be read when something is wrong. */
   background: rgba(20, 12, 0, 0.8);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   color: #f0c060;
   font-size: 12px;
 }

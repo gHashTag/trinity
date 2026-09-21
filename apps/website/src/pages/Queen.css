@@ -873,8 +873,15 @@
   box-shadow: 0 0 8px var(--queen-dir);
 }
 
+/* The numbers in the owner's photograph — 1104, 356, 487 — and they were the
+   faintest thing in it. `opacity` multiplies, it does not set: the shell gives
+   the chip `color: var(--hud-muted)`, which is already white at 0.78, so 0.65
+   on top of it put these digits on screen at an effective 0.51 while the word
+   beside them ran at 0.78. Two different inks in one chip, with the quieter one
+   carrying the only fact the chip reports. 0.85 keeps the count subordinate to
+   its label and lands it at 0.66 — still quieter, no longer a whisper. */
 .queen27-dir-filter .queen27-chip small {
-  opacity: 0.65;
+  opacity: 0.85;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: inherit;
 }
@@ -3235,6 +3242,11 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
   font: 12px/1.35 ui-monospace, Menlo, monospace;
   letter-spacing: 0.02em;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  /* Safe to frost only because the hidden state below is `display: none` and
+     not a transparent box left in the layout — the distinction that decides
+     whether a backdrop-filter draws a band across the screen. */
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 .queen27-hover-card[aria-hidden="true"] { display: none; }
 .queen27-hover-card b { display: block; color: #ffd45a; font-weight: 500; margin-bottom: 2px; }
@@ -3283,11 +3295,21 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
   position: absolute; z-index: 9; top: 3.8rem; left: .8rem; right: .8rem;
   display: flex; flex-wrap: wrap; gap: .4rem; pointer-events: auto;
 }
+/* These five float on the scene itself, not on a HUD panel: there is no
+   frosted ancestor anywhere above them, because they are children of the comb
+   field. So each pays for its own low pass. Every one of them is a control or
+   a label the reader has to get words out of while the lattice runs behind it
+   — the two filters, the card naming a hovered issue, the signal legend, the
+   zoom hint and the colour law — and a ground alone was never the treatment.
+   The hive's own faces are the exception and stay sharp on purpose: see the
+   `.queen-hive-display` rule below, and the text-shadow they carry instead. */
 .queen-hive-inspect-tools select, .queen-hive-inspect-tools button {
   min-height: 44px; min-width: 44px; border: 1px solid #397d80;
   background: rgba(3, 12, 14, .88); color: var(--text); padding: .5rem .7rem;
   border-radius: 8px;
   font: 500 .875rem/1.3 var(--font);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 .queen-hive-inspect-tools select {
   flex: 1; min-width: 140px; max-width: 380px;
@@ -3340,7 +3362,7 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
 .queen-hive-signal-guide summary { cursor:pointer; min-height:44px; display:flex; align-items:center; color:var(--text); padding:0 .3rem; text-transform:none; font-size:.85rem; }
 .queen-hive-signal-guide summary::after { content:' ▾'; margin-left:.4rem; }
 .queen-hive-signal-guide summary:focus-visible { outline:2px solid #ffc24d; }
-.queen-hive-signal-panel { position:absolute; top:100%; left:0; width:min(360px,100%); max-height:min(480px,60vh); overflow:auto; box-sizing:border-box; padding:1rem; background:rgba(3,12,19,.97); border:1px solid #577780; border-radius:8px; box-shadow:0 12px 36px #0009; text-transform:none; letter-spacing:normal; font:.875rem/1.5 var(--font); }
+.queen-hive-signal-panel { position:absolute; top:100%; left:0; width:min(360px,100%); max-height:min(480px,60vh); overflow:auto; box-sizing:border-box; padding:1rem; background:rgba(3,12,19,.97); border:1px solid #577780; border-radius:8px; box-shadow:0 12px 36px #0009; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); text-transform:none; letter-spacing:normal; font:.875rem/1.5 var(--font); }
 .queen-hive-signal-panel h4 { margin:0 0 .6rem; color:var(--text); font-weight:500; }
 .queen-hive-signal-panel h4:not(:first-child) { margin-top:1rem; }
 .queen-hive-signal-panel p { padding:.2rem 0; }
@@ -3370,8 +3392,14 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
 .queen-hive-display a { color:#64dcff; display:inline-flex; align-items:center; min-height:44px; font-size:.875rem; }
 .queen-hive-epic-progress { display:grid; gap:.35rem; font-size:.8125rem; }
 .queen-hive-epic-progress progress { width:100%; height:5px; accent-color:#64dcff; }
-.queen-hive-zoom-hint { position:absolute; z-index:8; left:.8rem; bottom:.6rem; margin:0; padding:.3rem .5rem; color:#b4cbd2; background:#041115a0; font:.75rem/1.4 var(--font); pointer-events:none; }
-.queen27-hive-law { z-index:10; background:#041115e8; padding:.2rem .4rem; }
+/* Was `#041115a0`, and a0 is 0.627: 4.12:1 against --hud-muted over a lit hive,
+   which is under the 4.5 this board holds every other label to. It had never
+   been measured, because it is written as an eight-digit hex and the gate read
+   literal rgba() and nothing else. The veil token is the same surface class —
+   a label floating on the scene — and it is 0.72, so it moves with the palette
+   instead of being a fourth number somebody picked by eye. */
+.queen-hive-zoom-hint { position:absolute; z-index:8; left:.8rem; bottom:.6rem; margin:0; padding:.3rem .5rem; color:#b4cbd2; background:var(--hud-veil,#041115b8); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); font:.75rem/1.4 var(--font); pointer-events:none; }
+.queen27-hive-law { z-index:10; background:#041115e8; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); padding:.2rem .4rem; }
 @media(max-width:640px) {
   .queen-hive-inspect-tools { top:4.5rem; gap:.3rem; }
   .queen-hive-inspect-tools select { width:100%; max-width:none; flex-basis:100%; }
@@ -4954,14 +4982,23 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* In bare mode the head is the only chrome left, so it floats rather than
-   taking a row from the map. */
+   taking a row from the map — which also makes it the one strip with the whole
+   live field behind it and nothing else in front. `#00000099` is 0.6, and 0.6
+   measured 4.24:1 against --hud-muted over a lit hive: under the 4.5 this board
+   holds every other label to, and unseen for as long as it has existed because
+   an eight-digit hex was not a colour the contrast gate could read. It is a nav
+   strip floating on the scene, the same surface class as .queen27-ladder, so it
+   takes what that row has carried since it was built: the nav token and a low
+   pass, because the ground is only half of the treatment. */
 .queen27-page.is-shell.is-bare .queen27-hud-vp-head {
   position: absolute;
   z-index: 3;
   top: 0;
   right: 0;
   left: 0;
-  background: #00000099;
+  background: var(--hud-nav, #000000db);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 /* the factory is the one deep panel: it scrolls vertically inside the
@@ -7096,8 +7133,48 @@ body.queen-shell .queen-starfield-source {
    only where the map happened to be empty: a cell's outline running through a
    line of text is a line read twice. The blur keeps the map as depth behind the
    panel and takes its detail out of the words. The veil itself stays thin — the
-   frosting is what makes it readable, not opacity. */
-.queen27-page.is-shell :is(.queen27-column, .queen27-kanban-panel, .queen27-map-sector, .queen27-tech-node, .queen27-tech-map, .queen27-tech-console, .queen27-tech-details, .queen27-city, .queen27-city-console, .queen27-city-canvas, .queen27-factory-floor, .queen27-factory-inspector, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-top, .queen27-hud-commands, .queen-catalog-toolbar) {
+   frosting is what makes it readable, not opacity.
+
+   Nine names joined this list on 2026-09-21, from a photograph of the DIRECTION
+   row. That row had been given the other half of the treatment and not this
+   one: `--hud-panel` on the chips, measured at 9.8:1, which is a fine number
+   and was not the complaint. A ground at 0.88 still passes 12% of the hive
+   THROUGH ITS PATTERN INTACT, and the row sat across a band where the comb
+   paints a saturated red cell — brighter than the chip's own ground, directly
+   under the word PROOF. Contrast arithmetic cannot see that, because it models
+   a backdrop as one flat colour and the hive is not one: it is a lattice, and
+   what makes it unreadable is its EDGES crossing the letters, not its level.
+   Which is what the comment above has said since the day it was written.
+
+   THE ROSTER IS THE DEFECT, AND THIS FILE ALREADY KNEW IT. Read the note above
+   `.queen27-board-stack`'s own hand-kept list, six hundred lines up: "a new row
+   above the board belongs on this list the day it is added". The stack has four
+   chrome rows. `.queen27-ladder` was built with `--hud-nav` and blur(6px);
+   `.queen27-lane-head.is-private` with `--hud-panel` and blur(8px). The two
+   BETWEEN them — DIRECTION and the board switch — were bare glass, and the
+   owner photographed the gap. The same miss had happened five more times where
+   nobody was looking: `.queen27-specs-frame-wrap` is the only ground under an
+   entire spec document (the iframe inside it paints nothing), and the mission
+   map, the factory, the tech strip, the docs jumps and the collapsible specs
+   strip were all carrying text on a veil with no low pass behind it.
+
+   So the list is now kept by a gate rather than by whoever last looked at the
+   screen — `qa/queen-contrast-contract.mjs` reads every stylesheet the board
+   loads and fails on a text-bearing translucent ground with no blur on it or on
+   a named frosted ancestor. Add a panel without frosting it and CI says so; you
+   no longer have to wait for a photograph. */
+.queen27-page.is-shell :is(
+  .queen27-column, .queen27-kanban-panel, .queen27-map-sector,
+  .queen27-tech-node, .queen27-tech-map, .queen27-tech-console,
+  .queen27-tech-details, .queen27-tech-strip,
+  .queen27-city, .queen27-city-console, .queen27-city-canvas,
+  .queen27-factory, .queen27-factory-floor, .queen27-factory-inspector,
+  .queen27-mission-map,
+  .queen27-hud-command, .queen27-hud-intel, .queen27-hud-top,
+  .queen27-hud-commands, .queen-catalog-toolbar,
+  .queen27-dir-filter, .queen27-lane-filter, .queen27-lane-switch,
+  .queen27-specs-strip, .queen27-specs-frame-wrap, .queen27-docs-jumps
+) {
   backdrop-filter: blur(6px);
 }
 
@@ -7562,4 +7639,46 @@ body.queen-shell .queen-starfield-source {
 .queen27-page.is-shell :is(.queen27-lane-filter, .queen27-dir-filter),
 .queen27-page.is-shell .queen27-lane-head small {
   color: var(--hud-muted);
+}
+
+/* And a ground under the whole row, not only under each chip.
+   In the photograph the comb is visible BETWEEN the chips as much as through
+   them: the row is `display: flex` with a 0.3rem gap and no background of its
+   own, so the word DIRECTION, the gaps, and the space around every chip were
+   bare field. Giving each chip a thicker ground would not have touched any of
+   that.
+   It also pays for the blur added to this row above. A backdrop-filter on a
+   transparent box still blurs — that is what put a soft vertical band down the
+   side of the screen with nothing drawn on it, recorded a few hundred lines up
+   — so a row that frosts has to be a row that paints. The veil, not the panel:
+   the chips carry the panel on top of this, and 0.88 over 0.72 leaves the comb
+   about 3% of the way through, which is depth rather than texture.
+
+   Three more rows are on this rule for the second reason alone. The board
+   switch, the tech strip and the collapsible specs strip painted nothing
+   either, and all three are now frosted by the matte roster — so all three owe
+   a ground, or they are exactly the empty box that smeared a band down the
+   screen. They keep their own padding: the two filter rows get theirs here
+   because they had none, the other three already set their own and a second
+   `padding` would move the text they already place. */
+.queen27-page.is-shell :is(.queen27-lane-filter, .queen27-dir-filter) {
+  padding: 0.25rem 0.4rem;
+}
+
+/* The switch sets its own vertical rhythm (0.5rem above, 0.4rem below) and
+   keeps it; it only ever lacked the sideways room for a ground to show past
+   the outermost chip. */
+.queen27-page.is-shell .queen27-lane-switch {
+  padding-inline: 0.4rem;
+}
+
+.queen27-page.is-shell :is(.queen27-lane-filter, .queen27-dir-filter, .queen27-lane-switch) {
+  border-radius: 0.6rem;
+}
+
+.queen27-page.is-shell :is(
+  .queen27-lane-filter, .queen27-dir-filter, .queen27-lane-switch,
+  .queen27-tech-strip, .queen27-specs-strip
+) {
+  background: var(--hud-veil);
 }

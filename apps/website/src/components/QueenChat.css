@@ -9,6 +9,14 @@
    to be third, so switching tabs moved the growing row onto a paragraph. A
    flex column says the thing that is actually true: everything is its own
    height except the body, which takes what is left. */
+/* This file was written outside the reach of the contrast work done on
+   Queen.css, and it shows: three translucent grounds and, until 2026-09-21, not
+   one backdrop-filter in 350 lines. The Queen's own column floats over the same
+   live comb as every panel next to it, so it owes the same two things every one
+   of those panels owes — a ground thick enough to carry text, and a low pass so
+   the comb arrives as depth instead of as a second set of strokes inside the
+   letters. The gate that was supposed to hold this read `src/pages/Queen.css`
+   and nothing else; it now reads every stylesheet the board loads. */
 .queen-chat {
   display: flex;
   flex-direction: column;
@@ -16,7 +24,9 @@
   gap: 8px;
   padding: 10px 12px;
   border: 1px solid rgba(0, 255, 136, 0.18);
-  background: rgba(3, 12, 14, 0.72);
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 /* THE THREE TABS. The conversation is first and is where she opens: the owner
@@ -112,6 +122,13 @@
    the button stretched into a full-height bordered box with "Ask the Queen"
    floating in the middle of it, which is the panel the chat was hidden to get
    rid of. Small, at the top, and the column below it is sky. */
+/* Collapsed, this button is the only thing left of the Queen's column, and it
+   is a gold word on a 0.55 ground with the comb running under it — the thinnest
+   text-bearing ground anywhere on the board bar one. Queen.css takes the blur
+   off the column that HOLDS it, on purpose and with the reason written down:
+   the collapsed column paints nothing, and frosting an empty box drew a soft
+   band down the screen. That argument is about the column. This button does
+   paint, so it frosts itself. */
 .queen-chat-tab {
   width: auto;
   justify-self: end;
@@ -120,7 +137,9 @@
   padding: 0 12px;
   min-height: 34px;
   color: var(--hud-gold, #ffd45a);
-  background: rgba(3, 12, 14, 0.55);
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .queen-chat-context {
@@ -339,13 +358,20 @@
   gap: 6px;
   align-items: center;
 }
+/* 0.25 was the thinnest ground on the board: a search field that let three
+   quarters of the comb through what somebody was typing into it. Like the
+   person-search box in the lane head, this input has no <label> — its
+   placeholder is its accessible name — so it is body text and owes what body
+   text owes. */
 .queen-chat-find input {
   flex: 1;
   min-width: 0;
   min-height: 34px;
   padding: 0 8px;
   border: 1px solid rgba(0, 255, 136, 0.2);
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   color: #d7e5e0;
   font: inherit;
   font-size: 11px;

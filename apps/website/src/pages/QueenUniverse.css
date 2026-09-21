@@ -123,6 +123,12 @@ body.queen-shell {background:#000;}
 body.queen-shell .queen-universe {
   grid-template-rows: minmax(0, 1fr);
 }
+/* At 0.42 it was the thinnest ground under text anywhere on the board: a bar
+   of world names with 58% of a live lattice coming through them. It is the
+   same kind of surface as `.queen27-ladder` — a nav strip floating over the
+   scene — so it takes the same treatment that row has carried since it was
+   built: the `--hud-nav` ground and a low pass behind it. Named tokens rather
+   than a literal, so it moves when the palette does. */
 body.queen-shell .queen-universe-nav {
   position: absolute;
   z-index: 5;
@@ -130,7 +136,9 @@ body.queen-shell .queen-universe-nav {
   right: 0;
   left: 0;
   border-bottom: 0;
-  background: rgba(2, 8, 6, 0.42);
+  background: var(--hud-nav, rgba(2, 8, 6, 0.86));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 body.queen-shell .queen-universe-content {
   position: relative;

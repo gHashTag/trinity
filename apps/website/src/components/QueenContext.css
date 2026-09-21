@@ -27,8 +27,17 @@
   color: var(--text, #e8e8f0);
 }
 
+/* The chip is the panel when the panel is shut, and it was the one of the pair
+   that never got frosted. Both are grounded by the same declaration fifteen
+   lines up — `var(--hud-panel)`, 0.88 — and the panel takes blur(6px) directly
+   above; the chip's own rule sets padding, colour, type and a clip-path and
+   stops. Nothing above it rescues it either: it hangs off `.queen27-hud-viewport`
+   (Queen.css), which is not on the matte roster. So the word CONTEXT was read
+   through 12% of a live lattice while the panel it opens was not. */
 .queen27-context-chip {
   padding: 0.4rem 0.75rem;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   color: var(--ctx-green);
   font: inherit;
   font-size: 0.62rem;

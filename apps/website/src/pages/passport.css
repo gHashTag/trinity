@@ -278,6 +278,13 @@
   overflow-y: auto;
   padding-top: 2.5rem;
   background: rgba(6, 8, 10, 0.94);
+  /* The sentence above is right about the hex field and was one declaration
+     short of acting on it: 0.94 is an amplitude, and 6% of a lattice arrives
+     with its edges intact. The blur is the half that takes the structure out.
+     It also becomes the backdrop root for the whole record, so nothing nested
+     inside the passport has to repeat it. */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   position: relative;
   z-index: 3;
 }
