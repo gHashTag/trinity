@@ -31,7 +31,7 @@ import { StackBar, type StackSegment } from '../components/SpecGraphics'
 import { loadFunctionSpecs, type FunctionSideEffect, type FunctionSpecCatalog, type FunctionSpecEntry, type FunctionTrigger } from '../lib/agentSpecs'
 import { cronExplorerHash } from '../lib/cronsCatalog'
 import { canonicalFunctionUrl, functionExplorerHash, functionSourceUrl, resolveFunction } from '../lib/functionsCatalog'
-import { STATUS_POLL_MS, fetchFunctionsStatus, functionsStatusUrl, totalRuns, type FunctionStatus, type StatusState } from '../lib/functionsStatus'
+import { STATUS_POLL_MS, fetchFunctionsStatus, functionsStatusUrl, totalRuns, type FunctionStatus, type FunctionTriggerRef, type RunCounts, type StatusState } from '../lib/functionsStatus'
 import { C, panelBox, pill, tagChip } from '../lib/explorerTheme'
 
 const UI = {
@@ -113,10 +113,34 @@ const UI = {
     completed: 'completed',
     failedRuns: 'failed',
     running: 'running',
+    cancelled: 'cancelled',
+    invoked: 'invoked by hand',
+    totalRunsLabel: 'total',
+    invokedHint: 'Invoked runs — the probe suite, the dashboard, MCP — are counted in the total and in none of the three above, which is why the three do not add up to it.',
     unknown: 'unknown',
     lastRun: 'last run',
     lastError: 'last error',
     lastProbe: 'last probe',
+    liveTriggers: 'triggers, live',
+    liveTriggersHint: 'What the running app is actually triggered by, as the status source states it — beside the trigger the spec declares above.',
+    noTriggers: 'the status source reported no trigger',
+    liveIdentity: 'name and domain in the app',
+    liveApp: 'answering app',
+    appDisconnected: 'no app is connected to Inngest',
+    servedByApp: 'served by the app',
+    notServed: 'the manifest knows this function and the app does not serve it',
+    isServed: 'yes',
+    startedAt: 'started',
+    endedAtLabel: 'ended',
+    stillRunning: 'not finished',
+    errorRunId: 'run',
+    errorEvent: 'event',
+    errorNoEvent: 'cron run — no event',
+    noErrorYet: 'no failed run reported',
+    drift: 'served by the app, unknown to the manifest',
+    noDrift: 'every function the app serves is one the manifest knows',
+    bodyCached: 'cached by the bot',
+    bodyFresh: 'freshly read',
     probeAsExpected: 'as expected',
     probeUnexpected: 'not as expected',
     probeExpects: 'expects',
@@ -219,10 +243,34 @@ const UI = {
     completed: 'завершено',
     failedRuns: 'с ошибкой',
     running: 'выполняется',
+    cancelled: 'отменено',
+    invoked: 'запущено вручную',
+    totalRunsLabel: 'всего',
+    invokedHint: 'Запуски вручную — набор проб, панель Inngest, MCP — считаются в «всего» и ни в одном из трёх счётчиков выше; поэтому три числа не складываются в итог.',
     unknown: 'неизвестно',
     lastRun: 'последний запуск',
     lastError: 'последняя ошибка',
     lastProbe: 'последняя проба',
+    liveTriggers: 'триггеры, живые',
+    liveTriggersHint: 'Чем на самом деле запускается работающее приложение, как об этом говорит источник статуса, — рядом с триггером из спеки выше.',
+    noTriggers: 'источник статуса не сообщил ни одного триггера',
+    liveIdentity: 'имя и домен в приложении',
+    liveApp: 'отвечающее приложение',
+    appDisconnected: 'ни одно приложение не подключено к Inngest',
+    servedByApp: 'обслуживается приложением',
+    notServed: 'манифест знает эту функцию, а приложение её не обслуживает',
+    isServed: 'да',
+    startedAt: 'начат',
+    endedAtLabel: 'завершён',
+    stillRunning: 'не завершён',
+    errorRunId: 'запуск',
+    errorEvent: 'событие',
+    errorNoEvent: 'запуск по крону — без события',
+    noErrorYet: 'упавших запусков не сообщено',
+    drift: 'обслуживается приложением, манифесту неизвестна',
+    noDrift: 'каждая функция, которую обслуживает приложение, известна манифесту',
+    bodyCached: 'из кэша бота',
+    bodyFresh: 'прочитано заново',
     probeAsExpected: 'как ожидалось',
     probeUnexpected: 'не как ожидалось',
     probeExpects: 'ожидание',
@@ -304,24 +352,49 @@ function shortDate(iso: string | null): string {
 
 const fmt = (n: number | null, unknown: string): string => (n === null ? unknown : String(n))
 
+/** Nothing measured yet. Every counter null, never zero -- see functionsStatus.ts. */
+const NO_COUNTS: RunCounts = { completed: null, failed: null, running: null, cancelled: null, invoked: null, total: null }
+
+/**
+ * When a run happened. `endedAt` is null while the run is in flight, and the
+ * page used to print a status beside an empty date in exactly that case --
+ * while `queuedAt`, the "started N minutes ago" a reader wants, arrived in the
+ * same object and was dropped by the parser.
+ */
+function runWhen(r: { queuedAt: string | null; endedAt: string | null }, ui: Ui): string {
+  if (r.endedAt) return `${ui.endedAtLabel} ${shortDate(r.endedAt)}`
+  if (r.queuedAt) return `${ui.startedAt} ${shortDate(r.queuedAt)} · ${ui.stillRunning}`
+  return ui.unknown
+}
+
+/** One live trigger as a line: the cron glyph with its expression, or the event glyph with its name. */
+function triggerText(t: FunctionTriggerRef): string {
+  const glyph = t.type === 'cron' ? '⟲' : t.type === 'event' ? '⚡' : '·'
+  return `${glyph} ${t.value ?? '?'}`
+}
+
 // ---------------------------------------------------------------------------
 // Inline SVG infographics. No dependency; every number drawn is one the page
 // received, and a missing number is drawn as "unknown", never as zero.
 // ---------------------------------------------------------------------------
 
-function HealthRing({ completed, failed, running, ui, offline }: { completed: number | null; failed: number | null; running: number | null; ui: Ui; offline: boolean }) {
+function HealthRing({ counts, ui, offline }: { counts: RunCounts; ui: Ui; offline: boolean }) {
+  const { completed, failed, running, cancelled, invoked, total } = counts
   const r = 34
   const circ = 2 * Math.PI * r
-  const total = (completed ?? 0) + (failed ?? 0)
+  // The ring is completed against failed only: `running`, `cancelled` and
+  // `invoked` are not outcomes. `total` from the wire is the denominator of
+  // the legend below, not of the ring.
+  const ringTotal = (completed ?? 0) + (failed ?? 0)
   const known = !offline && (completed !== null || failed !== null)
-  const okFrac = known && total > 0 ? (completed ?? 0) / total : 0
-  const badFrac = known && total > 0 ? (failed ?? 0) / total : 0
-  const pct = known && total > 0 ? Math.round(okFrac * 100) : null
+  const okFrac = known && ringTotal > 0 ? (completed ?? 0) / ringTotal : 0
+  const badFrac = known && ringTotal > 0 ? (failed ?? 0) / ringTotal : 0
+  const pct = known && ringTotal > 0 ? Math.round(okFrac * 100) : null
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
       <svg width={92} height={92} viewBox="0 0 92 92" role="img" aria-label={ui.healthRing}>
         <circle cx={46} cy={46} r={r} fill="none" stroke={C.border} strokeWidth={9} />
-        {known && total > 0 && (
+        {known && ringTotal > 0 && (
           <>
             <circle cx={46} cy={46} r={r} fill="none" stroke={C.accent} strokeWidth={9} strokeDasharray={`${okFrac * circ} ${circ}`} transform="rotate(-90 46 46)" strokeLinecap="butt" />
             <circle cx={46} cy={46} r={r} fill="none" stroke={C.bad} strokeWidth={9} strokeDasharray={`${badFrac * circ} ${circ}`} strokeDashoffset={-okFrac * circ} transform="rotate(-90 46 46)" strokeLinecap="butt" />
@@ -331,7 +404,7 @@ function HealthRing({ completed, failed, running, ui, offline }: { completed: nu
           {pct === null ? '?' : `${pct}%`}
         </text>
         <text x={46} y={58} textAnchor="middle" fill={C.muted} fontFamily={C.mono} fontSize={8}>
-          {known && total > 0 ? '24h' : ui.unknown}
+          {known && ringTotal > 0 ? '24h' : ui.unknown}
         </text>
       </svg>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: C.mono, fontSize: 11.5 }}>
@@ -344,31 +417,37 @@ function HealthRing({ completed, failed, running, ui, offline }: { completed: nu
         <span style={{ color: C.blue }}>
           ● {ui.running} <b data-lang-exempt="live">{offline ? ui.unknown : fmt(running, ui.unknown)}</b>
         </span>
+        {/* The endpoint counts an invoked run in `total` and in none of the
+            three above, so the three provably do not add up to it. Printing
+            only the three left an unexplained gap on the page. */}
+        <span style={{ color: C.muted }}>
+          ○ {ui.cancelled} <b data-lang-exempt="live">{offline ? ui.unknown : fmt(cancelled, ui.unknown)}</b>
+        </span>
+        <span style={{ color: C.muted }}>
+          ○ {ui.invoked} <b data-lang-exempt="live">{offline ? ui.unknown : fmt(invoked, ui.unknown)}</b>
+        </span>
+        <span style={{ color: C.text }}>
+          Σ {ui.totalRunsLabel} <b data-lang-exempt="live">{offline ? ui.unknown : fmt(total, ui.unknown)}</b>
+        </span>
       </div>
     </div>
   )
 }
 
 function Bars7d({ rows, ui, selectedId, onPick }: { rows: { id: string; status: FunctionStatus | null }[]; ui: Ui; selectedId: string | null; onPick: (id: string) => void }) {
-  const anyDaily = rows.some((r) => r.status?.daily7d && r.status.daily7d.length > 0)
-  const max = Math.max(
-    1,
-    ...rows.map((r) => {
-      const s = r.status
-      if (!s) return 0
-      if (anyDaily && s.daily7d) return Math.max(0, ...s.daily7d.map((d) => (d.completed ?? 0) + (d.failed ?? 0)))
-      return (s.runs7d.completed ?? 0) + (s.runs7d.failed ?? 0)
-    }),
-  )
+  // One bar per function: the endpoint reports 7-day totals, not per-day
+  // counts. An earlier version drew seven cells from a `daily7d` field the bot
+  // has never had, so the loop that produced them never ran once.
+  const max = Math.max(1, ...rows.map((r) => (r.status ? (r.status.runs7d.completed ?? 0) + (r.status.runs7d.failed ?? 0) : 0)))
   const w = 120
   const h = 22
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {!anyDaily && rows.some((r) => r.status) && <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4 }}>{ui.bars7dNoDaily}</div>}
+      {rows.some((r) => r.status) && <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4 }}>{ui.bars7dNoDaily}</div>}
       {rows.map((r) => {
         const s = r.status
-        const known = s !== null && (s.runs7d.completed !== null || s.runs7d.failed !== null || (s.daily7d?.length ?? 0) > 0)
-        const cells = anyDaily && s?.daily7d ? s.daily7d.slice(-7) : known && s ? [{ day: '7d', completed: s.runs7d.completed, failed: s.runs7d.failed }] : []
+        const known = s !== null && (s.runs7d.completed !== null || s.runs7d.failed !== null)
+        const cells = known && s ? [{ day: '7d', completed: s.runs7d.completed, failed: s.runs7d.failed }] : []
         const cw = cells.length ? w / cells.length : w
         const sel = r.id === selectedId
         return (
@@ -662,7 +741,7 @@ export default function FunctionExplorer() {
 
   const liveRows = useMemo(() => functions.map((f) => ({ id: f.id, status: live.kind === 'ok' ? live.status.byId.get(f.id) ?? null : null })), [functions, live])
   const liveOffline = live.kind !== 'ok'
-  const totals24 = live.kind === 'ok' ? totalRuns(live.status, 'runs24h') : { completed: null, failed: null, running: null }
+  const totals24: RunCounts = live.kind === 'ok' ? totalRuns(live.status, 'runs24h') : NO_COUNTS
   const selectedLive: FunctionStatus | null = selected && live.kind === 'ok' ? live.status.byId.get(selected.id) ?? null : null
 
   const heading = (text: string) => <div style={{ fontSize: 11, color: C.muted, fontFamily: C.mono }}>{text}</div>
@@ -708,6 +787,16 @@ export default function FunctionExplorer() {
         <>
           {' · '}
           {ui.liveGenerated} <span data-lang-exempt="live">{shortDate(live.status.generatedAt)}</span>
+        </>
+      ) : null}
+      {/* The bot caches the body for 30 s and the page polls every 60 s, so
+          about half of these reads are older than "read at" suggests. The
+          endpoint states which; the page can now say it instead of implying
+          freshness. The internal gqlUrl beside it is deliberately not drawn. */}
+      {live.kind === 'ok' && live.status.source.cached !== null ? (
+        <>
+          {' · '}
+          {live.status.source.cached ? ui.bodyCached : ui.bodyFresh}
         </>
       ) : null}
       {live.kind === 'offline' ? (
@@ -881,35 +970,93 @@ export default function FunctionExplorer() {
                   {live.kind === 'offline' && <div style={{ fontSize: 12, color: C.warn, lineHeight: 1.5 }}>{ui.liveOfflineHint}</div>}
                   {live.kind === 'ok' && !selectedLive && <div style={{ fontSize: 12, color: C.warn }}>{ui.liveNotReported}</div>}
                   <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                    <HealthRing
-                      completed={selectedLive?.runs24h.completed ?? null}
-                      failed={selectedLive?.runs24h.failed ?? null}
-                      running={selectedLive?.runs24h.running ?? null}
-                      ui={ui}
-                      offline={liveOffline || !selectedLive}
-                    />
+                    <HealthRing counts={selectedLive?.runs24h ?? NO_COUNTS} ui={ui} offline={liveOffline || !selectedLive} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 220, flex: 1 }}>
-                      {row(ui.runs7d, mono(selectedLive ? `${ui.completed} ${fmt(selectedLive.runs7d.completed, ui.unknown)} · ${ui.failedRuns} ${fmt(selectedLive.runs7d.failed, ui.unknown)} · ${ui.running} ${fmt(selectedLive.runs7d.running, ui.unknown)}` : ui.unknown))}
+                      {row(
+                        ui.runs7d,
+                        mono(
+                          selectedLive
+                            ? `${ui.completed} ${fmt(selectedLive.runs7d.completed, ui.unknown)} · ${ui.failedRuns} ${fmt(selectedLive.runs7d.failed, ui.unknown)} · ${ui.running} ${fmt(selectedLive.runs7d.running, ui.unknown)} · ${ui.cancelled} ${fmt(selectedLive.runs7d.cancelled, ui.unknown)} · ${ui.invoked} ${fmt(selectedLive.runs7d.invoked, ui.unknown)} · ${ui.totalRunsLabel} ${fmt(selectedLive.runs7d.total, ui.unknown)}`
+                            : ui.unknown,
+                        ),
+                      )}
                       {row(
                         ui.lastRun,
                         selectedLive?.lastRun
-                          ? mono(`${selectedLive.lastRun.status ?? ui.unknown} · ${shortDate(selectedLive.lastRun.endedAt)}${selectedLive.lastRun.id ? ` · ${selectedLive.lastRun.id}` : ''}`)
+                          ? mono(`${selectedLive.lastRun.status ?? ui.unknown} · ${runWhen(selectedLive.lastRun, ui)}${selectedLive.lastRun.id ? ` · ${selectedLive.lastRun.id}` : ''}`)
                           : liveText(selectedLive ? ui.noRunsYet : ui.unknown),
                       )}
                       {row(
                         ui.lastProbe,
                         selectedLive?.lastProbe
                           ? mono(
-                              `${selectedLive.lastProbe.status ?? ui.unknown} · ${shortDate(selectedLive.lastProbe.endedAt)} · ${ui.probeExpects} ${selectedLive.lastProbe.expect ?? selectedLive.probeExpect ?? ui.unknown}${
+                              `${selectedLive.lastProbe.status ?? ui.unknown} · ${runWhen(selectedLive.lastProbe, ui)} · ${ui.probeExpects} ${selectedLive.lastProbe.expect ?? selectedLive.probeExpect ?? ui.unknown}${
                                 selectedLive.lastProbe.asExpected === null ? '' : ` · ${selectedLive.lastProbe.asExpected ? ui.probeAsExpected : ui.probeUnexpected}`
                               }`,
                               selectedLive.lastProbe.asExpected === false ? C.bad : undefined,
                             )
                           : liveText(selectedLive ? ui.noProbeYet : ui.unknown),
                       )}
-                      {row(ui.lastError, selectedLive?.lastError ? mono(selectedLive.lastError, C.bad) : liveText(selectedLive ? '—' : ui.unknown))}
+                      {/* The newest organic failure. It used to be read as a
+                          string while the endpoint sends an object, so this
+                          row drew an em dash for every function on every poll
+                          -- the one field that names a problem, lost in
+                          transit. Run id, when, and the event that caused it. */}
+                      {row(
+                        ui.lastError,
+                        selectedLive?.lastError
+                          ? mono(
+                              `${ui.errorRunId} ${selectedLive.lastError.runId ?? ui.unknown} · ${shortDate(selectedLive.lastError.endedAt)} · ${
+                                selectedLive.lastError.eventName ? `${ui.errorEvent} ${selectedLive.lastError.eventName}` : ui.errorNoEvent
+                              }`,
+                              C.bad,
+                            )
+                          : liveText(selectedLive ? ui.noErrorYet : ui.unknown),
+                      )}
+                      {/* What the running app is triggered by, from the source
+                          that knows. Parsed as `string[]` against a wire of
+                          `{type,value}` objects, this list was always empty. */}
+                      {row(
+                        ui.liveTriggers,
+                        selectedLive && selectedLive.triggers.length > 0 ? (
+                          <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                            {selectedLive.triggers.map((t, i) => (
+                              <span
+                                key={`${t.type ?? '?'}:${t.value ?? i}`}
+                                style={{ ...tagChip(false, false), cursor: 'default', color: t.type === 'cron' ? C.golden : t.type === 'event' ? C.blue : C.muted, borderColor: C.borderBright }}
+                                data-lang-exempt="live"
+                              >
+                                {triggerText(t)}
+                              </span>
+                            ))}
+                          </span>
+                        ) : (
+                          liveText(selectedLive ? ui.noTriggers : ui.unknown)
+                        ),
+                      )}
+                      {/* The name and domain the app serves it under, which is
+                          not always the manifest's: the spec beside this panel
+                          is a vendored copy and can drift from what runs. */}
+                      {row(
+                        ui.liveIdentity,
+                        selectedLive?.name || selectedLive?.domain
+                          ? mono([selectedLive.name, selectedLive.domain].filter((s): s is string => s !== null).join(' · '))
+                          : liveText(ui.unknown),
+                      )}
+                      {row(
+                        ui.servedByApp,
+                        selectedLive === null
+                          ? liveText(ui.unknown)
+                          : selectedLive.deployed === true
+                            ? mono(`✓ ${ui.isServed}${selectedLive.slug ? ` · ${selectedLive.slug}` : ''}`, C.accent)
+                            : selectedLive.deployed === false
+                              ? liveText(ui.notServed)
+                              : liveText(ui.unknown),
+                      )}
                     </div>
                   </div>
+                  <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{ui.invokedHint}</div>
+                  <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{ui.liveTriggersHint}</div>
                   {liveMeta}
                 </div>
 
@@ -1048,7 +1195,33 @@ export default function FunctionExplorer() {
                     {liveBadge}
                   </div>
                   <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.healthRingHint}</div>
-                  <HealthRing completed={totals24.completed} failed={totals24.failed} running={totals24.running} ui={ui} offline={liveOffline} />
+                  <HealthRing counts={totals24} ui={ui} offline={liveOffline} />
+                  {/* Which app answered. The counters are only as meaningful as
+                      the app they came from, and `connected: false` means the
+                      SDK is not registered at all -- every counter below is
+                      then history, not a live fleet. */}
+                  {live.kind === 'ok' ? (
+                    <div style={{ fontSize: 11.5, color: live.status.app.connected === false ? C.warn : C.muted, lineHeight: 1.5 }}>
+                      {ui.liveApp}:{' '}
+                      {live.status.app.connected === false ? (
+                        ui.appDisconnected
+                      ) : (
+                        <span data-lang-exempt="live">{[live.status.app.name, live.status.app.sdk, live.status.app.url].filter((s): s is string => s !== null).join(' · ') || '—'}</span>
+                      )}
+                    </div>
+                  ) : null}
+                  {/* Drift: the app serves something the manifest does not
+                      declare. The endpoint says so; the page used to not even
+                      parse the field. */}
+                  {live.kind === 'ok' ? (
+                    live.status.unknownInApp.length > 0 ? (
+                      <div style={{ fontSize: 11.5, color: C.warn, lineHeight: 1.5 }}>
+                        ⚠ {ui.drift}: <span data-lang-exempt="live">{live.status.unknownInApp.join(' · ')}</span>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{ui.noDrift}</div>
+                    )
+                  ) : null}
                 </div>
 
                 <div style={{ ...box, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>

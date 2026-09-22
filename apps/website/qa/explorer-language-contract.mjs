@@ -25,6 +25,10 @@ const PAGES = [
   'src/pages/ToolExplorer.tsx',
   'src/pages/SystemDocs.tsx',
   'src/pages/ClientsConsole.tsx',
+  // FunctionExplorer draws a live endpoint, so it gains copy faster than the
+  // others and was the one page not listed here. A key missing from BOTH
+  // dictionaries renders as its own name and no parity check can see it.
+  'src/pages/FunctionExplorer.tsx',
 ]
 
 /**

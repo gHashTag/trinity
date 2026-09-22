@@ -14,9 +14,16 @@
 #                      errors accrued unseen -- among them seven React branches
 #                      that were statically false, so four panels rendered
 #                      nothing in production)
-#   check:api          a field the UI formats that no server emits, and any
+#   check:api          a field the UI formats that no server emits, any
 #                      fallback not tagged with sample() (A36/A37: novelty:0.342
-#                      rendered as an FPGA measurement on a public route)
+#                      rendered as an FPGA measurement on a public route), and
+#                      the mirror of the first: a field the server DOES emit
+#                      that the site's parser throws away. It runs the real
+#                      parser over a recorded body of the bot's Inngest status
+#                      endpoint, both directions. `lastError` was declared
+#                      `string` against an object wire, so the one field that
+#                      names a failing run returned null on every poll for all
+#                      33 functions, and the page drew an em dash
 #   audit:mobile       no route scrolls sideways at 375px (A50: /specs kept its
 #                      desktop two-pane layout on a phone, leaving ~150px for
 #                      the detail; nothing was checking the other 27 routes, and
@@ -75,8 +82,12 @@ jobs:
       - name: typecheck ratchet
         run: npm run typecheck:ratchet
 
-      # Compares names only -- it cannot see units, which is why A34's five
-      # mappable fields stay unwired rather than relabelled as microseconds.
+      # Compares names only for the Zig half -- it cannot see units, which is
+      # why A34's five mappable fields stay unwired rather than relabelled as
+      # microseconds. The Inngest half compares VALUES, against a recorded
+      # body, and runs --self-test first: it replays the two defects it was
+      # written for and requires both to be reported, so a gate nobody has
+      # watched fail is not trusted on the day it matters.
       - name: API contract
         run: npm run check:api
 

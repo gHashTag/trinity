@@ -1,0 +1,1296 @@
+{
+  "generatedAt": "2026-09-22T16:30:07.854Z",
+  "source": {
+    "gqlUrl": "http://REDACTED.railway.internal:8288/v0/gql",
+    "cached": false
+  },
+  "app": {
+    "name": "telegram-bot-client",
+    "sdk": "v3.54.2",
+    "url": "https://999-multibots-telegraf-production-2008.up.railway.app/api/inngest",
+    "connected": true
+  },
+  "functions": [
+    {
+      "id": "neuro-image-generate",
+      "slug": "telegram-bot-client-neuro-image-generate",
+      "name": "🎨 Neuro Image Generation",
+      "domain": "neuro",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "neuro/image.generate"
+        },
+        {
+          "type": "event",
+          "value": "neuro/photo.generate"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "reels-ai-generate",
+      "slug": "telegram-bot-client-reels-ai-generate",
+      "name": "🎬 AI Reels Generation",
+      "domain": "reels",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "reels/ai.generate"
+        },
+        {
+          "type": "event",
+          "value": "ai-reels/generate"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "reels-ai-callback",
+      "slug": "telegram-bot-client-reels-ai-callback",
+      "name": "🔔 AI Reels Callback Handler",
+      "domain": "reels",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "reels/ai.callback"
+        },
+        {
+          "type": "event",
+          "value": "ai-reels-callback"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "reels-loop-generate",
+      "slug": "telegram-bot-client-reels-loop-generate",
+      "name": "🔄 Generate Kling Morphing Loop v7",
+      "domain": "reels",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "reels/loop.generate"
+        },
+        {
+          "type": "event",
+          "value": "reels/generate-advanced-loop"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "training-model-start",
+      "slug": "telegram-bot-client-training-model-start",
+      "name": "🧠 Model Training - Flux LoRA",
+      "domain": "training",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "training/model.start"
+        },
+        {
+          "type": "event",
+          "value": "model/training.start"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "training-model-v2-start",
+      "slug": "telegram-bot-client-training-model-v2-start",
+      "name": "🚀 Model Training V2",
+      "domain": "training",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "training/model-v2.start"
+        },
+        {
+          "type": "event",
+          "value": "model/training.v2.requested"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "training-model-complete",
+      "slug": "telegram-bot-client-training-model-complete",
+      "name": "🤖 Training Complete",
+      "domain": "training",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "training/model.complete"
+        },
+        {
+          "type": "event",
+          "value": "model/training.completed"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "training-stuck-check",
+      "slug": "telegram-bot-client-training-stuck-check",
+      "name": "Check Stuck Model Trainings",
+      "domain": "training",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "*/30 * * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 48,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 48
+      },
+      "runs7d": {
+        "completed": 336,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 336
+      },
+      "lastRun": {
+        "id": "01M34Z7SSZ0XPG7N8THY2C23CY",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T16:30:00.005463Z",
+        "endedAt": "2026-09-22T16:30:00.691026Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "morph-images-generate",
+      "slug": "telegram-bot-client-morph-images-generate",
+      "name": "🧬 Morph Images",
+      "domain": "morph",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "morph/images.generate"
+        },
+        {
+          "type": "event",
+          "value": "morph/images.requested"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "render-job-run",
+      "slug": "telegram-bot-client-render-job-run",
+      "name": "🎬 Render Workflow",
+      "domain": "render",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "render/job.run"
+        },
+        {
+          "type": "event",
+          "value": "render"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "render-avatar-video-run",
+      "slug": "telegram-bot-client-render-avatar-video-run",
+      "name": "🎥 Render Avatar Video Workflow",
+      "domain": "render",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "render/avatar-video.run"
+        },
+        {
+          "type": "event",
+          "value": "render/avatar-video"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "render-riddle-run",
+      "slug": "telegram-bot-client-render-riddle-run",
+      "name": "🧩 Render Riddle Workflow",
+      "domain": "render",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "render/riddle.run"
+        },
+        {
+          "type": "event",
+          "value": "render-riddle"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "payment-ai-server-process",
+      "slug": "telegram-bot-client-payment-ai-server-process",
+      "name": "💳 Payment Processing AI Server",
+      "domain": "payment",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "payment/ai-server.process"
+        },
+        {
+          "type": "event",
+          "value": "payment/process-ai-server"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "broadcast-message-send",
+      "slug": "telegram-bot-client-broadcast-message-send",
+      "name": "📢 Broadcast Message",
+      "domain": "broadcast",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "broadcast/message.send"
+        },
+        {
+          "type": "event",
+          "value": "broadcast/send-message"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "instagram-reels-analyze",
+      "slug": "telegram-bot-client-instagram-reels-analyze",
+      "name": "📈 Analyze Competitor Reels",
+      "domain": "instagram",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "instagram/reels.analyze"
+        },
+        {
+          "type": "event",
+          "value": "instagram/analyze-reels"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "instagram-competitors-find",
+      "slug": "telegram-bot-client-instagram-competitors-find",
+      "name": "🔍 Find Instagram Competitors",
+      "domain": "instagram",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "instagram/competitors.find"
+        },
+        {
+          "type": "event",
+          "value": "instagram/find-competitors"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "instagram-top-content-extract",
+      "slug": "telegram-bot-client-instagram-top-content-extract",
+      "name": "📊 Extract Top Content",
+      "domain": "instagram",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "instagram/top-content.extract"
+        },
+        {
+          "type": "event",
+          "value": "instagram/extract-top"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "content-scripts-generate",
+      "slug": "telegram-bot-client-content-scripts-generate",
+      "name": "🎬 Generate Content Scripts",
+      "domain": "content",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "content/scripts.generate"
+        },
+        {
+          "type": "event",
+          "value": "instagram/generate-scripts"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "content-detailed-script-generate",
+      "slug": "telegram-bot-client-content-detailed-script-generate",
+      "name": "📝 Generate Detailed Script",
+      "domain": "content",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "content/detailed-script.generate"
+        },
+        {
+          "type": "event",
+          "value": "content/generate-detailed-script"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "content-scenario-clips-generate",
+      "slug": "telegram-bot-client-content-scenario-clips-generate",
+      "name": "🎬 Generate Blogger Text Scenarios",
+      "domain": "content",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "content/scenario-clips.generate"
+        },
+        {
+          "type": "event",
+          "value": "content/generate-scenario-clips"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "FAILED-at-guard",
+      "lastError": null
+    },
+    {
+      "id": "monitoring-error-report",
+      "slug": "telegram-bot-client-monitoring-error-report",
+      "name": "🚨 Critical Error Monitor",
+      "domain": "monitoring",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "monitoring/error.report"
+        },
+        {
+          "type": "event",
+          "value": "app/error.critical"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "monitoring-health-check",
+      "slug": "telegram-bot-client-monitoring-health-check",
+      "name": "💚 Health Check Monitor",
+      "domain": "monitoring",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "*/30 * * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 48,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 48
+      },
+      "runs7d": {
+        "completed": 336,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 336
+      },
+      "lastRun": {
+        "id": "01M34Z7ST4DVYH6K7VDK3C19M6",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T16:30:00.009098Z",
+        "endedAt": "2026-09-22T16:30:00.840063Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "monitoring-logs-analyze",
+      "slug": "telegram-bot-client-monitoring-logs-analyze",
+      "name": "📊 Log Monitor & Reporter",
+      "domain": "monitoring",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "0 10 * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 1,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 1
+      },
+      "runs7d": {
+        "completed": 7,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 7
+      },
+      "lastRun": {
+        "id": "01M348XPA72F4CT2GQP69P2A24",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T10:00:00.080135Z",
+        "endedAt": "2026-09-22T10:00:11.460334Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "monitoring-logs-trigger",
+      "slug": "telegram-bot-client-monitoring-logs-trigger",
+      "name": "🔄 Trigger Log Monitor (Manual)",
+      "domain": "monitoring",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "monitoring/logs.trigger"
+        },
+        {
+          "type": "event",
+          "value": "logs/monitor.trigger"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "analytics-sales-advise",
+      "slug": "telegram-bot-client-analytics-sales-advise",
+      "name": "analytics-sales-advise",
+      "domain": "analytics",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "0 9 * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 1,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 1
+      },
+      "runs7d": {
+        "completed": 7,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 7
+      },
+      "lastRun": {
+        "id": "01M345FTKK0AC2NXR70SVKE68Z",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T08:59:59.988513Z",
+        "endedAt": "2026-09-22T09:00:09.385759Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "analytics-skills-detect",
+      "slug": "telegram-bot-client-analytics-skills-detect",
+      "name": "analytics-skills-detect",
+      "domain": "analytics",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "0 10 * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 1,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 1
+      },
+      "runs7d": {
+        "completed": 7,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 7
+      },
+      "lastRun": {
+        "id": "01M348XPA7N9Z6GWDN2K9J5FM3",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T10:00:00.076555Z",
+        "endedAt": "2026-09-22T10:00:04.133035Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "client-telemetry-daily",
+      "slug": "telegram-bot-client-client-telemetry-daily",
+      "name": "Clients: daily usage report to the owner",
+      "domain": "analytics",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "0 7 * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 1,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 1
+      },
+      "runs7d": {
+        "completed": 2,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 2
+      },
+      "lastRun": {
+        "id": "01M33YM3BJ9KPM3F47FQ8G2FTE",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T06:59:59.992403Z",
+        "endedAt": "2026-09-22T07:00:01.744089Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "club-invoice-abandoned-watch",
+      "slug": "telegram-bot-client-club-invoice-abandoned-watch",
+      "name": "Funnel: club invoices nobody paid",
+      "domain": "analytics",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "20 * * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 11,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 11
+      },
+      "runs7d": {
+        "completed": 11,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 11
+      },
+      "lastRun": {
+        "id": "01M34YNFVK2Z99YX8V7SRJY4G1",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T16:19:59.989188Z",
+        "endedAt": "2026-09-22T16:20:00.371151Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "webhook-generation-validate",
+      "slug": "telegram-bot-client-webhook-generation-validate",
+      "name": "⚙️ System VideoCheck",
+      "domain": "webhook",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "webhook/generation.validate"
+        },
+        {
+          "type": "event",
+          "value": "video/generation-validate-webhook"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "runs7d": {
+        "completed": 0,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 0
+      },
+      "lastRun": null,
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "welcome-avatar-generate",
+      "slug": "telegram-bot-client-welcome-avatar-generate",
+      "name": "🎁 Welcome Avatar",
+      "domain": "welcome",
+      "triggers": [
+        {
+          "type": "event",
+          "value": "welcome/avatar.generate"
+        },
+        {
+          "type": "event",
+          "value": "user/welcome.avatar.generate"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 3,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 3
+      },
+      "runs7d": {
+        "completed": 5,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 5
+      },
+      "lastRun": {
+        "id": "01M34YMDFXCTTT35NWVD59NBG7",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T16:19:24.799152Z",
+        "endedAt": "2026-09-22T16:20:50.687243Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "crm-proactive-sweep",
+      "slug": "telegram-bot-client-crm-proactive-sweep",
+      "name": "CRM: proactive seller sweep",
+      "domain": "crm",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "*/30 * * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 47,
+        "failed": 1,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 1,
+        "total": 49
+      },
+      "runs7d": {
+        "completed": 331,
+        "failed": 5,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 1,
+        "total": 337
+      },
+      "lastRun": {
+        "id": "01M34Z7SSZYS3TX3GQ7RQCFAGS",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T16:30:00.005739Z",
+        "endedAt": "2026-09-22T16:30:05.309033Z"
+      },
+      "lastProbe": {
+        "id": "01M34XM14PS8VWEYY5RPBT53BF",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T16:01:43.576187Z",
+        "endedAt": "2026-09-22T16:02:17.909476Z",
+        "expect": "COMPLETED",
+        "asExpected": true
+      },
+      "probeExpect": "COMPLETED",
+      "lastError": {
+        "runId": "01M34VSY7WPDV605VG15YEKJ7M",
+        "endedAt": "2026-09-22T15:30:30.453531Z",
+        "eventName": null
+      }
+    },
+    {
+      "id": "ton-pending-watch",
+      "slug": "telegram-bot-client-ton-pending-watch",
+      "name": "Money: TON that arrived and was never credited",
+      "domain": "money",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "0 * * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 24,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 24
+      },
+      "runs7d": {
+        "completed": 94,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 94
+      },
+      "lastRun": {
+        "id": "01M34XGW251G207BSY5WCQHT1K",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T16:00:00.076782Z",
+        "endedAt": "2026-09-22T16:00:02.054585Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    },
+    {
+      "id": "robokassa-unclaimed-watch",
+      "slug": "telegram-bot-client-robokassa-unclaimed-watch",
+      "name": "Money: roubles that arrived and were never credited",
+      "domain": "money",
+      "triggers": [
+        {
+          "type": "cron",
+          "value": "20 7 * * *"
+        }
+      ],
+      "control": "spec+code",
+      "deployed": true,
+      "runs24h": {
+        "completed": 1,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 1
+      },
+      "runs7d": {
+        "completed": 4,
+        "failed": 0,
+        "running": 0,
+        "cancelled": 0,
+        "invoked": 0,
+        "total": 4
+      },
+      "lastRun": {
+        "id": "01M33ZRQ7N5S1NTTJNJ7YNGG7F",
+        "status": "COMPLETED",
+        "queuedAt": "2026-09-22T07:19:59.991348Z",
+        "endedAt": "2026-09-22T07:20:01.718272Z"
+      },
+      "lastProbe": null,
+      "probeExpect": "COMPLETED",
+      "lastError": null
+    }
+  ],
+  "unknownInApp": []
+}

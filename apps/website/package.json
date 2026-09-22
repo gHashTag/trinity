@@ -25,7 +25,7 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
-    "check:api": "node scripts/api-contract-check.mjs",
+    "check:api": "node --experimental-strip-types scripts/api-contract-check.mjs --self-test",
     "check:silicon": "node scripts/check-silicon-coverage.mjs --self-test",
     "check:render": "node scripts/render-check.mjs",
     "check:deployed": "node scripts/deployed-check.mjs",
