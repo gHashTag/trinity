@@ -826,7 +826,7 @@ const TOKEN_SCOPES = new Map([
   ['.queen-catalog-layer', 'board'],
   ['.queen-catalog-layer:has(.queen-catalog-toolbar.is-search-open)', 'board'],
   ['.queen-hive-display', 'board'],
-  ['.queen27-context, .queen27-context-chip', 'board'],
+  ['.queen27-context', 'board'],
   ['.queen27-cycle-brand', 'board'],
   ['.queen27-factory', 'board'],
   ['.queen27-factory-station', 'board'],
@@ -1790,9 +1790,11 @@ let haloed = 0
  *
  *  A selector list is one declaration and several surfaces, and they do not
  *  have to be in the same state. `.queen27-context, .queen27-context-chip` in
- *  QueenContext.css grounds both at --hud-panel in one breath; the card below
- *  is frosted and the collapsed chip is not, and the chip floats over the live
- *  scene on its own. Every question here used to be asked of the rule with
+ *  QueenContext.css grounded both at --hud-panel in one breath; the card was
+ *  frosted and the collapsed chip was not, and the chip floated over the live
+ *  scene on its own. (The chip has since been removed from the board, so that
+ *  list is one selector now — the shape it exposed is what this guards.)
+ *  Every question here used to be asked of the rule with
  *  `subjects.some(...)` or `NO_TEXT.some(...)`, so one qualifying member spoke
  *  for the whole list: the frosted card vouched for the bare chip, and the gate
  *  reported the board clean while an 0.86 ground sat over a moving lattice with

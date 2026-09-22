@@ -683,7 +683,6 @@ const COPY = {
     hudCopyLink: "COPY LINK",
     hudLinkCopied: "LINK COPIED",
     hudClose: "Close",
-    hudOpenPanel: "CONTEXT",
     hudActiveSector: "ACTIVE SECTOR",
     hudProduction: "PRODUCTION",
     hudCards: "CARDS",
@@ -1091,7 +1090,6 @@ const COPY = {
     hudCopyLink: "КОПИРОВАТЬ ССЫЛКУ",
     hudLinkCopied: "ССЫЛКА СКОПИРОВАНА",
     hudClose: "Закрыть",
-    hudOpenPanel: "КОНТЕКСТ",
     hudActiveSector: "АКТИВНЫЙ СЕКТОР",
     hudProduction: "PRODUCTION",
     hudCards: "КАРТОЧЕК",
@@ -3644,6 +3642,10 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                   signalHealth={{board:hiveFeedHealth(boardState.data!==null,boardState.error),activity:hiveFeedHealth(activityState.data!==null,activityState.error)}}
                   displays={hiveCells}
                   lang={lang === 'ru' ? 'ru' : 'en'}
+                  /* Inspecting a hive display zooms the scene onto it and the
+                     display draws over the whole field, so the card steps
+                     aside. It used to leave a collapsed chip behind; now it
+                     leaves nothing, and FIT VIEW below brings it back. */
                   onInspect={() => setContextOpen(false)}
                   cards={placedCards}
                   modules={modulesById}
@@ -3755,10 +3757,17 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                     <span className="queen27-hud-vp-word">{c[LAYER_COPY[k]]}</span>
                   </button>
                 ))}
+                {/* FIT VIEW is the way home, and the inspector is part of home:
+                    it undoes the roam, the zoom and the display that took the
+                    field, so the CONTEXT card comes back with them. That is
+                    what reopens it now that the collapsed chip is gone — a
+                    labelled control in the toolbar instead of a green button
+                    floating over the hive. Not on the catalog board and not on
+                    a phone: the card does not belong to either. */}
                 <button
                   type="button"
                   data-tool="fit"
-                  onClick={() => combRef.current?.fit()}
+                  onClick={() => { combRef.current?.fit(); setContextOpen(!isPhone && !sharedCatalog); }}
                   title={c.hudFitView}
                 >
                   {c.hudFitView}
@@ -4071,11 +4080,12 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             the old comb: the shared catalog has its own inspector. Drawn on
             every other view, its collapsed chip floated over FEED, AI, PROFILE
             and ROADMAP with nothing to show (owner, 2026-09-22: "remove the
-            phantom button of the old design"). */}
+            phantom button of the old design"). Closing it now removes it
+            outright - there is no chip left behind, and FIT VIEW brings the
+            card back. */}
         {boardView === "comb" && !sharedCatalog && <QueenContext
           open={contextOpen}
           onClose={() => setContextOpen(false)}
-          onOpen={() => setContextOpen(true)}
           lang={lang}
           repo={repo}
           columns={boardColumns}
@@ -4138,7 +4148,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             copyLink: c.hudCopyLink,
             linkCopied: c.hudLinkCopied,
             close: c.hudClose,
-            openPanel: c.hudOpenPanel,
           }}
         />}
 

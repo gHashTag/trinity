@@ -198,13 +198,10 @@
     display: none;
   }
 
-  /* 5b. WHAT STANDS ABOVE THE RAIL FOLLOWS ITS HEIGHT. The CONTEXT chip, the
-         context drawer and the identity prompt were placed for a 64px rail;
-         the chip stood on the first two tiles in the third picture. */
-  .queen27-page.is-shell .queen27-hud-viewport > .queen27-context-chip {
-    bottom: calc(var(--hud-phone-rail-h) + var(--hud-gap) * 2);
-  }
-
+  /* 5b. WHAT STANDS ABOVE THE RAIL FOLLOWS ITS HEIGHT. The context drawer and
+         the identity prompt were placed for a 64px rail. The CONTEXT chip was
+         lifted here too, standing on the first two tiles in the third picture;
+         it has since been removed from the board entirely. */
   .queen27-page.is-shell .queen27-hud-intel.is-drawer,
   .queen27-identity-bridge {
     bottom: calc(var(--hud-phone-rail-h) + 16px + env(safe-area-inset-bottom));

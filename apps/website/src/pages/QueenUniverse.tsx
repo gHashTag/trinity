@@ -69,7 +69,16 @@ export default function QueenUniverse() {
       {repo!==PINNED_WORLDS[1]&&<button className="queen-world-shortcut" onClick={()=>choose(PINNED_WORLDS[1])}>T27 ↗</button>}
       <button className="queen-world-connect" onClick={()=>dialog.current?.showModal()}>{c.connect}</button>
       <button aria-pressed={atlasView} onClick={()=>setParams(new URLSearchParams())}>{lang==='ru'?'◈ Главная игры':'◈ Game home'}</button>
-      <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView)n.delete('view');else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
+      {/* Leaving the core view must not leave its selection behind. choose()
+          writes world= off the core view and repo= on it, because the core
+          names one repository while the map names a world; "← Map" deleted
+          only view=, so the repo= stayed and the map it returned to was the
+          legacy single-repository comb. That was four clicks from the default
+          board and the only in-app route to it - the board the phantom CONTEXT
+          chip belonged to. Convert the selection back on the way out, by the
+          same test choose() uses; a repository the atlas does not carry is a
+          world of its own and keeps its repo=. */}
+      <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView){n.delete('view');const r=n.get('repo');if(r&&atlas?.worlds.some(w=>w.repo===r&&w.specCount>0)){n.delete('repo');n.set('world',r);}}else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
     </nav>;
 
   // Where the nav goes when there is no slot yet.

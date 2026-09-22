@@ -1,7 +1,12 @@
 /* CONTEXT DETAILS: the floating unit/queue card over the centre viewport. */
 
-.queen27-context,
-.queen27-context-chip {
+/* One selector, where there used to be two: the card had a collapsed form, a
+   CONTEXT chip pinned to the same corner, and it is gone (owner, 2026-09-22:
+   "hide the phantom button of the old design"). It only ever appeared on the
+   legacy comb, floating a green button over the hive with nothing behind it.
+   The card is now either drawn or absent, and FIT VIEW in the comb's toolbar
+   brings it back. */
+.queen27-context {
   --ctx-line: var(--hud-line, rgba(0, 255, 136, 0.22));
   --ctx-line-strong: var(--hud-line-strong, rgba(0, 255, 136, 0.5));
   --ctx-muted: var(--hud-muted, rgba(255, 255, 255, 0.55));
@@ -13,10 +18,13 @@
   left: 20px;
   z-index: 3;
   border: 1px solid var(--ctx-line-strong);
-  background: var(--hud-panel, rgba(2, 8, 6, 0.86));
-}
-
-.queen27-context {
+  /* --hud-panel is declared once in the tree, on .queen27-page.is-shell in
+     Queen.css, and it holds 0.88; this card renders only from Queen.tsx, whose
+     root carries is-shell unconditionally, so the fallback is never reached.
+     It read 0.86 while the collapsed chip and its hover rule carried the same
+     wrong literal and a disagreeing pair would have read as the hover moving
+     the ground. Both are gone, so the number here can say what draws. */
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
   right: 20px;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -25,46 +33,6 @@
   -webkit-backdrop-filter: blur(6px);
   clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
   color: var(--text, #e8e8f0);
-}
-
-/* The collapsed chip is the card's other state, and it is alone on the field.
-   The two share the rule above because they share a corner of the viewport, a
-   border and a ground -- and sharing the ground is how the chip came to be the
-   only surface on this board floating over a live hive at 0.88 with nothing
-   taking the lattice's edges out. The card above carries the low pass; the
-   chip, being the collapsed form, has no card around it to inherit one from.
-
-   0.88, not the 0.86 written beside it: --hud-panel is declared once in the
-   whole tree, on .queen27-page.is-shell in Queen.css, and it holds 0.88. The
-   literal in the rule is a fallback for a surface outside the shell, and this
-   one is never outside it -- QueenContext renders only from Queen.tsx, whose
-   root carries is-shell unconditionally -- so the number a reader can see here
-   is the number the browser never uses. Left as written rather than corrected
-   in place, because the sibling rule above carries the same 0.86 and a pair
-   that disagrees would read as the hover changing the ground, which is exactly
-   the bug fixed at the bottom of this file.
-
-   The gate could not see it either, and for the same reason the CSS hides it:
-   one declaration, two surfaces, and only one of them frosted. It asked its
-   questions of the rule rather than of each subject, so the card's blur
-   answered for the chip. That is fixed in qa/queen-contrast-contract.mjs; this
-   is the surface it found.
-
-   0.88 passes 12% of the hive, and alpha only scales the lattice's amplitude --
-   its frequency comes through whatever the ground. On a label of 0.62rem
-   uppercase with 0.14em of tracking, a hexagon edge crossing a letterform is
-   read as part of the letter, which is exactly what the screenshot showed. */
-.queen27-context-chip {
-  padding: 0.4rem 0.75rem;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  color: var(--ctx-green);
-  font: inherit;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-  cursor: pointer;
 }
 
 .queen27-context-head {
@@ -223,22 +191,13 @@ a.queen27-context-row:hover { border-color: var(--ctx-line-strong); }
 
 /* Inside the card these three are bare -- the card paints the ground and they
    sit on it -- so a hover that sets `background` to a 10% wash is the whole
-   effect and nothing is lost. */
+   effect and nothing is lost. The collapsed chip used to need its own rule
+   here, because it carried a ground of its own and `background` written alone
+   is a shorthand that REPLACES; with the chip gone, every hover on this card
+   is a hover on something bare again. */
 .queen27-context-head button:hover,
 .queen27-context-actions > a:hover,
 .queen27-context-actions > button:hover:not(:disabled) { background: rgba(0, 255, 136, 0.1); }
-
-/* The chip is not bare, and that is why it is no longer on the line above.
-   `background` is a shorthand: written alone it REPLACES, so pointing at the
-   collapsed chip dropped its 0.86 ground and left the label on 10% green over
-   a moving lattice -- the one moment a reader is certainly looking at it was
-   the one moment it was least readable. The wash is a layer now and the panel
-   stays under it. */
-.queen27-context-chip:hover {
-  background:
-    linear-gradient(rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.1)),
-    var(--hud-panel, rgba(2, 8, 6, 0.86));
-}
 
 .queen27-context-actions > button:disabled { opacity: 0.4; cursor: default; }
 .queen27-context-actions > button.is-copied { border-color: var(--ctx-gold); color: var(--ctx-gold); }
