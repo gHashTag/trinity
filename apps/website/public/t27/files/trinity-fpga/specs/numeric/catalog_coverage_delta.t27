@@ -1,6 +1,17 @@
 # Trinity Numeric SSOT — coverage delta between the published catalog and the oracle layer
 # Claim under test: arXiv:2606.09686 (83-format catalog), abstract
 # Measured 2026-07-31 against gHashTag/t27 conformance/vectors and local conformance/*_ref.py
+#
+# NOTE 2026-09-22 — one finding below rests on a question that turned out to be void.
+# Passes 89 onward raise a conflict over which Artix-7 part the "35/35 at 323 MHz"
+# result belongs to (XC7A35T in Paper A vs XC7A100T in main_ru). The 323 MHz figure
+# itself was WITHDRAWN on 2026-08-08: the gf16 cores hold no registers, the synthesis
+# top constant-folds them away behind a ring oscillator, and the only create_clock in
+# the FPGA tree asks for 12 MHz. There is no part it belongs to. Those passes are kept
+# verbatim as the record of a real miss — the method compared attributes of a number
+# without ever testing whether the number could exist — but do not act on them, and do
+# not quote 323 MHz from any line below. Everything about the 83/84 catalog delta,
+# which is what this spec is for, is unaffected.
 
 spec CatalogCoverageDelta version 1.0.0
 
