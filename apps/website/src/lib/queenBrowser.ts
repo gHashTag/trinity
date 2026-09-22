@@ -49,6 +49,8 @@ export interface BrowserView {
   state: BrowserState
   sessionId?: string
   viewUrl?: string
+  /** Who drives, as the server holds it (999-multibots-telegraf #2797). */
+  wheel?: 'person' | 'agent'
 }
 
 /**
@@ -87,6 +89,7 @@ export function viewOf(answer: unknown): BrowserView {
   const view: BrowserView = { state }
   if (typeof a.sessionId === 'string') view.sessionId = a.sessionId
   if (typeof a.viewUrl === 'string') view.viewUrl = a.viewUrl
+  if (a.wheel === 'person' || a.wheel === 'agent') view.wheel = a.wheel
   return view
 }
 

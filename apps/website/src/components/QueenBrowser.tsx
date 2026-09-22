@@ -151,6 +151,11 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
     [takeTheWheel],
   )
   useEffect(() => () => unlisten.current?.(), [])
+  // After a reload or from another device: the server says who is driving.
+  useEffect(() => {
+    if (view?.wheel === 'person') setDriving(true)
+    else if (view?.wheel === 'agent') setDriving(false)
+  }, [view?.wheel])
 
   // A pod that is still starting is asked again until it answers otherwise.
   useEffect(() => {

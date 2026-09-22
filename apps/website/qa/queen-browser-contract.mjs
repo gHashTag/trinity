@@ -102,6 +102,8 @@ await assert.rejects(callBroker(recorder(500, {}).env, 'read'))
 assert.deepEqual(viewOf({ state: 'hibernating' }), { state: 'none' })
 assert.deepEqual(viewOf(null), { state: 'none' })
 assert.deepEqual(viewOf({ state: 'live', viewUrl: 42 }), { state: 'live' })
+assert.deepEqual(viewOf({ state: 'live', wheel: 'person' }), { state: 'live', wheel: 'person' }, 'who drives passes through')
+assert.deepEqual(viewOf({ state: 'live', wheel: 'robot' }), { state: 'live' }, 'and nothing else does')
 
 // 4. What may be framed: our own origin, under /live/, and nothing else.
 assert.equal(frameSrcOf('/live/s1?t=v', APP), `${APP}/live/s1?t=v`)
