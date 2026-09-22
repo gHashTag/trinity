@@ -88,11 +88,21 @@
   color: #00ff88;
 }
 
+/* FROSTED GLASS, like the Queen's own panel (QueenChat.css): the app's screens
+   sit on a translucent, blurred pane over the hex field instead of a black
+   slab (owner, 2026-09-22). The blur lives HERE, on the board: a document
+   inside the frame cannot blur the pixels behind the frame. The app draws its
+   page transparent in embed mode, so this pane is what shows through. */
 .queen27-page.is-shell .queen27-tri-frame-wrap {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  border: 1px solid rgba(0, 255, 136, 0.18);
+  border-radius: 10px;
+  background: rgba(3, 12, 14, 0.62);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  backdrop-filter: blur(14px) saturate(120%);
 }
 
 .queen27-page.is-shell .queen27-tri-frame {
@@ -101,7 +111,8 @@
   height: 100%;
   min-height: 0;
   border: 0;
-  background: #000;
+  background: transparent;
+  color-scheme: dark;
 }
 
 .queen27-page.is-shell .queen27-tri-loading {

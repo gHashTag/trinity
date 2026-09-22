@@ -307,6 +307,38 @@ export async function askBrowserAgent(
   return answer
 }
 
+/**
+ * A message to the person's agent, AS the person: the text exactly as they
+ * approved it, with no framing of ours, into their own thread (the one the
+ * AGENT tab shows). `surface: 'queen'` labels where it came from; the server
+ * keeps that name for this chat (render routes.ts, ИЗВЕСТНЫЕ_ПОВЕРХНОСТИ) and
+ * stores the person's line, so the AGENT tab shows it after a reload.
+ */
+export async function sayToAgent(
+  env: AgentEnv,
+  text: string,
+  onProgress?: (soFar: AgentAnswer) => void,
+): Promise<AgentAnswer> {
+  const token = env.token()
+  if (!token) throw new AgentSignedOut()
+  const res = await env.fetch(`${BROKER_BASE}/api/agent/chat`, {
+    method: 'POST',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ messages: [{ role: 'user', content: text }], surface: 'queen' }),
+  })
+  if (res.status === 401) throw new AgentSignedOut()
+  if (!res.ok) {
+    const raw = await res.text().catch(() => '')
+    throw new Error(`agent ${res.status}${raw ? `: ${raw.slice(0, 300)}` : ''}`)
+  }
+  const answer = res.body
+    ? await readAgentBody(res.body, onProgress)
+    : readAgentStream(await res.text().catch(() => ''))
+  if (!answer.text && answer.error) throw new Error(answer.error)
+  return answer
+}
+
 /* ────────────────────────────────────────────────────────────────────────
  * THE WINDOW SAYS WHEN ITS CONNECTION IS LOST.
  *

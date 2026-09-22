@@ -158,6 +158,13 @@ export function QueenTri({ c, lang, embedded }: { c: TriCopy; lang: string; embe
   // moves screen= along, and the frame and the address stay in step.
   const src = triFrameSrc(frame.screen, frame.lang, frame.path)
   const [mountSrc] = useState(src)
+  // The Queen sent a message to the agent as the person: reload this screen
+  // so the app's own thread shows it (Queen.tsx sendForPerson).
+  useEffect(() => {
+    const reload = () => setFrame((f) => ({ ...f, nonce: f.nonce + 1 }))
+    window.addEventListener('queen:tri-reload', reload)
+    return () => window.removeEventListener('queen:tri-reload', reload)
+  }, [])
   const navigatedNonce = useRef(frame.nonce)
   useEffect(() => {
     if (navigatedNonce.current === frame.nonce) return
