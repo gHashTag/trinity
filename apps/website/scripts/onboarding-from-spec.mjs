@@ -25,6 +25,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CYRILLIC, SITE, checkSchema, compilerErrors, constsOf, loadCompiler, sha256, verdictOf } from './agents-from-specs.mjs'
+// The one rule for "is this entry a compilation unit?", imported rather than
+// retyped. Every derived count below is a subset of the health states, and the
+// health states are counted over modules only -- a second copy of the test here
+// is exactly how the two denominators drift apart again.
+import { isSourceEntry } from './t27-corpus.mjs'
 import { runSpecTests } from './viewport-from-spec.mjs'
 
 const WASM = 'public/t27/t27_compiler.wasm'
@@ -54,7 +59,8 @@ export const ONBOARDING_REQUIRED = {
   BACKENDS: 'arr', BACKENDS_NOTE: 'str',
   TS_SHARES_THE_JS_VALUE_LAYER: 'bool', JS_TS_DIVERGENCES: 'u16',
   MEASURED_AT: 'str', SPEC_COUNT: 'u16', SPEC_LINES: 'u32',
-  HEALTH_OK: 'u16', HEALTH_WARN: 'u16', HEALTH_FAIL: 'u16', HEALTH_FAIL_NOTE: 'str',
+  HEALTH_OK: 'u16', HEALTH_WARN: 'u16', HEALTH_FAIL: 'u16', HEALTH_NOT_MODULE: 'u16',
+  HEALTH_FAIL_NOTE: 'str', HEALTH_NOT_MODULE_NOTE: 'str',
   HEALTH_FAIL_UNPARSED: 'u16', HEALTH_FAIL_JS_ONLY: 'u16', HEALTH_PARTIAL: 'u16',
   REPO_COUNT: 'u8', WORLD_COUNT: 'u8',
   GAME: 'str', GAME_DOC: 'str', GAME_BOARD: 'str', WIN_CONDITION: 'str',
@@ -99,8 +105,22 @@ export function semanticProblems(f, file) {
     if (!f.COMPILER_EXPORTS.includes(name)) p.push(`${file}: COMPILER_EXPORTS must name ${name}`)
   }
 
-  if (f.HEALTH_OK + f.HEALTH_WARN + f.HEALTH_FAIL !== f.SPEC_COUNT) {
-    p.push(`${file}: health ${f.HEALTH_OK}+${f.HEALTH_WARN}+${f.HEALTH_FAIL} does not add up to SPEC_COUNT ${f.SPEC_COUNT}`)
+  // Four groups now, not three. The health states are counted over modules, and
+  // HEALTH_NOT_MODULE is the rest of the `.t27` files -- Markdown documents,
+  // TRI-27 assembly, fixtures damaged on purpose. Dropping the fourth term
+  // rather than adding it would have let this invariant pass while the document
+  // claimed 1454 specs and accounted for 1333.
+  const counted = f.HEALTH_OK + f.HEALTH_WARN + f.HEALTH_FAIL + f.HEALTH_NOT_MODULE
+  if (counted !== f.SPEC_COUNT) {
+    p.push(`${file}: health ${f.HEALTH_OK}+${f.HEALTH_WARN}+${f.HEALTH_FAIL}+${f.HEALTH_NOT_MODULE} = ${counted} does not add up to SPEC_COUNT ${f.SPEC_COUNT}`)
+  }
+  // Both are subsets of the failures, and a subset larger than its set is the
+  // shape of a denominator mismatch rather than a new fact.
+  if (f.HEALTH_FAIL_UNPARSED > f.HEALTH_FAIL) {
+    p.push(`${file}: HEALTH_FAIL_UNPARSED ${f.HEALTH_FAIL_UNPARSED} exceeds HEALTH_FAIL ${f.HEALTH_FAIL}; one of them is counting non-modules`)
+  }
+  if (f.HEALTH_FAIL_JS_ONLY > f.HEALTH_FAIL) {
+    p.push(`${file}: HEALTH_FAIL_JS_ONLY ${f.HEALTH_FAIL_JS_ONLY} exceeds HEALTH_FAIL ${f.HEALTH_FAIL}`)
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(f.MEASURED_AT)) p.push(`${file}: MEASURED_AT must be an ISO date; a snapshot without its day is not a snapshot`)
 
@@ -161,6 +181,12 @@ export function corpusProblems(f, file, manifest) {
     HEALTH_OK: manifest.health.ok,
     HEALTH_WARN: manifest.health.warn,
     HEALTH_FAIL: manifest.health.fail,
+    // The `.t27` files that are not modules: Markdown documents that happen to
+    // carry the extension, TRI-27 assembly, fixtures damaged on purpose. They
+    // used to be counted as broken specs -- 81 of the 218 reds were files the
+    // parser was never meant to accept -- so they now leave the health states
+    // and are reported as their own group instead of vanishing.
+    HEALTH_NOT_MODULE: manifest.notSource?.total ?? 0,
     REPO_COUNT: manifest.repos.length,
     WORLD_COUNT: manifest.discovery.worlds.length,
     // The share of health=fail that is the declarations-only backends declining to emit, on
@@ -173,16 +199,20 @@ export function corpusProblems(f, file, manifest) {
     // matches nothing, and the constant would have been "corrected" to zero by a generator
     // that was measuring the wrong set. Compare against DECLARATIONS_ONLY instead, so the
     // next backend of this kind is a one-word edit there and not a wrong number here.
-    HEALTH_FAIL_JS_ONLY: manifest.specs.filter((s) => sameSet(s.failedBackends ?? [], DECLARATIONS_ONLY)).length,
+    HEALTH_FAIL_JS_ONLY: manifest.specs.filter((s) => isSourceEntry(s) && sameSet(s.failedBackends ?? [], DECLARATIONS_ONLY)).length,
     // The half of health=fail that HEALTH_FAIL_NOTE promises the manifest separates, actually
     // separated. Zero AST nodes means the parser produced nothing, so no backend ran: its
     // clean counters say nothing ran, not that nothing went wrong. The remainder parsed and
     // then lost a backend, which is a different fault and a different fix.
-    HEALTH_FAIL_UNPARSED: manifest.specs.filter((s) => s.health === 'fail' && !s.nodes).length,
+    //
+    // Module-only, like HEALTH_FAIL itself. Over every entry this counts 228
+    // against a HEALTH_FAIL of 156 -- a subset larger than its set, which is
+    // the arithmetic of a Markdown document being called an unparsed spec.
+    HEALTH_FAIL_UNPARSED: manifest.specs.filter((s) => isSourceEntry(s) && s.health === 'fail' && !s.nodes).length,
     // A spec whose artifact exists and says, in itself, what it could not print. Counted here
     // for the same reason as the rest: a number this document states about the corpus is
     // measured from the corpus or it is not published.
-    HEALTH_PARTIAL: manifest.specs.filter((s) => (s.partialBackends ?? []).length > 0).length,
+    HEALTH_PARTIAL: manifest.specs.filter((s) => isSourceEntry(s) && (s.partialBackends ?? []).length > 0).length,
   }
   // The spec claims codegen_ts shares codegen_js's value layer. That is falsifiable over the
   // corpus and therefore gets falsified here rather than believed: a spec that loses one of

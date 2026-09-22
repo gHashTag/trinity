@@ -35,12 +35,20 @@
 ; CHECK (status IN ('available','rented','service','retired')) -- migrations/078_bike_units.sql:32
 ; -- and explains the choice at 078:16-19: service and retired exist so a unit can leave the
 ; available pool without being deleted and orphaning its service history in 080. Every other
-; source in the tree agrees with the migration rather than with the brief: src/api/bikes.rs:452
-; declares UNIT_STATUS_RETIRED and its test the_four_statuses_match_the_check_constraint pins the
-; four-value array, src/db/entities/bike_unit.rs:40 and src/db/bikes.rs:42 restate it,
-; scripts/verify_fleet_seed.py:59 parses no other value, src/ui/screens/admin_screen.rs:485
-; renders it, and the sibling spec specs/bike_catalog.t27:59 already writes "retired". The string
-; "sold" appears nowhere in this repository as a unit status. So this file follows the migration:
+; source in the tree agrees with the migration rather than with the brief. RE-MEASURED
+; 2026-09-21, and every address in this sentence had drifted except two: src/api/bikes.rs:794
+; declares UNIT_STATUS_RETIRED, src/api/bikes.rs:797-803 is the four-value UNIT_STATUSES array
+; and the test the_four_statuses_match_the_check_constraint pins it at src/api/bikes.rs:2493,
+; src/db/entities/bike_unit.rs:40 and src/db/bikes.rs:42 restate it (both still exact),
+; scripts/verify_fleet_seed.py:60 parses no other value, and src/ui/screens/admin_screen.rs:522
+; renders it as a label. The sixth witness this sentence used to call is WITHDRAWN rather than
+; re-addressed: it claimed the sibling spec bike_catalog.t27 already writes "retired", and that
+; spec contains the word nowhere at all -- the citation was not stale, the claim was false.
+; The one contract that does name the set is turbobaby/order-status, and it names it while
+; crediting THIS file as the owner, so it corroborates nothing on its own. The shipped sources
+; above carry the point without it. The string
+; "sold" appears nowhere in this repository as a unit status (the sole hit, src/promo.rs:330, is
+; a promotion column and not a unit). So this file follows the migration:
 ; D17 makes an issue a brief and not a measurement, and the earlier revision of this spec took the
 ; fourth value from #4's PROSE and then labelled it a measurement. The cost is not cosmetic -- a
 ; backend writing STATUS_NAMES[3] into bike_units.status would hand Postgres a value the column
@@ -80,10 +88,16 @@ pub const MEASURED_AT : str = "2026-09-12";
 ; spells the fourth value 'sold' -- see the second refutation in the header. The u8 codes here
 ; are this spec's own ordinals and they start at ONE, because zero is what an unwritten slot in
 ; a fixed-length array already holds (see the header).
-; The codes are written as plain constants rather than as an enum type on purpose: the corpus
-; carries two incompatible spellings for an enum member inside an assert -- `ErrorCode::Success`
-; in specs/enrichment/youtube_transcript.t27 against the leading-dot form used elsewhere -- and a
-; discriminant that spells differently in two backends is a discriminant that can drift.
+; The codes are written as plain constants rather than as an enum type on purpose: a discriminant
+; that spells differently in two backends is a discriminant that can drift.
+; THE EVIDENCE THIS PARAGRAPH CITED IS NOT IN THIS CORPUS (re-measured 2026-09-21). It named two
+; incompatible spellings of an enum member inside an assert -- `ErrorCode::Success` in
+; specs/enrichment/youtube_transcript.t27 against the leading-dot form used elsewhere. There is no
+; specs/enrichment/ directory: find specs -type f returns 43 files, specs/agents/turbobaby.t27 and
+; the 42 under specs/turbobaby/, and grep -rn "ErrorCode::Success" specs/ now matches only this
+; paragraph. The reason is kept because the reason is sound on its own -- two backends, one
+; discriminant -- and the borrowed example is withdrawn rather than re-addressed to a file that
+; would have to be invented to hold it.
 pub const STATUS_UNSET : u8 = 0;
 pub const STATUS_AVAILABLE : u8 = 1;
 pub const STATUS_RENTED : u8 = 2;
@@ -96,13 +110,36 @@ pub const STATUS_NAMES : [4]str = ["available", "rented", "service", "retired"];
 pub const RESERVED_STATUS : str = "";
 pub const RESERVED_STATUS_NOTE : str = "Issue #19 asks for a reserved status; nothing in this repository has one. migrations/078_bike_units.sql:32 enumerates four wire values and reserved is not among them, and D8 puts a booking hold on the family key rather than on a unit, so no unit row exists for a hold to occupy. available_count matches AVAILABLE exactly, which excludes a held unit whatever a later migration calls it.";
 
+; --- What gates this file's copies, measured and not assumed ----------------------------------
+; Two absences this file asserted had quietly stopped being true, so the live one is pinned as a
+; literal instead of as a sentence. Re-measured 2026-09-21.
+pub const SEED_GATE_SCRIPT : str = "scripts/verify_fleet_seed.py";
+pub const SEED_GATE_SPEC_READ : str = "turbobaby/market";
+pub const SEED_GATE_COVERS_THIS_FILE : bool = false;
+pub const SEED_GATE_NOTE : str = "scripts/verify_fleet_seed.py is no longer .t27-blind: line 34 binds MARKET_SPEC to specs/turbobaby/market_profile.t27 and check_market_profile at :98-140 compares the seed's market block against that contract's constants. It gates turbobaby/market and nothing else. The fleet table in THIS file stays ungated, and the checkable form of that is narrow: the word availability does not occur anywhere in that script, measured 2026-09-21. Closing the gap needs FAMILY_UNITS, FAMILY_RENTED and FAMILY_AVAILABLE compared against data/fleet_seed.json by the same script, in the shape it already uses for the market block.";
+
+; The sixth witness the fourth-value refutation used to call. Recorded as a withdrawal rather
+; than deleted, because a reader who remembers the old sentence must be able to find out what
+; happened to it: bike_catalog.t27 was cited as already writing "retired" and it writes the word
+; nowhere. turbobaby/order-status does name the set, and names this file as its owner, so it is
+; corroboration of ownership and not an independent source for the value.
+pub const RETIRED_SIBLING_WITNESS : str = "";
+pub const RETIRED_SIBLING_WITNESS_NOTE : str = "No sibling contract independently writes the fourth unit status. The withdrawn citation was bike_catalog.t27, which contains no occurrence of retired at all (measured 2026-09-21). The only contract that names the four-value set is turbobaby/order-status, and it names it while crediting turbobaby/availability as the owner, so it restates this file rather than confirming it. The shipped sources carry the refutation on their own: src/api/bikes.rs:794, src/api/bikes.rs:797-803, the test at src/api/bikes.rs:2493, src/db/entities/bike_unit.rs:40, src/db/bikes.rs:42, scripts/verify_fleet_seed.py:60 and src/ui/screens/admin_screen.rs:522.";
+
 ; --- The measured fleet ---------------------------------------------------------------------
 ; 14 in-stock families in the seed's own order, so a diff against data/fleet_seed.json reads
 ; line for line. This table is a SECOND copy of the seed's counts and a copy is a drift risk
 ; (D15). It is here because the arithmetic cannot be checked without it, and the copy is
-; currently ungated: scripts/verify_fleet_seed.py pins migrations/082_bikes_seed.sql to the JSON
-; and knows nothing about .t27, so comparing this table to the seed is the next gate to write,
-; not a job something already does.
+; STILL ungated -- but for a narrower reason than this paragraph used to give (re-verified
+; 2026-09-21). It used to say scripts/verify_fleet_seed.py pins migrations/082_bikes_seed.sql to
+; the JSON and knows nothing about .t27. The first half holds; the second is now FALSE. That
+; script reads exactly one spec: MARKET_SPEC at scripts/verify_fleet_seed.py:34 is
+; specs/turbobaby/market_profile.t27, and check_market_profile at :98-140 compares the seed's
+; market block against that contract's constants field by field. It is a spec gate, and it gates
+; a different spec. What keeps this table ungated is narrower and checkable: the word
+; availability does not occur in that script at all (grep -c availability -> 0 on 2026-09-21),
+; and no column below is read by anything it does. So comparing this table to the seed is still
+; the next gate to write -- and the precedent for writing it now exists in the same file.
 pub const FAMILY_KEYS : [14]str = [
   "click-125", "nmax-155", "xsr-155", "cb-300r", "forza-300", "mt-03-300", "xmax-300",
   "xmax-300-new", "adv-350", "ninja-400", "cb-650r", "cbr-650r", "vulcan-s-650", "xadv-750",
@@ -430,6 +467,28 @@ test the_four_wire_values_are_the_check_constraint_of_078 {
     assert STATUS_NAMES[3] == "retired";
     // and none of them is "reserved"
     assert RESERVED_STATUS == "";
+}
+
+; The two re-measurements of 2026-09-21, as literals rather than as prose a later reader has to
+; take on trust. Both replace an absence this file used to assert and that had stopped being
+; true: the seed checker does read a spec now, and the sibling witness never existed.
+test the_seed_gate_reads_a_spec_and_it_is_not_this_one {
+    assert SEED_GATE_SCRIPT == "scripts/verify_fleet_seed.py";
+    assert SEED_GATE_SPEC_READ == "turbobaby/market";
+    assert SEED_GATE_SPEC_READ != ID;
+    // The gate exists and this file is outside it. Both halves matter: dropping the first
+    // restores the false "knows nothing about .t27", dropping the second lets a reader think
+    // the fleet table below is checked by something.
+    assert SEED_GATE_COVERS_THIS_FILE == false;
+}
+
+test no_sibling_contract_independently_writes_the_fourth_status {
+    // Empty for the same reason RESERVED_STATUS is empty: the honest value of a withdrawn
+    // citation is nothing, and the note beside it says what was withdrawn and why.
+    assert RETIRED_SIBLING_WITNESS == "";
+    assert RETIRED_SIBLING_WITNESS != "turbobaby/bike-catalog";
+    // The value itself is unaffected by the withdrawal; it comes from the column.
+    assert STATUS_NAMES[3] == "retired";
 }
 
 test the_table_reproduces_the_published_totals {

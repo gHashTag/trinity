@@ -80,6 +80,13 @@ module automation::crm_duet {
     pub const CLAIM_CHECK_CORRECTIONS : u8 = 1;  // one rewrite round, as the voice check; the second miss is sent and reported
     pub const CLAIM_MISS_IS_VIOLATION : bool = true;  // both misses land in violations, the corrected one marked as rewritten
 
+    // New constants from the live run (duet-mub68idg, 2026-09-21)
+    pub const FEED_PUBLISH_SAYS_SAVED : bool = true;  // a hidden save is reported as saved and waiting, never as published
+    pub const NO_LIVED_EXPERIENCE_CLAIM : bool = true;  // the seller may speak about the product and the canon, never claim personal practice or a human's experience
+    pub const PLAN_MEANING_FROM_CANON : bool = true;  // a plan's meaning in a seller line is taken from the leela_plan result of the same turn, never paraphrased from memory
+    pub const PERSONA_CONSENT_IS_NOT_CONSENT : bool = true;  // the persona's agreement never counts as the client's approval
+    pub const AGENT_PUBLISH_IS_HIDDEN : bool = true;  // an agent publish is always hidden until a human approves
+
     // ---- State of a run that broke off (same run) ----------------------------------------
     // Turn 2: every provider answered with a rate limit, the seller produced no text, the
     // loop broke and the run was stored as done with 3 of 8 lines and no error. The
@@ -121,7 +128,7 @@ module automation::crm_duet {
 
     // ---- The seller's voice (same run) ------------------------------------------------------
     // Line 2 "ya ne videl" (masculine), line 4 "ya zadavala ... sama ... ne videla" (feminine):
-    // the seller writes for the owner, Dmitrii, and the brief now says so. A feminine
+    // the writer writes for the owner, Dmitrii, and the brief now says so. A feminine
     // first-person past form in a seller line is reported as a voice flag, not rewritten.
     pub const SELLER_GENDER : str = "m";
     pub const SELLER_GENDER_IN_BRIEF : bool = true;
@@ -160,7 +167,8 @@ module automation::crm_duet {
     pub const DRY_RUN_DELIVERY_CLAIM_FIXED : bool = false;
 
     // ---- Not claimed ----------------------------------------------------------------------
-    pub const DUET_RAN_LIVE : bool = false;  // crm_duet_status of a real (non-dry) run is the evidence
+    pub const DUET_RAN_LIVE : bool = true;  // crm_duet_status of a real (non-dry) run is the evidence
+    pub const DUET_LIVE_RUN : str = "duet-mub68idg";  // the first live run
 
     struct Turn {
         from_owner: bool,
@@ -172,8 +180,34 @@ module automation::crm_duet {
         return Turn { from_owner: i % 2 == 0, index: i };
     }
 
-    fn business_bot_silent(opened_by_owner: bool, minutes_since_owner_msg: u8) -> bool {
-        return opened_by_owner && minutes_since_owner_msg < BUSINESS_BOT_TAKEOVER_MIN;
+    // Whether a paid tool is offered to the seller model on seller turn `seller_turn`.
+    fn paid_tool_offered(seller_turn: u8) -> bool {
+        return seller_turn >= DISCOVERY_SELLER_TURNS;
+    }
+
+    // Whether a CLAIM-word hit counts, given how many words back the nearest negation stands
+    // (0 = none in the window).
+    fn claim_hit_counts(negation_distance: u8) -> bool {
+        return negation_distance == 0 || negation_distance > NEGATION_WINDOW_WORDS;
+    }
+
+    // Whether a claim of finished work in a turn that produced nothing is a miss.
+    fn claim_is_honest(claims_done_work: bool, producing_tool_called: bool, media_forwarded: bool) -> bool {
+        return !claims_done_work || producing_tool_called || media_forwarded;
+    }
+
+    // Whether a failed seller turn is played again: once, only on a limit, only when no
+    // paid generation happened in the failed attempt.
+    fn retry_allowed(retries_done: u8, is_limit: bool, paid_calls_in_attempt: u8) -> bool {
+        return retries_done < SELLER_RETRY_ON_LIMIT && is_limit && paid_calls_in_attempt == 0;
+    }
+
+    // The state a finished loop stores: done only for a full transcript, failed otherwise.
+    fn state_after(lines: u8, turns: u8, errored: bool) -> str {
+        if errored || lines < turns * 2 {
+            return ABORTED_RUN_STATE;
+        }
+        return "done";
     }
 
     test "the seller opens and the business bot stays silent for the run"
@@ -216,22 +250,6 @@ module automation::crm_duet {
     // paid generation happened in the failed attempt.
     fn retry_allowed(retries_done: u8, is_limit: bool, paid_calls_in_attempt: u8) -> bool {
         return retries_done < SELLER_RETRY_ON_LIMIT && is_limit && paid_calls_in_attempt == 0;
-    }
-
-    // Whether a paid tool is offered to the seller model on seller turn `seller_turn`.
-    fn paid_tool_offered(seller_turn: u8) -> bool {
-        return seller_turn >= DISCOVERY_SELLER_TURNS;
-    }
-
-    // Whether a CLAIM-word hit counts, given how many words back the nearest negation stands
-    // (0 = none in the window).
-    fn claim_hit_counts(negation_distance: u8) -> bool {
-        return negation_distance == 0 || negation_distance > NEGATION_WINDOW_WORDS;
-    }
-
-    // A claim of finished work in a turn that produced nothing is a miss.
-    fn claim_is_honest(claims_done_work: bool, producing_tool_called: bool, media_forwarded: bool) -> bool {
-        return !claims_done_work || producing_tool_called || media_forwarded;
     }
 
     test "a run that broke off is failed and keeps the turn's error"
@@ -297,12 +315,20 @@ module automation::crm_duet {
         assert(FAILED_STATE_SEEN_LIVE);
         assert(!CLAIM_CHECK_SEEN_LIVE);
         assert(!RETRY_SEEN_LIVE);
-        assert(!DUET_RAN_LIVE);
+        assert(DUET_RAN_LIVE);
+        assert(DUET_LIVE_RUN == "duet-mub68idg");
 
     test "content is for the real game and nothing live is claimed"
         assert(BUYER_GAME == "Leela Chakra");
         assert(LEELA_PLANES == 72);
         assert(LEELA_RULESET == "classic");
-        assert(!DUET_RAN_LIVE);
+        
         assert(!DRY_RUN_SENDS);
+
+    test "honesty constants from the live run"
+        assert(FEED_PUBLISH_SAYS_SAVED);
+        assert(NO_LIVED_EXPERIENCE_CLAIM);
+        assert(PLAN_MEANING_FROM_CANON);
+        assert(PERSONA_CONSENT_IS_NOT_CONSENT);
+        assert(AGENT_PUBLISH_IS_HIDDEN);
 }

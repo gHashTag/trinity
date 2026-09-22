@@ -129,7 +129,11 @@ module AdamW;
     // amsgrad_update(v: gf16::GF16, v_max: gf16::GF16) → f32
     // Computes AMSGrad maximum tracking.
     fn amsgrad_update(v: gf16::GF16, v_max: gf16::GF16) -> gf16::GF16 {
-        // return max(v_max, v)
+        if v > v_max {
+            v
+        } else {
+            v_max
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -568,7 +572,7 @@ module AdamW;
         DEFAULT_BETA1
     }
 
-    test get_effective_betas {
+    test get_effective_betas
         // Test Canonical variant
         given (b1, b2, wd) = get_effective_betas(PhiVariant.Canonical)
         then approximately_equal(b1, PHI_CANONICAL_BETA1)  // ~ 0.618
@@ -592,37 +596,28 @@ module AdamW;
         then approximately_equal(b1, RATIONAL_BETA1)       // 4/7 ~ 0.5714
         and   approximately_equal(b2, DEFAULT_BETA2)     // 0.999
         and   approximately_equal(wd, RATIONAL_WEIGHT_DECAY) // 7/30 ~ 0.2333
-    }
 
-    fn amsgrad_update(v: gf16::GF16, v_max: gf16::GF16) -> gf16::GF16 {
-        // return max(v_max, v)
-        when v > v_max {
-            v
-        } else {
-            v_max
-        }
-    }
+    
 
-    test amsgrad_update {
-        // Test when v > v_max
-        given result = amsgrad_update(5.0, 3.0)
-        then result == 5.0
+test amsgrad_update
+         // Test when v > v_max
+         given result = amsgrad_update(5.0, 3.0)
+         then result == 5.0
 
-        // Test when v <= v_max
-        given result = amsgrad_update(2.0, 4.0)
-        then result == 4.0
+         // Test when v <= v_max
+         given result = amsgrad_update(2.0, 4.0)
+         then result == 4.0
 
-        // Test when v == v_max
-        given result = amsgrad_update(3.0, 3.0)
-        then result == 3.0
+         // Test when v == v_max
+         given result = amsgrad_update(3.0, 3.0)
+         then result == 3.0
 
-        // Test with negative values
-        given result = amsgrad_update(-1.0, -2.0)
-        then result == -1.0
+         // Test with negative values
+         given result = amsgrad_update(-1.0, -2.0)
+         then result == -1.0
 
-        given result = amsgrad_update(-3.0, -1.0)
-        then result == -1.0
-    }
+         given result = amsgrad_update(-3.0, -1.0)
+         then result == -1.0
 
     // =========================================================
     // EXISTING TDD: Tests (preserved from pre-B1 spec)

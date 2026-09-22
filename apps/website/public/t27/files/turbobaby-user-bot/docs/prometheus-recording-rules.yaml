@@ -1,0 +1,88 @@
+# Recording rules for Woody Weed Bot.
+#
+# These pre-compute the rate aggregations that the burn-rate alerts
+# (prometheus-alerts.yaml) depend on, so the alerting query stays cheap.
+#
+# Per Google SRE Workbook, ch. 5: keep burn-rate evaluations off the
+# alert path by recording the underlying ratios into stable series.
+#
+# SLO target: availability = 99.5 % over 30 days → error budget = 0.5 %.
+# Pick a number you can actually meet; raise it once data supports it.
+#
+# Imports into Prometheus:
+#   rule_files:
+#     - /etc/prometheus/turbobaby-bot/recording-rules.yaml
+#     - /etc/prometheus/turbobaby-bot/alerts.yaml
+
+groups:
+  - name: turbobaby_bot_availability
+    interval: 30s
+    rules:
+      # ── Request rate per status class ───────────────────────────────
+      - record: wwb:http_requests:rate5m
+        expr: |
+          sum by (path) (rate(axum_http_requests_total[5m]))
+
+      - record: wwb:http_requests_errors:rate5m
+        expr: |
+          sum by (path) (rate(axum_http_requests_total{status=~"5.."}[5m]))
+
+      # ── Error ratio at multiple windows (used by burn-rate alerts) ──
+      # Each window: errors / total. NaN-safe via `or vector(0)`.
+      - record: wwb:error_ratio:5m
+        expr: |
+          (
+            sum(rate(axum_http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(axum_http_requests_total[5m]))
+          ) or vector(0)
+
+      - record: wwb:error_ratio:30m
+        expr: |
+          (
+            sum(rate(axum_http_requests_total{status=~"5.."}[30m]))
+            /
+            sum(rate(axum_http_requests_total[30m]))
+          ) or vector(0)
+
+      - record: wwb:error_ratio:1h
+        expr: |
+          (
+            sum(rate(axum_http_requests_total{status=~"5.."}[1h]))
+            /
+            sum(rate(axum_http_requests_total[1h]))
+          ) or vector(0)
+
+      - record: wwb:error_ratio:6h
+        expr: |
+          (
+            sum(rate(axum_http_requests_total{status=~"5.."}[6h]))
+            /
+            sum(rate(axum_http_requests_total[6h]))
+          ) or vector(0)
+
+      # ── Burn rate = error_ratio / SLO error budget (0.005) ──────────
+      # A burn rate of 1 exhausts the 30-day budget exactly on schedule.
+      # If you change the SLO target, update the divisor here.
+      - record: wwb:burn_rate:5m
+        expr: wwb:error_ratio:5m / 0.005
+      - record: wwb:burn_rate:30m
+        expr: wwb:error_ratio:30m / 0.005
+      - record: wwb:burn_rate:1h
+        expr: wwb:error_ratio:1h / 0.005
+      - record: wwb:burn_rate:6h
+        expr: wwb:error_ratio:6h / 0.005
+
+  - name: turbobaby_bot_latency
+    interval: 30s
+    rules:
+      - record: wwb:request_latency_p99:5m
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le, path) (rate(axum_http_requests_duration_seconds_bucket[5m]))
+          )
+      - record: wwb:request_latency_p50:5m
+        expr: |
+          histogram_quantile(0.50,
+            sum by (le, path) (rate(axum_http_requests_duration_seconds_bucket[5m]))
+          )

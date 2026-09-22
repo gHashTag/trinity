@@ -91,6 +91,19 @@ pub const SOURCE : str = "data/fleet_seed.json";
 pub const SOURCE_SCHEMA_VERSION : u8 = 2;
 pub const MEASURED_AT : str = "2026-09-12";
 
+; --- What other contracts say this file owns, checked against declarations that exist --------
+; This file is named by more contracts than almost any other, which makes it a place where a
+; sibling's sentence can go on describing a declaration that has been renamed or removed. Every
+; inbound ownership claim was opened and checked on 2026-09-21 rather than assumed: three
+; contracts -- turbobaby/deposit-tiers, turbobaby/rental-terms and turbobaby/ride-game -- say
+; this file owns the class algebra, and all three are true of declarations present below under
+; the names they use. Nothing was renamed to make that so; the count is recorded because the
+; NEXT rename is the one that breaks it, and a bare count is the cheapest thing that can fail.
+pub const INBOUND_OWNERSHIP_CLAIMS : u8 = 3;
+pub const INBOUND_OWNERSHIP_CLAIMS_CONFIRMED : u8 = 3;
+pub const INBOUND_CLAIMED_SUBJECT : str = "the class algebra";
+pub const INBOUND_OWNERSHIP_NOTE : str = "Three contracts name this file as the owner of the class algebra: turbobaby/deposit-tiers, turbobaby/rental-terms and turbobaby/ride-game. Confirmed 2026-09-21 against the declarations they rely on -- CLASSES, CLASS_SCOOTER, CLASS_MOTORCYCLE, CLASS_COUNT, CLASS_NONE, is_valid_class and class_of_body -- all present under those names. Two of the three also relied on DISPLACEMENTS_CC, which is present. No inbound claim was found pointing at a declaration this file no longer has.";
+
 // ============================================================================
 // Class -- exactly two discriminants
 //
@@ -222,10 +235,16 @@ pub const CatalogRow = packed struct {
     rate_published : bool,
 };
 
-; Build a row. Follows greeting_new in specs/demos/hello_world.t27: the constructor states
-; the field order once, and the predicates below take the fields they read rather than the
-; whole row, so a caller that has not built a row yet -- the API filter, the cart guard --
-; uses the same function and D15's one-implementation rule survives.
+; Build a row. The rule: the constructor states the field order once, and the predicates below
+; take the fields they read rather than the whole row, so a caller that has not built a row yet
+; -- the API filter, the cart guard -- uses the same function and D15's one-implementation rule
+; survives.
+; This used to be credited to greeting_new in specs/demos/hello_world.t27. That file is NOT in
+; this corpus (measured 2026-09-21: find specs -type f returns 43 files, specs/agents/turbobaby.t27
+; and the 42 under specs/turbobaby/; there is no specs/demos/ directory), so the borrowed
+; precedent is withdrawn and the rule is stated on its own terms. A pattern that is right is
+; right without a reference, and a reference a reader cannot open makes the rest of the
+; paragraph look checkable when it is not.
 pub fn row_new(class_id: u8, body_id: u8, displacement_cc: u16, units_total: u8, units_rented: u8, units_available: u8, offered: bool, rate_published: bool) CatalogRow {
     return CatalogRow{
         .class_id = class_id,
@@ -366,6 +385,25 @@ test only_the_two_discriminants_are_a_class {
     assert is_valid_class(CLASS_NONE) == false;
 }
 
+; The inbound ownership claims, exercised rather than described. Each of the three siblings that
+; says this file owns the class algebra relies on the names touched here, so a rename that would
+; falsify their sentences fails this test first -- in the file doing the renaming, which is the
+; only place the author is looking.
+test every_inbound_ownership_claim_names_a_declaration_that_exists {
+    assert INBOUND_OWNERSHIP_CLAIMS == 3;
+    assert INBOUND_OWNERSHIP_CLAIMS_CONFIRMED == INBOUND_OWNERSHIP_CLAIMS;
+    assert INBOUND_CLAIMED_SUBJECT == "the class algebra";
+    // The declarations the three siblings actually lean on.
+    assert CLASSES.len == CLASS_COUNT;
+    assert CLASSES[CLASS_SCOOTER] == "scooter";
+    assert CLASSES[CLASS_MOTORCYCLE] == "motorcycle";
+    assert is_valid_class(CLASS_SCOOTER) == true;
+    assert class_of_body(BODY_SCOOTER) == CLASS_SCOOTER;
+    // Two of the three also lean on the displacement list; deposit-tiers cites it to explain
+    // why it carries no copy of one.
+    assert DISPLACEMENTS_CC.len == DISPLACEMENT_COUNT;
+}
+
 test the_body_determines_the_class_on_all_six_measured_styles {
     assert class_of_body(BODY_SCOOTER) == CLASS_SCOOTER;
     assert class_of_body(BODY_MAXI_SCOOTER) == CLASS_SCOOTER;
@@ -467,7 +505,8 @@ test stock_and_a_published_rate_are_independent {
     assert click_125.units_available == 0;
 }
 
-; Built and then read back -- the same discipline hello_world.t27 applies to Greeting. This is
+; Built and then read back. (The comparison to hello_world.t27's Greeting is withdrawn for the
+; reason given at row_new: no such file is in this corpus, measured 2026-09-21.) This is
 ; the only test that reaches the constructor, so it is the only one that can catch a field
 ; that moved in the order stated at row_new.
 test the_row_constructor_takes_the_measured_nmax_155_shape {

@@ -421,7 +421,7 @@ else console.log(`  warning: no tutorial specs found -- page will open on the fi
 entries.length = 0
 entries.push(...tutorial, ...rest)
 
-const { totalLines, categories, tags, health, backendFailures, totals } = corpusAggregates(entries)
+const { totalLines, categories, tags, health, notSource, backendFailures, totals } = corpusAggregates(entries)
 
 // ---------------------------------------------------------------------------
 // Which vendored specs could someone else actually reproduce?
@@ -509,6 +509,7 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
   duplicates: duplicatePairs.sort((x, y) => x.path.localeCompare(y.path)),
   tags,
   health,
+  notSource,
   backendFailures,
   featured: FEATURED,
   totals,
@@ -530,7 +531,11 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
 
 console.log(`sync-t27-specs: ${entries.length} specs, ${Object.keys(categories).length} categories`)
 console.log(`  sources: ${sources.map((s) => s.repo).join(', ')}  (${duplicates} duplicate files skipped by content hash)`)
-console.log(`  health: ${health.ok} ok · ${health.warn} warn · ${health.fail} fail`)
+// Over modules, and the line says so. These three used to cover every vendored
+// file, which meant 81 of the failures were Markdown documents and damaged
+// fixtures being counted as broken specs -- a number that could not go down.
+console.log(`  health: ${health.ok} ok · ${health.warn} warn · ${health.fail} fail   (of ${health.ok + health.warn + health.fail} modules)`)
+console.log(`  not a module: ${notSource.total}  ${Object.entries(notSource.byKind).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(' · ')}`)
 if (Object.keys(backendFailures).length) console.log(`  backend failures: ${JSON.stringify(backendFailures)}`)
 console.log(`  t27 @ ${shortSha}${dirty ? ' (DIRTY -- snapshot includes uncommitted spec/compiler changes)' : ''}`)
 console.log(`  wasm ${(wasmBytes / 1024).toFixed(0)} KB -> public/t27/t27_compiler.wasm  (${wasmFrom})`)

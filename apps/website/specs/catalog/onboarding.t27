@@ -90,33 +90,46 @@ pub const REQUIRES_RUNNING_OUR_CODE : bool = false;
 
 ; --- The corpus on the day this was written --------------------------------------------------
 pub const MEASURED_AT : str = "2026-09-21";
-pub const SPEC_COUNT : u16 = 1419;
-pub const SPEC_LINES : u32 = 373151;
-; Health as the manifest reports it. The three add up to SPEC_COUNT, and the test below says so.
+pub const SPEC_COUNT : u16 = 1454;
+pub const SPEC_LINES : u32 = 403463;
+; Health as the manifest reports it, over the files that are modules. Those three plus
+; HEALTH_NOT_MODULE add up to SPEC_COUNT, and the test below says so.
 ; These moved a long way on 2026-09-21, and the cause was the instrument, not the corpus: the
 ; wasm served here until then was built from no committed source, and it accepted anything.
 ; Fed a Zig file, a Markdown file or a string literal left open, it answered typecheck.ok and
 ; emitted C, Rust, Verilog and Zig. The binary now served is built from bootstrap/src, and it
 ; reads what is actually in the file. Nothing in the corpus got worse; it got measured.
-pub const HEALTH_OK : u16 = 1017;
-pub const HEALTH_WARN : u16 = 184;
-pub const HEALTH_FAIL : u16 = 218;
+pub const HEALTH_OK : u16 = 1001;
+pub const HEALTH_WARN : u16 = 176;
+pub const HEALTH_FAIL : u16 = 156;
+; A file with the .t27 extension is not always a t27 module, and a document is not a broken
+; spec. The compiler's own classifier -- the rule `t27c classify` has always used, now shared
+; with the wasm served here -- answers that question before the parser is asked, and the
+; manifest carries its verdict per file. 121 of these 1454 are Markdown prose, TRI-27
+; assembly, the older `spec Name { }` dialect, or fixtures this repository damages on purpose.
+; They are counted here instead of inside HEALTH_FAIL, which is where 81 of them sat until
+; 2026-09-21. The other 40 were passing, which is the clearest evidence that this is a
+; separate axis and not a fourth health state: whether a file is a module and whether it
+; compiles are two questions, and the corpus answers them independently.
+pub const HEALTH_NOT_MODULE : u16 = 121;
+pub const HEALTH_NOT_MODULE_NOTE : str = "not-a-module is the classifier's verdict, not a health state; the manifest's notSource.byKind splits it and notSource.byHealth shows these files compile or fail on their own";
 ; Repositories the manifest was built from, and the worlds the scan found on GitHub.
 pub const REPO_COUNT : u8 = 10;
 pub const WORLD_COUNT : u8 = 5;
 ; "fail" is two different things wearing one label, and the split is measured rather than
 ; described: a spec that NEVER PARSED, so no backend ran and its clean counters mean nothing
 ; ran rather than nothing went wrong -- and a spec that parsed and then lost a backend.
-; Do not report the second count as the first, and do not read the total as "218 broken specs".
-; A file with the .t27 extension is not always t27: Zig source, Markdown prose, an older
-; `spec Name { }` dialect and fixtures this repository damages on purpose all sit in the first
-; group. This file no longer prints a count per class. It carried one until 2026-09-21, hand
+; Do not report the second count as the first, and do not read the total as "156 broken specs".
+; Everything counted here is a module -- the files that are not one left for HEALTH_NOT_MODULE
+; above. This file no longer prints a count per class. It carried one until 2026-09-21, hand
 ; typed, adding to 154 beside a sentence that said 145 -- a breakdown nothing checked, which is
 ; the one kind of number this document is not allowed to hold.
 pub const HEALTH_FAIL_NOTE : str = "health=fail covers both a spec that did not parse and a spec whose backend failed; the manifest's backendFailures separates them";
-pub const HEALTH_FAIL_UNPARSED : u16 = 211;
-; What is left once the unparsed are set aside: seven specs that parse, typecheck, and emit
-; six of seven languages. That is the honest size of "broken and readable".
+pub const HEALTH_FAIL_UNPARSED : u16 = 147;
+; What is left once the unparsed are set aside: a handful of modules that parse, typecheck,
+; and then lose a backend. That is the honest size of "broken and readable". The count is
+; HEALTH_FAIL minus HEALTH_FAIL_UNPARSED rather than a constant, because a third number that
+; nothing derives is a third number that goes stale on its own schedule.
 ; The largest class used to be a different one. js and ts are declarations-only backends, and
 ; a const whose initialiser they had no spelling for failed the WHOLE module -- costing every
 ; declaration that was fine to refuse the one that was not, on files the other five backends
@@ -127,7 +140,7 @@ pub const HEALTH_FAIL_JS_ONLY : u16 = 0;
 ; Announced, not dropped. A spec here emits a real module that says inside itself what it left
 ; out, as data -- `__NOT_EMITTED__`, a list a tool can read without parsing comments. That is
 ; neither whole nor broken, so it is counted apart and coloured a warning, never a pass.
-pub const HEALTH_PARTIAL : u16 = 71;
+pub const HEALTH_PARTIAL : u16 = 67;
 
 ; --- The game --------------------------------------------------------------------------------
 pub const GAME : str = "Queen Hive";
@@ -177,13 +190,19 @@ pub const ASKS_FOR_CREDENTIALS : bool = false;
 pub const ASKS_TO_ACT_ALONE : bool = false;
 
 test health_accounts_for_every_spec {
-    assert HEALTH_OK + HEALTH_WARN + HEALTH_FAIL == SPEC_COUNT;
+    // Four groups, not three. The health states are counted over modules; the rest of the
+    // corpus is HEALTH_NOT_MODULE. Leaving the fourth term out would let this assert hold
+    // over 1333 files while SPEC_COUNT says 1454 -- the sum would simply be wrong, quietly.
+    assert HEALTH_OK + HEALTH_WARN + HEALTH_FAIL + HEALTH_NOT_MODULE == SPEC_COUNT;
     assert HEALTH_FAIL > 0;
+    // Not every .t27 is a module, and not every module is a spec worth counting as broken.
+    assert HEALTH_NOT_MODULE > 0;
+    assert HEALTH_NOT_MODULE < SPEC_COUNT;
     // The qualifier is part of the count, not a footnote to it: each of these is a SUBSET of
     // fail, so a reading of HEALTH_FAIL that ignores them is reading a smaller number wrong.
     assert HEALTH_FAIL_JS_ONLY < HEALTH_FAIL;
     assert HEALTH_FAIL_UNPARSED < HEALTH_FAIL;
-    // The subset that is worth stating on its own: 209 of the 216 never reached a backend at
+    // The subset that is worth stating on its own: most failures never reached a backend at
     // all. An earlier version of this test demanded HEALTH_FAIL_JS_ONLY > 0, which was true
     // the day it was written and is a lie the moment the class it counts is fixed. A test
     // that forbids its own subject from reaching zero is a test against the work.

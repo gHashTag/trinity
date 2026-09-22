@@ -1,0 +1,679 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/turbobaby/delivery_terms.t27 -- the delivery promise: one island, two handover points,
+; one published fee, and a dash for every other area.
+; This contract owns the shape of what the shop promises about getting a bike to a client:
+; the coverage rule, the handover point and the agreement it needs, the window geometry read
+; off the wall clock, and the single documented area fee. It is the named PRODUCER of the
+; `delivery_destination_ready` boolean that turbobaby/commerce consumes abstractly in its own
+; declaration commerce_fulfillment_valid: commerce decides whether an order may be delivered,
+; this file decides only whether the destination leg is complete.
+; THE EDGE IS NAMED BY OWNER AND DECLARATION, NOT BY LINE (corrected 2026-09-21). Until this edit
+; it cited commerce.t27 by a line range, 146 through 156. That range was re-read on the day it was
+; deleted and it still held -- which is the argument against it and not for it: commerce.t27 grew
+; from 411 lines to 855 between the two readings, and the citation survived only because every
+; addition happened to land past the end of the range. A number that is right by luck reads
+; exactly like a number that is right. The old form is described here rather than quoted, so that
+; a sweep for line citations into a sibling does not find this paragraph and count it as one.
+; What was re-verified instead is the sentence: turbobaby/commerce declares
+; commerce_fulfillment_valid, delivery_destination_ready is its fourth argument, and its delivery
+; arm still returns the conjunction of that boolean with the upstream delivery_allowed.
+; Transcribed from data/fleet_seed.json rental_terms.delivery, lines 295-309 (measured_at
+; 2026-09-12, schema_version 2). ASCII only (L3), English identifiers only.
+; --
+; WHY (measured 2026-09-20). Delivery is the FOURTH topic by client volume in the corpus behind
+; KB_faq -- 499 messages of the ten topics counted in data/fleet_seed.json:341 -- and the
+; repository answers it from a table that describes a different island. src/delivery.rs ships 5
+; default zones (src/delivery.rs:37-78): 4 named places and 1 handover row, and its own header
+; (src/delivery.rs:7-20) says the places are villages on Koh Phangan while the shop is in
+; Kamala, Phuket. ZERO of the 4 place rows lie inside the coverage area this file pins; the fifth
+; row is the shop's own counter, which is inside it and is not a destination. The one delivery
+; figure the shop actually documents -- 290 THB to a single area, data/fleet_seed.json:306 -- is
+; in no table the code reads: `tariff_table` is null (data/fleet_seed.json:307) and the seed's
+; own note (line 308) forbids interpolating any other area's price from that one figure. So the
+; published tariff has exactly one row, the shipped tariff has five wrong ones, and nothing in
+; the repository states the rule that reconciles them. That rule is what this file is.
+; --
+; WHERE THE OBVIOUS READING IS REFUTED. src/api/orders.rs:2415 and :1794 serve the zone fee
+; through `finite_money`, with a comment (orders.rs:2411-2414) saying an undocumented fee comes
+; back as null and renders as a dash rather than as free delivery. Read alone, that comment says
+; the dash already protects the delivery leg. It does not, for three measured reasons.
+;   (1) The branch cannot fire. `fee` is NOT NULL DEFAULT 0 CHECK (fee >= 0) in
+;       migrations/060_delivery_zones.sql:6 and `f64` -- not `Option<f64>` -- in
+;       src/db/entities/delivery_zone.rs:13, and the admin write path maps every non-finite or
+;       negative input to 0.0 (src/api/admin.rs:1038-1044, used at :1084 and :1131-1133). Every
+;       row this repository can create therefore carries a finite number, so finite_money returns
+;       Some for all of them. An unpriced area is not a null fee; it is a row that does not exist.
+;   (2) The client cannot receive the null anyway. src/ui/api/types.rs:405 types
+;       `delivery_fee_baht` as a bare `f64`, so a null in that field fails the whole response.
+;   (3) When the zone list arrives EMPTY the checkout screen prints a zero fee and a hard-coded
+;       "30-45" minute ETA (src/ui/screens/checkout_screen.rs:828-835) through format_baht, which
+;       takes `f64` and has no absent case (src/trios/pricing.rs:417, was :361). It is the empty list and not
+;       an unselected picker that reaches this branch, because :797 falls back to the first zone
+;       whenever one exists. That is the confident zero D9 forbids, still live on the client half.
+; The prohibition therefore cannot be a render rule here. It is the LENGTH of the published-fee
+; array below, pinned by an invariant: one row, and a second row cannot be added without deleting
+; an assert.
+; --
+; WHAT THIS FILE NEVER DOES. It holds no zone table, no ETA, no address, no Maps link and no
+; customer (D14) -- not in a constant, not in a test fixture, not in a comment. It does not decide
+; whether an order may be delivered: that is admissibility and commerce.t27 owns it. It adds no
+; fee to any total, and no function here returns a sum. It does not render an absent amount:
+; pricing_honesty.t27 owns the dash and the sentence that must travel with it, and this file only
+; reports that the amount is absent. It declares no fulfillment mode, no timezone and no UTC
+; offset; each is named by the ID of its owner instead. It does not transcribe the shipped zone
+; names: they are Cyrillic in src/delivery.rs:40-72 and in migrations/071_delivery_zones_koh_
+; phangan.sql:25-29, L3 forbids Cyrillic in a spec, and they are cited by path and never quoted.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module turbobaby-delivery-terms;
+
+pub const KIND : str = "contract";
+pub const ID : str = "turbobaby/delivery-terms";
+pub const NAME : str = "TurboBaby delivery coverage, window and published fee";
+pub const SOURCE : str = "data/fleet_seed.json";
+pub const SOURCE_MEASURED_AT : str = "2026-09-12";
+pub const MEASURED_AT : str = "2026-09-20";
+
+; --- Reuse edges ------------------------------------------------------------------------------
+; Current t27c does not support brace imports, so an ownership edge is a string naming the owner
+; and an assert that pins the literal. That keeps the edge greppable and impossible to delete
+; quietly, which an import comment would not be.
+; --
+; pricing-honesty owns what a reader does with an absent amount: SHAPE_DASH, the DASH sentinel and
+; the obligation that the dash never travels without the sentence. This file produces the absence
+; and copies none of that rendering machinery. It does declare its own absence sentinel, FEE_ABSENT
+; below, and the relationship is named rather than left to be discovered: pricing-honesty's
+; NOT_AN_AMOUNT_THB_DAY is the same -1 over a different quantity (a daily rate, typed i16). Neither
+; value can be imported into the other -- t27c has no imports -- so the two are separate
+; declarations on purpose, and each is justified from its own CHECK constraint.
+pub const REUSES_PRICING_HONESTY_ID : str = "turbobaby/pricing-honesty";
+; market owns the wall clock the hours below are read on -- TH_TIMEZONE and TH_UTC_OFFSET_HOURS.
+; Every minute-of-day constant here is local time on that profile, and this file declares neither
+; the zone name nor the offset.
+pub const REUSES_MARKET_PROFILE_ID : str = "turbobaby/market";
+; commerce owns the fulfillment modes (FULFILLMENT_PICKUP, FULFILLMENT_DELIVERY) and their
+; validity. This file declares no mode. The handover points below are a different set answering a
+; different question -- WHICH shop point, not WHICH mode -- and they are never a second copy.
+pub const REUSES_COMMERCE_ID : str = "turbobaby/commerce";
+; order-money owns the total identity -- subtotal less bonus less star discount, floored at zero,
+; src/api/orders.rs:210 -- and the tolerance around it. The two constants below about totals say
+; only where the delivery fee is NOT, and the identity itself is not restated here in any form a
+; caller could evaluate.
+pub const REUSES_ORDER_MONEY_ID : str = "turbobaby/order-money";
+; The single boolean this contract exists to produce, spelled exactly as the consumer's argument.
+pub const PRODUCES : str = "delivery_destination_ready";
+pub const CONSUMER_FUNCTION : str = "commerce_fulfillment_valid";
+
+; --- Coverage: one island, and off it the promise ends ------------------------------------------
+; data/fleet_seed.json:296. Off the island there is no delivery at all -- not a longer window and
+; not a larger fee -- and the client collects the bike. That is a boundary, not a price.
+pub const COVERAGE_ISLAND : str = "Phuket";
+pub const COVERAGE_ISLAND_COUNT : i32 = 1;
+pub const OFF_ISLAND_MEANS_NO_DELIVERY : bool = true;
+; The seed says only that the client collects the bike themselves; it names no point for that
+; collection, so none is named here either.
+pub const OFF_ISLAND_FALLBACK : str = "the client collects the bike themselves";
+; A neighbour fact that reads like this one and is not it. data/fleet_seed.json rental_terms.
+; off_island permits RIDING to other islands and provinces, with recovery at the client's cost if
+; the bike breaks down. That is about where a rented bike may go; coverage is about where the shop
+; will bring one. Confusing the two would turn a permission into delivery of a bike to Krabi.
+pub const OFF_ISLAND_TRAVEL_IS_A_DIFFERENT_FACT : bool = true;
+
+; --- Handover points ----------------------------------------------------------------------------
+; data/fleet_seed.json:297-298. The default point is the office. The secondary point exists only
+; "by explicit agreement", so the discriminant alone never settles it, and an unknown point fails
+; closed rather than falling back to the default.
+pub const POINT_NONE : u8 = 0;
+pub const POINT_DEFAULT : u8 = 1;
+pub const POINT_SECONDARY : u8 = 2;
+pub const POINT_NAMES : [2]str = ["default", "secondary"];
+pub const DEFAULT_POINT : str = "Kamala office";
+pub const SECONDARY_POINT : str = "Bangtao / Thalang";
+pub const SECONDARY_POINT_REQUIRES_EXPLICIT_AGREEMENT : bool = true;
+; The seed writes the secondary point as ONE field naming two places, and this file does not split
+; it into two points: the agreement is per handover, and inventing a second discriminant would
+; publish a distinction the source does not make.
+pub const SECONDARY_POINT_IS_ONE_SOURCE_FIELD : bool = true;
+; data/fleet_seed.json:305. The client ALWAYS gets a map link to the handover point, so the link
+; is part of the promise and not a courtesy: the readiness function below refuses without it, the
+; same way pricing-honesty refuses a dash that travels without its sentence. No link is stored
+; here, and none could be: a link is per-order data (D14).
+pub const MUST_SEND_MAP_LINK : bool = true;
+pub const NO_MAP_LINK_IS_STORED_IN_THIS_FILE : bool = true;
+
+; --- Window geometry, in minutes of the local day -----------------------------------------------
+; Local time on the market profile (REUSES_MARKET_PROFILE_ID). Minutes since local midnight,
+; because a clock string is not arithmetic and this language pins integers.
+; data/fleet_seed.json:299 office_opens 10:00 -> 600. :300 earliest_window 11:00-13:00 -> 660..780.
+; :302 default_window_hours 2 -> 120. :303 narrow_window_hours 1 -> 60. :304 the narrow window is
+; "on request, rarely", so it is published but never the default.
+pub const MINUTES_PER_HOUR : i32 = 60;
+pub const OFFICE_OPENS_MIN : i32 = 600;
+pub const EARLIEST_WINDOW_START_MIN : i32 = 660;
+pub const EARLIEST_WINDOW_END_MIN : i32 = 780;
+pub const DEFAULT_WINDOW_MIN : i32 = 120;
+pub const NARROW_WINDOW_MIN : i32 = 60;
+pub const WINDOW_LENGTHS_MIN : [2]i32 = [120, 60];
+pub const NARROW_WINDOW_IS_BY_REQUEST_ONLY : bool = true;
+; data/fleet_seed.json:301: same-day delivery is two hours after the booking is completed, "but
+; never before the 11:00-13:00 window". Two rules, and the second one is a floor under the first.
+pub const SAME_DAY_LEAD_MIN : i32 = 120;
+pub const SAME_DAY_HAS_A_FLOOR : bool = true;
+; The hour between opening and the earliest window is measured, not assumed: 660 - 600. A reader
+; who expects delivery from the moment the office opens is wrong by exactly this much.
+pub const OPENING_TO_EARLIEST_WINDOW_MIN : i32 = 60;
+; TWO LIMITS OF THE WINDOW MODEL, DECLARED RATHER THAN HIDDEN, because each one makes a function
+; below answer a question narrower than its name suggests.
+; (a) The lead is the SAME-DAY rule and nothing else. data/fleet_seed.json:301 attaches the two
+;     hours to same-day delivery only, and every quantity here is a minute of ONE local day, so
+;     window_start_min and booking_completed_min are minutes of the same day by construction. A
+;     delivery on a later day is outside this model: the functions below have no date argument and
+;     no calendar, and a caller that feeds them a next-day window will get a refusal the shop's own
+;     rule does not make. What is missing is a date, which would have to come with the timezone
+;     turbobaby/market owns; no next-day default was invented in either direction.
+pub const DELIVERY_DATE_IS_NOT_MODELLED : bool = true;
+pub const SAME_DAY_MODEL_NOTE : str = "Every minute-of-day quantity in this file belongs to one local day, so window_start_is_allowed and window_shape_is_published answer the SAME-DAY question only. data/fleet_seed.json:301 scopes the two-hour lead to same-day delivery; nothing in the repository says what the lead is for a later day, and the seed publishes no booking-to-delivery calendar. Until a date model exists, a consumer must apply these two functions to a same-day window and must not read a refusal from them as the shop refusing a next-day one.";
+; (b) There is no closing time. data/fleet_seed.json:299 publishes office_opens and no counterpart,
+;     and no source anywhere in the repository states when the day ends, so nothing below puts an
+;     upper bound on a window start. A late hour is therefore unjudged rather than permitted.
+pub const OFFICE_CLOSING_TIME_IS_NOT_PUBLISHED : bool = true;
+pub const OFFICE_CLOSING_NOTE : str = "data/fleet_seed.json:299 publishes an opening time and no closing time, and no other file in this repository states one. window_start_is_allowed therefore has a floor and no ceiling: a start late in the evening is not refused by it, and that is an unjudged case rather than a published promise. What is missing is the owner's closing hour. Inventing one would refuse windows the shop may well serve. RE-MEASURED 2026-09-21, because the sentence above was first measured when specs/ held 12 tracked files and it holds 43 now: a case-insensitive search over .rs, .json, .sql, .t27 and .md for office_close, closing_time, closes_at and closing hour returns this file's own two lines and nothing else, so the count of sources is still zero and is now dated twice.";
+
+; --- The one published fee ----------------------------------------------------------------------
+; data/fleet_seed.json:306, the sole `known_tariff_example`: one area, a delivery figure of 290
+; THB and a collection figure of 0 THB. :307 `tariff_table` is null. :308 forbids deriving any
+; other area's price from the 290.
+; --
+; THE PROHIBITION IS THE LENGTH. A rule written as prose ("do not interpolate") can be obeyed by a
+; renderer and still broken by a spec that grows a second row; a rule written as an array of one,
+; pinned by an invariant, cannot grow without an assert being deleted on purpose. That is why the
+; array exists beside the scalar rather than instead of it.
+pub const DOCUMENTED_AREA_COUNT : i32 = 1;
+pub const DOCUMENTED_AREA_INDEX : i32 = 0;
+pub const DOCUMENTED_AREA_NAMES : [1]str = ["Bangtao"];
+pub const DOCUMENTED_AREA_DELIVERY_FEE_THB : [1]i32 = [290];
+pub const DOCUMENTED_DELIVERY_FEE_THB : i32 = 290;
+; The 0 in the same record is a PUBLISHED zero for that one area's collection leg, and it is the
+; only legitimate zero in this file. It is not evidence that delivery anywhere is free, and it is
+; not the shape of an unpriced area: that is FEE_ABSENT below. Keeping the two apart is the whole
+; distinction pricing-honesty is built on -- an absent amount is not zero.
+pub const DOCUMENTED_COLLECTION_FEE_THB : i32 = 0;
+; The sentinel for "this area publishes no fee". Negative on purpose: a THB amount is never
+; negative (migrations/060_delivery_zones.sql:6 CHECKs fee >= 0), so no arithmetic can mistake the
+; sentinel for money, and a caller that forgets to branch gets a visibly impossible number instead
+; of a plausible free delivery.
+pub const FEE_ABSENT : i32 = -1;
+pub const FEE_MAY_BE_INTERPOLATED : bool = false;
+pub const TARIFF_TABLE_IS_NOT_SHIPPED : bool = true;
+pub const TARIFF_TABLE_NOTE : str = "data/fleet_seed.json:307 sets rental_terms.delivery.tariff_table to null, and :308 says only the one documented area's figure exists and that no other area may be interpolated from it. There is no second published area price anywhere in this repository: the delivery_zones rows carry fees (migrations/071_delivery_zones_koh_phangan.sql:25-29) but they price another island's villages. What is missing is the owner's Phuket tariff -- an area list with a fee per area, measured by him. Until it exists, every area but the documented one is an absent amount, and an absent amount is rendered by turbobaby/pricing-honesty, not filled in here. RE-MEASURED 2026-09-21 against the corpus as it now stands, 43 tracked specs against the 12 this sentence was first measured over: none of the 31 contracts added since declares a delivery area price, and the only delivery fee any of them names is turbobaby/commerce pointing at src/api/orders.rs:1794, the same shipped zone read this file already cites. The seed line numbers were re-read the same day and are unchanged.";
+
+; --- The shipped zone table, which describes another island --------------------------------------
+; src/delivery.rs:37-78 -- 5 default zones, 4 places and 1 handover row. The module header
+; (src/delivery.rs:7-20) states that the places are Koh Phangan villages and that TurboBaby is in
+; Kamala, Phuket, a different island. The rows are deliberately left alone, and the reason is
+; recorded in three places, so this is settled policy and not neglect.
+pub const SHIPPED_ZONE_DEFAULTS_PATH : str = "src/delivery.rs";
+pub const SHIPPED_ZONE_DEFAULT_COUNT : i32 = 5;
+pub const SHIPPED_ZONE_PLACE_COUNT : i32 = 4;
+pub const SHIPPED_ZONE_HANDOVER_COUNT : i32 = 1;
+; The count is over the PLACE rows, and the distinction is measured rather than tidy. The four
+; place rows (src/delivery.rs:38-69) are the other island's villages, and none of them is on the
+; coverage island. The fifth row is not a destination at all: migrations/085_unpublish_woody_
+; catalog.sql:36-38 rebranded it and src/delivery.rs:70-77 carries the rebranded name, so it is
+; the shop's own counter -- which src/delivery.rs:10 places in Kamala, Phuket, INSIDE the coverage
+; island. Counting it as a zone outside coverage would be false; counting it as a delivery
+; destination inside coverage would be false too. It is the origin, and it is counted separately.
+pub const SHIPPED_ZONE_PLACES_IN_COVERAGE : i32 = 0;
+pub const SHIPPED_HANDOVER_ROW_IS_THE_SHOP_ITSELF : bool = true;
+pub const SHIPPED_ZONE_TABLE_DESCRIBES_ANOTHER_ISLAND : bool = true;
+pub const SHIPPED_ZONE_NAMES_ARE_CITED_NOT_QUOTED : bool = true;
+pub const ZONE_TABLE_MIGRATION : str = "migrations/060_delivery_zones.sql";
+pub const ZONE_ROWS_MIGRATION : str = "migrations/071_delivery_zones_koh_phangan.sql";
+pub const ZONE_RENAME_MIGRATION : str = "migrations/085_unpublish_woody_catalog.sql";
+pub const ZONE_ROWS_ARE_KEPT_NOT_DELETED : bool = true;
+pub const ZONE_ROWS_KEPT_REASON : str = "Three recorded reasons, none of them an oversight. migrations/060_delivery_zones.sql:16-19 seeded one mainland placeholder zone to match an older hard-coded fallback. migrations/071_delivery_zones_koh_phangan.sql:13-18 deactivates that placeholder rather than deleting it, because placed orders reference delivery_zone_id and deleting the row would orphan them, and :9-11 leaves 060 itself unedited because an applied migration may not be rewritten. migrations/085_unpublish_woody_catalog.sql:32-38 renames only the handover row and states that the island zone names are the other shop's delivery map, kept until the owner defines TurboBaby's Phuket zones -- flagged to him, not decided in code. DECISIONS.md D19 records the same thing as an unmade product call. A zone is a name, a fee and an ETA, and inventing any of the three would put an unmeasured number on a customer's screen (D11).";
+; src/delivery.rs:89-102. One override, and its failure mode points the wrong way: invalid JSON
+; logs a warning and returns the built-in defaults, so a broken override silently restores the
+; other island's map instead of leaving the table empty. The env var is named because the code
+; names it; no value of it is read by this file or by any spec.
+pub const ZONE_OVERRIDE_ENV : str = "DELIVERY_ZONES_JSON";
+pub const ZONE_OVERRIDE_INVALID_FALLS_BACK_TO_DEFAULTS : bool = true;
+; The live read surface: src/api/mod.rs:77 nests the API under /api and src/api/orders.rs:104
+; registers the handler at /delivery/zones. src/api/orders.rs:2389-2420 serves every ACTIVE row
+; ordered by sort_order then name, with no auth, to the customer checkout and the order tracker.
+pub const ZONES_ROUTE : str = "/api/delivery/zones";
+pub const ZONES_ROUTE_IS_PUBLIC : bool = true;
+pub const ZONES_ROUTE_SERVES_ACTIVE_ROWS_ONLY : bool = true;
+; migrations/060_delivery_zones.sql:6 and src/db/entities/delivery_zone.rs:13. Because the column
+; cannot be null, an unpriced area has no row shape at all: absence is expressed by a row's
+; non-existence, never by a field.
+pub const ZONE_FEE_COLUMN_IS_NOT_NULLABLE : bool = true;
+pub const ABSENT_FEE_HAS_NO_ROW_SHAPE : bool = true;
+
+; --- What is not published, said plainly ----------------------------------------------------------
+; The shop publishes a WINDOW, not a travel time. No ETA for any area appears in
+; data/fleet_seed.json, and the minute ranges the API serves (src/api/orders.rs:1787-1788 and
+; :2409-2410) come from the zone rows of the other island.
+pub const ETA_IS_NOT_PUBLISHED : bool = true;
+pub const ETA_NOTE : str = "No travel-time estimate for any area of the coverage island exists in this repository. The shop's promise is a window with a start and a published length; the min/max minute pair the API returns is read from delivery_zones rows whose places are on another island, and the empty-list fallback on the checkout screen prints a single hard-coded '30-45' string that no source measures (src/ui/screens/checkout_screen.rs:829). What would be needed is an owner-measured time per Phuket area, which nobody has taken. Until then a window is the answer and an ETA is not offered. RE-MEASURED 2026-09-21 over all 43 tracked specs: still nothing. turbobaby/order-status, written that day, records No delivery ETA from its own side, which is a second contract arriving independently at the same absence and not a source that supplies one. The checkout-screen line was re-read the same day and still carries the hard-coded string.";
+; Nothing in this repository decides whether an address is on the coverage island. delivery_zones
+; carries name, name_en, fee, min_order, eta_min, eta_max, is_active and sort_order
+; (migrations/060_delivery_zones.sql:2-14) and no geometry of any kind; the checkout screen can
+; read browser coordinates but only pastes them into a free-text address field
+; (src/ui/screens/checkout_screen.rs:210-245) and compares them with nothing. So the first
+; argument of the readiness function is an input this repository cannot yet produce -- stated
+; here rather than faked with a bounding box nobody measured.
+pub const COVERAGE_BOUNDARY_IS_NOT_MACHINE_CHECKABLE : bool = true;
+pub const COVERAGE_BOUNDARY_NOTE : str = "The coverage rule is a sentence, not a shape. No polygon, radius, centroid or geocoder is ever applied to a delivery address, and the delivery_zones table has no coordinate column, so on_coverage_island is answered by a human today. The tree is not free of coordinate machinery and the claim is deliberately narrower than that: quest_places and hunt_checkpoints carry lat/lon columns (migrations/003_quest.sql:6-7, migrations/021_hunt_checkpoints_fields.sql:5-6) and src/trios/quest.rs:86-90 measures a plain Euclidean distance between two of them. None of it is a geographic boundary, none of it reads a delivery address, and none of it touches delivery_zones. What is missing is a boundary with a source and a decision about what to do with an address that cannot be resolved. A default of true would deliver off the island; a default of false would refuse every legitimate order; neither is invented here.";
+; The write end of the same defect as the render end. src/api/admin.rs:1038-1044 maps any
+; non-finite or negative fee to 0.0 before storing it (:1084 on create, :1131-1133 on update), so
+; an unmeasurable fee is persisted as free delivery rather than refused.
+pub const ADMIN_WRITE_TURNS_AN_UNUSABLE_FEE_INTO_ZERO : bool = true;
+
+; --- Fees and totals ------------------------------------------------------------------------------
+; Measured 2026-09-20: the zone fee is READ at two endpoints (src/api/orders.rs:1794 and :2415)
+; and rendered on one screen (src/ui/screens/checkout_screen.rs:818-825, :1547). It appears in no
+; total expression anywhere: the order total the server accepts is subtotal minus bonus minus
+; stars (src/api/orders.rs:210), with no delivery term in it. The shipped delivery fee is
+; therefore displayed and never charged. This file neither changes that nor restates the identity.
+; Re-verified 2026-09-21: src/ is byte-identical to the tree that measurement was taken against,
+; and the contracts written since put the total elsewhere rather than here -- turbobaby/order-money
+; owns the identity and turbobaby/checkout-contact states in its own words that it computes no
+; total and decides no delivery. No contract in the grown corpus adds a delivery term to a total.
+pub const FEE_ENTERS_NO_SHIPPED_TOTAL : bool = true;
+pub const THIS_FILE_ADDS_NO_FEE_TO_ANY_TOTAL : bool = true;
+
+; --- The three absence claims, re-measured against the grown corpus ------------------------------
+; Three sentences in this file say that something exists NOWHERE in this repository: no closing
+; hour, no second published area price, no ETA for the coverage island. All three were measured on
+; 2026-09-20, when specs/ held 12 tracked files; it holds 43 now, 31 of them added on 2026-09-21.
+; A false absence is the one claim a reader accepts without checking, so none of the three was left
+; standing on the smaller corpus. All three were run again and all three still answer zero. The
+; counts are declared rather than described so that a later reader can see WHICH corpus was
+; searched and on WHAT DAY, instead of inheriting a sentence whose scope has quietly moved.
+pub const ABSENCE_CLAIMS_REMEASURED_AT : str = "2026-09-21";
+pub const TRACKED_SPECS_WHEN_FIRST_MEASURED : i32 = 12;
+pub const TRACKED_SPECS_AT_REMEASURE : i32 = 43;
+pub const ABSENCE_CLAIM_COUNT : i32 = 3;
+pub const CLOSING_TIME_SOURCES_FOUND : i32 = 0;
+pub const SECOND_PUBLISHED_AREA_PRICE_SOURCES_FOUND : i32 = 0;
+pub const COVERAGE_ISLAND_ETA_SOURCES_FOUND : i32 = 0;
+pub const ABSENCE_CLAIMS_SURVIVED_THE_REMEASURE : bool = true;
+; A claim of absence holds only while its count is zero. Written as a function so that a worker who
+; finds one source writes the number and watches the assert fail, instead of editing the prose.
+pub fn absence_claim_still_holds(sources_found: i32) bool {
+    return sources_found == 0;
+}
+
+; ==================================================================================================
+; Functions. Each takes plain arguments: the compiler has no struct type, and every decision this
+; file does not own arrives as a boolean produced elsewhere.
+; ==================================================================================================
+
+; Is this area the one the shop documents? Index form, so the answer is bounded by the published
+; count rather than by a name comparison that a rename would silently break.
+pub fn area_fee_is_documented(area_index: i32) bool {
+    return area_index >= 0 and area_index < DOCUMENTED_AREA_COUNT;
+}
+
+; The fee, or the sentinel. There is no third branch and no default: an area outside the published
+; one produces an ABSENCE, which turbobaby/pricing-honesty renders as a dash carrying the sentence
+; that a human quotes the price. No arithmetic on the documented figure appears here, which is the
+; interpolation prohibition expressed as a missing function.
+pub fn area_fee_thb(area_index: i32) i32 {
+    if (area_fee_is_documented(area_index)) {
+        return DOCUMENTED_DELIVERY_FEE_THB;
+    }
+    return FEE_ABSENT;
+}
+
+; The distinction that the shipped client half loses: absent is not zero.
+pub fn fee_is_absent(fee_thb: i32) bool {
+    return fee_thb == FEE_ABSENT;
+}
+
+; The default point is settled by being chosen. The secondary point is settled only by an explicit
+; agreement. Anything else -- including the unset discriminant -- is unsettled, and no branch falls
+; back to the default.
+pub fn handover_point_is_settled(point: u8, explicit_agreement: bool) bool {
+    if (point == POINT_DEFAULT) {
+        return true;
+    }
+    if (point == POINT_SECONDARY) {
+        return explicit_agreement;
+    }
+    return false;
+}
+
+; Exactly two lengths are published. A length the shop never offered is not a shorter promise, it
+; is an unpublished one.
+pub fn window_length_is_published(length_min: i32) bool {
+    return length_min == DEFAULT_WINDOW_MIN or length_min == NARROW_WINDOW_MIN;
+}
+
+; The same-day rule and its floor, as one function. Two hours after the booking, but never before
+; the earliest window -- so a booking completed at breakfast does not buy a 09:00 delivery.
+pub fn earliest_start_min(booking_completed_min: i32) i32 {
+    if (booking_completed_min + SAME_DAY_LEAD_MIN < EARLIEST_WINDOW_START_MIN) {
+        return EARLIEST_WINDOW_START_MIN;
+    }
+    return booking_completed_min + SAME_DAY_LEAD_MIN;
+}
+
+pub fn window_start_is_allowed(start_min: i32, booking_completed_min: i32) bool {
+    return start_min >= earliest_start_min(booking_completed_min);
+}
+
+pub fn window_shape_is_published(start_min: i32, length_min: i32, booking_completed_min: i32) bool {
+    return window_length_is_published(length_min) and window_start_is_allowed(start_min, booking_completed_min);
+}
+
+; THE PRODUCER. Everything the destination leg of a delivery needs, and nothing about whether the
+; order itself may proceed: commerce_fulfillment_valid takes this answer together with its own
+; delivery_allowed and decides that. Four independent legs, all required, none defaulted.
+pub fn delivery_destination_ready(on_coverage_island: bool, point: u8, explicit_agreement: bool, map_link_sent: bool, window_start_min: i32, window_length_min: i32, booking_completed_min: i32) bool {
+    return on_coverage_island and handover_point_is_settled(point, explicit_agreement) and map_link_sent and window_shape_is_published(window_start_min, window_length_min, booking_completed_min);
+}
+
+; A table answers for the coverage area only if it has at least one row inside it. Written as a
+; function so the shipped count can be handed to it instead of asserted about in prose.
+pub fn shipped_table_answers_for_coverage(zones_in_coverage: i32) bool {
+    return zones_in_coverage > 0;
+}
+
+; ==================================================================================================
+; Tests. The gate enumerates these; it does not execute the asserts, so each one below was
+; hand-evaluated against the function above it.
+; ==================================================================================================
+
+test the_reuse_edges_are_named_by_id_and_are_not_this_file {
+    assert REUSES_PRICING_HONESTY_ID == "turbobaby/pricing-honesty";
+    assert REUSES_MARKET_PROFILE_ID == "turbobaby/market";
+    assert REUSES_COMMERCE_ID == "turbobaby/commerce";
+    assert REUSES_ORDER_MONEY_ID == "turbobaby/order-money";
+    assert REUSES_PRICING_HONESTY_ID != ID;
+    assert REUSES_MARKET_PROFILE_ID != ID;
+    assert REUSES_COMMERCE_ID != ID;
+    assert REUSES_ORDER_MONEY_ID != ID;
+    assert PRODUCES == "delivery_destination_ready";
+    assert CONSUMER_FUNCTION == "commerce_fulfillment_valid";
+}
+
+test exactly_one_area_fee_is_published_and_the_array_says_so {
+    assert DOCUMENTED_AREA_COUNT == 1;
+    assert DOCUMENTED_AREA_DELIVERY_FEE_THB.len == DOCUMENTED_AREA_COUNT;
+    assert DOCUMENTED_AREA_NAMES.len == DOCUMENTED_AREA_COUNT;
+    assert DOCUMENTED_AREA_DELIVERY_FEE_THB[0] == DOCUMENTED_DELIVERY_FEE_THB;
+    assert DOCUMENTED_DELIVERY_FEE_THB == 290;
+    assert area_fee_is_documented(DOCUMENTED_AREA_INDEX) == true;
+    assert area_fee_is_documented(1) == false;
+    assert area_fee_is_documented(-1) == false;
+}
+
+test every_other_area_is_an_absence_and_never_a_derived_number {
+    assert area_fee_thb(DOCUMENTED_AREA_INDEX) == DOCUMENTED_DELIVERY_FEE_THB;
+    assert area_fee_thb(1) == FEE_ABSENT;
+    assert area_fee_thb(2) == FEE_ABSENT;
+    assert area_fee_thb(-1) == FEE_ABSENT;
+    assert fee_is_absent(area_fee_thb(1)) == true;
+    assert fee_is_absent(area_fee_thb(DOCUMENTED_AREA_INDEX)) == false;
+    assert FEE_MAY_BE_INTERPOLATED == false;
+    assert TARIFF_TABLE_IS_NOT_SHIPPED == true;
+}
+
+; The measured distinction the client half loses. 0 is a published figure for the one documented
+; area; -1 is the shape of an area nobody priced. A renderer that treats them alike prints free
+; delivery to the far end of the island.
+test a_published_zero_is_not_an_absent_fee {
+    assert DOCUMENTED_COLLECTION_FEE_THB == 0;
+    assert FEE_ABSENT != DOCUMENTED_COLLECTION_FEE_THB;
+    assert fee_is_absent(DOCUMENTED_COLLECTION_FEE_THB) == false;
+    assert fee_is_absent(FEE_ABSENT) == true;
+    assert FEE_ABSENT < 0;
+    assert DOCUMENTED_COLLECTION_FEE_THB < DOCUMENTED_DELIVERY_FEE_THB;
+}
+
+test the_coverage_rule_is_one_island_and_off_it_the_promise_ends {
+    assert COVERAGE_ISLAND == "Phuket";
+    assert COVERAGE_ISLAND_COUNT == 1;
+    assert OFF_ISLAND_MEANS_NO_DELIVERY == true;
+    assert OFF_ISLAND_TRAVEL_IS_A_DIFFERENT_FACT == true;
+    assert delivery_destination_ready(false, POINT_DEFAULT, true, true, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == false;
+    assert delivery_destination_ready(true, POINT_DEFAULT, true, true, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == true;
+}
+
+test the_secondary_handover_point_needs_an_agreement_and_an_unknown_one_fails_closed {
+    assert POINT_NONE == 0;
+    assert POINT_DEFAULT != POINT_SECONDARY;
+    assert POINT_NAMES.len == 2;
+    assert SECONDARY_POINT_REQUIRES_EXPLICIT_AGREEMENT == true;
+    assert handover_point_is_settled(POINT_DEFAULT, false) == true;
+    assert handover_point_is_settled(POINT_DEFAULT, true) == true;
+    assert handover_point_is_settled(POINT_SECONDARY, true) == true;
+    assert handover_point_is_settled(POINT_SECONDARY, false) == false;
+    assert handover_point_is_settled(POINT_NONE, true) == false;
+    assert handover_point_is_settled(9, true) == false;
+}
+
+; 600 is 10:00, 660 is 11:00, 780 is 13:00. The office is open for a full hour before the earliest
+; window opens, and the earliest window is itself exactly one default-length window.
+test the_window_clock_is_transcribed_and_its_two_gaps_are_measured {
+    assert OFFICE_OPENS_MIN == 10 * MINUTES_PER_HOUR;
+    assert EARLIEST_WINDOW_START_MIN == 11 * MINUTES_PER_HOUR;
+    assert EARLIEST_WINDOW_END_MIN == 13 * MINUTES_PER_HOUR;
+    assert EARLIEST_WINDOW_START_MIN - OFFICE_OPENS_MIN == OPENING_TO_EARLIEST_WINDOW_MIN;
+    assert OPENING_TO_EARLIEST_WINDOW_MIN == MINUTES_PER_HOUR;
+    assert EARLIEST_WINDOW_END_MIN - EARLIEST_WINDOW_START_MIN == DEFAULT_WINDOW_MIN;
+    assert DEFAULT_WINDOW_MIN == 2 * MINUTES_PER_HOUR;
+    assert NARROW_WINDOW_MIN == MINUTES_PER_HOUR;
+    assert NARROW_WINDOW_MIN < DEFAULT_WINDOW_MIN;
+}
+
+test only_two_window_lengths_exist_and_nothing_between_them_does {
+    assert WINDOW_LENGTHS_MIN.len == 2;
+    assert WINDOW_LENGTHS_MIN[0] == DEFAULT_WINDOW_MIN;
+    assert WINDOW_LENGTHS_MIN[1] == NARROW_WINDOW_MIN;
+    assert window_length_is_published(DEFAULT_WINDOW_MIN) == true;
+    assert window_length_is_published(NARROW_WINDOW_MIN) == true;
+    assert window_length_is_published(90) == false;
+    assert window_length_is_published(0) == false;
+    assert window_length_is_published(DEFAULT_WINDOW_MIN + NARROW_WINDOW_MIN) == false;
+    assert NARROW_WINDOW_IS_BY_REQUEST_ONLY == true;
+}
+
+; The floor bites for every booking completed before 09:00 and stops biting at exactly 09:00, when
+; the two-hour lead lands on the earliest window. 540 is 09:00; 480 is 08:00; 720 is 12:00.
+test same_day_delivery_is_two_hours_out_but_never_before_the_earliest_window {
+    assert SAME_DAY_LEAD_MIN == 2 * MINUTES_PER_HOUR;
+    assert earliest_start_min(0) == EARLIEST_WINDOW_START_MIN;
+    assert earliest_start_min(480) == EARLIEST_WINDOW_START_MIN;
+    assert earliest_start_min(540) == EARLIEST_WINDOW_START_MIN;
+    assert earliest_start_min(OFFICE_OPENS_MIN) == 720;
+    assert earliest_start_min(EARLIEST_WINDOW_START_MIN) == EARLIEST_WINDOW_END_MIN;
+    assert SAME_DAY_HAS_A_FLOOR == true;
+}
+
+test a_window_start_is_allowed_only_from_the_computed_earliest_moment {
+    assert window_start_is_allowed(EARLIEST_WINDOW_START_MIN, 0) == true;
+    assert window_start_is_allowed(OFFICE_OPENS_MIN, 0) == false;
+    assert window_start_is_allowed(720, OFFICE_OPENS_MIN) == true;
+    assert window_start_is_allowed(EARLIEST_WINDOW_START_MIN, OFFICE_OPENS_MIN) == false;
+    assert window_shape_is_published(EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == true;
+    assert window_shape_is_published(EARLIEST_WINDOW_START_MIN, NARROW_WINDOW_MIN, 0) == true;
+    assert window_shape_is_published(EARLIEST_WINDOW_START_MIN, 90, 0) == false;
+    assert window_shape_is_published(OFFICE_OPENS_MIN, DEFAULT_WINDOW_MIN, 0) == false;
+}
+
+; Four legs, and each one is shown to be load-bearing on its own against a case where the other
+; three hold. The last assert is the positive control: without it the others would pass on a
+; function that always returns false.
+test the_destination_is_ready_only_when_every_leg_holds {
+    assert delivery_destination_ready(false, POINT_DEFAULT, true, true, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == false;
+    assert delivery_destination_ready(true, POINT_NONE, true, true, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == false;
+    assert delivery_destination_ready(true, POINT_SECONDARY, false, true, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == false;
+    assert delivery_destination_ready(true, POINT_DEFAULT, false, false, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == false;
+    assert delivery_destination_ready(true, POINT_DEFAULT, false, true, OFFICE_OPENS_MIN, DEFAULT_WINDOW_MIN, 0) == false;
+    assert delivery_destination_ready(true, POINT_DEFAULT, false, true, EARLIEST_WINDOW_START_MIN, 45, 0) == false;
+    assert delivery_destination_ready(true, POINT_SECONDARY, true, true, EARLIEST_WINDOW_START_MIN, NARROW_WINDOW_MIN, 0) == true;
+    assert delivery_destination_ready(true, POINT_DEFAULT, false, true, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == true;
+    assert MUST_SEND_MAP_LINK == true;
+}
+
+test the_shipped_zone_table_prices_another_island_and_is_kept_on_purpose {
+    assert SHIPPED_ZONE_DEFAULTS_PATH == "src/delivery.rs";
+    assert SHIPPED_ZONE_DEFAULT_COUNT == 5;
+    assert SHIPPED_ZONE_PLACE_COUNT + SHIPPED_ZONE_HANDOVER_COUNT == SHIPPED_ZONE_DEFAULT_COUNT;
+    assert SHIPPED_ZONE_PLACES_IN_COVERAGE == 0;
+    assert shipped_table_answers_for_coverage(SHIPPED_ZONE_PLACES_IN_COVERAGE) == false;
+    assert shipped_table_answers_for_coverage(1) == true;
+    assert SHIPPED_ZONE_TABLE_DESCRIBES_ANOTHER_ISLAND == true;
+    assert SHIPPED_ZONE_NAMES_ARE_CITED_NOT_QUOTED == true;
+    assert ZONE_ROWS_ARE_KEPT_NOT_DELETED == true;
+    assert ZONE_TABLE_MIGRATION == "migrations/060_delivery_zones.sql";
+    assert ZONE_ROWS_MIGRATION == "migrations/071_delivery_zones_koh_phangan.sql";
+    assert ZONE_RENAME_MIGRATION == "migrations/085_unpublish_woody_catalog.sql";
+}
+
+; The published-table count and the shipped-table count are different numbers about different
+; things, and neither is the other's evidence. One area is priced; five zones are shipped; none of
+; the five is in the coverage area. That is the whole problem in three integers.
+test the_published_count_and_the_shipped_count_do_not_corroborate_each_other {
+    assert DOCUMENTED_AREA_COUNT == 1;
+    assert SHIPPED_ZONE_DEFAULT_COUNT == 5;
+    assert SHIPPED_ZONE_PLACES_IN_COVERAGE == 0;
+    assert DOCUMENTED_AREA_COUNT != SHIPPED_ZONE_DEFAULT_COUNT;
+    assert DOCUMENTED_AREA_COUNT > SHIPPED_ZONE_PLACES_IN_COVERAGE;
+}
+
+test the_absent_fee_has_no_place_to_live_in_the_shipped_row_shape {
+    assert ZONE_FEE_COLUMN_IS_NOT_NULLABLE == true;
+    assert ABSENT_FEE_HAS_NO_ROW_SHAPE == true;
+    assert ADMIN_WRITE_TURNS_AN_UNUSABLE_FEE_INTO_ZERO == true;
+    assert ZONE_OVERRIDE_ENV == "DELIVERY_ZONES_JSON";
+    assert ZONE_OVERRIDE_INVALID_FALLS_BACK_TO_DEFAULTS == true;
+    assert ZONES_ROUTE == "/api/delivery/zones";
+    assert ZONES_ROUTE_IS_PUBLIC == true;
+    assert ZONES_ROUTE_SERVES_ACTIVE_ROWS_ONLY == true;
+}
+
+test what_is_not_published_is_refused_by_name_rather_than_filled_in {
+    assert ETA_IS_NOT_PUBLISHED == true;
+    assert COVERAGE_BOUNDARY_IS_NOT_MACHINE_CHECKABLE == true;
+    assert TARIFF_TABLE_IS_NOT_SHIPPED == true;
+    assert NO_MAP_LINK_IS_STORED_IN_THIS_FILE == true;
+    assert DELIVERY_DATE_IS_NOT_MODELLED == true;
+    assert OFFICE_CLOSING_TIME_IS_NOT_PUBLISHED == true;
+    assert SHIPPED_HANDOVER_ROW_IS_THE_SHOP_ITSELF == true;
+}
+
+; The three counts and the corpus they were taken over. The last two asserts are the point: the
+; re-measurement has its own date, distinct from the file's MEASURED_AT, and one non-zero count is
+; enough to make the function say so.
+test the_three_absence_claims_were_remeasured_on_the_grown_corpus {
+    assert ABSENCE_CLAIMS_REMEASURED_AT == "2026-09-21";
+    assert TRACKED_SPECS_WHEN_FIRST_MEASURED == 12;
+    assert TRACKED_SPECS_AT_REMEASURE == 43;
+    assert TRACKED_SPECS_AT_REMEASURE > TRACKED_SPECS_WHEN_FIRST_MEASURED;
+    assert ABSENCE_CLAIM_COUNT == 3;
+    assert CLOSING_TIME_SOURCES_FOUND == 0;
+    assert SECOND_PUBLISHED_AREA_PRICE_SOURCES_FOUND == 0;
+    assert COVERAGE_ISLAND_ETA_SOURCES_FOUND == 0;
+    assert absence_claim_still_holds(CLOSING_TIME_SOURCES_FOUND) == true;
+    assert absence_claim_still_holds(SECOND_PUBLISHED_AREA_PRICE_SOURCES_FOUND) == true;
+    assert absence_claim_still_holds(COVERAGE_ISLAND_ETA_SOURCES_FOUND) == true;
+    assert ABSENCE_CLAIMS_SURVIVED_THE_REMEASURE == true;
+    assert ABSENCE_CLAIMS_REMEASURED_AT != MEASURED_AT;
+    assert absence_claim_still_holds(1) == false;
+}
+
+; The consumer edge, re-verified by NAME on 2026-09-21 after its line citation was removed from the
+; header. The owner and the declaration are both literals here, so the edge cannot decay into a
+; comment the way a line number does.
+test the_consumer_edge_names_an_owner_and_a_declaration_and_not_a_line {
+    assert REUSES_COMMERCE_ID == "turbobaby/commerce";
+    assert CONSUMER_FUNCTION == "commerce_fulfillment_valid";
+    assert PRODUCES == "delivery_destination_ready";
+    assert REUSES_COMMERCE_ID != ID;
+    assert CONSUMER_FUNCTION != PRODUCES;
+}
+
+test this_contract_charges_nothing_and_totals_nothing {
+    assert THIS_FILE_ADDS_NO_FEE_TO_ANY_TOTAL == true;
+    assert FEE_ENTERS_NO_SHIPPED_TOTAL == true;
+    assert KIND == "contract";
+    assert ID == "turbobaby/delivery-terms";
+    assert SOURCE == "data/fleet_seed.json";
+    assert SOURCE_MEASURED_AT == "2026-09-12";
+    assert MEASURED_AT == "2026-09-20";
+}
+
+; ==================================================================================================
+; Invariants
+; ==================================================================================================
+
+; THE PROHIBITION. One published area fee, and the array length is the thing that says so. A second
+; row cannot arrive without this assert being deleted deliberately.
+invariant exactly_one_delivery_fee_is_published
+    assert DOCUMENTED_AREA_DELIVERY_FEE_THB.len == 1 and DOCUMENTED_AREA_NAMES.len == DOCUMENTED_AREA_DELIVERY_FEE_THB.len and DOCUMENTED_AREA_COUNT == 1
+
+; The interpolation ban, mechanically: the area after the documented one is absent, not a fraction
+; of 290. There is no function in this file from an undocumented area to a number.
+invariant no_second_area_ever_acquires_a_fee
+    assert area_fee_thb(DOCUMENTED_AREA_INDEX + 1) == FEE_ABSENT and area_fee_thb(DOCUMENTED_AREA_INDEX) == DOCUMENTED_DELIVERY_FEE_THB and FEE_MAY_BE_INTERPOLATED == false
+
+; D9, on the one leg this file owns. The published zero belongs to one documented area; an area
+; nobody priced is absent, and the two never collapse into each other.
+invariant an_absent_fee_is_never_the_published_zero
+    assert FEE_ABSENT != DOCUMENTED_COLLECTION_FEE_THB and fee_is_absent(DOCUMENTED_COLLECTION_FEE_THB) == false and fee_is_absent(area_fee_thb(DOCUMENTED_AREA_COUNT)) == true
+
+; Off the island there is no delivery at any price and in any window.
+invariant no_window_or_agreement_delivers_off_the_island
+    assert delivery_destination_ready(false, POINT_DEFAULT, true, true, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == false and OFF_ISLAND_MEANS_NO_DELIVERY == true
+
+; The hour a reader would otherwise assume away: the office opens before the earliest window, and
+; the earliest window is exactly one default-length window wide.
+invariant the_earliest_window_opens_an_hour_after_the_office_does
+    assert EARLIEST_WINDOW_START_MIN - OFFICE_OPENS_MIN == MINUTES_PER_HOUR and EARLIEST_WINDOW_END_MIN - EARLIEST_WINDOW_START_MIN == DEFAULT_WINDOW_MIN
+
+; The same-day floor. An early booking does not buy an earlier slot, and a late one is not pulled
+; back to the floor either.
+invariant same_day_lead_never_beats_the_earliest_window
+    assert earliest_start_min(0) == EARLIEST_WINDOW_START_MIN and earliest_start_min(OFFICE_OPENS_MIN) == OFFICE_OPENS_MIN + SAME_DAY_LEAD_MIN
+
+; Two published lengths, and their sum is not a third one.
+invariant only_the_two_published_window_lengths_are_offered
+    assert WINDOW_LENGTHS_MIN.len == 2 and window_length_is_published(DEFAULT_WINDOW_MIN) == true and window_length_is_published(NARROW_WINDOW_MIN) == true and window_length_is_published(DEFAULT_WINDOW_MIN + NARROW_WINDOW_MIN) == false
+
+; "By explicit agreement only", mechanically. The discriminant alone never settles the secondary
+; point, and an unknown point never falls back to the default.
+invariant the_secondary_point_never_settles_itself
+    assert handover_point_is_settled(POINT_SECONDARY, false) == false and handover_point_is_settled(POINT_NONE, true) == false and handover_point_is_settled(POINT_DEFAULT, false) == true
+
+; The map link is part of the promise, not a courtesy: readiness fails without it even when every
+; other leg holds.
+invariant the_map_link_obligation_is_load_bearing
+    assert delivery_destination_ready(true, POINT_DEFAULT, true, false, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == false and MUST_SEND_MAP_LINK == true
+
+; The producer is not vacuous: one case is ready, so every refusal above means something.
+invariant a_complete_destination_leg_is_actually_reachable
+    assert delivery_destination_ready(true, POINT_DEFAULT, false, true, EARLIEST_WINDOW_START_MIN, DEFAULT_WINDOW_MIN, 0) == true
+
+; The shipped table answers for no part of the coverage area, and its five rows account for
+; themselves so the count cannot drift unnoticed.
+invariant the_shipped_zone_table_answers_for_no_part_of_the_coverage_area
+    assert shipped_table_answers_for_coverage(SHIPPED_ZONE_PLACES_IN_COVERAGE) == false and SHIPPED_ZONE_PLACE_COUNT + SHIPPED_ZONE_HANDOVER_COUNT == SHIPPED_ZONE_DEFAULT_COUNT
+
+; This contract quotes nothing and charges nothing. Flipping either constant is the edit that would
+; turn a promise into an invoice, so it fails here.
+invariant this_contract_never_becomes_a_charge
+    assert THIS_FILE_ADDS_NO_FEE_TO_ANY_TOTAL == true and ETA_IS_NOT_PUBLISHED == true
+
+; An absence is a measurement and carries the corpus it was taken over. If any of the three counts
+; ever leaves zero, this fails rather than the sentence quietly becoming false.
+invariant an_absence_claim_here_holds_only_while_its_count_is_zero
+    assert absence_claim_still_holds(CLOSING_TIME_SOURCES_FOUND) == true and absence_claim_still_holds(SECOND_PUBLISHED_AREA_PRICE_SOURCES_FOUND) == true and absence_claim_still_holds(COVERAGE_ISLAND_ETA_SOURCES_FOUND) == true and TRACKED_SPECS_AT_REMEASURE > TRACKED_SPECS_WHEN_FIRST_MEASURED
+
+; The ownership edges, pinned as literals because without imports a REUSES_* string is the only
+; thing standing between reuse and a second copy of somebody else's table.
+invariant every_reuse_edge_names_another_contract
+    assert REUSES_PRICING_HONESTY_ID != ID and REUSES_MARKET_PROFILE_ID != ID and REUSES_COMMERCE_ID != ID and REUSES_ORDER_MONEY_ID != ID and REUSES_PRICING_HONESTY_ID != REUSES_COMMERCE_ID

@@ -124,6 +124,9 @@ const UI = {
     healthOk: 'Clean through every layer',
     healthWarn: 'Compiles, but the compiler flagged or dropped something',
     healthFail: 'A backend refused this spec outright',
+    notSource: 'Not a module',
+    notSourceHint:
+      'Files under a .t27 extension that are not compilation units: Markdown documents, TRI-27 assembly, fixtures damaged on purpose, and the older spec X { } surface. The three health counts are over modules only.',
     corpusHealth: 'corpus health',
     startHere: 'START HERE',
     noneInGroup: 'Nothing in this group.',
@@ -224,6 +227,9 @@ const UI = {
     healthOk: 'Чисто на всех слоях',
     healthWarn: 'Компилируется, но компилятор что-то отбросил или пометил',
     healthFail: 'Бэкенд отказался обрабатывать эту спеку',
+    notSource: 'Не модуль',
+    notSourceHint:
+      'Файлы с расширением .t27, которые не являются единицами компиляции: документы Markdown, ассемблер TRI-27, намеренно повреждённые фикстуры и старая форма spec X { }. Три счётчика здоровья считаются только по модулям.',
     corpusHealth: 'здоровье корпуса',
     startHere: 'НАЧНИТЕ ЗДЕСЬ',
     noneInGroup: 'В этой группе пусто.',
@@ -274,6 +280,30 @@ const C = {
 function fmtBytes(n: number): string {
   if (n < 1024) return `${n}B`
   return `${(n / 1024).toFixed(1)}K`
+}
+
+/** The group a chip selects. `not-source` crosses the health axis rather than extending it. */
+type SpecGroup = Health | 'all' | 'course' | 'not-source'
+
+/**
+ * Whether a spec belongs in the selected group.
+ *
+ * One function, two callers: the list and the tag-facet counts. Those were the
+ * same three lines written out twice, a few lines apart -- which is exactly how
+ * a facet ends up promising results the list will not show.
+ *
+ * The three health chips count MODULES only, matching the manifest's `health`
+ * block, so the chip and the list it opens can never disagree. A file that is
+ * not a compilation unit is in `not-source` whatever the compiler did with it;
+ * `sourceKind` defaults to `source` so a catalog written before the classifier
+ * existed behaves exactly as it did.
+ */
+function inGroup(s: SpecEntry, group: SpecGroup): boolean {
+  if (group === 'course') return !!s.tutorial
+  const isSource = (s.sourceKind ?? 'source') === 'source'
+  if (group === 'not-source') return !isSource
+  if (group === 'all') return true
+  return isSource && s.health === group
 }
 
 /** Colour a node by its family so structure reads at a glance. */
@@ -432,7 +462,10 @@ export default function SpecExplorer() {
   // which of 760 specs to open, and "Working 522" is still 522 unordered
   // files; the eight lessons are the one path through this that starts
   // somewhere. Every other group is one click away and carries its count.
-  const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course'>('course')
+  // `not-source` is a fourth group beside the three health states rather than a
+  // fourth health state: it answers a different question (what IS this file)
+  // and the two axes cross. 31 files here compile cleanly.
+  const [healthFilter, setHealthFilter] = useState<Health | 'all' | 'course' | 'not-source'>('course')
   // Multi-select, AND across selections: picking domain/fpga + has/tests means
   // "FPGA specs that have tests", which is the question people actually ask.
   const [tagSel, setTagSel] = useState<string[]>([])
@@ -588,9 +621,7 @@ export default function SpecExplorer() {
     if (!manifest) return []
     const q = query.trim().toLowerCase()
     return manifest.specs.filter((s) => {
-      if (healthFilter === 'course') {
-        if (!s.tutorial) return false
-      } else if (healthFilter !== 'all' && s.health !== healthFilter) return false
+      if (!inGroup(s, healthFilter)) return false
       if (tagSel.length && !tagSel.every((t) => s.tags.includes(t))) return false
       if (category && s.category !== category) return false
       if (!q) return true
@@ -614,8 +645,7 @@ export default function SpecExplorer() {
     if (!manifest) return {}
     const q = query.trim().toLowerCase()
     const base = manifest.specs.filter((s) => {
-      if (healthFilter === 'course') { if (!s.tutorial) return false }
-      else if (healthFilter !== 'all' && s.health !== healthFilter) return false
+      if (!inGroup(s, healthFilter)) return false
       if (category && s.category !== category) return false
       if (q && !(s.path.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) ||
         (s.module ? s.module.toLowerCase().includes(q) : false) ||
@@ -1028,15 +1058,21 @@ export default function SpecExplorer() {
                     ['ok', ui.working, manifest.health.ok],
                     ['warn', ui.warnings, manifest.health.warn],
                     ['fail', ui.broken, manifest.health.fail],
+                    // Counted from the entries, not read from `manifest.notSource`,
+                    // so this chip is right on a catalog generated before that
+                    // block existed instead of reading 0 over a full list.
+                    ['not-source', ui.notSource, manifest.specs.filter((s) => inGroup(s, 'not-source')).length],
                     ['all', ui.all, manifest.specCount],
-                  ] as [Health | 'all' | 'course', string, number][]).map(([k, label, n]) => {
+                  ] as [SpecGroup, string, number][]).map(([k, label, n]) => {
                     const on = healthFilter === k
-                    const col = k === 'all' ? C.muted : k === 'course' ? C.golden : HEALTH_COLOR[k]
+                    const col =
+                      k === 'all' || k === 'not-source' ? C.muted : k === 'course' ? C.golden : HEALTH_COLOR[k]
                     return (
                       <button
                         key={k}
                         onClick={() => setHealthFilter(k)}
                         aria-pressed={on}
+                        title={k === 'not-source' ? ui.notSourceHint : undefined}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -1053,6 +1089,8 @@ export default function SpecExplorer() {
                       >
                         {k === 'course' ? (
                           <span aria-hidden="true">◆</span>
+                        ) : k === 'not-source' ? (
+                          <span aria-hidden="true">◇</span>
                         ) : k !== 'all' ? (
                           <span aria-hidden="true">{HEALTH_GLYPH[k]}</span>
                         ) : null}
@@ -1062,7 +1100,14 @@ export default function SpecExplorer() {
                     )
                   })}
                 </div>
-                <HealthBar health={manifest.health} total={manifest.specCount} />
+                {/* The bar's denominator is the modules, not the corpus. The
+                    three counts are over `source` entries, so dividing them by
+                    `specCount` would leave a silent 121-wide gap on the right
+                    that reads as a fourth, unnamed state. */}
+                <HealthBar
+                  health={manifest.health}
+                  total={manifest.health.ok + manifest.health.warn + manifest.health.fail}
+                />
               </>
             )}
             {/* Tag facets, grouped by family. Collapsed by default: 40-odd
