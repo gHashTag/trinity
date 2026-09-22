@@ -415,6 +415,8 @@ const COPY = {
     browserFrameTitle: "Your browser",
     browserPasswords: "Type passwords yourself, inside the window. Nobody else sees them, the agent included.",
     browserJournal: "What the agent did here",
+    browserDriving: "You are driving. The agent watches and waits.",
+    browserHandBack: "Hand back to the agent",
     triScreens: "App screens",
     triFeed: "Feed",
     triAgent: "Agent",
@@ -830,6 +832,8 @@ const COPY = {
     browserFrameTitle: "Ваш браузер",
     browserPasswords: "Пароли вводите сами, внутри окна. Их не видит никто, включая агента.",
     browserJournal: "Что здесь делал агент",
+    browserDriving: "Руль у вас. Агент смотрит и ждёт.",
+    browserHandBack: "Вернуть агенту",
     triScreens: "Экраны приложения",
     triFeed: "Лента",
     triAgent: "Агент",
@@ -3991,6 +3995,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 frameTitle: c.browserFrameTitle,
                 passwords: c.browserPasswords,
                 journal: c.browserJournal,
+                driving: c.browserDriving,
+                handBack: c.browserHandBack,
               }}
             />
           ) : boardView === "comb" ? (

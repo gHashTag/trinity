@@ -10,6 +10,8 @@ import {
   frameSrcOf,
   frameStateOf,
   journalLine,
+  setWheel,
+  shouldRenewWheel,
   readJournal,
   JOURNAL_POLL_MS,
   type JournalStep,
@@ -35,6 +37,8 @@ export interface BrowserCopy {
   frameTitle: string
   passwords: string
   journal: string
+  driving: string
+  handBack: string
 }
 
 const brokerEnv = {
@@ -112,6 +116,42 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
     }
   }, [live])
 
+  // The wheel (lib/queenBrowser.ts setWheel). A press inside the picture
+  // does not bubble out of the frame, so the frame's own window is listened
+  // to -- it is same-origin -- and attached again on every load, since the
+  // window reloads itself when it reconnects.
+  const [driving, setDriving] = useState(false)
+  const wheelSent = useRef<number | null>(null)
+  const takeTheWheel = useCallback(() => {
+    setDriving(true)
+    const now = Date.now()
+    if (shouldRenewWheel(wheelSent.current, now)) {
+      wheelSent.current = now
+      void setWheel(brokerEnv, 'person')
+    }
+  }, [])
+  const handBack = useCallback(() => {
+    setDriving(false)
+    wheelSent.current = null
+    void setWheel(brokerEnv, 'agent')
+  }, [])
+  const unlisten = useRef<(() => void) | null>(null)
+  const listenInside = useCallback(
+    (el: HTMLIFrameElement) => {
+      unlisten.current?.()
+      const w = el.contentWindow
+      if (!w) return
+      w.addEventListener('pointerdown', takeTheWheel, true)
+      w.addEventListener('keydown', takeTheWheel, true)
+      unlisten.current = () => {
+        w.removeEventListener('pointerdown', takeTheWheel, true)
+        w.removeEventListener('keydown', takeTheWheel, true)
+      }
+    },
+    [takeTheWheel],
+  )
+  useEffect(() => () => unlisten.current?.(), [])
+
   // A pod that is still starting is asked again until it answers otherwise.
   useEffect(() => {
     if (view?.state !== 'starting') return
@@ -175,7 +215,12 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
     return (
       <div className="queen27-browser is-live">
         <div className="queen27-browser-bar">
-          <span className="queen27-browser-hint">{c.passwords}</span>
+          <span className="queen27-browser-hint">{driving ? c.driving : c.passwords}</span>
+          {driving ? (
+            <button type="button" className="queen27-browser-btn is-quiet" onClick={handBack}>
+              {c.handBack}
+            </button>
+          ) : null}
           <button type="button" className="queen27-browser-btn is-quiet" disabled={busy} onClick={() => void act('close')}>
             {c.close}
           </button>
@@ -186,6 +231,7 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
           src={src}
           title={c.frameTitle}
           allow="clipboard-read; clipboard-write; fullscreen"
+          onLoad={e => listenInside(e.currentTarget)}
         />
         {journal.length > 0 ? (
           <ol className="queen27-browser-journal" aria-label={c.journal}>
