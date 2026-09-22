@@ -3,7 +3,7 @@
 .queen-hero-block {
   border-top: 1px solid rgba(0, 255, 136, .24);
   background: #020605;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .queen-hero-block-inner {

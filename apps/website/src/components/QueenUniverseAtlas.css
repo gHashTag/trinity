@@ -1,4 +1,4 @@
-.queen-atlas {height:100%;overflow:auto;box-sizing:border-box;padding:1.2rem;color:#e4f2ed;background:radial-gradient(ellipse at 35% 25%,#08473733,transparent 62%),#020806;font-family:var(--font,'Outfit',sans-serif);font-size:.9rem;}
+.queen-atlas {height:100%;overflow:auto;box-sizing:border-box;padding:1.2rem;color:#e4f2ed;background:radial-gradient(ellipse at 35% 25%,#08473733,transparent 62%),#020806;font-family:var(--font, 'Outfit', system-ui, -apple-system, sans-serif);font-size:.9rem;}
 .queen-atlas * {box-sizing:border-box;}
 .queen-atlas :where(section) {display:block;min-height:0;max-width:none;width:auto;padding:0;margin:0;}
 .queen-atlas h1,.queen-atlas h2,.queen-atlas h3,.queen-atlas p {margin:0;}

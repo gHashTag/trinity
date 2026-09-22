@@ -205,6 +205,15 @@ jobs:
       # filter chips measured 1.6:1.
       - name: The HUD can be read while the map is lit
         run: npm run check:queen-contrast
+      # The colour written beside a token is only reached where the token is
+      # unknown, so a fallback that disagrees with the declaration is a number
+      # the screen never paints -- and the contrast gate above reads the source.
+      # One such line made it report 1.74:1 for ink drawing at 1.53:1. This
+      # asserts every fallback agrees with SOME declaration of its token; where
+      # it does not, the value is wrong in every scope it could be reached from.
+      # Pure, no browser.
+      - name: A fallback says what the token says
+        run: npm run check:queen-fallback-parity
       # Why free bees are idle, read from /queen/status alone: real snapshots
       # and malformed ones through the pure reader, no fabricated zeros, a
       # stale round called stale. Pure, no browser.

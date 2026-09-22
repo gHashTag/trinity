@@ -4,7 +4,7 @@
 .spec-hero-block {
   border-bottom: 1px solid rgba(255, 212, 90, .24);
   background: #050403;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .spec-hero-block-inner {

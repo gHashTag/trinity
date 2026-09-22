@@ -23,7 +23,7 @@
 .treasury-portal {cursor:pointer;}
 .treasury-portal rect {fill:#062418;stroke:#00ff8888;stroke-width:2;}
 .treasury-portal.is-linked rect,.treasury-portal:hover rect {stroke:#75eaff;stroke-width:4;}
-.treasury-portal text {font:13px var(--font,'Outfit',sans-serif);fill:#e6f8ec;}
+.treasury-portal text {font:13px var(--font, 'Outfit', system-ui, -apple-system, sans-serif);fill:#e6f8ec;}
 .treasury-portal text.treasury-portal-count {font-size:11px;fill:#ffe08a;}
 /* This bar floats on the map, so what sits behind it is the treasury's own hex
    cells and their source edges. The `eb` is alpha 0.92, and the 8% it passed

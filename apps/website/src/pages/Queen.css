@@ -3420,7 +3420,7 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
    and nothing else. The veil token is the same surface class -- a label
    floating on the scene -- so the hint moves with the palette instead of being
    a fourth number somebody picked by eye. */
-.queen-hive-zoom-hint { position:absolute; z-index:8; left:.8rem; bottom:.6rem; margin:0; padding:.3rem .5rem; color:#b4cbd2; background:var(--hud-veil,#041115b8); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); font:.75rem/1.4 var(--font); pointer-events:none; }
+.queen-hive-zoom-hint { position:absolute; z-index:8; left:.8rem; bottom:.6rem; margin:0; padding:.3rem .5rem; color:#b4cbd2; background:var(--hud-veil, rgba(2, 8, 6, 0.72)); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); font:.75rem/1.4 var(--font); pointer-events:none; }
 /* `#041115e8` is alpha 0.909, and the law is 10px uppercase mono at 0.72 ink:
    the remaining ninth of the wall was enough for a cell edge to run through a
    colour word, which is that word read twice. The signal panel hangs off the
@@ -6418,7 +6418,7 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-specs-counts {
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
-  color: var(--muted, #8b9490);
+  color: var(--muted, #888888);
   white-space: nowrap;
 }
 
@@ -6443,7 +6443,7 @@ main:where(.queen27-page.is-shell) section {
   place-items: center;
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px;
-  color: var(--muted, #8b9490);
+  color: var(--muted, #888888);
   pointer-events: none;
 }
 
@@ -7575,7 +7575,7 @@ body.queen-shell .queen-starfield-source {
    4.39:1 here: under the line, and the third of the five words in the owner's
    photograph that was failing. */
 .queen27-lane-search::placeholder {
-  color: var(--hud-muted, #888888);
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   opacity: 1;
 }
 
@@ -7709,7 +7709,7 @@ body.queen-shell .queen-starfield-source {
    Grounded here by argument rather than by sighting, which is worth saying
    plainly: the reasoning is the two rows above it, not a screenshot. */
 .queen27-page.is-shell .queen27-lane-head {
-  padding-inline: var(--hud-gap, 0.5rem);
+  padding-inline: var(--hud-gap, 10px);
   background: var(--hud-veil, rgba(2, 8, 6, 0.72));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -7739,7 +7739,7 @@ body.queen-shell .queen-starfield-source {
 }
 
 .queen27-page.is-shell .queen27-lane-switch {
-  padding-inline: var(--hud-gap, 0.5rem);
+  padding-inline: var(--hud-gap, 10px);
   font-family: var(--hud-mono);
 }
 
@@ -7850,7 +7850,7 @@ body.queen-shell .queen-starfield-source {
    that carry their own grounds, so there is nothing of theirs on the hive. They
    belong here the day one of them gets a caption. */
 .queen27-page.is-shell :is(.queen27-lane-filter, .queen27-dir-filter) {
-  padding: 0.35rem var(--hud-gap, 0.5rem);
+  padding: 0.35rem var(--hud-gap, 10px);
   background: var(--hud-veil, rgba(2, 8, 6, 0.72));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);

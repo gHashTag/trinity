@@ -3,7 +3,7 @@
 
 .pp {
   padding: 5rem 1.25rem 6rem;
-  color: var(--text, #e8e4dc);
+  color: var(--text, #FFFFFF);
   /* Every accent below was written `var(--accent, #d4af37)` by an author who
      believed the fallback would apply. It never did: index.css sets --accent
      to #00FF88 on :root, so the fallback is dead and the page rendered green.

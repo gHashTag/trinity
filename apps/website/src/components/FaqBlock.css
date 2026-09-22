@@ -5,7 +5,7 @@
 .faq-block {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: #010403;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .faq-block-inner {

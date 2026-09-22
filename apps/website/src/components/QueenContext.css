@@ -9,7 +9,7 @@
 .queen27-context {
   --ctx-line: var(--hud-line, rgba(0, 255, 136, 0.22));
   --ctx-line-strong: var(--hud-line-strong, rgba(0, 255, 136, 0.5));
-  --ctx-muted: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  --ctx-muted: var(--hud-muted, rgba(255, 255, 255, 0.78));
   --ctx-green: var(--hud-green, #00ff88);
   --ctx-gold: var(--hud-gold, #ffd700);
   --ctx-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -32,7 +32,7 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-  color: var(--text, #e8e8f0);
+  color: var(--text, #FFFFFF);
 }
 
 .queen27-context-head {
@@ -143,7 +143,7 @@ a.queen27-context-row:hover { border-color: var(--ctx-line-strong); }
   width: 96px;
   height: 96px;
   border: 1px solid var(--ctx-line-strong);
-  background: var(--hud-ground, #020806);
+  background: var(--hud-ground, transparent);
   overflow: hidden;
 }
 

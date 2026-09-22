@@ -49,7 +49,7 @@
 
 .mcp-head p {
   margin: 0 0 16px;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   max-width: 68ch;
   line-height: 1.5;
 }
@@ -77,7 +77,7 @@
    compositing layers over a backdrop that has been through the filter once. */
 .mcp-metric {
   border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
-  background: var(--hud-panel, rgba(2, 8, 6, 0.62));
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
   border-radius: 8px;
   padding: 10px 12px;
   display: flex;
@@ -95,7 +95,7 @@
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-metric.is-online b { color: var(--hud-green, #00ff88); }
@@ -111,7 +111,7 @@
 
 .mcp-scanned {
   font-size: 12px;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-btn {
@@ -133,7 +133,7 @@
   margin: 0 0 12px;
   font-size: 12px;
   line-height: 1.5;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   max-width: 76ch;
 }
 
@@ -155,7 +155,7 @@
 .mcp-card {
   border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
   border-left-width: 3px;
-  background: var(--hud-panel, rgba(2, 8, 6, 0.62));
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
   border-radius: 6px;
 }
 
@@ -205,7 +205,7 @@
 .mcp-state,
 .mcp-ms {
   font-size: 12px;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-transport { min-width: 60px; }
@@ -235,7 +235,7 @@
 .mcp-keys {
   margin: 0 0 6px;
   font-size: 12px;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-tools {
@@ -262,7 +262,7 @@
 }
 
 .mcp-tools span {
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-down {
@@ -281,7 +281,7 @@
 .mcp-down p {
   margin: 0 0 12px;
   line-height: 1.55;
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .mcp-cmd {
@@ -303,7 +303,7 @@
 }
 
 .mcp-loading {
-  color: var(--hud-muted, rgba(255, 255, 255, 0.55));
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   font-size: 13px;
 }
 

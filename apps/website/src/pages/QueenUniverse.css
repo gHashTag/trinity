@@ -1,5 +1,5 @@
 html:has(body.queen-universe-shell),body.queen-universe-shell,body.queen-universe-shell>#root {height:100%;min-height:0;overflow:hidden;}
-.queen-universe {height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);background:#000;color:var(--text,#e7f7fa);font-family:var(--font,'Outfit',sans-serif);}
+.queen-universe {height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);background:#000;color:var(--text, #FFFFFF);font-family:var(--font, 'Outfit', system-ui, -apple-system, sans-serif);}
 /* The black belongs to the page, not to this wrapper: opaque here it sat
    between the sky and the translucent chrome, so every panel showed black
    rather than stars. The body keeps the ground; the sky paints on it. */
@@ -8,7 +8,7 @@ body.queen-shell {background:#000;}
 .queen-universe {box-sizing:border-box;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
 .queen-universe-nav {display:flex;align-items:center;gap:.6rem;padding:.4rem .65rem;border-bottom:1px solid #00ff8844;min-width:0;}
 .queen-universe-nav>span {color:#00ff88;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;}
-.queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button,.queen-universe-nav select,.queen-world-dialog input {font:inherit;min-height:40px;border:1px solid #397d80;color:var(--text,#e7f7fa);background:#041115;padding:.4rem .75rem;border-radius:6px;}
+.queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button,.queen-universe-nav select,.queen-world-dialog input {font:inherit;min-height:40px;border:1px solid #397d80;color:var(--text, #FFFFFF);background:#041115;padding:.4rem .75rem;border-radius:6px;}
 .queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button {cursor:pointer;}
 .queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button:disabled {opacity:.5;cursor:not-allowed;}
 .queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button:focus-visible,.queen-universe-nav select:focus-visible,.queen-world-dialog input:focus-visible,.queen-world-dialog a:focus-visible {outline:2px solid #ffd45a;outline-offset:2px;}

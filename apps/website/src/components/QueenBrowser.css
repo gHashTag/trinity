@@ -41,10 +41,11 @@
    the hint on the live bar, the quiet button -- and this is the one place it is
    explained.
 
-   All three said `var(--muted, #8b9490)`, and the fallback is dead: index.css
-   declares --muted: #888888 on :root, so the number a reader of this file can
-   see is the one number the browser never uses, and what drew was a duller grey
-   than the one written down. passport.css carries the same lesson about
+   All three said `var(--muted, #8b9490)`, and the fallback was dead: index.css
+   declares --muted: #888888 on :root, so the number a reader of this file could
+   see was the one number the browser never uses, and what drew was a duller grey
+   than the one written down. They now repeat the declaration, so source and
+   screen agree. passport.css carries the same lesson about
    --accent, found the same way -- by measuring the running page instead of
    reading the declaration. --hud-muted is the board's own word for a label or a
    note; it is declared on .queen27-page.is-shell, which every rule in this file
@@ -182,7 +183,7 @@
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
   line-height: 1.45;
-  color: var(--muted, #8b9490);
+  color: var(--muted, #888888);
 }
 .queen27-page.is-shell .queen27-browser-journal li {
   white-space: nowrap;

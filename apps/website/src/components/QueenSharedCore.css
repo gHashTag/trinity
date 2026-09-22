@@ -1,4 +1,4 @@
-.queen-shared-core {height:100%;overflow:auto;padding:1rem;box-sizing:border-box;background:radial-gradient(ellipse at top right,#00ff8809,transparent 60%);font-family:var(--font,'Outfit',sans-serif);text-align:left;}
+.queen-shared-core {height:100%;overflow:auto;padding:1rem;box-sizing:border-box;background:radial-gradient(ellipse at top right,#00ff8809,transparent 60%);font-family:var(--font, 'Outfit', system-ui, -apple-system, sans-serif);text-align:left;}
 .queen-shared-core h1 {font-weight:500;font-size:1.6rem;margin:.3rem 0;}.queen-shared-core h2 {font-weight:500;font-size:1.15rem;overflow-wrap:anywhere;}
 .queen-shared-core p {font-size:.85rem;line-height:1.5;color:#a9c4be;}.queen-shared-core code {font-family:'JetBrains Mono',monospace;font-size:.75rem;overflow-wrap:anywhere;}
 .queen-shared-core a {color:#64dcff;}.queen-shared-core .core-boundary {color:#64dcff;border-left:2px solid #64dcff;padding-left:.8rem;}

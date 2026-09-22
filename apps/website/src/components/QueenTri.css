@@ -22,7 +22,7 @@
 /* These buttons float on the live hive with nothing between them: the row that
    holds them paints no ground at all, so each chip is its own surface and has
    to answer for itself.
-   It was rgba(2,8,6,0.6) under `var(--muted, #8b9490)`, and that fallback is
+   It was rgba(2,8,6,0.6) under `var(--muted, #8b9490)`, and that fallback was
    dead: index.css declares --muted: #888888 on :root, so the ink that drew was
    #888888 at 1.53:1 over a lit field, and 1.74:1 -- the number a reader of the
    old rule could work out from what it said -- was for a grey the browser never
@@ -126,7 +126,7 @@
   justify-content: center;
   padding: 16px;
   gap: 12px;
-  color: var(--muted, #8b9490);
+  color: var(--muted, #888888);
 }
 
 .queen27-page.is-shell .queen27-tri-nested {

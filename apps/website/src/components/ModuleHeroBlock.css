@@ -5,7 +5,7 @@
 .module-hero {
   border-bottom: 1px solid rgba(0, 255, 136, 0.2);
   background: #030605;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .module-hero-inner {

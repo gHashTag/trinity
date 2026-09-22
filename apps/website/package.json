@@ -83,6 +83,7 @@
     "check:queen-chat-gate": "node --experimental-strip-types qa/queen-chat-gate-contract.mjs",
     "check:queen-chat-tabs": "node --experimental-strip-types qa/queen-chat-tabs-contract.mjs",
     "check:queen-contrast": "node --experimental-strip-types qa/queen-contrast-contract.mjs",
+    "check:queen-fallback-parity": "node qa/queen-fallback-parity.mjs",
     "test:sync-skills": "node --test scripts/sync-skills.test.mjs scripts/skills-core.test.mjs",
     "test:sync-crons": "node --test scripts/sync-crons.test.mjs",
     "check:agents": "node --experimental-strip-types qa/agents-spec-contract.mjs",

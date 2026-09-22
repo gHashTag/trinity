@@ -69,8 +69,8 @@
   cursor: pointer;
 }
 .queen-chat-tabbtn.is-on {
-  border-bottom-color: var(--hud-gold, #ffd45a);
-  color: var(--hud-gold, #ffd45a);
+  border-bottom-color: var(--hud-gold, #ffd700);
+  color: var(--hud-gold, #ffd700);
 }
 .queen-chat-tabbtn > b {
   color: #b9cad5;
@@ -96,7 +96,7 @@
 }
 
 .queen-chat-title {
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.16em;
@@ -140,14 +140,15 @@
    gold is the reason, not the saving grace: #ffd700 is a LIGHT ink, so against
    the bright part of the field it has less to work with than the muted white
    every other label uses, not more. Read the ink from the token and not from
-   the fallback beside it: this file writes `var(--hud-gold, #ffd45a)` sixteen
+   the fallback beside it: this file writes `var(--hud-gold, #ffd700)` sixteen
    times and --hud-gold is declared #ffd700 on .queen27-page.is-shell, so not
-   one of those sixteen fallbacks has ever applied -- the same dead-fallback
-   shape QueenBrowser.css and QueenTri.css each carry a note about. Two bare
-   literals near the foot of this file DO paint #ffd45a, and that is the drift
-   the fallbacks were hiding: a reader who takes the fallback for the colour
-   sees one gold in this file where the screen shows two. Left as found; it is
-   a separate change from this one. The panel token is what the rest of this
+   one of those sixteen fallbacks is ever reached. They said #ffd45a until the
+   running page was asked which value draws -- the same dead-fallback shape
+   QueenBrowser.css and QueenTri.css each carry a note about. Two bare literals
+   near the foot of this file DO paint #ffd45a, and that is the drift those
+   fallbacks were hiding: a reader who took the fallback for the colour saw one
+   gold in this file where the screen shows two. Left as found; it is a
+   separate change from this one. The panel token is what the rest of this
    board's chrome carries, and
    the blur is safe here for the same reason it was wrong on the column: this
    box paints.
@@ -163,7 +164,7 @@
   margin: 0;
   padding: 0 12px;
   min-height: 34px;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   background: var(--hud-panel, rgba(2, 8, 6, 0.88));
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
@@ -218,7 +219,7 @@
   border-left: 2px solid rgba(0, 255, 136, 0.35);
   background: rgba(255, 255, 255, 0.02);
 }
-.queen-chat-event.is-subject { border-left-color: var(--hud-gold, #ffd45a); }
+.queen-chat-event.is-subject { border-left-color: var(--hud-gold, #ffd700); }
 .queen-chat-event[data-kind="refusal"],
 .queen-chat-event[data-kind="failure"] { border-left-color: #ff6b6b; }
 
@@ -243,7 +244,7 @@
   padding: 0 6px;
   border: 0;
   background: transparent;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font: inherit;
   font-size: 10.5px;
   text-decoration: none;
@@ -265,7 +266,7 @@
   margin-left: auto;
   border: 0;
   background: transparent;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font: inherit;
   font-size: 10.5px;
   cursor: pointer;
@@ -293,9 +294,9 @@
   align-items: center;
   margin-left: auto;
   padding: 0 0.7rem;
-  border: 1px solid var(--hud-gold, #ffd45a);
+  border: 1px solid var(--hud-gold, #ffd700);
   border-radius: 6px;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font-size: 10.5px;
   letter-spacing: 0.06em;
   text-decoration: none;
@@ -375,8 +376,8 @@
    in — the count beside each one is of the whole window, so a chip always says
    how much pressing it would bring back. */
 .queen-chat-chip.is-on {
-  border-color: var(--hud-gold, #ffd45a);
-  color: var(--hud-gold, #ffd45a);
+  border-color: var(--hud-gold, #ffd700);
+  color: var(--hud-gold, #ffd700);
 }
 .queen-chat-chip[data-kind="error"].is-on { border-color: #ff6b6b; color: #ff6b6b; }
 
@@ -403,7 +404,7 @@
   padding: 0 8px;
   border: 0;
   background: transparent;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font: inherit;
   font-size: 10.5px;
   cursor: pointer;
@@ -440,7 +441,7 @@
 }
 .queen-chat-net-sum dd {
   margin: 0;
-  color: var(--hud-gold, #ffd45a);
+  color: var(--hud-gold, #ffd700);
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -470,7 +471,7 @@
    the one message that closes a loop; a send-back does not, so a link she sent
    work back on stays lit rather than reading as done. */
 .queen-chat-link[data-stance="accepted"] { border-left-color: #2f6f52; opacity: 0.72; }
-.queen-chat-link[data-stance="with-worker"] { border-left-color: var(--hud-gold, #ffd45a); }
+.queen-chat-link[data-stance="with-worker"] { border-left-color: var(--hud-gold, #ffd700); }
 
 .queen-chat-link-head {
   display: flex;
@@ -480,7 +481,7 @@
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
 }
-.queen-chat-link-head > b { color: var(--hud-gold, #ffd45a); font-weight: 500; }
+.queen-chat-link-head > b { color: var(--hud-gold, #ffd700); font-weight: 500; }
 .queen-chat-link-head > em {
   margin-left: auto;
   color: #8b9490;
@@ -523,6 +524,6 @@
 }
 .queen-chat-partial {
   margin: 0;
-  color: var(--text, #d8ebe3);
+  color: var(--text, #FFFFFF);
   white-space: pre-wrap;
 }
