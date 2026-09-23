@@ -19,7 +19,7 @@
     "@docusaurus/preset-classic": "3.10.0",
     "@docusaurus/theme-live-codeblock": "3.10.0",
     "@docusaurus/theme-mermaid": "3.10.0",
-    "@easyops-cn/docusaurus-search-local": "^0.55.1",
+    "@easyops-cn/docusaurus-search-local": "^0.55.3",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",
     "livecodes": "^0.12.0",
