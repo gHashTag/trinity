@@ -1,0 +1,123 @@
+name: Board release (open the QUEEN_REF bump where Actions can run)
+
+# THE MERGE THAT SHIPS NOTHING, AND THE FIX THAT COULD NOT RUN.
+#
+# The board lives here; app.t27.ai serves it from an image in
+# gHashTag/999-multibots-telegraf that clones this repository at a PINNED
+# commit (apps/vibee-editor/Dockerfile, ARG QUEEN_REF). Pinning is right - an
+# unpinned clone makes the image unreproducible and lets a merge here silently
+# change what the app serves - but it made shipping the board an act of memory
+# in a repository nobody was working in. Measured 2026-09-23: the pin sat at
+# 8508131 while three merges landed on top, including the ROADMAP view, which
+# was merged, believed shipped, and was not on the site.
+#
+# The first version of this job was written in 999 itself, which was the wrong
+# place and was only discovered by running it: EVERY workflow in that
+# repository fails before its first step, because its GitHub Actions billing is
+# exhausted. An automation that cannot execute is worse than none - it looks
+# like a solution while the problem continues.
+#
+# So it runs HERE, where Actions work, and opens the pull request THERE. The
+# pin stays, the remembering goes, and a person still merges the release.
+#
+# It needs a token that may write to the other repository: AGENT_GH_TOKEN.
+# Without it the run says which secret is missing rather than passing quietly,
+# because a silent skip is how a pipeline dies unnoticed.
+
+on:
+  push:
+    branches: [main]
+    # Only when something the board is actually built from moved. A change to
+    # this workflow, or to docs, ships no new board.
+    paths:
+      - 'apps/website/**'
+  schedule:
+    # A safety net for a push that happened while the token was missing, or a
+    # merge made with the workflow file itself excluded by the paths filter.
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: board-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Open the release pull request in the app repository
+        env:
+          GH_TOKEN: ${{ secrets.AGENT_GH_TOKEN }}
+          APP_REPO: gHashTag/999-multibots-telegraf
+          BOARD_REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::warning::AGENT_GH_TOKEN is not set, so the board cannot be" \
+                 "released automatically and app.t27.ai keeps serving the" \
+                 "pinned commit. Set it to a token that may open a pull" \
+                 "request in $APP_REPO."
+            exit 0
+          fi
+
+          # The pin, read from the app repository rather than guessed.
+          dockerfile=$(gh api "repos/$APP_REPO/contents/apps/vibee-editor/Dockerfile" \
+            --jq '.content' | base64 -d)
+          pinned=$(printf '%s' "$dockerfile" \
+            | sed -n 's/^ARG QUEEN_REF=\([0-9a-f]\{40\}\)$/\1/p' | head -1)
+          if [ -z "$pinned" ]; then
+            echo "::error::could not read ARG QUEEN_REF from $APP_REPO"
+            exit 1
+          fi
+          if [ "$pinned" = "$HEAD_SHA" ]; then
+            echo "The board is already current at ${pinned:0:7}."
+            exit 0
+          fi
+
+          # What the bump brings, so the pull request says it rather than
+          # asking a reviewer to go and look.
+          gh api "repos/$BOARD_REPO/compare/$pinned...$HEAD_SHA" \
+            --jq '.commits[] | "- \(.sha[0:7]) \(.commit.message | split("\n")[0])"' \
+            | tail -40 > /tmp/brings.md \
+            || echo "- (the comparison could not be read)" > /tmp/brings.md
+          count=$(wc -l < /tmp/brings.md | tr -d ' ')
+
+          branch="release/board-${HEAD_SHA:0:7}"
+          if [ "$(gh pr list --repo "$APP_REPO" --head "$branch" --state open --json number --jq 'length')" != "0" ]; then
+            echo "A pull request for ${HEAD_SHA:0:7} is already open."
+            exit 0
+          fi
+
+          # One file, one line: write it through the API rather than cloning a
+          # repository this job has no other reason to hold.
+          base=$(gh api "repos/$APP_REPO" --jq '.default_branch')
+          base_sha=$(gh api "repos/$APP_REPO/git/ref/heads/$base" --jq '.object.sha')
+          gh api --method POST "repos/$APP_REPO/git/refs" \
+            -f ref="refs/heads/$branch" -f sha="$base_sha" --silent
+          file_sha=$(gh api "repos/$APP_REPO/contents/apps/vibee-editor/Dockerfile?ref=$branch" --jq '.sha')
+          printf '%s' "$dockerfile" \
+            | sed "s/^ARG QUEEN_REF=$pinned\$/ARG QUEEN_REF=$HEAD_SHA/" \
+            | base64 > /tmp/next.b64
+          gh api --method PUT "repos/$APP_REPO/contents/apps/vibee-editor/Dockerfile" \
+            -f message="release(board): ship trinity ${HEAD_SHA:0:7}" \
+            -f content="$(tr -d '\n' < /tmp/next.b64)" \
+            -f sha="$file_sha" -f branch="$branch" --silent
+
+          {
+            echo "The board on app.t27.ai is pinned to a commit of \`$BOARD_REPO\`, so a merge there ships nothing until this line moves. It was **$count commit(s)** behind."
+            echo
+            echo "\`QUEEN_REF\` \`${pinned:0:7}\` → \`${HEAD_SHA:0:7}\`"
+            echo
+            echo "## What this ships"
+            cat /tmp/brings.md
+            echo
+            echo "Opened by \`.github/workflows/board-release.yml\` in \`$BOARD_REPO\`, which runs there because every workflow in this repository fails before its first step while its Actions billing is exhausted. Merging is deliberately left to a person: this is the release."
+          } > /tmp/body.md
+          gh pr create --repo "$APP_REPO" --base "$base" --head "$branch" \
+            --title "release(board): ship trinity ${HEAD_SHA:0:7}" \
+            --body-file /tmp/body.md
