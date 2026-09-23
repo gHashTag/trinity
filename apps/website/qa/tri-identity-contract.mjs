@@ -48,7 +48,6 @@ import {
   whoamiProfile,
   signInHref,
   APP_BOARD_HOME,
-  PLAYER_VIEWS,
   createTriIdentity,
 } from '../src/lib/triIdentity.ts'
 import { APP_ORIGIN as TRI_APP_ORIGIN, TRI_SCREENS } from '../src/lib/triScreens.ts'
@@ -184,7 +183,7 @@ const playerReturnTargetOf = (raw) => {
   const [, tab, screen] = match
   const queen = 'https://t27.ai/#/queen'
   if (tab === undefined) return queen
-  const view = PLAYER_VIEWS.find((known) => known === tab)
+  const view = /^[a-z]{1,16}$/.test(tab) ? tab : undefined
   if (!view) return null
   if (screen === undefined) return `${queen}?tab=${view}`
   if (view !== 'tri') return null
@@ -202,8 +201,10 @@ const SCREEN_IDS = TRI_SCREENS.map((entry) => entry.screen)
 //      a real defect and still fails here.
 //   2. The views the player does NOT know are named, below, with what it costs.
 //      A new one appearing unannounced fails this gate exactly as before.
-const UNKNOWN_TO_PLAYER = HUD_VIEWS.filter((view) => !PLAYER_VIEWS.includes(view))
-eq(PLAYER_VIEWS.filter((view) => !HUD_VIEWS.includes(view)), [], 'the player follows no view the Queen does not have')
+// There is no list to drift any more. The player takes any well-shaped tab and
+// the board decides whether it has such a view, so a view added here works
+// there the day it ships -- which is the whole reason the two lists are gone.
+const UNKNOWN_TO_PLAYER = HUD_VIEWS.filter((view) => !/^[a-z]{1,16}$/.test(view))
 // PASSPORT and BROWSER were named here until the player learned them
 // (999-multibots-telegraf#2736, its QUEEN_VIEWS), and ROADMAP until the same
 // deploy that ships it taught the player its name. Now none: every view
@@ -217,7 +218,7 @@ for (const view of HUD_VIEWS) {
   eq(href.origin + href.pathname, `${APP_ORIGIN}/`, `${view}: the player's login`)
   eq([...href.searchParams.keys()], ['return'], `${view}: one parameter`)
   const back = href.searchParams.get('return')
-  const carried = view !== 'comb' && PLAYER_VIEWS.includes(view)
+  const carried = view !== 'comb' && /^[a-z]{1,16}$/.test(view)
   eq(back, carried ? `${GAME_ORIGIN}/#/queen?tab=${view}` : `${GAME_ORIGIN}/#/queen`,
     carried ? `${view}: returns to its view` : `${view}: the player cannot follow it, so it returns to the comb`)
   eq(playerReturnTargetOf(back), back, `${view}: the player accepts the return as it is`)
@@ -265,7 +266,7 @@ for (const back of returns) {
 }
 // One route per view the PLAYER knows -- the views it does not know share the
 // comb's return, so the count follows its list, not ours.
-eq(returns.size, PLAYER_VIEWS.length, 'one fixed route per view the player follows')
+eq(returns.size, HUD_VIEWS.length, 'one fixed route per view of the board')
 
 // ---- 7. The chip: one next step for every code ----
 // The codes the client can receive: the render server's /api/auth/game-token

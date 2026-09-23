@@ -49,6 +49,7 @@ interface Board {
 export interface LeaderboardCopy {
   title: string
   lead: string
+  howTo: string
   scoring: (accepted: number, hour: number) => string
   rank: string
   who: string
@@ -67,6 +68,7 @@ export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
   en: {
     title: 'LEADERBOARD',
     lead: 'Every bee runs on somebody’s provider token. This is what each lane did.',
+    howTo: 'How to lend one — and which providers forbid it',
     scoring: (accepted, hour) =>
       `${accepted} XP for an issue the Queen accepted on that lane, ${hour} XP for an hour her bees spent on it. Summed from the swarm’s own records on every read.`,
     rank: '#',
@@ -84,6 +86,7 @@ export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
   ru: {
     title: 'ЛИДЕРБОРД',
     lead: 'Каждая пчела работает на чьём-то токене провайдера. Вот что сделала каждая полоса.',
+    howTo: 'Как одолжить свой — и кто из провайдеров это запрещает',
     scoring: (accepted, hour) =>
       `${accepted} XP за задачу, которую Королева приняла на этой полосе, и ${hour} XP за час работы пчёл на ней. Складывается из записей самого роя при каждом чтении.`,
     rank: '#',
@@ -131,6 +134,13 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
         <p>{c.lead}</p>
         <p className="ql-scoring">{c.scoring(board.scoring.acceptedXp, board.scoring.hourXp)}</p>
         <p className="ql-window">{c.window(board.days)}</p>
+        {/* This tab invited people to lend a lane and said nothing about how,
+            which made it an advertisement rather than a door. The tutorial is
+            where the how lives, including the part that costs us the simple
+            version of the pitch: what each provider's terms actually say. */}
+        <a className="ql-howto" href="https://t27.ai/blog/how-to-join-the-swarm/" target="_blank" rel="noreferrer noopener">
+          {c.howTo} →
+        </a>
       </header>
 
       {board.contributors.length === 0 ? (

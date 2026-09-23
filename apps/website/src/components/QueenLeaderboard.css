@@ -155,3 +155,16 @@
     gap: 10px;
   }
 }
+
+/* The way out of this tab and into the instructions. */
+.ql-howto {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--hud-cyan, #64dcff);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(100, 220, 255, 0.4);
+}
+.ql-howto:hover,
+.ql-howto:focus-visible {
+  border-bottom-color: var(--hud-cyan, #64dcff);
+}
