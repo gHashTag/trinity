@@ -57,6 +57,29 @@ async function gh(url) {
   return res.json()
 }
 
+/**
+ * COMMIT ADDRESSES THAT ARE AN AGENT, NOT A PERSON WITH AN ACCOUNT.
+ *
+ * Claude Code commits as `Claude <claude@anthropic.com>` by default. GitHub
+ * resolves that address to github.com/claude - an account registered by an
+ * unrelated person in 2009 - so the board drew a stranger's avatar, linked
+ * their profile, and credited them with 67 spec commits made on the owner's
+ * machine under the owner's direction.
+ *
+ * That is not a display preference to argue about: linking one person's work
+ * to another person's profile is wrong whichever way the credit is meant to
+ * fall. These addresses are named here, shown as the agent they are, and never
+ * linked.
+ *
+ * The real repair is upstream - a git author address belonging to whoever runs
+ * the agent - and until that happens this keeps the board from asserting
+ * something false about a bystander.
+ */
+const AGENT_EMAILS = new Map([
+  ['claude@anthropic.com', 'Claude Code (agent)'],
+  ['noreply@anthropic.com', 'Claude Code (agent)'],
+])
+
 const people = new Map()
 
 /** One author, keyed by login where GitHub knows one, else by the name on the commit. */
@@ -89,6 +112,14 @@ for (const { repo, path } of SOURCES) {
     )
     if (!Array.isArray(rows) || rows.length === 0) break
     for (const row of rows) {
+      const email = (row.commit?.author?.email ?? '').toLowerCase()
+      const agent = AGENT_EMAILS.get(email)
+      if (agent) {
+        // Keyed by the agent name, never by the account GitHub guessed from
+        // the address: that account belongs to somebody else.
+        credit(`agent:${agent}`, { login: null, avatar: null, name: agent }, short)
+        continue
+      }
       const login = row.author?.login ?? null
       const name = row.commit?.author?.name ?? login
       if (!login && !name) continue
@@ -107,7 +138,7 @@ for (const { repo, path } of SOURCES) {
 // the login and 2 without. Fold a name into a login when they match, so one
 // person is one row.
 for (const [key, row] of [...people]) {
-  if (!key.startsWith('name:')) continue
+  if (!key.startsWith('name:')) continue // `agent:` rows are never folded
   const match = [...people.values()].find(
     (other) => other.login && other.login.toLowerCase() === (row.name ?? '').toLowerCase(),
   )
