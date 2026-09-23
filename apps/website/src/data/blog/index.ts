@@ -2624,6 +2624,68 @@ export const postsIndex: PostMeta[] = [
         "Частота ошибок по кадрам не измерялась напрямую, а только выводилась из того, поднялся ли линк. Три точки по перекосу цензурированы справа на отсчёте 31 и не позволяют различить конкурирующие модели."
       ]
     }
+  },
+  {
+    "slug": "how-to-join-the-swarm",
+    "title": "How to join the swarm",
+    "summary": "A hive of coding agents is rewriting this stack into its own language, one file per issue. There are two ways in - write a spec, or lend a provider key - and this is what each costs, what each earns, and which providers' terms quietly forbid the second one.",
+    "date": "2026-09-23",
+    "readingMinutes": 9,
+    "tags": [
+      "onboarding",
+      "queen",
+      "leaderboard",
+      "t27"
+    ],
+    "receipts": [
+      {
+        "label": "LEADERBOARD - the lanes and their XP, live",
+        "href": "https://app.t27.ai/queen/#/queen?tab=leaderboard"
+      },
+      {
+        "label": "ROADMAP - the .t27 share of the stack, live",
+        "href": "https://app.t27.ai/queen/#/queen?tab=roadmap"
+      },
+      {
+        "label": "The rules of the game, machine-readable and test-checked",
+        "href": "https://t27.ai/llms.txt"
+      },
+      {
+        "label": "The open port issues, one file each",
+        "href": "https://github.com/gHashTag/t27/issues?q=is%3Aissue+in%3Atitle+%22Port+tools%2F%22+is%3Aopen"
+      },
+      {
+        "label": "NVIDIA API Trial Terms of Service (bars production use and making the service available to others)",
+        "href": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf"
+      },
+      {
+        "label": "OpenRouter rate limits (20/min, 50/day free; 1,000/day after a $10 lifetime top-up)",
+        "href": "https://openrouter.ai/docs/api-reference/limits"
+      },
+      {
+        "label": "GitHub Models retired 2026-07-30",
+        "href": "https://docs.github.com/en/github-models"
+      },
+      {
+        "label": "Z.AI pricing - GLM-4.7-Flash and GLM-4.5-Flash at zero",
+        "href": "https://docs.z.ai/guides/overview/pricing"
+      }
+    ],
+    "openQuestions": [
+      "A bee that runs on your own machine on your own key is the shape that would let someone contribute compute without breaching a provider agreement. It is not built, and nothing here should be read as a promise that it is coming.",
+      "Free-tier rate limits at Google, Z.AI and Mistral are no longer published or are login-gated, so the table states what each provider states and marks the rest unknown rather than guessing.",
+      "Whether a donated key breaches a given provider's terms is a question about YOUR agreement with them, and the reading here is ours, not legal advice."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Как войти в рой",
+      "summary": "Рой кодовых агентов переписывает этот стек на собственный язык, по одному файлу на задачу. Войти можно двумя способами - написать спеку или одолжить ключ провайдера, - и здесь сказано, чего стоит каждый, что приносит, и чьи условия тихо запрещают второй.",
+      "openQuestions": [
+        "Пчела, работающая на вашей машине на вашем ключе, - та форма, которая позволила бы отдавать вычисления, не нарушая соглашения с провайдером. Она не построена, и ничто здесь не следует читать как обещание, что она будет.",
+        "Лимиты бесплатных тарифов у Google, Z.AI и Mistral больше не публикуются или закрыты логином, поэтому таблица приводит то, что заявляет сам провайдер, а остальное помечает неизвестным, вместо того чтобы угадывать.",
+        "Нарушает ли одолженный ключ условия конкретного провайдера - это вопрос о ВАШЕМ соглашении с ним, и прочтение здесь наше, а не юридическая консультация."
+      ]
+    }
   }
 ]
 

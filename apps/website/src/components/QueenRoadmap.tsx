@@ -334,7 +334,7 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
             })()}
             <a
               className="rm-join-link"
-              href={`https://github.com/${goals.issueRepo}/blob/master/docs/JOIN.md`}
+              href="https://t27.ai/blog/how-to-join-the-swarm/"
               target="_blank"
               rel="noreferrer noopener"
             >

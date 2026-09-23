@@ -306,7 +306,7 @@ a.rm-chip:hover {
 .rm-join {
   margin: 22px 0 6px;
   padding: 16px 18px;
-  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.3));
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
   border-radius: 12px;
   background: var(--hud-veil, rgba(2, 8, 6, 0.72));
   -webkit-backdrop-filter: blur(6px);
@@ -348,7 +348,7 @@ a.rm-chip:hover {
   background: rgba(0, 255, 136, 0.18);
 }
 .rm-join-link {
-  color: var(--hud-cyan, #7fd1ff);
+  color: var(--hud-cyan, #64dcff);
   text-decoration: none;
   border-bottom: 1px solid rgba(127, 209, 255, 0.4);
 }
