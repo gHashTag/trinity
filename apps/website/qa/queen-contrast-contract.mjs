@@ -211,6 +211,12 @@ const REACHED = {
        that renders inside .queen27-hud-vp-body sits over the same hive every
        other view does, and arriving three days later does not exempt it. */
     'src/components/queenRoadmap.css',
+    /* The LEADERBOARD view: the third sheet to arrive after this list was
+       written, and the third the list caught on its first run rather than
+       letting it onto the board unmeasured. It is grounded with the rest -- a
+       veil over the hive, blurred, and every pair below measured over both a
+       lit and a dark field. */
+    'src/components/QueenLeaderboard.css',
   ],
   'src/App.tsx': [
     'src/components/AgiGameBlock.css',
