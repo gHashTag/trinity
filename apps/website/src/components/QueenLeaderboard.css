@@ -46,7 +46,7 @@
 }
 .ql-row {
   display: grid;
-  grid-template-columns: 28px minmax(140px, 1.4fr) minmax(80px, 2fr) auto auto auto;
+  grid-template-columns: 28px 36px minmax(140px, 1.4fr) minmax(80px, 1.6fr) auto;
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
@@ -59,6 +59,37 @@
 .ql-row.is-unclaimed {
   border-style: dashed;
   opacity: 0.85;
+}
+.ql-face {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  background: rgba(255, 255, 255, 0.04);
+}
+.ql-face.is-anon {
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.ql-who a {
+  color: var(--hud-green, #00ff88);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.35);
+}
+.ql-who a:hover,
+.ql-who a:focus-visible {
+  border-bottom-color: var(--hud-green, #00ff88);
+}
+/* The three numbers ride together so a wrap can never stack one label on
+   another: at width they sit in a row, on a phone they spread across it. */
+.ql-nums {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  white-space: nowrap;
 }
 .ql-rank {
   font-variant-numeric: tabular-nums;
@@ -108,10 +139,19 @@
 
 @media (max-width: 760px) {
   .ql-row {
-    grid-template-columns: 24px 1fr auto;
-    row-gap: 6px;
+    grid-template-columns: 22px 32px 1fr;
+    row-gap: 8px;
   }
-  .ql-bar {
+  .ql-face {
+    width: 32px;
+    height: 32px;
+  }
+  .ql-bar,
+  .ql-nums {
     grid-column: 1 / -1;
+  }
+  .ql-nums {
+    justify-content: space-between;
+    gap: 10px;
   }
 }

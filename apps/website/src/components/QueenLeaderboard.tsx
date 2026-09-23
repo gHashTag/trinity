@@ -18,12 +18,26 @@ import './QueenLeaderboard.css'
 interface Contributor {
   name: string
   claimed: boolean
+  /** Their GitHub login, when the operator signed the lane as `@login`. */
+  github?: string
   keys: number[]
   accepted: number
   finished: number
   hours: number
   xp: number
 }
+
+/**
+ * A GitHub login, checked again here rather than trusted from the wire.
+ *
+ * The server already refuses anything that is not one, and this is the second
+ * lock on the same door: the value ends up in an `href` and an `<img src>`, and
+ * a page that trusts a remote string to build a profile link is a page that can
+ * be pointed at somebody else's account by whoever can write that string.
+ */
+const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
+const loginOf = (row: Contributor) =>
+  row.github && GITHUB_LOGIN.test(row.github) ? row.github : null
 
 interface Board {
   days: number
@@ -123,29 +137,65 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
         <p className="ql-note">{c.empty}</p>
       ) : (
         <ol className="ql-rows">
-          {board.contributors.map((row, i) => (
-            <li key={row.name} className={`ql-row${row.claimed ? '' : ' is-unclaimed'}`}>
-              <span className="ql-rank">{i + 1}</span>
-              <span className="ql-who" title={row.claimed ? undefined : c.unclaimed}>
-                {row.name}
-                <b className="ql-lanes">
-                  {c.lanes}: {row.keys.map((k) => `#${k}`).join(' ')}
-                </b>
-              </span>
-              {/* The bar is the share of the leader's XP: a rank tells you the
-                  order, and this tells you the distance. */}
-              <span className="ql-bar" aria-hidden="true">
-                <i style={{ width: `${top > 0 ? Math.max(2, (100 * row.xp) / top) : 0}%` }} />
-              </span>
-              <span className="ql-stat">
-                <b>{fmt(row.accepted)}</b> {c.accepted}
-              </span>
-              <span className="ql-stat">
-                <b>{row.hours.toFixed(1)}</b> {c.hours}
-              </span>
-              <span className="ql-xp">{fmt(row.xp)} {c.xp}</span>
-            </li>
-          ))}
+          {board.contributors.map((row, i) => {
+            const login = loginOf(row)
+            return (
+              <li key={row.name} className={`ql-row${row.claimed ? '' : ' is-unclaimed'}`}>
+                <span className="ql-rank">{i + 1}</span>
+                {/* The avatar comes from github.com/<login>.png, a public
+                    redirect: no API call, no token, and a leaderboard that does
+                    not wait on GitHub. If it 404s the row still reads. */}
+                {login ? (
+                  <img
+                    className="ql-face"
+                    src={`https://github.com/${login}.png?size=96`}
+                    alt=""
+                    loading="lazy"
+                    width={36}
+                    height={36}
+                  />
+                ) : (
+                  <span className="ql-face is-anon" aria-hidden="true">
+                    ◇
+                  </span>
+                )}
+                <span className="ql-who" title={row.claimed ? undefined : c.unclaimed}>
+                  {login ? (
+                    <a
+                      href={`https://github.com/${login}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      {row.name}
+                    </a>
+                  ) : (
+                    row.name
+                  )}
+                  <b className="ql-lanes">
+                    {c.lanes}: {row.keys.map((k) => `#${k}`).join(' ')}
+                  </b>
+                </span>
+                {/* The bar is the share of the leader's XP: a rank tells you the
+                    order, and this tells you the distance. */}
+                <span className="ql-bar" aria-hidden="true">
+                  <i style={{ width: `${top > 0 ? Math.max(2, (100 * row.xp) / top) : 0}%` }} />
+                </span>
+                {/* The three numbers ride in one box so they cannot land on top
+                    of each other when the row wraps on a phone. */}
+                <span className="ql-nums">
+                  <span className="ql-stat">
+                    <b>{fmt(row.accepted)}</b> {c.accepted}
+                  </span>
+                  <span className="ql-stat">
+                    <b>{row.hours.toFixed(1)}</b> {c.hours}
+                  </span>
+                  <span className="ql-xp">
+                    {fmt(row.xp)} {c.xp}
+                  </span>
+                </span>
+              </li>
+            )
+          })}
         </ol>
       )}
     </div>
