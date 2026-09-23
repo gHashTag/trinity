@@ -252,7 +252,17 @@ eq(APP_BOARD_HOME, 'https://app.t27.ai/queen/', 'the app board home')
 eq(new URL(signInHref('tri', HUD_VIEWS, 'profile', SCREEN_IDS, APP_BOARD_HOME)).searchParams.get('return'), `${APP_BOARD_HOME}#/queen?tab=tri&screen=profile`, 'from the app board, back to the same screen of the app board')
 eq(new URL(signInHref('kanban', HUD_VIEWS, null, [], APP_BOARD_HOME)).searchParams.get('return'), `${APP_BOARD_HOME}#/queen?tab=kanban`, 'from the app board, back to the same view')
 eq(new URL(signInHref('kanban', HUD_VIEWS, null, [], 'https://evil.test/queen/')).searchParams.get('return'), `${GAME_ORIGIN}/#/queen?tab=kanban`, 'a home that is not the app board falls back to the game, never to itself')
-ok([...returns].every((r) => r.startsWith(`${GAME_ORIGIN}/#/queen`) && !/embed|screen|path|lead|\d/.test(r.slice(GAME_ORIGIN.length))), 'no view return carries embed, a screen, a path or an id')
+// The parameters themselves, not the letters of the address: `embed`, `screen`,
+// `path` and `lead` are PARAMETER NAMES, and matching them as substrings also
+// refuses a view whose own name contains one (LEADERBOARD carries `lead`). So
+// this reads what the return actually asks the board to do: name one view, and
+// nothing else -- no embed, no TRI screen, no CRM lead, no id of a person.
+for (const back of returns) {
+  ok(back.startsWith(`${GAME_ORIGIN}/#/queen`), `${back}: returns to the board`)
+  const asked = new URLSearchParams(back.slice(back.indexOf('#/queen') + '#/queen'.length).replace(/^\?/, ''))
+  ok([...asked.keys()].every((key) => key === 'tab'), `${back}: a view return carries no parameter but the tab`)
+  ok(/^[a-z]*$/.test(asked.get('tab') ?? ''), `${back}: the tab is a view name, not a path or an id`)
+}
 // One route per view the PLAYER knows -- the views it does not know share the
 // comb's return, so the count follows its list, not ours.
 eq(returns.size, PLAYER_VIEWS.length, 'one fixed route per view the player follows')

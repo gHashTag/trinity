@@ -374,7 +374,7 @@ export const PLAYER_VIEWS: readonly string[] = [
   'passport', 'browser',
   // Taught to the player in the same deploy as the view itself
   // (999-multibots-telegraf player/src/lib/returnTarget.ts QUEEN_VIEWS).
-  'roadmap',
+  'roadmap', 'leaderboard',
 ] as const
 
 /**

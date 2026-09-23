@@ -96,6 +96,7 @@ const KEY_SHORTCUTS_STORAGE = "queen.hud.key-shortcuts";
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
 import QueenRoadmap from "../components/QueenRoadmap";
+import QueenLeaderboard from "../components/QueenLeaderboard";
 import Passport from "./Passport";
 import { QueenBrowser } from "../components/QueenBrowser";
 import { QueenIdentity } from "../components/QueenIdentity";
@@ -398,6 +399,11 @@ const COPY = {
     // group, and the three measured cases of ours that pay for it.
     roadmapView: "ROADMAP",
     roadmapHint: "The game: the whole stack rewritten in .t27, by language and stage (key m)",
+    // The fifteenth view: every bee runs on somebody's provider token, and this
+    // is the work each of those lanes did. The score is derived from the
+    // dispatches on every read, so it can be checked against the board.
+    leaderboardView: "LEADERBOARD",
+    leaderboardHint: "Who lends the swarm a lane, and the XP its bees earned there (key l)",
     passportView: "PASSPORT",
     passportHint: "What must travel with a result: the record proposed to the OCP working group (key b)",
     // The fifteenth view: the person's own remote browser, the one the agent drives.
@@ -811,6 +817,8 @@ const COPY = {
     triHint: "Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)",
     roadmapView: "ДОРОЖНАЯ КАРТА",
     roadmapHint: "Игра: весь стек на .t27 — по языкам и этапам (клавиша m)",
+    leaderboardView: "ЛИДЕРБОРД",
+    leaderboardHint: "Кто дал рою полосу и сколько XP на ней заработали пчёлы (клавиша l)",
     passportView: "ПАСПОРТ",
     passportHint: "Что обязано ехать вместе с результатом: запись, поданная в рабочую группу OCP (клавиша b)",
     browserView: "БРАУЗЕР",
@@ -3407,6 +3415,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     { view: "passport" as const, glyph: "▤", label: c.passportView, hint: c.passportHint },
     { view: "browser" as const, glyph: "◍", label: c.browserView, hint: c.browserHint },
     { view: "roadmap" as const, glyph: "⇶", label: c.roadmapView, hint: c.roadmapHint },
+    // On the letter l: whose token each bee ran on, and what that lane earned.
+    { view: "leaderboard" as const, glyph: "⚙", label: c.leaderboardView, hint: c.leaderboardHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
   // TRI is drawn as one button per screen, owner's word 2026-09-21: every
   // screen of the app its own tab. The first keeps TRI's key; the rest are
@@ -4022,6 +4032,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             />
           ) : boardView === "roadmap" ? (
             <QueenRoadmap lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "leaderboard" ? (
+            <QueenLeaderboard lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "passport" ? (
             // The record itself, not a frame of it: the page and this view read
             // one content module, so the working group and the map cannot drift.
