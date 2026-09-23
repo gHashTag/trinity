@@ -41,7 +41,8 @@ const loginOf = (row: Contributor) =>
   row.github && GITHUB_LOGIN.test(row.github) ? row.github : null
 
 interface Board {
-  days: number
+  /** The window in days, or null for the whole record. */
+  days: number | null
   measuredAt: string
   scoring: { acceptedXp: number; hourXp: number }
   contributors: Contributor[]
@@ -64,7 +65,7 @@ export interface LeaderboardCopy {
   loading: string
   failed: string
   empty: string
-  window: (days: number) => string
+  window: (days: number | null) => string
 }
 
 export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
@@ -86,7 +87,7 @@ export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
     loading: 'Reading the swarm’s records…',
     failed: 'The leaderboard could not be read.',
     empty: 'No lane has finished a turn in this window.',
-    window: (days) => `Last ${days} days`,
+    window: (days) => (days === null ? 'All time' : `Last ${days} days`),
   },
   ru: {
     title: 'ЛИДЕРБОРД',
@@ -106,7 +107,7 @@ export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
     loading: 'Читаю записи роя…',
     failed: 'Лидерборд прочитать не удалось.',
     empty: 'В этом окне ни одна полоса не завершила ход.',
-    window: (days) => `За ${days} дней`,
+    window: (days) => (days === null ? 'За всё время' : `За ${days} дней`),
   },
 }
 
