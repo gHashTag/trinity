@@ -97,15 +97,19 @@ export const body: Block[] = [
   },
   {
     kind: "p",
-    text: "That fourth column is the part nobody tells you, and it is the reason this section is not a simple call to action. Several providers explicitly forbid transferring or sharing an API key: Cerebras, Mistral, Fireworks and Moonshot all bar it in those words; NVIDIA bars making the service available to others; Groq bars orchestrating usage between organisations. A swarm running on a key you handed over is, for most of them, a breach of your agreement - not ours. You are the account holder and you carry it.",
+    text: "That fourth column is the part nobody tells you, and it is the reason this section is not a simple call to action. The three largest providers forbid handing a key to someone else in explicit words. OpenAI's business terms bar you from “buy, sell, or transfer API keys from, to, or with a third party”. Anthropic's terms name the thing directly: “You may not share your Account login information, Anthropic API key, or Account credentials with anyone else.” Google's API terms go further and name this exact situation - “Developer credentials may not be embedded in open source projects” - and separately bar sublicensing an API for use by a third party. There is no carve-out for non-commercial or charitable use.",
   },
   {
     kind: "p",
-    text: "So the honest advice is narrower than the invitation. If you want to lend, OpenRouter is the one whose terms do not stand in the way, and a free key there is enough to see the thing work. If you want to give more than that without breaking an agreement you signed, the better shape is a bee that runs on your own machine on your own key - which is not built yet, and is named here as missing rather than implied as available.",
+    text: "Three more things follow from that, and none of them are comfortable. A key is not scoped to inference: an OpenAI key can revoke itself, mint new keys and change spend caps, so whoever holds it holds the account. Every clause above puts responsibility for all activity on the account holder, which means a bee that runs up a bill or trips a policy gets YOUR account banned, not ours. And pooling keys to get more throughput is itself named and forbidden - rate limits are per account on purpose.",
   },
   {
     kind: "p",
-    text: "Whatever you lend: lend a free key or one with a hard spending cap, never a production key. The bees spend what you give them.",
+    text: "So the honest advice is narrower than the invitation, and it has a shape. The design that does not ask anyone to breach anything is the one where the key never moves: the swarm hands out the task, a bee runs on YOUR machine under YOUR account, and the patch comes back. That is how AI Horde and BOINC have always worked, and it is what every clause above actually requires. It is not built here yet. It is named as missing rather than implied as available, and it is the next thing worth building.",
+  },
+  {
+    kind: "p",
+    text: "Until then: OpenRouter is the one provider on this list whose terms do not bar lending, and a free key there is enough to watch the thing work. Whatever you lend, lend a free key or one with a hard spending cap, never a production key. The bees spend what you give them.",
   },
   {
     kind: "h",
@@ -282,15 +286,19 @@ export const ruBody: Block[] = [
   },
   {
     kind: "p",
-    text: "Четвёртая колонка — это и есть то, о чём молчат, и поэтому здесь нет простого призыва. Несколько провайдеров прямо запрещают передавать ключ: Cerebras, Mistral, Fireworks и Moonshot — этими же словами; NVIDIA запрещает делать сервис доступным другим; Groq запрещает раскладывать нагрузку между организациями. Рой, работающий на переданном вами ключе, для большинства из них — нарушение вашего соглашения, а не нашего. Владелец аккаунта вы, и отвечаете тоже вы.",
+    text: "Четвёртая колонка — это и есть то, о чём молчат, и поэтому здесь нет простого призыва. Три крупнейших провайдера запрещают передачу ключа прямым текстом. Условия OpenAI запрещают «покупать, продавать или передавать ключи API от третьей стороны, третьей стороне или вместе с ней». Условия Anthropic называют предмет прямо: «Вы не можете передавать данные для входа в аккаунт, ключ API Anthropic или учётные данные аккаунта кому-либо ещё». Условия Google идут дальше и описывают ровно этот случай: «Учётные данные разработчика нельзя встраивать в проекты с открытым исходным кодом», — и отдельно запрещают сублицензировать API третьей стороне. Исключения для некоммерческого или благотворительного использования нет.",
   },
   {
     kind: "p",
-    text: "Поэтому честный совет уже приглашения. Если хотите одолжить — у OpenRouter условия этому не мешают, и бесплатного ключа там хватит, чтобы увидеть, как всё работает. Если хотите дать больше, не нарушая подписанного соглашения, правильная форма — пчела, которая работает на вашей машине на вашем ключе. Она ещё не построена, и здесь это названо отсутствующим, а не выдано за доступное.",
+    text: "Отсюда следуют ещё три вещи, и ни одна не приятная. Ключ не ограничен инференсом: ключ OpenAI может отозвать сам себя, выпустить новые ключи и изменить лимиты расходов — у кого ключ, у того и аккаунт. Каждый пункт выше возлагает ответственность за всю активность на владельца аккаунта: пчела, которая нагенерит счёт или заденет политику, забанит ВАШ аккаунт, а не наш. И складывание ключей ради большей пропускной способности запрещено отдельным пунктом — лимиты сделаны поаккаунтно намеренно.",
   },
   {
     kind: "p",
-    text: "Что бы вы ни одалживали: одалживайте бесплатный ключ или ключ с жёстким лимитом расходов, но не боевой. Пчёлы тратят то, что им дали.",
+    text: "Поэтому честный совет уже приглашения — и у него есть форма. Конструкция, которая никого не заставляет нарушать соглашение, та, где ключ никуда не уезжает: рой раздаёт задачу, пчела работает на ВАШЕЙ машине под ВАШИМ аккаунтом, а обратно приходит патч. Так всегда работали AI Horde и BOINC, и именно этого требуют все процитированные пункты. Здесь это пока не построено. Это названо отсутствующим, а не выдано за доступное, и это следующее, что стоит построить.",
+  },
+  {
+    kind: "p",
+    text: "А пока: OpenRouter — единственный провайдер в этом списке, чьи условия не запрещают одалживать, и бесплатного ключа там хватит, чтобы увидеть работу. Что бы вы ни одалживали — одалживайте бесплатный ключ или ключ с жёстким лимитом расходов, но не боевой. Пчёлы тратят то, что им дали.",
   },
   {
     kind: "h",

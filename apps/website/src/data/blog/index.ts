@@ -2667,12 +2667,24 @@ export const postsIndex: PostMeta[] = [
         "href": "https://docs.github.com/en/github-models"
       },
       {
+        "label": "Anthropic Consumer Terms - \"You may not share your Account login information, Anthropic API key, or Account credentials with anyone else\"",
+        "href": "https://www.anthropic.com/legal/consumer-terms"
+      },
+      {
+        "label": "Google APIs Terms of Service - \"Developer credentials may not be embedded in open source projects\"",
+        "href": "https://developers.google.com/terms"
+      },
+      {
+        "label": "AI Horde - donated GPUs for kudos, and its rule that kudos are not a currency",
+        "href": "https://aihorde.net/"
+      },
+      {
         "label": "Z.AI pricing - GLM-4.7-Flash and GLM-4.5-Flash at zero",
         "href": "https://docs.z.ai/guides/overview/pricing"
       }
     ],
     "openQuestions": [
-      "A bee that runs on your own machine on your own key is the shape that would let someone contribute compute without breaching a provider agreement. It is not built, and nothing here should be read as a promise that it is coming.",
+      "A bee that runs on your own machine on your own key is the shape that lets someone contribute capacity without breaching a provider agreement - the way AI Horde and BOINC have always worked. It is not built here, and nothing in this post should be read as a promise that it is coming.",
       "Free-tier rate limits at Google, Z.AI and Mistral are no longer published or are login-gated, so the table states what each provider states and marks the rest unknown rather than guessing.",
       "Whether a donated key breaches a given provider's terms is a question about YOUR agreement with them, and the reading here is ours, not legal advice."
     ],
@@ -2681,7 +2693,7 @@ export const postsIndex: PostMeta[] = [
       "title": "Как войти в рой",
       "summary": "Рой кодовых агентов переписывает этот стек на собственный язык, по одному файлу на задачу. Войти можно двумя способами - написать спеку или одолжить ключ провайдера, - и здесь сказано, чего стоит каждый, что приносит, и чьи условия тихо запрещают второй.",
       "openQuestions": [
-        "Пчела, работающая на вашей машине на вашем ключе, - та форма, которая позволила бы отдавать вычисления, не нарушая соглашения с провайдером. Она не построена, и ничто здесь не следует читать как обещание, что она будет.",
+        "Пчела, работающая на вашей машине на вашем ключе, — та форма, которая позволяет отдавать мощность, не нарушая соглашения с провайдером, и именно так всегда работали AI Horde и BOINC. Здесь она не построена, и ничто в этом тексте не следует читать как обещание, что она будет.",
         "Лимиты бесплатных тарифов у Google, Z.AI и Mistral больше не публикуются или закрыты логином, поэтому таблица приводит то, что заявляет сам провайдер, а остальное помечает неизвестным, вместо того чтобы угадывать.",
         "Нарушает ли одолженный ключ условия конкретного провайдера - это вопрос о ВАШЕМ соглашении с ним, и прочтение здесь наше, а не юридическая консультация."
       ]
