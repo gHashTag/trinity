@@ -1,0 +1,135 @@
+// SPDX-License-Identifier: Apache-2.0
+// specs/queen/wars.t27 -- source of truth for the Queen WARS experiment arena
+//
+// This module owns the experiment protocol, competitor configurations, real tasks,
+// run ledger and measurements shown by the WARS view. React, JSON and the public
+// copy of this file are generated projections. Missing measurements are absent;
+// zero is never used to mean unknown. ASCII only (L3), English only (LANG-EN).
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module queen_wars;
+
+pub const KIND : str = "queen-wars";
+pub const ID : str = "queen/wars";
+pub const NAME : str = "Queen WARS real-task agent arena";
+pub const SCHEMA_VERSION : u8 = 2;
+pub const GENERATED : [3]str = ["src/lib/queenWars.generated.ts", "public/queen/wars.json", "public/queen/wars.t27"];
+
+// Epistemic and lifecycle vocabularies. Every displayed claim uses one of these.
+pub const EVIDENCE_LEVELS : [5]str = ["OBSERVED", "SESSION-OBSERVED", "SOURCE-CLAIM", "TARGET", "UNKNOWN"];
+pub const CONFIG_STATES : [4]str = ["ready", "credential-blocked", "checkpoint-unverified", "pipeline-only"];
+pub const EXPERIMENT_STATES : [5]str = ["planned", "running", "credential-blocked", "complete", "invalid"];
+pub const RUN_STATES : [5]str = ["pending", "running", "passed", "failed", "blocked"];
+pub const VERDICTS : [4]str = ["accepted", "rejected", "inconclusive", "not-reviewed"];
+pub const EMPTY_METRIC_MEANS_UNKNOWN : bool = true;
+
+// Fairness contract. A result that breaks one controlled factor is not an A/B result.
+pub const REAL_GITHUB_TASKS_ONLY : bool = true;
+pub const VARIABLE_FACTOR : str = "jev-decision-layer";
+pub const CONTROLLED_FACTORS : [7]str = ["issue-url", "base-sha", "executor-model", "prompt", "tool-policy", "budget", "acceptance"];
+pub const ISOLATION : str = "one clean git worktree per arm, both pinned to the same base commit";
+pub const ACCEPTANCE_POLICY : str = "the issue acceptance commands plus repository gates decide pass or fail";
+pub const REVIEW_POLICY : str = "Queen reviews the diff and exact evidence after automated gates";
+pub const WINNER_POLICY : str = "merge at most one accepted patch; preserve every arm in the append-only ledger";
+pub const COMPARISON_VALIDITY_POLICY : str = "run both arms in one campaign with the same explicit executor model and reasoning configuration; an unpaired run or unknown model identity cannot determine a winner";
+pub const JEV_ROLE : str = "structured decision layer that ranks typed choices; never a chat model and never a code generator";
+pub const JEV_ROLE_EVIDENCE : str = "SOURCE-CLAIM";
+pub const JEV_ROLE_SOURCE : str = "https://docs.typesafe.ai/introduction/coding-agents";
+
+// Measurement vocabulary. Values are strings so an exact native unit is preserved;
+// absent rows mean unknown. A numeric zero is a measured zero only when a source exists.
+pub const METRIC_COUNT : u8 = 11;
+pub const METRIC_KEYS : [11]str = ["acceptance", "queen-verdict", "elapsed", "input-tokens", "output-tokens", "tool-calls", "retries", "patch-lines", "cost", "jev-latency", "jev-confidence"];
+pub const METRIC_UNITS : [11]str = ["verdict", "verdict", "ms", "tokens", "tokens", "count", "count", "lines", "usd", "ms", "probability"];
+
+// Arena configurations. IGLA entries are visible now, but neither is presented as a
+// measured coding model until an executable checkpoint and a witnessed run exist.
+pub const CONFIG_COUNT : u8 = 4;
+pub const CONFIG_IDS : [4]str = ["bee-baseline", "bee-jev", "igla-coder", "igla-race"];
+pub const CONFIG_NAMES : [4]str = ["Bee baseline", "Bee + JEV", "IGLA CODER", "IGLA RACE"];
+pub const CONFIG_KINDS : [4]str = ["coding-agent", "coding-agent-plus-decision-layer", "model-training-target", "training-race-pipeline"];
+pub const CONFIG_STATES_BY_ID : [4]str = ["ready", "credential-blocked", "checkpoint-unverified", "pipeline-only"];
+pub const CONFIG_EVIDENCE : [4]str = ["OBSERVED", "SOURCE-CLAIM", "OBSERVED", "OBSERVED"];
+pub const CONFIG_SOURCES : [4]str = ["current Codex task runtime", "https://docs.typesafe.ai/introduction/coding-agents", "https://t27.ai/t27/files/specs/igla/coder/pipeline.t27", "https://github.com/gHashTag/trios-trainer-igla"];
+pub const CONFIG_NOTES : [4]str = ["Control arm: the coding Bee chooses and implements without an external decision model.", "Same coding Bee with JEV restricted to ranking typed choices; JEV does not generate the patch.", "The .t27 corpus describes the coder pipeline; this lane becomes measurable only with an executable checkpoint.", "Observed training and evaluation repository. It is a pipeline competitor, not a runnable coding-model result."];
+pub const CONFIG_STATE_EVIDENCE : [4]str = ["OBSERVED", "OBSERVED", "OBSERVED", "OBSERVED"];
+pub const CONFIG_STATE_SOURCES : [4]str = ["current Codex task runtime on 2026-09-23", "credential-name audit: current process environment, GitHub Actions secret names, local Railway IaC, and local wrangler auth on 2026-09-23; production Railway variables were not inspected", "checkpoint discovery audit of the linked IGLA .t27 pipeline on 2026-09-23", "repository inspection of the linked IGLA RACE pipeline on 2026-09-23"];
+pub const CONFIG_STATE_NOTES : [4]str = ["The baseline Bee can run locally.", "No usable TypeSafe or Cloudflare credential was found in the audited locations. Production Railway variables were not inspected, so credential absence there is not claimed.", "No executable checkpoint was verified for this arena.", "The training pipeline is visible, but no coding-model run is claimed."];
+
+// Experiments. The exact prompt, tools, budget and acceptance live here, not in React.
+pub const EXPERIMENT_COUNT : u8 = 1;
+pub const EXPERIMENT_IDS : [1]str = ["t27-4328-validate-trits"];
+pub const EXPERIMENT_NAMES : [1]str = ["validate_trits missing test"];
+pub const EXPERIMENT_REPOS : [1]str = ["gHashTag/t27"];
+pub const EXPERIMENT_ISSUE_URLS : [1]str = ["https://github.com/gHashTag/t27/issues/4328"];
+pub const EXPERIMENT_ISSUE_NUMBERS : [1]str = ["4328"];
+pub const EXPERIMENT_ISSUE_UPDATED_AT : [1]str = ["2026-09-20T13:51:01Z"];
+pub const EXPERIMENT_BASE_SHAS : [1]str = ["f123674fe40d6ba600a8c5c4948683198f756fdc"];
+pub const EXPERIMENT_EXECUTOR_MODELS : [1]str = ["UNKNOWN: exact model id and reasoning configuration were not exposed"];
+pub const EXPERIMENT_MODEL_EVIDENCE : [1]str = ["UNKNOWN"];
+pub const EXPERIMENT_MODEL_SOURCES : [1]str = ["current Codex task runtime did not expose a stable model id and reasoning configuration"];
+pub const EXPERIMENT_PROMPTS : [1]str = ["Resolve gHashTag/t27 issue 4328 at the pinned base. Inspect repository instructions. Add the smallest non-vacuous test coverage for validate_trits in specs/base/ternary_encoding.t27. Preserve every signature and function. Use TDD, run the issue acceptance commands and repository gates, and report exact evidence. Do not commit or push."];
+pub const EXPERIMENT_TOOL_POLICIES : [1]str = ["Local repository read, edit and test tools only; one isolated worktree; no network writes; no commit or push."];
+pub const EXPERIMENT_BUDGETS : [1]str = ["one Codex agent turn; no explicit token cap; record usage only when exposed"];
+pub const EXPERIMENT_ACCEPTANCE : [1]str = ["t27c parse specs/base/ternary_encoding.t27; t27c coverage specs/base/ternary_encoding.t27 reports Untested: 0; function count remains 13; test count is at least 11; t27c spec-status reports IMPLEMENTED; t27c validate-vacuity and t27c test-report pass"];
+pub const EXPERIMENT_STATES_BY_ID : [1]str = ["credential-blocked"];
+pub const EXPERIMENT_EVIDENCE : [1]str = ["OBSERVED"];
+pub const EXPERIMENT_NOTES : [1]str = ["This baseline is a preflight result, not one side of a future A/B comparison: model identity is unknown. When JEV authentication is connected, rerun both arms together with the same explicit model and reasoning configuration. The JEV arm is blocked in this runtime because no usable authentication was found in the audited locations; unaudited production secret state is not claimed."];
+
+// Append-only run ledger. Completed, failed and blocked attempts all stay visible.
+pub const RUN_COUNT : u8 = 1;
+pub const RUN_IDS : [1]str = ["t27-4328-bee-baseline-20260923T041025Z"];
+pub const RUN_EXPERIMENT_IDS : [1]str = ["t27-4328-validate-trits"];
+pub const RUN_CONFIG_IDS : [1]str = ["bee-baseline"];
+pub const RUN_STARTED_AT : [1]str = ["2026-09-23T04:10:25Z"];
+pub const RUN_FINISHED_AT : [1]str = ["2026-09-23T04:32:27Z"];
+pub const RUN_STATES_BY_ID : [1]str = ["blocked"];
+pub const RUN_EVIDENCE : [1]str = ["SESSION-OBSERVED"];
+pub const RUN_VERDICTS : [1]str = ["inconclusive"];
+pub const RUN_LOG_SHAS : [1]str = [""];
+pub const RUN_PATCH_SHAS : [1]str = ["11dce31c83d80148e31fdf8b355f5ee11ed436a1a261188296a4a95d01d8a267"];
+pub const RUN_ARTIFACT_URLS : [1]str = [""];
+pub const RUN_NOTES : [1]str = ["The Bee added one non-vacuous validate_trits test with four cases, preserving 13 functions and raising the textual test count from 10 to 11. Current t27c v0.2.0 rejected unchanged base syntax at line 37 and reported NOPARSE and BLOCKED. The exact-base compiler accepted the file but dropped all 13 bodies, so executable acceptance is not claimed."];
+
+// EAV measurements keep unknowns absent instead of turning them into misleading zeroes.
+pub const MEASUREMENT_COUNT : u8 = 5;
+pub const MEASUREMENT_RUN_IDS : [5]str = ["t27-4328-bee-baseline-20260923T041025Z", "t27-4328-bee-baseline-20260923T041025Z", "t27-4328-bee-baseline-20260923T041025Z", "t27-4328-bee-baseline-20260923T041025Z", "t27-4328-bee-baseline-20260923T041025Z"];
+pub const MEASUREMENT_KEYS : [5]str = ["acceptance", "queen-verdict", "elapsed", "retries", "patch-lines"];
+pub const MEASUREMENT_VALUES : [5]str = ["BLOCKED", "inconclusive", "1322000", "2", "9"];
+pub const MEASUREMENT_UNITS : [5]str = ["verdict", "verdict", "ms", "count", "lines"];
+pub const MEASUREMENT_EVIDENCE : [5]str = ["SESSION-OBSERVED", "SESSION-OBSERVED", "SESSION-OBSERVED", "SESSION-OBSERVED", "SESSION-OBSERVED"];
+pub const MEASUREMENT_SOURCES : [5]str = ["session-observed isolated worktree commands: current t27c v0.2.0 returned NOPARSE and test-report BLOCKED at unchanged line 37; no external run-log artifact was sealed", "session-observed Queen review of the control-arm diff and acceptance evidence on 2026-09-23; no external review artifact was sealed", "session-observed agent UTC timestamps 2026-09-23T04:10:25Z through 2026-09-23T04:32:27Z", "session-observed command ledger: unsupported tri flag and wrong bootstrap target; no external run-log artifact was sealed", "session-observed git diff --numstat at pinned worktree: 9 insertions and 0 deletions in specs/base/ternary_encoding.t27; patch sha256 is recorded in RUN_PATCH_SHAS"];
+
+test protocol_has_one_variable {
+    assert REAL_GITHUB_TASKS_ONLY == true;
+    assert VARIABLE_FACTOR == "jev-decision-layer";
+    assert CONTROLLED_FACTORS[0] == "issue-url";
+    assert CONTROLLED_FACTORS[6] == "acceptance";
+    assert EMPTY_METRIC_MEANS_UNKNOWN == true;
+    assert JEV_ROLE_EVIDENCE == "SOURCE-CLAIM";
+}
+
+test arena_names_all_four_lanes {
+    assert CONFIG_COUNT == 4;
+    assert CONFIG_IDS[0] == "bee-baseline";
+    assert CONFIG_IDS[1] == "bee-jev";
+    assert CONFIG_IDS[2] == "igla-coder";
+    assert CONFIG_IDS[3] == "igla-race";
+    assert CONFIG_EVIDENCE[1] == "SOURCE-CLAIM";
+    assert CONFIG_STATE_EVIDENCE[1] == "OBSERVED";
+}
+
+test first_task_is_real_and_pinned {
+    assert EXPERIMENT_COUNT == 1;
+    assert EXPERIMENT_ISSUE_NUMBERS[0] == "4328";
+    assert EXPERIMENT_REPOS[0] == "gHashTag/t27";
+    assert EXPERIMENT_STATES_BY_ID[0] == "credential-blocked";
+    assert EXPERIMENT_MODEL_EVIDENCE[0] == "UNKNOWN";
+}
+
+test metric_vocabulary_has_jev_and_cost_evidence {
+    assert METRIC_COUNT == 11;
+    assert METRIC_KEYS[8] == "cost";
+    assert METRIC_KEYS[9] == "jev-latency";
+    assert METRIC_KEYS[10] == "jev-confidence";
+}

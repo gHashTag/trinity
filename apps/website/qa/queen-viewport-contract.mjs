@@ -28,7 +28,7 @@ const DIST = join(ROOT, 'dist');
 const ROUTE = '#/queen';
 const SHOTS = '/tmp/hud-shots';
 const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600], [390, 844]];
-const VIEWS = ['comb', 'kanban', 'map', 'factory', 'research'];
+const VIEWS = ['comb', 'kanban', 'map', 'factory', 'research', 'wars'];
 // The rail used to draw one button per view, so this counted HUD_VIEWS and
 // compared. That stopped being the shape of the thing: SPECS has long stood for
 // six layers behind one button, and KANBAN now stands for itself, MAP and
@@ -51,10 +51,11 @@ const readList = (name, pattern) => {
 const HUD_VIEWS = readList('HUD_VIEWS', /export const HUD_VIEWS[^=]*=\s*\[([\s\S]*?)\]\s*as const/);
 const SPEC_LAYERS = readList('SPEC_LAYERS', /export const SPEC_LAYERS\s*=\s*\[([\s\S]*?)\]\s*as const/);
 const BOARD_VIEWS = readList('BOARD_VIEWS', /export const BOARD_VIEWS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+const PROJECT_VIEWS = readList('PROJECT_VIEWS', /export const PROJECT_VIEWS\s*=\s*\[([\s\S]*?)\]\s*as const/);
 // A family's first entry is the button; the rest are behind it. This mirrors
 // isFolded in queenHud.ts, which is the one place the app decides it.
 const FOLD = new Map();
-for (const family of [SPEC_LAYERS, BOARD_VIEWS]) {
+for (const family of [SPEC_LAYERS, BOARD_VIEWS, PROJECT_VIEWS]) {
   for (const view of family.slice(1)) FOLD.set(view, family[0]);
 }
 const RAIL_VIEWS = HUD_VIEWS.filter((view) => !FOLD.has(view));
@@ -224,6 +225,7 @@ const DECLARED = [
   '.queen27-city-build-queue ol', '.queen27-hardware-foundry ol', '.queen27-city-console ol',
   '.queen27-city-head dl', '.queen27-city-build-queue dl', '.queen27-hardware-foundry dl', '.queen27-factory-command dl',
   '.queen27-activity-stream ol', '.queen27-flow-grid',
+  '.queen-wars', '.queen-wars-table-scroll', '.queen-wars-flow',
   // the sub-navigation row: one line at every width, scrolling sideways when
   // the rungs are wider than the module -- overflow-x:auto with the bar hidden,
   // which is the declaration. This gate never met one before, because the row
@@ -269,7 +271,7 @@ const PROBE = (phone) => `(() => {
   // arrive as a single child. Matching only direct children counted zero views
   // on any tab that had grown a row above it, and reported a rendered board as
   // a board that had not rendered at all.
-  const viewSel = '.queen27-comb, .queen27-kanban, .queen27-mission-map, .queen27-factory, .queen27-tech';
+  const viewSel = '.queen27-comb, .queen27-kanban, .queen27-mission-map, .queen27-factory, .queen27-tech, .queen-wars';
   const views = body
     ? [...body.children].flatMap(child =>
         child.matches(viewSel) ? [child] : [...child.querySelectorAll(':scope > ' + viewSel)])
