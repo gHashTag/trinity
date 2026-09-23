@@ -168,3 +168,16 @@
 .ql-howto:focus-visible {
   border-bottom-color: var(--hud-cyan, #64dcff);
 }
+
+/* The lanes half, once PEOPLE took the top of the tab. */
+.ql-lanes-title {
+  margin: 28px 0 6px;
+  font-size: clamp(16px, 1.8vw, 20px);
+  letter-spacing: 0.02em;
+  color: var(--hud-gold, #ffd700);
+}
+.ql-lanes-lead {
+  margin: 0 0 10px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  line-height: 1.5;
+}

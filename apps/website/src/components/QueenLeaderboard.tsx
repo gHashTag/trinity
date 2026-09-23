@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react'
 import { QUEEN_API } from '../lib/queenApi'
+import QueenPeople from './QueenPeople'
 import './QueenLeaderboard.css'
 
 interface Contributor {
@@ -50,6 +51,8 @@ export interface LeaderboardCopy {
   title: string
   lead: string
   howTo: string
+  lanesTitle: string
+  lanesLead: string
   scoring: (accepted: number, hour: number) => string
   rank: string
   who: string
@@ -69,6 +72,8 @@ export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
     title: 'LEADERBOARD',
     lead: 'Every bee runs on somebody’s provider token. This is what each lane did.',
     howTo: 'How to lend one — and which providers forbid it',
+    lanesTitle: 'LANES',
+    lanesLead: 'A lane is named once its lender is written into the swarm\u2019s TRIOS_KEY_OWNERS; until then it is shown as its index rather than invented.',
     scoring: (accepted, hour) =>
       `${accepted} XP for an issue the Queen accepted on that lane, ${hour} XP for an hour her bees spent on it. Summed from the swarm’s own records on every read.`,
     rank: '#',
@@ -87,6 +92,8 @@ export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
     title: 'ЛИДЕРБОРД',
     lead: 'Каждая пчела работает на чьём-то токене провайдера. Вот что сделала каждая полоса.',
     howTo: 'Как одолжить свой — и кто из провайдеров это запрещает',
+    lanesTitle: 'ПОЛОСЫ',
+    lanesLead: 'Полоса получает имя, когда её владельца впишут в TRIOS_KEY_OWNERS роя; до тех пор показывается её индекс, а не выдуманное имя.',
     scoring: (accepted, hour) =>
       `${accepted} XP за задачу, которую Королева приняла на этой полосе, и ${hour} XP за час работы пчёл на ней. Складывается из записей самого роя при каждом чтении.`,
     rank: '#',
@@ -142,6 +149,16 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
           {c.howTo} →
         </a>
       </header>
+
+      {/* PEOPLE first, and that is the point. "Who contributed?" is the
+          question a visitor asks before "whose key ran the bee", and it was
+          the one the board could not answer while every lane read `key #0`.
+          This half needs no configuration: it is GitHub's own record of the
+          open repositories. */}
+      <QueenPeople lang={lang === 'ru' ? 'ru' : 'en'} />
+
+      <h3 className="ql-lanes-title">{c.lanesTitle}</h3>
+      <p className="ql-lanes-lead">{c.lanesLead}</p>
 
       {board.contributors.length === 0 ? (
         <p className="ql-note">{c.empty}</p>

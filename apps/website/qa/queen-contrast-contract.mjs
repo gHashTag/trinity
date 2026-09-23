@@ -217,6 +217,9 @@ const REACHED = {
        veil over the hive, blurred, and every pair below measured over both a
        lit and a dark field. */
     'src/components/QueenLeaderboard.css',
+    /* PEOPLE, the contributors half of that tab: the fourth sheet the list has
+       caught on its first run, which is four for four. */
+    'src/components/QueenPeople.css',
   ],
   'src/App.tsx': [
     'src/components/AgiGameBlock.css',
