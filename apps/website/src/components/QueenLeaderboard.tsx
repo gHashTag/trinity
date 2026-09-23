@@ -23,6 +23,8 @@ interface Contributor {
   github?: string
   keys: number[]
   accepted: number
+  /** Accepted issues whose boundary named a .t27 file: the game's own goal. */
+  specs?: number
   finished: number
   hours: number
   xp: number
@@ -44,7 +46,7 @@ interface Board {
   /** The window in days, or null for the whole record. */
   days: number | null
   measuredAt: string
-  scoring: { acceptedXp: number; hourXp: number }
+  scoring: { acceptedXp: number; specXp?: number; hourXp: number }
   contributors: Contributor[]
 }
 
@@ -54,11 +56,12 @@ export interface LeaderboardCopy {
   howTo: string
   lanesTitle: string
   lanesLead: string
-  scoring: (accepted: number, hour: number) => string
+  scoring: (accepted: number, spec: number, hour: number) => string
   rank: string
   who: string
   lanes: string
   accepted: string
+  specs: string
   hours: string
   xp: string
   unclaimed: string
@@ -75,12 +78,13 @@ export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
     howTo: 'How to lend one — and which providers forbid it',
     lanesTitle: 'LANES',
     lanesLead: 'A lane is named once its lender is written into the swarm\u2019s TRIOS_KEY_OWNERS; until then it is shown as its index rather than invented.',
-    scoring: (accepted, hour) =>
-      `${accepted} XP for an issue the Queen accepted on that lane, ${hour} XP for an hour her bees spent on it. Summed from the swarm’s own records on every read.`,
+    scoring: (accepted, spec, hour) =>
+      `${accepted} XP for an issue the Queen accepted on that lane, ${spec} XP more when it was a .t27 spec — the goal law L0 names — and ${hour} XP for an hour her bees spent. Summed from the swarm’s own records on every read.`,
     rank: '#',
     who: 'Lane holder',
     lanes: 'Lanes',
     accepted: 'Accepted',
+    specs: '.t27 specs',
     hours: 'Bee hours',
     xp: 'XP',
     unclaimed: 'nobody has claimed this lane',
@@ -95,12 +99,13 @@ export const LEADERBOARD_COPY: Record<'en' | 'ru', LeaderboardCopy> = {
     howTo: 'Как одолжить свой — и кто из провайдеров это запрещает',
     lanesTitle: 'ПОЛОСЫ',
     lanesLead: 'Полоса получает имя, когда её владельца впишут в TRIOS_KEY_OWNERS роя; до тех пор показывается её индекс, а не выдуманное имя.',
-    scoring: (accepted, hour) =>
-      `${accepted} XP за задачу, которую Королева приняла на этой полосе, и ${hour} XP за час работы пчёл на ней. Складывается из записей самого роя при каждом чтении.`,
+    scoring: (accepted, spec, hour) =>
+      `${accepted} XP за задачу, принятую на этой полосе, ещё ${spec} XP если это была спека .t27 — цель, названная законом L0, — и ${hour} XP за час работы пчёл. Складывается из записей самого роя при каждом чтении.`,
     rank: '#',
     who: 'Чья полоса',
     lanes: 'Полосы',
     accepted: 'Принято',
+    specs: 'спек .t27',
     hours: 'Часы пчёл',
     xp: 'XP',
     unclaimed: 'полосу никто не назвал своей',
@@ -140,7 +145,7 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
       <header className="ql-head">
         <h2>{c.title}</h2>
         <p>{c.lead}</p>
-        <p className="ql-scoring">{c.scoring(board.scoring.acceptedXp, board.scoring.hourXp)}</p>
+        <p className="ql-scoring">{c.scoring(board.scoring.acceptedXp, board.scoring.specXp ?? 0, board.scoring.hourXp)}</p>
         <p className="ql-window">{c.window(board.days)}</p>
         {/* This tab invited people to lend a lane and said nothing about how,
             which made it an advertisement rather than a door. The tutorial is
@@ -214,6 +219,14 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
                   <span className="ql-stat">
                     <b>{fmt(row.accepted)}</b> {c.accepted}
                   </span>
+                  {/* The goal, shown beside the total rather than folded into
+                      it: a score that hid which half moved the language would
+                      be a score nobody could check against the issues. */}
+                  {row.specs !== undefined && (
+                    <span className="ql-stat is-spec">
+                      <b>{fmt(row.specs)}</b> {c.specs}
+                    </span>
+                  )}
                   <span className="ql-stat">
                     <b>{row.hours.toFixed(1)}</b> {c.hours}
                   </span>

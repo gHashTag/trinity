@@ -181,3 +181,8 @@
   color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   line-height: 1.5;
 }
+
+/* The goal of the game, marked as such where it is counted. */
+.ql-stat.is-spec b {
+  color: var(--hud-green, #00ff88);
+}
