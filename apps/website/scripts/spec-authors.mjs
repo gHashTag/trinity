@@ -40,6 +40,7 @@ const SOURCES = [
   { repo: 'gHashTag/t27', path: 'specs' },
   { repo: 'gHashTag/trinity', path: 'apps/website/specs' },
   { repo: 'gHashTag/BrowserOS', path: 'trios' },
+  { repo: 'gHashTag/turbobaby-user-bot', path: 'specs' },
 ]
 
 /** Pages of 100. The cap is a bound on cost, and the JSON records if it bit. */
