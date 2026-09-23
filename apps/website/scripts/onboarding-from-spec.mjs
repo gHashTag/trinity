@@ -60,6 +60,8 @@ export const ONBOARDING_REQUIRED = {
   GAME: 'str', GAME_DOC: 'str', GAME_BOARD: 'str', WIN_CONDITION: 'str',
   CAMPAIGN: 'str', CAMPAIGN_NOTE: 'str', CYCLE: 'arr', CYCLE_ABOUT: 'arr',
   CLAIM_COLOURS: 'arr', CLAIM_MEANINGS: 'arr', HOVER_COLOUR: 'str', HOVER_NOTE: 'str', HONESTY_LAW: 'str',
+  LEADERBOARD: 'str', LEADERBOARD_READ: 'str', XP_ACCEPTED: 'u16', XP_HOUR: 'u16',
+  XP_NOTE: 'str', XP_BUYS: 'str', LANE_IS_LENT_BY_A_PERSON: 'bool', LANE_NOT_ASKED_OF_A_READER: 'str',
   JOIN: 'arr', CONTRIBUTE: 'str', CONTRIBUTE_NOTE: 'str',
   WRITE_API: 'bool', WRITE_API_NOTE: 'str', MCP_HOSTED: 'bool', MCP_NOTE: 'str',
   AGENT_REGISTRY: 'bool', AGENT_REGISTRY_NOTE: 'str', ACCOUNTS: 'bool', UNKNOWN: 'arr',
