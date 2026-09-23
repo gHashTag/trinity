@@ -96,11 +96,14 @@ const KEY_SHORTCUTS_STORAGE = "queen.hud.key-shortcuts";
 import { useI18n } from "../i18n/context";
 import { QueenTri } from "../components/QueenTri";
 import QueenRoadmap from "../components/QueenRoadmap";
+import QueenLeaderboard from "../components/QueenLeaderboard";
 import { QueenWars } from "../components/QueenWars";
 import Passport from "./Passport";
 import { QueenBrowser } from "../components/QueenBrowser";
 import { QueenIdentity } from "../components/QueenIdentity";
 import { TRI_BUTTONS, hashParamsOf, tabAddress, triAddress, triGroupOf, triScreenOf } from "../lib/triScreens";
+import { OPEN_TARGETS, screenExcerpt } from "../lib/queenDirectives";
+import { sendToAgentAsMe } from "../services/queenModel";
 import { triIdentity } from "../lib/triIdentity";
 import { clientsLane, loadHiveBoard, type ClientsLane, type HiveBoard, type HiveBoardReason } from "../lib/hiveBoard";
 import {
@@ -397,6 +400,11 @@ const COPY = {
     // group, and the three measured cases of ours that pay for it.
     roadmapView: "ROADMAP",
     roadmapHint: "The game: the whole stack rewritten in .t27, by language and stage (key m)",
+    // The fifteenth view: every bee runs on somebody's provider token, and this
+    // is the work each of those lanes did. The score is derived from the
+    // dispatches on every read, so it can be checked against the board.
+    leaderboardView: "LEADERBOARD",
+    leaderboardHint: "Who lends the swarm a lane, and the XP its bees earned there (key l)",
     warsView: "WARS",
     warsHint: "Real-task agent benchmarks generated from one .t27 ledger (key x)",
     passportView: "PASSPORT",
@@ -812,6 +820,8 @@ const COPY = {
     triHint: "Приложение внутри игры: лента, агент, ИИ-генерация, профиль и CRM (клавиша r)",
     roadmapView: "ДОРОЖНАЯ КАРТА",
     roadmapHint: "Игра: весь стек на .t27 — по языкам и этапам (клавиша m)",
+    leaderboardView: "ЛИДЕРБОРД",
+    leaderboardHint: "Кто дал рою полосу и сколько XP на ней заработали пчёлы (клавиша l)",
     warsView: "ВОЙНЫ",
     warsHint: "Бенчмарки агентов на реальных задачах из единого журнала .t27 (клавиша x)",
     passportView: "ПАСПОРТ",
@@ -3410,6 +3420,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
     { view: "passport" as const, glyph: "▤", label: c.passportView, hint: c.passportHint },
     { view: "browser" as const, glyph: "◍", label: c.browserView, hint: c.browserHint },
     { view: "roadmap" as const, glyph: "⇶", label: c.roadmapView, hint: c.roadmapHint },
+    // On the letter l: whose token each bee ran on, and what that lane earned.
+    { view: "leaderboard" as const, glyph: "⚙", label: c.leaderboardView, hint: c.leaderboardHint },
     { view: "wars" as const, glyph: "⚔", label: c.warsView, hint: c.warsHint },
   ].map((item) => ({ ...item, hotkey: hudKeyOf(item.view) }));
   // TRI is drawn as one button per screen, owner's word 2026-09-21: every
@@ -3522,11 +3534,61 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
   // to work in. The events go to her; the column keeps the overview below.
   // The same Queen in both shapes of the column: the wide aside and the phone
   // drawer. Defined once so the drawer cannot quietly lose her.
+  // WHERE THE PERSON IS, AND WHAT THEY SEE (owner, 2026-09-22): the rail's
+  // own name for the tab, the TRI screen, and the screen's text read at the
+  // moment of a question. The app frame is this origin on app.t27.ai/queen,
+  // so its document is readable; on t27.ai it is another origin and the read
+  // throws, which leaves the Queen with the tab name alone.
+  const triScreenNow = triScreenOf(hashParams.get("screen"));
+  const railLabelNow = (
+    boardView === "tri"
+      ? triRail[triGroupOf(triScreenNow)]?.label ?? c.triView
+      : viewItems.find((item) => item.view === railViewOf(boardView))?.label ?? boardView
+  ).toUpperCase();
+  const screenNow = (): string => {
+    if (boardView === "tri") {
+      const frame = document.querySelector<HTMLIFrameElement>(".queen27-tri-frame");
+      try {
+        const body = frame?.contentDocument?.body;
+        if (body) return screenExcerpt(body.innerText, triScreenNow === "chat");
+      } catch {
+        /* another origin: nothing to read, and nothing to claim */
+      }
+      return "";
+    }
+    const main = document.querySelector<HTMLElement>(".queen27-hud-vp-body");
+    return main ? screenExcerpt(main.innerText, false) : "";
+  };
+  // She shows her work by opening the tab it is on ([[open:NAME]]), through
+  // the same two calls the rail makes.
+  const openForQueen = (name: string): string | null => {
+    const target = Object.hasOwn(OPEN_TARGETS, name) ? OPEN_TARGETS[name] : null;
+    if (!target) return null;
+    if (target.screen) selectTriScreen(target.screen);
+    else setView(target.view as HudView);
+    return name.toUpperCase();
+  };
+  // A draft the person approved goes to their agent as them; the AGENT tab
+  // is reloaded after, so its own thread shows the exchange.
+  const sendForPerson = async (text: string): Promise<string> => {
+    const reply = await sendToAgentAsMe(text);
+    window.dispatchEvent(new CustomEvent("queen:tri-reload"));
+    return reply;
+  };
   const queenChat = (
     <Suspense fallback={null}>
       <QueenChat
         lang={lang === "ru" ? "ru" : "en"}
-        context={{ view: boardView, repo, spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null }}
+        context={{
+          view: boardView,
+          repo,
+          spec: boardView === "specs" ? "specs/demos/hello_world.t27" : null,
+          label: railLabelNow,
+          screen: boardView === "tri" ? triScreenNow : null,
+          sees: screenNow,
+        }}
+        onOpen={openForQueen}
+        onSendToAgent={sendForPerson}
         events={events}
         describe={describe}
         issueHref={(event) => (event.issue && repo ? `https://github.com/${repo}/issues/${event.issue}` : null)}
@@ -3978,6 +4040,8 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
             <QueenWars lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "roadmap" ? (
             <QueenRoadmap lang={lang === "ru" ? "ru" : "en"} />
+          ) : boardView === "leaderboard" ? (
+            <QueenLeaderboard lang={lang === "ru" ? "ru" : "en"} />
           ) : boardView === "passport" ? (
             // The record itself, not a frame of it: the page and this view read
             // one content module, so the working group and the map cannot drift.

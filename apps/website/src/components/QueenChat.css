@@ -527,3 +527,83 @@
   color: var(--text, #FFFFFF);
   white-space: pre-wrap;
 }
+
+/* WHAT SHE DID WITH AN ANSWER (queenDirectives): the tab she opened, and a
+   draft for the person's agent that only the person sends. */
+.queen-chat-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.queen-chat-opened {
+  margin: 0 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(0, 255, 136, 0.8);
+}
+.queen-chat-draft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 8px;
+  /* Blurred as well as dark: alpha alone leaves the lattice's edges crossing
+     the letters (qa/queen-contrast-contract.mjs). */
+  background: rgba(2, 8, 6, 0.88);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.queen-chat-draft-title {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd700;
+}
+.queen-chat-draft textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  /* An opaque ground: this is a text field over the lit map, and the contrast
+     contract measures what shows through (qa/queen-contrast-contract.mjs
+     refused 0.35 here). */
+  background: rgba(2, 8, 6, 0.94);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #e8f5ee;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.queen-chat-draft-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.queen-chat-draft-actions button {
+  padding: 6px 12px;
+  border: 1px solid #ffd700;
+  border-radius: 6px;
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffd700;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.queen-chat-draft-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.queen-chat-draft-note {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(232, 245, 238, 0.75);
+}
+.queen-chat-draft.is-failed .queen-chat-draft-note {
+  color: #ff6b6b;
+}

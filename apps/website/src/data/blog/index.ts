@@ -3,6 +3,177 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    "slug": "queen-browser-actions-you-can-follow",
+    "title": "The browser agent should show its work",
+    "summary": "Queen’s merged browser changes expose actions as they arrive, keep a compact journal, and let human input request server-side control—with the remaining handover limits made explicit.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Queen",
+      "BrowserAutomation",
+      "Agents",
+      "Observability",
+      "Testing"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1088 — one remote browser in Queen · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1088"
+      },
+      {
+        "label": "Trinity #1094 — chat reaches the browser-equipped agent · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1094"
+      },
+      {
+        "label": "Trinity #1096 — incremental action and text events · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1096"
+      },
+      {
+        "label": "Trinity #1104 — connection-state messages · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1104"
+      },
+      {
+        "label": "Trinity #1107 — recent browser journal · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1107"
+      },
+      {
+        "label": "Trinity #1109 — human-control request from the board · MERGED 2026-09-22",
+        "href": "https://github.com/gHashTag/trinity/pull/1109"
+      },
+      {
+        "label": "Trinity #1111 — consecutive journal repeats folded · MERGED 2026-09-22",
+        "href": "https://github.com/gHashTag/trinity/pull/1111"
+      },
+      {
+        "label": "Website checks — browser contract passed in run 35689898918",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35689898918/job/106624452015"
+      }
+    ],
+    "openQuestions": [
+      "The source diffs and browser contract were inspected and the contract rerun for this article; no fresh signed-in end-to-end remote-browser session was independently tested.",
+      "The driving indicator updates before server acknowledgement and a failed wheel request is not surfaced; the indicator alone is not evidence of accepted control, and cancellation of in-flight actions is not established.",
+      "The journal shows at most six folded lines from up to 24 recent entries, polls every five seconds, and is not a complete audit archive.",
+      "Connection handling and human-control enforcement depend on the matching viewer and server deployments; a source merge alone does not establish live delivery. Server behaviour is attributed to the public #1109 report, not independently reproduced here.",
+      "The public #1109 report says a human-control lease can persist until its ten-minute expiry after a tab is closed; this article does not claim a general security guarantee or measured productivity improvement."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Браузерный агент должен показывать свою работу",
+      "summary": "Смерженные изменения Queen показывают действия по мере поступления, сохраняют компактный журнал и позволяют вводу человека запрашивать управление на сервере — с явными ограничениями передачи руля.",
+      "openQuestions": [
+        "Для статьи изучены изменения и браузерный контракт, который также запущен повторно; новая сквозная проверка удалённого браузера в авторизованной сессии независимо не выполнялась.",
+        "Индикатор управления меняется до подтверждения сервера, а отказ запроса не показывается; одного индикатора недостаточно для подтверждения принятого управления, отмена уже начатых действий не установлена.",
+        "Журнал показывает не более шести свёрнутых строк из максимум 24 последних записей, опрашивается каждые пять секунд и не является полным архивом аудита.",
+        "Обработка соединения и ограничение действий зависят от соответствующих версий окна просмотра и сервера; слияние исходников само по себе не подтверждает доставку на живой сайт. Поведение сервера приведено по публичному отчёту #1109, а не независимо воспроизведено здесь.",
+        "По публичному отчёту #1109 после закрытия вкладки право управления может сохраняться до истечения десятиминутного срока; статья не заявляет общей гарантии безопасности или измеренного роста производительности."
+      ]
+    }
+  },
+  {
+    "slug": "a-partial-module-needs-its-own-verdict",
+    "title": "A partial module needs its own verdict",
+    "summary": "JavaScript and TypeScript generation gained explicit omission records, so the Spec Explorer can distinguish a useful partial module from a complete one and from a failed compilation.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Compiler",
+      "TypeScript",
+      "Testing",
+      "Reproducibility"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1084 — partial output becomes a warning · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1084"
+      },
+      {
+        "label": "t27 #4529 — references and explicit omission records · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/t27/pull/4529"
+      },
+      {
+        "label": "t27 #4502 — TypeScript shares the JS value layer · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/t27/pull/4502"
+      },
+      {
+        "label": "Reviewed manifest — 1,419-spec snapshot at e7a11be",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/public/t27/manifest.json"
+      },
+      {
+        "label": "Website checks for #1084 · SUCCESS 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35599487248/job/106331933482"
+      }
+    ],
+    "openQuestions": [
+      "The reviewed website snapshot still has 211 specifications with no AST and seven parsed specifications losing a backend; their causes are not resolved by this article.",
+      "The upstream 1,414-spec test corpus and the website's 1,419-spec snapshot are different populations, so their counts are not interchangeable.",
+      "A partial declaration artifact does not establish complete language support or runtime correctness for every generated program.",
+      "Upstream test results are attributed to their merged PR reports, not presented as independently rerun compiler benchmarks."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Частичному модулю нужен собственный вердикт",
+      "summary": "Генераторы JavaScript и TypeScript получили явные записи о пропусках: Spec Explorer теперь отличает полезный, но частичный модуль от полного результата и от неудачной компиляции.",
+      "openQuestions": [
+        "В изученном снимке сайта остаются 211 спецификаций без AST и семь разобранных файлов с отказом backend; статья не устраняет причины этих ошибок.",
+        "Корпус upstream-проверки из 1 414 спецификаций и снимок сайта из 1 419 — разные выборки, их числа нельзя подменять друг другом.",
+        "Частичный артефакт объявлений не устанавливает полную поддержку языка или корректность исполнения каждой сгенерированной программы.",
+        "Результаты upstream-тестов приведены по отчётам смерженных PR, а не как независимо повторённые бенчмарки компилятора."
+      ]
+    }
+  },
+  {
+    "slug": "an-invitation-in-the-language-it-describes",
+    "title": "An invitation in the language it describes",
+    "summary": "T27's agent-facing introduction is one compiler-checked module served at two addresses, with executable claim checks and an explicit boundary around the reader's authority.",
+    "date": "2026-09-23",
+    "readingMinutes": 6,
+    "tags": [
+      "Agents",
+      "Compiler",
+      "Spec-first",
+      "Testing"
+    ],
+    "receipts": [
+      {
+        "label": "Trinity #1047 — one .t27 onboarding source · MERGED 2026-09-20",
+        "href": "https://github.com/gHashTag/trinity/pull/1047"
+      },
+      {
+        "label": "Trinity #1074 — backend and corpus claims checked · MERGED 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/pull/1074"
+      },
+      {
+        "label": "Reviewed generator — schema, assertions, consent and rendered-output checks",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/scripts/onboarding-from-spec.mjs"
+      },
+      {
+        "label": "Reviewed onboarding source — nine tests and declared unknowns",
+        "href": "https://github.com/gHashTag/trinity/blob/e7a11be07eb73fceaf41fb693a628d10ec245637/apps/website/specs/catalog/onboarding.t27"
+      },
+      {
+        "label": "Website checks — nine blocks, 49 assertions · SUCCESS 2026-09-21",
+        "href": "https://github.com/gHashTag/trinity/actions/runs/35599487248/job/106331933482"
+      }
+    ],
+    "openQuestions": [
+      "Serving the document at llms.txt does not establish compatibility with every consumer, crawler indexing or external adoption.",
+      "The consent checks constrain this generated document; they are not a universal prompt-injection defence.",
+      "Comparing declared counts with the shipped manifest proves agreement, not independent correctness of the corpus classification.",
+      "The initial audit and negative-control results are attributed to the merged PR; no count of outside readers or contributions is established."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Приглашение на языке, о котором оно рассказывает",
+      "summary": "Введение T27 для агентов — один проверяемый компилятором модуль по двум адресам, с исполняемыми проверками утверждений и явной границей полномочий читателя.",
+      "openQuestions": [
+        "Публикация документа по адресу llms.txt не устанавливает совместимость со всеми потребителями, индексацию или внешнее использование.",
+        "Проверки согласия ограничивают данный сгенерированный документ, но не являются универсальной защитой от prompt injection.",
+        "Сравнение объявленных чисел с поставляемым manifest доказывает согласованность, а не независимую правильность классификации корпуса.",
+        "Исходный аудит и отрицательные контроли приведены по смерженному PR; число внешних читателей или вкладов не установлено."
+      ]
+    }
+  },
+  {
     slug: 'the-fpga-row-was-corrected',
     title: 'The FPGA row was corrected before it became evidence',
     summary: '[proven] A merged t27 PR corrected an invalid Yosys invocation and changed three FPGA status rows from green to red after 881 historical runs showed 36 successes, 842 failures, and 3 cancellations.',
@@ -2451,6 +2622,80 @@ export const postsIndex: PostMeta[] = [
         "Аппаратный захват IDDR на Artix-7 не работает, и открыт сам диагноз, а не только починка: issue #114 отзывает собственный первый вывод («Q1 мёртв, Q2 жив») после того, как детектор оказался односторонним. Оба выхода инертны во всех испробованных режимах фронта. Приёмный тракт использует захват DDR на фабрике как обходной путь.",
         "Sigma ~= 470 пс никогда не измерялась. Она выведена из размаха перекоса в пять шагов через закон длины кадра, а значит не может служить подтверждением этого же закона. Независимое измерение джиттера — тот единственный опыт, который закрыл бы вопрос; значение около 50 пс опровергло бы объяснение.",
         "Частота ошибок по кадрам не измерялась напрямую, а только выводилась из того, поднялся ли линк. Три точки по перекосу цензурированы справа на отсчёте 31 и не позволяют различить конкурирующие модели."
+      ]
+    }
+  },
+  {
+    "slug": "how-to-join-the-swarm",
+    "title": "How to join the swarm",
+    "summary": "A hive of coding agents is rewriting this stack into its own language, one file per issue. There are two ways in - write a spec, or lend a provider key - and this is what each costs, what each earns, and which providers' terms quietly forbid the second one.",
+    "date": "2026-09-23",
+    "readingMinutes": 9,
+    "tags": [
+      "onboarding",
+      "queen",
+      "leaderboard",
+      "t27"
+    ],
+    "receipts": [
+      {
+        "label": "LEADERBOARD - the lanes and their XP, live",
+        "href": "https://app.t27.ai/queen/#/queen?tab=leaderboard"
+      },
+      {
+        "label": "ROADMAP - the .t27 share of the stack, live",
+        "href": "https://app.t27.ai/queen/#/queen?tab=roadmap"
+      },
+      {
+        "label": "The rules of the game, machine-readable and test-checked",
+        "href": "https://t27.ai/llms.txt"
+      },
+      {
+        "label": "The open port issues, one file each",
+        "href": "https://github.com/gHashTag/t27/issues?q=is%3Aissue+in%3Atitle+%22Port+tools%2F%22+is%3Aopen"
+      },
+      {
+        "label": "NVIDIA API Trial Terms of Service (bars production use and making the service available to others)",
+        "href": "https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf"
+      },
+      {
+        "label": "OpenRouter rate limits (20/min, 50/day free; 1,000/day after a $10 lifetime top-up)",
+        "href": "https://openrouter.ai/docs/api-reference/limits"
+      },
+      {
+        "label": "GitHub Models retired 2026-07-30",
+        "href": "https://docs.github.com/en/github-models"
+      },
+      {
+        "label": "Anthropic Consumer Terms - \"You may not share your Account login information, Anthropic API key, or Account credentials with anyone else\"",
+        "href": "https://www.anthropic.com/legal/consumer-terms"
+      },
+      {
+        "label": "Google APIs Terms of Service - \"Developer credentials may not be embedded in open source projects\"",
+        "href": "https://developers.google.com/terms"
+      },
+      {
+        "label": "AI Horde - donated GPUs for kudos, and its rule that kudos are not a currency",
+        "href": "https://aihorde.net/"
+      },
+      {
+        "label": "Z.AI pricing - GLM-4.7-Flash and GLM-4.5-Flash at zero",
+        "href": "https://docs.z.ai/guides/overview/pricing"
+      }
+    ],
+    "openQuestions": [
+      "A bee that runs on your own machine on your own key is the shape that lets someone contribute capacity without breaching a provider agreement - the way AI Horde and BOINC have always worked. It is not built here, and nothing in this post should be read as a promise that it is coming.",
+      "Free-tier rate limits at Google, Z.AI and Mistral are no longer published or are login-gated, so the table states what each provider states and marks the rest unknown rather than guessing.",
+      "Whether a donated key breaches a given provider's terms is a question about YOUR agreement with them, and the reading here is ours, not legal advice."
+    ],
+    "published": true,
+    "ru": {
+      "title": "Как войти в рой",
+      "summary": "Рой кодовых агентов переписывает этот стек на собственный язык, по одному файлу на задачу. Войти можно двумя способами - написать спеку или одолжить ключ провайдера, - и здесь сказано, чего стоит каждый, что приносит, и чьи условия тихо запрещают второй.",
+      "openQuestions": [
+        "Пчела, работающая на вашей машине на вашем ключе, — та форма, которая позволяет отдавать мощность, не нарушая соглашения с провайдером, и именно так всегда работали AI Horde и BOINC. Здесь она не построена, и ничто в этом тексте не следует читать как обещание, что она будет.",
+        "Лимиты бесплатных тарифов у Google, Z.AI и Mistral больше не публикуются или закрыты логином, поэтому таблица приводит то, что заявляет сам провайдер, а остальное помечает неизвестным, вместо того чтобы угадывать.",
+        "Нарушает ли одолженный ключ условия конкретного провайдера - это вопрос о ВАШЕМ соглашении с ним, и прочтение здесь наше, а не юридическая консультация."
       ]
     }
   }

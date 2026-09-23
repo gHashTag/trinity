@@ -9,7 +9,7 @@
 // readable by anyone who opens the site, so a hosted model is reached through a
 // proxy that holds the key, never from this file.
 import { sendMessage, checkHealth, NotSignedIn, type ChatResponse } from './chatApi.ts'
-import { AgentSignedOut, askBrowserAgent, type AgentAnswer, type ChatTurn } from '../lib/queenBrowser.ts'
+import { AgentSignedOut, askBrowserAgent, type AgentAnswer, type ChatTurn, sayToAgent } from '../lib/queenBrowser.ts'
 import { appSessionFromWindow, type AppSessionVerdict } from '../lib/appSessionIdentity.ts'
 
 const OLLAMA_URL = import.meta.env?.VITE_QUEEN_OLLAMA_URL || 'http://localhost:11434'
@@ -144,6 +144,31 @@ export async function askQueenInBrowser(
       confidence: 0,
       latency_us: Math.round((Date.now() - started) * 1000),
     }
+  } catch (error) {
+    if (error instanceof AgentSignedOut) throw new NotSignedIn()
+    throw error
+  }
+}
+
+/**
+ * The AGENT tab: a message the Queen drafted and the person approved, sent to
+ * their agent as them. Same token discipline as askQueenInBrowser: read at the
+ * moment of sending, handed to one call, kept nowhere.
+ */
+export async function sendToAgentAsMe(
+  text: string,
+  onProgress?: (soFar: AgentAnswer) => void,
+): Promise<string> {
+  const caller = queenCaller()
+  if (!caller.signedIn) throw new NotSignedIn()
+  const bearer = caller.authorization.replace(/^Bearer /, '')
+  try {
+    const answer = await sayToAgent(
+      { fetch: (url, init) => fetch(url, init), token: () => bearer },
+      text,
+      onProgress,
+    )
+    return answer.text
   } catch (error) {
     if (error instanceof AgentSignedOut) throw new NotSignedIn()
     throw error

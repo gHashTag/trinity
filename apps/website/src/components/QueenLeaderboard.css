@@ -1,0 +1,188 @@
+/* LEADERBOARD: who lends the swarm a lane. Grounds are opaque or blurred, the
+   way the contrast contract requires of anything carrying text over the lit
+   hive (qa/queen-contrast-contract.mjs). */
+.ql {
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px max(16px, calc((100% - 1100px) / 2)) 48px;
+  color: #e8f5ee;
+  background: radial-gradient(ellipse at top, #06140d 0%, #020806 70%);
+}
+.ql > * {
+  flex-shrink: 0;
+}
+.ql-head h2 {
+  margin: 0 0 6px;
+  font-size: clamp(20px, 2.4vw, 28px);
+  letter-spacing: 0.02em;
+  color: var(--hud-green, #00ff88);
+}
+.ql-head p {
+  margin: 0 0 4px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  line-height: 1.5;
+}
+.ql-scoring {
+  font-size: 13px;
+}
+.ql-window {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hud-gold, #ffd700);
+}
+.ql-note {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.ql-rows {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.ql-row {
+  display: grid;
+  grid-template-columns: 28px 36px minmax(140px, 1.4fr) minmax(80px, 1.6fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 10px;
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.ql-row.is-unclaimed {
+  border-style: dashed;
+  opacity: 0.85;
+}
+.ql-face {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  background: rgba(255, 255, 255, 0.04);
+}
+.ql-face.is-anon {
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.ql-who a {
+  color: var(--hud-green, #00ff88);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.35);
+}
+.ql-who a:hover,
+.ql-who a:focus-visible {
+  border-bottom-color: var(--hud-green, #00ff88);
+}
+/* The three numbers ride together so a wrap can never stack one label on
+   another: at width they sit in a row, on a phone they spread across it. */
+.ql-nums {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  white-space: nowrap;
+}
+.ql-rank {
+  font-variant-numeric: tabular-nums;
+  color: var(--hud-gold, #ffd700);
+  font-weight: 700;
+}
+.ql-who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+.ql-lanes {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.ql-bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.ql-bar i {
+  display: block;
+  height: 100%;
+  background: var(--hud-green, #00ff88);
+}
+.ql-stat {
+  font-size: 12px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  white-space: nowrap;
+}
+.ql-stat b {
+  display: block;
+  font-size: 15px;
+  color: #e8f5ee;
+  font-variant-numeric: tabular-nums;
+}
+.ql-xp {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--hud-green, #00ff88);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .ql-row {
+    grid-template-columns: 22px 32px 1fr;
+    row-gap: 8px;
+  }
+  .ql-face {
+    width: 32px;
+    height: 32px;
+  }
+  .ql-bar,
+  .ql-nums {
+    grid-column: 1 / -1;
+  }
+  .ql-nums {
+    justify-content: space-between;
+    gap: 10px;
+  }
+}
+
+/* The way out of this tab and into the instructions. */
+.ql-howto {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--hud-cyan, #64dcff);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(100, 220, 255, 0.4);
+}
+.ql-howto:hover,
+.ql-howto:focus-visible {
+  border-bottom-color: var(--hud-cyan, #64dcff);
+}
+
+/* The lanes half, once PEOPLE took the top of the tab. */
+.ql-lanes-title {
+  margin: 28px 0 6px;
+  font-size: clamp(16px, 1.8vw, 20px);
+  letter-spacing: 0.02em;
+  color: var(--hud-gold, #ffd700);
+}
+.ql-lanes-lead {
+  margin: 0 0 10px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  line-height: 1.5;
+}
+
+/* The goal of the game, marked as such where it is counted. */
+.ql-stat.is-spec b {
+  color: var(--hud-green, #00ff88);
+}

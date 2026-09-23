@@ -1,5 +1,6 @@
 // ROADMAP: the game's goal, measured. Everything below the interface in .t27,
-// generated to its target (trios CLAUDE.md, law L0) - and how far the stack
+// generated to its target (law L0 PURPOSE, gHashTag/t27 docs/T27-CONSTITUTION.md
+// section 2) - and how far the stack
 // that runs app.t27.ai is from that today, repository by repository and
 // language by language.
 //
@@ -98,6 +99,17 @@ const COPY = {
     target: 'target',
     loading: 'Reading the count…',
     failed: 'The count could not be read.',
+    joinTitle: 'The rewrite is one file at a time. Take one.',
+    joinBody:
+      'Nobody rewrites a stack in one commit. Each stage is cut into issues of one file each, and every closed one moves the number above. You do not need permission and you do not need to know .t27 first: the issue names the file, the boundary says what it may touch, and the Queen reviews what comes back.',
+    joinOpen: 'port issues open right now',
+    joinBrowse: 'Browse the open issues',
+    joinLend: 'Or lend the swarm a lane',
+    joinLendBody:
+      'No time to write code? A bee runs on somebody’s provider API key. Lend one and its work earns you XP on the leaderboard — several providers give a key away for nothing.',
+    joinLearn: 'How to join, step by step',
+    law: 'Law L0 PURPOSE',
+    lawBody: 'This is not an ambition, it is a law: L0 in the constitution, enforced by the number above \u2014 the .t27 share may not fall.',
   },
   ru: {
     title: 'ДОРОЖНАЯ КАРТА',
@@ -121,6 +133,17 @@ const COPY = {
     target: 'цель',
     loading: 'Читаю подсчёт…',
     failed: 'Подсчёт прочитать не удалось.',
+    joinTitle: 'Переписывание идёт по одному файлу. Возьмите один.',
+    joinBody:
+      'Никто не переписывает стек одним коммитом. Каждый этап нарезан на задачи по одному файлу, и каждая закрытая двигает число выше. Разрешения не нужно, и знать .t27 заранее тоже: в задаче назван файл, границы говорят, что можно трогать, а Королева проверяет то, что вернулось.',
+    joinOpen: 'задач переноса открыто прямо сейчас',
+    joinBrowse: 'Посмотреть открытые задачи',
+    joinLend: 'Или дайте рою полосу',
+    joinLendBody:
+      'Нет времени писать код? Пчела работает на чьём-то API-ключе провайдера. Одолжите свой — и его работа принесёт вам XP в лидерборде; несколько провайдеров выдают ключ бесплатно.',
+    joinLearn: 'Как присоединиться, по шагам',
+    law: 'Закон L0 PURPOSE',
+    lawBody: 'Это не стремление, а закон: L0 в конституции, и проверяется он числом выше — доля .t27 не должна падать.',
   },
 } as const
 
@@ -257,6 +280,19 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
         <div className="rm-hero-text">
           <h2>{c.goal}</h2>
           <p>{c.goalBody}</p>
+          {/* The goal was measured here for days with no law behind it, while
+              the board's own source cited an L0 that did not exist anywhere.
+              It exists now, so the tab cites the real one. */}
+          <p className="rm-law">
+            <a
+              href="https://github.com/gHashTag/t27/blob/master/docs/T27-CONSTITUTION.md"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {c.law}
+            </a>{' '}
+            {c.lawBody}
+          </p>
         </div>
         <div className="rm-dial" aria-label={`${pct(summary.t27, summary.total)} ${c.share}`}>
           <svg viewBox="0 0 120 120">
@@ -282,6 +318,52 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
         <div><strong>{stack.repos.length}</strong><span>repos</span></div>
         <div><strong>{summary.code.length}</strong><span>{lang === 'ru' ? 'языков' : 'languages'}</span></div>
       </div>
+
+      {/* THE INVITATION. A measurement is not a reason for a stranger to stay:
+          this tab said how far the rewrite has to go and never said that
+          anyone could push it. The count of open issues is the one already
+          fetched for the stage bars, so this costs no extra request, and it
+          links the real GitHub search rather than a page about the project. */}
+      {goals && (
+        <aside className="rm-join">
+          <h3>{c.joinTitle}</h3>
+          <p>{c.joinBody}</p>
+          <div className="rm-join-acts">
+            {(() => {
+              const staged = goals.goals.find((g) => g.progress && progress[g.id])
+              const bar = staged ? progress[staged.id] : undefined
+              const open = bar ? Math.max(0, bar.all - bar.done) : null
+              const query = staged?.progress ? `${staged.progress} is:open` : ''
+              return (
+                <a
+                  className="rm-join-cta"
+                  href={
+                    query
+                      ? `https://github.com/${goals.issueRepo}/issues?q=${encodeURIComponent(query)}`
+                      : `https://github.com/${goals.issueRepo}/issues`
+                  }
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {open !== null && <strong>{open}</strong>}
+                  <span>{open !== null ? c.joinOpen : c.joinBrowse}</span>
+                </a>
+              )
+            })()}
+            <a
+              className="rm-join-link"
+              href="https://t27.ai/blog/how-to-join-the-swarm/"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {c.joinLearn} →
+            </a>
+          </div>
+          <p className="rm-join-lend">
+            <b>{c.joinLend}.</b> {c.joinLendBody}
+          </p>
+        </aside>
+      )}
 
       <h3>{c.languages}</h3>
       <StackedBar parts={summary.code.map(([l, v]) => [l, v.bytes])} total={summary.total} height={22} />

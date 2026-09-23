@@ -297,6 +297,23 @@ export const MODULES = [
     },
   },
   {
+    tab: 'leaderboard',
+    key: 'l',
+    glyph: '\u2699',
+    en: {
+      name: 'LEADERBOARD',
+      hint: 'Who lends the swarm a lane, and what it did (key l)',
+      body: 'Every bee runs on somebody\u2019s provider token, and each lane records what it did: the issues the Queen accepted on it and the hours her bees spent there. This view ranks the lenders by that work -- 100 XP for an accepted issue, 10 XP for an hour -- and nothing is stored: the numbers are summed from the swarm\u2019s own dispatch rows on every read, so anyone can recompute them. A lane nobody has claimed is shown as its number rather than hidden. Opens on the letter l.',
+      play: 'Lend the swarm a key and watch your bees work: the board shows whose lanes carried the hive this month.',
+    },
+    ru: {
+      name: 'ЛИДЕРБОРД',
+      hint: 'Кто даёт рою полосу и что она сделала (клавиша l)',
+      body: 'Каждая пчела работает на чьём-то токене провайдера, и по каждой полосе видно, что она сделала: задачи, которые Королева приняла на ней, и часы, которые провели на ней пчёлы. Этот вид выстраивает тех, кто дал полосу, по этой работе — 100 XP за принятую задачу и 10 XP за час — и ничего не хранит: числа складываются из собственных записей роя при каждом чтении, так что их может пересчитать любой. Полоса, которую никто не назвал своей, показана номером, а не спрятана. Открывается буквой l.',
+      play: 'Дайте рою ключ и смотрите, как на нём работают пчёлы: доска показывает, чьи полосы вынесли улей в этом месяце.',
+    },
+  },
+  {
     tab: 'wars',
     key: 'x',
     glyph: '⚔',

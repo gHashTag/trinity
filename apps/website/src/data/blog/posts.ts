@@ -1,4 +1,8 @@
+import { body as body_how_to_join_the_swarm, ruBody as ruBody_how_to_join_the_swarm } from './bodies/how-to-join-the-swarm'
 import { postsIndex } from './index'
+import { body as body_queen_browser_actions_you_can_follow, ruBody as ruBody_queen_browser_actions_you_can_follow } from './bodies/queen-browser-actions-you-can-follow'
+import { body as body_a_partial_module_needs_its_own_verdict, ruBody as ruBody_a_partial_module_needs_its_own_verdict } from './bodies/a-partial-module-needs-its-own-verdict'
+import { body as body_an_invitation_in_the_language_it_describes, ruBody as ruBody_an_invitation_in_the_language_it_describes } from './bodies/an-invitation-in-the-language-it-describes'
 import { body as body_signal_health_self_run32, ruBody as ruBody_signal_health_self_run32 } from './bodies/signal-health-self-run32'
 import { body as body_queen_phone_orientation_gate, ruBody as ruBody_queen_phone_orientation_gate } from './bodies/queen-phone-orientation-gate'
 import { body as body_merge_diff_ci_boundaries, ruBody as ruBody_merge_diff_ci_boundaries } from './bodies/merge-diff-ci-boundaries'
@@ -71,6 +75,10 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'how-to-join-the-swarm': { body: body_how_to_join_the_swarm, ruBody: ruBody_how_to_join_the_swarm },
+  'queen-browser-actions-you-can-follow': { body: body_queen_browser_actions_you_can_follow, ruBody: ruBody_queen_browser_actions_you_can_follow },
+  'a-partial-module-needs-its-own-verdict': { body: body_a_partial_module_needs_its_own_verdict, ruBody: ruBody_a_partial_module_needs_its_own_verdict },
+  'an-invitation-in-the-language-it-describes': { body: body_an_invitation_in_the_language_it_describes, ruBody: ruBody_an_invitation_in_the_language_it_describes },
   'the-fpga-row-was-corrected': { body: body_the_fpga_row_was_corrected, ruBody: ruBody_the_fpga_row_was_corrected },
   'signal-health-self-run32': { body: body_signal_health_self_run32, ruBody: ruBody_signal_health_self_run32 },
   'queen-phone-orientation-gate': { body: body_queen_phone_orientation_gate, ruBody: ruBody_queen_phone_orientation_gate },

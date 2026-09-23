@@ -2,10 +2,12 @@
 ; specs/skills/trinity-connect-accounts.t27 -- skill trinity/connect-accounts
 ; Source of truth for the skill card on t27.ai (#/skills?skill=trinity/connect-accounts).
 ; The skill body lives in gHashTag/trinity at .claude/skills/connect-accounts/SKILL.md
-; (vendored copy: apps/website/public/skills/files/trinity/connect-accounts/SKILL.md, sha256 b8401486a420...).
-; Written from two live runs on 2026-09-22: LinkedIn through Google (one press,
-; one account choice, one consent) and X through Google (blocked until the
-; browser allowed pop-ups), and two sessions an agent described but never ran.
+; (vendored copy: apps/website/public/skills/files/trinity/connect-accounts/SKILL.md, sha256 c7eadb87f1ed...).
+; Written from live runs on 2026-09-22 and 23: LinkedIn through Google (one
+; press, one account choice, one consent), X through Google (blocked until the
+; browser allowed pop-ups), TikTok through Apple, two sessions an agent
+; described but never ran, and a night in which nothing could be pressed by
+; hand because the viewer's own input layer was hidden by a stylesheet.
 ; The JSON the site serves is generated from this file by the real compiler;
 ; nothing below is parsed with a regex.
 ; phi^2 + 1/phi^2 = 3 | TRINITY

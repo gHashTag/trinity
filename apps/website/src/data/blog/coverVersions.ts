@@ -3,244 +3,276 @@
 // Regenerate after changing artwork or captions; do not edit by hand.
 export const BLOG_COVER_VERSIONS: Record<string, { en: string; ru: string }> = {
   "a-broken-reference-looks-exactly-like-broken-code": {
-    "en": "89f5e4075a2e",
-    "ru": "89f5e4075a2e"
+    "en": "07e46c2925b7",
+    "ru": "07e46c2925b7"
   },
   "a-clean-merge-is-not-a-semantic-no-op": {
-    "en": "eb546f8971a4",
-    "ru": "eb546f8971a4"
+    "en": "e73c427a8c23",
+    "ru": "e73c427a8c23"
   },
   "a-correct-gate-with-a-manual-remedy": {
-    "en": "9d5939dec996",
-    "ru": "9d5939dec996"
+    "en": "8ec07f73178b",
+    "ru": "8ec07f73178b"
   },
   "a-gate-that-rejected-its-own-users": {
-    "en": "2716fa2d28ef",
-    "ru": "2716fa2d28ef"
+    "en": "936fdca14402",
+    "ru": "936fdca14402"
   },
   "a-health-snapshot-changed-its-denominator": {
-    "en": "68551d8a8392",
-    "ru": "68551d8a8392"
+    "en": "50e5508bab36",
+    "ru": "50e5508bab36"
   },
   "a-multiplicity-correction-changed-the-deployment-reading": {
-    "en": "403e8c911408",
-    "ru": "403e8c911408"
+    "en": "fa8b77935452",
+    "ru": "fa8b77935452"
+  },
+  "a-partial-module-needs-its-own-verdict": {
+    "en": "9a0d74f70627",
+    "ru": "9a0d74f70627"
   },
   "a-red-gate-was-missing-its-input": {
-    "en": "127c9ffed47d",
-    "ru": "127c9ffed47d"
+    "en": "1d24d76bea4d",
+    "ru": "1d24d76bea4d"
   },
   "a-repair-reaches-only-the-copy-it-lands-in": {
-    "en": "6ef08a956015",
-    "ru": "6ef08a956015"
+    "en": "7541c41f1553",
+    "ru": "7541c41f1553"
   },
   "a-suite-that-runs-nothing-exits-zero": {
-    "en": "a912e9593877",
-    "ru": "a912e9593877"
+    "en": "b83f70f9914c",
+    "ru": "b83f70f9914c"
   },
   "an-inert-filter-is-safest-until-it-works": {
-    "en": "f1c4a497e1ea",
-    "ru": "f1c4a497e1ea"
+    "en": "fae47f38cbc6",
+    "ru": "fae47f38cbc6"
+  },
+  "an-invitation-in-the-language-it-describes": {
+    "en": "45292d6ce630",
+    "ru": "45292d6ce630"
   },
   "clara-proposal-submitted-not-reviewed": {
-    "en": "b849683643a1",
-    "ru": "b849683643a1"
+    "en": "f22cae30e264",
+    "ru": "f22cae30e264"
   },
   "context-length-resonance-not-power-law": {
-    "en": "70f6ef4e6bb1",
-    "ru": "70f6ef4e6bb1"
+    "en": "5f9a09f37406",
+    "ru": "5f9a09f37406"
   },
   "each-half-imported-the-other": {
-    "en": "8811cb1dfb9d",
-    "ru": "8811cb1dfb9d"
+    "en": "a6ba2ff228b1",
+    "ru": "a6ba2ff228b1"
   },
   "eight-theorems-audited": {
-    "en": "cab6d19abd0d",
-    "ru": "cab6d19abd0d"
+    "en": "a226118686b3",
+    "ru": "a226118686b3"
   },
   "eleven-verdicts-were-windows-not-checkpoints": {
-    "en": "fc0a32228888",
-    "ru": "fc0a32228888"
+    "en": "998b505af792",
+    "ru": "998b505af792"
   },
   "energy-asymmetry-activations": {
-    "en": "632881b78512",
-    "ru": "632881b78512"
+    "en": "81f18c25614f",
+    "ru": "81f18c25614f"
   },
   "equal-stored-width-removed-an-accuracy-lead": {
-    "en": "0fd240138a6e",
-    "ru": "0fd240138a6e"
+    "en": "2fa0d8a3c3de",
+    "ru": "2fa0d8a3c3de"
   },
   "fifteen-merged-nine-credited": {
-    "en": "a64c90e352aa",
-    "ru": "a64c90e352aa"
+    "en": "c4d1a92636e0",
+    "ru": "c4d1a92636e0"
   },
   "five-reasons-the-build-was-red": {
-    "en": "337f9dec6eb1",
-    "ru": "337f9dec6eb1"
+    "en": "cd7e7581befc",
+    "ru": "cd7e7581befc"
   },
   "formal-was-green-and-had-never-run-a-solver": {
-    "en": "0b98a5386e69",
-    "ru": "0b98a5386e69"
+    "en": "f51195a443cd",
+    "ru": "f51195a443cd"
   },
   "four-hundred-and-twelve-tests-that-were-sentences": {
-    "en": "08683118cca2",
-    "ru": "08683118cca2"
+    "en": "c16c01faaa27",
+    "ru": "c16c01faaa27"
+  },
+  "four-languages-one-tri-extension": {
+    "en": "58aae6d5e410",
+    "ru": "58aae6d5e410"
   },
   "fourteen-rows-agreed-one-did-not": {
-    "en": "b9c55238ebcd",
-    "ru": "b9c55238ebcd"
+    "en": "b7def6781146",
+    "ru": "b7def6781146"
   },
   "frame-length-margin-law": {
-    "en": "67ddcc90e021",
-    "ru": "67ddcc90e021"
+    "en": "d42aea69584b",
+    "ru": "d42aea69584b"
   },
   "green-ci-does-not-mean-usable": {
-    "en": "7048796f9a71",
-    "ru": "7048796f9a71"
+    "en": "9c21af836ff2",
+    "ru": "9c21af836ff2"
   },
   "half-the-build-is-bitstream-generation": {
-    "en": "1e5fffb821d8",
-    "ru": "1e5fffb821d8"
+    "en": "a3f9d3f7ecea",
+    "ru": "a3f9d3f7ecea"
   },
   "i-wrote-the-post-then-did-the-thing": {
-    "en": "4d3e0957eea2",
-    "ru": "4d3e0957eea2"
+    "en": "23cde0220d6f",
+    "ru": "23cde0220d6f"
+  },
+  "merge-diff-ci-boundaries": {
+    "en": "134b1e70b2b3",
+    "ru": "134b1e70b2b3"
   },
   "ninety-tests-were-unreachable": {
-    "en": "97be410f596e",
-    "ru": "97be410f596e"
+    "en": "1acacee537d8",
+    "ru": "1acacee537d8"
   },
   "nobodys-example": {
-    "en": "f5b8e6df6420",
-    "ru": "f5b8e6df6420"
+    "en": "168ce138248b",
+    "ru": "168ce138248b"
   },
   "one-commit-nine-workflow-outcomes": {
-    "en": "fca5778fe959",
-    "ru": "fca5778fe959"
+    "en": "fc9b68930501",
+    "ru": "fc9b68930501"
   },
   "one-saturation-rule-five-artefacts": {
-    "en": "dda79b2590d4",
-    "ru": "dda79b2590d4"
+    "en": "3fa2e7e28efb",
+    "ru": "3fa2e7e28efb"
   },
   "open-gigabit-ethernet-artix7": {
-    "en": "881eb9dfbfb8",
-    "ru": "881eb9dfbfb8"
+    "en": "d844230c5a0f",
+    "ru": "d844230c5a0f"
   },
   "phi-identity-machine-checked": {
-    "en": "2658a0480af6",
-    "ru": "2658a0480af6"
+    "en": "b4c4056e237c",
+    "ru": "b4c4056e237c"
   },
   "phi-is-a-scale-not-information": {
-    "en": "8c3ac94acf31",
-    "ru": "8c3ac94acf31"
+    "en": "8158e4c4a037",
+    "ru": "8158e4c4a037"
   },
   "physical-width-changed-the-question": {
-    "en": "1c01d6c9dbba",
-    "ru": "1c01d6c9dbba"
+    "en": "2e76de810b2f",
+    "ru": "2e76de810b2f"
+  },
+  "queen-browser-actions-you-can-follow": {
+    "en": "6c3ff7962b9f",
+    "ru": "6c3ff7962b9f"
   },
   "queen-foundation-snapshot-contract": {
-    "en": "fd763c8f8045",
-    "ru": "fd763c8f8045"
+    "en": "26bc434f542d",
+    "ru": "26bc434f542d"
+  },
+  "queen-phone-orientation-gate": {
+    "en": "b59e705b0638",
+    "ru": "b59e705b0638"
   },
   "queen-review-lifecycle-queues": {
-    "en": "136713e879dd",
-    "ru": "136713e879dd"
+    "en": "8e2e7bbb5199",
+    "ru": "8e2e7bbb5199"
   },
   "readout-that-cannot-be-misread": {
-    "en": "294d3daa7fb1",
-    "ru": "294d3daa7fb1"
+    "en": "5b56be7350e8",
+    "ru": "5b56be7350e8"
   },
   "real-value-in-integer-container": {
-    "en": "84e7a1803e85",
-    "ru": "84e7a1803e85"
+    "en": "da5ee404e545",
+    "ru": "da5ee404e545"
   },
   "receipts-and-seals-over-radio": {
-    "en": "24e64232d5f2",
-    "ru": "24e64232d5f2"
+    "en": "00451a652d11",
+    "ru": "00451a652d11"
   },
   "scale-field-width-already-published": {
-    "en": "5380df554000",
-    "ru": "5380df554000"
+    "en": "b160e56cfdd1",
+    "ru": "b160e56cfdd1"
+  },
+  "signal-health-self-run32": {
+    "en": "01fde4f3d436",
+    "ru": "01fde4f3d436"
   },
   "six-and-a-half-years-in-a-discarded-return-value": {
-    "en": "9f61491dceb3",
-    "ru": "9f61491dceb3"
+    "en": "ad6459eb50eb",
+    "ru": "ad6459eb50eb"
   },
   "ternary-won-the-wire-not-the-gate": {
-    "en": "17e12db60f2a",
-    "ru": "17e12db60f2a"
+    "en": "437454747243",
+    "ru": "437454747243"
   },
   "the-auditor-made-the-mistake-it-audits": {
-    "en": "f6c934ef8c74",
-    "ru": "f6c934ef8c74"
+    "en": "06b48174c9ec",
+    "ru": "06b48174c9ec"
   },
   "the-control-that-could-not-fail": {
-    "en": "7834d6178f23",
-    "ru": "7834d6178f23"
+    "en": "1873d7866354",
+    "ru": "1873d7866354"
   },
   "the-experiment-that-could-not-answer": {
-    "en": "447de04e2b6f",
-    "ru": "447de04e2b6f"
+    "en": "3ab48d2aca94",
+    "ru": "3ab48d2aca94"
+  },
+  "the-fpga-row-was-corrected": {
+    "en": "a14537eeade2",
+    "ru": "a14537eeade2"
   },
   "the-full-adder-made-the-cost-claim-comparable": {
-    "en": "7ed0971e02b1",
-    "ru": "7ed0971e02b1"
+    "en": "ec874634b830",
+    "ru": "ec874634b830"
   },
   "the-gate-was-right-and-nothing-stopped": {
-    "en": "6127ed62921e",
-    "ru": "6127ed62921e"
+    "en": "fa4f1cb3f783",
+    "ru": "fa4f1cb3f783"
   },
   "the-generated-file-was-three-years-old": {
-    "en": "9c27790b82cf",
-    "ru": "9c27790b82cf"
+    "en": "1c92df51b286",
+    "ru": "1c92df51b286"
   },
   "the-only-stable-speed-belonged-to-the-tool": {
-    "en": "9c98d4bd3f83",
-    "ru": "9c98d4bd3f83"
+    "en": "da52c8363ca4",
+    "ru": "da52c8363ca4"
   },
   "the-ratchet-counted-a-total-as-an-error": {
-    "en": "950ea7ea0e96",
-    "ru": "950ea7ea0e96"
+    "en": "479ea7e22621",
+    "ru": "479ea7e22621"
   },
   "the-required-check-was-an-echo": {
-    "en": "09114497d544",
-    "ru": "09114497d544"
+    "en": "1681b93032a4",
+    "ru": "1681b93032a4"
   },
   "the-scanner-scored-what-it-could-not-see": {
-    "en": "9ffb3cf488ba",
-    "ru": "9ffb3cf488ba"
+    "en": "74a87a6a029b",
+    "ru": "74a87a6a029b"
   },
   "the-search-space-erased-a-significance-claim": {
-    "en": "6937872d2915",
-    "ru": "6937872d2915"
+    "en": "31b24572e199",
+    "ru": "31b24572e199"
   },
   "the-silence-was-a-saturated-readout": {
-    "en": "0b98931d51b3",
-    "ru": "0b98931d51b3"
+    "en": "f62c9820fa28",
+    "ru": "f62c9820fa28"
   },
   "the-tail-that-had-never-run": {
-    "en": "8fe9437dca36",
-    "ru": "8fe9437dca36"
+    "en": "5d27f8dd0b72",
+    "ru": "5d27f8dd0b72"
   },
   "thirty-epochs-exposed-a-failure-rate-blind-spot": {
-    "en": "b2808896b803",
-    "ru": "b2808896b803"
+    "en": "70ecfd8a3c23",
+    "ru": "70ecfd8a3c23"
   },
   "tri-claw-an-agent-you-can-audit": {
-    "en": "f5d93e408c4f",
-    "ru": "f5d93e408c4f"
+    "en": "ef1ffe34ebf0",
+    "ru": "ef1ffe34ebf0"
   },
   "twenty-merged-in-three-days": {
-    "en": "2ac26c19584a",
-    "ru": "2ac26c19584a"
+    "en": "43b4d84f5727",
+    "ru": "43b4d84f5727"
   },
   "twenty-three-reference-models": {
-    "en": "5807396bd244",
-    "ru": "5807396bd244"
+    "en": "d4c5ab281594",
+    "ru": "d4c5ab281594"
   },
   "two-bitstreams-one-bit-apart": {
-    "en": "4f107bd43f92",
-    "ru": "4f107bd43f92"
+    "en": "a959bc36445a",
+    "ru": "a959bc36445a"
   }
 }
 
@@ -342,6 +374,22 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       }
     ]
   },
+  "a-partial-module-needs-its-own-verdict": {
+    "en": [
+      {
+        "heading": "THE MODULE",
+        "caption": "Syntax is not import."
+      },
+      {
+        "heading": "THE OMISSIONS",
+        "caption": "Name what was not emitted."
+      },
+      {
+        "heading": "THE VERDICT",
+        "caption": "Partial is not whole."
+      }
+    ]
+  },
   "a-red-gate-was-missing-its-input": {
     "en": [
       {
@@ -403,6 +451,22 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       {
         "heading": "THE LIMIT",
         "caption": "The case that mattered was unreachable."
+      }
+    ]
+  },
+  "an-invitation-in-the-language-it-describes": {
+    "en": [
+      {
+        "heading": "THE ADDRESS",
+        "caption": "One document, two addresses."
+      },
+      {
+        "heading": "THE ASSERTION",
+        "caption": "Parsing does not prove truth."
+      },
+      {
+        "heading": "THE OWNER",
+        "caption": "An invitation, not an instruction."
       }
     ]
   },
@@ -582,6 +646,22 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       }
     ]
   },
+  "four-languages-one-tri-extension": {
+    "en": [
+      {
+        "heading": "THE EXTENSION",
+        "caption": "One suffix hid different languages."
+      },
+      {
+        "heading": "THE DIAGNOSTIC",
+        "caption": "Name the recognised dialect."
+      },
+      {
+        "heading": "THE LIMIT",
+        "caption": "Unknown shapes still pass through."
+      }
+    ]
+  },
   "fourteen-rows-agreed-one-did-not": {
     "en": [
       {
@@ -659,6 +739,22 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       {
         "heading": "FOUR MERGES",
         "caption": "Four pull requests merged past it."
+      }
+    ]
+  },
+  "merge-diff-ci-boundaries": {
+    "en": [
+      {
+        "heading": "THE MERGE",
+        "caption": "The change landed."
+      },
+      {
+        "heading": "THE CHECKS",
+        "caption": "Each verdict needs its receipt."
+      },
+      {
+        "heading": "THE DELIVERY",
+        "caption": "Live pages need a separate check."
       }
     ]
   },
@@ -790,6 +886,22 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       }
     ]
   },
+  "queen-browser-actions-you-can-follow": {
+    "en": [
+      {
+        "heading": "ONE WINDOW",
+        "caption": "Person and agent share the view."
+      },
+      {
+        "heading": "VISIBLE STEPS",
+        "caption": "Actions leave a readable trail."
+      },
+      {
+        "heading": "HUMAN CONTROL",
+        "caption": "The server must accept the handover."
+      }
+    ]
+  },
   "queen-foundation-snapshot-contract": {
     "en": [
       {
@@ -803,6 +915,22 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       {
         "heading": "THE CONTRACT",
         "caption": "A fixture checks source and count."
+      }
+    ]
+  },
+  "queen-phone-orientation-gate": {
+    "en": [
+      {
+        "heading": "THE VIEWPORT",
+        "caption": "A short portrait view was missed."
+      },
+      {
+        "heading": "THE AXIS",
+        "caption": "Gate the shell by orientation."
+      },
+      {
+        "heading": "THE LIMIT",
+        "caption": "Device coverage remains open."
       }
     ]
   },
@@ -886,6 +1014,22 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       }
     ]
   },
+  "signal-health-self-run32": {
+    "en": [
+      {
+        "heading": "THE RUN",
+        "caption": "One scheduled run succeeded."
+      },
+      {
+        "heading": "THE CHAIN",
+        "caption": "Inspect each job and step."
+      },
+      {
+        "heading": "THE LIMIT",
+        "caption": "Success has a narrow scope."
+      }
+    ]
+  },
   "six-and-a-half-years-in-a-discarded-return-value": {
     "en": [
       {
@@ -963,6 +1107,22 @@ export const BLOG_COVER_CAPTIONS: Record<string, Partial<Record<'en' | 'ru', Blo
       {
         "heading": "BEFORE THE RUN",
         "caption": "The verdict is knowable before the experiment."
+      }
+    ]
+  },
+  "the-fpga-row-was-corrected": {
+    "en": [
+      {
+        "heading": "THE CORRECTION",
+        "caption": "Parser and toolchain corrected."
+      },
+      {
+        "heading": "THE RECORD",
+        "caption": "Historical runs remain evidence."
+      },
+      {
+        "heading": "THE LIMIT",
+        "caption": "No board result established."
       }
     ]
   },
