@@ -1,17 +1,29 @@
 {
- "$source": "design/inngest-spec-first.md + functions-manifest.json (28 functions), the code witness for specs/functions",
+ "$source": "design/inngest-spec-first.md + functions-manifest.json (33 functions), the code witness for specs/functions",
  "repo": "gHashTag/999-multibots-telegraf",
  "generatedFrom": {
   "branch": "main",
   "commit": "a9c08b4",
-  "note": "Extracted from the source tree by the spec-first design pass of 2026-09-09; three entries carry no file/steps and eight carry retries null because the extractor did not resolve them. Copied by hand into this repository -- no sync script produces it yet."
+  "note": "Extracted from the source tree by the spec-first design pass of 2026-09-09; three entries carry no file/steps and eight carry retries null because the extractor did not resolve them. Copied by hand into this repository -- no sync script produces it yet.",
+  "addendum": {
+   "commit": "05fd960f1fef35d09e9ec04e642fcbe0b8c5610a",
+   "read_at": "2026-09-22",
+   "functions": [
+    "crm-proactive-sweep",
+    "ton-pending-watch",
+    "club-invoice-abandoned-watch",
+    "robokassa-unclaimed-watch",
+    "client-telemetry-daily"
+   ],
+   "note": "Five functions registered after the 2026-09-09 pass were absent from this witness, so the site could draw no card for any of them -- including crm-proactive-sweep, which carried every failed run in the project over the week of 2026-09-22. Their rows are copied from the bot's own src/inngest_app/functions.manifest.json at this commit and carry read_at. probe_result is empty and deployed_2026_09_09 is null because no safe probe was sent to them and the 2026-09-09 deployment reading predates their registration; the deployed_2026_09_09 false the bot manifest still carries for three of them is that same stale pass, while the live status endpoint answered for all five on 2026-09-22. The 28 older rows are still as read at a9c08b4 and have drifted from this commit in about forty fields; re-pinning them is a separate pass."
+  }
  },
  "probedAt": "2026-09-09",
  "deployedApp": {
   "name": "telegram-bot-client",
   "sdk": "js v3.54.2",
   "baseFunctions": 24,
-  "mainRegisters": 28
+  "mainRegisters": 33
  },
  "functions": [
   {
@@ -873,6 +885,140 @@
    "probe_result": "not-deployed",
    "deployed_2026_09_09": false,
    "control": "spec+code"
+  },
+  {
+   "id": "crm-proactive-sweep",
+   "legacy_id": "",
+   "domain": "crm",
+   "trigger": "cron",
+   "event": "",
+   "legacy_events": [],
+   "cron": "*/30 * * * *",
+   "tz": "UTC",
+   "file": "src/inngest_app/functions/crm/crmProactiveSweep.ts",
+   "steps": [
+    "resolve-sellers",
+    "sweep-${owner}"
+   ],
+   "retries": 0,
+   "on_failure": "admin-telegram",
+   "side_effects": [
+    "messages-user",
+    "paid-api",
+    "db-write"
+   ],
+   "guard": "none",
+   "safe_probe": "{}",
+   "probe_result": "",
+   "deployed_2026_09_09": null,
+   "control": "spec+code",
+   "read_at": "05fd960"
+  },
+  {
+   "id": "ton-pending-watch",
+   "legacy_id": "",
+   "domain": "money",
+   "trigger": "cron",
+   "event": "",
+   "legacy_events": [],
+   "cron": "0 * * * *",
+   "tz": "UTC",
+   "file": "src/inngest_app/functions/money/tonPendingWatch.ts",
+   "steps": [
+    "look"
+   ],
+   "retries": 0,
+   "on_failure": "admin-telegram",
+   "side_effects": [
+    "db-read",
+    "paid-api"
+   ],
+   "guard": "none",
+   "safe_probe": "{}",
+   "probe_result": "",
+   "deployed_2026_09_09": null,
+   "control": "spec+code",
+   "read_at": "05fd960"
+  },
+  {
+   "id": "club-invoice-abandoned-watch",
+   "legacy_id": "",
+   "domain": "analytics",
+   "trigger": "cron",
+   "event": "",
+   "legacy_events": [],
+   "cron": "20 * * * *",
+   "tz": "UTC",
+   "file": "src/inngest_app/functions/analytics/clubInvoiceAbandonedWatch.ts",
+   "steps": [
+    "mark"
+   ],
+   "retries": 0,
+   "on_failure": "admin-telegram",
+   "side_effects": [
+    "db-read",
+    "db-write"
+   ],
+   "guard": "safe-mode",
+   "safe_probe": "{\"e2e_test\":true}",
+   "probe_result": "",
+   "deployed_2026_09_09": null,
+   "control": "spec+code",
+   "read_at": "05fd960"
+  },
+  {
+   "id": "robokassa-unclaimed-watch",
+   "legacy_id": "",
+   "domain": "money",
+   "trigger": "cron",
+   "event": "",
+   "legacy_events": [],
+   "cron": "20 7 * * *",
+   "tz": "UTC",
+   "file": "src/inngest_app/functions/money/robokassaUnclaimedWatch.ts",
+   "steps": [
+    "ask the provider"
+   ],
+   "retries": 0,
+   "on_failure": "admin-telegram",
+   "side_effects": [
+    "db-read",
+    "paid-api"
+   ],
+   "guard": "none",
+   "safe_probe": "{}",
+   "probe_result": "",
+   "deployed_2026_09_09": null,
+   "control": "spec+code",
+   "read_at": "05fd960"
+  },
+  {
+   "id": "client-telemetry-daily",
+   "legacy_id": "client-telemetry-daily",
+   "domain": "analytics",
+   "trigger": "cron",
+   "event": "",
+   "legacy_events": [],
+   "cron": "0 7 * * *",
+   "tz": "UTC",
+   "file": "src/inngest_app/functions/analytics/clientTelemetryDaily.ts",
+   "steps": [
+    "build-report",
+    "send",
+    "prune"
+   ],
+   "retries": 0,
+   "on_failure": "admin-telegram",
+   "side_effects": [
+    "messages-owners",
+    "db-write"
+   ],
+   "guard": "safe-mode",
+   "safe_probe": "{\"e2e_test\":true}",
+   "probe_result": "",
+   "deployed_2026_09_09": null,
+   "control": "spec+code",
+   "read_at": "05fd960"
   }
  ]
 }
