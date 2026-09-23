@@ -100,7 +100,10 @@
   overflow: hidden;
   border: 1px solid rgba(0, 255, 136, 0.18);
   border-radius: 10px;
-  background: rgba(3, 12, 14, 0.62);
+  /* --hud-veil is the token for a surface that CARRIES text: the app's screens
+     are drawn on this pane (they are transparent in embed), so the contract
+     measures its ground against the lit map and picks the alpha, not the eye. */
+  background: var(--hud-veil);
   -webkit-backdrop-filter: blur(14px) saturate(120%);
   backdrop-filter: blur(14px) saturate(120%);
 }
