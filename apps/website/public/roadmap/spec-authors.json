@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-23T12:22:03.177Z",
+  "measuredAt": "2026-09-23T13:26:36.676Z",
   "method": "Commits touching a directory where this project keeps its .t27 specs, per repository, by author. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
   "sources": [
     {
@@ -69,15 +69,15 @@
       "linked": true
     },
     {
-      "login": null,
+      "login": "mxfill77",
       "name": "Filipp",
-      "avatar": null,
+      "avatar": "https://github.com/mxfill77.png?size=96",
       "commits": 8,
       "repos": [
         "turbobaby-user-bot"
       ],
       "bot": false,
-      "linked": false
+      "linked": true
     },
     {
       "login": null,
