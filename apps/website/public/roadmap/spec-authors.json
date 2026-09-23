@@ -1,0 +1,100 @@
+{
+  "measuredAt": "2026-09-23T09:23:31.225Z",
+  "method": "Commits touching a directory where this project keeps its .t27 specs, per repository, by author. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
+  "sources": [
+    {
+      "repo": "gHashTag/t27",
+      "path": "specs"
+    },
+    {
+      "repo": "gHashTag/trinity",
+      "path": "apps/website/specs"
+    },
+    {
+      "repo": "gHashTag/BrowserOS",
+      "path": "trios"
+    }
+  ],
+  "truncated": [],
+  "people": [
+    {
+      "login": "gHashTag",
+      "name": "Vasilev Dmitrii",
+      "avatar": "https://github.com/gHashTag.png?size=96",
+      "commits": 996,
+      "repos": [
+        "t27",
+        "trinity",
+        "BrowserOS"
+      ],
+      "bot": false,
+      "linked": true
+    },
+    {
+      "login": null,
+      "name": "Trinity Bee",
+      "avatar": null,
+      "commits": 274,
+      "repos": [
+        "t27"
+      ],
+      "bot": false,
+      "linked": false
+    },
+    {
+      "login": "claude",
+      "name": "Claude",
+      "avatar": "https://github.com/claude.png?size=96",
+      "commits": 67,
+      "repos": [
+        "t27"
+      ],
+      "bot": false,
+      "linked": true
+    },
+    {
+      "login": "dmitrii-f-t27",
+      "name": "Dmitrii Fedorov",
+      "avatar": "https://github.com/dmitrii-f-t27.png?size=96",
+      "commits": 8,
+      "repos": [
+        "t27"
+      ],
+      "bot": false,
+      "linked": true
+    },
+    {
+      "login": null,
+      "name": "trios-consolidation",
+      "avatar": null,
+      "commits": 4,
+      "repos": [
+        "BrowserOS"
+      ],
+      "bot": false,
+      "linked": false
+    },
+    {
+      "login": null,
+      "name": "Claude Agent",
+      "avatar": null,
+      "commits": 1,
+      "repos": [
+        "t27"
+      ],
+      "bot": false,
+      "linked": false
+    },
+    {
+      "login": null,
+      "name": "T27 Agent",
+      "avatar": null,
+      "commits": 1,
+      "repos": [
+        "t27"
+      ],
+      "bot": false,
+      "linked": false
+    }
+  ]
+}

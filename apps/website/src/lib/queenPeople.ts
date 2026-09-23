@@ -1,67 +1,56 @@
-// WHO CONTRIBUTED: the merge rule, kept apart from the component that draws it.
+// WHO WROTE THE SPECS: the shape of the published answer, and nothing else.
 //
-// GitHub answers per repository, so the same person arrives once per repository
-// they touched and has to be summed. That is the whole of this file, and it is
-// here rather than inside the view so it can be driven directly by a test
-// without a browser, a fetch or a render.
+// The first version of this board counted commits in the repositories, which
+// answered a question nobody asked. BrowserOS is a fork, so its top contributor
+// by that measure had 1,335 commits and has never touched a `.t27` file - a
+// board about a project rewriting itself into one language listed, second,
+// somebody with no connection to it. Owner's word, 2026-09-23: only the people
+// who made the specs belong here.
 //
-// It is deliberately suspicious of what comes back. The avatar URL is BUILT
-// from the login rather than taken from the payload: a URL from a remote body
-// is a URL somebody else chose for this page to load. A row without a login, or
-// with a count that is not a positive number, is dropped rather than shown as
-// zero - a name on this board should mean somebody committed something.
+// The counting moved to `scripts/spec-authors.mjs`, which walks commits under
+// each repository's spec directory with a token and publishes
+// `public/roadmap/spec-authors.json`. The page reads that file: an honest
+// answer needs dozens of GitHub pages and anonymous GitHub allows sixty
+// requests an hour, so a live read could only ever have been a partial one.
 
-/** The public repositories. A private one is left out: it 404s anonymously. */
-export const PEOPLE_REPOS = [
-  'gHashTag/t27',
-  'gHashTag/trinity',
-  'gHashTag/BrowserOS',
-  'gHashTag/trios',
-] as const
-
-export interface Person {
-  login: string
-  avatar: string
+export interface SpecAuthor {
+  /** The GitHub login, when the commit's email belongs to an account. */
+  login: string | null
+  /** The name on the commit, which is all there is when it does not. */
+  name: string | null
+  avatar: string | null
   commits: number
   repos: string[]
-  /** An account whose name ends in [bot]: shown, and marked, never hidden. */
   bot: boolean
+  /** Whether GitHub resolved this author to an account at all. */
+  linked: boolean
 }
 
-export interface ContributorRow {
-  login?: unknown
-  contributions?: unknown
+export interface SpecAuthors {
+  measuredAt: string
+  /** What was counted, in the file's own words, so the page states it. */
+  method: string
+  sources: Array<{ repo: string; path: string }>
+  /** Repositories whose history was longer than the script would walk. */
+  truncated: string[]
+  people: SpecAuthor[]
 }
 
-/** Merge one repository's contributors into the running tally. */
-export function absorb(
-  into: Map<string, Person>,
-  repo: string,
-  rows: ContributorRow[],
-): void {
-  for (const row of rows) {
-    if (typeof row.login !== 'string' || !row.login) continue
-    const commits = Number(row.contributions)
-    if (!Number.isFinite(commits) || commits <= 0) continue
-    const seen = into.get(row.login)
-    if (seen) {
-      seen.commits += commits
-      if (!seen.repos.includes(repo)) seen.repos.push(repo)
-      continue
-    }
-    into.set(row.login, {
-      login: row.login,
-      avatar: `https://github.com/${row.login}.png?size=96`,
-      commits,
-      repos: [repo],
-      bot: row.login.endsWith('[bot]'),
-    })
-  }
+/**
+ * A GitHub login, checked here rather than trusted from the file, because it
+ * becomes an `href` and an `<img src>`. The file is ours, but the rule that a
+ * page never builds a link to a person out of an unchecked string does not
+ * become less true when the string is one we wrote.
+ */
+const GITHUB_LOGIN = /^[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}$/
+
+export function loginOf(person: SpecAuthor): string | null {
+  return person.linked && person.login && GITHUB_LOGIN.test(person.login)
+    ? person.login
+    : null
 }
 
-/** Most commits first; ties by login, so two readings never swap places. */
-export function rankPeople(tally: Map<string, Person>): Person[] {
-  return [...tally.values()].sort(
-    (a, b) => b.commits - a.commits || a.login.localeCompare(b.login),
-  )
+/** What to call somebody: their login, else the name on their commits. */
+export function nameOf(person: SpecAuthor): string {
+  return person.login ?? person.name ?? 'unknown'
 }
