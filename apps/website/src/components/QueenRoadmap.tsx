@@ -1,5 +1,6 @@
 // ROADMAP: the game's goal, measured. Everything below the interface in .t27,
-// generated to its target (trios CLAUDE.md, law L0) - and how far the stack
+// generated to its target (law L0 PURPOSE, gHashTag/t27 docs/T27-CONSTITUTION.md
+// section 2) - and how far the stack
 // that runs app.t27.ai is from that today, repository by repository and
 // language by language.
 //
@@ -107,6 +108,8 @@ const COPY = {
     joinLendBody:
       'No time to write code? A bee runs on somebody’s provider API key. Lend one and its work earns you XP on the leaderboard — several providers give a key away for nothing.',
     joinLearn: 'How to join, step by step',
+    law: 'Law L0 PURPOSE',
+    lawBody: 'This is not an ambition, it is a law: L0 in the constitution, enforced by the number above \u2014 the .t27 share may not fall.',
   },
   ru: {
     title: 'ДОРОЖНАЯ КАРТА',
@@ -139,6 +142,8 @@ const COPY = {
     joinLendBody:
       'Нет времени писать код? Пчела работает на чьём-то API-ключе провайдера. Одолжите свой — и его работа принесёт вам XP в лидерборде; несколько провайдеров выдают ключ бесплатно.',
     joinLearn: 'Как присоединиться, по шагам',
+    law: 'Закон L0 PURPOSE',
+    lawBody: 'Это не стремление, а закон: L0 в конституции, и проверяется он числом выше — доля .t27 не должна падать.',
   },
 } as const
 
@@ -275,6 +280,19 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
         <div className="rm-hero-text">
           <h2>{c.goal}</h2>
           <p>{c.goalBody}</p>
+          {/* The goal was measured here for days with no law behind it, while
+              the board's own source cited an L0 that did not exist anywhere.
+              It exists now, so the tab cites the real one. */}
+          <p className="rm-law">
+            <a
+              href="https://github.com/gHashTag/t27/blob/master/docs/T27-CONSTITUTION.md"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {c.law}
+            </a>{' '}
+            {c.lawBody}
+          </p>
         </div>
         <div className="rm-dial" aria-label={`${pct(summary.t27, summary.total)} ${c.share}`}>
           <svg viewBox="0 0 120 120">
