@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-23T09:23:31.225Z",
+  "measuredAt": "2026-09-23T13:31:03.719Z",
   "method": "Commits touching a directory where this project keeps its .t27 specs, per repository, by author. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
   "sources": [
     {
@@ -13,6 +13,10 @@
     {
       "repo": "gHashTag/BrowserOS",
       "path": "trios"
+    },
+    {
+      "repo": "gHashTag/turbobaby-user-bot",
+      "path": "specs"
     }
   ],
   "truncated": [],
@@ -21,11 +25,12 @@
       "login": "gHashTag",
       "name": "Vasilev Dmitrii",
       "avatar": "https://github.com/gHashTag.png?size=96",
-      "commits": 996,
+      "commits": 1005,
       "repos": [
         "t27",
         "trinity",
-        "BrowserOS"
+        "BrowserOS",
+        "turbobaby-user-bot"
       ],
       "bot": false,
       "linked": true
@@ -42,15 +47,15 @@
       "linked": false
     },
     {
-      "login": "claude",
-      "name": "Claude",
-      "avatar": "https://github.com/claude.png?size=96",
+      "login": null,
+      "name": "Claude Code (agent)",
+      "avatar": null,
       "commits": 67,
       "repos": [
         "t27"
       ],
       "bot": false,
-      "linked": true
+      "linked": false
     },
     {
       "login": "dmitrii-f-t27",
@@ -59,6 +64,17 @@
       "commits": 8,
       "repos": [
         "t27"
+      ],
+      "bot": false,
+      "linked": true
+    },
+    {
+      "login": "mxfill77",
+      "name": "Filipp",
+      "avatar": "https://github.com/mxfill77.png?size=96",
+      "commits": 8,
+      "repos": [
+        "turbobaby-user-bot"
       ],
       "bot": false,
       "linked": true
