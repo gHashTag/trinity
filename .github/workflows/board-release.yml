@@ -65,6 +65,19 @@ jobs:
             exit 0
           fi
 
+          # A PRESENT TOKEN IS NOT A WORKING TOKEN, and the difference is the
+          # whole failure mode. The first run of this job died with
+          # `gh: Bad credentials (HTTP 401)` followed by `base64: invalid
+          # input` - two errors, neither of which says "your token expired".
+          # AGENT_GH_TOKEN had been in place since 2026-03-12 and had simply
+          # stopped working, which is exactly the state nobody notices.
+          if ! gh api "repos/$APP_REPO" --jq '.full_name' >/dev/null 2>&1; then
+            echo "::error::AGENT_GH_TOKEN is set but cannot read $APP_REPO -" \
+                 "it is expired, revoked, or lacks access. Renew it; the board" \
+                 "keeps serving the pinned commit until you do."
+            exit 1
+          fi
+
           # The pin, read from the app repository rather than guessed.
           dockerfile=$(gh api "repos/$APP_REPO/contents/apps/vibee-editor/Dockerfile" \
             --jq '.content' | base64 -d)
