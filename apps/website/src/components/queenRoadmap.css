@@ -299,3 +299,63 @@ a.rm-chip:hover {
     gap: 2px;
   }
 }
+
+/* THE INVITATION. A measurement is not a reason for a stranger to stay, so the
+   count of open issues is a button, not a sentence. Grounds are opaque or
+   veiled, the way the contrast contract requires of anything over the lit hive. */
+.rm-join {
+  margin: 22px 0 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.3));
+  border-radius: 12px;
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.rm-join h3 {
+  margin: 0 0 6px;
+  color: var(--hud-green, #00ff88);
+}
+.rm-join p {
+  margin: 0 0 12px;
+  line-height: 1.55;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.rm-join-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+.rm-join-cta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--hud-green, #00ff88);
+  background: rgba(0, 255, 136, 0.1);
+  color: #e8f5ee;
+  text-decoration: none;
+}
+.rm-join-cta strong {
+  font-size: 20px;
+  color: var(--hud-green, #00ff88);
+  font-variant-numeric: tabular-nums;
+}
+.rm-join-cta:hover,
+.rm-join-cta:focus-visible {
+  background: rgba(0, 255, 136, 0.18);
+}
+.rm-join-link {
+  color: var(--hud-cyan, #7fd1ff);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(127, 209, 255, 0.4);
+}
+.rm-join-lend {
+  margin: 14px 0 0 !important;
+  font-size: 13px;
+}
+.rm-join-lend b {
+  color: var(--hud-gold, #ffd700);
+}

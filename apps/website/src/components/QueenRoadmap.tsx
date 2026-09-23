@@ -98,6 +98,15 @@ const COPY = {
     target: 'target',
     loading: 'Reading the count…',
     failed: 'The count could not be read.',
+    joinTitle: 'The rewrite is one file at a time. Take one.',
+    joinBody:
+      'Nobody rewrites a stack in one commit. Each stage is cut into issues of one file each, and every closed one moves the number above. You do not need permission and you do not need to know .t27 first: the issue names the file, the boundary says what it may touch, and the Queen reviews what comes back.',
+    joinOpen: 'port issues open right now',
+    joinBrowse: 'Browse the open issues',
+    joinLend: 'Or lend the swarm a lane',
+    joinLendBody:
+      'No time to write code? A bee runs on somebody’s provider API key. Lend one and its work earns you XP on the leaderboard — several providers give a key away for nothing.',
+    joinLearn: 'How to join, step by step',
   },
   ru: {
     title: 'ДОРОЖНАЯ КАРТА',
@@ -121,6 +130,15 @@ const COPY = {
     target: 'цель',
     loading: 'Читаю подсчёт…',
     failed: 'Подсчёт прочитать не удалось.',
+    joinTitle: 'Переписывание идёт по одному файлу. Возьмите один.',
+    joinBody:
+      'Никто не переписывает стек одним коммитом. Каждый этап нарезан на задачи по одному файлу, и каждая закрытая двигает число выше. Разрешения не нужно, и знать .t27 заранее тоже: в задаче назван файл, границы говорят, что можно трогать, а Королева проверяет то, что вернулось.',
+    joinOpen: 'задач переноса открыто прямо сейчас',
+    joinBrowse: 'Посмотреть открытые задачи',
+    joinLend: 'Или дайте рою полосу',
+    joinLendBody:
+      'Нет времени писать код? Пчела работает на чьём-то API-ключе провайдера. Одолжите свой — и его работа принесёт вам XP в лидерборде; несколько провайдеров выдают ключ бесплатно.',
+    joinLearn: 'Как присоединиться, по шагам',
   },
 } as const
 
@@ -282,6 +300,52 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
         <div><strong>{stack.repos.length}</strong><span>repos</span></div>
         <div><strong>{summary.code.length}</strong><span>{lang === 'ru' ? 'языков' : 'languages'}</span></div>
       </div>
+
+      {/* THE INVITATION. A measurement is not a reason for a stranger to stay:
+          this tab said how far the rewrite has to go and never said that
+          anyone could push it. The count of open issues is the one already
+          fetched for the stage bars, so this costs no extra request, and it
+          links the real GitHub search rather than a page about the project. */}
+      {goals && (
+        <aside className="rm-join">
+          <h3>{c.joinTitle}</h3>
+          <p>{c.joinBody}</p>
+          <div className="rm-join-acts">
+            {(() => {
+              const staged = goals.goals.find((g) => g.progress && progress[g.id])
+              const bar = staged ? progress[staged.id] : undefined
+              const open = bar ? Math.max(0, bar.all - bar.done) : null
+              const query = staged?.progress ? `${staged.progress} is:open` : ''
+              return (
+                <a
+                  className="rm-join-cta"
+                  href={
+                    query
+                      ? `https://github.com/${goals.issueRepo}/issues?q=${encodeURIComponent(query)}`
+                      : `https://github.com/${goals.issueRepo}/issues`
+                  }
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {open !== null && <strong>{open}</strong>}
+                  <span>{open !== null ? c.joinOpen : c.joinBrowse}</span>
+                </a>
+              )
+            })()}
+            <a
+              className="rm-join-link"
+              href={`https://github.com/${goals.issueRepo}/blob/master/docs/JOIN.md`}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {c.joinLearn} →
+            </a>
+          </div>
+          <p className="rm-join-lend">
+            <b>{c.joinLend}.</b> {c.joinLendBody}
+          </p>
+        </aside>
+      )}
 
       <h3>{c.languages}</h3>
       <StackedBar parts={summary.code.map(([l, v]) => [l, v.bytes])} total={summary.total} height={22} />
