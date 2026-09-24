@@ -1,8 +1,8 @@
 .queen-wars {
-  --wars-line: color-mix(in srgb, var(--hud-line, #00f5a0) 48%, transparent);
-  --wars-green: var(--hud-green, #00f5a0);
-  --wars-gold: var(--hud-gold, #ffd54a);
-  --wars-cyan: var(--hud-cyan, #5ddcff);
+  --wars-line: color-mix(in srgb, var(--hud-line, rgba(0, 255, 136, 0.22)) 48%, transparent);
+  --wars-green: var(--hud-green, #00ff88);
+  --wars-gold: var(--hud-gold, #ffd700);
+  --wars-cyan: var(--hud-cyan, #64dcff);
   --wars-red: #ff667a;
   --wars-session: #c4b5fd;
   --wars-text-muted: #adc9c0;
