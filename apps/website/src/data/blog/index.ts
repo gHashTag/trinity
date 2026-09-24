@@ -3,6 +3,38 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: 'tri-mined-not-sold',
+    title: 'The token is mined, not sold',
+    summary: '[design] 100% of TRI is mined by accepted .t27 work with zero pre-mine; the mint-on-acceptance rule is a Zig golden oracle (11/11 tests) with a TON and Solana minter whose digest matches cross-language (cargo test 4/4). Nothing is deployed.',
+    date: '2026-09-24',
+    readingMinutes: 5,
+    tags: ['DePIN', 'TRI', 'Tokenomics', 'TON', 'Solana', 'Design'],
+    receipts: [
+      { label: 'Protocol spec: mint_on_acceptance.t27', href: 'https://github.com/gHashTag/trinity-fpga/blob/trinet-fleet-truth/specs/trinet/mint_on_acceptance.t27' },
+      { label: 'Tested oracle + reference contracts (commit 2901c62)', href: 'https://github.com/gHashTag/trinity-fpga/commit/2901c6273' },
+      { label: '100% mined, zero pre-mine (commit c31157a)', href: 'https://github.com/gHashTag/trinity-fpga/commit/c31157ae0' },
+    ],
+    openQuestions: [
+      'Nothing is deployed: no contract, key, or mint exists on any live network.',
+      'V1 trusts an honest majority of the attestor set; it is not trustless, and who holds the keys is undecided.',
+      'The reference contracts are unaudited, and the cross-chain shared-nonce mechanism is unspecified.',
+      'No legal review of issuance or secondary trading has been done; that is the first task the decision creates.',
+      'The oracle is tested in software; it is not a hardware, silicon, or deployed-network result.',
+    ],
+    published: false,
+    ru: {
+      title: 'Токен намывают, а не продают',
+      summary: '[дизайн] 100% TRI намывается за принятую работу .t27, без премайна; правило чеканки-при-принятии — золотой оракул на Zig (11/11 тестов), с минтерами TON и Solana, чей дайджест совпадает межъязыково (cargo test 4/4). Ничего не задеплоено.',
+      openQuestions: [
+        'Ничего не задеплоено: ни контракта, ни ключа, ни чеканки в живой сети.',
+        'V1 доверяет честному большинству аттестаторов; это не трастлесс, и кто держит ключи — не решено.',
+        'Эталонные контракты без аудита, а механизм общего nonce между цепями не специфицирован.',
+        'Юридической проверки выпуска и вторичного рынка не было; это первая задача, которую создаёт решение.',
+        'Оракул проверен в софте; это не результат на железе, кремнии или в живой сети.',
+      ],
+    },
+  },
+  {
     slug: 'the-fpga-row-was-corrected',
     title: 'The FPGA row was corrected before it became evidence',
     summary: '[proven] A merged t27 PR corrected an invalid Yosys invocation and changed three FPGA status rows from green to red after 881 historical runs showed 36 successes, 842 failures, and 3 cancellations.',
