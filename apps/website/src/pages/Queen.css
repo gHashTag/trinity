@@ -3832,12 +3832,19 @@ main:where(.queen27-page.is-shell) section {
   font-style: normal;
 }
 
+/* The label truncates like the value and the sub-line under it already do:
+   at 1280x600 the squeezed tile gave VERDICTS 51 px for a 55 px word (measured
+   2026-09-24), and a label that overflows its own tile is an undeclared
+   scroller to qa/queen-viewport-contract.mjs. Its strong and span siblings
+   have carried the ellipsis since P1-18; the label just never needed it. */
 .queen27-page.is-shell :is(.queen27-hud-res, .queen27-hud-res-round-btn) > small {
   grid-area: label;
+  overflow: hidden;
   color: var(--hud-muted);
   font-size: 0.56rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -4439,11 +4446,24 @@ main:where(.queen27-page.is-shell) section {
   white-space: nowrap;
 }
 
+/* The tools row scrolls sideways when the rungs are wider than the head -- the
+   ladder's own answer to the same question one row down -- instead of pushing
+   the head past the module edge (measured 2026-09-24: 300 px of buttons in a
+   151 px window at 1280x700 took the head to 792 px in a 644 px shell). The
+   head's own texts truncate; buttons cannot, so the row they sit in is the
+   thing that moves. Declared in qa/queen-viewport-contract.mjs. */
 .queen27-page.is-shell .queen27-hud-vp-tools {
   display: flex;
   gap: 4px;
   margin-left: auto;
   min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-tools::-webkit-scrollbar {
+  display: none;
 }
 
 /* The identity chip (QueenIdentity.tsx) sits in the tools row at a button's size.

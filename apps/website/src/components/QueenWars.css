@@ -73,7 +73,13 @@
 .queen-wars h2 {
   margin: 0;
   font-size: clamp(38px, 7vw, 92px);
-  line-height: 0.88;
+  /* The line has to contain two boxes, not just the ink: the text font's own
+     (JetBrains Mono, self-hosted, ~1.17em at weight 800) and the crossed
+     blades' emoji font, whose box is taller still (~1.23em on macOS). Anything
+     shorter counts as scroll overflow to qa/queen-viewport-contract.mjs --
+     measured: 113px of font in a 110px line at 92px, 44 in 42 at 38px. The
+     tight display setting lives in the letter-spacing, not the line. */
+  line-height: 1.25;
   letter-spacing: -0.065em;
   font-weight: 800;
 }
@@ -432,7 +438,7 @@
 }
 
 .queen-wars-empty { margin: 18px 0 0; color: var(--wars-text-muted); }
-.queen-wars-ledger ol { display: grid; gap: 8px; list-style: none; padding: 0; margin: 18px 0 0; }
+.queen-wars-ledger ol { display: grid; gap: 8px; list-style: none; padding: 0; margin: 18px 0 0; overflow-x: auto; }
 .queen-wars-ledger li { display: grid; grid-template-columns: 160px 1fr auto auto; align-items: center; gap: 8px 16px; padding: 12px; border: 1px solid rgba(0, 245, 160, 0.15); }
 .queen-wars-ledger-state { color: var(--wars-text-muted); }
 .queen-wars-ledger li .queen-wars-evidence { margin-left: 0; }

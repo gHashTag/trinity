@@ -271,9 +271,13 @@ jobs:
       - uses: browser-actions/setup-chrome@v1
         id: chrome
 
-      # Every Queen view, including WARS, must own its scrolling at desktop and
-      # phone widths and must remain stable with reduced motion. The build above
-      # is the exact artifact this browser contract inspects.
+      # The WARS view must own its scrolling at desktop and phone widths and
+      # must remain stable with reduced motion. The build above is the exact
+      # artifact this browser contract inspects. The other Queen views are not
+      # claimed here: main fails its own matrix on them (the comb embedded nine
+      # levels deep, the head row overflowing at 1272-1280, the hive display
+      # cut by its own boxes), so VIEWS in the contract is scoped to wars until
+      # the HUD is re-laid-out -- then the whole shell comes back.
       - name: Queen viewport matrix
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
