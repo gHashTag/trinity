@@ -497,7 +497,7 @@ invariant backend_mul_detect_finite:
     invariant backend_phi_identity:
     1.618 * 1.618 + 1.0 / (1.618 * 1.618) > 2.99 && 1.618 * 1.618 + 1.0 / (1.618 * 1.618) < 3.01
     invariant contains_multiply_returns_defined:
-    forall a : i32, contains_multiply(a) != undefined
+    forall a : string, contains_multiply(a) != undefined
 
     invariant booth_encode_preserves_width
     forall expr : string, c : i32, w : u16

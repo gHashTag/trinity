@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // spec: AspSolver
 // Answer Set Programming solver for neuro-symbolic reasoning
+// Decision on Stmt.forLoop: Add a second constructor to express non-lowerable constructs required by this spec.
 
 spec AspSolver {
     // ASP literal structure

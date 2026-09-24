@@ -89,49 +89,81 @@ module FormulaDiscovery {
 
     // ===== Pattern Generation =====
 
+    // One generated pattern phi^i * pi^j * e^k and its value.
+    // The original returned Vec<(String, f64)> whose label was
+    // format!("phi^{}pi^{}e^{}", i, j, k). t27 has no heap vector and no string
+    // formatting, so each label is kept as the three exponents that fully
+    // determine it, and the list is a fixed-capacity array with a length.
+    struct BasisEntry {
+        i: i32;
+        j: i32;
+        k: i32;
+        value: f64;
+    }
+
+    // Capacity of a Basis: (2 * max_pow + 1)^3 entries, sized for max_pow <= 6.
+    // 6 is the default --max-pow of `formula chimera-search` (bootstrap/src/
+    // formula_eval.rs), so the default search keeps all (2*6+1)^3 = 2197 patterns.
+    const BASIS_MAX_POW: i32 = 6;
+    const BASIS_CAPACITY: u32 = 2197;
+
+    struct Basis {
+        entries: [BASIS_CAPACITY]BasisEntry;
+        len: u32;
+    }
+
+    fn basis_entry_zero() -> BasisEntry {
+        return BasisEntry{ i = 0, j = 0, k = 0, value = 0.0 };
+    }
+
     /// Generate n·φⁱ·πʲ·eᵏ patterns
-    fn generate_basis(max_pow: i32) -> Vec<(String, f64)> {
-        let mut basis = Vec::new();
+    fn generate_basis(max_pow: i32) -> Basis {
+        var basis = Basis{
+            entries = [basis_entry_zero(); BASIS_CAPACITY],
+            len = 0,
+        };
 
         for i in -max_pow..=max_pow {
             for j in -max_pow..=max_pow {
                 for k in -max_pow..=max_pow {
-                    let val = 1.0_f64 * powi(PHI, i) * powi(PI, j) * powi(E, k);
-                    basis.push((format!("φ^{}π^{}e^{}", i, j, k), val));
+                    const val = 1.0 * powi(PHI, i) * powi(PI, j) * powi(E, k);
+                    // Fixed capacity (approximation of Vec::push): patterns past
+                    // BASIS_CAPACITY, i.e. max_pow > BASIS_MAX_POW, are not stored.
+                    if (basis.len < BASIS_CAPACITY) {
+                        basis.entries[basis.len] = BasisEntry{ i = i, j = j, k = k, value = val };
+                        basis.len = basis.len + 1;
+                    }
                 }
             }
         }
 
-        basis
+        return basis;
     }
 
     // ===== Tests =====
 
-    test "S1_gamma_verified" {
+    test "S1_gamma_verified"
         given g = S1_gamma
         and   pdg = 0.23607
         when  err = abs(g - pdg) / pdg
         then  err < 0.001
-    }
 
-    test "N1_alpha_s_verified" {
-        given as = N1_alpha_s
+    // `as` is a keyword (cast) in t27, so the local is named alpha_s
+    test "N1_alpha_s_verified"
+        given alpha_s = N1_alpha_s
         and   pdg = 0.118034
-        when  err = abs(as - pdg) / pdg
+        when  err = abs(alpha_s - pdg) / pdg
         then  err < 0.001
-    }
 
-    test "PMNS2_sin2th23_verified" {
+    test "PMNS2_sin2th23_verified"
         given s = PMNS2_sin2th23
         and   pdg = 0.547
         when  err = abs(s - pdg) / pdg
         then  err < 0.001
-    }
 
-    test "trinity_identity" {
+    test "trinity_identity"
         given t = pow(PHI, 2.0) + 1.0 / pow(PHI, 2.0)
         then  abs(t - 3.0) < 1e-12
-    }
 
     // ===== Invariants =====
 
@@ -144,14 +176,14 @@ module FormulaDiscovery {
     }
 
     invariant "sin2th23_in_bounds" {
-        let s = PMNS2_sin2th23;
+        const s = PMNS2_sin2th23;
         assert s > 0.0 and s < 1.0
     }
 
     invariant "ckm_unitarity_check" {
-        let v_us = 1.0 / (E * PHI);
-        let v_cb = CKM2_V_cb;
-        let v_ud = P10_V_ud;
+        const v_us = 1.0 / (E * PHI);
+        const v_cb = CKM2_V_cb;
+        const v_ud = P10_V_ud;
         assert v_us > 0.0 and v_cb > 0.0 and v_ud > 0.0 and v_ud < 1.0
     }
 }

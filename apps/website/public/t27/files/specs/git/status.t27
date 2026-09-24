@@ -329,4 +329,12 @@ module GitStatus {
         var files = get_changed_files(items);
         assert(files.len == 0);
     }
+
+    test "status_function" {
+        // Test that status function returns Result<[Item], GitError>
+        var result = status("/tmp/test_repo");
+        assert(result.kind == 0); // 0 means Ok, 1 means Err
+        var items = result.value;
+        assert(items.len >= 0); // Should return array of items, possibly empty
+    }
 }

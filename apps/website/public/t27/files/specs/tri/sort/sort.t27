@@ -55,3 +55,8 @@ module TriSort;
         when result = sort_by(input)
         then result != undefined
 
+    test sort_order_is_an_enum_whose_two_directions_are_alternatives
+        given ascending = @intFromEnum(SortOrder.Ascending)
+        and descending = @intFromEnum(SortOrder.Descending)
+        then ascending == 0 and descending == 1
+

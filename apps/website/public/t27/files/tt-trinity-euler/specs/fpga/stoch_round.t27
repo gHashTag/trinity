@@ -46,32 +46,55 @@ pub const RngState = struct {
     state : u16,
 }
 
+// Named forms of the anonymous `struct { ... }` return types used below (same
+// fields, same types); `.{ ... }` return literals are spelled with these names.
+pub const RngStep = struct {
+    state : RngState,
+    value : u8,
+}
+
+pub const StochRoundStep = struct {
+    result : RoundResult,
+    new_state : RngState,
+}
+
+pub const VectorStochStep = struct {
+    results : [8]RoundResult,
+    new_state : RngState,
+}
+
+pub const StochRoundFields = struct {
+    mode : u8,
+    target_bits : u8,
+    seed : u8,
+}
+
 // ============================================================================
 // RNG Functions (XorShift LFSR)
 // ============================================================================
 
 // rng_init(seed: u16) -> RngState
 // Initialize RNG with seed
-pub fn rng_init(seed: u16) RngState {
+pub fn rng_init(seed: u16) -> RngState {
     return RngState{.state = if (seed == 0) 1 else seed};
 }
 
 // rng_next(state: RngState) -> struct { state: RngState, value: u8 }
 // Get next random byte
-pub fn rng_next(state: RngState) -> struct { state: RngState, value: u8 } {
+pub fn rng_next(state: RngState) -> RngStep {
     var s = state.state;
     s ^= s >> 7;
     s ^= s << 9;
     s ^= s >> 8;
-    return .{ .state = RngState{.state = s}, .value = @as(u8, @truncate(s)) };
+    return RngStep{ .state = RngState{.state = s}, .value = @as(u8, @truncate(s)) };
 }
 
 // rng_next_range(state: RngState, max: u8) -> struct { state: RngState, value: u8 }
 // Get next random value in range [0, max)
-pub fn rng_next_range(state: RngState, max: u8) -> struct { state: RngState, value: u8 } {
+pub fn rng_next_range(state: RngState, max: u8) -> RngStep {
     const next_result = rng_next(state);
     const scaled = (@as(u16, next_result.value) * @as(u16, max)) >> 8;
-    return .{ .state = next_result.state, .value = @as(u8, @truncate(scaled)) };
+    return RngStep{ .state = next_result.state, .value = @as(u8, @truncate(scaled)) };
 }
 
 // ============================================================================
@@ -115,13 +138,13 @@ pub fn round_nearest(value: i16, bits: u8) -> RoundResult {
 
 // round_stochastic(value: i16, bits: u8, state: RngState) -> struct { result: RoundResult, new_state: RngState }
 // Stochastic rounding
-pub fn round_stochastic(value: i16, bits: u8, state: RngState) -> struct { result: RoundResult, new_state: RngState } {
+pub fn round_stochastic(value: i16, bits: u8, state: RngState) -> StochRoundStep {
     const shift = 16 - bits;
     var result : i16 = 0;
 
     if (shift <= 0) {
         result = value << (-shift);
-        return .{ .result = RoundResult{.value = result, .original = value, .rounded = false, .overflow = false}, .new_state = state };
+        return StochRoundStep{ .result = RoundResult{.value = result, .original = value, .rounded = false, .overflow = false}, .new_state = state };
     }
 
     const abs_val = if (value < 0) -value else value;
@@ -156,7 +179,7 @@ pub fn round_stochastic(value: i16, bits: u8, state: RngState) -> struct { resul
         overflow = true;
     }
 
-    return .{ .result = RoundResult{.value = result, .original = value, .rounded = result != (abs_val >> shift), .overflow = overflow}, .new_state = rng_result.state };
+    return StochRoundStep{ .result = RoundResult{.value = result, .original = value, .rounded = result != (abs_val >> shift), .overflow = overflow}, .new_state = rng_result.state };
 }
 
 // round_truncate(value: i16, bits: u8) -> RoundResult
@@ -237,23 +260,18 @@ pub fn round_ceil(value: i16, bits: u8) -> RoundResult {
 
 // round_with_config(value: i16, config: RoundConfig, state: RngState) -> struct { result: RoundResult, new_state: RngState }
 // Round using config
-pub fn round_with_config(value: i16, config: RoundConfig, state: RngState) -> struct { result: RoundResult, new_state: RngState } {
-    switch (config.mode) {
-        ROUND_MODE_NEAREST => {
-            return .{ .result = round_nearest(value, config.target_bits), .new_state = state };
-        },
-        ROUND_MODE_STOCHASTIC => {
-            return round_stochastic(value, config.target_bits, state);
-        },
-        ROUND_MODE_TRUNCATE => {
-            return .{ .result = round_truncate(value, config.target_bits), .new_state = state };
-        },
-        ROUND_MODE_CEIL => {
-            return .{ .result = round_ceil(value, config.target_bits), .new_state = state };
-        },
-        else => {
-            return .{ .result = RoundResult{.value = 0, .original = value, .rounded = false, .overflow = true}, .new_state = state };
-        },
+pub fn round_with_config(value: i16, config: RoundConfig, state: RngState) -> StochRoundStep {
+    // switch (config.mode) with block arms, written as the equivalent if / else-if chain
+    if (config.mode == ROUND_MODE_NEAREST) {
+        return StochRoundStep{ .result = round_nearest(value, config.target_bits), .new_state = state };
+    } else if (config.mode == ROUND_MODE_STOCHASTIC) {
+        return round_stochastic(value, config.target_bits, state);
+    } else if (config.mode == ROUND_MODE_TRUNCATE) {
+        return StochRoundStep{ .result = round_truncate(value, config.target_bits), .new_state = state };
+    } else if (config.mode == ROUND_MODE_CEIL) {
+        return StochRoundStep{ .result = round_ceil(value, config.target_bits), .new_state = state };
+    } else {
+        return StochRoundStep{ .result = RoundResult{.value = 0, .original = value, .rounded = false, .overflow = true}, .new_state = state };
     }
 }
 
@@ -263,9 +281,12 @@ pub fn round_with_config(value: i16, config: RoundConfig, state: RngState) -> st
 
 // round_vector_nearest(values: [8]i16, bits: u8) -> [8]RoundResult
 // Round vector to nearest
-pub fn round_vector_nearest(values: [8]i16, bits: u8) [8]RoundResult {
+pub fn round_vector_nearest(values: [8]i16, bits: u8) -> [8]RoundResult {
     var results : [8]RoundResult = undefined;
-    for (values, 0..) |val, i| {
+    // for (values, 0..) |val, i|: index loop over the same elements
+    // (values is [8]i16, so the index runs 0..8)
+    for (0..8) |i| {
+        const val = values[i];
         results[i] = round_nearest(val, bits);
     }
     return results;
@@ -273,17 +294,20 @@ pub fn round_vector_nearest(values: [8]i16, bits: u8) [8]RoundResult {
 
 // round_vector_stochastic(values: [8]i16, bits: u8, state: RngState) -> struct { results: [8]RoundResult, new_state: RngState }
 // Round vector stochastically
-pub fn round_vector_stochastic(values: [8]i16, bits: u8, state: RngState) -> struct { results: [8]RoundResult, new_state: RngState } {
+pub fn round_vector_stochastic(values: [8]i16, bits: u8, state: RngState) -> VectorStochStep {
     var results : [8]RoundResult = undefined;
     var current_state = state;
 
-    for (values, 0..) |val, i| {
+    // for (values, 0..) |val, i|: index loop over the same elements
+    // (values is [8]i16, so the index runs 0..8)
+    for (0..8) |i| {
+        const val = values[i];
         const round_result = round_stochastic(val, bits, current_state);
         results[i] = round_result.result;
         current_state = round_result.new_state;
     }
 
-    return .{ .results = results, .new_state = current_state };
+    return VectorStochStep{ .results = results, .new_state = current_state };
 }
 
 // ============================================================================
@@ -292,7 +316,7 @@ pub fn round_vector_stochastic(values: [8]i16, bits: u8, state: RngState) -> str
 
 // encode_stoch_round(mode: u8, target_bits: u8, seed: u8) -> u16
 // Encode stochastic rounding instruction
-pub fn encode_stoch_round(mode: u8, target_bits: u8, seed: u8) u16 {
+pub fn encode_stoch_round(mode: u8, target_bits: u8, seed: u8) -> u16 {
     // Format: [OP:8][MODE:2][BITS:4][SEED:2]
     const op : u16 = @as(u16, OP_STOCH_ROUND) << 8;
     const mode_field : u16 = @as(u16, mode & 0x03) << 6;
@@ -303,11 +327,11 @@ pub fn encode_stoch_round(mode: u8, target_bits: u8, seed: u8) u16 {
 
 // decode_stoch_round(encoded: u16) -> struct { mode: u8, target_bits: u8, seed: u8 }
 // Decode stochastic rounding instruction
-pub fn decode_stoch_round(encoded: u16) struct { mode: u8, target_bits: u8, seed: u8 } {
+pub fn decode_stoch_round(encoded: u16) -> StochRoundFields {
     const mode : u8 = @as(u8, @truncate((encoded >> 6) & 0x03));
     const target_bits : u8 = @as(u8, @truncate((encoded >> 2) & 0x0F));
     const seed : u8 = @as(u8, @truncate(encoded & 0x03));
-    return .{ .mode = mode, .target_bits = target_bits, .seed = seed };
+    return StochRoundFields{ .mode = mode, .target_bits = target_bits, .seed = seed };
 }
 
 // ============================================================================
@@ -315,157 +339,156 @@ pub fn decode_stoch_round(encoded: u16) struct { mode: u8, target_bits: u8, seed
 // ============================================================================
 
 test "round_mode_constants" {
-    try std.testing.expect(ROUND_MODE_NEAREST == 0);
-    try std.testing.expect(ROUND_MODE_STOCHASTIC == 1);
-    try std.testing.expect(ROUND_MODE_TRUNCATE == 2);
-    try std.testing.expect(ROUND_MODE_CEIL == 3);
+    assert(ROUND_MODE_NEAREST == 0);
+    assert(ROUND_MODE_STOCHASTIC == 1);
+    assert(ROUND_MODE_TRUNCATE == 2);
+    assert(ROUND_MODE_CEIL == 3);
 }
 
 test "int4_bounds" {
-    try std.testing.expect(INT4_MAX == 7 and INT4_MIN == -8);
+    assert(INT4_MAX == 7 and INT4_MIN == -8);
 }
 
 test "int8_bounds" {
-    try std.testing.expect(INT8_MAX == 127 and INT8_MIN == -128);
+    assert(INT8_MAX == 127 and INT8_MIN == -128);
 }
 
 test "round_nearest_basic" {
-    given result = round_nearest(10, 4)
-    try std.testing.expect(result.value == 1);
+    const result = round_nearest(10, 4);
+    assert(result.value == 1);
 }
 
 test "round_nearest_negative" {
-    given result = round_nearest(-10, 4)
-    try std.testing.expect(result.value == -1);
+    const result = round_nearest(-10, 4);
+    assert(result.value == -1);
 }
 
 test "round_nearest_overflow" {
-    given result = round_nearest(0x7FFF, 8)
-    try std.testing.expect(result.value == INT8_MAX);
-    try std.testing.expect(result.overflow == true);
+    const result = round_nearest(0x7FFF, 8);
+    assert(result.value == INT8_MAX);
+    assert(result.overflow == true);
 }
 
 test "round_nearest_underflow" {
-    given result = round_nearest(-0x8000, 8)
-    try std.testing.expect(result.value == INT8_MIN);
-    try std.testing.expect(result.overflow == true);
+    const result = round_nearest(-0x8000, 8);
+    assert(result.value == INT8_MIN);
+    assert(result.overflow == true);
 }
 
 test "round_nearest_no_change" {
-    given result = round_nearest(0x1000, 8)
-    try std.testing.expect(result.value == 0x10);
-    try std.testing.expect(result.rounded == false);
+    const result = round_nearest(0x1000, 8);
+    assert(result.value == 0x10);
+    assert(result.rounded == false);
 }
 
 test "round_truncate_basic" {
-    given result = round_truncate(10, 4)
-    try std.testing.expect(result.value == 0);
+    const result = round_truncate(10, 4);
+    assert(result.value == 0);
 }
 
 test "round_truncate_negative" {
-    given result = round_truncate(-10, 4)
-    try std.testing.expect(result.value == 0);
+    const result = round_truncate(-10, 4);
+    assert(result.value == 0);
 }
 
 test "round_truncate_fractional" {
-    given result = round_truncate(15, 4)
-    try std.testing.expect(result.value == 0);
+    const result = round_truncate(15, 4);
+    assert(result.value == 0);
 }
 
 test "round_ceil_basic" {
-    given result = round_ceil(10, 4)
-    try std.testing.expect(result.value == 1);
+    const result = round_ceil(10, 4);
+    assert(result.value == 1);
 }
 
 test "round_ceil_negative" {
-    given result = round_ceil(-10, 4)
-    try std.testing.expect(result.value == 0);
+    const result = round_ceil(-10, 4);
+    assert(result.value == 0);
 }
 
 test "round_ceil_fractional" {
-    given result = round_ceil(1, 4)
-    try std.testing.expect(result.value == 1);
+    const result = round_ceil(1, 4);
+    assert(result.value == 1);
 }
 
 test "round_stochastic_seeded" {
-    given state = RngState{.state = 0x1234}
-    try std.testing.expect(round1 = round_stochastic(10, 4, state));
-    try std.testing.expect(state2 = RngState{.state = 0x1234});
-    try std.testing.expect(round2 = round_stochastic(10, 4, state2));
-    try std.testing.expect(round1.result.value == round2.result.value);
-    try std.testing.expect(round1.new_state == round2.new_state);
+    const state = RngState{.state = 0x1234};
+    const round1 = round_stochastic(10, 4, state);
+    const state2 = RngState{.state = 0x1234};
+    const round2 = round_stochastic(10, 4, state2);
+    assert(round1.result.value == round2.result.value);
+    assert(round1.new_state == round2.new_state);
 }
 
 test "round_stochastic_reproducible" {
-    given state = RngState{.state = 0x1234}
-    try std.testing.expect(round1 = round_stochastic(10, 4, state));
-    try std.testing.expect(round2 = round_stochastic(10, 4, round1.new_state));
-    try std.testing.expect(round2.result.value != round1.result.value or round2.new_state != round1.new_state);
+    const state = RngState{.state = 0x1234};
+    const round1 = round_stochastic(10, 4, state);
+    const round2 = round_stochastic(10, 4, round1.new_state);
+    assert(round2.result.value != round1.result.value or round2.new_state != round1.new_state);
 }
 
 test "round_vector_nearest" {
-    given results = round_vector_nearest([_]i16{10, 20, 30, 40, 50, 60, 70, 80}, 4)
-    try std.testing.expect(results[0].value == 1);
-    try std.testing.expect(results[7].value == 5);
+    const results = round_vector_nearest([_]i16{10, 20, 30, 40, 50, 60, 70, 80}, 4);
+    assert(results[0].value == 1);
+    assert(results[7].value == 5);
 }
 
 test "round_vector_stochastic" {
-    given state = RngState{.state = 0x1234}
-    try std.testing.expect(round_result = round_vector_stochastic([_]i16{10, 20, 30, 40}, 4, state));
-    try std.testing.expect(round_result.new_state.state != 0x1234);
+    const state = RngState{.state = 0x1234};
+    const round_result = round_vector_stochastic([_]i16{10, 20, 30, 40}, 4, state);
+    assert(round_result.new_state.state != 0x1234);
 }
 
 test "rng_init_default" {
-    given state = rng_init(0)
-    try std.testing.expect(state.state == 1);
+    const state = rng_init(0);
+    assert(state.state == 1);
 }
 
 test "rng_init_with_seed" {
-    given state = rng_init(0x1234)
-    try std.testing.expect(state.state == 0x1234);
+    const state = rng_init(0x1234);
+    assert(state.state == 0x1234);
 }
 
 test "rng_next_range" {
-    given state = rng_init(0x1234)
-    try std.testing.expect(result = rng_next_range(state, 100));
-    try std.testing.expect(result.value <= 100);
+    const state = rng_init(0x1234);
+    const result = rng_next_range(state, 100);
+    assert(result.value <= 100);
 }
 
 test "round_with_config_nearest" {
-    given config = RoundConfig{.mode = ROUND_MODE_NEAREST, .target_bits = 8, .seed = 0}
-    try std.testing.expect(state = RngState{.state = 1});
-    try std.testing.expect(result = round_with_config(10, config, state));
-    try std.testing.expect(result.result.value == 10);
+    const config = RoundConfig{.mode = ROUND_MODE_NEAREST, .target_bits = 8, .seed = 0};
+    const state = RngState{.state = 1};
+    const result = round_with_config(10, config, state);
+    assert(result.result.value == 10);
 }
 
 test "round_with_config_stochastic" {
-    given config = RoundConfig{.mode = ROUND_MODE_STOCHASTIC, .target_bits = 4, .seed = 0}
-    try std.testing.expect(state = RngState{.state = 1});
-    try std.testing.expect(result = round_with_config(10, config, state));
-    try std.testing.expect(result.result.value <= INT4_MAX);
+    const config = RoundConfig{.mode = ROUND_MODE_STOCHASTIC, .target_bits = 4, .seed = 0};
+    const state = RngState{.state = 1};
+    const result = round_with_config(10, config, state);
+    assert(result.result.value <= INT4_MAX);
 }
 
 test "encode_stoch_round" {
-    given encoded = encode_stoch_round(1, 4, 2)
-    try std.testing.expect((encoded >> 8) == OP_STOCH_ROUND);
+    const encoded = encode_stoch_round(1, 4, 2);
+    assert((encoded >> 8) == OP_STOCH_ROUND);
 }
 
 test "decode_stoch_round" {
-    given decoded = decode_stoch_round(0xE932)
-    try std.testing.expect(decoded.mode == 1);
-    try std.testing.expect(decoded.target_bits == 4);
-    try std.testing.expect(decoded.seed == 2);
+    const decoded = decode_stoch_round(0xE932);
+    assert(decoded.mode == 1);
+    assert(decoded.target_bits == 4);
+    assert(decoded.seed == 2);
 }
 
 test "opcode_constant" {
-    try std.testing.expect(OP_STOCH_ROUND == 0xE9);
+    assert(OP_STOCH_ROUND == 0xE9);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant random_bits_eight
     assert RANDOM_BITS == 8
 
@@ -476,63 +499,63 @@ invariant int8_bits_eight
     assert INT8_BITS == 8
 
 invariant int4_max_min_relation
-    try std.testing.expect(INT4_MAX == -INT4_MIN - 1);
+    assert INT4_MAX == -INT4_MIN - 1
 
 invariant int8_max_min_relation
-    try std.testing.expect(INT8_MAX == -INT8_MIN - 1);
+    assert INT8_MAX == -INT8_MIN - 1
 
 invariant round_mode_values
-    try std.testing.expect(ROUND_MODE_NEAREST >= 0 and ROUND_MODE_CEIL <= 3);
+    assert ROUND_MODE_NEAREST >= 0 and ROUND_MODE_CEIL <= 3
 
 invariant round_nearest_range
     given result = round_nearest(0, 4)
-    try std.testing.expect(result.value >= -8 and result.value <= 7);
+    then result.value >= -8 and result.value <= 7
 
 invariant round_truncate_range
     given result = round_truncate(0, 4)
-    try std.testing.expect(result.value >= -8 and result.value <= 7);
+    then result.value >= -8 and result.value <= 7
 
 invariant round_ceil_range
     given result = round_ceil(0, 4)
-    try std.testing.expect(result.value >= -8 and result.value <= 7);
+    then result.value >= -8 and result.value <= 7
 
 invariant round_stochastic_range
     given state = RngState{.state = 1}
-    try std.testing.expect(result = round_stochastic(0, 4, state));
-    try std.testing.expect(result.result.value >= INT4_MIN and result.result.value <= INT4_MAX);
+    and   result = round_stochastic(0, 4, state)
+    then result.result.value >= INT4_MIN and result.result.value <= INT4_MAX
 
 invariant round_nearest_preserves_sign
     given result_pos = round_nearest(100, 4)
-    try std.testing.expect(result_neg = round_nearest(-100, 4));
-    try std.testing.expect(result_pos.value >= 0 and result_neg.value <= 0);
+    and   result_neg = round_nearest(-100, 4)
+    then result_pos.value >= 0 and result_neg.value <= 0
 
 invariant round_truncate_preserves_sign
     given result_pos = round_truncate(100, 4)
-    try std.testing.expect(result_neg = round_truncate(-100, 4));
-    try std.testing.expect(result_pos.value >= 0 and result_neg.value <= 0);
+    and   result_neg = round_truncate(-100, 4)
+    then result_pos.value >= 0 and result_neg.value <= 0
 
 invariant round_ceil_non_negative
     given result = round_ceil(0, 4)
-    try std.testing.expect(result.value >= 0);
+    then result.value >= 0
 
 invariant rng_next_state_changes
     given state = RngState{.state = 0x1234}
-    try std.testing.expect(result = rng_next(state));
-    try std.testing.expect(result.state.state != state.state);
+    and   result = rng_next(state)
+    then result.state.state != state.state
 
 invariant rng_next_range_value_bound
     given state = RngState{.state = 1}
-    try std.testing.expect(result = rng_next_range(state, 100));
-    try std.testing.expect(result.value <= 100);
+    and   result = rng_next_range(state, 100)
+    then result.value <= 100
 
 invariant round_vector_nearest_length
     given results = round_vector_nearest([_]i16{0} ** 8, 4)
-    try std.testing.expect(results.len == 8);
+    then results.len == 8
 
 invariant round_vector_stochastic_length
     given state = RngState{.state = 1}
-    try std.testing.expect(result = round_vector_stochastic([_]i16{0} ** 8, 4, state));
-    try std.testing.expect(result.results.len == 8);
+    and   result = round_vector_stochastic([_]i16{0} ** 8, 4, state)
+    then result.results.len == 8
 
 // ============================================================================
 // Benchmarks

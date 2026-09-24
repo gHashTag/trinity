@@ -1,15 +1,15 @@
 // specs/account/auth.t27
 // Account Authentication Operations
-// φ² + 1/φ² = 3 | TRINITY
+// phi^2 + 1/phi^2 = 3 | TRINITY
 
 module AccountAuth {
     use base::types;
     use account::schema;
     use compiler::stdlib;
 
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
     // Authentication Operations
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
 
     // token retrieves a fresh access token for an account
     // Refreshes the token if needed
@@ -27,7 +27,7 @@ module AccountAuth {
         } else if (account_id.0 == "expired-account") {
             return Ok(AccessToken("stale-token")); // Would trigger refresh in real impl
         } else {
-            return Ok(None); // No valid session
+            return Ok(null); // No valid session (Rust `None` is t27 `null`)
         }
     }
 
@@ -124,12 +124,13 @@ module AccountAuth {
         // Implementation: Clear tokens for the account
         // In a real implementation, this would delete tokens from storage
         // and mark the account as logged out
-        return Ok(());
+        // (t27 has no unit value `()`: a void Ok is written Ok())
+        return Ok();
     }
 
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
     // Organization Operations
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
 
     // orgs returns organizations for an account
     fn orgs(account_id: AccountID) -> Result<[Org], AccountError> {
@@ -210,8 +211,96 @@ module AccountAuth {
         ]);
     }
 
+    // ConfigValueKind / ConfigEntry carry one key/value pair of an org
+    // configuration. The original typed the configuration as the map
+    // [str: any]; t27 has no map type and no `any`, so the map is an array of
+    // entries, and each entry keeps its value in the field for its kind (the
+    // other value fields hold their zero value).
+    enum ConfigValueKind {
+        Str,
+        Bool,
+        Int,
+        StrList,
+    }
+
+    struct ConfigEntry {
+        key: str,
+        kind: ConfigValueKind,
+        str_value: str,
+        bool_value: bool,
+        int_value: i64,
+        list_value: [str],
+    }
+
+    // config_str / config_bool / config_int / config_list build one entry;
+    // they stand in for the `"key" = value` items of the original map literal.
+    fn config_str(key: str, value: str) -> ConfigEntry {
+        return ConfigEntry {
+            key = key,
+            kind = ConfigValueKind::Str,
+            str_value = value,
+            bool_value = false,
+            int_value = 0,
+            list_value = [],
+        };
+    }
+
+    fn config_bool(key: str, value: bool) -> ConfigEntry {
+        return ConfigEntry {
+            key = key,
+            kind = ConfigValueKind::Bool,
+            str_value = "",
+            bool_value = value,
+            int_value = 0,
+            list_value = [],
+        };
+    }
+
+    fn config_int(key: str, value: i64) -> ConfigEntry {
+        return ConfigEntry {
+            key = key,
+            kind = ConfigValueKind::Int,
+            str_value = "",
+            bool_value = false,
+            int_value = value,
+            list_value = [],
+        };
+    }
+
+    fn config_list(key: str, value: [str]) -> ConfigEntry {
+        return ConfigEntry {
+            key = key,
+            kind = ConfigValueKind::StrList,
+            str_value = "",
+            bool_value = false,
+            int_value = 0,
+            list_value = value,
+        };
+    }
+
+    // config_get_str / config_get_bool look a key up in a configuration and
+    // return its value, or null when the key is absent or holds another kind.
+    // They stand in for the original map index `config["key"]`.
+    fn config_get_str(entries: [ConfigEntry], key: str) -> ?str {
+        for entry in entries {
+            if (entry.key == key and entry.kind == ConfigValueKind::Str) {
+                return entry.str_value;
+            }
+        }
+        return null;
+    }
+
+    fn config_get_bool(entries: [ConfigEntry], key: str) -> ?bool {
+        for entry in entries {
+            if (entry.key == key and entry.kind == ConfigValueKind::Bool) {
+                return entry.bool_value;
+            }
+        }
+        return null;
+    }
+
     // config retrieves configuration for an account/org
-    fn config(account_id: AccountID, org_id: OrgID) -> Result<[str: any]?, AccountError> {
+    fn config(account_id: AccountID, org_id: OrgID) -> Result<[ConfigEntry]?, AccountError> {
         // Implementation: Fetch config from API
         // In a real implementation, this would:
         // 1. Verify the account has access to the organization
@@ -223,26 +312,26 @@ module AccountAuth {
         // Mock implementation: simulate configuration retrieval
         if (account_id.0 == "admin-user" and org_id.0 == "org-1") {
             return Ok([
-                "theme" = "dark",
-                "notifications" = true,
-                "max_projects" = 10,
-                "features" = ["advanced", "beta"],
+                config_str("theme", "dark"),
+                config_bool("notifications", true),
+                config_int("max_projects", 10),
+                config_list("features", ["advanced", "beta"]),
             ]);
         } else if (account_id.0 == "regular-user" and org_id.0 == "org-2") {
             return Ok([
-                "theme" = "light",
-                "notifications" = false,
+                config_str("theme", "light"),
+                config_bool("notifications", false),
             ]);
         } else if (account_id.0 == "unauthorized-user") {
             return Err(AccountError.AccessDenied);
         } else {
-            return Ok(None); // No custom configuration
+            return Ok(null); // No custom configuration
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
     // User Operations
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
 
     // AccountOrgs represents an account with its organizations
     struct AccountOrgs {
@@ -283,9 +372,9 @@ module AccountAuth {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
     // Token Management
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
 
     // TokenRefreshRequest is the request body for token refresh
     struct TokenRefreshRequest {
@@ -330,9 +419,9 @@ module AccountAuth {
         error_description: str,
     }
 
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
     // Error Types and Poll Results
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
 
     // AccountError represents authentication and account-related errors
     enum AccountError {
@@ -357,9 +446,9 @@ module AccountAuth {
         Error,        // Other error occurred
     }
 
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
     // Poll Response Handling
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
 
     // parse_poll_result converts a device token response to PollResult
     fn parse_poll_result(response: DeviceTokenErrorResponse) -> PollResult {
@@ -378,9 +467,9 @@ module AccountAuth {
         return PollResult::Error;
     }
 
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
     // Tests
-    // ════════════════════════════════════════════════════════════════════
+    // ====================================================================
 
     test "user_info_creation" {
         var user = UserInfo {
@@ -608,7 +697,7 @@ module AccountAuth {
         var account_id = AccountID("non-existent-account");
         var result = token(account_id);
         assert(result.is_ok());
-        assert(result.unwrap() == None);
+        assert(result.unwrap() == null);
     }
 
     test "refresh_successful" {
@@ -675,7 +764,7 @@ module AccountAuth {
         var result = orgs(account_id);
         assert(result.is_ok());
         var orgs = result.unwrap();
-        assert(orgs.length == 2);
+        assert(orgs.len == 2);
         assert(orgs[0].name == "Acme Corporation");
         assert(orgs[1].name == "Beta Inc");
     }
@@ -691,7 +780,7 @@ module AccountAuth {
         var result = orgs_by_account();
         assert(result.is_ok());
         var accounts = result.unwrap();
-        assert(accounts.length == 2);
+        assert(accounts.len == 2);
         assert(accounts[0].account.email == "alice@example.com");
         assert(accounts[1].account.email == "bob@example.com");
     }
@@ -702,8 +791,8 @@ module AccountAuth {
         var result = config(account_id, org_id);
         assert(result.is_ok());
         var config = result.unwrap();
-        assert(config["theme"] == "dark");
-        assert(config["notifications"] == true);
+        assert(config_get_str(config, "theme") == "dark");
+        assert(config_get_bool(config, "notifications") == true);
     }
 
     test "config_no_custom_config" {
@@ -711,13 +800,15 @@ module AccountAuth {
         var org_id = OrgID("unknown-org");
         var result = config(account_id, org_id);
         assert(result.is_ok());
-        assert(result.unwrap() == None);
+        assert(result.unwrap() == null);
     }
 
     test "logout_success" {
         var account_id = AccountID("test-account");
         var result = logout(account_id);
         assert(result.is_ok());
-        assert(result.unwrap() == ());
+        // was: assert(result.unwrap() == ()) -- t27 has no unit value `()`;
+        // for a void result the check is that unwrapping it succeeds
+        result.unwrap();
     }
 }

@@ -83,6 +83,14 @@ pub const AvsStatus = struct {
     calibration_complete : bool,
 }
 
+// Named form of the anonymous `struct { opcode, level, channel }` that
+// decode_avs_96_cmd returns (same fields, same types).
+pub const Avs96Cmd = struct {
+    opcode : u8,
+    level : u8,
+    channel : u8,
+}
+
 pub const AvsConfig = struct {
     mode : AvsMode,
     min_mv : u16,
@@ -150,7 +158,7 @@ pub fn avs_voltage_in_hysteresis(current_mv: u16, target_mv: u16, hysteresis_mv:
 // avs_should_adjust(current_mv: u16, target_mv: u16, hysteresis_mv: u16) -> bool
 // Check if voltage should be adjusted
 pub fn avs_should_adjust(current_mv: u16, target_mv: u16, hysteresis_mv: u16) -> bool {
-    return not avs_voltage_in_hysteresis(current_mv, target_mv, hysteresis_mv);
+    return !avs_voltage_in_hysteresis(current_mv, target_mv, hysteresis_mv);
 }
 
 // ============================================================================
@@ -385,7 +393,7 @@ pub fn avs_control_pin_for_bit(bit_index: u8, channel: AvsChannel) -> u8 {
 
 // encode_avs_96_cmd(opcode: u8, level: u8, channel: u8) -> u16
 // Encode AVS 96-pin command
-pub fn encode_avs_96_cmd(opcode: u8, level: u8, channel: u8) u16 {
+pub fn encode_avs_96_cmd(opcode: u8, level: u8, channel: u8) -> u16 {
     // Format: [OP:8][LEVEL:7][CHANNEL:1]
     const op_field : u16 = @as(u16, opcode) << 8;
     const level_field : u16 = @as(u16, level & 0x7F) << 1;
@@ -395,11 +403,11 @@ pub fn encode_avs_96_cmd(opcode: u8, level: u8, channel: u8) u16 {
 
 // decode_avs_96_cmd(encoded: u16) -> struct { opcode: u8, level: u8, channel: u8 }
 // Decode AVS 96-pin command
-pub fn decode_avs_96_cmd(encoded: u16) -> struct { opcode: u8, level: u8, channel: u8 } {
+pub fn decode_avs_96_cmd(encoded: u16) -> Avs96Cmd {
     const opcode : u8 = @as(u8, @truncate((encoded >> 8) & 0xFF));
     const level : u8 = @as(u8, @truncate((encoded >> 1) & 0x7F));
     const channel : u8 = @as(u8, @truncate(encoded & 0x01));
-    return .{ .opcode = opcode, .level = level, .channel = channel };
+    return Avs96Cmd{ .opcode = opcode, .level = level, .channel = channel };
 }
 
 // ============================================================================
@@ -407,23 +415,23 @@ pub fn decode_avs_96_cmd(encoded: u16) -> struct { opcode: u8, level: u8, channe
 // ============================================================================
 
 test "pins_96_constant" {
-    try std.testing.expect(PINS_96 == 96);
+    assert(PINS_96 == 96);
 }
 
 test "voltage_constants" {
-    try std.testing.expect(VOLTAGE_MIN_MV == 700);
-    try std.testing.expect(VOLTAGE_MAX_MV == 1300);
-    try std.testing.expect(VOLTAGE_STEP_MV == 5);
-    try std.testing.expect(VOLTAGE_LEVELS == 121);
+    assert(VOLTAGE_MIN_MV == 700);
+    assert(VOLTAGE_MAX_MV == 1300);
+    assert(VOLTAGE_STEP_MV == 5);
+    assert(VOLTAGE_LEVELS == 121);
 }
 
 test "target_voltage_constant" {
-    try std.testing.expect(TARGET_MV == 1000);
+    assert(TARGET_MV == 1000);
 }
 
 test "control_pin_constants" {
-    try std.testing.expect(CONTROL_PIN_OFFSET == 64);
-    try std.testing.expect(CONTROL_PIN_COUNT == 7);
+    assert(CONTROL_PIN_OFFSET == 64);
+    assert(CONTROL_PIN_COUNT == 7);
 }
 
 test "dual_channel_constant" {
@@ -431,202 +439,201 @@ test "dual_channel_constant" {
 }
 
 test "avs_voltage_from_level_zero" {
-    try std.testing.expect(avs_voltage_from_level(0) == VOLTAGE_MIN_MV);
+    assert(avs_voltage_from_level(0) == VOLTAGE_MIN_MV);
 }
 
 test "avs_voltage_from_level_max" {
-    given max_level = VOLTAGE_LEVELS - 1
-    try std.testing.expect(avs_voltage_from_level(max_level) == VOLTAGE_MAX_MV);
+    const max_level = VOLTAGE_LEVELS - 1;
+    assert(avs_voltage_from_level(max_level) == VOLTAGE_MAX_MV);
 }
 
 test "avs_level_from_voltage_target" {
-    given level = avs_level_from_voltage(TARGET_MV)
-    try std.testing.expect(avs_voltage_from_level(level) == TARGET_MV);
+    const level = avs_level_from_voltage(TARGET_MV);
+    assert(avs_voltage_from_level(level) == TARGET_MV);
 }
 
 test "avs_level_from_voltage_clamp_low" {
-    try std.testing.expect(avs_level_from_voltage(600) == 0);
+    assert(avs_level_from_voltage(600) == 0);
 }
 
 test "avs_level_from_voltage_clamp_high" {
-    try std.testing.expect(avs_level_from_voltage(1500) == VOLTAGE_LEVELS - 1);
+    assert(avs_level_from_voltage(1500) == VOLTAGE_LEVELS - 1);
 }
 
 test "avs_control_code_from_level_max" {
-    given code = avs_control_code_from_level(127)
-    try std.testing.expect(code == 127);
+    const code = avs_control_code_from_level(127);
+    assert(code == 127);
 }
 
 test "avs_control_code_from_level_clamp" {
-    given code = avs_control_code_from_level(200)
-    try std.testing.expect(code == 72  // 200 & 0x7F);
+    const code = avs_control_code_from_level(200);
+    assert(code == 72); // 200 & 0x7F
 }
 
 test "avs_level_from_control_code_roundtrip" {
-    given level = 50
-    try std.testing.expect(code = avs_control_code_from_level(level));
-    try std.testing.expect(decoded = avs_level_from_control_code(code));
-    try std.testing.expect(decoded == level);
+    const level = 50;
+    const code = avs_control_code_from_level(level);
+    const decoded = avs_level_from_control_code(code);
+    assert(decoded == level);
 }
 
 test "avs_voltage_valid_in_range" {
-    try std.testing.expect(avs_voltage_valid(750) == true);
-    try std.testing.expect(avs_voltage_valid(1000) == true);
-    try std.testing.expect(avs_voltage_valid(1250) == true);
+    assert(avs_voltage_valid(750) == true);
+    assert(avs_voltage_valid(1000) == true);
+    assert(avs_voltage_valid(1250) == true);
 }
 
 test "avs_voltage_valid_out_of_range" {
-    try std.testing.expect(avs_voltage_valid(600) == false);
-    try std.testing.expect(avs_voltage_valid(1400) == false);
+    assert(avs_voltage_valid(600) == false);
+    assert(avs_voltage_valid(1400) == false);
 }
 
 test "avs_voltage_in_hysteresis_true" {
-    try std.testing.expect(avs_voltage_in_hysteresis(1000, 1000, 15) == true);
-    try std.testing.expect(avs_voltage_in_hysteresis(1010, 1000, 15) == true);
-    try std.testing.expect(avs_voltage_in_hysteresis(990, 1000, 15) == true);
+    assert(avs_voltage_in_hysteresis(1000, 1000, 15) == true);
+    assert(avs_voltage_in_hysteresis(1010, 1000, 15) == true);
+    assert(avs_voltage_in_hysteresis(990, 1000, 15) == true);
 }
 
 test "avs_voltage_in_hysteresis_false" {
-    try std.testing.expect(avs_voltage_in_hysteresis(1030, 1000, 15) == false);
-    try std.testing.expect(avs_voltage_in_hysteresis(970, 1000, 15) == false);
+    assert(avs_voltage_in_hysteresis(1030, 1000, 15) == false);
+    assert(avs_voltage_in_hysteresis(970, 1000, 15) == false);
 }
 
 test "avs_config_init_structure" {
-    given config = avs_config_init()
-    try std.testing.expect(config.mode == AvsMode.automatic);
-    try std.testing.expect(config.target_mv == TARGET_MV);
-    try std.testing.expect(config.enable_dual_channel == false);
+    const config = avs_config_init();
+    assert(config.mode == AvsMode.automatic);
+    assert(config.target_mv == TARGET_MV);
+    assert(config.enable_dual_channel == false);
 }
 
 test "avs_config_dual_structure" {
-    given config = avs_config_dual(950, 1050)
-    try std.testing.expect(config.mode == AvsMode.dual_independent);
-    try std.testing.expect(config.enable_dual_channel == true);
+    const config = avs_config_dual(950, 1050);
+    assert(config.mode == AvsMode.dual_independent);
+    assert(config.enable_dual_channel == true);
 }
 
 test "avs_channel_init_structure" {
-    given channel = avs_channel_init(AvsChannel.channel0)
-    try std.testing.expect(channel.channel == AvsChannel.channel0);
-    try std.testing.expect(channel.enabled == false);
+    const channel = avs_channel_init(AvsChannel.channel0);
+    assert(channel.channel == AvsChannel.channel0);
+    assert(channel.enabled == false);
 }
 
 test "avs_channel_enable" {
-    given channel = avs_channel_init(AvsChannel.channel0)
-    try std.testing.expect(result = avs_channel_enable(channel, 950));
-    try std.testing.expect(result.enabled == true);
-    try std.testing.expect(result.target_mv == 950);
+    const channel = avs_channel_init(AvsChannel.channel0);
+    const result = avs_channel_enable(channel, 950);
+    assert(result.enabled == true);
+    assert(result.target_mv == 950);
 }
 
 test "avs_channel_adjust" {
-    given channel = avs_channel_init(AvsChannel.channel0)
-    try std.testing.expect(result = avs_channel_adjust(channel, 30));
-    try std.testing.expect(result.level == 30);
+    const channel = avs_channel_init(AvsChannel.channel0);
+    const result = avs_channel_adjust(channel, 30);
+    assert(result.level == 30);
 }
 
 test "avs_status_init_structure" {
-    given status = avs_status_init()
-    try std.testing.expect(status.state == AvsState.disabled);
-    try std.testing.expect(status.calibration_complete == false);
+    const status = avs_status_init();
+    assert(status.state == AvsState.disabled);
+    assert(status.calibration_complete == false);
 }
 
 test "avs_status_enable" {
-    given status = avs_status_init()
-    try std.testing.expect(config = avs_config_init());
-    try std.testing.expect(result = avs_status_enable(status, config));
-    try std.testing.expect(result.state == AvsState.enabled);
-    try std.testing.expect(result.channel0.enabled == true);
+    const status = avs_status_init();
+    const config = avs_config_init();
+    const result = avs_status_enable(status, config);
+    assert(result.state == AvsState.enabled);
+    assert(result.channel0.enabled == true);
 }
 
 test "avs_status_enable_dual" {
-    given status = avs_status_init()
-    try std.testing.expect(config = avs_config_dual(950, 1050));
-    try std.testing.expect(result = avs_status_enable(status, config));
-    try std.testing.expect(result.channel0.enabled == true);
-    try std.testing.expect(result.channel1.enabled == true);
+    const status = avs_status_init();
+    const config = avs_config_dual(950, 1050);
+    const result = avs_status_enable(status, config);
+    assert(result.channel0.enabled == true);
+    assert(result.channel1.enabled == true);
 }
 
 test "avs_status_calibrate" {
-    given status = avs_status_init()
-    try std.testing.expect(result = avs_status_calibrate(status));
-    try std.testing.expect(result.state == AvsState.calibrating);
-    try std.testing.expect(result.calibration_complete == false);
+    const status = avs_status_init();
+    const result = avs_status_calibrate(status);
+    assert(result.state == AvsState.calibrating);
+    assert(result.calibration_complete == false);
 }
 
 test "avs_status_calibration_complete" {
-    given status = avs_status_init()
-    try std.testing.expect(result = avs_status_calibration_complete(status));
-    try std.testing.expect(result.calibration_complete == true);
+    const status = avs_status_init();
+    const result = avs_status_calibration_complete(status);
+    assert(result.calibration_complete == true);
 }
 
 test "avs_control_pins_start" {
-    try std.testing.expect(avs_control_pins_start() == CONTROL_PIN_OFFSET);
+    assert(avs_control_pins_start() == CONTROL_PIN_OFFSET);
 }
 
 test "avs_control_pins_end" {
-    try std.testing.expect(avs_control_pins_end() == CONTROL_PIN_OFFSET + CONTROL_PIN_COUNT - 1);
+    assert(avs_control_pins_end() == CONTROL_PIN_OFFSET + CONTROL_PIN_COUNT - 1);
 }
 
 test "avs_control_pins_secondary_start" {
-    try std.testing.expect(avs_control_pins_secondary_start() == CONTROL_PIN_OFFSET + CONTROL_PIN_COUNT);
+    assert(avs_control_pins_secondary_start() == CONTROL_PIN_OFFSET + CONTROL_PIN_COUNT);
 }
 
 test "avs_is_control_pin_primary_true" {
-    try std.testing.expect(avs_is_control_pin_primary(64) == true);
-    try std.testing.expect(avs_is_control_pin_primary(70) == true);
+    assert(avs_is_control_pin_primary(64) == true);
+    assert(avs_is_control_pin_primary(70) == true);
 }
 
 test "avs_is_control_pin_primary_false" {
-    try std.testing.expect(avs_is_control_pin_primary(63) == false);
-    try std.testing.expect(avs_is_control_pin_primary(71) == false);
+    assert(avs_is_control_pin_primary(63) == false);
+    assert(avs_is_control_pin_primary(71) == false);
 }
 
 test "avs_is_control_pin_secondary_true" {
-    try std.testing.expect(avs_is_control_pin_secondary(71) == true);
-    try std.testing.expect(avs_is_control_pin_secondary(77) == true);
+    assert(avs_is_control_pin_secondary(71) == true);
+    assert(avs_is_control_pin_secondary(77) == true);
 }
 
 test "avs_is_control_pin_secondary_false" {
-    try std.testing.expect(avs_is_control_pin_secondary(70) == false);
-    try std.testing.expect(avs_is_control_pin_secondary(78) == false);
+    assert(avs_is_control_pin_secondary(70) == false);
+    assert(avs_is_control_pin_secondary(78) == false);
 }
 
 test "avs_is_control_pin_true" {
-    try std.testing.expect(avs_is_control_pin(64) == true);
-    try std.testing.expect(avs_is_control_pin(75) == true);
+    assert(avs_is_control_pin(64) == true);
+    assert(avs_is_control_pin(75) == true);
 }
 
 test "avs_is_control_pin_false" {
-    try std.testing.expect(avs_is_control_pin(63) == false);
-    try std.testing.expect(avs_is_control_pin(78) == false);
+    assert(avs_is_control_pin(63) == false);
+    assert(avs_is_control_pin(78) == false);
 }
 
 test "avs_control_pin_for_bit_primary" {
-    try std.testing.expect(avs_control_pin_for_bit(0, AvsChannel.channel0) == CONTROL_PIN_OFFSET);
-    try std.testing.expect(avs_control_pin_for_bit(6, AvsChannel.channel0) == CONTROL_PIN_OFFSET + 6);
+    assert(avs_control_pin_for_bit(0, AvsChannel.channel0) == CONTROL_PIN_OFFSET);
+    assert(avs_control_pin_for_bit(6, AvsChannel.channel0) == CONTROL_PIN_OFFSET + 6);
 }
 
 test "avs_control_pin_for_bit_secondary" {
-    try std.testing.expect(avs_control_pin_for_bit(0, AvsChannel.channel1) == avs_control_pins_secondary_start());
-    try std.testing.expect(avs_control_pin_for_bit(6, AvsChannel.channel1) == avs_control_pins_secondary_start() + 6);
+    assert(avs_control_pin_for_bit(0, AvsChannel.channel1) == avs_control_pins_secondary_start());
+    assert(avs_control_pin_for_bit(6, AvsChannel.channel1) == avs_control_pins_secondary_start() + 6);
 }
 
 test "encode_avs_96_cmd" {
-    given encoded = encode_avs_96_cmd(0x20, 30, 1)
-    try std.testing.expect((encoded >> 8) == 0x20);
+    const encoded = encode_avs_96_cmd(0x20, 30, 1);
+    assert((encoded >> 8) == 0x20);
 }
 
 test "decode_avs_96_cmd" {
-    given decoded = decode_avs_96_cmd(0x203D)
-    try std.testing.expect(decoded.opcode == 0x20);
-    try std.testing.expect(decoded.level == 30);
-    try std.testing.expect(decoded.channel == 1);
+    const decoded = decode_avs_96_cmd(0x203D);
+    assert(decoded.opcode == 0x20);
+    assert(decoded.level == 30);
+    assert(decoded.channel == 1);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant voltage_range_positive
     assert VOLTAGE_MIN_MV > 0 and VOLTAGE_MAX_MV > VOLTAGE_MIN_MV
 
@@ -634,7 +641,7 @@ invariant voltage_step_positive
     assert VOLTAGE_STEP_MV > 0
 
 invariant voltage_levels_calculated
-    try std.testing.expect(VOLTAGE_LEVELS == ((VOLTAGE_MAX_MV - VOLTAGE_MIN_MV) / VOLTAGE_STEP_MV) + 1);
+    assert VOLTAGE_LEVELS == ((VOLTAGE_MAX_MV - VOLTAGE_MIN_MV) / VOLTAGE_STEP_MV) + 1
 
 invariant target_voltage_in_range
     assert avs_voltage_valid(TARGET_MV)
@@ -650,25 +657,25 @@ invariant dual_channel_enabled
 
 invariant avs_status_init_disabled
     given status = avs_status_init()
-    try std.testing.expect(status.state == AvsState.disabled);
+    then status.state == AvsState.disabled
 
 invariant avs_status_calibrate_sets_state
     given status = avs_status_init()
-    try std.testing.expect(result = avs_status_calibrate(status));
-    try std.testing.expect(result.state == AvsState.calibrating);
+    and   result = avs_status_calibrate(status)
+    then result.state == AvsState.calibrating
 
 invariant avs_is_control_pin_primary_excludes_secondary
     given pin = 70  // Last primary pin
     assert avs_is_control_pin_primary(pin) == true
-    try std.testing.expect(avs_is_control_pin_secondary(pin) == false);
+    then avs_is_control_pin_secondary(pin) == false
 
 invariant avs_is_control_pin_secondary_excludes_primary
     given pin = 71  // First secondary pin
     assert avs_is_control_pin_secondary(pin) == true
-    try std.testing.expect(avs_is_control_pin_primary(pin) == false);
+    then avs_is_control_pin_primary(pin) == false
 
 invariant avs_control_pin_for_bit_monotonic
-    try std.testing.expect(avs_control_pin_for_bit(3, AvsChannel.channel0) < avs_control_pin_for_bit(4, AvsChannel.channel0));
+    assert avs_control_pin_for_bit(3, AvsChannel.channel0) < avs_control_pin_for_bit(4, AvsChannel.channel0)
 
 invariant avs_config_dual_enables_both_channels
     given config = avs_config_dual(950, 1050)

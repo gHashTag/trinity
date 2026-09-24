@@ -7,6 +7,8 @@ module Prereq;
     use std::process;
     use std::fs;
     use std::path;
+    // `use std::regex;` sat inside plant(); t27 only accepts `use` at module level.
+    use std::regex;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 1. Function: _who
@@ -29,15 +31,17 @@ module Prereq;
     // Handles skip condition: environment incomplete
     // Exits with 0 normally, or 2 if --require flag is present
     fn skip(msg: str) -> void {
+        // println!("{}") formatting has no t27 form: each line is printed as
+        // its parts with the multi-argument @print the port specs use.
         if (os.args.contains("--require")) {
-            println!("FAIL {}: {}", _who(), msg);
-            println!("  --require was given, so a missing prerequisite is a failure, not a skip.");
-            println!("  The CI job builds t27c and the runner ships the toolchain; if one is");
-            println!("  absent the environment is broken and this check did not run.");
-            println!("  Exit 2 = could not run, not a check that ran and said no.");
+            @print("FAIL ", _who(), ": ", msg, "\n");
+            @print("  --require was given, so a missing prerequisite is a failure, not a skip.\n");
+            @print("  The CI job builds t27c and the runner ships the toolchain; if one is\n");
+            @print("  absent the environment is broken and this check did not run.\n");
+            @print("  Exit 2 = could not run, not a check that ran and said no.\n");
             process.exit(2);
         }
-        println!("SKIP {}: {}", _who(), msg);
+        @print("SKIP ", _who(), ": ", msg, "\n");
         process.exit(0);
     }
 
@@ -49,10 +53,10 @@ module Prereq;
     // Handles broken condition: product failed or tracked file missing
     // Always exits with 1
     fn broken(msg: str) -> void {
-        println!("FAIL {}: {}", _who(), msg);
-        println!("  This is not a missing tool. Nothing was compared, and the reason is");
-        println!("  the thing under test -- a compiler that would not emit, or a spec");
-        println!("  this repository tracks and no longer has.");
+        @print("FAIL ", _who(), ": ", msg, "\n");
+        @print("  This is not a missing tool. Nothing was compared, and the reason is\n");
+        @print("  the thing under test -- a compiler that would not emit, or a spec\n");
+        @print("  this repository tracks and no longer has.\n");
         process.exit(1);
     }
 
@@ -63,21 +67,20 @@ module Prereq;
     // plant(script: str, dest_tools: str) → []str
     // Copy `script` into `dest_tools`, together with what it imports.
     fn plant(script: str, dest_tools: str) -> []str {
-        use std::regex;
-        
-        let src = path.script.to_string();  // TODO: Fix this - need to resolve script path
-        let here = path.dirname(src);
-        let dest = path.dest_tools.to_string();  // TODO: Fix this
+        const src = path.script.to_string();  // TODO: Fix this - need to resolve script path
+        const here = path.dirname(src);
+        const dest = path.dest_tools.to_string();  // TODO: Fix this
         
         // Create destination directory if it doesn't exist
-        fs.create_dir_all(dest, 0o755).expect("Failed to create destination directory");
+        // Mode 493 == 0o755 (rwxr-xr-x); t27 has no `0o` octal literal.
+        fs.create_dir_all(dest, 493).expect("Failed to create destination directory");
         
-        let mut seen: []str = [];
-        let mut queue: []str = [src];
+        var seen: []str = [];
+        var queue: []str = [src];
         
         while (queue.len > 0) {
-            let f = queue.pop().expect("Queue should not be empty");
-            let fname = path.basename(f);
+            const f = queue.pop().expect("Queue should not be empty");
+            const fname = path.basename(f);
             
             if (seen.contains(fname) || !fs.is_file(f)) {
                 continue;
@@ -86,12 +89,13 @@ module Prereq;
             seen.push(fname);
             fs.copy(f, path.join(dest, fname)).expect("Failed to copy file");
             
-            let text = fs.read_to_string(f).expect("Failed to read file");
-            let import_regex = regex::Regex::new(r"^\s*(?:from|import)\s+([A-Za-z_][A-Za-z0-9_]*)").expect("Failed to create regex");
+            const text = fs.read_to_string(f).expect("Failed to read file");
+            // Raw string r"..." rewritten as an ordinary string: each `\s` is `\\s`.
+            const import_regex = regex.Regex.new("^\\s*(?:from|import)\\s+([A-Za-z_][A-Za-z0-9_]*)").expect("Failed to create regex");
             
-            for cap in import_regex.captures_iter(&text) {
-                let name = cap.get(1).unwrap().as_str();
-                let sib = path.join(here, name + ".py");
+            for cap in import_regex.captures_iter(text) {
+                const name = cap.get(1).unwrap().as_str();
+                const sib = path.join(here, name + ".py");
                 if (fs.is_file(sib) && !seen.contains(path.basename(sib))) {
                     queue.push(sib);
                 }
@@ -110,7 +114,7 @@ module Prereq;
         // This test would need to mock os.args, which is complex in T27
         // For now, we'll test the fallback case when args is empty
         // In a real test, we'd set up mock args
-        let result = _who();
+        const result = _who();
         // When no args, should return "verifier"
         assert(result == "verifier");
     }

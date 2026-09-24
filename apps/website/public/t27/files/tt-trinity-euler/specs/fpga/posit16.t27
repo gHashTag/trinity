@@ -59,7 +59,7 @@ pub fn posit16_extract_regime(pos: Posit16) i8 {
     var regime_run : i8 = 0;
     var first_bit : u16 = (remaining_bits >> (NBITS - 1)) & 1;
 
-    for (0..NBITS-1) |i| {
+    for i in 0..NBITS - 1 {
         const bit = (remaining_bits >> (NBITS - 1 - i)) & 1;
         if (bit == first_bit) {
             regime_run += 1;
@@ -81,7 +81,7 @@ pub fn posit16_extract_exponent(pos: Posit16) i8 {
     var regime_run : u8 = 0;
     var first_bit : u16 = (remaining_bits >> (NBITS - 1)) & 1;
 
-    for (0..NBITS-1) |i| {
+    for i in 0..NBITS - 1 {
         const bit = (remaining_bits >> (NBITS - 1 - i)) & 1;
         if (bit == first_bit) {
             regime_run += 1;
@@ -108,7 +108,7 @@ pub fn posit16_extract_fraction(pos: Posit16) u16 {
     var regime_run : u8 = 0;
     var first_bit : u16 = (remaining_bits >> (NBITS - 1)) & 1;
 
-    for (0..NBITS-1) |i| {
+    for i in 0..NBITS - 1 {
         const bit = (remaining_bits >> (NBITS - 1 - i)) & 1;
         if (bit == first_bit) {
             regime_run += 1;
@@ -184,7 +184,7 @@ pub fn posit16_is_special(pos: Posit16) bool {
 // posit16_is_finite(pos: Posit16) -> bool
 // Check if posit is finite (not NaR)
 pub fn posit16_is_finite(pos: Posit16) bool {
-    return not posit16_is_nar(pos);
+    return !posit16_is_nar(pos);
 }
 
 // ============================================================================
@@ -248,7 +248,7 @@ pub fn posit16_encode_f32(value: f32) Posit16 {
     var frac_val = remaining - 1.0;  // Remove implicit 1
 
     if (fraction_bits > 0) {
-        for (0..fraction_bits) |i| {
+        for i in 0..fraction_bits {
             frac_val *= 2.0;
             if (frac_val >= 1.0) {
                 fraction |= (@as(u16, 1) << (fraction_bits - 1 - i));
@@ -276,7 +276,7 @@ pub fn posit16_encode_f32(value: f32) Posit16 {
     const regime_start = SIGN_SHIFT - 1 - regime_bits_remaining;
     if (k >= 0) {
         // k+1 ones followed by zero (if space permits)
-        for (0..@as(u8, @intCast(k + 1))) |i| {
+        for i in 0..@as(u8, @intCast(k + 1)) {
             if (regime_start - i >= 0) {
                 result |= (@as(u16, 1) << (regime_start - i));
             }
@@ -452,7 +452,7 @@ pub fn posit16_is_greater(a: Posit16, b: Posit16) bool {
     const sign_a = posit16_extract_sign(a);
     const sign_b = posit16_extract_sign(b);
     if (sign_a != sign_b) {
-        return not sign_a;  // Positive > negative
+        return !sign_a;  // Positive > negative
     }
     if (sign_a) {
         // Both negative, compare magnitudes (inverse)
@@ -550,8 +550,11 @@ pub fn posit16_to_f32_scaled(value: Posit16, scale: f32) f32 {
 // Dot product of two posit arrays
 pub fn posit16_dot_product(a: []const Posit16, b: []const Posit16) Posit16 {
     var sum: f32 = 0.0;
-    for (a, 0..) |val_a, i| {
-        if (i >= b.len) break;
+    for i in 0..a.len {
+        const val_a = a[i];
+        if (i >= b.len) {
+            break;
+        }
         const fa = posit16_decode_f32(val_a);
         const fb = posit16_decode_f32(b[i]);
         sum += fa * fb;
@@ -563,7 +566,7 @@ pub fn posit16_dot_product(a: []const Posit16, b: []const Posit16) Posit16 {
 // Sum all elements of a vector
 pub fn posit16_vector_sum(vec: []const Posit16) Posit16 {
     var sum: f32 = 0.0;
-    for (vec) |val| {
+    for val in vec {
         sum += posit16_decode_f32(val);
     }
     return posit16_encode_f32(sum);
@@ -584,285 +587,284 @@ pub fn posit16_vector_mean(vec: []const Posit16) Posit16 {
 // ============================================================================
 
 test "posit16_is_zero_true" {
-    try std.testing.expect(posit16_is_zero(POS16_ZERO) == true);
+    assert(posit16_is_zero(POS16_ZERO) == true);
 }
 
 test "posit16_is_zero_false" {
-    try std.testing.expect(posit16_is_zero(0x0001) == false);
+    assert(posit16_is_zero(0x0001) == false);
 }
 
 test "posit16_is_nar_true" {
-    try std.testing.expect(posit16_is_nar(POS16_NAR) == true);
+    assert(posit16_is_nar(POS16_NAR) == true);
 }
 
 test "posit16_is_nar_false" {
-    try std.testing.expect(posit16_is_nar(POS16_ZERO) == false);
+    assert(posit16_is_nar(POS16_ZERO) == false);
 }
 
 test "posit16_is_special_zero" {
-    try std.testing.expect(posit16_is_special(POS16_ZERO) == true);
+    assert(posit16_is_special(POS16_ZERO) == true);
 }
 
 test "posit16_is_special_nar" {
-    try std.testing.expect(posit16_is_special(POS16_NAR) == true);
+    assert(posit16_is_special(POS16_NAR) == true);
 }
 
 test "posit16_is_special_normal" {
-    try std.testing.expect(posit16_is_special(0x4000) == false);
+    assert(posit16_is_special(0x4000) == false);
 }
 
 test "posit16_extract_sign_positive" {
-    given value = 0x4000
-    try std.testing.expect(sign = posit16_extract_sign(value));
-    try std.testing.expect(sign == false);
+    const value = 0x4000;
+    const sign = posit16_extract_sign(value);
+    assert(sign == false);
 }
 
 test "posit16_extract_sign_negative" {
-    given value = 0xC000
-    try std.testing.expect(sign = posit16_extract_sign(value));
-    try std.testing.expect(sign == true);
+    const value = 0xC000;
+    const sign = posit16_extract_sign(value);
+    assert(sign == true);
 }
 
 test "posit16_encode_f32_zero" {
-    given pos = posit16_encode_f32(0.0)
-    try std.testing.expect(pos == POS16_ZERO);
+    const pos = posit16_encode_f32(0.0);
+    assert(pos == POS16_ZERO);
 }
 
 test "posit16_encode_f32_one" {
-    given pos = posit16_encode_f32(1.0)
-    try std.testing.expect(decoded = posit16_decode_f32(pos));
-    try std.testing.expect(abs(decoded - 1.0) < 0.1);
+    const pos = posit16_encode_f32(1.0);
+    const decoded = posit16_decode_f32(pos);
+    assert(abs(decoded - 1.0) < 0.1);
 }
 
 test "posit16_encode_f32_negative_one" {
-    given pos = posit16_encode_f32(-1.0)
-    try std.testing.expect(decoded = posit16_decode_f32(pos));
-    try std.testing.expect(abs(decoded + 1.0) < 0.1);
+    const pos = posit16_encode_f32(-1.0);
+    const decoded = posit16_decode_f32(pos);
+    assert(abs(decoded + 1.0) < 0.1);
 }
 
 test "posit16_encode_f32_ten" {
-    given pos = posit16_encode_f32(10.0)
-    try std.testing.expect(decoded = posit16_decode_f32(pos));
-    try std.testing.expect(abs(decoded - 10.0) < 2.0);
+    const pos = posit16_encode_f32(10.0);
+    const decoded = posit16_decode_f32(pos);
+    assert(abs(decoded - 10.0) < 2.0);
 }
 
 test "posit16_encode_f32_roundtrip_positive" {
-    given original = 1.5
-    try std.testing.expect(pos = posit16_encode_f32(original));
-    try std.testing.expect(decoded = posit16_decode_f32(pos));
-    try std.testing.expect(abs(decoded - original) < 0.3);
+    const original = 1.5;
+    const pos = posit16_encode_f32(original);
+    const decoded = posit16_decode_f32(pos);
+    assert(abs(decoded - original) < 0.3);
 }
 
 test "posit16_encode_f32_roundtrip_negative" {
-    given original = -1.5
-    try std.testing.expect(pos = posit16_encode_f32(original));
-    try std.testing.expect(decoded = posit16_decode_f32(pos));
-    try std.testing.expect(abs(decoded - original) < 0.3);
+    const original = -1.5;
+    const pos = posit16_encode_f32(original);
+    const decoded = posit16_decode_f32(pos);
+    assert(abs(decoded - original) < 0.3);
 }
 
 test "posit16_decode_f32_zero" {
-    try std.testing.expect(posit16_decode_f32(POS16_ZERO) == 0.0);
+    assert(posit16_decode_f32(POS16_ZERO) == 0.0);
 }
 
 test "posit16_decode_f32_nar" {
-    try std.testing.expect(std.math.isNan(posit16_decode_f32(POS16_NAR)) == true);
+    assert(std.math.isNan(posit16_decode_f32(POS16_NAR)) == true);
 }
 
 test "posit16_add_simple" {
-    given a = posit16_encode_f32(10.0)
-    try std.testing.expect(b = posit16_encode_f32(20.0));
-    try std.testing.expect(result = posit16_add(a, b));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 30.0) < 5.0);
+    const a = posit16_encode_f32(10.0);
+    const b = posit16_encode_f32(20.0);
+    const result = posit16_add(a, b);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 30.0) < 5.0);
 }
 
 test "posit16_sub_simple" {
-    given a = posit16_encode_f32(50.0)
-    try std.testing.expect(b = posit16_encode_f32(30.0));
-    try std.testing.expect(result = posit16_sub(a, b));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 20.0) < 5.0);
+    const a = posit16_encode_f32(50.0);
+    const b = posit16_encode_f32(30.0);
+    const result = posit16_sub(a, b);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 20.0) < 5.0);
 }
 
 test "posit16_mul_simple" {
-    given a = posit16_encode_f32(10.0)
-    try std.testing.expect(b = posit16_encode_f32(10.0));
-    try std.testing.expect(result = posit16_mul(a, b));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 100.0) < 20.0);
+    const a = posit16_encode_f32(10.0);
+    const b = posit16_encode_f32(10.0);
+    const result = posit16_mul(a, b);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 100.0) < 20.0);
 }
 
 test "posit16_div_simple" {
-    given a = posit16_encode_f32(100.0)
-    try std.testing.expect(b = posit16_encode_f32(10.0));
-    try std.testing.expect(result = posit16_div(a, b));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 10.0) < 3.0);
+    const a = posit16_encode_f32(100.0);
+    const b = posit16_encode_f32(10.0);
+    const result = posit16_div(a, b);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 10.0) < 3.0);
 }
 
 test "posit16_sqrt_four" {
-    given value = posit16_encode_f32(4.0)
-    try std.testing.expect(result = posit16_sqrt(value));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 2.0) < 0.3);
+    const value = posit16_encode_f32(4.0);
+    const result = posit16_sqrt(value);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 2.0) < 0.3);
 }
 
 test "posit16_sqrt_negative" {
-    given value = posit16_encode_f32(-4.0)
-    try std.testing.expect(result = posit16_sqrt(value));
-    try std.testing.expect(posit16_is_nar(result) == true);
+    const value = posit16_encode_f32(-4.0);
+    const result = posit16_sqrt(value);
+    assert(posit16_is_nar(result) == true);
 }
 
 test "posit16_abs_positive" {
-    given value = posit16_encode_f32(50.0)
-    try std.testing.expect(result = posit16_abs(value));
-    try std.testing.expect(posit16_is_equal(result, value) == true);
+    const value = posit16_encode_f32(50.0);
+    const result = posit16_abs(value);
+    assert(posit16_is_equal(result, value) == true);
 }
 
 test "posit16_abs_negative" {
-    given value = posit16_encode_f32(-50.0)
-    try std.testing.expect(abs_val = posit16_abs(value));
-    try std.testing.expect(posit16_extract_sign(abs_val) == false);
+    const value = posit16_encode_f32(-50.0);
+    const abs_val = posit16_abs(value);
+    assert(posit16_extract_sign(abs_val) == false);
 }
 
 test "posit16_neg_positive" {
-    given value = posit16_encode_f32(50.0)
-    try std.testing.expect(neg_val = posit16_neg(value));
-    try std.testing.expect(posit16_extract_sign(neg_val) == true);
+    const value = posit16_encode_f32(50.0);
+    const neg_val = posit16_neg(value);
+    assert(posit16_extract_sign(neg_val) == true);
 }
 
 test "posit16_neg_negative" {
-    given value = posit16_encode_f32(-50.0)
-    try std.testing.expect(neg_val = posit16_neg(value));
-    try std.testing.expect(posit16_extract_sign(neg_val) == false);
+    const value = posit16_encode_f32(-50.0);
+    const neg_val = posit16_neg(value);
+    assert(posit16_extract_sign(neg_val) == false);
 }
 
 test "posit16_is_equal_true" {
-    given value = posit16_encode_f32(10.0)
-    try std.testing.expect(posit16_is_equal(value, value) == true);
+    const value = posit16_encode_f32(10.0);
+    assert(posit16_is_equal(value, value) == true);
 }
 
 test "posit16_is_equal_false" {
-    given a = posit16_encode_f32(10.0)
-    try std.testing.expect(b = posit16_encode_f32(20.0));
-    try std.testing.expect(posit16_is_equal(a, b) == false);
+    const a = posit16_encode_f32(10.0);
+    const b = posit16_encode_f32(20.0);
+    assert(posit16_is_equal(a, b) == false);
 }
 
 test "posit16_is_equal_nar" {
-    try std.testing.expect(posit16_is_equal(POS16_NAR, POS16_NAR) == false);
+    assert(posit16_is_equal(POS16_NAR, POS16_NAR) == false);
 }
 
 test "posit16_is_greater_positive" {
-    given a = posit16_encode_f32(50.0)
-    try std.testing.expect(b = posit16_encode_f32(30.0));
-    try std.testing.expect(posit16_is_greater(a, b) == true);
+    const a = posit16_encode_f32(50.0);
+    const b = posit16_encode_f32(30.0);
+    assert(posit16_is_greater(a, b) == true);
 }
 
 test "posit16_max_returns_larger" {
-    given a = posit16_encode_f32(30.0)
-    try std.testing.expect(b = posit16_encode_f32(50.0));
-    try std.testing.expect(result = posit16_max(a, b));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(decoded >= 35.0);
+    const a = posit16_encode_f32(30.0);
+    const b = posit16_encode_f32(50.0);
+    const result = posit16_max(a, b);
+    const decoded = posit16_decode_f32(result);
+    assert(decoded >= 35.0);
 }
 
 test "posit16_min_returns_smaller" {
-    given a = posit16_encode_f32(30.0)
-    try std.testing.expect(b = posit16_encode_f32(50.0));
-    try std.testing.expect(result = posit16_min(a, b));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(decoded <= 45.0);
+    const a = posit16_encode_f32(30.0);
+    const b = posit16_encode_f32(50.0);
+    const result = posit16_min(a, b);
+    const decoded = posit16_decode_f32(result);
+    assert(decoded <= 45.0);
 }
 
 test "posit16_relu_positive" {
-    given value = posit16_encode_f32(50.0)
-    try std.testing.expect(result = posit16_relu(value));
-    try std.testing.expect(posit16_is_equal(result, value) == true);
+    const value = posit16_encode_f32(50.0);
+    const result = posit16_relu(value);
+    assert(posit16_is_equal(result, value) == true);
 }
 
 test "posit16_relu_negative" {
-    given value = posit16_encode_f32(-50.0)
-    try std.testing.expect(result = posit16_relu(value));
-    try std.testing.expect(result == POS16_ZERO);
+    const value = posit16_encode_f32(-50.0);
+    const result = posit16_relu(value);
+    assert(result == POS16_ZERO);
 }
 
 test "posit16_sigmoid_zero" {
-    given value = POS16_ZERO
-    try std.testing.expect(result = posit16_sigmoid(value));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 0.5) < 0.1);
+    const value = POS16_ZERO;
+    const result = posit16_sigmoid(value);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 0.5) < 0.1);
 }
 
 test "posit16_sigmoid_positive_large" {
-    given value = posit16_encode_f32(10.0)
-    try std.testing.expect(result = posit16_sigmoid(value));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(decoded >= 0.9);
+    const value = posit16_encode_f32(10.0);
+    const result = posit16_sigmoid(value);
+    const decoded = posit16_decode_f32(result);
+    assert(decoded >= 0.9);
 }
 
 test "posit16_quantize_to_int4_max" {
-    given value = posit16_encode_f32(100.0)
-    try std.testing.expect(result = posit16_quantize_to_int4(value));
-    try std.testing.expect(result == 7);
+    const value = posit16_encode_f32(100.0);
+    const result = posit16_quantize_to_int4(value);
+    assert(result == 7);
 }
 
 test "posit16_quantize_to_int4_min" {
-    given value = posit16_encode_f32(-100.0)
-    try std.testing.expect(result = posit16_quantize_to_int4(value));
-    try std.testing.expect(result == -8);
+    const value = posit16_encode_f32(-100.0);
+    const result = posit16_quantize_to_int4(value);
+    assert(result == -8);
 }
 
 test "posit16_from_f32_scaled_up" {
-    given value = 1.0
-    try std.testing.expect(scale = 100.0);
-    try std.testing.expect(result = posit16_from_f32_scaled(value, scale));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 100.0) < 20.0);
+    const value = 1.0;
+    const scale = 100.0;
+    const result = posit16_from_f32_scaled(value, scale);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 100.0) < 20.0);
 }
 
 test "posit16_dot_product_simple" {
-    given a = [_]Posit16{posit16_encode_f32(1.0), posit16_encode_f32(2.0), posit16_encode_f32(3.0), posit16_encode_f32(4.0)}
-    try std.testing.expect(b = [_]Posit16{posit16_encode_f32(2.0), posit16_encode_f32(2.0), posit16_encode_f32(2.0), posit16_encode_f32(2.0)});
-    try std.testing.expect(result = posit16_dot_product(a, b));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 20.0) < 5.0);
+    const a = [_]Posit16{posit16_encode_f32(1.0), posit16_encode_f32(2.0), posit16_encode_f32(3.0), posit16_encode_f32(4.0)};
+    const b = [_]Posit16{posit16_encode_f32(2.0), posit16_encode_f32(2.0), posit16_encode_f32(2.0), posit16_encode_f32(2.0)};
+    const result = posit16_dot_product(a, b);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 20.0) < 5.0);
 }
 
 test "posit16_vector_sum_simple" {
-    given vec = [_]Posit16{posit16_encode_f32(1.0), posit16_encode_f32(2.0), posit16_encode_f32(3.0), posit16_encode_f32(4.0)}
-    try std.testing.expect(result = posit16_vector_sum(vec));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 10.0) < 3.0);
+    const vec = [_]Posit16{posit16_encode_f32(1.0), posit16_encode_f32(2.0), posit16_encode_f32(3.0), posit16_encode_f32(4.0)};
+    const result = posit16_vector_sum(vec);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 10.0) < 3.0);
 }
 
 test "posit16_vector_mean_simple" {
-    given vec = [_]Posit16{posit16_encode_f32(2.0), posit16_encode_f32(4.0), posit16_encode_f32(6.0), posit16_encode_f32(8.0)}
-    try std.testing.expect(result = posit16_vector_mean(vec));
-    try std.testing.expect(decoded = posit16_decode_f32(result));
-    try std.testing.expect(abs(decoded - 5.0) < 1.0);
+    const vec = [_]Posit16{posit16_encode_f32(2.0), posit16_encode_f32(4.0), posit16_encode_f32(6.0), posit16_encode_f32(8.0)};
+    const result = posit16_vector_mean(vec);
+    const decoded = posit16_decode_f32(result);
+    assert(abs(decoded - 5.0) < 1.0);
 }
 
 test "posit16_lerp_zero" {
-    given a = posit16_encode_f32(10.0)
-    try std.testing.expect(b = posit16_encode_f32(50.0));
-    try std.testing.expect(t = 0.0);
-    try std.testing.expect(result = posit16_lerp(a, b, t));
-    try std.testing.expect(posit16_is_equal(result, a) == true);
+    const a = posit16_encode_f32(10.0);
+    const b = posit16_encode_f32(50.0);
+    const t = 0.0;
+    const result = posit16_lerp(a, b, t);
+    assert(posit16_is_equal(result, a) == true);
 }
 
 test "posit16_lerp_one" {
-    given a = posit16_encode_f32(10.0)
-    try std.testing.expect(b = posit16_encode_f32(50.0));
-    try std.testing.expect(t = 1.0);
-    try std.testing.expect(result = posit16_lerp(a, b, t));
-    try std.testing.expect(posit16_is_equal(result, b) == true);
+    const a = posit16_encode_f32(10.0);
+    const b = posit16_encode_f32(50.0);
+    const t = 1.0;
+    const result = posit16_lerp(a, b, t);
+    assert(posit16_is_equal(result, b) == true);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant posit16_bits_constant
     assert BITS == 16
 
@@ -906,45 +908,51 @@ invariant posit16_div_nar_propagates
     given value = posit16_encode_f32(50.0)
     assert posit16_is_nar(posit16_div(POS16_NAR, value)) == true
 
-invariant posit16_relu_non_negative
-    given result = posit16_relu(posit16_encode_f32(50.0))
-    try std.testing.expect(posit16_extract_sign(result) == false);
+invariant posit16_relu_non_negative {
+    const result = posit16_relu(posit16_encode_f32(50.0));
+    assert(posit16_extract_sign(result) == false);
+}
 
-invariant posit16_sqrt_non_negative
-    given result = posit16_sqrt(posit16_encode_f32(4.0))
-    try std.testing.expect(posit16_extract_sign(result) == false);
+invariant posit16_sqrt_non_negative {
+    const result = posit16_sqrt(posit16_encode_f32(4.0));
+    assert(posit16_extract_sign(result) == false);
+}
 
 invariant posit16_quantize_to_int4_in_range
     given result = posit16_quantize_to_int4(posit16_encode_f32(50.0))
     assert result >= -8 and result <= 7
 
-invariant posit16_scale_roundtrip
-    given value = posit16_encode_f32(50.0)
-    try std.testing.expect(scale = 2.0);
-    try std.testing.expect(scaled = posit16_scale(value, scale));
-    try std.testing.expect(decoded = posit16_to_f32_scaled(scaled, scale));
-    try std.testing.expect(abs(decoded - posit16_decode_f32(value)) < 5.0);
+invariant posit16_scale_roundtrip {
+    const value = posit16_encode_f32(50.0);
+    const scale = 2.0;
+    const scaled = posit16_scale(value, scale);
+    const decoded = posit16_to_f32_scaled(scaled, scale);
+    assert(abs(decoded - posit16_decode_f32(value)) < 5.0);
+}
 
-invariant posit16_max_ge_both
-    given a = posit16_encode_f32(30.0)
-    try std.testing.expect(b = posit16_encode_f32(50.0));
-    try std.testing.expect(result = posit16_max(a, b));
-    try std.testing.expect(posit16_is_greater(result, a) == true or posit16_is_equal(result, a) == true);
+invariant posit16_max_ge_both {
+    const a = posit16_encode_f32(30.0);
+    const b = posit16_encode_f32(50.0);
+    const result = posit16_max(a, b);
+    assert(posit16_is_greater(result, a) == true or posit16_is_equal(result, a) == true);
+}
 
-invariant posit16_min_le_both
-    given a = posit16_encode_f32(30.0)
-    try std.testing.expect(b = posit16_encode_f32(50.0));
-    try std.testing.expect(result = posit16_min(a, b));
-    try std.testing.expect(posit16_is_greater(b, result) == true or posit16_is_equal(b, result) == true);
+invariant posit16_min_le_both {
+    const a = posit16_encode_f32(30.0);
+    const b = posit16_encode_f32(50.0);
+    const result = posit16_min(a, b);
+    assert(posit16_is_greater(b, result) == true or posit16_is_equal(b, result) == true);
+}
 
-invariant posit16_lerp_bounded
-    given a = posit16_encode_f32(10.0)
-    try std.testing.expect(b = posit16_encode_f32(50.0));
-    try std.testing.expect(result_half = posit16_lerp(a, b, 0.5));
-    try std.testing.expect(decoded_a = posit16_decode_f32(a));
-    try std.testing.expect(decoded_b = posit16_decode_f32(b));
-    try std.testing.expect(decoded_half = posit16_decode_f32(result_half));
-    try std.testing.expect(decoded_half > decoded_a and decoded_half < decoded_b);
+invariant posit16_lerp_bounded {
+    const a = posit16_encode_f32(10.0);
+    const b = posit16_encode_f32(50.0);
+    const result_half = posit16_lerp(a, b, 0.5);
+    const decoded_a = posit16_decode_f32(a);
+    const decoded_b = posit16_decode_f32(b);
+    const decoded_half = posit16_decode_f32(result_half);
+    assert(decoded_half > decoded_a and decoded_half < decoded_b);
+}
 
 // ============================================================================
 // Benchmarks

@@ -1,14 +1,43 @@
 // SPDX-License-Identifier: Apache-2.0
 ; specs/turbobaby/market_profile.t27 -- the contract a market/country/currency must satisfy
 ; The owner's standing instruction (2026-09-13) is that this agent runs on ANY market, country
-; and currency. Measured before this file existed, Thailand was ambient in the code rather than
-; declared anywhere: the money formatter hardcodes the baht glyph, the comma group separator and
-; whole-baht display (src/trios/pricing.rs format_baht/group_thousands), i18n templates bake
-; the glyph into customer-facing sentences (src/trios/i18n.rs), the shop timezone is a
-; hardcoded +7 in five files (src/api/happy_hour.rs:15, src/api/share.rs:135, src/promo.rs:252,
-; src/api/orders.rs:254, src/ui/screens/events_screen.rs:36; measured 2026-09-13 -- src/api/
-; events.rs stores UTC and carries no market fact), and the checkout phone default is +66
-; (src/trios/store.rs). None of those files states a market; each states a fact of one market.
+; and currency. Measured 2026-09-13, before this file existed, Thailand was ambient in the code
+; rather than declared anywhere: the money formatter hardcoded the baht glyph, the comma group
+; separator and whole-baht display (src/trios/pricing.rs), i18n templates baked the glyph into
+; customer-facing sentences (src/trios/i18n.rs), the shop timezone was a hardcoded +7, and the
+; checkout phone default was a hardcoded +66 (src/trios/store.rs). None of those files stated a
+; market; each stated a fact of one market.
+; --
+; WHAT IS TRUE TODAY (re-measured 2026-09-21, and it is not what the paragraph above says).
+; D18 -- and this file's own header until this edit -- named FIVE files carrying that +7 and
+; gave a line number into each. Every one of those five line numbers is wrong today, and the
+; list of five was itself two short. In order:
+; (1) All five cited lines are COMMENT lines now, not the code they described.
+;     src/api/happy_hour.rs:15 is the middle of a doc comment about the old bug; share.rs:135
+;     and orders.rs:254 likewise; promo.rs:252 is a // line; and events_screen.rs:36 is a doc
+;     comment about WASM metrics, with nothing to do with a clock at all.
+; (2) All five READ THIS PROFILE instead of a literal. src/api/happy_hour.rs:1 imports it and
+;     :34 derives the wall-clock hour from it; src/api/share.rs:137, src/promo.rs:260,
+;     src/api/orders.rs:257 and src/ui/screens/events_screen.rs:63-65 call MARKET.at,
+;     MARKET.fixed_offset, MARKET.now and MARKET.fixed_offset respectively.
+; (3) The census was two short. src/api/events.rs:2068 (:1700, then :1928 -- the 2026-09-21 events
+;     edits moved it twice, the second time by the delete's escape hatch) and
+;     src/ui/screens/admin_screen.rs:4724 (:4722 before that same day's delete-toast fix)
+;     read the same clock and appear in no list of five; both source files say so in their own
+;     comments. tests/market_clock_wiring.rs pins SEVEN sites in its WIRED array, and seven is
+;     the count pinned below.
+; (4) This file's previous sentence -- "src/api/events.rs stores UTC and carries no market
+;     fact" -- was true on 2026-09-13 and is false now: events.rs:1928 reads MARKET.at.
+; DECISIONS.md D18 is stale on the same point and cannot be corrected from here: its closing
+; paragraph still calls "the +7 literals in five files" unwired debt tracked in issue #35. The
+; debt is wired and the count was never five. Editing DECISIONS.md is outside this contract, so
+; the correction is recorded here and pinned by D18_CLOCK_SITE_NOTE below.
+; Three neighbouring claims in the same old sentence moved too. src/trios/pricing.rs has no
+; group_thousands function at all any more (a grep of src/ returns zero), the glyph now living
+; in the THB_MARKET profile instance that format_baht is a named shortcut for. The four
+; surviving baht glyphs in src/trios/i18n.rs are all doc-comment lines describing the old
+; behaviour, not template text. And src/trios/store.rs:325 defines DEFAULT_COUNTRY_CODE as
+; MARKET_DIALING.default_calling_code rather than a +66 literal.
 ; This contract makes the market a PROFILE -- a named set of fields any deployment must
 ; declare -- so that a second market is a second profile, not a second fork of the formatter.
 ; --
@@ -52,6 +81,21 @@ pub const MEASURED_AT : str = "2026-09-13";
 ; typed twice without one owner, so the profile consts below are the citable mirror the tests
 ; run against, and the seed verifier compares its block to these values.
 pub const PROFILE_OWNER : str = "data/fleet_seed.json market block (deployment); specs/turbobaby/market_profile.t27 (contract); src/trios/pricing.rs THB_MARKET (formatter instance)";
+
+; --- The clock sites, re-measured 2026-09-21 ------------------------------------------------
+; D18 named five files carrying a hardcoded +7 and gave a line number into each. Seven files
+; read the shop clock, all seven read this profile, and every one of D18's five line numbers
+; points at a comment today. The witness is a Rust test rather than this file: the WIRED array
+; in tests/market_clock_wiring.rs fails if a site stops consulting the market, which is how the
+; next ambient literal would get in. The count is pinned here so a reader comparing D18 against
+; the tree finds the difference declared instead of having to re-measure it.
+pub const CLOCK_SITES_D18_NAMED : u8 = 5;
+pub const CLOCK_SITES_MEASURED : u8 = 7;
+pub const CLOCK_SITES_READING_THIS_PROFILE : u8 = 7;
+pub const CLOCK_SITES_WITNESS : str = "tests/market_clock_wiring.rs WIRED";
+pub const CLOCK_SITES_REMEASURED_AT : str = "2026-09-21";
+pub const EVERY_D18_CLOCK_LINE_CITATION_IS_NOW_A_COMMENT : bool = true;
+pub const D18_CLOCK_SITE_NOTE : str = "DECISIONS.md D18 still calls the +7 literals in five files unwired debt tracked in issue #35. Re-measured 2026-09-21: seven files read the shop clock, not five, and all seven read this profile rather than a literal. The two D18 could not enumerate are src/api/events.rs and src/ui/screens/admin_screen.rs. DECISIONS.md is not editable from this contract, so the correction lives here.";
 
 ; --- the profile shape -------------------------------------------------------------------
 ; A market is exactly these fields. A field added to the seed without a rule here is a field
@@ -279,7 +323,7 @@ test unrenderable_symbol_codepoints_are_refused {
   assert symbol_codepoint_is_assigned(8364) == true;
   assert symbol_codepoint_is_assigned(-1) == false;
   assert symbol_codepoint_is_assigned(1114112) == false;
-  ; The surrogate gap: not assignable, not renderable.
+  // The surrogate gap: not assignable, not renderable.
   assert symbol_codepoint_is_assigned(55296) == false;
   assert symbol_codepoint_is_assigned(57343) == false;
   assert symbol_codepoint_is_assigned(57344) == true;
@@ -302,6 +346,18 @@ test the_profile_shape_is_pinned {
   assert PROFILE_FIELDS[2] == "currency_code";
   assert PROFILE_FIELDS[5] == "currency_symbol_codepoint";
   assert PROFILE_FIELDS[12] == "default_calling_code";
+}
+
+; The census D18 could not take. This fails if someone "restores" the five, or if the seven
+; sites stop agreeing with the array the Rust test pins.
+test the_clock_site_census_is_larger_than_the_decision_that_named_it {
+  assert CLOCK_SITES_D18_NAMED == 5;
+  assert CLOCK_SITES_MEASURED == 7;
+  assert CLOCK_SITES_MEASURED > CLOCK_SITES_D18_NAMED;
+  assert CLOCK_SITES_READING_THIS_PROFILE == CLOCK_SITES_MEASURED;
+  assert EVERY_D18_CLOCK_LINE_CITATION_IS_NOW_A_COMMENT == true;
+  assert CLOCK_SITES_WITNESS == "tests/market_clock_wiring.rs WIRED";
+  assert CLOCK_SITES_REMEASURED_AT == "2026-09-21";
 }
 
 test the_fixture_declares_itself_a_fixture {

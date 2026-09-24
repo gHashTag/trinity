@@ -228,8 +228,11 @@ module GoldenFloatFamily {
     // 3. Query functions
     // ----------------------------------------------------------------
 
-    fn get_format_by_name(name: string) -> Option<GoldenFloatFormat> {
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+    // (Loops below were `for (const XS) |x|`; the `const` qualifier inside
+    // the iterable parentheses is not t27 and is dropped -- same iteration.
+    // Rust `Option<T>` return types are written as the optional `?T`.)
+    fn get_format_by_name(name: string) -> ?GoldenFloatFormat {
+        for (GOLDEN_FLOAT_FAMILY) |fmt| {
             if (fmt.name == name) {
                 return fmt;
             }
@@ -237,8 +240,8 @@ module GoldenFloatFamily {
         return null;
     }
 
-    fn get_format_by_bits(bits: u8) -> Option<GoldenFloatFormat> {
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+    fn get_format_by_bits(bits: u8) -> ?GoldenFloatFormat {
+        for (GOLDEN_FLOAT_FAMILY) |fmt| {
             if (fmt.bits == bits) {
                 return fmt;
             }
@@ -276,7 +279,7 @@ module GoldenFloatFamily {
         // Check for duplicate names
         var names_seen : [17]string = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+        for (GOLDEN_FLOAT_FAMILY) |fmt| {
             format_count = format_count + 1;
 
             // Count primary formats (should be exactly 1)
@@ -293,7 +296,7 @@ module GoldenFloatFamily {
             total_dist = total_dist + fmt.phi_distance;
 
             // Check for duplicate names
-            for (const names_seen) |name| {
+            for (names_seen) |name| {
                 if (name != "" && name == fmt.name) {
                     all_names_unique = false;
                 }
@@ -397,7 +400,7 @@ module GoldenFloatFamily {
 
     test gffamily_only_gf16_is_primary
         var count = 0
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+        for (GOLDEN_FLOAT_FAMILY) |fmt| {
             if (fmt.is_primary) { count = count + 1; }
         }
         then count == 1
@@ -492,23 +495,28 @@ module GoldenFloatFamily {
     invariant gffamily_gf256_at_index_8
         assert GOLDEN_FLOAT_FAMILY[8].name == "GF256"
 
-    invariant gffamily_all_formats_have_sign_bits_1
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+    // (The three loop invariants below are in brace form: a `for` loop
+    // cannot open a keyword-style block, which the parser dropped.)
+    invariant gffamily_all_formats_have_sign_bits_1 {
+        for (GOLDEN_FLOAT_FAMILY) |fmt| {
             assert fmt.sign_bits == 1;
         }
+    }
 
-    invariant gffamily_all_formats_bits_sum_correct
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+    invariant gffamily_all_formats_bits_sum_correct {
+        for (GOLDEN_FLOAT_FAMILY) |fmt| {
             assert fmt.sign_bits + fmt.exp_bits + fmt.mant_bits == fmt.bits;
         }
+    }
 
     invariant gffamily_primary_is_gf16
         assert GOLDEN_FLOAT_FAMILY[3].is_primary == true
 
-    invariant gffamily_phi_distances_non_negative
-        for (const GOLDEN_FLOAT_FAMILY) |fmt| {
+    invariant gffamily_phi_distances_non_negative {
+        for (GOLDEN_FLOAT_FAMILY) |fmt| {
             assert fmt.phi_distance >= 0.0;
         }
+    }
 
     invariant gffamily_memory_efficiency_gf4
         assert abs(memory_efficiency(GOLDEN_FLOAT_FAMILY[0]) - 0.125) < 0.01
@@ -516,23 +524,36 @@ module GoldenFloatFamily {
     invariant gffamily_memory_efficiency_gf64
         assert abs(memory_efficiency(GOLDEN_FLOAT_FAMILY[7]) - 2.0) < 0.01
 
-    bench gffamily_get_format_by_name_latency
-        measure: nanoseconds to get_format_by_name("GF16")
-        target: < 100ns
+    // (Benches were keyword-style `measure:` / `target:` lines, which no
+    // backend lowers; now brace form: both lines kept as comments and the
+    // measured call written as the bench statement.)
+    bench gffamily_get_format_by_name_latency {
+        // measure: nanoseconds to get_format_by_name("GF16")
+        // target: < 100ns
+        _ = get_format_by_name("GF16");
+    }
 
-    bench gffamily_get_format_by_bits_latency
-        measure: nanoseconds to get_format_by_bits(16)
-        target: < 100ns
+    bench gffamily_get_format_by_bits_latency {
+        // measure: nanoseconds to get_format_by_bits(16)
+        // target: < 100ns
+        _ = get_format_by_bits(16);
+    }
 
-    bench gffamily_get_primary_format_latency
-        measure: nanoseconds to get_primary_format()
-        target: < 50ns
+    bench gffamily_get_primary_format_latency {
+        // measure: nanoseconds to get_primary_format()
+        // target: < 50ns
+        _ = get_primary_format();
+    }
 
-    bench gffamily_verify_golden_family_latency
-        measure: nanoseconds to verify_golden_family()
-        target: < 500ns
+    bench gffamily_verify_golden_family_latency {
+        // measure: nanoseconds to verify_golden_family()
+        // target: < 500ns
+        _ = verify_golden_family();
+    }
 
-    bench gffamily_memory_efficiency_latency
-        measure: nanoseconds to memory_efficiency(GOLDEN_FLOAT_FAMILY[3])
-        target: < 100ns
+    bench gffamily_memory_efficiency_latency {
+        // measure: nanoseconds to memory_efficiency(GOLDEN_FLOAT_FAMILY[3])
+        // target: < 100ns
+        _ = memory_efficiency(GOLDEN_FLOAT_FAMILY[3]);
+    }
 }

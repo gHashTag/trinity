@@ -1,10 +1,11 @@
 module Wp18GateSelfConsistentSelfTest;
 
-import std.fs;
-import std.json;
-import std.process;
-import std.hash.sha256;
-import std.encoding.hex;
+// (was `import std.fs;` etc.: t27 imports are `use a::b;`)
+use std::fs;
+use std::json;
+use std::process;
+use std::hash::sha256;
+use std::encoding::hex;
 
 // ============================================================================
 // Type Definitions
@@ -63,7 +64,9 @@ fn json_bool(b: bool) JsonValue {
 }
 
 fn json_null() JsonValue {
-    return JsonValue{ .Null = {} };
+    // (was `JsonValue{ .Null = {} }`: `Null` carries no payload, and t27 has
+    // no `{}` void value, so the tag is named directly -- same value)
+    return JsonValue.Null;
 }
 
 // ============================================================================
@@ -76,7 +79,9 @@ pub fn _drop_stale_bytecode() void {
     // and __pycache__ directories. In T27, we provide a no-op stub since
     // bytecode caching is not applicable to the generated targets.
     // The function exists to maintain API compatibility.
-    _ = struct{};
+    // (was `_ = struct{};`, a Zig no-op statement t27 cannot parse; a bare
+    // `return;` is the same no-op)
+    return;
 }
 
 // ============================================================================
@@ -111,7 +116,11 @@ pub fn _write(path: []u8, obj: JsonValue) void {
 
 pub fn _ssot(path: []u8, ids: []PackId) void {
     var entries: []JsonObjectEntry = &[_]JsonObjectEntry{};
-    for (ids, 0..) |id, i| {
+    // (Zig `for (ids, 0..) |id, i|` written as an indexed while loop:
+    // t27 has no multi-object for with an index range)
+    var i: usize = 0;
+    while (i < ids.len) : (i += 1) {
+        const id = ids[i];
         entries = append_entry(entries, JsonObjectEntry{
             .key = @as([]u8, @intToPtr(i)),
             .value = json_string(id),
@@ -137,7 +146,9 @@ fn append_entry(entries: []JsonObjectEntry, entry: JsonObjectEntry) []JsonObject
 pub fn _bitexact_pack(name: []u8) PackId {
     // In Python: creates a deterministic hash of the serialized tree
     // We simulate by hashing the name with a fixed salt
-    var hasher = sha256.Hasher{};
+    // (`sha256.Hasher{}` -> `sha256::Hasher{}`: a struct literal's type is
+    // named with a `::` path in t27)
+    var hasher = sha256::Hasher{};
     hasher.init();
     hasher.update("bitexact:");
     hasher.update(name);
@@ -154,7 +165,7 @@ pub fn _bitexact_pack(name: []u8) PackId {
 pub fn _selfconsistent_pack(name: []u8) PackId {
     // In Python: creates a pack that is self-consistent (same input = same output)
     // We simulate by hashing the name with a different salt
-    var hasher = sha256.Hasher{};
+    var hasher = sha256::Hasher{};
     hasher.init();
     hasher.update("selfconsistent:");
     hasher.update(name);
@@ -170,7 +181,11 @@ pub fn _selfconsistent_pack(name: []u8) PackId {
 
 pub fn build_tree(tmp: []u8, kinds: [][]u8) TreeNode {
     var children: []TreeNode = &[_]TreeNode{};
-    for (kinds, 0..) |kind, i| {
+    // (Zig `for (kinds, 0..) |kind, i|` written as an indexed while loop:
+    // t27 has no multi-object for with an index range)
+    var i: usize = 0;
+    while (i < kinds.len) : (i += 1) {
+        const kind = kinds[i];
         const child_name = concat_name(tmp, kind, i);
         const child = TreeNode{
             .name = child_name,

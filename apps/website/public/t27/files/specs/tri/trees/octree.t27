@@ -21,7 +21,7 @@ module TriOctree;
 
     pub const OctNode = struct {
         bounds : "BBox",
-        children : [8]?OctNode,
+        children : [8]?Box<OctNode>,
         data : "?void",
         divided : "bool",
         allocator : "std.mem.Allocator",

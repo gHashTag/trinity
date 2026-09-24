@@ -275,14 +275,14 @@ module TernaryIsa {
         return cfg.clock_freq_hz / 1000000;
     }
 
-    fn fits_arty_a7(cfg: TernaryCoreConfig) -> bool {
-        var luts : u32 = core_lut_estimate(cfg);
-        return luts < 33800;
+fn fits_arty_a7(cfg: TernaryCoreConfig) -> bool {
+         const luts : u32 = core_lut_estimate(cfg);
+         return luts < 33800;
     }
 
-    fn fits_xc7a100t(cfg: TernaryCoreConfig) -> bool {
-        var luts : u32 = core_lut_estimate(cfg);
-        return luts < 63400;
+fn fits_xc7a100t(cfg: TernaryCoreConfig) -> bool {
+         const luts : u32 = core_lut_estimate(cfg);
+         return luts < 63400;
     }
 
     fn pipeline_total_latency(stages: [8]PipelineStage, count: u32) -> u32 {
@@ -501,6 +501,22 @@ module TernaryIsa {
     test validate_core_zero_alus
         given cfg = TernaryCoreConfig{.name = "tri0", .data_width = 64, .addr_width = 32, .num_alus = 0, .has_gf16_unit = true, .has_ternary_alu = true, .has_branch_predictor = false, .pipeline_depth = 5, .clock_freq_hz = 100000000}
         then validate_core(cfg) > 0
+
+    test pipeline_total_latency_basic
+        given stages = [
+            PipelineStage{.name = "IF", .latency = 1, .has_forwarding = false},
+            PipelineStage{.name = "ID", .latency = 1, .has_forwarding = false},
+            PipelineStage{.name = "EX", .latency = 1, .has_forwarding = true},
+            PipelineStage{.name = "MEM", .latency = 1, .has_forwarding = true},
+            PipelineStage{.name = "WB", .latency = 1, .has_forwarding = false},
+            PipelineStage{.name = "STALL", .latency = 2, .has_forwarding = false},
+            PipelineStage{.name = "EXTRA1", .latency = 1, .has_forwarding = false},
+            PipelineStage{.name = "EXTRA2", .latency = 1, .has_forwarding = false},
+        ]
+        then pipeline_total_latency(stages, 5) == 5
+        and pipeline_total_latency(stages, 6) == 7
+        and pipeline_total_latency(stages, 8) == 9
+        and pipeline_total_latency(stages, 0) == 0
 
     // === Invariants ===
 

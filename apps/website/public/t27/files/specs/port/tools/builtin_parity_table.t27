@@ -1,17 +1,22 @@
-module specs.port.tools.builtin_parity_table
+// (was `module specs.port.tools.builtin_parity_table` with no `;`: a t27
+// module path is `::`-separated and the header ends in `;`)
+module specs::port::tools::builtin_parity_table;
 
 pub fn t27c() -> []const u8 {
-    const paths = [&][:]"target/release/t27c", "bootstrap/target/release/t27c";
+    // the two build locations, in search order (was the malformed
+    // `[&][:]"target/release/t27c", "bootstrap/target/release/t27c"`)
+    const paths = ["target/release/t27c", "bootstrap/target/release/t27c"];
     for (paths) |path| {
         if (std.fs.stat(path)) |stat| {
-            if (stat.mode & 0o100 != 0) {
+            // owner-execute bit: 0x40 == octal 0o100 (t27 has no 0o literals)
+            if ((stat.mode & 0x40) != 0) {
                 return path;
             }
         }
     }
     if (std.process.getEnv("TRI_T27C")) |tri_t27c| {
         if (std.fs.stat(tri_t27c)) |stat| {
-            if (stat.mode & 0o100 != 0) {
+            if ((stat.mode & 0x40) != 0) {
                 return tri_t27c;
             }
         }

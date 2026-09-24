@@ -674,236 +674,261 @@ module testgen {
 // TDD-Inside-Spec: Tests and Invariants for TestGen
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
-test testgen_new_creates_generator
+// (Blocks were keyword-style with Zig statements; now brace form:
+// `try std.testing.expect(x)` -> `assert x`,
+// `try std.testing.expectEqualStrings(a, b)` -> `assert b == a`,
+// `testgen.X` -> `X` (same module), and each bench's `target:` line is kept
+// as a comment.)
+
+test testgen_new_creates_generator {
     // Verify: TestGen.new creates a generator with AST and options
     // Expected: TestGen has ast, options, and initialized StringBuilder
-    var ast = testgen.Program{
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "zig",
         .emit_comments = true,
         .emit_benchmarks = true,
         .output_format = "code",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     _ = gen;
-    try std.testing.expect(true);
+    assert true;
+}
 
-test testgen_generate_zig_outputs_header
+test testgen_generate_zig_outputs_header {
     // Verify: generate() with zig backend outputs Zig header
     // Expected: Output contains "// Zig tests generated from" and std import
-    var ast = testgen.Program{
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "zig",
         .emit_comments = true,
         .emit_benchmarks = false,
         .output_format = "code",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     const output = gen.generate();
-    try std.testing.expect(std.mem.indexOf(u8, output, "// Zig tests generated from") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "@import(\"std\")") != null);
+    assert std.mem.indexOf(u8, output, "// Zig tests generated from") != null;
+    assert std.mem.indexOf(u8, output, "@import(\"std\")") != null;
+}
 
-test testgen_generate_c_outputs_header
+test testgen_generate_c_outputs_header {
     // Verify: generate() with c backend outputs C header
     // Expected: Output contains "// C tests generated from" and assert.h include
-    var ast = testgen.Program{
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "c",
         .emit_comments = true,
         .emit_benchmarks = false,
         .output_format = "code",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     const output = gen.generate();
-    try std.testing.expect(std.mem.indexOf(u8, output, "// C tests generated from") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "#include <assert.h>") != null);
+    assert std.mem.indexOf(u8, output, "// C tests generated from") != null;
+    assert std.mem.indexOf(u8, output, "#include <assert.h>") != null;
+}
 
-test testgen_generate_verilog_outputs_module
+test testgen_generate_verilog_outputs_module {
     // Verify: generate() with verilog backend outputs Verilog module
     // Expected: Output contains "module tb_" and "`timescale"
-    var ast = testgen.Program{
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "verilog",
         .emit_comments = true,
         .emit_benchmarks = false,
         .output_format = "code",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     const output = gen.generate();
-    try std.testing.expect(std.mem.indexOf(u8, output, "module tb_") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "`timescale") != null);
+    assert std.mem.indexOf(u8, output, "module tb_") != null;
+    assert std.mem.indexOf(u8, output, "`timescale") != null;
+}
 
-test testgen_generate_rust_outputs_mod_block
+test testgen_generate_rust_outputs_mod_block {
     // Verify: generate() with rust backend outputs Rust mod block
     // Expected: Output contains "#[cfg(test)]" and "mod tests {"
-    var ast = testgen.Program{
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "rust",
         .emit_comments = true,
         .emit_benchmarks = false,
         .output_format = "code",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     const output = gen.generate();
-    try std.testing.expect(std.mem.indexOf(u8, output, "#[cfg(test)]") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "mod tests {") != null);
+    assert std.mem.indexOf(u8, output, "#[cfg(test)]") != null;
+    assert std.mem.indexOf(u8, output, "mod tests {") != null;
+}
 
-test testgen_generate_json_outputs_conformance
+test testgen_generate_json_outputs_conformance {
     // Verify: generate() with json backend outputs conformance JSON
     // Expected: Output contains "spec", "generated_at", "test_vectors"
-    var ast = testgen.Program{
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "json",
         .emit_comments = false,
         .emit_benchmarks = false,
         .output_format = "json",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     const output = gen.generate();
-    try std.testing.expect(std.mem.indexOf(u8, output, "\"spec\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "\"generated_at\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output, "\"test_vectors\"") != null);
+    assert std.mem.indexOf(u8, output, "\"spec\"") != null;
+    assert std.mem.indexOf(u8, output, "\"generated_at\"") != null;
+    assert std.mem.indexOf(u8, output, "\"test_vectors\"") != null;
+}
 
-test testgen_unsupported_backend
+test testgen_unsupported_backend {
     // Verify: generate() with unsupported backend returns error comment
     // Expected: Output contains "// Unsupported backend:"
-    var ast = testgen.Program{
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "python",
         .emit_comments = true,
         .emit_benchmarks = false,
         .output_format = "code",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     const output = gen.generate();
-    try std.testing.expect(std.mem.indexOf(u8, output, "// Unsupported backend:") != null);
+    assert std.mem.indexOf(u8, output, "// Unsupported backend:") != null;
+}
 
-test string_builder_append_works
+test string_builder_append_works {
     // Verify: StringBuilder.append adds strings correctly
     // Expected: to_string returns concatenated content
-    var sb = testgen.StringBuilder.new(100);
+    var sb = StringBuilder.new(100);
     sb.append("hello");
     sb.append(" ");
     sb.append("world");
-    try std.testing.expectEqualStrings("hello world", sb.to_string());
+    assert sb.to_string() == "hello world";
+}
 
-test string_builder_respects_capacity
+test string_builder_respects_capacity {
     // Verify: StringBuilder does not exceed capacity
     // Expected: Truncates at capacity if exceeded
-    var sb = testgen.StringBuilder.new(10);
+    var sb = StringBuilder.new(10);
     sb.append("hello world this is too long");
-    try std.testing.expect(sb.to_string().len <= 10);
+    assert sb.to_string().len <= 10;
+}
 
-invariant testgen_backend_switch
+invariant testgen_backend_switch {
     // generate() dispatches to correct backend function
     // Rationale: Ensures proper backend selection
-    const backends = [_][]const u8{ "zig", "c", "verilog", "rust", "json" };
+    // (was `[_][]const u8{ ... }`: the parser does not take `const` inside
+    // an array-literal element type)
+    const backends = [_][]u8{ "zig", "c", "verilog", "rust", "json" };
     _ = backends;
     assert true;
+}
 
-invariant testgen_output_contains_tdd_header
+invariant testgen_output_contains_tdd_header {
     // All generated outputs contain TDD-Inside-Spec header
     // Rationale: Marks generated code as TDD-compliant
     assert true;
+}
 
-invariant string_builder_capacity_fixed
+invariant string_builder_capacity_fixed {
     // StringBuilder has fixed capacity from creation
     // Rationale: Predictable memory usage for test generation
     assert true;
+}
 
-invariant testgen_json_escaped_properly
+invariant testgen_json_escaped_properly {
     // JSON output escapes special characters
     // Rationale: Valid JSON output for conformance testing
     assert true;
+}
 
-invariant testgen_filename_mangled
+invariant testgen_filename_mangled {
     // Filenames are mangled to valid identifiers
     // Rationale: Generates valid module/function names
     assert true;
+}
 
-bench testgen_generate_zig_latency
-    target: < 10ms
-    var ast = testgen.Program{
+bench testgen_generate_zig_latency {
+    // target: < 10ms
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "zig",
         .emit_comments = true,
         .emit_benchmarks = false,
         .output_format = "code",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     _ = gen.generate();
+}
 
-bench testgen_generate_json_latency
-    target: < 5ms
-    var ast = testgen.Program{
+bench testgen_generate_json_latency {
+    // target: < 5ms
+    var ast = Program{
         .source_file = "test.t27",
         .spec_decl = null,
         .test_section = null,
         .invariant_section = null,
         .bench_section = null,
     };
-    var opts = testgen.TestGenOptions{
+    var opts = TestGenOptions{
         .backend = "json",
         .emit_comments = false,
         .emit_benchmarks = false,
         .output_format = "json",
     };
-    var gen = testgen.TestGen.new(ast, opts);
+    var gen = TestGen.new(ast, opts);
     _ = gen.generate();
+}
 
-bench string_builder_append_latency
-    target: < 1us per append
-    var sb = testgen.StringBuilder.new(1000);
+bench string_builder_append_latency {
+    // target: < 1us per append
+    var sb = StringBuilder.new(1000);
     var i: usize = 0;
     while (i < 100) : (i += 1) {
         sb.append("test");
     }
     _ = sb.to_string();
+}

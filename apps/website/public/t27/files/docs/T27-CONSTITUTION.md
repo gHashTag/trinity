@@ -64,12 +64,15 @@ Grandfathered non-English paths are listed only in **`docs/.legacy-non-english-d
 
 ## § 2 — Invariant Laws (never change without constitutional amendment)
 
-These seven laws are the **constitutional bedrock** of Trinity S³AI / t27. They govern behavior, not formats or scientific claims. Amendments require explicit consensus and version bump.
+These laws are the **constitutional bedrock** of Trinity S³AI / t27. They govern behavior, not formats or scientific claims. Amendments require explicit consensus and version bump.
 
-### Law Table (L1–L7)
+**L0 was adopted on 2026-09-23, and it is an addition rather than a rewrite.** L1-L7 say how work enters the repository - traced, generated, ASCII, tested - and every one of them is carried by a live gate. What they never said is what the work is *for*. That gap was already being filled informally: the board's source cited "trios CLAUDE.md, law L0" for the rewrite goal, and no such law existed in that file or anywhere else. `trios/CLAUDE.md` carries its own L1-L9 about shell scripts, clippy and ports. A citation that does not resolve is precisely what the honesty rule forbids, so the choice was to delete the claim or to make it true. It was made true.
+
+### Law Table (L0–L7)
 
 | Law # | Name | Body | Enforcement |
 |-------|------|------|-------------|
+| **L0** | **PURPOSE** | Everything below the interface is written once, in `.t27`, and generated to its target - Rust for servers, Zig, C and Verilog for the core and silicon. Two exceptions, both named: the seed (`t27c` itself stays hand-written Rust) and the interface (Swift for trios, TSX for the web) | The measured `.t27` share of the stack must not fall: `apps/website/scripts/roadmap-stack.mjs` in gHashTag/trinity, published at `/roadmap/stack.json` and drawn by the ROADMAP view |
 | **L1** | **TRACEABILITY** | No code merged without `Closes #N` — every PR must reference a GitHub issue | `.github/workflows/issue-gate.yml` |
 | **L2** | **GENERATION** | Files under `gen/` are generated; edit the `.t27` spec instead | `./target/release/t27c validate-gen-headers` |
 | **L3** | **PURITY** | All `.t27` / `.zig` / `.v` / `.c` source — ASCII-only identifiers & comments | `SOUL.md`, `ADR-004`, build.rs language checks |
@@ -78,10 +81,11 @@ These seven laws are the **constitutional bedrock** of Trinity S³AI / t27. They
 | **L6** | **CEILING** | `conformance/FORMAT-SPEC-001.json` + `specs/numeric/gf16.t27` are the numeric ceiling — never forked | SSOT: seal coverage CI |
 | **L7** | **UNITY** | No new `*.sh` on the critical path for validation / gen / data | `SOUL.md` Article VIII; `t27c` + `tri` only |
 
-### Alias Index (legacy → L1–L7)
+### Alias Index (legacy → L0–L7)
 
 | Legacy name | New name |
 |-------------|----------|
+| law L0 (cited in gHashTag/trinity board source before it existed) | L0 PURPOSE |
 | ISSUE-GATE | L1 TRACEABILITY |
 | NO-HAND-EDIT-GEN | L2 GENERATION |
 | SOUL-ASCII | L3 PURITY |
@@ -92,9 +96,10 @@ These seven laws are the **constitutional bedrock** of Trinity S³AI / t27. They
 
 ### Law Priority
 
-Laws follow **Asimov-style priority** (L1 > L2 > … > L7):
+Laws follow **Asimov-style priority** (L1 > L2 > … > L7). **L0 sits outside that ordering on purpose**: it is the destination, not a rule about the journey, and it may never be cited to excuse breaking L1-L7. Work that reaches L0 faster by merging untraced, hand-editing generated files or shipping an untested spec has not reached it at all.
 
-1. **L1 TRACEABILITY** (highest) — Without issue linkage, nothing enters the repository
+0. **L0 PURPOSE** (the goal, not a tie-breaker) — the stack below the interface becomes `.t27`
+1. **L1 TRACEABILITY** — Without issue linkage, nothing enters the repository
 2. **L2 GENERATION** — Generated files are output, not source
 3. **L3 PURITY** — Language policy enables universal tooling
 4. **L4 TESTABILITY** — TDD ensures specifications are verifiable

@@ -924,7 +924,7 @@ module Parsing {
         decl.extra_mutable = self.check(lexer::TokenKind::KwVar);
         self.advance();
 
-        if (self.check(lexer::TokenKind::Ident)) {
+        if (self.current.kind == lexer::TokenKind::Ident or self.current.kind == lexer::TokenKind::KwModule) {
             decl.name = self.current.lexeme;
             self.advance();
         }
@@ -1497,7 +1497,7 @@ module Parsing {
                     full_path = self.current.lexeme;
                     self.advance();
 
-                    if (self.check(lexer::TokenKind::Colon) and not self.check_peek(lexer::TokenKind::Colon)) {
+                    if (self.check(lexer::TokenKind::Colon) and !self.check_peek(lexer::TokenKind::Colon)) {
                         alias_name = full_path;
                         self.advance();
                         if (self.check(lexer::TokenKind::Ident)) {
@@ -1541,78 +1541,78 @@ module Parsing {
     // ════════════════════════════════════════════════════════════════════
 
     test "kind_values" {
-        assert(NodeKind::Module == 0)
-        assert(NodeKind::FnDecl == 4)
-        assert(NodeKind::ExprBinary == 22)
-        assert(NodeKind::ExprCall == 24)
+        assert(NodeKind::Module == 0);
+        assert(NodeKind::FnDecl == 4);
+        assert(NodeKind::ExprBinary == 22);
+        assert(NodeKind::ExprCall == 24);
     }
 
     test "precedence_order" {
-        const or_level = 0
-        const and_level = 1
-        const comp_level = 2
-        const add_level = 3
-        const mul_level = 4
-        const unary_level = 5
-        assert(or_level < and_level)
-        assert(and_level < comp_level)
-        assert(comp_level < add_level)
-        assert(add_level < mul_level)
-        assert(mul_level < unary_level)
+        const or_level = 0;
+        const and_level = 1;
+        const comp_level = 2;
+        const add_level = 3;
+        const mul_level = 4;
+        const unary_level = 5;
+        assert(or_level < and_level);
+        assert(and_level < comp_level);
+        assert(comp_level < add_level);
+        assert(add_level < mul_level);
+        assert(mul_level < unary_level);
     }
 
     test "max_children_constant" {
-        assert(MAX_CHILDREN == 32)
+        assert(MAX_CHILDREN == 32);
     }
 
     test "node_kind_count" {
-        assert(NodeKind::ExprReturn == 31)
-        assert(NodeKind::StmtLocal == 10)
+        assert(NodeKind::ExprReturn == 31);
+        assert(NodeKind::StmtLocal == 10);
     }
 
     test "node_kind_coverage" {
-        assert(NodeKind::Module == NodeKind::Module)
-        assert(NodeKind::FnDecl != NodeKind::StructDecl)
+        assert(NodeKind::Module == NodeKind::Module);
+        assert(NodeKind::FnDecl != NodeKind::StructDecl);
     }
 
     test "expression_precedence_levels" {
-        assert(10 > 9)
-        assert(9 > 8)
-        assert(8 > 7)
-        assert(7 > 6)
-        assert(6 > 5)
-        assert(5 > 4)
-        assert(4 > 3)
-        assert(3 > 2)
-        assert(2 > 1)
-        assert(1 > 0)
+        assert(10 > 9);
+        assert(9 > 8);
+        assert(8 > 7);
+        assert(7 > 6);
+        assert(6 > 5);
+        assert(5 > 4);
+        assert(4 > 3);
+        assert(3 > 2);
+        assert(2 > 1);
+        assert(1 > 0);
     }
 
     test "break_continue_node_kinds" {
-        assert(NodeKind::StmtBreak == 17)
-        assert(NodeKind::StmtContinue == 18)
-        assert(NodeKind::StmtBreak != NodeKind::StmtContinue)
+        assert(NodeKind::StmtBreak == 17);
+        assert(NodeKind::StmtContinue == 18);
+        assert(NodeKind::StmtBreak != NodeKind::StmtContinue);
     }
 
     test "error_recovery_skip_to_semicolon" {
         var p = parser_init("fn foo() { x; }", 16);
-        assert(p.current.kind != lexer::TokenKind::Eof)
+        assert(p.current.kind != lexer::TokenKind::Eof);
     }
 
     test "struct_decl_distinct_from_enum" {
-        assert(NodeKind::StructDecl == 6)
-        assert(NodeKind::EnumDecl == 5)
-        assert(NodeKind::StructDecl != NodeKind::EnumDecl)
+        assert(NodeKind::StructDecl == 6);
+        assert(NodeKind::EnumDecl == 5);
+        assert(NodeKind::StructDecl != NodeKind::EnumDecl);
     }
 
     test "all_statement_kinds_unique" {
-        assert(NodeKind::StmtLocal != NodeKind::StmtAssign)
-        assert(NodeKind::StmtAssign != NodeKind::StmtIf)
-        assert(NodeKind::StmtIf != NodeKind::StmtWhile)
-        assert(NodeKind::StmtWhile != NodeKind::StmtFor)
-        assert(NodeKind::StmtFor != NodeKind::StmtExpr)
-        assert(NodeKind::StmtExpr != NodeKind::ExprReturn)
-        assert(NodeKind::ExprReturn != NodeKind::StmtBreak)
-        assert(NodeKind::StmtBreak != NodeKind::StmtContinue)
+        assert(NodeKind::StmtLocal != NodeKind::StmtAssign);
+        assert(NodeKind::StmtAssign != NodeKind::StmtIf);
+        assert(NodeKind::StmtIf != NodeKind::StmtWhile);
+        assert(NodeKind::StmtWhile != NodeKind::StmtFor);
+        assert(NodeKind::StmtFor != NodeKind::StmtExpr);
+        assert(NodeKind::StmtExpr != NodeKind::ExprReturn);
+        assert(NodeKind::ExprReturn != NodeKind::StmtBreak);
+        assert(NodeKind::StmtBreak != NodeKind::StmtContinue);
     }
 }

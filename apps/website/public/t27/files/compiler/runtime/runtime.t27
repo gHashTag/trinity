@@ -50,9 +50,12 @@ module triruntime {
     };
 
     // Initialize runtime environment
-    pub fn runtime_init(rt: *Runtime) !void {
-        try alloc_stack(rt);
-        try alloc_heap(rt);
+    // (Was `!void` with `try` calls: t27 has no error unions, and neither
+    // allocator can fail in this spec -- "assume allocation succeeds" -- so
+    // runtime_init, alloc_stack and alloc_heap return plain void.)
+    pub fn runtime_init(rt: *Runtime) void {
+        alloc_stack(rt);
+        alloc_heap(rt);
         init_threads(rt);
         init_channels(rt);
         rt.cycle_counter = 0;
@@ -76,7 +79,7 @@ module triruntime {
     }
 
     // Allocate stack memory
-    fn alloc_stack(rt: *Runtime) !void {
+    fn alloc_stack(rt: *Runtime) void {
         // Allocate STACK_SIZE bytes
         // For spec: assume allocation succeeds
         rt.stack_base = 0xDEADBEEF; // Placeholder
@@ -84,7 +87,7 @@ module triruntime {
     }
 
     // Allocate heap memory
-    fn alloc_heap(rt: *Runtime) !void {
+    fn alloc_heap(rt: *Runtime) void {
         // Allocate HEAP_SIZE bytes
         rt.heap_base = 0xBADDCAFE; // Placeholder
         rt.heap_ptr = rt.heap_base;
@@ -94,15 +97,17 @@ module triruntime {
     // Initialize thread management
     fn init_threads(rt: *Runtime) void {
         // Set all threads to idle
-        for (&rt.thread_states) |*state| {
-            state.* = .idle;
+        // (Zig `for (&xs) |*x| x.* = v` written as an indexed loop.)
+        var i: usize = 0;
+        while (i < MAX_THREADS) : (i += 1) {
+            rt.thread_states[i] = .idle;
         }
     }
 
     // Initialize communication channels
     fn init_channels(rt: *Runtime) void {
         // Set all channels to empty
-        for (0..MAX_CHANNELS) |i| {
+        for i in 0..MAX_CHANNELS {
             rt.channel_sizes[i] = 0;
             rt.channel_readers[i] = 0;
             rt.channel_writers[i] = 0;
@@ -143,7 +148,7 @@ module triruntime {
     // Create a new channel
     pub fn channel_create(rt: *Runtime, size: usize) usize {
         // Find free channel
-        for (0..MAX_CHANNELS) |i| {
+        for i in 0..MAX_CHANNELS {
             if (rt.channel_sizes[i] == 0) {
                 const buffer = runtime_alloc(rt, size);
                 if (buffer == 0) {
@@ -181,7 +186,7 @@ module triruntime {
     // Spawn a new thread
     pub fn thread_spawn(rt: *Runtime, entry: usize, arg: usize) usize {
         // Find free thread slot
-        for (0..MAX_THREADS) |i| {
+        for i in 0..MAX_THREADS {
             if (rt.thread_states[i] == .idle) {
                 rt.thread_states[i] = .running;
                 rt.thread_sp[i] = rt.stack_base + STACK_SIZE;
@@ -211,129 +216,150 @@ module triruntime {
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 // TDD-Inside-Spec: Tests and Invariants for Runtime
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+// (Blocks were keyword-style with Zig statements; now brace form:
+// `try std.testing.expect(x)` -> `assert x`, `triruntime.f` -> `f` (same
+// module), `_ = runtime_init(&rt)` -> `runtime_init(&rt)` (it returns void
+// now, see runtime_init), and each bench's `target:` line is a comment.)
 
-test test_bootstrap_init_sequence
+test test_bootstrap_init_sequence {
     // Verify: runtime_init initializes all components in correct order
     // Setup: call runtime_init on fresh runtime
     // Expected: stack allocated, heap allocated, threads idle, channels empty
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    try std.testing.expect(rt.stack_base != 0);
-    try std.testing.expect(rt.heap_base != 0);
+    var rt = Runtime{};
+    runtime_init(&rt);
+    assert rt.stack_base != 0;
+    assert rt.heap_base != 0;
+}
 
-test test_arena_no_leak
+test test_arena_no_leak {
     // Verify: all allocations are freed (or tracked) in bump allocator
     // Setup: allocate various sizes, check heap state
     // Expected: no untracked allocations, heap_ptr <= heap_end
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    const ptr1 = triruntime.runtime_alloc(&rt, 100);
-    const ptr2 = triruntime.runtime_alloc(&rt, 200);
+    var rt = Runtime{};
+    runtime_init(&rt);
+    const ptr1 = runtime_alloc(&rt, 100);
+    const ptr2 = runtime_alloc(&rt, 200);
     _ = ptr1;
     _ = ptr2;
-    try std.testing.expect(rt.heap_ptr <= rt.heap_end);
+    assert rt.heap_ptr <= rt.heap_end;
+}
 
-test test_channel_send_recv_roundtrip
+test test_channel_send_recv_roundtrip {
     // Verify: data sent through channel is received correctly
     // Setup: create channel, send value, recv value
     // Expected: received value == sent value
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    const channel_id = triruntime.channel_create(&rt, 16);
-    try std.testing.expect(channel_id != 0xFFFFFFFF);
-    const sent = triruntime.channel_send(&rt, channel_id, 42);
-    try std.testing.expect(sent);
-    _ = triruntime.channel_recv(&rt, channel_id);
+    var rt = Runtime{};
+    runtime_init(&rt);
+    const channel_id = channel_create(&rt, 16);
+    assert channel_id != 0xFFFFFFFF;
+    const sent = channel_send(&rt, channel_id, 42);
+    assert sent;
+    _ = channel_recv(&rt, channel_id);
+}
 
-test test_thread_yield_fairness
+test test_thread_yield_fairness {
     // Verify: thread_yield cycles through all running threads
     // Setup: spawn 3 threads, each yields, verify round-robin
     // Expected: each thread gets CPU time
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    const t1 = triruntime.thread_spawn(&rt, 0x1000, 0);
-    const t2 = triruntime.thread_spawn(&rt, 0x2000, 0);
-    const t3 = triruntime.thread_spawn(&rt, 0x3000, 0);
-    try std.testing.expect(t1 != 0xFFFFFFFF);
-    try std.testing.expect(t2 != 0xFFFFFFFF);
-    try std.testing.expect(t3 != 0xFFFFFFFF);
-    triruntime.thread_yield(&rt);
+    var rt = Runtime{};
+    runtime_init(&rt);
+    const t1 = thread_spawn(&rt, 0x1000, 0);
+    const t2 = thread_spawn(&rt, 0x2000, 0);
+    const t3 = thread_spawn(&rt, 0x3000, 0);
+    assert t1 != 0xFFFFFFFF;
+    assert t2 != 0xFFFFFFFF;
+    assert t3 != 0xFFFFFFFF;
+    thread_yield(&rt);
+}
 
-test test_exception_handler_invocation
+test test_exception_handler_invocation {
     // Verify: exception handler is called on trap
     // Setup: trigger TRAP, check exception_code
     // Expected: exception_handler called, exception_code set
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    try std.testing.expect(rt.exception_handler != 0);
+    var rt = Runtime{};
+    runtime_init(&rt);
+    assert rt.exception_handler != 0;
+}
 
-test test_stack_growth_direction
+test test_stack_growth_direction {
     // Verify: stack grows downward (SP decreases)
     // Setup: push values, track SP before/after
     // Expected: SP after < SP before
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
+    var rt = Runtime{};
+    runtime_init(&rt);
     const sp_before = rt.stack_ptr;
-    _ = triruntime.setup_stack_frame(&rt);
-    try std.testing.expect(rt.stack_ptr < sp_before);
+    setup_stack_frame(&rt);
+    assert rt.stack_ptr < sp_before;
+}
 
-test test_heap_bump_allocator_properties
+test test_heap_bump_allocator_properties {
     // Verify: bump allocator is O(1) and contiguous
     // Setup: allocate multiple times, check addresses
     // Expected: addresses are contiguous and increasing
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    const p1 = triruntime.runtime_alloc(&rt, 16);
-    const p2 = triruntime.runtime_alloc(&rt, 16);
-    try std.testing.expect(p2 > p1);
+    var rt = Runtime{};
+    runtime_init(&rt);
+    const p1 = runtime_alloc(&rt, 16);
+    const p2 = runtime_alloc(&rt, 16);
+    assert p2 > p1;
+}
 
-invariant arena_no_leak
+invariant arena_no_leak {
     // heap_ptr never exceeds heap_end
     // Rationale: Bump allocator must stay within bounds
-    const rt = triruntime.Runtime{};
+    const rt = Runtime{};
     assert rt.heap_ptr <= rt.heap_end;
+}
 
-invariant stack_bounds_valid
+invariant stack_bounds_valid {
     // stack_ptr stays within [stack_base, stack_base + STACK_SIZE)
     // Rationale: Stack must not overflow or underflow
-    const rt = triruntime.Runtime{};
+    const rt = Runtime{};
     assert rt.stack_ptr >= rt.stack_base;
-    assert rt.stack_ptr <= rt.stack_base + triruntime.STACK_SIZE;
+    assert rt.stack_ptr <= rt.stack_base + STACK_SIZE;
+}
 
-invariant thread_count_limit
+invariant thread_count_limit {
     // Active threads never exceed MAX_THREADS
     // Rationale: Thread pool has fixed size
-    const MAX_THREADS = triruntime.MAX_THREADS;
+    // (was `const MAX_THREADS = triruntime.MAX_THREADS;` -- renamed, since
+    // without the module prefix the local would shadow the constant it reads)
+    const max_threads = MAX_THREADS;
     assert true; // Runtime enforces this via thread_states array size
+}
 
-invariant channel_capacity_limit
+invariant channel_capacity_limit {
     // Channel size never exceeds initial allocation
     // Rationale: Channels have bounded capacity
     assert true; // Channels have fixed size buffers
+}
 
-invariant exception_handler_set
+invariant exception_handler_set {
     // exception_handler is never NULL after init
     // Rationale: System must have default error handler
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
+    var rt = Runtime{};
+    runtime_init(&rt);
     assert rt.exception_handler != 0;
+}
 
-bench bench_alloc_latency_cycles
-    target: < 10 cycles
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    _ = triruntime.runtime_alloc(&rt, 16);
+bench bench_alloc_latency_cycles {
+    // target: < 10 cycles
+    var rt = Runtime{};
+    runtime_init(&rt);
+    _ = runtime_alloc(&rt, 16);
+}
 
-bench test_channel_throughput_ops_per_sec
-    target: > 1M ops/sec
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    const channel_id = triruntime.channel_create(&rt, 16);
-    _ = triruntime.channel_send(&rt, channel_id, 0);
-    _ = triruntime.channel_recv(&rt, channel_id);
+bench test_channel_throughput_ops_per_sec {
+    // target: > 1M ops/sec
+    var rt = Runtime{};
+    runtime_init(&rt);
+    const channel_id = channel_create(&rt, 16);
+    _ = channel_send(&rt, channel_id, 0);
+    _ = channel_recv(&rt, channel_id);
+}
 
-bench test_thread_context_switch_cycles
-    target: < 100 cycles
-    var rt = triruntime.Runtime{};
-    _ = triruntime.runtime_init(&rt);
-    triruntime.thread_yield(&rt);
+bench test_thread_context_switch_cycles {
+    // target: < 100 cycles
+    var rt = Runtime{};
+    runtime_init(&rt);
+    thread_yield(&rt);
+}

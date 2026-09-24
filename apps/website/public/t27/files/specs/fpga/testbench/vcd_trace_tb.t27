@@ -73,6 +73,12 @@ module VCD_Trace_Testbench {
         invariant TIMESTAMP_RES_PS == 10;
     }
 
+    test test_tick {
+        tick();
+        invariant clk == true;
+        invariant timestamp_ps == 10;
+    }
+
     invariant max_signals_positive : MAX_SIGNALS > 0;
     invariant resolution_positive : TIMESTAMP_RES_PS > 0;
 

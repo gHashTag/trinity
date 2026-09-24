@@ -117,14 +117,21 @@ pub fn route_match(router: *Router, method: RouteMethod, path: []u8) RouteMatch 
     var best_match : *Route = null;
     var best_params : []RouteParam = &[_]RouteParam{};
 
-    for (router.routes) |route| {
+    // Was `for (router.routes) |route|`. It is an index loop now so that the
+    // matched route can be addressed in router.routes itself (see below).
+    for (0..router.routes.len) |ri| {
+        const route = router.routes[ri];
         if (route.method != method and route.method != .any) {
             continue;
         }
 
         const result = match_route(route.path, segments);
         if (result.matched) {
-            best_match = @ptrFrom(*route);
+            // Was `@ptrFrom(*route)`, which is no t27 (or Zig) builtin. The
+            // intent is a pointer to the matched element of router.routes,
+            // spelled `&router.routes[ri]`. (`&route` would point at the
+            // per-iteration copy, which does not outlive the loop.)
+            best_match = &router.routes[ri];
             best_params = result.params;
         }
     }
@@ -406,12 +413,16 @@ test "pattern_has_wildcard_false" {
 }
 
 test "param_get_finds_value" {
-    const params = &[_]RouteParam{ .key = "id", .value = "123" };
+    // One-element array: the original listed the element's fields directly
+    // inside `[_]RouteParam{...}`; the element is now an explicit literal.
+    const params = &[_]RouteParam{ RouteParam{ .key = "id", .value = "123" } };
     try std.testing.expect(std.mem.eql(param_get(params, "id"), "123"));
 }
 
 test "param_get_empty_not_found" {
-    const params = &[_]RouteParam{ .key = "name", .value = "test" };
+    // One-element array: the original listed the element's fields directly
+    // inside `[_]RouteParam{...}`; the element is now an explicit literal.
+    const params = &[_]RouteParam{ RouteParam{ .key = "name", .value = "test" } };
     try std.testing.expect(param_get(params, "id").len == 0);
 }
 
@@ -532,7 +543,9 @@ bench "router_param_get_latency" {
     // Measure: cycles for parameter lookup
     // Target: < 50 cycles
     @setEvalBranchQuota(10000);
-    const params = &[_]RouteParam{ .key = "id", .value = "123" };
+    // One-element array: the original listed the element's fields directly
+    // inside `[_]RouteParam{...}`; the element is now an explicit literal.
+    const params = &[_]RouteParam{ RouteParam{ .key = "id", .value = "123" } };
     var result : []u8 = undefined;
     for (0..1000) |_| {
         result = param_get(params, "id");

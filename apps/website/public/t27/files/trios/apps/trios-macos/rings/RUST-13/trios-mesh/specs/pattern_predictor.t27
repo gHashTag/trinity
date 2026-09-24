@@ -66,7 +66,7 @@ module pattern_predictor {
     }
 
     fn get_sample_array_upper(array: u64) -> u64 {
-        return ((array >> 64) & 0xFFFFFFFFFFFFFFFF;
+        return ((array >> 64) & 0xFFFFFFFFFFFFFFFF);
     }
 
     fn get_sample_array_lower(array: u64) -> u32 {

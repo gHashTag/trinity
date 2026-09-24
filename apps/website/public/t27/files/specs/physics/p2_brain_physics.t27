@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-// Module: P2 Brain — Physics Engine Framework
-// φ² + 1/φ² = 3 | TRINITY
+// Module: P2 Brain -- Physics Engine Framework
+// phi^2 + 1/phi^2 = 3 | TRINITY
 
 module P2Brain {
     // ========================================================================
@@ -20,7 +20,7 @@ module P2Brain {
     pub const PHI_INV : gf16 = numeric::phi_ratio::PHI_INV;
     pub const PHI_INV_SQ : gf16 = numeric::phi_ratio::PHI_INV_SQ;
 
-    // Trinity identity: φ² + φ⁻² = 3
+    // Trinity identity: phi^2 + phi^-2 = 3
     pub const TRINITY_PHI_SQ_INV : gf16 = numeric::phi_ratio::TRINITY_PHI_SQ_INV;
 
     // Planck constant (from physics/sacred_constants.t27)
@@ -38,7 +38,7 @@ module P2Brain {
 
     // LQGCState: 8-element state for bridge operations
     pub struct LQGCState {
-        symbols : [LQGCSymbol; 8],
+        symbols : [8]LQGCSymbol,
         position : u32,              // Bit position 0-31
         carry : u8,               // Bit 32-64
         overflow : bool,
@@ -50,11 +50,14 @@ module P2Brain {
 
     // stateInit(initialState: LQGCState) -> LQGCState
     // Initialize LQG-CS bridge with initial state
-    fn stateInit(initialState: LQGCState) -> LQGCState;
+    // (The original declares this signature only, with no body; the body is
+    // left empty here rather than invented.)
+    fn stateInit(initialState: LQGCState) -> LQGCState { }
 
     // next(state: LQGCState, symbol: LQGCSymbol, action: u8) -> LQGCState
     // Compute next state for LQG-CS transition
-    fn next(state: LQGCState, symbol: LQGCSymbol, action: u8) -> LQGCState;
+    // (Signature only in the original; body left empty, not invented.)
+    fn next(state: LQGCState, symbol: LQGCSymbol, action: u8) -> LQGCState { }
 
     // ========================================================================
     // 4. Entropy Operations
@@ -62,7 +65,8 @@ module P2Brain {
 
     // su2Entropy(h: gf16, n: u8) -> gf16
     // Compute SU(2) Chern entropy from histogram data
-    fn su2Entropy(h: gf16, n: u8) -> gf16;
+    // (Signature only in the original; body left empty, not invented.)
+    fn su2Entropy(h: gf16, n: u8) -> gf16 { }
 
     // ========================================================================
     // 5. Simulation Types
@@ -88,77 +92,93 @@ module P2Brain {
     // 6. Tests
     // ========================================================================
 
-    test state_init_creates_valid_state
-        given state = stateInit({ symbols: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position: 0, carry: 0, overflow: false})
-        then state.symbols[0] == 0
+    // The original state literals listed 11, 10 or 9 zeros for the 8-element
+    // `symbols` field; every literal below uses the 8 zeros the type holds.
+    test state_init_creates_valid_state {
+        const state = stateInit(LQGCState{ .symbols = [8]LQGCSymbol{ 0, 0, 0, 0, 0, 0, 0, 0 }, .position = 0, .carry = 0, .overflow = false });
+        assert(state.symbols[0] == 0);
+    }
 
-    test next_updates_state_correctly
-        given state = stateInit({ symbols: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position: 0, carry: 0, overflow: false})
-        and result = next(state, 0, 0, 0b00000000u8)
-        then result.symbols[0] == 0b00000000u8
+    test next_updates_state_correctly {
+        const state = stateInit(LQGCState{ .symbols = [8]LQGCSymbol{ 0, 0, 0, 0, 0, 0, 0, 0 }, .position = 0, .carry = 0, .overflow = false });
+        // The original call was next(state, 0, 0, 0b00000000u8): four arguments
+        // for three parameters. The surplus zero argument is dropped.
+        const result = next(state, 0, 0);
+        assert(result.symbols[0] == 0b00000000);
+    }
 
-    test su2_entropy_computes_valid_gamma
-        given h = gf16::from_f64(1.0)  // Half probability
-        and n = 2                             // 2 symbols
-        when entropy = su2Entropy(h, n)
-        then gf16::to_f64(entropy) > 0.5
+    test su2_entropy_computes_valid_gamma {
+        const h = gf16::from_f64(1.0);  // Half probability
+        const n : u8 = 2;                     // 2 symbols
+        const entropy = su2Entropy(h, n);
+        assert(gf16::to_f64(entropy) > 0.5);
+    }
 
     // ========================================================================
     // 7. Benchmarks
     // ========================================================================
 
-    bench state_init_latency
+    bench state_init_latency {
         // Measure: cycles to initialize LQG-CS state
         // Target: < 1000 cycles
         @setEvalBranchQuota(10000);
-        var state = stateInit({ symbols: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], position: 0, carry: 0, overflow: false});
+        var state = stateInit(LQGCState{ .symbols = [8]LQGCSymbol{ 0, 0, 0, 0, 0, 0, 0, 0 }, .position = 0, .carry = 0, .overflow = false });
         _ = state;
+    }
 
-    bench next_transition_latency
+    bench next_transition_latency {
         // Measure: cycles for one LQG-CS transition
         // Target: < 500 cycles
         @setEvalBranchQuota(10000);
-        var state = stateInit({ symbols: [0, 0, 0, 0, 0, 0, 0, 0, 0], position: 0, carry: 0, overflow: false});
+        var state = stateInit(LQGCState{ .symbols = [8]LQGCSymbol{ 0, 0, 0, 0, 0, 0, 0, 0 }, .position = 0, .carry = 0, .overflow = false });
         _ = next(state, 0, 1);
         _ = state;
+    }
 
-    bench su2_entropy_latency_2_symbols
+    bench su2_entropy_latency_2_symbols {
         // Measure: cycles to compute SU(2) entropy for 2 symbols
         // Target: < 5000 cycles
         @setEvalBranchQuota(10000);
         var h = gf16::from_f64(1.0);
         _ = su2Entropy(h, 2);
+    }
 
     // ========================================================================
     // 8. Invariants
     // ========================================================================
 
-    invariant trinity_phi_squared_plus_inverse_squared_equals_three
+    invariant trinity_phi_squared_plus_inverse_squared_equals_three {
         // Verify: PHI_SQ + PHI_INV_SQ equals TRINITY (exactly 3.0 in GF16)
         // This is the fundamental Trinity identity
-        assert numeric::gf16::to_f64(PHI_SQ) + numeric::gf16::to_f64(PHI_INV_SQ) == numeric::gf16::from_f64(3.0);
+        assert(numeric::gf16::to_f64(PHI_SQ) + numeric::gf16::to_f64(PHI_INV_SQ) == numeric::gf16::from_f64(3.0));
+    }
 
-    invariant lqgc_symbols_cover_all_states
+    invariant lqgc_symbols_cover_all_states {
         // Verify: LQGCSymbol enum {0, 1, 2, +1, -1, -2} covers 2^8 = 256 states
         // Bridge operations must handle all symbol transitions
-        assert LQGCSymbol::NUM_VALUES == 8;
+        assert(LQGCSymbol::NUM_VALUES == 8);
+    }
 
-    invariant entropy_non_negative
+    invariant entropy_non_negative {
         // Verify: Entropy is always non-negative
         // H >= 0 for all probability distributions
-        assert true;
+        assert(true);
+    }
 
-    invariant simulation_samples_positive
+    invariant simulation_samples_positive {
         // Verify: Simulation samples parameter is valid
-        assert Simulation.samples > 0;
+        assert(Simulation.samples > 0);
+    }
 
-    invariant lqgc_state_valid
+    invariant lqgc_state_valid {
         // Verify: LQGCSState position is always valid (< 64)
         // Position must be in range 0-31
-        assert true;
+        assert(true);
+    }
 
-    invariant carry_bit_within_u32
+    invariant carry_bit_within_u32 {
         // Verify: Carry bit is within u32 range
         // Carry must be bit 32-64
-        assert true;
+        assert(true);
+    }
 }

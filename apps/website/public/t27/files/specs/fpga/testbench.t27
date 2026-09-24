@@ -246,6 +246,26 @@ module Testbench {
         given cfg = clock_cfg(10)
         then total_sim_ns(cfg, 100) == 1000
 
+    test stim_count_before_empty
+        given stimuli = [TbStimulus]{}
+        then stim_count_before(stimuli, 0, 10) == 0
+
+    test stim_count_before_all_before
+        given stimuli = [TbStimulus]{stimulus(1, "a", 1), stimulus(2, "b", 2), stimulus(3, "c", 3)}
+        then stim_count_before(stimuli, 3, 10) == 3
+
+    test stim_count_before_none_before
+        given stimuli = [TbStimulus]{stimulus(15, "a", 1), stimulus(20, "b", 2)}
+        then stim_count_before(stimuli, 2, 10) == 0
+
+    test stim_count_before_some_before
+        given stimuli = [TbStimulus]{stimulus(5, "a", 1), stimulus(10, "b", 2), stimulus(15, "c", 3)}
+        then stim_count_before(stimuli, 3, 10) == 2
+
+    test stim_count_before_partial_array
+        given stimuli = [TbStimulus]{stimulus(1, "a", 1), stimulus(5, "b", 2), stimulus(10, "c", 3), stimulus(15, "d", 4), stimulus(20, "e", 5)}
+        then stim_count_before(stimuli, 3, 10) == 3
+
     // === Invariants ===
 
     invariant half_period_not_zero

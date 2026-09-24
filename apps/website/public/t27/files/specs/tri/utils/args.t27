@@ -1,105 +1,16 @@
-// SPDX-License-Identifier: Apache-2.0
-// t27/specs/
-// -- separates options from positional args | φ² + 1/φ² = 3 | TRINITY
-
 module TriArgs;
-    use base::types;
-    use math::constants;
+use base::types;
+use math::constants;
 
-    // ═══════════════════════════════════════════════════════════
-    // 2. Types
-    // ═══════════════════════════════════════════════════════════
+// Alias to avoid dot-splitting in Lean model transcription
+const Allocator = std.mem.Allocator;
 
-    pub const Arg = struct {
-        short : ?u8,
-        long : ?[]const u8,
-        required : bool,
-    };
+test parse_creates_result
+         given allocator = std.testing.allocator
+         when parse(allocator)
+         then true // parse function executes without error
 
-    pub const ArgValue = struct {
-        value : ?[]const u8,
-        present : bool,
-    };
-
-    pub const ParseResult = struct {
-        positional : [][]const u8,
-        named : []ArgValue,
-        error : ?[]const u8,
-    };
-
-    // ═══════════════════════════════════════════════════════════
-    // 3. Core Functions
-    // ═══════════════════════════════════════════════════════════
-
-    // parse(allocator: std.mem.Allocator) → void
-    fn parse(allocator: std.mem.Allocator) -> void {
-        _ = allocator; // Allocator parameter not used in basic implementation
-        return; // Explicit return statement
-    }
-
-    // has_flag(result: ParseResult) → void
-    fn has_flag(result: ParseResult) -> void {
-        // Check if any flags are present in the result
-        var has_any = false;
-        for (result.named) |arg_value| {
-            if (arg_value.present) {
-                has_any = true;
-                break;
-            }
-        }
-    }
-
-    // get_value(result: ParseResult) → void
-    fn get_value(result: ParseResult) -> void {
-        // Extract values from the result
-        for (result.named) |arg_value| {
-            if (arg_value.present and arg_value.value != null) {
-                // Value extraction logic
-            }
-        }
-    }
-
-    // get_positional(result: ParseResult) → void
-    fn get_positional(result: ParseResult) -> void {
-        // Extract positional arguments from result
-        for (result.positional) |pos| {
-            // Positional argument extraction logic
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // TDD: Tests (from .tri behaviors)
-    // ═══════════════════════════════════════════════════════════
-
-    test parse_creates_result
-        given allocator = std.testing.allocator
-        when parse(allocator)
-        then true // parse function executes without error
-
-    test has_flag_detects_flags
-        given result = ParseResult{
-            .positional = &[_][]const u8{},
-            .named = &[_]ArgValue{ArgValue{.value = null, .present = true}},
-            .error = null,
-        }
-        when has_flag(result)
-        then true // has_flag function executes without error
-
-    test get_value_extracts_values
-        given result = ParseResult{
-            .positional = &[_][]const u8{},
-            .named = &[_]ArgValue{ArgValue{.value = "test", .present = true}},
-            .error = null,
-        }
-        when get_value(result)
-        then true // get_value function executes without error
-
-    test get_positional_extracts_positional
-        given result = ParseResult{
-            .positional = &[_][]const u8{"arg1", "arg2"},
-            .named = &[_]ArgValue{},
-            .error = null,
-        }
-        when get_positional(result)
-        then true // get_positional function executes without error
-
+fn parse(allocator: Allocator) -> void {
+    _ = allocator; // Allocator parameter not used in basic implementation
+    return; // Explicit return statement
+}

@@ -467,446 +467,445 @@ pub fn fp8_quantize_to_int8(value: FP8E4M3) i8 {
 // ============================================================================
 
 test "fp8_extract_sign_positive" {
-    given value = 0x3C
-    try std.testing.expect(sign = fp8_extract_sign(value));
-    try std.testing.expect(sign == 0);
+    const value = 0x3C;
+    const sign = fp8_extract_sign(value);
+    assert(sign == 0);
 }
 
 test "fp8_extract_sign_negative" {
-    given value = 0xBC
-    try std.testing.expect(sign = fp8_extract_sign(value));
-    try std.testing.expect(sign == -1);
+    const value = 0xBC;
+    const sign = fp8_extract_sign(value);
+    assert(sign == -1);
 }
 
 test "fp8_extract_exponent_max" {
-    given value = 0x78
-    try std.testing.expect(exp = fp8_extract_exponent(value));
-    try std.testing.expect(exp == EXP_MAX);
+    const value = 0x78;
+    const exp = fp8_extract_exponent(value);
+    assert(exp == EXP_MAX);
 }
 
 test "fp8_extract_exponent_zero" {
-    given value = 0x07
-    try std.testing.expect(exp = fp8_extract_exponent(value));
-    try std.testing.expect(exp == 0);
+    const value = 0x07;
+    const exp = fp8_extract_exponent(value);
+    assert(exp == 0);
 }
 
 test "fp8_extract_mantissa_max" {
-    given value = 0x07
-    try std.testing.expect(mant = fp8_extract_mantissa(value));
-    try std.testing.expect(mant == MANT_MASK);
+    const value = 0x07;
+    const mant = fp8_extract_mantissa(value);
+    assert(mant == MANT_MASK);
 }
 
 test "fp8_is_zero_positive" {
-    try std.testing.expect(fp8_is_zero(FP8_ZERO_POS) == true);
+    assert(fp8_is_zero(FP8_ZERO_POS) == true);
 }
 
 test "fp8_is_zero_negative" {
-    try std.testing.expect(fp8_is_zero(FP8_ZERO_NEG) == true);
+    assert(fp8_is_zero(FP8_ZERO_NEG) == true);
 }
 
 test "fp8_is_zero_nonzero" {
-    try std.testing.expect(fp8_is_zero(0x01) == false);
+    assert(fp8_is_zero(0x01) == false);
 }
 
 test "fp8_is_inf_positive" {
-    try std.testing.expect(fp8_is_inf(FP8_INF_POS) == true);
+    assert(fp8_is_inf(FP8_INF_POS) == true);
 }
 
 test "fp8_is_inf_negative" {
-    try std.testing.expect(fp8_is_inf(FP8_INF_NEG) == true);
+    assert(fp8_is_inf(FP8_INF_NEG) == true);
 }
 
 test "fp8_is_nan_positive" {
-    try std.testing.expect(fp8_is_nan(FP8_NAN_POS) == true);
+    assert(fp8_is_nan(FP8_NAN_POS) == true);
 }
 
 test "fp8_is_nan_negative" {
-    try std.testing.expect(fp8_is_nan(FP8_NAN_NEG) == true);
+    assert(fp8_is_nan(FP8_NAN_NEG) == true);
 }
 
 test "fp8_is_inf_not_nan" {
-    try std.testing.expect(fp8_is_inf(FP8_INF_POS) == true and fp8_is_nan(FP8_INF_POS) == false);
+    assert(fp8_is_inf(FP8_INF_POS) == true and fp8_is_nan(FP8_INF_POS) == false);
 }
 
 test "fp8_is_special_inf" {
-    try std.testing.expect(fp8_is_special(FP8_INF_POS) == true);
+    assert(fp8_is_special(FP8_INF_POS) == true);
 }
 
 test "fp8_is_special_nan" {
-    try std.testing.expect(fp8_is_special(FP8_NAN_POS) == true);
+    assert(fp8_is_special(FP8_NAN_POS) == true);
 }
 
 test "fp8_is_subnormal_true" {
-    given value = 0x01
-    try std.testing.expect(fp8_is_subnormal(value) == true);
+    const value = 0x01;
+    assert(fp8_is_subnormal(value) == true);
 }
 
 test "fp8_is_subnormal_false_normal" {
-    given value = 0x08
-    try std.testing.expect(fp8_is_subnormal(value) == false);
+    const value = 0x08;
+    assert(fp8_is_subnormal(value) == false);
 }
 
 test "fp8_is_subnormal_false_zero" {
-    try std.testing.expect(fp8_is_subnormal(FP8_ZERO_POS) == false);
+    assert(fp8_is_subnormal(FP8_ZERO_POS) == false);
 }
 
 test "fp8_encode_f32_zero" {
-    given fp = fp8_encode_f32(0.0)
-    try std.testing.expect(fp == FP8_ZERO_POS);
+    const fp = fp8_encode_f32(0.0);
+    assert(fp == FP8_ZERO_POS);
 }
 
 test "fp8_encode_f32_negative_zero" {
-    given fp = fp8_encode_f32(-0.0)
-    try std.testing.expect(fp == FP8_ZERO_NEG);
+    const fp = fp8_encode_f32(-0.0);
+    assert(fp == FP8_ZERO_NEG);
 }
 
 test "fp8_encode_f32_one" {
-    given fp = fp8_encode_f32(1.0)
-    try std.testing.expect(decoded = fp8_decode_f32(fp));
-    try std.testing.expect(abs(decoded - 1.0) < 0.05);
+    const fp = fp8_encode_f32(1.0);
+    const decoded = fp8_decode_f32(fp);
+    assert(abs(decoded - 1.0) < 0.05);
 }
 
 test "fp8_encode_f32_negative_one" {
-    given fp = fp8_encode_f32(-1.0)
-    try std.testing.expect(decoded = fp8_decode_f32(fp));
-    try std.testing.expect(abs(decoded + 1.0) < 0.05);
+    const fp = fp8_encode_f32(-1.0);
+    const decoded = fp8_decode_f32(fp);
+    assert(abs(decoded + 1.0) < 0.05);
 }
 
 test "fp8_encode_f32_two" {
-    given fp = fp8_encode_f32(2.0)
-    try std.testing.expect(decoded = fp8_decode_f32(fp));
-    try std.testing.expect(abs(decoded - 2.0) < 0.1);
+    const fp = fp8_encode_f32(2.0);
+    const decoded = fp8_decode_f32(fp);
+    assert(abs(decoded - 2.0) < 0.1);
 }
 
 test "fp8_encode_f32_half" {
-    given fp = fp8_encode_f32(0.5)
-    try std.testing.expect(decoded = fp8_decode_f32(fp));
-    try std.testing.expect(abs(decoded - 0.5) < 0.05);
+    const fp = fp8_encode_f32(0.5);
+    const decoded = fp8_decode_f32(fp);
+    assert(abs(decoded - 0.5) < 0.05);
 }
 
 test "fp8_encode_f32_roundtrip_positive" {
-    given original = 1.5
-    try std.testing.expect(fp = fp8_encode_f32(original));
-    try std.testing.expect(decoded = fp8_decode_f32(fp));
-    try std.testing.expect(abs(decoded - original) < 0.1);
+    const original = 1.5;
+    const fp = fp8_encode_f32(original);
+    const decoded = fp8_decode_f32(fp);
+    assert(abs(decoded - original) < 0.1);
 }
 
 test "fp8_encode_f32_roundtrip_negative" {
-    given original = -1.5
-    try std.testing.expect(fp = fp8_encode_f32(original));
-    try std.testing.expect(decoded = fp8_decode_f32(fp));
-    try std.testing.expect(abs(decoded - original) < 0.1);
+    const original = -1.5;
+    const fp = fp8_encode_f32(original);
+    const decoded = fp8_decode_f32(fp);
+    assert(abs(decoded - original) < 0.1);
 }
 
 test "fp8_encode_f32_nan" {
-    given fp = fp8_encode_f32(std.math.nan(f32))
-    try std.testing.expect(fp8_is_nan(fp) == true);
+    const fp = fp8_encode_f32(std.math.nan(f32));
+    assert(fp8_is_nan(fp) == true);
 }
 
 test "fp8_encode_f32_inf" {
-    given fp = fp8_encode_f32(std.math.inf(f32))
-    try std.testing.expect(fp8_is_inf(fp) == true);
+    const fp = fp8_encode_f32(std.math.inf(f32));
+    assert(fp8_is_inf(fp) == true);
 }
 
 test "fp8_encode_f32_neg_inf" {
-    given fp = fp8_encode_f32(-std.math.inf(f32))
-    try std.testing.expect(fp8_is_inf(fp) == true);
+    const fp = fp8_encode_f32(-std.math.inf(f32));
+    assert(fp8_is_inf(fp) == true);
 }
 
 test "fp8_decode_f32_zero" {
-    try std.testing.expect(fp8_decode_f32(FP8_ZERO_POS) == 0.0);
+    assert(fp8_decode_f32(FP8_ZERO_POS) == 0.0);
 }
 
 test "fp8_decode_f32_negative_zero" {
-    try std.testing.expect(fp8_decode_f32(FP8_ZERO_NEG) == -0.0);
+    assert(fp8_decode_f32(FP8_ZERO_NEG) == -0.0);
 }
 
 test "fp8_decode_f32_inf" {
-    try std.testing.expect(std.math.isInf(fp8_decode_f32(FP8_INF_POS)) == true);
+    assert(std.math.isInf(fp8_decode_f32(FP8_INF_POS)) == true);
 }
 
 test "fp8_decode_f32_neg_inf" {
-    try std.testing.expect(std.math.isInf(fp8_decode_f32(FP8_INF_NEG)) == true);
+    assert(std.math.isInf(fp8_decode_f32(FP8_INF_NEG)) == true);
 }
 
 test "fp8_decode_f32_nan" {
-    try std.testing.expect(std.math.isNan(fp8_decode_f32(FP8_NAN_POS)) == true);
+    assert(std.math.isNan(fp8_decode_f32(FP8_NAN_POS)) == true);
 }
 
 test "fp8_add_simple" {
-    given a = fp8_encode_f32(1.0)
-    try std.testing.expect(b = fp8_encode_f32(2.0));
-    try std.testing.expect(result = fp8_add(a, b));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded - 3.0) < 0.15);
+    const a = fp8_encode_f32(1.0);
+    const b = fp8_encode_f32(2.0);
+    const result = fp8_add(a, b);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded - 3.0) < 0.15);
 }
 
 test "fp8_sub_simple" {
-    given a = fp8_encode_f32(5.0)
-    try std.testing.expect(b = fp8_encode_f32(3.0));
-    try std.testing.expect(result = fp8_sub(a, b));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded - 2.0) < 0.15);
+    const a = fp8_encode_f32(5.0);
+    const b = fp8_encode_f32(3.0);
+    const result = fp8_sub(a, b);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded - 2.0) < 0.15);
 }
 
 test "fp8_mul_simple" {
-    given a = fp8_encode_f32(3.0)
-    try std.testing.expect(b = fp8_encode_f32(2.0));
-    try std.testing.expect(result = fp8_mul(a, b));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded - 6.0) < 0.3);
+    const a = fp8_encode_f32(3.0);
+    const b = fp8_encode_f32(2.0);
+    const result = fp8_mul(a, b);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded - 6.0) < 0.3);
 }
 
 test "fp8_div_simple" {
-    given a = fp8_encode_f32(6.0)
-    try std.testing.expect(b = fp8_encode_f32(3.0));
-    try std.testing.expect(result = fp8_div(a, b));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded - 2.0) < 0.15);
+    const a = fp8_encode_f32(6.0);
+    const b = fp8_encode_f32(3.0);
+    const result = fp8_div(a, b);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded - 2.0) < 0.15);
 }
 
 test "fp8_div_by_zero_positive" {
-    given a = fp8_encode_f32(5.0)
-    try std.testing.expect(b = fp8_encode_f32(0.0));
-    try std.testing.expect(result = fp8_div(a, b));
-    try std.testing.expect(result == FP8_INF_POS);
+    const a = fp8_encode_f32(5.0);
+    const b = fp8_encode_f32(0.0);
+    const result = fp8_div(a, b);
+    assert(result == FP8_INF_POS);
 }
 
 test "fp8_div_by_zero_negative" {
-    given a = fp8_encode_f32(-5.0)
-    try std.testing.expect(b = fp8_encode_f32(0.0));
-    try std.testing.expect(result = fp8_div(a, b));
-    try std.testing.expect(result == FP8_INF_NEG);
+    const a = fp8_encode_f32(-5.0);
+    const b = fp8_encode_f32(0.0);
+    const result = fp8_div(a, b);
+    assert(result == FP8_INF_NEG);
 }
 
 test "fp8_sqrt_four" {
-    given value = fp8_encode_f32(4.0)
-    try std.testing.expect(result = fp8_sqrt(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded - 2.0) < 0.1);
+    const value = fp8_encode_f32(4.0);
+    const result = fp8_sqrt(value);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded - 2.0) < 0.1);
 }
 
 test "fp8_sqrt_negative" {
-    given value = fp8_encode_f32(-4.0)
-    try std.testing.expect(result = fp8_sqrt(value));
-    try std.testing.expect(fp8_is_nan(result) == true);
+    const value = fp8_encode_f32(-4.0);
+    const result = fp8_sqrt(value);
+    assert(fp8_is_nan(result) == true);
 }
 
 test "fp8_rsqrt_four" {
-    given value = fp8_encode_f32(4.0)
-    try std.testing.expect(result = fp8_rsqrt(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded - 0.5) < 0.1);
+    const value = fp8_encode_f32(4.0);
+    const result = fp8_rsqrt(value);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded - 0.5) < 0.1);
 }
 
 test "fp8_abs_positive" {
-    given value = fp8_encode_f32(5.0)
-    try std.testing.expect(result = fp8_abs(value));
-    try std.testing.expect(fp8_is_equal(result, value) == true);
+    const value = fp8_encode_f32(5.0);
+    const result = fp8_abs(value);
+    assert(fp8_is_equal(result, value) == true);
 }
 
 test "fp8_abs_negative" {
-    given value = fp8_encode_f32(-5.0)
-    try std.testing.expect(abs_val = fp8_abs(value));
-    try std.testing.expect(fp8_extract_sign(abs_val) == 0);
+    const value = fp8_encode_f32(-5.0);
+    const abs_val = fp8_abs(value);
+    assert(fp8_extract_sign(abs_val) == 0);
 }
 
 test "fp8_neg_positive" {
-    given value = fp8_encode_f32(5.0)
-    try std.testing.expect(neg_val = fp8_neg(value));
-    try std.testing.expect(fp8_extract_sign(neg_val) < 0);
+    const value = fp8_encode_f32(5.0);
+    const neg_val = fp8_neg(value);
+    assert(fp8_extract_sign(neg_val) < 0);
 }
 
 test "fp8_neg_negative" {
-    given value = fp8_encode_f32(-5.0)
-    try std.testing.expect(neg_val = fp8_neg(value));
-    try std.testing.expect(fp8_extract_sign(neg_val) == 0);
+    const value = fp8_encode_f32(-5.0);
+    const neg_val = fp8_neg(value);
+    assert(fp8_extract_sign(neg_val) == 0);
 }
 
 test "fp8_is_equal_true" {
-    given value = fp8_encode_f32(1.0)
-    try std.testing.expect(fp8_is_equal(value, value) == true);
+    const value = fp8_encode_f32(1.0);
+    assert(fp8_is_equal(value, value) == true);
 }
 
 test "fp8_is_equal_false" {
-    given a = fp8_encode_f32(1.0)
-    try std.testing.expect(b = fp8_encode_f32(2.0));
-    try std.testing.expect(fp8_is_equal(a, b) == false);
+    const a = fp8_encode_f32(1.0);
+    const b = fp8_encode_f32(2.0);
+    assert(fp8_is_equal(a, b) == false);
 }
 
 test "fp8_is_equal_nan" {
-    try std.testing.expect(fp8_is_equal(FP8_NAN_POS, FP8_NAN_POS) == false);
+    assert(fp8_is_equal(FP8_NAN_POS, FP8_NAN_POS) == false);
 }
 
 test "fp8_is_equal_zero" {
-    try std.testing.expect(fp8_is_equal(FP8_ZERO_POS, FP8_ZERO_NEG) == true);
+    assert(fp8_is_equal(FP8_ZERO_POS, FP8_ZERO_NEG) == true);
 }
 
 test "fp8_is_greater_positive" {
-    given a = fp8_encode_f32(5.0)
-    try std.testing.expect(b = fp8_encode_f32(3.0));
-    try std.testing.expect(fp8_is_greater(a, b) == true);
+    const a = fp8_encode_f32(5.0);
+    const b = fp8_encode_f32(3.0);
+    assert(fp8_is_greater(a, b) == true);
 }
 
 test "fp8_max_returns_larger" {
-    given a = fp8_encode_f32(3.0)
-    try std.testing.expect(b = fp8_encode_f32(5.0));
-    try std.testing.expect(result = fp8_max(a, b));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(decoded >= 4.0);
+    const a = fp8_encode_f32(3.0);
+    const b = fp8_encode_f32(5.0);
+    const result = fp8_max(a, b);
+    const decoded = fp8_decode_f32(result);
+    assert(decoded >= 4.0);
 }
 
 test "fp8_min_returns_smaller" {
-    given a = fp8_encode_f32(3.0)
-    try std.testing.expect(b = fp8_encode_f32(5.0));
-    try std.testing.expect(result = fp8_min(a, b));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(decoded <= 4.0);
+    const a = fp8_encode_f32(3.0);
+    const b = fp8_encode_f32(5.0);
+    const result = fp8_min(a, b);
+    const decoded = fp8_decode_f32(result);
+    assert(decoded <= 4.0);
 }
 
 test "fp8_lerp_zero" {
-    given a = fp8_encode_f32(1.0)
-    try std.testing.expect(b = fp8_encode_f32(5.0));
-    try std.testing.expect(t = 0.0);
-    try std.testing.expect(result = fp8_lerp(a, b, t));
-    try std.testing.expect(fp8_is_equal(result, a) == true);
+    const a = fp8_encode_f32(1.0);
+    const b = fp8_encode_f32(5.0);
+    const t = 0.0;
+    const result = fp8_lerp(a, b, t);
+    assert(fp8_is_equal(result, a) == true);
 }
 
 test "fp8_lerp_one" {
-    given a = fp8_encode_f32(1.0)
-    try std.testing.expect(b = fp8_encode_f32(5.0));
-    try std.testing.expect(t = 1.0);
-    try std.testing.expect(result = fp8_lerp(a, b, t));
-    try std.testing.expect(fp8_is_equal(result, b) == true);
+    const a = fp8_encode_f32(1.0);
+    const b = fp8_encode_f32(5.0);
+    const t = 1.0;
+    const result = fp8_lerp(a, b, t);
+    assert(fp8_is_equal(result, b) == true);
 }
 
 test "fp8_fma_simple" {
-    given a = fp8_encode_f32(2.0)
-    try std.testing.expect(b = fp8_encode_f32(3.0));
-    try std.testing.expect(c = fp8_encode_f32(1.0));
-    try std.testing.expect(result = fp8_fma(a, b, c));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded - 7.0) < 0.3);
+    const a = fp8_encode_f32(2.0);
+    const b = fp8_encode_f32(3.0);
+    const c = fp8_encode_f32(1.0);
+    const result = fp8_fma(a, b, c);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded - 7.0) < 0.3);
 }
 
 test "fp8_relu_positive" {
-    given value = fp8_encode_f32(5.0)
-    try std.testing.expect(result = fp8_relu(value));
-    try std.testing.expect(fp8_is_equal(result, value) == true);
+    const value = fp8_encode_f32(5.0);
+    const result = fp8_relu(value);
+    assert(fp8_is_equal(result, value) == true);
 }
 
 test "fp8_relu_negative" {
-    given value = fp8_encode_f32(-5.0)
-    try std.testing.expect(result = fp8_relu(value));
-    try std.testing.expect(result == FP8_ZERO_POS);
+    const value = fp8_encode_f32(-5.0);
+    const result = fp8_relu(value);
+    assert(result == FP8_ZERO_POS);
 }
 
 test "fp8_relu_zero" {
-    given result = fp8_relu(FP8_ZERO_POS)
-    try std.testing.expect(result == FP8_ZERO_POS);
+    const result = fp8_relu(FP8_ZERO_POS);
+    assert(result == FP8_ZERO_POS);
 }
 
 test "fp8_sigmoid_zero" {
-    given value = FP8_ZERO_POS
-    try std.testing.expect(result = fp8_sigmoid(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded - 0.5) < 0.05);
+    const value = FP8_ZERO_POS;
+    const result = fp8_sigmoid(value);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded - 0.5) < 0.05);
 }
 
 test "fp8_sigmoid_positive" {
-    given value = fp8_encode_f32(10.0)
-    try std.testing.expect(result = fp8_sigmoid(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(decoded >= 0.95);
+    const value = fp8_encode_f32(10.0);
+    const result = fp8_sigmoid(value);
+    const decoded = fp8_decode_f32(result);
+    assert(decoded >= 0.95);
 }
 
 test "fp8_sigmoid_negative" {
-    given value = fp8_encode_f32(-10.0)
-    try std.testing.expect(result = fp8_sigmoid(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(decoded <= 0.05);
+    const value = fp8_encode_f32(-10.0);
+    const result = fp8_sigmoid(value);
+    const decoded = fp8_decode_f32(result);
+    assert(decoded <= 0.05);
 }
 
 test "fp8_tanh_zero" {
-    given value = FP8_ZERO_POS
-    try std.testing.expect(result = fp8_tanh(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(abs(decoded) < 0.05);
+    const value = FP8_ZERO_POS;
+    const result = fp8_tanh(value);
+    const decoded = fp8_decode_f32(result);
+    assert(abs(decoded) < 0.05);
 }
 
 test "fp8_tanh_positive" {
-    given value = fp8_encode_f32(10.0)
-    try std.testing.expect(result = fp8_tanh(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(decoded >= 0.95);
+    const value = fp8_encode_f32(10.0);
+    const result = fp8_tanh(value);
+    const decoded = fp8_decode_f32(result);
+    assert(decoded >= 0.95);
 }
 
 test "fp8_tanh_negative" {
-    given value = fp8_encode_f32(-10.0)
-    try std.testing.expect(result = fp8_tanh(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(decoded <= -0.95);
+    const value = fp8_encode_f32(-10.0);
+    const result = fp8_tanh(value);
+    const decoded = fp8_decode_f32(result);
+    assert(decoded <= -0.95);
 }
 
 test "fp8_gelu_zero" {
-    given value = FP8_ZERO_POS
-    try std.testing.expect(result = fp8_gelu(value));
-    try std.testing.expect(fp8_extract_sign(result) == 0);
+    const value = FP8_ZERO_POS;
+    const result = fp8_gelu(value);
+    assert(fp8_extract_sign(result) == 0);
 }
 
 test "fp8_swish_zero" {
-    given value = FP8_ZERO_POS
-    try std.testing.expect(result = fp8_swish(value));
-    try std.testing.expect(result == FP8_ZERO_POS);
+    const value = FP8_ZERO_POS;
+    const result = fp8_swish(value);
+    assert(result == FP8_ZERO_POS);
 }
 
 test "fp8_swish_positive" {
-    given value = fp8_encode_f32(1.0)
-    try std.testing.expect(result = fp8_swish(value));
-    try std.testing.expect(decoded = fp8_decode_f32(result));
-    try std.testing.expect(decoded > 0.0);
+    const value = fp8_encode_f32(1.0);
+    const result = fp8_swish(value);
+    const decoded = fp8_decode_f32(result);
+    assert(decoded > 0.0);
 }
 
 test "fp8_quantize_to_int4_max" {
-    given value = fp8_encode_f32(2.0)
-    try std.testing.expect(result = fp8_quantize_to_int4(value));
-    try std.testing.expect(result == 7);
+    const value = fp8_encode_f32(2.0);
+    const result = fp8_quantize_to_int4(value);
+    assert(result == 7);
 }
 
 test "fp8_quantize_to_int4_min" {
-    given value = fp8_encode_f32(-2.0)
-    try std.testing.expect(result = fp8_quantize_to_int4(value));
-    try std.testing.expect(result == -8);
+    const value = fp8_encode_f32(-2.0);
+    const result = fp8_quantize_to_int4(value);
+    assert(result == -8);
 }
 
 test "fp8_quantize_to_int8_max" {
-    given value = fp8_encode_f32(2.0)
-    try std.testing.expect(result = fp8_quantize_to_int8(value));
-    try std.testing.expect(result == 127);
+    const value = fp8_encode_f32(2.0);
+    const result = fp8_quantize_to_int8(value);
+    assert(result == 127);
 }
 
 test "fp8_quantize_to_int8_min" {
-    given value = fp8_encode_f32(-2.0)
-    try std.testing.expect(result = fp8_quantize_to_int8(value));
-    try std.testing.expect(result == -128);
+    const value = fp8_encode_f32(-2.0);
+    const result = fp8_quantize_to_int8(value);
+    assert(result == -128);
 }
 
 test "fp8_from_components_roundtrip" {
-    given sign = -1
-    try std.testing.expect(exp = 7);
-    try std.testing.expect(mant = 4);
-    try std.testing.expect(fp = fp8_from_components(sign, exp, mant));
-    try std.testing.expect(extracted_sign = fp8_extract_sign(fp));
-    try std.testing.expect(extracted_exp = fp8_extract_exponent(fp));
-    try std.testing.expect(extracted_mant = fp8_extract_mantissa(fp));
-    try std.testing.expect(extracted_sign == sign and extracted_exp == exp and extracted_mant == mant);
+    const sign = -1;
+    const exp = 7;
+    const mant = 4;
+    const fp = fp8_from_components(sign, exp, mant);
+    const extracted_sign = fp8_extract_sign(fp);
+    const extracted_exp = fp8_extract_exponent(fp);
+    const extracted_mant = fp8_extract_mantissa(fp);
+    assert(extracted_sign == sign and extracted_exp == exp and extracted_mant == mant);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant fp8_bits_constant
     assert BITS == 8
 
@@ -968,46 +967,46 @@ invariant fp8_sub_zero_identity
 
 invariant fp8_mul_one_identity
     given value = fp8_encode_f32(5.0)
-    try std.testing.expect(one = fp8_encode_f32(1.0));
+    and   one = fp8_encode_f32(1.0)
     assert fp8_is_equal(fp8_mul(value, one), value) == true or fp8_magnitude(value) > 0.5
 
 invariant fp8_div_one_identity
     given value = fp8_encode_f32(5.0)
-    try std.testing.expect(one = fp8_encode_f32(1.0));
+    and   one = fp8_encode_f32(1.0)
     assert fp8_is_equal(fp8_div(value, one), value) == true
 
 invariant fp8_max_ge_both
     given a = fp8_encode_f32(3.0)
-    try std.testing.expect(b = fp8_encode_f32(5.0));
-    try std.testing.expect(result = fp8_max(a, b));
-    try std.testing.expect(fp8_is_greater(result, a) == true and fp8_is_greater(result, b) == true or fp8_is_equal(result, b) == true);
+    and   b = fp8_encode_f32(5.0)
+    and   result = fp8_max(a, b)
+    assert fp8_is_greater(result, a) == true and fp8_is_greater(result, b) == true or fp8_is_equal(result, b) == true
 
 invariant fp8_min_le_both
     given a = fp8_encode_f32(3.0)
-    try std.testing.expect(b = fp8_encode_f32(5.0));
-    try std.testing.expect(result = fp8_min(a, b));
-    try std.testing.expect(fp8_is_greater(a, result) == true or fp8_is_equal(a, result) == true);
+    and   b = fp8_encode_f32(5.0)
+    and   result = fp8_min(a, b)
+    assert fp8_is_greater(a, result) == true or fp8_is_equal(a, result) == true
 
 invariant fp8_relu_non_negative
     given result = fp8_relu(fp8_encode_f32(5.0))
-    try std.testing.expect(fp8_extract_sign(result) == 0);
+    assert fp8_extract_sign(result) == 0
 
 invariant fp8_lerp_zero_start
     given a = fp8_encode_f32(1.0)
-    try std.testing.expect(b = fp8_encode_f32(5.0));
+    and   b = fp8_encode_f32(5.0)
     assert fp8_is_equal(fp8_lerp(a, b, 0.0), a) == true
 
 invariant fp8_lerp_one_end
     given a = fp8_encode_f32(1.0)
-    try std.testing.expect(b = fp8_encode_f32(5.0));
+    and   b = fp8_encode_f32(5.0)
     assert fp8_is_equal(fp8_lerp(a, b, 1.0), b) == true
 
 invariant fp8_sqrt_square_close
     given value = fp8_encode_f32(4.0)
-    try std.testing.expect(sqrt_val = fp8_sqrt(value));
-    try std.testing.expect(sq_val = fp8_mul(sqrt_val, sqrt_val));
-    try std.testing.expect(decoded = fp8_decode_f32(sq_val));
-    try std.testing.expect(abs(decoded - 4.0) < 0.5);
+    and   sqrt_val = fp8_sqrt(value)
+    and   sq_val = fp8_mul(sqrt_val, sqrt_val)
+    and   decoded = fp8_decode_f32(sq_val)
+    assert abs(decoded - 4.0) < 0.5
 
 invariant fp8_quantize_to_int4_in_range
     given result = fp8_quantize_to_int4(fp8_encode_f32(1.0))

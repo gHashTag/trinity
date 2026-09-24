@@ -195,6 +195,15 @@ module ZeroDSP_TopLevel {
         given set_uart_data(255)
         then get_uart_data() == 255
 
+    test system_init_resets_state
+        given system_init()
+        and   ready = system_ready()
+        and   busy = system_busy()
+        and   error = system_error()
+        then ready == true
+        and busy == false
+        and error == false
+
     invariant system_ready_when_not_processing
         given busy = system_busy()
         and   ready = system_ready()

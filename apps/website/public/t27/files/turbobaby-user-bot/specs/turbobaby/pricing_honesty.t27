@@ -46,7 +46,15 @@
 ; a number. It carries no renter, handle, phone, debt, key code, tax date, purchase cost,
 ; plate or personal note (D14) -- not in a constant and not in a test fixture. It does not
 ; distinguish a silent door from an unpublished tariff, because the client-facing consequence
-; of the two is identical; the divergence log D11 requires is a different contract. And it
+; of the two is identical. It no longer disclaims the divergence rule, and that sentence is
+; corrected rather than left standing: until 2026-09-20 this paragraph said "the divergence log
+; D11 requires is a different contract", which was wrong about the DECISION and right only
+; about the record. The decision -- the one-baht threshold, the ">=" boundary, and the rule
+; that the log never blocks or delays the answer -- is owned here, below. What is still owned
+; by nobody is the PERSISTED divergence record, and not by deferral: none of the 89 .sql files
+; under migrations/ mentions divergence, so there is no table, column or retention rule for any
+; contract to describe, and both emission sites leave a tracing::info! line and nothing else.
+; A named refusal below says exactly that, instead of naming a sink that does not exist. And it
 ; does not carry the Russian wording of the must-say sentence: L3 forbids Cyrillic in a spec,
 ; so what is pinned is the obligation, not the translation (D13: ru primary, en second).
 ; phi^2 + 1/phi^2 = 3 | TRINITY
@@ -84,7 +92,13 @@ pub const ZERO_DAY_RATES : u8 = 0;
 ; pcx-150, price-list-only: the cheapest number the tariff publishes anywhere.
 pub const CHEAPEST_PUBLISHED_DAY_RATE_THB : i16 = 349;
 ; nmax-155: the cheapest rate attached to a family that actually has units.
+; OWNED HERE, and named as owned since 2026-09-24: turbobaby/rental-terms computes its audit
+; arithmetic on the same row and carries the figure as REF_BASE_THB_DAY, which it now declares a
+; copy of this declaration (REF_BASE_IS_A_COPY, REF_BASE_OWNER_DECLARATION). Gate 3 binds both to
+; nmax-155's base_rate_thb_day in data/fleet_seed.json, so neither can move alone.
 pub const CHEAPEST_IN_STOCK_DAY_RATE_THB : i16 = 449;
+pub const CHEAPEST_IN_STOCK_FAMILY : str = "nmax-155";
+pub const CHEAPEST_IN_STOCK_RATE_COPY_DECLARATION : str = "REF_BASE_THB_DAY";
 ; xadv-750: the dearest, and the number that fixes the width of the amount field.
 pub const DEAREST_IN_STOCK_DAY_RATE_THB : i16 = 2788;
 ; Derived: click-125's rate, deposit and monthly, plus xadv-750's monthly.
@@ -180,8 +194,8 @@ pub struct RenderedRate {
 ; The only door to a PRESENT rate, and it is a guard rather than a wrapper. Zero is the exact
 ; "FREE" failure value D9 forbids; the negative half is reserved for invalid inputs and the
 ; poison marker. Both are refused as INVALID instead of being tagged present. This matches the
-; shared runtime boundary in src/trios/pricing.rs and the catalog renderer: finite and strictly
-; positive, never merely non-negative. Choosing i16 already makes NaN and infinity
+; shared runtime PRICE boundary in src/trios/pricing.rs and the catalog renderer: finite and strictly
+; positive, never merely non-negative (scope clarified 2026-09-22, see the end). i16 already makes NaN and infinity
 ; unrepresentable, so non-positive values are the remaining unpublishable cases.
 ; The refused number is not kept in the slot: it is replaced by the marker, because code that
 ; took the magnitude of a retained -250 would print a plausible 250 THB/day, and -1 is the one
@@ -245,6 +259,178 @@ pub fn may_add_to_cart(rate: OptionalRate, bookable: bool) bool {
         return false;
     }
     return bookable;
+}
+
+; --- D11's divergence decision, and the record nobody owns --------------------------------
+; DECISIONS.md:166-167 states the rule in one sentence: "Every priced answer logs any
+; divergence of >= 1 baht between door and file, and the logging never blocks or delays the
+; answer." Two halves, and the second is the load-bearing one. The first half alone would be
+; satisfied by a comparator that refuses the answer when the numbers disagree, which is the
+; exact failure D11 forbids at one remove: a client who is told nothing because two internal
+; numbers argue has been served silence, and silence is item 5 of MUST_NOT_EMIT.
+;
+; What is pinned here is the DECISION, not the sink. The threshold, the direction of the
+; boundary and the non-blocking rule are all checkable statements about behaviour. Persistence
+; is a statement about storage, and the refusal below explains why this file may not make one.
+
+; DECISIONS.md:166. One baht exactly, and the comparison includes the boundary: a gap EQUAL to
+; the threshold is reported. src/api/orders.rs:642 writes the same boundary in the runtime as
+; (quoted - from_file).abs() >= 1.0, so ">= " here is transcription and not a choice made in
+; this file. The unit is baht per day, the same unit as every other amount in this contract.
+pub const DIVERGENCE_THRESHOLD_THB_DAY : i16 = 1;
+
+; DECISIONS.md:167, the second half. Both emission sites obey it structurally, not by promise:
+; src/api/bikes.rs:649-662 logs inside an if-let and falls through to Ok(value), and
+; src/api/orders.rs:845-855 logs inside the loop and falls through to Ok(BikeLineCheck::Ok).
+; Neither has a branch that turns a divergence into an error, a retry or a delay.
+pub const DIVERGENCE_NEVER_BLOCKS_THE_ANSWER : bool = true;
+
+; Derived in one visible step: the cheapest in-stock rate moved by exactly the threshold. 448
+; is no family's tariff anywhere in the seed and is not offered as one -- it is the boundary
+; witness, the nearest file-side number that still has to be reported. The derivation is
+; asserted below rather than trusted to this comment.
+pub const GAP_AT_THRESHOLD_FILE_THB_DAY : i16 = CHEAPEST_IN_STOCK_DAY_RATE_THB - DIVERGENCE_THRESHOLD_THB_DAY;
+
+; An honest property of the representation, written down because its absence would read as an
+; oversight. The runtime compares f64 baht and can therefore see a gap SMALLER than one baht:
+; src/api/orders.rs:3732 pins 337.4 against a file-side 337.0, a 0.4 baht gap that is correctly
+; not reported. This contract's amounts are whole baht (AMOUNT_DECIMALS is 0), so the smallest
+; non-zero gap it can represent IS the threshold, and "below the threshold" here means exactly
+; zero. A reader hunting for a sub-baht case in this file would be hunting for something the
+; model cannot hold; the runtime test named above is where that case lives.
+pub const SUB_BAHT_GAP_IS_UNREPRESENTABLE_HERE : bool = true;
+
+; The file side's number is produced by the class-discount arithmetic, and that arithmetic is
+; NOT restated here: src/api/orders.rs:639-641 calls apply_class_discount (src/db/bikes.rs:296)
+; then round_half_up_baht (src/db/bikes.rs:312), and the integer statement of that same step
+; belongs to the rental-terms contract, whose audit_daily_thb pins 449 at 2500 bp to 337
+; (turbobaby/rental-terms owns audit_daily_thb and REF_BASE_THB_DAY; cited by owner ID and
+; declaration name rather than by line, because that file is under concurrent edit and a line
+; number would rot -- re-opened 2026-09-21, both declarations exist and still carry exactly this
+; arithmetic). This file compares two amounts. It
+; computes neither of them, and it holds no discount, rate or rounding rule of its own.
+; CORRECTED 2026-09-24: "owns REF_BASE_THB_DAY" was half right. Rental-terms owns the arithmetic
+; and the choice of NMAX 155 as its reference; the 449 inside REF_BASE_THB_DAY is this file's
+; CHEAPEST_IN_STOCK_DAY_RATE_THB, and rental-terms now declares its constant a copy of that one.
+pub const REUSES_RENTAL_TERMS_ID : str = "turbobaby/rental-terms";
+
+; Audit-only, tied to the discriminant instead of repeating the claim. The file side of a
+; comparison is exactly a SOURCE_FILE_REFERENCE value, and is_client_price already refuses that
+; source, so the file's number has no path to a render. What is NEW is the scope: on the
+; divergence path a caller holds both numbers at once for the first time, which is the one
+; place where showing "the other one" becomes reachable by accident.
+pub const FILE_REFERENCE_IS_AUDIT_ONLY : bool = true;
+pub const DIVERGENCE_FILE_SIDE_SOURCE : u8 = SOURCE_FILE_REFERENCE;
+
+; THE REFUSAL (measured 2026-09-20, re-measured 2026-09-21 and unchanged). Persistence is not
+; specified here, and not because it was deferred: there is nothing in this repository to
+; specify it against. grep -rniE "diverg" over
+; migrations/ returns 0 rows. The 89 below is the number of .sql migration files that recursive
+; grep actually read: 88 at the top level plus 077_quest_progress.sql in migrations/wip/. It is
+; NOT "ls migrations/ | wc -l", which also prints 89 but counts the wip/ DIRECTORY as one of its
+; entries and only 88 files -- the right number by the wrong arithmetic, and the two agree here
+; by coincidence. (87, 86 and 87 before 087, and 88, 87 and 88 before 088, both 2026-09-24: see
+; the corrections below the count.) So: no table, no column, no id, no retention
+; window. Both emission sites are tracing::info!, which is a process log line: it has no schema
+; this file could pin, no reader this file could name and no lifetime this file could bound.
+; Naming a table, a column set or a retention period would be exactly the invention D11 forbids,
+; one level up from the price. When a sink exists, this constant is what has to be deleted.
+pub const DIVERGENCE_PERSISTENCE_IS_NOT_SPECIFIED : bool = true;
+pub const DIVERGENCE_TABLES : u8 = 0;
+pub const MIGRATION_FILES_SEARCHED : u8 = 89;
+; THIS CONTRACT OWNS THIS COUNT. turbobaby/locale-policy declares the same figure in a
+; declaration of the same name, for a DIFFERENT search over the same directory: it looks for a
+; CHECK constraint on a language column where this one looks for a divergence sink. One
+; measurement declared twice with no edge between the two files is the drift D15 exists to
+; remove. This contract raised the figure first, so the count is owned HERE and carried THERE as
+; a named copy that names this ID. Re-measured 2026-09-21 and unchanged at 87: 86 .sql files at
+; the top level plus 077_quest_progress.sql in migrations/wip/. The only non-.sql file anywhere
+; under migrations/ is migrations/wip/README.md, which is why counting every file returns 88 and
+; is the wrong arithmetic for this claim. Re-run the same day, the search for divergence over
+; all 87 still returns zero rows, and both emission sites below still read as quoted.
+; CORRECTED 2026-09-24: 88, of which 87 at the top level. migrations/087_delivery_zones_phuket.sql
+; arrived with the owner's Phuket delivery zones (turbobaby/delivery-terms). The search was re-run
+; over all 88 the same day and still returns zero rows for divergence; counting every file under
+; migrations/ now returns 89, still the wrong arithmetic for the same reason. The 2026-09-21
+; figures are kept below under their own names.
+; CORRECTED 2026-09-24, later the same day: 89, of which 88 at the top level.
+; migrations/088_unpublish_events.sql arrived with the owner's rental-only ruling
+; (turbobaby/events-booking). The divergence search was re-run over all 89 and still returns zero
+; rows; counting every file under migrations/ now returns 90. The figures between 087 and 088 are
+; kept below under _BEFORE_088 names. The paragraph that follows still reads 88, as written.
+; CORRECTED 2026-09-24, the same day: THIS CONTRACT DOES NOT OWN THIS COUNT. The paragraph above claimed it,
+; and so did turbobaby/schema-provenance, whose subject is the migration tree: it declares the same
+; census as SQL_FILES_RECURSIVE 88, SQL_FILES_TOP_LEVEL 87 and WIP_SQL_FILES 1, names itself the
+; census owner, and lists this file as a sibling copy -- while this file never named it. A review of
+; 2026-09-23 recorded two self-declared owners of one measurement. Resolved by subject: the census
+; is schema-provenance's. What stays here is the USE of the number -- the divergence search read
+; all 88 files and found no sink -- carried as a declared copy with the owner named by ID and by
+; declaration, and gate 3 now binds the owner's three figures to the tree beside this file's.
+; The claim as written is kept under a _BEFORE_ name, and so is the copy holder it named, because
+; turbobaby/locale-policy now names the census owner instead of this file.
+pub const MIGRATION_COUNT_IS_OWNED_HERE : bool = false;
+pub const MIGRATION_COUNT_IS_OWNED_HERE_BEFORE_2026_09_24 : bool = true;
+pub const REUSES_SCHEMA_PROVENANCE_ID : str = "turbobaby/schema-provenance";
+pub const MIGRATION_COUNT_OWNER_DECLARATIONS : [3]str = ["SQL_FILES_RECURSIVE", "SQL_FILES_TOP_LEVEL", "WIP_SQL_FILES"];
+pub const MIGRATION_COUNT_IS_A_COPY : bool = true;
+pub const MIGRATION_COUNT_COPY_HOLDER_ID_BEFORE_2026_09_24 : str = "turbobaby/locale-policy";
+pub const MIGRATION_COUNT_TOP_LEVEL : u8 = 88;
+pub const MIGRATION_COUNT_IN_WIP : u8 = 1;
+pub const MIGRATION_COUNT_REMEASURED_AT : str = "2026-09-24";
+pub const MIGRATION_COUNT_OWNERSHIP_RESOLVED_AT : str = "2026-09-24";
+pub const MIGRATION_FILES_SEARCHED_BEFORE_087 : u8 = 87;
+pub const MIGRATION_COUNT_TOP_LEVEL_BEFORE_087 : u8 = 86;
+pub const MIGRATION_COUNT_REMEASURED_AT_BEFORE_087 : str = "2026-09-21";
+pub const MIGRATION_FILES_SEARCHED_BEFORE_088 : u8 = 88;
+pub const MIGRATION_COUNT_TOP_LEVEL_BEFORE_088 : u8 = 87;
+pub const DIVERGENCE_SINK_KIND : str = "process log line";
+pub const DIVERGENCE_SINKS : [2]str = [
+  "src/api/bikes.rs:655-660",
+  "src/api/orders.rs:848-853",
+];
+pub const DIVERGENCE_PERSISTENCE_NOTE : str = "No sink exists: none of the 89 .sql migration files under migrations/ (88 at the top level plus one in migrations/wip/) mentions divergence, so there is no table, column or retention rule to pin. The only trace either priced answer leaves is a tracing::info! line at src/api/bikes.rs:655-660 and src/api/orders.rs:848-853. The decision is owned here; the record is owned by nobody.";
+
+; The file side of a comparison, as a predicate. is_client_price already names the door side;
+; this is its counterpart, and it exists so that divergence_report_required can refuse a
+; mislabelled pair instead of comparing a door number against another door number.
+pub fn is_file_reference(rate: OptionalRate) bool {
+    return is_present(rate) and rate.source == SOURCE_FILE_REFERENCE;
+}
+
+; Unsigned distance between two amounts, in whole baht. Both published bounds fit in i16 and so
+; does their widest possible difference (2788 - 349), so no comparison here can overflow.
+pub fn amount_gap_thb_day(a: i16, b: i16) i16 {
+    if (a >= b) {
+        return a - b;
+    }
+    return b - a;
+}
+
+; Whether D11 requires a report. Three refusals before the arithmetic, and each mirrors a
+; branch of src/api/orders.rs:634-647: no door number means no priced answer to log against
+; (the runtime's quoted filter at :640), no file number means nothing to compare (the runtime's
+; ? at :641), and only then is the gap measured against the threshold. A mislabelled pair --
+; two door values, or a reference value passed as the door -- is refused rather than compared,
+; because a divergence between a number and itself is not evidence of anything.
+pub fn divergence_report_required(door: OptionalRate, file_ref: OptionalRate) bool {
+    if (is_client_price(door) == false) {
+        return false;
+    }
+    if (is_file_reference(file_ref) == false) {
+        return false;
+    }
+    return amount_gap_thb_day(door.thb_day, file_ref.thb_day) >= DIVERGENCE_THRESHOLD_THB_DAY;
+}
+
+; The non-blocking half, written as code so that it can be checked rather than believed. The
+; branch is real and both arms are deliberately identical: whatever the comparison decides, the
+; customer is handed render(door) and nothing else. The file side never reaches this return
+; value, and there is no third arm in which a divergence withholds the answer.
+pub fn answer_despite_divergence(door: OptionalRate, file_ref: OptionalRate) RenderedRate {
+    if (divergence_report_required(door, file_ref)) {
+        return render(door);
+    }
+    return render(door);
 }
 
 ; --- tests -------------------------------------------------------------------------------
@@ -352,6 +538,134 @@ test the_published_rates_are_counted_and_none_is_free {
     assert NULL_MONEY_FIELDS_IN_STOCK == 4;
 }
 
+; ---- D11's divergence boundary ----------------------------------------------------------
+; The door quotes the cheapest in-stock rate, 449. The file side is that same number, then that
+; same number moved by exactly the threshold. Equality and the boundary are the two cases the
+; ">=" in DECISIONS.md:166 actually distinguishes, so they are the two cases pinned.
+test the_divergence_report_boundary_sits_exactly_at_one_baht {
+    assert DIVERGENCE_THRESHOLD_THB_DAY == 1;
+    assert GAP_AT_THRESHOLD_FILE_THB_DAY == CHEAPEST_IN_STOCK_DAY_RATE_THB - DIVERGENCE_THRESHOLD_THB_DAY;
+    assert amount_gap_thb_day(CHEAPEST_IN_STOCK_DAY_RATE_THB, CHEAPEST_IN_STOCK_DAY_RATE_THB) == 0;
+    assert divergence_report_required(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)) == false;
+    assert amount_gap_thb_day(CHEAPEST_IN_STOCK_DAY_RATE_THB, GAP_AT_THRESHOLD_FILE_THB_DAY) == DIVERGENCE_THRESHOLD_THB_DAY;
+    assert divergence_report_required(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)) == true;
+}
+
+; "Below the threshold" is not a second case in this model, it is the same case, and saying so
+; out loud is the point of this test. In whole baht the only gap smaller than one baht is zero,
+; so equality IS the sub-threshold case here; the fractional one the runtime can see is pinned
+; in Rust at src/api/orders.rs:3732 and cannot be written down in an integer contract.
+test below_the_threshold_means_exactly_zero_in_whole_baht {
+    assert SUB_BAHT_GAP_IS_UNREPRESENTABLE_HERE == true;
+    assert AMOUNT_DECIMALS == 0;
+    assert amount_gap_thb_day(CHEAPEST_IN_STOCK_DAY_RATE_THB, CHEAPEST_IN_STOCK_DAY_RATE_THB) < DIVERGENCE_THRESHOLD_THB_DAY;
+    assert divergence_report_required(rate_present(DEAREST_IN_STOCK_DAY_RATE_THB), rate_reference(DEAREST_IN_STOCK_DAY_RATE_THB)) == false;
+}
+
+; The widest gap this file's own measured bounds can produce, 2788 against 349. It is here to
+; catch an implementation that reports only an exact one-baht difference instead of everything
+; at or above it, and to show the comparison is symmetric in its two arguments.
+test a_gap_far_above_the_threshold_is_reported_in_either_direction {
+    assert amount_gap_thb_day(DEAREST_IN_STOCK_DAY_RATE_THB, CHEAPEST_PUBLISHED_DAY_RATE_THB) == 2439;
+    assert amount_gap_thb_day(CHEAPEST_PUBLISHED_DAY_RATE_THB, DEAREST_IN_STOCK_DAY_RATE_THB) == 2439;
+    assert divergence_report_required(rate_present(DEAREST_IN_STOCK_DAY_RATE_THB), rate_reference(CHEAPEST_PUBLISHED_DAY_RATE_THB)) == true;
+    assert divergence_report_required(rate_present(CHEAPEST_PUBLISHED_DAY_RATE_THB), rate_reference(DEAREST_IN_STOCK_DAY_RATE_THB)) == true;
+}
+
+; The non-blocking half of DECISIONS.md:166-167, as the three cases side by side. Agreement, a
+; divergence exactly at the boundary, and a divergence far past it all hand the customer the
+; identical triple: the amount shape, the door's own 449, and no extra sentence.
+test the_customer_is_told_the_same_thing_in_every_divergence_case {
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)).shape == SHAPE_AMOUNT;
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).shape == SHAPE_AMOUNT;
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(DEAREST_IN_STOCK_DAY_RATE_THB)).shape == SHAPE_AMOUNT;
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)).thb_day == CHEAPEST_IN_STOCK_DAY_RATE_THB;
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).thb_day == CHEAPEST_IN_STOCK_DAY_RATE_THB;
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(DEAREST_IN_STOCK_DAY_RATE_THB)).thb_day == CHEAPEST_IN_STOCK_DAY_RATE_THB;
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).say == SAY_NOTHING_EXTRA;
+    assert DIVERGENCE_NEVER_BLOCKS_THE_ANSWER == true;
+}
+
+; The audit-only rule at the one place it becomes reachable: the caller is holding both numbers.
+; 448 is the file's number in the boundary case above, and it is exactly what the answer must
+; NOT contain. A source-tagged pair is also checked for mislabelling in both directions.
+test the_file_side_of_a_divergence_is_never_shown_to_a_client {
+    assert FILE_REFERENCE_IS_AUDIT_ONLY == true;
+    assert DIVERGENCE_FILE_SIDE_SOURCE == SOURCE_FILE_REFERENCE;
+    assert is_file_reference(rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)) == true;
+    assert is_file_reference(rate_present(GAP_AT_THRESHOLD_FILE_THB_DAY)) == false;
+    assert is_client_price(rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)) == false;
+    assert render(rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).shape == SHAPE_DASH;
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).thb_day != GAP_AT_THRESHOLD_FILE_THB_DAY;
+}
+
+; A silent door is the absence path, not a divergence with one side missing. The runtime agrees
+; by construction -- src/api/orders.rs:640 drops out before the comparison -- and the customer
+; gets the dash and the sentence, never a comparison against the file's number. The mirror case
+; is here too: a missing file side is nothing to compare, not a divergence of the whole amount.
+test an_absent_door_amount_is_the_absence_path_and_never_a_divergence {
+    assert divergence_report_required(rate_absent(), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)) == false;
+    assert divergence_report_required(rate_zero_filled_record(), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)) == false;
+    assert divergence_report_required(rate_present(0), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)) == false;
+    assert divergence_report_required(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_absent()) == false;
+    assert answer_despite_divergence(rate_absent(), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)).shape == SHAPE_DASH;
+    assert answer_despite_divergence(rate_absent(), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)).say == SAY_HUMAN_QUOTES;
+    assert answer_despite_divergence(rate_absent(), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)).thb_day == NOT_AN_AMOUNT_THB_DAY;
+}
+
+; The refusal, as a case rather than as a paragraph. If a migration ever creates a divergence
+; table, DIVERGENCE_TABLES stops being 0 and this test is the first thing that has to change.
+test persistence_of_a_divergence_is_refused_for_lack_of_a_sink {
+    assert DIVERGENCE_PERSISTENCE_IS_NOT_SPECIFIED == true;
+    assert DIVERGENCE_TABLES == 0;
+    assert MIGRATION_FILES_SEARCHED == 89;
+    assert DIVERGENCE_SINK_KIND == "process log line";
+    assert DIVERGENCE_SINKS.len == 2;
+    assert DIVERGENCE_SINKS[0] == "src/api/bikes.rs:655-660";
+    assert DIVERGENCE_SINKS[1] == "src/api/orders.rs:848-853";
+}
+
+; The file side's number is somebody else's output. Naming that owner is what keeps this
+; contract from growing a second copy of the class-discount step.
+; The count this contract USES, and whose it is. Until 2026-09-24 this test was named for owning
+; the count and naming its copy holder; the census is turbobaby/schema-provenance's, and the test
+; now says so. It still fails the day the two halves of the directory stop adding up to the whole,
+; which is the arithmetic that made the wrong version of this measurement look right.
+test the_migration_file_count_is_a_named_copy_of_the_schema_census {
+  assert MIGRATION_FILES_SEARCHED == 89;
+  assert MIGRATION_COUNT_IS_OWNED_HERE == false;
+  assert MIGRATION_COUNT_IS_OWNED_HERE_BEFORE_2026_09_24 == true;
+  assert MIGRATION_COUNT_IS_A_COPY == true;
+  assert REUSES_SCHEMA_PROVENANCE_ID == "turbobaby/schema-provenance";
+  assert REUSES_SCHEMA_PROVENANCE_ID != ID;
+  assert MIGRATION_COUNT_OWNER_DECLARATIONS.len == 3;
+  assert MIGRATION_COUNT_OWNER_DECLARATIONS[0] == "SQL_FILES_RECURSIVE";
+  assert MIGRATION_COUNT_OWNER_DECLARATIONS[1] == "SQL_FILES_TOP_LEVEL";
+  assert MIGRATION_COUNT_OWNER_DECLARATIONS[2] == "WIP_SQL_FILES";
+  assert MIGRATION_COUNT_OWNERSHIP_RESOLVED_AT == "2026-09-24";
+  assert MIGRATION_COUNT_TOP_LEVEL == 88;
+  assert MIGRATION_COUNT_IN_WIP == 1;
+  assert MIGRATION_COUNT_TOP_LEVEL + MIGRATION_COUNT_IN_WIP == MIGRATION_FILES_SEARCHED;
+  assert MIGRATION_COUNT_COPY_HOLDER_ID_BEFORE_2026_09_24 == "turbobaby/locale-policy";
+  assert MIGRATION_COUNT_COPY_HOLDER_ID_BEFORE_2026_09_24 != ID;
+  assert MIGRATION_COUNT_REMEASURED_AT == "2026-09-24";
+  assert MIGRATION_FILES_SEARCHED_BEFORE_087 == 87;
+  assert MIGRATION_COUNT_TOP_LEVEL_BEFORE_087 + MIGRATION_COUNT_IN_WIP == MIGRATION_FILES_SEARCHED_BEFORE_087;
+  assert MIGRATION_FILES_SEARCHED == MIGRATION_FILES_SEARCHED_BEFORE_088 + 1;
+  assert MIGRATION_FILES_SEARCHED_BEFORE_088 == MIGRATION_FILES_SEARCHED_BEFORE_087 + 1;
+  assert MIGRATION_COUNT_TOP_LEVEL_BEFORE_088 + MIGRATION_COUNT_IN_WIP == MIGRATION_FILES_SEARCHED_BEFORE_088;
+  assert MIGRATION_COUNT_REMEASURED_AT_BEFORE_087 == "2026-09-21";
+  assert DIVERGENCE_TABLES == 0;
+}
+
+test the_file_side_arithmetic_is_owned_by_the_rental_terms_contract {
+    assert REUSES_RENTAL_TERMS_ID == "turbobaby/rental-terms";
+    assert REUSES_RENTAL_TERMS_ID != ID;
+    assert REUSES_RENTAL_TERMS_ID != REUSES_AVAILABILITY_ID;
+    assert CHEAPEST_IN_STOCK_FAMILY == "nmax-155";
+    assert CHEAPEST_IN_STOCK_RATE_COPY_DECLARATION == "REF_BASE_THB_DAY";
+}
+
 ; --- invariants --------------------------------------------------------------------------
 ; Claims about the whole module that no single example carries.
 
@@ -419,3 +733,45 @@ invariant the_prohibited_emissions_are_whole
 ; The issue's premise, refuted in the file that closes it.
 invariant the_issue_figure_was_not_reproducible
     assert ISSUE_CLAIMED_WITHOUT_RATE != FAMILIES_WITHOUT_RATE and FAMILIES_WITHOUT_RATE == 1
+
+; The claim D11's second half is really making, as a property rather than as an example. The
+; first conjunct is what gives the second one its force: the two inputs genuinely disagree
+; about whether a report is owed -- one true, one false -- and the customer's amount is the
+; same number in both. Without the first conjunct this would hold vacuously for two identical
+; inputs and would prove nothing at all.
+invariant a_reported_divergence_and_a_silent_one_produce_the_same_answer
+    assert divergence_report_required(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)) != divergence_report_required(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)) and answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).thb_day == answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)).thb_day
+
+; All three fields of the answer, so that "the same answer" means the whole triple and not just
+; the number: a divergence may not silently swap the shape or attach the human-quote sentence
+; to a perfectly good amount either. Silence is item 5 of MUST_NOT_EMIT, and a divergence that
+; downgraded a priced answer to a dash would be committing it.
+invariant no_divergence_outcome_changes_the_shape_the_amount_or_the_sentence
+    assert answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).shape == SHAPE_AMOUNT and answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).say == SAY_NOTHING_EXTRA and answer_despite_divergence(rate_present(CHEAPEST_IN_STOCK_DAY_RATE_THB), rate_reference(GAP_AT_THRESHOLD_FILE_THB_DAY)).thb_day != GAP_AT_THRESHOLD_FILE_THB_DAY
+
+; The threshold is a positive whole baht, and the boundary witness is derived from it rather
+; than typed in. If either number is edited alone, this fails.
+invariant the_divergence_threshold_is_one_whole_baht
+    assert DIVERGENCE_THRESHOLD_THB_DAY == 1 and DIVERGENCE_THRESHOLD_THB_DAY > 0 and GAP_AT_THRESHOLD_FILE_THB_DAY == CHEAPEST_IN_STOCK_DAY_RATE_THB - DIVERGENCE_THRESHOLD_THB_DAY
+
+; D11's two halves must not be allowed to swap places: a silent door produces the dash and the
+; sentence, and never a comparison, so no divergence path can be reached from an absence.
+invariant a_silent_door_is_an_absence_and_never_a_divergence
+    assert divergence_report_required(rate_absent(), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)) == false and answer_despite_divergence(rate_absent(), rate_reference(CHEAPEST_IN_STOCK_DAY_RATE_THB)).say == SAY_HUMAN_QUOTES
+
+; Refused for cause, not deferred to later. The cause is a measurement -- zero divergence tables
+; in 88 migrations, two tracing sites -- so the refusal expires the day that measurement changes.
+invariant the_persisted_divergence_record_is_refused_not_deferred
+    assert DIVERGENCE_PERSISTENCE_IS_NOT_SPECIFIED == true and DIVERGENCE_TABLES == 0 and DIVERGENCE_SINKS.len == 2
+
+; CLARIFIED 2026-09-22, by the order-presentation money repair (turbobaby/order-presentation). The
+; constructors section calls the shared runtime boundary in src/trios/pricing.rs finite and
+; strictly positive, never merely non-negative. That sentence is about the PRICE boundary,
+; published_money, and it still holds. Since that day the same module also holds measured_money, a
+; separate boundary for the figures a stored ORDER carries -- a bonus of none, no stars spent, a
+; total the discounts paid in full -- where zero is a measurement and not an unpublished price.
+; published_money is written on top of it (the order filter plus the refusal of zero), so unusable
+; money is still defined once. Nothing this file owns changes: it governs one value, the per-day
+; rate of a bike family, and an order figure is not that value. The sentence its SHAPE_DASH carries
+; is not claimed by the order screens either; that contract records the absence as an open owner
+; question.

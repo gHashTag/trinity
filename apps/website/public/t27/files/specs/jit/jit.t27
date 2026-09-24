@@ -45,11 +45,13 @@ pub const MAX_DIMENSION : usize = 65536;
 
 /// JIT-compiled function type for VSA operations
 /// Takes two vector pointers and returns result in first pointer
-pub const JitVsaFn = *const fn (*anyopaque, *anyopaque) void;
+const JitVsaFnBase = fn (*anyopaque, *anyopaque) void;
+pub const JitVsaFn = *const JitVsaFnBase;
 
 /// JIT-compiled similarity function
 /// Takes two vector pointers and returns f64 similarity
-pub const JitSimilarityFn = *const fn (*anyopaque, *anyopaque) f64;
+const JitSimilarityFnBase = fn (*anyopaque, *anyopaque) f64;
+pub const JitSimilarityFn = *const JitSimilarityFnBase;
 
 /// JIT compilation result
 pub const JitResult = struct {
@@ -461,9 +463,9 @@ pub const JitCompiler = struct {
 /// Avoids recompilation for same dimensions
 pub const JitCache = struct {
     /// Cached bind functions by dimension
-    bind_cache : []*const fn (*anyopaque, *anyopaque) void,
+    bind_cache : []JitVsaFn,
     /// Cached bundle functions by dimension
-    bundle_cache : []*const fn (*anyopaque, *anyopaque) void,
+    bundle_cache : []JitSimilarityFn,
     /// Number of cached functions
     cache_size : usize,
     /// Maximum cache size
@@ -476,16 +478,16 @@ pub const JitCache = struct {
     const Self = @This();
 
     /// Initialize JIT cache
-    pub fn init(allocator: *anyopaque, max_cache_size: usize) Self {
-        return Self{
-            .bind_cache = [_]*const fn (*anyopaque, *anyopaque) void{} ** max_cache_size,
-            .bundle_cache = [_]*const fn (*anyopaque, *anyopaque) void{} ** max_cache_size,
-            .cache_size = 0,
-            .max_cache_size = max_cache_size,
-            .compiler = JitCompiler.init(allocator),
-            .allocator = allocator,
-        };
-    }
+pub fn init(allocator: *anyopaque, max_cache_size: usize) Self {
+         return Self{
+             .bind_cache = [_]JitVsaFn{} ** max_cache_size,
+             .bundle_cache = [_]JitSimilarityFn{} ** max_cache_size,
+             .cache_size = 0,
+             .max_cache_size = max_cache_size,
+             .compiler = JitCompiler.init(allocator),
+             .allocator = allocator,
+         };
+     }
 
     /// Reset cache (clear all cached functions)
     pub fn reset(self: *Self) void {
@@ -494,7 +496,7 @@ pub const JitCache = struct {
 
     /// Get or compile bind function for dimension
     /// Returns cached function if available, compiles new otherwise
-    pub fn get_bind(self: *Self, dimension: usize) ?*const fn (*anyopaque, *anyopaque) void {
+    pub fn get_bind(self: *Self, dimension: usize) *?JitVsaFn {
         // Check cache for existing function
         var i : usize = 0;
         while (i < self.cache_size) {
@@ -514,7 +516,7 @@ pub const JitCache = struct {
     }
 
     /// Get or compile bundle function for dimension
-    pub fn get_bundle(self: *Self, dimension: usize) ?*const fn (*anyopaque, *anyopaque) void {
+    pub fn get_bundle(self: *Self, dimension: usize) *?JitSimilarityFn {
         // Similar to get_bind but for bundle operation
         if (!self.compiler.compile_bundle(dimension)) {
             return null;
@@ -844,11 +846,11 @@ bench "jit_compiler_compile_dot_product_latency" {
 bench "jit_compiler_code_size_latency" {
     // Measure: cycles for code_size() call
     // Target: < 50 cycles (should be O(1))
-    @setEvalBranchQuota(10000);
-    var compiler = JitCompiler.init(null);
-    var size : usize = 0;
+    var total : usize = 0;
     for (0..10000) |_| {
-        size = compiler.code_size();
+        total += compiler.code_size();
+    }
+    @compileLog(total);
     }
     _ = size;
 }

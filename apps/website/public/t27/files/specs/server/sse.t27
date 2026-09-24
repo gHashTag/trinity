@@ -43,7 +43,7 @@ pub const RETRY_FIELD : [6]u8 = "retry:";
 pub const SSEEventType = enum(u8) {
     message = 0,
     status = 1,
-    error = 2,
+    @"error" = 2,
     keepalive = 3,
 };
 
@@ -590,3 +590,28 @@ bench "sse_int_to_string_latency" {
     }
     _ = result.len;
 }
+
+// TEST CASE: Function literals in struct fields cause parser errors
+// The following should work but currently fails:
+// test "function_literals_in_struct" {
+//     const client = SSEClient{
+//         .connection = connection_new("http://test"),
+//         .on_message = fn(e: SSEEvent) void { },
+//         .on_error = fn(err: []u8) void { },
+//         .on_open = fn() void { },
+//         .on_close = fn(code: SSECloseCode, msg: []u8) void { },
+//     };
+//     _ = client;
+// }
+//
+// WORKAROUND: Use struct pattern (also currently fails):
+// test "function_literals_struct_pattern" {
+//     const client = SSEClient{
+//         .connection = connection_new("http://test"),
+//         .on_message = (struct { fn f(e: SSEEvent) void { _ = e; } }).f,
+//         .on_error = (struct { fn f(err: []u8) void { _ = err; } }).f,
+//         .on_open = (struct { fn f() void {} }).f,
+//         .on_close = (struct { fn f(code: SSECloseCode, msg: []u8) void { _ = code; _ = msg; } }).f,
+//     };
+//     _ = client;
+// }

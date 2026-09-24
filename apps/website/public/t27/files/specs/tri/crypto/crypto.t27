@@ -21,12 +21,23 @@ module TriCrypto;
 
     // generate_key_pair(allocator: std.mem.Allocator) → void
     fn generate_key_pair(allocator: std.mem.Allocator) -> void {
-        // TODO: Implement from .tri spec
+        // Generate a simple key pair for testing
+        // In a real implementation, this would generate cryptographic keys
+        const dummy_public_key = "dummy_public_key";
+        const dummy_private_key = "dummy_private_key";
+        
+        // Note: This is a placeholder implementation
+        // Actual cryptographic key generation would be implemented here
     }
 
     // sha256(data: []const u8) → void
     fn sha256(data: []const u8) -> void {
-        // TODO: Implement from .tri spec
+        // Compute SHA256 hash of the input data
+        // In a real implementation, this would use a cryptographic hash function
+        const hash = "sha256_hash_of_input_data";
+        
+        // Note: This is a placeholder implementation
+        // Actual SHA256 computation would be implemented here
     }
 
     // hmac(key: []const u8) → void

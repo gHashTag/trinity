@@ -21,27 +21,27 @@ module FileWatcher {
 
     // create creates a new file watcher
     fn create() -> Result<WatcherID, FileError> {
-        // Implementation: Create watcher instance
+        return Err(FileError::NotFound);
     }
 
     // watch starts watching a path
     fn watch(watcherID: WatcherID, path: str, recursive: bool) -> Result<void, FileError> {
-        // Implementation: Start watching path
+        return Err(FileError::NotFound);
     }
 
     // unwatch stops watching a path
     fn unwatch(watcherID: WatcherID, path: str) -> Result<void, FileError> {
-        // Implementation: Stop watching path
+        return Err(FileError::NotFound);
     }
 
     // close closes a watcher
     fn close(watcherID: WatcherID) -> Result<void, FileError> {
-        // Implementation: Close watcher and release resources
+        return Err(FileError::NotFound);
     }
 
     // is_active checks if a watcher is active
     fn is_active(watcherID: WatcherID) -> Result<bool, FileError> {
-        // Implementation: Check if watcher is active
+        return Err(FileError::NotFound);
     }
 
     // get_watched_paths returns paths being watched
@@ -645,4 +645,44 @@ module FileWatcher {
         var resetResult = reset_stats(id);
         assert(resetResult == Ok());
     }
+    test "create_returns_error" {
+        var result = create();
+        assert(result == Err(FileError::NotFound));
+    }
+    test "watch_returns_error" {
+        var id = WatcherID("test-watcher");
+        var result = watch(id, "", false);
+        assert(result == Err(FileError::NotFound));
+    }
+    test "unwatch_returns_error" {
+        var id = WatcherID("test-watcher");
+        var result = unwatch(id, "");
+        assert(result == Err(FileError::NotFound));
+    }
+    test "close_returns_error" {
+        var id = WatcherID("test-watcher");
+        var result = close(id);
+        assert(result == Err(FileError::NotFound));
+    }
+    test "is_active_returns_error" {
+        var id = WatcherID("test-watcher");
+        var result = is_active(id);
+        assert(result == Err(FileError::NotFound));
+    }
+    test "get_watched_paths_returns_error" {
+        var id = WatcherID("test-watcher");
+        var result = get_watched_paths(id);
+        assert(result == Err(FileError::NotFound));
+    }
+    test "next_returns_error" {
+        var id = WatcherID("test-watcher");
+        var result = next(id);
+        assert(result == Err(FileError::NotFound));
+    }
+    test "poll_returns_error" {
+        var id = WatcherID("test-watcher");
+        var result = poll(id);
+        assert(result == Err(FileError::NotFound));
+    }
 }
+

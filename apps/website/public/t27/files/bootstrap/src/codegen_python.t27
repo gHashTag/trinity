@@ -7,7 +7,10 @@
 //
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 
-module codegen_python {
+// Syntax note: the older `module codegen_python { ... }` block form is written
+// as the `module codegen_python;` header; the block's closing brace and two
+// stray closing braces after the tests were removed.
+module codegen_python;
     use base::types;
     use parser;
 
@@ -16,7 +19,8 @@ module codegen_python {
     // ════════════════════════════════════════════════════════════════
 
     /// Python module prefix for generated code
-    pub const PYTHON_MODULE_PREFIX : []const u8 = b"t27_";
+    // Rust byte string b"t27_" written as an ordinary t27 string literal.
+    pub const PYTHON_MODULE_PREFIX : []const u8 = "t27_";
 
     // ══════════════════════════════════════════════════════════════════
     // TYPE MAPPINGS
@@ -60,15 +64,13 @@ module codegen_python {
         var field_count : u8 = 0;
 
         // Get struct name from node type identifier
-        match node.kind {
-            StructDecl => {
-                const name = node.name;
-                fields = &node.fields;
-            },
-            _ => {
-                // For other types, skip for now
-                class_name = "Any";
-            }
+        // (Rust `match node.kind { StructDecl => ..., _ => ... }` as if/else.)
+        if (node.kind == .StructDecl) {
+            const name = node.name;
+            fields = &node.fields;
+        } else {
+            // For other types, skip for now
+            class_name = "Any";
         }
 
         // Process each field
@@ -135,11 +137,12 @@ module codegen_python {
         var result : [256]u8 = undefined;
         var offset : usize = 0;
 
-        offset = string_copy_str(&mut offset, "def ");
-        offset = string_copy_str(&mut offset, func_name);
-        offset = gen_params(&mut offset, params, false);
-        offset = string_copy_str(&mut offset, "):\n");
-        offset = indent_lines(&mut offset, INDENT);
+        // Rust `&mut offset` borrows written as the pointer `&offset`.
+        offset = string_copy_str(&offset, "def ");
+        offset = string_copy_str(&offset, func_name);
+        offset = gen_params(&offset, params, false);
+        offset = string_copy_str(&offset, "):\n");
+        offset = indent_lines(&offset, INDENT);
 
         return result[0..offset];
     }
@@ -156,9 +159,9 @@ module codegen_python {
             var param = &params_node.args[offset];
 
             // Generate param name (default "param" + N)
-            offset = string_copy_str(&mut offset, "param");
-            offset = string_copy_str(&mut offset, param_count);
-            offset = string_copy_str(&mut offset, ": ");
+            offset = string_copy_str(&offset, "param");
+            offset = string_copy_str(&offset, param_count);
+            offset = string_copy_str(&offset, ": ");
 
             // Just stub: "param1" (no default value)
             param_count += 1;
@@ -172,24 +175,32 @@ module codegen_python {
     // TESTS
     // ══════════════════════════════════════════════════════
 
-    test map_trit_to_python_type {
-        given node = ExprIdentifier { name = "test_trit", value = "" }
-        when call map_trit_to_python_type(node)
-        then result == "bool"
+    // given/when/then clauses written as statements; `when call f(x)` binds
+    // the call's value to `result`, which the `then` clause reads.
+    test "map_trit_to_python_type" {
+        // given
+        const node = ExprIdentifier { name = "test_trit", value = "" };
+        // when
+        const result = map_trit_to_python_type(node);
+        // then
+        assert(result == "bool");
     }
 
-    test gen_function_basic {
-        given fn = ExprIdentifier { name = "test_func", value = "" }
-        when call gen_function(fn)
-        then result starts with "def test_func("
-    }
+    test "gen_function_basic" {
+        // given (`fn` is a keyword, so the node is named fn_node)
+        const fn_node = ExprIdentifier { name = "test_func", value = "" };
+        // when
+        const result = gen_function(fn_node);
+        // then: result starts with "def test_func("
+        assert(@startsWith(result, "def test_func("));
     }
 
     // ════════════════════════════════════════════════════════
     // Invariant: Python generator always produces valid syntax
-    invariant python_output_is_valid {
-        given output = generate_python_class(ExprIdentifier { name = "test_module" })
-        then output contains "class test_module"
+    invariant "python_output_is_valid" {
+        // given
+        const output = generate_python_class(ExprIdentifier { name = "test_module" });
+        // then: output contains "class test_module"
+        assert(@contains(output, "class test_module"));
     }
-}
-}
+

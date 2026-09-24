@@ -1,9 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
-// t27/specs/fpga/testbench/power_tb.t27
-// Power Analysis Testbench
-// Tests power domain management, gating, and estimation
-// phi^2 + 1/phi^2 = 3 | TRINITY
-
 module Power_Testbench {
     use fpga::power::Power;
 
@@ -101,6 +95,11 @@ module Power_Testbench {
     test test_vcc_values {
         invariant VCCINT == 1000;
         invariant VCCAUX == 1800;
+    }
+
+    test test_tick {
+        tick();
+        invariant clk == true;
     }
 
     invariant max_power_positive : MAX_POWER_MW > 0;

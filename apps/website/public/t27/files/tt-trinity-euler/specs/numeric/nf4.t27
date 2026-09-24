@@ -303,432 +303,431 @@ pub fn nf4_scale(value: NF4, scale: f32) NF4 {
 // ============================================================================
 
 test "nf4_from_f32_zero" {
-    given value = 0.0
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0);
+    const value = 0.0;
+    const result = nf4_from_f32(value);
+    assert(result == 0);
 }
 
 test "nf4_from_f32_small_positive" {
-    given value = 0.1
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(nf4_is_zero(result) == true);
+    const value = 0.1;
+    const result = nf4_from_f32(value);
+    assert(nf4_is_zero(result) == true);
 }
 
 test "nf4_from_f32_medium_positive" {
-    given value = 0.5
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0b010  // level 2);
+    const value = 0.5;
+    const result = nf4_from_f32(value);
+    assert(result == 0b010); // level 2
 }
 
 test "nf4_from_f32_large_positive" {
-    given value = 0.9
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0b011  // level 3 (max));
+    const value = 0.9;
+    const result = nf4_from_f32(value);
+    assert(result == 0b011); // level 3 (max)
 }
 
 test "nf4_from_f32_max_positive" {
-    given value = 1.0
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0b011);
+    const value = 1.0;
+    const result = nf4_from_f32(value);
+    assert(result == 0b011);
 }
 
 test "nf4_from_f32_above_max" {
-    given value = 1.5
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0b011  // saturated to max);
+    const value = 1.5;
+    const result = nf4_from_f32(value);
+    assert(result == 0b011); // saturated to max
 }
 
 test "nf4_from_f32_small_negative" {
-    given value = -0.1
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(nf4_is_zero(result) == true);
+    const value = -0.1;
+    const result = nf4_from_f32(value);
+    assert(nf4_is_zero(result) == true);
 }
 
 test "nf4_from_f32_medium_negative" {
-    given value = -0.5
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0b110  // level 2, negative);
+    const value = -0.5;
+    const result = nf4_from_f32(value);
+    assert(result == 0b110); // level 2, negative
 }
 
 test "nf4_from_f32_large_negative" {
-    given value = -0.9
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0b111  // level 3, negative (min));
+    const value = -0.9;
+    const result = nf4_from_f32(value);
+    assert(result == 0b111); // level 3, negative (min)
 }
 
 test "nf4_from_f32_max_negative" {
-    given value = -1.0
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0b111);
+    const value = -1.0;
+    const result = nf4_from_f32(value);
+    assert(result == 0b111);
 }
 
 test "nf4_from_f32_below_min" {
-    given value = -1.5
-    try std.testing.expect(result = nf4_from_f32(value));
-    try std.testing.expect(result == 0b111  // saturated to min);
+    const value = -1.5;
+    const result = nf4_from_f32(value);
+    assert(result == 0b111); // saturated to min
 }
 
 test "nf4_from_f32_nan" {
-    given result = nf4_from_f32(std.math.nan(f32))
-    try std.testing.expect(result == 0);
+    const result = nf4_from_f32(std.math.nan(f32));
+    assert(result == 0);
 }
 
 test "nf4_from_f32_inf" {
-    given result = nf4_from_f32(std.math.inf(f32))
-    try std.testing.expect(result == 0b011);
+    const result = nf4_from_f32(std.math.inf(f32));
+    assert(result == 0b011);
 }
 
 test "nf4_from_f32_neg_inf" {
-    given result = nf4_from_f32(-std.math.inf(f32))
-    try std.testing.expect(result == 0b111);
+    const result = nf4_from_f32(-std.math.inf(f32));
+    assert(result == 0b111);
 }
 
 test "nf4_to_f32_zero" {
-    given value: NF4 = 0
-    try std.testing.expect(result = nf4_to_f32(value));
-    try std.testing.expect(result == 0.0);
+    const value: NF4 = 0;
+    const result = nf4_to_f32(value);
+    assert(result == 0.0);
 }
 
 test "nf4_to_f32_positive_max" {
-    given value: NF4 = 0b011
-    try std.testing.expect(result = nf4_to_f32(value));
-    try std.testing.expect(result == 1.0);
+    const value: NF4 = 0b011;
+    const result = nf4_to_f32(value);
+    assert(result == 1.0);
 }
 
 test "nf4_to_f32_negative_min" {
-    given value: NF4 = 0b111
-    try std.testing.expect(result = nf4_to_f32(value));
-    try std.testing.expect(result == -1.0);
+    const value: NF4 = 0b111;
+    const result = nf4_to_f32(value);
+    assert(result == -1.0);
 }
 
 test "nf4_to_f32_roundtrip_positive" {
-    given original = 0.7
-    try std.testing.expect(encoded = nf4_from_f32(original));
-    try std.testing.expect(decoded = nf4_to_f32(encoded));
-    try std.testing.expect(abs(decoded - original) < 0.2);
+    const original = 0.7;
+    const encoded = nf4_from_f32(original);
+    const decoded = nf4_to_f32(encoded);
+    assert(abs(decoded - original) < 0.2);
 }
 
 test "nf4_to_f32_roundtrip_negative" {
-    given original = -0.7
-    try std.testing.expect(encoded = nf4_from_f32(original));
-    try std.testing.expect(decoded = nf4_to_f32(encoded));
-    try std.testing.expect(abs(decoded - original) < 0.2);
+    const original = -0.7;
+    const encoded = nf4_from_f32(original);
+    const decoded = nf4_to_f32(encoded);
+    assert(abs(decoded - original) < 0.2);
 }
 
 test "nf4_from_i8_zero" {
-    given value: i8 = 0
-    try std.testing.expect(result = nf4_from_i8(value));
-    try std.testing.expect(result == 0);
+    const value: i8 = 0;
+    const result = nf4_from_i8(value);
+    assert(result == 0);
 }
 
 test "nf4_from_i8_max" {
-    given value: i8 = 127
-    try std.testing.expect(result = nf4_from_i8(value));
-    try std.testing.expect(result == 0b011);
+    const value: i8 = 127;
+    const result = nf4_from_i8(value);
+    assert(result == 0b011);
 }
 
 test "nf4_from_i8_min" {
-    given value: i8 = -128
-    try std.testing.expect(result = nf4_from_i8(value));
-    try std.testing.expect(result == 0b111);
+    const value: i8 = -128;
+    const result = nf4_from_i8(value);
+    assert(result == 0b111);
 }
 
 test "nf4_from_i8_medium" {
-    given value: i8 = 64
-    try std.testing.expect(result = nf4_from_i8(value));
-    try std.testing.expect(result == 0b011  // 64/127 ≈ 0.5 -> level 3);
+    const value: i8 = 64;
+    const result = nf4_from_i8(value);
+    assert(result == 0b011); // 64/127 ≈ 0.5 -> level 3
 }
 
 test "nf4_to_i8_max" {
-    given value: NF4 = 0b011
-    try std.testing.expect(result = nf4_to_i8(value));
-    try std.testing.expect(result >= 120  // Should be ~127);
+    const value: NF4 = 0b011;
+    const result = nf4_to_i8(value);
+    assert(result >= 120); // Should be ~127
 }
 
 test "nf4_to_i8_min" {
-    given value: NF4 = 0b111
-    try std.testing.expect(result = nf4_to_i8(value));
-    try std.testing.expect(result <= -120  // Should be ~-127);
+    const value: NF4 = 0b111;
+    const result = nf4_to_i8(value);
+    assert(result <= -120); // Should be ~-127
 }
 
 test "nf4_add_zero" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0);
-    try std.testing.expect(result = nf4_add(a, b));
-    try std.testing.expect(result == a);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0;
+    const result = nf4_add(a, b);
+    assert(result == a);
 }
 
 test "nf4_add_positives" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b001);
-    try std.testing.expect(result = nf4_add(a, b));
-    try std.testing.expect(nf4_is_positive(result) == true);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b001;
+    const result = nf4_add(a, b);
+    assert(nf4_is_positive(result) == true);
 }
 
 test "nf4_add_opposite" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b110);
-    try std.testing.expect(result = nf4_add(a, b));
-    try std.testing.expect(nf4_is_zero(result) == true or nf4_magnitude(result) < 0.5);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b110;
+    const result = nf4_add(a, b);
+    assert(nf4_is_zero(result) == true or nf4_magnitude(result) < 0.5);
 }
 
 test "nf4_sub_same" {
-    given a: NF4 = 0b010
-    try std.testing.expect(result = nf4_sub(a, a));
-    try std.testing.expect(result == 0);
+    const a: NF4 = 0b010;
+    const result = nf4_sub(a, a);
+    assert(result == 0);
 }
 
 test "nf4_mul_zero" {
-    given a: NF4 = 0b011
-    try std.testing.expect(b: NF4 = 0);
-    try std.testing.expect(result = nf4_mul(a, b));
-    try std.testing.expect(result == 0);
+    const a: NF4 = 0b011;
+    const b: NF4 = 0;
+    const result = nf4_mul(a, b);
+    assert(result == 0);
 }
 
 test "nf4_mul_max_max" {
-    given a: NF4 = 0b011
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(result = nf4_mul(a, b));
-    try std.testing.expect(result == 0b011  // 1.0 * 1.0 = 1.0);
+    const a: NF4 = 0b011;
+    const b: NF4 = 0b011;
+    const result = nf4_mul(a, b);
+    assert(result == 0b011); // 1.0 * 1.0 = 1.0
 }
 
 test "nf4_mul_pos_neg" {
-    given a: NF4 = 0b011
-    try std.testing.expect(b: NF4 = 0b111);
-    try std.testing.expect(result = nf4_mul(a, b));
-    try std.testing.expect(nf4_is_negative(result) == true);
+    const a: NF4 = 0b011;
+    const b: NF4 = 0b111;
+    const result = nf4_mul(a, b);
+    assert(nf4_is_negative(result) == true);
 }
 
 test "nf4_div_same" {
-    given a: NF4 = 0b010
-    try std.testing.expect(result = nf4_div(a, a));
-    try std.testing.expect(result == 0b001  // x/x = 1);
+    const a: NF4 = 0b010;
+    const result = nf4_div(a, a);
+    assert(result == 0b001); // x/x = 1
 }
 
 test "nf4_div_zero" {
-    given a: NF4 = 0b011
-    try std.testing.expect(b: NF4 = 0);
-    try std.testing.expect(result = nf4_div(a, b));
-    try std.testing.expect(result == 0);
+    const a: NF4 = 0b011;
+    const b: NF4 = 0;
+    const result = nf4_div(a, b);
+    assert(result == 0);
 }
 
 test "nf4_is_zero_true" {
-    try std.testing.expect(nf4_is_zero(0) == true);
+    assert(nf4_is_zero(0) == true);
 }
 
 test "nf4_is_zero_false" {
-    given value: NF4 = 0b001
-    try std.testing.expect(nf4_is_zero(value) == false);
+    const value: NF4 = 0b001;
+    assert(nf4_is_zero(value) == false);
 }
 
 test "nf4_is_negative_true" {
-    try std.testing.expect(nf4_is_negative(0b111) == true);
+    assert(nf4_is_negative(0b111) == true);
 }
 
 test "nf4_is_negative_false_positive" {
-    try std.testing.expect(nf4_is_negative(0b011) == false);
+    assert(nf4_is_negative(0b011) == false);
 }
 
 test "nf4_is_negative_false_zero" {
-    try std.testing.expect(nf4_is_negative(0) == false);
+    assert(nf4_is_negative(0) == false);
 }
 
 test "nf4_is_positive_true" {
-    try std.testing.expect(nf4_is_positive(0b011) == true);
+    assert(nf4_is_positive(0b011) == true);
 }
 
 test "nf4_is_positive_false_negative" {
-    try std.testing.expect(nf4_is_positive(0b111) == false);
+    assert(nf4_is_positive(0b111) == false);
 }
 
 test "nf4_is_positive_false_zero" {
-    try std.testing.expect(nf4_is_positive(0) == false);
+    assert(nf4_is_positive(0) == false);
 }
 
 test "nf4_abs_positive" {
-    given value: NF4 = 0b010
-    try std.testing.expect(result = nf4_abs(value));
-    try std.testing.expect(result == value);
+    const value: NF4 = 0b010;
+    const result = nf4_abs(value);
+    assert(result == value);
 }
 
 test "nf4_abs_negative" {
-    given value: NF4 = 0b110
-    try std.testing.expect(result = nf4_abs(value));
-    try std.testing.expect(result == 0b010);
+    const value: NF4 = 0b110;
+    const result = nf4_abs(value);
+    assert(result == 0b010);
 }
 
 test "nf4_abs_zero" {
-    given result = nf4_abs(0)
-    try std.testing.expect(result == 0);
+    const result = nf4_abs(0);
+    assert(result == 0);
 }
 
 test "nf4_neg_positive" {
-    given value: NF4 = 0b010
-    try std.testing.expect(result = nf4_neg(value));
-    try std.testing.expect(result == 0b110);
+    const value: NF4 = 0b010;
+    const result = nf4_neg(value);
+    assert(result == 0b110);
 }
 
 test "nf4_neg_negative" {
-    given value: NF4 = 0b110
-    try std.testing.expect(result = nf4_neg(value));
-    try std.testing.expect(result == 0b010);
+    const value: NF4 = 0b110;
+    const result = nf4_neg(value);
+    assert(result == 0b010);
 }
 
 test "nf4_neg_zero" {
-    given result = nf4_neg(0)
-    try std.testing.expect(result == 0);
+    const result = nf4_neg(0);
+    assert(result == 0);
 }
 
 test "nf4_is_equal_true" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b010);
-    try std.testing.expect(nf4_is_equal(a, b) == true);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b010;
+    assert(nf4_is_equal(a, b) == true);
 }
 
 test "nf4_is_equal_false" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b110);
-    try std.testing.expect(nf4_is_equal(a, b) == false);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b110;
+    assert(nf4_is_equal(a, b) == false);
 }
 
 test "nf4_is_greater_true" {
-    given a: NF4 = 0b011
-    try std.testing.expect(b: NF4 = 0b010);
-    try std.testing.expect(nf4_is_greater(a, b) == true);
+    const a: NF4 = 0b011;
+    const b: NF4 = 0b010;
+    assert(nf4_is_greater(a, b) == true);
 }
 
 test "nf4_is_greater_false" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(nf4_is_greater(a, b) == false);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b011;
+    assert(nf4_is_greater(a, b) == false);
 }
 
 test "nf4_is_less_true" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(nf4_is_less(a, b) == true);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b011;
+    assert(nf4_is_less(a, b) == true);
 }
 
 test "nf4_is_less_false" {
-    given a: NF4 = 0b011
-    try std.testing.expect(b: NF4 = 0b010);
-    try std.testing.expect(nf4_is_less(a, b) == false);
+    const a: NF4 = 0b011;
+    const b: NF4 = 0b010;
+    assert(nf4_is_less(a, b) == false);
 }
 
 test "nf4_max_returns_larger" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(result = nf4_max(a, b));
-    try std.testing.expect(result == 0b011);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b011;
+    const result = nf4_max(a, b);
+    assert(result == 0b011);
 }
 
 test "nf4_min_returns_smaller" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(result = nf4_min(a, b));
-    try std.testing.expect(result == 0b010);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b011;
+    const result = nf4_min(a, b);
+    assert(result == 0b010);
 }
 
 test "nf4_clamp_in_range" {
-    given value: NF4 = 0b010
-    try std.testing.expect(min: NF4 = 0b001);
-    try std.testing.expect(max: NF4 = 0b011);
-    try std.testing.expect(result = nf4_clamp(value, min, max));
-    try std.testing.expect(result == value);
+    const value: NF4 = 0b010;
+    const min: NF4 = 0b001;
+    const max: NF4 = 0b011;
+    const result = nf4_clamp(value, min, max);
+    assert(result == value);
 }
 
 test "nf4_clamp_below_min" {
-    given value: NF4 = 0
-    try std.testing.expect(min: NF4 = 0b001);
-    try std.testing.expect(max: NF4 = 0b011);
-    try std.testing.expect(result = nf4_clamp(value, min, max));
-    try std.testing.expect(result == min);
+    const value: NF4 = 0;
+    const min: NF4 = 0b001;
+    const max: NF4 = 0b011;
+    const result = nf4_clamp(value, min, max);
+    assert(result == min);
 }
 
 test "nf4_clamp_above_max" {
-    given value: NF4 = 0b111
-    try std.testing.expect(min: NF4 = 0b001);
-    try std.testing.expect(max: NF4 = 0b011);
-    try std.testing.expect(result = nf4_clamp(value, min, max));
-    try std.testing.expect(result == max);
+    const value: NF4 = 0b111;
+    const min: NF4 = 0b001;
+    const max: NF4 = 0b011;
+    const result = nf4_clamp(value, min, max);
+    assert(result == max);
 }
 
 test "nf4_lerp_zero" {
-    given a: NF4 = 0b001
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(t = 0.0);
-    try std.testing.expect(result = nf4_lerp(a, b, t));
-    try std.testing.expect(result == a);
+    const a: NF4 = 0b001;
+    const b: NF4 = 0b011;
+    const t = 0.0;
+    const result = nf4_lerp(a, b, t);
+    assert(result == a);
 }
 
 test "nf4_lerp_one" {
-    given a: NF4 = 0b001
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(t = 1.0);
-    try std.testing.expect(result = nf4_lerp(a, b, t));
-    try std.testing.expect(result == b);
+    const a: NF4 = 0b001;
+    const b: NF4 = 0b011;
+    const t = 1.0;
+    const result = nf4_lerp(a, b, t);
+    assert(result == b);
 }
 
 test "nf4_lerp_half" {
-    given a: NF4 = 0
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(t = 0.5);
-    try std.testing.expect(result = nf4_lerp(a, b, t));
-    try std.testing.expect(nf4_magnitude(result) > 0.3);
+    const a: NF4 = 0;
+    const b: NF4 = 0b011;
+    const t = 0.5;
+    const result = nf4_lerp(a, b, t);
+    assert(nf4_magnitude(result) > 0.3);
 }
 
 test "nf4_magnitude_positive" {
-    given value: NF4 = 0b011
-    try std.testing.expect(result = nf4_magnitude(value));
-    try std.testing.expect(result == 1.0);
+    const value: NF4 = 0b011;
+    const result = nf4_magnitude(value);
+    assert(result == 1.0);
 }
 
 test "nf4_magnitude_negative" {
-    given value: NF4 = 0b111
-    try std.testing.expect(result = nf4_magnitude(value));
-    try std.testing.expect(result == 1.0);
+    const value: NF4 = 0b111;
+    const result = nf4_magnitude(value);
+    assert(result == 1.0);
 }
 
 test "nf4_l1_distance_same" {
-    given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b010);
-    try std.testing.expect(result = nf4_l1_distance(a, b));
-    try std.testing.expect(result == 0.0);
+    const a: NF4 = 0b010;
+    const b: NF4 = 0b010;
+    const result = nf4_l1_distance(a, b);
+    assert(result == 0.0);
 }
 
 test "nf4_l1_distance_max_min" {
-    given a: NF4 = 0b011
-    try std.testing.expect(b: NF4 = 0b111);
-    try std.testing.expect(result = nf4_l1_distance(a, b));
-    try std.testing.expect(result == 2.0);
+    const a: NF4 = 0b011;
+    const b: NF4 = 0b111;
+    const result = nf4_l1_distance(a, b);
+    assert(result == 2.0);
 }
 
 test "nf4_l2_distance_max_min" {
-    given a: NF4 = 0b011
-    try std.testing.expect(b: NF4 = 0b111);
-    try std.testing.expect(result = nf4_l2_distance(a, b));
-    try std.testing.expect(result == 4.0);
+    const a: NF4 = 0b011;
+    const b: NF4 = 0b111;
+    const result = nf4_l2_distance(a, b);
+    assert(result == 4.0);
 }
 
 test "nf4_scale_up" {
-    given value: NF4 = 0b001
-    try std.testing.expect(scale = 2.0);
-    try std.testing.expect(result = nf4_scale(value, scale));
-    try std.testing.expect(nf4_magnitude(result) > 0.4);
+    const value: NF4 = 0b001;
+    const scale = 2.0;
+    const result = nf4_scale(value, scale);
+    assert(nf4_magnitude(result) > 0.4);
 }
 
 test "nf4_scale_down" {
-    given value: NF4 = 0b011
-    try std.testing.expect(scale = 0.5);
-    try std.testing.expect(result = nf4_scale(value, scale));
-    try std.testing.expect(nf4_magnitude(result) < 1.0);
+    const value: NF4 = 0b011;
+    const scale = 0.5;
+    const result = nf4_scale(value, scale);
+    assert(nf4_magnitude(result) < 1.0);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant nf4_bits_constant
     assert BITS == 4
 
@@ -758,60 +757,60 @@ invariant nf4_neg_zero_is_zero
 
 invariant nf4_max_positive_is_max
     given max_val: NF4 = 0b011
-    try std.testing.expect(fmax = nf4_to_f32(max_val));
+    and   fmax = nf4_to_f32(max_val)
     assert fmax == 1.0
 
 invariant nf4_min_negative_is_min
     given min_val: NF4 = 0b111
-    try std.testing.expect(fmin = nf4_to_f32(min_val));
+    and   fmin = nf4_to_f32(min_val)
     assert fmin == -1.0
 
 invariant nf4_abs_neg_is_pos
     given value: NF4 = 0b110
-    try std.testing.expect(abs_val = nf4_abs(value));
+    and   abs_val = nf4_abs(value)
     assert nf4_is_positive(abs_val) == true
 
 invariant nf4_neg_neg_is_pos
     given value: NF4 = 0b110
-    try std.testing.expect(neg_val = nf4_neg(value));
+    and   neg_val = nf4_neg(value)
     assert nf4_is_positive(neg_val) == true
 
 invariant nf4_double_neg_original_or_zero
     given value: NF4 = 0b010
-    try std.testing.expect(neg_val = nf4_neg(value));
-    try std.testing.expect(neg_neg_val = nf4_neg(neg_val));
+    and   neg_val = nf4_neg(value)
+    and   neg_neg_val = nf4_neg(neg_val)
     assert neg_neg_val == value or value == 0
 
 invariant nf4_abs_non_negative
     given value: NF4 = 0b111
-    try std.testing.expect(abs_val = nf4_abs(value));
+    and   abs_val = nf4_abs(value)
     assert nf4_to_f32(abs_val) >= 0.0
 
 invariant nf4_l1_distance_symmetric
     given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b111);
+    and   b: NF4 = 0b111
     assert nf4_l1_distance(a, b) == nf4_l1_distance(b, a)
 
 invariant nf4_l2_distance_symmetric
     given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b111);
+    and   b: NF4 = 0b111
     assert nf4_l2_distance(a, b) == nf4_l2_distance(b, a)
 
 invariant nf4_l1_distance_non_negative
     given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b111);
+    and   b: NF4 = 0b111
     assert nf4_l1_distance(a, b) >= 0.0
 
 invariant nf4_max_ge_both
     given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(result = nf4_max(a, b));
+    and   b: NF4 = 0b011
+    and   result = nf4_max(a, b)
     assert nf4_is_greater(result, a) == true and nf4_is_greater(result, b) == true or nf4_is_equal(result, a) == true
 
 invariant nf4_min_le_both
     given a: NF4 = 0b010
-    try std.testing.expect(b: NF4 = 0b011);
-    try std.testing.expect(result = nf4_min(a, b));
+    and   b: NF4 = 0b011
+    and   result = nf4_min(a, b)
     assert nf4_is_less(result, a) == true or nf4_is_equal(result, a) == true
 
 // ============================================================================

@@ -97,6 +97,11 @@ pub const PromiseState = enum(u8) {
     cancelled = 3,
 };
 
+/// Promise resolve callback type. A function type cannot be written directly
+/// as a parameter type in t27, so it is named here (as router.t27 names
+/// Handler) and promise_with_resolve takes a ResolveFn.
+pub const ResolveFn = fn(TaskResult) void;
+
 /// Promise
 pub const Promise = struct {
     task_id : TaskID,
@@ -235,7 +240,7 @@ pub fn promise_create(task_id: TaskID) Promise {
 }
 
 /// Create promise with resolve function
-pub fn promise_with_resolve(task_id: TaskID, resolve_fn: fn(TaskResult) void) Promise {
+pub fn promise_with_resolve(task_id: TaskID, resolve_fn: ResolveFn) Promise {
     const base = promise_create(task_id);
     return Promise{
         .task_id = base.task_id,
@@ -252,7 +257,10 @@ pub fn promise_resolve(promise: *Promise, result: TaskResult) void {
     promise.state = .resolved;
     promise.result = result;
     if (promise.resolve_fn != null) {
-        promise.resolve_fn.?(result);
+        // Unwrap, then call: `promise.resolve_fn.?(result)` in one step was
+        // lowered as a tuple expression rather than a call.
+        const resolve_fn = promise.resolve_fn.?;
+        resolve_fn(result);
     }
 }
 
@@ -260,7 +268,9 @@ pub fn promise_resolve(promise: *Promise, result: TaskResult) void {
 pub fn promise_reject(promise: *Promise, error: []u8) void {
     promise.state = .rejected;
     if (promise.reject_fn != null) {
-        promise.reject_fn.?(error);
+        // Unwrap, then call (see promise_resolve).
+        const reject_fn = promise.reject_fn.?;
+        reject_fn(error);
     }
 }
 
@@ -429,6 +439,18 @@ pub fn concat_args_item(a: [][]u8, item: []u8) [][]u8 {
 // TDD - Tests
 // ============================================================================
 
+// t27 has no anonymous fn expressions: the callbacks the tests below wrote
+// inline as `fn(result: TaskResult) void { _ = result; }`,
+// `fn(r: TaskResult) void { _ = r; }` and `fn(msg: []u8) void { _ = msg; }`
+// are these two named fns (the two resolve callbacks were identical).
+fn noop_resolve(result: TaskResult) void {
+    _ = result;
+}
+
+fn noop_reject(msg: []u8) void {
+    _ = msg;
+}
+
 test "runtime_task_create" {
     const task = task_create("test-task", "echo", &[_][]u8{"hello"});
     try std.testing.expect(task.timeout_ms == DEFAULT_TIMEOUT_MS);
@@ -494,7 +516,7 @@ test "runtime_promise_create" {
 
 test "runtime_promise_with_resolve" {
     const id = task_id_generate();
-    const resolve = fn(result: TaskResult) void { _ = result; };
+    const resolve = noop_resolve;
     const promise = promise_with_resolve(id, resolve);
     try std.testing.expect(promise.resolve_fn != null);
 }
@@ -502,14 +524,14 @@ test "runtime_promise_with_resolve" {
 test "runtime_promise_resolve" {
     const id = task_id_generate();
     const result = result_success(id, "output", 100);
-    var promise = promise_with_resolve(id, fn(r: TaskResult) void { _ = r; });
+    var promise = promise_with_resolve(id, noop_resolve);
     promise_resolve(&promise, result);
     try std.testing.expect(promise_is_resolved(promise));
 }
 
 test "runtime_promise_reject" {
     const id = task_id_generate();
-    const reject = fn(msg: []u8) void { _ = msg; };
+    const reject = noop_reject;
     var promise = promise_create(id);
     promise.reject_fn = reject;
     promise_reject(&promise, "error");
@@ -669,6 +691,7 @@ invariant exec_error_has_message {
 invariant exec_error_has_timestamp {
     // ExecError has timestamp_ms field
     @compileAssert(true);
+}  // closing brace was missing in the original
 
 // ============================================================================
 // TDD - Benchmarks

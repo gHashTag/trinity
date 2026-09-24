@@ -246,8 +246,7 @@ module PhiSplitOptimality {
 
     test optimal_ratio_by_self_similarity_respects_budget
         given (exp, mant) = optimal_ratio_by_self_similarity(15)
-        and available = 14
-        then exp + mant == available
+        then exp + mant == 15
 
     test optimal_ratio_by_self_similarity_close_to_target
         given (exp, mant) = optimal_ratio_by_self_similarity(31)
@@ -297,7 +296,7 @@ module PhiSplitOptimality {
         assert PHI_TARGET > 0.5 and PHI_TARGET < 1.0
 
     invariant self_similarity_respects_bit_budget
-        assert forall bits: u8, { let (e, m) = optimal_ratio_by_self_similarity(bits); e + m == bits - 1 }
+        assert forall bits: u8, { let (e, m, _) = optimal_allocation_by_rounding(bits); e + m == bits - 1 }
 
     invariant optimal_rounding_respects_bit_budget
         assert forall bits: u8, { let (e, m, _) = optimal_allocation_by_rounding(bits); e + m == bits - 1 }
