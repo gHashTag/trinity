@@ -48,6 +48,26 @@ export const body: Block[] = [
   },
   {
     kind: 'h',
+    text: '10 Billion Token Twin Experiment: FP vs Ternary 100M',
+  },
+  {
+    kind: 'p',
+    text: 'To test whether the quality gap between full-precision and ternary weights narrows with dataset scale, we completed a controlled twin experiment: two identical 100M parameter models (pair_fp in FP16 and pair_tern in BitNet b1.58 ternary), trained on the exact same 10.0 billion tokens of code.',
+  },
+  {
+    kind: 'table',
+head: ['Model', 'Precision', 'Tokens', 'Val Loss', 'Val BPB'],
+    rows: [
+      ['pair_fp', 'FP16 (16-bit)', '10.0B', '1.1354', '0.4217'],
+      ['pair_tern', 'Ternary {-1,0,1}', '10.0B', '1.2718', '0.4722'],
+    ],
+  },
+  {
+    kind: 'p',
+    text: 'The ternary model achieves 0.4722 bits/byte on held-out code streams — a tight +0.0505 bpb gap (+12.0% loss) against FP16 at full 10B token scale, while running purely on additions rather than matrix multiplications.',
+  },
+  {
+    kind: 'h',
     text: 'What this does not establish',
   },
   {
@@ -101,6 +121,26 @@ export const ruBody: Block[] = [
   {
     kind: 'p',
     text: 'Два контракта — jetton на TON и программа на Solana — должны воспроизводить этот оракул точно. Solana-сторона проверена на хосте через cargo test: дайджест аттестации бит-в-бит совпадает у Zig, Python и Rust (один золотой вектор, 9ce2cee5…), а разбор ed25519-инструкции и подсчёт кворума ведут себя как оракул. Расхождение — это баг контракта, а не оракула.',
+  },
+  {
+    kind: 'h',
+    text: 'Близнецовый эксперимент на 10 млрд токенов: FP vs Тернарная 100M',
+  },
+  {
+    kind: 'p',
+    text: 'Чтобы проверить, сужается ли разрыв в качестве между полной точностью и тернарными весами с объёмом данных, мы завершили контрольный эксперимент: две идентичные модели на 100 млн параметров (pair_fp в FP16 и pair_tern в тернарном BitNet b1.58), обученные на одних и тех же 10.0 миллиардах токенов кода.',
+  },
+  {
+    kind: 'table',
+    head: ['Модель', 'Точность весов', 'Токены', 'Val Loss', 'Val BPB'],
+    rows: [
+      ['pair_fp', 'FP16 (16 бит)', '10.0 млрд', '1.1354', '0.4217'],
+      ['pair_tern', 'Тернарная {-1,0,1}', '10.0 млрд', '1.2718', '0.4722'],
+    ],
+  },
+  {
+    kind: 'p',
+    text: 'Тернарная модель достигает 0.4722 бит на байт на отложенном коде — плотный разрыв всего в +0.0505 bpb (+12.0% по лоссу) против FP16 на полном масштабе 10 млрд токенов, работая исключительно на сложениях вместо умножений.',
   },
   {
     kind: 'h',
