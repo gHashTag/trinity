@@ -21,7 +21,7 @@ export const postsIndex: PostMeta[] = [
       'No legal review of issuance or secondary trading has been done; that is the first task the decision creates.',
       'The oracle is tested in software; it is not a hardware, silicon, or deployed-network result.',
     ],
-    published: false,
+    published: true,
     ru: {
       title: 'Токен намывают, а не продают',
       summary: '[дизайн] 100% TRI намывается за принятую работу .t27, без премайна; правило чеканки-при-принятии — золотой оракул на Zig (11/11 тестов), с минтерами TON и Solana, чей дайджест совпадает межъязыково (cargo test 4/4). Ничего не задеплоено.',
