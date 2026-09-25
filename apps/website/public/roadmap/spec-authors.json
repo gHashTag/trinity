@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-23T13:31:03.719Z",
+  "measuredAt": "2026-09-25T07:56:18.749Z",
   "method": "Commits touching a directory where this project keeps its .t27 specs, per repository, by author. A measure of work on the spec corpus: not every file under those directories is a spec, and a commit is not a file.",
   "sources": [
     {
@@ -25,7 +25,7 @@
       "login": "gHashTag",
       "name": "Vasilev Dmitrii",
       "avatar": "https://github.com/gHashTag.png?size=96",
-      "commits": 1005,
+      "commits": 1066,
       "repos": [
         "t27",
         "trinity",
@@ -58,22 +58,24 @@
       "linked": false
     },
     {
-      "login": "dmitrii-f-t27",
-      "name": "Dmitrii Fedorov",
-      "avatar": "https://github.com/dmitrii-f-t27.png?size=96",
-      "commits": 8,
+      "login": "mxfill77",
+      "name": "Filipp",
+      "avatar": "https://github.com/mxfill77.png?size=96",
+      "commits": 18,
       "repos": [
-        "t27"
+        "turbobaby-user-bot"
       ],
       "bot": false,
       "linked": true
     },
     {
-      "login": "mxfill77",
-      "name": "Filipp",
-      "avatar": "https://github.com/mxfill77.png?size=96",
-      "commits": 8,
+      "login": "dmitrii-f-t27",
+      "name": "Dmitrii Fedorov",
+      "avatar": "https://github.com/dmitrii-f-t27.png?size=96",
+      "commits": 11,
       "repos": [
+        "t27",
+        "trinity",
         "turbobaby-user-bot"
       ],
       "bot": false,
