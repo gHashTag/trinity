@@ -3,6 +3,46 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "a-small-agent-needs-an-exact-judge",
+    title: "A small agent is only useful next to an exact judge",
+    summary: "[model results measured on GPUs; board throughput derived, not measured] One Artix-7 200T holds the layers of a 13M-parameter ternary model in its own block memory. In our own twin experiment the 100M ternary model passes 0.97% vs 1.68% for full precision across eight languages, and compile rate, not correctness, is the gap. A model that is wrong most of the time becomes useful only where a compiler checks every answer.",
+    date: "2026-09-26",
+    readingMinutes: 9,
+    tags: ["IGLA", "Agents", "FPGA", "Ternary", "Verification", "Plan"],
+    receipts: [
+      { label: "Codex paper, Table 1: pass@k for 12M-85M code models (arXiv:2107.03374)", href: "https://arxiv.org/abs/2107.03374" },
+      { label: "JetBrains Full Line Code Completion: a local 100M model, 16,384-token vocabulary (arXiv:2405.08704)", href: "https://arxiv.org/abs/2405.08704" },
+      { label: "Branch-Train-Merge (arXiv:2208.03306)", href: "https://arxiv.org/abs/2208.03306" },
+      { label: "c-BTM: scaling expert language models with unsupervised domain discovery (arXiv:2303.14177)", href: "https://arxiv.org/abs/2303.14177" },
+      { label: "TerEffic: on-chip vs HBM ternary inference on FPGA (arXiv:2502.16473)", href: "https://arxiv.org/abs/2502.16473" },
+      { label: "nextpnr-xilinx releases: 0.9.5, LiteX DDR3 memtest passing on hardware", href: "https://github.com/openXC7/nextpnr-xilinx/releases" },
+      { label: "AMD DS180: 7-series block RAM counts", href: "https://docs.amd.com/api/khub/documents/2LByHkO~nSZXcei2D55fTg/content" },
+      { label: "TRI CLAW: an agent you can audit (the device this lane runs on)", href: "https://t27.ai/blog/tri-claw-an-agent-you-can-audit/" },
+      { label: "MultiPL-E: MultiPL-E benchmark, HumanEval-164 in 18+ languages (arXiv:2208.08227)", href: "https://arxiv.org/abs/2208.08227" },
+    ],
+    openQuestions: [
+      "No IGLA model has run on a board. Every throughput figure here is a ceiling derived from memory bandwidth and LUT counts.",
+      "The code ability of a 13M model on .t27 is unknown. The HumanEval figures above are for Python and for another model family.",
+      "The open DDR3 path on Artix-7 has passed memtest on hardware only since nextpnr-xilinx 0.9.5 (13 September 2026). The independent UberDDR3 test reached a 333 MHz DDR clock, not the 400 MHz the AX7203 is rated for.",
+      "Integer inference must be shown to cost little quality against the float model before receipts can rest on it.",
+      "The c-BTM experts had 1.3B parameters or more, a hundred times the size of a board-sized one. Whether the result holds at 13M is a measurement, not an inference.",
+      "The twin numbers are for 100M-parameter models trained on GPUs; the board-sized 13M ternary model has been neither trained nor run on a board.",
+    ],
+    published: true,
+    ru: {
+      title: "Маленький агент полезен только рядом с точным судьёй",
+      summary: "[результаты моделей измерены на GPU; пропускная способность платы выведена, не измерена] Одна Artix-7 200T держит слои тернарной модели на 13M параметров в собственной блочной памяти. В нашем парном эксперименте тернарная модель на 100M проходит 0,97% против 1,68% у полной точности на восьми языках, и разрыв — это компиляция, а не корректность. Модель, чаще ошибающаяся, полезна только там, где каждый ответ проверяет компилятор.",
+      openQuestions: [
+        "Ни одна модель IGLA ещё не запускалась на плате. Каждая цифра скорости здесь — потолок, выведенный из пропускной способности памяти и числа LUT.",
+        "Способность модели на 13M писать .t27 неизвестна. Цифры HumanEval выше относятся к Python и к другому семейству моделей.",
+        "Открытый путь к DDR3 на Artix-7 проходит memtest на железе только с nextpnr-xilinx 0.9.5 (13 сентября 2026). Независимый тест UberDDR3 достиг частоты DDR 333 МГц, а не 400 МГц, на которые рассчитана AX7203.",
+        "Нужно показать, что целочисленный вывод почти не теряет в качестве по сравнению с плавающей точкой. Только после этого на него могут опираться квитанции.",
+        "Эксперты в c-BTM имели 1,3B параметров и больше — в сто раз больше, чем модель размером с плату. Держится ли результат при 13M, решит замер, а не рассуждение.",
+        "Числа двойняшек относятся к моделям на 100M параметров, обученным на GPU; модель на 13M, помещающаяся на плату, не обучена и не запускалась на плате.",
+      ],
+    },
+  },
+  {
     slug: 'tri-mined-not-sold',
     title: 'The token is mined, not sold',
     summary: '[design] 100% of TRI is mined by accepted .t27 work with zero pre-mine; the mint-on-acceptance rule is a Zig golden oracle (11/11 tests) with a TON and Solana minter whose digest matches cross-language (cargo test 4/4). Nothing is deployed.',
