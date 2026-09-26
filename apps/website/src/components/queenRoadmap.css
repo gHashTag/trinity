@@ -1,0 +1,376 @@
+/* ROADMAP tab: the stack by language, and the plan to move it to .t27. */
+.rm {
+  --rm-green: var(--hud-green, #00ff88);
+  --rm-gold: var(--hud-gold, #ffd700);
+  --rm-muted: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  --rm-line: var(--hud-line, rgba(0, 255, 136, 0.22));
+  --rm-panel: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  color: #e8f5ee;
+  /* Opaque: the board's hex field runs under every view, and text over it
+     was hard to read. */
+  background: radial-gradient(ellipse at top, #06140d 0%, #020806 70%);
+  position: relative;
+  z-index: 1;
+  /* Content at most 1180 px wide, centred, on a full-width background. */
+  padding: 20px max(16px, calc((100% - 1180px) / 2)) 48px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.rm > * {
+  flex-shrink: 0;
+}
+.rm h2 {
+  font-size: clamp(20px, 2.4vw, 28px);
+  margin: 0 0 8px;
+  color: var(--rm-green);
+  letter-spacing: 0.02em;
+}
+.rm h3 {
+  margin: 32px 0 10px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rm-gold);
+}
+.rm p {
+  color: var(--rm-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.rm-note {
+  padding: 40px 0;
+  text-align: center;
+}
+
+.rm-hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid var(--rm-line);
+  border-radius: 12px;
+  background: var(--rm-panel);
+}
+.rm-dial {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+.rm-dial svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.rm-dial-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 12;
+}
+.rm-dial-fill {
+  fill: none;
+  stroke: var(--rm-green);
+  stroke-width: 12;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.6));
+}
+.rm-dial-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.rm-dial-num strong {
+  font-size: 30px;
+  color: var(--rm-green);
+  font-variant-numeric: tabular-nums;
+}
+.rm-dial-num span {
+  font-size: 11px;
+  max-width: 100px;
+  color: var(--rm-muted);
+}
+
+.rm-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.rm-kpis div {
+  border: 1px solid var(--rm-line);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--rm-panel);
+}
+.rm-kpis strong {
+  display: block;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.rm-kpis span {
+  font-size: 12px;
+  color: var(--rm-muted);
+}
+
+.rm-bar {
+  display: block;
+  /* The board lays its viewport out as a flex column, which shrank this bar to
+     0 px under the tall content that follows it. */
+  flex: none;
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+.rm-legend {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px 16px;
+}
+.rm-legend li,
+.rm-lang {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.rm-legend i,
+.rm-lang i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: none;
+}
+.rm-legend span {
+  margin-left: auto;
+  color: var(--rm-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rm-repos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+.rm-repo-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.rm-repo-head a {
+  color: #e8f5ee;
+  text-decoration: none;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.rm-repo-head a:hover {
+  color: var(--rm-green);
+}
+.rm-repo-head span {
+  color: var(--rm-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rm-repos p {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.rm-stages {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  counter-reset: none;
+}
+.rm-stages li {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--rm-line);
+  border-radius: 10px;
+  background: var(--rm-panel);
+}
+.rm-stages li.rm-done {
+  border-color: var(--hud-line-strong, rgba(0, 255, 136, 0.5));
+}
+.rm-stage-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--rm-gold);
+  border: 1px solid var(--rm-gold);
+}
+.rm-done .rm-stage-num {
+  color: #021;
+  background: var(--rm-green);
+  border-color: var(--rm-green);
+}
+.rm-stage-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.rm-chip {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--rm-line);
+  color: var(--rm-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.rm-chip:hover {
+  color: var(--rm-green);
+  border-color: var(--rm-green);
+}
+.rm-stage-body p {
+  font-size: 13px;
+}
+.rm-stage-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--rm-muted);
+}
+
+.rm-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--rm-muted);
+}
+.rm-progress-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.rm-progress-track div {
+  height: 100%;
+  background: var(--rm-green);
+}
+
+.rm-foot {
+  margin-top: 32px;
+  font-size: 11px;
+  display: grid;
+  gap: 4px;
+  opacity: 0.8;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .rm-hero {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .rm-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rm-repo-head {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* THE INVITATION. A measurement is not a reason for a stranger to stay, so the
+   count of open issues is a button, not a sentence. Grounds are opaque or
+   veiled, the way the contrast contract requires of anything over the lit hive. */
+.rm-join {
+  margin: 22px 0 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
+  border-radius: 12px;
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.rm-join h3 {
+  margin: 0 0 6px;
+  color: var(--hud-green, #00ff88);
+}
+.rm-join p {
+  margin: 0 0 12px;
+  line-height: 1.55;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+.rm-join-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+.rm-join-cta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--hud-green, #00ff88);
+  background: rgba(0, 255, 136, 0.1);
+  color: #e8f5ee;
+  text-decoration: none;
+}
+.rm-join-cta strong {
+  font-size: 20px;
+  color: var(--hud-green, #00ff88);
+  font-variant-numeric: tabular-nums;
+}
+.rm-join-cta:hover,
+.rm-join-cta:focus-visible {
+  background: rgba(0, 255, 136, 0.18);
+}
+.rm-join-link {
+  color: var(--hud-cyan, #64dcff);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(127, 209, 255, 0.4);
+}
+.rm-join-lend {
+  margin: 14px 0 0 !important;
+  font-size: 13px;
+}
+.rm-join-lend b {
+  color: var(--hud-gold, #ffd700);
+}
+
+/* The law behind the number. */
+.rm-law {
+  margin-top: 10px !important;
+  font-size: 13px;
+}
+.rm-law a {
+  color: var(--hud-gold, #ffd700);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.4);
+}
+.rm-law a:hover,
+.rm-law a:focus-visible {
+  border-bottom-color: var(--hud-gold, #ffd700);
+}

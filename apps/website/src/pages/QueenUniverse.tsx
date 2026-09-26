@@ -69,7 +69,16 @@ export default function QueenUniverse() {
       {repo!==PINNED_WORLDS[1]&&<button className="queen-world-shortcut" onClick={()=>choose(PINNED_WORLDS[1])}>T27 ↗</button>}
       <button className="queen-world-connect" onClick={()=>dialog.current?.showModal()}>{c.connect}</button>
       <button aria-pressed={atlasView} onClick={()=>setParams(new URLSearchParams())}>{lang==='ru'?'◈ Главная игры':'◈ Game home'}</button>
-      <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView)n.delete('view');else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
+      {/* Leaving the core view must not leave its selection behind. choose()
+          writes world= off the core view and repo= on it, because the core
+          names one repository while the map names a world; "← Map" deleted
+          only view=, so the repo= stayed and the map it returned to was the
+          legacy single-repository comb. That was four clicks from the default
+          board and the only in-app route to it - the board the phantom CONTEXT
+          chip belonged to. Convert the selection back on the way out, by the
+          same test choose() uses; a repository the atlas does not carry is a
+          world of its own and keeps its repo=. */}
+      <button aria-pressed={coreView} onClick={()=>setParams(p=>{const n=new URLSearchParams(p);if(coreView){n.delete('view');const r=n.get('repo');if(r&&atlas?.worlds.some(w=>w.repo===r&&w.specCount>0)){n.delete('repo');n.set('world',r);}}else n.set('view','core');return n;})}>{coreView?(lang==='ru'?'← Карта':'← Map'):(lang==='ru'?'Общее ядро':'Shared core')}</button>
     </nav>;
 
   // Where the nav goes when there is no slot yet.
@@ -87,7 +96,10 @@ export default function QueenUniverse() {
 
   return <div className="queen-universe" data-world={repo}>
     {slot ? createPortal(nav, slot) : shellIsComing ? null : nav}
-    <div className="queen-universe-content"><Suspense fallback={<p role="status">{c.loading}</p>}>
+    {/* The wait is the shell's own loader, not a sentence. A line of text
+        appearing on a black page reads as an error message; the mark and the
+        bar read as work in progress, which is what this is. */}
+    <div className="queen-universe-content"><Suspense fallback={<QueenLoading label={c.loading}/>}>
       {/* Loading is not failing. This paragraph carried the error class either
           way, so every cold load opened with the failure colour on a black
           page — which reads as "it did not load", because that is what it
@@ -149,7 +161,7 @@ function RepositoryWorld({repo,lang}:{repo:string;lang:'en'|'ru'}) {
     </div>
     {error&&<p className="queen-world-error" role="alert">{snapshot?c.stale:c.failed}: {errorCopy(error,c)}</p>}
     <div className="queen-world-stage" data-source="github-public" aria-busy={busy}>
-      {!snapshot?<p role="status">{busy?c.loading:c.failed}</p>:rows.length===0?<p>{snapshot.meta.issuesEnabled?c.empty:c.disabled}</p>:view==='hive'?<Suspense fallback={<p>{c.loading}</p>}><Hive displays={displays} cards={cards} workers={null} events={EMPTY_EVENTS} handleRef={handle} lang={lang} signalHealth={{board:error?'stale':'live',activity:'unknown'}} layers={{foundation:true,castle:false,code:false}}/></Suspense>:<div className="queen-world-list">{rows.map(row=><a key={row.key} href={`https://github.com/${repo}/issues/${row.number}`} target="_blank" rel="noopener noreferrer"><b>#{row.number}</b><span data-lang-exempt="github-title">{row.title}</span><small>{row.state==='closed'?(lang==='ru'?'Закрыта · T27 не подтверждено':'Closed · T27 unproven'):row.state==='dropped'?(lang==='ru'?'Отложена':'Paused'):(lang==='ru'?'Открыта':'Open')}</small></a>)}</div>}
+      {!snapshot?(busy?<QueenLoading label={c.loading}/>:<p role="status">{c.failed}</p>):rows.length===0?<p>{snapshot.meta.issuesEnabled?c.empty:c.disabled}</p>:view==='hive'?<Suspense fallback={<QueenLoading label={c.loading}/>}><Hive displays={displays} cards={cards} workers={null} events={EMPTY_EVENTS} handleRef={handle} lang={lang} signalHealth={{board:error?'stale':'live',activity:'unknown'}} layers={{foundation:true,castle:false,code:false}}/></Suspense>:<div className="queen-world-list">{rows.map(row=><a key={row.key} href={`https://github.com/${repo}/issues/${row.number}`} target="_blank" rel="noopener noreferrer"><b>#{row.number}</b><span data-lang-exempt="github-title">{row.title}</span><small>{row.state==='closed'?(lang==='ru'?'Закрыта · T27 не подтверждено':'Closed · T27 unproven'):row.state==='dropped'?(lang==='ru'?'Отложена':'Paused'):(lang==='ru'?'Открыта':'Open')}</small></a>)}</div>}
     </div>
     <footer><span>{c.scope}</span><time dateTime={snapshot?.at}>{snapshot?new Date(snapshot.at).toLocaleTimeString(lang):'—'}</time></footer>
   </main>;

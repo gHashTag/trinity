@@ -1966,6 +1966,46 @@ module fpga_emission {
     }
 }
 
+// Test helpers. t27 has no closures or iterator adapters, so the line filter
+// one test needs is written out as explicit loops.
+
+// True when `needle` occurs inside text[start..end].
+fn range_contains(text: []const u8, start: usize, end: usize, needle: []const u8) bool {
+    if (needle.len == 0) {
+        return true;
+    }
+    var i: usize = start;
+    while (i + needle.len <= end) {
+        var j: usize = 0;
+        while (j < needle.len and text[i + j] == needle[j]) {
+            j += 1;
+        }
+        if (j == needle.len) {
+            return true;
+        }
+        i += 1;
+    }
+    return false;
+}
+
+// Number of '\n'-separated lines of `text` that contain `needle`
+// (same count as `text.lines().filter(|l| l.contains(needle)).count()`).
+fn count_lines_containing(text: []const u8, needle: []const u8) usize {
+    var count: usize = 0;
+    var line_start: usize = 0;
+    var i: usize = 0;
+    while (i <= text.len) {
+        if (i == text.len or text[i] == '\n') {
+            if (range_contains(text, line_start, i, needle)) {
+                count += 1;
+            }
+            line_start = i + 1;
+        }
+        i += 1;
+    }
+    return count;
+}
+
 test fpga_emission_init_empty {
     let cg = FpgaCodegen.init();
     assert cg.output.len() == 0;
@@ -2212,7 +2252,10 @@ test fpga_emission_xdc_skips_clk_rst_pins {
     hir.add_port(Port.make("data", PortDir.output_dir, 8, false));
     let mut cg = FpgaCodegen.init();
     cg.emit_xdc_from_hir(hir, "E3", "C12", 50_000_000);
-    let lines_with_clk_pin = cg.output.lines().filter(|l| l.contains("get_ports {clk}")).count();
+    // Rust iterator chain `cg.output.lines().filter(|l| l.contains(..)).count()`
+    // spelled as an explicit-loop helper (t27 has no closures); the output
+    // bytes are read through StringBuilder.to_string().
+    let lines_with_clk_pin = count_lines_containing(cg.output.to_string(), "get_ports {clk}");
     assert lines_with_clk_pin == 1; // only in create_clock, not in PACKAGE_PIN
 }
 
@@ -2342,17 +2385,31 @@ invariant fpga_emission_int_to_str_no_leading_zeros {
     assert result[0] != '0';
 }
 
+// The benches below were written as `measure: ...` / `target: ...` metadata
+// lines, which are not statements inside a braced block. The metadata is
+// kept verbatim as comments and the body runs exactly the operation the
+// `measure:` line names, in the same calling style as the tests above.
+
 bench fpga_emission_init_latency {
-    measure: nanoseconds to create FpgaCodegen
-    target: < 100ns
+    // measure: nanoseconds to create FpgaCodegen
+    // target: < 100ns
+    let cg = FpgaCodegen.init();
+    _ = cg;
 }
 
 bench fpga_emission_emit_line_latency {
-    measure: nanoseconds to emit_line("wire clk;")
-    target: < 500ns
+    // measure: nanoseconds to emit_line("wire clk;")
+    // target: < 500ns
+    let mut cg = FpgaCodegen.init();
+    cg.emit_line("wire clk;");
 }
 
 bench fpga_emission_full_top_latency {
-    measure: nanoseconds to emit_fpga_top() + emit_uart_module() + emit_spi_module() + emit_mac_module()
-    target: < 50000ns
+    // measure: nanoseconds to emit_fpga_top() + emit_uart_module() + emit_spi_module() + emit_mac_module()
+    // target: < 50000ns
+    let mut cg = FpgaCodegen.init();
+    cg.emit_fpga_top();
+    cg.emit_uart_module();
+    cg.emit_spi_module();
+    cg.emit_mac_module();
 }

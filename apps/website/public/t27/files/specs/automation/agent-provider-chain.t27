@@ -51,6 +51,13 @@ module automation::agent_provider_chain {
     pub const RESERVE_IN_BOT_PICKER : bool = true;  // KNOWN_PROVIDERS lists it so the owner can move it to the front
     pub const SKIPPED_PROVIDER_IS_LOGGED : bool = true;  // every fall-through (HTTP error, thrown fetch, timeout) is a console.warn with the diagnose() reason before the next provider is tried
     pub const SKIP_LOG_PREFIX : str = "[agent] provider skipped:";
+    // OpenRouter-style vendors reject a request whose max_tokens the prepaid balance cannot cover
+    // (HTTP 402). Without max_tokens they assume the model ceiling. The reserve route therefore
+    // always sends a bounded max_tokens; the other providers are unchanged.
+    pub const RESERVE_SENDS_MAX_TOKENS : bool = true;
+    pub const RESERVE_ENV_MAX_TOKENS : str = "RESERVE_MAX_TOKENS";  // positive integer; anything else falls back to the default
+    pub const RESERVE_MAX_TOKENS_DEFAULT : u32 = 1024;
+    pub const PAYMENT_REQUIRED_IS_DIAGNOSED : bool = true;  // HTTP 402 or "requires more credits" reads as "no funds on the key", whatever the body wording
 
     // ---- Live evidence -------------------------------------------------------------------
     // 2026-09-15, vibee-render commit e2c4617: RESERVE_BASE_URL/RESERVE_MODEL/RESERVE_API_KEY set on
@@ -59,11 +66,19 @@ module automation::agent_provider_chain {
     pub const RESERVE_CONFIGURED_LIVE : bool = true;
     pub const RESERVE_CONFIGURED_LIVE_EVIDENCE : str = "GET /api/agent/provider chain includes reserve deepseek-chat";
     // ---- Not claimed ---------------------------------------------------------------------
-    // Same day, reserve moved first by the owner, one ephemeral tools_only turn: the provider event
-    // named zai, so the reserve was skipped; the reason was not logged (see SKIPPED_PROVIDER_IS_LOGGED).
+    // Same day, three probes, each: reserve moved first by the owner, one ephemeral tools_only
+    // turn, zai restored. Every provider event named zai, so the reserve was skipped each time.
+    // Probe 1 (commit e2c4617): reason not logged. Probe 2 (commit a587fee, DeepSeek): log line
+    // "reserve: key invalid" (HTTP 401). Probe 3 (same commit, RESERVE_* moved to OpenRouter,
+    // deepseek/deepseek-chat): HTTP 402 "requires more credits ... requested up to 16000 tokens,
+    // but can only afford 2506" -- no max_tokens was sent, the vendor assumed the model ceiling.
     pub const RESERVE_ANSWERED_LIVE : bool = false;
-    pub const RESERVE_PROBES : u8 = 1;
+    pub const RESERVE_PROBES : u8 = 3;
     pub const RESERVE_PROBE_ANSWERED_BY : str = "zai";
+    pub const RESERVE_PROBE_2_STATUS : u16 = 401;
+    pub const RESERVE_PROBE_3_STATUS : u16 = 402;
+    pub const RESERVE_PROBE_3_AFFORDABLE_TOKENS : u32 = 2506;
+    pub const RESERVE_PROBE_3_REQUESTED_TOKENS : u32 = 16000;
 
     // The reserve route exists only when all three variables are set.
     fn reserve_available(base: bool, key: bool, model: bool) -> bool {
@@ -95,9 +110,22 @@ module automation::agent_provider_chain {
         assert(OWNER_PICK_GOES_FIRST);
         assert(EVERY_CONFIGURED_PROVIDER_IS_TRIED);
 
+    // A prepaid vendor accepts the request only when the requested ceiling fits the balance.
+    fn fits_budget(requested: u32, affordable: u32) -> bool {
+        return requested <= affordable;
+    }
+
     test "the reserve route is configured live; an answer from it is not claimed"
         assert(RESERVE_CONFIGURED_LIVE);
         assert(!RESERVE_ANSWERED_LIVE);
-        assert(RESERVE_PROBES == 1);
+        assert(RESERVE_PROBES == 3);
         assert(SKIPPED_PROVIDER_IS_LOGGED);
+        assert(RESERVE_PROBE_2_STATUS == 401);
+        assert(RESERVE_PROBE_3_STATUS == 402);
+
+    test "the reserve sends a bounded max_tokens and 402 is named"
+        assert(RESERVE_SENDS_MAX_TOKENS);
+        assert(PAYMENT_REQUIRED_IS_DIAGNOSED);
+        assert(!fits_budget(RESERVE_PROBE_3_REQUESTED_TOKENS, RESERVE_PROBE_3_AFFORDABLE_TOKENS));
+        assert(fits_budget(RESERVE_MAX_TOKENS_DEFAULT, RESERVE_PROBE_3_AFFORDABLE_TOKENS));
 }

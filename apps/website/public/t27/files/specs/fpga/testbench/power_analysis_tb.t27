@@ -113,6 +113,12 @@ module PowerAnalysis_Testbench {
         invariant TYPICAL_BUDGET_MW == 2000;
     }
 
+    test test_tick_function {
+        var initial_clk = clk;
+        tick();
+        invariant clk != initial_clk;
+    }
+
     invariant power_positive_for_nonzero_resources {
 //         given u = utilization(1000, 2000, 10, 8)
         assert est_total_power_mw(u, 12) > 0

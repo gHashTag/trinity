@@ -25,17 +25,20 @@ module TriLockfreeStack;
 
     // init() → LockFreeStack
     fn init() -> LockFreeStack {
-        // TODO: Implement from .tri spec
+        LockFreeStack { head = null }
     }
 
     // push(s: *LockFreeStack) → void
     fn push(s: *LockFreeStack) -> void {
-        // TODO: Implement from .tri spec
+        let new_node = LFNode { value = 0, next = s.head };
+        s.head = &new_node;
     }
 
     // pop(s: *LockFreeStack) → void
     fn pop(s: *LockFreeStack) -> void {
-        // TODO: Implement from .tri spec
+        if (s.head != null) {
+            s.head = s.head.next;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -56,4 +59,21 @@ module TriLockfreeStack;
         given input = default_input()
         when result = pop(input)
         then result != undefined
+
+    test "init returns valid stack"
+        given stack = init()
+        then stack != undefined
+        then stack.head == null
+
+    test "push adds node to stack"
+        given stack = init()
+        when push(&stack, 42, allocator)
+        then stack.head != null
+        then stack.head.value == 42
+
+    test "pop removes node from stack"
+        given stack = init()
+        when push(&stack, 42, allocator)
+        when pop(&stack, allocator)
+        then stack.head == null
 

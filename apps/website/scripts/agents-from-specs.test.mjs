@@ -73,12 +73,16 @@ test('the compiler accepts the schema, including an empty array, and constants c
   assert.equal(c.TIMEOUT_MIN.type, 'u16')
 })
 
-test('array literals arrive as identifiers and UTF-8 arrives as bytes; both are undone exactly', () => {
+test('array literals arrive as array nodes and UTF-8 arrives as bytes; both are undone exactly', () => {
   // Specs are English-only (LANG-EN), but English specs still carry non-ASCII
   // glyphs -- arrows, check marks, φ -- and those must round-trip exactly.
   const a = analyze(skillSrc('trinity/x', { module: 'skill_x0', specs: ['specs/a.t27', 'specs/φ.t27'], summary: 'Issue → Spec ✓ ⟲ ◷ φ' }))
   const arr = a.ast.children.find((n) => n.name === 'SPECS').children[0]
-  assert.equal(arr.kind, 'ExprIdentifier', 'the quirk this generator documents: array literal in an identifier name')
+  // The artifact vendored before #4471 put the whole literal in an ExprIdentifier's
+  // *name*, as a JSON document. The compiler's own build emits the node it parsed.
+  assert.equal(arr.kind, 'ExprArrayLiteral')
+  assert.deepEqual(arr.children.map((n) => n.kind), ['ExprLiteral', 'ExprLiteral'])
+  assert.equal(arr.children[0].nodeKind, 'string', 'a string element is marked as one, not guessed from its text')
   const c = constsOf(a)
   assert.deepEqual(c.SPECS.value, ['specs/a.t27', 'specs/φ.t27'])
   assert.equal(c.SUMMARY_EN.value, 'Issue → Spec ✓ ⟲ ◷ φ')
@@ -152,7 +156,11 @@ test('unknown constants, wrong shapes and bad enums are problems, not silently d
 })
 
 test('the wasm typecheck is lenient, so the schema is the gate: wrong annotation, shape, length and range are all problems', () => {
-  // Measured against the vendored wasm: each of these still gets typecheck.ok === true.
+  // Measured 2026-09-21 against the compiler's own build: of the five defects below it
+  // reports exactly one -- the u16 overflow, by digit count. A number for a `str`, a
+  // `= ;` with no initialiser at all, a [2]str holding one element and a string for a
+  // `bool` all still typecheck. So the schema is still the gate; it is the gate for
+  // four of five rather than five of five, and that number is asserted, not assumed.
   const src = `module skill_x0;
 pub const KIND : str = 5;
 pub const ID : str = "trinity/x";
@@ -167,7 +175,8 @@ pub const ENABLED : bool = "yes";
 pub const TIMEOUT_MIN : u16 = 70000;
 `
   const a = analyze(src)
-  assert.equal(a.typecheck.ok, true, 'if this starts failing the compiler got stricter; the schema gate below stays')
+  assert.deepEqual(a.typecheck.errors, ["error: constant 'TIMEOUT_MIN' declares u16 but its value has 5 digits, which no u16 can hold"],
+    'the compiler reports the range error and nothing else; if this list grows the schema gate below still stays')
   const r = build(files('specs/skills', src), [])
   const text = r.problems.join('\n')
   assert.match(text, /KIND: value is not a string literal/)
@@ -613,7 +622,9 @@ test('a tri tool spec typechecks into a card with its actions, its owner letters
   assert.equal(r.tools.counts.tri, 1)
   assert.equal(r.tools.counts.triActions, 2)
   assert.equal(r.tools.counts.withAgents, 1)
-  assert.deepEqual(r.tools.groups.triByAgent, { W: ['tri/cell'] })
+  // '-' is always present and empty when nothing is unbound (fa0a34451): "nothing is
+  // unbound" is a fact the contract states rather than an absence its reader must infer.
+  assert.deepEqual(r.tools.groups.triByAgent, { '-': [], W: ['tri/cell'] })
   // and the agent side sees the same binding
   assert.deepEqual(r.agents.agents[0].tools, [{ id: 'tri/cell', ok: true }])
 })

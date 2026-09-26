@@ -24,8 +24,8 @@ const CAPTIONS: Record<DiagramKind, { en: string; ru: string }> = {
 }
 
 const UI = {
-  en: { source: 'Data source', figure: 'Figure', unowned: 'no owner', external: 'external', crons: 'crons', skills: 'skills', agents: 'agents', tools: 'tools', functions: 'functions', noEdges: 'without a drawn edge', specs: 'specs', chapters: 'docs chapters', tri: 'tri commands', mcp: 'MCP servers', repo: 'repository', priority: 'priority', steps: 'steps' },
-  ru: { source: 'Источник данных', figure: 'Рисунок', unowned: 'без владельца', external: 'внешний', crons: 'расписания', skills: 'навыки', agents: 'агенты', tools: 'инструменты', functions: 'функции', noEdges: 'без нарисованных связей', specs: 'спеки', chapters: 'главы документации', tri: 'команды tri', mcp: 'MCP-серверы', repo: 'репозиторий', priority: 'приоритет', steps: 'шагов' },
+  en: { source: 'Data source', figure: 'Figure', unowned: 'no owner', external: 'external', crons: 'crons', skills: 'skills', agents: 'agents', tools: 'tools', functions: 'functions', noEdges: 'without a drawn edge', specs: 'specs', chapters: 'docs chapters', tri: 'tri commands', mcp: 'MCP servers', repo: 'repository', priority: 'priority', steps: 'steps', purpose: 'the goal, outside the ordering' },
+  ru: { source: 'Источник данных', figure: 'Рисунок', unowned: 'без владельца', external: 'внешний', crons: 'расписания', skills: 'навыки', agents: 'агенты', tools: 'инструменты', functions: 'функции', noEdges: 'без нарисованных связей', specs: 'спеки', chapters: 'главы документации', tri: 'команды tri', mcp: 'MCP-серверы', repo: 'репозиторий', priority: 'приоритет', steps: 'шагов', purpose: 'цель, вне порядка приоритета' },
 }
 
 const mono: CSSProperties = { fontFamily: C.mono }
@@ -161,23 +161,37 @@ export function PhaseCycleFigure({ data, lang }: { data: DocFigures['phase-cycle
 
 export function LawHierarchyFigure({ data, lang }: { data: DocFigures['law-hierarchy']; lang: string }) {
   const ui = UI[lang === 'ru' ? 'ru' : 'en']
-  const W = 560, rowH = 30, H = data.laws.length * rowH + 44
-  const n = data.laws.length || 1
+  // L0 PURPOSE (2026-09-23) is the destination, not a rung: the constitution
+  // puts it outside the L1 > ... > L7 ordering, so it is drawn above the
+  // pyramid as a dashed band and never joins the '>' chain.
+  const purpose = data.laws.filter((l) => l.law === 'L0')
+  const ranked = data.laws.filter((l) => l.law !== 'L0')
+  const W = 560, rowH = 30, top = purpose.length ? rowH + 8 : 0, H = top + ranked.length * rowH + 44
+  const n = ranked.length || 1
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={CAPTIONS['law-hierarchy'][lang === 'ru' ? 'ru' : 'en']} style={{ maxWidth: W, display: 'block' }}>
-      {data.laws.map((l, i) => {
+      {purpose.map((l) => (
+        <g key={l.law}>
+          <rect x={30} y={8} width={500} height={rowH - 6} rx={3} fill="none" stroke={C.golden} strokeDasharray="5 4" />
+          <text x={40} y={8 + 17} fill={C.golden} fontSize={12} fontWeight={700} style={mono}>{l.law}</text>
+          <text x={W / 2} y={8 + 17} textAnchor="middle" fill={C.text} fontSize={12} style={mono}>{l.name}</text>
+          <text x={520} y={8 + 17} textAnchor="end" fill={C.muted} fontSize={10}>{ui.purpose}</text>
+        </g>
+      ))}
+      {ranked.map((l, i) => {
         const w = 500 - (i * (300 / n))
         const x = (W - w) / 2
+        const y = top + 8 + i * rowH
         return (
           <g key={l.law}>
-            <rect x={x} y={8 + i * rowH} width={w} height={rowH - 6} rx={3} fill={`rgba(255,215,0,${(0.22 - i * 0.025).toFixed(3)})`} stroke={C.golden} strokeOpacity={1 - i * 0.09} />
-            <text x={x + 10} y={8 + i * rowH + 17} fill={C.golden} fontSize={12} fontWeight={700} style={mono}>{l.law}</text>
-            <text x={x + w / 2 + 10} y={8 + i * rowH + 17} textAnchor="middle" fill={C.text} fontSize={12} style={mono}>{l.name}</text>
-            {i > 0 && <text x={x - 12} y={8 + i * rowH + 17} textAnchor="end" fill={C.muted} fontSize={12}>{'>'}</text>}
+            <rect x={x} y={y} width={w} height={rowH - 6} rx={3} fill={`rgba(255,215,0,${(0.22 - i * 0.025).toFixed(3)})`} stroke={C.golden} strokeOpacity={1 - i * 0.09} />
+            <text x={x + 10} y={y + 17} fill={C.golden} fontSize={12} fontWeight={700} style={mono}>{l.law}</text>
+            <text x={x + w / 2 + 10} y={y + 17} textAnchor="middle" fill={C.text} fontSize={12} style={mono}>{l.name}</text>
+            {i > 0 && <text x={x - 12} y={y + 17} textAnchor="end" fill={C.muted} fontSize={12}>{'>'}</text>}
           </g>
         )
       })}
-      <text x={W / 2} y={H - 10} textAnchor="middle" fill={C.muted} fontSize={11} style={mono}>{ui.priority}: {data.priority ?? data.laws.map((l) => l.law).join(' > ')}</text>
+      <text x={W / 2} y={H - 10} textAnchor="middle" fill={C.muted} fontSize={11} style={mono}>{ui.priority}: {data.priority ?? ranked.map((l) => l.law).join(' > ')}</text>
     </svg>
   )
 }

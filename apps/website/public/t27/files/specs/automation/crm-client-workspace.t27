@@ -149,4 +149,15 @@ module automation::crm_client_workspace {
         assert(ROUTE_CLIENT_CHAT == "/crm/:clientId/chat");
         assert(DASHBOARD_SEEN_LIVE);
         assert(!RUN_SURVIVED_REDEPLOY);
+
+    test "thread_for creates correct thread based on client digits and caller status"
+        let valid_client = thread_for(10, false);
+        let invalid_client = thread_for(3, false);
+        let caller_client = thread_for(10, true);
+        assert(valid_client.is_self == false);
+        assert(invalid_client.is_self == true);
+        assert(caller_client.is_self == true);
+        assert(valid_client.client_digits == 10);
+        assert(invalid_client.client_digits == 3);
+        assert(caller_client.client_digits == 10);
 }

@@ -1,8 +1,9 @@
 import {useEffect,useMemo,useRef,useState,type Ref,type CSSProperties} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import {QueenCombBabylon} from './QueenCombBabylon';
-import {catalogUniverse,catalogFocus,catalogFocusHash,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
-import {QueenCatalogInspector,QueenCatalogSpec} from './QueenCatalogInspector';
+import {catalogUniverse,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
+import {QueenCatalogSpec} from './QueenCatalogSpec';
+import QueenCellStage,{type CellSpecLink} from './QueenCellStage';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
 import type {CombHandle} from './queenHud';
 import type {HiveDisplayProjection,HiveDisplay} from './queenHiveDisplay';
@@ -27,9 +28,9 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
   // trinity-fpga rendered at left:-31 and read as "ity-fpga". The label box is
   // clamped into the measured layer instead.
   const labels=useRef<HTMLDivElement>(null);
-  const [field,setField]=useState({width:0,height:0});
+  const [field,setField]=useState({left:0,top:0,right:0,bottom:0});
   const [regionHeight,setRegionHeight]=useState(49);
-  useEffect(()=>{const node=labels.current;if(!node)return;const measure=()=>setField(prev=>prev.width===node.clientWidth&&prev.height===node.clientHeight?prev:{width:node.clientWidth,height:node.clientHeight});const observer=new ResizeObserver(measure);observer.observe(node);measure();return()=>observer.disconnect();},[]);
+  useEffect(()=>{const node=labels.current;if(!node)return;const measure=()=>{const box=node.getBoundingClientRect();const next=catalogLabelField({left:box.left,top:box.top,width:box.width,height:box.height},node.parentElement?.getBoundingClientRect()??null,toolbar.current?.getBoundingClientRect()??null);setField(prev=>prev.left===next.left&&prev.top===next.top&&prev.right===next.right&&prev.bottom===next.bottom?prev:next);};const observer=new ResizeObserver(measure);observer.observe(node);if(node.parentElement)observer.observe(node.parentElement);if(toolbar.current)observer.observe(toolbar.current);measure();return()=>observer.disconnect();},[]);
   const [selected,setSelected]=useState<number|null>(null),[projections,setProjections]=useState<HiveDisplayProjection[]>([]),[query,setQuery]=useState(''),[limit,setLimit]=useState(8),[packet,setPacket]=useState(''),[copied,setCopied]=useState(false);
   const [regionProjections,setRegionProjections]=useState<HiveDisplayProjection[]>([]);
   const resource=selected===null?null:map.cells[selected];
@@ -48,8 +49,9 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       const row=map.cells[p.index];
       if(row?.kind!=='repo')return [];
       const cap=Math.max(90,Math.min(200,p.width)),half=cap/2;
-      const x=field.width>=cap+8?Math.min(Math.max(p.x,half+4),field.width-half-4):p.x;
-      const floor=regionHeight+4,ceil=field.height?field.height-4:Number.POSITIVE_INFINITY;
+      const width=field.right-field.left,height=field.bottom-field.top;
+      const x=width>=cap+8?Math.min(Math.max(p.x,field.left+half+4),field.right-half-4):p.x;
+      const floor=field.top+regionHeight+4,ceil=height?field.bottom-4:Number.POSITIVE_INFINITY;
       for(const lift of lifts){
         const y=Math.min(Math.max(p.y+lift,floor),ceil);
         if(lift&&Math.abs(y-p.y)<Math.abs(lift)-0.5)continue;      // the clamp swallowed the lift, so it is not a new slot
@@ -72,6 +74,26 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
   function enter(nextRepo:string,number:number|null=null){setSpecPath(null);setPacket('');setCopied(false);if(nextRepo===repo&&number===focus?.number)return;setParams(p=>{const next=new URLSearchParams(p);next.set('world',nextRepo);if(number===null)next.delete('task');else next.set('task',String(number));return next;},{replace:nextRepo===repo});onInspect?.();}
   function home(){setSpecPath(null);setPacket('');setCopied(false);setParams(p=>{const next=new URLSearchParams(p);next.delete('world');next.delete('task');return next;});}
   function openIssue(row:HiveDisplay){enter(row.repo,row.number);}
+  // The cell, opened: the stage takes the whole display, so everything it needs
+  // that only this component holds -- the atlas -- is handed to it as data. The
+  // snapshot is the catalog's own row; the live GitHub read happens inside the
+  // stage and comes back through onObserved, which is what redraws the map cell.
+  const snapshot=issueKey?atlas.issues.find(i=>i.key===issueKey)??null:null;
+  const cellSpecs=useMemo(()=>{
+    const links=new Map<string,CellSpecLink>();
+    for(const hit of snapshot?.hits??[]){
+      const note=hit.relation==='reference'?(ru?'Путь / символ, не подтверждено':'Path / symbol, unverified'):(ru?'Кандидат, не подтверждено':'Candidate, unverified');
+      for(const source of atlas.specs.find(s=>s.id===hit.specId)?.sources??[])if(!links.has(source.path))links.set(source.path,{path:source.path,label:`${source.repo} · ${source.path}`,note});
+    }
+    return [...links.values()];
+  },[snapshot,atlas.specs,ru]);
+  function cellPacket(){
+    const number=focus?.number;
+    if(!repo||!number)return '';
+    const row=observed[`${repo}#${number}`]??null;
+    return atlasAgentPacket(atlas,snapshot??{key:`${repo}#${number}`,repo,number,title:row?.title??'',hits:[]})+
+      `\nPublic issue observation (not a task lease): ${JSON.stringify(row?{key:row.key,title:row.title,state:row.state,updatedAt:row.updatedAt,assignees:row.assignees??null}:null)}\nCheck assignments and active PRs before taking work. Coordinate ownership in the existing issue; this copy action does not reserve it.\n`;
+  }
   const previousRepo=useRef(repo);
   useEffect(()=>{if(previousRepo.current&&!repo&&resource?.kind!=='spec')control.current?.overview();previousRepo.current=repo;},[repo,resource?.kind]);
   function project(next:HiveDisplayProjection[],regions:HiveDisplayProjection[]){
@@ -111,7 +133,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       {packet&&<><p role="status">{copied?(ru?'Скопировано':'Copied'):(ru?'Скопируйте пакет ниже':'Copy the packet below')}</p><textarea readOnly aria-label="Agent packet" value={packet}/></>}
       <small>{ru?'Наблюдение':'Observed'}: {new Date(atlas.at).toLocaleString(lang)} · {ru?'не live':'not live'}</small>
     </aside>}
-    {!specPath&&repo&&focus?.number&&<QueenCatalogInspector key={issueKey} atlas={atlas} repo={repo} number={focus.number} lang={lang} onClose={()=>enter(repo)} onSpec={setSpecPath} onObserved={row=>setObserved(prev=>prev[row.key]===row?prev:{...prev,[row.key]:row})}/>}
+    {!specPath&&repo&&focus?.number&&<QueenCellStage key={issueKey} repo={repo} number={focus.number} title={snapshot?.title} lang={lang} onClose={()=>enter(repo)} cellHref={new URL(catalogFocusHash({repo,number:focus.number}),location.href).href} specs={cellSpecs} onSpec={setSpecPath} packet={cellPacket} onObserved={row=>setObserved(prev=>prev[row.key]===row?prev:{...prev,[row.key]:row})}/>}
     {specPath&&<QueenCatalogSpec key={specPath} atlas={atlas} path={specPath} lang={lang} onClose={()=>setSpecPath(null)}/>}
   </div>;
 }

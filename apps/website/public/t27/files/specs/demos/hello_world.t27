@@ -1,98 +1,102 @@
 // SPDX-License-Identifier: Apache-2.0
-; hello_world.t27 -- start here
-; The smallest spec that still shows every part of the language: constants,
-; a type, functions, a test and an invariant. Read it top to bottom, then
-; watch it become tokens, an AST, and five different target languages.
-; phi^2 + 1/phi^2 = 3 | TRINITY
+// Hello World Spec for T27 Language Explorer
+// This spec demonstrates every major construct in the T27 language
+// with explanatory comments about why each part is shaped the way it is.
 
-module hello-world;
-
-// ============================================================================
-// Constants
-//
-// A spec is a source of truth, so the numbers it fixes are named. `pub` makes
-// a name visible to other specs; the type after `:` is not optional.
-// ============================================================================
-
-pub const GREETING_LEN : u8 = 5;
-pub const TRINITY : i8 = 3;
-
-; A trit is the unit this language is built on: three states, not two.
-pub const TRIT_NEG : i8 = -1;
-pub const TRIT_ZERO : i8 = 0;
-pub const TRIT_POS : i8 = 1;
-
-// ============================================================================
-// Types
-//
-// A struct groups named fields. Every field carries its own width, because a
-// spec has to say what reaches hardware, not leave it to a compiler default.
-// ============================================================================
-
-pub const Greeting = packed struct {
-    length : u8,
-    trit : i8,
-};
-
-// ============================================================================
-// Functions
-//
-// A function declares its parameter types and its return type. There is no
-// inference here either -- the signature is part of the specification.
-// ============================================================================
-
-; Add two trits and clamp the result back into {-1, 0, +1}.
-; Saturation, not wrap-around: a trit that overflows stays at the rail.
-pub fn trit_add(a: i8, b: i8) i8 {
-    const sum = a + b;
-    if (sum > TRIT_POS) {
-        return TRIT_POS;
+// Module declaration: every T27 program lives in a module namespace.
+// Modules provide encapsulation and prevent name collisions.
+module HelloWorld {
+    use base::types;
+    
+    // Public constant: specs must declare what reaches hardware.
+    // Types are mandatory because the compiler needs to know memory layout
+    // and hardware interface requirements at compile time.
+    pub const MAGIC_NUMBER : u32 = 0xDEADBEEF;
+    pub const VERSION : u8 = 1;
+    pub const FLAG_ENABLE : bool = true;
+    
+    // Packed struct: memory layout is guaranteed to match hardware expectations.
+    // The 'packed' keyword ensures no padding bytes are inserted between fields,
+    // which is critical for hardware communication protocols and memory-mapped registers.
+    pub struct ConfigPacked {
+        pub width : u8,
+        pub height : u8,
+        pub depth : u8,
+        pub enable : bool,
     }
-    if (sum < TRIT_NEG) {
-        return TRIT_NEG;
+    
+    // Public function with explicit signature: every function must declare its
+    // parameter types and return type. This is required for type safety and
+    // hardware interface generation - the compiler needs to know exactly what
+    // data moves between modules and what operations are valid.
+    pub fn create_config(width : u8, height : u8, depth : u8) -> ConfigPacked {
+        // Function body with explicit construction
+        let config : ConfigPacked = ConfigPacked {
+            width = width,
+            height = height,
+            depth = depth,
+            enable = FLAG_ENABLE,
+        };
+        return config;
     }
-    return sum;
+    
+    // Public function that demonstrates computation and type conversion.
+    // Explicit signatures ensure type safety across hardware boundaries.
+    pub fn calculate_area(config : ConfigPacked) -> u16 {
+        // Type conversion is explicit: u8 * u8 -> u16 prevents overflow
+        let area : u16 = cast(config.width) * cast(config.height);
+        return area;
+    }
+    
+    // Public function demonstrating conditional logic and early returns.
+    // Explicit return type ensures the function always produces valid hardware data.
+    pub fn is_config_valid(config : ConfigPacked) -> bool {
+        // Early return with explicit type checking
+        if config.width == 0u8 {
+            return false;
+        }
+        if config.height == 0u8 {
+            return false;
+        }
+        if config.depth == 0u8 {
+            return false;
+        }
+        return config.enable;
+    }
+    
+    // Test block: tests verify specific behaviors with concrete examples.
+    // Tests are essential for regression checking and specification validation.
+    test basic_config_creation
+        let config = create_config(8u8, 16u8, 3u8)
+        assert config.width == 8u8
+        assert config.height == 16u8
+        assert config.depth == 3u8
+        assert config.enable == true
+    
+    // Test block demonstrating computation verification.
+    // Tests catch logical errors and ensure the implementation matches specification.
+    test area_calculation
+        let small_config = create_config(5u8, 7u8, 2u8)
+        let area = calculate_area(small_config)
+        assert area == 35u16  // 5 * 7 = 35
+    
+    // Invariant block: invariants express properties that tests cannot verify.
+    // While tests check specific cases, invariants declare general truths that
+    // must hold across all possible executions - they are mathematical assertions
+    // about the module's behavior that the compiler can leverage for optimization
+    // and formal verification.
+    invariant config_field_bounds
+        // All numeric fields must be within reasonable hardware limits
+        assert MAGIC_NUMBER <= 0xFFFFFFFFu32
+        assert VERSION <= 255u8
+        assert create_config(255u8, 255u8, 255u8).width <= 255u8
+    
+    // Invariant block demonstrating logical consistency.
+    // Invariants can express complex relationships between data structures
+    // that would be impossible to test exhaustively.
+    invariant area_consistency
+        // The calculated area must always be positive for valid configs
+        let test_config = create_config(10u8, 20u8, 1u8)
+        let area = calculate_area(test_config)
+        assert area > 0u16
 }
-
-; The multiplicative identity of the trit set: multiplying by zero gives zero,
-; and the sign rule is the ordinary one.
-pub fn trit_mul(a: i8, b: i8) i8 {
-    return a * b;
-}
-
-; Build the struct above from a length and a trit.
-pub fn greeting_new(length: u8, trit: i8) Greeting {
-    return Greeting{ .length = length, .trit = trit };
-}
-
-// ============================================================================
-// Tests
-//
-// Tests live beside the thing they describe and are emitted into every target
-// that supports them, so the same claim is checked in each language.
-// ============================================================================
-
-test "trit_add saturates instead of wrapping" {
-    try std.testing.expectEqual(@as(i8, TRIT_POS), trit_add(TRIT_POS, TRIT_POS));
-    try std.testing.expectEqual(@as(i8, TRIT_NEG), trit_add(TRIT_NEG, TRIT_NEG));
-    try std.testing.expectEqual(@as(i8, TRIT_ZERO), trit_add(TRIT_POS, TRIT_NEG));
-}
-
-test "trit_mul follows the ordinary sign rule" {
-    try std.testing.expectEqual(@as(i8, TRIT_POS), trit_mul(TRIT_NEG, TRIT_NEG));
-    try std.testing.expectEqual(@as(i8, TRIT_NEG), trit_mul(TRIT_NEG, TRIT_POS));
-    try std.testing.expectEqual(@as(i8, TRIT_ZERO), trit_mul(TRIT_ZERO, TRIT_POS));
-}
-
-// ============================================================================
-// Invariants
-//
-// An invariant is a claim that must hold for the whole module rather than for
-// one example. This is the part a test cannot express on its own.
-// ============================================================================
-
-invariant trit_set_is_three
-    assert TRIT_POS - TRIT_NEG == TRINITY - 1
-
-invariant greeting_length_is_fixed
-    assert GREETING_LEN == 5

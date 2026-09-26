@@ -80,60 +80,229 @@ module LayerNorm;
     // init(config: NormConfig) → NormState
     // Initializes layer norm state with phi-optimized parameters.
     fn init(config: NormConfig) -> NormState {
-        // If use_phi_init:
-        //   gamma[i] = 1.0 + (i % 3) * INV_PHI_SQUARED * 0.1
-        //   beta[i] = (i % 3) * PHI * 0.01
-        // else:
-        //   gamma[i] = 1.0
-        //   beta[i] = 0.0
-        //
-        // If strand_mode: partition gamma/beta into 3 strands
+        let gamma = allocate_array(config.hidden_size);
+        let beta = allocate_array(config.hidden_size);
+        let mean = allocate_array(config.hidden_size);
+        let variance = allocate_array(config.hidden_size);
+        
+        if config.use_phi_init {
+            for i in range(0, config.hidden_size) {
+                gamma[i] = 1.0 + ((i % 3) as f32) * INV_PHI_SQUARED * 0.1;
+                beta[i] = ((i % 3) as f32) * PHI * 0.01;
+            }
+        } else {
+            for i in range(0, config.hidden_size) {
+                gamma[i] = 1.0;
+                beta[i] = 0.0;
+            }
+        }
+        
+        return NormState{
+            .gamma = gamma,
+            .beta = beta,
+            .mean = mean,
+            .variance = variance,
+            .is_training = true,
+            .momentum = 0.1,
+        };
     }
 
     // forward(state: NormState, input: []gf16::GF16) → ForwardResult
     // Computes layer normalization: output = γ * (x - μ) / √(σ² + ε) + β
     fn forward(state: NormState, input: []gf16::GF16) -> ForwardResult {
+        let n = input.len();
+        let eps = DEFAULT_EPSILON;
+        
         // 1. Compute mean: μ = (1/n) * Σ x_i
+        let mean = compute_mean(input);
+        
         // 2. Compute variance: σ² = (1/n) * Σ (x_i - μ)²
+        let variance = compute_variance(input, mean);
+        
         // 3. Normalize: x̂ = (x - μ) / √(σ² + ε)
-        // 4. Scale and shift: y = γ * x̂ + β
-        //
-        // Strand mode: process each strand independently with strand-local params
-        // Save intermediate values (mean, variance, centered, normalized) for backward
+        let normalized = allocate_array(n);
+        let centered = allocate_array(n);
+        let output = allocate_array(n);
+        
+        for i in range(0, n) {
+            centered[i] = input[i] - mean;
+            let std_dev = sqrt(variance + eps);
+            normalized[i] = centered[i] / std_dev;
+            output[i] = state.gamma[i] * normalized[i] + state.beta[i];
+        }
+        
+        return ForwardResult{
+            .output = output,
+            .mean = mean,
+            .variance = variance,
+            .centered = centered,
+            .normalized = normalized,
+        };
     }
 
     // forward_strand(strand: Strand, input: []gf16::GF16) → ForwardResult
     // Strand-local forward pass for parallel processing.
     fn forward_strand(strand: Strand, input: []gf16::GF16) -> ForwardResult {
-        // Same as forward but operates on strand subset [start:end)
-        // Applies phi_gamma_offset and phi_beta_offset
+        let n = strand.end - strand.start;
+        let eps = PHI_EPSILON;
+        
+        // Extract subset for this strand
+        let strand_input = allocate_array(n);
+        for i in range(0, n) {
+            strand_input[i] = input[strand.start + i];
+        }
+        
+        // 1. Compute mean: μ = (1/n) * Σ x_i
+        let mean = compute_mean(strand_input);
+        
+        // 2. Compute variance: σ² = (1/n) * Σ (x_i - μ)²
+        let variance = compute_variance(strand_input, mean);
+        
+        // 3. Normalize: x̂ = (x - μ) / √(σ² + ε)
+        let normalized = allocate_array(n);
+        let centered = allocate_array(n);
+        let output = allocate_array(n);
+        
+        for i in range(0, n) {
+            centered[i] = strand_input[i] - mean;
+            let std_dev = sqrt(variance + eps);
+            normalized[i] = centered[i] / std_dev;
+            
+            // Apply phi-optimized gamma and beta
+            let effective_gamma = strand.gamma[i] + strand.phi_gamma_offset;
+            let effective_beta = strand.beta[i] + strand.phi_beta_offset;
+            output[i] = effective_gamma * normalized[i] + effective_beta;
+        }
+        
+        return ForwardResult{
+            .output = output,
+            .mean = mean,
+            .variance = variance,
+            .centered = centered,
+            .normalized = normalized,
+        };
     }
 
-    // backward(state: NormState, result: ForwardResult, grad_output: []gf16::GF16) → NormGradients
+    // backward(state: NormState, result: ForwardResult, grad_output: []gf16::GF16) -> NormGradients
     // Computes gradients for backpropagation.
     fn backward(state: NormState, result: ForwardResult, grad_output: []gf16::GF16) -> NormGradients {
-        // d_γ = Σ (grad_output * normalized)
-        // d_β = Σ grad_output
-        // d_x = (1/n) * γ / √(σ²+ε) * (n * grad_output - Σgrad_output - x̂ * Σ(grad_output * x̂))
+        let n = grad_output.len();
+        let eps = DEFAULT_EPSILON;
+        let std_dev = sqrt(result.variance + eps);
+        
+        // Compute d_γ = Σ (grad_output * normalized)
+        let mut d_gamma = allocate_array(n);
+        for i in range(0, n) {
+            d_gamma[i] = grad_output[i] * result.normalized[i];
+        }
+        
+        // Compute d_β = Σ grad_output
+        let mut d_beta = allocate_array(n);
+        for i in range(0, n) {
+            d_beta[i] = grad_output[i];
+        }
+        
+        // Compute d_x using the full gradient formula
+        let mut d_input = allocate_array(n);
+        let sum_grad_output = sum_array(grad_output);
+        let sum_grad_output_normalized = sum_array(multiply_arrays(grad_output, result.normalized));
+        
+        for i in range(0, n) {
+            let term1 = n as f32 * grad_output[i];
+            let term2 = sum_grad_output;
+            let term3 = result.normalized[i] * sum_grad_output_normalized;
+            let grad_input = (state.gamma[i] / std_dev) * (term1 - term2 - term3) / n as f32;
+            d_input[i] = grad_input;
+        }
+        
+        return NormGradients{
+            .d_gamma = d_gamma,
+            .d_beta = d_beta,
+            .d_input = d_input,
+        };
     }
 
     // backward_strand(strand: Strand, result: ForwardResult, grad_output: []gf16::GF16) → NormGradients
     // Strand-local backward pass.
     fn backward_strand(strand: Strand, result: ForwardResult, grad_output: []gf16::GF16) -> NormGradients {
-        // Same as backward but operates on strand subset
+        let n = strand.end - strand.start;
+        let eps = PHI_EPSILON;
+        let std_dev = sqrt(result.variance + eps);
+        
+        // Extract grad_output for this strand
+        let strand_grad_output = allocate_array(n);
+        for i in range(0, n) {
+            strand_grad_output[i] = grad_output[strand.start + i];
+        }
+        
+        // Compute d_γ = Σ (grad_output * normalized)
+        let mut d_gamma = allocate_array(n);
+        for i in range(0, n) {
+            d_gamma[i] = strand_grad_output[i] * result.normalized[i];
+        }
+        
+        // Compute d_β = Σ grad_output
+        let mut d_beta = allocate_array(n);
+        for i in range(0, n) {
+            d_beta[i] = strand_grad_output[i];
+        }
+        
+        // Compute d_x using the full gradient formula
+        let mut d_input = allocate_array(n);
+        let sum_grad_output = sum_array(strand_grad_output);
+        let sum_grad_output_normalized = sum_array(multiply_arrays(strand_grad_output, result.normalized));
+        
+        for i in range(0, n) {
+            let term1 = n as f32 * strand_grad_output[i];
+            let term2 = sum_grad_output;
+            let term3 = result.normalized[i] * sum_grad_output_normalized;
+            let grad_input = (strand.gamma[i] / std_dev) * (term1 - term2 - term3) / n as f32;
+            d_input[i] = grad_input;
+        }
+        
+        return NormGradients{
+            .d_gamma = d_gamma,
+            .d_beta = d_beta,
+            .d_input = d_input,
+        };
     }
 
     // update(state: NormState, grads: NormGradients, lr: gf16::GF16) → NormState
     // Updates learnable parameters using computed gradients.
     fn update(state: NormState, grads: NormGradients, lr: gf16::GF16) -> NormState {
-        // gamma = gamma - lr * d_gamma
-        // beta = beta - lr * d_beta
+        let n = state.gamma.len();
+        let new_gamma = allocate_array(n);
+        let new_beta = allocate_array(n);
+        
+        for i in range(0, n) {
+            new_gamma[i] = state.gamma[i] - lr * grads.d_gamma[i];
+            new_beta[i] = state.beta[i] - lr * grads.d_beta[i];
+        }
+        
+        return NormState{
+            .gamma = new_gamma,
+            .beta = new_beta,
+            .mean = state.mean,
+            .variance = state.variance,
+            .is_training = state.is_training,
+            .momentum = state.momentum,
+        };
     }
 
     // normalize_vector(x: []gf16::GF16, eps: gf16::GF16) → []gf16::GF16
     // Utility function to normalize a vector without affine transform.
     fn normalize_vector(x: []gf16::GF16, eps: gf16::GF16) -> []gf16::GF16 {
-        // Returns (x - μ) / √(σ² + eps)
+        let n = x.len();
+        let mean = compute_mean(x);
+        let variance = compute_variance(x, mean);
+        let normalized = allocate_array(n);
+        
+        for i in range(0, n) {
+            let std_dev = sqrt(variance + eps);
+            normalized[i] = (x[i] - mean) / std_dev;
+        }
+        
+        return normalized;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -143,33 +312,73 @@ module LayerNorm;
     // phi_init_gamma(hidden_size: u32) → []gf16::GF16
     // Initialize γ with phi-based pattern.
     fn phi_init_gamma(hidden_size: u32) -> []gf16::GF16 {
-        // gamma[i] = 1.0 + ((i % 3) * INV_PHI_SQUARED * 0.1)
-        // Creates subtle variation across strands: [1.0, 1.038, 1.076, 1.0, ...]
+        let gamma = allocate_array(hidden_size);
+        
+        for i in range(0, hidden_size) {
+            gamma[i] = 1.0 + ((i % 3) as f32) * INV_PHI_SQUARED * 0.1;
+        }
+        
+        return gamma;
     }
 
     // phi_init_beta(hidden_size: u32) → []gf16::GF16
     // Initialize β with phi-based pattern.
     fn phi_init_beta(hidden_size: u32) -> []gf16::GF16 {
-        // beta[i] = ((i % 3) * PHI * 0.01)
-        // Creates pattern: [0.0, 0.0162, 0.0324, 0.0, ...]
+        let beta = allocate_array(hidden_size);
+        
+        for i in range(0, hidden_size) {
+            beta[i] = ((i % 3) as f32) * PHI * 0.01;
+        }
+        
+        return beta;
     }
 
     // phi_normalize(x: gf16::GF16, mean: gf16::GF16, var: gf16::GF16) -> gf16::GF16
     // Phi-optimized normalization with reduced numerical error.
     fn phi_normalize(x: gf16::GF16, mean: gf16::GF16, var: gf16::GF16) -> gf16::GF16 {
-        // Uses PHI_EPSILON instead of default
-        // Returns (x - mean) / sqrt(var + PHI_EPSILON)
+        return (x - mean) / sqrt(var + PHI_EPSILON);
     }
 
     // create_strands(hidden_size: u32, gamma: []gf16::GF16, beta: []gf16::GF16) → []Strand
     // Create 3 strands for parallel processing.
     fn create_strands(hidden_size: u32, gamma: []gf16::GF16, beta: []gf16::GF16) -> []Strand {
-        // Strand I:   [0, hidden_size/3)
-        // Strand II:  [hidden_size/3, 2*hidden_size/3)
+        let strand_size = hidden_size / 3;
+        let strands = allocate_array(3);
+        
+        // Strand I: [0, hidden_size/3)
+        strands[0] = Strand{
+            .id = 0,
+            .start = 0,
+            .end = strand_size,
+            .gamma = slice_array(gamma, 0, strand_size),
+            .beta = slice_array(beta, 0, strand_size),
+            .phi_gamma_offset = 0.0,
+            .phi_beta_offset = 0.0,
+        };
+        
+        // Strand II: [hidden_size/3, 2*hidden_size/3)
+        strands[1] = Strand{
+            .id = 1,
+            .start = strand_size,
+            .end = 2 * strand_size,
+            .gamma = slice_array(gamma, strand_size, 2 * strand_size),
+            .beta = slice_array(beta, strand_size, 2 * strand_size),
+            .phi_gamma_offset = INV_PHI_SQUARED * 0.1,
+            .phi_beta_offset = INV_PHI_SQUARED * 0.1,
+        };
+        
         // Strand III: [2*hidden_size/3, hidden_size)
-        //
-        // Each strand gets phi_gamma_offset and phi_beta_offset:
-        //   offset = strand_id * INV_PHI_SQUARED * 0.1
+        strands[2] = Strand{
+            .id = 2,
+            .start = 2 * strand_size,
+            .end = hidden_size,
+            .gamma = slice_array(gamma, 2 * strand_size, hidden_size),
+            .beta = slice_array(beta, 2 * strand_size, hidden_size),
+            .phi_gamma_offset = 2.0 * INV_PHI_SQUARED * 0.1,
+            .phi_beta_offset = 2.0 * INV_PHI_SQUARED * 0.1,
+        };
+        
+        return strands;
     }
 
     // ═══════════════════════════════════════════════════════════

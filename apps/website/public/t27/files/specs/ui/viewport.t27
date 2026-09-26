@@ -19,6 +19,12 @@
 ;   390x844  #/queen  rail is a horizontal strip, 12 tiles of 44x74, about 6 visible;
 ;            7 interactive targets below 40 px; .queen27-hud-command.is-compact
 ;            scrollWidth 612 > clientWidth 344.
+;            Since gHashTag/trinity#1032 (2026-09-16) a portrait phone (max-width 640px,
+;            queen-phone.css) lays the rail out as a grid of two rows, ceil(views / 2)
+;            columns, every tile at least 44 px and in view, nothing scrolling; the head's
+;            tool row wraps instead of scrolling. Measured at 360x740, 375x812, 390x844:
+;            scrollWidth == clientWidth. The strip described below remains the layout
+;            from 641 to 900 px wide.
 ;   1024x768 #/queen  the rail of 12 does not fit: PROJECT hidden under COLLAPSE.
 ;   1920x1080 #/docs  text column left-aligned, nested scrollers (Docs 2, Tools 3).
 ;   Queen.css carries 36 media queries at 640/760/900/901/1100; the explorers use 760/1100
@@ -83,7 +89,10 @@ pub const DESKTOP_REFERENCE_WIDTH : u16 = 1280;
 
 ; --- Queen rail capacity (described, not changed here) ---------------------------------
 ; Numbers read from apps/website/src/pages/Queen.css of trinity main c881e7f and from the
-; measurement above; each carries where it comes from.
+; measurement above; each carries where it comes from. They are that reading: the rail
+; carries thirteen views since TRI joined it (HUD_KEYS[12] = r), and on a portrait phone
+; the compact strip gave way to the two-row grid of gHashTag/trinity#1032 (see SOURCE),
+; where all tiles are visible and RAIL_MIN_VISIBLE is met with room to spare.
 ;   RAIL_TILES            12  src/components/queenHud.ts:35 (HUD_KEYS, twelve views)
 ;   RAIL_TILE_W_COMPACT   44  Queen.css:5311-5312 (.is-compact .queen27-hud-cmd flex 0 0 44px, min-width 44px)
 ;   RAIL_TILE_GAP_COMPACT  4  Queen.css:5302 (.is-compact gap: 4px)

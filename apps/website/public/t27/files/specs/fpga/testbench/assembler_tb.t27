@@ -95,6 +95,12 @@ module Assembler_Testbench {
         invariant INSTR_WIDTH == 32;
     }
 
+    test test_tick {
+        var initial_clk : bool = clk;
+        tick();
+        invariant clk != initial_clk;
+    }
+
     invariant program_size_positive : MAX_PROGRAM_SIZE > 0;
     invariant registers_positive : NUM_REGISTERS > 0;
 

@@ -25,11 +25,15 @@ assert.equal(h.hiveFeedHealth(false,null),'unknown');
 assert.equal(h.hiveFeedHealth(true,'HTTP503'),'stale');
 assert.equal(h.hiveFeedHealth(false,'HTTP503'),'unknown');
 assert.equal(h.hiveFeedHealth(true,null),'live');
-const intel=readFileSync(new URL('../src/components/QueenIntel.tsx',import.meta.url),'utf8');
+// Two assertions read QueenIntel.tsx for the intel feed's use of
+// hiveEventSignal() and its signalLabel text. The feed was deleted -- the shell
+// gave its cell to the Queen's conversation -- so both asserted a file that no
+// longer renders. The tone rule they guarded is asserted above against
+// hiveEventSignal itself; the accessible-label rule has no renderer to guard
+// and comes back with the next component that paints an event.
 const scene=readFileSync(new URL('../src/components/QueenCombBabylon.tsx',import.meta.url),'utf8');
 assert.ok(scene.includes('!displaysRef.current && p !== null'), 'selecting an issue cannot manufacture a colored legacy event flare');
 assert.ok(scene.includes('!catalogRef.current && !displaysRef.current && p !== null'), 'selecting a spec cannot manufacture a red fog flare');
-assert.ok(intel.includes('hiveEventSignal(event)'), 'intel feed must not show green check for finished/refused');
 let cursor={ready:false,seen:new Set()};
 const identity=e=>e.kind==='review'?`review:${e.issue}:${e.state}`:e.id;
 let delivery=h.hiveSignalDelivery([e('result')],now,'live',cursor,identity);
@@ -49,5 +53,4 @@ const newest=e('result',null,7,new Date(now).toISOString(),'newest');
 const first=h.hiveSignalDelivery([newest],now,'live',initial.cursor,identity);
 const late=e('error',null,7,new Date(now-1000).toISOString(),'late');
 assert.deepEqual(h.hiveSignalDelivery([newest,late],now+4000,'live',first.cursor,identity).events,[],'late older failure must not resurrect after newer result ring expired');
-assert.ok(intel.includes('signalLabel'),'event meaning must be accessible text, not only aria-hidden colored icon');
 console.log('Hive signals: PASS (lifecycle, failure priority, proof boundaries, event freshness, board-only live work, feed health)');

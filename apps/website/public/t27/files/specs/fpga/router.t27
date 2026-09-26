@@ -233,6 +233,21 @@ module Router {
         given e = ConnEdge{.source = "", .sink = "", .kind = 0, .bit_width = 0}
         then validate_edge(e) > 0
 
+    test est_total_wire_basic
+        given edges = [data_edge("a", "b", 32), data_edge("c", "d", 16)]
+        and fanouts = [fanout("net1", 2, 32), fanout("net2", 8, 16), fanout("net3", 32, 8)]
+        then est_total_wire(edges, 2, fanouts, 3) == 88000
+
+    test est_total_wire_zero_fcount
+        given edges = [data_edge("a", "b", 32)]
+        and fanouts = [fanout("net1", 4, 32)]
+        then est_total_wire(edges, 1, fanouts, 0) == 0
+
+    test est_total_wire_zero_fanout
+        given edges = [data_edge("a", "b", 32)]
+        and fanouts = [fanout("net1", 0, 32)]
+        then est_total_wire(edges, 1, fanouts, 1) == 0
+
     // === Invariants ===
 
     invariant wire_length_non_negative

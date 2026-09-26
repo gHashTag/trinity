@@ -27,7 +27,7 @@ import {
   tabAddress,
   triAddress,
 } from '../src/lib/triScreens.ts'
-import { HUD_VIEWS, HUD_KEYS } from '../src/components/queenHud.ts'
+import { HUD_VIEWS, HUD_KEYS, HUD_CODES, hudKeyIndex } from '../src/components/queenHud.ts'
 import { MODULES } from '../src/lib/queenModules.ts'
 
 const read = (rel) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8')
@@ -159,6 +159,16 @@ assert.equal(acceptAppMessage({ ...ok, data: { type: 't27-app', kind: 'route', p
 assert.equal(acceptAppMessage({ ...ok, data: { type: 't27-app', kind: 'route', path: '//evil.example' } }, frame), null, 'protocol-relative path')
 assert.equal(acceptAppMessage({ ...ok, data: [1] }, frame), null, 'array')
 assert.equal(acceptAppMessage({ ...ok, data: null }, frame), null, 'null')
+// The app failing inside the frame: {type:'t27-app', kind:'error', code}, same origin and source rules.
+const failed = { ...ok, data: { type: 't27-app', kind: 'error', code: 'boundary' } }
+assert.deepEqual(acceptAppMessage(failed, frame), { kind: 'error', code: 'boundary' })
+assert.deepEqual(acceptAppMessage({ ...ok, data: { type: 't27-app', kind: 'error', code: 'storage_blocked' } }, frame), { kind: 'error', code: 'storage_blocked' })
+assert.equal(acceptAppMessage({ ...failed, origin: 'https://t27.ai' }, frame), null, 'error: wrong origin')
+assert.equal(acceptAppMessage({ ...failed, source: { name: 'other' } }, frame), null, 'error: wrong source')
+for (const code of [undefined, 42, '', 'Boundary', 'x'.repeat(65), '<b>', 'a b', ['boundary']]) {
+  assert.equal(acceptAppMessage({ ...ok, data: { type: 't27-app', kind: 'error', code } }, frame), null, `error code ${JSON.stringify(code)} is not a code`)
+}
+assert.equal(acceptAppMessage({ ...ok, data: { type: 'other', kind: 'error', code: 'boundary' } }, frame), null, 'error: wrong type')
 
 // ---- 5. The nesting guard ----
 assert.equal(insidePlayer({ isTop: false, ancestorOrigins: [APP_ORIGIN], referrer: '', ownOrigin: 'https://t27.ai' }), true, 'the app frames the game')
@@ -174,7 +184,33 @@ assert.equal(insidePlayer({ isTop: false, referrer: 'not a url', ownOrigin: 'htt
 const at = HUD_VIEWS.indexOf('tri')
 assert.ok(at >= 0, 'HUD_VIEWS includes tri')
 assert.equal(HUD_KEYS[at], 'r', 'TRI opens on r')
-assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tpr')
+// Spelled out rather than derived, so adding a view has to be said out loud
+// here. The fourteenth is b: PASSPORT. The digits were spent at ten, and t, p
+// and r are TOOLS, PROJECT and TRI. Then w: BROWSER, m: ROADMAP, and l:
+// LEADERBOARD, whose lane the bees ran on. The eighteenth is x (the crossed
+// blades): WARS.
+assert.equal(HUD_KEYS.slice(0, HUD_VIEWS.length).join(''), '1234567890tprbwmlx')
+// The typed Latin letter or digit decides, as the rail's badge says; the
+// physical key (KeyboardEvent.code) only when the character is not one, so r
+// opens TRI on a Russian layout too.
+assert.equal(HUD_CODES.length, HUD_KEYS.length, 'every key has its physical code')
+assert.equal(hudKeyIndex({ code: 'KeyR', key: 'к' }), at, 'Russian layout: code KeyR, key к opens TRI')
+assert.equal(hudKeyIndex({ code: 'KeyR', key: 'r' }), at)
+assert.equal(hudKeyIndex({ code: 'KeyT', key: 'е' }), HUD_VIEWS.indexOf('tools'))
+assert.equal(hudKeyIndex({ code: 'KeyP', key: 'з' }), HUD_VIEWS.indexOf('project'))
+assert.equal(hudKeyIndex({ code: 'Digit1', key: '!' }), 0, 'a shifted digit is still its digit')
+assert.equal(hudKeyIndex({ code: 'Digit0', key: '0' }), 9)
+assert.equal(hudKeyIndex({ code: 'Numpad2', key: '2' }), 1, 'a keypad digit stays its digit')
+assert.equal(hudKeyIndex({ code: 'Numpad2', key: 'ArrowDown' }), 1, 'a keypad digit with Num Lock off stays its digit')
+// Dvorak and Colemak put the Latin letters on other keys: the letter typed is the shortcut.
+for (const [layout, key, code, view] of [
+  ['Dvorak', 'r', 'KeyO', 'tri'], ['Dvorak', 'p', 'KeyR', 'project'], ['Dvorak', 't', 'KeyK', 'tools'], ['Dvorak', 'y', 'KeyT', null],
+  ['Colemak', 'p', 'KeyR', 'project'], ['Colemak', 't', 'KeyG', 'tools'], ['Colemak', 'f', 'KeyT', null], ['Colemak', 'R', 'KeyS', 'tri'],
+]) assert.equal(hudKeyIndex({ code, key }), view ? HUD_VIEWS.indexOf(view) : -1, `${layout}: typing ${key} (physical ${code}) opens ${view ?? 'nothing'}`)
+assert.equal(hudKeyIndex({ code: 'KeyK', key: 'к' }), -1)
+assert.equal(hudKeyIndex({ code: '', key: 'r' }), at, 'no code (a scripted event): the character decides')
+assert.equal(hudKeyIndex({ code: '', key: 'к' }), -1)
+assert.equal(hudKeyIndex({ key: 'R' }), at)
 const tri = MODULES.find((m) => m.tab === 'tri')
 assert.ok(tri, 'MODULES has tri')
 assert.equal(tri.key, 'r')
@@ -186,7 +222,22 @@ assert.deepEqual(hints, [tri.en.hint, tri.ru.hint], 'COPY triHint (en, ru) equal
 assert.match(queen, /view: "tri" as const/, 'the rail lists TRI')
 assert.match(queen, /boardView === "tri" \? \(\s*<QueenTri/, 'the view body renders QueenTri')
 assert.match(queen, /tabAddress\(window\.location\.hash, next\)/, 'the shell writes its tab from the live hash')
-assert.match(read('src/App.tsx'), /module\.tab !== 'tri'/, 'the landing renders no TRI preview (it would load the whole app for every visitor)')
+// The landing used to map every module and filter TRI back out, so this asked
+// the source for the expression `module.tab !== 'tri'`. The full-size previews
+// are an allowlist now -- SHOWCASE -- and that expression is gone, which turned
+// a live property into a red check about a deleted line. The property is the
+// same and states better against the list: TRI is not one of the modules the
+// front page draws at full size, because its preview would load a whole
+// third-party app for everyone who scrolled past it.
+const app = read('src/App.tsx')
+const showcase = app.match(/^const SHOWCASE = \[([^\]]*)\] as const$/m)
+assert.ok(showcase, 'the landing no longer names its full-size previews in a SHOWCASE list')
+const showcased = [...showcase[1].matchAll(/'([a-z]+)'/g)].map((m) => m[1])
+assert.ok(showcased.length > 0, 'SHOWCASE is empty, so the landing draws no module at full size')
+for (const tab of showcased) {
+  assert.ok(MODULES.some((m) => m.tab === tab), `SHOWCASE names '${tab}', which is not a module`)
+}
+assert.ok(!showcased.includes('tri'), 'the landing renders no TRI preview (it would load the whole app for every visitor)')
 const component = read('src/components/QueenTri.tsx')
 assert.doesNotMatch(component, /\.postMessage\(/, 'TRI never posts into the app frame')
 assert.match(component, /triAddress\(window\.location\.hash/, 'TRI writes its screen from the live hash')

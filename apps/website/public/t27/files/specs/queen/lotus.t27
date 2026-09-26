@@ -64,7 +64,7 @@ module QueenLotus {
         outcome : u8,
     }
 
-    var episode_buffer : [EPISODE_BUFFER_SIZE]Episode;
+    var episode_buffer : [EPISODE_BUFFER_SIZE]Episode = undefined;
 
     // Policy state
     var policy_state : [256]u8 = [0; 256];
@@ -489,7 +489,7 @@ module QueenLotus {
     fn record_episode_() -> RecordResult {
         const cycle_result = CycleResult{
             .context = observe_state(),
-            .evaluation = evaluate_(),
+            .evaluation = evaluate_quality_(),
             .plan = generate_plan_(),      // W575: the zero-argument wrapper, like evaluate_() above
             .action = execute_action_(),   // W575: same -- generate_plan/execute_action each take one argument
             .outcome = OUTCOME_UNKNOWN,
@@ -617,13 +617,13 @@ module QueenLotus {
         then phase == PHASE_OBSERVE
 
     test lotus_phase_transitions_wrap_around
-        given current_phase = NUM_PHASES - 1
+        given initial_phase = NUM_PHASES - 1
         and   force_phase_transition()
         and   new_phase = current_phase
         then new_phase == 0
 
     test lotus_phase_transitions_increment
-        given current_phase = 2
+        given initial_phase = 2
         and   force_phase_transition()
         and   new_phase = current_phase
         then new_phase == 3
@@ -740,12 +740,10 @@ module QueenLotus {
 
     invariant lotus_quality_good_when_high_success_rate
         given eval = evaluate_quality(RecallEpisode{.episodes = [0, 1, 2, 3, 4, 5, 6, 7], .count = 8})
-        and   // Simulate 8 episodes, 7 successes
         assert eval.quality == QUALITY_GOOD
 
     invariant lotus_quality_bad_when_high_failure_rate
         given eval = evaluate_quality(RecallEpisode{.episodes = [0, 1, 2, 3, 4, 5, 6, 7], .count = 8})
-        and   // Simulate 8 episodes, 7 failures
         assert eval.quality == QUALITY_BAD
 
     invariant lotus_plan_consistency

@@ -8,7 +8,8 @@ module TrinityFpgaTracePlayerT27;
 // throughput workload (64 stored words, WORKLOAD_FRAMES frames of 64 beats,
 // activations from a closed formula, results reported), the Edge Demo fixtures
 // (three template rows in lockstep, label, accumulators and latency reported),
-// then the totals. A run starts after reset and again on any UART start bit.
+// then the totals. A run starts after reset and again on a UART start bit that
+// arrives while the player is idle.
 // Every statement reads a variable before the same tick writes it, so the C
 // and the Verilog backends agree.
 const S_IDLE: u32 = 0;
@@ -91,7 +92,6 @@ var counter: [6]u32;
 var kidx: u32 = 0;
 var wait_cnt: u32 = 0;
 var auto_started: bool = false;
-var trigger_pending: bool = false;
 var run_done: bool = false;
 var mism_seen: bool = false;
 var free_first: bool = false;
@@ -167,21 +167,27 @@ vbase = (entry >> 10) & 1023;
 vcycles = entry & 1023;
 vkind = (entry >> 20) & 3;
 
+// The H line's b field. A typed local, not the constant: gen-c emits constants as
+// untyped macros, and REPORT_FORMAT << 32 would be a 32-bit int shift in C.
+fn header_b(cycle_count: u32, vector_count: u32) -> u64 {
+    var fmt: u64 = REPORT_FORMAT;
+    return (fmt << 32) | ((cycle_count as u64) << 16) | (vector_count as u64);
+}
+
 fn on_clock(uart_rx: bool, line_idle: bool, stimulus: u64, expected: u64, entry: u32,
             vector_count: u32, cycle_count: u32, observed: u64, workload_frames: u32,
             wl_busy: bool, wl_act_ready: bool, wl_beat: bool, wl_out_valid: bool, wl_result: i32,
             edge_fixtures: u32, edge_act_ready: bool, edge_beat: bool, edge_done: bool,
             edge_acc0: i32, edge_acc1: i32, edge_acc2: i32, edge_label: u32) {
     line_go = false;
-    if (rx3 && !rx2) { trigger_pending = true; }
-    rx3 = rx2;
-    rx2 = rx1;
-    rx1 = uart_rx;
     if (state == S_IDLE) {
         dut_en = false;
-        if (trigger_pending || !auto_started) {
+        // A falling edge of RX starts a run only while the player is idle; edges
+        // during a run are ignored. A trigger byte has up to five falling edges, and
+        // queueing one of them behind the run made one byte start two runs (fixed
+        // 2026-09-22). The edge is read from the old rx3/rx2, shifted at the end.
+        if ((rx3 && !rx2) || !auto_started) {
             auto_started = true;
-            trigger_pending = false;
             run_done = false;
             mism_seen = false;
             vector = 0;
@@ -189,7 +195,7 @@ fn on_clock(uart_rx: bool, line_idle: bool, stimulus: u64, expected: u64, entry:
             free_total = 0;
             line_tag = TAG_H;
             line_a = 0;
-            line_b = (REPORT_FORMAT << 32) | ((cycle_count as u64) << 16) | (vector_count as u64);
+            line_b = header_b(cycle_count, vector_count);
             line_go = true;
             after_line = S_VEC_BEGIN;
             state = S_LINE_START;
@@ -565,8 +571,12 @@ fn on_clock(uart_rx: bool, line_idle: bool, stimulus: u64, expected: u64, entry:
     } else {
         state = S_IDLE;
     }
+    rx3 = rx2;
+    rx2 = rx1;
+    rx1 = uart_rx;
 }
 
+test header_fields { assert_eq(header_b(406, 34), 8616542242); }
 test bit_extraction { assert_eq(bit(8, 3), true); assert_eq(bit(8, 2), false); }
 test popcount_of_the_lane_mask { assert_eq(popcount5(31), 5); assert_eq(popcount5(3), 2); assert_eq(popcount5(0), 0); }
 test workload_activation_formula { assert_eq(workload_lane(0, 0, 0), 7); assert_eq(workload_lane(63, 4, 15), (63 * 13 + 4 * 29 + 15 * 5 + 7) & 255); }

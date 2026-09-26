@@ -344,7 +344,7 @@ invariant "deploy_state_enum_complete" {
 
 invariant "env_vars_array_size_is_sacred" {
     // Environment variables must have 27 elements
-    var dummy: [27]EnvVar = undefined;
+    const dummy: [27]EnvVar = undefined;
     _ = dummy;
 }
 

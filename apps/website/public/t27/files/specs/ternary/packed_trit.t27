@@ -72,14 +72,14 @@ module PackedTrit {
     // Returns valid=true if all trits are valid (-1, 0, +1)
     // Returns valid=false if any trit is invalid
     // Complexity: O(n) where n = count
-    pub fn encodePack(trits: []i8, count: u16) -> PackResult;
+    pub fn encodePack(trits: []i8, count: u16) -> PackResult { }
 
     // decodePack(bytes: []u8, byte_count: u16) -> UnpackResult
     // Unpack bytes to trits using 5-trit-per-byte encoding
     // Algorithm: decode 5 trits from each byte using 2-bit trit encoding
     // Returns count trits (last byte may have unused trits)
     // Complexity: O(n) where n = byte_count
-    pub fn decodePack(bytes: []u8, byte_count: u16) -> UnpackResult;
+    pub fn decodePack(bytes: []u8, byte_count: u16) -> UnpackResult { }
 
     // ========================================================================
     // 5. PackedBigInt Arithmetic
@@ -90,35 +90,35 @@ module PackedTrit {
     // Returns ArithResult with sum and overflow flag
     // Overflow occurs if magnitude exceeds MAX_TRITS
     // Complexity: O(n) where n = max(magnitude of a, magnitude of b)
-    pub fn packed_add(a: PackedBigInt, b: PackedBigInt) -> ArithResult;
+    pub fn packed_add(a: PackedBigInt, b: PackedBigInt) -> ArithResult { }
 
     // packed_sub(a: PackedBigInt, b: PackedBigInt) -> ArithResult
     // Subtract b from a using PackedBigInt arithmetic
     // Returns ArithResult with difference and overflow flag
     // Overflow occurs on underflow (result < 0)
     // Complexity: O(n) where n = max(magnitude of a, magnitude of b)
-    pub fn packed_sub(a: PackedBigInt, b: PackedBigInt) -> ArithResult;
+    pub fn packed_sub(a: PackedBigInt, b: PackedBigInt) -> ArithResult { }
 
     // packed_mul(a: PackedBigInt, b: PackedBigInt) -> ArithResult
     // Multiply two PackedBigInt values
     // Returns ArithResult with product and overflow flag
     // Overflow occurs if magnitude exceeds MAX_TRITS
     // Complexity: O(n*m) where n,m are magnitudes
-    pub fn packed_mul(a: PackedBigInt, b: PackedBigInt) -> ArithResult;
+    pub fn packed_mul(a: PackedBigInt, b: PackedBigInt) -> ArithResult { }
 
     // packed_from_i64(value: i64) -> PackedBigInt
     // Convert i64 to PackedBigInt
     // Returns PackedBigInt with sign and magnitude
     // Handles overflow by clamping to MAX_TRITS
     // Complexity: O(log3(|value|)) to compute magnitude
-    pub fn packed_from_i64(value: i64) -> PackedBigInt;
+    pub fn packed_from_i64(value: i64) -> PackedBigInt { }
 
     // packed_to_i64(bigint: PackedBigInt) -> i64
     // Convert PackedBigInt to i64
     // Returns signed integer value
     // Returns 0 if magnitude is 0
     // Complexity: O(n) where n = magnitude
-    pub fn packed_to_i64(bigint: PackedBigInt) -> i64;
+    pub fn packed_to_i64(bigint: PackedBigInt) -> i64 { }
 
     // ========================================================================
     // 6. Utility Functions

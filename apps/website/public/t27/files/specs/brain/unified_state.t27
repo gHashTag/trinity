@@ -91,3 +91,28 @@ test "brain_region_count_is_3_cubed" {
     try std.testing.expectEqual(@as(u8, 27), REGION_COUNT);
     try std.testing.expectEqual(REGION_COUNT, LAYER_COUNT * REGIONS_PER_LAYER);
 }
+
+test "brain_state_phi_coherence_returns_field" {
+    const state = brain_state_init();
+    const coherence = brain_state_phi_coherence(state);
+    try std.testing.expectApproxEqAbs(PHI_INV, coherence, 0.001);
+
+    // Test with a custom phi_coherence value
+    const custom_state = BrainState{
+        .consciousness = ConsciousnessState{
+            .awareness = 0.5,
+            .self_model_active = true,
+            .default_mode = false,
+        },
+        .mood = Mood{ .valence = 0.3, .arousal = 0.4, .dominance = 0.6 },
+        .conflict_level = 0.1,
+        .arousal = .alert,
+        .fear_level = 0.2,
+        .reward_signal = 0.7,
+        .phi_coherence = PHI,
+        .cycle_count = 42,
+        .timestamp = 1234567890,
+    };
+    const custom_coherence = brain_state_phi_coherence(custom_state);
+    try std.testing.expectApproxEqAbs(PHI, custom_coherence, 0.001);
+}

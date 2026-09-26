@@ -123,7 +123,7 @@ Evidence Level:
 | **GF16** (DLFloat 6:9) | **1/6/9**   | **±4.29e9**   | **0.000234** | **~7.2**    | **~4.5**    | **5.80%**   | **16**       |
 | ternary  | 2 bits      | {-1, 0, +1}   | 0.500000     | ~0.5        | ~0.5        | 6.90%       | 2            |
 
-GF16 (DLFloat 6:9) maintains f32-equivalent accuracy on a small MLP while offering 10⁵× wider
+GF16 (DLFloat 6:9) maintains f32-equivalent accuracy on a small MLP while offering ~6.55×10⁴× wider
 dynamic range than fp16. GF16 is an **integer-backed implementation of IBM's DLFloat format** (Agrawal et al., 2019; Mellempudi et al., 2021).
 
 ### Key Findings
@@ -227,7 +227,7 @@ tri clara demo
     ↓
 γ = φ⁻³ (TRUNK)
     ↓
-├── G = π³γ²/φ     → 0.09% accuracy ✅
+├── G = π³γ²/φ     → ⚠️ withdrawn: evaluates to 1.068, not the 6.68×10⁻¹¹ claimed, and its only input γ = φ⁻³ is REJECTED above (line 92). No code in this repo computes the "0.09%" figure — the catalogue cites src/gravity/quantum_gravity_full.zig, which contains no such calculation.
 ├── C = φ⁻¹        → consciousness threshold
 ├── t = φ⁻²        → 382 ms ✅
 └── N_gen = 3      → exact identity ✅
@@ -260,7 +260,7 @@ A proposal based on this work was submitted in May 2026 through a partner organi
 | **Neural Networks** | HSLM (BitNet LLM, 1.95M params, 385 KB) |
 | **Logic Programs** | VSA (Vector Symbolic Architecture, O(n) ops) |
 | **Classical Logic** | TRI-27 (27 registers, O(1) dispatch) |
-| **Bayesian** | GF16 (Galois Field 2¹⁶ arithmetic) |
+| **Bayesian** | GF16 (integer-backed 16-bit float, DLFloat 6:9 layout 1/6/9) |
 | **Reinforcement Learning** | Queen Lotus (lotus-cycle, RL agents) |
 
 ### Polynomial-Time Guarantees
@@ -270,7 +270,7 @@ Trinity provides **formal verification** of polynomial-time complexity:
 | Theorem | Claim | Status |
 |---------|-------|--------|
 | **Theorem 1** | VSA operations are O(n) | ✅ Verified |
-| **Theorem 2** | Ternary MAC is O(1) in FPGA | ✅ Verified (0% DSP) |
+| **Theorem 2** | Ternary MAC needs no DSP multipliers | ✅ Synthesis shows 0 DSP (BENCH-005); constant-time behaviour is not claimed |
 | **Theorem 3** | TRI-27 VM has O(1) opcode dispatch | ✅ Verified |
 | **Theorem 4** | Trinity Identity φ² + φ⁻² = 3 | ✅ Verified |
 
@@ -284,7 +284,7 @@ tri clara demo
 
 This demonstrates:
 - VSA O(n) scaling with actual timing measurements
-- FPGA synthesis results (0% DSP, 19.6% LUT)
+- FPGA synthesis results (0 DSP blocks used)
 - TRI-27 O(1) opcode dispatch
 - Golden ratio verification (φ² + φ⁻² = 3)
 - NN+VSA polynomial-time composition
@@ -695,16 +695,16 @@ Requires **Zig 0.15.x**.
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18947017.svg)](https://doi.org/10.5281/zenodo.18947017)
 
-First autoregressive ternary language model on FPGA with fully open-source toolchain.
+An autoregressive ternary language-model pipeline (~60K parameters) running on an FPGA with a fully open-source toolchain. Weights are deterministic patterns rather than trained ternary weights, so the generated tokens do not reflect a trained model.
 
 | Metric | Value |
 |--------|-------|
 | **Board** | QMTech XC7A100T ($30) |
-| **Throughput** | 63 tok/s @ 92 MHz |
-| **Power** | ~1W (~63 tok/s/W) |
+| **Throughput** | ~34 tok/s measured (16 tokens in ~467 ms at 50 MHz); ~63 tok/s projected at the 92 MHz Fmax estimate |
+| **Power** | not measured (no instrument, rail or method is on record; the earlier ~1W figure and every tok/s/W derived from it are withdrawn) |
 | **DSP blocks** | **0** (pure LUT ternary compute) |
 | **BRAM** | 98% |
-| **LUT** | 5.8% |
+| **LUT** | 4,267 (6.7% of XC7A100T) per fpga/openxc7-synth/BENCH-005_RESULTS.md |
 | **Toolchain** | openXC7 (Yosys + nextpnr-xilinx + prjxray) |
 | **Tokens** | 16 autoregressive from seed |
 

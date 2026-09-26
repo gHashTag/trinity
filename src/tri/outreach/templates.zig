@@ -173,7 +173,7 @@ pub const templates = [_]Template{
         \\• Energy efficiency: 3000× less power than float32
         \\• Natural binding: φ² (expansion) and φ⁻² (contraction)
         \\
-        \\Implementation in Zig with FPGA backend: 63 tok/s @ 1W on $30 XC7A100T. Zero DSP usage.
+        \\Implementation in Zig with FPGA backend: ~34 tok/s at 50 MHz on $30 XC7A100T (power not measured). Zero DSP usage.
         \\
         \\Question: Does ternary VSA merit further investigation in your view?
         \\
@@ -203,7 +203,7 @@ pub const templates = [_]Template{
         \\Hardware difference: Zero-DSP FPGA synthesis vs your HBM approach.
         \\
         \\Our results:
-        \\• 63 tok/s @ 1W on $30 XC7A100T
+        \\• ~34 tok/s at 50 MHz on $30 XC7A100T (power not measured)
         \\• 0% DSP usage, 19.6% LUT
         \\• Pure Zig implementation (no Python, no CUDA)
         \\
@@ -349,14 +349,14 @@ pub const templates = [_]Template{
     .{
         .id = "rabaey_short",
         .name = "Jan Rabaey — Zero-DSP FPGA LLM",
-        .subject = "63 tok/s @ 1W, zero DSP usage",
+        .subject = "~34 tok/s at 50 MHz, zero DSP usage",
         .body_template =
         \\Dear Jan,
         \\
         \\I achieved LLM inference on $30 FPGA without DSP blocks.
         \\
         \\Results:
-        \\• 63 tok/s @ 1W (QMTech XC7A100T)
+        \\• ~34 tok/s at 50 MHz, power not measured (QMTech XC7A100T)
         \\• 0% DSP usage, 19.6% LUT
         \\• Ternary weights {-1,0,+1}
         \\

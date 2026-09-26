@@ -15,7 +15,7 @@ assert.match(css,/\.queen-catalog-toolbar/,'Toolbar gets a measured flow layout'
 assert.match(css,/grid-template-rows:\s*minmax\(0,\s*1fr\)/,'Embedded canvas has no fixed row floor');
 assert.match(css,/font-size:\s*1rem/,'Touch form text remains readable');
 const page=readFileSync('src/pages/Queen.tsx','utf8'),hive=readFileSync('src/components/QueenCatalogHive.tsx','utf8');
-assert.match(page,/!\(sharedCatalog\s*&&\s*boardView\s*===\s*"comb"\)\s*&&\s*<QueenContext/,'Legacy context cannot compete with catalog');
+assert.match(page,/boardView\s*===\s*"comb"\s*&&\s*!sharedCatalog\s*&&\s*<QueenContext/,'Legacy context lives only on the old comb: not over the catalog, not over any other view');
 assert.match(hive,/!specPath&&resource/);assert.match(hive,/!specPath&&repo&&focus\?\.number/);
 assert(!hive.includes('className="queen-catalog-share"'),'Copy feedback stays in the current card');
 console.log('Responsive contract: PASS (pointer state machine, flow layout, readable controls, single context)');

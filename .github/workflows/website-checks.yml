@@ -32,12 +32,16 @@
 #                      the bundler succeeded, not that the page renders)
 name: Website checks
 
+# apps/queen-proxy/** is in the triggers because one of the gates below reads
+# it. The proxy is the server half of the rule that only registered people
+# write to the Queen, and a proxy-only edit that removed the gate would
+# otherwise touch no watched path and run no check at all.
 on:
   pull_request:
-    paths: ['apps/website/**', '.github/workflows/website-checks.yml']
+    paths: ['apps/website/**', 'apps/queen-proxy/**', '.github/workflows/website-checks.yml']
   push:
     branches: [main]
-    paths: ['apps/website/**']
+    paths: ['apps/website/**', 'apps/queen-proxy/**']
   workflow_dispatch:
 
 jobs:
@@ -123,6 +127,114 @@ jobs:
       # memory only; whoami never carries X-Agent-Key. Pure, no browser.
       - name: TRI identity
         run: npm run check:tri-identity
+      # The Queen's kanban grew a second lane, and it is the first thing on that
+      # page that differs per person. Signed in, it asks the hive for the
+      # clients this visitor answers for — on the game token, one identity
+      # header, no cookies, and without the tool's `client` argument, so a
+      # control on the page can narrow what arrived but never ask for somebody
+      # else. Signed out, the markup is the public board's and nothing more: no
+      # lane, no count, not even a label. Asserted against the real modules and
+      # the page parsed with the real parser. Pure, no browser.
+      - name: Hive board is per person
+        run: npm run check:hive-board
+      # The lane's filter can watch several clients at once and search within
+      # them, which is two more ways for a control to describe rows the server
+      # did not send. One property over every hostile input anyone has thought
+      # of: the cards drawn are a SUBSET of the cards that arrived, and the
+      # request count does not move however many times the board is filtered.
+      - name: The clients filter can only ever hide
+        run: npm run check:clients-filter
+      # The task lane grew the same kind of control, over what a card is ABOUT
+      # rather than whose it is, and it is held to the same property: the cards
+      # drawn are a SUBSET of the cards that arrived, for every selection
+      # including ones no reader can produce. The second half is the colours.
+      # The wire carries no labels, so direction is read from the title the page
+      # was already sent -- which means a card that said nothing, like the bare
+      # `#1234` the hive sends for finished work, must come out `other` and not
+      # be quietly painted as code. A colour is read as a fact. Pure, no browser.
+      - name: The direction filter can only ever hide
+        run: npm run check:queen-direction
+      # The Queen board moved to app.t27.ai/queen/, and #/queen here hands its
+      # visitors over. app.t27.ai builds THIS bundle, so the redirect code runs
+      # at the destination too: keyed on the route alone it would send that page
+      # to itself for ever, and the board would be unreachable at the only
+      # address that serves it. The gate calls the decision with both origins as
+      # input and re-feeds every answer to prove it settles. Pure, no browser.
+      - name: Queen board moved
+        run: npm run check:queen-redirect
+      # The other half of that move. At the destination the bridge above is not
+      # merely unnecessary, it is impossible: rule 1 is false off t27.ai, the
+      # bridge answers only a t27.ai parent, and nginx serves it with
+      # frame-ancestors https://t27.ai and never 'self'. So the redirect alone
+      # would have handed every visitor a board they could never sign in to.
+      # On app.t27.ai/queen/ the bundle is same-origin with the player and
+      # reads its session directly -- which is a stronger credential than the
+      # game token, so this holds it to the same rules and to one more: an
+      # empty store is signed OUT, not broken. Pure, no browser.
+      - name: Identity at the board's new home
+        run: npm run check:app-session-identity
+      # The person's own remote browser as a view: a preview never touches a
+      # pod, reading never opens one, the token rides only in a header, and
+      # only our own /live/ is framed. Pure, no browser.
+      - name: The BROWSER view
+        run: npm run check:queen-browser
+      # What that identity is FOR. The owner's rule, 2026-09-20: only registered
+      # people write to the Queen. The gate that holds it is the proxy's, not
+      # this bundle's -- a rule shipped in a public bundle is a suggestion -- and
+      # it asks the one service that holds the signing key rather than keeping a
+      # second copy of it. Both halves run here: the proxy's decision table
+      # against a fake verifier, and the panel that shows a sign-in link instead
+      # of an input nobody can send from. Pure, no browser, no network.
+      - name: Only registered people write to the Queen
+        run: npm run check:queen-chat-gate
+      # The Queen's panel is three tabs: her conversation, the board's log with
+      # a filter over it, and the agents' network. Two of them are arithmetic
+      # over the feed and this runs that arithmetic -- including the decision
+      # that no chip lit means every kind, which read the other way opens the
+      # tab on an empty list and tells the reader the swarm is idle. The third
+      # holds the ceiling on what the network may claim: the wire carries an
+      # issue on every row and no agent name anywhere, so the tab says so in
+      # both languages instead of drawing names nobody published.
+      - name: The Queen's three tabs
+        run: npm run check:queen-chat-tabs
+      # "it is dim" (the owner, 2026-09-21, with a photograph of the clients
+      # strip). The board draws every panel over a live hive, so each colour
+      # here has two contrasts and only one of them gets looked at. This does
+      # the WCAG arithmetic over a field at full brightness: the tokens against
+      # each ground, and every hand-written ground in the file. Before it, the
+      # filter chips measured 1.6:1.
+      - name: The HUD can be read while the map is lit
+        run: npm run check:queen-contrast
+      # The colour written beside a token is only reached where the token is
+      # unknown, so a fallback that disagrees with the declaration is a number
+      # the screen never paints -- and the contrast gate above reads the source.
+      # One such line made it report 1.74:1 for ink drawing at 1.53:1. This
+      # asserts every fallback agrees with SOME declaration of its token; where
+      # it does not, the value is wrong in every scope it could be reached from.
+      # Pure, no browser.
+      - name: A fallback says what the token says
+        run: npm run check:queen-fallback-parity
+      # Why free bees are idle, read from /queen/status alone: real snapshots
+      # and malformed ones through the pure reader, no fabricated zeros, a
+      # stale round called stale. Pure, no browser.
+      - name: Queen idle reason
+        run: npm run check:queen-idle
+      # The map's camera: a close-up of every cell stays readable at three
+      # viewports, and also on a field eight times wider, because zoom is
+      # relative to the whole field and the catalogue keeps growing. A fixed
+      # ceiling of 128 broke this once the scan found an eleventh repository,
+      # and the nightly t27 world scan -- the only place these ran -- then
+      # failed for three nights. Pure, no browser.
+      - name: Queen map close-ups stay readable
+        run: npm run check:queen-displays && npm run check:queen-continuous
+      # The PASSPORT argues a result is worthless without the record of how it
+      # was taken, so its own figures must not drift from its own prose: every
+      # plotted quantity carries the literal the text prints for it, in both
+      # languages; the † counts are derived from the table, not typed beside it;
+      # and the seven-record survey keeps its shape, including the finding that
+      # the control is the only column with no absent field. Pure, no browser.
+      - name: Passport figures
+        run: npm run check:passport
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from
@@ -131,11 +243,33 @@ jobs:
       # still refuse a spec whose own tests do not hold.
       - name: Viewport spec
         run: npm run check:viewport && npm run test:viewport-spec
+      # The agent-facing surface (/agents.t27 and /llms.txt) is generated from
+      # specs/catalog/onboarding.t27 through the compiler, and the generator
+      # re-compiles what it is about to publish. This step is also what keeps
+      # the four consent constants from being edited into an instruction
+      # addressed at somebody else's agent.
+      - name: Agent onboarding spec
+        run: npm run check:onboarding
       # The world scan's contract (specs/catalog/discovery.t27 through the compiler),
       # its pure decisions, and the manifest merge that must never touch a founding
       # source. The scan itself runs against GitHub in t27-world-scan.yml.
       - name: t27 world discovery
         run: npm run check:discovery
+      # The TECH TREE draws the evolution of the .t27 language itself, so every
+      # number in it has to come out of public/t27/manifest.json rather than out
+      # of a literal. The gate executes the derivation against the shipped index
+      # and then against a corpus a third the size, and requires the drawing to
+      # move. It also holds the silicon node to what an index of specs can say.
+      # Pure, no browser.
+      - name: t27 evolution tree
+        run: npm run check:t27-evolution
+
+      # WARS has exactly one source of truth: specs/queen/wars.t27. These gates
+      # execute its own assertions, reject unsupported or contradictory ledger
+      # rows, and prove that the public .t27, JSON and TypeScript projections
+      # are byte-for-byte current before Vite packages any of them.
+      - name: Queen WARS experiment ledger
+        run: npm run check:wars && npm run test:wars-spec
 
       - name: Build
         run: npx vite build
@@ -144,6 +278,18 @@ jobs:
       # browser is an environment fact, not a defect in the change.
       - uses: browser-actions/setup-chrome@v1
         id: chrome
+
+      # The WARS view must own its scrolling at desktop and phone widths and
+      # must remain stable with reduced motion. The build above is the exact
+      # artifact this browser contract inspects. The other Queen views are not
+      # claimed here: main fails its own matrix on them (the comb embedded nine
+      # levels deep, the head row overflowing at 1272-1280, the hive display
+      # cut by its own boxes), so VIEWS in the contract is scoped to wars until
+      # the HUD is re-laid-out -- then the whole shell comes back.
+      - name: Queen viewport matrix
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:queen-viewport -- --no-build
 
       # Проверяет все маршруты в обеих локалях. Скрипты имеют собственные
       # самотесты и используют Chrome через CDP без новой зависимости npm.

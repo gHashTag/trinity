@@ -11,6 +11,7 @@ module Softmax;
     // ═══════════════════════════════════════════════════════════
 
     const ZERO : f32 = 0.0;
+    const ONE : f32 = 1.0;
     const MIN_TEMP : f32 = 0.001;
 
     // ═══════════════════════════════════════════════════════════
@@ -27,29 +28,60 @@ module Softmax;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(logits: []const f32) → void
-    fn forward(logits: []const f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward(logits: []const f32, output: []f32, config: SoftmaxConfig) → void
+    fn forward(logits: []const f32, output: []f32, config: SoftmaxConfig) -> void {
+        // Apply softmax transformation with temperature
+        var max_val: f32 = logits[0];
+        for (i in range(logits.len)) {
+            if (logits[i] > max_val) {
+                max_val = logits[i];
+            }
+        }
+        
+        var sum: f32 = ZERO;
+        for (i in range(logits.len)) {
+            output[i] = math::exp((logits[i] - max_val) / config.temperature);
+            sum += output[i];
+        }
+        
+        for (i in range(logits.len)) {
+            output[i] /= sum;
+        }
     }
 
-    // backward(grad_output: []const f32) → void
-    fn backward(grad_output: []const f32) -> void {
-        // TODO: Implement from .tri spec
+    // backward(grad_output: []const f32, probabilities: []const f32, grad_input: []f32, config: SoftmaxConfig) → void
+    fn backward(grad_output: []const f32, probabilities: []const f32, grad_input: []f32, config: SoftmaxConfig) -> void {
+        // Compute gradient of softmax loss
+        for (i in range(grad_output.len)) {
+            grad_input[i] = grad_output[i] * probabilities[i] * (ONE - probabilities[i]);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test forward_basic_case
-        given input = default_input()
-        when result = forward(input)
-        then result != undefined
+    test "forward_basic_case"
+        given 
+            logits = [1.0, 2.0, 3.0]
+            output = [0.0, 0.0, 0.0]
+            config = SoftmaxConfig { temperature = 1.0, axis = 0, stable = true }
+        when 
+            forward(logits, output, config)
+        then 
+            output[0] > 0.0 and output[1] > 0.0 and output[2] > 0.0 and
+            (output[0] + output[1] + output[2] - 1.0).abs() < 0.0001
 
-    test backward_basic_case
-        given input = default_input()
-        when result = backward(input)
-        then result != undefined
+    test "backward_basic_case"
+        given 
+            grad_output = [0.1, 0.2, 0.3]
+            probabilities = [0.2, 0.3, 0.5]
+            grad_input = [0.0, 0.0, 0.0]
+            config = SoftmaxConfig { temperature = 1.0, axis = 0, stable = true }
+        when 
+            backward(grad_output, probabilities, grad_input, config)
+        then 
+            grad_input[0] != 0.0 and grad_input[1] != 0.0 and grad_input[2] != 0.0
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

@@ -33,7 +33,7 @@
 **Key Principles:**
 
 1. **Present as engineer**, not peer scientist
-2. **Show what works** — FPGA on $30, 63 tok/s, 1W (concrete, verifiable)
+2. **Show what works** — FPGA on $30, ~34 tok/s measured at 50 MHz, power not measured (the earlier 63 tok/s was a projection and the 1W figure is withdrawn; see the FPGA table in the root README.md)
 3. **Ask honestly** — "is this numerology or is there structure?"
 4. **Lead with rejected results** — demonstrates scientific integrity
 
@@ -45,7 +45,7 @@
 
 Dear Professor Frenkel,
 
-I am a software engineer building Trinity, an open-source ternary computing framework grounded in φ² + φ⁻² = 3. The engineering works: ternary LLM on a $30 FPGA, 63 tok/s, ~1W, zero DSP blocks.
+I am a software engineer building Trinity, an open-source ternary computing framework grounded in φ² + φ⁻² = 3. The engineering works: ternary LLM on a $30 FPGA, ~34 tok/s measured at 50 MHz (power not measured), zero DSP blocks.
 
 Along the way, I found φ-based expressions that approximate physical constants (m_p/m_e ≈ 6π⁵ at 0.002%). Some predictions were **falsified** and I document this openly in an "Evidence Ladder" that grades each claim.
 
@@ -69,7 +69,7 @@ Bangkok, Thailand
 
 Dear Professor Frenkel,
 
-I'm building an open-source ternary computing framework (FPGA LLM: $30, 63 tok/s, 1W). The architecture is grounded in φ² + φ⁻² = 3, which also generates expressions approximating some physical constants.
+I'm building an open-source ternary computing framework (FPGA LLM: $30, ~34 tok/s measured at 50 MHz, power not measured). The architecture is grounded in φ² + φ⁻² = 3, which also generates expressions approximating some physical constants.
 
 I maintain an "Evidence Ladder" tracking what works, what's falsified, and what's speculative. I can't tell if there's real mathematical structure here or just coincidences.
 
@@ -101,7 +101,7 @@ Dear Professor Baez,
 
 I've been following your Azimuth blog posts distinguishing numerology from structural physics. I'm hoping you could help evaluate something I've encountered.
 
-I'm building an open-source ternary computing framework (Trinity) grounded in φ² + φ⁻² = 3. The engineering results are concrete: $30 FPGA running a ternary LLM at 63 tok/s, ~1W.
+I'm building an open-source ternary computing framework (Trinity) grounded in φ² + φ⁻² = 3. The engineering results are concrete: $30 FPGA running a ternary LLM at ~34 tok/s measured at 50 MHz (power not measured).
 
 The mathematics led to φ-based expressions that approximate some physical constants:
 - m_p/m_e ≈ 6π⁵ (0.002% error)

@@ -26,14 +26,14 @@ First autoregressive ternary language model running on an FPGA with a fully open
 | Metric | Value |
 |--------|-------|
 | Board | QMTech XC7A100T-1FGG676C ($30) |
-| Power | ~1W |
+| Power | not measured (the ~1W figure is withdrawn: no instrument, rail or method is on record; see the FPGA table in the root README.md) |
 | Toolchain | openXC7 (yosys + nextpnr-xilinx + prjxray) |
 | DSP blocks | **0** |
 | LUT usage | ~7,400 (5.8%) |
 | BRAM usage | ~98% |
-| Fmax | 92 MHz |
-| Latency | 15.9 ms/token @ 92 MHz |
-| Throughput | ~63 tok/s @ 92 MHz |
+| Fmax | 92 MHz (an estimate, per the FPGA table in the root README.md; the board run was at 50 MHz) |
+| Latency | 15.9 ms/token @ 92 MHz (projected at the 92 MHz estimate, not measured; the measured 50 MHz run is in the Total generation time row) |
+| Throughput | ~34 tok/s measured (16 tokens in ~467 ms at 50 MHz); ~63 tok/s @ 92 MHz is a projection, not a measurement (see the FPGA table in the root README.md) |
 | Tokens generated | 16 (autoregressive from seed=42) |
 | Total generation time | ~467 ms @ 50 MHz |
 
@@ -88,12 +88,12 @@ All weights use 2-bit ternary encoding: `01` = +1, `10` = -1, `00` = 0. Multipli
 
 | Platform | tok/s/W |
 |----------|---------|
-| **Trinity XC7A100T** | **~63** |
+| **Trinity XC7A100T** | ~~**~63**~~ withdrawn: power was not measured (none is on record), so no tok/s/W can be stated (see the FPGA table in the root README.md) |
 | FlightLLM (Alveo U280) | ~1.5 |
 | Bitnet.cpp (M2 Ultra) | ~0.12 |
 | Bitnet.cpp (i7-13700H) | ~0.03 |
 
-Note: models differ in size (HSLM ~60K params vs LLaMA-7B), but the hardware efficiency ratio demonstrates the advantage of natively ternary architectures.
+Note: models differ in size (HSLM ~60K params vs LLaMA-7B), ~~but the hardware efficiency ratio demonstrates the advantage of natively ternary architectures~~ (withdrawn with the Trinity row above: power was not measured, so no efficiency ratio is claimed; see the FPGA table in the root README.md).
 
 ## Latency Breakdown
 

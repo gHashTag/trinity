@@ -176,6 +176,16 @@ module Partition {
         and n.device == "xc7a100t"
         and n.luts == 63400
 
+    test fpga_node_direct
+        given n = fpga_node("test_fpga", "xc7k325t", 203600, 407200, 445, 840, 500)
+        then n.name == "test_fpga"
+        and n.device == "xc7k325t"
+        and n.luts == 203600
+        and n.ffs == 407200
+        and n.bram18 == 445
+        and n.dsp48 == 840
+        and n.io_pins == 500
+
     test lvds_link_creation
         given l = lvds_link(0, 1, 8)
         then l.fpga_a == 0

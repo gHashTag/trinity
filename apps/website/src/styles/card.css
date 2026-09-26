@@ -1,0 +1,44 @@
+/* The card, once.
+   The homepage blocks each grew their own card: a 1px gap over a bed painted
+   rgba(0, 255, 136, 0.16), which is a green wash sitting on every rule and
+   every edge of every card on the page. Green is the accent -- a number, a
+   link, a live figure -- and an accent used as a surface stops being one.
+   What the site used before this, and still uses on the long subpages
+   (index.css, .subpage-layout), is a neutral glass card: a white border at a
+   tenth, a 135deg white gradient two steps darker than the border, and a
+   radius. That is the card restored here, written once so the four blocks
+   that show cards cannot drift apart again.
+   Green stays where it belongs: on the numbers, the links, the figures. */
+.site-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+  padding: clamp(1.25rem, 2.8vw, 1.9rem);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+/* A card that is itself a link says so under the pointer; a card that is only
+   a card does not move. The hover raises the border rather than tinting the
+   surface, for the same reason the surface is neutral to begin with. */
+a.site-card:hover,
+a.site-card:focus-visible,
+.site-card:has(> a:hover) {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+}
+
+a.site-card:focus-visible {
+  outline: 2px solid #ffd45a;
+  outline-offset: -2px;
+}
+
+/* The rows of cards. One rule for the gap, so the blocks below cannot each
+   invent a different one. */
+.site-card-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: clamp(0.8rem, 1.8vw, 1.2rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

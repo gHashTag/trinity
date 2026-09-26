@@ -24,12 +24,12 @@ pub const Trit = enum(i8) {
 // Constants - PackedTrit
 // ============================================================================
 
-// PackedTrit: 8 trits packed into u8
-// Layout: [t7 t6 t5 t4 t3 t2 t1 t0] where each t ∈ {-1, 0, +1}
+// PackedTrit: 4 trits packed into u8
+// Layout: [t3 t2 t1 t0] where each t ∈ {-1, 0, +1}
 // Encoding: -1 → 10, 0 → 00, +1 → 01 (2 bits per trit)
-// So packed byte: [t7_1 t7_0][t6_1 t6_0]...[t0_1 t0_0]
+// So packed byte: [t3_1 t3_0][t2_1 t2_0][t1_1 t1_0][t0_1 t0_0]
 pub const PACKED_BITS_PER_TRIT : u8 = 2;
-pub const TRITS_PER_BYTE : u8 = 8;
+pub const TRITS_PER_BYTE : u8 = 4;
 
 // Trit value mapping (2-bit to trit)
 // -1 → 10b = 2, 0 → 00b = 0, +1 → 01b = 1
@@ -48,7 +48,7 @@ pub const PackedTrit = u8;  // Type alias
 // Can represent any value in 3^27 ≈ 7.6×10^12 states
 // Practical use: vector operations, VSA bindings, weight storage
 pub const TRITS_PER_WORD : u8 = 27;
-pub const WORD_BYTES : u8 = 5;   // ceil(27/8) = 5 bytes for 27 trits
+pub const WORD_BYTES : u8 = 7;   // ceil(27/4) = 7 bytes for 27 trits
 
 pub const TernaryWord = [WORD_BYTES]u8;  // Type alias
 
@@ -199,7 +199,11 @@ pub fn ternary_word_pack(src: []Trit, count: u8) TernaryWord {
     var result = [_]u8{0} ** WORD_BYTES;
 
     for (0..@min(count, TRITS_PER_WORD)) |i| {
-        result = pack_trit(src[i], @intCast(i), result);
+        const byte_index = i / TRITS_PER_BYTE;
+        const trit_in_byte = i % TRITS_PER_BYTE;
+        const old = result[byte_index];
+        const packed = pack_trit(src[i], trit_in_byte, old);
+        result[byte_index] = packed;
     }
 
     return result;
@@ -423,7 +427,7 @@ pub fn packed_trit_shift_left(packed: PackedTrit, shift: u8) PackedTrit {
     var result: PackedTrit = 0;
     for (0..TRITS_PER_BYTE) |i| {
         if (i >= shift) {
-            const src_pos = @intCast(i - shift);
+            const src_pos: u8 = @intCast(i - shift);
             const src_trit = unpack_trit(src_pos, packed).value;
             result = pack_trit(src_trit, @intCast(i), result);
         }
@@ -445,7 +449,7 @@ pub fn packed_trit_shift_right(packed: PackedTrit, shift: u8) PackedTrit {
 
     var result: PackedTrit = 0;
     for (0..TRITS_PER_BYTE) |i| {
-        const dst_pos = @intCast(i + shift);
+        const dst_pos: u8 = @intCast(i + shift);
         if (dst_pos < TRITS_PER_BYTE) {
             const src_trit = unpack_trit(@intCast(i), packed).value;
             result = pack_trit(src_trit, dst_pos, result);
@@ -467,7 +471,7 @@ pub fn packed_trit_rotate_left(packed: PackedTrit, rotate: u8) PackedTrit {
     var result: PackedTrit = 0;
 
     for (0..TRITS_PER_BYTE) |i| {
-        const src_pos = @intCast((i + TRITS_PER_BYTE - shift) % TRITS_PER_BYTE);
+        const src_pos: u8 = @intCast((i + TRITS_PER_BYTE - shift) % TRITS_PER_BYTE);
         const src_trit = unpack_trit(src_pos, packed).value;
         result = pack_trit(src_trit, @intCast(i), result);
     }
@@ -487,7 +491,7 @@ pub fn packed_trit_rotate_right(packed: PackedTrit, rotate: u8) PackedTrit {
     var result: PackedTrit = 0;
 
     for (0..TRITS_PER_BYTE) |i| {
-        const src_pos = @intCast((i + shift) % TRITS_PER_BYTE);
+        const src_pos: u8 = @intCast((i + shift) % TRITS_PER_BYTE);
         const src_trit = unpack_trit(src_pos, packed).value;
         result = pack_trit(src_trit, @intCast(i), result);
     }
@@ -500,7 +504,7 @@ pub fn packed_trit_rotate_right(packed: PackedTrit, rotate: u8) PackedTrit {
 pub fn ternary_word_is_zero(word: TernaryWord) bool {
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         if (unpacked.valid and unpacked.value != .zero) {
             return false;
@@ -515,7 +519,7 @@ pub fn ternary_word_count(word: TernaryWord, value: Trit) u8 {
     var count: u8 = 0;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         if (unpacked.valid and unpacked.value == value) {
             count += 1;
@@ -541,7 +545,7 @@ pub fn ternary_word_negate(word: TernaryWord) TernaryWord {
     var result: TernaryWord = undefined;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         const unpacked = unpack_trit(trit_pos, word[byte_idx]);
         const negated = trit_negate(unpacked.value);
         result[byte_idx] = pack_trit(negated, trit_pos, result[byte_idx]);
@@ -1060,7 +1064,7 @@ test "test_ternary_word_count_all_same" {
     var word: TernaryWord = [_]u8{0} ** WORD_BYTES;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         word[byte_idx] = pack_trit(.neg, trit_pos, word[byte_idx]);
     }
     try std.testing.expectEqual(TRITS_PER_WORD, ternary_word_count(word, .neg));
@@ -1109,7 +1113,7 @@ test "test_ternary_word_is_all_same_true" {
     var word: TernaryWord = [_]u8{0} ** WORD_BYTES;
     for (0..TRITS_PER_WORD) |i| {
         const byte_idx = i / TRITS_PER_BYTE;
-        const trit_pos = @intCast(i % TRITS_PER_BYTE);
+        const trit_pos: u8 = @intCast(i % TRITS_PER_BYTE);
         word[byte_idx] = pack_trit(.pos, trit_pos, word[byte_idx]);
     }
     try std.testing.expect(ternary_word_is_all_same(word));

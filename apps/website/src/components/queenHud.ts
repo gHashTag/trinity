@@ -7,7 +7,7 @@
 // derivable from these types, the number does not exist yet and the panel
 // must say so rather than invent it.
 
-export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents" | "functions" | "tools" | "project" | "tri" | "lanes";
+export type HudView = "comb" | "specs" | "kanban" | "map" | "factory" | "research" | "skills" | "crons" | "agents" | "functions" | "tools" | "project" | "tri" | "passport" | "browser" | "roadmap" | "leaderboard" | "wars";
 // In command-panel order: the key that opens a view is HUD_KEYS at the same
 // position, and `?tab=` accepts exactly these names. Kept identical to
 // lib/queenModules (qa/agents-spec-contract.mjs checks the two lists agree), so
@@ -30,16 +30,113 @@ export const HUD_VIEWS: readonly HudView[] = [
   // Thirteenth, on the letter r: TRI, the app at app.t27.ai inside the game (the
   // digits are spent, t is TOOLS, p is PROJECT).
   "tri",
-  // Fourteenth, on the letter l: LANES -- how many bees can work at once, and
-  // why utilisation is not the same question as whether they are working.
-  "lanes",
+  // Fourteenth, on the letter b: the PASSPORT -- the record a result must carry,
+  // proposed to the OCP neuromorphic working group, with the three measured cases
+  // of our own that pay for it. (The digits are spent; t is TOOLS, p is PROJECT,
+  // r is TRI.)
+  "passport",
+  // Fifteenth, on the letter w (web): the person's own remote browser -- the
+  // same pod the app's Browser tab shows and the agent drives, framed here
+  // because the board and the app share one origin (lib/queenBrowser.ts).
+  "browser",
+  // Sixteenth, on the letter m (map of the road): the ROADMAP -- the game's goal,
+  // the whole stack rewritten in .t27, measured by language and repository, with
+  // one goal issue per stage. (Digits spent; t, p, r, b, w taken.)
+  "roadmap",
+  // Seventeenth, on the letter l: the LEADERBOARD -- who lends the swarm a
+  // lane, and what its bees did there (owner, 2026-09-23).
+  "leaderboard",
+  // Eighteenth, on x (the crossed blades): WARS compares agent configurations
+  // on pinned real issues. Its protocol, entrants and results are generated from
+  // specs/queen/wars.t27; the view never invents a score for an absent run.
+  "wars",
 ] as const;
 // The keyboard shortcut per view, by position: the digits 1-9, then 0, then
 // letters once the digits are spent. The rail prints HUD_KEYS[i] on button i and
 // the shell binds exactly these keys; a tenth or eleventh view takes the next
 // entry here and nothing else changes.
-export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "t", "p", "r", "l"] as const;
+export const HUD_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "t", "p", "r", "b", "w", "m", "l", "x"] as const;
 export const hudKeyOf = (view: HudView): string => HUD_KEYS[HUD_VIEWS.indexOf(view)] ?? "";
+// The physical key behind each HUD_KEYS entry (KeyboardEvent.code), for a
+// character that is not a Latin letter or digit: on a Russian layout the r key
+// reports key "к" and code "KeyR".
+export const HUD_CODES: readonly string[] = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0", "KeyT", "KeyP", "KeyR", "KeyB", "KeyW", "KeyM", "KeyL", "KeyX"] as const;
+/** The HUD_KEYS index a key event means, or -1. A typed Latin letter or digit
+ *  decides, as the rail's badge says (Dvorak and Colemak put them on other
+ *  keys); anything else (another script, a shifted digit, a keypad key with Num
+ *  Lock off, no key) falls back to the physical key. */
+export function hudKeyIndex(event: { code?: string; key?: string }): number {
+  const key = (event.key ?? "").toLowerCase();
+  if (/^[a-z0-9]$/.test(key)) return HUD_KEYS.indexOf(key);
+  const code = event.code ?? "";
+  const pad = /^Numpad([0-9])$/.exec(code);
+  return pad ? HUD_KEYS.indexOf(pad[1]) : HUD_CODES.indexOf(code);
+}
+
+// The ladder, and the one place it is written down as a list.
+//
+// Specs, Skills, Crons, Agents, Tools and Functions are six layers of one
+// thing: every card in each of them is stated by a .t27 spec, and each layer
+// names the one below it. They were six buttons of a fourteen-button rail, so
+// the rail read as fourteen unrelated instruments and the ladder -- which the
+// site states in prose on three pages -- was nowhere visible in the shell.
+// They are now one module: SPECS holds the other five, and the rail switches
+// between nine things instead of fourteen.
+//
+// Order is the ladder's own, bottom to top; it is what the sub-navigation draws.
+export const SPEC_LAYERS = ["specs", "skills", "crons", "agents", "tools", "functions"] as const;
+export type SpecLayer = (typeof SPEC_LAYERS)[number];
+export const isSpecLayer = (value: string): value is SpecLayer =>
+  (SPEC_LAYERS as readonly string[]).includes(value);
+
+// The board, and the one place its three views are written down as a list.
+//
+// Kanban, Mission Map and Factory are three readings of one subject: the board
+// the swarm works. The kanban draws its columns, the map draws the same cards
+// as sectors of ground (measured 2026-09-20: the same BACKLOG count and the
+// same issue numbers, laid out differently), and the factory draws what the
+// Bees are producing on it. As three rail buttons they asked the reader to
+// choose between three words for one thing before being shown any of it. They
+// are now one module: KANBAN holds the other two, exactly as SPECS holds its
+// layers.
+//
+// Order is the board's own -- columns, then ground, then production -- and it
+// is what the sub-navigation draws.
+// TECH TREE joined the board on the owner's word, 2026-09-21: it is read
+// beside the columns, not as a rail button of its own.
+export const BOARD_VIEWS = ["kanban", "map", "factory", "research"] as const;
+export type BoardView = (typeof BOARD_VIEWS)[number];
+export const isBoardView = (value: string): value is BoardView =>
+  (BOARD_VIEWS as readonly string[]).includes(value);
+
+// The project, and the record beside it. PASSPORT moved inside PROJECT on the
+// owner's word, 2026-09-21: the disclosure record is part of how the project
+// describes itself, not an instrument of its own. Same shape as the board.
+export const PROJECT_VIEWS = ["project", "passport"] as const;
+export type ProjectView = (typeof PROJECT_VIEWS)[number];
+export const isProjectView = (value: string): value is ProjectView =>
+  (PROJECT_VIEWS as readonly string[]).includes(value);
+
+/**
+ * A view the rail does not draw, because another module holds it: every rung
+ * of the ladder below SPECS, and every board view beside KANBAN. Written once,
+ * as the negation of "is the door of its own family", so a family cannot grow
+ * a member the rail then draws twice.
+ */
+const isFolded = (view: HudView): boolean =>
+  (isSpecLayer(view) && view !== SPEC_LAYERS[0]) ||
+  (isBoardView(view) && view !== BOARD_VIEWS[0]) ||
+  (isProjectView(view) && view !== PROJECT_VIEWS[0]);
+
+// The rail: the modules that hold no other, plus SPECS and KANBAN, which are
+// the doors of the two that do. Every one of the fourteen names stays a valid
+// `?tab=` -- a link, a bookmark and a keyboard shortcut that named a layer or a
+// board view still lands on it -- so this list is what the rail *draws*, not
+// what the address accepts. The address vocabulary is still HUD_VIEWS.
+export const RAIL_VIEWS: readonly HudView[] = HUD_VIEWS.filter((view) => !isFolded(view));
+/** The rail button a view lights: a ladder layer lights SPECS, a board view KANBAN. */
+export const railViewOf = (view: HudView): HudView =>
+  isSpecLayer(view) ? SPEC_LAYERS[0] : isBoardView(view) ? BOARD_VIEWS[0] : isProjectView(view) ? PROJECT_VIEWS[0] : view;
 
 export type Territory = "held" | "neutral" | "fog";
 
@@ -289,6 +386,151 @@ export function roundStrip(
  */
 export function skipReasonWords(key: string): string {
   return key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
+}
+
+/** One skip category and how many candidates the round filed under it. */
+export interface SkipCount { key: string; count: number }
+
+const isCount = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0;
+
+/** The server's closed category set (queen-public-status.ts, SKIP_CATEGORIES). */
+const SKIP_CATEGORIES = new Set(["claimed", "completed", "missingBoundary", "fileConflict", "incompleteSpec", "notFirst", "other"]);
+
+/**
+ * lastTick.skipSummary as counts in wire order. The wire sends
+ * { count, issues, more } per category (older servers a bare number); only
+ * the count is read. A key outside the server's closed set is filed under
+ * "other", as the server files a sentence it does not know. Null when the
+ * summary is absent, any entry is unreadable, or the counts do not sum to
+ * skippedCount, which the server guarantees they do: a malformed summary says
+ * nothing, never a zero.
+ */
+export function skipCounts(summary: unknown, skipped: number | null = null): SkipCount[] | null {
+  if (!summary || typeof summary !== "object" || Array.isArray(summary)) return null;
+  const counts: SkipCount[] = [];
+  let total = 0;
+  for (const [wireKey, value] of Object.entries(summary)) {
+    const count = value && typeof value === "object" ? (value as { count?: unknown }).count : value;
+    if (!isCount(count)) return null;
+    const key = SKIP_CATEGORIES.has(wireKey) ? wireKey : "other";
+    const filed = counts.find((r) => r.key === key);
+    if (filed) filed.count += count;
+    else counts.push({ key, count });
+    total += count;
+  }
+  return skipped !== null && total !== skipped ? null : counts;
+}
+
+/** The refusal queend writes when no candidate survives a round. */
+const NOTHING_TO_CHOOSE = "nothing to choose";
+
+export type IdleReason =
+  | { kind: "stale"; free: number; ageSeconds: number; intervalSeconds: number }
+  | { kind: "refused"; free: number; refusal: string; checked: number | null; counts: SkipCount[] | null };
+
+/**
+ * Why free worker slots started nothing, from /queen/status alone. Measured
+ * 2026-09-15: BEES 0/4 was read as broken bees while the round had said
+ * "nothing to choose" and 449 of 488 candidates had no ## Boundary. Null when
+ * there is nothing to explain or nothing trustworthy to explain it with: no
+ * free slot, a round that dispatched, a scheduler that is off, an unreadable
+ * tick. A tick older than two intervals (the server's TICK_STALENESS_INTERVALS)
+ * is stale, and a stale round explains nothing.
+ */
+export function idleReason(status: unknown, serverNowMs: number): IdleReason | null {
+  if (!status || typeof status !== "object") return null;
+  const { scheduler, workers, lastTick } = status as {
+    scheduler?: { enabled?: unknown; intervalSeconds?: unknown } | null;
+    workers?: { capacity?: unknown; active?: unknown } | null;
+    lastTick?: { decidedAt?: unknown; allowed?: unknown; refusal?: unknown; skippedCount?: unknown; skipSummary?: unknown } | null;
+  };
+  if (!scheduler || scheduler.enabled !== true) return null;
+  const interval = scheduler.intervalSeconds;
+  if (typeof interval !== "number" || !Number.isFinite(interval) || interval <= 0) return null;
+  if (!workers || !isCount(workers.capacity) || !isCount(workers.active)) return null;
+  const free = workers.capacity - workers.active;
+  if (free <= 0) return null;
+  if (!lastTick || typeof lastTick.decidedAt !== "string" || typeof lastTick.allowed !== "boolean") return null;
+  const decidedMs = Date.parse(lastTick.decidedAt);
+  if (Number.isNaN(decidedMs)) return null;
+  const ageMs = serverNowMs - decidedMs;
+  if (ageMs > interval * 1000 * 2) {
+    return { kind: "stale", free, ageSeconds: Math.floor(ageMs / 1000), intervalSeconds: interval };
+  }
+  if (lastTick.allowed || typeof lastTick.refusal !== "string" || !lastTick.refusal.trim()) return null;
+  if (lastTick.refusal !== NOTHING_TO_CHOOSE) return { kind: "refused", free, refusal: lastTick.refusal, checked: null, counts: null };
+  // skippedCount counts skip LINES, not issues. queend (main.swift, choose)
+  // files "delegatable but ..." and goes on judging the same issue; in a round
+  // that chose nothing, that issue always files " held by " next. So an
+  // incompleteSpec line never blocked anything and counts its issue twice: it
+  // is left out of the reasons and out of how many issues were checked. More
+  // of them than fileConflict lines contradicts the decider, and says nothing.
+  const skipped = isCount(lastTick.skippedCount) ? lastTick.skippedCount : null;
+  const read = skipCounts(lastTick.skipSummary, skipped);
+  const countOf = (key: string) => read?.find((r) => r.key === key)?.count ?? 0;
+  const incomplete = countOf("incompleteSpec");
+  const counts = read && incomplete <= countOf("fileConflict") ? read.filter((r) => r.key !== "incompleteSpec") : null;
+  const checked = counts && skipped !== null ? skipped - incomplete : null;
+  return { kind: "refused", free, refusal: lastTick.refusal, checked, counts };
+}
+
+export interface IdleWords {
+  idle: string;
+  nothingToChoose: string;
+  /** The tile's word for any other refusal; the line keeps the wire's text. */
+  refused: string;
+  /** Label for how many issues the round checked. */
+  checked: string;
+  stale: string;
+  /** With {age} and {interval}. */
+  staleDetail: string;
+  unitS: string;
+  unitMin: string;
+  unitH: string;
+  /** A label per skip category, printed "label: count", so no count has to agree with a word. */
+  reasons: Record<string, string>;
+}
+
+export interface IdleLine { head: string; tail: string | null; text: string; example: boolean }
+
+function spanWords(seconds: number, words: IdleWords): string {
+  if (seconds < 120) return `${seconds} ${words.unitS}`;
+  if (seconds < 7200) return `${Math.floor(seconds / 60)} ${words.unitMin}`;
+  return `${Math.floor(seconds / 3600)} ${words.unitH}`;
+}
+
+/**
+ * The idle reason as one line. The head is short enough for the BEES tile:
+ * the free slots and "nothing to choose", "round refused" or "round stale".
+ * The tail is what the wire counted: how many issues the round checked and
+ * the three largest skip reasons, or the stale tick's age. Any other refusal
+ * prints in the line as the wire wrote it; only queend's fixed "nothing to
+ * choose" has words of its own. The format example is offered only when
+ * issues were skipped for having no ## Boundary.
+ */
+export function idleLine(reason: IdleReason, words: IdleWords): IdleLine {
+  const lead = `${reason.free} ${words.idle}`;
+  if (reason.kind === "stale") {
+    const head = `${lead}: ${words.stale}`;
+    const tail = words.staleDetail
+      .replace("{age}", spanWords(reason.ageSeconds, words))
+      .replace("{interval}", spanWords(reason.intervalSeconds, words));
+    return { head, tail, text: `${head} — ${tail}`, example: false };
+  }
+  if (reason.refusal !== NOTHING_TO_CHOOSE) {
+    return { head: `${lead}: ${words.refused}`, tail: null, text: `${lead}: ${reason.refusal}`, example: false };
+  }
+  const head = `${lead}: ${words.nothingToChoose}`;
+  const top = (reason.counts ?? []).filter((r) => r.count > 0).sort((a, b) => b.count - a.count).slice(0, 3);
+  const said = top.map((r) => `${words.reasons[r.key] ?? words.reasons.other}: ${r.count}`).join(", ");
+  const tail = top.length === 0 ? null : reason.checked !== null ? `${words.checked}: ${reason.checked}; ${said}` : said;
+  return {
+    head,
+    tail,
+    text: tail ? `${head} — ${tail}` : head,
+    example: (reason.counts ?? []).some((r) => r.key === "missingBoundary" && r.count > 0),
+  };
 }
 
 /**
@@ -996,27 +1238,6 @@ export function alertSpan(observedFrom: string | null, nowMs: number, windowMs =
   if (!Number.isFinite(from)) return null;
   const observed = Math.max(0, nowMs - from);
   return observed < windowMs ? { seconds: Math.round(observed / 1000), clipped: true } : { seconds: Math.round(windowMs / 1000), clipped: false };
-}
-
-/**
- * What the feed holds (P1-27): its row count and the span between its
- * oldest and newest rows, from the rows themselves. The span is null with
- * fewer than two datable rows; the header then prints the count alone and
- * never a fabricated "0 s".
- */
-export function feedCoverage(events: Array<{ at: string }>): { rows: number; spanSeconds: number | null; oldestAt: string | null; newestAt: string | null } {
-  let oldest: number | null = null;
-  let newest: number | null = null;
-  let oldestAt: string | null = null;
-  let newestAt: string | null = null;
-  for (const event of events) {
-    const t = Date.parse(event.at);
-    if (!Number.isFinite(t)) continue;
-    if (oldest === null || t < oldest) { oldest = t; oldestAt = event.at; }
-    if (newest === null || t > newest) { newest = t; newestAt = event.at; }
-  }
-  const spanSeconds = oldest !== null && newest !== null && oldestAt !== newestAt ? Math.round((newest - oldest) / 1000) : null;
-  return { rows: events.length, spanSeconds, oldestAt, newestAt };
 }
 
 /**

@@ -1,5 +1,5 @@
 # VHS tape for tri benchmark
-# Key demo: 63 tok/s performance for addressing speed objections
+# Key demo: benchmark performance for addressing speed objections (the 63 tok/s once quoted here is withdrawn: it was an FPGA projection, see the FPGA table in README.md)
 
 Output tri-benchmark.gif
 Set FontSize 26

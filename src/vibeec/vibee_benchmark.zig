@@ -37,7 +37,7 @@ const V12_METRICS = VersionMetrics{
 };
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
 
     try stdout.print("\n", .{});
     try stdout.print("╔══════════════════════════════════════════════════════════════════╗\n", .{});

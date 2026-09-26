@@ -204,7 +204,7 @@ pub fn spec_context_init() -> SpecContext {
 // spec_context_enter_speculation(context: SpecContext, depth_limit: u8) -> SpecContext
 // Enter speculation
 pub fn spec_context_enter_speculation(context: SpecContext, depth_limit: u8) -> SpecContext {
-    if (not spec_state_can_speculate(context.state)) {
+    if (!spec_state_can_speculate(context.state)) {
         return context;
     }
     if (context.current_depth >= depth_limit) {
@@ -289,220 +289,219 @@ pub fn decode_spec_exit(encoded: u32) -> struct { reason: u8, depth: u8, checkpo
 // ============================================================================
 
 test "max_nesting_depth_eight" {
-    try std.testing.expect(MAX_NESTING_DEPTH == 8);
+    assert(MAX_NESTING_DEPTH == 8);
 }
 
 test "exit_reason_constants" {
-    try std.testing.expect(EXIT_SUCCESS == 0);
-    try std.testing.expect(EXIT_ABORT == 5);
-    try std.testing.expect(EXIT_RECOVER == 6);
+    assert(EXIT_SUCCESS == 0);
+    assert(EXIT_ABORT == 5);
+    assert(EXIT_RECOVER == 6);
 }
 
 test "state_constants" {
-    try std.testing.expect(STATE_RUNNING == 0);
-    try std.testing.expect(STATE_EXITED == 3);
-    try std.testing.expect(STATE_ERROR == 5);
+    assert(STATE_RUNNING == 0);
+    assert(STATE_EXITED == 3);
+    assert(STATE_ERROR == 5);
 }
 
 test "spec_state_is_running_true" {
-    try std.testing.expect(spec_state_is_running(SpecState.running) == true);
+    assert(spec_state_is_running(SpecState.running) == true);
 }
 
 test "spec_state_is_running_false" {
-    try std.testing.expect(spec_state_is_running(SpecState.speculating) == false);
+    assert(spec_state_is_running(SpecState.speculating) == false);
 }
 
 test "spec_state_is_terminal_true" {
-    try std.testing.expect(spec_state_is_terminal(SpecState.exited) == true);
-    try std.testing.expect(spec_is_terminal(SpecState.error) == true);
+    assert(spec_state_is_terminal(SpecState.exited) == true);
+    assert(spec_state_is_terminal(SpecState.error) == true);
 }
 
 test "spec_state_is_terminal_false" {
-    try std.testing.expect(spec_state_is_terminal(SpecState.running) == false);
+    assert(spec_state_is_terminal(SpecState.running) == false);
 }
 
 test "spec_state_can_speculate_true" {
-    try std.testing.expect(spec_state_can_speculate(SpecState.running) == true);
-    try std.testing.expect(spec_state_can_speculate(SpecState.recovering) == true);
+    assert(spec_state_can_speculate(SpecState.running) == true);
+    assert(spec_state_can_speculate(SpecState.recovering) == true);
 }
 
 test "spec_state_can_speculate_false" {
-    try std.testing.expect(spec_state_can_speculate(SpecState.exiting) == false);
-    try std.testing.expect(spec_state_can_speculate(SpecState.error) == false);
+    assert(spec_state_can_speculate(SpecState.exiting) == false);
+    assert(spec_state_can_speculate(SpecState.error) == false);
 }
 
 test "spec_exit_success_structure" {
-    given exit = spec_exit_success(5, 0x1000)
-    try std.testing.expect(exit.reason == ExitReason.success);
-    try std.testing.expect(exit.depth == 5);
-    try std.testing.expect(exit.recovery_possible == true);
+    const exit = spec_exit_success(5, 0x1000);
+    assert(exit.reason == ExitReason.success);
+    assert(exit.depth == 5);
+    assert(exit.recovery_possible == true);
 }
 
 test "spec_exit_fail_structure" {
-    given exit = spec_exit_fail(ExitReason.exception, 3, 0x2000, true)
-    try std.testing.expect(exit.reason == ExitReason.exception);
-    try std.testing.expect(exit.recovery_possible == true);
+    const exit = spec_exit_fail(ExitReason.exception, 3, 0x2000, true);
+    assert(exit.reason == ExitReason.exception);
+    assert(exit.recovery_possible == true);
 }
 
 test "spec_exit_abort_no_recovery" {
-    given exit = spec_exit_abort(5)
-    try std.testing.expect(exit.reason == ExitReason.abort);
-    try std.testing.expect(exit.recovery_possible == false);
+    const exit = spec_exit_abort(5);
+    assert(exit.reason == ExitReason.abort);
+    assert(exit.recovery_possible == false);
 }
 
 test "spec_exit_recover_structure" {
-    given exit = spec_exit_recover(3, 0x3000)
-    try std.testing.expect(exit.reason == ExitReason.recover);
-    try std.testing.expect(exit.recovery_possible == true);
+    const exit = spec_exit_recover(3, 0x3000);
+    assert(exit.reason == ExitReason.recover);
+    assert(exit.recovery_possible == true);
 }
 
 test "spec_context_init_structure" {
-    given context = spec_context_init()
-    try std.testing.expect(context.state == SpecState.running);
-    try std.testing.expect(context.current_depth == 0);
-    try std.testing.expect(context.spec_count == 0);
+    const context = spec_context_init();
+    assert(context.state == SpecState.running);
+    assert(context.current_depth == 0);
+    assert(context.spec_count == 0);
 }
 
 test "spec_context_enter_speculation" {
-    given context = spec_context_init()
-    try std.testing.expect(result = spec_context_enter_speculation(context, 8));
-    try std.testing.expect(result.state == SpecState.speculating);
-    try std.testing.expect(result.current_depth == 1);
+    const context = spec_context_init();
+    const result = spec_context_enter_speculation(context, 8);
+    assert(result.state == SpecState.speculating);
+    assert(result.current_depth == 1);
 }
 
 test "spec_context_enter_depth_limit" {
-    given context = spec_context_init()
-    try std.testing.expect(deep = spec_context_enter_speculation(spec_context_enter_speculation(context, 8), 8));
-    try std.testing.expect(deep.current_depth == 2);
+    const context = spec_context_init();
+    const deep = spec_context_enter_speculation(spec_context_enter_speculation(context, 8), 8);
+    assert(deep.current_depth == 2);
 }
 
 test "spec_context_enter_depth_limit_exceeded" {
-    given context = SpecContext{.state = SpecState.running, .current_depth = 8, .spec_count = 0, .exit_count = 0}
-    try std.testing.expect(result = spec_context_enter_speculation(context, 8));
-    try std.testing.expect(result.current_depth == 8);
+    const context = SpecContext{.state = SpecState.running, .current_depth = 8, .spec_count = 0, .exit_count = 0};
+    const result = spec_context_enter_speculation(context, 8);
+    assert(result.current_depth == 8);
 }
 
 test "spec_context_exit_success" {
-    given context = spec_context_init()
-    try std.testing.expect(exit = spec_exit_success(5, 0x1000));
-    try std.testing.expect(result = spec_context_exit(context, exit));
-    try std.testing.expect(result.state == SpecState.exiting);
+    const context = spec_context_init();
+    const exit = spec_exit_success(5, 0x1000);
+    const result = spec_context_exit(context, exit);
+    assert(result.state == SpecState.exiting);
 }
 
 test "spec_context_exit_fail_recover" {
-    given context = spec_context_init()
-    try std.testing.expect(exit = spec_exit_fail(ExitReason.exception, 3, 0x2000, true));
-    try std.testing.expect(result = spec_context_exit(context, exit));
-    try std.testing.expect(result.state == SpecState.recovering);
+    const context = spec_context_init();
+    const exit = spec_exit_fail(ExitReason.exception, 3, 0x2000, true);
+    const result = spec_context_exit(context, exit);
+    assert(result.state == SpecState.recovering);
 }
 
 test "spec_context_exit_fail_no_recover" {
-    given context = spec_context_init()
-    try std.testing.expect(exit = spec_exit_fail(ExitReason.abort, 3, 0, false));
-    try std.testing.expect(result = spec_context_exit(context, exit));
-    try std.testing.expect(result.state == SpecState.error);
+    const context = spec_context_init();
+    const exit = spec_exit_fail(ExitReason.abort, 3, 0, false);
+    const result = spec_context_exit(context, exit);
+    assert(result.state == SpecState.error);
 }
 
 test "spec_context_complete" {
-    given context = spec_context_init()
-    try std.testing.expect(result = spec_context_complete(context));
-    try std.testing.expect(result.state == SpecState.exited);
-    try std.testing.expect(result.current_depth == 0);
+    const context = spec_context_init();
+    const result = spec_context_complete(context);
+    assert(result.state == SpecState.exited);
+    assert(result.current_depth == 0);
 }
 
 test "spec_context_check_timeout_true" {
-    given context = SpecContext{.state = SpecState.speculating, .current_depth = 3, .spec_count = 10, .exit_count = 0}
-    try std.testing.expect(config = SpecConfig{.max_depth = 8, .timeout_cycles = 500, .enable_recovery = true, .checkpoint_interval = 1});
-    try std.testing.expect(spec_context_check_timeout(context, config, 1000) == true);
+    const context = SpecContext{.state = SpecState.speculating, .current_depth = 3, .spec_count = 10, .exit_count = 0};
+    const config = SpecConfig{.max_depth = 8, .timeout_cycles = 500, .enable_recovery = true, .checkpoint_interval = 1};
+    assert(spec_context_check_timeout(context, config, 1000) == true);
 }
 
 test "spec_context_check_timeout_false" {
-    given context = SpecContext{.state = SpecState.speculating, .current_depth = 3, .spec_count = 1, .exit_count = 0}
-    try std.testing.expect(config = SpecConfig{.max_depth = 8, .timeout_cycles = 500, .enable_recovery = true, .checkpoint_interval = 1});
-    try std.testing.expect(spec_context_check_timeout(context, config, 1000) == false);
+    const context = SpecContext{.state = SpecState.speculating, .current_depth = 3, .spec_count = 1, .exit_count = 0};
+    const config = SpecConfig{.max_depth = 8, .timeout_cycles = 500, .enable_recovery = true, .checkpoint_interval = 1};
+    assert(spec_context_check_timeout(context, config, 1000) == false);
 }
 
 test "encode_spec_exit" {
-    given encoded = encode_spec_exit(1, 5, 0x1234)
-    try std.testing.expect((encoded >> 24) == OP_SPEC_EXIT);
+    const encoded = encode_spec_exit(1, 5, 0x1234);
+    assert((encoded >> 24) == OP_SPEC_EXIT);
 }
 
 test "decode_spec_exit" {
-    given decoded = decode_spec_exit(0xEB081234)
-    try std.testing.expect(decoded.reason == 1);
-    try std.testing.expect(decoded.depth == 5);
-    try std.testing.expect(decoded.checkpoint == 0x1234);
+    const decoded = decode_spec_exit(0xEB081234);
+    assert(decoded.reason == 1);
+    assert(decoded.depth == 5);
+    assert(decoded.checkpoint == 0x1234);
 }
 
 test "opcode_constant" {
-    try std.testing.expect(OP_SPEC_EXIT == 0xEB);
+    assert(OP_SPEC_EXIT == 0xEB);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant max_nesting_depth_eight
     assert MAX_NESTING_DEPTH == 8
 
 invariant exit_reason_values
-    try std.testing.expect(EXIT_SUCCESS >= 0 and EXIT_MAX <= 7);
+    assert EXIT_SUCCESS >= 0 and EXIT_MAX <= 7
 
 invariant state_values
-    try std.testing.expect(STATE_RUNNING >= 0 and STATE_ERROR <= 5);
+    assert STATE_RUNNING >= 0 and STATE_ERROR <= 5
 
 invariant spec_exit_success_recoverable
     given exit = spec_exit_success(0, 0x1000)
-    try std.testing.expect(exit.recovery_possible == true);
+    assert exit.recovery_possible == true
 
 invariant spec_exit_abort_not_recoverable
     given exit = spec_exit_abort(5)
-    try std.testing.expect(exit.recovery_possible == false);
+    assert exit.recovery_possible == false
 
 invariant spec_exit_depth_bound
-    try std.testing.expect(spec_exit_abort(0).depth == 0);
-    try std.testing.expect(spec_exit_abort(MAX_NESTING_DEPTH).depth == MAX_NESTING_DEPTH);
+    assert spec_exit_abort(0).depth == 0
+    assert spec_exit_abort(MAX_NESTING_DEPTH).depth == MAX_NESTING_DEPTH
 
 invariant spec_context_init_zero_depth
     given context = spec_context_init()
-    try std.testing.expect(context.current_depth == 0);
+    assert context.current_depth == 0
 
 invariant spec_context_enter_increases_depth
     given context = spec_context_init()
-    try std.testing.expect(result = spec_context_enter_speculation(context, 8));
-    try std.testing.expect(result.current_depth == context.current_depth + 1);
+    and result = spec_context_enter_speculation(context, 8)
+    assert result.current_depth == context.current_depth + 1
 
 invariant spec_context_exit_preserves_reason
     given context = spec_context_init()
-    try std.testing.expect(exit = spec_exit_fail(ExitReason.exception, 3, 0x2000, true));
-    try std.testing.expect(result = spec_context_exit(context, exit));
-    try std.testing.expect(exit.reason == ExitReason.exception);
+    and exit = spec_exit_fail(ExitReason.exception, 3, 0x2000, true)
+    and result = spec_context_exit(context, exit)
+    assert exit.reason == ExitReason.exception
 
 invariant spec_context_complete_zero_depth
     given context = SpecContext{.state = SpecState.running, .current_depth = 5, .spec_count = 10, .exit_count = 0}
-    try std.testing.expect(result = spec_context_complete(context));
-    try std.testing.expect(result.current_depth == 0);
+    and result = spec_context_complete(context)
+    assert result.current_depth == 0
 
 invariant spec_context_complete_exited_state
     given context = spec_context_init()
-    try std.testing.expect(result = spec_context_complete(context));
-    try std.testing.expect(result.state == SpecState.exited);
+    and result = spec_context_complete(context)
+    assert result.state == SpecState.exited
 
 invariant spec_context_check_timeout_no_timeout
     given config = SpecConfig{.max_depth = 8, .timeout_cycles = 0, .enable_recovery = true, .checkpoint_interval = 1}
-    try std.testing.expect(context = SpecContext{.state = SpecState.speculating, .current_depth = 3, .spec_count = 1000, .exit_count = 0});
-    try std.testing.expect(spec_context_check_timeout(context, config, 1000) == false);
+    and context = SpecContext{.state = SpecState.speculating, .current_depth = 3, .spec_count = 1000, .exit_count = 0}
+    assert spec_context_check_timeout(context, config, 1000) == false
 
 invariant spec_context_enter_speculate_requires_running_or_recovering
     given context = SpecContext{.state = SpecState.exiting, .current_depth = 0, .spec_count = 0, .exit_count = 0}
-    try std.testing.expect(spec_context_enter_speculation(context, 8).current_depth == 0);
+    assert spec_context_enter_speculation(context, 8).current_depth == 0
 
 invariant spec_context_exit_increases_exit_count
     given context = spec_context_init()
-    try std.testing.expect(exit = spec_exit_success(0, 0x1000));
-    try std.testing.expect(result = spec_context_exit(context, exit));
-    try std.testing.expect(result.exit_count == context.exit_count + 1);
+    and exit = spec_exit_success(0, 0x1000)
+    and result = spec_context_exit(context, exit)
+    assert result.exit_count == context.exit_count + 1
 
 // ============================================================================
 // Benchmarks

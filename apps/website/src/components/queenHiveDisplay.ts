@@ -165,10 +165,27 @@ export function hiveDisplayLod(width: number): 'overview' | 'badge' | 'title' | 
   return width < 64 ? 'overview' : width < 140 ? 'badge' : width < 260 ? 'title' : 'detail';
 }
 
-export function hiveFocusZoom(baseCellWidth: number, viewportWidth: number, viewportHeight: number): number {
+/** Largest on-screen width, in CSS pixels, a close-up ever asks a cell to reach. */
+export const HIVE_FOCUS_MAX_PX = 520;
+/** The zoom ceiling the map had when it held five repositories. */
+export const HIVE_ZOOM_CEILING = 128;
+
+/**
+ * Zoom is relative to the whole field (1 shows everything), so a fixed ceiling
+ * shrinks in pixels as the catalogue grows: with eleven repositories the
+ * smallest cell needed more than 128 to reach its readable size, the close-up
+ * contract failed, and the nightly catalogue refresh stopped. The ceiling is the
+ * zoom at which the smallest cell, `smallestCellWidth` pixels wide at zoom 1,
+ * reaches HIVE_FOCUS_MAX_PX -- never below the old 128.
+ */
+export function hiveMaxZoom(smallestCellWidth: number): number {
+  return smallestCellWidth > 0 ? Math.max(HIVE_ZOOM_CEILING, HIVE_FOCUS_MAX_PX / smallestCellWidth) : HIVE_ZOOM_CEILING;
+}
+
+export function hiveFocusZoom(baseCellWidth: number, viewportWidth: number, viewportHeight: number, maxZoom = HIVE_ZOOM_CEILING): number {
   if (!(baseCellWidth > 0)) return 1;
-  const target = Math.max(64, Math.min(520, viewportWidth * .84, viewportHeight * .74));
-  return Math.min(128, Math.max(.5, target / baseCellWidth));
+  const target = Math.max(64, Math.min(HIVE_FOCUS_MAX_PX, viewportWidth * .84, viewportHeight * .74));
+  return Math.min(maxZoom, Math.max(.5, target / baseCellWidth));
 }
 
 export interface HiveDisplayProjection { index: number; x: number; y: number; width: number; height: number }

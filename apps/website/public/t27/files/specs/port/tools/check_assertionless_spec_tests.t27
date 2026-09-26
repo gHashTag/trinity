@@ -1,0 +1,79 @@
+module check_assertionless_spec_tests;
+
+use std::fs;
+use std::process;
+use std::mem;
+use std::path;
+use std::regex;
+
+pub fn refuse(msg: []u8) -> void {
+    @printErr("check_assertionless_spec_tests: ", msg, "\n");
+    @printErr("  Exit 2 = could not run, not a clean tree.\n");
+    process.exit(2);
+}
+
+pub fn assertionless_in(text: []u8) -> u32 {
+    const OPEN_PATTERN = r"^\s*test\s+[A-Za-z0-9_]+\s*\{(?P<rest>.*)$";
+    const COMMENT_ONLY_PATTERN = r"^\s*(?://.*|/\*[^*]*\*/)?\s*$";
+    const CANNOT_FAIL_PATTERN = r"^\s*(?://.*|/\*[^*]*\*/|assert\s+true\s*;?)?\s*$";
+
+    let open_regex = regex::Regex::new(OPEN_PATTERN).expect("Failed to create OPEN regex");
+    let comment_only_regex = regex::Regex::new(COMMENT_ONLY_PATTERN).expect("Failed to create COMMENT_ONLY regex");
+    let cannot_fail_regex = regex::Regex::new(CANNOT_FAIL_PATTERN).expect("Failed to create CANNOT_FAIL regex");
+
+    let lines = std::mem.split(text, u8'\n');
+    let mut in_test = false;
+    let mut result: u32 = 0;
+
+    for (i, line) in lines.enumerate() {
+        // Check for test opening
+        if let Some(captures) = open_regex.captures(line) {
+            in_test = true;
+            // The rest of the line after the brace is ignored (as per Python code)
+            continue;
+        }
+
+        if in_test {
+            // Check for closing brace
+            if std::mem.eq(std::mem.trim(line, u8' '), u8"}") {
+                in_test = false;
+                continue;
+            }
+
+            // Check if line is comment-only or assert true
+            let is_comment_only = comment_only_regex.test(line);
+            let is_cannot_fail = cannot_fail_regex.test(line);
+            if !is_comment_only && !is_cannot_fail {
+                // Found a real statement
+                result += 1;
+                in_test = false; // Stop processing this test's body
+            }
+        }
+    }
+
+    return result;
+}
+
+pub fn census() -> [][]u8 {
+    // TODO: implement
+    return [];
+}
+
+pub fn load_baseline() -> [][]u8 {
+    // TODO: implement
+    return [];
+}
+
+pub fn write_baseline(rows: [][]u8) -> void {
+    // TODO: implement
+}
+
+pub fn self_check() -> i32 {
+    // TODO: implement
+    return 0;
+}
+
+pub fn main(argv: [][]u8) -> i32 {
+    // TODO: implement
+    return 0;
+}

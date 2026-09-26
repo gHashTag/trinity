@@ -146,6 +146,14 @@ module Linking {
         given s = symbol_ref_new("foo", "bar", "fn", false, 1)
         then validate_pub_access(s) == false
 
+    test "symbol_ref_new creates correct symbol"
+        given s = symbol_ref_new("test_symbol", "test_module", "function", true, 42)
+        then s.symbol_name == "test_symbol"
+        and s.module_name == "test_module"
+        and s.symbol_type == "function"
+        and s.is_pub == true
+        and s.line == 42
+
     invariant link_err_is_not_ok
         given r = link_result_err(LinkError::TypeMismatch, "")
         assert r.ok == false

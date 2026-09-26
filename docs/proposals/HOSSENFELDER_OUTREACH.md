@@ -26,7 +26,7 @@ Professor Hossenfelder,
 
 I've been following your work on "Lost in Math" and your critiques of numerical coincidences in physics. I'm hoping for your assessment of something I've encountered.
 
-I'm building an open-source ternary computing framework (Trinity) grounded in φ² + φ⁻² = 3. The engineering works: $30 FPGA running a ternary LLM at 63 tok/s, ~1W.
+I'm building an open-source ternary computing framework (Trinity) grounded in φ² + φ⁻² = 3. The engineering works: $30 FPGA running a ternary LLM at ~34 tok/s measured at 50 MHz (power not measured).
 
 The mathematics led to φ-based expressions that approximate some physical constants:
 - m_p/m_e ≈ 6π⁵ (0.002% error)

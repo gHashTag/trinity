@@ -30,38 +30,92 @@
  * gates on `(orientation: portrait)`, and the landscape rules in Queen.css and
  * QueenCatalogHive.css gate on `(orientation: landscape)`. At 390x480 the
  * comb, the star canvas and the one-row head now render as at 390x844.
+ *
+ * THE ICONS RAN OFF THE EDGE (2026-09-16, THIRD PICTURE)
+ *
+ * The owner opened #/queen on the phone again: the head's tool row showed
+ * ⌘ ◇ # ⟲ and half the identity chip, INTEL FEED and FULLSCREEN were past
+ * the edge; the footer rail showed six and a half of its thirteen tiles; the
+ * CONTEXT chip stood on the first two of them. Both rows were designed to
+ * scroll sideways, and a row gives no sign that it can be dragged. So on a
+ * portrait phone nothing in the chrome scrolls sideways any more: the tools
+ * wrap to a second row, the rail is a grid of two rows with every view in
+ * sight, and what was anchored above a 64px rail follows its new height.
+ * Measured at 375x812 and 390x844.
  */
 
 @media (max-width: 640px) and (orientation: portrait) {
-  /* 1. THE HEAD: title on one line, tools on one row that scrolls sideways.
-        Ten buttons on two rows were 92px; one row is 44px, and the ones that
-        do not fit are a thumb-swipe away rather than a full row of height. */
+  .queen27-page.is-shell {
+    /* The footer rail: two rows of 44px tiles, 2px between them, 4px around.
+       Everything placed above the rail measures from this one number. */
+    --hud-phone-rail-h: 98px;
+  }
+
+  /* 1. THE HEAD: title on one line, the tools on the rows they need -- two,
+        measured at 375 and 390 wide: six tiles, then four and the identity
+        chip. One row that scrolled sideways (2026-09-10) cost 48px less, and
+        the third picture shows what it cost instead: the tiles past the edge
+        did not exist for the owner. A control that cannot be seen is not a
+        thumb-swipe away; it is gone. */
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-head {
     padding: 4px 8px 6px;
     gap: 6px;
   }
 
   .queen27-page.is-shell .queen27-hud-vp-tools {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 2px;
-  }
-
-  .queen27-page.is-shell .queen27-hud-vp-tools::-webkit-scrollbar {
-    display: none;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 4px;
+    overflow: visible;
+    padding-bottom: 0;
   }
 
   .queen27-page.is-shell .queen27-hud-vp-tools > * {
     flex: 0 0 auto;
   }
 
+  /* The identity chip goes last and takes what the last row leaves: at 8.5rem
+     it is the one wide item, and in the middle of the row it opened a third
+     line (measured at 375: four tiles, then the chip with four more, then two
+     tiles alone). A flex line breaks on the unshrunk size, so the chip asks
+     for 6rem, packs after the second row's four tiles (188px + 6rem fits from
+     326px up: 360, 375, 390) and then grows to the row's end, never past its
+     8.5rem -- at 390 it is the same 136px the identity contract measures. */
+  .queen27-page.is-shell .queen27-hud-vp-tools > .queen27-identity {
+    order: 1;
+    flex: 1 1 6rem;
+    width: auto;
+    min-width: 6rem;
+    max-width: 8.5rem;
+    /* a tile's height whether it shares a row or has one to itself: alone,
+       it was 24px pending and 28px once "Sign in" came, and the identity
+       contract (#12 at 390x844) rightly reads a chip that changes size as a
+       row that moves under the finger */
+    min-height: 44px;
+  }
+
+  /* The one link among the buttons (◇, the shared core) is a tile of the same
+     size, not a 25x26 box hanging off the top edge of a 44px row. */
+  .queen27-page.is-shell .queen27-hud-vp-tools > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* The repository select gives the row what the + and SHARED CORE need and
+     keeps the rest: 150px cut "ALL REPOSITORIES · SHARED CORE" mid-word. */
+  .queen27-page.is-shell .queen27-hud-vp-head .queen27-hud-vp-worlds .queen-universe-nav select {
+    max-width: min(200px, calc(100% - 160px));
+  }
+
   /* 2. THE BODY FOLLOWS THE HEAD. The head is in the flow on a phone (Queen.css,
         max-width: 900px), so the body needs a gap above it, not the 124px a
         floating head would need; and it stops above the footer tabs. */
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
-    padding: var(--hud-gap) var(--hud-gap) calc(64px + 16px);
+    padding: var(--hud-gap) var(--hud-gap) calc(var(--hud-phone-rail-h) + 16px);
   }
 
   /* 3. THE LAW LINE AT THE BOTTOM OF THE FIELD, NOT ACROSS ITS MIDDLE.
@@ -100,14 +154,57 @@
     font-size: 0.56rem;
   }
 
-  /* 5. FOOTER TABS: 64px, the height the bar variable already names. */
+  /* 5. FOOTER TABS: every view in sight. Thirteen tiles of 44px made one row
+        of 652px in a 339px rail: six and a half showed, the rest were past the
+        edge (the third picture). Now a grid of two rows -- the column count is
+        the rail's own (--queen-phone-cols, half the views rounded up, from
+        QueenCommand.tsx), every tile one cell, icon only, the SPECS tile no
+        wider than its neighbours. Nothing scrolls and nothing is cut, for
+        98px of height instead of 64. */
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-bottom {
-    height: 64px;
-    bottom: 8px;
+    right: var(--hud-gap);
+    bottom: var(--hud-gap);
+    left: var(--hud-gap);
+    height: var(--hud-phone-rail-h);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
   }
 
-  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd {
-    height: 56px;
+  .queen27-page.is-shell .queen27-hud-command.is-compact {
+    display: grid;
+    grid-template-columns: repeat(var(--queen-phone-cols, 7), minmax(0, 1fr));
+    grid-auto-rows: minmax(44px, 1fr);
+    gap: 2px;
+    padding: 4px;
+    overflow: hidden;
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd,
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd[data-view="specs"] {
+    flex: none;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    min-height: 44px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    justify-items: center;
+    padding: 0;
+  }
+
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd > span,
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd[data-view="specs"] > span,
+  .queen27-page.is-shell .queen27-hud-command.is-compact .queen27-hud-cmd > kbd {
+    display: none;
+  }
+
+  /* 5b. WHAT STANDS ABOVE THE RAIL FOLLOWS ITS HEIGHT. The context drawer and
+         the identity prompt were placed for a 64px rail. The CONTEXT chip was
+         lifted here too, standing on the first two tiles in the third picture;
+         it has since been removed from the board entirely. */
+  .queen27-page.is-shell .queen27-hud-intel.is-drawer,
+  .queen27-identity-bridge {
+    bottom: calc(var(--hud-phone-rail-h) + 16px + env(safe-area-inset-bottom));
   }
 
   /* 6. THE SCENE FITS THE FIELD, NOT THE WINDOW. On a desktop the comb field is

@@ -1,10 +1,11 @@
 /* Four moves, in a row that becomes a column when the width says so. Same
    auto-fit rule as the modules block: the number of columns is the width's
-   decision, not a breakpoint's. */
+   decision, not a breakpoint's. The card surface is .site-card in
+   styles/card.css, shared with every other block on the page. */
 .play-block {
-  border-top: 1px solid rgba(0, 255, 136, 0.24);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: #020605;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .play-block-inner {
@@ -39,45 +40,32 @@
 .play-block-head p {
   margin: 0;
   color: #a8c1ba;
-  font-size: clamp(0.9rem, 1.6vw, 1rem);
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
   line-height: 1.6;
-}
-
-.play-block-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-  gap: 1px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid rgba(0, 255, 136, 0.16);
-  background: rgba(0, 255, 136, 0.16);
 }
 
 .play-block-steps > li {
   display: grid;
   align-content: start;
-  gap: 0.5rem;
-  padding: clamp(1.1rem, 2.4vw, 1.5rem);
-  background: #020605;
+  gap: 0.6rem;
 }
 
 .play-step-n {
   color: #00ff88;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   letter-spacing: 0.2em;
 }
 
 .play-block-steps strong {
-  font-size: 1rem;
+  font-size: clamp(1.15rem, 2.1vw, 1.35rem);
   font-weight: 500;
 }
 
 .play-block-steps p {
   margin: 0;
   color: #a8c1ba;
-  font-size: 0.82rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
   line-height: 1.65;
 }
 
@@ -85,7 +73,7 @@
   justify-self: start;
   color: #00ff88;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   letter-spacing: 0.12em;
   text-decoration: none;
   text-transform: uppercase;
@@ -99,7 +87,7 @@
 .play-block-closing {
   margin: 0;
   color: #a8c1ba;
-  font-size: 0.86rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
 }
 
 .play-block-closing a {

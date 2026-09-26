@@ -195,6 +195,11 @@ export const EXCLUDED: Record<string, string> = {
   'tt-trinity-euler/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
   'tt-trinity-euler/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
   'tt-trinity-euler/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
+  // tt-trinity-gamma carries its own copies of the same three (catalog refresh of
+  // 2026-09-24, #1039); same widths, same reasons.
+  'tt-trinity-gamma/specs/numeric/gf64.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-gamma/specs/numeric/gf128.t27': 'format above the silicon-verified GF4-GF24 ladder',
+  'tt-trinity-gamma/specs/numeric/gf256.t27': 'structural by design — bias is an open R&D parameter',
 
   // Widths the GitHub-sourced refresh brought in from t27 master, none of them
   // rungs of the silicon-verified ladder (GF4, GF8, GF12, GF16, GF20, GF24 --
@@ -225,6 +230,9 @@ export const EXCLUDED: Record<string, string> = {
   'tt-trinity-euler/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
   'tt-trinity-euler/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
   'tt-trinity-euler/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
+  'tt-trinity-gamma/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
 }
 
 /**

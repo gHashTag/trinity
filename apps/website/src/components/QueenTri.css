@@ -19,26 +19,56 @@
   scrollbar-width: thin;
 }
 
+/* These buttons float on the live hive with nothing between them: the row that
+   holds them paints no ground at all, so each chip is its own surface and has
+   to answer for itself.
+   It was rgba(2,8,6,0.6) under `var(--muted, #8b9490)`, and that fallback was
+   dead: index.css declares --muted: #888888 on :root, so the ink that drew was
+   #888888 at 1.53:1 over a lit field, and 1.74:1 -- the number a reader of the
+   old rule could work out from what it said -- was for a grey the browser never
+   used. Either reading is the screenshot where CRM could not be made out at
+   all. QueenBrowser.css carries the same lesson about the same token, found the
+   same way, by measuring the running page. --hud-panel is the token
+   this board gives chrome, chosen by the 4.5 threshold rather than by eye, and
+   the blur is the other half: 0.88 passes 12% of the lattice with its EDGES
+   intact, and only a low pass takes those out. */
 .queen27-page.is-shell .queen27-tri-screen {
   flex: 0 0 auto;
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid rgba(0, 255, 136, 0.22);
   border-radius: 6px;
-  background: rgba(2, 8, 6, 0.6);
-  color: var(--muted, #8b9490);
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  backdrop-filter: blur(6px);
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px;
   letter-spacing: 0.04em;
   cursor: pointer;
 }
 
+/* The active chip was the THINNEST thing in the row: `background` is a
+   shorthand, so rgba(0,255,136,0.08) did not tint the panel above, it replaced
+   it, and the one button a reader is meant to be looking at sat on 8% of a
+   ground over a live lattice. The tint is a layer now, not a substitution --
+   the panel stays underneath and the green rides on it, which is what the
+   border and the ink were already saying. */
 .queen27-page.is-shell .queen27-tri-screen.is-active {
   border-color: #00ff88;
   color: #00ff88;
-  background: rgba(0, 255, 136, 0.08);
+  background:
+    linear-gradient(rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.1)),
+    var(--hud-panel, rgba(2, 8, 6, 0.88));
 }
 
+/* The ground here stays warm. The amber IS the signal that the app did not
+   answer, and a cold --hud-* token would file this with the ordinary chrome.
+   What it was missing is the other half, the same half the chips above were
+   missing: 0.8 passes 20% of the lattice with its EDGES intact, and this strip
+   wraps a whole sentence rather than a two-word label, so a hexagon edge had a
+   paragraph of 12px amber to cross. A thicker alpha only scales the field's
+   amplitude and leaves its frequency where it was; the low pass is the one
+   declaration that touches it. Ground unchanged, blur added. */
 .queen27-page.is-shell .queen27-tri-noanswer {
   display: flex;
   flex: 0 0 auto;
@@ -49,6 +79,7 @@
   border: 1px solid rgba(240, 160, 32, 0.45);
   border-radius: 6px;
   background: rgba(20, 12, 0, 0.8);
+  backdrop-filter: blur(6px);
   color: #f0c060;
   font-size: 12px;
 }
@@ -57,11 +88,24 @@
   color: #00ff88;
 }
 
+/* FROSTED GLASS, like the Queen's own panel (QueenChat.css): the app's screens
+   sit on a translucent, blurred pane over the hex field instead of a black
+   slab (owner, 2026-09-22). The blur lives HERE, on the board: a document
+   inside the frame cannot blur the pixels behind the frame. The app draws its
+   page transparent in embed mode, so this pane is what shows through. */
 .queen27-page.is-shell .queen27-tri-frame-wrap {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  border: 1px solid rgba(0, 255, 136, 0.18);
+  border-radius: 10px;
+  /* --hud-veil is the token for a surface that CARRIES text: the app's screens
+     are drawn on this pane (they are transparent in embed), so the contract
+     measures its ground against the lit map and picks the alpha, not the eye. */
+  background: var(--hud-veil);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  backdrop-filter: blur(14px) saturate(120%);
 }
 
 .queen27-page.is-shell .queen27-tri-frame {
@@ -70,15 +114,25 @@
   height: 100%;
   min-height: 0;
   border: 0;
-  background: #000;
+  background: transparent;
+  color-scheme: dark;
 }
 
 .queen27-page.is-shell .queen27-tri-loading {
   position: absolute;
   inset: 0;
   display: grid;
-  place-items: center;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
   pointer-events: none;
+}
+
+/* The link out beside a slow spinner is the one thing on the overlay a pointer may reach. */
+.queen27-page.is-shell .queen27-tri-loading a {
+  pointer-events: auto;
+  color: #00ff88;
+  font-size: 12px;
 }
 
 .queen27-page.is-shell .queen27-tri.is-nested,
@@ -86,7 +140,7 @@
   justify-content: center;
   padding: 16px;
   gap: 12px;
-  color: var(--muted, #8b9490);
+  color: var(--muted, #888888);
 }
 
 .queen27-page.is-shell .queen27-tri-nested {
@@ -103,4 +157,12 @@
   list-style: none;
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px;
+}
+
+/* Every TRI screen is its own rail tab now (owner, 2026-09-21), so the row
+   of screen buttons above the frame would be the same five choices twice.
+   Hidden, not removed: the rail writes the same ?tab=tri&screen= address the
+   row did, and the row's buttons stay the one place the contracts drive. */
+.queen27-page.is-shell .queen27-tri-screens {
+  display: none;
 }

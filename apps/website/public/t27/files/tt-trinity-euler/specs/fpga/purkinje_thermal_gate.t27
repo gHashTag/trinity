@@ -182,7 +182,7 @@ pub fn ptg_thermal_state_init() -> ThermalState {
 // ptg_gate_state_from_temp(temp_c: i8, config: GateConfig) -> GateState
 // Determine gate state from temperature
 pub fn ptg_gate_state_from_temp(temp_c: i8, config: GateConfig) -> GateState {
-    if (not ptg_temp_valid(temp_c)) {
+    if (!ptg_temp_valid(temp_c)) {
         return GateState.error;
     } else if (ptg_temp_critical(temp_c, config)) {
         return GateState.error;
@@ -348,243 +348,242 @@ pub fn decode_ptg_cmd(encoded: u16) -> struct { opcode: u8, temp_c: i8, threshol
 // ============================================================================
 
 test "ptg_opcode_constant" {
-    try std.testing.expect(PTG_OPCODE == 0xF4);
+    assert(PTG_OPCODE == 0xF4);
 }
 
 test "temp_constants" {
-    try std.testing.expect(TEMP_MIN_C == -40);
-    try std.testing.expect(TEMP_MAX_C == 125);
-    try std.testing.expect(TEMP_NOMINAL_C == 25);
+    assert(TEMP_MIN_C == -40);
+    assert(TEMP_MAX_C == 125);
+    assert(TEMP_NOMINAL_C == 25);
 }
 
 test "temp_threshold_constants" {
-    try std.testing.expect(TEMP_THRESHOLD_LOW_C == 0);
-    try std.testing.expect(TEMP_THRESHOLD_HIGH_C == 85);
-    try std.testing.expect(TEMP_CRITICAL_C == 100);
+    assert(TEMP_THRESHOLD_LOW_C == 0);
+    assert(TEMP_THRESHOLD_HIGH_C == 85);
+    assert(TEMP_CRITICAL_C == 100);
 }
 
 test "temp_hysteresis_constant" {
-    try std.testing.expect(TEMP_HYSTERESIS_C == 5);
+    assert(TEMP_HYSTERESIS_C == 5);
 }
 
 test "gate_state_constants" {
-    try std.testing.expect(GATE_STATE_CLOSED == 0);
-    try std.testing.expect(GATE_STATE_OPEN == 1);
-    try std.testing.expect(GATE_STATE_THROTTLING == 2);
-    try std.testing.expect(GATE_STATE_ERROR == 3);
+    assert(GATE_STATE_CLOSED == 0);
+    assert(GATE_STATE_OPEN == 1);
+    assert(GATE_STATE_THROTTLING == 2);
+    assert(GATE_STATE_ERROR == 3);
 }
 
 test "throttle_level_constants" {
-    try std.testing.expect(THROTTLE_LEVEL_NONE == 0);
-    try std.testing.expect(THROTTLE_LEVEL_LOW == 1);
-    try std.testing.expect(THROTTLE_LEVEL_MED == 2);
-    try std.testing.expect(THROTTLE_LEVEL_HIGH == 3);
+    assert(THROTTLE_LEVEL_NONE == 0);
+    assert(THROTTLE_LEVEL_LOW == 1);
+    assert(THROTTLE_LEVEL_MED == 2);
+    assert(THROTTLE_LEVEL_HIGH == 3);
 }
 
 test "ptg_config_init_structure" {
-    given config = ptg_config_init()
-    try std.testing.expect(config.low_threshold_c == TEMP_THRESHOLD_LOW_C);
-    try std.testing.expect(config.high_threshold_c == TEMP_THRESHOLD_HIGH_C);
-    try std.testing.expect(config.auto_throttle == true);
+    const config = ptg_config_init();
+    assert(config.low_threshold_c == TEMP_THRESHOLD_LOW_C);
+    assert(config.high_threshold_c == TEMP_THRESHOLD_HIGH_C);
+    assert(config.auto_throttle == true);
 }
 
 test "ptg_config_strict_structure" {
-    given config = ptg_config_strict()
-    try std.testing.expect(config.high_threshold_c == 70);
-    try std.testing.expect(config.critical_temp_c == 90);
+    const config = ptg_config_strict();
+    assert(config.high_threshold_c == 70);
+    assert(config.critical_temp_c == 90);
 }
 
 test "ptg_config_permissive_structure" {
-    given config = ptg_config_permissive()
-    try std.testing.expect(config.high_threshold_c == 100);
-    try std.testing.expect(config.critical_temp_c == 115);
+    const config = ptg_config_permissive();
+    assert(config.high_threshold_c == 100);
+    assert(config.critical_temp_c == 115);
 }
 
 test "ptg_config_manual_structure" {
-    given config = ptg_config_manual()
-    try std.testing.expect(config.auto_throttle == false);
+    const config = ptg_config_manual();
+    assert(config.auto_throttle == false);
 }
 
 test "ptg_temp_valid_true" {
-    try std.testing.expect(ptg_temp_valid(0) == true);
-    try std.testing.expect(ptg_temp_valid(25) == true);
-    try std.testing.expect(ptg_temp_valid(100) == true);
+    assert(ptg_temp_valid(0) == true);
+    assert(ptg_temp_valid(25) == true);
+    assert(ptg_temp_valid(100) == true);
 }
 
 test "ptg_temp_valid_false" {
-    try std.testing.expect(ptg_temp_valid(-50) == false);
-    try std.testing.expect(ptg_temp_valid(150) == false);
+    assert(ptg_temp_valid(-50) == false);
+    assert(ptg_temp_valid(150) == false);
 }
 
 test "ptg_temp_critical_true" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_temp_critical(105, config) == true);
-    try std.testing.expect(ptg_temp_critical(100, config) == true);
+    const config = ptg_config_init();
+    assert(ptg_temp_critical(105, config) == true);
+    assert(ptg_temp_critical(100, config) == true);
 }
 
 test "ptg_temp_critical_false" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_temp_critical(90, config) == false);
+    const config = ptg_config_init();
+    assert(ptg_temp_critical(90, config) == false);
 }
 
 test "ptg_temp_high_true" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_temp_high(90, config) == true);
-    try std.testing.expect(ptg_temp_high(85, config) == true);
+    const config = ptg_config_init();
+    assert(ptg_temp_high(90, config) == true);
+    assert(ptg_temp_high(85, config) == true);
 }
 
 test "ptg_temp_high_false" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_temp_high(80, config) == false);
+    const config = ptg_config_init();
+    assert(ptg_temp_high(80, config) == false);
 }
 
 test "ptg_temp_low_true" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_temp_low(-10, config) == true);
-    try std.testing.expect(ptg_temp_low(-1, config) == true);
+    const config = ptg_config_init();
+    assert(ptg_temp_low(-10, config) == true);
+    assert(ptg_temp_low(-1, config) == true);
 }
 
 test "ptg_temp_low_false" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_temp_low(0, config) == false);
-    try std.testing.expect(ptg_temp_low(10, config) == false);
+    const config = ptg_config_init();
+    assert(ptg_temp_low(0, config) == false);
+    assert(ptg_temp_low(10, config) == false);
 }
 
 test "ptg_temp_in_hysteresis_true" {
-    try std.testing.expect(ptg_temp_in_hysteresis(85, 85, 5) == true);
-    try std.testing.expect(ptg_temp_in_hysteresis(87, 85, 5) == true);
-    try std.testing.expect(ptg_temp_in_hysteresis(83, 85, 5) == true);
+    assert(ptg_temp_in_hysteresis(85, 85, 5) == true);
+    assert(ptg_temp_in_hysteresis(87, 85, 5) == true);
+    assert(ptg_temp_in_hysteresis(83, 85, 5) == true);
 }
 
 test "ptg_temp_in_hysteresis_false" {
-    try std.testing.expect(ptg_temp_in_hysteresis(95, 85, 5) == false);
-    try std.testing.expect(ptg_temp_in_hysteresis(75, 85, 5) == false);
+    assert(ptg_temp_in_hysteresis(95, 85, 5) == false);
+    assert(ptg_temp_in_hysteresis(75, 85, 5) == false);
 }
 
 test "ptg_thermal_state_init_structure" {
-    given thermal = ptg_thermal_state_init()
-    try std.testing.expect(thermal.temp_c == TEMP_NOMINAL_C);
-    try std.testing.expect(thermal.gate_state == GateState.open);
+    const thermal = ptg_thermal_state_init();
+    assert(thermal.temp_c == TEMP_NOMINAL_C);
+    assert(thermal.gate_state == GateState.open);
 }
 
 test "ptg_gate_state_from_temp_open" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_gate_state_from_temp(50, config) == GateState.open);
+    const config = ptg_config_init();
+    assert(ptg_gate_state_from_temp(50, config) == GateState.open);
 }
 
 test "ptg_gate_state_from_temp_throttling" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_gate_state_from_temp(90, config) == GateState.throttling);
+    const config = ptg_config_init();
+    assert(ptg_gate_state_from_temp(90, config) == GateState.throttling);
 }
 
 test "ptg_gate_state_from_temp_closed" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_gate_state_from_temp(-10, config) == GateState.closed);
+    const config = ptg_config_init();
+    assert(ptg_gate_state_from_temp(-10, config) == GateState.closed);
 }
 
 test "ptg_gate_state_from_temp_error" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_gate_state_from_temp(105, config) == GateState.error);
+    const config = ptg_config_init();
+    assert(ptg_gate_state_from_temp(105, config) == GateState.error);
 }
 
 test "ptg_throttle_from_temp_none" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_throttle_from_temp(50, config) == ThrottleLevel.none);
+    const config = ptg_config_init();
+    assert(ptg_throttle_from_temp(50, config) == ThrottleLevel.none);
 }
 
 test "ptg_throttle_from_temp_low" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_throttle_from_temp(90, config) == ThrottleLevel.low);
+    const config = ptg_config_init();
+    assert(ptg_throttle_from_temp(90, config) == ThrottleLevel.low);
 }
 
 test "ptg_throttle_from_temp_medium" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_throttle_from_temp(100, config) == ThrottleLevel.medium);
+    const config = ptg_config_init();
+    assert(ptg_throttle_from_temp(100, config) == ThrottleLevel.medium);
 }
 
 test "ptg_throttle_from_temp_high" {
-    given config = ptg_config_init()
-    try std.testing.expect(ptg_throttle_from_temp(110, config) == ThrottleLevel.high);
+    const config = ptg_config_init();
+    assert(ptg_throttle_from_temp(110, config) == ThrottleLevel.high);
 }
 
 test "ptg_thermal_state_update" {
-    given thermal = ptg_thermal_state_init()
-    try std.testing.expect(config = ptg_config_init());
-    try std.testing.expect(result = ptg_thermal_state_update(thermal, 90, config));
-    try std.testing.expect(result.temp_c == 90);
-    try std.testing.expect(result.gate_state == GateState.throttling);
+    const thermal = ptg_thermal_state_init();
+    const config = ptg_config_init();
+    const result = ptg_thermal_state_update(thermal, 90, config);
+    assert(result.temp_c == 90);
+    assert(result.gate_state == GateState.throttling);
 }
 
 test "ptg_gate_status_init_structure" {
-    given status = ptg_gate_status_init()
-    try std.testing.expect(status.current_state == GateState.open);
-    try std.testing.expect(status.fault_count == 0);
+    const status = ptg_gate_status_init();
+    assert(status.current_state == GateState.open);
+    assert(status.fault_count == 0);
 }
 
 test "ptg_gate_status_open" {
-    given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_open(status));
-    try std.testing.expect(result.current_state == GateState.open);
-    try std.testing.expect(result.throttle_level == ThrottleLevel.none);
+    const status = ptg_gate_status_init();
+    const result = ptg_gate_status_open(status);
+    assert(result.current_state == GateState.open);
+    assert(result.throttle_level == ThrottleLevel.none);
 }
 
 test "ptg_gate_status_close" {
-    given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_close(status));
-    try std.testing.expect(result.current_state == GateState.closed);
-    try std.testing.expect(result.throttle_level == ThrottleLevel.high);
+    const status = ptg_gate_status_init();
+    const result = ptg_gate_status_close(status);
+    assert(result.current_state == GateState.closed);
+    assert(result.throttle_level == ThrottleLevel.high);
 }
 
 test "ptg_gate_status_throttle" {
-    given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_throttle(status, ThrottleLevel.medium));
-    try std.testing.expect(result.current_state == GateState.throttling);
-    try std.testing.expect(result.throttle_level == ThrottleLevel.medium);
+    const status = ptg_gate_status_init();
+    const result = ptg_gate_status_throttle(status, ThrottleLevel.medium);
+    assert(result.current_state == GateState.throttling);
+    assert(result.throttle_level == ThrottleLevel.medium);
 }
 
 test "ptg_gate_status_error" {
-    given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_error(status));
-    try std.testing.expect(result.current_state == GateState.error);
-    try std.testing.expect(result.fault_count == 1);
+    const status = ptg_gate_status_init();
+    const result = ptg_gate_status_error(status);
+    assert(result.current_state == GateState.error);
+    assert(result.fault_count == 1);
 }
 
 test "ptg_gate_status_update_temp" {
-    given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_update_temp(status, 75));
-    try std.testing.expect(result.temp_measured_c == 75);
+    const status = ptg_gate_status_init();
+    const result = ptg_gate_status_update_temp(status, 75);
+    assert(result.temp_measured_c == 75);
 }
 
 test "ptg_gate_status_increment_cycle" {
-    given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_increment_cycle(status));
-    try std.testing.expect(result.cycle_count == 1);
+    const status = ptg_gate_status_init();
+    const result = ptg_gate_status_increment_cycle(status);
+    assert(result.cycle_count == 1);
 }
 
 test "encode_ptg_cmd" {
-    given encoded = encode_ptg_cmd(0x10, 25, 1)
-    try std.testing.expect((encoded >> 8) == 0x10);
+    const encoded = encode_ptg_cmd(0x10, 25, 1);
+    assert((encoded >> 8) == 0x10);
 }
 
 test "decode_ptg_cmd" {
-    given decoded = decode_ptg_cmd(0x1033)
-    try std.testing.expect(decoded.opcode == 0x10);
-    try std.testing.expect(decoded.temp_c == 25);
+    const decoded = decode_ptg_cmd(0x1033);
+    assert(decoded.opcode == 0x10);
+    assert(decoded.temp_c == 25);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant temp_range_valid
     assert TEMP_MIN_C < TEMP_MAX_C
-    try std.testing.expect(TEMP_NOMINAL_C > TEMP_MIN_C);
-    try std.testing.expect(TEMP_NOMINAL_C < TEMP_MAX_C);
+    assert TEMP_NOMINAL_C > TEMP_MIN_C
+    assert TEMP_NOMINAL_C < TEMP_MAX_C
 
 invariant temp_thresholds_ordered
     assert TEMP_THRESHOLD_LOW_C < TEMP_THRESHOLD_HIGH_C
-    try std.testing.expect(TEMP_THRESHOLD_HIGH_C < TEMP_CRITICAL_C);
+    assert TEMP_THRESHOLD_HIGH_C < TEMP_CRITICAL_C
 
 invariant temp_hysteresis_positive
     assert TEMP_HYSTERESIS_C > 0
@@ -592,19 +591,19 @@ invariant temp_hysteresis_positive
 invariant ptg_config_init_valid
     given config = ptg_config_init()
     assert config.low_threshold_c < config.high_threshold_c
-    try std.testing.expect(config.high_threshold_c < config.critical_temp_c);
+    assert config.high_threshold_c < config.critical_temp_c
 
 invariant ptg_config_strict_lower_thresholds
     given strict = ptg_config_strict()
-    try std.testing.expect(normal = ptg_config_init());
+    and normal = ptg_config_init()
     assert strict.high_threshold_c < normal.high_threshold_c
-    try std.testing.expect(strict.critical_temp_c < normal.critical_temp_c);
+    assert strict.critical_temp_c < normal.critical_temp_c
 
 invariant ptg_config_permissive_higher_thresholds
     given perm = ptg_config_permissive()
-    try std.testing.expect(normal = ptg_config_init());
+    and normal = ptg_config_init()
     assert perm.high_threshold_c > normal.high_threshold_c
-    try std.testing.expect(perm.critical_temp_c > normal.critical_temp_c);
+    assert perm.critical_temp_c > normal.critical_temp_c
 
 invariant ptg_config_manual_no_auto_throttle
     given config = ptg_config_manual()
@@ -612,36 +611,36 @@ invariant ptg_config_manual_no_auto_throttle
 
 invariant ptg_thermal_state_init_open
     given thermal = ptg_thermal_state_init()
-    try std.testing.expect(thermal.gate_state == GateState.open);
+    assert thermal.gate_state == GateState.open
 
 invariant ptg_gate_state_from_temp_nominal_open
     given config = ptg_config_init()
-    try std.testing.expect(state = ptg_gate_state_from_temp(TEMP_NOMINAL_C, config));
-    try std.testing.expect(state == GateState.open);
+    and state = ptg_gate_state_from_temp(TEMP_NOMINAL_C, config)
+    assert state == GateState.open
 
 invariant ptg_throttle_from_temp_nominal_none
     given config = ptg_config_init()
-    try std.testing.expect(level = ptg_throttle_from_temp(TEMP_NOMINAL_C, config));
-    try std.testing.expect(level == ThrottleLevel.none);
+    and level = ptg_throttle_from_temp(TEMP_NOMINAL_C, config)
+    assert level == ThrottleLevel.none
 
 invariant ptg_gate_status_init_open
     given status = ptg_gate_status_init()
-    try std.testing.expect(status.current_state == GateState.open);
+    assert status.current_state == GateState.open
 
 invariant ptg_gate_status_error_increments_fault
     given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_error(status));
-    try std.testing.expect(result.fault_count == 1);
+    and result = ptg_gate_status_error(status)
+    assert result.fault_count == 1
 
 invariant ptg_gate_status_increment_cycle_increments
     given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_increment_cycle(status));
-    try std.testing.expect(result.cycle_count == 1);
+    and result = ptg_gate_status_increment_cycle(status)
+    assert result.cycle_count == 1
 
 invariant ptg_gate_status_close_high_throttle
     given status = ptg_gate_status_init()
-    try std.testing.expect(result = ptg_gate_status_close(status));
-    try std.testing.expect(result.throttle_level == ThrottleLevel.high);
+    and result = ptg_gate_status_close(status)
+    assert result.throttle_level == ThrottleLevel.high
 
 // ============================================================================
 // Benchmarks

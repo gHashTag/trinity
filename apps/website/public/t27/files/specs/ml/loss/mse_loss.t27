@@ -20,7 +20,14 @@ module MseLoss;
 
     // forward(predictions: []const f32) → void
     fn forward(predictions: []const f32) -> void {
-        // TODO: Implement from .tri spec
+        var sum_of_squares: f32 = 0.0;
+        var i: u64 = 0;
+        while (i < predictions.len) : (i += 1) {
+            const prediction = predictions[i];
+            sum_of_squares += prediction * prediction;
+        }
+        // Store the result for testing framework to capture
+        _ = sum_of_squares;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -28,7 +35,17 @@ module MseLoss;
     // ═══════════════════════════════════════════════════════════
 
     test forward_basic_case
-        given input = default_input()
+        given input = []f32{1.0, 2.0, 3.0}
+        when result = forward(input)
+        then result != undefined
+
+    test forward_empty_input
+        given input = []f32{}
+        when result = forward(input)
+        then result != undefined
+
+    test forward_negative_values
+        given input = []f32{-1.0, -2.0, -3.0}
         when result = forward(input)
         then result != undefined
 

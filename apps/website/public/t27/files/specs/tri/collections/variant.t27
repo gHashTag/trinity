@@ -19,19 +19,25 @@ module TriVariant;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // make(tag: []const u8) → void
-    fn make(tag: []const u8) -> void {
-        // TODO: Implement from .tri spec
+    // make(tag: []const u8, value: T) → Variant(T)
+    fn make(tag: []const u8, value: T) -> Variant(T) {
+        return Variant(T) {
+            tag = tag,
+            value = value,
+        };
     }
 
-    // get_tag(variant: Variant(T)) → void
-    fn get_tag(variant: Variant(T)) -> void {
-        // TODO: Implement from .tri spec
+    // get_tag(variant: Variant(T)) → []const u8
+    fn get_tag(variant: Variant(T)) -> []const u8 {
+        return variant.tag;
     }
 
-    // match(variant: Variant(T)) → void
-    fn match(variant: Variant(T)) -> void {
-        // TODO: Implement from .tri spec
+    // match(variant: Variant(T), handlers: Map) → T
+    fn match(variant: Variant(T), handlers: Map) -> T {
+        // Basic implementation: return the value
+        // In a full implementation, this would look up the tag in handlers map
+        _ = handlers; // suppress unused warning for now
+        return variant.value;
     }
 
     // ═══════════════════════════════════════════════════════════

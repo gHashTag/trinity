@@ -9,7 +9,7 @@
 | FF | 129,600 |
 | DSP48 | 240 |
 | BRAM36 | 135 |
-| Target Fmax | ≥92 MHz (ternary baseline) |
+| Target Fmax | ≥92 MHz (ternary baseline; that 92 MHz is itself an Fmax estimate, per the FPGA table in the root README.md) |
 
 ## Synthesis Results (Yosys)
 
@@ -53,7 +53,7 @@
 
 | Module | LUT | FF | DSP | Fmax (MHz) | Status |
 |--------|-----|----|-----|------------|--------|
-| ternary (hslm) | 4,267 | 2,449 | 0 | ≥92 | ✅ Measured |
+| ternary (hslm) | 4,267 | 2,449 | 0 | ≥92 (an Fmax estimate, per the FPGA table in the root README.md; the board run was at 50 MHz) | ✅ Measured (LUT/FF/DSP; Fmax not measured) |
 | gf16_add | 118 | 47 | 0 | ⏳ TBD | ⏳ Synthesis OK |
 | gf16_mul | 94 | 47 | 1 | ⏳ TBD | ⏳ Synthesis OK |
 

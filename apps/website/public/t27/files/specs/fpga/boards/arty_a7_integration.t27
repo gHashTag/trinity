@@ -83,10 +83,10 @@ module ArtyA7_Integration {
 
     fn verify_pin_config(pins : PinMapping) -> bool {
         var valid : bool = true;
-        if pins.clk_pin == "" { valid = false; }
-        if pins.rst_pin == "" { valid = false; }
-        if pins.uart_tx_pin == "" { valid = false; }
-        if pins.uart_rx_pin == "" { valid = false; }
+        if (pins.clk_pin == "") { valid = false; }
+        if (pins.rst_pin == "") { valid = false; }
+        if (pins.uart_tx_pin == "") { valid = false; }
+        if (pins.uart_rx_pin == "") { valid = false; }
         return valid;
     }
 

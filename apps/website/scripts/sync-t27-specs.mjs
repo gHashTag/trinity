@@ -30,7 +30,16 @@ import { corpusEntry, corpusAggregates, registerDescriptionExceptions } from './
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const WEBSITE = join(HERE, '..')
-const T27 = process.env.T27_ROOT || '/Users/playom/t27'
+// A checkout beside this repository, not somebody's home directory. The line
+// used to read `/Users/playom/t27` -- `playra` with one letter wrong -- and the
+// typo was not cosmetic, because WASM_SRC on the next line is derived from it.
+// `existsSync(WASM_SRC)` was therefore false on every machine, including the
+// one that wrote it, so every refresh took the fallback branch below and
+// re-vendored the wasm already sitting in public/t27. That is the whole
+// mechanism behind gHashTag/t27#4487: the browser ran a compiler built from
+// source committed in no repository, because one character kept the real build
+// permanently out of reach.
+const T27 = process.env.T27_ROOT || join(HERE, '../../../../t27')
 const SPECS_SRC = join(T27, 'specs')
 const WASM_SRC = join(T27, 'bindings/wasm-explorer/target/wasm32-unknown-unknown/release/t27_wasm_explorer.wasm')
 
@@ -67,19 +76,49 @@ if (FROM_LOCAL && !existsSync(SPECS_SRC)) fail(`T27_LOCAL is set but no spec cor
 const VENDORED_WASM = join(OUT_DIR, 't27_compiler.wasm')
 let wasmBuf, wasmFrom
 if (existsSync(WASM_SRC)) { wasmBuf = readFileSync(WASM_SRC); wasmFrom = 'cargo build in the local checkout' }
-else if (existsSync(VENDORED_WASM)) { wasmBuf = readFileSync(VENDORED_WASM); wasmFrom = 'the copy already vendored here' }
+else if (existsSync(VENDORED_WASM)) {
+  wasmBuf = readFileSync(VENDORED_WASM); wasmFrom = 'the copy already vendored here'
+  // Say it out loud. Re-vendoring is the right default for a spec refresh, but
+  // it is the wrong outcome for anyone who just built the compiler and expects
+  // to see it, and silence is what let the last one drift unnoticed.
+  console.log(`  note: no cargo build at ${WASM_SRC}, re-vendoring the existing wasm`)
+  console.log('        set T27_ROOT if your t27 checkout is somewhere else')
+}
 else fail(`no compiler wasm.\n  cd ${T27}/bindings/wasm-explorer\n  cargo build --target wasm32-unknown-unknown --release`)
 
 const gh = (args) => execFileSync('gh', args, { encoding: 'utf8', timeout: 120000, maxBuffer: 60 * 1024 * 1024 }).trim()
 
 // One request, no working copy left behind. Returns the extracted root.
-function tarball(repo, ref) {
-  const dir = mkdtempSync(join(tmpdir(), `t27-${repo.replace(/\W/g, '-')}-`))
-  execFileSync('sh', ['-c',
-    `gh api "repos/gHashTag/${repo}/tarball/${ref}" > "${dir}/a.tar.gz" && tar -xzf "${dir}/a.tar.gz" -C "${dir}"`,
-  ], { stdio: 'ignore' })
-  const inner = execFileSync('sh', ['-c', `ls -d "${dir}"/*/ | head -1`], { encoding: 'utf8' }).trim()
-  return { dir, root: inner.replace(/\/$/, '') }
+//
+// `slug` is owner/name. It used to be a bare name with `gHashTag/` welded in
+// here, which is why a corpus repo owned by anyone else could not be fetched at
+// all -- see EXTRA_REPOS below for what that cost.
+//
+// Three attempts, not one. These are large downloads -- trinity-fpga alone is
+// 353 MB over about a minute and a half -- and on 2026-09-21 one of them failed
+// once. That single hiccup cost the manifest all 64 of that repository's specs,
+// and the run still exited 0. Backoff is 2s, 6s: long enough to outlast a
+// transient refusal, short enough that a genuinely dead repository is not
+// waited on for minutes.
+function tarball(slug, ref) {
+  const dir = mkdtempSync(join(tmpdir(), `t27-${slug.replace(/\W/g, '-')}-`))
+  let last
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      execFileSync('sh', ['-c',
+        `gh api "repos/${slug}/tarball/${ref}" > "${dir}/a.tar.gz" && tar -xzf "${dir}/a.tar.gz" -C "${dir}"`,
+      ], { stdio: 'ignore' })
+      const inner = execFileSync('sh', ['-c', `ls -d "${dir}"/*/ | head -1`], { encoding: 'utf8' }).trim()
+      return { dir, root: inner.replace(/\/$/, '') }
+    } catch (e) {
+      last = e
+      if (attempt < 3) {
+        console.log(`  ${slug}: tarball attempt ${attempt} failed, retrying`)
+        execFileSync('sleep', [String(attempt * 2 + (attempt - 1) * 2)])
+      }
+    }
+  }
+  throw last
 }
 
 // Exclusions, all of them copies of files counted elsewhere rather than
@@ -112,7 +151,7 @@ if (FROM_LOCAL) {
 } else {
   sha = gh(['api', `repos/gHashTag/t27/commits/${T27_REF}`, '--jq', '.sha'])
   dirty = ''
-  const main = tarball('t27', T27_REF)
+  const main = tarball('gHashTag/t27', T27_REF)
   t27Root = main.root
   t27Tmp = main.dir
   // Overlay: copy in only what the main ref is missing, and record what each
@@ -120,7 +159,7 @@ if (FROM_LOCAL) {
   const have = new Set(specFiles(t27Root).map((f) => relative(t27Root, f)))
   for (const ref of OVERLAY_REFS) {
     let extra
-    try { extra = tarball('t27', ref) } catch { console.log(`  warning: overlay ref ${ref} unreachable, skipped`); continue }
+    try { extra = tarball('gHashTag/t27', ref) } catch { console.log(`  warning: overlay ref ${ref} unreachable, skipped`); continue }
     const added = []
     for (const abs of specFiles(extra.root)) {
       const rel = relative(extra.root, abs)
@@ -156,36 +195,102 @@ if (!t27Files.length) fail('no .t27 files found')
 // tt-trinity-{euler,gamma,phi} repos (verified by blob SHA), so content-hash
 // dedup below keeps them from appearing twice. A knowledge library full of
 // duplicates is worse than a smaller honest one.
+//
+// The list was four names long until 2026-09-21, and the corpus it was
+// rebuilding had ten. The five missing ones were vendored here by some other
+// route and this script knew nothing about them, so every run WIPED them:
+// trios 58 specs, tt-trinity-euler 46, dmitrii-f-t27/trinity-memory 37,
+// turbobaby-user-bot 12, tt-trinity-gamma 1 -- 154 of 1407, amputated in
+// silence and re-committed as a refresh. Measured by running it: 1407 in,
+// 1259 out. One of the five is not even owned by gHashTag, which is the
+// reason `tarball()` now takes owner/name instead of welding the owner in.
+//
+// Entries are owner/name. The manifest key stays the bare name for our own
+// repos, because that is what `specUrl` and the contribute links already
+// build `github.com/gHashTag/<key>` from.
 // ---------------------------------------------------------------------------
 const EXTRA_REPOS = (process.env.T27_SKIP_REMOTE ? [] : [
-  'tri-net',
-  'trinity-fpga',
-  'trinity',
-  'tt-trinity-corona',
+  'gHashTag/tri-net',
+  'gHashTag/trinity-fpga',
+  'gHashTag/trinity',
+  'gHashTag/tt-trinity-corona',
+  'gHashTag/tt-trinity-euler',
+  'gHashTag/tt-trinity-gamma',
+  'gHashTag/trios',
+  'gHashTag/turbobaby-user-bot',
+  'dmitrii-f-t27/trinity-memory',
 ])
 
 const sources = [{ repo: 't27', root: t27Root, files: t27Files, commit: FROM_LOCAL ? null : sha, tmp: t27Tmp }]
 
-for (const repo of EXTRA_REPOS) {
+for (const slug of EXTRA_REPOS) {
+  const [owner, name] = slug.split('/')
+  const repo = owner === 'gHashTag' ? name : slug
+  // A skip used to be a `console.log` and a `continue`, and the run still
+  // exited 0. On 2026-09-21 that printed one warning line and wrote a manifest
+  // missing 64 specs -- a whole repository -- which is a corpus that lies about
+  // its own size, published, with nothing red anywhere. A source named in
+  // EXTRA_REPOS that cannot be read is a failed sync, not a smaller corpus.
+  //
+  // The escape hatch is deliberate and narrow: a repository that is genuinely
+  // gone should be DELETED FROM THE LIST above, which is a decision a person
+  // makes once, in a diff, rather than a warning nobody reads every run.
+  // T27_ALLOW_MISSING is for reproducing an old manifest offline.
+  const ALLOW_MISSING = process.env.T27_ALLOW_MISSING === '1'
+  const lost = (what, e) => {
+    if (!ALLOW_MISSING) fail(`${slug} ${what}.\n  A source in EXTRA_REPOS that cannot be read is a failed sync.\n  If the repository is gone, remove it from EXTRA_REPOS in this file.\n  To reproduce an older manifest anyway: T27_ALLOW_MISSING=1\n  ${e?.message ?? ''}`)
+    console.log(`  warning: ${slug} ${what}, skipped (T27_ALLOW_MISSING=1)`)
+  }
   let branch
   try {
-    branch = gh(['api', `repos/gHashTag/${repo}`, '--jq', '.default_branch'])
-  } catch {
-    console.log(`  warning: ${repo} unreachable, skipped`)
+    branch = gh(['api', `repos/${slug}`, '--jq', '.default_branch'])
+  } catch (e) {
+    lost('unreachable', e)
     continue
   }
-  const sha = gh(['api', `repos/gHashTag/${repo}/commits/${branch}`, '--jq', '.sha'])
+  const sha = gh(['api', `repos/${slug}/commits/${branch}`, '--jq', '.sha'])
   let pulled
   try {
-    pulled = tarball(repo, branch)
-  } catch {
-    console.log(`  warning: ${repo} tarball failed, skipped`)
+    pulled = tarball(slug, branch)
+  } catch (e) {
+    lost('tarball failed after 3 attempts', e)
     continue
   }
   sources.push({ repo, root: pulled.root, files: specFiles(pulled.root), commit: sha, tmp: pulled.dir })
 }
 
-rmSync(OUT_DIR, { recursive: true, force: true })
+// Provenance this script does not compute, read before the wipe removes it.
+//
+// `discover-t27-worlds.mjs vendor` writes two things into the manifest that
+// nothing here can reconstruct: `discoveredAt` on a world's repo row, and the
+// `discovery` block naming the contract each world was admitted under. That
+// division of labour held while EXTRA_REPOS listed four founding sources and
+// mergeWorld owned the rest -- it stopped holding the moment this script
+// started pulling all ten, because it rewrites those rows now. The first
+// ten-repo run dropped `manifest.discovery` entirely and left every repo row
+// looking founding, which `qa/t27-world-discovery.mjs` reads as five
+// hand-vendored sources having become ten.
+//
+// So carry the scan's facts and refresh ours. `at`, `branch`, `files`,
+// `duplicatesSkipped` and `spec.sha256` describe a scan on a stated day and
+// stay true of it; `commit` and `specs` are claims about the corpus in this
+// file, and a preserved commit sitting beside a freshly pulled repos[].commit
+// is a manifest that contradicts itself. A world this script no longer pulls
+// drops out rather than lingering as provenance for specs that are gone.
+const priorManifestPath = join(OUT_DIR, 'manifest.json')
+const priorManifest = existsSync(priorManifestPath) ? JSON.parse(readFileSync(priorManifestPath, 'utf8')) : null
+const discoveredAt = new Map((priorManifest?.repos ?? []).filter((r) => r.discoveredAt).map((r) => [r.repo, r.discoveredAt]))
+const priorDiscovery = priorManifest?.discovery ?? null
+
+// Wipe what this script writes, and only that.
+//
+// This was `rmSync(OUT_DIR)`, which also deleted two tracked artifacts it does
+// not produce and cannot restore: shared-core.json (2.3 MB, `npm run core`) and
+// universe-atlas.json (1.1 MB, `npm run atlas`). Nothing warned, and nothing in
+// package.json chains the three, so a refresh left the Queen's shared-core and
+// universe pages pointing at files that were no longer there.
+rmSync(SPECS_OUT, { recursive: true, force: true })
+rmSync(join(OUT_DIR, 'manifest.json'), { force: true })
 mkdirSync(SPECS_OUT, { recursive: true })
 
 // Run the same wasm the browser runs, here, over the whole corpus. Health has
@@ -394,7 +499,12 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
   specCount: entries.length,
   totalLines,
   categories,
-  repos: sources.map((s) => ({ repo: s.repo, commit: s.commit ?? sha, specs: entries.filter((e) => e.repo === s.repo).length })),
+  repos: sources.map((s) => {
+    const row = { repo: s.repo, commit: s.commit ?? sha, specs: entries.filter((e) => e.repo === s.repo).length }
+    // A repo row without `discoveredAt` means "hand-vendored, founding". Only
+    // the scan can say otherwise, so the flag is carried, never invented.
+    return discoveredAt.has(s.repo) ? { ...row, discoveredAt: discoveredAt.get(s.repo) } : row
+  }),
   duplicatesSkipped: duplicates,
   duplicates: duplicatePairs.sort((x, y) => x.path.localeCompare(y.path)),
   tags,
@@ -402,6 +512,19 @@ writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify({
   backendFailures,
   featured: FEATURED,
   totals,
+  ...(priorDiscovery
+    ? {
+      discovery: {
+        ...priorDiscovery,
+        worlds: (priorDiscovery.worlds ?? [])
+          .filter((w) => sources.some((s) => s.repo === w.label))
+          .map((w) => {
+            const s = sources.find((x) => x.repo === w.label)
+            return { ...w, commit: s.commit ?? w.commit, specs: entries.filter((e) => e.repo === w.label).length }
+          }),
+      },
+    }
+    : {}),
   specs: entries,
 }, null, 0))
 
@@ -410,5 +533,5 @@ console.log(`  sources: ${sources.map((s) => s.repo).join(', ')}  (${duplicates}
 console.log(`  health: ${health.ok} ok · ${health.warn} warn · ${health.fail} fail`)
 if (Object.keys(backendFailures).length) console.log(`  backend failures: ${JSON.stringify(backendFailures)}`)
 console.log(`  t27 @ ${shortSha}${dirty ? ' (DIRTY -- snapshot includes uncommitted spec/compiler changes)' : ''}`)
-console.log(`  wasm ${(wasmBytes / 1024).toFixed(0)} KB -> public/t27/t27_compiler.wasm`)
+console.log(`  wasm ${(wasmBytes / 1024).toFixed(0)} KB -> public/t27/t27_compiler.wasm  (${wasmFrom})`)
 if (dirty) console.log(`  warning: commit t27 before shipping, or the recorded SHA understates the snapshot`)

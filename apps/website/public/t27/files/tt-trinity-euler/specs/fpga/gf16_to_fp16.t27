@@ -303,175 +303,174 @@ pub fn gf16_bits_to_fp16_bits_with_result(gf_bits: u16, config: ConversionConfig
 // ============================================================================
 
 test "gf16_bits_constants" {
-    try std.testing.expect(GF16_SIGN_BITS == 1);
-    try std.testing.expect(GF16_EXP_BITS == 6);
-    try std.testing.expect(GF16_MANT_BITS == 9);
-    try std.testing.expect(GF16_BIAS == 31);
+    assert(GF16_SIGN_BITS == 1);
+    assert(GF16_EXP_BITS == 6);
+    assert(GF16_MANT_BITS == 9);
+    assert(GF16_BIAS == 31);
 }
 
 test "fp16_bits_constants" {
-    try std.testing.expect(FP16_SIGN_BITS == 1);
-    try std.testing.expect(FP16_EXP_BITS == 5);
-    try std.testing.expect(FP16_MANT_BITS == 10);
-    try std.testing.expect(FP16_BIAS == 15);
+    assert(FP16_SIGN_BITS == 1);
+    assert(FP16_EXP_BITS == 5);
+    assert(FP16_MANT_BITS == 10);
+    assert(FP16_BIAS == 15);
 }
 
 test "mantissa_masks" {
-    try std.testing.expect(MANTissa_MASK_GF16 == 0x01FF);
-    try std.testing.expect(MANTissa_MASK_FP16 == 0x03FF);
+    assert(MANTissa_MASK_GF16 == 0x01FF);
+    assert(MANTissa_MASK_FP16 == 0x03FF);
 }
 
 test "gf16_from_bits_to_bits_roundtrip" {
-    given bits = 0x1234
-    try std.testing.expect(gf = gf16_from_bits(bits));
-    try std.testing.expect(result = gf16_to_bits(gf));
-    try std.testing.expect(result == bits);
+    const bits = 0x1234;
+    const gf = gf16_from_bits(bits);
+    const result = gf16_to_bits(gf);
+    assert(result == bits);
 }
 
 test "gf16_from_bits_structure" {
-    given gf = gf16_from_bits(0x8000)
-    try std.testing.expect(gf.sign == 1);
-    try std.testing.expect(gf.exp == 0);
-    try std.testing.expect(gf.mant == 0);
+    const gf = gf16_from_bits(0x8000);
+    assert(gf.sign == 1);
+    assert(gf.exp == 0);
+    assert(gf.mant == 0);
 }
 
 test "fp16_from_bits_to_bits_roundtrip" {
-    given bits = 0x3C00
-    try std.testing.expect(fp = fp16_from_bits(bits));
-    try std.testing.expect(result = fp16_to_bits(fp));
-    try std.testing.expect(result == bits);
+    const bits = 0x3C00;
+    const fp = fp16_from_bits(bits);
+    const result = fp16_to_bits(fp);
+    assert(result == bits);
 }
 
 test "gf16_is_zero_true" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
-    try std.testing.expect(gf16_is_zero(gf) == true);
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
+    assert(gf16_is_zero(gf) == true);
 }
 
 test "gf16_is_zero_false" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 1}
-    try std.testing.expect(gf16_is_zero(gf) == false);
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 1};
+    assert(gf16_is_zero(gf) == false);
 }
 
 test "gf16_is_infinity_true" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0}
-    try std.testing.expect(gf16_is_infinity(gf) == true);
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0};
+    assert(gf16_is_infinity(gf) == true);
 }
 
 test "gf16_is_infinity_false" {
-    given gf = Gf16{.sign = 0, .exp = 0x3E, .mant = 0}
-    try std.testing.expect(gf16_is_infinity(gf) == false);
+    const gf = Gf16{.sign = 0, .exp = 0x3E, .mant = 0};
+    assert(gf16_is_infinity(gf) == false);
 }
 
 test "gf16_is_nan_true" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1}
-    try std.testing.expect(gf16_is_nan(gf) == true);
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1};
+    assert(gf16_is_nan(gf) == true);
 }
 
 test "fp16_is_zero_true" {
-    given fp = Fp16{.sign = 0, .exp = 0, .mant = 0}
-    try std.testing.expect(fp16_is_zero(fp) == true);
+    const fp = Fp16{.sign = 0, .exp = 0, .mant = 0};
+    assert(fp16_is_zero(fp) == true);
 }
 
 test "fp16_is_infinity_true" {
-    given fp = Fp16{.sign = 0, .exp = 0x1F, .mant = 0}
-    try std.testing.expect(fp16_is_infinity(fp) == true);
+    const fp = Fp16{.sign = 0, .exp = 0x1F, .mant = 0};
+    assert(fp16_is_infinity(fp) == true);
 }
 
 test "conversion_config_init_structure" {
-    given config = conversion_config_init()
-    try std.testing.expect(config.round_mode == 0);
-    try std.testing.expect(config.enable_saturation == true);
+    const config = conversion_config_init();
+    assert(config.round_mode == 0);
+    assert(config.enable_saturation == true);
 }
 
 test "conversion_config_no_saturation_structure" {
-    given config = conversion_config_no_saturation()
-    try std.testing.expect(config.enable_saturation == false);
+    const config = conversion_config_no_saturation();
+    assert(config.enable_saturation == false);
 }
 
 test "gf16_to_fp16_zero" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
-    try std.testing.expect(fp = gf16_to_fp16(gf));
-    try std.testing.expect(fp.exp == 0);
-    try std.testing.expect(fp.mant == 0);
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
+    const fp = gf16_to_fp16(gf);
+    assert(fp.exp == 0);
+    assert(fp.mant == 0);
 }
 
 test "gf16_to_fp16_infinity" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0}
-    try std.testing.expect(fp = gf16_to_fp16(gf));
-    try std.testing.expect(fp.exp == 0x1F);
-    try std.testing.expect(fp.mant == 0);
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0};
+    const fp = gf16_to_fp16(gf);
+    assert(fp.exp == 0x1F);
+    assert(fp.mant == 0);
 }
 
 test "gf16_to_fp16_nan" {
-    given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1}
-    try std.testing.expect(fp = gf16_to_fp16(gf));
-    try std.testing.expect(fp.exp == 0x1F);
-    try std.testing.expect(fp.mant == 1);
+    const gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 1};
+    const fp = gf16_to_fp16(gf);
+    assert(fp.exp == 0x1F);
+    assert(fp.mant == 1);
 }
 
 test "gf16_to_fp16_preserves_sign" {
-    given gf_pos = Gf16{.sign = 1, .exp = 1, .mant = 0}
-    try std.testing.expect(gf_neg = Gf16{.sign = 0, .exp = 1, .mant = 0});
-    try std.testing.expect(fp_pos = gf16_to_fp16(gf_pos));
-    try std.testing.expect(fp_neg = gf16_to_fp16(gf_neg));
-    try std.testing.expect(fp_pos.sign == 1 and fp_neg.sign == 0);
+    const gf_pos = Gf16{.sign = 1, .exp = 1, .mant = 0};
+    const gf_neg = Gf16{.sign = 0, .exp = 1, .mant = 0};
+    const fp_pos = gf16_to_fp16(gf_pos);
+    const fp_neg = gf16_to_fp16(gf_neg);
+    assert(fp_pos.sign == 1 and fp_neg.sign == 0);
 }
 
 test "gf16_to_fp16_with_result_zero" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
-    try std.testing.expect(config = conversion_config_init());
-    try std.testing.expect(result = gf16_to_fp16_with_result(gf, config));
-    try std.testing.expect(result.overflow == false);
-    try std.testing.expect(result.underflow == false);
-    try std.testing.expect(result.lost_precision == false);
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
+    const config = conversion_config_init();
+    const result = gf16_to_fp16_with_result(gf, config);
+    assert(result.overflow == false);
+    assert(result.underflow == false);
+    assert(result.lost_precision == false);
 }
 
 test "gf16_bits_to_fp16_bits_zero" {
-    given config = conversion_config_init()
-    try std.testing.expect(gf16_bits_to_fp16_bits(0x0000, config) == 0x0000);
+    const config = conversion_config_init();
+    assert(gf16_bits_to_fp16_bits(0x0000, config) == 0x0000);
 }
 
 test "gf16_bits_to_fp16_bits_roundtrip" {
-    given config = conversion_config_init()
+    const config = conversion_config_init();
     // Normal value
-    try std.testing.expect(gf_bits = 0x2000  // exp=32, mant=0 -> value ~1.0 in GF16);
-    try std.testing.expect(fp_bits = gf16_bits_to_fp16_bits(gf_bits));
-    try std.testing.expect((fp_bits & 0x8000) == (gf_bits & 0x8000)  // Sign preserved);
+    const gf_bits = 0x2000;  // exp=32, mant=0 -> value ~1.0 in GF16
+    const fp_bits = gf16_bits_to_fp16_bits(gf_bits);
+    assert((fp_bits & 0x8000) == (gf_bits & 0x8000));  // Sign preserved
 }
 
 test "gf16_to_fp16_with_result_underflow" {
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 1}  // Very small value
-    try std.testing.expect(config = conversion_config_init());
-    try std.testing.expect(result = gf16_to_fp16_with_result(gf, config));
-    try std.testing.expect(result.underflow == true or result.lost_precision == true);
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 1};  // Very small value
+    const config = conversion_config_init();
+    const result = gf16_to_fp16_with_result(gf, config);
+    assert(result.underflow == true or result.lost_precision == true);
 }
 
 test "gf16_to_fp16_with_result_overflow" {
-    given gf = Gf16{.sign = 0, .exp = 62, .mant = 0}  // Very large value
-    try std.testing.expect(config = conversion_config_init());
-    try std.testing.expect(result = gf16_to_fp16_with_result(gf, config));
-    try std.testing.expect(result.overflow == true);
+    const gf = Gf16{.sign = 0, .exp = 62, .mant = 0};  // Very large value
+    const config = conversion_config_init();
+    const result = gf16_to_fp16_with_result(gf, config);
+    assert(result.overflow == true);
 }
 
 test "gf16_to_fp16_with_result_saturation" {
-    given gf = Gf16{.sign = 0, .exp = 62, .mant = 0}  // Very large value
-    try std.testing.expect(config = conversion_config_init());
-    try std.testing.expect(result = gf16_to_fp16_with_result(gf, config));
-    try std.testing.expect(result.value != 0x7C00  // Not infinity, but max finite);
+    const gf = Gf16{.sign = 0, .exp = 62, .mant = 0};  // Very large value
+    const config = conversion_config_init();
+    const result = gf16_to_fp16_with_result(gf, config);
+    assert(result.value != 0x7C00);  // Not infinity, but max finite
 }
 
 test "gf16_to_fp16_with_result_no_saturation_overflow" {
-    given gf = Gf16{.sign = 0, .exp = 62, .mant = 0}  // Very large value
-    try std.testing.expect(config = conversion_config_no_saturation());
-    try std.testing.expect(result = gf16_to_fp16_with_result(gf, config));
-    try std.testing.expect(result.value == 0x7C00  // Infinity);
+    const gf = Gf16{.sign = 0, .exp = 62, .mant = 0};  // Very large value
+    const config = conversion_config_no_saturation();
+    const result = gf16_to_fp16_with_result(gf, config);
+    assert(result.value == 0x7C00);  // Infinity
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant gf16_bit_count
     assert GF16_SIGN_BITS + GF16_EXP_BITS + GF16_MANT_BITS == 16
 
@@ -492,7 +491,7 @@ invariant fp16_mant_width
 
 invariant mantissa_masks_correct
     assert MANTissa_MASK_GF16 == (@as(u16, 1) << GF16_MANT_BITS) - 1
-    try std.testing.expect(MANTissa_MASK_FP16 == (@as(u16, 1) << FP16_MANT_BITS) - 1);
+    assert MANTissa_MASK_FP16 == (@as(u16, 1) << FP16_MANT_BITS) - 1
 
 invariant gf16_from_bits_roundtrip
     given bits = 0x5678
@@ -508,11 +507,11 @@ invariant gf16_zero_exp_zero_mant_zero
 
 invariant gf16_infinity_exp_max_mant_zero
     given gf = Gf16{.sign = 0, .exp = 0x3F, .mant = 0}
-    assert gf16_is_infinity(gf) and not gf16_is_nan(gf)
+    assert gf16_is_infinity(gf) and !gf16_is_nan(gf)
 
 invariant fp16_infinity_exp_max_mant_zero
     given fp = Fp16{.sign = 0, .exp = 0x1F, .mant = 0}
-    assert fp16_is_infinity(fp) and not fp16_is_nan(fp)
+    assert fp16_is_infinity(fp) and !fp16_is_nan(fp)
 
 invariant conversion_config_init_saturation_enabled
     given config = conversion_config_init()
@@ -522,20 +521,23 @@ invariant conversion_config_no_saturation_disabled
     given config = conversion_config_no_saturation()
     assert config.enable_saturation == false
 
-invariant gf16_to_fp16_zero_preserves
-    given gf = Gf16{.sign = 0, .exp = 0, .mant = 0}
-    try std.testing.expect(fp = gf16_to_fp16(gf));
-    try std.testing.expect(fp.sign == gf.sign);
+invariant gf16_to_fp16_zero_preserves {
+    const gf = Gf16{.sign = 0, .exp = 0, .mant = 0};
+    const fp = gf16_to_fp16(gf);
+    assert(fp.sign == gf.sign);
+}
 
-invariant gf16_to_fp16_infinity_preserves_sign
-    given gf_pos = Gf16{.sign = 1, .exp = 0x3F, .mant = 0}
-    try std.testing.expect(fp_pos = gf16_to_fp16(gf_pos));
-    try std.testing.expect(fp_pos.sign == 1);
+invariant gf16_to_fp16_infinity_preserves_sign {
+    const gf_pos = Gf16{.sign = 1, .exp = 0x3F, .mant = 0};
+    const fp_pos = gf16_to_fp16(gf_pos);
+    assert(fp_pos.sign == 1);
+}
 
-invariant gf16_to_fp16_nan_preserves_sign
-    given gf = Gf16{.sign = 1, .exp = 0x3F, .mant = 1}
-    try std.testing.expect(fp = gf16_to_fp16(gf));
-    try std.testing.expect(fp.sign == gf.sign);
+invariant gf16_to_fp16_nan_preserves_sign {
+    const gf = Gf16{.sign = 1, .exp = 0x3F, .mant = 1};
+    const fp = gf16_to_fp16(gf);
+    assert(fp.sign == gf.sign);
+}
 
 // ============================================================================
 // Benchmarks

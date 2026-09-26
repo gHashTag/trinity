@@ -31,7 +31,7 @@
 
 | System | LUT | FF | DSP | Fmax | Status |
 |---------|-----|----|-----|------|--------|
-| **hslm_full_top** | 4,267 | 2,449 | 0 | ≥92 MHz | ✅ Measured |
+| **hslm_full_top** | 4,267 | 2,449 | 0 | ≥92 MHz (an Fmax estimate, per the FPGA table in the root README.md; the board run was at 50 MHz) | ✅ Measured (LUT/FF/DSP; Fmax not measured) |
 | **gf16_inference** | ⏳ TBD | ⏳ TBD | ⏳ TBD | ⏳ TBD | ⏳ Future work |
 
 > **Why NOT comparable**: `hslm_full_top` is a **full inference pipeline** (memory + MAC array + control), while GF16 add/mul are **single operations**. Comparing 118 LUT (single op) to 4,267 LUT (full pipeline) is "apples vs oranges".

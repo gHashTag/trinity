@@ -21,22 +21,31 @@ module TriWriter;
 
     // pure(value: T) → void
     fn pure(value: T) -> void {
-        // TODO: Implement from .tri spec
+        let writer = Writer(W, T) {
+            value = value,
+            output = identity(),
+        };
+        return writer;
     }
 
     // tell(output: W) → void
     fn tell(output: W) -> void {
-        // TODO: Implement from .tri spec
+        let writer = Writer(W, T) {
+            value = unit(),
+            output = output,
+        };
+        return writer;
     }
 
     // listen(writer: Writer(W, T)) → void
     fn listen(writer: Writer(W, T)) -> void {
-        // TODO: Implement from .tri spec
+        return writer.value;
     }
 
     // censor(fn: Fn(W) -> W) → void
-    fn censor(fn: Fn(W) -> W) -> void {
-        // TODO: Implement from .tri spec
+    fn censor(censor_fn: Fn(W) -> W) -> void {
+        let result = censor_fn(identity());
+        return result;
     }
 
     // ═══════════════════════════════════════════════════════════

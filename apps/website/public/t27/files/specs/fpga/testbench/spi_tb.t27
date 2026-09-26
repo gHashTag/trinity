@@ -109,6 +109,8 @@ module SPI_Testbench {
         invariant spi_done == true;
     }
 
+    
+
     invariant clk_div_positive : SPI_CLK_DIV > 0;
     invariant cs_high_when_idle : true;
 

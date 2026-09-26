@@ -25,7 +25,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://t27.ai/" />
   <meta property="og:title" content="TRINITY | GFTernary · TNF — a reference format pair for the ternary datapath" />
-  <meta property="og:description" content="GFTernary closes the weight, TNF closes the accumulator. GFTernary decoder 66 LUT at 974.66 MHz; 0.1797 MHz/LUT in a whole ternary neuron. Measured on a binary FPGA, which is stated rather than smoothed." />
+  <meta property="og:description" content="GFTernary closes the weight, TNF closes the accumulator. GFTernary decoder 66 LUT against a 112 LUT bare wire; 463 LUT for a whole ternary neuron against binary32's 472. Area measured on a binary FPGA and identical across seeds; frequency verdicts flip between seeds, so no frequency ranking is claimed." />
   <meta property="og:image" content="https://t27.ai/og-image.png" />
   <meta property="og:site_name" content="TRINITY" />
   <meta property="og:locale" content="en_US" />
@@ -34,7 +34,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://t27.ai/" />
   <meta name="twitter:title" content="TRINITY | GFTernary · TNF — a reference format pair for the ternary datapath" />
-  <meta name="twitter:description" content="52 theorems, 16 retractions. GFTernary decoder 66 LUT at 974.66 MHz on XC7A200T, open flow, median of 5 seeds." />
+  <meta name="twitter:description" content="52 theorems, 16 retractions. GFTernary decoder 66 LUT against a 112 LUT bare wire on XC7A200T, open flow. Area is identical across all 5 seeds; frequency verdicts are not, so no frequency ranking is claimed." />
   <meta name="twitter:image" content="https://t27.ai/og-image.png" />
 
   <!-- Canonical URL -->
@@ -142,6 +142,11 @@
        runs where the plugin has not replaced it. */
     html { background: #000; }
     #boot { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem; padding: 2rem; text-align: center; }
+    /* `hidden` is a UA rule of one element-type's weight; `#boot` is an id, so
+       the flex above wins and the attribute does nothing. Stated here so that
+       hiding the hero inside the Queen's frame (the script at the end of the
+       body) actually hides it. */
+    #boot[hidden] { display: none; }
     #boot img { width: min(46vw, 240px); height: auto; }
     #boot h1 { font-family: 'Outfit', system-ui, sans-serif; font-weight: 600; font-size: clamp(0.7rem, 2.2vw, 0.85rem); letter-spacing: 0.14em; text-transform: uppercase; color: #00FF88; max-width: 42ch; margin: 0; }
     #boot .eq { font-family: 'Outfit', system-ui, sans-serif; font-size: clamp(1.6rem, 5vw, 2.4rem); font-weight: 700; color: #fff; margin: 0; }
@@ -158,6 +163,24 @@
       <h1>GFTernary · TNF — a reference pair for the ternary datapath</h1>
     </div><!-- /boot -->
   </div>
+  <script>
+    // This hero is what the page says before React mounts: the right thing for a
+    // reader, a crawler, or a browser with no script. Inside the Queen's shell it
+    // is none of those. An Explorer is framed there with ?embed=1, and the shell
+    // already draws one loader over the frame -- so the wait showed two at once,
+    // the shell's mark and bar on top of a full-bleed logo and a headline about
+    // the ternary datapath, which is not what is loading. Hidden only when framed;
+    // every other visitor still gets it.
+    //
+    // embed=1 is in the HASH, not the search: the shell builds the frame's src as
+    // `<path>?lang=xx#/<route>?...&embed=1` (lib/queenEmbed.explorerFrameHash), so
+    // reading location.search here found nothing and the hero kept painting under
+    // the shell's loader. href covers both, and being framed is checked as well so
+    // that a reader who types embed=1 at the top level still gets a page.
+    if (window.self !== window.top && window.location.href.indexOf('embed=1') !== -1) {
+      document.getElementById('boot').hidden = true;
+    }
+  </script>
   <!-- GitHub Pages SPA redirect handler -->
   <script>
     (function(l) {

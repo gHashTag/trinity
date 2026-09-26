@@ -258,17 +258,14 @@ pub fn request_params_create(model: []u8, messages: []Message) RequestParams {
         .max_tokens = DEFAULT_MAX_TOKENS,
         .temperature = DEFAULT_TEMPERATURE,
         .top_p = DEFAULT_TOP_P,
-        .tools = &[_]Tool{},
+        .tools = [],
     };
 }
 
 /// Create provider config
 pub fn provider_config_create(provider_type: ProviderType, api_key: []u8) ProviderConfig {
-    const base_url = if (provider_type == .anthropic) {
-        "https://api.anthropic.com";
-    } else {
-        "https://api.openai.com";
-    };
+    // Block-valued `if (...) { "a"; } else { "b"; }` written as an if expression.
+    const base_url = if (provider_type == .anthropic) "https://api.anthropic.com" else "https://api.openai.com";
     return ProviderConfig{
         .provider_type = provider_type,
         .api_key = api_key,
@@ -293,7 +290,7 @@ pub fn streaming_chunk_create(chunk_type: ChunkType, delta: []u8) StreamingChunk
     return StreamingChunk{
         .chunk_type = chunk_type,
         .delta = delta,
-        .tool_calls = &[_]ToolCall{},
+        .tool_calls = [],
         .finish_reason = "",
         .usage = usage_create(0, 0),
     };
@@ -399,7 +396,7 @@ test "provider_tool_create" {
 }
 
 test "provider_request_params_create" {
-    const params = request_params_create("model", &[_]Message{});
+    const params = request_params_create("model", []);
     try std.testing.expectEqual(@as(usize, params.model.len), @as(usize, 5));
 }
 
@@ -554,7 +551,7 @@ bench "provider_request_params_create_latency" {
     @setEvalBranchQuota(10000);
     var result : RequestParams = undefined;
     for (0..1000) |_| {
-        result = request_params_create("model", &[_]Message{});
+        result = request_params_create("model", []);
     }
     _ = result;
 }

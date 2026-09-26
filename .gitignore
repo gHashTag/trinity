@@ -375,7 +375,12 @@ bindings/
 contracts/
 demo/
 demos/
-extensions/
+# Anchored 2026-09-20, same defect as website/ below. Unanchored, `extensions/`
+# matched deploy/trinity-nexus/extensions at depth 3 and silently swallowed both
+# browser manifests and all six icons when that tree was moved there -- the 53
+# already-tracked files kept working, so nothing looked wrong, and Extension
+# Release built zips with no manifest.json in them for months.
+/extensions/
 homebrew-tap/
 install.sh
 k8s/
@@ -387,7 +392,10 @@ packages/
 runtime/
 translator-app/
 tree-sitter-vibee/
-trinity-nexus/
+# Anchored for the same reason: it matched deploy/trinity-nexus, where 2988
+# files are tracked. No top-level trinity-nexus/ exists, so the rule was
+# protecting nothing and hiding real source.
+/trinity-nexus/
 # website/ removed 2026-08-10: it matched apps/website at any depth and silently
 # excluded every NEW file in the site source, while already-tracked files kept working.
 # Build output is handled by apps/website/.gitignore (node_modules, dist).

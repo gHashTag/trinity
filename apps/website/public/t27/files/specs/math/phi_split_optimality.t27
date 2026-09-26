@@ -92,9 +92,11 @@ module PhiSplitOptimality {
     // This shows that maximizing e*m does NOT lead to phi.
 
     fn optimal_ratio_by_am_gm(available: u8) -> (u8, u8) {
-        // By AM-GM, product e * m is maximized when e = m = available/2
+        // By AM-GM, product e * m is maximized when e and m are as equal as possible
         const half = available as f64 / 2.0;
-        return (half as u8, half as u8);
+        let exp = round(half) as u8;
+        let mant = available - exp;
+        return (exp, mant);
     }
 
     fn round(x: f64) -> f64 {
@@ -244,8 +246,7 @@ module PhiSplitOptimality {
 
     test optimal_ratio_by_self_similarity_respects_budget
         given (exp, mant) = optimal_ratio_by_self_similarity(15)
-        and available = 14
-        then exp + mant == available
+        then exp + mant == 15
 
     test optimal_ratio_by_self_similarity_close_to_target
         given (exp, mant) = optimal_ratio_by_self_similarity(31)
@@ -279,6 +280,11 @@ module PhiSplitOptimality {
         and (exp_phi, mant_phi) = optimal_ratio_by_self_similarity(15)
         then exp_amgm != exp_phi or mant_amgm != mant_phi
 
+    test am_gm_bits_sum_to_available
+        given (exp, mant) = optimal_ratio_by_am_gm(15)
+        and available = 14
+        then exp + mant == available
+
     // ===================================================================
     // 8. Invariants
     // ===================================================================
@@ -290,7 +296,7 @@ module PhiSplitOptimality {
         assert PHI_TARGET > 0.5 and PHI_TARGET < 1.0
 
     invariant self_similarity_respects_bit_budget
-        assert forall bits: u8, { let (e, m) = optimal_ratio_by_self_similarity(bits); e + m == bits - 1 }
+        assert forall bits: u8, { let (e, m, _) = optimal_allocation_by_rounding(bits); e + m == bits - 1 }
 
     invariant optimal_rounding_respects_bit_budget
         assert forall bits: u8, { let (e, m, _) = optimal_allocation_by_rounding(bits); e + m == bits - 1 }

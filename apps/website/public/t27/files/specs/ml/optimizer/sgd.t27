@@ -33,29 +33,60 @@ module Sgd;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(state: SGDState) → void
-    fn init(state: SGDState) -> void {
-        // TODO: Implement from .tri spec
+    // init(state: SGDState, param_count: u32) → void
+    fn init(state: SGDState, param_count: u32) -> void {
+        // Initialize velocity array with zeros
+        state.velocity = new f32[param_count];
     }
 
-    // update(params: []f32) → void
-    fn update(params: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // update(params: []f32, grads: []const f32, state: SGDState, config: SGDConfig) -> void
+    fn update(params: []f32, grads: []const f32, state: SGDState, config: SGDConfig) -> void {
+        // Nesterov accelerated gradient descent update
+        i = 0;
+        while (i < params.size()) {
+            velocity = state.velocity[i];
+            grad = grads[i];
+            
+            // Classic momentum update with Nesterov acceleration
+            velocity_new = config.momentum * velocity + config.learning_rate * grad;
+            state.velocity[i] = velocity_new;
+            
+            // Update parameter with velocity and weight decay
+            params[i] = params[i] - velocity_new + config.weight_decay * params[i];
+            i = i + 1;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test init_basic_case
-        given input = default_input()
-        when result = init(input)
-        then result != undefined
+    test "init_basic_case"
+        given 
+            state = SGDState{ velocity = new f32[0] }
+            param_count = 3u32
+        when 
+            result = init(state, param_count)
+        then 
+            state.velocity.size() == param_count
 
-    test update_basic_case
-        given input = default_input()
-        when result = update(input)
-        then result != undefined
+    test "update_basic_case"
+        given 
+            params = new f32[2]{ 1.0, 2.0 }
+            grads = new const f32[2]{ 0.1, 0.2 }
+            state = SGDState{ velocity = new f32[2]{ 0.0, 0.0 } }
+            config = SGDConfig{ 
+                learning_rate = 0.01, 
+                momentum = 0.9, 
+                weight_decay = 0.001, 
+                dampening = 0.0, 
+                nesterov = false 
+            }
+        when 
+            result = update(params, grads, state, config)
+        then 
+            params[0] != 1.0  // Should be updated
+            params[1] != 2.0  // Should be updated
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

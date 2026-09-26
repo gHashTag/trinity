@@ -88,3 +88,19 @@ body.explorer-shell > #root {
   text-align: left;
   line-height: 1.4;
 }
+
+/* One scroller on a phone, the pane itself. index.css caps an open spec brief
+   at 45vh and scrolls the rest (#1019), which is right where the pane is a
+   fixed column that must leave the tabs and the code their height. On a phone
+   the detail pane is the one document that scrolls (SpecExplorer.tsx, main
+   with overflow-y auto; the layer body under it asks for 70vh and no longer
+   competes), so a capped brief is a second live scroller inside the first:
+   qa/explorer-viewport-contract.mjs, 390x844 specs, "2 live vertical
+   scrollers for 1 pane(s): main 792/1232, details.spec-x-brief 380/552",
+   red on main since #1019. Here the brief takes its height and the pane
+   scrolls past it. */
+.spec-x[data-tier='phone'] .spec-x-brief:not(.is-collapsible),
+.spec-x[data-tier='phone'] .spec-x-brief.is-collapsible[open] {
+  max-height: none;
+  overflow: visible;
+}

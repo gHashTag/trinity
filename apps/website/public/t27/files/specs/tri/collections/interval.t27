@@ -24,19 +24,41 @@ module TriInterval;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // create(start: i64) → void
-    fn create(start: i64) -> void {
-        // TODO: Implement from .tri spec
+    // create(start: i64, end: i64) → Interval
+    fn create(start: i64, end: i64) -> Interval {
+        return Interval {
+            start = start,
+            end = end,
+            inclusive = true,
+        };
     }
 
-    // overlaps(a: Interval) → void
-    fn overlaps(a: Interval) -> void {
-        // TODO: Implement from .tri spec
+    // overlaps(a: Interval, b: Interval) → bool
+    fn overlaps(a: Interval, b: Interval) -> bool {
+        // Two intervals overlap if one starts before the other ends and ends after the other starts
+        return a.start < b.end && b.start < a.end;
     }
 
-    // union(a: IntervalSet) → void
-    fn union(a: IntervalSet) -> void {
-        // TODO: Implement from .tri spec
+    // union(a: IntervalSet, b: IntervalSet, allocator: std.mem.Allocator) → !IntervalSet
+    fn union(a: IntervalSet, b: IntervalSet, allocator: std.mem.Allocator) -> !IntervalSet {
+        // Combine all intervals from both sets
+        var combined: IntervalSet = IntervalSet { intervals = allocator.alloc(Interval, a.intervals.len + b.intervals.len) };
+        var i: usize = 0;
+        
+        // Copy intervals from first set
+        while (i < a.intervals.len) {
+            combined.intervals[i] = a.intervals[i];
+            i += 1;
+        }
+        
+        // Copy intervals from second set  
+        var j: usize = 0;
+        while (j < b.intervals.len) {
+            combined.intervals[a.intervals.len + j] = b.intervals[j];
+            j += 1;
+        }
+        
+        return combined;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -44,17 +66,20 @@ module TriInterval;
     // ═══════════════════════════════════════════════════════════
 
     test create_basic_case
-        given input = default_input()
-        when result = create(input)
-        then result != undefined
+        given start = 10, end = 20
+        when result = create(start, end)
+        then result.start == 10 and result.end == 20 and result.inclusive == true
 
     test overlaps_basic_case
-        given input = default_input()
-        when result = overlaps(input)
-        then result != undefined
+        given a = Interval { start = 10, end = 20, inclusive = true }
+             b = Interval { start = 15, end = 25, inclusive = true }
+        when result = overlaps(a, b)
+        then result == true
 
     test union_basic_case
-        given input = default_input()
-        when result = union(input)
-        then result != undefined
+        given a = IntervalSet { intervals = []Interval }
+             b = IntervalSet { intervals = []Interval }
+             allocator = std.testing.allocator
+        when result = union(a, b, allocator)
+        then result.intervals.len == 0
 

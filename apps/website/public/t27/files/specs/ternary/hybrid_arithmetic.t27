@@ -46,14 +46,14 @@ module HybridArithmetic {
     // Platform-specific: XMM/YMM registers, implementation detail omitted
     pub struct Vec32i8 {
         data : [32]i8,
-    };
+    }
 
     // Vec32i16: logical vector of 32 signed 16-bit integers
     // Used for SIMD-accelerated carry propagation
     // Platform-specific: implementation detail omitted
     pub struct Vec32i16 {
         data : [16]i16,
-    };
+    }
 
     // ========================================================================
     // 4. Hybrid BigInt Creation
@@ -63,14 +63,16 @@ module HybridArithmetic {
     // Create zero HybridBigInt
     // Returns HybridBigInt with sign=0, trit_count=0, mode=packed_mode
     // Complexity: O(1)
-    pub fn zero() -> HybridBigInt;
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn zero() -> HybridBigInt { }
 
     // ensureUnpacked(bigint: &HybridBigInt)
     // Ensure HybridBigInt is in unpacked mode for computation
     // If mode is packed_mode, unpack to unpacked_data and set mode
     // This is a no-op if already in unpacked_mode
     // Complexity: O(n) where n = trit_count
-    pub fn ensureUnpacked(bigint: &HybridBigInt);
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn ensureUnpacked(bigint: &HybridBigInt) { }
 
     // ========================================================================
     // 5. Arithmetic Operations
@@ -80,7 +82,8 @@ module HybridArithmetic {
     // Add two HybridBigInt values
     // Returns sum in unpacked_mode for further computation
     // Complexity: O(n) where n = max(trit_count of a, b)
-    pub fn add(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt;
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn add(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt { }
 
     // addSimd(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt
     // Add two HybridBigInt values using SIMD acceleration
@@ -88,26 +91,30 @@ module HybridArithmetic {
     // Returns sum in unpacked_mode
     // Platform-specific: uses XMM/YMM registers for parallel ops
     // Complexity: O(n/32) where n = max(trit_count of a, b)
-    pub fn addSimd(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt;
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn addSimd(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt { }
 
     // sub(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt
     // Subtract b from a using HybridBigInt arithmetic
     // Returns difference in unpacked_mode
     // Complexity: O(n) where n = max(trit_count of a, b)
-    pub fn sub(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt;
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn sub(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt { }
 
     // mul(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt
     // Multiply two HybridBigInt values
     // Returns product in unpacked_mode
     // Complexity: O(n*m) where n,m are trit_counts
-    pub fn mul(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt;
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn mul(a: &HybridBigInt, b: &HybridBigInt) -> HybridBigInt { }
 
     // dotProduct(a: &HybridBigInt, b: &HybridBigInt) -> i32
     // Compute dot product of two HybridBigInt values
     // Returns sum of element-wise products
     // Used for similarity metrics in ternary vector spaces
     // Complexity: O(n) where n = min(trit_count of a, b)
-    pub fn dotProduct(a: &HybridBigInt, b: &HybridBigInt) -> i32;
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn dotProduct(a: &HybridBigInt, b: &HybridBigInt) -> i32 { }
 
     // ========================================================================
     // 6. Mode Transition Functions
@@ -119,7 +126,8 @@ module HybridArithmetic {
     // Sets mode to packed_mode after packing
     // This is a no-op if already in packed_mode
     // Complexity: O(n) where n = trit_count
-    pub fn pack(bigint: &HybridBigInt);
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn pack(bigint: &HybridBigInt) { }
 
     // unpack(bigint: &HybridBigInt)
     // Transition from packed_mode to unpacked_mode
@@ -127,7 +135,8 @@ module HybridArithmetic {
     // Sets mode to unpacked_mode after unpacking
     // This is a no-op if already in unpacked_mode
     // Complexity: O(n) where n = trit_count
-    pub fn unpack(bigint: &HybridBigInt);
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn unpack(bigint: &HybridBigInt) { }
 
     // ========================================================================
     // 7. Helper Functions
@@ -137,13 +146,15 @@ module HybridArithmetic {
     // Create HybridBigInt in packed_mode from trits
     // Encodes trits to packed_data
     // Complexity: O(n) where n = count
-    pub fn createPacked(trits: []i8, count: u16) -> HybridBigInt;
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn createPacked(trits: []i8, count: u16) -> HybridBigInt { }
 
     // createUnpacked(trits: []i8, count: u16) -> HybridBigInt
     // Create HybridBigInt in unpacked_mode from trits
     // Copies trits to unpacked_data
     // Complexity: O(n) where n = count
-    pub fn createUnpacked(trits: []i8, count: u16) -> HybridBigInt;
+    // (Signature only in the original; body left empty, not invented.)
+    pub fn createUnpacked(trits: []i8, count: u16) -> HybridBigInt { }
 
     // ========================================================================
     // TDD - Tests
@@ -302,7 +313,10 @@ module HybridArithmetic {
 
     test hybrid_empty_bigint_is_zero
         // Verify: empty HybridBigInt is zero
-        given empty = createUnpacked([] as []i8, 0)
+        // (Rust cast `[] as []i8` written as the typed empty slice literal
+        // `[]i8{}`. Not `[_]i8{}`: t27c lowers an empty `[_]T{}` to the
+        // one-element `{ _ }`, which would not be empty.)
+        given empty = createUnpacked([]i8{}, 0)
         then empty.trit_count == 0 and empty.sign == 0
 
     test hybrid_sign_preserved
@@ -399,6 +413,8 @@ module HybridArithmetic {
     // TDD - Benchmarks
     // ========================================================================
 
+    // (Python-style list repetition `[x] * n` in the benches below is
+    // written as the array repetition `[_]i8{x} ** n`; `*` would multiply.)
     bench hybrid_add_latency
         // Measure: cycles for add() operation
         // Target: < 100 cycles for 10-trit numbers
@@ -412,8 +428,8 @@ module HybridArithmetic {
         // Measure: cycles for addSimd() operation
         // Target: < 50 cycles for 160-trit numbers (5x32 SIMD)
         @setEvalBranchQuota(10000);
-        var a = createUnpacked([1] * 32, 32);
-        var b = createUnpacked([0] * 32, 32);
+        var a = createUnpacked([_]i8{1} ** 32, 32);
+        var b = createUnpacked([_]i8{0} ** 32, 32);
         var result = addSimd(a, b);
         _ = result;
 
@@ -439,8 +455,8 @@ module HybridArithmetic {
         // Measure: cycles for dotProduct() operation
         // Target: < 200 cycles for 32-trit vectors
         @setEvalBranchQuota(10000);
-        var a = createUnpacked([1] * 32, 32);
-        var b = createUnpacked([1] * 32, 32);
+        var a = createUnpacked([_]i8{1} ** 32, 32);
+        var b = createUnpacked([_]i8{1} ** 32, 32);
         var result = dotProduct(a, b);
         _ = result;
 
@@ -448,7 +464,7 @@ module HybridArithmetic {
         // Measure: cycles for pack() operation
         // Target: < 50 cycles for 32 trits
         @setEvalBranchQuota(10000);
-        var unpacked = createUnpacked([1, 0, -1, 1] * 8, 32);
+        var unpacked = createUnpacked([_]i8{1, 0, -1, 1} ** 8, 32);
         pack(unpacked);
         _ = unpacked;
 
@@ -456,7 +472,7 @@ module HybridArithmetic {
         // Measure: cycles for unpack() operation
         // Target: < 50 cycles for 32 trits
         @setEvalBranchQuota(10000);
-        var packed = createPacked([1, 0, -1, 1] * 8, 32);
+        var packed = createPacked([_]i8{1, 0, -1, 1} ** 8, 32);
         unpack(packed);
         _ = packed;
 
@@ -471,7 +487,7 @@ module HybridArithmetic {
         // Measure: cycles for ensureUnpacked() operation
         // Target: < 50 cycles for 32 trits
         @setEvalBranchQuota(10000);
-        var packed = createPacked([1] * 32, 32);
+        var packed = createPacked([_]i8{1} ** 32, 32);
         ensureUnpacked(packed);
         _ = packed;
 
@@ -479,13 +495,13 @@ module HybridArithmetic {
         // Measure: cycles for createPacked() operation
         // Target: < 100 cycles for 32 trits
         @setEvalBranchQuota(10000);
-        var result = createPacked([1] * 32, 32);
+        var result = createPacked([_]i8{1} ** 32, 32);
         _ = result;
 
     bench hybrid_createUnpacked_latency
         // Measure: cycles for createUnpacked() operation
         // Target: < 50 cycles for 32 trits
         @setEvalBranchQuota(10000);
-        var result = createUnpacked([1] * 32, 32);
+        var result = createUnpacked([_]i8{1} ** 32, 32);
         _ = result;
 }

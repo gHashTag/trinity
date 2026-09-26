@@ -122,7 +122,7 @@ pub fn gf16_encode_f32(value: f32) GF16 {
 
     // Convert exp from f32 bias (127) to GF16 bias (31)
     // gf16_exp = f32_exp + 31 - 127 = f32_exp - 96
-    var gf16_exp = f32_exp - 96;
+    var gf16_exp: u8 = @as(u8, @intCast(f32_exp - 96));
 
     // Clamp exponent
     if (gf16_exp < 0) {
@@ -206,7 +206,7 @@ pub fn gf16_round_phi(value: f32) GF16 {
     var f32_mant: u32 = f32_bits & 0x7FFFFF;
 
     // Convert exp from f32 bias (127) to GF16 bias (31)
-    var gf16_exp = f32_exp - 96;
+    var gf16_exp: u8 = @as(u8, @intCast(f32_exp - 96));
 
     // Clamp exponent
     if (gf16_exp < 0) {

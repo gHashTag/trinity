@@ -93,8 +93,11 @@ pub fn npu_transform_9x9(grid: [9][9]i8) Transform9x9 {
     var phi_score : u16 = 0;
 
     // Count zeros and compute phi score
-    for (grid, 0..) |row, i| {
-        for (row, 0..) |val, j| {
+    // Zig `for (grid, 0..) |row, i|` written as index ranges over the 9x9 grid
+    for i in 0..9 {
+        const row = grid[i];
+        for j in 0..9 {
+            const val = row[j];
             if (val == 0) {
                 zero_count += 1;
             }
@@ -133,7 +136,7 @@ pub fn transform_phi_optimized(transform: Transform9x9) bool {
 // lut_lookup_base(lut: [LUT_SIZE]LutEntry, addr: u8) -> LutEntry
 // Base LUT lookup
 pub fn lut_lookup_base(lut: [LUT_SIZE]LutEntry, addr: u8) LutEntry {
-    if (not lut_entry_address_valid(addr)) {
+    if (!lut_entry_address_valid(addr)) {
         return LutEntry{.address = 255, .value = 0, .valid = false, .phi_related = false};
     }
     return lut[@as(u8, @intCast(addr))];
@@ -142,7 +145,7 @@ pub fn lut_lookup_base(lut: [LUT_SIZE]LutEntry, addr: u8) LutEntry {
 // lut_lookup_phi(lut: [LUT_SIZE]LutEntry, addr: u8) -> LutEntry
 // Phi-optimized LUT lookup
 pub fn lut_lookup_phi(lut: [LUT_SIZE]LutEntry, addr: u8) LutEntry {
-    if (not lut_entry_address_valid(addr)) {
+    if (!lut_entry_address_valid(addr)) {
         return LutEntry{.address = 255, .value = 0, .valid = false, .phi_related = false};
     }
 
@@ -152,7 +155,7 @@ pub fn lut_lookup_phi(lut: [LUT_SIZE]LutEntry, addr: u8) LutEntry {
     }
 
     // Fallback: search for nearest phi-related entry
-    for (0..LUT_SIZE) |i| {
+    for i in 0..LUT_SIZE {
         const e = lut[i];
         if (e.valid and e.phi_related) {
             return e;
@@ -167,7 +170,7 @@ pub fn lut_lookup_phi(lut: [LUT_SIZE]LutEntry, addr: u8) LutEntry {
 pub fn lut_lookup_range(lut: [LUT_SIZE]LutEntry, start_addr: u8, count: u8) [LUT_SIZE]LutEntry {
     var result : [LUT_SIZE]LutEntry = undefined;
 
-    for (0..LUT_SIZE) |i| {
+    for i in 0..LUT_SIZE {
         if (i < count and lut_entry_address_valid(start_addr + i)) {
             result[i] = lut[@as(u8, @intCast(start_addr + i))];
         } else {
@@ -199,16 +202,17 @@ pub fn decode_lut_npu(encoded: u16) struct { op: NpuOperation, addr: u8 } {
     const addr : u8 = @as(u8, @truncate(encoded & 0x1F));
 
     var op : NpuOperation = undefined;
-    switch (opcode_val) {
-        0 => op = NpuOperation.lookup,
-        1 => op = NpuOperation.transform,
-        2 => op = NpuOperation.phi_project,
-        3 => op = NpuOperation.sparse_reduce,
-        4 => op = NpuOperation.quantize,
-        5 => op = NpuOperation.dequantize,
-        6 => op = NpuOperation.composite,
-        else => op = NpuOperation.custom,
-    }
+    // switch arms are expressions in t27: the arm value is assigned to op
+    op = switch (opcode_val) {
+        0 => NpuOperation.lookup,
+        1 => NpuOperation.transform,
+        2 => NpuOperation.phi_project,
+        3 => NpuOperation.sparse_reduce,
+        4 => NpuOperation.quantize,
+        5 => NpuOperation.dequantize,
+        6 => NpuOperation.composite,
+        else => NpuOperation.custom,
+    };
 
     return .{ .op = op, .addr = addr };
 }
@@ -218,48 +222,48 @@ pub fn decode_lut_npu(encoded: u16) struct { op: NpuOperation, addr: u8 } {
 // ============================================================================
 
 test "lut_size_eighty_one" {
-    try std.testing.expect(LUT_SIZE == 81);
+    assert(LUT_SIZE == 81);
 }
 
 test "lut_entry_address_valid_true" {
-    try std.testing.expect(lut_entry_address_valid(0) == true);
-    try std.testing.expect(lut_entry_address_valid(80) == true);
+    assert(lut_entry_address_valid(0) == true);
+    assert(lut_entry_address_valid(80) == true);
 }
 
 test "lut_entry_address_valid_false" {
-    try std.testing.expect(lut_entry_address_valid(81) == false);
-    try std.testing.expect(lut_entry_address_valid(255) == false);
+    assert(lut_entry_address_valid(81) == false);
+    assert(lut_entry_address_valid(255) == false);
 }
 
 test "lut_entry_valid_true" {
-    given entry = LutEntry{.address = 40, .value = 0x1234, .valid = true, .phi_related = false}
-    try std.testing.expect(lut_entry_valid(entry) == true);
+    const entry = LutEntry{.address = 40, .value = 0x1234, .valid = true, .phi_related = false};
+    assert(lut_entry_valid(entry) == true);
 }
 
 test "lut_entry_valid_false_invalid_addr" {
-    given entry = LutEntry{.address = 255, .value = 0x1234, .valid = true, .phi_related = false}
-    try std.testing.expect(lut_entry_valid(entry) == false);
+    const entry = LutEntry{.address = 255, .value = 0x1234, .valid = true, .phi_related = false};
+    assert(lut_entry_valid(entry) == false);
 }
 
 test "lut_entry_valid_false_invalid_flag" {
-    given entry = LutEntry{.address = 40, .value = 0x1234, .valid = false, .phi_related = false}
-    try std.testing.expect(lut_entry_valid(entry) == false);
+    const entry = LutEntry{.address = 40, .value = 0x1234, .valid = false, .phi_related = false};
+    assert(lut_entry_valid(entry) == false);
 }
 
 test "create_lut_entry_valid" {
-    given entry = create_lut_entry(40, 0x1234, true)
-    try std.testing.expect(entry.valid == true);
-    try std.testing.expect(entry.phi_related == true);
-    try std.testing.expect(entry.value == 0x1234);
+    const entry = create_lut_entry(40, 0x1234, true);
+    assert(entry.valid == true);
+    assert(entry.phi_related == true);
+    assert(entry.value == 0x1234);
 }
 
 test "create_lut_entry_invalid" {
-    given entry = create_lut_entry(81, 0x1234, true)
-    try std.testing.expect(entry.valid == false);
+    const entry = create_lut_entry(81, 0x1234, true);
+    assert(entry.valid == false);
 }
 
 test "npu_transform_9x9_count" {
-    given grid = [_][9]i8{
+    const grid = [_][9]i8{
         [_]i8{0} ** 9,
         [_]i8{0} ** 9,
         [_]i8{0} ** 9,
@@ -269,13 +273,13 @@ test "npu_transform_9x9_count" {
         [_]i8{0} ** 9,
         [_]i8{0} ** 9,
         [_]i8{0} ** 9,
-    }
-    try std.testing.expect(transform = npu_transform_9x9(grid));
-    try std.testing.expect(transform.sparsity == 88);
+    };
+    const transform = npu_transform_9x9(grid);
+    assert(transform.sparsity == 88);
 }
 
 test "transform_is_sparse_true" {
-    given grid = [_][9]i8{
+    const grid = [_][9]i8{
         [_]i8{0} ** 9,
         [_]i8{0} ** 9,
         [_]i8{0} ** 9,
@@ -285,19 +289,19 @@ test "transform_is_sparse_true" {
         [_]i8{0} ** 9,
         [_]i8{0} ** 9,
         [_]i8{0} ** 9,
-    }
-    try std.testing.expect(transform = npu_transform_9x9(grid));
-    try std.testing.expect(transform_is_sparse(transform) == true);
+    };
+    const transform = npu_transform_9x9(grid);
+    assert(transform_is_sparse(transform) == true);
 }
 
 test "transform_is_sparse_false" {
-    given grid = [_][9]i8{[_]i8{1} ** 9} ** 9}
-    try std.testing.expect(transform = npu_transform_9x9(grid));
-    try std.testing.expect(transform_is_sparse(transform) == false);
+    const grid = [_][9]i8{[_]i8{1} ** 9} ** 9;
+    const transform = npu_transform_9x9(grid);
+    assert(transform_is_sparse(transform) == false);
 }
 
 test "transform_phi_optimized_true" {
-    given grid = [_][9]i8{
+    const grid = [_][9]i8{
         [_]i8{1} ** 9,
         [_]i8{1} ** 9,
         [_]i8{1} ** 9,
@@ -307,50 +311,49 @@ test "transform_phi_optimized_true" {
         [_]i8{1} ** 9,
         [_]i8{1} ** 9,
         [_]i8{1} ** 9,
-    }
-    try std.testing.expect(transform = npu_transform_9x9(grid));
-    try std.testing.expect(transform_phi_optimized(transform) == true);
+    };
+    const transform = npu_transform_9x9(grid);
+    assert(transform_phi_optimized(transform) == true);
 }
 
 test "transform_phi_optimized_false" {
-    given grid = [_][9]i8{[_]i8{1} ** 9} ** 9}
-    try std.testing.expect(transform = npu_transform_9x9(grid));
-    try std.testing.expect(transform_phi_optimized(transform) == false);
+    const grid = [_][9]i8{[_]i8{1} ** 9} ** 9;
+    const transform = npu_transform_9x9(grid);
+    assert(transform_phi_optimized(transform) == false);
 }
 
 test "lut_lookup_base_valid" {
-    given lut = [_]LutEntry{.{.address = 40, .value = 0x1234, .valid = true, .phi_related = false}} ** 81
-    try std.testing.expect(entry = lut_lookup_base(lut, 40));
-    try std.testing.expect(entry.value == 0x1234);
-    try std.testing.expect(entry.valid == true);
+    const lut = [_]LutEntry{.{.address = 40, .value = 0x1234, .valid = true, .phi_related = false}} ** 81;
+    const entry = lut_lookup_base(lut, 40);
+    assert(entry.value == 0x1234);
+    assert(entry.valid == true);
 }
 
 test "lut_lookup_base_invalid_addr" {
-    given lut = [_]LutEntry{.{.address = 40, .value = 0x1234, .valid = true, .phi_related = false}} ** 81
-    try std.testing.expect(entry = lut_lookup_base(lut, 81));
-    try std.testing.expect(entry.valid == false);
+    const lut = [_]LutEntry{.{.address = 40, .value = 0x1234, .valid = true, .phi_related = false}} ** 81;
+    const entry = lut_lookup_base(lut, 81);
+    assert(entry.valid == false);
 }
 
 test "encode_lut_npu" {
-    given encoded = encode_lut_npu(NpuOperation.phi_project, 0x10)
-    try std.testing.expect((encoded >> 8) == OP_LUT_NPU);
+    const encoded = encode_lut_npu(NpuOperation.phi_project, 0x10);
+    assert((encoded >> 8) == OP_LUT_NPU);
 }
 
 test "decode_lut_npu" {
-    given decoded = decode_lut_npu(0xE350)
-    try std.testing.expect(decoded.op == NpuOperation.phi_project);
-    try std.testing.expect(decoded.addr == 0x10);
+    const decoded = decode_lut_npu(0xE350);
+    assert(decoded.op == NpuOperation.phi_project);
+    assert(decoded.addr == 0x10);
 }
 
 test "opcode_constant" {
-    try std.testing.expect(OP_LUT_NPU == 0xE3);
+    assert(OP_LUT_NPU == 0xE3);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant lut_size_eighty_one
     assert LUT_SIZE == 81
 
@@ -376,23 +379,23 @@ invariant lut_address_bound
     assert lut_entry_address_valid(80) == true and lut_entry_address_valid(81) == false
 
 invariant transform_sparsity_bound
-    given grid = [_][9]i8{[_]i8{1} ** 9} ** 9}
-    try std.testing.expect(transform = npu_transform_9x9(grid));
-    try std.testing.expect(transform.sparsity <= 100);
+    given grid = [_][9]i8{[_]i8{1} ** 9} ** 9
+    when transform = npu_transform_9x9(grid)
+    assert transform.sparsity <= 100;
 
 invariant transform_sparsity_dense
-    given grid = [_][9]i8{[_]i8{1} ** 9} ** 9}
-    try std.testing.expect(transform = npu_transform_9x9(grid));
-    try std.testing.expect(transform.sparsity == 0);
+    given grid = [_][9]i8{[_]i8{1} ** 9} ** 9
+    when transform = npu_transform_9x9(grid)
+    assert transform.sparsity == 0;
 
 invariant phi_score_non_negative
-    given grid = [_][9]i8{[_]i8{1} ** 9} ** 9}
-    try std.testing.expect(transform = npu_transform_9x9(grid));
-    try std.testing.expect(transform.phi_score >= 0);
+    given grid = [_][9]i8{[_]i8{1} ** 9} ** 9
+    when transform = npu_transform_9x9(grid)
+    assert transform.phi_score >= 0;
 
 invariant npu_operation_enum_values
-    try std.testing.expect(@intFromEnum(NpuOperation.lookup) == 0);
-    try std.testing.expect(@intFromEnum(NpuOperation.custom) == 7);
+    assert @intFromEnum(NpuOperation.lookup) == 0;
+    assert @intFromEnum(NpuOperation.custom) == 7;
 
 // ============================================================================
 // Benchmarks

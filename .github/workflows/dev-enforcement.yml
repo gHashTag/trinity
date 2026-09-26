@@ -1,62 +1,101 @@
+# Dev Workflow Enforcement
+#
+# This file has never run a single job. GitHub could not parse it: `steps:` was
+# indented under `if:` at what used to be line 54, so `pr-status` had no steps
+# key, and an unschedulable workflow is reported as a failed run with an empty
+# jobs array and the file path where the name should be. Every branch, every
+# push, since c523c41b0. "CI enforcement" that has never executed a step is
+# green by absence.
+#
+# Two of the three jobs were also wrong in ways parsing would not have fixed:
+#
+#   session-check read .trinity/dev_session.json -- a committed snapshot of one
+#   developer's local session. It holds {"state":"COMMITTED","issue_id":503},
+#   while the job queried `.issue_number`, which is null there. So it passed on
+#   a null, judging every pull request by a file that does not change with the
+#   pull request. Removed rather than repaired: there is nothing in a local
+#   session file that describes the branch under test.
+#
+#   ci-check ran `git log -1` with no actions/checkout step, in an empty
+#   directory. On a pull_request event HEAD is a synthetic merge commit whose
+#   subject is "Merge ... into ...", so even with a checkout the regex could
+#   not match. The regex itself was `^\[a-f]+\((feat|fix|...)\(` -- a literal
+#   `[`, then `a-f`, then parentheses around the type -- which no conventional
+#   commit has ever matched. And `$COMMIT` was never assigned, so the issue-ID
+#   branch tested an empty string and took `exit 1` unconditionally.
+
 name: Dev Workflow Enforcement
+
+# push: [main] is gone with session-check. Every remaining job describes a pull
+# request, and there is no pull request on a push.
 on:
   pull_request:
-    types: [opened, synchronize]
-  push:
-    branches: [main]
+    types: [opened, synchronize, closed]
 
 jobs:
-  ci-check:
-    name: CI Validation
+  title-check:
+    name: PR Title Format
     runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
     steps:
-      - name: Validate Commit Format
+      # The title is attacker-controlled text. It goes through env, never
+      # through ${{ }} interpolation into the script body, or a pull request
+      # named `$(...)` would run that command on the runner.
+      - name: Validate PR title format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          git log -1 --format=%s | grep -E '^\[a-f]+\((feat|fix|refactor|docs|chore|test|ci)\([^)]+\):' | head -1
-          if [[ $(echo "$COMMIT" | grep -oE '(ISSUE-|#)[0-9]+') ]]; then
-            echo "✅ Valid issue ID format"
-          else
-            echo "❌ Missing issue ID (format: feat(scope): description (#123) or fix(scope): description (ISSUE-123))"
-            exit 1
+          set -u
+          pattern='^(feat|fix|docs|ci|chore|test|refactor|perf|build|style|revert|port|deps|site|website)(\([^)]+\))?!?: .+'
+          if printf '%s' "$PR_TITLE" | grep -qE "$pattern"; then
+            echo "OK: $PR_TITLE"
+            exit 0
           fi
-
-  session-check:
-    name: Verify Dev Session State
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check session state before commit
-        run: |
-          if [ ! -f .trinity/dev_session.json ]; then
-            echo "❌ No dev session found"
-            exit 1
-          fi
-
-          STATE=$(jq -r '.state' .trinity/dev_session.json 2>/dev/null || echo "IDLE")
-          ISSUE=$(jq -r '.issue_number' .trinity/dev_session.json 2>/dev/null || echo "0")
-
-          if [ "$STATE" != "TESTED" ] && [ "$STATE" != "COMMITTED" ]; then
-            echo "❌ Invalid state: $STATE (must be TESTED or COMMITTED)"
-            echo "   Run: tri dev test to pass tests"
-            exit 1
-          fi
-
-          if [ "$ISSUE" = "0" ]; then
-            echo "❌ No active issue"
-            exit 1
-          fi
-
-          echo "✅ Session state valid: $STATE for issue #$ISSUE"
+          echo "Title does not match ${pattern}"
+          echo "  $PR_TITLE"
+          echo
+          echo "This is a WARNING, not a failure, and the reason is measured:"
+          echo "105 of the last 120 merged pull requests match this pattern and"
+          echo "15 do not -- mostly Russian-language prose titles and 'README:'"
+          echo "prefixes. Those are a different convention, not malformed input,"
+          echo "and failing them would reject 12.5% of this repository's own"
+          echo "recent history on a rule nobody has agreed to. To make it"
+          echo "binding, replace the line below with 'exit 1'."
+          exit 0
 
   pr-status:
     name: Update PR Status
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-      steps:
-        - name: Add in-progress label
-          run: |
-            gh pr edit "$PR_NUMBER" --add-label "status:in-progress"
-        - name: Update to done when merged
-          if: github.event.action == 'closed' && github.event.pull_request.merged == true
-            run: |
-              gh pr edit "$PR_NUMBER" --remove-label "status:in-progress"
-              gh pr edit "$PR_NUMBER" --add-label "status:completed"
+    permissions:
+      pull-requests: write
+    # Labelling is cosmetic and must never stand between a change and its
+    # merge. It also cannot work for a pull request opened from a fork: those
+    # get a read-only GITHUB_TOKEN no matter what `permissions:` asks for.
+    continue-on-error: true
+    steps:
+      - name: Mark in progress
+        if: github.event.action == 'opened' || github.event.action == 'synchronize'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "status:in-progress"
+
+      # This step existed before and could never fire: it tested for action
+      # 'closed' while the workflow only listened for [opened, synchronize].
+      # 'closed' is now in the trigger list, so the label finally comes off.
+      - name: Mark completed on merge
+        if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --remove-label "status:in-progress" \
+            --add-label "status:completed"
+
+      - name: Drop in-progress on a close without merge
+        if: github.event.action == 'closed' && github.event.pull_request.merged != true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --remove-label "status:in-progress"

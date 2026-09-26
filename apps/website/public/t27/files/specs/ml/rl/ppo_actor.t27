@@ -39,29 +39,152 @@ module PpoActor;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward_discrete(state: []const f32) → void
-    fn forward_discrete(state: []const f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward_discrete(state: []const f32, params: []const f32, config: ActorConfig) → []f32
+    fn forward_discrete(state: []const f32, params: []const f32, config: ActorConfig) -> []f32 {
+        var action_probs = []f32{config.action_dim, 0.0};
+        // Simple linear layer: logits = state * weights + bias
+        var i : usize = 0;
+        while (i < config.state_dim) : (i += 1) {
+            var j : usize = 0;
+            while (j < config.action_dim) : (j += 1) {
+                action_probs[j] += state[i] * params[i * config.action_dim + j];
+            }
+        }
+        // Add bias terms (stored after weights)
+        var j : usize = 0;
+        while (j < config.action_dim) : (j += 1) {
+            action_probs[j] += params[config.state_dim * config.action_dim + j];
+        }
+        // Softmax to get probabilities
+        var max_logit = action_probs[0];
+        i = 1;
+        while (i < config.action_dim) : (i += 1) {
+            if (action_probs[i] > max_logit) {
+                max_logit = action_probs[i];
+            }
+        }
+        var sum_exp = 0.0;
+        i = 0;
+        while (i < config.action_dim) : (i += 1) {
+            action_probs[i] = math::exp(action_probs[i] - max_logit);
+            sum_exp += action_probs[i];
+        }
+        i = 0;
+        while (i < config.action_dim) : (i += 1) {
+            action_probs[i] /= sum_exp;
+        }
+        return action_probs;
     }
 
-    // forward_continuous(state: []const f32) → void
-    fn forward_continuous(state: []const f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward_continuous(state: []const f32, params: []const f32, config: ActorConfig) → PolicyOutput
+    fn forward_continuous(state: []const f32, params: []const f32, config: ActorConfig) -> PolicyOutput {
+        var logits = []f32{config.action_dim, 0.0};
+        var log_std = []f32{config.action_dim, 0.0};
+        
+        // Compute mean (logits) using linear layer
+        var i : usize = 0;
+        while (i < config.state_dim) : (i += 1) {
+            var j : usize = 0;
+            while (j < config.action_dim) : (j += 1) {
+                logits[j] += state[i] * params[i * config.action_dim + j];
+            }
+        }
+        // Add bias terms for mean
+        var j : usize = 0;
+        while (j < config.action_dim) : (j += 1) {
+            logits[j] += params[config.state_dim * config.action_dim + j];
+        }
+        
+        // Compute log standard deviation
+        var log_std_offset = config.state_dim * config.action_dim + config.action_dim;
+        j = 0;
+        while (j < config.action_dim) : (j += 1) {
+            log_std[j] = config.init_log_std + params[log_std_offset + j];
+        }
+        
+        // Clamp log_std to valid range
+        j = 0;
+        while (j < config.action_dim) : (j += 1) {
+            if (log_std[j] < MIN_LOG_STD) {
+                log_std[j] = MIN_LOG_STD;
+            } else if (log_std[j] > MAX_LOG_STD) {
+                log_std[j] = MAX_LOG_STD;
+            }
+        }
+        
+        return PolicyOutput{.logits = logits, .log_std = log_std};
     }
 
-    // sample_action(policy_output: PolicyOutput) → void
-    fn sample_action(policy_output: PolicyOutput) -> void {
-        // TODO: Implement from .tri spec
+    // sample_action(policy_output: PolicyOutput, action_space: ActionSpace, deterministic: bool) → []f32
+    fn sample_action(policy_output: PolicyOutput, action_space: ActionSpace, deterministic: bool) -> []f32 {
+        var action = []f32{policy_output.logits.len, 0.0};
+        
+        if (deterministic) {
+            // For deterministic action, use the mean
+            var i : usize = 0;
+            while (i < action.len) : (i += 1) {
+                action[i] = policy_output.logits[i];
+            }
+        } else {
+            // For stochastic action, add Gaussian noise
+            var i : usize = 0;
+            while (i < action.len) : (i += 1) {
+                // Convert log_std to std
+                var std = math::exp(policy_output.log_std[i]);
+                // Sample from normal distribution and scale
+                var noise = math::normal_random() * std;
+                action[i] = policy_output.logits[i] + noise;
+            }
+        }
+        
+        // Clip actions to reasonable range if needed
+        var i : usize = 0;
+        while (i < action.len) : (i += 1) {
+            if (action[i] > 10.0) {
+                action[i] = 10.0;
+            } else if (action[i] < -10.0) {
+                action[i] = -10.0;
+            }
+        }
+        
+        return action;
     }
 
-    // log_prob(action: []f32) → void
-    fn log_prob(action: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // log_prob(action: []f32, policy_output: PolicyOutput, action_space: ActionSpace) → f32
+    fn log_prob(action: []f32, policy_output: PolicyOutput, action_space: ActionSpace) -> f32 {
+        var log_prob_sum = 0.0;
+        
+        var i : usize = 0;
+        while (i < action.len) : (i += 1) {
+            // Gaussian log probability: -0.5 * ((x - μ) / σ)² - 0.5 * log(2π) - log(σ)
+            var diff = action[i] - policy_output.logits[i];
+            var std = math::exp(policy_output.log_std[i]);
+            var var = std * std;
+            
+            // Gaussian log probability formula
+            var gaussian_log_prob = -0.5 * (diff * diff) / var - policy_output.log_std[i] - 0.9189385332046727; // -0.5 * log(2π)
+            
+            log_prob_sum += gaussian_log_prob;
+        }
+        
+        return log_prob_sum;
     }
 
-    // entropy(policy_output: PolicyOutput) → void
-    fn entropy(policy_output: PolicyOutput) -> void {
-        // TODO: Implement from .tri spec
+    // entropy(policy_output: PolicyOutput, action_space: ActionSpace) → f32
+    fn entropy(policy_output: PolicyOutput, action_space: ActionSpace) -> f32 {
+        var total_entropy = 0.0;
+        
+        var i : usize = 0;
+        while (i < policy_output.logits.len) : (i += 1) {
+            // Differential entropy of Gaussian: 0.5 * log(2πeσ²)
+            var std = math::exp(policy_output.log_std[i]);
+            var variance = std * std;
+            var gaussian_entropy = 0.5 * math::log(2.0 * 3.141592653589793 * variance * 2.718281828459045); // log(2πeσ²)
+            
+            total_entropy += gaussian_entropy;
+        }
+        
+        return total_entropy;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -69,29 +192,61 @@ module PpoActor;
     // ═══════════════════════════════════════════════════════════
 
     test forward_discrete_basic_case
-        given input = default_input()
-        when result = forward_discrete(input)
-        then result != undefined
+        given state = [1.0, 2.0, 3.0]
+             params = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.1, 0.2] // 3x4 weights + 4 bias
+             config = ActorConfig{state_dim: 3, action_dim: 4, hidden_dims: [], action_space: ActionSpace{}, init_log_std: 0.0}
+        when result = forward_discrete(state, params, config)
+        then result.len == 4
+             result[0] >= 0.0 && result[0] <= 1.0
+             result[1] >= 0.0 && result[1] <= 1.0
+             result[2] >= 0.0 && result[2] <= 1.0
+             result[3] >= 0.0 && result[3] <= 1.0
+             (result[0] + result[1] + result[2] + result[3] - 1.0) * (result[0] + result[1] + result[2] + result[3] - 1.0) <= 0.001 * 0.001
+    }
 
     test forward_continuous_basic_case
-        given input = default_input()
-        when result = forward_continuous(input)
-        then result != undefined
+        given state = [1.0, 2.0, 3.0]
+             params = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.1, 0.2, 0.0, 0.0, 0.0, 0.0] // 3x4 weights + 4 bias + 4 log_std
+             config = ActorConfig{state_dim: 3, action_dim: 4, hidden_dims: [], action_space: ActionSpace{}, init_log_std: 0.0}
+        when result = forward_continuous(state, params, config)
+        then result.logits.len == 4
+             result.log_std.len == 4
+             var i : usize = 0;
+             while (i < result.logits.len) : (i += 1) {
+                 result.logits[i] != undefined
+                 result.log_std[i] >= MIN_LOG_STD && result.log_std[i] <= MAX_LOG_STD
+             }
+    }
 
     test sample_action_basic_case
-        given input = default_input()
-        when result = sample_action(input)
-        then result != undefined
+        given policy_output = PolicyOutput{logits: [1.0, 2.0, 3.0, 4.0], log_std: [0.1, 0.2, 0.3, 0.4]}
+             action_space = ActionSpace{}
+             deterministic = false
+        when result = sample_action(policy_output, action_space, deterministic)
+        then result.len == 4
+             var i : usize = 0;
+             while (i < result.len) : (i += 1) {
+                 result[i] != undefined
+                 result[i] >= -10.0 && result[i] <= 10.0
+             }
+    }
 
     test log_prob_basic_case
-        given input = default_input()
-        when result = log_prob(input)
+        given action = [1.0, 2.0, 3.0, 4.0]
+             policy_output = PolicyOutput{logits: [1.0, 2.0, 3.0, 4.0], log_std: [0.1, 0.2, 0.3, 0.4]}
+             action_space = ActionSpace{}
+        when result = log_prob(action, policy_output, action_space)
         then result != undefined
+             result != undefined
+    }
 
     test entropy_basic_case
-        given input = default_input()
-        when result = entropy(input)
+        given policy_output = PolicyOutput{logits: [1.0, 2.0, 3.0, 4.0], log_std: [0.1, 0.2, 0.3, 0.4]}
+             action_space = ActionSpace{}
+        when result = entropy(policy_output, action_space)
         then result != undefined
+             result >= 0.0
+    }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

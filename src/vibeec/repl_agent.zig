@@ -88,8 +88,8 @@ pub const ReplAgent = struct {
 
     /// Main REPL loop
     pub fn run(self: *Self) !void {
-        const stdin = std.io.getStdIn().reader();
-        const stdout = std.io.getStdOut().writer();
+        const stdin = std.fs.File.stdin().deprecatedReader();
+        const stdout = std.fs.File.stdout().deprecatedWriter();
 
         // Welcome banner
         try stdout.print("\n", .{});

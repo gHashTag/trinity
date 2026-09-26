@@ -18,6 +18,12 @@ export const ROUTES = [
   // Signed out, /clients renders only its sign-in screen — which is exactly
   // what an audit should see: no credential, no data, fully dictionary-driven.
   'clients',
+  // Both faces of the passport, because they do not share a layout: the record
+  // face puts its figures straight into the section and the research face wraps
+  // each one with the case it belongs to. The wrapper was a flex item nobody had
+  // told to shrink, and it pushed 149px of sideways scroll onto a phone while
+  // this audit reported PASS across 33 routes — it had never visited either one.
+  'passport', 'passport/research',
 ]
 
 const CHROME_CANDIDATES = [
@@ -198,6 +204,14 @@ export async function collectRouteText(language, baseUrl) {
     if (!document.body) return "";
     const clone = document.body.cloneNode(true);
     clone.querySelectorAll('[data-lang-exempt]').forEach((n) => n.remove());
+    // A detached clone has no layout, so innerText here means textContent --
+    // and textContent includes the SOURCE of every inline script and style in
+    // the body. One English comment written above the pre-mount hero's guard
+    // was therefore read as page copy on all 35 routes at once: 350 findings,
+    // 10 lines times 35, not one of them anything a reader can see. Script and
+    // style source is not copy in any language, and neither is a template that
+    // has not been stamped or the noscript branch of a page that has script.
+    clone.querySelectorAll('script, style, noscript, template').forEach((n) => n.remove());
     return clone.innerText;
   })()`)
   const out = {}

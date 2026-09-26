@@ -14,6 +14,7 @@
 // Choosing a provider is three environment variables, never a code change.
 import { createServer } from 'node:http'
 import { randomUUID } from 'node:crypto'
+import { verifyCaller } from './caller.mjs'
 
 const PORT = Number(process.env.PORT || 8080)
 const PROVIDER_URL = process.env.QUEEN_PROVIDER_URL || 'https://openrouter.ai/api/v1/chat/completions'
@@ -120,7 +121,10 @@ function cors(req, res) {
   const origin = req.headers.origin
   if (origin && ORIGINS.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin)
   res.setHeader('Vary', 'Origin')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  // Authorization is on this list because the gate in caller.mjs asks for it.
+  // A browser that is refused it at the preflight never sends the token, and
+  // every signed-in person is refused as if they were signed out.
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
 }
 
@@ -370,6 +374,16 @@ createServer(async (req, res) => {
   }
 
   if (req.url === '/chat' && req.method === 'POST') {
+    // Who is asking, before anything is asked of her. The owner's rule, given
+    // 2026-09-20: only registered people write in this chat. The check is here
+    // rather than in the website because the website is a public bundle and
+    // every rule in it is a suggestion.
+    //
+    // /health is deliberately left open above: whether the Queen is up is not a
+    // secret, and a signed-out visitor still has to be able to tell the
+    // difference between "she is down" and "you are not signed in".
+    const who = await verifyCaller(req.headers.authorization)
+    if (!who.ok) return json(res, who.status, { error: who.error })
     if (!TRIOS_URL && (!MODEL || (KEY_REQUIRED && !KEY))) return json(res, 503, { error: KEY_REQUIRED ? 'QUEEN_MODEL and QUEEN_API_KEY are required for an off-network provider' : 'QUEEN_MODEL is not set' })
     let raw = ''
     for await (const chunk of req) raw += chunk

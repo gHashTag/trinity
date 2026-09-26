@@ -82,7 +82,7 @@ module PhiWeightInit;
         });
 
         // Sample from normal distribution and encode to GF16
-        for (i = 0; i < numel; i += 1) {
+        for i in 0..numel {
             const sample = randn() * std;  // Normal(0, std)
             weights[i] = gf16_encode_f32(@as(f32, sample));
         }
@@ -137,8 +137,20 @@ module PhiWeightInit;
         and   std_baseline = tied_embed_init_std(false)
         then std_phi < std_baseline
 
-    invariant phi_init_std_positive
-        assert phi_init_std(c) > 0.0 for all valid configs c
+    // Original claim: assert phi_init_std(c) > 0.0 for all valid configs c
+    // t27 has no unbounded quantifier, so the claim is checked over a
+    // bounded domain only: fan_in = fan_out = 512, total_layers = 11,
+    // layer_idx 0..10, use_phi_scale true and false. Other fan sizes and
+    // depths are not covered; with use_phi_scale = false the result does
+    // not depend on layer_idx, so the c_plain checks are one config.
+    invariant phi_init_std_positive {
+        for layer in 0..11 {
+            const c_phi = PhiInitConfig{layer_idx = layer, total_layers = 11, fan_in = 512, fan_out = 512, use_phi_scale = true};
+            const c_plain = PhiInitConfig{layer_idx = layer, total_layers = 11, fan_in = 512, fan_out = 512, use_phi_scale = false};
+            assert(phi_init_std(c_phi) > 0.0);
+            assert(phi_init_std(c_plain) > 0.0);
+        }
+    }
 
     invariant phi_scale_between_one_and_phi_inv
         given config = PhiInitConfig{layer_idx = 0, total_layers = 10, fan_in = 1, fan_out = 1, use_phi_scale = true}

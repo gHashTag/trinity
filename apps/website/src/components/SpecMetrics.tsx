@@ -4,6 +4,7 @@
 // isolation says nothing; showing "3481 (+42)" next to what the original
 // produced turns the page into an instrument you can actually experiment with.
 
+import { TARGET_IDS } from '../lib/t27Compiler'
 import type { T27Analysis } from '../lib/t27Compiler'
 
 const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
@@ -67,7 +68,7 @@ export function SpecMetrics({
     },
   ]
 
-  const targets = ['zig', 'verilog', 'verilog_hir', 'c', 'rust']
+  const targets = TARGET_IDS
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

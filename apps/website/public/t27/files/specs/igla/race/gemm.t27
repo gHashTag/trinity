@@ -2269,3 +2269,26 @@ test igla_race_gemm_w392_batch_depth_invariant_2 {
 }
 
 invariant igla_race_gemm_w392_depth: true
+test booth_mul_u32_inner_test1 {
+    let a: u32 = 5;
+    let b: u32 = 7;
+    let acc: u32 = 0;
+    let result = booth_mul_u32_inner(a, b, acc);
+    assert result == 35;
+}
+
+test booth_mul_u32_inner_test2 {
+    let a: u32 = 0;
+    let b: u32 = 12345;
+    let acc: u32 = 0;
+    let result = booth_mul_u32_inner(a, b, acc);
+    assert result == 0;
+}
+
+test booth_mul_u32_inner_test3 {
+    let a: u32 = 123;
+    let b: u32 = 456;
+    let acc: u32 = 0;
+    let result = booth_mul_u32_inner(a, b, acc);
+    assert result == 56088;
+}

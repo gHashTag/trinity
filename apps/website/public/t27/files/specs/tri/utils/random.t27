@@ -60,31 +60,31 @@ module TriRandom;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test init_basic_case
+    test "init_basic_case"
         given input = default_input()
         when result = init(input)
         then result != undefined
 
-    test next_basic_case
+    test "next_basic_case"
         given input = default_input()
         when result = next(input)
         then result != undefined
 
-    test range_basic_case
+    test "range_basic_case"
         given input = default_input()
         when result = range(input)
         then result != undefined
 
-    test range_inclusive_basic_case
+    test "range_inclusive_basic_case"
         given input = default_input()
         when result = range_inclusive(input)
         then result != undefined
 
-    test init_replaces_the_zero_seed
+    test "init_replaces_the_zero_seed"
         given rng = init(0)
         then rng.state != 0
 
-    test the_multiplier_is_the_star_in_xorshift64_star
+    test "the_multiplier_is_the_star_in_xorshift64_star"
         // Verify: the output stage multiplies by 2685821657736338717, which is
         // odd and therefore invertible modulo 2^64 — it scrambles the bits
         // without ever mapping two states onto one output
@@ -92,7 +92,7 @@ module TriRandom;
         when parity = multiplier % 2
         then parity == 1
 
-    test range_endpoints_bound_a_half_open_interval
+    test "range_endpoints_bound_a_half_open_interval"
         // Verify: range(lo, hi) spans hi - lo values and range_inclusive spans one
         // more, which is the only difference between the two entry points
         given lo = 3
@@ -101,18 +101,18 @@ module TriRandom;
         and inclusive = hi - lo + 1
         then half_open == 4 and inclusive == 5
 
-    test next_follows_xorshift64_star_algorithm
+    test "next_follows_xorshift64_star_algorithm"
         given rng = init(12345)
         when first = next(rng)
         and second = next(rng)
         then first != second
 
-    test range_returns_zero_for_max_zero
+    test "range_returns_zero_for_max_zero"
         given rng = init(42)
         when result = range(rng, 0)
         then result == 0
 
-    test range_inclusive_handles_single_value_range
+    test "range_inclusive_handles_single_value_range"
         given rng = init(42)
         when result = range_inclusive(rng, 5, 5)
         then result == 5

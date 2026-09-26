@@ -26,22 +26,38 @@ module TriAsync;
 
     // new_promise() → Promise(T)
     fn new_promise() -> Promise(T) {
-        // TODO: Implement from .tri spec
+        let future = Future(T) {
+            completed: false,
+            value: undefined,
+        };
+        Promise(T) {
+            fulfilled: false,
+            future: future,
+        }
     }
 
     // fulfill(promise: Promise(T)) → void
     fn fulfill(promise: Promise(T)) -> void {
-        // TODO: Implement from .tri spec
+        promise.fulfilled = true;
+        promise.future.completed = true;
     }
 
     // await(future: Future(T)) → void
     fn await(future: Future(T)) -> void {
-        // TODO: Implement from .tri spec
+        while (!future.completed) {
+            // Wait for future to complete
+            // In a real implementation, this would be an actual await mechanism
+        }
     }
 
     // map(future: Future(T)) → void
     fn map(future: Future(T)) -> void {
-        // TODO: Implement from .tri spec
+        // Map operation - since this returns void, it might be setting up a transformation
+        // or the signature might be intended to return Future(U) for some mapped type U
+        // For now, we'll just mark it as completed to avoid hanging
+        if (!future.completed) {
+            future.completed = true;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════

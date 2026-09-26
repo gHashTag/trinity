@@ -166,7 +166,7 @@ pub fn registration_create(name: []u8, instance_type: InstanceType, command: []u
 }
 
 /// Create instance with PID
-pub fn instance_create(id: InstanceID, pid: ProcessID, name: []u8, instance_type: InstanceType) Instance {
+pub fn instance_create(id: InstanceID, pid: ProcessID, name: []u8, instance_type: InstanceType, command: []u8, args: [][]u8) Instance {
     return Instance{
         .id = id,
         .name = name,
@@ -175,8 +175,8 @@ pub fn instance_create(id: InstanceID, pid: ProcessID, name: []u8, instance_type
         .state = .registering,
         .start_time_ms = get_timestamp_ms(),
         .metadata = "",
-        .command = "",
-        .args = &[_][]u8{},
+        .command = command,
+        .args = args,
     };
 }
 
@@ -617,10 +617,12 @@ invariant registration_has_type {
 invariant registration_has_command {
     // Registration has command field
     @compileAssert(true);
+}
 
 invariant registration_has_args {
     // Registration has args field
     @compileAssert(true);
+}
 
 invariant lookup_result_has_found {
     // LookupResult has found field
@@ -650,6 +652,7 @@ invariant status_response_has_id {
 invariant status_response_has_state {
     // StatusResponse has state field
     @compileAssert(true);
+}
 
 invariant status_response_has_uptime {
     // StatusResponse has uptime_ms field
@@ -669,6 +672,7 @@ invariant termination_result_has_success {
 invariant termination_result_has_final_state {
     // TerminationResult has final_state field
     @compileAssert(true);
+}
 
 invariant termination_normal_transitions_to_terminated {
     // Normal termination results in terminated state
@@ -683,26 +687,32 @@ invariant force_kill_sets_terminated {
 invariant terminate_sets_terminating {
     // Terminate sets terminating state
     @compileAssert(true);
+}
 
 invariant register_sets_active {
     // Register sets active state
     @compileAssert(true);
+}
 
 invariant unregister_sets_terminated {
     // Unregister sets terminated state
     @compileAssert(true);
+}
 
 invariant duration_returns_positive {
     // Duration returns non-negative value
     @compileAssert(true);
+}
 
 invariant is_active_returns_true_for_active {
     // is_active returns true for active state
     @compileAssert(true);
+}
 
 invariant is_terminated_returns_true_for_terminated {
     // is_terminated returns true for terminated state
     @compileAssert(true);
+}
 
 // ============================================================================
 // TDD - Benchmarks

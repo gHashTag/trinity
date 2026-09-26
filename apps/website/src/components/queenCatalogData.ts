@@ -1,7 +1,7 @@
 import {HEX_R,S_CELL,hexCellCount,hexRingStart,hexRingsFor,hexToWorld,spiralAxial,hexIndexAt} from './queenHud.ts';
 import {keyWorldAtlas,type UniverseAtlas} from '../lib/queenUniverseAtlas.ts';
 import type {WorldIssue} from './queenRepositoryWorld.ts';
-import {hiveFocusZoom} from './queenHiveDisplay.ts';
+import {HIVE_ZOOM_CEILING,hiveFocusZoom,hiveMaxZoom} from './queenHiveDisplay.ts';
 
 export type CatalogCell = {kind:'spec';key:string;specId:string;placement:'core'|'source';sourceRepo?:string;title:string;sources:string[];count:1}
   | {kind:'repo';key:string;title:string;repo:string;count:number;open:number|null};
@@ -110,21 +110,63 @@ export function catalogSpecSelection(map:CatalogHive,index:number|null):{indices
   return {indices,links:(map.specLinks??[]).filter(([a,b])=>selected.has(a)&&selected.has(b))};
 }
 
-export function catalogConnectionView(map:CatalogHive,index:number,halfWidth:number,halfHeight:number,inset={right:0,bottom:0}) {
+const smallestScale=new WeakMap<CatalogHive,number>();
+/** The zoom ceiling of this map when zoom 1 spans 2*halfWidth world units across `width` pixels (see hiveMaxZoom). */
+export function catalogMaxZoom(map:CatalogHive,halfWidth:number,width:number):number {
+  let scale=smallestScale.get(map);
+  if(scale===undefined){scale=Infinity;for(const p of map.positions??[])if(p.scale<scale)scale=p.scale;if(!Number.isFinite(scale))scale=1;smallestScale.set(map,scale);}
+  return hiveMaxZoom(S_CELL*scale*width/(halfWidth*2));
+}
+
+export function catalogConnectionView(map:CatalogHive,index:number,halfWidth:number,halfHeight:number,inset={right:0,bottom:0},maxZoom=HIVE_ZOOM_CEILING) {
   const {indices}=catalogSpecSelection(map,index),points=indices.flatMap(i=>map.positions?.[i]?[map.positions[i]]:[]);
   if(!points.length)return null;
   const minX=Math.min(...points.map(p=>p.x-HEX_R*p.scale)),maxX=Math.max(...points.map(p=>p.x+HEX_R*p.scale));
   const minY=Math.min(...points.map(p=>p.y-HEX_R*p.scale)),maxY=Math.max(...points.map(p=>p.y+HEX_R*p.scale));
-  const zoom=Math.min(128,Math.max(.05,Math.min(halfWidth*2*(1-inset.right)/(maxX-minX+S_CELL),halfHeight*2*(1-inset.bottom)/(maxY-minY+S_CELL))*.78));
+  const zoom=Math.min(maxZoom,Math.max(.05,Math.min(halfWidth*2*(1-inset.right)/(maxX-minX+S_CELL),halfHeight*2*(1-inset.bottom)/(maxY-minY+S_CELL))*.78));
   return {x:(minX+maxX)/2+inset.right*halfWidth/zoom,y:(minY+maxY)/2-inset.bottom*halfHeight/zoom,zoom};
 }
 
 /** Region and cell close-ups share the exact camera sizing contract on desktop and mobile. */
 export function catalogFocusView(map:CatalogHive,index:number,halfWidth:number,halfHeight:number,width:number,height:number,inset={right:0,bottom:0}) {
   const position=map.positions?.[index];if(!position)return null;
-  const region=map.regions?.find(r=>r.portalIndex===index);
+  const region=map.regions?.find(r=>r.portalIndex===index),maxZoom=catalogMaxZoom(map,halfWidth,width);
   const zoom=region?
-    Math.min(128,Math.max(.5,Math.min(halfWidth,halfHeight)/(region.focusRadius*1.12))):
-    hiveFocusZoom(S_CELL*position.scale*width/(halfWidth*2),width*(1-inset.right),height*(1-inset.bottom));
+    Math.min(maxZoom,Math.max(.5,Math.min(halfWidth,halfHeight)/(region.focusRadius*1.12))):
+    hiveFocusZoom(S_CELL*position.scale*width/(halfWidth*2),width*(1-inset.right),height*(1-inset.bottom),maxZoom);
   return {x:(region?.x??position.x)+(region?0:inset.right*halfWidth/zoom),y:(region?.y??position.y)-(region?0:inset.bottom*halfHeight/zoom),zoom};
+}
+
+/** The rectangle a region label may occupy, in the label layer's own coordinates.
+ *
+ * In the shell the layer is fixed at inset 0, because Babylon projects a cell to
+ * CSS pixels of the render viewport and that viewport is the window -- so the
+ * layer has to share the window's origin or every label lands displaced by the
+ * body's padding. The cost is that the layer's own box is the window too, and
+ * "clamp the label inside the layer" then clamped it inside the window: with the
+ * tabs moved up, two repository names were placed at y=25 and y=40, underneath
+ * the translucent status bar, where they read as garbled text over the counters.
+ *
+ * The field is the map's own box -- the layer the labels belong to -- less the
+ * toolbar floating over whichever edge it is anchored to. Off the shell, where
+ * the label layer already starts below the toolbar, every edge resolves to the
+ * layer's own box and nothing moves.
+ */
+export function catalogLabelField(
+  box:{left:number;top:number;width:number;height:number},
+  layer:{left:number;top:number;right:number;bottom:number}|null,
+  bar:{top:number;bottom:number}|null,
+) {
+  let left=0,top=0,right=box.width,bottom=box.height;
+  if(layer){
+    left=Math.max(0,layer.left-box.left);
+    top=Math.max(0,layer.top-box.top);
+    right=Math.min(box.width,layer.right-box.left);
+    bottom=Math.min(box.height,layer.bottom-box.top);
+  }
+  if(layer&&bar){
+    if(bar.top-layer.top<=layer.bottom-bar.bottom)top=Math.max(top,Math.min(bottom,bar.bottom-box.top));
+    else bottom=Math.min(bottom,Math.max(top,bar.top-box.top));
+  }
+  return {left,top,right,bottom};
 }

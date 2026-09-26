@@ -1,0 +1,103 @@
+/* Built like the blocks around it: one inner column, auto-fit answer columns
+   whose count the width decides, and no breakpoint doing the deciding. The
+   answers are a description list because that is what they are -- a term and
+   its definition -- which also gives a screen reader the pairing for free. */
+.faq-block {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #010403;
+  color: var(--text, #FFFFFF);
+}
+
+.faq-block-inner {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) 0;
+  display: grid;
+  gap: clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.faq-block-head {
+  max-width: 68ch;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.faq-block-eyebrow {
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.faq-block-head h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.faq-block-head p {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  line-height: 1.6;
+}
+
+/* Separate cards with a gap between them, on the shared .site-card surface;
+   the answers no longer sit in one green-ruled slab. */
+.faq-block-list {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+
+.faq-block-item {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+}
+
+.faq-block-item dt {
+  color: #e7f7fa;
+  font-size: clamp(1.1rem, 2.1vw, 1.3rem);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.faq-block-item dd {
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.faq-block-item dd p {
+  margin: 0;
+  color: #a8c1ba;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.6;
+}
+
+.faq-block-item dd a {
+  justify-self: start;
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.35);
+  padding-bottom: 2px;
+}
+
+.faq-block-item dd a:hover,
+.faq-block-item dd a:focus-visible {
+  border-bottom-color: #00ff88;
+}
+
+/* A link is a target before it is a word: on touch it gets the 44px the
+   platform asks for, without growing on a pointer that does not need it. */
+@media (pointer: coarse) {
+  .faq-block-item dd a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}

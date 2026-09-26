@@ -38,7 +38,7 @@ enum ErrorCode {
 
 pub struct YouTubeSource {
     url : str,
-    video_id : Option<str>,
+    video_id : ?str, // Rust Option<str> is the t27 optional ?str
     title : str,
 }
 
@@ -90,7 +90,7 @@ pub fn is_youtube_url(url : str) -> bool {
 // extract_video_id(url: str) -> Option<str>
 // Extract YouTube video ID from URL
 // Handles: youtu.be/VIDEO_ID, youtube.com/watch?v=VIDEO_ID, shorts/, embed/, live/, v/
-pub fn extract_video_id(url : str) -> Option<str> {
+pub fn extract_video_id(url : str) -> ?str {
     let trimmed = @trim(url);
 
     // youtu.be short URLs
@@ -106,7 +106,10 @@ pub fn extract_video_id(url : str) -> Option<str> {
     if (@contains(trimmed, "youtube.com/")) {
         let path_start = @indexOf(trimmed, "youtube.com/") + 11;
         let path = @substring(trimmed, path_start, @len(trimmed));
-        let segments = @split(@trim(path, "/");
+        // Typo fixed: was `@split(@trim(path, "/");` -- the `)` closing @split and
+        // its separator argument were missing. @trim(path, "/") strips the leading
+        // '/' (path_start = index + 11 points at it), then split on "/".
+        let segments = @split(@trim(path, "/"), "/");
 
         // Handle shorts/, embed/, live/, v/ prefixes
         if (@len(segments) >= 2) {
@@ -411,7 +414,7 @@ pub fn enrich_with_transcripts(
     sources : [0]str,
     api_token : str
 ) -> EnrichmentReport {
-    var report : EnrichmentReport = {
+    var report : EnrichmentReport = EnrichmentReport{
         .sources_added = 0,
         .transcripts_added = 0,
         .transcripts_failed = 0,
@@ -572,7 +575,7 @@ invariant error_codes_positive
 
 invariant enrichment_report_fields_initialized
     // EnrichmentReport fields start at 0 for successful case
-    var report : EnrichmentReport = {
+    var report : EnrichmentReport = EnrichmentReport{
         .sources_added = 0,
         .transcripts_added = 0,
         .transcripts_failed = 0,

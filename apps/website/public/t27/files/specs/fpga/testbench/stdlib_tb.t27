@@ -93,9 +93,14 @@ module Stdlib_Testbench {
         invariant clamp(5, 0, 10) == 5;
         invariant clamp(-1, 0, 10) == 0;
         invariant clamp(15, 0, 10) == 10;
-    }
+}
 
-    invariant max_ip_cores_positive : MAX_IP_CORES > 0;
+     test test_tick {
+         tick();
+         invariant clk == true;
+     }
+
+     invariant max_ip_cores_positive : MAX_IP_CORES > 0;
 
     bench bench_stdlib {
         reset();

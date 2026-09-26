@@ -105,13 +105,14 @@ export function appScreenUrl(screen: TriScreen, path?: string | null): string {
   return `${APP_ORIGIN}${triPathOf(screen, path) ?? entryOf(screen).route}`
 }
 
-export interface AppMessage {
-  kind: 'ready' | 'route'
-  path: string
-}
+export type AppMessage = { kind: 'ready' | 'route'; path: string } | { kind: 'error'; code: string }
+
+/** An error code the app names: short, lower-case, digits and underscores. */
+const APP_ERROR_CODE = /^[a-z0-9_]{1,64}$/
 
 /**
- * The only messages TRI listens to: a plain object {type:'t27-app', kind, path}
+ * The only messages TRI listens to: a plain object {type:'t27-app', kind, path},
+ * or {type:'t27-app', kind:'error', code} when the app failed inside the frame,
  * from the app's origin and from the frame TRI itself holds. telegram-web-app.js
  * inside the app posts JSON strings to '*'; those, and anything from any other
  * window, are rejected.
@@ -124,8 +125,9 @@ export function acceptAppMessage(
   if (!frameWindow || event.source !== frameWindow) return null
   const data = event.data
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null
-  const { type, kind, path } = data as { type?: unknown; kind?: unknown; path?: unknown }
+  const { type, kind, path, code } = data as { type?: unknown; kind?: unknown; path?: unknown; code?: unknown }
   if (type !== 't27-app') return null
+  if (kind === 'error') return typeof code === 'string' && APP_ERROR_CODE.test(code) ? { kind, code } : null
   if (kind !== 'ready' && kind !== 'route') return null
   if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')) return null
   return { kind, path }

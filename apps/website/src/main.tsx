@@ -3,16 +3,66 @@ import { createRoot } from 'react-dom/client'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import FormatSelection from './pages/FormatSelection'
 import './index.css'
+import './styles/card.css'
 import './styles/viewport.generated.css'
 import './styles/explorer-viewport.css'
 import App from './App.tsx'
 import { I18nProvider } from './i18n/context.tsx'
 import GlobalStarfield from './components/GlobalStarfield.tsx'
 import { handExplorerLinksToQueen } from './lib/queenFrame'
+import { redirectLegacyQueen } from './lib/legacyQueenRedirect'
+import { triIdentity } from './lib/triIdentity'
+import { reportArrival } from './lib/trafficArrival'
+
+// THE QUEEN MOVED to https://app.t27.ai/queen/, which now builds this same
+// bundle and serves the board on the app's own origin. #/queen here is the old
+// address and hands its visitors over.
+//
+// Decided first, before anything below costs a request. location.replace() does
+// not halt this module — the document keeps executing until the navigation
+// commits — so `leaving` is carried down to the identity bridge, which would
+// otherwise fetch a cross-origin document for a page that is on its way out.
+//
+// Why this cannot simply key on the route: app.t27.ai/queen/ runs this code
+// too. See src/lib/legacyQueenRedirect.ts and qa/queen-redirect-contract.mjs,
+// which calls the decision with both origins as input.
+const leaving = redirectLegacyQueen()
+
+// A visitor from a tagged link (utm_source=x, reddit, threads...) is counted
+// once, by channel, where the agents' links land. Not for a page that is on
+// its way to another address. See src/lib/trafficArrival.ts.
+if (!leaving) void reportArrival()
 
 // In a Queen tab's frame, a link to another Explorer switches the Queen's tab instead
 // of navigating the frame under a rail that names a different one.
 handExplorerLinksToQueen()
+
+// The Queen's identity chip waits on the app.t27.ai bridge, a document from
+// another host that then waits behind the hive's long tasks. Measured on a
+// local build with the bridge's live latency: requested only when the shell
+// rendered (~0.7 s), loaded, then ~1.1 s more behind long tasks; chip at
+// 3.3-6.0 s. Asked here, at the entry, the bridge loads beside the Queen's own
+// chunks. Only on the address that renders the Queen shell, never for an
+// embedded preview (embed=1, which asks nobody), in the language the page
+// will pick (src/i18n/context.tsx: ?lang=, then the saved choice).
+{
+  const hash = window.location.hash
+  const params = new URLSearchParams(hash.split('?')[1] ?? '')
+  const view = params.get('view')
+  if (!leaving && /^#\/queen(?:\?|$)/.test(hash) && params.get('embed') !== '1' && !params.has('repo') && view !== 'atlas' && view !== 'core') {
+    const asked = new URLSearchParams(window.location.search).get('lang')
+    let lang = asked && ['en', 'ru', 'de', 'zh', 'es'].includes(asked) ? asked : null
+    if (!lang) {
+      try {
+        lang = window.localStorage.getItem('trinity-lang')
+      } catch {
+        lang = null
+      }
+    }
+    triIdentity().setLanguage(lang ?? 'en')
+    triIdentity().prime()
+  }
+}
 
 // Only "/" is eager — it is the route every visitor lands on. The others were
 // static imports, which put all of them in the entry chunk (843 kB) and made the
@@ -36,6 +86,9 @@ const AboutAuthor = lazy(() => import('./pages/AboutAuthor.tsx'))
 const Resources = lazy(() => import('./pages/Resources.tsx'))
 const Foundry = lazy(() => import('./pages/Foundry.tsx'))
 const Queen = lazy(() => import('./pages/QueenUniverse.tsx'))
+// The PASSPORT: the record proposed to the OCP neuromorphic working group, and
+// the three measured cases behind it. One component, two faces.
+const Passport = lazy(() => import('./pages/Passport.tsx'))
 // Blog exports two components rather than a default, so the module has to be
 // unwrapped into the shape lazy() expects.
 const BlogIndex = lazy(() => import('./pages/Blog.tsx').then(m => ({ default: m.BlogIndex })))
@@ -97,6 +150,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/foundry" element={<Foundry />} />
             <Route path="/club" element={<Navigate to="/foundry" replace />} />
             <Route path="/queen" element={<Queen />} />
+            <Route path="/passport" element={<Passport face="record" />} />
+            <Route path="/passport/research" element={<Passport face="research" />} />
             <Route path="/canvas" element={<TrinityCanvas />} />
             <Route path="/quantum" element={<QuantumLab />} />
             <Route path="/lab" element={<QuantumLab />} />

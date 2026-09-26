@@ -35,16 +35,16 @@ jobs:
 
       - name: Build Trinity (Linux amd64)
         run: |
-          zig build -Dtarget=x86_64-linux-gnu.2.35 -Drelease-safe=true
-          zig build vibee -Dtarget=x86_64-linux-gnu.2.35 -Drelease-safe=true
+          zig build -Dtarget=x86_64-linux-gnu.2.35 -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
           mkdir -p release
           cp zig-out/bin/tri release/tri-linux-amd64
           cp zig-out/bin/vibee release/vibee-linux-amd64
-          chmod +x release/tri-linux-amd64 release/vibee-linux-amd64
-          tar czf trinity-linux-amd64.tar.gz -C release tri-linux-amd64 vibee-linux-amd64
+          cp zig-out/bin/firebird release/firebird-linux-amd64
+          chmod +x release/tri-linux-amd64 release/vibee-linux-amd64 release/firebird-linux-amd64
+          tar czf trinity-linux-amd64.tar.gz -C release tri-linux-amd64 vibee-linux-amd64 firebird-linux-amd64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -68,16 +68,16 @@ jobs:
 
       - name: Build Trinity (Linux arm64)
         run: |
-          zig build -Dtarget=aarch64-linux-gnu.2.35 -Drelease-safe=true
-          zig build vibee -Dtarget=aarch64-linux-gnu.2.35 -Drelease-safe=true
+          zig build -Dtarget=aarch64-linux-gnu.2.35 -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
           mkdir -p release
           cp zig-out/bin/tri release/tri-linux-arm64
           cp zig-out/bin/vibee release/vibee-linux-arm64
-          chmod +x release/tri-linux-arm64 release/vibee-linux-arm64
-          tar czf trinity-linux-arm64.tar.gz -C release tri-linux-arm64 vibee-linux-arm64
+          cp zig-out/bin/firebird release/firebird-linux-arm64
+          chmod +x release/tri-linux-arm64 release/vibee-linux-arm64 release/firebird-linux-arm64
+          tar czf trinity-linux-arm64.tar.gz -C release tri-linux-arm64 vibee-linux-arm64 firebird-linux-arm64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -87,7 +87,12 @@ jobs:
 
   build-macos-amd64:
     name: Build macOS (amd64)
-    runs-on: macos-13
+    # Was macos-13, which sat queued for the whole of a 50-minute run while
+    # every other job finished -- that image is on its way out and there is no
+    # reason to wait for it. The target here is already -Dtarget=x86_64-macos-none,
+    # so this was never a native build: zig cross-compiles it from the arm64
+    # image, which is also the one with an SDK zig 0.15.2 can read.
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -101,16 +106,16 @@ jobs:
 
       - name: Build Trinity (macOS amd64)
         run: |
-          zig build -Dtarget=x86_64-macos-none -Drelease-safe=true
-          zig build vibee -Dtarget=x86_64-macos-none -Drelease-safe=true
+          zig build -Dtarget=x86_64-macos-none -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
           mkdir -p release
           cp zig-out/bin/tri release/tri-macos-amd64
           cp zig-out/bin/vibee release/vibee-macos-amd64
-          chmod +x release/tri-macos-amd64 release/vibee-macos-amd64
-          tar czf trinity-macos-amd64.tar.gz -C release tri-macos-amd64 vibee-macos-amd64
+          cp zig-out/bin/firebird release/firebird-macos-amd64
+          chmod +x release/tri-macos-amd64 release/vibee-macos-amd64 release/firebird-macos-amd64
+          tar czf trinity-macos-amd64.tar.gz -C release tri-macos-amd64 vibee-macos-amd64 firebird-macos-amd64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -120,7 +125,13 @@ jobs:
 
   build-macos-arm64:
     name: Build macOS (arm64)
-    runs-on: macos-latest
+    # NOT macos-latest. That image is macOS 26.6 with the Xcode 26.6 SDK, and
+    # zig 0.15.2 cannot link `pub fn main() void {}` against libc there: every
+    # libSystem symbol comes back undefined, which is the failure this whole
+    # workflow has been dying of. Measured 2026-09-20 on all three images --
+    # macos-14 (Xcode 15.4) links it and runs the build runner; macos-latest
+    # fails both. Pinned until ZIG_VERSION moves to a zig that knows SDK 26.
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -134,16 +145,16 @@ jobs:
 
       - name: Build Trinity (macOS arm64)
         run: |
-          zig build -Dtarget=aarch64-macos-none -Drelease-safe=true
-          zig build vibee -Dtarget=aarch64-macos-none -Drelease-safe=true
+          zig build -Dtarget=aarch64-macos-none -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
           mkdir -p release
           cp zig-out/bin/tri release/tri-macos-arm64
           cp zig-out/bin/vibee release/vibee-macos-arm64
-          chmod +x release/tri-macos-arm64 release/vibee-macos-arm64
-          tar czf trinity-macos-arm64.tar.gz -C release tri-macos-arm64 vibee-macos-arm64
+          cp zig-out/bin/firebird release/firebird-macos-arm64
+          chmod +x release/tri-macos-arm64 release/vibee-macos-arm64 release/firebird-macos-arm64
+          tar czf trinity-macos-arm64.tar.gz -C release tri-macos-arm64 vibee-macos-arm64 firebird-macos-arm64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -151,9 +162,20 @@ jobs:
           name: macos-arm64
           path: trinity-macos-arm64.tar.gz
 
+  # Kept, and expected to fail. 17 files in this tree cannot compile for
+  # x86_64-windows: std.posix.getenv is a @compileError there because Windows
+  # environment strings are WTF-16, std.process.ArgIterator wants
+  # initWithAllocator, several @ptrFromInt sites pass a comptime_int where
+  # *anyopaque is required, and src/jit_arm64.zig is an arm64 JIT. That is a
+  # portability project across the source, not a line in this file.
+  #
+  # continue-on-error, not deletion: a job that runs and fails says Windows is
+  # unsupported and shows exactly why, every release. A deleted job says
+  # nothing, and the next person re-derives it from scratch.
   build-windows:
     name: Build Windows (amd64)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -167,15 +189,15 @@ jobs:
 
       - name: Build Trinity (Windows amd64)
         run: |
-          zig build -Dtarget=x86_64-windows-gnu -Drelease-safe=true
-          zig build vibee -Dtarget=x86_64-windows-gnu -Drelease-safe=true
+          zig build -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseSafe -Dci=true
 
       - name: Create archive
         run: |
           mkdir -p release
           cp zig-out/bin/tri.exe release/tri-windows-amd64.exe
           cp zig-out/bin/vibee.exe release/vibee-windows-amd64.exe
-          zip trinity-windows-amd64.zip release/tri-windows-amd64.exe release/vibee-windows-amd64.exe
+          cp zig-out/bin/firebird.exe release/firebird-windows-amd64.exe
+          zip trinity-windows-amd64.zip release/tri-windows-amd64.exe release/vibee-windows-amd64.exe release/firebird-windows-amd64.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -183,9 +205,18 @@ jobs:
           name: windows-amd64
           path: trinity-windows-amd64.zip
 
+  # The step below publishes with make_latest: true under github.ref_name. On a
+  # workflow_dispatch that name is a BRANCH, so dispatching this workflow to test
+  # a build would publish a release called fix/release-build and make it the
+  # latest one users are offered. The five build jobs are the part worth testing
+  # by hand; publishing is only ever the tag's job.
   release:
     name: Create Release
-    needs: [build-linux-amd64, build-linux-arm64, build-macos-amd64, build-macos-arm64, build-windows]
+    if: startsWith(github.ref, 'refs/tags/')
+    # build-windows is deliberately absent: it is allowed to fail, and whether
+    # `needs` treats a continue-on-error failure as satisfied is not something
+    # to bet a release on. It ships nothing, so it gates nothing.
+    needs: [build-linux-amd64, build-linux-arm64, build-macos-amd64, build-macos-arm64]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -233,7 +264,14 @@ jobs:
             | Linux | ARM64 | `trinity-linux-arm64.tar.gz` |
             | macOS | AMD64 (Intel) | `trinity-macos-amd64.tar.gz` |
             | macOS | ARM64 (Apple Silicon) | `trinity-macos-arm64.tar.gz` |
-            | Windows | AMD64 | `trinity-windows-amd64.zip` |
+
+            **There is no Windows build.** The Windows job runs and is expected
+            to fail: 17 source files use POSIX-only APIs that zig refuses to
+            compile for that target — `std.posix.getenv` (WTF-16 environment
+            strings), `ArgIterator.init` where Windows needs
+            `initWithAllocator`, and `src/jit_arm64.zig`, which is an arm64 JIT.
+            Listing a file here that the build cannot produce would be the only
+            thing worse than not shipping it.
 
             ### Verification
 
@@ -260,6 +298,7 @@ jobs:
 
             - **TRI** - Unified Trinity CLI (chat, code, pipeline, all commands)
             - **VIBEE** - VIBEE compiler (spec → Zig/Verilog)
+            - **FIREBIRD** - Firebird CLI (`src/firebird`, built ReleaseFast)
 
             ### Documentation
 

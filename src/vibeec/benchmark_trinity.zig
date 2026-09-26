@@ -262,6 +262,6 @@ test "golden identity" {
 }
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
     try generateComparisonTable(stdout);
 }

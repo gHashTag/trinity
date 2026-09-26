@@ -116,135 +116,135 @@ module TriConstants;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test max_path_len_basic_case
+    test "max_path_len_basic_case"
         given input = default_input()
         when result = max_path_len(input)
         then result != undefined
 
-    test max_line_len_basic_case
+    test "max_line_len_basic_case"
         given input = default_input()
         when result = max_line_len(input)
         then result != undefined
 
-    test max_args_basic_case
+    test "max_args_basic_case"
         given input = default_input()
         when result = max_args(input)
         then result != undefined
 
-    test max_env_vars_basic_case
+    test "max_env_vars_basic_case"
         given input = default_input()
         when result = max_env_vars(input)
         then result != undefined
 
-    test get_p_h_i_basic_case
+    test "get_p_h_i_basic_case"
         given input = default_input()
         when result = get_p_h_i(input)
         then result != undefined
 
-    test get_p_i_basic_case
+    test "get_p_i_basic_case"
         given input = default_input()
         when result = get_p_i(input)
         then result != undefined
 
-    test get_e_basic_case
+    test "get_e_basic_case"
         given input = default_input()
         when result = get_e(input)
         then result != undefined
 
-    test get_s_q_r_t2_basic_case
+    test "get_s_q_r_t2_basic_case"
         given input = default_input()
         when result = get_s_q_r_t2(input)
         then result != undefined
 
-    test get_s_q_r_t3_basic_case
+    test "get_s_q_r_t3_basic_case"
         given input = default_input()
         when result = get_s_q_r_t3(input)
         then result != undefined
 
-    test get_golden_ratio_basic_case
+    test "get_golden_ratio_basic_case"
         given input = default_input()
         when result = get_golden_ratio(input)
         then result != undefined
 
-    test get_system_limits_basic_case
+    test "get_system_limits_basic_case"
         given input = default_input()
         when result = get_system_limits(input)
         then result != undefined
 
-    test get_sacred_constants_basic_case
+    test "get_sacred_constants_basic_case"
         given input = default_input()
         when result = get_sacred_constants(input)
         then result != undefined
 
-    test max_path_len_accessor_matches_system_limits
+    test "max_path_len_accessor_matches_system_limits"
         given limits = get_system_limits()
         then limits.max_path_len == max_path_len()
 
-    test max_line_len_accessor_matches_system_limits
+    test "max_line_len_accessor_matches_system_limits"
         given limits = get_system_limits()
         then limits.max_line_len == max_line_len()
 
-    test max_args_accessor_matches_system_limits
+    test "max_args_accessor_matches_system_limits"
         given limits = get_system_limits()
         then limits.max_args == max_args()
 
-    test max_env_vars_accessor_matches_system_limits
+    test "max_env_vars_accessor_matches_system_limits"
         given limits = get_system_limits()
         then limits.max_env_vars == max_env_vars()
 
-    test get_p_h_i_accessor_matches_sacred_constants
+    test "get_p_h_i_accessor_matches_sacred_constants"
         given c = get_sacred_constants()
         then c.phi == get_p_h_i()
 
-    test get_p_i_accessor_matches_sacred_constants
+    test "get_p_i_accessor_matches_sacred_constants"
         given c = get_sacred_constants()
         then c.pi == get_p_i()
 
-    test get_e_accessor_matches_sacred_constants
+    test "get_e_accessor_matches_sacred_constants"
         given c = get_sacred_constants()
         then c.e == get_e()
 
-    test get_s_q_r_t2_accessor_matches_sacred_constants
+    test "get_s_q_r_t2_accessor_matches_sacred_constants"
         given c = get_sacred_constants()
         then c.sqrt2 == get_s_q_r_t2()
 
-    test get_s_q_r_t3_accessor_matches_sacred_constants
+    test "get_s_q_r_t3_accessor_matches_sacred_constants"
         given c = get_sacred_constants()
         then c.sqrt3 == get_s_q_r_t3()
 
-    test get_golden_ratio_accessor_matches_sacred_constants
+    test "get_golden_ratio_accessor_matches_sacred_constants"
         given c = get_sacred_constants()
         then c.golden_ratio == get_golden_ratio()
 
-    test phi_identity_through_accessors
+    test "phi_identity_through_accessors"
         // phi^2 + 1/phi^2 = 3
         given phi = get_p_h_i()
         and phi_sq = phi * phi
         and sum = phi_sq + 1.0 / phi_sq
         then @abs(sum - 3.0) < 1e-12
 
-    test phi_reciprocal_identity_through_accessors
+    test "phi_reciprocal_identity_through_accessors"
         // phi * phi == phi + 1
         given phi = get_p_h_i()
         then @abs(phi * phi - (phi + 1.0)) < 1e-12
 
-    test sqrt2_identity_through_accessors
+    test "sqrt2_identity_through_accessors"
         // sqrt2 * sqrt2 == 2
         given sqrt2 = get_s_q_r_t2()
         then @abs(sqrt2 * sqrt2 - 2.0) < 1e-12
 
-    test sqrt3_identity_through_accessors
+    test "sqrt3_identity_through_accessors"
         // sqrt3 * sqrt3 == 3
         given sqrt3 = get_s_q_r_t3()
         then @abs(sqrt3 * sqrt3 - 3.0) < 1e-12
 
-    test golden_ratio_equals_phi
+    test "golden_ratio_equals_phi"
         // golden_ratio is the same as phi
         given golden_ratio = get_golden_ratio()
         and phi = get_p_h_i()
         then golden_ratio == phi
 
-    test sacred_constants_aggregate_consistency
+    test "sacred_constants_aggregate_consistency"
         // All sacred constants accessible through aggregate and individual accessors
         given c = get_sacred_constants()
         and phi = get_p_h_i()
@@ -255,7 +255,7 @@ module TriConstants;
         and golden_ratio = get_golden_ratio()
         then c.phi == phi and c.pi == pi and c.e == e and c.sqrt2 == sqrt2 and c.sqrt3 == sqrt3 and c.golden_ratio == golden_ratio
 
-    test system_limits_aggregate_consistency
+    test "system_limits_aggregate_consistency"
         // All system limits accessible through aggregate and individual accessors
         given limits = get_system_limits()
         and path_len = max_path_len()

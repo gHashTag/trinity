@@ -187,10 +187,12 @@ pub fn avs_reconf_freq_valid(freq_khz: u32) -> bool {
 // avs_reconf_config_valid(config: ReconfConfig) -> bool
 // Check if config is valid
 pub fn avs_reconf_config_valid(config: ReconfConfig) -> bool {
+    // `and` continuation lines restored (they had been rewritten as
+    // `try std.testing.expect(...)` statements after the return).
     return avs_reconf_voltage_valid(config.voltage_mv)
-    try std.testing.expect(avs_reconf_freq_valid(config.freq_khz));
-    try std.testing.expect(config.min_voltage_mv < config.max_voltage_mv);
-    try std.testing.expect(config.min_freq_khz < config.max_freq_khz;);
+        and avs_reconf_freq_valid(config.freq_khz)
+        and config.min_voltage_mv < config.max_voltage_mv
+        and config.min_freq_khz < config.max_freq_khz;
 }
 
 // ============================================================================
@@ -393,204 +395,203 @@ pub fn decode_avs_reconf_cmd(encoded: u32) -> struct { op: u8, param1: u16, para
 // ============================================================================
 
 test "reconf_opcode_base" {
-    try std.testing.expect(RECONF_OPCODE_BASE == 0xF0);
+    assert(RECONF_OPCODE_BASE == 0xF0);
 }
 
 test "reconf_op_constants" {
-    try std.testing.expect(RECONF_OP_SET_VOLTAGE == 0);
-    try std.testing.expect(RECONF_OP_SET_FREQUENCY == 1);
-    try std.testing.expect(RECONF_OP_SET_MODE == 2);
-    try std.testing.expect(RECONF_OP_CALIBRATE == 7);
+    assert(RECONF_OP_SET_VOLTAGE == 0);
+    assert(RECONF_OP_SET_FREQUENCY == 1);
+    assert(RECONF_OP_SET_MODE == 2);
+    assert(RECONF_OP_CALIBRATE == 7);
 }
 
 test "reconf_mode_constants" {
-    try std.testing.expect(RECONF_MODE_MANUAL == 0);
-    try std.testing.expect(RECONF_MODE_PERFORMANCE == 2);
-    try std.testing.expect(RECONF_MODE_POWER_SAVING == 3);
-    try std.testing.expect(RECONF_MODE_ADAPTIVE == 4);
+    assert(RECONF_MODE_MANUAL == 0);
+    assert(RECONF_MODE_PERFORMANCE == 2);
+    assert(RECONF_MODE_POWER_SAVING == 3);
+    assert(RECONF_MODE_ADAPTIVE == 4);
 }
 
 test "reconf_state_constants" {
-    try std.testing.expect(RECONF_STATE_IDLE == 0);
-    try std.testing.expect(RECONF_STATE_BUSY == 1);
-    try std.testing.expect(RECONF_STATE_ERROR == 2);
+    assert(RECONF_STATE_IDLE == 0);
+    assert(RECONF_STATE_BUSY == 1);
+    assert(RECONF_STATE_ERROR == 2);
 }
 
 test "voltage_freq_constants" {
-    try std.testing.expect(VOLTAGE_MIN_MV == 700);
-    try std.testing.expect(VOLTAGE_MAX_MV == 1300);
-    try std.testing.expect(FREQ_MIN_KHZ == 10000);
-    try std.testing.expect(FREQ_MAX_KHZ == 200000);
+    assert(VOLTAGE_MIN_MV == 700);
+    assert(VOLTAGE_MAX_MV == 1300);
+    assert(FREQ_MIN_KHZ == 10000);
+    assert(FREQ_MAX_KHZ == 200000);
 }
 
 test "avs_reconf_config_init_structure" {
-    given config = avs_reconf_config_init()
-    try std.testing.expect(config.mode == ReconfMode.manual);
-    try std.testing.expect(config.voltage_mv == 1000);
-    try std.testing.expect(config.freq_khz == 100000);
+    const config = avs_reconf_config_init();
+    assert(config.mode == ReconfMode.manual);
+    assert(config.voltage_mv == 1000);
+    assert(config.freq_khz == 100000);
 }
 
 test "avs_reconf_config_performance_structure" {
-    given config = avs_reconf_config_performance()
-    try std.testing.expect(config.mode == ReconfMode.performance);
-    try std.testing.expect(config.voltage_mv == VOLTAGE_MAX_MV);
-    try std.testing.expect(config.auto_scale == true);
+    const config = avs_reconf_config_performance();
+    assert(config.mode == ReconfMode.performance);
+    assert(config.voltage_mv == VOLTAGE_MAX_MV);
+    assert(config.auto_scale == true);
 }
 
 test "avs_reconf_config_power_saving_structure" {
-    given config = avs_reconf_config_power_saving()
-    try std.testing.expect(config.mode == ReconfMode.power_saving);
-    try std.testing.expect(config.voltage_mv < 1000);
-    try std.testing.expect(config.auto_scale == true);
+    const config = avs_reconf_config_power_saving();
+    assert(config.mode == ReconfMode.power_saving);
+    assert(config.voltage_mv < 1000);
+    assert(config.auto_scale == true);
 }
 
 test "avs_reconf_config_adaptive_structure" {
-    given config = avs_reconf_config_adaptive()
-    try std.testing.expect(config.mode == ReconfMode.adaptive);
-    try std.testing.expect(config.auto_scale == true);
+    const config = avs_reconf_config_adaptive();
+    assert(config.mode == ReconfMode.adaptive);
+    assert(config.auto_scale == true);
 }
 
 test "avs_reconf_voltage_valid_true" {
-    try std.testing.expect(avs_reconf_voltage_valid(800) == true);
-    try std.testing.expect(avs_reconf_voltage_valid(1000) == true);
-    try std.testing.expect(avs_reconf_voltage_valid(1200) == true);
+    assert(avs_reconf_voltage_valid(800) == true);
+    assert(avs_reconf_voltage_valid(1000) == true);
+    assert(avs_reconf_voltage_valid(1200) == true);
 }
 
 test "avs_reconf_voltage_valid_false" {
-    try std.testing.expect(avs_reconf_voltage_valid(600) == false);
-    try std.testing.expect(avs_reconf_voltage_valid(1400) == false);
+    assert(avs_reconf_voltage_valid(600) == false);
+    assert(avs_reconf_voltage_valid(1400) == false);
 }
 
 test "avs_reconf_freq_valid_true" {
-    try std.testing.expect(avs_reconf_freq_valid(20000) == true);
-    try std.testing.expect(avs_reconf_freq_valid(100000) == true);
-    try std.testing.expect(avs_reconf_freq_valid(150000) == true);
+    assert(avs_reconf_freq_valid(20000) == true);
+    assert(avs_reconf_freq_valid(100000) == true);
+    assert(avs_reconf_freq_valid(150000) == true);
 }
 
 test "avs_reconf_freq_valid_false" {
-    try std.testing.expect(avs_reconf_freq_valid(5000) == false);
-    try std.testing.expect(avs_reconf_freq_valid(300000) == false);
+    assert(avs_reconf_freq_valid(5000) == false);
+    assert(avs_reconf_freq_valid(300000) == false);
 }
 
 test "avs_reconf_config_valid_true" {
-    given config = avs_reconf_config_init()
-    try std.testing.expect(avs_reconf_config_valid(config) == true);
+    const config = avs_reconf_config_init();
+    assert(avs_reconf_config_valid(config) == true);
 }
 
 test "avs_reconf_config_valid_false" {
-    given config = ReconfConfig{.mode = ReconfMode.manual, .voltage_mv = 600, .freq_khz = 100000, .auto_scale = false, .min_voltage_mv = 700, .max_voltage_mv = 1300, .min_freq_khz = 10000, .max_freq_khz = 200000}
-    try std.testing.expect(avs_reconf_config_valid(config) == false);
+    const config = ReconfConfig{.mode = ReconfMode.manual, .voltage_mv = 600, .freq_khz = 100000, .auto_scale = false, .min_voltage_mv = 700, .max_voltage_mv = 1300, .min_freq_khz = 10000, .max_freq_khz = 200000};
+    assert(avs_reconf_config_valid(config) == false);
 }
 
 test "avs_reconf_status_init_structure" {
-    given status = avs_reconf_status_init()
-    try std.testing.expect(status.state == ReconfState.idle);
-    try std.testing.expect(status.current_voltage_mv == VOLTAGE_MIN_MV);
+    const status = avs_reconf_status_init();
+    assert(status.state == ReconfState.idle);
+    assert(status.current_voltage_mv == VOLTAGE_MIN_MV);
 }
 
 test "avs_reconf_status_start_op" {
-    given status = avs_reconf_status_init()
-    try std.testing.expect(result = avs_reconf_status_start_op(status, ReconfOp.set_voltage));
-    try std.testing.expect(result.state == ReconfState.busy);
-    try std.testing.expect(result.last_op == ReconfOp.set_voltage);
+    const status = avs_reconf_status_init();
+    const result = avs_reconf_status_start_op(status, ReconfOp.set_voltage);
+    assert(result.state == ReconfState.busy);
+    assert(result.last_op == ReconfOp.set_voltage);
 }
 
 test "avs_reconf_status_complete_success" {
-    given status = avs_reconf_status_init()
-    try std.testing.expect(result = avs_reconf_result_success(1000));
-    try std.testing.expect(new_status = avs_reconf_status_complete(status, result));
-    try std.testing.expect(new_status.state == ReconfState.idle);
-    try std.testing.expect(new_status.error_code == 0);
+    const status = avs_reconf_status_init();
+    const result = avs_reconf_result_success(1000);
+    const new_status = avs_reconf_status_complete(status, result);
+    assert(new_status.state == ReconfState.idle);
+    assert(new_status.error_code == 0);
 }
 
 test "avs_reconf_status_complete_error" {
-    given status = avs_reconf_status_init()
-    try std.testing.expect(result = avs_reconf_result_error(1, 500));
-    try std.testing.expect(new_status = avs_reconf_status_complete(status, result));
-    try std.testing.expect(new_status.state == ReconfState.error);
-    try std.testing.expect(new_status.error_code == 1);
-    try std.testing.expect(new_status.retry_count == 1);
+    const status = avs_reconf_status_init();
+    const result = avs_reconf_result_error(1, 500);
+    const new_status = avs_reconf_status_complete(status, result);
+    assert(new_status.state == ReconfState.error);
+    assert(new_status.error_code == 1);
+    assert(new_status.retry_count == 1);
 }
 
 test "avs_reconf_status_update_voltage" {
-    given status = avs_reconf_status_init()
-    try std.testing.expect(result = avs_reconf_status_update_voltage(status, 1100));
-    try std.testing.expect(result.current_voltage_mv == 1100);
+    const status = avs_reconf_status_init();
+    const result = avs_reconf_status_update_voltage(status, 1100);
+    assert(result.current_voltage_mv == 1100);
 }
 
 test "avs_reconf_status_update_freq" {
-    given status = avs_reconf_status_init()
-    try std.testing.expect(result = avs_reconf_status_update_freq(status, 150000));
-    try std.testing.expect(result.current_freq_khz == 150000);
+    const status = avs_reconf_status_init();
+    const result = avs_reconf_status_update_freq(status, 150000);
+    assert(result.current_freq_khz == 150000);
 }
 
 test "avs_reconf_command_set_voltage_structure" {
-    given cmd = avs_reconf_command_set_voltage(1050)
-    try std.testing.expect(cmd.op == ReconfOp.set_voltage);
-    try std.testing.expect(cmd.param1 == 1050);
+    const cmd = avs_reconf_command_set_voltage(1050);
+    assert(cmd.op == ReconfOp.set_voltage);
+    assert(cmd.param1 == 1050);
 }
 
 test "avs_reconf_command_set_freq_structure" {
-    given cmd = avs_reconf_command_set_freq(120000)
-    try std.testing.expect(cmd.op == ReconfOp.set_frequency);
-    try std.testing.expect(cmd.param1 == 120000);
+    const cmd = avs_reconf_command_set_freq(120000);
+    assert(cmd.op == ReconfOp.set_frequency);
+    assert(cmd.param1 == 120000);
 }
 
 test "avs_reconf_command_set_mode_structure" {
-    given cmd = avs_reconf_command_set_mode(ReconfMode.performance)
-    try std.testing.expect(cmd.op == ReconfOp.set_mode);
-    try std.testing.expect(cmd.param1 == 2);
+    const cmd = avs_reconf_command_set_mode(ReconfMode.performance);
+    assert(cmd.op == ReconfOp.set_mode);
+    assert(cmd.param1 == 2);
 }
 
 test "avs_reconf_command_calibrate_structure" {
-    given cmd = avs_reconf_command_calibrate()
-    try std.testing.expect(cmd.op == ReconfOp.calibrate);
-    try std.testing.expect(cmd.timeout_ms > RECONF_TIMEOUT_MS);
+    const cmd = avs_reconf_command_calibrate();
+    assert(cmd.op == ReconfOp.calibrate);
+    assert(cmd.timeout_ms > RECONF_TIMEOUT_MS);
 }
 
 test "avs_reconf_result_success_structure" {
-    given result = avs_reconf_result_success(500)
-    try std.testing.expect(result.success == true);
-    try std.testing.expect(result.cycles_taken == 500);
+    const result = avs_reconf_result_success(500);
+    assert(result.success == true);
+    assert(result.cycles_taken == 500);
 }
 
 test "avs_reconf_result_error_structure" {
-    given result = avs_reconf_result_error(2, 300)
-    try std.testing.expect(result.success == false);
-    try std.testing.expect(result.error_code == 2);
+    const result = avs_reconf_result_error(2, 300);
+    assert(result.success == false);
+    assert(result.error_code == 2);
 }
 
 test "avs_reconf_should_retry_true" {
-    given status = ReconfStatus{.state = ReconfState.error, .current_voltage_mv = 1000, .current_freq_khz = 100000, .last_op = ReconfOp.set_voltage, .error_code = 1, .retry_count = 1}
-    try std.testing.expect(avs_reconf_should_retry(status) == true);
+    const status = ReconfStatus{.state = ReconfState.error, .current_voltage_mv = 1000, .current_freq_khz = 100000, .last_op = ReconfOp.set_voltage, .error_code = 1, .retry_count = 1};
+    assert(avs_reconf_should_retry(status) == true);
 }
 
 test "avs_reconf_should_retry_false_max_retries" {
-    given status = ReconfStatus{.state = ReconfState.error, .current_voltage_mv = 1000, .current_freq_khz = 100000, .last_op = ReconfOp.set_voltage, .error_code = 1, .retry_count = 3}
-    try std.testing.expect(avs_reconf_should_retry(status) == false);
+    const status = ReconfStatus{.state = ReconfState.error, .current_voltage_mv = 1000, .current_freq_khz = 100000, .last_op = ReconfOp.set_voltage, .error_code = 1, .retry_count = 3};
+    assert(avs_reconf_should_retry(status) == false);
 }
 
 test "avs_reconf_should_retry_false_idle" {
-    given status = avs_reconf_status_init()
-    try std.testing.expect(avs_reconf_should_retry(status) == false);
+    const status = avs_reconf_status_init();
+    assert(avs_reconf_should_retry(status) == false);
 }
 
 test "encode_avs_reconf_cmd" {
-    given encoded = encode_avs_reconf_cmd(0x00, 0x3E8, 0x2710)
-    try std.testing.expect((encoded >> 24) == 0x00);
+    const encoded = encode_avs_reconf_cmd(0x00, 0x3E8, 0x2710);
+    assert((encoded >> 24) == 0x00);
 }
 
 test "decode_avs_reconf_cmd" {
-    given decoded = decode_avs_reconf_cmd(0x003E8271)
-    try std.testing.expect(decoded.op == 0);
-    try std.testing.expect(decoded.param1 == 0x3E8);
+    const decoded = decode_avs_reconf_cmd(0x003E8271);
+    assert(decoded.op == 0);
+    assert(decoded.param1 == 0x3E8);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant voltage_range_positive
     assert VOLTAGE_MIN_MV > 0 and VOLTAGE_MAX_MV > VOLTAGE_MIN_MV
 
@@ -617,12 +618,12 @@ invariant reconf_config_power_saving_low_voltage
 
 invariant reconf_status_init_idle
     given status = avs_reconf_status_init()
-    try std.testing.expect(status.state == ReconfState.idle);
+    assert status.state == ReconfState.idle;
 
 invariant reconf_status_start_op_busy
     given status = avs_reconf_status_init()
-    try std.testing.expect(result = avs_reconf_status_start_op(status, ReconfOp.set_voltage));
-    try std.testing.expect(result.state == ReconfState.busy);
+    when result = avs_reconf_status_start_op(status, ReconfOp.set_voltage)
+    assert result.state == ReconfState.busy;
 
 invariant reconf_result_success_no_error
     given result = avs_reconf_result_success(100)
@@ -646,7 +647,7 @@ invariant reconf_config_power_saving_auto_scale
 
 invariant reconf_command_calibrate_longer_timeout
     given normal = avs_reconf_command_init()
-    try std.testing.expect(cal = avs_reconf_command_calibrate());
+    when cal = avs_reconf_command_calibrate()
     assert cal.timeout_ms > normal.timeout_ms
 
 // ============================================================================

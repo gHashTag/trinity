@@ -19,34 +19,87 @@ module TriPolynomial;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(allocator: std.mem.Allocator) → void
-    fn init(allocator: std.mem.Allocator) -> void {
-        // TODO: Implement from .tri spec
+    // init(allocator: std.mem.Allocator, coeffs: []f64) → Polynomial
+    fn init(allocator: std.mem.Allocator, coeffs: []f64) -> Polynomial {
+        var result: Polynomial = .{
+            .coeffs = coeffs,
+            .allocator = allocator,
+        };
+        return result;
     }
 
-    // eval(p: *Polynomial) → void
-    fn eval(p: *Polynomial) -> void {
-        // TODO: Implement from .tri spec
+    // eval(p: *Polynomial, x: f64) → f64
+    fn eval(p: *Polynomial, x: f64) -> f64 {
+        var result: f64 = 0.0;
+        for (p.coeffs) |coeff, i| {
+            result += coeff * std.math.pow(f64, x, @intCast(i));
+        }
+        return result;
     }
 
-    // add(a: *Polynomial) → void
-    fn add(a: *Polynomial) -> void {
-        // TODO: Implement from .tri spec
+    // add(a: *Polynomial, b: *Polynomial, allocator: std.mem.Allocator) → Polynomial
+    fn add(a: *Polynomial, b: *Polynomial, allocator: std.mem.Allocator) -> Polynomial {
+        const max_len = @max(a.coeffs.len, b.coeffs.len);
+        var coeffs: []f64 = allocator.alloc(f64, max_len);
+        
+        for (coeffs) |*coeff, i| {
+            coeff.* = if (i < a.coeffs.len) a.coeffs[i] else 0.0;
+            coeff.* += if (i < b.coeffs.len) b.coeffs[i] else 0.0;
+        }
+        
+        return Polynomial{
+            .coeffs = coeffs,
+            .allocator = allocator,
+        };
     }
 
-    // multiply(a: *Polynomial) → void
-    fn multiply(a: *Polynomial) -> void {
-        // TODO: Implement from .tri spec
+    // multiply(a: *Polynomial, b: *Polynomial, allocator: std.mem.Allocator) → Polynomial
+    fn multiply(a: *Polynomial, b: *Polynomial, allocator: std.mem.Allocator) -> Polynomial {
+        const result_len = a.coeffs.len + b.coeffs.len - 1;
+        var coeffs: []f64 = allocator.alloc(f64, result_len);
+        
+        for (coeffs) |*coeff| {
+            coeff.* = 0.0;
+        }
+        
+        for (a.coeffs) |a_coeff, i| {
+            for (b.coeffs) |b_coeff, j| {
+                coeffs[i + j] += a_coeff * b_coeff;
+            }
+        }
+        
+        return Polynomial{
+            .coeffs = coeffs,
+            .allocator = allocator,
+        };
     }
 
-    // derivative(p: *Polynomial) → void
-    fn derivative(p: *Polynomial) -> void {
-        // TODO: Implement from .tri spec
+    // derivative(p: *Polynomial, allocator: std.mem.Allocator) → Polynomial
+    fn derivative(p: *Polynomial, allocator: std.mem.Allocator) -> Polynomial {
+        if (p.coeffs.len <= 1) {
+            var coeffs: []f64 = allocator.alloc(f64, 1);
+            coeffs[0] = 0.0;
+            return Polynomial{
+                .coeffs = coeffs,
+                .allocator = allocator,
+            };
+        }
+        
+        var coeffs: []f64 = allocator.alloc(f64, p.coeffs.len - 1);
+        
+        for (coeffs) |*coeff, i| {
+            coeff.* = p.coeffs[i + 1] * @as(f64, @floatFromInt(i + 1));
+        }
+        
+        return Polynomial{
+            .coeffs = coeffs,
+            .allocator = allocator,
+        };
     }
 
     // deinit(p: *Polynomial) → void
     fn deinit(p: *Polynomial) -> void {
-        // TODO: Implement from .tri spec
+        p.allocator.free(p.coeffs);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -54,32 +107,34 @@ module TriPolynomial;
     // ═══════════════════════════════════════════════════════════
 
     test init_basic_case
-        given input = default_input()
-        when result = init(input)
+        given coeffs = []f64{1.0, 2.0, 3.0}
+        when result = init(std.mem.global_allocator, coeffs)
         then result != undefined
 
     test eval_basic_case
-        given input = default_input()
-        when result = eval(input)
+        given coeffs = []f64{1.0, 2.0, 3.0}
+        when result = eval(&init(std.mem.global_allocator, coeffs), 2.0)
         then result != undefined
 
     test add_basic_case
-        given input = default_input()
-        when result = add(input)
+        given a_coeffs = []f64{1.0, 2.0}
+        b_coeffs = []f64{3.0, 4.0}
+        when result = add(&init(std.mem.global_allocator, a_coeffs), &init(std.mem.global_allocator, b_coeffs), std.mem.global_allocator)
         then result != undefined
 
     test multiply_basic_case
-        given input = default_input()
-        when result = multiply(input)
+        given a_coeffs = []f64{1.0, 2.0}
+        b_coeffs = []f64{3.0, 4.0}
+        when result = multiply(&init(std.mem.global_allocator, a_coeffs), &init(std.mem.global_allocator, b_coeffs), std.mem.global_allocator)
         then result != undefined
 
     test derivative_basic_case
-        given input = default_input()
-        when result = derivative(input)
+        given coeffs = []f64{1.0, 2.0, 3.0}
+        when result = derivative(&init(std.mem.global_allocator, coeffs), std.mem.global_allocator)
         then result != undefined
 
     test deinit_basic_case
-        given input = default_input()
-        when result = deinit(input)
+        given coeffs = []f64{1.0, 2.0, 3.0}
+        when result = deinit(&init(std.mem.global_allocator, coeffs))
         then result != undefined
 

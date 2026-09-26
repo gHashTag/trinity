@@ -104,7 +104,7 @@ pub fn pe_set_state(status: PeStatus, state: PeState) PeStatus {
 // pe_config_enabled(config: PeConfig) -> bool
 // Check if PE config enables operation
 pub fn pe_config_enabled(config: PeConfig) -> bool {
-    return config.enabled and not config.bypass_enabled;
+    return config.enabled and !config.bypass_enabled;
 }
 
 // pe_is_null(config: PeConfig) -> bool
@@ -129,7 +129,8 @@ pub fn null_pe_skip(input: u16, pe_mask: u8, configs: [PE_COUNT]PeConfig) -> Nul
     var skip_count : u8 = 0;
     var output_data : u16 = input;
 
-    for (configs, 0..) |config, i| {
+    for (0..PE_COUNT) |i| {  // was `for (configs, 0..) |config, i|`; configs has PE_COUNT entries
+        const config = configs[i];
         if (((pe_mask >> i) & 1) != 0 and pe_is_null(config)) {
             skip_count += 1;
         }
@@ -148,7 +149,8 @@ pub fn null_pe_skip(input: u16, pe_mask: u8, configs: [PE_COUNT]PeConfig) -> Nul
 pub fn null_pe_zero(input: u16, pe_mask: u8, configs: [PE_COUNT]PeConfig) -> NullPeResult {
     var skip_count : u8 = 0;
 
-    for (configs, 0..) |config, i| {
+    for (0..PE_COUNT) |i| {  // was `for (configs, 0..) |config, i|`; configs has PE_COUNT entries
+        const config = configs[i];
         if (((pe_mask >> i) & 1) != 0 and pe_is_null(config)) {
             skip_count += 1;
         }
@@ -167,7 +169,8 @@ pub fn null_pe_zero(input: u16, pe_mask: u8, configs: [PE_COUNT]PeConfig) -> Nul
 pub fn null_pe_identity(input: u16, pe_mask: u8, configs: [PE_COUNT]PeConfig) -> NullPeResult {
     var active_count : u8 = 0;
 
-    for (configs, 0..) |config, i| {
+    for (0..PE_COUNT) |i| {  // was `for (configs, 0..) |config, i|`; configs has PE_COUNT entries
+        const config = configs[i];
         if (((pe_mask >> i) & 1) != 0 and pe_is_identity(config)) {
             active_count += 1;
         }
@@ -187,31 +190,23 @@ pub fn null_pe_execute(input: u16, pe_mask: u8, configs: [PE_COUNT]PeConfig) -> 
     var mode : u8 = NULL_MODE_SKIP;
 
     // Determine primary mode from active PEs
-    for (configs, 0..) |config, i| {
+    for (0..PE_COUNT) |i| {  // was `for (configs, 0..) |config, i|`; configs has PE_COUNT entries
+        const config = configs[i];
         if (((pe_mask >> i) & 1) != 0 and config.enabled) {
             mode = config.mode;
             break;
         }
     }
 
-    switch (mode) {
-        NULL_MODE_SKIP => {
-            return null_pe_skip(input, pe_mask, configs);
-        },
-        NULL_MODE_ZERO => {
-            return null_pe_zero(input, pe_mask, configs);
-        },
-        NULL_MODE_IDENTITY => {
-            return null_pe_identity(input, pe_mask, configs);
-        },
-        NULL_MODE_CUSTOM => {
-            // Custom: return zero for null PEs
-            return null_pe_zero(input, pe_mask, configs);
-        },
-        else => {
-            return null_pe_skip(input, pe_mask, configs);
-        },
-    }
+    // t27 switch arms are expressions, so the per-arm `{ return X; }` blocks become `return switch`
+    return switch (mode) {
+        NULL_MODE_SKIP => null_pe_skip(input, pe_mask, configs),
+        NULL_MODE_ZERO => null_pe_zero(input, pe_mask, configs),
+        NULL_MODE_IDENTITY => null_pe_identity(input, pe_mask, configs),
+        // Custom: return zero for null PEs
+        NULL_MODE_CUSTOM => null_pe_zero(input, pe_mask, configs),
+        else => null_pe_skip(input, pe_mask, configs),
+    };
 }
 
 // ============================================================================
@@ -253,7 +248,7 @@ pub fn pe_array_enable(pe_array: PeArray, pe_mask: u8) -> PeArray {
 pub fn pe_array_count_active(pe_array: PeArray) -> u8 {
     var count : u8 = 0;
     for (pe_array.configs) |config| {
-        if (config.enabled and not config.bypass_enabled) {
+        if (config.enabled and !config.bypass_enabled) {
             count += 1;
         }
     }
@@ -276,7 +271,8 @@ pub fn pe_array_count_null(pe_array: PeArray) -> u8 {
 // Get bitmask of null PEs
 pub fn pe_array_get_null_mask(pe_array: PeArray) -> u8 {
     var mask : u8 = 0;
-    for (pe_array.configs, 0..) |config, i| {
+    for (0..PE_COUNT) |i| {  // was `for (pe_array.configs, 0..) |config, i|`; pe_array.configs has PE_COUNT entries
+        const config = pe_array.configs[i];
         if (pe_is_null(config)) {
             mask |= (@as(u8, 1) << i);
         }
@@ -311,172 +307,171 @@ pub fn decode_null_pe(encoded: u16) -> struct { pe_mask: u8, mode: u8 } {
 // ============================================================================
 
 test "pe_count_four" {
-    try std.testing.expect(PE_COUNT == 4);
+    assert(PE_COUNT == 4);
 }
 
 test "data_width_sixteen" {
-    try std.testing.expect(DATA_WIDTH == 16);
+    assert(DATA_WIDTH == 16);
 }
 
 test "null_mode_constants" {
-    try std.testing.expect(NULL_MODE_SKIP == 0);
-    try std.testing.expect(NULL_MODE_ZERO == 1);
-    try std.testing.expect(NULL_MODE_IDENTITY == 2);
-    try std.testing.expect(NULL_MODE_CUSTOM == 3);
+    assert(NULL_MODE_SKIP == 0);
+    assert(NULL_MODE_ZERO == 1);
+    assert(NULL_MODE_IDENTITY == 2);
+    assert(NULL_MODE_CUSTOM == 3);
 }
 
 test "pe_state_constants" {
-    try std.testing.expect(PE_STATE_IDLE == 0);
-    try std.testing.expect(PE_STATE_ACTIVE == 1);
-    try std.testing.expect(PE_STATE_WAITING == 2);
-    try std.testing.expect(PE_STATE_ERROR == 3);
+    assert(PE_STATE_IDLE == 0);
+    assert(PE_STATE_ACTIVE == 1);
+    assert(PE_STATE_WAITING == 2);
+    assert(PE_STATE_ERROR == 3);
 }
 
 test "pe_is_active_true" {
-    given status = PeStatus{.state = PeState.active, .cycle_count = 10, .op_count = 5}
-    try std.testing.expect(pe_is_active(status) == true);
+    const status = PeStatus{.state = PeState.active, .cycle_count = 10, .op_count = 5};
+    assert(pe_is_active(status) == true);
 }
 
 test "pe_is_active_false" {
-    given status = PeStatus{.state = PeState.idle, .cycle_count = 0, .op_count = 0}
-    try std.testing.expect(pe_is_active(status) == false);
+    const status = PeStatus{.state = PeState.idle, .cycle_count = 0, .op_count = 0};
+    assert(pe_is_active(status) == false);
 }
 
 test "pe_is_idle_true" {
-    given status = PeStatus{.state = PeState.idle, .cycle_count = 0, .op_count = 0}
-    try std.testing.expect(pe_is_idle(status) == true);
+    const status = PeStatus{.state = PeState.idle, .cycle_count = 0, .op_count = 0};
+    assert(pe_is_idle(status) == true);
 }
 
 test "pe_set_state_increments" {
-    given status = PeStatus{.state = PeState.idle, .cycle_count = 10, .op_count = 5}
-    try std.testing.expect(result = pe_set_state(status, PeState.active));
-    try std.testing.expect(result.cycle_count == 11);
-    try std.testing.expect(result.op_count == 6);
+    const status = PeStatus{.state = PeState.idle, .cycle_count = 10, .op_count = 5};
+    const result = pe_set_state(status, PeState.active);
+    assert(result.cycle_count == 11);
+    assert(result.op_count == 6);
 }
 
 test "pe_config_enabled_true" {
-    given config = PeConfig{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}
-    try std.testing.expect(pe_config_enabled(config) == true);
+    const config = PeConfig{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false};
+    assert(pe_config_enabled(config) == true);
 }
 
 test "pe_config_enabled_disabled" {
-    given config = PeConfig{.mode = NULL_MODE_SKIP, .enabled = false, .bypass_enabled = false}
-    try std.testing.expect(pe_config_enabled(config) == false);
+    const config = PeConfig{.mode = NULL_MODE_SKIP, .enabled = false, .bypass_enabled = false};
+    assert(pe_config_enabled(config) == false);
 }
 
 test "pe_config_enabled_bypass" {
-    given config = PeConfig{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = true}
-    try std.testing.expect(pe_config_enabled(config) == false);
+    const config = PeConfig{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = true};
+    assert(pe_config_enabled(config) == false);
 }
 
 test "pe_is_null_skip" {
-    try std.testing.expect(pe_is_null(.{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}) == true);
-    try std.testing.expect(pe_is_null(.{.mode = NULL_MODE_ZERO, .enabled = true, .bypass_enabled = false}) == true);
+    assert(pe_is_null(.{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}) == true);
+    assert(pe_is_null(.{.mode = NULL_MODE_ZERO, .enabled = true, .bypass_enabled = false}) == true);
 }
 
 test "pe_is_null_not" {
-    try std.testing.expect(pe_is_null(.{.mode = NULL_MODE_IDENTITY, .enabled = true, .bypass_enabled = false}) == false);
+    assert(pe_is_null(.{.mode = NULL_MODE_IDENTITY, .enabled = true, .bypass_enabled = false}) == false);
 }
 
 test "null_pe_skip_some" {
-    given configs = [_]PeConfig{
+    const configs = [_]PeConfig{
         .{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false},
         .{.mode = NULL_MODE_IDENTITY, .enabled = true, .bypass_enabled = false},
         .{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false},
         .{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false},
-    }
-    try std.testing.expect(result = null_pe_skip(0x1234, 0b1010, configs));
-    try std.testing.expect(result.skip_count == 3);
+    };
+    const result = null_pe_skip(0x1234, 0b1010, configs);
+    assert(result.skip_count == 3);
 }
 
 test "null_pe_zero_always_zero" {
-    given configs = [_]PeConfig{.{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(result = null_pe_zero(0x1234, 0b1111, configs));
-    try std.testing.expect(result.output_data == 0);
-    try std.testing.expect(result.valid == true);
+    const configs = [_]PeConfig{.{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}} ** 4;
+    const result = null_pe_zero(0x1234, 0b1111, configs);
+    assert(result.output_data == 0);
+    assert(result.valid == true);
 }
 
 test "null_pe_identity_pass" {
-    given configs = [_]PeConfig{.{.mode = NULL_MODE_IDENTITY, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(result = null_pe_identity(0x1234, 0b1111, configs));
-    try std.testing.expect(result.output_data == 0x1234);
+    const configs = [_]PeConfig{.{.mode = NULL_MODE_IDENTITY, .enabled = true, .bypass_enabled = false}} ** 4;
+    const result = null_pe_identity(0x1234, 0b1111, configs);
+    assert(result.output_data == 0x1234);
 }
 
 test "null_pe_execute_skip" {
-    given configs = [_]PeConfig{.{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(result = null_pe_execute(0x1234, 0b1111, configs));
-    try std.testing.expect(result.output_data == 0x1234);
+    const configs = [_]PeConfig{.{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}} ** 4;
+    const result = null_pe_execute(0x1234, 0b1111, configs);
+    assert(result.output_data == 0x1234);
 }
 
 test "null_pe_execute_zero" {
-    given configs = [_]PeConfig{.{.mode = NULL_MODE_ZERO, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(result = null_pe_execute(0x1234, 0b1111, configs));
-    try std.testing.expect(result.output_data == 0);
+    const configs = [_]PeConfig{.{.mode = NULL_MODE_ZERO, .enabled = true, .bypass_enabled = false}} ** 4;
+    const result = null_pe_execute(0x1234, 0b1111, configs);
+    assert(result.output_data == 0);
 }
 
 test "pe_array_init" {
-    given array = pe_array_init()
-    try std.testing.expect(pe_array_count_active(array) == 0);
-    try std.testing.expect(pe_array_count_null(array) == 0);
+    const array = pe_array_init();
+    assert(pe_array_count_active(array) == 0);
+    assert(pe_array_count_null(array) == 0);
 }
 
 test "pe_array_enable" {
-    given array = pe_array_init()
-    try std.testing.expect(result = pe_array_enable(array, 0b1010));
-    try std.testing.expect(result.configs[0].enabled == false);
-    try std.testing.expect(result.configs[1].enabled == true);
-    try std.testing.expect(result.configs[2].enabled == false);
-    try std.testing.expect(result.configs[3].enabled == true);
+    const array = pe_array_init();
+    const result = pe_array_enable(array, 0b1010);
+    assert(result.configs[0].enabled == false);
+    assert(result.configs[1].enabled == true);
+    assert(result.configs[2].enabled == false);
+    assert(result.configs[3].enabled == true);
 }
 
 test "pe_array_count_active" {
-    given array = pe_array_enable(pe_array_init(), 0b1111)
-    try std.testing.expect(pe_array_count_active(array) == 4);
+    const array = pe_array_enable(pe_array_init(), 0b1111);
+    assert(pe_array_count_active(array) == 4);
 }
 
 test "pe_array_count_null" {
-    given configs = [_]PeConfig{
+    const configs = [_]PeConfig{
         .{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false},
         .{.mode = NULL_MODE_ZERO, .enabled = true, .bypass_enabled = false},
         .{.mode = NULL_MODE_SKIP, .enabled = false, .bypass_enabled = false},
         .{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false},
-    }
-    try std.testing.expect(array = PeArray{.configs = configs, .statuses = [_]PeStatus{.state = PeState.idle, .cycle_count = 0, .op_count = 0} ** 4});
-    try std.testing.expect(pe_array_count_null(array) == 2);
+    };
+    const array = PeArray{.configs = configs, .statuses = [_]PeStatus{.{.state = PeState.idle, .cycle_count = 0, .op_count = 0}} ** 4};
+    assert(pe_array_count_null(array) == 2);
 }
 
 test "pe_array_get_null_mask" {
-    given configs = [_]PeConfig{
+    const configs = [_]PeConfig{
         .{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false},
         .{.mode = NULL_MODE_ZERO, .enabled = true, .bypass_enabled = false},
         .{.mode = NULL_MODE_SKIP, .enabled = false, .bypass_enabled = false},
         .{.mode = NULL_MODE_IDENTITY, .enabled = true, .bypass_enabled = false},
-    }
-    try std.testing.expect(array = PeArray{.configs = configs, .statuses = [_]PeStatus{.state = PeState.idle, .cycle_count = 0, .op_count = 0} ** 4});
-    try std.testing.expect(mask = pe_array_get_null_mask(array));
-    try std.testing.expect(mask == 0b1011);
+    };
+    const array = PeArray{.configs = configs, .statuses = [_]PeStatus{.{.state = PeState.idle, .cycle_count = 0, .op_count = 0}} ** 4};
+    const mask = pe_array_get_null_mask(array);
+    assert(mask == 0b1011);
 }
 
 test "encode_null_pe" {
-    given encoded = encode_null_pe(0b1010, 1)
-    try std.testing.expect((encoded >> 8) == OP_NULL_PE);
+    const encoded = encode_null_pe(0b1010, 1);
+    assert((encoded >> 8) == OP_NULL_PE);
 }
 
 test "decode_null_pe" {
-    given decoded = decode_null_pe(0xEA5A)
-    try std.testing.expect(decoded.pe_mask == 0b1010);
-    try std.testing.expect(decoded.mode == 1);
+    const decoded = decode_null_pe(0xEA5A);
+    assert(decoded.pe_mask == 0b1010);
+    assert(decoded.mode == 1);
 }
 
 test "opcode_constant" {
-    try std.testing.expect(OP_NULL_PE == 0xEA);
+    assert(OP_NULL_PE == 0xEA);
 }
 
 // ============================================================================
 // Invariants
 // ============================================================================
 
-}
 invariant pe_count_four
     assert PE_COUNT == 4
 
@@ -484,52 +479,52 @@ invariant data_width_sixteen
     assert DATA_WIDTH == 16
 
 invariant null_mode_values
-    try std.testing.expect(NULL_MODE_SKIP >= 0 and NULL_MODE_CUSTOM <= 3);
+    assert NULL_MODE_SKIP >= 0 and NULL_MODE_CUSTOM <= 3
 
 invariant pe_state_values
-    try std.testing.expect(PE_STATE_IDLE >= 0 and PE_STATE_ERROR <= 3);
+    assert PE_STATE_IDLE >= 0 and PE_STATE_ERROR <= 3
 
 invariant pe_set_state_increments
     given status = PeStatus{.state = PeState.idle, .cycle_count = 0, .op_count = 0}
-    try std.testing.expect(result = pe_set_state(status, PeState.active));
-    try std.testing.expect(result.cycle_count == status.cycle_count + 1);
-    try std.testing.expect(result.op_count == status.op_count + 1);
+    and   result = pe_set_state(status, PeState.active)
+    assert result.cycle_count == status.cycle_count + 1
+    assert result.op_count == status.op_count + 1
 
 invariant pe_set_state_preserves_when_idle
     given status = PeStatus{.state = PeState.active, .cycle_count = 10, .op_count = 5}
-    try std.testing.expect(result = pe_set_state(status, PeState.idle));
-    try std.testing.expect(result.cycle_count == status.cycle_count);
-    try std.testing.expect(result.op_count == status.op_count);
+    and   result = pe_set_state(status, PeState.idle)
+    assert result.cycle_count == status.cycle_count
+    assert result.op_count == status.op_count
 
 invariant null_pe_skip_valid
     given configs = [_]PeConfig{.{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(null_pe_skip(0x1234, 0, configs).valid == false);
-    try std.testing.expect(null_pe_skip(0x1234, 0b1111, configs).skip_count == 4);
+    assert null_pe_skip(0x1234, 0, configs).valid == false
+    assert null_pe_skip(0x1234, 0b1111, configs).skip_count == 4
 
 invariant null_pe_zero_always_valid
     given configs = [_]PeConfig{.{.mode = NULL_MODE_ZERO, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(null_pe_zero(0x1234, 0, configs).valid == true);
+    assert null_pe_zero(0x1234, 0, configs).valid == true
 
 invariant null_pe_zero_output
     given configs = [_]PeConfig{.{.mode = NULL_MODE_ZERO, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(null_pe_zero(0x1234, 0b1111, configs).output_data == 0);
+    assert null_pe_zero(0x1234, 0b1111, configs).output_data == 0
 
 invariant null_pe_identity_preserves
     given configs = [_]PeConfig{.{.mode = NULL_MODE_IDENTITY, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(null_pe_identity(0x1234, 0, configs).output_data == 0x1234);
+    assert null_pe_identity(0x1234, 0, configs).output_data == 0x1234
 
 invariant pe_array_count_bounds
     given array = pe_array_enable(pe_array_init(), 0xFF)
-    try std.testing.expect(pe_array_count_active(array) <= PE_COUNT);
-    try std.testing.expect(pe_array_count_null(array) <= PE_COUNT);
+    assert pe_array_count_active(array) <= PE_COUNT
+    assert pe_array_count_null(array) <= PE_COUNT
 
 invariant pe_array_get_null_mask_bound
-    try std.testing.expect(pe_array_get_null_mask(pe_array_init()) < (@as(u8, 1) << PE_COUNT));
+    assert pe_array_get_null_mask(pe_array_init()) < (@as(u8, 1) << PE_COUNT)
 
 invariant pe_array_count_all
     given configs = [_]PeConfig{.{.mode = NULL_MODE_SKIP, .enabled = true, .bypass_enabled = false}} ** 4
-    try std.testing.expect(array = PeArray{.configs = configs, .statuses = [_]PeStatus{.state = PeState.idle, .cycle_count = 0, .op_count = 0} ** 4});
-    try std.testing.expect(pe_array_count_active(array) + pe_array_count_null(array) == PE_COUNT);
+    and   array = PeArray{.configs = configs, .statuses = [_]PeStatus{.{.state = PeState.idle, .cycle_count = 0, .op_count = 0}} ** 4}
+    assert pe_array_count_active(array) + pe_array_count_null(array) == PE_COUNT
 
 // ============================================================================
 // Benchmarks

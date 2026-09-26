@@ -1,0 +1,246 @@
+{
+  "source": {
+    "spec": "specs/queen/wars.t27",
+    "publicSpec": "public/queen/wars.t27",
+    "sha256": "b7c1f22ea8361a092c083d0a2681477af2d7ec08bd35802dfd25289f0e784924",
+    "schemaVersion": 2
+  },
+  "name": "Queen WARS real-task agent arena",
+  "vocabularies": {
+    "evidence": [
+      "OBSERVED",
+      "SESSION-OBSERVED",
+      "SOURCE-CLAIM",
+      "TARGET",
+      "UNKNOWN"
+    ],
+    "configStates": [
+      "ready",
+      "credential-blocked",
+      "checkpoint-unverified",
+      "pipeline-only"
+    ],
+    "experimentStates": [
+      "planned",
+      "running",
+      "credential-blocked",
+      "complete",
+      "invalid"
+    ],
+    "runStates": [
+      "pending",
+      "running",
+      "passed",
+      "failed",
+      "blocked"
+    ],
+    "verdicts": [
+      "accepted",
+      "rejected",
+      "inconclusive",
+      "not-reviewed"
+    ]
+  },
+  "protocol": {
+    "realGitHubTasksOnly": true,
+    "variableFactor": "jev-decision-layer",
+    "controlledFactors": [
+      "issue-url",
+      "base-sha",
+      "executor-model",
+      "prompt",
+      "tool-policy",
+      "budget",
+      "acceptance"
+    ],
+    "isolation": "one clean git worktree per arm, both pinned to the same base commit",
+    "acceptancePolicy": "the issue acceptance commands plus repository gates decide pass or fail",
+    "reviewPolicy": "Queen reviews the diff and exact evidence after automated gates",
+    "winnerPolicy": "merge at most one accepted patch; preserve every arm in the append-only ledger",
+    "comparisonValidityPolicy": "run both arms in one campaign with the same explicit executor model and reasoning configuration; an unpaired run or unknown model identity cannot determine a winner",
+    "jevRole": "structured decision layer that ranks typed choices; never a chat model and never a code generator",
+    "jevRoleEvidence": "SOURCE-CLAIM",
+    "jevRoleSource": "https://docs.typesafe.ai/introduction/coding-agents",
+    "emptyMetricMeansUnknown": true
+  },
+  "metricCatalog": [
+    {
+      "key": "acceptance",
+      "unit": "verdict"
+    },
+    {
+      "key": "queen-verdict",
+      "unit": "verdict"
+    },
+    {
+      "key": "elapsed",
+      "unit": "ms"
+    },
+    {
+      "key": "input-tokens",
+      "unit": "tokens"
+    },
+    {
+      "key": "output-tokens",
+      "unit": "tokens"
+    },
+    {
+      "key": "tool-calls",
+      "unit": "count"
+    },
+    {
+      "key": "retries",
+      "unit": "count"
+    },
+    {
+      "key": "patch-lines",
+      "unit": "lines"
+    },
+    {
+      "key": "cost",
+      "unit": "usd"
+    },
+    {
+      "key": "jev-latency",
+      "unit": "ms"
+    },
+    {
+      "key": "jev-confidence",
+      "unit": "probability"
+    }
+  ],
+  "configurations": [
+    {
+      "id": "bee-baseline",
+      "name": "Bee baseline",
+      "kind": "coding-agent",
+      "state": "ready",
+      "evidence": "OBSERVED",
+      "source": "current Codex task runtime",
+      "note": "Control arm: the coding Bee chooses and implements without an external decision model.",
+      "stateEvidence": "OBSERVED",
+      "stateSource": "current Codex task runtime on 2026-09-23",
+      "stateNote": "The baseline Bee can run locally."
+    },
+    {
+      "id": "bee-jev",
+      "name": "Bee + JEV",
+      "kind": "coding-agent-plus-decision-layer",
+      "state": "credential-blocked",
+      "evidence": "SOURCE-CLAIM",
+      "source": "https://docs.typesafe.ai/introduction/coding-agents",
+      "note": "Same coding Bee with JEV restricted to ranking typed choices; JEV does not generate the patch.",
+      "stateEvidence": "OBSERVED",
+      "stateSource": "credential-name audit: current process environment, GitHub Actions secret names, local Railway IaC, and local wrangler auth on 2026-09-23; production Railway variables were not inspected",
+      "stateNote": "No usable TypeSafe or Cloudflare credential was found in the audited locations. Production Railway variables were not inspected, so credential absence there is not claimed."
+    },
+    {
+      "id": "igla-coder",
+      "name": "IGLA CODER",
+      "kind": "model-training-target",
+      "state": "checkpoint-unverified",
+      "evidence": "OBSERVED",
+      "source": "https://t27.ai/t27/files/specs/igla/coder/pipeline.t27",
+      "note": "The .t27 corpus describes the coder pipeline; this lane becomes measurable only with an executable checkpoint.",
+      "stateEvidence": "OBSERVED",
+      "stateSource": "checkpoint discovery audit of the linked IGLA .t27 pipeline on 2026-09-23",
+      "stateNote": "No executable checkpoint was verified for this arena."
+    },
+    {
+      "id": "igla-race",
+      "name": "IGLA RACE",
+      "kind": "training-race-pipeline",
+      "state": "pipeline-only",
+      "evidence": "OBSERVED",
+      "source": "https://github.com/gHashTag/trios-trainer-igla",
+      "note": "Observed training and evaluation repository. It is a pipeline competitor, not a runnable coding-model result.",
+      "stateEvidence": "OBSERVED",
+      "stateSource": "repository inspection of the linked IGLA RACE pipeline on 2026-09-23",
+      "stateNote": "The training pipeline is visible, but no coding-model run is claimed."
+    }
+  ],
+  "experiments": [
+    {
+      "id": "t27-4328-validate-trits",
+      "name": "validate_trits missing test",
+      "issue": {
+        "repo": "gHashTag/t27",
+        "number": 4328,
+        "url": "https://github.com/gHashTag/t27/issues/4328",
+        "updatedAt": "2026-09-20T13:51:01Z"
+      },
+      "baseSha": "f123674fe40d6ba600a8c5c4948683198f756fdc",
+      "executorModel": "UNKNOWN: exact model id and reasoning configuration were not exposed",
+      "prompt": "Resolve gHashTag/t27 issue 4328 at the pinned base. Inspect repository instructions. Add the smallest non-vacuous test coverage for validate_trits in specs/base/ternary_encoding.t27. Preserve every signature and function. Use TDD, run the issue acceptance commands and repository gates, and report exact evidence. Do not commit or push.",
+      "promptSha256": "802e41621a28102a31ea6c64599c6af5723006cab168b65d196274e254effa9c",
+      "toolPolicy": "Local repository read, edit and test tools only; one isolated worktree; no network writes; no commit or push.",
+      "toolPolicySha256": "1e8c7b9f7452453ec82eb0f3284f4d0881add2c7a6b99b07d72097b29d479246",
+      "budget": "one Codex agent turn; no explicit token cap; record usage only when exposed",
+      "acceptance": "t27c parse specs/base/ternary_encoding.t27; t27c coverage specs/base/ternary_encoding.t27 reports Untested: 0; function count remains 13; test count is at least 11; t27c spec-status reports IMPLEMENTED; t27c validate-vacuity and t27c test-report pass",
+      "acceptanceSha256": "7873d19d6dd591664a744423ba8ea2a9422e664b0e0558a633375b4c3edb3712",
+      "modelEvidence": "UNKNOWN",
+      "modelSource": "current Codex task runtime did not expose a stable model id and reasoning configuration",
+      "state": "credential-blocked",
+      "evidence": "OBSERVED",
+      "note": "This baseline is a preflight result, not one side of a future A/B comparison: model identity is unknown. When JEV authentication is connected, rerun both arms together with the same explicit model and reasoning configuration. The JEV arm is blocked in this runtime because no usable authentication was found in the audited locations; unaudited production secret state is not claimed."
+    }
+  ],
+  "runs": [
+    {
+      "id": "t27-4328-bee-baseline-20260923T041025Z",
+      "experimentId": "t27-4328-validate-trits",
+      "configId": "bee-baseline",
+      "startedAt": "2026-09-23T04:10:25Z",
+      "finishedAt": "2026-09-23T04:32:27Z",
+      "state": "blocked",
+      "evidence": "SESSION-OBSERVED",
+      "verdict": "inconclusive",
+      "logSha256": null,
+      "patchSha256": "11dce31c83d80148e31fdf8b355f5ee11ed436a1a261188296a4a95d01d8a267",
+      "artifactUrl": null,
+      "note": "The Bee added one non-vacuous validate_trits test with four cases, preserving 13 functions and raising the textual test count from 10 to 11. Current t27c v0.2.0 rejected unchanged base syntax at line 37 and reported NOPARSE and BLOCKED. The exact-base compiler accepted the file but dropped all 13 bodies, so executable acceptance is not claimed."
+    }
+  ],
+  "measurements": [
+    {
+      "runId": "t27-4328-bee-baseline-20260923T041025Z",
+      "key": "acceptance",
+      "value": "BLOCKED",
+      "unit": "verdict",
+      "evidence": "SESSION-OBSERVED",
+      "source": "session-observed isolated worktree commands: current t27c v0.2.0 returned NOPARSE and test-report BLOCKED at unchanged line 37; no external run-log artifact was sealed"
+    },
+    {
+      "runId": "t27-4328-bee-baseline-20260923T041025Z",
+      "key": "queen-verdict",
+      "value": "inconclusive",
+      "unit": "verdict",
+      "evidence": "SESSION-OBSERVED",
+      "source": "session-observed Queen review of the control-arm diff and acceptance evidence on 2026-09-23; no external review artifact was sealed"
+    },
+    {
+      "runId": "t27-4328-bee-baseline-20260923T041025Z",
+      "key": "elapsed",
+      "value": "1322000",
+      "unit": "ms",
+      "evidence": "SESSION-OBSERVED",
+      "source": "session-observed agent UTC timestamps 2026-09-23T04:10:25Z through 2026-09-23T04:32:27Z"
+    },
+    {
+      "runId": "t27-4328-bee-baseline-20260923T041025Z",
+      "key": "retries",
+      "value": "2",
+      "unit": "count",
+      "evidence": "SESSION-OBSERVED",
+      "source": "session-observed command ledger: unsupported tri flag and wrong bootstrap target; no external run-log artifact was sealed"
+    },
+    {
+      "runId": "t27-4328-bee-baseline-20260923T041025Z",
+      "key": "patch-lines",
+      "value": "9",
+      "unit": "lines",
+      "evidence": "SESSION-OBSERVED",
+      "source": "session-observed git diff --numstat at pinned worktree: 9 insertions and 0 deletions in specs/base/ternary_encoding.t27; patch sha256 is recorded in RUN_PATCH_SHAS"
+    }
+  ]
+}

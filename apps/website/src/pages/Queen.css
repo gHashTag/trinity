@@ -834,10 +834,203 @@
   border-left-color: #2a6;
 }
 
+/* ── DIRECTION ──────────────────────────────────────────────────────────────
+   What a card is ABOUT, as a colour, beside what column it is in.
+
+   The left border above is already spoken for: it is the column, and it is the
+   only thing on the card that moves when work moves. So direction gets its own
+   channel and never touches it — an inset rule down the RIGHT edge, a faint
+   tint of the whole card, and a dot. Each card hands its colour in as
+   --queen-dir from src/lib/queenDirection.ts, so this stylesheet holds no list
+   of directions and cannot fall out of step with the one that does. There is
+   deliberately no fallback colour on any var() below: a fallback IS a second
+   copy of the palette, and qa/queen-direction-contract.mjs fails the build if
+   one appears here — which is how the greys that used to sit in these
+   parentheses were found.
+
+   Everything coloured here is also written here in words, next to the colour.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* The chips sit above the board rather than inside a lane head, so they take no
+   auto margin, and they do not scroll: there are seven of them at most, and
+   they are the legend for the colours below. */
+.queen27-dir-filter {
+  margin: 0 0 0.6rem;
+}
+
+.queen27-dir-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+.queen27-dir-chip > i {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--queen-dir);
+  box-shadow: 0 0 8px var(--queen-dir);
+}
+
+.queen27-dir-filter .queen27-chip small {
+  opacity: 0.65;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: inherit;
+}
+
+/* A pressed direction chip wears ITS OWN colour, not the shared gold of the
+   generic pressed chip, so the legend and the cards it selects are the same
+   colour.
+
+   `.queen27-dir-filter` is in the selector to WIN, not to scope. An earlier
+   version of this rule was `.queen27-dir-chip[aria-pressed="true"]` and said in
+   a comment that it came after the gold rule and so won on source order. It did
+   not: the gold rule is ~6300 lines BELOW this one, both were 0,2,0, and gold
+   won every time. Naming the container makes this 0,3,0, which beats the gold
+   rule from wherever either sits in the file — and stops a comment about line
+   order from being load-bearing. */
+.queen27-dir-filter .queen27-dir-chip[aria-pressed="true"] {
+  border-color: var(--queen-dir);
+  color: #050505;
+  background: var(--queen-dir);
+}
+
+.queen27-dir-filter .queen27-dir-chip[aria-pressed="true"] > i {
+  background: #050505;
+  box-shadow: none;
+}
+
+/* The tint is an inset shadow and not a border, so turning it on moves nothing:
+   a filter that reflows the board costs the reader the place they were looking
+   at. 7% keeps the card a dark card — this is a hue, not a highlight.
+
+   THE SECOND SELECTOR IS NOT A DUPLICATE. The shell layout states
+   `.queen27-page.is-shell .queen27-card { background: transparent }` far below,
+   and it means it: "one layer of ground, not two", the column carries the veil
+   and the card adds nothing. That rule is 0,3,0 and this one was 0,2,0, so the
+   tint was being thrown away on every card of the live board — the dot, the tag
+   and the right edge rendered and the colour did not. Measured in the browser,
+   not guessed. Naming the shell explicitly wins the cascade whatever the source
+   order, and qa/queen-direction-contract.mjs fails the build if this selector
+   goes missing again.
+
+   It also keeps the shell's argument intact. The mix is against `transparent`,
+   not against the old card's white: this adds ONE layer, the hue itself at 7%,
+   over whatever ground the layout chose. It is not a second veil. */
+.queen27-card[data-dir],
+.queen27-page.is-shell .queen27-card[data-dir] {
+  background: color-mix(in srgb, var(--queen-dir) 7%, transparent);
+  box-shadow: inset -3px 0 0 var(--queen-dir);
+}
+
+.queen27-card[data-dir]:hover,
+.queen27-page.is-shell .queen27-card[data-dir]:hover {
+  border-color: var(--queen-dir);
+  background: color-mix(in srgb, var(--queen-dir) 16%, transparent);
+}
+
+/* The topline was a one-line row with the issue number at the left and, on the
+   few cards that have one, a signal at the right. Putting a third thing in it
+   broke both: measured on the live board at six columns beside the chat panel,
+   a card is 126px wide, and 90 of 90 cards wrapped `#3573` onto two lines and
+   clipped the word HARDWARE mid-letter.
+
+   So the row wraps as a row. The number keeps its own line whole and the tag
+   drops beneath it when the column is too narrow to hold both — a card one line
+   taller, rather than a number broken in half and a direction that cannot be
+   read. Wide columns still show all three side by side, which is the common
+   case; this only spends the line where the space genuinely is not there. */
+.queen27-card-topline {
+  flex-wrap: wrap;
+  row-gap: 0.2rem;
+}
+
+.queen27-card-topline > b {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* `margin-right: auto` and not a third slot in the topline's space-between: the
+   number and the direction belong together at the left, and the running/review
+   signal keeps the right edge it has always had. `min-width: 0` is what lets
+   the ellipsis below ever happen — a flex item refuses to shrink past its
+   content without it, which is how the clipping above got on screen. */
+.queen27-card .queen27-dir-tag {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 8rem;
+  align-items: center;
+  gap: 0.3rem;
+  margin-right: auto;
+  overflow: hidden;
+  color: var(--queen-dir);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queen27-card .queen27-dir-tag i {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* THREE LINES, AND WHY A CARD IS ALLOWED TO BE SHORTER THAN ITS TITLE.
+   Measured on the live board at 1512x949: the columns are 160px wide, a card
+   126px, and a real title — "Port part 1 of 2 of tools/verify_multitarget.py to
+   specs/port/tools/verify_multitarget.t27 (8 functions)" — took nine lines and
+   147px of a 222px card. Two and a half cards fitted on screen. A board you can
+   see two cards of is a list with extra steps, which is what the owner was
+   looking at when they said the cards were barely visible.
+   Nothing is lost by cutting it: the whole title is on the card's `title`
+   attribute, and the card is a link to the issue that holds the rest. */
 .queen27-card strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
   font-size: 0.86rem;
   font-weight: 500;
   line-height: 1.35;
+}
+
+/* The foot of a column that has more in it than is drawn. Deliberately not a
+   card: it is the same width and sits in the same flow, but it is flat, quiet
+   and says a number, so the eye reading down a column does not stop at it
+   thinking it has found another issue. */
+.queen27-cards-more {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.queen27-cards-more > small {
+  color: var(--q-gold);
+  font-size: 1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.queen27-cards-more:hover,
+.queen27-cards-more:focus-visible {
+  border-color: var(--q-gold);
+  color: var(--text, #fff);
 }
 
 .queen27-card span {
@@ -962,7 +1155,8 @@
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: var(--text);
   text-decoration: none;
-  background: rgba(0, 0, 0, 0.42);
+  /* 0.42 measured 2.47:1 for the node's own name against a lit hive. */
+  background: var(--hud-veil);
 }
 
 .queen27-map-nodes a:hover {
@@ -2400,7 +2594,11 @@
 
 .queen27-tech-console {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(270px, 0.34fr);
+  /* The detail panel took a third of the console -- 358px of a 1053px board --
+     and it holds six short fields. The tree is the thing being read, and the
+     tree is the thing that was scrolling sideways, so the panel gets the width
+     its longest field needs and the tree gets the rest. */
+  grid-template-columns: minmax(0, 1fr) minmax(232px, 0.22fr);
   min-height: 720px;
   border: 1px solid var(--border);
   background: var(--border);
@@ -3021,7 +3219,21 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
   width: 100vw;
   height: 100dvh;
 }
-.queen-starfield-source { position: absolute; right: .8rem; bottom: 2.8rem; z-index: 8; color: #b9cad5; background: rgba(0,0,0,.6); border: 1px solid var(--border); border-radius: 6px; padding: .35rem .55rem; font: 400 .68rem/1.4 var(--font); text-decoration: none; }
+/* The credit line is 10.9px over a 0.72 veil, so 28 per cent of what is behind
+   it reached the letters -- and what is behind it is the star layer, whose
+   points are one pixel across. Alpha dimmed them and left them exactly where
+   they were, inside the words. 6px puts them behind the line instead.
+   The veil is written with its literal because this rule is the one place on
+   the board where the token is not in scope. --hud-veil is declared on
+   `.queen27-page.is-shell` and nowhere else; this element is display:none in
+   the shell (below, at `body.queen-shell .queen-starfield-source`) and the
+   only place it is ever seen is the landing page, which has no such ancestor.
+   `var(--hud-veil)` with no fallback there is invalid at computed-value time,
+   so `background` fell back to transparent and the 0.72 the line above was
+   measured against was never painted. Written bare, the blur added here would
+   have been a soft band over bare scene -- a low pass on an element that paints
+   nothing -- in the element's only live state. */
+.queen-starfield-source { position: absolute; right: .8rem; bottom: 2.8rem; z-index: 8; color: #b9cad5; background: var(--hud-veil, rgba(2, 8, 6, 0.72)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid var(--border); border-radius: 6px; padding: .35rem .55rem; font: 400 .68rem/1.4 var(--font); text-decoration: none; }
 .queen-starfield-source:hover { color: var(--accent); }
 
 /* the hover card (the user, 2026-09-06): a hovered cell names its GitHub issue beside the pointer; hidden until a cell is under it */
@@ -3033,6 +3245,12 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
   padding: 8px 10px;
   border: 1px solid rgba(255, 212, 90, 0.55);
   background: rgba(6, 10, 12, 0.92);
+  /* 0.92 still passes 8 per cent of the wall, and the card is always over a
+     cell -- that is what put it there. A hex edge ran through the issue number
+     at its own full sharpness, because alpha lowers an edge and does not widen
+     it. 6px: the card only appears while the pointer is holding still. */
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   color: var(--q27-text, #e6f0ec);
   font: 12px/1.35 ui-monospace, Menlo, monospace;
   letter-spacing: 0.02em;
@@ -3089,6 +3307,14 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
   min-height: 44px; min-width: 44px; border: 1px solid #397d80;
   background: rgba(3, 12, 14, .88); color: var(--text); padding: .5rem .7rem;
   border-radius: 8px;
+  /* The strip that holds these paints nothing, so each control is its own
+     surface on the wall. At 0.88 an eighth of the hive came through the label
+     of a select that is listing issue titles. 8px rather than 6 because the
+     wall is still turning while the control is being read. A disabled button
+     keeps very little of this: `opacity:.4` below fades the frosted result
+     back towards the sharp field behind it. */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   font: 500 .875rem/1.3 var(--font);
 }
 .queen-hive-inspect-tools select {
@@ -3142,7 +3368,18 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
 .queen-hive-signal-guide summary { cursor:pointer; min-height:44px; display:flex; align-items:center; color:var(--text); padding:0 .3rem; text-transform:none; font-size:.85rem; }
 .queen-hive-signal-guide summary::after { content:' ▾'; margin-left:.4rem; }
 .queen-hive-signal-guide summary:focus-visible { outline:2px solid #ffc24d; }
-.queen-hive-signal-panel { position:absolute; top:100%; left:0; width:min(360px,100%); max-height:min(480px,60vh); overflow:auto; box-sizing:border-box; padding:1rem; background:rgba(3,12,19,.97); border:1px solid #577780; border-radius:8px; box-shadow:0 12px 36px #0009; text-transform:none; letter-spacing:normal; font:.875rem/1.5 var(--font); }
+/* Opaque, where every other panel on this board is frosted -- because this one
+   cannot be. It hangs at top:100% off .queen27-hive-law, which now carries a
+   blur: that makes the law a backdrop ROOT for its descendants, but the filter
+   only applies inside the law's own border box, and this panel paints entirely
+   below it. A blur written here would sample a region the root does not cover
+   and change nothing on screen. The choice was a dead declaration that quiets a
+   gate, an excuse naming an ancestor whose ground does not reach, or this: the
+   last 3% of an alpha nobody can see, spent to make the sentence true. It reads
+   a legend of colour names against a field that lights cells gold and red under
+   it, so a hexagon edge crossing a word here is crossing the one word that
+   explains a colour. */
+.queen-hive-signal-panel { position:absolute; top:100%; left:0; width:min(360px,100%); max-height:min(480px,60vh); overflow:auto; box-sizing:border-box; padding:1rem; background:#030c13; border:1px solid #577780; border-radius:8px; box-shadow:0 12px 36px #0009; text-transform:none; letter-spacing:normal; font:.875rem/1.5 var(--font); }
 .queen-hive-signal-panel h4 { margin:0 0 .6rem; color:var(--text); font-weight:500; }
 .queen-hive-signal-panel h4:not(:first-child) { margin-top:1rem; }
 .queen-hive-signal-panel p { padding:.2rem 0; }
@@ -3172,8 +3409,29 @@ body.queen-shell .queen27-comb.is-embedded canvas.queen-starfield {
 .queen-hive-display a { color:#64dcff; display:inline-flex; align-items:center; min-height:44px; font-size:.875rem; }
 .queen-hive-epic-progress { display:grid; gap:.35rem; font-size:.8125rem; }
 .queen-hive-epic-progress progress { width:100%; height:5px; accent-color:#64dcff; }
-.queen-hive-zoom-hint { position:absolute; z-index:8; left:.8rem; bottom:.6rem; margin:0; padding:.3rem .5rem; color:#b4cbd2; background:#041115a0; font:.75rem/1.4 var(--font); pointer-events:none; }
-.queen27-hive-law { z-index:10; background:#041115e8; padding:.2rem .4rem; }
+/* `#041115a0` is alpha 0.627, and 0.627 measures 3.28:1 against this hint's own
+   ink `#b4cbd2` over a lit hive -- well under the 4.5 every other label on this
+   board is held to, and 0.84 further under it than the 4.12:1 this note first
+   claimed, which was the figure for --hud-muted, the ink the gate assumes only
+   when a rule states none. The hex is written here rather than the phrase "its
+   own ink" so the sentence can be checked against the declaration on the next
+   line. It had gone unmeasured for as long as it has existed because it is
+   written as an eight-digit hex, and the contrast gate read literal `rgba()`
+   and nothing else. The veil token is the same surface class -- a label
+   floating on the scene -- so the hint moves with the palette instead of being
+   a fourth number somebody picked by eye. */
+.queen-hive-zoom-hint { position:absolute; z-index:8; left:.8rem; bottom:.6rem; margin:0; padding:.3rem .5rem; color:#b4cbd2; background:var(--hud-veil, rgba(2, 8, 6, 0.72)); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); font:.75rem/1.4 var(--font); pointer-events:none; }
+/* `#041115e8` is alpha 0.909, and the law is 10px uppercase mono at 0.72 ink:
+   the remaining ninth of the wall was enough for a cell edge to run through a
+   colour word, which is that word read twice. The signal panel hangs off the
+   task legend from inside this element, so the low pass belongs here -- one on
+   the panel would sample this box, find it empty below the strip, and blur
+   nothing. */
+.queen27-hive-law { z-index:10; background:#041115e8; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); padding:.2rem .4rem; }
+/* Not in the catalogue toolbar, where the same element is `background:
+   transparent` (QueenCatalogHive.css) and the toolbar carries the ground. A
+   blur on a strip that draws nothing is a soft band across the map. */
+.queen-catalog-toolbar .queen27-hive-law { -webkit-backdrop-filter:none; backdrop-filter:none; }
 @media(max-width:640px) {
   .queen-hive-inspect-tools { top:4.5rem; gap:.3rem; }
   .queen-hive-inspect-tools select { width:100%; max-width:none; flex-basis:100%; }
@@ -3361,7 +3619,11 @@ body.queen-shell .sticky-cta {
   --hud-green: #00ff88;
   --hud-cyan: #64dcff;
   --hud-cold: #ff6b6b;
-  --hud-muted: rgba(255, 255, 255, 0.55);
+  /* Raised from 0.55 after measuring it. Over a veil at the strength the
+     content surfaces used to carry, and with the hive lit underneath, 0.55
+     white came out at 1.6:1 — which is not dim, it is unreadable, and it is
+     what the owner was looking at when he said so. See --hud-veil. */
+  --hud-muted: rgba(255, 255, 255, 0.78);
   --hud-line: rgba(0, 255, 136, 0.22);
   --hud-line-strong: rgba(0, 255, 136, 0.5);
   /* The star map is the canvas, and the HUD floats over it: at 0.86 the panels
@@ -3374,7 +3636,21 @@ body.queen-shell .sticky-cta {
      outline through a line of text is a line read twice. Frosted as well as
      darker — the blur takes the map's detail out of the words and leaves it as
      depth, which is the part worth keeping. */
-  --hud-panel: rgba(2, 8, 6, 0.62);
+  --hud-panel: rgba(2, 8, 6, 0.88);
+  /* THE GROUND UNDER CONTENT, as against under a chrome panel.
+     A kanban column, a card, the tech map, the city: wide surfaces where the
+     map showing through is the whole aesthetic, so they are lighter than a
+     panel and stay that way.
+     Stated ONCE. It was fifteen literals between 0.42 and 0.86 spelled out in
+     fifteen rules, which is fifteen chances for a surface to be legible over a
+     dark sky and not over a lit hive — and every one of them read as a
+     deliberate choice, because a number written by hand always does.
+     0.42 was the number most of them carried, and the arithmetic in
+     qa/queen-contrast-contract.mjs says what that bought: with the hive at
+     full brightness beneath it, --hud-muted on it measured 1.6:1. The gate
+     picks the alpha now; this is the value that clears 4.5:1 with the field
+     as bright as it is able to be. */
+  --hud-veil: rgba(2, 8, 6, 0.72);
   /* Overlay geometry in one place. Every panel inside the map is positioned
      from these, so a breakpoint moves all of them together instead of each
      carrying its own pixel guess. */
@@ -3388,6 +3664,15 @@ body.queen-shell .sticky-cta {
      reservation was 52px of empty sky above the header. What is left is the
      rhythm the sides already keep: a gap, the bar, a gap. */
   --hud-chrome-top: calc(var(--hud-gap) * 2 + var(--hud-bar-h));
+  /* The ground under NAVIGATION, as against under a panel. Everything in this
+     shell lets the map through, and for content that is the point; for the two
+     rows you steer with -- the viewport head and the ladder -- it meant a red
+     sector could drift under a button and take its label with it (measured on
+     the SPECS layer at 1343px: hexes across GAME-HOME, IDENTITY and the first
+     three rungs). A control whose name is legible only when the map is
+     somewhere else is not a control. Darker than --hud-panel and stated once,
+     because the two rows sit one above the other and must read as one band. */
+  --hud-nav: rgba(2, 8, 6, 0.86);
   --hud-ground: transparent;
   --hud-mono: "JetBrains Mono", ui-monospace, monospace;
   --hud-notch: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
@@ -3444,11 +3729,33 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* ---- panels ------------------------------------------------------------- */
-.queen27-page.is-shell .queen27-hud-panel,
+/* Three of the five names that used to be on this list are not rendered by
+   anything: .queen27-hud-panel, .queen27-hud-sector and .queen27-hud-commands.
+   The near-misses are what kept them here -- .queen27-hud-panel-head,
+   .queen27-hud-sectors and .queen27-hud-command are each one character away
+   from a name above it, so a reader checking the list by eye finds all three
+   and stops. Only a word-boundary census over the tsx sources separates them,
+   and it separates them two ways rather than one: .queen27-hud-sectors and
+   .queen27-hud-command are rendered (1 occurrence each -- Queen.tsx for the
+   first, QueenCommand.tsx for the second, which is worth stating because a
+   census that names the wrong file is a census nobody can repeat), and
+   .queen27-hud-panel-head is not (0, exactly like the three struck above it).
+   It stays on the page anyway, and the reason is worth writing down rather
+   than leaving as an inconsistency: qa/queen-viewport-contract.mjs names it,
+   so deleting its rules here without touching that gate trades a dead rule for
+   a red one. It is a cleanup, not a show-through fix, and it belongs in a
+   change that can move both files at once.
+
+   They were not harmless. `background` here is a ground, and the contrast gate
+   reads grounds out of the stylesheet rather than off the screen, so a dead
+   name in a live rule is a surface the gate must either measure or excuse --
+   and it excused two live siblings by standing next to them. .queen27-hud-
+   commands was worse than dead: qa/queen-contrast-contract.mjs named it as the
+   frosted ancestor covering .queen27-hud-cmd-collapse, which is really a child
+   of .queen27-hud-command. The excuse was true of the element and false of the
+   class it was written against. */
 .queen27-page.is-shell .queen27-hud-command,
-.queen27-page.is-shell .queen27-hud-viewport,
-.queen27-page.is-shell .queen27-hud-sector,
-.queen27-page.is-shell .queen27-hud-commands {
+.queen27-page.is-shell .queen27-hud-viewport {
   border: 1px solid var(--hud-line);
   background: var(--hud-panel);
   clip-path: var(--hud-notch);
@@ -3525,12 +3832,19 @@ main:where(.queen27-page.is-shell) section {
   font-style: normal;
 }
 
+/* The label truncates like the value and the sub-line under it already do:
+   at 1280x600 the squeezed tile gave VERDICTS 51 px for a 55 px word (measured
+   2026-09-24), and a label that overflows its own tile is an undeclared
+   scroller to qa/queen-viewport-contract.mjs. Its strong and span siblings
+   have carried the ellipsis since P1-18; the label just never needed it. */
 .queen27-page.is-shell :is(.queen27-hud-res, .queen27-hud-res-round-btn) > small {
   grid-area: label;
+  overflow: hidden;
   color: var(--hud-muted);
   font-size: 0.56rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -3985,6 +4299,29 @@ main:where(.queen27-page.is-shell) section {
   display: none;
 }
 
+/* Thirteen commands with their hints and COLLAPSE take 775 px, so the one-column
+   rail stopped fitting well above 760 px: a 652 px rail at 1366x768 and a
+   684 px one at 1280x800 (measured). COLLAPSE is sticky, so at rest PROJECT sat
+   under it and TRI below the rail's edge, and a click there collapsed the rail
+   instead; collapsed at 1440x813 the TRI glyph was under it too. Below 920 px
+   of height the hints go and the rows tighten, so every command is on screen at
+   rest (at 761 px: a 645 px rail, fourteen ~30 px rows, gaps and padding come to
+   about 520 px). Below 760 px the tile grid further down takes over; it comes
+   later in the file and wins where both apply. The phone's icon row is not this
+   rail. */
+@media (max-height: 919px) {
+  .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd {
+    padding: 0.35rem 0.65rem;
+  }
+  .queen27-page.is-shell .queen27-hud-command:not(.is-compact) > .queen27-hud-cmd small {
+    display: none;
+  }
+  .queen27-page.is-shell .queen27-hud-command.is-collapsed > .queen27-hud-cmd,
+  .queen27-page.is-shell .queen27-hud-command.is-collapsed > .queen27-hud-cmd-collapse {
+    padding: 0.28rem 0.2rem;
+  }
+}
+
 /* This block sits AFTER the base rail rules on purpose: the container
    selector has the same specificity as the flex base, so source order is
    what lets `display: grid` win below 760 px. */
@@ -4109,36 +4446,129 @@ main:where(.queen27-page.is-shell) section {
   white-space: nowrap;
 }
 
+/* The tools row scrolls sideways when the rungs are wider than the head -- the
+   ladder's own answer to the same question one row down -- instead of pushing
+   the head past the module edge (measured 2026-09-24: 300 px of buttons in a
+   151 px window at 1280x700 took the head to 792 px in a 644 px shell). The
+   head's own texts truncate; buttons cannot, so the row they sit in is the
+   thing that moves. Declared in qa/queen-viewport-contract.mjs. */
 .queen27-page.is-shell .queen27-hud-vp-tools {
   display: flex;
   gap: 4px;
   margin-left: auto;
   min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.queen27-page.is-shell .queen27-hud-vp-tools::-webkit-scrollbar {
+  display: none;
 }
 
 /* The identity chip (QueenIdentity.tsx) sits in the tools row at a button's size.
-   The row can run out of room, so the chip shrinks there, but never below an
-   avatar, a few letters of the name and the whole role; inside it the name
-   gives way first. */
+   Until someone is signed in it keeps one width, so nothing in the row moves
+   when the answer comes (a skeleton, then Sign in or a reason; measured at
+   390x844 in qa/queen-identity-contract.mjs). Signed in, it may grow for a name
+   and shrinks there when the row runs out of room, never below an avatar, a
+   few letters of the name and the whole role. Its action, a link or a button,
+   fills the chip's height, at least 24 px (WCAG 2.5.8). */
 .queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity {
+  position: relative;
   display: inline-flex;
-  flex: 0 1 auto;
-  min-width: 8.5rem;
+  flex: 0 0 8.5rem;
+  width: 8.5rem;
+  min-height: 24px;
   overflow: hidden;
-  align-items: center;
-  gap: 0.35rem;
-  max-width: 16rem;
-  padding: 0.3rem 0.55rem;
+  align-items: stretch;
+  align-self: stretch;
   border: 1px solid var(--hud-line);
   color: var(--hud-muted);
   font-size: 0.58rem;
   letter-spacing: 0.08em;
   white-space: nowrap;
-  text-decoration: none;
 }
-.queen27-page.is-shell .queen27-hud-vp-tools a.queen27-identity:hover {
-  border-color: var(--hud-line-strong);
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity[data-identity="signed-in"] {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 8.5rem;
+  max-width: 16rem;
+}
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-action {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  min-height: 24px;
+  margin: 0;
+  padding: 0 0.55rem;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+  text-decoration: none;
+  cursor: pointer;
+}
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-action:hover,
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-action:focus-visible {
   color: var(--hud-green);
+}
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-action:focus-visible {
+  outline: 1px solid var(--hud-green);
+  outline-offset: -2px;
+}
+.queen27-page.is-shell .queen27-hud-vp-tools .queen27-identity .queen27-identity-retry {
+  flex: 0 0 auto;
+  border-left: 1px solid var(--hud-line);
+}
+.queen27-identity-reason {
+  flex: 1 1 auto;
+  align-self: center;
+  min-width: 0;
+  padding: 0 0.55rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.queen27-identity-who {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0 0.55rem;
+  overflow: hidden;
+}
+/* Pending: a quiet bar, still unless motion is welcome; the words are for a screen reader. */
+.queen27-identity-skeleton {
+  flex: 1 1 auto;
+  align-self: center;
+  height: 0.45rem;
+  margin: 0 0.55rem;
+  border-radius: 2px;
+  background: var(--hud-line);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .queen27-identity-skeleton {
+    animation: queen27-identity-wait 1.4s ease-in-out infinite alternate;
+  }
+}
+@keyframes queen27-identity-wait {
+  from { opacity: 0.35; }
+  to { opacity: 0.9; }
+}
+.queen27-identity-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  border: 0;
+  white-space: nowrap;
 }
 .queen27-identity-avatar {
   width: 18px;
@@ -4161,16 +4591,40 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* The bridge frame (triIdentity.ts) is hidden unless it asks for a click. No
-   display here: the hidden attribute must keep winning. */
+   display here: the hidden attribute must keep winning.
+   On a desktop it sits left of the Queen's column (its chat composer is at the
+   foot) and above the map's control row (29-55 px from the bottom), so neither
+   is under it (measured from 1920x1080 to 1024x768 in every view). The frame
+   hangs on body, outside .queen27-page, so the column's width is repeated from
+   there: --hud-col-w plus two --hud-gap of 10 px, and no column at 1100 px and
+   below. */
 .queen27-identity-bridge {
   position: fixed;
   right: 16px;
-  bottom: 16px;
+  bottom: 64px;
   z-index: 2147483000;
   width: min(360px, calc(100vw - 32px));
   height: 140px;
   border: 1px solid rgba(120, 255, 190, 0.45);
   background: #05070a;
+}
+@media (min-width: 1101px) {
+  .queen27-identity-bridge {
+    right: 320px;
+  }
+}
+@media (min-width: 1280px) {
+  .queen27-identity-bridge {
+    right: 356px;
+  }
+}
+/* On a phone the command rail runs along the bottom (62 px plus the safe area,
+   inside 8 px of padding): the prompt sits above it, so the rail stays under
+   the finger (measured at 390x844: it covered the TRI command). */
+@media (max-width: 900px) {
+  .queen27-identity-bridge {
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
 }
 
 .queen27-page.is-shell .queen27-hud-vp-tools button[aria-pressed="true"] {
@@ -4185,8 +4639,10 @@ main:where(.queen27-page.is-shell) section {
   margin-right: 0.3em;
   font-style: normal;
 }
+/* Off reads as a dashed outline, not as faded text: at opacity .55 the muted
+   word fell to about 2.5:1 against the bar (WCAG 1.4.3 asks 4.5:1). */
 .queen27-page.is-shell .queen27-hud-vp-tools button[data-layer][aria-pressed="false"] {
-  opacity: 0.55;
+  border-style: dashed;
 }
 @media (max-width: 900px) {
   .queen27-page.is-shell .queen27-hud-vp-head {
@@ -4325,6 +4781,16 @@ main:where(.queen27-page.is-shell) section {
      lost a module off the bottom. Spanning every track makes the offsets mean
      what they say. */
   grid-area: 1 / 1 / -1 / -1;
+}
+
+/* The header's popovers open over the side panels. The MENU list carries
+   z-index 9, but only inside the header's own stacking context: at 4, level
+   with the rail and the Queen's column and before them in the DOM, the column
+   painted over the open list. Measured with trusted input at 1440x900: the
+   element under every menu item was the Queen's chat header. One level up,
+   and the panels (which start below the bar) still cover nothing of it. */
+.queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
+  z-index: 5;
 }
 
 .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-top {
@@ -4497,6 +4963,27 @@ main:where(.queen27-page.is-shell) section {
     --hud-col-w: 110px;
   }
 
+  /* — and a button is 97x34 in the head's own band, not a 110x674 strip down
+     the side of the board. Two things followed from going on treating it as a
+     column. The body reserved 130px of width for the whole height of the
+     screen, so the board was drawn into 933px of 1343 and its last lane was
+     cut off at the edge. And the strip itself — transparent, unfrosted,
+     painting nothing — was still an overlay above the field, so it took the
+     clicks aimed through it at whatever was underneath.
+
+     Measured stowed on KANBAN at 1343x788: the button ends at y=128 and the
+     body starts at y=210, so nothing below the head was ever behind it. The
+     width reserve becomes the gap, and the column is as tall as what it
+     holds. The head keeps its own inset, so the worlds row still stops short
+     of the button. */
+  .queen27-page.is-shell:has(.queen-chat-tab) .queen27-hud-viewport > .queen27-hud-vp-body {
+    padding-right: var(--hud-gap);
+  }
+
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-intel:has(> .queen-chat-tab) {
+    bottom: auto;
+  }
+
 
 
   /* The sector tile keeps the bar's rhythm rather than a panel's. */
@@ -4536,6 +5023,11 @@ main:where(.queen27-page.is-shell) section {
   top: var(--hud-chrome-top);
   right: calc(var(--hud-col-w) + var(--hud-gap) * 2 + var(--hud-cmds-w));
   left: calc(var(--hud-rail-w) + var(--hud-gap) * 2);
+  /* Floating over the field, so it needs the navigation ground -- the same one
+     the ladder directly beneath it takes, so the two read as one band rather
+     than a lit row over a transparent one. */
+  background: var(--hud-nav);
+  backdrop-filter: blur(6px);
 }
 
 .queen27-page.is-shell.is-command-collapsed .queen27-hud-viewport > .queen27-hud-vp-head {
@@ -4564,14 +5056,23 @@ main:where(.queen27-page.is-shell) section {
 }
 
 /* In bare mode the head is the only chrome left, so it floats rather than
-   taking a row from the map. */
+   taking a row from the map -- which also makes it the one strip with the whole
+   live field behind it and nothing else in front.
+   This block used to end in `background: #00000099`. That is alpha 0.6, and 0.6
+   measured 4.24:1 against --hud-muted over a lit hive, under the 4.5 this board
+   holds every other label to -- while the rule ten lines up already gives this
+   same header the nav ground at 0.86 and a low pass. The head is a child of the
+   viewport in bare mode too, so both rules match at equal specificity and this
+   one, being later, was doing nothing but making the strip thinner than the
+   board's own answer for it. Deleted rather than restated: the ground belongs
+   to the rule above, and bare mode only has an opinion about where the strip
+   sits. The blur was never in this block and never needed to be. */
 .queen27-page.is-shell.is-bare .queen27-hud-vp-head {
   position: absolute;
   z-index: 3;
   top: 0;
   right: 0;
   left: 0;
-  background: #00000099;
 }
 
 /* the factory is the one deep panel: it scrolls vertically inside the
@@ -4629,6 +5130,19 @@ main:where(.queen27-page.is-shell) section {
   overflow: auto;
 }
 
+/* The header bar of the tech tree, and the second of the two places on this
+   board where text was painted straight onto the moving hive. It was already
+   shaped like a bar -- padding, a rule under it, its own muted colour -- so the
+   ground reads as the thing that was missing rather than as a new decoration.
+
+   Everything on the strip was on the hive, not just the label: the caption, the
+   "overall research 52%" line, and all nineteen worker slots, twenty-nine
+   elements in one row. The slots looked grounded and were not; .is-busy paints
+   rgba(..., 0.05), which is a tint on whatever is behind it and behind it was
+   the lattice. One ground on the bar covers the row and every future thing put
+   on it. See the filter-row rule near the end of this file for why the gate is
+   blind to a surface that declares no background, and for how these two were
+   found. */
 .queen27-page.is-shell .queen27-tech-strip {
   display: flex;
   flex-wrap: wrap;
@@ -4636,6 +5150,9 @@ main:where(.queen27-page.is-shell) section {
   align-items: center;
   padding: 0.45rem 0.8rem;
   border-bottom: 1px solid var(--hud-line);
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   color: var(--hud-muted);
   font-size: 0.6rem;
   letter-spacing: 0.1em;
@@ -4799,16 +5316,6 @@ main:where(.queen27-page.is-shell) section {
   grid-template-rows: minmax(0, 1fr);
 }
 
-.queen27-page.is-shell .queen27-hud-minimap {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  min-height: 0;
-}
-
-.queen27-page.is-shell .queen27-hud-minimap-body {
-  min-height: 0;
-}
-
 .queen27-page.is-shell .queen27-hud-intel.is-drawer {
   position: absolute;
   z-index: 7;
@@ -4836,10 +5343,6 @@ main:where(.queen27-page.is-shell) section {
   font-size: 0.9rem;
   line-height: 1;
   background: var(--hud-ground);
-}
-
-.queen27-page.is-shell .queen27-hud-intel.is-drawer .queen27-intel-head {
-  padding-right: 2.2rem;
 }
 
 /* ---- bottom bar --------------------------------------------------------- */
@@ -5033,6 +5536,28 @@ main:where(.queen27-page.is-shell) section {
   grid-template-rows: minmax(0, 1fr);
 }
 
+/* Both halves of this clock — the widget here and the collapsed button below —
+   float on the live hive and were missing their low pass.
+
+   They are the two surfaces that show why the layered-tint idiom owes one. The
+   fix for a state rule that wrote `background: <tint>` and silently REPLACED
+   the panel underneath is to write the tint as a layer and leave the panel as
+   the bottom stop, which is what both of these do. That restores the ground
+   and it also means the rule now paints a ground, at 0.88, where before the
+   contract's reader saw only the gold and moved on. A gate that reads the
+   first layer of a `background` and stops cannot see the second; once it reads
+   every stop, these two arrive as what they always were — dark translucent
+   chrome over a moving lattice.
+
+   0.88 passes 12% of the hive, and alpha scales that field's amplitude while
+   leaving its spatial frequency exactly where it was: what comes through is a
+   hexagon EDGE at full sharpness. On a countdown that is not a texture, it is
+   a stroke. The digits change every second and are the one number on this
+   board read at a glance, so an edge crossing a numeral is read as part of the
+   numeral. Thickening the alpha cannot help — it dims the edge and keeps it.
+   blur() is the only declaration in CSS that touches the frequency, and 8px
+   rather than the board's usual 6px because this is chrome that has to stay
+   legible while the lattice behind it is turning. */
 .queen27-page.is-shell .queen27-hud-round {
   position: relative;
   display: grid;
@@ -5040,6 +5565,8 @@ main:where(.queen27-page.is-shell) section {
   height: 100%;
   min-height: 0;
   border: 2px solid var(--hud-gold);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   background:
     linear-gradient(135deg, rgba(255, 215, 0, 0.14), rgba(255, 215, 0, 0.02) 60%),
     var(--hud-panel);
@@ -5218,6 +5745,8 @@ main:where(.queen27-page.is-shell) section {
   border: 2px solid var(--hud-gold);
   color: inherit;
   font: inherit;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.14), rgba(255, 215, 0, 0.02)), var(--hud-panel);
   cursor: pointer;
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
@@ -5335,6 +5864,15 @@ main:where(.queen27-page.is-shell) section {
     max-width: none;
   }
 
+  /* The fixed list only escapes the bar if the bar is not its containing
+     block, and a backdrop-filter makes it one: the matte rule blurs the bar,
+     so the open list was laid out inside the 48 px bar and clipped by its
+     overflow. Measured with trusted taps at 390x844: no item was under the
+     finger. While the list is open the bar goes without its blur. */
+  .queen27-page.is-shell .queen27-hud-top:has(> .queen27-hud-status > .queen27-hud-menu) {
+    backdrop-filter: none;
+  }
+
   .queen27-page.is-shell .queen27-hud-viewport {
     grid-column: 1;
   }
@@ -5423,6 +5961,32 @@ main:where(.queen27-page.is-shell) section {
   .queen27-page.is-shell .queen27-city-stage {
     grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr);
   }
+}
+
+/* ---- why free bees are idle (2026-09-15, moved into the tile 2026-09-20) ---
+   BEES 0/4 was read as broken bees while the round had said "nothing to
+   choose", so the reason was drawn twice: short in the BEES tile, and in full
+   on a line floating under the map's head. The floating one spent four rounds
+   being moved out from under something -- the head's bottom rule, a phone's
+   screen tabs, a landscape phone's map tools, and finally the SPECS ladder and
+   the Explorer's search field under it. A notification that has to be re-placed
+   every time the page gains a row is in the wrong place. The tile keeps the
+   whole reason: the head in the line, the sentence on hover and for a screen
+   reader, and the example issue as the link the floating line carried.
+   qa/queen-idle-layout-contract.mjs now holds it there. */
+.queen27-page.is-shell .queen27-hud-idle-why[data-idle] {
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-hud-idle-why > a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.queen27-page.is-shell .queen27-hud-idle-why > a:focus-visible {
+  outline: 2px solid var(--hud-cyan);
+  outline-offset: 2px;
 }
 
 /* ---- a round's resolution moment (loop cycle 004, P1-1) ------------------- */
@@ -5530,6 +6094,258 @@ main:where(.queen27-page.is-shell) section {
   background: rgba(255, 215, 0, 0.05);
 }
 
+/* --------------------------------------------------------------------------
+   The LADDER — sub-navigation of the SPECS module.
+   components/QueenLadder.tsx
+
+   Six layers that used to be six of the rail's fourteen buttons. Here they get
+   the room the rail could not give them: the label is read at the body size
+   rather than the rail's 0.6rem caption, and the rung number says out loud that
+   this is an order, not a set. Any number of rows may sit above the frame now
+   (ladder, directive, faces), so .has-ladder drops the fixed grid-template-rows
+   of the views above for a column flex where the frame simply takes the rest.
+   -------------------------------------------------------------------------- */
+
+.queen27-page.is-shell .queen27-specs.has-ladder,
+.queen27-page.is-shell .queen27-specs.has-ladder.has-jumps {
+  display: flex;
+  flex-direction: column;
+  grid-template-rows: none;
+}
+
+.queen27-page.is-shell .queen27-specs.has-ladder > .queen27-specs-frame-wrap,
+.queen27-page.is-shell .queen27-specs.has-ladder > .mcp-view {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* The board's three readings under the board's own row.
+   The viewport body is a one-cell grid -- every view is placed in the same
+   cell, stacked over the scene -- so a row and the view it switches cannot be
+   two children of it without landing on top of each other. They are one child,
+   and this is the column they share: the row takes what it asks for, the view
+   takes the rest. The views declare `height: 100%` for the grid cell they used
+   to be placed in directly, which in a flex column would be 100% of a height
+   that is itself being computed from them; `height: auto` with `flex: 1 1 auto`
+   is the same intent stated the way this parent can answer. */
+.queen27-page.is-shell .queen27-board-stack {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The board's row, the switch that says which board is on screen, the direction
+   chips, and the heading that only exists once there is a second board to name,
+   all take exactly what they ask for. Named on the same rule as the row rather
+   than on ones of their own: they are the same kind of thing to this stack -- a
+   line of chrome above a view -- and four rules saying `flex: 0 0 auto` is
+   three more places for that to stop being true.
+
+   Anything NOT named here defaults to `flex: 0 1 auto` and shrinks instead:
+   that is how the chips ended up squeezed when the board was tall, and it is
+   why a new row above the board belongs on this list the day it is added. */
+.queen27-page.is-shell .queen27-board-stack > .queen27-ladder,
+.queen27-page.is-shell .queen27-board-stack > .queen27-lane-switch,
+.queen27-page.is-shell .queen27-board-stack > .queen27-dir-filter,
+.queen27-page.is-shell .queen27-board-stack > .queen27-lane-head {
+  flex: 0 0 auto;
+}
+
+.queen27-page.is-shell .queen27-board-stack > .queen27-kanban,
+.queen27-page.is-shell .queen27-board-stack > .queen27-mission-map,
+.queen27-page.is-shell .queen27-board-stack > .queen27-factory {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  /* And sideways, for the same reason. A flex item's automatic minimum size is
+     its content, so on a 390px phone the map and the factory held the stack
+     open 4px wider than the module and pushed that overflow up to the stack --
+     which is not a scroller and so had nowhere to put it. Both views scroll
+     their own content; this lets them, instead of widening what contains them. */
+  min-width: 0;
+}
+
+/* One row, always, at every width and on every one of the six layers. It used
+   to wrap, and a wrapping tab bar is a tab bar whose height is a function of
+   the window: 49px here, 86px there, and the Explorer under it jumping by 37px
+   between two screens showing the same thing. When the six do not fit, the row
+   scrolls -- which is what the head row directly above it already does, so the
+   two rows of chrome now behave the same way rather than each inventing its
+   own answer to the same question. */
+.queen27-page.is-shell .queen27-ladder {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.18);
+  /* Green sheen over the navigation ground, not instead of it: the gradient
+     used to start at 5% green on nothing, so the top half of the row was the
+     map and the rungs' names were read against whatever drifted under them. */
+  background:
+    linear-gradient(180deg, rgba(0, 255, 136, 0.06), rgba(0, 255, 136, 0)),
+    var(--hud-nav);
+  backdrop-filter: blur(6px);
+  min-width: 0;
+  flex: 0 0 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.queen27-page.is-shell .queen27-ladder::-webkit-scrollbar {
+  display: none;
+}
+
+/* The six share the row: each is sized to its own name and then stretches into
+   what is left, so the ladder is one bar across the module rather than six
+   buttons and a ragged gap. Measured: the six at their intrinsic width come to
+   643px of a 707px column on a 1440px screen, so they stretch into one 50px row
+   and a narrower column wraps them -- which flex-wrap above makes read as two
+   rows rather than an overflow. The sizes here are what brought 869px down to
+   692px; loosening them puts FUNCTIONS back on a second row.
+
+   The counts moved onto the rungs from the strip the Explorers used to draw
+   inside the frame, and 1407 is four digits: that put the six back over the
+   column and FUNCTIONS back on the second row at 1343px. The padding and the
+   two gaps here are tightened by exactly what the counts cost, so the wrap
+   threshold is where it was. */
+.queen27-page.is-shell .queen27-ladder-step {
+  display: inline-flex;
+  /* Grow into a wide row, never shrink out of a narrow one: a rung that
+     shrinks clips its own name, and the name is the whole point. Past the
+     point where growing stops the row scrolls instead. */
+  flex: 1 0 auto;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 0.42rem 0.3rem;
+  border: 1px solid var(--hud-line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--hud-muted);
+  font: inherit;
+  cursor: pointer;
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+/* The rung number: the ladder's order, stated. */
+.queen27-page.is-shell .queen27-ladder-step > em {
+  font-family: var(--hud-mono);
+  font-size: 0.6rem;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  color: rgba(0, 255, 136, 0.45);
+}
+
+.queen27-page.is-shell .queen27-ladder-step > i {
+  font-style: normal;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.queen27-page.is-shell .queen27-ladder-step > b {
+  font-family: var(--hud-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* How many the layer holds -- the number the Explorer's own strip used to print
+   inside the frame. It arrives one fetch after the row is drawn, so the span is
+   always in the DOM and `min-width` holds its place: a four-digit count (Specs
+   is in the thousands) appearing into a row sized without it re-flexed all six
+   rungs and could push FUNCTIONS onto a second line. 3.2ch is four monospace
+   digits at this size; the empty state is therefore the same width as the full
+   one, and nothing moves when the catalog answers. (3.2ch was three digits and
+   Specs is 1407.) */
+.queen27-page.is-shell .queen27-ladder-count {
+  min-width: 4ch;
+  font-family: var(--hud-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-align: right;
+  color: #ffd45a;
+  font-variant-numeric: tabular-nums;
+}
+
+.queen27-page.is-shell .queen27-ladder-step > kbd {
+  font-family: var(--hud-mono);
+  font-size: 0.55rem;
+  padding: 0.04rem 0.22rem;
+  border: 1px solid var(--hud-line);
+  color: var(--hud-muted);
+  opacity: 0.7;
+}
+
+/* The key badge is the first thing to go when the six stop fitting. Measured at
+   1343px: the six want 781px of the 687px the module's column has, and the six
+   badges are 108px of that -- so dropping them is the difference between the
+   whole ladder being visible and the reader having to scroll to find FUNCTIONS.
+   Nothing is lost: the key is still in the tooltip, still on the rail's own
+   button for SPECS, and still the key that works.
+
+   Asked of the specs family alone. This row is now drawn for the board too, and
+   three members across the module's whole width are nowhere near crowded -- at
+   1343px they have 1053px for three -- so the same rule was hiding 3, 4 and 5
+   to solve a crush that is not happening there. */
+@media (max-width: 1499px) {
+  .queen27-page.is-shell .queen27-ladder[data-family="specs"] .queen27-ladder-step > kbd {
+    display: none;
+  }
+}
+
+.queen27-page.is-shell .queen27-ladder-step:hover {
+  border-color: var(--hud-line-strong);
+  color: var(--hud-green);
+  background: rgba(0, 255, 136, 0.04);
+}
+
+.queen27-page.is-shell .queen27-ladder-step.is-active {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+  background: rgba(255, 215, 0, 0.07);
+}
+
+.queen27-page.is-shell .queen27-ladder-step.is-active > em {
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-ladder-step.is-active > kbd {
+  border-color: rgba(255, 215, 0, 0.45);
+  color: var(--hud-gold);
+  opacity: 1;
+}
+
+/* A phone has no room for the key hint or the rung number; the glyph and the
+   name are what a thumb needs, and the row scrolls rather than wrapping to
+   three lines of buttons over a 581px view. */
+@media (max-width: 720px) {
+  .queen27-page.is-shell .queen27-ladder {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 6px 8px;
+  }
+
+  .queen27-page.is-shell .queen27-ladder-step {
+    flex: 0 0 auto;
+    padding: 0.36rem 0.6rem;
+    gap: 6px;
+  }
+
+  .queen27-page.is-shell .queen27-ladder-step > em,
+  .queen27-page.is-shell .queen27-ladder-step > kbd {
+    display: none;
+  }
+
+  .queen27-page.is-shell .queen27-ladder-step > b {
+    font-size: 0.7rem;
+  }
+}
+
 /* In the column it reads as a stack, not as a strip across the top. */
 .queen27-page.is-shell .queen27-hud-intel .queen27-specs-strip {
   display: grid;
@@ -5591,7 +6407,7 @@ main:where(.queen27-page.is-shell) section {
 
 .queen27-page.is-shell .queen27-specs-strip.is-collapsible > summary::after {
   content: '▾';
-  color: var(--hud-muted, #8b9490);
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
 }
 
 .queen27-page.is-shell .queen27-specs-strip.is-collapsible[open] > summary::after {
@@ -5608,7 +6424,7 @@ main:where(.queen27-page.is-shell) section {
 .queen27-page.is-shell .queen27-specs-counts {
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 11px;
-  color: var(--muted, #8b9490);
+  color: var(--muted, #888888);
   white-space: nowrap;
 }
 
@@ -5633,7 +6449,7 @@ main:where(.queen27-page.is-shell) section {
   place-items: center;
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px;
-  color: var(--muted, #8b9490);
+  color: var(--muted, #888888);
   pointer-events: none;
 }
 
@@ -5699,36 +6515,65 @@ main:where(.queen27-page.is-shell) section {
   background: transparent;
 }
 
-.queen27-page.is-shell .queen27-kanban {
-  background: rgba(2, 8, 6, 0.42);
+/* Letting the map through is not the same as having no ground. The factory and
+   the mission map each take a scrim below -- a dark veil the map is still read
+   through -- and the specs frame was the one view that took none: its document
+   is transparent and the wrap behind it was transparent too, so six layers of
+   dense catalog text (a list of 1407 names, a source pane, tag chips) were set
+   directly on a moving hex field with red sectors crossing them. Measured on
+   the SPECS layer at 1343px: the chips and the source gutter sit on live hexes.
+
+   The same veil, on the wrap rather than the frame: the frame holds another
+   document and cannot be reached from here, while the wrap is the element
+   directly beneath it in this one. The map still shows through, at the strength
+   every other view already shows it.
+
+   This paragraph used to open "The kanban, the factory and the mission map",
+   and a line below it gave the kanban the same veil. It has not had one since
+   2026-09-09: the board layout decided "one layer of ground, not two" and set
+   `.queen27-kanban { background: transparent }` at equal specificity further
+   down, where it wins on source order. The declaration here painted nothing and
+   said the opposite of what the file does -- which is how the contrast gate came
+   to report a 0.72 ground under six columns of text and how an agent came to be
+   asked to frost it. Deleted rather than frosted: a blur under a fully
+   transparent element is the documented band-over-bare-map defect, and at the
+   size of a whole tab it is the worst place on the board to ship one. The text
+   in this view is on .queen27-column, which carries --hud-panel and is on the
+   blur roster. */
+.queen27-page.is-shell .queen27-specs-frame-wrap {
+  background: var(--hud-veil);
 }
 
 .queen27-page.is-shell .queen27-factory {
-  background: rgba(1, 3, 2, 0.5);
+  background: var(--hud-veil);
 }
 
 .queen27-page.is-shell .queen27-mission-map {
-  background: rgba(2, 8, 6, 0.42);
+  background: var(--hud-veil);
 }
 
 /* The containers were not the last of it: inside three views the content itself
-   was opaque — kanban columns, the factory's city panels, the tech map and its
-   nodes. Probed at the centre of every tab, these were what still stood between
-   the sky and the eye. */
-.queen27-page.is-shell .queen27-column {
-  background: rgba(2, 8, 6, 0.5);
-}
+   was opaque — the factory's city panels, the tech map and its nodes. Probed at
+   the centre of every tab, these were what still stood between the sky and the
+   eye.
 
+   The kanban column was on this list and is not any more. It had a fourth
+   `.queen27-page.is-shell .queen27-column` rule here setting the same
+   translucent green; the panel rule further down the file sets `background`
+   too, at the same specificity and later, so this one never applied to a single
+   pixel. It read as the rule that made the columns see-through and it was not —
+   which is the expensive kind of dead code, the sort you edit for an hour
+   before checking whether it wins. */
 .queen27-page.is-shell :is(.queen27-city, .queen27-city-build-queue, .queen27-city-console, .queen27-hardware-foundry) {
-  background: rgba(2, 8, 6, 0.5);
+  background: var(--hud-veil);
 }
 
 .queen27-page.is-shell :is(.queen27-tech-map, .queen27-tech-console, .queen27-tech-details) {
-  background: rgba(2, 8, 6, 0.5);
+  background: var(--hud-veil);
 }
 
 .queen27-page.is-shell .queen27-tech-node {
-  background: rgba(2, 8, 6, 0.62);
+  background: var(--hud-veil);
 }
 
 /* The worlds sit in the map's control row now, so they take that row's scale
@@ -5801,8 +6646,16 @@ body.queen-shell .queen-universe {
     height: 56px;
   }
 
+  /* The band above the content is the floating head and the gap under it, and
+     nothing else. It used to be 116px: the head's 40, a 10px gap, then 56px
+     and another 10 held for the quick-command row — which no component in this
+     page renders, on any tab. SPECS had already been excused from it, in its
+     own rule below, so the six ladder layers got the 66px back and the other
+     eight views went on reserving empty sky. Measured on KANBAN at 1343x788:
+     the head ended at y=134 and the board began at y=210. One rule for every
+     tab, and the reserve is what is actually drawn. */
   .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
-    padding-top: calc(var(--hud-chrome-top) + 116px);
+    padding-top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
   }
 }
 
@@ -5954,26 +6807,45 @@ body.queen-shell .phi-starfield {
    Measured at 1440x900 with the sky lit: the mission map's sectors were 0.88
    opaque, and in the factory the floor (1480x642), the city's canvas, the
    inspector and the bay cells were solid colour. Translucent panels on an
-   opaque floor is translucency over nothing — the sheet is what the eye sees. */
-.queen27-page.is-shell .queen27-map-sector {
-  background: rgba(1, 7, 5, 0.45);
+   opaque floor is translucency over nothing — the sheet is what the eye sees.
+
+   That round got the intent right and the number wrong. It opened these five
+   to 0.30-0.50, which is how much of the hive you want to SEE; nobody asked
+   how much text survives it. qa/queen-contrast-contract.mjs now asks: at 0.30
+   the labels on the factory floor measure 1.80:1 against a lit hive, and at
+   0.45 the map's sector text is 2.63:1. The token is 0.72 because that is
+   where the same arithmetic reaches 4.5:1 — the map still comes through, it
+   just no longer comes through the words. */
+.queen27-page.is-shell .queen27-map-sector,
+.queen27-page.is-shell .queen27-factory-floor,
+.queen27-page.is-shell .queen27-factory-inspector,
+.queen27-page.is-shell .queen27-factory-bays > div,
+.queen27-page.is-shell .queen27-factory-bays li {
+  background: var(--hud-veil);
 }
 
-.queen27-page.is-shell .queen27-factory-floor {
-  background: rgba(2, 4, 3, 0.3);
-}
-
+/* The exception, and the reason the gate names it: this one is
+   `aria-hidden="true"` in QueenResearchCity.tsx:293 — a draw surface with no
+   text of its own. Nothing on it can be made illegible, so it keeps the thin
+   alpha and the city stays open to the sky behind it. */
 .queen27-page.is-shell .queen27-city-canvas {
   background: rgba(1, 7, 6, 0.42);
 }
 
-.queen27-page.is-shell .queen27-factory-inspector {
-  background: rgba(3, 4, 3, 0.5);
+/* The bay strip's own ground. On the page `background: var(--border)` is how a
+   1px grid is drawn: the children paint over it and what stays visible is the
+   gap between them. There is one bay and the row is the width of the screen,
+   so what stayed visible was the row — 8% white twice over, the strip and the
+   list inside it, as a pale band laid across the HUD. Measured on FACTORY at
+   1343x788: it ran the full 1053px of the board. Here the gap is the panel the
+   strip sits on, and its rule is the HUD's hairline like every other. */
+.queen27-page.is-shell .queen27-factory-bays,
+.queen27-page.is-shell .queen27-factory-bays ol {
+  background: transparent;
 }
 
-.queen27-page.is-shell .queen27-factory-bays > div,
-.queen27-page.is-shell .queen27-factory-bays li {
-  background: rgba(4, 7, 5, 0.5);
+.queen27-page.is-shell .queen27-factory-bays {
+  border-bottom-color: var(--hud-line);
 }
 
 /* The scene's boundary. It is a panel of the HUD like any other — the map is
@@ -6143,14 +7015,14 @@ body.queen-shell .phi-starfield {
 
 /* The body is the scene's area, and every other panel floats over it — so it
    spans the viewport instead of sharing it. Auto-placed it took the first grid
-   row and the context chip took the second, which meant the row was sized to
-   whatever the view happened to render. In the comb that went unnoticed: the
+   row and the context chip -- since removed -- took the second, which meant the
+   row was sized to whatever the view rendered. In the comb that went unnoticed:
+   the
    field is positioned over the whole shell anyway. In the specs view the
    content is an iframe, and it was handed 150px of an 880px shell — the Spec
    Explorer drew its header and its tab bar, and the code was cut off below. */
 @media (min-width: 901px) {
-  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body,
-  .queen27-page.is-shell .queen27-hud-viewport > .queen27-context-chip {
+  .queen27-page.is-shell .queen27-hud-viewport > .queen27-hud-vp-body {
     grid-area: 1 / 1 / -1 / -1;
   }
 }
@@ -6164,6 +7036,14 @@ body.queen-shell .phi-starfield {
 .queen27-page.is-shell .queen27-kanban {
   gap: var(--hud-gap);
   background: transparent;
+  /* Six lanes, and the board at 1343x788 is 1053 wide. At a 210px floor the six
+     ask for 1310: DONE was cut down the middle by the right edge and DROPPED
+     was not on the screen at all, behind a horizontal scroll that nothing in
+     the row tells you is there. A floor is for legibility, not for holding a
+     width the screen does not have — at 160px the six ask for 1010 and the
+     whole board is visible, and below that the row still scrolls rather than
+     crushing a title. */
+  grid-template-columns: repeat(6, minmax(160px, 1fr));
 }
 
 .queen27-page.is-shell .queen27-column {
@@ -6195,9 +7075,15 @@ body.queen-shell .phi-starfield {
   opacity: 0.72;
 }
 
+/* The card's own veil is gone for the same reason the kanban's is, and the file
+   already argued this case at .queen27-card[data-dir]: "one layer of ground, not
+   two -- the column carries the veil and the card adds nothing". That rule and
+   `.queen27-card { background: transparent }` below are the live pair; this line
+   was the third opinion, outranked on source order and painting nothing. The
+   direction tint mixes against `transparent` on purpose, so deleting a ground
+   that never drew changes no colour on the board. */
 .queen27-page.is-shell .queen27-card {
   border: 1px solid var(--hud-line);
-  background: rgba(2, 8, 6, 0.5);
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
 
@@ -6238,6 +7124,23 @@ body.queen-shell .phi-starfield {
 
 .queen27-page.is-shell .queen27-card {
   min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-cards-more {
+  border-color: var(--hud-line);
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+  clip-path: var(--hud-notch);
+}
+
+.queen27-page.is-shell .queen27-cards-more > small {
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-cards-more:hover,
+.queen27-page.is-shell .queen27-cards-more:focus-visible {
+  border-color: var(--hud-gold);
+  color: var(--text, #fff);
 }
 
 .queen27-page.is-shell .queen27-card > :is(strong, span, .queen27-card-topline) {
@@ -6282,15 +7185,13 @@ body.queen-shell .queen-starfield-source {
 
 /* The specs view is not the map, and the map's controls do not act on it:
    copy-to-agent, fit view, the zoom pair, fullscreen — every one of them
-   addresses a scene that is not on this screen. The row goes here, and the
-   Explorer is given back the 66px it stood in. */
-@media (min-width: 901px) {
-  .queen27-page.is-shell[data-view="specs"] .queen27-hud-viewport > .queen27-hud-commands {
-    display: none;
-  }
+   addresses a scene that is not on this screen. The row is hidden here.
 
-  .queen27-page.is-shell[data-view="specs"] .queen27-hud-viewport > .queen27-hud-vp-body {
-    padding-top: calc(var(--hud-chrome-top) + 40px + var(--hud-gap));
+   The padding this rule used to carry has moved: it is now what every view
+   gets, stated once beside the head it measures. */
+@media (min-width: 901px) {
+  .queen27-page.is-shell[data-rail-view="specs"] .queen27-hud-viewport > .queen27-hud-commands {
+    display: none;
   }
 }
 
@@ -6302,7 +7203,7 @@ body.queen-shell .queen-starfield-source {
    is, embedded. */
 .queen27-page.is-shell .queen-catalog-spec {
   border-color: var(--hud-line);
-  background: rgba(2, 8, 6, 0.66);
+  background: var(--hud-veil);
   backdrop-filter: blur(7px);
 }
 
@@ -6313,7 +7214,7 @@ body.queen-shell .queen-starfield-source {
 /* Its own detail card, the one a cell opens first, on the same veil. */
 .queen27-page.is-shell .queen-catalog-detail {
   border-color: var(--hud-line);
-  background: rgba(2, 8, 6, 0.66);
+  background: var(--hud-veil);
   backdrop-filter: blur(7px);
 }
 
@@ -6321,8 +7222,19 @@ body.queen-shell .queen-starfield-source {
    The field is a fixed, full-shell layer at z-index 0, so it is the ground
    under every tab — which is the point — but its labels, its law line and the
    cards a cell opens belong to the map's own view. A scene that took clicks
-   from under the board would be a scene in the way. */
-.queen27-page.is-shell:not([data-view="comb"]) .queen27-comb-field {
+   from under the board would be a scene in the way.
+   The field alone was not enough. The scene is mounted in .queen-scene-holder,
+   an absolutely positioned overlay of the view body, and a positioned box
+   paints over a tab whose content is not positioned, whatever the DOM order:
+   inside it the catalog layer (position:relative, and the hive's gesture
+   surface) and .queen27-comb still took the pointer. Measured with trusted
+   input on TRI: the element under every screen button was
+   .queen27-comb.is-embedded, then .queen-scene-holder once the comb stopped,
+   and a click or tap chose no screen. So off the comb the holder and every box
+   in it (the hive displays set pointer-events:auto) stop taking the pointer,
+   and so does the canvas engine's comb, which has no holder. */
+.queen27-page.is-shell:not([data-view="comb"]) :is(.queen27-comb-field, .queen-scene-holder, .queen27-comb.is-embedded),
+.queen27-page.is-shell:not([data-view="comb"]) :is(.queen-scene-holder, .queen27-comb.is-embedded) * {
   pointer-events: none;
 }
 
@@ -6331,14 +7243,78 @@ body.queen-shell .queen-starfield-source {
   display: none;
 }
 
+/* The other half of the sentence above.
+   "A positioned box paints over a tab whose content is not positioned, whatever
+   the DOM order" was written about the POINTER and is just as true of PAINT,
+   and only the pointer was fixed. Every view root here -- .queen27-tri,
+   .queen27-board-stack, .queen27-specs -- is a static in-flow block, so it
+   paints at step 3 of its stacking context while .queen-scene-holder, being
+   positioned, paints at step 6: the hive is drawn ON TOP of the board, not
+   behind it.
+   Photographed twice before it was understood. On KANBAN the lattice crossed
+   the words HARDWARE and PROOF in the direction row and a red comb strand ran
+   down through the DONE column; on TRI the screen button CRM was unreadable
+   under a hexagon. Both were read as "the ground is too thin" and answered with
+   a thicker ground, which cannot work: no alpha hides something painted after
+   you. With this rule the same rows come back clean and the show-through fixes
+   elsewhere in this file finally have something to do.
+   The page solved this for its own children at "Everything else rides above
+   it." -- the same two declarations, one level up. The scene holder is excluded
+   because on the comb it IS the content; there it is also the body's only
+   child, so this rule matches nothing at all.
+   .queen27-comb.is-embedded is excluded for the same reason and is a separate
+   name because it is a separate element: SceneBoundary is the only thing that
+   writes .queen-scene-holder, and the canvas engine's branch (Queen.tsx, the
+   `ENGINE_FLAG !== "canvas"` ternary) has no SceneBoundary around it, so under
+   ?engine=canvas the hive arrives here as .queen27-comb.is-embedded with no
+   holder at all. Without the second :not() this rule would lift THAT to
+   z-index 1 -- a tie with the view roots, settled by JSX order, which is a
+   stacking bug waiting for somebody to reorder two children. The pointer rule
+   twenty lines up already names both for exactly this reason; the paint rule
+   was written naming one. */
+.queen27-page.is-shell .queen27-hud-vp-body > *:not(.queen-scene-holder):not(.queen27-comb.is-embedded) {
+  position: relative;
+  z-index: 1;
+}
+
 
 /* Matte where the words are.
    With the hive drawing under every tab, a panel at one 0.42 veil was legible
    only where the map happened to be empty: a cell's outline running through a
    line of text is a line read twice. The blur keeps the map as depth behind the
    panel and takes its detail out of the words. The veil itself stays thin — the
-   frosting is what makes it readable, not opacity. */
-.queen27-page.is-shell :is(.queen27-column, .queen27-kanban-panel, .queen27-map-sector, .queen27-tech-node, .queen27-tech-map, .queen27-tech-console, .queen27-tech-details, .queen27-city, .queen27-city-console, .queen27-city-canvas, .queen27-factory-floor, .queen27-factory-inspector, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-top, .queen27-hud-commands, .queen-catalog-toolbar) {
+   frosting is what makes it readable, not opacity.
+
+   The four names after the toolbar joined on the same measurement, one round
+   later: the specs frame wrap and the docs jump strip, the factory and the
+   mission map. Three of them paint the 0.72 veil and the jump strip 0.82, and
+   every one of them was still showing a sharp lattice through it. The kanban
+   is deliberately absent: its veil is overridden back to `transparent` further
+   down, so a blur there would band a whole tab with nothing drawn on it.
+
+   What the mission map costs, written down because it is not free and the next
+   reader will otherwise count it twice: .queen27-map-sector is on this list too
+   and carries its own blur(10px) at its base rule, so the map tab now composites
+   the field once for the container and once per sector. The container is what
+   the lattice actually shows through -- the gaps between the six sectors, and
+   the bands .queen27-map-stars and .queen27-map-route sit on -- while the text
+   is all inside the sectors. The sectors are not dropped from this list because
+   the low pass they carry is the backdrop the INSIDE table in
+   qa/queen-contrast-contract.mjs names for `.queen27-map-nodes a`; taking it
+   away moves the excuse and the declaration together, which is a change to that
+   file and not to this one.
+
+   Only bare class names go in this list. A compound -- anything with a `:not`
+   or an attribute on it -- would raise the whole `:is()` by one class and put
+   it above the `backdrop-filter: none` below that keeps the hive faces
+   unfrosted.
+
+   Two joined and one left. The city's build queue and the hardware foundry are
+   grounded with the city itself a few screens up and were never frosted; both
+   are bare single classes, so this is where they belong. .queen27-hud-commands
+   left because nothing renders it -- see the panels rule for the census and for
+   what a dead name in a live rule cost. */
+.queen27-page.is-shell :is(.queen27-column, .queen27-kanban-panel, .queen27-map-sector, .queen27-tech-node, .queen27-tech-map, .queen27-tech-console, .queen27-tech-details, .queen27-city, .queen27-city-build-queue, .queen27-city-console, .queen27-city-canvas, .queen27-hardware-foundry, .queen27-factory-floor, .queen27-factory-inspector, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-top, .queen-catalog-toolbar, .queen27-specs-frame-wrap, .queen27-docs-jumps, .queen27-factory, .queen27-mission-map) {
   backdrop-filter: blur(6px);
 }
 
@@ -6429,7 +7405,7 @@ body.queen-shell .queen-starfield-source {
    markup rather than hidden here — four previews each booting Babylon is four
    more WebGL contexts on one page. */
 .queen27-page.is-shell.is-embed .queen27-hud-viewport
-  > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-vp-head, .queen27-hud-bottom, .queen27-context-chip) {
+  > :is(.queen27-hud-top, .queen27-hud-command, .queen27-hud-intel, .queen27-hud-vp-head, .queen27-hud-bottom) {
   display: none;
 }
 
@@ -6457,4 +7433,431 @@ body.queen-shell .queen-starfield-source {
      kept it in place — a fixed layer is loose in the page instead, and a
      repository name near the top edge was drawn over the status bar. */
   z-index: 2;
+}
+
+/* ── The board's second lane: the signed-in visitor's own clients ──
+   It IS the kanban, and carries that class, so the frame, the veil over the
+   hive, the scrollbar, the column and card styling and the phone layout are
+   each stated once and apply to both lanes. A parallel set of rules for a
+   board that looks identical is a board that stops looking identical the first
+   time one of them is touched.
+   What differs is the column count, and it is not a constant: the hive names
+   the columns it has, a stage this build has never met still has to be drawn,
+   and a stage nobody is in still has to hold its place. So the columns are
+   automatic -- as many as arrive, each no narrower than a card needs to be
+   legible, and the lane scrolls sideways when they do not fit, which is what
+   the six fixed ones already do. */
+.queen27-clients-lane {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(210px, 1fr);
+}
+
+.queen27-page.is-shell .queen27-clients-lane {
+  grid-auto-columns: minmax(160px, 1fr);
+}
+
+@media (max-width: 760px) {
+  .queen27-clients-lane {
+    grid-auto-columns: minmax(78vw, 1fr);
+  }
+}
+
+/* The sentence a lane says when it has no cards to show: asking, refused, no
+   answer, unreadable, or a board that really is empty. It sits in the lane's
+   own grid, which has no columns at that moment, so it is the only thing in it
+   -- the same place the task lane's per-column `em` sits, wearing the same
+   quiet type. */
+.queen27-lane-note {
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+/* The heading over a lane. Only drawn when there are two lanes, so the public
+   board keeps the shape it has always had: the row, then the board, and
+   nothing between them. */
+.queen27-lane-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0.4rem;
+  min-width: 0;
+}
+
+.queen27-lane-head h3 {
+  margin: 0;
+  color: var(--q-green);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.queen27-lane-head > span {
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.queen27-lane-head small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The narrowing control. Last in the row and pushed to the far end, because it
+   acts on the lane rather than describing it. */
+/* Two rows of chips, one shape. They share the look and nothing else: the
+   clients row is about PEOPLE and exists only for a signed-in reader, the
+   direction row is about SUBJECTS and is there for everyone. They are two class
+   names rather than one for a reason that is checked —
+   qa/clients-filter-contract.mjs counts the elements carrying the clients class
+   and requires the single one it finds to sit inside the signed-in conditional.
+   Borrowing that class for the public row would have made that count read 2 and
+   the gate read "a clients filter escaped the sign-in check". */
+.queen27-lane-filter,
+.queen27-dir-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.queen27-lane-filter {
+  margin-left: auto;
+  /* A keeper is offered one chip per client on the platform. The row wraps, and
+     past a few lines of them it scrolls rather than pushing the board down the
+     page: the filter is how you get to the board, not a thing to scroll past. */
+  max-height: 4.6rem;
+  overflow-y: auto;
+}
+
+.queen27-chip {
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  background: #050505;
+  cursor: pointer;
+}
+
+.queen27-chip:hover {
+  color: var(--text);
+}
+
+/* The pressed state IS the accessible state: one attribute, so the styling and
+   the screen reader cannot come to disagree about which clients are shown. */
+.queen27-chip[aria-pressed="true"] {
+  border-color: var(--gold, #d9a441);
+  color: #050505;
+  background: var(--gold, #d9a441);
+}
+
+.queen27-lane-search {
+  max-width: 9rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  background: #050505;
+}
+
+/* "find a person" is not a hint, it is the only label this box has — there is
+   no <label> beside it, so the placeholder IS the accessible name and has to
+   clear 4.5:1 like any other. The UA default is #757575, which measured
+   4.39:1 here: under the line, and the third of the five words in the owner's
+   photograph that was failing. */
+.queen27-lane-search::placeholder {
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  opacity: 1;
+}
+
+/* THE SWITCH BETWEEN THE TWO BOARDS.
+   Drawn where the two lane headings used to be, and for the same reason they
+   were: there are two boards to tell apart. It replaces them rather than
+   joining them, because only one board is on screen now. */
+.queen27-lane-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.5rem 0 0.4rem;
+}
+
+.queen27-lane-switch .queen27-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.queen27-lane-switch .queen27-chip > small {
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+/* No new colour for "private", on purpose. Seven hues on this board already
+   mean seven DIRECTIONS, and an eighth would be read as the eighth of those
+   before it was read as a warning — the two reds in that table are a card's
+   subject, not its reach. The dashes carry it instead, and the word carries it
+   for anybody the dashes do not reach, which is the same rule the direction
+   tags follow: the colour is the shortcut, never the whole of the message. */
+.queen27-lane-switch .queen27-lane-private-chip {
+  border-style: dashed;
+}
+
+.queen27-lane-private-chip > em {
+  color: var(--q-gold);
+  font-size: 0.86em;
+  font-style: normal;
+  letter-spacing: 0.08em;
+}
+
+/* Pressed, the chip is the gold every pressed chip on this board is, and the
+   word goes dark along with the rest of it — by INHERITING, never by naming a
+   dark colour of its own.
+
+   Naming one is the defect this board has now shipped twice: a rule that says
+   `color: #050505` is only true while some other rule is still handing that
+   element a light background, and the two drift apart the first time a shell
+   layer restyles the chip. qa/queen-direction-contract.mjs refuses any rule
+   that paints #050505 without stating the background in the same breath, and it
+   refused this one — correctly, on a word whose background belongs to its
+   parent. `inherit` has no such gap: whatever colour wins on the chip, the word
+   is a quieter version of exactly that, including on a future chip that is not
+   gold at all. Qualified by the row it lives in so it wins by structure rather
+   than by sitting further down the file. */
+.queen27-lane-switch .queen27-lane-private-chip[aria-pressed="true"] > em {
+  color: inherit;
+  opacity: 0.68;
+}
+
+/* The badge on the board itself. `is-private` wraps because the sentence beside
+   the word is a sentence: on a narrow board it belongs on its own line rather
+   than cut to an ellipsis, which is how a warning comes to read "names and
+   payme…". */
+/* This heading carries more than a word: the badge, the count, whose scope is
+   being shown ("Keeper · alpha_bot · beta_bot") and the control that narrows it.
+   Measured at 1512x949 it is 67px and wraps onto two rows, the filter flush
+   right on the second. Wrapping is what keeps those rows from colliding on a
+   narrower screen; the ground is what keeps them readable, because this is the
+   one heading on the page drawn over the brightest part of the hex field.
+   Scoped to `.is-private`, so the public board's heading is untouched. */
+/* This one is a PANEL, not a veil, and the reason is in the row itself: a
+   client's name, the bot they came through, and a search box, in 0.62rem mono,
+   drawn over the densest gold the hive ever paints. The owner photographed it —
+   the chips read through the honeycomb, a hex line crossing every second
+   glyph — and the arithmetic agreed: 1.6:1. The map may run under a column of
+   cards. It does not get to run under somebody's name. */
+.queen27-lane-head.is-private {
+  flex-wrap: wrap;
+  border-radius: 0.6rem;
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  /* The blur is not the legibility — the alpha above is. It takes the hive's
+     edges out of what little shows through, so the field reads as depth
+     instead of as a second set of strokes inside the letters. */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* It carries its own ground, which the rest of this heading does not.
+   Everything on this page is drawn over a live hex field, and the field is
+   brightest exactly where the clients lane is narrow enough to let it through —
+   measured with the badge sitting on a lit gold cluster. A label can afford to
+   be textured; the one sentence that tells somebody a screen is about to show
+   another person's name and what they paid cannot. */
+.queen27-lane-head > .queen27-lane-private {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px dashed var(--q-gold);
+  border-radius: 999px;
+  background: rgba(2, 8, 6, 0.86);
+  color: var(--q-gold);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.queen27-lane-head > .queen27-lane-private > em {
+  color: var(--muted);
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* The third row of the same family, and the one the live sweep could not reach:
+   the lane heading only draws when there are two lanes, which is a signed-in
+   board. Its h3, its span and its small all hold their own text and the row
+   declares no background, so it is the caption defect again with a heading in
+   place of the caption -- and it is invisible to a probe that runs signed out.
+   Grounded here by argument rather than by sighting, which is worth saying
+   plainly: the reasoning is the two rows above it, not a screenshot. */
+.queen27-page.is-shell .queen27-lane-head {
+  padding-inline: var(--hud-gap, 10px);
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--hud-muted);
+  font-family: var(--hud-mono);
+}
+
+/* And this one exists ONLY because the rule above it was written, which is the
+   whole lesson of it. `.queen27-lane-head.is-private` is 0,2,0 and this shell
+   layer is 0,3,0 and later in the file, so grounding the generic heading
+   silently took the panel off the one heading in this codebase that has an
+   argument written above it for why it must be a panel and not a veil -- a
+   client's name, the bot they came through and a search box in 0.62rem mono,
+   over the densest gold the hive paints. A fix for show-through that thins the
+   worst surface on the board is not a fix.
+
+   Nothing would have caught it. The contrast gate reads the THINNEST ground for
+   an element and both of these clear 4.5:1 with --hud-muted on them, so 0.72
+   passes and the gate has no way to know that 0.88 was the answer somebody
+   reached for after looking at a photograph. The rule is restated at 0,4,0
+   rather than moved, so that adding a third layer below cannot quietly undo it
+   again: whatever the generic heading is given, this one keeps the panel. */
+.queen27-page.is-shell .queen27-lane-head.is-private {
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.queen27-page.is-shell .queen27-lane-switch {
+  padding-inline: var(--hud-gap, 10px);
+  font-family: var(--hud-mono);
+}
+
+.queen27-page.is-shell .queen27-lane-head > .queen27-lane-private {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+}
+
+.queen27-page.is-shell .queen27-lane-head > .queen27-lane-private > em {
+  color: var(--hud-muted);
+}
+
+/* Resting only, and the `:not()` is the whole point of the rule rather than a
+   detail of it. Without it this sits at the same 0,3,0 as the pressed rule
+   above and LATER in the file, so it would win on source order and paint the
+   word gold on the gold chip — the invisible control, a third time, in a third
+   place. The house rule on this board is that a shell layer restyles the
+   resting chip and never touches the pressed one; the direction contract
+   asserts it for backgrounds, and this is the same rule about a colour. */
+.queen27-page.is-shell
+  .queen27-lane-private-chip:not([aria-pressed="true"])
+  > em {
+  color: var(--hud-gold);
+}
+
+/* `:not([aria-pressed="true"])` is the whole point of this rule now.
+   Without it, this 0,3,0 selector overrode the background of EVERY pressed chip
+   on the shell board while leaving its `color: #050505` alone — near-black text
+   on the near-black HUD panel, measured live at rgb(5,5,5) on rgba(2,8,6,0.62),
+   which is no contrast at all. The chip that says which filter is on was the one
+   chip that could not be read.
+
+   It reached the live board on the direction chips, and it was never theirs
+   alone: the same override sits on the generic gold pressed chip, so the clients
+   lane's "all" chip — pressed by default — comes up blank the moment that lane
+   is drawn in this layout.
+
+   The shell still restyles the resting chip, which is all it ever wanted: a HUD
+   panel instead of flat black. A pressed chip is a state, not a surface, and
+   this rule now declines to have an opinion about it. */
+.queen27-page.is-shell .queen27-chip:not([aria-pressed="true"]),
+.queen27-page.is-shell .queen27-lane-search {
+  border-color: var(--hud-line);
+  background: var(--hud-panel);
+  /* 0.88 leaves an eighth of the hive in a chip label, and the rows these ride
+     hold little or nothing back. The lane switch is still a bare flex row and
+     paints nothing at all; the two filter rows are given a veil further down in
+     this same change, which is thinner than the chip and low-passed at 6px, so
+     a chip on them composites 0.88 over 0.72 and gets a softer field rather
+     than a hidden one. 8px here, the same as the private lane head: the board
+     moves under them while they are being read, and the chip is the thing being
+     read. This is written here rather than added to the roster above
+     because the chip selector is a compound, and a compound inside that
+     `:is()` would outrank the rule that keeps the hive faces unfrosted. */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* And the colour with it, which is the half this rule kept forgetting.
+   The base chip is `color: var(--muted)` — #888888 — on a background of solid
+   #050505, and on that ground #888 is a perfectly reasonable 5.9:1. The shell
+   took the ground away and left the colour: #888888 over a translucent panel
+   over a lit hive measures 1.6:1. A rule that changes a background without
+   changing the colour written against it has not restyled a control, it has
+   broken the pair. */
+.queen27-page.is-shell .queen27-chip:not([aria-pressed="true"]) {
+  color: var(--hud-muted);
+}
+
+/* The same pair, one level up: these rows set their own `color: var(--muted)`
+   directly on the element, so the heading's inherited --hud-muted never
+   reaches them. "NARROW TO", the scope line under it, and the hive's own
+   applied-filter note are the labels on the control the owner photographed. */
+.queen27-page.is-shell :is(.queen27-lane-filter, .queen27-dir-filter),
+.queen27-page.is-shell .queen27-lane-head small {
+  color: var(--hud-muted);
+}
+
+/* The colour was half of it. The other half is that the row it sits on has no
+   ground at all.
+
+   Every chip in these two rows was grounded and low-passed when the owner
+   photographed the clients strip. The word standing to the left of the chips --
+   "DIRECTION", "NARROW TO" -- is a bare <span> in a <div> that declares no
+   background anywhere, so it is painted straight onto the hive, and the second
+   screenshot is that caption with the lattice running through it.
+
+   qa/queen-contrast-contract.mjs could not have found this and still cannot:
+   it collects GROUNDS out of the stylesheet -- a background with 0 < alpha < 1
+   -- and asks whether each one is low-passed. A surface that declares no
+   background declares no ground, so it is not a subject, and the gate's silence
+   about it was never a verdict. It finds a ground that is too thin; it cannot
+   find a ground nobody wrote. What found these was a live sweep of all fourteen
+   views: for every element with its own text inside .queen27-hud-vp-body, walk
+   up to the viewport body and ask whether ANYTHING between it and
+   .queen-scene-holder paints. Two surfaces answered "nothing" -- this caption
+   and .queen27-tech-strip, which is grounded at its own rule a few thousand
+   lines up.
+
+   The ground goes on the ROW, not on the caption. A pill behind one word would
+   have fixed the word and left the next label somebody adds to this row bare
+   again, which is the shape of the defect being fixed, not a cure for it.
+   --hud-veil is the bar weight rather than --hud-panel's, and it is the pair
+   the gate already measures against a lit hive for --hud-muted text.
+
+   .queen27-ladder and .queen27-lane-switch are the other two rows on the flex
+   list above and are deliberately NOT here: their text all lives inside chips
+   that carry their own grounds, so there is nothing of theirs on the hive. They
+   belong here the day one of them gets a caption. */
+.queen27-page.is-shell :is(.queen27-lane-filter, .queen27-dir-filter) {
+  padding: 0.35rem var(--hud-gap, 10px);
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }

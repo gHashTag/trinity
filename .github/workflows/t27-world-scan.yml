@@ -116,8 +116,14 @@ jobs:
           git commit -q -m "t27 worlds: refresh the catalog ($N)"
           BRANCH=bot/t27-world-scan
           # The bot's own branch, and only ever this job writes it -- so the
-          # lease is against the copy this run started from, not against a human.
-          git push -q --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+          # lease is against the branch as this run found it, not against a human.
+          # The checkout fetched main alone, so a bare --force-with-lease has no
+          # tracking ref to compare with and expects the branch to be absent: once
+          # the first refresh had created it, every push was refused as "stale
+          # info" (the nights of 2026-09-17..20). Name the expected value
+          # explicitly; an empty one still means "must not exist yet".
+          EXPECT=$(git ls-remote --heads origin "refs/heads/$BRANCH" | cut -f1)
+          git push -q --force-with-lease="refs/heads/$BRANCH:$EXPECT" origin "HEAD:refs/heads/$BRANCH"
           SHA=$(git rev-parse HEAD)
           node scripts/catalog-work-report.mjs --head-sha "$SHA" --out "$RUNNER_TEMP/catalog-report.md"
           PR=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')

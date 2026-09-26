@@ -54,6 +54,18 @@ export function hasUnreachableControl(measurement) {
   return Array.isArray(measurement.unreachable) && measurement.unreachable.length > 0
 }
 
+/**
+ * Did the app actually render on this route?
+ *
+ * An absent measurement and an unmounted one both mean the same thing: this
+ * route was not audited. Neither may be read as "fits on a phone". The old code
+ * skipped an absent measurement with `continue` and had no concept of the
+ * second case at all.
+ */
+export function didNotRender(measurement) {
+  return !measurement || measurement.mounted !== true
+}
+
 export function selfTest() {
   if (!isOverflowing({ overflow: 40 })) throw new Error('self-test: a 40px overflow must be reported')
   if (isOverflowing({ overflow: 0 })) throw new Error('self-test: a fitting page must not be reported')
@@ -62,6 +74,10 @@ export function selfTest() {
   if (!hasUnreachableControl({ unreachable: [{ tag: 'button' }] })) throw new Error('self-test: an off-screen control must be reported')
   if (hasUnreachableControl({ unreachable: [] })) throw new Error('self-test: a page with every control on screen must pass')
   if (hasUnreachableControl({})) throw new Error('self-test: a measurement without the field must not fail')
+  if (didNotRender({ mounted: true, overflow: 0 })) throw new Error('self-test: a rendered route must count as audited')
+  if (!didNotRender({ mounted: false, overflow: 0 })) throw new Error('self-test: an unmounted route must not pass as fitting')
+  if (!didNotRender({ overflow: 0 })) throw new Error('self-test: a measurement predating the mount probe must not pass silently')
+  if (!didNotRender(undefined)) throw new Error('self-test: a route that returned nothing must not pass')
   if (!ROUTES.length) throw new Error('self-test: no routes to audit')
   console.log(`mobile self-test: PASS (${ROUTES.length} routes, tolerance ${TOLERANCE_PX}px)`)
 }
@@ -82,6 +98,15 @@ export function selfTest() {
 // function the reader cannot reach.
 const MEASURE = `(() => {
   const d = document.documentElement;
+  // A gate that cannot tell "this page fits" from "this page never loaded" is
+  // not a gate. The default base URL below is a preview server on :4173, and
+  // when nothing is listening Chrome renders its own error page: the hash
+  // survives, so the route settle is satisfied; scrollWidth equals clientWidth,
+  // so the overflow is zero; and every route reports clean having measured
+  // nothing. That is how a real 150px overflow on /passport/research lived
+  // through a run that printed PASS across 35 routes.
+  const root = document.getElementById('root');
+  const mounted = !!root && root.childElementCount > 0;
   const client = d.clientWidth;
   const overflow = d.scrollWidth - client;
   // Off-screen is not the same as unreachable. A horizontally scrollable strip
@@ -137,7 +162,7 @@ const MEASURE = `(() => {
       }
     }
   }
-  return { client, scrollWidth: d.scrollWidth, overflow, widest, unreachable: unreachable.slice(0, 5) };
+  return { client, scrollWidth: d.scrollWidth, overflow, widest, mounted, unreachable: unreachable.slice(0, 5) };
 })()`
 
 async function main() {
@@ -146,10 +171,22 @@ async function main() {
   const baseUrl = process.env.AUDIT_BASE_URL || 'http://127.0.0.1:4173/index.html'
   const measurements = await forEachRoute(baseUrl, MEASURE, { windowSize: VIEWPORT })
 
+  // Before anything is judged: was anything seen? An unloaded route is not a
+  // passing route, and this has to be checked first, because every other
+  // measurement on an error page reads as clean.
+  const blank = ROUTES.filter((route) => didNotRender(measurements[route]))
+  if (blank.length) {
+    console.error(`mobile audit: ${blank.length} of ${ROUTES.length} route(s) never rendered at ${baseUrl}`)
+    for (const route of blank) console.error(`  /${route || '(home)'}`)
+    console.error('mobile audit: FAIL — a page that did not load cannot pass a layout check.')
+    console.error('  Serve the build first (npm run preview), or point AUDIT_BASE_URL at a server that is up.')
+    process.exitCode = 1
+    return
+  }
+
   const offenders = []
   for (const route of ROUTES) {
     const m = measurements[route]
-    if (!m) continue
     const unreachableIsNew = hasUnreachableControl(m) && !KNOWN_UNREACHABLE.has(route)
     if (isOverflowing(m) || unreachableIsNew) offenders.push({ route, ...m, unreachableIsNew })
   }

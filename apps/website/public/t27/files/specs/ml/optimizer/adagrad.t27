@@ -32,29 +32,41 @@ module Adagrad;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init_state(num_params: u32) → void
-    fn init_state(num_params: u32) -> void {
-        // TODO: Implement from .tri spec
+    // init_state(num_params: u32) → AdagradState
+    fn init_state(num_params: u32) -> AdagradState {
+        let state = AdagradState { sum_squared_grad: [] };
+        return state;
     }
 
-    // update(params: []f32) → void
-    fn update(params: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // update(params: []f32, grads: []f32, state: AdagradState, config: AdagradConfig) → AdagradState
+    fn update(params: []f32, grads: []f32, state: AdagradState, config: AdagradConfig) -> AdagradState {
+        let mut new_state = state;
+        for i in range(0, len(params)) {
+            new_state.sum_squared_grad[i] += grads[i] * grads[i];
+            let adaptive_lr = config.learning_rate / (sqrt(new_state.sum_squared_grad[i]) + config.epsilon);
+            params[i] -= adaptive_lr * grads[i];
+        }
+        return new_state;
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test init_state_basic_case
-        given input = default_input()
-        when result = init_state(input)
-        then result != undefined
+    test init_state_returns_correct_size
+        given num_params = 5u32
+        when state = init_state(num_params)
+        then len(state.sum_squared_grad) == num_params
 
-    test update_basic_case
-        given input = default_input()
-        when result = update(input)
-        then result != undefined
+    test update_accumulates_gradients_properly
+        given params = [1.0f32, 2.0f32, 3.0f32]
+            grads = [0.1f32, 0.2f32, 0.3f32]
+            state = init_state(3u32)
+            config = AdagradConfig { learning_rate: 0.01, epsilon: 1e-8, weight_decay: 0.0 }
+        when new_state = update(params, grads, state, config)
+        then new_state.sum_squared_grad[0] == 0.01f32
+            and new_state.sum_squared_grad[1] == 0.04f32
+            and new_state.sum_squared_grad[2] == 0.09f32
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Invariants (from .tri constraints)

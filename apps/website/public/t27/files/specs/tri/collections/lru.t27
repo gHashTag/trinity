@@ -20,19 +20,59 @@ module TriLru;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // init(capacity: usize) → void
-    fn init(capacity: usize) -> void {
-        // TODO: Implement from .tri spec
+    // init(capacity: usize, allocator: std.mem.Allocator) → !LRU(K, V)
+    fn init(capacity: usize, allocator: std.mem.Allocator) -> !LRU(K, V) {
+        var cache = LRU(K, V) {
+            .capacity = capacity,
+            .entries = std.HashMap(K, V).init(allocator),
+            .access_list = []K,
+        };
+        return cache;
     }
 
-    // get(cache: *LRU(K, V)) → void
-    fn get(cache: *LRU(K, V)) -> void {
-        // TODO: Implement from .tri spec
+    // get(cache: *LRU(K, V), key: K, allocator: std.mem.Allocator) → ?V
+    fn get(cache: *LRU(K, V), key: K, allocator: std.mem.Allocator) -> ?V {
+        if (cache.entries.get(key)) |value| {
+            // Move key to end of access list to mark as recently used
+            var i: usize = 0;
+            while (i < cache.access_list.len) : (i += 1) {
+                if (cache.access_list[i] == key) {
+                    cache.access_list[i] = cache.access_list[cache.access_list.len - 1];
+                    cache.access_list[cache.access_list.len - 1] = key;
+                    break;
+                }
+            }
+            return value;
+        }
+        return null;
     }
 
-    // put(cache: *LRU(K, V)) → void
-    fn put(cache: *LRU(K, V)) -> void {
-        // TODO: Implement from .tri spec
+    // put(cache: *LRU(K, V), key: K, value: V, allocator: std.mem.Allocator) → !void
+    fn put(cache: *LRU(K, V), key: K, value: V, allocator: std.mem.Allocator) -> !void {
+        if (cache.entries.contains(key)) {
+            // Key exists, update value and move to end of access list
+            cache.entries.put(key, value);
+            var i: usize = 0;
+            while (i < cache.access_list.len) : (i += 1) {
+                if (cache.access_list[i] == key) {
+                    cache.access_list[i] = cache.access_list[cache.access_list.len - 1];
+                    cache.access_list[cache.access_list.len - 1] = key;
+                    break;
+                }
+            }
+        } else {
+            // Key doesn't exist, check if we need to evict
+            if (cache.entries.count >= cache.capacity) {
+                // Evict least recently used item (first in access list)
+                const lru_key = cache.access_list[0];
+                cache.entries.remove(lru_key);
+                cache.access_list = cache.access_list[1..];
+            }
+            
+            // Add new key-value pair
+            cache.entries.put(key, value);
+            cache.access_list = cache.access_list ++ [_]K{key};
+        }
     }
 
     // ═══════════════════════════════════════════════════════════

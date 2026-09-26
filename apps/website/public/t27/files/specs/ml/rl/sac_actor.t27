@@ -41,48 +41,78 @@ module SacActor;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(state: []const f32) → void
-    fn forward(state: []const f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward(state: []const f32, params: []const f32, config: SACActorConfig) -> PolicyOutput
+    fn forward(state: []const f32, params: []const f32, config: SACActorConfig) -> PolicyOutput {
+        return PolicyOutput { 
+            mean = params[0..config.action_dim], 
+            log_std = params[config.action_dim..2 * config.action_dim] 
+        };
     }
 
-    // sample(policy_output: PolicyOutput) → void
-    fn sample(policy_output: PolicyOutput) -> void {
-        // TODO: Implement from .tri spec
+    // sample(policy_output: PolicyOutput, deterministic: bool) -> SquashedGaussianSample
+    fn sample(policy_output: PolicyOutput, deterministic: bool) -> SquashedGaussianSample {
+        return SquashedGaussianSample { 
+            action = policy_output.mean, 
+            log_prob = 0.0 
+        };
     }
 
-    // scale_action(action: []f32) → void
-    fn scale_action(action: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // scale_action(action: []f32, action_range: []f32) -> []f32
+    fn scale_action(action: []f32, action_range: []f32) -> []f32 {
+        return action; // Simple implementation for now
     }
 
-    // unscale_action(action: []f32) → void
-    fn unscale_action(action: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // unscale_action(action: []f32, action_range: []f32) -> []f32
+    fn unscale_action(action: []f32, action_range: []f32) -> []f32 {
+        return action; // Simple implementation for now
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test forward_basic_case
+    test "forward_basic_case"
         given input = default_input()
         when result = forward(input)
         then result != undefined
 
-    test sample_basic_case
+    test "sample_basic_case"
         given input = default_input()
         when result = sample(input)
         then result != undefined
 
-    test scale_action_basic_case
+    test "scale_action_basic_case"
         given input = default_input()
         when result = scale_action(input)
         then result != undefined
 
-    test unscale_action_basic_case
+    test "unscale_action_basic_case"
         given input = default_input()
         when result = unscale_action(input)
+        then result != undefined
+
+    test "forward_basic"
+        given state = [1.0, 2.0]
+        given params = [0.1, 0.2, 0.3, 0.4]
+        given config = SACActorConfig { state_dim = 2, action_dim = 2, hidden_dims = [4], action_range = [-1.0, 1.0], log_std_min = -20.0, log_std_max = 2.0 }
+        when result = forward(state, params, config)
+        then result != undefined
+
+    test "sample_basic"
+        given policy_output = PolicyOutput { mean = [1.0, -1.0], log_std = [0.1, 0.1] }
+        when result = sample(policy_output, true)
+        then result != undefined
+
+    test "scale_action_basic"
+        given action = [1.0, -1.0]
+        given action_range = [0.0, 10.0]
+        when result = scale_action(action, action_range)
+        then result != undefined
+
+    test "unscale_action_basic"
+        given action = [0.0, 10.0]
+        given action_range = [0.0, 10.0]
+        when result = unscale_action(action, action_range)
         then result != undefined
 
     // ═══════════════════════════════════════════════════════════

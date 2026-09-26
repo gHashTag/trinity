@@ -272,7 +272,7 @@ pub const VectorizedArrayOps = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runBenchmark() void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
 
     stdout.print("\n", .{}) catch {};
     stdout.print("═══════════════════════════════════════════════════════════════════════════════\n", .{}) catch {};

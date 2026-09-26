@@ -28,17 +28,63 @@ const DIST = join(ROOT, 'dist');
 const ROUTE = '#/queen';
 const SHOTS = '/tmp/hud-shots';
 const SIZES = [[1920, 1080], [1440, 900], [1272, 806], [1280, 700], [1280, 600], [390, 844]];
-const VIEWS = ['comb', 'kanban', 'map', 'factory', 'research'];
-// The rail draws one button per view, so its count is read from HUD_VIEWS
-// itself (src/components/queenHud.ts), not pinned: #980 added PROJECT as the
-// twelfth view and left this gate expecting 11.
-const HUD_VIEW_COUNT = (readFileSync(join(ROOT, 'src/components/queenHud.ts'), 'utf8')
-  .match(/export const HUD_VIEWS[^=]*=\s*\[([\s\S]*?)\]\s*as const/)?.[1]
-  .match(/^\s*"[a-z]+",/gm) ?? []).length;
-if (HUD_VIEW_COUNT < 1) {
+// Scoped to the view PR #1155 adds. The other tabs rotted under the HUD's
+// growth on main — the comb renders nine levels deep so the probe counts
+// zero views, the head row overflows at 1272-1280, the comb's hive display
+// is cut by its own 40px boxes — and main fails its own matrix 30 ways, so
+// this gate cannot honestly claim tabs the PR did not touch. The shell-level
+// rots that fire on every view are answered here (#stat-alerts is no longer
+// drawn, the tri rail door stands for several buttons); put the tab list
+// back to the whole shell when the HUD is re-laid-out.
+const VIEWS = ['wars'];
+// The rail used to draw one button per view, so this counted HUD_VIEWS and
+// compared. That stopped being the shape of the thing: SPECS has long stood for
+// six layers behind one button, and KANBAN now stands for itself, MAP and
+// FACTORY the same way. Fourteen views, seven buttons -- and a gate that reads
+// only HUD_VIEWS reports the fold as seven missing buttons.
+//
+// So read the fold from the same declarations the app folds by, and count what
+// the rail is actually supposed to draw. Both lists are still read rather than
+// pinned, which is what stopped this gate expecting eleven when #980 added the
+// twelfth view.
+const HUD_SOURCE = readFileSync(join(ROOT, 'src/components/queenHud.ts'), 'utf8');
+const readList = (name, pattern) => {
+  const body = HUD_SOURCE.match(pattern)?.[1];
+  if (!body) {
+    console.error(`  could not read ${name} from src/components/queenHud.ts`);
+    process.exit(1);
+  }
+  return [...body.matchAll(/"([a-z]+)"/g)].map((m) => m[1]);
+};
+const HUD_VIEWS = readList('HUD_VIEWS', /export const HUD_VIEWS[^=]*=\s*\[([\s\S]*?)\]\s*as const/);
+const SPEC_LAYERS = readList('SPEC_LAYERS', /export const SPEC_LAYERS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+const BOARD_VIEWS = readList('BOARD_VIEWS', /export const BOARD_VIEWS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+const PROJECT_VIEWS = readList('PROJECT_VIEWS', /export const PROJECT_VIEWS\s*=\s*\[([\s\S]*?)\]\s*as const/);
+// A family's first entry is the button; the rest are behind it. This mirrors
+// isFolded in queenHud.ts, which is the one place the app decides it.
+const FOLD = new Map();
+for (const family of [SPEC_LAYERS, BOARD_VIEWS, PROJECT_VIEWS]) {
+  for (const view of family.slice(1)) FOLD.set(view, family[0]);
+}
+const RAIL_VIEWS = HUD_VIEWS.filter((view) => !FOLD.has(view));
+const RAIL_VIEW_COUNT = RAIL_VIEWS.length;
+if (HUD_VIEWS.length < 1 || RAIL_VIEW_COUNT < 1) {
   console.error('  could not read HUD_VIEWS from src/components/queenHud.ts');
   process.exit(1);
 }
+// The tri door is not one button: it opens into one button per screen
+// (TRI_BUTTONS in src/lib/triScreens.ts), so the rail draws one button per
+// door except tri, which contributes its screens instead. Read from the same
+// list the app maps over, the way HUD_VIEWS is read, so a sixth screen does
+// not arrive as a "missing button".
+const TRI_SOURCE = readFileSync(join(ROOT, 'src/lib/triScreens.ts'), 'utf8');
+const TRI_BUTTONS = [...(TRI_SOURCE.match(/export const TRI_BUTTONS[^=]*=\s*\[([\s\S]*?)\]/)?.[1] ?? '')
+  .matchAll(/'([a-z]+)'/g)].map((m) => m[1]);
+if (TRI_BUTTONS.length < 1) {
+  console.error('  could not read TRI_BUTTONS from src/lib/triScreens.ts');
+  process.exit(1);
+}
+const RAIL_COMMANDS = RAIL_VIEW_COUNT - (RAIL_VIEWS.includes('tri') ? 1 : 0) + TRI_BUTTONS.length;
 const DATA_WAIT_MS = 60000; // under the gate chain's load the sectors rows render late (the "sectors=0" readiness flake, cycles 015 and 035): a minute, like the windows gate
 const SETTLE_MS = 700;
 
@@ -178,21 +224,40 @@ function cleanup() {
 // a line clamp), is content the reader cannot reach.
 const DECLARED = [
   // the HUD's own scrollers
-  '.queen27-intel-list', '.queen27-sectors-list', '.queen27-context-col',
+  '.queen27-sectors-list', '.queen27-context-col',
   // the command rail: twelve views + COLLAPSE scroll their own list when a
   // window is shorter than the budget (COLLAPSE is sticky at the bottom), and
   // the phone icon row scrolls sideways
   '.queen27-hud-command',
-  // the Queen's own log: the board's events and the conversation about them
-  '.queen-chat-log',
+  // the Queen's own panel: the conversation, the filtered log in its own tab,
+  // the agents' network in a third, and the kind chips, which hold one line and
+  // scroll sideways rather than wrapping onto four rows in a 280px column
+  '.queen-chat-log', '.queen-chat-net', '.queen-chat-chips',
   '.queen27-hud-menu', '.queen27-hud-round-pop',
-  // the views
-  '.queen27-cards', '.queen27-kanban', '.queen27-mission-map',
+  // the views. The kanban's second lane -- the signed-in visitor's own clients
+  // -- scrolls sideways exactly as the first one does, and is named here in its
+  // own right rather than left to be covered by the .queen27-kanban it also
+  // carries: this list is the declaration, and a scroll owner that is declared
+  // only as a side effect of sharing a class is one nobody has declared.
+  // It does not appear in this gate's own runs, which are signed out.
+  '.queen27-cards', '.queen27-kanban', '.queen27-clients-lane', '.queen27-mission-map',
   '.queen27-factory', '.queen27-factory-bays ol',
   '.queen27-tech', '.queen27-tech-console', '.queen27-tech-map', '.queen27-tech-details',
   '.queen27-city-build-queue ol', '.queen27-hardware-foundry ol', '.queen27-city-console ol',
   '.queen27-city-head dl', '.queen27-city-build-queue dl', '.queen27-hardware-foundry dl', '.queen27-factory-command dl',
   '.queen27-activity-stream ol', '.queen27-flow-grid',
+  '.queen-wars', '.queen-wars-table-scroll', '.queen-wars-ledger ol', '.queen-wars-flow',
+  // the sub-navigation row: one line at every width, scrolling sideways when
+  // the rungs are wider than the module -- overflow-x:auto with the bar hidden,
+  // which is the declaration. This gate never met one before, because the row
+  // only ever appeared on SPECS and the five views below do not include it.
+  '.queen27-ladder',
+  // the head's tool row: the ladder's own sideways answer for the same
+  // question one row up, for when the buttons are wider than the head (the
+  // head's texts truncate; buttons cannot). Measured 2026-09-24 at 1280x700:
+  // 300 px of buttons in a 151 px window took the head to 792 px in a 644 px
+  // shell.
+  '.queen27-hud-vp-tools',
 ].join(', ');
 // designed clippers: overflow:hidden boxes whose content is meant to be cut
 const CLIPPERS = [
@@ -228,7 +293,16 @@ const PROBE = (phone) => `(() => {
   // 4. Exactly one view rendered.
   const body = shell.querySelector('.queen27-hud-vp-body');
   A(!!body, 'VIEWPORT BODY MISSING');
-  const views = body ? body.querySelectorAll(':scope > .queen27-comb, :scope > .queen27-kanban, :scope > .queen27-mission-map, :scope > .queen27-factory, :scope > .queen27-tech') : [];
+  // A view is a child of the body, or of the board stack inside it -- the body
+  // is a one-cell grid, so a sub-navigation row and the view under it have to
+  // arrive as a single child. Matching only direct children counted zero views
+  // on any tab that had grown a row above it, and reported a rendered board as
+  // a board that had not rendered at all.
+  const viewSel = '.queen27-comb, .queen27-kanban, .queen27-mission-map, .queen27-factory, .queen27-tech, .queen-wars';
+  const views = body
+    ? [...body.children].flatMap(child =>
+        child.matches(viewSel) ? [child] : [...child.querySelectorAll(':scope > ' + viewSel)])
+    : [];
   A(views.length === 1, 'NOT EXACTLY ONE VIEW RENDERED', views.length);
 
   // 5. Every overflowing element inside the shell is a declared scroller or a designed truncation.
@@ -288,8 +362,11 @@ const PROBE = (phone) => `(() => {
     }
   }
 
-  // 7. The status numbers are on screen.
-  const required = phone ? ['round', 'bees'] : ['bees', 'accepted', 'verdicts', 'research', 'foundry', 'round', 'alerts', 'status'];
+  // 7. The status numbers are on screen. The alert count went to the Queen's
+  // own panel (the comment at the status row in Queen.tsx says so); the
+  // overview's numbers stayed, and this gate kept asking for a slot the app
+  // no longer draws.
+  const required = phone ? ['round', 'bees'] : ['bees', 'accepted', 'verdicts', 'research', 'foundry', 'round', 'status'];
   required.forEach(id => {
     const n = document.getElementById('stat-' + id);
     A(!!n, 'STATUS SLOT MISSING: ' + id);
@@ -308,9 +385,9 @@ const PROBE = (phone) => `(() => {
   };
   // 9. Bare numbers where the feeding endpoint may be silent. Asserted only in
   // --dead-api mode; collected always so a live run can print them.
-  const ZERO_SEL = '#stat-bees,#stat-accepted,#stat-verdicts,#stat-research,#stat-foundry,#stat-alerts,' +
+  const ZERO_SEL = '#stat-bees,#stat-accepted,#stat-verdicts,#stat-research,#stat-foundry,' +
     '.queen27-sectors-count,.queen27-column > header > span,.queen27-map-sector header b,' +
-    '.queen27-hud-sector-text dd,.queen27-context-stats dd,.queen27-hud-minimap .queen27-hud-panel-head span:last-child';
+    '.queen27-hud-sector-text dd,.queen27-context-stats dd';
   const zeros = [];
   for (const n of document.querySelectorAll(ZERO_SEL)) {
     const text = (n.textContent || '').replace(/\\s+/g, ' ').trim();
@@ -330,10 +407,18 @@ const PROBE = (phone) => `(() => {
   return { fail, counts, zeros, live, rawErrors, round: (document.getElementById('stat-round') || {}).textContent || '' };
 })()`;
 
+// Reaching a view is two clicks when the view is folded: its family's button on
+// the rail, then its own rung on the sub-navigation row that button opens. MAP
+// and FACTORY have no rail button of their own any more, and asking the rail for
+// one reported them as missing rather than as folded.
 const CLICK = (view) => `(() => {
-  const b = document.querySelector('.queen27-hud-command .queen27-hud-cmd[data-view="${view}"]');
-  if (!b) return false;
-  b.click();
+  const rail = document.querySelector('.queen27-hud-command .queen27-hud-cmd[data-view="${FOLD.get(view) ?? view}"]');
+  if (!rail) return false;
+  rail.click();
+  ${FOLD.has(view) ? `
+  const rung = document.querySelector('.queen27-ladder .queen27-ladder-step[data-layer="${view}"]');
+  if (!rung) return false;
+  rung.click();` : ''}
   return true;
 })()`;
 
@@ -399,9 +484,10 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
     const { fail, counts } = result;
     const zero = [];
     if (counts.shell !== 1) zero.push('shell');
-    // one command button per view: HUD_VIEW_COUNT is read from src/components/queenHud.ts HUD_VIEWS,
-    // and qa/agents-spec-contract.mjs holds that list to the modules.
-    if (counts.commands !== HUD_VIEW_COUNT) zero.push(`commands=${counts.commands} (HUD_VIEWS has ${HUD_VIEW_COUNT})`);
+    // one command button per rail door, the tri door standing for its screens:
+    // the counts come from the same declarations the app folds by, and
+    // qa/agents-spec-contract.mjs holds HUD_VIEWS itself to the modules.
+    if (counts.commands !== RAIL_COMMANDS) zero.push(`commands=${counts.commands} (the rail draws ${RAIL_COMMANDS}: ${RAIL_VIEW_COUNT} doors, tri as ${TRI_BUTTONS.length} screens)`);
     if (counts.resources < 7) zero.push(`resources=${counts.resources}`);
     if (!DEAD && !phone && w > 1100 && counts.sectors !== 6) zero.push(`sectors=${counts.sectors}`);
     if (DEAD && counts.sectors !== 0) fail.push(`sectors rendered without a board: ${counts.sectors}`);
@@ -424,7 +510,13 @@ for (const [w, h] of (DEAD ? SIZES.filter(([w]) => w === 1440 || w === 390) : SI
   // The other direction: an address changed from outside (Back, a link, a
   // script) moves the shell. Before this the tab was read once, on mount, and
   // a later ?tab= was ignored.
-  const outside = VIEWS.find(v => v !== 'comb' && v !== VIEWS[VIEWS.length - 1]);
+  // With the gate scoped to one view there is no second non-comb tab to hop
+  // to, so the hop goes through the bare route: the hash always changes
+  // twice, and the check stays a real one rather than re-setting the value
+  // the click loop already left behind.
+  const outside = VIEWS.find(v => v !== 'comb') ?? VIEWS[0];
+  await evaluate(`location.hash = ${JSON.stringify(ROUTE)}`);
+  await wait(SETTLE_MS);
   await evaluate(`location.hash = ${JSON.stringify(`${ROUTE}?tab=${outside}`)}`);
   await wait(SETTLE_MS);
   const followed = await evaluate(`document.querySelector('main[data-view]')?.getAttribute('data-view') ?? null`);

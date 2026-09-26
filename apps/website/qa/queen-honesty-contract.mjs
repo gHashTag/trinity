@@ -3,7 +3,7 @@
 // source facts a regex CAN state. Node 22 needs --experimental-strip-types
 // to import the TypeScript module; package.json passes it.
 import { readFileSync } from "node:fs";
-import { alertCount, alertSpan, beeSilence, buildingPlan, castlePlaces, epicProgress, familyTint, feedCoverage, ringFamily, ringOfEpic, ringSummary, towerStage, wallBetween, ringOfModulePath, epicOfIssue, hexRingCells, foundationCells, foundationOrder, hexCellCount, hexCentres, hexCorners, hexField, hexIndexAt, hexRing, hexRingStart, hexToWorld, honeyTone, layersFromSearch, spiralAxial, spiralIndex, spiralOrder, HEX_R, S_CELL, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues, HIVE_TONES, hiveCoverOf, hiveKey, hiveToneOf } from "../src/components/queenHud.ts";
+import { alertCount, alertSpan, beeSilence, buildingPlan, castlePlaces, epicProgress, familyTint, ringFamily, ringOfEpic, ringSummary, towerStage, wallBetween, ringOfModulePath, epicOfIssue, hexRingCells, foundationCells, foundationOrder, hexCellCount, hexCentres, hexCorners, hexField, hexIndexAt, hexRing, hexRingStart, hexToWorld, honeyTone, layersFromSearch, spiralAxial, spiralIndex, spiralOrder, HEX_R, S_CELL, buildingTint, cellGeometry, countdownFor, eventIdentity, mergeActivity, serverOffsetMs, decisionDetail, fieldShape, moduleColumn, moduleFor, moduleId, pathInTitle, placeCards, rewriteEndpoints, ringOrder, ringTone, roundStrip, skipReasonWords, staleAge, territoryOf, planHash, withOpenIssues, HIVE_TONES, hiveCoverOf, hiveKey, hiveToneOf } from "../src/components/queenHud.ts";
 
 const fails = [];
 let checks = 0;
@@ -143,13 +143,20 @@ check(/`\$\{c\.hudSince\} \$\{formatMoment\(lastRoundAt, lang\)\} · ≤ \$\{for
 check(/schedulerOff \|\| !roundKnown \? "—" : `\+\$\{formatCountdown\(elapsedSeconds\)\}`/.test(src), "the value counts up since the last round; no countdown promises the next round at a second");
 // the status pill reads swarmState through COPY keys; the VERDICTS tile adds the unreviewed count only when the wire has it (P1-28)
 check(/data\?\.swarmState === "working"[\s\S]{0,40}c\.swarmWorking[\s\S]{0,120}c\.swarmIdle[\s\S]{0,120}c\.swarmPaused[\s\S]{0,80}data\.swarmState\.toUpperCase\(\)[\s\S]{0,40}c\.swarmUnknown/.test(src), "the pill maps working/idle/paused to COPY keys, prints an unfamiliar wire state as itself, and a missing one as the unknown key");
-check(/swarmWorking:\s*"WORKING"/.test(src) && /swarmWorking:\s*"РАБОТАЕТ"/.test(src) && /hudReady:\s*"ready"/.test(src) && /hudReady:\s*"готово"/.test(src), "the four swarm words and the ready word exist in both languages");
-check(/typeof data\?\.dispatches\.unreviewed === "number" \? ` · \$\{data\.dispatches\.unreviewed\} \$\{c\.hudReady\}` : ""/.test(src), "the VERDICTS sub-line prints the unreviewed count only when the wire carries the field, never 0 for an absent one");
+check(/swarmWorking:\s*"WORKING"/.test(src) && /swarmWorking:\s*"РАБОТАЕТ"/.test(src) && /hudNoVerdict:\s*"finished, no verdict"/.test(src) && /hudNoVerdict:\s*"без вердикта"/.test(src), "the four swarm words and the no-verdict words exist in both languages (dispatches.unreviewed counts finished rows with no verdict, not issues ready)");
+check(/typeof data\?\.dispatches\.unreviewed === "number" \? ` · \$\{data\.dispatches\.unreviewed\} \$\{c\.hudNoVerdict\}` : ""/.test(src), "the VERDICTS sub-line prints the unreviewed count only when the wire carries the field, never 0 for an absent one");
 check(/`\$\{decisionInfo\} · \$\{decision\.allowed \? c\.chose : c\.stoodDown\}`/.test(src), "the gold block's decision line leads with the wire field (the refusal or what the round did), the verb follows");
-// the INTEL FEED header states what it holds, from its rows (P1-27)
-const cov = feedCoverage([{ at: "2026-09-05T00:40:00Z" }, { at: "2026-09-05T00:41:02Z" }, { at: "2026-09-05T00:40:30Z" }]);
-check(cov.rows === 3 && cov.spanSeconds === 62 && cov.oldestAt === "2026-09-05T00:40:00Z" && cov.newestAt === "2026-09-05T00:41:02Z", "three rows over 62 s: the header says 3 rows · 62 s from the rows themselves");
-check(feedCoverage([{ at: "2026-09-05T00:40:00Z" }]).spanSeconds === null && feedCoverage([]).rows === 0 && feedCoverage([{ at: "bad" }, { at: "2026-09-05T00:40:00Z" }]).spanSeconds === null, "one row, no rows or an undatable row: no span is printed, never a fabricated 0 s");
+// Two assertions exercised feedCoverage(), the INTEL FEED header's row count
+// and row span (P1-27). The feed was deleted -- the shell gave its cell to the
+// Queen's conversation -- and these calls were the function's only remaining
+// reader, so the gate was the sole reason a dead helper still shipped. Both are
+// gone with it. The rule they stood for, that a header never prints a
+// fabricated "0 s", has no header left to govern: the conversation prints its
+// own row count from events.length and prints no span anywhere. The nearest
+// surface that could want one is the A2A tab, whose netScope line scopes the
+// link counts in rows alone ("the last {n} events", QueenChat.tsx:381); giving
+// it a span is a change to published copy in two languages, so the rule comes
+// back with that decision, not before it.
 // review and finished rows print their wire state after the kind word (P1-24)
 check(/return \(event\.kind === "review" \|\| event\.kind === "finished"\) && event\.state && event\.state !== event\.kind \? `\$\{word\} · \$\{event\.state\}` : word;/.test(src), "a verdict or a finish carries its wire state after the kind word; no state or a state equal to the kind (finished · finished) adds no suffix");
 // a bee's silence is measured against the round (P1-23)

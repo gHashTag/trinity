@@ -2,7 +2,7 @@
    viewport — there is nothing here that needs a breakpoint to decide. */
 .game-hero {
   background: #020605;
-  color: var(--text, #e7f7fa);
+  color: var(--text, #FFFFFF);
 }
 
 .game-hero-inner {
@@ -15,15 +15,38 @@
   text-align: center;
 }
 
+/* The name, at the size a name is read at. It carried the format claim --
+   TERNARY NETWORK FLOATS -- in a line small enough to be chrome, which left the
+   screen with no product name on it at all: the claim moved to /trinity with
+   the rest of the arithmetic, and what stands under the mark now is what the
+   thing is called. It is now the largest type on the screen -- 4rem against the
+   headline's 3.2rem -- and bold against the headline's 300, because the product
+   name outranks the sentence describing it on the screen that introduces both.
+   (It was the other way round, and the note here still said so for a while.) */
 .game-hero-wordmark {
-  color: var(--text, #e7f7fa);
-  font-size: clamp(0.62rem, 1.6vw, 0.82rem);
-  font-weight: 300;
-  letter-spacing: clamp(0.146em, 0.618vw, 0.236em);
+  color: var(--text, #FFFFFF);
+  font-size: clamp(1.9rem, 6.4vw, 4rem);
+  font-weight: 700;
+  letter-spacing: clamp(0.04em, 0.3vw, 0.1em);
+  line-height: 1.05;
+}
+
+/* The motto, directly under the mark it captions. Gold rather than the body
+   colour, because it is the one line on this screen that is a claim about the
+   game rather than a description of the page, and it should read as a mark's
+   caption reads: smaller than the headline, louder than the wordmark.
+   `text-transform` does the shouting so lib/motto can hold ordinary words. */
+.game-hero-motto {
+  color: #ffd45a;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: clamp(0.66rem, 1.5vw, 0.8rem);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .game-hero h1 {
-  max-width: 20ch;
+  max-width: 26ch;
   margin: 0;
   font-size: clamp(1.7rem, 5.2vw, 3.2rem);
   font-weight: 300;

@@ -30,6 +30,22 @@ assert.deepEqual(detail.assignees,['real-agent']);assert.equal(detail.coverage,'
 assert.equal(detail.body,'<script>untrusted()</script>','content stays text, not executable markup');
 await assert.rejects(w.loadWorldIssue('ghashtag/t27',1258,new AbortController().signal,specific({pull_request:{}})),/issue-identity/);
 await assert.rejects(w.loadWorldIssue('ghashtag/t27',1258,new AbortController().signal,specific({html_url:'https://github.com/other/repo/issues/1258'})),/issue-identity/);
+// Reopening a cell must not spend one of the sixty reads an hour anonymous
+// GitHub allows a visitor. Measured through the fetcher rather than asserted
+// about in prose: the second look makes no request, a deliberate reload does,
+// and a different number is a different cell.
+const cached=new AbortController().signal;let reads=0;
+const counted=(overrides={})=>async(url,opts)=>{reads++;return specific(overrides)(url,opts);};
+assert.equal((await w.loadWorldIssueDetailsCached('ghashtag/t27',1258,cached,false,counted())).number,1258);
+assert.equal(reads,1);
+assert.equal((await w.loadWorldIssueDetailsCached('ghashtag/t27',1258,cached,false,counted({title:'Never read'}))).title,'FIFO spec','a second look at the same cell within the minute costs no GitHub read');
+assert.equal(reads,1);
+assert.equal((await w.loadWorldIssueDetailsCached('ghashtag/t27',1258,cached,true,counted({title:'Reloaded'}))).title,'Reloaded','a deliberate reload asks GitHub again');
+assert.equal(reads,2);
+let others=0;
+const another=async()=>{others++;return new Response(JSON.stringify({number:1259,title:'Another cell',state:'open',html_url:'https://github.com/gHashTag/t27/issues/1259'}),{status:200});};
+assert.equal((await w.loadWorldIssueDetailsCached('ghashtag/t27',1259,cached,false,another)).number,1259);
+assert.equal(others,1,'the cache is keyed by cell and cannot answer for a number it never read');
 const ui=readFileSync(new URL('../src/pages/QueenUniverse.tsx',import.meta.url),'utf8');
 assert.match(ui,/<RepositoryWorld key=\{repo\} repo=\{repo\}/,'switches unmount the old source');
 assert.match(ui,/workers=\{null\} events=\{EMPTY_EVENTS\}/,'a public map cannot inherit runtime agents or review events');

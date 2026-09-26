@@ -188,8 +188,8 @@ pub const TrinityWriter = struct {
     allocator: std.mem.Allocator,
     file: std.fs.File,
     header: TrinityHeader,
-    index: std.ArrayList(TensorIndexEntry),
-    data_buffer: std.ArrayList(u8),
+    index: std.array_list.Managed(TensorIndexEntry),
+    data_buffer: std.array_list.Managed(u8),
     current_offset: u64,
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !TrinityWriter {
@@ -199,8 +199,8 @@ pub const TrinityWriter = struct {
             .allocator = allocator,
             .file = file,
             .header = TrinityHeader{},
-            .index = std.ArrayList(TensorIndexEntry).init(allocator),
-            .data_buffer = std.ArrayList(u8).init(allocator),
+            .index = std.array_list.Managed(TensorIndexEntry).init(allocator),
+            .data_buffer = std.array_list.Managed(u8).init(allocator),
             .current_offset = 0,
         };
     }
@@ -298,7 +298,7 @@ pub const TrinityReader = struct {
     allocator: std.mem.Allocator,
     file: std.fs.File,
     header: TrinityHeader,
-    index: std.ArrayList(TensorIndexEntry),
+    index: std.array_list.Managed(TensorIndexEntry),
     data_start: u64,
 
     pub fn init(allocator: std.mem.Allocator, path: []const u8) !TrinityReader {
@@ -309,7 +309,7 @@ pub const TrinityReader = struct {
         const header = try TrinityHeader.read(reader);
 
         // and index
-        var index = std.ArrayList(TensorIndexEntry).init(allocator);
+        var index = std.array_list.Managed(TensorIndexEntry).init(allocator);
         for (0..header.num_tensors) |_| {
             const entry = try TensorIndexEntry.read(allocator, reader);
             try index.append(entry);
@@ -596,7 +596,7 @@ test "header write and read" {
     };
 
     // andwithin in buffer
-    var buffer = std.ArrayList(u8).init(allocator);
+    var buffer = std.array_list.Managed(u8).init(allocator);
     defer buffer.deinit();
     try header.write(buffer.writer());
 

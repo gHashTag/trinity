@@ -1,0 +1,205 @@
+/* BROWSER: the person's own remote browser, one frame, one quiet bar.
+
+   POSITIONED, AND ABOVE THE HIVE. The hive's scene lives in
+   .queen-scene-holder, an absolutely positioned layer of the view body, and a
+   positioned box paints over any content that is not positioned, whatever the
+   DOM order (Queen.css says so where it takes the scene's pointer away). First
+   shipped without this: the owner opened the tab on app.t27.ai and saw the
+   comb drawn straight over the live window -- the pod's toolbar dimmed under
+   red sectors, the picture nowhere. TRI escapes the same way, with a
+   positioned frame wrap. The map is scenery; a window a person types into is
+   not something to read it through.
+
+   z-index stays low on purpose: the HUD's top bar and its menu sit at 5-9 in
+   the same page, and a browser window above the menu would swallow it. The
+   hive is taken out of the way instead, below.
+
+   This pair no longer DECIDES that order, it agrees with it. Queen.css now sets
+   position and z-index: 1 on every child of .queen27-hud-vp-body except the
+   hive, at a higher specificity than this rule can reach, because the same
+   paint-order defect was on every view and not just this one. Two rules writing
+   one stacking order is the shape passport.css deleted rather than kept -- the
+   difference is that there the number written was not the number that computed,
+   and here they agree, and qa/queen-browser-contract.mjs asserts this rule
+   specifically: positioned, and >= 1. It stays so that assertion has something
+   to read, and so this file still says out loud why the number is 1 and not 7. */
+.queen27-page.is-shell .queen27-browser {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  gap: 6px;
+}
+
+.queen27-page.is-shell .queen27-browser.is-live {
+  background: #000;
+}
+
+/* THE INK ON THIS VIEW. Three rules in this file write it -- the note below,
+   the hint on the live bar, the quiet button -- and this is the one place it is
+   explained.
+
+   All three said `var(--muted, #8b9490)`, and the fallback was dead: index.css
+   declares --muted: #888888 on :root, so the number a reader of this file could
+   see was the one number the browser never uses, and what drew was a duller grey
+   than the one written down. They now repeat the declaration, so source and
+   screen agree. passport.css carries the same lesson about
+   --accent, found the same way -- by measuring the running page instead of
+   reading the declaration. --hud-muted is the board's own word for a label or a
+   note; it is declared on .queen27-page.is-shell, which every rule in this file
+   is already scoped to, and qa/queen-contrast-contract.mjs pins it at 4.5:1.
+
+   MEASURED HARDER THAN IT DRAWS, deliberately. The last rule in this file hides
+   the hive on this view, so nothing lit is behind these grounds: the note reads
+   on solid black, where even #888888 cleared the bar at 5.76:1. The contrast
+   gate does not model a view that switches the scene off -- it assumes a lit
+   field behind every translucent ground, everywhere -- and it read the dead
+   #8b9490 over that imagined field as 2.75:1. Rather than teach the gate a
+   third kind of exemption for the sake of one file, the note clears the harsher
+   bar as written: 5.99:1 against a fully lit field, 12.19 against the black it
+   actually gets. The arithmetic stays true if the scene ever comes back.
+
+   Only the note is measured twice, because only the note is translucent. The
+   quiet button's ground is opaque (the reason is at that rule, at the foot of
+   this file), so a field behind it changes nothing it composites and it reads
+   12.11:1 whether the hive is lit or hidden -- one number, not a pair. The hint
+   declares no ground of its own and rides the live bar's #000. */
+.queen27-page.is-shell .queen27-browser.is-note {
+  background: var(--hud-veil, rgba(2, 8, 6, 0.72));
+  backdrop-filter: blur(6px);
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.queen27-page.is-shell .queen27-browser.is-note p {
+  margin: 0;
+  max-width: 56ch;
+}
+
+.queen27-page.is-shell .queen27-browser-bar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.queen27-page.is-shell .queen27-browser-hint {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* Same ink, same reason: see the note rule above. 11px is the smallest type
+     on this view, so it is the line that could least afford the duller grey. */
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+}
+
+.queen27-page.is-shell .queen27-browser-btn {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #00ff88;
+  border-radius: 6px;
+  background: rgba(0, 255, 136, 0.08);
+  color: #00ff88;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* OPAQUE, and it is the only ground in this file that can honestly say so.
+   This button is rendered on one branch of the component and one only, the live
+   bar, whose wrapper paints #000 with no alpha at all -- so there is no field
+   behind this row to let through, and a translucent ground here was describing
+   a backdrop that does not exist. It read 1.74:1 against a lit field, the worst
+   pair in the file, and it was hiding behind the note's failure because an
+   assertion stops at the first one.
+
+   Not var(--hud-ground): that token is declared `transparent` on the shell, so
+   the #020806 every caller writes beside it is a fallback that never applies --
+   the same dead-fallback shape as the ink above, and two more surfaces in this
+   tree are standing on it. The literal is written out here because it is what
+   this rule means. Ink as above. */
+.queen27-page.is-shell .queen27-browser-btn.is-quiet {
+  border-color: rgba(0, 255, 136, 0.22);
+  background: #020806;
+  color: var(--hud-muted, rgba(255, 255, 255, 0.78));
+}
+
+.queen27-page.is-shell .queen27-browser-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.queen27-page.is-shell .queen27-browser-link {
+  color: #00ff88;
+  font-size: 12px;
+}
+
+.queen27-page.is-shell .queen27-browser-frame {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border: 1px solid rgba(0, 255, 136, 0.22);
+  border-radius: 6px;
+  background: #000;
+}
+
+/* Behind a live browser the hive is not scenery, it is interference: its
+   faces sit at z-index 6 inside the scene holder, above any panel that stays
+   under the menu. On this view alone the scene is hidden -- visibility, not
+   display, so the engine is not torn down and the comb comes back as it was. */
+.queen27-page.is-shell[data-view="browser"] :is(.queen-scene-holder, .queen27-comb-field, .queen27-comb.is-embedded) {
+  visibility: hidden;
+}
+
+/* What the agent did here: a few quiet lines under the window. */
+.queen27-page.is-shell .queen27-browser-journal {
+  flex: 0 0 auto;
+  max-height: 8.5em;
+  margin: 0;
+  padding: 6px 10px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid rgba(0, 255, 136, 0.22);
+  border-radius: 6px;
+  background: rgb(2, 8, 6);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted, #888888);
+}
+.queen27-page.is-shell .queen27-browser-journal li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.queen27-page.is-shell .queen27-browser-journal b {
+  color: #00ff88;
+  font-weight: 500;
+}
+.queen27-page.is-shell .queen27-browser-journal li.is-error b,
+.queen27-page.is-shell .queen27-browser-journal li.is-error span {
+  color: #ff6b6b;
+}
+
+.queen27-page.is-shell .queen27-browser-journal em {
+  font-style: normal;
+  opacity: 0.7;
+}

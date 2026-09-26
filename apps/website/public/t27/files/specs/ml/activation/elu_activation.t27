@@ -24,36 +24,53 @@ module Elu;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(x: f32) → void
-    fn forward(x: f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward(x: f32, alpha: f32) → f32
+    fn forward(x: f32, alpha: f32) -> f32 {
+        if x > 0.0 {
+            return x;
+        } else {
+            return alpha * (math::exp(x) - 1.0);
+        }
     }
 
-    // forward_batch(input: []f32) → void
-    fn forward_batch(input: []f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward_batch(input: []f32, alpha: f32) → []f32
+    fn forward_batch(input: []f32, alpha: f32) -> []f32 {
+        var result = []f32{};
+        var i : usize = 0;
+        while (i < input.len) : (i += 1) {
+            if (input[i] > 0.0) {
+                result = result + [input[i]];
+            } else {
+                result = result + [alpha * (math::exp(input[i]) - 1.0)];
+            }
+        }
+        return result;
     }
 
-    // derivative(x: f32) → void
-    fn derivative(x: f32) -> void {
-        // TODO: Implement from .tri spec
+    // derivative(x: f32, alpha: f32) → f32
+    fn derivative(x: f32, alpha: f32) -> f32 {
+        if x > 0.0 {
+            return 1.0;
+        } else {
+            return alpha * math::exp(x);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test forward_basic_case
+    test "forward_basic_case"
         given input = default_input()
         when result = forward(input)
         then result != undefined
 
-    test forward_batch_basic_case
+    test "forward_batch_basic_case"
         given input = default_input()
         when result = forward_batch(input)
         then result != undefined
 
-    test derivative_basic_case
+    test "derivative_basic_case"
         given input = default_input()
         when result = derivative(input)
         then result != undefined

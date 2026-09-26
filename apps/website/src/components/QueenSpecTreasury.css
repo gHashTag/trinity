@@ -23,9 +23,14 @@
 .treasury-portal {cursor:pointer;}
 .treasury-portal rect {fill:#062418;stroke:#00ff8888;stroke-width:2;}
 .treasury-portal.is-linked rect,.treasury-portal:hover rect {stroke:#75eaff;stroke-width:4;}
-.treasury-portal text {font:13px var(--font,'Outfit',sans-serif);fill:#e6f8ec;}
+.treasury-portal text {font:13px var(--font, 'Outfit', system-ui, -apple-system, sans-serif);fill:#e6f8ec;}
 .treasury-portal text.treasury-portal-count {font-size:11px;fill:#ffe08a;}
-.treasury-zoom {position:absolute;bottom:.35rem;left:50%;transform:translateX(-50%);display:flex;gap:.35rem;align-items:center;padding:.3rem;background:#04160eeb;border:1px solid #547657;border-radius:9px;white-space:nowrap;}
+/* This bar floats on the map, so what sits behind it is the treasury's own hex
+   cells and their source edges. The `eb` is alpha 0.92, and the 8% it passed
+   carried every cell stroke through at full sharpness onto the labels: alpha
+   scales the field's amplitude and leaves its spatial frequency where it was.
+   8px because the map is dragged and zoomed under this bar while it is read. */
+.treasury-zoom {position:absolute;bottom:.35rem;left:50%;transform:translateX(-50%);display:flex;gap:.35rem;align-items:center;padding:.3rem;background:#04160eeb;backdrop-filter:blur(8px);border:1px solid #547657;border-radius:9px;white-space:nowrap;}
 .treasury-zoom button {font-size:.75rem;min-width:40px;padding:.35rem!important;}
 .treasury-zoom button[aria-pressed=true] {color:#ffe08a;border-color:#ffe08a;}
 .treasury-zoom output {font-size:.7rem;}

@@ -388,6 +388,20 @@ export function loadSkillSpecs(): Promise<SkillSpecCatalog> {
   return skillsPromise
 }
 
+/**
+ * The six ladder counts alone, for a caller that wants the numbers without a
+ * catalog -- the Queen's own rungs, which stand outside the Explorer frames and
+ * so cannot read what those frames loaded.
+ *
+ * Every catalog carries the same generated `ladder`; this reads the smallest of
+ * the six (spec-skills.json, ~32 kB against spec-tools.json's ~390 kB) and
+ * shares the promise the Skill Explorer already uses, so a reader who opens
+ * SKILLS pays for it once. The numbers are still generated, never typed here.
+ */
+export function loadLadderCounts(): Promise<LadderCounts> {
+  return loadSkillSpecs().then((c) => c.ladder)
+}
+
 export function loadCronSpecs(): Promise<CronSpecCatalog> {
   if (!cronsPromise) {
     cronsPromise = fetch('crons/spec-crons.json', { credentials: 'omit' }).then((r) => {

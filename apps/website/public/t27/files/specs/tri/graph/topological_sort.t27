@@ -21,12 +21,92 @@ module TriTopological;
 
     // sort(graph: *const Graph) → void
     fn sort(graph: *const Graph) -> void {
-        // TODO: Implement from .tri spec
+        // Implement topological sort using Kahn's algorithm
+        let num_nodes = graph.node_count;
+        let in_degree = []usize;
+        let queue = []usize;
+        let result_order = []usize;
+        
+        // Initialize in-degree for all nodes
+        for i in 0..num_nodes {
+            in_degree[i] = 0;
+        }
+        
+        // Calculate in-degree for each node
+        for i in 0..num_nodes {
+            for neighbor in graph.adjacency_list[i] {
+                in_degree[neighbor] += 1;
+            }
+        }
+        
+        // Add nodes with no incoming edges to queue
+        for i in 0..num_nodes {
+            if in_degree[i] == 0 {
+                queue.push(i);
+            }
+        }
+        
+        // Process nodes in topological order
+        while queue.length > 0 {
+            let current = queue.shift();
+            result_order.push(current);
+            
+            // Update in-degree of neighbors
+            for neighbor in graph.adjacency_list[current] {
+                in_degree[neighbor] -= 1;
+                if in_degree[neighbor] == 0 {
+                    queue.push(neighbor);
+                }
+            }
+        }
+        
+        // Check for cycles
+        let has_cycle = result_order.length != num_nodes;
+        
+        // Store the result
+        result.order = result_order;
+        result.has_cycle = has_cycle;
     }
 
     // is_valid(result: TopologicalSort) → void
     fn is_valid(result: TopologicalSort) -> void {
-        // TODO: Implement from .tri spec
+        // Validate that the topological sort is correct
+        if result.has_cycle {
+            // If graph has cycle, no valid topological sort exists
+            return;
+        }
+        
+        // Check that all nodes appear exactly once in the order
+        let node_count = result.order.length;
+        let seen = []bool;
+        
+        for i in 0..node_count {
+            seen[i] = false;
+        }
+        
+        for node in result.order {
+            if node >= node_count {
+                // Node index out of bounds
+                return;
+            }
+            if seen[node] {
+                // Node appears more than once
+                return;
+            }
+            seen[node] = true;
+        }
+        
+        // Check that for every edge u -> v, u appears before v in the order
+        for i in 0..node_count {
+            let u = result.order[i];
+            for j in (i + 1)..node_count {
+                let v = result.order[j];
+                // Check if there's an edge from v to u (which would violate topological order)
+                if graph.has_edge(v, u) {
+                    return;
+                }
+            }
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -34,12 +114,14 @@ module TriTopological;
     // ═══════════════════════════════════════════════════════════
 
     test sort_basic_case
-        given input = default_input()
-        when result = sort(input)
-        then result != undefined
+        given graph = default_input()
+        when sort_result = sort(graph)
+        then sort_result.order.length > 0
+        then sort_result.has_cycle == false
 
     test is_valid_basic_case
-        given input = default_input()
-        when result = is_valid(input)
-        then result != undefined
+        given graph = default_input()
+        when sort_result = sort(graph)
+        when validation = is_valid(sort_result)
+        then validation == true
 

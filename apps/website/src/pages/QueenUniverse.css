@@ -1,5 +1,5 @@
 html:has(body.queen-universe-shell),body.queen-universe-shell,body.queen-universe-shell>#root {height:100%;min-height:0;overflow:hidden;}
-.queen-universe {height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);background:#000;color:var(--text,#e7f7fa);font-family:var(--font,'Outfit',sans-serif);}
+.queen-universe {height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);background:#000;color:var(--text, #FFFFFF);font-family:var(--font, 'Outfit', system-ui, -apple-system, sans-serif);}
 /* The black belongs to the page, not to this wrapper: opaque here it sat
    between the sky and the translucent chrome, so every panel showed black
    rather than stars. The body keeps the ground; the sky paints on it. */
@@ -8,7 +8,7 @@ body.queen-shell {background:#000;}
 .queen-universe {box-sizing:border-box;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
 .queen-universe-nav {display:flex;align-items:center;gap:.6rem;padding:.4rem .65rem;border-bottom:1px solid #00ff8844;min-width:0;}
 .queen-universe-nav>span {color:#00ff88;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;}
-.queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button,.queen-universe-nav select,.queen-world-dialog input {font:inherit;min-height:40px;border:1px solid #397d80;color:var(--text,#e7f7fa);background:#041115;padding:.4rem .75rem;border-radius:6px;}
+.queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button,.queen-universe-nav select,.queen-world-dialog input {font:inherit;min-height:40px;border:1px solid #397d80;color:var(--text, #FFFFFF);background:#041115;padding:.4rem .75rem;border-radius:6px;}
 .queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button {cursor:pointer;}
 .queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button:disabled {opacity:.5;cursor:not-allowed;}
 .queen-universe :is(.queen-universe-nav,.queen-world-dialog,.queen-world-tools) button:focus-visible,.queen-universe-nav select:focus-visible,.queen-world-dialog input:focus-visible,.queen-world-dialog a:focus-visible {outline:2px solid #ffd45a;outline-offset:2px;}
@@ -119,18 +119,21 @@ body.queen-shell {background:#000;}
 
 /* The worlds bar belongs to the map too: above the shell it was the one strip
    left outside the container everything else moved into. It floats in the same
-   place, over the scene, and leaves with the rest in bare mode. */
+   place, over the scene, and leaves with the rest in bare mode.
+   It used to float by its own hand here -- position, z-index, three insets and
+   `background: rgba(2, 8, 6, 0.42)`. None of it has ever drawn anything. In
+   shell mode QueenUniverse portals the nav into the map's control row, and
+   Queen.css gives it `display: contents` there at four classes against this
+   rule's two-and-an-element, so the element generates no box: measured on the
+   live board, getClientRects().length is 0 while getComputedStyle still
+   cheerfully reports position:absolute and that 0.42 ground. The children lay
+   out on .queen27-hud-vp-head, which does its own floating and carries the nav
+   token and a low pass. So the bar is already where this rule was asking it to
+   be, and the 0.42 was a ground on nothing -- declarations are deleted rather
+   than thickened, because thickening one would have been answering a
+   measurement of a box that is not there. */
 body.queen-shell .queen-universe {
   grid-template-rows: minmax(0, 1fr);
-}
-body.queen-shell .queen-universe-nav {
-  position: absolute;
-  z-index: 5;
-  top: 0;
-  right: 0;
-  left: 0;
-  border-bottom: 0;
-  background: rgba(2, 8, 6, 0.42);
 }
 body.queen-shell .queen-universe-content {
   position: relative;

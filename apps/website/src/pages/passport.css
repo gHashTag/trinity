@@ -1,0 +1,307 @@
+/* The PASSPORT page. A record is read, not admired: one column, generous
+   measure, and the table allowed to breathe wider than the prose. */
+
+.pp {
+  padding: 5rem 1.25rem 6rem;
+  color: var(--text, #FFFFFF);
+  /* Every accent below was written `var(--accent, #d4af37)` by an author who
+     believed the fallback would apply. It never did: index.css sets --accent
+     to #00FF88 on :root, so the fallback is dead and the page rendered green.
+     That went unseen until the figures arrived hard-coded gold and the two
+     halves of one page disagreed. Declaring the token here is the fix, and it
+     is scoped -- 586 elements inside .pp were probed and the 19 that move are
+     all .pp-* accents: the warn chip, the active face, the scope rule, the six
+     dagger marks, the figure captions, the seven source links, the control.
+     Gold and not the site green because green is the explorer's word for
+     healthy and live, and this document is neither: it is proposed. */
+  --accent: #d4af37;
+}
+.pp-wrap {
+  max-width: 62rem;
+  margin: 0 auto;
+}
+
+.pp-head { margin-bottom: 3.5rem; }
+.pp-eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 0 0 0.9rem;
+}
+.pp-head h1 {
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  letter-spacing: 0.12em;
+  margin: 0;
+}
+.pp-sub {
+  font-size: 1.1rem;
+  opacity: 0.85;
+  margin: 0.5rem 0 1.2rem;
+}
+.pp-by {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  opacity: 0.6;
+  margin: 0 0 0.9rem;
+}
+.pp-status { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0 0 1.6rem; }
+.pp-chip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  opacity: 0.8;
+}
+.pp-chip-warn {
+  border-color: var(--accent, #d4af37);
+  color: var(--accent, #d4af37);
+  opacity: 1;
+}
+.pp-chip-kind { border-color: rgba(255, 255, 255, 0.35); }
+
+.pp-faces { display: flex; gap: 1.4rem; }
+.pp-faces a {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: inherit;
+  opacity: 0.5;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid transparent;
+}
+.pp-faces a.is-on {
+  opacity: 1;
+  border-bottom-color: var(--accent, #d4af37);
+}
+
+.pp-sec { margin-bottom: 3.5rem; }
+.pp-sec h2 {
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin: 0 0 1.2rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pp-sec p { line-height: 1.75; margin: 0 0 1rem; }
+.pp-lede { opacity: 0.8; font-size: 1.02rem; }
+
+.pp-standing { padding-left: 1.2rem; margin: 0 0 1.5rem; }
+.pp-standing li { margin-bottom: 1.1rem; }
+.pp-standing strong { display: block; margin-bottom: 0.35rem; }
+.pp-standing p { margin: 0; opacity: 0.85; }
+.pp-scope {
+  border-left: 2px solid var(--accent, #d4af37);
+  padding-left: 1rem;
+  opacity: 0.85;
+}
+
+/* .pp-sec is a flex container (the site's global section rule), so its children
+   are flex items and default to min-width: auto -- they refuse to shrink below
+   their content. Without this a scroller does not scroll: it widens, and the
+   whole page takes the sideways scroll instead of the one box that asked for it.
+
+   The rule names every child rather than .pp-scroll and .pp-fig alone, because
+   naming those two was the first fix and it missed. Figures 1 and 2 sit inside
+   a wrapper that keeps a case and its plate together, and that wrapper was the
+   flex item; .pp-fig had min-width: 0 and was still handed 672px. It cost 149px
+   of page overflow on the research face at 375px, and it went unseen because I
+   measured the record face and reported the result for both. No flex item of
+   .pp-sec is ever the thing that should decide how wide the page is. */
+.pp-sec > *,
+.pp-scroll,
+.pp-fig { min-width: 0; max-width: 100%; }
+/* align-items: center sizes a flex item to its content, so the figure frame
+   came out narrower than the paragraphs it sits between. It is a block of the
+   argument, not an inset, so it takes the measure of the prose. */
+.pp-fig { width: 100%; }
+
+.pp-scroll { overflow-x: auto; margin-bottom: 1rem; }
+.pp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  min-width: 46rem;
+}
+.pp-table th,
+.pp-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  line-height: 1.6;
+}
+.pp-table thead th {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+.pp-table tbody th { width: 22%; font-weight: 600; }
+.pp-table tbody th abbr { color: var(--accent, #d4af37); text-decoration: none; }
+.pp-absence { opacity: 0.68; font-style: italic; }
+.pp-note { font-size: 0.85rem; opacity: 0.6; line-height: 1.7; }
+
+.pp-practice { margin-bottom: 1.6rem; }
+.pp-practice strong { display: block; margin-bottom: 0.4rem; }
+.pp-practice p { margin: 0; opacity: 0.85; }
+
+.pp-questions { padding-left: 1.2rem; }
+.pp-questions li { margin-bottom: 1rem; line-height: 1.75; opacity: 0.9; }
+
+.pp-case {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 1.6rem;
+}
+.pp-case header {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.pp-case-n {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.6rem;
+  color: var(--accent, #d4af37);
+  line-height: 1;
+}
+.pp-case h3 { font-size: 1.05rem; margin: 0; flex-basis: 100%; }
+.pp-case-setup { opacity: 0.75; }
+.pp-case-finding { opacity: 1; }
+.pp-case-moral {
+  border-left: 2px solid var(--accent, #d4af37);
+  padding-left: 1rem;
+  font-style: italic;
+  opacity: 0.9;
+}
+.pp-case-src {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.74rem;
+  opacity: 0.45;
+  margin: 0;
+}
+
+/* Sub-heading inside a section: the survey has three parts under one h2. */
+.pp-subh {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin: 2.4rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* The seven surveyed records. Every entry carries its own link, because a page
+   that grades other people's disclosure has to be checkable against theirs. */
+.pp-sources { list-style: none; padding: 0; margin: 0; }
+.pp-sources li {
+  border-left: 2px solid rgba(255, 255, 255, 0.14);
+  padding-left: 1rem;
+  margin-bottom: 1.3rem;
+}
+.pp-sources li.is-control { border-left-color: var(--accent, #d4af37); }
+.pp-sources strong { display: block; margin-bottom: 0.3rem; font-size: 0.95rem; }
+.pp-sources p { margin: 0 0 0.3rem; opacity: 0.8; font-size: 0.92rem; }
+.pp-sources a { color: var(--accent, #d4af37); text-decoration: none; word-break: break-all; }
+.pp-sources a:hover { text-decoration: underline; }
+
+.pp-withdrawn {
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  padding-left: 1rem;
+  margin-bottom: 1.4rem;
+}
+.pp-withdrawn strong { display: block; margin-bottom: 0.35rem; opacity: 0.9; }
+.pp-withdrawn p { margin: 0; opacity: 0.7; font-size: 0.92rem; }
+
+.pp-foot {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pp-foot a {
+  color: inherit;
+  opacity: 0.6;
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+}
+.pp-foot a:hover { opacity: 1; }
+
+/* The figures. A plate a shade above the page, a numbered caption, and the
+   source line in mono — the same frame the system documentation uses, so a
+   reader who has seen one figure on this site has seen this one. */
+.pp-fig {
+  margin: 2rem 0 2.5rem;
+  padding: 1rem 1rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.pp-fig-plate { overflow-x: auto; }
+/* min-width, not width alone: all four viewBoxes are 700 units wide, so a phone
+   would otherwise scale an 11-unit label down to about five pixels. The same
+   escape the table takes above — scroll the plate sideways, keep the type
+   legible — and the mobile audit forgives an element inside a scroller that
+   really scrolls. */
+.pp-fig-plate svg { display: block; width: 100%; min-width: 40rem; height: auto; }
+.pp-fig-cap {
+  margin-top: 0.85rem;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  opacity: 0.88;
+}
+.pp-fig-cap b { color: var(--accent, #d4af37); }
+.pp-fig-src {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  opacity: 0.5;
+  letter-spacing: 0.02em;
+}
+
+/* Inside the Queen's shell the views are stacked in one grid cell on top of the
+   hive scene. A record read through a hex field is not read: this view owns its
+   own backdrop and its own scroll, like every other named scroll owner.
+
+   The ground was only half of it. At 0.94 six per cent of the hive still came
+   through, and alpha compositing is a linear mix: it scales the field's
+   amplitude and leaves its spatial frequency exactly where it was, so a hexagon
+   edge crossed the prose at full sharpness however dark this ground got, and an
+   edge through a letterform is read as a stroke of the letter. The blur is the
+   half that takes the edges out. 8px and not 6px because this face is long-form
+   reading over a scene that keeps moving; .mcp-view in QueenMcp.css is the same
+   surface at the same 0.94 and took the same figure. It stays inside the
+   is-shell scope with the rest of the rule -- on the standalone /passport route
+   this rule paints no ground and there is no hive behind the page to low-pass.
+   One layer here and none on the sections inside it: backdrop-filter makes this
+   element a backdrop root, so the whole record is low-passed once. */
+.queen27-page.is-shell .pp {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 2.5rem;
+  background: rgba(6, 8, 10, 0.94);
+  backdrop-filter: blur(8px);
+  position: relative;
+  /* No z-index. Queen.tsx mounts <Passport> as a direct child of
+     .queen27-hud-vp-body, and Queen.css now sets position and z-index on every
+     child of that element except the hive, at a higher specificity than this
+     rule can reach -- so a `z-index: 3` written here computed to 1 and read to
+     a debugger as though it were 3. One owner for the stacking order of that
+     row, and it is the rule that owns the row. */
+}
+
+@media (max-width: 640px) {
+  .pp { padding: 3.5rem 1rem 4rem; }
+  .pp-case { padding: 1.1rem; }
+}

@@ -1,5 +1,12 @@
 # NeoDetect Extension Release Workflow
 # Triggers on extension-specific tags (ext-v*) to avoid conflicts with other releases
+#
+# Every path here used to point at a top-level directory that no longer exists.
+# The tree moved under deploy/trinity-nexus/ and the workflow did not move with
+# it, so each step after checkout was operating on a missing directory. The
+# move also dropped both manifests and all six icons -- restored from ext-v2.0.0
+# in the same commit as this repoint, because a build that cannot find
+# manifest.json produces a zip Chrome will not load.
 
 name: Extension Release
 
@@ -38,7 +45,7 @@ jobs:
           echo "Building extension version: $VERSION"
       
       - name: Setup Zig
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v2
         with:
           version: 0.15.2
       
@@ -49,7 +56,7 @@ jobs:
       
       - name: Update version in package.json
         run: |
-          cd extension
+          cd deploy/trinity-nexus/extensions
           VERSION="${{ steps.version.outputs.version }}"
           jq ".version = \"$VERSION\"" package.json > tmp.json && mv tmp.json package.json
           cat package.json | grep version
@@ -61,28 +68,28 @@ jobs:
             -O ReleaseFast \
             -fno-entry \
             -rdynamic \
-            -femit-bin=extension/chrome/wasm/neodetect.wasm
+            -femit-bin=deploy/trinity-nexus/extensions/chrome/wasm/neodetect.wasm
           
-          cp extension/chrome/wasm/neodetect.wasm extension/firefox/wasm/
+          cp deploy/trinity-nexus/extensions/chrome/wasm/neodetect.wasm deploy/trinity-nexus/extensions/firefox/wasm/
           
           echo "WASM built:"
-          ls -la extension/chrome/wasm/neodetect.wasm
+          ls -la deploy/trinity-nexus/extensions/chrome/wasm/neodetect.wasm
       
       - name: Update Chrome manifest version
         run: |
-          cd extension/chrome
+          cd deploy/trinity-nexus/extensions/chrome
           VERSION="${{ steps.version.outputs.version }}"
           jq ".version = \"$VERSION\"" manifest.json > tmp.json && mv tmp.json manifest.json
       
       - name: Update Firefox manifest version
         run: |
-          cd extension/firefox
+          cd deploy/trinity-nexus/extensions/firefox
           VERSION="${{ steps.version.outputs.version }}"
           jq ".version = \"$VERSION\"" manifest.json > tmp.json && mv tmp.json manifest.json
       
       - name: Sync Firefox files
         run: |
-          cd extension
+          cd deploy/trinity-nexus/extensions
           # Copy shared files
           cp chrome/icons/*.png firefox/icons/
           cp chrome/wasm/neodetect-loader.js firefox/wasm/
@@ -96,7 +103,7 @@ jobs:
       
       - name: Package Chrome extension
         run: |
-          cd extension/chrome
+          cd deploy/trinity-nexus/extensions/chrome
           VERSION="${{ steps.version.outputs.version }}"
           zip -r ../neodetect-chrome-v${VERSION}.zip . \
             -x "*.DS_Store" \
@@ -110,7 +117,7 @@ jobs:
       
       - name: Package Firefox extension
         run: |
-          cd extension/firefox
+          cd deploy/trinity-nexus/extensions/firefox
           VERSION="${{ steps.version.outputs.version }}"
           zip -r ../neodetect-firefox-v${VERSION}.zip . \
             -x "*.DS_Store" \
@@ -126,13 +133,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: neodetect-chrome
-          path: extension/neodetect-chrome-*.zip
+          path: deploy/trinity-nexus/extensions/neodetect-chrome-*.zip
       
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v4
         with:
           name: neodetect-firefox
-          path: extension/neodetect-firefox-*.zip
+          path: deploy/trinity-nexus/extensions/neodetect-firefox-*.zip
 
   release:
     name: Create Release
@@ -200,8 +207,8 @@ jobs:
           
           ### Links
           
-          - [Documentation](https://github.com/gHashTag/trinity/tree/main/extension)
-          - [Privacy Policy](https://github.com/gHashTag/trinity/blob/main/extension/chrome/PRIVACY_POLICY.md)
+          - [Documentation](https://github.com/gHashTag/trinity/tree/main/deploy/trinity-nexus/extensions)
+          - [Privacy Policy](https://github.com/gHashTag/trinity/blob/main/deploy/trinity-nexus/extensions/chrome/PRIVACY_POLICY.md)
           - [Source Code](https://github.com/gHashTag/trinity)
           
           ---
@@ -211,12 +218,16 @@ jobs:
           cat release_notes.md
       
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: NeoDetect v${{ needs.build.outputs.version }}
           body_path: release_notes.md
           draft: false
           prerelease: false
+          # The browser extension is a side artifact, not the repository's
+          # headline download. v2 defaults make_latest to true, which would put
+          # an ext-v* tag at the top of the releases page ahead of Trinity.
+          make_latest: false
           files: |
             ./artifacts/neodetect-chrome-*.zip
             ./artifacts/neodetect-firefox-*.zip

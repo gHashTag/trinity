@@ -11,12 +11,13 @@
 // backed by code, how many cards have code and no spec yet, and how many the
 // compiler accepted. It counts; it does not grade.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useI18n } from '../i18n/context'
 import { QueenLoading } from './QueenLoading'
 import { useQueenExplorerFrame } from './useQueenExplorerFrame'
 import { loadAgentSpecs, loadCronSpecs, loadFunctionSpecs, loadSkillSpecs, loadToolSpecs } from '../lib/agentSpecs'
 import { loadSystemDocs } from '../lib/systemDocs'
+import { QueenMcp, mcpCopy } from './QueenMcp'
 import type { ExplorerTab } from '../lib/queenEmbed'
 
 export type AgentsKind = 'skills' | 'crons' | 'agents' | 'functions' | 'tools' | 'project'
@@ -32,6 +33,16 @@ export const PROJECT_JUMPS: readonly { stem: string; en: string; ru: string }[] 
   { stem: 'alphabet', en: 'Alphabet', ru: 'Алфавит' },
   { stem: 'tooling', en: 'Tools', ru: 'Инструменты' },
   { stem: 'evidence', en: 'Evidence', ru: 'Свидетели' },
+] as const
+
+// TOOLS answers two questions, so it has two faces and one tab. The Explorer is
+// the spec catalogue: what a tool is declared to be. The fleet is whether the
+// MCP servers behind those tools answer right now, read live from a hub on the
+// owner's own machine. A declared server that is offline and a healthy one are
+// the same text in a spec, which is the half the catalogue cannot show.
+export const TOOL_FACES: readonly { id: 'specs' | 'mcp'; en: string; ru: string }[] = [
+  { id: 'specs', en: 'Specs', ru: 'Спеки' },
+  { id: 'mcp', en: '🔌 MCP fleet', ru: '🔌 Парк MCP' },
 ] as const
 
 export interface AgentsCopy {
@@ -139,7 +150,7 @@ export function QueenAgentsDirective({ kind, c, collapsible = false }: { kind: A
   )
 }
 
-export function QueenAgents({ kind, c, showDirective = true, onNavigate }: { kind: AgentsKind; c: AgentsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void }) {
+export function QueenAgents({ kind, c, showDirective = true, onNavigate, ladder }: { kind: AgentsKind; c: AgentsCopy; showDirective?: boolean; onNavigate: (tab: ExplorerTab, card: string | null) => void; ladder?: ReactNode }) {
   const { lang } = useI18n()
   const [ready, setReady] = useState(false)
   // The card in the frame is the card in the Queen address: skill=, cron=, agent=,
@@ -147,10 +158,35 @@ export function QueenAgents({ kind, c, showDirective = true, onNavigate }: { kin
   const frameRef = useRef<HTMLIFrameElement>(null)
   const frame = useQueenExplorerFrame(kind, onNavigate, frameRef)
   const jump = frame.card ?? PROJECT_JUMPS[0].stem
+  // TOOLS only. `seenMcp` keeps the fleet from probing the hub for a reader who
+  // never asks for it, and keeps it mounted once they have: both faces stay in
+  // the tree and are hidden rather than unmounted, because the Explorer boots
+  // the compiler wasm and a face switch must not pay for that twice.
+  const [face, setFace] = useState<'specs' | 'mcp'>('specs')
+  const [seenMcp, setSeenMcp] = useState(false)
+  const hasFaces = kind === 'tools'
+  const showMcp = hasFaces && face === 'mcp'
 
   return (
-    <div className={`queen27-specs${kind === 'project' ? ' has-jumps' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>
+    <div className={`queen27-specs${kind === 'project' || hasFaces ? ' has-jumps' : ''}${ladder ? ' has-ladder' : ''}`} data-directive={showDirective ? 'above' : 'aside'}>
+      {ladder}
       {showDirective && <QueenAgentsDirective kind={kind} c={c} collapsible />}
+
+      {hasFaces && (
+        <nav className="queen27-docs-jumps" aria-label={lang === 'ru' ? 'Что показывает вкладка инструментов' : 'What the tools view shows'}>
+          {TOOL_FACES.map((f) => (
+            <button
+              type="button"
+              key={f.id}
+              className={`queen27-docs-jump${face === f.id ? ' is-active' : ''}`}
+              aria-pressed={face === f.id}
+              onClick={() => { setFace(f.id); if (f.id === 'mcp') setSeenMcp(true) }}
+            >
+              {lang === 'ru' ? f.ru : f.en}
+            </button>
+          ))}
+        </nav>
+      )}
 
       {kind === 'project' && (
         <nav className="queen27-docs-jumps" aria-label={lang === 'ru' ? 'Быстрые переходы по документации' : 'Documentation quick jumps'}>
@@ -168,10 +204,17 @@ export function QueenAgents({ kind, c, showDirective = true, onNavigate }: { kin
         </nav>
       )}
 
-      <div className="queen27-specs-frame-wrap">
+      {seenMcp && (
+        // Its own copy table travels with the component: "answering" and the
+        // hub-down command are this view's vocabulary and nothing else's.
+        <QueenMcp c={mcpCopy(lang)} lang={lang} hidden={!showMcp} />
+      )}
+
+      <div className="queen27-specs-frame-wrap" hidden={showMcp}>
         {!ready && (
           <div className="queen27-specs-loading">
-            <QueenLoading title={c.loading} facts={[kind === 'project' ? 'specs/docs/system.t27' : `specs/${kind}/*.t27`]} />
+            {/* The mark and the bar, no words: see components/QueenLoading. */}
+            <QueenLoading label={c.loading} />
           </div>
         )}
         <iframe

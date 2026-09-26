@@ -200,15 +200,12 @@ pub const BigInt = struct {
         return result;
     }
 
-    /// Absolute value
-    /// Returns: self if positive, negate(self) if negative
-    /// Complexity: O(len) worst case, O(1) for positive
-    pub fn abs(self: Self) Self {
-        if (self.is_negative()) {
-            return self.negate();
-        }
-        return self;
-    }
+/// Absolute value
+/// Returns: self if positive, negate(self) if negative
+/// Complexity: O(len) worst case, O(1) for positive
+pub fn abs(self: Self) Self {
+    return @abs(self);
+}
 
     // ========================================================================
     // Addition

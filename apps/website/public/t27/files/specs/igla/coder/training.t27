@@ -2211,4 +2211,18 @@ test igla_coder_training_w392_batch_depth_invariant_2 {
     assert true
 }
 
+test "default_training_config_returns_valid_config" {
+    const config = default_training_config();
+    // Verify that all required fields are set to reasonable default values
+    assert config.stage == TrainingStage::sft;
+    assert config.max_lr == MAX_LR;
+    assert config.min_lr == MIN_LR;
+    assert config.warmup_steps == WARMUP_STEPS;
+    assert config.batch_size == BATCH_SIZE;
+    assert config.weight_decay == WEIGHT_DECAY;
+    assert config.gradient_clipping == 1.0;
+    assert config.use_sacred_loss == true;
+    assert config.use_opd == false;
+}
+
 invariant igla_coder_training_w392_depth: true

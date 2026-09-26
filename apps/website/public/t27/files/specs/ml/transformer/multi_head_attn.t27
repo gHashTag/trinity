@@ -7,6 +7,7 @@ module MultiHeadAttention;
     use math::constants;
     use math::statistics;
     use numeric::gf16;
+use numeric::gf16::GF16;
     use ml::transformer::positional_enc;
     use ml::transformer::norm;
 
@@ -172,7 +173,7 @@ module MultiHeadAttention;
     fn compute_phi_scale(head_dim: u32) -> gf16::GF16 {
         // Standard: 1.0 / sqrt(head_dim)
         // φ-optimized: 1.0 / (sqrt(head_dim) * PHI)
-        return 1.0 / (sqrt(head_dim as gf16::GF16) * PHI);
+        return GF16(1.0 / (sqrt(head_dim as f32) * PHI));
     }
 
     // merge_heads(attention: []gf16::GF16, num_heads: u32, head_dim: u32) → []gf16::GF16

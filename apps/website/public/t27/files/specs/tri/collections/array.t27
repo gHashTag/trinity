@@ -106,47 +106,47 @@ module TriArray;
     // TDD: Tests (from .tri behaviors)
     // ═══════════════════════════════════════════════════════════
 
-    test slice_basic_case
+    test "slice_basic_case"
         given input = default_input()
         when result = slice(input)
         then result != undefined
 
-    test slice_from_basic_case
+    test "slice_from_basic_case"
         given input = default_input()
         when result = slice_from(input)
         then result != undefined
 
-    test first_basic_case
+    test "first_basic_case"
         given input = default_input()
         when result = first(input)
         then result != undefined
 
-    test last_basic_case
+    test "last_basic_case"
         given input = default_input()
         when result = last(input)
         then result != undefined
 
-    test is_empty_basic_case
+    test "is_empty_basic_case"
         given input = default_input()
         when result = is_empty(input)
         then result != undefined
 
-    test contains_basic_case
+    test "contains_basic_case"
         given input = default_input()
         when result = contains(input)
         then result != undefined
 
-    test index_of_basic_case
+    test "index_of_basic_case"
         given input = default_input()
         when result = index_of(input)
         then result != undefined
 
-    test reverse_basic_case
+    test "reverse_basic_case"
         given input = default_input()
         when result = reverse(input)
         then result != undefined
 
-    test concat_basic_case
+    test "concat_basic_case"
         given input = default_input()
         when result = concat(input)
         then result != undefined

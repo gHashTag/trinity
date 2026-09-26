@@ -10,8 +10,8 @@ import { ImageProcessingConfiguration } from "@babylonjs/core/Materials/imagePro
 import { useEffect, useRef, useState, useImperativeHandle } from "react";
 import { QueenHiveDisplays, QueenHiveTaskLegend, type HiveDisplayController } from './QueenHiveDisplays';
 import { QueenStarfield } from './QueenStarfield';
-import {catalogCellAt,catalogFocusView,catalogSpecSelection,catalogConnectionView,type CatalogHive,type CatalogController} from './queenCatalogData';
-import { HIVE_TASK_PALETTE, hiveSignalDelivery, hiveSignalRing, hiveRunningIssueNumbers, hiveTaskPaint, hiveTaskCounts, hiveDisplayPaintKey, hiveFocusZoom, hiveDisplayLod, type HiveDisplay, type HiveDisplayProjection, type HiveTaskTone, type HiveSignalHealth, type HiveSignalCursor, type HiveEventRing } from './queenHiveDisplay';
+import {catalogCellAt,catalogFocusView,catalogMaxZoom,catalogSpecSelection,catalogConnectionView,type CatalogHive,type CatalogController} from './queenCatalogData';
+import { HIVE_TASK_PALETTE, hiveSignalDelivery, hiveSignalRing, hiveRunningIssueNumbers, hiveTaskPaint, hiveTaskCounts, hiveDisplayPaintKey, hiveFocusZoom, hiveMaxZoom, hiveDisplayLod, type HiveDisplay, type HiveDisplayProjection, type HiveTaskTone, type HiveSignalHealth, type HiveSignalCursor, type HiveEventRing } from './queenHiveDisplay';
 import { HIVE_WALL_ROTATION, hiveWallToWorld, hiveWorldToWall } from './queenHiveOrientation';
 import type { Ref } from "react";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
@@ -357,6 +357,8 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     camera.panningSensibility = 0;
     let zoom = savedViewRef.current?.zoom ?? 1;
     let zoomGoal = zoom;
+    // recomputed by fit(): the ceiling follows the field and the viewport (hiveMaxZoom)
+    let maxZoom = 128;
     if (savedViewRef.current) { camera.target.x = savedViewRef.current.x; camera.target.y = savedViewRef.current.y; }
     const restoredFocus = savedViewRef.current?.focusKey ? cells.findIndex((_,index)=>viewKey(index)===savedViewRef.current?.focusKey) : -1;
     let focusIndex: number | null = restoredFocus >= 0 ? restoredFocus : null;
@@ -394,9 +396,12 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       const aspect = w / band;
       let halfW = fieldW / 2, halfH = halfW / aspect;
       if (halfH < fieldH / 2) { halfH = fieldH / 2; halfW = halfH * aspect; }
+      maxZoom = catalogRef.current ? catalogMaxZoom(catalogRef.current, halfW, w) : hiveMaxZoom(S_CELL * w / (halfW * 2));
+      // a narrower host lowers the ceiling; take the zoom down with it here, not at the next drag or wheel
+      if (focusIndex === null && zoom > maxZoom) zoom = zoomGoal = maxZoom;
       if (focusIndex !== null && cells[focusIndex]) {
-        const view=catalogRef.current?(focusConnection?catalogConnectionView(catalogRef.current,focusIndex,halfW,halfH,specInset()):catalogFocusView(catalogRef.current,focusIndex,halfW,halfH,w,band,catalogRef.current.cells[focusIndex]?.kind==='spec'?specInset():undefined)):null;
-        zoom = zoomGoal = view?.zoom??hiveFocusZoom(S_CELL * cellScale(focusIndex) * w / (halfW * 2), w, band);
+        const view=catalogRef.current?(focusConnection?catalogConnectionView(catalogRef.current,focusIndex,halfW,halfH,specInset(),maxZoom):catalogFocusView(catalogRef.current,focusIndex,halfW,halfH,w,band,catalogRef.current.cells[focusIndex]?.kind==='spec'?specInset():undefined)):null;
+        zoom = zoomGoal = view?.zoom??hiveFocusZoom(S_CELL * cellScale(focusIndex) * w / (halfW * 2), w, band, maxZoom);
         const focusedPoint = hiveWallToWorld(view?.x??cells[focusIndex].x, view?.y??cells[focusIndex].y);
         camera.target.x = focusedPoint.x;
         camera.target.y = focusedPoint.y;
@@ -427,7 +432,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       const r = canvas.getBoundingClientRect();
       focusIndex = null;
       anchor = planeAt(e.clientX - r.left, e.clientY - r.top);
-      zoomGoal = Math.min(128, Math.max(0.05, zoomGoal * Math.exp(-e.deltaY * 0.0016)));
+      zoomGoal = Math.min(maxZoom, Math.max(0.05, zoomGoal * Math.exp(-e.deltaY * 0.0016)));
       host.setAttribute("data-zoom-goal", zoomGoal.toFixed(2));
     };
     // Listen above the native spec labels too: their text must not form dead
@@ -442,7 +447,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
       anchor=null;
       const r = canvas.getBoundingClientRect();
       const a=planeAt(movement.from.x-r.left,movement.from.y-r.top);
-      zoom=zoomGoal=Math.min(128,Math.max(.05,zoom*movement.scale));fit();
+      zoom=zoomGoal=Math.min(maxZoom,Math.max(.05,zoom*movement.scale));fit();
       const b=planeAt(movement.to.x-r.left,movement.to.y-r.top);
       if (a && b) {
         const from = hiveWallToWorld(a.x,a.z), to = hiveWallToWorld(b.x,b.z);
@@ -461,7 +466,7 @@ export function QueenCombBabylon({ cards, workers, onPick, pickIndex = null, fit
     window.addEventListener('blur',onBlur);
     // the toolbar's FIT VIEW / - / + reach the scene through the same handle the canvas comb exposes
     cameraRef.current = {
-      zoomIn: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.min(128, zoom * 1.25); fit(); },
+      zoomIn: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.min(maxZoom, zoom * 1.25); fit(); },
       zoomOut: () => { focusIndex = null; anchor = null; zoom = zoomGoal = Math.max(0.05, zoom / 1.25); fit(); },
       // FIT VIEW is the way home: it undoes the roam as well as the zoom
       fit: () => { focusIndex = null; selectedDisplayRef.current = null; setSelectedDisplayKey(null); host.removeAttribute('data-display-selected'); anchor = null; zoom = zoomGoal = 1; camera.target.copyFrom(centreWorld); fit(); },

@@ -12,7 +12,7 @@
 // points at a server that holds the model key, never at a provider directly --
 // VITE_ values are compiled into the bundle and are public, so a key put here
 // would be readable by anyone who opens the site.
-const BASE_URL = import.meta.env.VITE_QUEEN_CHAT_URL || 'http://localhost:8080';
+const BASE_URL = import.meta.env?.VITE_QUEEN_CHAT_URL || 'http://localhost:8080';
 
 /**
  * Where the Queen answers.
@@ -29,7 +29,7 @@ const BASE_URL = import.meta.env.VITE_QUEEN_CHAT_URL || 'http://localhost:8080';
  * environment and never in this bundle.
  */
 const DEFAULT_CHAT_URL = 'https://queen-proxy-production-40b6.up.railway.app';
-const CHAT_URL = (import.meta.env.VITE_QUEEN_CHAT_URL || DEFAULT_CHAT_URL).replace(/\/+$/, '');
+const CHAT_URL = (import.meta.env?.VITE_QUEEN_CHAT_URL || DEFAULT_CHAT_URL).replace(/\/+$/, '');
 
 /**
  * Mark a value as placeholder data, not a measurement.
@@ -448,10 +448,38 @@ export interface ChatResponse {
   learned?: boolean;
 }
 
-export async function sendMessage(req: ChatRequest): Promise<ChatResponse> {
+/**
+ * Thrown when there is nobody signed in to ask.
+ *
+ * A distinct class rather than a message, because the panel treats it
+ * differently from every other failure: it is not the Queen being down, and the
+ * person reading it has somewhere to go.
+ */
+export class NotSignedIn extends Error {
+  constructor(message = 'sign in to ask the Queen') {
+    super(message);
+    this.name = 'NotSignedIn';
+  }
+}
+
+/**
+ * Ask the Queen, as the person who is signed in.
+ *
+ * `authorization` is handed in rather than read here. The session token has
+ * exactly one reader in this bundle -- src/lib/appSessionIdentity.ts -- and the
+ * rule that keeps it out of logs, URLs and storage is kept by that file being
+ * the only place that touches it. A second reader in this service would make
+ * that rule everybody's job, which is nobody's.
+ *
+ * Empty means signed out, and the call is refused here rather than sent: the
+ * proxy would answer 401 anyway (apps/queen-proxy/caller.mjs), and a request
+ * made to be refused is a round trip spent to learn what we already knew.
+ */
+export async function sendMessage(req: ChatRequest, authorization = ''): Promise<ChatResponse> {
+  if (!authorization) throw new NotSignedIn();
   const res = await fetch(`${CHAT_URL}/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Authorization: authorization },
     body: JSON.stringify({ conversation_id: conversationId(), ...req }),
     // She reads the board and the repository before she answers. The default
     // has no deadline at all, which leaves a question hanging with nothing to

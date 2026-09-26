@@ -122,7 +122,7 @@ width the rule generated is a tautology.
 scope_limits {
   covers      "the exponent/mantissa split arithmetic only"
   not_covered { "Lucas-exact 500-digit accumulator (n=1..256)",
-                "GF16 FPGA codec 35/35 at 323 MHz",
+                "GF16 FPGA codec 35/35 (the 323 MHz figure is withdrawn)",
                 "any accuracy or superiority claim" }
   superiority_claimed false
 }

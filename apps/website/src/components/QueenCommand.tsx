@@ -1,18 +1,32 @@
 import { useEffect, useRef, type CSSProperties } from "react";
-import { HUD_KEYS, type HudView } from "./queenHud";
+import { type HudView } from "./queenHud";
 
 // The COMMAND PANEL of the one-screen HUD: the view switches (one per entry in
-// HUD_VIEWS) stacked down the left edge (or, on a phone, laid out as an icon
+// RAIL_VIEWS) stacked down the left edge (or, on a phone, laid out as an icon
 // row inside the bottom bar) and a collapse toggle. Switching a view is the only
 // thing a button here does; nothing acts on the Queen. The key shown on each
-// button is the keyboard shortcut the shell binds (HUD_KEYS at the item's
-// position: 1-9, 0, p), not a figure from the wire.
+// button is the keyboard shortcut the shell binds, and it travels on the item
+// (hudKeyOf) rather than being read from the item's position: the rail is nine
+// buttons over a fourteen-name address, because the five ladder layers are
+// reached inside SPECS, and a position would have printed the wrong letter on
+// every button after it.
 
 export interface CommandItem {
   view: HudView;
   glyph: string;
   label: string;
   hint: string;
+  /** The keyboard shortcut this view answers (queenHud.hudKeyOf). */
+  hotkey: string;
+  /**
+   * A button that opens one screen of TRI rather than a whole view. The owner
+   * asked, 2026-09-21, for every TRI screen to be a tab of its own; the
+   * address stays `?tab=tri&screen=<screen>`, so links, the player's return
+   * and the TRI contracts keep working, and only the rail changes.
+   */
+  screen?: string;
+  /** Lit when this is the screen TRI is on (set by the shell). */
+  current?: boolean;
 }
 
 export interface QueenCommandLabels {
@@ -26,6 +40,8 @@ export interface QueenCommandProps {
   items: CommandItem[];
   view: HudView;
   onSelect: (view: HudView) => void;
+  /** A TRI screen button was pressed. */
+  onSelectScreen?: (screen: string) => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
   /** Phone mode: an icon row, no hints, no collapse button. */
@@ -37,6 +53,7 @@ export function QueenCommandPanel({
   items,
   view,
   onSelect,
+  onSelectScreen,
   collapsed,
   onToggleCollapsed,
   compact = false,
@@ -76,28 +93,32 @@ export function QueenCommandPanel({
           // the rail derives its row count from the item list, never from a hardcoded number
           "--queen-views": items.length,
           "--queen-tile-rows": Math.ceil(items.length / 2),
+          // the portrait phone lays the rail out as two rows (queen-phone.css),
+          // so its column count is half the views, rounded up: 13 views, 7 columns
+          "--queen-phone-cols": Math.ceil(items.length / 2),
         } as CSSProperties
       }
     >
-      {items.map((item, index) => {
-        const active = item.view === view;
-        const key = HUD_KEYS[index] ?? "";
+      {items.map((item) => {
+        const active = item.screen ? item.view === view && item.current === true : item.view === view;
+        const key = item.hotkey;
         return (
           <button
             type="button"
-            key={item.view}
+            key={item.screen ? `${item.view}:${item.screen}` : item.view}
             className={`queen27-hud-cmd${active ? " is-active" : ""}`}
             data-view={item.view}
+            data-screen={item.screen}
             aria-pressed={active}
-            title={`${key} · ${item.label}`}
-            onClick={() => onSelect(item.view)}
+            title={key ? `${key} · ${item.label}` : item.label}
+            onClick={() => (item.screen && onSelectScreen ? onSelectScreen(item.screen) : onSelect(item.view))}
           >
             <i aria-hidden="true">{item.glyph}</i>
             <span>
               <b>{item.label}</b>
               <small>{item.hint}</small>
             </span>
-            <kbd aria-hidden="true">{key}</kbd>
+            {key ? <kbd aria-hidden="true">{key}</kbd> : null}
           </button>
         );
       })}

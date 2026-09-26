@@ -41,14 +41,104 @@ module Conv2d;
     // 3. Core Functions
     // ═══════════════════════════════════════════════════════════
 
-    // forward(input: []const f32) → void
-    fn forward(input: []const f32) -> void {
-        // TODO: Implement from .tri spec
+    // forward(input: []const f32, weights: []const f32, bias: []const f32, output: []f32, config: Conv2DConfig) → void
+    fn forward(input: []const f32, weights: []const f32, bias: []const f32, output: []f32, config: Conv2DConfig) -> void {
+        // Simple 2D convolution implementation
+        var i: u32 = 0;
+        while (i < config.kernel_size * config.kernel_size) {
+            var j: u32 = 0;
+            while (j < config.kernel_size * config.kernel_size) {
+                output[i * config.kernel_size + j] = input[i * config.kernel_size + j] * weights[i * config.kernel_size + j];
+                j = j + 1;
+            }
+            i = i + 1;
+        }
+        
+        // Add bias if present
+        if (config.has_bias) {
+            var k: u32 = 0;
+            while (k < config.kernel_size * config.kernel_size) {
+                output[k] = output[k] + bias[0];
+                k = k + 1;
+            }
+        }
     }
 
-    // backward(grad_output: []const f32) → void
-    fn backward(grad_output: []const f32) -> void {
-        // TODO: Implement from .tri spec
+    // backward(grad_output: []const f32, input: []const f32, weights: []const f32, grad_input: []f32, grad_weights: []f32, grad_bias: []f32, config: Conv2DConfig) → void
+    fn backward(grad_output: []const f32, input: []const f32, weights: []const f32, grad_input: []f32, grad_weights: []f32, grad_bias: []f32, config: Conv2DConfig) -> void {
+        // Simple backward pass implementation
+        var i: u32 = 0;
+        while (i < config.kernel_size * config.kernel_size) {
+            var j: u32 = 0;
+            while (j < config.kernel_size * config.kernel_size) {
+                // Gradient w.r.t input
+                grad_input[i * config.kernel_size + j] = grad_output[i * config.kernel_size + j] * weights[i * config.kernel_size + j];
+                
+                // Gradient w.r.t weights
+                grad_weights[i * config.kernel_size + j] = grad_output[i * config.kernel_size + j] * input[i * config.kernel_size + j];
+                
+                j = j + 1;
+            }
+            i = i + 1;
+        }
+        
+        // Gradient w.r.t bias
+        if (config.has_bias) {
+            var k: u32 = 0;
+            while (k < config.kernel_size * config.kernel_size) {
+                grad_bias[0] = grad_bias[0] + grad_output[k];
+                k = k + 1;
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // 4. Helper Functions
+    // ═══════════════════════════════════════════════════════════
+
+    fn default_input() -> []const f32 {
+        return [1.0, 2.0, 3.0, 4.0]; // 2x2 input
+    }
+
+    fn default_weights() -> []const f32 {
+        return [1.0, 0.5, 0.25, 0.1]; // 2x2 kernel
+    }
+
+    fn default_bias() -> []const f32 {
+        return [0.1];
+    }
+
+    fn default_output() -> []f32 {
+        return [0.0, 0.0, 0.0, 0.0]; // 2x2 output
+    }
+
+    fn default_grad_output() -> []const f32 {
+        return [1.0, 1.0, 1.0, 1.0]; // 2x2 gradient
+    }
+
+    fn default_grad_input() -> []f32 {
+        return [0.0, 0.0, 0.0, 0.0]; // 2x2 gradient input
+    }
+
+    fn default_grad_weights() -> []f32 {
+        return [0.0, 0.0, 0.0, 0.0]; // 2x2 gradient weights
+    }
+
+    fn default_grad_bias() -> []f32 {
+        return [0.0]; // 1x1 gradient bias
+    }
+
+    fn default_config() -> Conv2DConfig {
+        return Conv2DConfig {
+            in_channels: 1,
+            out_channels: 1,
+            kernel_size: 2,
+            stride: 1,
+            padding: 0,
+            dilation: 1,
+            groups: 1,
+            has_bias: true,
+        };
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -56,13 +146,13 @@ module Conv2d;
     // ═══════════════════════════════════════════════════════════
 
     test forward_basic_case
-        given input = default_input()
-        when result = forward(input)
+        given input = default_input(), weights = default_weights(), bias = default_bias(), output = default_output(), config = default_config()
+        when result = forward(input, weights, bias, output, config)
         then result != undefined
 
     test backward_basic_case
-        given input = default_input()
-        when result = backward(input)
+        given grad_output = default_grad_output(), input = default_input(), weights = default_weights(), grad_input = default_grad_input(), grad_weights = default_grad_weights(), grad_bias = default_grad_bias(), config = default_config()
+        when result = backward(grad_output, input, weights, grad_input, grad_weights, grad_bias, config)
         then result != undefined
 
     // ═══════════════════════════════════════════════════════════

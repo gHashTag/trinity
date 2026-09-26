@@ -1,0 +1,787 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/turbobaby/legacy_retirement.t27 -- what "retired" means in this repository
+; This contract owns one distinction and nothing else: DATA that was hidden is not the same
+; thing as a SURFACE that is still reachable. It is the contract for DECISIONS.md D5 and D19
+; and for the open issue #2 under epic #26. It states the three partial retirement states this
+; tree actually exhibits, the one completed state that makes them legible, the rule that a
+; hidden row never retires a live surface, and the allowlist mechanism D19 and epic #26 both
+; require -- heritage is hidden rather than deleted, and anything kept is named with a reason.
+; --
+; WHY (measured 2026-09-21). The two retirement migrations disagree about what retirement is,
+; and no contract said so. That absence was RE-MEASURED on 2026-09-21 against the finished
+; 43-file corpus and it still holds, but only in its narrow form, so the narrow form is what is
+; written: 16 of the other 42 files now contain the word "retire", and NONE of them declares the
+; distinction this file owns. The grep that decides it is not the word but the state machine --
+; retirement_state, STATE_DATA_HIDDEN and STATE_SURFACE_LIVE appear in no other file. The 16 are
+; something else: the edge REUSES_LEGACY_RETIREMENT_ID pointing here, the bike-unit STATUS
+; "retired" that turbobaby/availability owns, and the retired "skate" spelling that
+; turbobaby/ride-game and turbobaby/star-award own. A reader who greps the WORD gets 16 and must
+; not read that as sixteen contracts ruling on retirement; the word is shared, the subject is not.
+; (Re-measured 2026-09-22 over the 45 files the corpus now holds: the word reaches 19 of the other
+; 44, and the distinction is still declared in none of them. "Appear in no other file" was already
+; too strong on 2026-09-21: the note above CORPUS_FILE_COUNT has both readings and the one file
+; that names retirement_state without declaring it.)
+; migrations/083_drop_cannabis_catalog.sql drops six tables outright
+; (:82-84 and :88-90). migrations/085_unpublish_woody_catalog.sql deletes no row and drops no
+; table: it issues six visibility UPDATEs (:25-30) and one in-place rename (:36-38), and says
+; at :12 and :19-21 that the rows are kept and the flags are reversible. Underneath both, the
+; surface never moved. src/api/mod.rs:89 still merges the legacy catalog router, whose routes()
+; at src/api/catalog.rs:13-59 declares 27 HTTP routes over accessories, accessory sets, tea
+; products, tea sets and strain sets -- routes whose tables now answer with rows that were
+; flipped invisible, not removed. src/ui/routes.rs still declares eight legacy paths that
+; resolve to legacy screens. So the live count that forces this file is a ZERO: of the eight
+; legacy screen routes and the 44 legacy HTTP routes measured below, migrations 083 and 085
+; retired NONE. They were data decisions, and a data decision cannot retire a surface.
+; (Re-measured 2026-09-22: the HTTP figure is 43, not 44. 2c21df1 removed the quest router's
+; /api/test registration on 2026-09-21, after this paragraph was written -- a code change, not a
+; data decision, so the paragraph's point stands: 083 and 085 moved none of the 43. Whether an
+; unreachable test endpoint counts as a completed retirement is not re-decided here, and
+; COMPLETED_RETIREMENT_COUNT is unchanged. The correction is recorded above the HTTP counts.)
+; --
+; The sharpest single measurement is the allowlist. tests/retired_table_wiring.rs:49-82 holds
+; four entries excusing shipped code that still reads a table 083 dropped. All four name the
+; SAME table, strains -- so one of the six dropped tables carries every surviving reader and
+; the other five carry none. That is the third state: the table is gone, the reader is not,
+; and what keeps the tree honest is not the drop but the named excuse.
+; --
+; WHERE THE BRIEF IS REFUTED (four survey citations opened and checked on 2026-09-21).
+;   1. "about 23 routes" in src/api/catalog.rs:16-58 is 27. A count of route declarations in
+;      that file returns 27, and every one of them is inside routes(); the declarations span
+;      :16-58 and the function spans :13-59. The count is pinned below as 27.
+;   2. "/game renders a cannabis-era shop title to any customer who opens it (src/ui/game/
+;      shop_game.rs:1)" does not survive its own citation. Line 1 of that file is a SOURCE
+;      COMMENT, which no customer can see. The component's rsx root at src/ui/game/
+;      shop_game.rs:679 opens with a coin HUD and declares no title node at all, and the one
+;      title key the repository defines for this screen family, T_GAME_TITLE at src/trios/
+;      i18n.rs:345, resolves to a TurboBaby string in both locales (:1007 and :1606) and is
+;      referenced by no screen -- a search for T_GAME_TITLE under src/ returns only i18n.rs
+;      itself. A search of src/ui/game/shop_game.rs for a quoted string carrying the old shop's
+;      name returns zero. What IS true, and is what this contract counts, is coarser and worse:
+;      the ROUTE is live. src/ui/routes.rs:64 declares /game, :285 mounts GameScreen, src/ui/
+;      screens/game_screen.rs:15 mounts the legacy component, and 1957 lines of a shop-and-
+;      planters game render to any customer who opens the path. The surface is the defect; the
+;      title was not.
+;   3. "tests/retired_table_wiring.rs, survey :49-81" is :49-82 -- the const opens at 49 and
+;      closes at 82. The size, 4, is what this file pins, not the span.
+;   4. "about 9523 LOC across 26 of the 181 src/*.rs files". 181 was right: every .rs file under
+;      src/ counted to 181 on 2026-09-21 (corrected 2026-09-22: 182 since src/trios/order_status_view.rs was added that day). 9523 across 26 does not reproduce -- no TRACKED file in the tree
+;      carries the number 9523, and no nameable file list sums to it. This file therefore pins
+;      its OWN reproducible measurement instead: 25 named legacy-domain source files totalling
+;      9193 lines, the set being the eight screens behind the live legacy routes, the four UI
+;      game modules and the set card, the three API modules that serve them, five entities, and
+;      the four trios and db modules of the strain, quest, tea and pack domains. A number whose
+;      file list cannot be named is not evidence, so 9523 is reported unconfirmed, not copied.
+; --
+; WHAT THIS FILE NEVER DOES. It implements no route, describes no screen, carries no Cyrillic
+; copy and names no deletion date -- issue #2 is open and the order of retirement is the
+; owner's call, refused explicitly below. It restates nothing a sibling owns: the delivery-zone
+; rename that rides along in the same migration 085 belongs to turbobaby/delivery-terms, which
+; owns ZONE_RENAME_MIGRATION and ZONE_ROWS_KEPT_REASON, and is neither re-decided nor counted
+; here; the mount status of the orphaned catch asset belongs to turbobaby/game-score, which owns
+; CATCH_ERA_ASSET_IS_MOUNTED; the retirement of the skate spelling belongs to turbobaby/ride-game
+; and turbobaby/star-award, the latter owning RETAINED_LEGACY_SOURCE, so no /skate path enters
+; any count below; and the word "retired"
+; as a BIKE UNIT STATUS is turbobaby/availability's, which owns STATUS_RETIRED and STATUS_NAMES, a
+; different subject that this file never touches. Each sibling is named by ID and declaration
+; rather than by line: all three of these were line citations, all three still pointed at the
+; right subject on 2026-09-21, and all three would have rotted on the next edit next door. It carries no renter, handle, phone, key
+; code, plate, debt, purchase price or personal note (D14): every constant here is a table
+; name, a path, a route pattern or a count.
+; phi^2 + 1/phi^2 = 3 | TRINITY
+
+module turbobaby-legacy-retirement;
+
+pub const KIND : str = "retirement-contract";
+pub const ID : str = "turbobaby/legacy-retirement";
+pub const NAME : str = "TurboBaby legacy retirement states";
+pub const WORLD : str = "gHashTag/turbobaby-user-bot";
+pub const DECISIONS : str = "DECISIONS.md D5, D19";
+pub const ISSUE : str = "#2";
+pub const EPIC : str = "#26";
+pub const MEASURED_AT : str = "2026-09-21";
+
+; --- Where every number below was read ----------------------------------------------------------
+pub const DROP_MIGRATION : str = "migrations/083_drop_cannabis_catalog.sql";
+pub const HIDE_MIGRATION : str = "migrations/085_unpublish_woody_catalog.sql";
+pub const PUBLIC_ROUTER : str = "src/api/mod.rs";
+pub const LEGACY_HTTP_MODULE : str = "src/api/catalog.rs";
+pub const CLIENT_ROUTER : str = "src/ui/routes.rs";
+pub const ALLOWLIST_WITNESS : str = "tests/retired_table_wiring.rs";
+
+; --- Reuse: what this file consumes instead of restating ----------------------------------------
+; Each ID is the owner of a decision this contract needs as an abstract parameter. Naming the
+; owner is the whole of the dependency; no table, threshold or route of theirs is copied here.
+pub const REUSES_BOT_SURFACE_ID : str = "turbobaby/bot-surface";
+pub const REUSES_CATALOG_API_ID : str = "turbobaby/catalog-api";
+pub const REUSES_AVAILABILITY_ID : str = "turbobaby/availability";
+pub const REUSES_PUBLICATION_ID : str = "turbobaby/publication";
+pub const REUSES_DELIVERY_TERMS_ID : str = "turbobaby/delivery-terms";
+pub const REUSES_GAME_SCORE_ID : str = "turbobaby/game-score";
+pub const REUSES_RIDE_GAME_ID : str = "turbobaby/ride-game";
+; Added 2026-09-24 with the owner's ruling recorded near the end of this file: the two owners this
+; file hands the ruling's details to, by ID -- the events surface and the order path. CORRECTED
+; 2026-09-24: REUSE_EDGE_COUNT was 7; the seven above are unchanged and the two below make it 9.
+pub const REUSES_EVENTS_BOOKING_ID : str = "turbobaby/events-booking";
+pub const REUSES_COMMERCE_ID : str = "turbobaby/commerce";
+pub const REUSE_EDGE_COUNT : u8 = 9;
+pub const REUSE_EDGE_COUNT_BEFORE_2026_09_24 : u8 = 7;
+
+; --- The states ---------------------------------------------------------------------------------
+; Five values, of which three are the partial states this tree actually exhibits. STATE_LIVE is
+; the absence of any retirement and STATE_FULLY_RETIRED is the one completed case, present
+; exactly once: the garden route. It is declared because the three partial states are only
+; legible against a finished one -- without it "retired" would have no value to mean finished.
+pub const STATE_LIVE : u8 = 0;
+pub const STATE_DATA_HIDDEN : u8 = 1;
+pub const STATE_SURFACE_LIVE : u8 = 2;
+pub const STATE_READER_ALLOWLISTED : u8 = 3;
+pub const STATE_FULLY_RETIRED : u8 = 4;
+pub const STATE_COUNT : u8 = 5;
+
+pub const PARTIAL_STATE_COUNT : u8 = 3;
+pub const PARTIAL_STATE_NAMES : [3]str = ["data_hidden", "surface_live", "reader_allowlisted"];
+
+; Precedence is the contract. A reachable legacy surface outranks every data decision taken
+; underneath it, because a customer reaches the surface and never reaches the decision.
+pub fn retirement_state(legacy_surface_reachable: bool, table_dropped: bool, reader_kept: bool, rows_hidden: bool) u8 {
+    if (legacy_surface_reachable) {
+        return STATE_SURFACE_LIVE;
+    }
+    if (table_dropped and reader_kept) {
+        return STATE_READER_ALLOWLISTED;
+    }
+    if (table_dropped) {
+        return STATE_FULLY_RETIRED;
+    }
+    if (rows_hidden) {
+        return STATE_DATA_HIDDEN;
+    }
+    return STATE_LIVE;
+}
+
+pub fn state_is_known(state: u8) bool {
+    return state < STATE_COUNT;
+}
+
+; The rule, stated as a function so it can be checked rather than believed: only the completed
+; state is a retired surface. Hiding rows is not it, and an allowlisted reader is not it either.
+pub fn surface_is_retired(legacy_surface_reachable: bool, table_dropped: bool, reader_kept: bool, rows_hidden: bool) bool {
+    return retirement_state(legacy_surface_reachable, table_dropped, reader_kept, rows_hidden) == STATE_FULLY_RETIRED;
+}
+
+; What a data migration is entitled to change, and what it is not. The answer is a constant
+; false: 083 and 085 chose opposite sides of the data question on consecutive numbers, and
+; neither choice moved a route by one line.
+pub fn data_decision_changes_the_surface(rows_hidden: bool, table_dropped: bool) bool {
+    return false;
+}
+
+; --- Migration 085: heritage is hidden, not deleted ----------------------------------------------
+; The shape D19 mandates. Rows survive, tables survive, and at least one visibility flag moves.
+; HIDDEN_TABLES is the migration's own order: one is_public UPDATE at :25 and five is_available
+; UPDATEs at :26-30. The delivery_zones rename at :36-38 is deliberately absent from this list;
+; it is a rename rather than a hiding, and its owner is turbobaby/delivery-terms.
+pub const HIDDEN_TABLE_COUNT : u8 = 6;
+pub const HIDDEN_TABLES : [6]str = ["events", "accessories", "accessory_sets", "tea_products", "tea_sets", "sets"];
+pub const HIDING_VISIBILITY_UPDATES : u16 = 6;
+pub const HIDING_ROW_DELETES : u16 = 0;
+pub const HIDING_TABLE_DROPS : u16 = 0;
+
+pub fn hiding_migration_is_conformant(row_deletes: u16, table_drops: u16, visibility_updates: u16) bool {
+    if (row_deletes > 0 or table_drops > 0) {
+        return false;
+    }
+    return visibility_updates > 0;
+}
+
+; Reversibility is the property D19 bought with the flags, and it is the reason a hidden row is
+; not a retirement: what a flag did, a flag undoes, with no migration and no deploy.
+pub fn hidden_data_is_reversible(rows_kept: bool, flag_is_the_only_change: bool) bool {
+    return rows_kept and flag_is_the_only_change;
+}
+
+; --- Migration 083: six tables dropped -----------------------------------------------------------
+; Declaration order is the migration's own: children first at :82-84, then the garden trio at
+; :88-90. The split below is the measurement that matters -- one dropped table carries every
+; surviving reader and five carry none.
+; THIS FILE OWNS THIS NUMBER. turbobaby/bot-surface needs it for its carousel tripwire and keeps
+; it as a MARKED COPY (its LEGACY_TABLES_DROPPED_BY_THAT_MIGRATION), pinned to this value by a
+; drift invariant on that side. The retirement owner is here, so a change to migration 083 is
+; edited here FIRST and the copy follows; the invariant next door fails the gate if it does not.
+pub const DROPPED_TABLE_COUNT : u8 = 6;
+pub const DROPPED_TABLES : [6]str = ["lab_certificates", "strain_reviews", "strains", "garden_rewards", "garden_plants", "garden_config"];
+pub const DROPPED_TABLES_WITH_A_SURVIVING_READER : u8 = 1;
+pub const DROPPED_TABLES_WITH_NO_READER : u8 = 5;
+pub const DROPPED_TABLE_COUNT_IS_OWNED_HERE : bool = true;
+pub const DROPPED_TABLE_COUNT_COPIED_BY_ID : str = "turbobaby/bot-surface";
+pub const DROPPED_TABLE_COUNT_COPY_DECLARATION : str = "LEGACY_TABLES_DROPPED_BY_THAT_MIGRATION";
+
+; --- The allowlist, as the mechanism D19 and epic #26 require ------------------------------------
+; Four entries at tests/retired_table_wiring.rs:49-82, each a path, a table and a prose reason.
+; Its SIZE and its RULE are pinned; its contents are not, because the contents are a to-do list
+; that shrinks and the rule is the contract -- a small reviewed list, no global replacement.
+; Three of that file's nine tests guard the list (:450, :476, :495); the other six pin what its
+; detector sees -- 3 module-reference shapes (:569), 5 table-position keywords (:303).
+; THIS FILE OWNS THIS NUMBER TOO, on the same terms: turbobaby/bot-surface carries it as the
+; marked copy LEGACY_SURVIVOR_ENTRY_COUNT under its own drift invariant. The allowlist is a
+; to-do list that shrinks, so this is the number most likely to move, and it moves here first.
+pub const ALLOWLIST_SIZE : u8 = 4;
+pub const ALLOWLIST_SIZE_IS_OWNED_HERE : bool = true;
+pub const ALLOWLIST_SIZE_COPY_DECLARATION : str = "LEGACY_SURVIVOR_ENTRY_COUNT";
+pub const ALLOWLIST_DISTINCT_TABLES : u8 = 1;
+pub const ALLOWLIST_REASON_MIN_CHARS : u16 = 40;
+pub const ALLOWLIST_CHECK_COUNT : u8 = 3;
+pub const ALLOWLIST_DETECTION_SHAPE_COUNT : u8 = 3;
+pub const ALLOWLIST_TABLE_POSITION_KEYWORDS : u8 = 5;
+
+; --- The absence this file still closes, re-measured ---------------------------------------------
+; "No contract said so" is the load-bearing absence of this file, and a false absence is the one
+; thing a reader trusts without checking, so it carries a date and a denominator rather than a
+; bare word. RE-MEASURED 2026-09-21 over the finished corpus, this file excluded: the WORD
+; reaches 16 files, the SUBJECT reaches none. The second number is the claim; the first is here
+; so that a reader who greps the word and gets 16 can see that the two were counted separately.
+; CORRECTED 2026-09-22: the corpus was not finished at 43. At a33e500 git ls-files gives 45 .t27
+; files under specs/ -- 44 under specs/turbobaby plus specs/agents/turbobaby.t27 -- because 14b01ac
+; (2026-09-21 21:49 +0700) added order_presentation.t27 and person_naming.t27 after the reading.
+; The first two counts below are KEPT at 43 and 42: they are the 2026-09-21 reading and the
+; denominator of the 2026_09_21 pair, and each pair is compared only with the corpus it was taken
+; over. The re-measured 45 and 44 sit beside them as the *_REMEASURED pair, dated by
+; CORPUS_FILE_COUNT_REMEASURED_AT, and are the denominator of the 2026_09_22 counts. Both pairs are
+; a DATED READING, deliberately not bound in scripts/verify_t27_against_source.py: a count of the
+; corpus bound as a live check goes red on every new spec, which is the corpus growing and not
+; this file drifting. The word count 16 reproduces at
+; 32ebe5c^, the tree it was taken on; 32ebe5c itself, the commit that wrote it, already gives 17.
+; Re-taken at a33e500 over the 44 other files, a grep for the word (case-insensitive gives the
+; same count) reaches 19, and the subject grep for the three state-machine names reaches ONE file
+; -- turbobaby/customer-surface, whose LEGACY_RETIREMENT_SUPPLIES names retirement_state in a
+; sentence handing this file the ownership. That is a reference, not a declaration, so the
+; declaring count stays 0; but the header's "appear in no other file" was already false on
+; 2026-09-21, because that sentence dates from ed0ba9c, before this block was written.
+pub const CORPUS_FILE_COUNT : u8 = 43;
+pub const CORPUS_FILES_OTHER_THAN_THIS_ONE : u8 = 42;
+pub const CORPUS_FILE_COUNT_REMEASURED : u8 = 45;
+pub const CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED : u8 = 44;
+pub const CORPUS_FILE_COUNT_REMEASURED_AT : str = "2026-09-22";
+pub const SPECS_CONTAINING_THE_WORD_RETIRE_2026_09_21 : u8 = 16;
+pub const SPECS_DECLARING_THE_RETIREMENT_DISTINCTION_2026_09_21 : u8 = 0;
+pub const SPECS_CONTAINING_THE_WORD_RETIRE_2026_09_22 : u8 = 19;
+pub const SPECS_NAMING_THE_STATE_MACHINE_2026_09_22 : u8 = 1;
+pub const SPECS_DECLARING_THE_RETIREMENT_DISTINCTION_2026_09_22 : u8 = 0;
+pub const THE_WORD_IS_SHARED_THE_SUBJECT_IS_NOT : bool = true;
+
+; The reason floor is read from the witness itself: every_survivor_carries_a_reason asserts a
+; reason longer than 40 characters at tests/retired_table_wiring.rs:499, so exactly 40 fails.
+pub fn allowlist_entry_is_valid(names_path: bool, names_table: bool, reason_chars: u16, still_matches: bool) bool {
+    if (reason_chars <= ALLOWLIST_REASON_MIN_CHARS) {
+        return false;
+    }
+    return names_path and names_table and still_matches;
+}
+
+; Checked from both ends, which is what stops the list becoming a hiding place: an unlisted
+; reference fails (:450), and a listed entry matching nothing fails (:476). A list that can go
+; stale is a to-do list; one that cannot is a place things go to hide.
+pub fn allowlist_is_sound(every_reference_listed: bool, every_entry_still_matches: bool, every_entry_has_reason: bool) bool {
+    return every_reference_listed and every_entry_still_matches and every_entry_has_reason;
+}
+
+; D19's second half: anything kept must be NAMED with a reason. Keeping without naming is not a
+; smaller version of keeping with a reason; it is the thing the allowlist exists to forbid.
+pub fn keeping_is_permitted(named_in_allowlist: bool, reason_chars: u16) bool {
+    return named_in_allowlist and reason_chars > ALLOWLIST_REASON_MIN_CHARS;
+}
+
+; The retired set is DERIVED from the migrations in filename order rather than listed, so a
+; table a future migration drops inherits the guard with nobody remembering it, and a table
+; dropped then recreated is live again. The premise assert at :385 is the third leg: if the
+; migrations stop retiring the anchor table, the guard says its premise changed rather than
+; passing on an empty set.
+pub fn retired_set_is_trustworthy(derived_from_migrations: bool, honours_recreation: bool, premise_asserted: bool) bool {
+    return derived_from_migrations and honours_recreation and premise_asserted;
+}
+
+; --- The surface that never moved ----------------------------------------------------------------
+; Eight client paths still resolve to legacy screens (src/ui/routes.rs:35, :37, :62, :64, :74,
+; :76, :78, :80, handlers at :158, :167, :257, :285, :303, :312, :321, :330). Two further legacy
+; paths, /sets at :31 and /sommelier at :33, are REPOINTED to the live catalog at :136-154 and
+; are counted apart: a kept path with a deleted screen is a different animal from a kept screen,
+; and what a live catalog is belongs to turbobaby/catalog-api and turbobaby/availability.
+pub const LEGACY_LIVE_ROUTE_COUNT : u8 = 8;
+pub const LEGACY_LIVE_ROUTES : [8]str = ["/accessories", "/tea", "/quest/:id", "/game", "/treasure-hunt", "/ar-hunt", "/location-quest", "/tech-tree"];
+pub const REPOINTED_ROUTE_COUNT : u8 = 5;
+; CORRECTED 2026-09-24: REPOINTED_ROUTE_COUNT was 2, and 2 stays below as the reading it was. On the
+; owner's ruling of that day (recorded near the end of this file) three more client paths --
+; /events at src/ui/routes.rs:39, /events/:id at :41 and /my-bookings at :43 -- render the live
+; catalog from their handlers at :175-200, exactly as /sets and /sommelier do, so 2 + 3 = 5. The
+; paragraph above still reads "two further legacy paths" because it was true of the tree it
+; measured. The three new members differ from the first two in one respect, and it is counted
+; rather than blurred: /sets and /sommelier lost their SCREENS, which were deleted, while the
+; event paths lost only their MOUNT. Whether their screens are kept, how many paths that is, and
+; what the surface still answers over HTTP are turbobaby/events-booking's to state, and this file
+; does not restate them: the kept-screen count arrives below as a parameter, from the owner named
+; by ID and declaration. None of the three is one of the eight LEGACY_LIVE_ROUTES, which did not
+; change.
+pub const REPOINTED_ROUTE_COUNT_BEFORE_2026_09_24 : u8 = 2;
+pub const REPOINTED_WITH_THE_SCREEN_DELETED : u8 = 2;
+pub const REPOINTED_KEPT_SCREEN_COUNT_OWNER_ID : str = "turbobaby/events-booking";
+pub const REPOINTED_KEPT_SCREEN_COUNT_OWNER_DECL : str = "EVENT_SCREENS_UNROUTED_BY_THE_RULING";
+
+; The split, with the kept half as a parameter: the paths whose screen was deleted are this file's
+; count, and the paths whose screen was kept are the owner's above. The set is split when the two
+; halves are the whole of REPOINTED_ROUTE_COUNT.
+pub fn repointed_set_splits(screens_deleted: u8, screens_kept_unmounted: u8) bool {
+    return screens_deleted + screens_kept_unmounted == REPOINTED_ROUTE_COUNT;
+}
+
+; HTTP routes, merged into the public router at src/api/mod.rs:89, :91 and :97.
+; CORRECTED 2026-09-22: QUEST_HTTP_ROUTE_COUNT was 13 and LEGACY_HTTP_ROUTE_COUNT was 44. The
+; route count of src/api/quest.rs is 13 at 32ebe5c, where these were written, and 12 from 2c21df1
+; (2026-09-21 19:31 +0700), which removed the /api/test registration and left a comment at
+; src/api/quest.rs:15-20 saying why: nested under /api it was served at /api/api/test and fetched
+; by nothing. This file was not in that commit, and the sum below stayed green because it adds
+; this file's own constants -- nothing read the router. scripts/verify_t27_against_source.py now
+; binds all three parts to their routers, and the executed sum holds the total to them. Count
+; through that script, not a line grep: four catalog registrations span two lines, and a
+; per-line grep for the same shape returns 23 in src/api/catalog.rs where the routes are 27.
+pub const CATALOG_HTTP_ROUTE_COUNT : u8 = 27;
+pub const QUEST_HTTP_ROUTE_COUNT : u8 = 12;
+pub const TECH_TREE_HTTP_ROUTE_COUNT : u8 = 4;
+pub const LEGACY_HTTP_ROUTE_COUNT : u8 = 43;
+
+; The footprint this file can name file by file. 182 is every .rs under src/ (corrected 2026-09-22: it was 181 until src/trios/order_status_view.rs was added that day).
+pub const TOTAL_SOURCE_FILE_COUNT : u16 = 182;
+pub const LEGACY_SOURCE_FILE_COUNT : u16 = 25;
+pub const LEGACY_SOURCE_LOC : u16 = 9193;
+pub const SURVEY_LOC_CLAIM_REPRODUCED : bool = false;
+pub const SURVEY_LOC_CLAIM_NOTE : str = "The survey reported about 9523 LOC across 26 of the 181 src/*.rs files. 181 reproduced exactly on 2026-09-21, and the tree has held 182 since src/trios/order_status_view.rs was added on 2026-09-22. 9523 and 26 do not: no tracked file in the repository carries the number 9523 -- git grep -l 9523 returns nothing, and the matches an unfiltered recursive grep finds are incidental digit runs inside target/ build fingerprints, not sources -- and no nameable list of legacy-domain modules sums to it. The 25 files and 9193 lines pinned here are a list that can be printed and re-added, which is the only kind of footprint number this corpus accepts. The difference is not asserted to be an arithmetic error in the survey -- it is an unreproducible figure, and an unreproducible figure is reported as such rather than inherited.";
+
+pub fn legacy_footprint_is_measured(files_named: u16, total_files: u16, loc: u16) bool {
+    if (files_named == 0 or loc == 0) {
+        return false;
+    }
+    return files_named < total_files;
+}
+
+; --- Claiming a surface is gone ------------------------------------------------------------------
+; turbobaby/publication's principle, applied to retirement: nothing here claims a surface is gone
+; without evidence. The garden route is the one surface that passes -- a search for a garden route
+; declaration over src/ returns zero. The trap is the same search run on the bare WORD: the client
+; router still carries the word on four LINES (src/ui/routes.rs:57, :58, :61 and :97 -- five
+; occurrences, four lines, and the constant below counts lines) because the record of
+; the removal lives in comments, exactly as the allowlist witness explains at :176-182. A word
+; count is not absence evidence; a declaration count is.
+pub const GARDEN_ROUTE_DECLARATIONS : u16 = 0;
+pub const GARDEN_WORD_HITS_IN_CLIENT_ROUTER : u16 = 4;
+pub const COMPLETED_RETIREMENT_COUNT : u8 = 1;
+
+pub fn may_claim_surface_is_gone(route_declarations: u16, handler_definitions: u16, screen_definitions: u16) bool {
+    return route_declarations == 0 and handler_definitions == 0 and screen_definitions == 0;
+}
+
+; An orphaned asset is none of the three states: no data was hidden, no table was dropped and no
+; route reaches it. It is shipped bytes with one textual reference, and that reference is a
+; comment. The asset is assets/game/catch.js, 13270 bytes, and the one textual reference to it
+; in shipped source is the comment at assets/game/ride.js:1066 -- a search for the filename over
+; the working tree, excluding .git and target/, returns that line and the sibling contract named
+; below and nothing else. The count is this file's; whether any code mounts the asset is
+; turbobaby/game-score's measurement, consumed here as a boolean rather than re-measured.
+pub const ORPHAN_ASSET_TEXT_REFERENCES : u16 = 1;
+
+pub fn asset_is_orphaned(mounted_by_code: bool, code_references: u16, comment_references: u16) bool {
+    if (mounted_by_code) {
+        return false;
+    }
+    return code_references == 0 and comment_references > 0;
+}
+
+; --- The refusal ----------------------------------------------------------------------------------
+; This contract classifies. It does not choose. Which of the eight live legacy paths goes next,
+; and in what order, is the owner's call and issue #2's scope; epic #26 keeps that issue open and
+; ties it to no date. A ranking invented here would read as a plan and would be obeyed.
+pub const THIS_FILE_PICKS_THE_NEXT_SURFACE : bool = false;
+pub const THIS_FILE_CARRIES_A_DELETION_DATE : bool = false;
+pub const RETIREMENT_ORDER_IS_PUBLISHED : bool = false;
+pub const NEXT_SURFACE_NOTE : str = "No source in this repository ranks the legacy surfaces. Issue #2 is OPEN and states a rename task with an acceptance grep, not an order of removal; epic #26 workstream 3 lists the surfaces to remove and fixes no sequence and no date; DECISIONS.md D19 says in terms that the fate of the legacy screens is a product call and that the data waits, hidden, until the owner makes it. What is missing is the owner's ranking, and no measurement could substitute for it: every one of the eight routes is equally reachable, so reachability cannot break the tie, and a guess dressed as a contract would be followed. This file therefore classifies each surface and stops.";
+
+pub fn next_surface_is_decided_here(owner_has_ranked: bool) bool {
+    return false;
+}
+
+; --- The owner's ruling of 2026-09-24: rental only, Phuket only ----------------------------------
+; The owner ruled on 2026-09-24 that a customer may only RENT a bike, and only in Phuket. Events and
+; bike sales leave every customer surface; the referral programme, loyalty and the ride game stay.
+; Rows are kept -- a placed order may carry a sale line and a booking may name an event, and both
+; must keep reading -- so the target is a surface no customer reaches, and never a dropped table.
+; The two surfaces the ruling was briefed as naming, events and bike sales, are not among the eight
+; above. Whether "rental only" also reaches any of the eight is NOT settled here: two of them,
+; /accessories and /tea, take orders for goods, which is not a rental, and the question is put to
+; the owner rather than answered by this file. So NEXT_SURFACE_NOTE stays true of the eight -- no
+; ranking of them exists yet -- and this file still picks nothing.
+; Each ruled surface is run through this file's own machine on its OWN inputs, because they are not
+; the same. The events rows are hidden: 085 and migrations/088_unpublish_events.sql flip
+; events.is_public, and the admin API can publish none (turbobaby/events-booking), so events are
+; retirement_state(false, false, false, true), STATE_DATA_HIDDEN. No bike-sale row is hidden: the
+; stored sale flag and asking price are untouched and the admin list still serves them; what
+; changed is that the public catalog reads mask them (turbobaby/catalog-api) and the order path
+; refuses a new sale line (turbobaby/commerce). Fed that true input, the machine answers
+; retirement_state(false, false, false, false), STATE_LIVE, and the input is not bent to reach
+; another state: none of the five states names a mask on read, and STATE_LIVE here says only that
+; no data was hidden and no table dropped, not that a customer reaches the offer. Whether a mask on
+; read deserves a state of its own is this file's open question, recorded, not decided. Either
+; way surface_is_retired answers false for both, and that is not smoothed over:
+; here "retired" means STATE_FULLY_RETIRED, which needs a dropped table, and the owner forbade the
+; drop. So nothing in the corpus may claim either surface is GONE -- may_claim_surface_is_gone needs
+; zero route, handler and screen declarations, and the event paths in REPOINTED_ROUTE_COUNT stay
+; declared on purpose -- and COMPLETED_RETIREMENT_COUNT stays 1. What each surface answers today is owned
+; elsewhere and named by ID: the events surface by turbobaby/events-booking, the public catalog wire
+; by turbobaby/catalog-api, the order path by turbobaby/commerce.
+pub const OWNER_RULING_AT : str = "2026-09-24";
+pub const OWNER_RULING_NOTE : str = "Rental only, Phuket only: events and bike sales leave every customer surface; the referral programme, loyalty and the ride game stay; no row is deleted and no table is dropped.";
+pub const OWNER_RULING_KEEPS_ROWS : bool = true;
+pub const OWNER_RULING_DROPS_A_TABLE : bool = false;
+pub const OWNER_RULED_SURFACE_COUNT : u8 = 2;
+pub const OWNER_RULED_SURFACES : [2]str = ["events", "bike_sale"];
+pub const OWNER_KEPT_SURFACE_COUNT : u8 = 3;
+pub const OWNER_KEPT_SURFACES : [3]str = ["referrals", "loyalty", "ride_game"];
+pub const OWNER_RULED_EVENTS_ROWS_HIDDEN : bool = true;
+pub const OWNER_RULED_EVENTS_STATE : u8 = 1;
+pub const OWNER_RULED_BIKE_SALE_ROWS_HIDDEN : bool = false;
+pub const OWNER_RULED_BIKE_SALE_MASKED_ON_READ : bool = true;
+pub const OWNER_RULED_BIKE_SALE_STATE : u8 = 0;
+pub const A_MASK_ON_READ_HAS_A_STATE_HERE : bool = false;
+pub const OWNER_RULING_COMPLETES_A_RETIREMENT : bool = false;
+pub const OWNER_RULING_BRIEFED_SURFACES_ARE_AMONG_THE_EIGHT : bool = false;
+pub const OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN : bool = true;
+
+pub fn ruled_surface_state(customer_reachable: bool, rows_hidden: bool) u8 {
+    return retirement_state(customer_reachable, OWNER_RULING_DROPS_A_TABLE, false, rows_hidden);
+}
+
+; --- Tests -----------------------------------------------------------------------------------------
+
+test the_three_partial_states_are_named_and_the_value_set_is_closed {
+    assert PARTIAL_STATE_NAMES.len == PARTIAL_STATE_COUNT;
+    assert PARTIAL_STATE_COUNT == 3;
+    assert PARTIAL_STATE_NAMES[0] == "data_hidden";
+    assert PARTIAL_STATE_NAMES[1] == "surface_live";
+    assert PARTIAL_STATE_NAMES[2] == "reader_allowlisted";
+    assert state_is_known(STATE_LIVE) == true;
+    assert state_is_known(STATE_FULLY_RETIRED) == true;
+    assert state_is_known(STATE_COUNT) == false;
+}
+
+test each_of_the_three_partial_states_is_reachable_and_distinct {
+    assert retirement_state(false, false, false, true) == STATE_DATA_HIDDEN;
+    assert retirement_state(true, false, false, false) == STATE_SURFACE_LIVE;
+    assert retirement_state(false, true, true, false) == STATE_READER_ALLOWLISTED;
+    assert retirement_state(false, true, false, false) == STATE_FULLY_RETIRED;
+    assert retirement_state(false, false, false, false) == STATE_LIVE;
+}
+
+test a_hidden_row_is_not_a_retired_surface {
+    assert retirement_state(true, false, false, true) == STATE_SURFACE_LIVE;
+    assert surface_is_retired(true, false, false, true) == false;
+    assert surface_is_retired(false, false, false, true) == false;
+    assert data_decision_changes_the_surface(true, false) == false;
+    assert data_decision_changes_the_surface(false, true) == false;
+    assert data_decision_changes_the_surface(true, true) == false;
+}
+
+test a_reachable_surface_outranks_every_decision_beneath_it {
+    assert retirement_state(true, true, true, true) == STATE_SURFACE_LIVE;
+    assert retirement_state(true, true, false, false) == STATE_SURFACE_LIVE;
+    assert surface_is_retired(true, true, false, false) == false;
+}
+
+test only_the_completed_state_counts_as_a_retired_surface {
+    assert surface_is_retired(false, true, false, false) == true;
+    assert surface_is_retired(false, true, true, false) == false;
+    assert surface_is_retired(false, false, false, false) == false;
+}
+
+test migration_085_has_the_shape_d19_mandates {
+    assert HIDDEN_TABLES.len == HIDDEN_TABLE_COUNT;
+    assert HIDDEN_TABLE_COUNT == 6;
+    assert HIDDEN_TABLES[0] == "events";
+    assert HIDDEN_TABLES[5] == "sets";
+    assert HIDING_ROW_DELETES == 0;
+    assert HIDING_TABLE_DROPS == 0;
+    assert HIDING_VISIBILITY_UPDATES == 6;
+    assert hiding_migration_is_conformant(HIDING_ROW_DELETES, HIDING_TABLE_DROPS, HIDING_VISIBILITY_UPDATES) == true;
+}
+
+test a_migration_that_deletes_or_drops_is_not_a_hiding_migration {
+    assert hiding_migration_is_conformant(1, 0, 6) == false;
+    assert hiding_migration_is_conformant(0, 1, 6) == false;
+    assert hiding_migration_is_conformant(0, 0, 0) == false;
+    assert hidden_data_is_reversible(true, true) == true;
+    assert hidden_data_is_reversible(false, true) == false;
+    assert hidden_data_is_reversible(true, false) == false;
+}
+
+test migration_083_drops_six_tables_and_one_of_them_keeps_every_reader {
+    assert DROPPED_TABLES.len == DROPPED_TABLE_COUNT;
+    assert DROPPED_TABLE_COUNT == 6;
+    assert DROPPED_TABLES[0] == "lab_certificates";
+    assert DROPPED_TABLES[2] == "strains";
+    assert DROPPED_TABLES[5] == "garden_config";
+    assert DROPPED_TABLES_WITH_A_SURVIVING_READER == 1;
+    assert DROPPED_TABLES_WITH_NO_READER == 5;
+    assert DROPPED_TABLES_WITH_A_SURVIVING_READER + DROPPED_TABLES_WITH_NO_READER == DROPPED_TABLE_COUNT;
+}
+
+test this_file_owns_both_numbers_that_bot_surface_copies {
+    assert DROPPED_TABLE_COUNT_IS_OWNED_HERE == true;
+    assert ALLOWLIST_SIZE_IS_OWNED_HERE == true;
+    assert DROPPED_TABLE_COUNT_COPIED_BY_ID == "turbobaby/bot-surface";
+    assert DROPPED_TABLE_COUNT_COPIED_BY_ID == REUSES_BOT_SURFACE_ID;
+    assert DROPPED_TABLE_COUNT_COPIED_BY_ID != ID;
+    assert DROPPED_TABLE_COUNT_COPY_DECLARATION == "LEGACY_TABLES_DROPPED_BY_THAT_MIGRATION";
+    assert ALLOWLIST_SIZE_COPY_DECLARATION == "LEGACY_SURVIVOR_ENTRY_COUNT";
+    assert DROPPED_TABLE_COUNT_COPY_DECLARATION != ALLOWLIST_SIZE_COPY_DECLARATION;
+}
+
+test the_retirement_distinction_is_still_declared_nowhere_else {
+    // 43 and 42 are the 2026-09-21 reading; 45 and 44 were re-taken at a33e500 on 2026-09-22.
+    assert CORPUS_FILE_COUNT == 43;
+    assert CORPUS_FILES_OTHER_THAN_THIS_ONE == 42;
+    assert CORPUS_FILES_OTHER_THAN_THIS_ONE + 1 == CORPUS_FILE_COUNT;
+    assert CORPUS_FILE_COUNT_REMEASURED == 45;
+    assert CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED == 44;
+    assert CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED + 1 == CORPUS_FILE_COUNT_REMEASURED;
+    assert CORPUS_FILE_COUNT_REMEASURED_AT == "2026-09-22";
+    assert CORPUS_FILE_COUNT_REMEASURED_AT != MEASURED_AT;
+    assert SPECS_CONTAINING_THE_WORD_RETIRE_2026_09_22 == 19;
+    assert SPECS_NAMING_THE_STATE_MACHINE_2026_09_22 == 1;
+    assert SPECS_DECLARING_THE_RETIREMENT_DISTINCTION_2026_09_22 == 0;
+    assert SPECS_DECLARING_THE_RETIREMENT_DISTINCTION_2026_09_22 < SPECS_NAMING_THE_STATE_MACHINE_2026_09_22;
+    assert SPECS_CONTAINING_THE_WORD_RETIRE_2026_09_22 < CORPUS_FILES_OTHER_THAN_THIS_ONE_REMEASURED;
+    assert SPECS_CONTAINING_THE_WORD_RETIRE_2026_09_21 == 16;
+    assert SPECS_DECLARING_THE_RETIREMENT_DISTINCTION_2026_09_21 == 0;
+    assert SPECS_CONTAINING_THE_WORD_RETIRE_2026_09_21 > SPECS_DECLARING_THE_RETIREMENT_DISTINCTION_2026_09_21;
+    assert SPECS_CONTAINING_THE_WORD_RETIRE_2026_09_21 < CORPUS_FILES_OTHER_THAN_THIS_ONE;
+    assert THE_WORD_IS_SHARED_THE_SUBJECT_IS_NOT == true;
+}
+
+test the_allowlist_is_pinned_by_size_and_rule_not_by_contents {
+    assert ALLOWLIST_SIZE == 4;
+    assert ALLOWLIST_DISTINCT_TABLES == 1;
+    assert ALLOWLIST_DISTINCT_TABLES < DROPPED_TABLE_COUNT;
+    assert ALLOWLIST_CHECK_COUNT == 3;
+    assert ALLOWLIST_DETECTION_SHAPE_COUNT == 3;
+    assert ALLOWLIST_TABLE_POSITION_KEYWORDS == 5;
+}
+
+test an_allowlist_entry_needs_a_path_a_table_a_reason_and_a_live_match {
+    assert allowlist_entry_is_valid(true, true, 41, true) == true;
+    assert allowlist_entry_is_valid(false, true, 41, true) == false;
+    assert allowlist_entry_is_valid(true, false, 41, true) == false;
+    assert allowlist_entry_is_valid(true, true, 41, false) == false;
+    assert allowlist_entry_is_valid(true, true, 40, true) == false;
+    assert allowlist_entry_is_valid(true, true, 0, true) == false;
+}
+
+test the_allowlist_is_checked_from_both_ends {
+    assert allowlist_is_sound(true, true, true) == true;
+    assert allowlist_is_sound(false, true, true) == false;
+    assert allowlist_is_sound(true, false, true) == false;
+    assert allowlist_is_sound(true, true, false) == false;
+}
+
+test keeping_something_requires_naming_it_with_a_reason {
+    assert keeping_is_permitted(true, 41) == true;
+    assert keeping_is_permitted(false, 41) == false;
+    assert keeping_is_permitted(true, 40) == false;
+    assert keeping_is_permitted(false, 0) == false;
+}
+
+test the_retired_set_is_derived_rather_than_listed {
+    assert retired_set_is_trustworthy(true, true, true) == true;
+    assert retired_set_is_trustworthy(false, true, true) == false;
+    assert retired_set_is_trustworthy(true, false, true) == false;
+    assert retired_set_is_trustworthy(true, true, false) == false;
+}
+
+test the_live_legacy_surface_is_counted_and_repointed_paths_are_counted_apart {
+    assert LEGACY_LIVE_ROUTES.len == LEGACY_LIVE_ROUTE_COUNT;
+    assert LEGACY_LIVE_ROUTE_COUNT == 8;
+    assert LEGACY_LIVE_ROUTES[0] == "/accessories";
+    assert LEGACY_LIVE_ROUTES[3] == "/game";
+    assert LEGACY_LIVE_ROUTES[7] == "/tech-tree";
+    // 2 until 2026-09-24, when the three event paths joined /sets and /sommelier.
+    assert REPOINTED_ROUTE_COUNT == 5;
+    assert REPOINTED_ROUTE_COUNT_BEFORE_2026_09_24 == 2;
+}
+
+test the_legacy_http_route_total_is_the_sum_of_its_three_modules {
+    assert CATALOG_HTTP_ROUTE_COUNT == 27;
+    // 13 until 2026-09-22: 2c21df1 removed /api/test from the quest router on 2026-09-21.
+    assert QUEST_HTTP_ROUTE_COUNT == 12;
+    assert TECH_TREE_HTTP_ROUTE_COUNT == 4;
+    assert CATALOG_HTTP_ROUTE_COUNT + QUEST_HTTP_ROUTE_COUNT + TECH_TREE_HTTP_ROUTE_COUNT == LEGACY_HTTP_ROUTE_COUNT;
+    // 44 until 2026-09-22, for the same reason.
+    assert LEGACY_HTTP_ROUTE_COUNT == 43;
+}
+
+test the_footprint_is_a_list_that_can_be_re_added {
+    assert TOTAL_SOURCE_FILE_COUNT == 182;
+    assert LEGACY_SOURCE_FILE_COUNT == 25;
+    assert LEGACY_SOURCE_LOC == 9193;
+    assert legacy_footprint_is_measured(LEGACY_SOURCE_FILE_COUNT, TOTAL_SOURCE_FILE_COUNT, LEGACY_SOURCE_LOC) == true;
+    assert legacy_footprint_is_measured(0, TOTAL_SOURCE_FILE_COUNT, LEGACY_SOURCE_LOC) == false;
+    assert legacy_footprint_is_measured(LEGACY_SOURCE_FILE_COUNT, TOTAL_SOURCE_FILE_COUNT, 0) == false;
+    assert SURVEY_LOC_CLAIM_REPRODUCED == false;
+}
+
+test a_gone_surface_is_proved_by_declarations_not_by_a_word_count {
+    assert may_claim_surface_is_gone(GARDEN_ROUTE_DECLARATIONS, 0, 0) == true;
+    assert GARDEN_ROUTE_DECLARATIONS == 0;
+    assert GARDEN_WORD_HITS_IN_CLIENT_ROUTER == 4;
+    assert GARDEN_WORD_HITS_IN_CLIENT_ROUTER > GARDEN_ROUTE_DECLARATIONS;
+    assert COMPLETED_RETIREMENT_COUNT == 1;
+}
+
+test a_surviving_declaration_of_any_kind_defeats_the_claim {
+    assert may_claim_surface_is_gone(1, 0, 0) == false;
+    assert may_claim_surface_is_gone(0, 1, 0) == false;
+    assert may_claim_surface_is_gone(0, 0, 1) == false;
+}
+
+test an_orphaned_asset_is_none_of_the_three_states {
+    assert asset_is_orphaned(false, 0, ORPHAN_ASSET_TEXT_REFERENCES) == true;
+    assert asset_is_orphaned(true, 0, 1) == false;
+    assert asset_is_orphaned(false, 1, 1) == false;
+    assert asset_is_orphaned(false, 0, 0) == false;
+    assert ORPHAN_ASSET_TEXT_REFERENCES == 1;
+}
+
+test the_reuse_edges_are_named_and_no_sibling_decision_is_restated {
+    assert REUSES_BOT_SURFACE_ID == "turbobaby/bot-surface";
+    assert REUSES_CATALOG_API_ID == "turbobaby/catalog-api";
+    assert REUSES_AVAILABILITY_ID == "turbobaby/availability";
+    assert REUSES_PUBLICATION_ID == "turbobaby/publication";
+    assert REUSES_DELIVERY_TERMS_ID == "turbobaby/delivery-terms";
+    assert REUSES_GAME_SCORE_ID == "turbobaby/game-score";
+    assert REUSES_RIDE_GAME_ID == "turbobaby/ride-game";
+    assert REUSES_EVENTS_BOOKING_ID == "turbobaby/events-booking";
+    assert REUSES_COMMERCE_ID == "turbobaby/commerce";
+    // 7 until 2026-09-24.
+    assert REUSE_EDGE_COUNT == 9;
+    assert REUSE_EDGE_COUNT_BEFORE_2026_09_24 == 7;
+}
+
+test this_file_refuses_to_choose_the_next_surface {
+    assert THIS_FILE_PICKS_THE_NEXT_SURFACE == false;
+    assert THIS_FILE_CARRIES_A_DELETION_DATE == false;
+    assert RETIREMENT_ORDER_IS_PUBLISHED == false;
+    assert next_surface_is_decided_here(true) == false;
+    assert next_surface_is_decided_here(false) == false;
+}
+
+test the_owners_ruling_is_classified_per_surface_and_claims_no_completed_retirement {
+    assert OWNER_RULING_AT == "2026-09-24";
+    assert OWNER_RULING_KEEPS_ROWS == true;
+    assert OWNER_RULING_DROPS_A_TABLE == false;
+    assert OWNER_RULED_SURFACES.len == OWNER_RULED_SURFACE_COUNT;
+    assert OWNER_RULED_SURFACES[0] == "events";
+    assert OWNER_RULED_SURFACES[1] == "bike_sale";
+    assert OWNER_KEPT_SURFACES.len == OWNER_KEPT_SURFACE_COUNT;
+    assert OWNER_KEPT_SURFACES[0] == "referrals";
+    assert OWNER_KEPT_SURFACES[2] == "ride_game";
+    assert OWNER_RULED_EVENTS_STATE == STATE_DATA_HIDDEN;
+    assert ruled_surface_state(false, OWNER_RULED_EVENTS_ROWS_HIDDEN) == OWNER_RULED_EVENTS_STATE;
+    // Bike sales: no row hidden, the offer masked on read. The true input gives STATE_LIVE, and
+    // no state of the five names the mask.
+    assert OWNER_RULED_BIKE_SALE_ROWS_HIDDEN == false;
+    assert OWNER_RULED_BIKE_SALE_MASKED_ON_READ == true;
+    assert OWNER_RULED_BIKE_SALE_STATE == STATE_LIVE;
+    assert ruled_surface_state(false, OWNER_RULED_BIKE_SALE_ROWS_HIDDEN) == OWNER_RULED_BIKE_SALE_STATE;
+    assert A_MASK_ON_READ_HAS_A_STATE_HERE == false;
+    assert ruled_surface_state(true, true) == STATE_SURFACE_LIVE;
+    assert surface_is_retired(false, OWNER_RULING_DROPS_A_TABLE, false, OWNER_RULED_EVENTS_ROWS_HIDDEN) == false;
+    assert surface_is_retired(false, OWNER_RULING_DROPS_A_TABLE, false, OWNER_RULED_BIKE_SALE_ROWS_HIDDEN) == false;
+    assert OWNER_RULING_COMPLETES_A_RETIREMENT == false;
+    assert COMPLETED_RETIREMENT_COUNT == 1;
+    // The two briefed surfaces are not among the eight; whether the ruling reaches the eight is open.
+    assert OWNER_RULING_BRIEFED_SURFACES_ARE_AMONG_THE_EIGHT == false;
+    assert OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN == true;
+    assert next_surface_is_decided_here(false) == false;
+    assert RETIREMENT_ORDER_IS_PUBLISHED == false;
+}
+
+test the_repointed_set_is_split_by_what_each_path_lost {
+    assert REPOINTED_WITH_THE_SCREEN_DELETED == REPOINTED_ROUTE_COUNT_BEFORE_2026_09_24;
+    assert REPOINTED_KEPT_SCREEN_COUNT_OWNER_ID == REUSES_EVENTS_BOOKING_ID;
+    assert REPOINTED_KEPT_SCREEN_COUNT_OWNER_DECL == "EVENT_SCREENS_UNROUTED_BY_THE_RULING";
+    // Only the whole of the set splits: the deleted half alone is not it, and neither is a kept
+    // half that would put the total past REPOINTED_ROUTE_COUNT.
+    assert repointed_set_splits(REPOINTED_WITH_THE_SCREEN_DELETED, REPOINTED_ROUTE_COUNT - REPOINTED_WITH_THE_SCREEN_DELETED) == true;
+    assert repointed_set_splits(REPOINTED_WITH_THE_SCREEN_DELETED, 0) == false;
+    assert repointed_set_splits(REPOINTED_WITH_THE_SCREEN_DELETED, REPOINTED_ROUTE_COUNT) == false;
+    // A kept path over a kept screen file is never a gone surface, however dark it is.
+    assert may_claim_surface_is_gone(1, 1, 1) == false;
+}
+
+test the_identity_of_this_contract_is_fixed {
+    assert ID == "turbobaby/legacy-retirement";
+    assert KIND == "retirement-contract";
+    assert ISSUE == "#2";
+    assert EPIC == "#26";
+    assert DECISIONS == "DECISIONS.md D5, D19";
+}
+
+; --- Invariants ---------------------------------------------------------------------------------
+
+invariant a_hidden_row_never_retires_a_reachable_surface
+    assert retirement_state(true, false, false, true) == STATE_SURFACE_LIVE and surface_is_retired(true, false, false, true) == false
+
+invariant hiding_data_alone_never_retires_anything
+    assert surface_is_retired(false, false, false, true) == false and data_decision_changes_the_surface(true, true) == false
+
+invariant a_reachable_legacy_surface_always_reports_the_same_state
+    assert retirement_state(true, true, true, true) == STATE_SURFACE_LIVE and retirement_state(true, false, false, false) == STATE_SURFACE_LIVE
+
+invariant an_allowlisted_reader_is_not_a_retired_surface
+    assert retirement_state(false, true, true, false) == STATE_READER_ALLOWLISTED and surface_is_retired(false, true, true, false) == false
+
+invariant the_three_partial_states_stay_three_and_stay_named
+    assert PARTIAL_STATE_NAMES.len == PARTIAL_STATE_COUNT and PARTIAL_STATE_COUNT == 3 and STATE_COUNT == 5
+
+invariant a_hiding_migration_that_deletes_a_row_stops_being_one
+    assert hiding_migration_is_conformant(1, 0, 6) == false and hiding_migration_is_conformant(0, 1, 6) == false
+
+invariant every_dropped_table_is_accounted_for_on_exactly_one_side
+    assert DROPPED_TABLES_WITH_A_SURVIVING_READER + DROPPED_TABLES_WITH_NO_READER == DROPPED_TABLE_COUNT and DROPPED_TABLES.len == DROPPED_TABLE_COUNT
+
+invariant a_kept_reader_without_a_named_reason_is_never_permitted
+    assert keeping_is_permitted(true, ALLOWLIST_REASON_MIN_CHARS) == false and keeping_is_permitted(false, 4000) == false
+
+invariant an_allowlist_entry_that_matches_nothing_is_invalid
+    assert allowlist_entry_is_valid(true, true, 4000, false) == false and allowlist_is_sound(true, false, true) == false
+
+invariant the_legacy_http_total_cannot_drift_from_its_parts
+    assert CATALOG_HTTP_ROUTE_COUNT + QUEST_HTTP_ROUTE_COUNT + TECH_TREE_HTTP_ROUTE_COUNT == LEGACY_HTTP_ROUTE_COUNT
+
+invariant no_surface_is_claimed_gone_while_any_declaration_survives
+    assert may_claim_surface_is_gone(1, 0, 0) == false and may_claim_surface_is_gone(0, 1, 0) == false and may_claim_surface_is_gone(0, 0, 1) == false
+
+invariant a_word_count_is_never_absence_evidence
+    assert GARDEN_WORD_HITS_IN_CLIENT_ROUTER > 0 and may_claim_surface_is_gone(GARDEN_ROUTE_DECLARATIONS, 0, 0) == true
+
+invariant an_unreproducible_footprint_figure_is_never_adopted
+    assert SURVEY_LOC_CLAIM_REPRODUCED == false and LEGACY_SOURCE_FILE_COUNT < TOTAL_SOURCE_FILE_COUNT
+
+invariant this_file_never_chooses_the_next_surface_or_a_date
+    assert next_surface_is_decided_here(true) == false and THIS_FILE_PICKS_THE_NEXT_SURFACE == false and THIS_FILE_CARRIES_A_DELETION_DATE == false and RETIREMENT_ORDER_IS_PUBLISHED == false
+
+invariant the_owners_ruling_never_counts_as_a_completed_retirement
+    assert surface_is_retired(false, OWNER_RULING_DROPS_A_TABLE, false, true) == false and OWNER_RULING_COMPLETES_A_RETIREMENT == false and COMPLETED_RETIREMENT_COUNT == 1
+
+invariant a_ruled_surface_a_customer_can_still_reach_is_still_live
+    assert ruled_surface_state(true, true) == STATE_SURFACE_LIVE and ruled_surface_state(true, false) == STATE_SURFACE_LIVE and ruled_surface_state(false, OWNER_RULED_EVENTS_ROWS_HIDDEN) == STATE_DATA_HIDDEN
+
+invariant the_repointed_set_is_always_split_by_what_each_path_lost
+    assert repointed_set_splits(REPOINTED_WITH_THE_SCREEN_DELETED, REPOINTED_ROUTE_COUNT - REPOINTED_WITH_THE_SCREEN_DELETED) == true and REPOINTED_WITH_THE_SCREEN_DELETED < REPOINTED_ROUTE_COUNT
+
+invariant a_bike_sale_row_is_never_called_hidden_to_reach_a_state
+    assert OWNER_RULED_BIKE_SALE_ROWS_HIDDEN == false and ruled_surface_state(false, OWNER_RULED_BIKE_SALE_ROWS_HIDDEN) == STATE_LIVE and OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN == true

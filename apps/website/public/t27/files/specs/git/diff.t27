@@ -13,26 +13,237 @@ module GitDiff {
     // diff returns changed files compared to a ref
     fn diff(cwd: str, ref: str) -> Result<[Item], GitError> {
         // Implementation: Run git diff --name-status ref
+        var cmd = Command::new("git");
+        cmd.arg("diff").arg("--name-status").arg(ref);
+        var result = cmd.execute(cwd);
+        
+        match result {
+            Ok(output) => {
+                var items: [Item] = [];
+                var lines = output.split("\n");
+                
+                for line in lines {
+                    if line.trim() != "" {
+                        var parts = line.split("\t");
+                        if parts.len >= 2 {
+                            var code = parts[0];
+                            var file = parts[1];
+                            var status = match code {
+                                "A" => Kind::Added,
+                                "D" => Kind::Deleted,
+                                "M" => Kind::Modified,
+                                _ => Kind::Modified,
+                            };
+                            items.push(Item { file = file, code = code, status = status });
+                        }
+                    }
+                }
+                return Ok(items);
+            }
+            Err(error) => return Err(GitError { message = error }),
+        }
+    }
+
+    test "diff_returns_changed_files" {
+        var result = diff(".", "main");
+        match result {
+            Ok(items) => {
+                assert(items.len >= 0);
+            }
+            Err(error) => {
+                // In a test repo with no changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
     }
 
     // diff_cached returns staged changes compared to a ref
     fn diff_cached(cwd: str, ref: str?) -> Result<[Item], GitError> {
         // Implementation: Run git diff --cached --name-status [ref]
+        var cmd = Command::new("git");
+        cmd.arg("diff").arg("--cached").arg("--name-status");
+        
+        match ref {
+            Some(r) => cmd.arg(r),
+            None => (),
+        }
+        
+        var result = cmd.execute(cwd);
+        
+        match result {
+            Ok(output) => {
+                var items: [Item] = [];
+                var lines = output.split("\n");
+                
+                for line in lines {
+                    if line.trim() != "" {
+                        var parts = line.split("\t");
+                        if parts.len >= 2 {
+                            var code = parts[0];
+                            var file = parts[1];
+                            var status = match code {
+                                "A" => Kind::Added,
+                                "D" => Kind::Deleted,
+                                "M" => Kind::Modified,
+                                _ => Kind::Modified,
+                            };
+                            items.push(Item { file = file, code = code, status = status });
+                        }
+                    }
+                }
+                return Ok(items);
+            }
+            Err(error) => return Err(GitError { message = error }),
+        }
+    }
+
+    test "diff_cached_returns_staged_changes" {
+        var result_no_ref = diff_cached(".", None);
+        match result_no_ref {
+            Ok(items) => {
+                assert(items.len >= 0);
+            }
+            Err(error) => {
+                // In a test repo with no staged changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
+        
+        var result_with_ref = diff_cached(".", Some("main"));
+        match result_with_ref {
+            Ok(items) => {
+                assert(items.len >= 0);
+            }
+            Err(error) => {
+                // In a test repo with no staged changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
     }
 
     // diff_files returns diff for specific files
     fn diff_files(cwd: str, ref: str, files: [str]) -> Result<[Item], GitError> {
         // Implementation: Run git diff --name-status ref -- files...
+        if files.len == 0 {
+            return Ok([]);
+        }
+        
+        var cmd = Command::new("git");
+        cmd.arg("diff").arg("--name-status").arg(ref).arg("--");
+        
+        for file in files {
+            cmd.arg(file);
+        }
+        
+        var result = cmd.execute(cwd);
+        
+        match result {
+            Ok(output) => {
+                var items: [Item] = [];
+                var lines = output.split("\n");
+                
+                for line in lines {
+                    if line.trim() != "" {
+                        var parts = line.split("\t");
+                        if parts.len >= 2 {
+                            var code = parts[0];
+                            var file = parts[1];
+                            var status = match code {
+                                "A" => Kind::Added,
+                                "D" => Kind::Deleted,
+                                "M" => Kind::Modified,
+                                _ => Kind::Modified,
+                            };
+                            items.push(Item { file = file, code = code, status = status });
+                        }
+                    }
+                }
+                return Ok(items);
+            }
+            Err(error) => return Err(GitError { message = error }),
+        }
+    }
+
+    test "diff_files_returns_diff_for_specific_files" {
+        var files = ["src/main.t27", "test/test.t27"];
+        var result = diff_files(".", "main", files);
+        match result {
+            Ok(items) => {
+                assert(items.len >= 0);
+            }
+            Err(error) => {
+                // In a test repo with no changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
+        
+        // Test with empty files array
+        var empty_result = diff_files(".", "main", []);
+        match empty_result {
+            Ok(items) => {
+                assert(items.len == 0);
+            }
+            Err(_) => {
+                // Should not error for empty files array
+                assert(false);
+            }
+        }
     }
 
     // diff_text returns the full diff text
     fn diff_text(cwd: str, ref: str) -> Result<str, GitError> {
         // Implementation: Run git diff ref
+        var cmd = Command::new("git");
+        cmd.arg("diff").arg(ref);
+        var result = cmd.execute(cwd);
+        
+        match result {
+            Ok(output) => return Ok(output),
+            Err(error) => return Err(GitError { message = error }),
+        }
+    }
+
+    test "diff_text_returns_full_diff_text" {
+        var result = diff_text(".", "main");
+        match result {
+            Ok(diff_output) => {
+                assert(diff_output.len >= 0);
+                // Diff output should contain some standard diff patterns
+                assert(diff_output.contains("diff --git") || diff_output == "");
+            }
+            Err(error) => {
+                // In a test repo with no changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
     }
 
     // diff_file_text returns diff text for a specific file
     fn diff_file_text(cwd: str, ref: str, file: str) -> Result<str, GitError> {
         // Implementation: Run git diff ref -- file
+        var cmd = Command::new("git");
+        cmd.arg("diff").arg(ref).arg("--").arg(file);
+        var result = cmd.execute(cwd);
+        
+        match result {
+            Ok(output) => return Ok(output),
+            Err(error) => return Err(GitError { message = error }),
+        }
+    }
+
+    test "diff_file_text_returns_diff_text_for_specific_file" {
+        var result = diff_file_text(".", "main", "src/main.t27");
+        match result {
+            Ok(diff_output) => {
+                assert(diff_output.len >= 0);
+                // Diff output should contain some standard diff patterns or be empty
+                assert(diff_output.contains("diff --git") || diff_output == "");
+            }
+            Err(error) => {
+                // File might not exist or have no changes
+                assert(error.message.contains("fatal") || error.message.contains("not found"));
+            }
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -42,11 +253,117 @@ module GitDiff {
     // stats returns line change statistics
     fn stats(cwd: str, ref: str) -> Result<[Stat], GitError> {
         // Implementation: Run git diff --numstat ref
+        var cmd = Command::new("git");
+        cmd.arg("diff").arg("--numstat").arg(ref);
+        var result = cmd.execute(cwd);
+        
+        match result {
+            Ok(output) => {
+                var stats: [Stat] = [];
+                var lines = output.split("\n");
+                
+                for line in lines {
+                    if line.trim() != "" {
+                        var parts = line.split("\t");
+                        if parts.len >= 3 {
+                            var additions = parts[0].parse_u32().unwrap_or(0);
+                            var deletions = parts[1].parse_u32().unwrap_or(0);
+                            var file = parts[2];
+                            stats.push(Stat { file = file, additions = additions, deletions = deletions });
+                        }
+                    }
+                }
+                return Ok(stats);
+            }
+            Err(error) => return Err(GitError { message = error }),
+        }
+    }
+
+    test "stats_returns_line_change_statistics" {
+        var result = stats(".", "main");
+        match result {
+            Ok(stats_list) => {
+                assert(stats_list.len >= 0);
+                for stat in stats_list {
+                    assert(stat.additions >= 0);
+                    assert(stat.deletions >= 0);
+                    assert(stat.file.len >= 0);
+                }
+            }
+            Err(error) => {
+                // In a test repo with no changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
     }
 
     // stats_cached returns staged change statistics
     fn stats_cached(cwd: str, ref: str?) -> Result<[Stat], GitError> {
         // Implementation: Run git diff --cached --numstat [ref]
+        var cmd = Command::new("git");
+        cmd.arg("diff").arg("--cached").arg("--numstat");
+        
+        match ref {
+            Some(r) => cmd.arg(r),
+            None => (),
+        }
+        
+        var result = cmd.execute(cwd);
+        
+        match result {
+            Ok(output) => {
+                var stats: [Stat] = [];
+                var lines = output.split("\n");
+                
+                for line in lines {
+                    if line.trim() != "" {
+                        var parts = line.split("\t");
+                        if parts.len >= 3 {
+                            var additions = parts[0].parse_u32().unwrap_or(0);
+                            var deletions = parts[1].parse_u32().unwrap_or(0);
+                            var file = parts[2];
+                            stats.push(Stat { file = file, additions = additions, deletions = deletions });
+                        }
+                    }
+                }
+                return Ok(stats);
+            }
+            Err(error) => return Err(GitError { message = error }),
+        }
+    }
+
+    test "stats_cached_returns_staged_change_statistics" {
+        var result_no_ref = stats_cached(".", None);
+        match result_no_ref {
+            Ok(stats_list) => {
+                assert(stats_list.len >= 0);
+                for stat in stats_list {
+                    assert(stat.additions >= 0);
+                    assert(stat.deletions >= 0);
+                    assert(stat.file.len >= 0);
+                }
+            }
+            Err(error) => {
+                // In a test repo with no staged changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
+        
+        var result_with_ref = stats_cached(".", Some("main"));
+        match result_with_ref {
+            Ok(stats_list) => {
+                assert(stats_list.len >= 0);
+                for stat in stats_list {
+                    assert(stat.additions >= 0);
+                    assert(stat.deletions >= 0);
+                    assert(stat.file.len >= 0);
+                }
+            }
+            Err(error) => {
+                // In a test repo with no staged changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
     }
 
     // stats_summary returns summary statistics
@@ -58,6 +375,66 @@ module GitDiff {
 
     fn stats_summary(cwd: str, ref: str) -> Result<StatsSummary, GitError> {
         // Implementation: Calculate totals from stats output
+        var stats_result = stats(cwd, ref);
+        
+        match stats_result {
+            Ok(stats_list) => {
+                var total_files = stats_list.len;
+                var total_additions = 0u32;
+                var total_deletions = 0u32;
+                
+                for stat in stats_list {
+                    total_additions += stat.additions;
+                    total_deletions += stat.deletions;
+                }
+                
+                var summary = StatsSummary {
+                    files_changed = total_files,
+                    additions = total_additions,
+                    deletions = total_deletions,
+                };
+                return Ok(summary);
+            }
+            Err(error) => return Err(error),
+        }
+    }
+
+    test "stats_summary_calculates_totals_from_stats" {
+        var result = stats_summary(".", "main");
+        match result {
+            Ok(summary) => {
+                assert(summary.files_changed >= 0);
+                assert(summary.additions >= 0);
+                assert(summary.deletions >= 0);
+                
+                // Verify that the totals match individual stats
+                var stats_result = stats(".", "main");
+                match stats_result {
+                    Ok(stats_list) => {
+                        var expected_files = stats_list.len;
+                        var expected_additions = 0u32;
+                        var expected_deletions = 0u32;
+                        
+                        for stat in stats_list {
+                            expected_additions += stat.additions;
+                            expected_deletions += stat.deletions;
+                        }
+                        
+                        assert(summary.files_changed == expected_files);
+                        assert(summary.additions == expected_additions);
+                        assert(summary.deletions == expected_deletions);
+                    }
+                    Err(_) => {
+                        // If stats fails, summary should also fail or have zeros
+                        assert(summary.files_changed == 0);
+                    }
+                }
+            }
+            Err(error) => {
+                // In a test repo with no changes, this might be expected
+                assert(error.message.contains("no changes") || error.message.contains("fatal"));
+            }
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════

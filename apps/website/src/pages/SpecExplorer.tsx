@@ -38,6 +38,7 @@ import {
   loadSpecSource,
   prefetchSpec,
   type Health,
+  type TargetId,
   type SpecEntry,
   type SpecManifest,
   type T27Analysis,
@@ -53,7 +54,7 @@ const UI = {
     subtitle: 'Every .t27 spec, layer by layer',
     metaTitle: 'Spec Explorer',
     metaDescription:
-      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and five codegen backends.',
+      'Browse the whole t27 spec corpus and watch each spec through the real compiler: tokens, AST, HIR and every codegen backend.',
     search: 'Search specs',
     allCategories: 'All categories',
     specs: 'specs',
@@ -153,7 +154,7 @@ const UI = {
     subtitle: 'Каждая .t27-спека, слой за слоем',
     metaTitle: 'Обозреватель спек',
     metaDescription:
-      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и пять бэкендов кодогенерации.',
+      'Просмотр всего корпуса спек t27 и каждой спеки через настоящий компилятор: токены, AST, HIR и все бэкенды кодогенерации.',
     search: 'Поиск по спекам',
     allCategories: 'Все категории',
     specs: 'спек',
@@ -295,10 +296,20 @@ const LAYERS = [
   { id: 'verilog_hir', kind: 'target' },
   { id: 'c', kind: 'target' },
   { id: 'rust', kind: 'target' },
+  { id: 'js', kind: 'target' },
+  { id: 'ts', kind: 'target' },
   { id: 'chip', kind: 'chip' },
 ] as const
 
 type LayerId = (typeof LAYERS)[number]['id']
+
+// LAYERS stays written out -- half of it is not a backend, and a spread of
+// TARGET_IDS would widen every `id` to `string` and take LayerId with it. So
+// the list is checked instead of derived: add a backend without a layer to show
+// it in and this line stops compiling. LAYER_LABEL, being a Record<LayerId,_>,
+// already refuses a layer with no name.
+const _everyBackendHasALayer: TargetId extends LayerId ? true : never = true
+void _everyBackendHasALayer
 
 const LAYER_LABEL: Record<LayerId, string> = {
   source: 'Source',
@@ -311,6 +322,8 @@ const LAYER_LABEL: Record<LayerId, string> = {
   verilog_hir: 'Verilog (HIR)',
   c: 'C',
   rust: 'Rust',
+  js: 'JavaScript',
+  ts: 'TypeScript',
   chip: 'Chip',
 }
 
@@ -804,7 +817,7 @@ export default function SpecExplorer() {
     if (layer === 'hir' && result?.hir.ok && result.hir.text) return highlightCode(result.hir.text, 'verilog')
     if (activeTarget?.ok && activeTarget.code) {
       const langOf: Record<string, string> = {
-        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust',
+        zig: 'zig', verilog: 'verilog', verilog_hir: 'verilog', c: 'c', rust: 'rust', js: 'js', ts: 'ts',
       }
       return highlightCode(activeTarget.code, langOf[layer] || 'plain')
     }
