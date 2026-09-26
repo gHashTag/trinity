@@ -52,8 +52,9 @@
 ;      shop_game.rs:1)" does not survive its own citation. Line 1 of that file is a SOURCE
 ;      COMMENT, which no customer can see. The component's rsx root at src/ui/game/
 ;      shop_game.rs:679 opens with a coin HUD and declares no title node at all, and the one
-;      title key the repository defines for this screen family, T_GAME_TITLE at src/trios/
-;      i18n.rs:345, resolves to a TurboBaby string in both locales (:1007 and :1606) and is
+;      title key the repository defines for this screen family, T_GAME_TITLE at
+;      src/trios/i18n.rs:345, resolves to a TurboBaby string in both locales (:1010 and :1610,
+;      re-pinned 2026-09-25 after a key declared above them moved both rows) and is
 ;      referenced by no screen -- a search for T_GAME_TITLE under src/ returns only i18n.rs
 ;      itself. A search of src/ui/game/shop_game.rs for a quoted string carrying the old shop's
 ;      name returns zero. What IS true, and is what this contract counts, is coarser and worse:
@@ -306,9 +307,22 @@ pub fn retired_set_is_trustworthy(derived_from_migrations: bool, honours_recreat
 ; paths, /sets at :31 and /sommelier at :33, are REPOINTED to the live catalog at :136-154 and
 ; are counted apart: a kept path with a deleted screen is a different animal from a kept screen,
 ; and what a live catalog is belongs to turbobaby/catalog-api and turbobaby/availability.
-pub const LEGACY_LIVE_ROUTE_COUNT : u8 = 8;
-pub const LEGACY_LIVE_ROUTES : [8]str = ["/accessories", "/tea", "/quest/:id", "/game", "/treasure-hunt", "/ar-hunt", "/location-quest", "/tech-tree"];
-pub const REPOINTED_ROUTE_COUNT : u8 = 5;
+; CORRECTED 2026-09-25: LEGACY_LIVE_ROUTE_COUNT was 8 and LEGACY_LIVE_ROUTES held all eight paths;
+; the eight stay below under *_BEFORE_2026_09_25 as the reading they were. On the owner's answer of
+; that day (recorded near the end of this file) seven of the eight render the live catalog, so the
+; one path that still mounts a legacy screen is /quest/:id, which the owner kept. All eight are
+; still DECLARED -- a link already sent never expires -- and that set is LEGACY_PATHS_DECLARED, the
+; constant the route-attribute check now reads; which surface each path lands on is counted apart
+; (REPOINTED_ROUTE_COUNT below). The paragraph above is kept as the tree it measured: its handler
+; lines are 2026-09-21's, and the seven handlers that moved are named, not cited, in the 2026-09-25
+; section.
+pub const LEGACY_LIVE_ROUTE_COUNT : u8 = 1;
+pub const LEGACY_LIVE_ROUTES : [1]str = ["/quest/:id"];
+pub const LEGACY_LIVE_ROUTE_COUNT_BEFORE_2026_09_25 : u8 = 8;
+pub const LEGACY_LIVE_ROUTES_BEFORE_2026_09_25 : [8]str = ["/accessories", "/tea", "/quest/:id", "/game", "/treasure-hunt", "/ar-hunt", "/location-quest", "/tech-tree"];
+pub const LEGACY_PATH_DECLARED_COUNT : u8 = 8;
+pub const LEGACY_PATHS_DECLARED : [8]str = ["/accessories", "/tea", "/quest/:id", "/game", "/treasure-hunt", "/ar-hunt", "/location-quest", "/tech-tree"];
+pub const REPOINTED_ROUTE_COUNT : u8 = 12;
 ; CORRECTED 2026-09-24: REPOINTED_ROUTE_COUNT was 2, and 2 stays below as the reading it was. On the
 ; owner's ruling of that day (recorded near the end of this file) three more client paths --
 ; /events at src/ui/routes.rs:39, /events/:id at :41 and /my-bookings at :43 -- render the live
@@ -325,12 +339,27 @@ pub const REPOINTED_ROUTE_COUNT_BEFORE_2026_09_24 : u8 = 2;
 pub const REPOINTED_WITH_THE_SCREEN_DELETED : u8 = 2;
 pub const REPOINTED_KEPT_SCREEN_COUNT_OWNER_ID : str = "turbobaby/events-booking";
 pub const REPOINTED_KEPT_SCREEN_COUNT_OWNER_DECL : str = "EVENT_SCREENS_UNROUTED_BY_THE_RULING";
+; CORRECTED 2026-09-25: REPOINTED_ROUTE_COUNT was 5, and 5 stays as the reading of 2026-09-24. On the
+; owner's answer of 2026-09-25 seven of the eight legacy paths -- LEGACY_PATHS_REPOINTED_ON_2026_09_25
+; below -- render the live catalog from their handlers, as /sets and the events paths do, so
+; 5 + 7 = 12. They are counted in the kept-screen half: their screens stay compiled and exported
+; and are mounted by no handler, like the events screens. Unlike those, the seven are THIS file's
+; subject, so their count is declared here and the events count still arrives from its owner.
+pub const REPOINTED_ROUTE_COUNT_BEFORE_2026_09_25 : u8 = 5;
+pub const REPOINTED_LEGACY_SCREENS_KEPT_UNMOUNTED : u8 = 7;
+pub const LEGACY_PATHS_REPOINTED_ON_2026_09_25 : [7]str = ["/accessories", "/tea", "/game", "/treasure-hunt", "/ar-hunt", "/location-quest", "/tech-tree"];
 
 ; The split, with the kept half as a parameter: the paths whose screen was deleted are this file's
 ; count, and the paths whose screen was kept are the owner's above. The set is split when the two
 ; halves are the whole of REPOINTED_ROUTE_COUNT.
 pub fn repointed_set_splits(screens_deleted: u8, screens_kept_unmounted: u8) bool {
     return screens_deleted + screens_kept_unmounted == REPOINTED_ROUTE_COUNT;
+}
+
+; The kept half, split again since 2026-09-25: the events screens (their owner's count, a parameter)
+; and the seven legacy screens (this file's). The whole set is three parts and nothing else.
+pub fn repointed_kept_half_splits(event_screens_kept: u8, legacy_screens_kept: u8) bool {
+    return REPOINTED_WITH_THE_SCREEN_DELETED + event_screens_kept + legacy_screens_kept == REPOINTED_ROUTE_COUNT;
 }
 
 ; HTTP routes, merged into the public router at src/api/mod.rs:89, :91 and :97.
@@ -386,6 +415,15 @@ pub fn may_claim_surface_is_gone(route_declarations: u16, handler_definitions: u
 ; below and nothing else. The count is this file's; whether any code mounts the asset is
 ; turbobaby/game-score's measurement, consumed here as a boolean rather than re-measured.
 pub const ORPHAN_ASSET_TEXT_REFERENCES : u16 = 1;
+; REMOVED 2026-09-25, on the owner's ruling recorded below (#12): the orphan was the old shop's catch
+; game -- two of its four falling pieces are a leaf and a bud, and its opening comment names the old
+; shop's mascot -- so it left assets/ with the rest of the old shop's served media, and git history
+; keeps it. The 1 above is the 2026-09-21 reading of a file that no longer exists; the one comment it
+; counted, at assets/game/ride.js:1066, still names the file and now names history. asset_is_orphaned
+; keeps its meaning for the next orphan; this one is gone rather than orphaned, and whether any code
+; mounts a catch-era asset stays turbobaby/game-score's measurement.
+pub const ORPHANED_ASSET_REMOVED : bool = true;
+pub const ORPHANED_ASSET_REMOVED_AT : str = "2026-09-25";
 
 pub fn asset_is_orphaned(mounted_by_code: bool, code_references: u16, comment_references: u16) bool {
     if (mounted_by_code) {
@@ -394,10 +432,72 @@ pub fn asset_is_orphaned(mounted_by_code: bool, code_references: u16, comment_re
     return code_references == 0 and comment_references > 0;
 }
 
+; --- The owner's ruling of 2026-09-25 (#12): nothing cannabis-related anywhere, client half ------
+; The owner answered a numbered list on 2026-09-25, and item 12 reads, in translation: everything
+; that concerns cannabis must be nowhere. Cannabis heritage is this file's subject (D19, issue #2),
+; so the half of the ruling the Mini App carries is recorded here; the server, bot and document
+; halves are recorded by the change that makes them. It is a COPY ruling and not a surface ruling:
+; it moves no route -- which legacy paths open the catalog instead is item 7 of the same list and is
+; not restated here -- and it drops no table and deletes no row. What it changed, measured on the
+; tree it was applied to (0526429):
+;   * src/trios/i18n.rs lost fourteen keys, deleted outright as the 46 of #2 were. Nine belonged to
+;     the retired strain menu and no screen rendered them; five were rendered by the accessories
+;     screen -- its smoking-gear subtitle and four paraphernalia filter chips. No replacement
+;     sentence was written for any of them. Each deleted line became a comment line, so no line of
+;     that file that a contract cites has moved. The declared-key count is owned by
+;     turbobaby/locale-policy (TRANSLATION_KEY_COUNT) and moved there, not here.
+;   * five rendered arms lost their cannabis half and gained nothing: the checkout age notice in both
+;     languages lost its medical-use clause, the success screen's back-to-menu button lost its herb
+;     emoji in Russian, and the shop game's herb-delivery event lost its first half in both.
+;   * two arms were brought into line with the other language's arm of the same key: the shop game's
+;     move log named the old shop's mascot in Russian where the English already named TurboBaby, and
+;     the checkout trust heading promised discretion in English where the Russian already asked why
+;     people trust the shop. Both now say what their twin says.
+;   * nothing that is only an identifier moved. The checkout's saved-draft storage keys keep their
+;     old prefix, because renaming a storage key silently discards every customer's saved draft,
+;     which D19 already records; key names such as the trust block's are not copy, as
+;     turbobaby/customer-surface already says of them.
+;   * assets/, which is served at /assets and at /images, lost 128 files of the old shop's media: its
+;     strain photographs and videos, its pack and member-card art, the product photographs of its
+;     catalogue (the paraphernalia and the goods sold beside it), the garden's fourteen growth
+;     sprites, its mascot portrait, and the orphaned catch game above. No rental code path loaded
+;     any of them; old migrations still name some of the paths in rows that 083 dropped or 085 hid,
+;     and those migrations are not edited (D2). Thirteen files stay: the logo, the brand files, the
+;     icons, the two placeholders, the ride game's two scripts and the vendored three.js.
+; The 20+ age gate itself is untouched. The server enforces it, turbobaby/checkout-contact records it
+; as inherited heritage whose retirement is this file's question, and item 12 did not answer that
+; question: it removed the cannabis claim printed beside the gate, not the gate.
+; ANSWERED LATER THE SAME DAY, and not by item 12: the owner removed the gate for now in answer 1 of
+; a second numbered list (AGE_GATE_ANSWER_* below). The sentence above is kept as the reading of
+; ruling #12, which is why CANNABIS_RULING_RETIRES_THE_AGE_GATE stays false; the notice whose
+; clause #12 cut went with the rest of the box under the later answer, key and all.
+pub const CANNABIS_RULING_AT : str = "2026-09-25";
+pub const CANNABIS_RULING_ITEM : str = "#12";
+pub const CANNABIS_RULING_NOTE : str = "Nothing cannabis-related anywhere. Client copy: fourteen i18n keys deleted (nine never rendered, five rendered by the accessories screen), five rendered arms cut to their non-cannabis half, two arms aligned with their other-language twin, no sentence invented, no identifier renamed, no route moved, no table dropped. Client media: 128 files of the old shop removed from assets/, none of them loaded by a rental code path.";
+pub const CANNABIS_RULING_I18N_KEYS_DELETED : u8 = 14;
+pub const CANNABIS_RULING_I18N_KEYS_DELETED_UNRENDERED : u8 = 9;
+pub const CANNABIS_RULING_I18N_KEYS_DELETED_RENDERED : u8 = 5;
+pub const CANNABIS_RULING_ARMS_CUT : u8 = 5;
+pub const CANNABIS_RULING_ARMS_ALIGNED_TO_THEIR_TWIN : u8 = 2;
+pub const CANNABIS_RULING_SENTENCES_INVENTED : u8 = 0;
+pub const CANNABIS_RULING_KEY_COUNT_OWNER_ID : str = "turbobaby/locale-policy";
+pub const CANNABIS_RULING_KEY_COUNT_OWNER_DECL : str = "TRANSLATION_KEY_COUNT";
+pub const CANNABIS_RULING_MOVES_A_ROUTE : bool = false;
+pub const CANNABIS_RULING_DROPS_A_TABLE : bool = false;
+pub const CANNABIS_RULING_RENAMES_A_STORAGE_KEY : bool = false;
+pub const CANNABIS_RULING_RETIRES_THE_AGE_GATE : bool = false;
+pub const CANNABIS_RULING_SERVED_FILES_REMOVED : u16 = 128;
+pub const CANNABIS_RULING_SERVED_FILES_KEPT : u16 = 13;
+pub const CANNABIS_RULING_SERVED_FILES_BEFORE : u16 = 141;
+pub const CANNABIS_RULING_REMOVED_FILES_A_RENTAL_PATH_LOADED : u16 = 0;
+
 ; --- The refusal ----------------------------------------------------------------------------------
 ; This contract classifies. It does not choose. Which of the eight live legacy paths goes next,
 ; and in what order, is the owner's call and issue #2's scope; epic #26 keeps that issue open and
 ; ties it to no date. A ranking invented here would read as a plan and would be obeyed.
+; (2026-09-25: the owner answered for seven of the eight at once -- recorded near the end of this
+; file -- so no ranking was needed and none was invented. This file still picks nothing, and
+; NEXT_SURFACE_NOTE below is the reading of the tree before that answer.)
 pub const THIS_FILE_PICKS_THE_NEXT_SURFACE : bool = false;
 pub const THIS_FILE_CARRIES_A_DELETION_DATE : bool = false;
 pub const RETIREMENT_ORDER_IS_PUBLISHED : bool = false;
@@ -451,11 +551,345 @@ pub const OWNER_RULED_BIKE_SALE_STATE : u8 = 0;
 pub const A_MASK_ON_READ_HAS_A_STATE_HERE : bool = false;
 pub const OWNER_RULING_COMPLETES_A_RETIREMENT : bool = false;
 pub const OWNER_RULING_BRIEFED_SURFACES_ARE_AMONG_THE_EIGHT : bool = false;
-pub const OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN : bool = true;
+; CORRECTED 2026-09-25: the scope over the eight was open, and true stays below as that reading. The
+; owner settled it the next day; the answer is the section that follows.
+pub const OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN : bool = false;
+pub const OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN_BEFORE_2026_09_25 : bool = true;
 
 pub fn ruled_surface_state(customer_reachable: bool, rows_hidden: bool) u8 {
     return retirement_state(customer_reachable, OWNER_RULING_DROPS_A_TABLE, false, rows_hidden);
 }
+
+; --- The owner's answer of 2026-09-25: the eight legacy paths -------------------------------------
+; The owner answered a numbered list of questions in chat on 2026-09-25. Answer 7 was a yes to this
+; proposal: the old non-rental client addresses -- the previous shop's goods, its game and its hunts
+; -- open the catalog; the ride game, referrals and loyalty stay; and the quest a customer opens from
+; the profile loses its minimum-purchase line. Seven of the eight LEGACY_PATHS_DECLARED fall under
+; it: /accessories and /tea (goods), /game (the previous shop's game; the kept ride is /ride, which
+; is none of the eight), /treasure-hunt, /ar-hunt and /location-quest (the hunts), and /tech-tree.
+; The answer's words name the goods, the game and the hunts, not the tech tree: /tech-tree -- a
+; development tech tree, no rental and none of the three things the answer kept -- is counted among
+; the old non-rental addresses on THIS FILE'S READING of the answer, and OWNER_ANSWER_NAMES_THE_TECH_TREE
+; says so, so that the owner can overrule it. Each stays declared and its handler in
+; src/ui/routes.rs -- fn Accessories, fn Tea, fn Game, fn TreasureHunt, fn ArHunt, fn LocationQuest,
+; fn TechTree -- renders the live catalog; the seven screens stay compiled and exported and no
+; handler mounts them (tests/rental_only_wiring.rs pins both ends, the unmount and the export).
+; --
+; The eighth is kept. /quest/:id is where the profile's quests row goes (the Link to Route::Quest
+; with the id "daily" in src/ui/screens/profile_screen.rs), and the answer kept that row and removed
+; one line from the screen behind it: T_PURCHASE_MIN, the previous shop's minimum purchase. The
+; screen is kept as the answer asked and is not re-decided or described here. The key stays
+; translated, as the retired buy-out keys do; no screen renders it, nor T_PURCHASE_REQUIRED and
+; T_ERROR_PURCHASE beside it, which no screen rendered before either. No sentence was written new:
+; a line was removed, which is the whole of the copy change, and this paragraph is its record.
+; --
+; Each path is run through this file's machine on its OWN inputs, as the ruling of 2026-09-24 was.
+; No customer reaches any of the seven screens now. /accessories and /tea read tables 085 hid
+; (HIDDEN_TABLES), so they are ruled_surface_state(false, true), STATE_DATA_HIDDEN; the other five
+; read no table 085 hid, so they are ruled_surface_state(false, false), STATE_LIVE, which here says
+; only that no data was hidden and no table dropped, as it did of bike sales. The kept quest is
+; reachable, so it is STATE_SURFACE_LIVE by this file's precedence, kept on purpose and named with
+; its reason, which is what D19 asks of anything kept. None is a completed retirement: no table was
+; dropped and COMPLETED_RETIREMENT_COUNT stays 1.
+; --
+; WHAT THE ANSWER DID NOT MOVE. The HTTP routes behind the seven paths stay merged: the legacy
+; catalog, quest and tech-tree routers still answer LEGACY_HTTP_ROUTE_COUNT routes, and the quest
+; router is also what the kept quest scans through. Whether any of them should stop answering is not
+; in the answer and is not decided here. The deep-link compatibility set grew by the seven paths;
+; that set is turbobaby/deeplink's (LEGACY_ROUTE_ALIASES) and is not restated here. The previous
+; shop's game credited Stars under a source of its own (src/ui/game/shop_game.rs, the credit_stars
+; closure); with its screen unmounted the ride is the one mounted screen that posts a Star credit,
+; and whether that source stays capped is turbobaby/star-award's CAPPED_SOURCES, untouched here.
+pub const OWNER_ANSWER_AT : str = "2026-09-25";
+pub const OWNER_ANSWER_NUMBER : u8 = 7;
+pub const OWNER_ANSWER_NOTE : str = "Yes to answer 7 of 2026-09-25: the previous shop's goods, its game and its hunts open the catalog, the ride game, referrals and loyalty stay, and the profile's quest loses its minimum-purchase line.";
+pub const OWNER_ANSWER_REPOINTED_COUNT : u8 = 7;
+pub const OWNER_ANSWER_KEPT_LEGACY_PATH_COUNT : u8 = 1;
+pub const OWNER_ANSWER_KEEPS_THE_QUEST : bool = true;
+pub const OWNER_ANSWER_NAMES_THE_TECH_TREE : bool = false;
+pub const OWNER_ANSWER_DROPS_A_TABLE : bool = false;
+pub const OWNER_ANSWER_CHANGES_AN_HTTP_ROUTE : bool = false;
+pub const OWNER_ANSWER_COMPLETES_A_RETIREMENT : bool = false;
+pub const OWNER_ANSWER_GOODS_ROWS_HIDDEN : bool = true;
+pub const OWNER_ANSWER_GOODS_STATE : u8 = 1;
+pub const OWNER_ANSWER_OTHER_ROWS_HIDDEN : bool = false;
+pub const OWNER_ANSWER_OTHER_STATE : u8 = 0;
+pub const OWNER_ANSWER_KEPT_QUEST_STATE : u8 = 2;
+pub const QUEST_PURCHASE_KEY : str = "T_PURCHASE_MIN";
+pub const QUEST_PURCHASE_LINE_RENDERED : bool = false;
+pub const QUEST_PURCHASE_LINE_RENDERED_BEFORE_2026_09_25 : bool = true;
+pub const QUEST_PURCHASE_KEY_STAYS_TRANSLATED : bool = true;
+pub const QUEST_COPY_WRITTEN_NEW : bool = false;
+
+; The answer splits the eight with nothing left over: the repointed seven and the kept one.
+pub fn owner_answer_covers_the_eight(repointed: u8, kept: u8) bool {
+    return repointed + kept == LEGACY_PATH_DECLARED_COUNT;
+}
+
+; --- The owner's answer of 2026-09-25 on the 20+ age gate (second list, answer 1) ----------------
+; turbobaby/checkout-contact named this file the owner of one question (AGE_BLOCKER_RETIREMENT_OWNER):
+; whether a bike-rental checkout keeps the age gate it inherited from the previous shop's bot. The
+; owner answered it on 2026-09-25, in answer 1 of a second numbered list put to him that day, the
+; numbering 1 to 5 confirmed by him: for now, we remove it. The Russian original is in DECISIONS.md,
+; the D19 addendum of that date. The answer says "for now", so it is recorded as provisional.
+; The decision is recorded where the gate lived, in turbobaby/checkout-contact (AGE_BLOCKER_REMOVED_AT
+; and the counts beside it), and not restated here: the checkout's box, its notice, its trust line,
+; its blocker, the submit handler's refusal and the server's refusal left the code, and five keys
+; left the translation tables. What this file adds is the classification. The gate was not a
+; surface this file's machine runs -- no route, no screen of its own, no table -- so it is none of
+; the partial states and no completed retirement: COMPLETED_RETIREMENT_COUNT stays 1. And nothing
+; stored moved: no migration, no row written or deleted, no storage key renamed or cleared; the
+; orders column keeps what each order recorded, and the server still accepts the field from a
+; bundle cached before the change.
+pub const AGE_GATE_ANSWER_AT : str = "2026-09-25";
+pub const AGE_GATE_ANSWER_LIST : u8 = 2;
+pub const AGE_GATE_ANSWER_NUMBER : u8 = 1;
+pub const AGE_GATE_ANSWER_IS_PROVISIONAL : bool = true;
+pub const AGE_GATE_ANSWER_NOTE : str = "For now, we remove it: answer 1 of the second numbered list the owner answered on 2026-09-25, to the question turbobaby/checkout-contact left with this file. The checkout's 20+ box, its notice, its trust line, its blocker and both refusals left the code; the orders column, every stored order and every saved draft stay as they are.";
+pub const AGE_GATE_DECISION_RECORDED_BY_ID : str = "turbobaby/checkout-contact";
+pub const AGE_GATE_ANSWER_IS_A_SURFACE_RETIREMENT : bool = false;
+pub const AGE_GATE_ANSWER_ADDS_A_MIGRATION : bool = false;
+pub const AGE_GATE_ANSWER_WRITES_A_ROW : bool = false;
+pub const AGE_GATE_ANSWER_RENAMES_A_STORAGE_KEY : bool = false;
+
+; --- The owner's ruling of 2026-09-25: nothing cannabis-related anywhere -------------------------
+; Answer 12 of the numbered list put to the owner on 2026-09-25 rules that nothing cannabis-related
+; may appear anywhere. The client half of the same answer is recorded above under CANNABIS_RULING_*;
+; the two halves were written apart and landed together on 2026-09-25. Its server half changes what
+; is SERVED or SENT, in code; it deletes no row,
+; drops no table and adds no migration. Seven server surfaces moved, each named with where it lives
+; (the seventh was added by review the same day, see PROMO_REPORT_NAME_DECIDED_AT):
+;   1. the retired carousel's buttons already in chats answer with the rental menu and read no
+;      table -- turbobaby/bot-surface, CAROUSEL_RETIRED_AT;
+;   2. GET /api/loyalty/tiers serves every perks list empty (the stored perks are the old shop's
+;      promises, and no TurboBaby perk copy is approved) and omits the tier named after the old shop
+;      -- src/api/loyalty.rs, get_loyalty_tiers and retired_tier; the rows are untouched. This
+;      closes the perks question DECISIONS.md left open on 2026-09-24;
+;   3. the three public tech-tree reads answer an empty roadmap, an empty badge list and not found
+;      -- src/api/tech_tree.rs; the rows are untouched and the admin complete route is unchanged;
+;   4. the share card builds only from a catalogue row the public catalog shows (is_available), so
+;      a row 085 hid answers not found -- src/api/share.rs, load_card;
+;   5. the bot's admin heading loses the old catalogue's tab list and the fact-post reply its leaf
+;      -- src/bot/commands.rs;
+;   6. the bot locale file loses four fields: the carousel's heading and arrows, and the old unit
+;      of sale -- src/locales.rs;
+;   7. the owners' promo sales report -- the bot's /promo and GET /api/admin/promo-report -- no
+;      longer prints the stored name of a published post about the product table migration 083
+;      dropped -- src/trios/promo.rs report_kind_and_name, called by src/promo.rs report; the rows
+;      stay and still count. The rule is PROMO_REPORT_NAME_* below.
+; tests/server_text_vocabulary_wiring.rs holds every string the server can send to it from now on.
+; Run through this file's machine, the tech tree is what bike sales were on 2026-09-24: rows kept,
+; none hidden, masked on read, which is STATE_LIVE because no state names a mask on read (see
+; A_MASK_ON_READ_HAS_A_STATE_HERE). The dropped strains table keeps its allowlisted reader --
+; still compiled, with no production caller since item 1 -- which is STATE_READER_ALLOWLISTED, so
+; ALLOWLIST_SIZE does not move. Nothing here is a completed retirement: COMPLETED_RETIREMENT_COUNT
+; stays 1, and none of the route counts above moves, because every route stays declared.
+pub const OWNER_RULING_2026_09_25_AT : str = "2026-09-25";
+pub const OWNER_RULING_2026_09_25_NOTE : str = "Nothing cannabis-related anywhere. Server surfaces stop serving or sending it, in code; no row is deleted, no table is dropped and no migration is added.";
+pub const OWNER_RULING_2026_09_25_ADDS_A_MIGRATION : bool = false;
+pub const OWNER_RULING_2026_09_25_DELETES_ROWS : bool = false;
+pub const OWNER_RULING_2026_09_25_SERVER_SURFACE_COUNT : u8 = 7;
+pub const OWNER_RULING_2026_09_25_SERVER_SURFACES : [7]str = [
+    "retired_carousel_buttons", "loyalty_tier_perks_and_old_shop_tier", "tech_tree_reads",
+    "share_card_for_hidden_rows", "bot_admin_and_fact_post_copy", "bot_locale_fields",
+    "promo_report_names",
+];
+pub const OWNER_RULING_2026_09_25_GUARD : str = "tests/server_text_vocabulary_wiring.rs";
+pub const TECH_TREE_ROWS_HIDDEN : bool = false;
+pub const TECH_TREE_MASKED_ON_READ : bool = true;
+pub const TECH_TREE_STATE : u8 = 0;
+pub const RETIRED_READER_STATE_AFTER_THE_2026_09_25_RULING : u8 = 3;
+pub const ALLOWLIST_SIZE_MOVED_BY_THE_2026_09_25_RULING : bool = false;
+
+; --- Surface 7: the names the promo sales report prints ------------------------------------------
+; DECIDED 2026-09-25 by the operator, applying the owner's ruling of that day; added by review the
+; same day. The label printed in place of a withheld name is admin-facing copy chosen then, and is
+; cited here by name (REPORT_WITHHELD_NAME in src/trios/promo.rs), not quoted.
+;
+; WHY. promo_posts keeps every row the promoter ever wrote, and from 2026-08-19 until migration 083
+; it also wrote about the product table 083 dropped: rows of the kind whose subject variant left
+; with 083, and bestseller rows drawn from that table. The report printed each row's stored
+; subject_name -- the old shop's product name -- to the owners in /promo (30 days) and on the admin
+; route (up to 365 days). Whether production holds such a published row today was not read; the
+; rule does not depend on the answer.
+;
+; THE RULE, fail closed (report_may_print_name). A stored name is printed only when a subject the
+; promoter can build today writes the row's kind AND the link stored with the row opens the
+; deep-link kind a live post of that kind opens. A row with no stored link (drafted before
+; migration 076) is judged by its kind alone, except a bestseller: bestsellers were drawn from two
+; tables until 083 and only the link tells which. Otherwise the name is withheld; the kind is kept
+; when a live subject writes it and printed empty when none does, because that word is the retired
+; one or one nobody here classified (the database forked from another shop's bot, DECISIONS.md D19).
+; No row is hidden, so the report's post count and totals do not move, and nothing in the table is
+; written.
+;
+; WHAT IT DOES NOT DECIDE. Whether a stored draft may still be SENT: that is the Publish button's
+; question, and the same day's item-13 decision in turbobaby/promo-broadcast answers it there
+; (publish_refusal in src/promo.rs, refusing every stored kind). This file claims no line of
+; publish. Names of posts about the old shop's other tables -- accessories, teas, sets, events,
+; which migration 085 hid rather than dropped -- are still printed: this surface withholds only a
+; name the dropped table supplied, and PROMO_REPORT_OTHER_TABLES_NAMES_PRINTED keeps that visible.
+pub const PROMO_REPORT_NAME_DECIDED_AT : str = "2026-09-25";
+pub const PROMO_REPORT_NAME_DECIDED_BY : str = "operator, applying the owner's ruling of 2026-09-25 (answer 12)";
+pub const PROMO_REPORT_NAME_SITE : str = "src/promo.rs report";
+pub const PROMO_REPORT_NAME_DECISION : str = "src/trios/promo.rs report_kind_and_name";
+pub const PROMO_REPORT_NAME_LABEL : str = "src/trios/promo.rs REPORT_WITHHELD_NAME";
+pub const PROMO_REPORT_NAME_WIRING_TEST : str = "tests/promo_report_names_wiring.rs";
+pub const PROMO_REPORT_READER_COUNT : u8 = 2;
+pub const PROMO_REPORT_ROWS_HIDDEN : bool = false;
+pub const PROMO_REPORT_WRITES_THE_TABLE : bool = false;
+pub const PROMO_REPORT_UNCLASSIFIED_KIND_IS_WITHHELD : bool = true;
+pub const PROMO_REPORT_OTHER_TABLES_NAMES_PRINTED : bool = true;
+pub const PROMO_PUBLISH_REFUSAL_OWNER_ID : str = "turbobaby/promo-broadcast";
+
+pub fn report_prints_stored_name(kind_written_by_a_live_subject: bool, link_stored: bool, link_opens_the_kinds_table: bool, kind_spans_two_tables: bool) bool {
+    if (!kind_written_by_a_live_subject) {
+        return false;
+    }
+    if (link_stored) {
+        return link_opens_the_kinds_table;
+    }
+    return !kind_spans_two_tables;
+}
+
+; --- The owner's answer of 2026-09-25 (#3): stored content out of customers' sight -------------
+; Answer 3 of the second numbered list put to the owner on 2026-09-25 is quoted verbatim in the
+; header of the rules' module (OWNER_ANSWER_3_RULES; this file stays ASCII). The operator read it
+; as OWNER_ANSWER_3_READ_AS: analyse all the cannabis-era content a customer could still see from
+; stored data, and take it out of sight without deleting or rewriting stored data. So every change
+; stops SERVING or PRINTING something, in code; no row is written, deleted or hidden and no
+; migration is added. The database was forked from the previous shop's bot (DECISIONS.md D19), so
+; what it stores was not all written by this repository, and each rule fails closed: a customer
+; is served what this code can vouch for. The admin views are the archive and read every row whole.
+;
+; THE ANALYSIS: every customer-facing read of stored legacy content in src/api and src/ui, and
+; the bot sends that read it. Masked on the server, five (OWNER_ANSWER_3_SERVER_READS):
+;   1. order lines of a retired kind on the customer's own list and detail
+;      (GET /api/orders/user/:telegram_id and /api/orders/:id/details): the neutral name and the
+;      stored quantity and unit price only. turbobaby/order-presentation owns the rule and its
+;      name (RETIRED_LINE_*), which is why it is not restated here;
+;   2. the shop those two reads name, withheld when it names the previous shop, as every value the
+;      old checkout stored did -- the same section there;
+;   3. the server cart (GET and POST /api/cart, POST /api/cart/merge): a line of a retired kind --
+;      every kind the cart API accepts -- keeps its id and figures and is served the neutral name
+;      and no picture. RECONCILED 2026-09-26, see below: such a line is not served at all, under
+;      turbobaby/cart-persistence's rule, and nothing on a cart's path renames a line;
+;   4. the bonus history (GET /api/loyalty/:telegram_id/bonus-history): a stored description is
+;      served only when it is one of the four sentences this repository writes, word for word
+;      apart from its figures (OWNER_ANSWER_3_DESCRIBED_TX_TYPE_COUNT). A garden row's, the
+;      welcome credit's (its sentence names the garden; confirm_referral still writes it, and it
+;      is withheld on read), an admin-typed one and anything the previous shop's bot wrote are
+;      withheld. The row's amount and date are served, and its type as read 5 says;
+;   5. the same read serves a garden-era row's TYPE empty (customer_bonus_tx_type), so the row
+;      reaches every bundle as a generic bonus: the profile's label function has labelled a type
+;      it does not name with T_PROFILE_BONUS_OTHER since it first shipped on 2026-08-07, and the
+;      garden's label is the one it would print for the stored type. This is what reaches a bundle
+;      cached before answer 3, which withholding the description alone would not have reached;
+;      the client guard below covers the bundles built after it.
+; Guarded on the client, where it builds the text itself, four on this answer's branch; two since
+; the reconciliation below removed the device-cart pair (OWNER_ANSWER_3_CLIENT_GUARDS):
+;   the order screens print the neutral name in the reader's language; a garden-era bonus row
+;   carries the generic label T_PROFILE_BONUS_OTHER instead of the garden's, whatever type a server
+;   serves it, and the garden's key stays declared and translated and is printed by no screen; and
+;   a cart kept on the device, written by an older bundle with the old item's name, prints the
+;   neutral name on the cart and the checkout and draws no stored picture there either: both
+;   screens read the line's picture through the server's own rule (cart_line_image), so the cart
+;   row shows its placeholder and the checkout no image. A device cart outranks the server's masked
+;   copy while it holds a line, and every kind the client's cart type knows is retired, so without
+;   the fourth guard a stored picture -- an absolute storage address still resolves -- would sit
+;   beside the neutral name. The one other reader of a device cart line, CartItemComponent, is
+;   mounted by no screen; it reads the line through the same two rules, so mounting it cannot
+;   bring the stored name or picture back.
+; Analysed and left, six on this answer's branch, each with its reason; four since the
+; reconciliation below, which names the two its neighbours closed (OWNER_ANSWER_3_LEFT_READS):
+;   * the loyalty profile's stored tier key: the profile screen maps the old shop's key to a card
+;     and prints the card's label, never the key; the leaderboard that serves it raw is read by
+;     the admin screen alone;
+;   * the star history (GET /api/stars/history/:telegram_id): no screen reads it, and none ever
+;     did (no client file this repository has held calls it);
+;   * the reads behind retired surfaces -- the bookings read, the quest locations, the legacy
+;     catalog routes: no mounted screen renders them since 2026-09-24 and 2026-09-25, the catalog
+;     reads answer only rows 085 left published, and whether those routes go is the question the
+;     answer of 2026-09-25 (#7) left open (LEGACY_PATHS_REPOINTED_ON_2026_09_25 above);
+;   * the abandoned-cart reminder, a bot send: it reminds a cart at most twice (its count never
+;     resets), and since 085 hid the last kind the cart API accepts no cart line can be written, so
+;     no reminder is left that could carry a stored name (CLOSED 2026-09-26 by
+;     turbobaby/cart-persistence: the reason missed a cart kept from before 085);
+;   * the referral, quest-scan and game reads: the referral and game reads are numbers, the
+;     customers' own names and compiled-in text. The quest scan's reply does carry a stored name,
+;     the scanned location's -- admin-typed and seeded by no migration -- but the kept quest prints
+;     only whether the scan succeeded, beside checkpoint titles compiled into the bundle, never
+;     that name;
+;   * the referral notification worker's friend_watered arm, a bot send outside src/api and
+;     src/ui: it prints the garden's sentence for a queued row of that kind. No code has written
+;     the kind since D5 removed the garden, and the worker ends every row it hands out after three
+;     passes, sent or not, so the arm can fire only for a row queued before D5 that was never
+;     handed out. Not changed: no neutral sentence was given for it, and the one row it could
+;     still reach is one nobody has shown to exist. CLOSED 2026-09-26 by
+;     turbobaby/notification-queue, which holds such a row unsent.
+; Nothing here retires a surface: every surface stays reachable and every row stays, so no state
+; above moves (OWNER_ANSWER_3_CHANGES_A_STATE) and COMPLETED_RETIREMENT_COUNT stays as it is.
+; RECONCILED 2026-09-26, when this answer's branch was merged with two changes of that day that
+; reach further, so that the contracts say one thing:
+;   * THE CART. The kept-cart change (turbobaby/cart-persistence, SERVED_CART_KINDS) serves no
+;     line of a retired kind at all: the cart API neither lists nor sums one, the abandoned-cart
+;     reminder neither sums nor names one, and the Mini App drops one from a saved cart and from a
+;     server cart. Its rule was kept and this answer's cart path removed: the server cart's
+;     neutral name and missing picture (read 3 above) and the two device-cart guards (the neutral
+;     name and the stored picture on the cart, the checkout and CartItemComponent). A line that
+;     never reaches a customer needs no name, and a served line is a rental line whose name and
+;     picture are its own. The one place a line could still have entered the Mini App's cart
+;     without that predicate, Cart::add_item (a reorder, or a screen nothing mounts), asks it too
+;     since the same day, so no cart screen is handed such a line. OWNER_ANSWER_3_SERVER_READS
+;     keeps read 3, which the neighbour now takes out of sight; the client guards are two.
+;   * THE REMINDER. The fourth read left above said no reminder could carry a stored name, since
+;     no cart line of a retired kind can be written. A cart kept from before 083 and 085 still
+;     holds such lines, so the reminder could; the kept-cart change closed it (its reads join
+;     only served lines, and a cart of hidden lines is never due).
+;   * THE GARDEN'S NOTIFICATION ARM. The sixth read left above is closed by
+;     turbobaby/notification-queue (HELD_KINDS_DECIDED_AT): a queued friend_watered row, and a row of
+;     any kind nobody classified, is held unsent, and the garden's message left src/locales.rs.
+; So four reads stay analysed and left, and the two the neighbours closed are named below.
+pub const OWNER_ANSWER_3_AT : str = "2026-09-25";
+pub const OWNER_ANSWER_3_READ_BY : str = "operator";
+pub const OWNER_ANSWER_3_READ_AS : str = "Analyse all the cannabis-era content a customer could still see from stored data and take it out of sight, without deleting or rewriting stored data.";
+pub const OWNER_ANSWER_3_RULES : str = "src/trios/legacy_view.rs";
+pub const OWNER_ANSWER_3_WITNESS : str = "tests/legacy_view_wiring.rs";
+pub const OWNER_ANSWER_3_LINE_RULE_OWNER_ID : str = "turbobaby/order-presentation";
+pub const OWNER_ANSWER_3_SERVER_READ_COUNT : u8 = 5;
+pub const OWNER_ANSWER_3_SERVER_READS : [5]str = [
+    "order_lines", "order_shop", "server_cart_lines", "bonus_descriptions", "bonus_garden_types",
+];
+pub const OWNER_ANSWER_3_CLIENT_GUARD_COUNT : u8 = 2;
+pub const OWNER_ANSWER_3_CLIENT_GUARDS : [2]str = [
+    "order_line_name_in_the_readers_language", "garden_bonus_label",
+];
+pub const OWNER_ANSWER_3_LEFT_READ_COUNT : u8 = 4;
+pub const OWNER_ANSWER_3_LEFT_READS : [4]str = [
+    "loyalty_tier_key", "star_history", "retired_surface_reads", "referral_quest_game_reads",
+];
+; What the reconciliation of 2026-09-26 changed here, above: the counts on this answer's own branch,
+; the cart path removed in favour of the neighbour's rule, and the two left reads the neighbours
+; closed, each with the contract that closed it.
+pub const OWNER_ANSWER_3_RECONCILED_AT : str = "2026-09-26";
+pub const OWNER_ANSWER_3_CLIENT_GUARD_COUNT_ON_ITS_BRANCH : u8 = 4;
+pub const OWNER_ANSWER_3_LEFT_READ_COUNT_ON_ITS_BRANCH : u8 = 6;
+pub const OWNER_ANSWER_3_CART_RULE_OWNER_ID : str = "turbobaby/cart-persistence";
+pub const OWNER_ANSWER_3_RENAMES_A_CART_LINE : bool = false;
+pub const OWNER_ANSWER_3_CART_GUARDS_REMOVED : [2]str = ["device_cart_line_names", "device_cart_line_pictures"];
+pub const OWNER_ANSWER_3_LEFT_READS_CLOSED : [2]str = ["abandoned_cart_reminder", "garden_notification_arm"];
+pub const OWNER_ANSWER_3_LEFT_READS_CLOSED_BY_IDS : [2]str = ["turbobaby/cart-persistence", "turbobaby/notification-queue"];
+pub const OWNER_ANSWER_3_DESCRIBED_TX_TYPE_COUNT : u8 = 4;
+; How many bonus types a customer is served without their type (GARDEN_ERA_TX_TYPES in the rules'
+; module), and that the type they are served instead is the empty one (WITHHELD_TX_TYPE there).
+pub const OWNER_ANSWER_3_WITHHELD_TX_TYPE_COUNT : u8 = 2;
+pub const OWNER_ANSWER_3_WITHHELD_TX_TYPE_IS_EMPTY : bool = true;
+pub const OWNER_ANSWER_3_WRITES_ROWS : bool = false;
+pub const OWNER_ANSWER_3_ADDS_A_MIGRATION : bool = false;
+pub const OWNER_ANSWER_3_CHANGES_A_STATE : bool = false;
+pub const OWNER_ANSWER_3_CHANGES_AN_ADMIN_READ : bool = false;
+pub const OWNER_ANSWER_3_KEYS_ADDED : u8 = 1;
+pub const OWNER_ANSWER_3_KEYS_DELETED : u8 = 0;
 
 ; --- Tests -----------------------------------------------------------------------------------------
 
@@ -603,14 +1037,27 @@ test the_retired_set_is_derived_rather_than_listed {
 }
 
 test the_live_legacy_surface_is_counted_and_repointed_paths_are_counted_apart {
+    // 8 until 2026-09-25, when seven of the eight began to render the catalog.
     assert LEGACY_LIVE_ROUTES.len == LEGACY_LIVE_ROUTE_COUNT;
-    assert LEGACY_LIVE_ROUTE_COUNT == 8;
-    assert LEGACY_LIVE_ROUTES[0] == "/accessories";
-    assert LEGACY_LIVE_ROUTES[3] == "/game";
-    assert LEGACY_LIVE_ROUTES[7] == "/tech-tree";
-    // 2 until 2026-09-24, when the three event paths joined /sets and /sommelier.
-    assert REPOINTED_ROUTE_COUNT == 5;
+    assert LEGACY_LIVE_ROUTE_COUNT == 1;
+    assert LEGACY_LIVE_ROUTES[0] == "/quest/:id";
+    assert LEGACY_LIVE_ROUTES_BEFORE_2026_09_25.len == LEGACY_LIVE_ROUTE_COUNT_BEFORE_2026_09_25;
+    assert LEGACY_LIVE_ROUTE_COUNT_BEFORE_2026_09_25 == 8;
+    assert LEGACY_LIVE_ROUTES_BEFORE_2026_09_25[0] == "/accessories";
+    assert LEGACY_LIVE_ROUTES_BEFORE_2026_09_25[3] == "/game";
+    assert LEGACY_LIVE_ROUTES_BEFORE_2026_09_25[7] == "/tech-tree";
+    // Every one of the eight is still declared: a link already sent never expires.
+    assert LEGACY_PATHS_DECLARED.len == LEGACY_PATH_DECLARED_COUNT;
+    assert LEGACY_PATH_DECLARED_COUNT == LEGACY_LIVE_ROUTE_COUNT_BEFORE_2026_09_25;
+    assert LEGACY_PATHS_DECLARED[0] == "/accessories";
+    assert LEGACY_PATHS_DECLARED[2] == LEGACY_LIVE_ROUTES[0];
+    assert LEGACY_PATHS_DECLARED[7] == "/tech-tree";
+    // 2 until 2026-09-24, when the three event paths joined /sets and /sommelier; 5 until
+    // 2026-09-25, when seven of the eight legacy paths joined them.
+    assert REPOINTED_ROUTE_COUNT == 12;
+    assert REPOINTED_ROUTE_COUNT_BEFORE_2026_09_25 == 5;
     assert REPOINTED_ROUTE_COUNT_BEFORE_2026_09_24 == 2;
+    assert REPOINTED_ROUTE_COUNT == REPOINTED_ROUTE_COUNT_BEFORE_2026_09_25 + LEGACY_PATHS_REPOINTED_ON_2026_09_25.len;
 }
 
 test the_legacy_http_route_total_is_the_sum_of_its_three_modules {
@@ -653,6 +1100,54 @@ test an_orphaned_asset_is_none_of_the_three_states {
     assert asset_is_orphaned(false, 1, 1) == false;
     assert asset_is_orphaned(false, 0, 0) == false;
     assert ORPHAN_ASSET_TEXT_REFERENCES == 1;
+    // The 2026-09-21 orphan is gone since 2026-09-25; the rule stays for the next one.
+    assert ORPHANED_ASSET_REMOVED == true;
+    assert ORPHANED_ASSET_REMOVED_AT == CANNABIS_RULING_AT;
+}
+
+test the_cannabis_ruling_removes_media_no_rental_path_loaded {
+    assert CANNABIS_RULING_SERVED_FILES_REMOVED + CANNABIS_RULING_SERVED_FILES_KEPT == CANNABIS_RULING_SERVED_FILES_BEFORE;
+    assert CANNABIS_RULING_SERVED_FILES_REMOVED == 128;
+    assert CANNABIS_RULING_SERVED_FILES_KEPT == 13;
+    assert CANNABIS_RULING_REMOVED_FILES_A_RENTAL_PATH_LOADED == 0;
+    assert CANNABIS_RULING_DROPS_A_TABLE == false;
+}
+
+test the_cannabis_ruling_deletes_and_cuts_copy_and_invents_none {
+    assert CANNABIS_RULING_AT == "2026-09-25";
+    assert CANNABIS_RULING_ITEM == "#12";
+    assert CANNABIS_RULING_I18N_KEYS_DELETED == 14;
+    assert CANNABIS_RULING_I18N_KEYS_DELETED_UNRENDERED + CANNABIS_RULING_I18N_KEYS_DELETED_RENDERED == CANNABIS_RULING_I18N_KEYS_DELETED;
+    assert CANNABIS_RULING_ARMS_CUT == 5;
+    assert CANNABIS_RULING_ARMS_ALIGNED_TO_THEIR_TWIN == 2;
+    assert CANNABIS_RULING_SENTENCES_INVENTED == 0;
+    assert CANNABIS_RULING_KEY_COUNT_OWNER_ID == "turbobaby/locale-policy";
+    assert CANNABIS_RULING_KEY_COUNT_OWNER_ID != ID;
+    assert CANNABIS_RULING_KEY_COUNT_OWNER_DECL == "TRANSLATION_KEY_COUNT";
+    // A copy ruling: no route, no table, no storage key, and the age gate beside the cut clause
+    // stayed under it. A later answer the same day removed the gate; see the next test.
+    assert CANNABIS_RULING_MOVES_A_ROUTE == false;
+    assert CANNABIS_RULING_DROPS_A_TABLE == false;
+    assert CANNABIS_RULING_RENAMES_A_STORAGE_KEY == false;
+    assert CANNABIS_RULING_RETIRES_THE_AGE_GATE == false;
+    assert COMPLETED_RETIREMENT_COUNT == 1;
+}
+
+test the_age_gate_question_is_answered_and_recorded_where_the_gate_lived {
+    assert AGE_GATE_ANSWER_AT == "2026-09-25";
+    assert AGE_GATE_ANSWER_AT == CANNABIS_RULING_AT;
+    assert AGE_GATE_ANSWER_LIST == 2;
+    assert AGE_GATE_ANSWER_NUMBER == 1;
+    assert AGE_GATE_ANSWER_IS_PROVISIONAL == true;
+    assert AGE_GATE_DECISION_RECORDED_BY_ID == "turbobaby/checkout-contact";
+    assert AGE_GATE_DECISION_RECORDED_BY_ID != ID;
+    // Not a surface this file's machine runs, and nothing stored moved.
+    assert AGE_GATE_ANSWER_IS_A_SURFACE_RETIREMENT == false;
+    assert AGE_GATE_ANSWER_ADDS_A_MIGRATION == false;
+    assert AGE_GATE_ANSWER_WRITES_A_ROW == false;
+    assert AGE_GATE_ANSWER_RENAMES_A_STORAGE_KEY == false;
+    assert CANNABIS_RULING_RETIRES_THE_AGE_GATE == false;
+    assert COMPLETED_RETIREMENT_COUNT == 1;
 }
 
 test the_reuse_edges_are_named_and_no_sibling_decision_is_restated {
@@ -702,11 +1197,60 @@ test the_owners_ruling_is_classified_per_surface_and_claims_no_completed_retirem
     assert surface_is_retired(false, OWNER_RULING_DROPS_A_TABLE, false, OWNER_RULED_BIKE_SALE_ROWS_HIDDEN) == false;
     assert OWNER_RULING_COMPLETES_A_RETIREMENT == false;
     assert COMPLETED_RETIREMENT_COUNT == 1;
-    // The two briefed surfaces are not among the eight; whether the ruling reaches the eight is open.
+    // The two briefed surfaces are not among the eight; whether the ruling reached the eight was
+    // open on 2026-09-24 and was answered on 2026-09-25.
     assert OWNER_RULING_BRIEFED_SURFACES_ARE_AMONG_THE_EIGHT == false;
-    assert OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN == true;
+    assert OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN_BEFORE_2026_09_25 == true;
+    assert OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN == false;
     assert next_surface_is_decided_here(false) == false;
     assert RETIREMENT_ORDER_IS_PUBLISHED == false;
+}
+
+test the_owners_answer_of_2026_09_25_is_classified_path_by_path {
+    assert OWNER_ANSWER_AT == "2026-09-25";
+    assert OWNER_ANSWER_AT != OWNER_RULING_AT;
+    assert OWNER_ANSWER_NUMBER == 7;
+    // Seven repointed, one kept, and that is all eight.
+    assert LEGACY_PATHS_REPOINTED_ON_2026_09_25.len == OWNER_ANSWER_REPOINTED_COUNT;
+    assert OWNER_ANSWER_REPOINTED_COUNT == 7;
+    assert OWNER_ANSWER_KEPT_LEGACY_PATH_COUNT == LEGACY_LIVE_ROUTE_COUNT;
+    assert owner_answer_covers_the_eight(OWNER_ANSWER_REPOINTED_COUNT, OWNER_ANSWER_KEPT_LEGACY_PATH_COUNT) == true;
+    assert owner_answer_covers_the_eight(OWNER_ANSWER_REPOINTED_COUNT, 0) == false;
+    assert owner_answer_covers_the_eight(LEGACY_PATH_DECLARED_COUNT, OWNER_ANSWER_KEPT_LEGACY_PATH_COUNT) == false;
+    assert LEGACY_PATHS_REPOINTED_ON_2026_09_25[0] == "/accessories";
+    assert LEGACY_PATHS_REPOINTED_ON_2026_09_25[2] == "/game";
+    assert LEGACY_PATHS_REPOINTED_ON_2026_09_25[6] == "/tech-tree";
+    // The seventh is this file's reading of the answer, not the answer's word.
+    assert OWNER_ANSWER_NAMES_THE_TECH_TREE == false;
+    assert OWNER_ANSWER_KEEPS_THE_QUEST == true;
+    assert LEGACY_LIVE_ROUTES[0] == "/quest/:id";
+    // Each path on its own inputs: the goods over tables 085 hid, the rest over none, and the kept
+    // quest still reachable.
+    assert OWNER_ANSWER_GOODS_STATE == STATE_DATA_HIDDEN;
+    assert ruled_surface_state(false, OWNER_ANSWER_GOODS_ROWS_HIDDEN) == OWNER_ANSWER_GOODS_STATE;
+    assert OWNER_ANSWER_OTHER_STATE == STATE_LIVE;
+    assert ruled_surface_state(false, OWNER_ANSWER_OTHER_ROWS_HIDDEN) == OWNER_ANSWER_OTHER_STATE;
+    assert OWNER_ANSWER_KEPT_QUEST_STATE == STATE_SURFACE_LIVE;
+    assert ruled_surface_state(OWNER_ANSWER_KEEPS_THE_QUEST, false) == OWNER_ANSWER_KEPT_QUEST_STATE;
+    assert HIDDEN_TABLES[1] == "accessories";
+    assert HIDDEN_TABLES[3] == "tea_products";
+    // Not a completed retirement, and nothing the answer did not name was moved.
+    assert OWNER_ANSWER_DROPS_A_TABLE == false;
+    assert surface_is_retired(false, OWNER_ANSWER_DROPS_A_TABLE, false, OWNER_ANSWER_GOODS_ROWS_HIDDEN) == false;
+    assert surface_is_retired(false, OWNER_ANSWER_DROPS_A_TABLE, false, OWNER_ANSWER_OTHER_ROWS_HIDDEN) == false;
+    assert OWNER_ANSWER_COMPLETES_A_RETIREMENT == false;
+    assert COMPLETED_RETIREMENT_COUNT == 1;
+    assert OWNER_ANSWER_CHANGES_AN_HTTP_ROUTE == false;
+    assert LEGACY_HTTP_ROUTE_COUNT == 43;
+    assert THIS_FILE_PICKS_THE_NEXT_SURFACE == false;
+}
+
+test the_quests_purchase_line_is_removed_and_no_sentence_was_written {
+    assert QUEST_PURCHASE_KEY == "T_PURCHASE_MIN";
+    assert QUEST_PURCHASE_LINE_RENDERED_BEFORE_2026_09_25 == true;
+    assert QUEST_PURCHASE_LINE_RENDERED == false;
+    assert QUEST_PURCHASE_KEY_STAYS_TRANSLATED == true;
+    assert QUEST_COPY_WRITTEN_NEW == false;
 }
 
 test the_repointed_set_is_split_by_what_each_path_lost {
@@ -718,8 +1262,122 @@ test the_repointed_set_is_split_by_what_each_path_lost {
     assert repointed_set_splits(REPOINTED_WITH_THE_SCREEN_DELETED, REPOINTED_ROUTE_COUNT - REPOINTED_WITH_THE_SCREEN_DELETED) == true;
     assert repointed_set_splits(REPOINTED_WITH_THE_SCREEN_DELETED, 0) == false;
     assert repointed_set_splits(REPOINTED_WITH_THE_SCREEN_DELETED, REPOINTED_ROUTE_COUNT) == false;
+    // Since 2026-09-25 the kept half is the events screens (their owner's count, passed in) and
+    // the seven legacy screens (this file's).
+    assert REPOINTED_LEGACY_SCREENS_KEPT_UNMOUNTED == LEGACY_PATHS_REPOINTED_ON_2026_09_25.len;
+    assert repointed_kept_half_splits(REPOINTED_ROUTE_COUNT_BEFORE_2026_09_25 - REPOINTED_WITH_THE_SCREEN_DELETED, REPOINTED_LEGACY_SCREENS_KEPT_UNMOUNTED) == true;
+    assert repointed_kept_half_splits(REPOINTED_ROUTE_COUNT_BEFORE_2026_09_25 - REPOINTED_WITH_THE_SCREEN_DELETED, 0) == false;
+    assert repointed_kept_half_splits(0, REPOINTED_LEGACY_SCREENS_KEPT_UNMOUNTED) == false;
     // A kept path over a kept screen file is never a gone surface, however dark it is.
     assert may_claim_surface_is_gone(1, 1, 1) == false;
+}
+
+test the_2026_09_25_ruling_changes_surfaces_and_no_data {
+    assert OWNER_RULING_2026_09_25_AT == "2026-09-25";
+    assert OWNER_RULING_2026_09_25_ADDS_A_MIGRATION == false;
+    assert OWNER_RULING_2026_09_25_DELETES_ROWS == false;
+    assert OWNER_RULING_2026_09_25_SERVER_SURFACES.len == OWNER_RULING_2026_09_25_SERVER_SURFACE_COUNT;
+    assert OWNER_RULING_2026_09_25_SERVER_SURFACES[0] == "retired_carousel_buttons";
+    assert OWNER_RULING_2026_09_25_SERVER_SURFACES[2] == "tech_tree_reads";
+    assert OWNER_RULING_2026_09_25_SERVER_SURFACES[6] == "promo_report_names";
+    // The tech tree: rows kept, none hidden, masked on read -- the bike-sale shape.
+    assert TECH_TREE_ROWS_HIDDEN == OWNER_RULED_BIKE_SALE_ROWS_HIDDEN;
+    assert TECH_TREE_MASKED_ON_READ == OWNER_RULED_BIKE_SALE_MASKED_ON_READ;
+    assert TECH_TREE_STATE == STATE_LIVE;
+    assert ruled_surface_state(false, TECH_TREE_ROWS_HIDDEN) == TECH_TREE_STATE;
+    assert A_MASK_ON_READ_HAS_A_STATE_HERE == false;
+    // The dropped table's reader stays, allowlisted, so the allowlist does not move.
+    assert RETIRED_READER_STATE_AFTER_THE_2026_09_25_RULING == STATE_READER_ALLOWLISTED;
+    assert retirement_state(false, true, true, false) == RETIRED_READER_STATE_AFTER_THE_2026_09_25_RULING;
+    assert ALLOWLIST_SIZE_MOVED_BY_THE_2026_09_25_RULING == false;
+    assert ALLOWLIST_SIZE == 4;
+    assert TECH_TREE_HTTP_ROUTE_COUNT == 4;
+    assert LEGACY_HTTP_ROUTE_COUNT == 43;
+    assert COMPLETED_RETIREMENT_COUNT == 1;
+    assert REUSES_BOT_SURFACE_ID == "turbobaby/bot-surface";
+}
+
+test the_promo_report_withholds_the_dropped_tables_names_and_keeps_every_row {
+    assert PROMO_REPORT_NAME_DECIDED_AT == OWNER_RULING_2026_09_25_AT;
+    assert PROMO_REPORT_NAME_DECIDED_BY == "operator, applying the owner's ruling of 2026-09-25 (answer 12)";
+    assert PROMO_REPORT_NAME_SITE == "src/promo.rs report";
+    assert PROMO_REPORT_NAME_DECISION == "src/trios/promo.rs report_kind_and_name";
+    assert PROMO_REPORT_NAME_LABEL == "src/trios/promo.rs REPORT_WITHHELD_NAME";
+    assert PROMO_REPORT_NAME_WIRING_TEST == "tests/promo_report_names_wiring.rs";
+    assert PROMO_REPORT_READER_COUNT == 2;
+    // A live kind with its own link, or with no link and one table behind it: printed.
+    assert report_prints_stored_name(true, true, true, false) == true;
+    assert report_prints_stored_name(true, true, true, true) == true;
+    assert report_prints_stored_name(true, false, false, false) == true;
+    // A bestseller whose link opens the dropped table, or with no link to tell: withheld.
+    assert report_prints_stored_name(true, true, false, true) == false;
+    assert report_prints_stored_name(true, false, false, true) == false;
+    // A kind no live subject writes, whatever its link says: withheld.
+    assert report_prints_stored_name(false, true, true, false) == false;
+    assert report_prints_stored_name(false, false, false, false) == false;
+    assert PROMO_REPORT_UNCLASSIFIED_KIND_IS_WITHHELD == true;
+    // Rows and totals stay; nothing is written; the send question is another file's.
+    assert PROMO_REPORT_ROWS_HIDDEN == false;
+    assert PROMO_REPORT_WRITES_THE_TABLE == false;
+    assert PROMO_REPORT_ROWS_HIDDEN == OWNER_RULING_2026_09_25_DELETES_ROWS;
+    assert PROMO_REPORT_OTHER_TABLES_NAMES_PRINTED == true;
+    assert PROMO_PUBLISH_REFUSAL_OWNER_ID != ID;
+}
+
+test the_answer_3_masks_reads_and_writes_no_row {
+    assert OWNER_ANSWER_3_AT == OWNER_RULING_2026_09_25_AT;
+    assert OWNER_ANSWER_3_READ_BY == "operator";
+    assert OWNER_ANSWER_3_RULES == "src/trios/legacy_view.rs";
+    assert OWNER_ANSWER_3_WITNESS == "tests/legacy_view_wiring.rs";
+    assert OWNER_ANSWER_3_LINE_RULE_OWNER_ID != ID;
+    assert OWNER_ANSWER_3_SERVER_READS.len == OWNER_ANSWER_3_SERVER_READ_COUNT;
+    assert OWNER_ANSWER_3_CLIENT_GUARDS.len == OWNER_ANSWER_3_CLIENT_GUARD_COUNT;
+    assert OWNER_ANSWER_3_LEFT_READS.len == OWNER_ANSWER_3_LEFT_READ_COUNT;
+    assert OWNER_ANSWER_3_SERVER_READS[0] == "order_lines";
+    assert OWNER_ANSWER_3_SERVER_READS[3] == "bonus_descriptions";
+    // A garden row reaches an old cached bundle as a generic bonus too: its type is withheld.
+    assert OWNER_ANSWER_3_SERVER_READS[4] == "bonus_garden_types";
+    assert OWNER_ANSWER_3_SERVER_READ_COUNT == 5;
+    assert OWNER_ANSWER_3_WITHHELD_TX_TYPE_COUNT == 2;
+    assert OWNER_ANSWER_3_WITHHELD_TX_TYPE_IS_EMPTY == true;
+    assert OWNER_ANSWER_3_LEFT_READS[3] == "referral_quest_game_reads";
+    assert OWNER_ANSWER_3_LEFT_READ_COUNT == 4;
+    assert OWNER_ANSWER_3_CLIENT_GUARDS[1] == "garden_bonus_label";
+    assert OWNER_ANSWER_3_CLIENT_GUARD_COUNT == 2;
+    assert OWNER_ANSWER_3_DESCRIBED_TX_TYPE_COUNT == 4;
+    // Nothing stored moves, and the archive reads it whole.
+    assert OWNER_ANSWER_3_WRITES_ROWS == false;
+    assert OWNER_ANSWER_3_WRITES_ROWS == OWNER_RULING_2026_09_25_DELETES_ROWS;
+    assert OWNER_ANSWER_3_ADDS_A_MIGRATION == false;
+    assert OWNER_ANSWER_3_CHANGES_AN_ADMIN_READ == false;
+    // A masked read is not a retirement: no state moves.
+    assert OWNER_ANSWER_3_CHANGES_A_STATE == false;
+    assert COMPLETED_RETIREMENT_COUNT == 1;
+    // One key declared for the neutral name; the garden label's key stays.
+    assert OWNER_ANSWER_3_KEYS_ADDED == 1;
+    assert OWNER_ANSWER_3_KEYS_DELETED == 0;
+}
+
+test the_answer_3_cart_path_gave_way_to_the_kept_cart_rule {
+    // Reconciled 2026-09-26: a cart line of a retired kind is not served at all, under the
+    // neighbour's rule, so this answer renames no cart line and guards no device cart.
+    assert OWNER_ANSWER_3_RECONCILED_AT == "2026-09-26";
+    assert OWNER_ANSWER_3_CART_RULE_OWNER_ID == "turbobaby/cart-persistence";
+    assert OWNER_ANSWER_3_CART_RULE_OWNER_ID != ID;
+    assert OWNER_ANSWER_3_RENAMES_A_CART_LINE == false;
+    assert OWNER_ANSWER_3_SERVER_READS[2] == "server_cart_lines";
+    assert OWNER_ANSWER_3_CART_GUARDS_REMOVED[0] == "device_cart_line_names";
+    assert OWNER_ANSWER_3_CART_GUARDS_REMOVED[1] == "device_cart_line_pictures";
+    assert OWNER_ANSWER_3_CLIENT_GUARD_COUNT + OWNER_ANSWER_3_CART_GUARDS_REMOVED.len == OWNER_ANSWER_3_CLIENT_GUARD_COUNT_ON_ITS_BRANCH;
+    // The two reads left on the branch that the neighbours closed, each with its closer.
+    assert OWNER_ANSWER_3_LEFT_READS_CLOSED[0] == "abandoned_cart_reminder";
+    assert OWNER_ANSWER_3_LEFT_READS_CLOSED_BY_IDS[0] == "turbobaby/cart-persistence";
+    assert OWNER_ANSWER_3_LEFT_READS_CLOSED[1] == "garden_notification_arm";
+    assert OWNER_ANSWER_3_LEFT_READS_CLOSED_BY_IDS[1] == "turbobaby/notification-queue";
+    assert OWNER_ANSWER_3_LEFT_READS_CLOSED.len == OWNER_ANSWER_3_LEFT_READS_CLOSED_BY_IDS.len;
+    assert OWNER_ANSWER_3_LEFT_READ_COUNT + OWNER_ANSWER_3_LEFT_READS_CLOSED.len == OWNER_ANSWER_3_LEFT_READ_COUNT_ON_ITS_BRANCH;
+    // Hiding is still not deleting.
+    assert OWNER_ANSWER_3_WRITES_ROWS == false;
 }
 
 test the_identity_of_this_contract_is_fixed {
@@ -768,6 +1426,12 @@ invariant no_surface_is_claimed_gone_while_any_declaration_survives
 invariant a_word_count_is_never_absence_evidence
     assert GARDEN_WORD_HITS_IN_CLIENT_ROUTER > 0 and may_claim_surface_is_gone(GARDEN_ROUTE_DECLARATIONS, 0, 0) == true
 
+invariant the_cannabis_ruling_invents_no_sentence_and_drops_no_table
+    assert CANNABIS_RULING_SENTENCES_INVENTED == 0 and CANNABIS_RULING_DROPS_A_TABLE == false and CANNABIS_RULING_I18N_KEYS_DELETED_UNRENDERED + CANNABIS_RULING_I18N_KEYS_DELETED_RENDERED == CANNABIS_RULING_I18N_KEYS_DELETED
+
+invariant no_removed_asset_was_one_a_rental_path_loaded
+    assert CANNABIS_RULING_REMOVED_FILES_A_RENTAL_PATH_LOADED == 0 and CANNABIS_RULING_SERVED_FILES_REMOVED + CANNABIS_RULING_SERVED_FILES_KEPT == CANNABIS_RULING_SERVED_FILES_BEFORE
+
 invariant an_unreproducible_footprint_figure_is_never_adopted
     assert SURVEY_LOC_CLAIM_REPRODUCED == false and LEGACY_SOURCE_FILE_COUNT < TOTAL_SOURCE_FILE_COUNT
 
@@ -783,5 +1447,29 @@ invariant a_ruled_surface_a_customer_can_still_reach_is_still_live
 invariant the_repointed_set_is_always_split_by_what_each_path_lost
     assert repointed_set_splits(REPOINTED_WITH_THE_SCREEN_DELETED, REPOINTED_ROUTE_COUNT - REPOINTED_WITH_THE_SCREEN_DELETED) == true and REPOINTED_WITH_THE_SCREEN_DELETED < REPOINTED_ROUTE_COUNT
 
+invariant the_2026_09_25_ruling_never_counts_as_a_completed_retirement
+    assert surface_is_retired(false, false, false, TECH_TREE_ROWS_HIDDEN) == false and OWNER_RULING_2026_09_25_DELETES_ROWS == false and OWNER_RULING_2026_09_25_ADDS_A_MIGRATION == false and COMPLETED_RETIREMENT_COUNT == 1
+
+invariant a_kind_no_live_subject_writes_never_has_its_name_printed
+    assert report_prints_stored_name(false, true, true, false) == false and report_prints_stored_name(false, false, false, false) == false and report_prints_stored_name(true, false, false, true) == false and PROMO_REPORT_ROWS_HIDDEN == false
+
 invariant a_bike_sale_row_is_never_called_hidden_to_reach_a_state
-    assert OWNER_RULED_BIKE_SALE_ROWS_HIDDEN == false and ruled_surface_state(false, OWNER_RULED_BIKE_SALE_ROWS_HIDDEN) == STATE_LIVE and OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN == true
+    assert OWNER_RULED_BIKE_SALE_ROWS_HIDDEN == false and ruled_surface_state(false, OWNER_RULED_BIKE_SALE_ROWS_HIDDEN) == STATE_LIVE and OWNER_RULING_SCOPE_OVER_THE_EIGHT_IS_OPEN_BEFORE_2026_09_25 == true
+
+invariant the_answer_of_2026_09_25_leaves_no_legacy_path_unaccounted_for
+    assert owner_answer_covers_the_eight(LEGACY_PATHS_REPOINTED_ON_2026_09_25.len, LEGACY_LIVE_ROUTES.len) == true and LEGACY_PATHS_DECLARED.len == LEGACY_PATH_DECLARED_COUNT and REPOINTED_ROUTE_COUNT == REPOINTED_ROUTE_COUNT_BEFORE_2026_09_25 + REPOINTED_LEGACY_SCREENS_KEPT_UNMOUNTED
+
+invariant the_answer_of_2026_09_25_never_counts_as_a_completed_retirement
+    assert surface_is_retired(false, OWNER_ANSWER_DROPS_A_TABLE, false, OWNER_ANSWER_GOODS_ROWS_HIDDEN) == false and surface_is_retired(false, OWNER_ANSWER_DROPS_A_TABLE, false, OWNER_ANSWER_OTHER_ROWS_HIDDEN) == false and OWNER_ANSWER_COMPLETES_A_RETIREMENT == false and COMPLETED_RETIREMENT_COUNT == 1
+
+invariant the_kept_quest_never_states_the_previous_shops_purchase_rule
+    assert OWNER_ANSWER_KEEPS_THE_QUEST == true and QUEST_PURCHASE_LINE_RENDERED == false and QUEST_COPY_WRITTEN_NEW == false
+
+invariant the_age_gate_answer_moves_no_stored_data_and_retires_no_surface
+    assert AGE_GATE_ANSWER_ADDS_A_MIGRATION == false and AGE_GATE_ANSWER_WRITES_A_ROW == false and AGE_GATE_ANSWER_RENAMES_A_STORAGE_KEY == false and AGE_GATE_ANSWER_IS_A_SURFACE_RETIREMENT == false and COMPLETED_RETIREMENT_COUNT == 1
+
+invariant the_answer_3_hides_what_it_reads_and_writes_nothing
+    assert OWNER_ANSWER_3_WRITES_ROWS == false and OWNER_ANSWER_3_ADDS_A_MIGRATION == false and OWNER_ANSWER_3_CHANGES_A_STATE == false and OWNER_ANSWER_3_CHANGES_AN_ADMIN_READ == false
+
+invariant the_answer_3_renames_no_cart_line
+    assert OWNER_ANSWER_3_RENAMES_A_CART_LINE == false and OWNER_ANSWER_3_CLIENT_GUARD_COUNT + OWNER_ANSWER_3_CART_GUARDS_REMOVED.len == OWNER_ANSWER_3_CLIENT_GUARD_COUNT_ON_ITS_BRANCH

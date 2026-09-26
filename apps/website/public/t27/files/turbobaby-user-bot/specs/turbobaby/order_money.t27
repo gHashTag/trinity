@@ -325,11 +325,19 @@ pub const SEED_MEASUREMENT_RE_RUN_AT : str = "2026-09-21";
 ; the one line-ending-independent number (Python reads either checkout as the same 350 lines).
 ; The two zeros above do not depend on line endings; re-read the same day on the blob, the seed
 ; still holds zero of each, case-insensitive.
-pub const FLEET_SEED_BYTES : u32 = 19084;
+; RE-MEASURED 2026-09-25, because the seed changed: the owner's decision of that day on what is
+; offered instead of CLICK 125 (DECISIONS.md, the D12 amendment of 2026-09-25) rewrote
+; pricing_policy.not_offered.click-125 and added the dated source it rests on, without moving a
+; line -- every line citation into the seed from the other contracts still lands where it did. The
+; committed blob is 20161 bytes and still 350 lines; 19084 is kept under its _BEFORE_ name, and it
+; is the size the 2026-09-24 arithmetic above reconciles. Re-read on the new blob: zero of each
+; word, case-insensitive, so the two zeros still stand.
+pub const FLEET_SEED_BYTES : u32 = 20161;
 pub const FLEET_SEED_BYTES_BEFORE_2026_09_24 : u32 = 19434;
+pub const FLEET_SEED_BYTES_BEFORE_2026_09_25 : u32 = 19084;
 pub const FLEET_SEED_LINES : u32 = 350;
 pub const FLEET_SEED_BYTES_ARE_THE_COMMITTED_BLOB : bool = true;
-pub const FLEET_SEED_BYTES_REMEASURED_AT : str = "2026-09-24";
+pub const FLEET_SEED_BYTES_REMEASURED_AT : str = "2026-09-25";
 pub const A_SECOND_CONTRACT_CITES_THIS_SEED_MEASUREMENT : bool = true;
 pub const SEED_MEASUREMENT_SECOND_READER_ID : str = "turbobaby/loyalty-ledger";
 pub const BONUS_POLICY_NOTE : str = "Measured 2026-09-20: data/fleet_seed.json contains zero occurrences of loyalty and zero of bonus, case-insensitive. That does NOT make the policy unowned. src/trios/loyalty.rs:34-46 is a standing default block holding max_bonus_usage_pct 30.0 at src/trios/loyalty.rs:43 next to three cashback percentages and three tier thresholds; src/trios/loyalty.rs:86-92 clamps a stored value into the legal percentage range or falls back to that default; src/api/orders.rs:1293-1305 turns it into a ceiling and refuses above it. All of that runs AFTER the identity here has passed, and none of it is a term of the identity, so restating any number of it here would be the hand-copied computation D15 forbids.";
@@ -568,14 +576,18 @@ test the_seed_is_silent_about_bonus_and_the_policy_is_still_owned_elsewhere {
 
 ; The seed's size, stated so that it reproduces on every checkout (corrected 2026-09-24). The blob
 ; size plus one byte per line is exactly what the CRLF working copy measured, which is the whole
-; of the difference between the old figure and the new one.
+; of the difference between the old figure and the new one. Since 2026-09-25 that arithmetic is
+; about the blob as it stood before the owner's CLICK 125 decision, which the _BEFORE_2026_09_25
+; name carries; the seed kept its 350 lines through the change.
 test the_seed_size_is_the_blobs_and_not_a_working_copys {
-  assert FLEET_SEED_BYTES == 19084;
+  assert FLEET_SEED_BYTES == 20161;
   assert FLEET_SEED_LINES == 350;
   assert FLEET_SEED_BYTES_BEFORE_2026_09_24 == 19434;
-  assert FLEET_SEED_BYTES_BEFORE_2026_09_24 == FLEET_SEED_BYTES + FLEET_SEED_LINES;
+  assert FLEET_SEED_BYTES_BEFORE_2026_09_25 == 19084;
+  assert FLEET_SEED_BYTES_BEFORE_2026_09_24 == FLEET_SEED_BYTES_BEFORE_2026_09_25 + FLEET_SEED_LINES;
+  assert FLEET_SEED_BYTES != FLEET_SEED_BYTES_BEFORE_2026_09_25;
   assert FLEET_SEED_BYTES_ARE_THE_COMMITTED_BLOB == true;
-  assert FLEET_SEED_BYTES_REMEASURED_AT == "2026-09-24";
+  assert FLEET_SEED_BYTES_REMEASURED_AT == "2026-09-25";
   assert FLEET_SEED_BYTES_REMEASURED_AT != SEED_MEASUREMENT_RE_RUN_AT;
   assert FLEET_SEED_LOYALTY_MENTIONS == 0;
   assert FLEET_SEED_BONUS_MENTIONS == 0;

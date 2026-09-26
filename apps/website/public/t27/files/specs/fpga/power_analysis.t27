@@ -199,7 +199,7 @@ module PowerAnalysis {
         };
     }
 
-    fn total_domain_power(domains: [ClockDomainPower], count: u32) -> u32 {
+    fn total_domain_power(domains: [*]ClockDomainPower, count: u32) -> u32 {
         var total : u32 = 0;
         var i : u32 = 0;
         while i < count {

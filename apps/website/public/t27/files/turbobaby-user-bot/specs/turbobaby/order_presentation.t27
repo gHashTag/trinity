@@ -97,6 +97,13 @@
 ; should show as its total. The commerce contract, whose ledger the second touches, is the ninth
 ; neighbour since the same day (REUSES_COMMERCE_ID), so "the seven contracts named by ID below" now
 ; reads nine.
+; ADDED 2026-09-25, the owner's answer 3: a fourth question, which NAME a customer is shown for a
+; line of the old catalogue on an order of theirs, and which SHOP. The answer is the operator's
+; neutral name, cited by its key like every other string here, and a withheld shop; the section
+; "The name of a line of the old catalogue" says where both are decided and what they cost. The
+; rule lives in src/trios/legacy_view.rs, a fifth file this boundary names without owning, and
+; turbobaby/legacy-retirement, which records the answer, is named there (RETIRED_LINE_OWNER_ID) and
+; is not counted among the nine neighbours: nothing of its is consumed but the date.
 ; phi^2 + 1/phi^2 = 3 | TRINITY
 
 module turbobaby-order-presentation;
@@ -324,7 +331,7 @@ pub const NO_REJECTED_LABEL_KEY_EXISTS : bool = true;
 ; two pairs apart (BOT_PUSH_SITE), but its sentences are notifications and not labels, and the
 ; rejected one adds a refund claim this screen cannot verify, so neither can be copied onto a
 ; label verbatim. src/locales.rs:184 and :273, the nearest short strings, are the ADMIN'S callback
-; toast (sent at src/bot/callbacks.rs:707) and not customer copy at all.
+; toast (sent at src/bot/callbacks.rs:680) and not customer copy at all.
 pub const COMPLETED_KEY_AWAITS_THE_OWNER : bool = true;
 pub const REJECTED_KEY_AWAITS_THE_OWNER : bool = true;
 pub const COMPLETED_KEY_NOTE : str = "Owner question A. A key for completed decides the customer-visible half of the alias the order-status contract owns, and the write path persists completed for both names, so a separate label would relabel every finished order. What is missing is the owner's ruling and an owner-approved ru and en pair; no source in this repository publishes one.";
@@ -930,6 +937,9 @@ pub const WIRE_STAR_CLAMP_SITE_BEFORE_THE_WIRE_FIX : str = "src/db/orders.rs:79"
 pub const MONEY_WITHHELD_FIELD : str = "money_withheld";
 pub const MONEY_WITHHELD_REASON : str = "stored_value_not_finite_non_negative";
 pub const MONEY_WITHHELD_REASON_SITE : str = "src/db/orders.rs:46";
+; Since the owner's answer 3 of 2026-09-25 the two customer sites call Order::for_customer, which
+; runs this same conversion first and then masks only the lines and the shop (the section "The
+; name of a line of the old catalogue"); no figure passes anything else, and the sites did not move.
 pub const ORDER_ENDPOINTS_SERIALISE_THROUGH_ONE_CONVERSION : [2]str = [
   "src/api/orders.rs:1973",
   "src/api/orders.rs:2509",
@@ -1228,6 +1238,105 @@ pub const TRANSPORT_ERROR_TEXT_REACHES_THE_CUSTOMER : bool = true;
 pub const LIST_ERROR_STATE_HAS_NO_KEY : bool = true;
 pub const DETAIL_ERROR_STATE_HAS_A_KEY_AND_ALSO_LEAKS_THE_TEXT : bool = true;
 
+; --- The name of a line of the old catalogue (owner, 2026-09-25, answer 3) ----------------------
+; DECIDED 2026-09-25. The owner's answer 3 of that day's second numbered list rules that what the
+; previous shop left in storage leaves customers' sight, and that no stored row is deleted or
+; rewritten for it; turbobaby/legacy-retirement records the answer (OWNER_ANSWER_3_AT) and the
+; other reads it moved. On these screens that content is the order LINE. An order placed before
+; migration 083 stores the old catalogue's lines -- a strain, an accessory, a tea or a set, each
+; by id and by name -- and the list, the detail and the profile's recent orders printed each
+; line's stored name as it was stored. The operator chose the neutral name those lines are shown
+; under; like every string on this surface it is cited by its key, RETIRED_LINE_NAME_KEY, and its
+; two rows are pinned by a host test beside the rule (RETIRED_LINE_UNIT_TESTS_LIVE_IN).
+;
+; THE RULE is the server's, so a bundle that predates it is served the neutral name too
+; (customer_order_line in RETIRED_LINE_RULE). A line whose bike is not an object is of a retired
+; kind, and it is served as at most three fields: the neutral name, under the one name field every
+; owned screen reads first (RETIRED_LINE_NAME_FIELD), and its quantity and unit price exactly as
+; stored (RETIRED_LINE_KEPT_FIELDS) -- a figure is copied, never judged or filled in, and D9 stays
+; the screens' as above. Its ids, kind flags and service choice are not served, and neither is a
+; key this repository never declared, so no reorder can rebuild the old item in a cart: all five
+; reorder conversions (the three owned screens, home and success) drop a line with no id, which is
+; what they already did, and home and success print no line name. A bike line is served
+; as stored. The server writes the name in the language the stored names were written in
+; (Russian), and each owned screen prints it through the same table in the reader's language
+; (shown_line_name, RETIRED_LINE_PRINT_SITES), so a customer reading English reads the English row.
+; Only the two customer reads apply the rule, through Order::for_customer; the admin reads keep
+; the stored row, which is the archive.
+;
+; THE SHOP. The same two reads withhold the shop an order names when it names the previous shop
+; (customer_shop_id); every shop value the old checkout stored did. A withheld shop reaches the
+; keyless shop fallback both owned screens print for an absent shop (two of
+; KEYLESS_CUSTOMER_STRING_SITES), and that fallback names THIS shop, so an order the previous shop
+; took now reads as placed with this one, on the detail's labelled delivery row too. No neutral
+; shop wording was given and none is supplied here (RETIRED_SHOP_FALLBACK_NOTE).
+; DECIDED 2026-09-26, by the operator, announced to the owner with no objection: an order of the
+; previous shop must NOT be shown as this shop's. No wording was needed, because the decision is to
+; show no shop label at all for such an order. So a withheld shop is served as an EMPTY shop
+; (RETIRED_SHOP_SERVED_AS; WITHHELD_SHOP in the rules' module), never as null: null is what an
+; order naming no shop is served, and those keep the fallback. Each owned screen reads the served
+; shop through shown_shop and prints no shop label for the empty one -- the list prints the date
+; alone where it printed the shop and the date, and the detail leaves out its labelled delivery row,
+; label and value -- while an order of this shop prints its stored shop, and one naming no shop the
+; keyless fallback, exactly as before; the two fallback sites keep their literal on their cited
+; lines, so KEYLESS_CUSTOMER_STRING_SITES holds, and no cited line moved. A bundle built before the
+; decision prints an empty value for the empty shop: not this shop's name either. The Mini App's
+; checkout never sends an empty shop, so no order of this shop is read as a withheld one.
+;
+; WHAT DID NOT MOVE. No status, no figure, no owner question above and no cited line: each of the
+; three print sites was replaced in place, so LIST_LINE_COUNT and DETAIL_LINE_COUNT hold.
+pub const RETIRED_LINE_DECIDED_AT : str = "2026-09-25";
+pub const RETIRED_LINE_DECIDED_BY : str = "operator, applying the owner's answer 3 of 2026-09-25";
+pub const RETIRED_LINE_OWNER_ID : str = "turbobaby/legacy-retirement";
+pub const RETIRED_LINE_NAME_KEY : str = "T_ORDER_LINE_PREVIOUS_CATALOGUE";
+pub const RETIRED_LINE_NAME_FIELD : str = "strain_name";
+pub const RETIRED_LINE_KEPT_FIELD_COUNT : u8 = 2;
+pub const RETIRED_LINE_KEPT_FIELDS : [2]str = ["quantity", "unit_price"];
+pub const RETIRED_LINE_RULE : str = "src/trios/legacy_view.rs";
+pub const RETIRED_LINE_SERVER_SITE : str = "Order::for_customer, src/db/orders.rs";
+pub const RETIRED_LINE_CUSTOMER_READS : [2]str = ["get_user_orders", "get_order_details"];
+pub const RETIRED_LINE_ADMIN_READS : [2]str = ["get_orders", "get_order"];
+pub const RETIRED_LINE_PRINT_SITES : [3]str = [
+  "src/ui/screens/orders_screen.rs:306",
+  "src/ui/screens/order_detail_screen.rs:260",
+  "src/ui/screens/profile_screen.rs:1001",
+];
+pub const RETIRED_LINE_WITNESS : str = "tests/legacy_view_wiring.rs";
+pub const RETIRED_LINE_UNIT_TESTS_LIVE_IN : str = "src/trios/legacy_view.rs";
+pub const RETIRED_LINE_SERVES_AN_ID : bool = false;
+pub const RETIRED_LINE_SERVES_AN_UNDECLARED_KEY : bool = false;
+pub const RETIRED_LINE_WRITES_A_ROW : bool = false;
+pub const RETIRED_LINE_ADMIN_READS_KEEP_THE_ROW : bool = true;
+pub const RETIRED_LINE_PRINTED_IN_THE_READERS_LANGUAGE : bool = true;
+pub const RETIRED_LINE_MOVED_A_CITED_LINE : bool = false;
+pub const RETIRED_SHOP_IS_WITHHELD : bool = true;
+pub const RETIRED_SHOP_READS_AS_THIS_SHOP : bool = false;
+pub const RETIRED_SHOP_READ_AS_THIS_SHOP_UNTIL : str = "2026-09-26";
+pub const RETIRED_SHOP_DECIDED_AT : str = "2026-09-26";
+pub const RETIRED_SHOP_DECIDED_BY : str = "operator, announced to the owner, no objection";
+pub const RETIRED_SHOP_LABEL_SHOWN : bool = false;
+pub const RETIRED_SHOP_SERVED_AS : str = "";
+pub const RETIRED_SHOP_LABEL_RULE : str = "shown_shop, src/trios/legacy_view.rs";
+pub const THIS_SHOPS_ORDERS_KEEP_THEIR_LABEL : bool = true;
+pub const RETIRED_SHOP_FALLBACK_NOTE : str = "CLOSED 2026-09-26. Until then a withheld shop was served as null, and both owned screens printed their keyless shop fallback for null, which names this shop, so an order the previous shop took read as placed with this one. The operator decided that such an order shows no shop label at all: it is served as the empty shop and both owned screens print no shop label for it, while null keeps the fallback.";
+
+; A line is of a retired kind unless its bike is an object.
+pub fn order_presentation_line_is_retired(bike_is_an_object: bool) bool {
+  return !bike_is_an_object;
+}
+
+; How many fields a line of a retired kind is served with: the neutral name, and each kept figure
+; the stored line holds. Never more, whatever else it stored.
+pub fn order_presentation_retired_line_field_count(quantity_stored: bool, price_stored: bool) u8 {
+  if (quantity_stored and price_stored) {
+    return 3;
+  }
+  if (quantity_stored or price_stored) {
+    return 2;
+  }
+  return 1;
+}
+
 ; --- The live view, and what it promises --------------------------------------------------------
 ; The detail screen polls the status endpoint on a bounded schedule: 360 ticks, ten seconds apart
 ; (src/ui/screens/order_detail_screen.rs:439-446), which is one hour and then silence. A live
@@ -1489,7 +1598,10 @@ pub fn order_presentation_cancel_is_told_by_a_line(answer: u8, reread: u8) bool 
 ; is the client-errors contract's refusal to hold (FAILURE_SENTENCE_DECLARATION), not this file's.
 pub const SCREEN_HAS_NO_RULE_FOR_A_REFUSED_CANCELLATION : bool = false;
 pub const SCREEN_HAS_NO_RULE_FOR_A_REFUSED_CANCELLATION_BEFORE_REPAIR : bool = true;
-pub const REFUSED_CANCELLATION_NOTE : str = "Since 2026-09-22 the screen reads the answer to a customer's cancellation through order_cancel_answer in src/trios/api_errors.rs, closes the dialog only on a confirmed success, withdraws the offer once the server has confirmed, reads the status again after every answer, holds an attempt whose outcome is unknown -- no answer, or a failure of the server's own -- until a fresh reading shows the order still cancellable, and tells every answer above the pending gate. What stays unpublished is narrower and belongs to the client-errors contract: an owner-approved sentence for the refusal the order-status contract declares once the order has left pending. The interim that ships until then, and what exactly is missing, are recorded there.";
+; CORRECTED 2026-09-25: the note's last two sentences named an unpublished sentence and the interim
+; shipped in its place. Owner question D was answered by delegation that day, so they now say
+; where the answer is recorded. Nothing the screen does changed with it.
+pub const REFUSED_CANCELLATION_NOTE : str = "Since 2026-09-22 the screen reads the answer to a customer's cancellation through order_cancel_answer in src/trios/api_errors.rs, closes the dialog only on a confirmed success, withdraws the offer once the server has confirmed, reads the status again after every answer, holds an attempt whose outcome is unknown -- no answer, or a failure of the server's own -- until a fresh reading shows the order still cancellable, and tells every answer above the pending gate. The sentence for the refusal the order-status contract declares once the order has left pending belongs to the client-errors contract. It was an interim from 2026-09-22 to 2026-09-25, when owner question D was answered by delegation, and what was decided and what it leaves open are recorded there (CONFLICTED_CANCELLATION_DECISION).";
 pub const REFUSED_CANCELLATION_NOTE_BEFORE_REPAIR : str = "The POST result is bound to a discarded local at src/ui/screens/order_detail_screen.rs:352 and the confirmation dialog is closed at :358 on both paths. No branch reads a status code, no state records a failure, and no i18n key exists for one. What the customer is told after a refused cancellation is therefore nothing, and this file declares the absence rather than a message.";
 pub const SCREEN_HAS_NO_RULE_FOR_AN_EXPIRED_LIVE_VIEW : bool = true;
 pub const EXPIRED_LIVE_VIEW_NOTE : str = "The tick loop at src/ui/screens/order_detail_screen.rs:439-446 ends after 360 iterations. Since 2026-09-22 one thing still reads the status after it: an answer to a cancellation, which drops the last reading and asks once more (CANCEL_REREAD_HANDLER_SITE), past the hour as within it. Nothing else runs. The badge at :247 depends on the presence of the last response and not on its age, and the payload at src/api/orders.rs:1908-1921 carries no timestamp that a freshness rule could consult, so there is still no shipped freshness rule to describe.";
@@ -1548,6 +1660,9 @@ pub const BIKE_LINE_ORDER_TOTAL_NOTE : str = "Owner question F. What an order ho
 ; is refused because the order has left pending. It is a question about a SENTENCE, so it is the
 ; client-errors contract's to hold (FAILURE_SENTENCE_DECLARATION) and is only named here. It is
 ; listed with the other three.
+; ANSWERED 2026-09-25: the owner delegated question D, and a 409 is told a key of its own since
+; that day. The client-errors contract holds the decision and the one named limit still open, the
+; other closed by rewording that day (CONFLICTED_CANCELLATION_DECISION); A, B and C are untouched.
 ; Added 2026-09-22 with the money repair: questions E and F, both named refusals above -- which
 ; sentence, if any, stands beside a dashed order figure (ORDER_FIGURE_DASH_NOTE), and what an order
 ; holding a bike line shows as its total (BIKE_LINE_ORDER_TOTAL_NOTE). Letting the server send an
@@ -2337,7 +2452,57 @@ test the_live_view_is_read_again_after_a_cancel_answer_and_nowhere_else {
   assert order_presentation_poll_horizon_ms(POLL_INTERVAL_MS, POLL_TICK_LIMIT) == POLL_HORIZON_MS;
 }
 
+test a_line_of_the_old_catalogue_is_served_by_the_neutral_name_and_its_stored_figures {
+  assert RETIRED_LINE_DECIDED_AT == "2026-09-25";
+  assert RETIRED_LINE_DECIDED_BY == "operator, applying the owner's answer 3 of 2026-09-25";
+  assert RETIRED_LINE_OWNER_ID == "turbobaby/legacy-retirement";
+  assert RETIRED_LINE_OWNER_ID != ID;
+  assert RETIRED_LINE_NAME_KEY == "T_ORDER_LINE_PREVIOUS_CATALOGUE";
+  assert RETIRED_LINE_NAME_FIELD == "strain_name";
+  assert RETIRED_LINE_KEPT_FIELDS.len == RETIRED_LINE_KEPT_FIELD_COUNT;
+  assert RETIRED_LINE_KEPT_FIELDS[0] == "quantity";
+  assert RETIRED_LINE_KEPT_FIELDS[1] == "unit_price";
+  assert order_presentation_line_is_retired(false) == true;
+  assert order_presentation_line_is_retired(true) == false;
+  assert order_presentation_retired_line_field_count(true, true) == RETIRED_LINE_KEPT_FIELD_COUNT + 1;
+  assert order_presentation_retired_line_field_count(true, false) == 2;
+  assert order_presentation_retired_line_field_count(false, false) == 1;
+  assert RETIRED_LINE_SERVES_AN_ID == false;
+  assert RETIRED_LINE_SERVES_AN_UNDECLARED_KEY == false;
+  assert RETIRED_LINE_WRITES_A_ROW == false;
+  assert RETIRED_LINE_CUSTOMER_READS.len == 2;
+  assert RETIRED_LINE_ADMIN_READS.len == 2;
+  assert RETIRED_LINE_ADMIN_READS_KEEP_THE_ROW == true;
+  assert RETIRED_LINE_PRINT_SITES.len == 3;
+  assert RETIRED_LINE_PRINTED_IN_THE_READERS_LANGUAGE == true;
+  assert RETIRED_LINE_MOVED_A_CITED_LINE == false;
+  assert RETIRED_LINE_RULE == RETIRED_LINE_UNIT_TESTS_LIVE_IN;
+  assert RETIRED_LINE_WITNESS == "tests/legacy_view_wiring.rs";
+}
+
+test a_withheld_shop_carries_no_shop_label_and_never_reads_as_this_one {
+  assert RETIRED_SHOP_IS_WITHHELD == true;
+  // until the operator's decision of 2026-09-26 it read as this shop, through the fallback
+  assert RETIRED_SHOP_READ_AS_THIS_SHOP_UNTIL == RETIRED_SHOP_DECIDED_AT;
+  assert RETIRED_SHOP_DECIDED_AT == "2026-09-26";
+  assert RETIRED_SHOP_READS_AS_THIS_SHOP == false;
+  assert RETIRED_SHOP_LABEL_SHOWN == false;
+  assert RETIRED_SHOP_SERVED_AS == "";
+  assert RETIRED_SHOP_FALLBACK_NOTE != "";
+  // this shop's orders, and those naming no shop, keep their label and the fallback sites
+  assert THIS_SHOPS_ORDERS_KEEP_THEIR_LABEL == true;
+  assert LABELLED_DELIVERY_ROW_VALUE_IS_A_SHOP_NAME == true;
+  assert KEYLESS_CUSTOMER_STRING_SITE_COUNT == 6;
+  assert RETIRED_LINE_WITNESS == "tests/legacy_view_wiring.rs";
+}
+
 ; --- Invariants -----------------------------------------------------------------------------------
+
+invariant an_order_of_the_previous_shop_never_reads_as_this_one
+  assert RETIRED_SHOP_READS_AS_THIS_SHOP == false and RETIRED_SHOP_LABEL_SHOWN == false and THIS_SHOPS_ORDERS_KEEP_THEIR_LABEL == true
+
+invariant a_line_of_the_old_catalogue_is_never_served_more_than_its_name_and_stored_figures
+  assert order_presentation_retired_line_field_count(true, true) == 3 and RETIRED_LINE_SERVES_AN_ID == false and RETIRED_LINE_SERVES_AN_UNDECLARED_KEY == false and RETIRED_LINE_WRITES_A_ROW == false
 
 invariant only_a_confirmed_success_closes_the_cancel_dialog
   assert order_presentation_cancel_dialog_closes(CANCEL_ANSWER_CANCELLED) == true and order_presentation_cancel_dialog_closes(CANCEL_ANSWER_REFUSED) == false and order_presentation_cancel_dialog_closes(CANCEL_ANSWER_NO_ANSWER) == false and order_presentation_cancel_dialog_closes(CANCEL_ANSWER_SERVER_FAILED) == false

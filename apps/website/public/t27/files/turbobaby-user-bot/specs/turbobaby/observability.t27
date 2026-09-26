@@ -327,6 +327,20 @@ pub const RECORDING_RULES_DEAD_NAMES : u8 = 0;
 ; still true -- there are two Grafana dashboards and one of them is read -- but its NAME records
 ; the three-artifact reading this block has since corrected to four. The constants are the
 ; measurement; the name is a birthmark, and it is left standing rather than quietly rewritten.
+; CORRECTED 2026-09-25: the two greps quoted above, grep -rn "prometheus-alerts" --include=*.rs .
+; and grep -rn "prometheus-recording-rules" --include=*.rs ., now return 1 each outside target/,
+; and "which no Rust test in this repository reads at all" in the header is no longer literally
+; true. The owner's ruling of that day (#12, nothing cannabis-related anywhere) rebranded the
+; three unguarded artifacts -- the alert names, the dashboard title and the file headers -- and
+; tests/legacy_vocabulary_wiring.rs (the_dev_and_ops_files_carry_neither_the_old_name_nor_the_vocabulary,
+; its DEV_OPS_FILES list) now reads docs/grafana-dashboard.json, docs/prometheus-alerts.yaml and
+; docs/prometheus-recording-rules.yaml whole, for the old shop's name and the retired vocabulary
+; and for nothing else. It compares no metric name against the emitted set, so none of the three
+; is guarded in this contract's sense (reference_failure_is_silent), and every _READ_BY_A_TEST
+; constant here keeps its value: they count reads that compare names. The rename was one line for
+; one line, so every line of those files cited in this contract still carries the same expression;
+; the wwb: recording-rule prefix was not renamed, because it is the stored series name that the
+; alert expressions and any recorded history select.
 
 ; The five names referenced by a published artifact and emitted by nothing. The first was a real
 ; helper until cycle #108 removed it with its pool (src/metrics.rs:320-328); the other four were

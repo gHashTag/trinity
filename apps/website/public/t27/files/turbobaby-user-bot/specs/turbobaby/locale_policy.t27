@@ -11,9 +11,9 @@
 ; nothing said so. src/locales.rs:119-121 supported_langs returns TWO codes, and that vector is
 ; what a customer is shown: it is the list the language picker is built from at
 ; src/bot/callbacks.rs:320-326 and src/bot/commands.rs:423-429, one button per element. But
-; src/trios/core.rs:8-17 declares EIGHT Lang variants, src/trios/i18n.rs:2176-2187
-; supported_languages returns all eight, and src/trios/i18n.rs:718-729 t() dispatches on all
-; eight -- two to their own table (720, 721) and SIX to the English one (722-727, each arm
+; src/trios/core.rs:8-17 declares EIGHT Lang variants, src/trios/i18n.rs:2181-2192
+; supported_languages returns all eight, and src/trios/i18n.rs:721-732 t() dispatches on all
+; eight -- two to their own table (723, 724) and SIX to the English one (725-730, each arm
 ; carrying the comment Fallback to English). So six of the eight names this code can hold are
 ; labels with no table behind them, and the gap is exactly six because the two variants that
 ; have a table are the two the shop publishes. That coincidence is measured below, not assumed.
@@ -23,7 +23,7 @@
 ; parameter: lang=th parses through src/trios/core.rs:34-48 FromStr into Lang::Thai
 ; (src/trios/core.rs:106-107 witnesses exactly that), and the value survives the resolver as a
 ; live Lang: src/lib.rs:77 and src/lib.rs:81 hand it to src/ui/lang.rs:55-62 current_lang, whose
-; readers pass it to src/trios/i18n.rs:718-729 t(), which answers out of the English table, and
+; readers pass it to src/trios/i18n.rs:721-732 t(), which answers out of the English table, and
 ; to src/ui/lang.rs:72-77 localized, which prefers the English column for any non-Russian
 ; language. The shipped consequence of an unpublished code on the web is therefore English text
 ; under an application state that says Thai. The bot half behaves differently and better:
@@ -33,33 +33,35 @@
 ; --
 ; WHAT IS NOT SHIPPED, AND IS RECORDED ANYWAY (measured 2026-09-20). One step further would be a
 ; payload LABELLED with the unpublished code over English text. The repository contains the code
-; for that and does not run it: src/trios/i18n.rs:1946 get_translations is the only writer of
-; Translations.lang (src/trios/i18n.rs:2169-2171, from Lang::as_str), and its only caller in the
-; whole tree is the unit test at src/trios/i18n.rs:2234-2235. Nothing under src/ui, src/api or
+; for that and does not run it: src/trios/i18n.rs:1951 get_translations is the only writer of
+; Translations.lang (src/trios/i18n.rs:2174-2176, from Lang::as_str), and its only caller in the
+; whole tree is the unit test at src/trios/i18n.rs:2239-2240. Nothing under src/ui, src/api or
 ; src/bot calls it, no other site stamps a resolved code into output, and index.html:2 hard-codes
 ; the document language. So the mislabelled payload is a latent shape and not a customer-facing
 ; fact today. label_and_text_agree models the shape, MISLABELLED_PAYLOAD_IS_NOT_SHIPPED records
 ; that it is not reached, and neither one is allowed to stand in for the other.
 ; --
 ; WHERE THE ISSUE IS REFUTED. The survey that commissioned this file recorded that no key-parity
-; gate exists. That is FALSE, and measurably so. src/trios/i18n.rs:2327 declares
+; gate exists. That is FALSE, and measurably so. src/trios/i18n.rs:2332 declares
 ; every_declared_key_has_a_russian_and_an_english_translation, which walks the declarations
-; returned by declared_keys (src/trios/i18n.rs:2257-2278, parsing the file through include_str
+; returned by declared_keys (src/trios/i18n.rs:2262-2283, parsing the file through include_str
 ; so the gate also builds for wasm32) and fails when either table is missing one. A SECOND gate,
-; src/trios/i18n.rs:2369 every_translation_key_is_translated_in_ru_and_en, does the same walk
+; src/trios/i18n.rs:2374 every_translation_key_is_translated_in_ru_and_en, does the same walk
 ; through std::fs. Parity is gated twice. What the survey should have said is the thing the gate
-; itself says at src/trios/i18n.rs:2321-2325: has_translation is get_ru_translation(key) != key,
+; itself says at src/trios/i18n.rs:2326-2330: has_translation is get_ru_translation(key) != key,
 ; so a translation whose text equalled its own key would read as missing -- a false alarm, never
 ; a silent pass. That limitation is recorded below in the gate's own terms, and the gate's real
 ; blind spot is recorded separately: it walks DECLARED keys, so a literal handed to t() that was
-; never declared is outside its reach, which src/trios/i18n.rs:2217-2221 demonstrates by
+; never declared is outside its reach, which src/trios/i18n.rs:2222-2226 demonstrates by
 ; asserting that an unknown key comes back as itself.
 ; --
 ; A SECOND CORRECTION, TO THE MEASUREMENT METHOD. The brief prescribed
-; grep -c "pub const T_" src/trios/i18n.rs for the key count. That command returns 570 and five
-; of those lines are not declarations: src/trios/i18n.rs:2251, 2358 and 2374 are prose, and 2260
-; and 2378 are the two key parsers matching their own source text. The declaration count is 565,
-; which is also what both gates find, and 565 is what is pinned below.
+; grep -c "pub const T_" src/trios/i18n.rs for the key count. That command returns 552 and five
+; of those lines are not declarations: src/trios/i18n.rs:2256, 2363 and 2379 are prose, and 2265
+; and 2383 are the two key parsers matching their own source text. The declaration count is 547,
+; which is also what both gates find, and 547 is what is pinned below (557 and 552 before the
+; owner's second list of 2026-09-25: answer 5 deleted one key, answer 1 five, answer 3 declared
+; one; the five lines did not move).
 ; --
 ; WHAT THIS FILE NEVER DOES. It carries no translated string and no Cyrillic: L3 forbids
 ; Cyrillic in a spec, and turbobaby/pricing-honesty already set the precedent for the whole
@@ -69,8 +71,8 @@
 ; leaves the wording to the locale layer. Both were re-opened 2026-09-21 and both still mean
 ; what this sentence claims. They were cited by line until then, and the line numbers had
 ; already drifted: the first pointed one line past the sentence it meant. That precedent is
-; named here as REUSES_PRICING_HONESTY_ID and applied to all 565 keys at once. It declares no key list --
-; restating 565 identifiers would be the largest duplication in this repository, and it would be
+; named here as REUSES_PRICING_HONESTY_ID and applied to all 547 keys at once. It declares no key list --
+; restating 547 identifiers would be the largest duplication in this repository, and it would be
 ; the fourth hand-maintained copy of a list that already has three. It publishes no third
 ; locale, and that prohibition is structural: the LENGTH of the published array, pinned by an
 ; invariant. It declares no currency glyph, separator, exponent or number format; those are
@@ -145,16 +147,16 @@ pub const BOT_RESOLVER_COLLAPSES_UNPUBLISHED : bool = true;
 pub const WEB_RESOLVER : str = "src/trios/core.rs:197-213 pick_lang";
 pub const WEB_RESOLVER_KEEPS_UNPUBLISHED_VARIANT : bool = true;
 pub const WEB_RESOLVER_LIVE_CALL_SITES : str = "src/lib.rs:77 and src/lib.rs:81, into src/ui/lang.rs:55-62 current_lang";
-pub const WEB_UNPUBLISHED_RENDERS_ENGLISH_AT : str = "src/trios/i18n.rs:718-729 t() and src/ui/lang.rs:72-77 localized";
+pub const WEB_UNPUBLISHED_RENDERS_ENGLISH_AT : str = "src/trios/i18n.rs:721-732 t() and src/ui/lang.rs:72-77 localized";
 ; THE STEP THAT IS WRITTEN AND NOT RUN, kept apart from the step that ships. A payload labelled
-; with the unpublished code over English text needs src/trios/i18n.rs:1946 get_translations, the
-; only writer of Translations.lang (src/trios/i18n.rs:2169-2171, from Lang::as_str). Its only
-; caller in the tree is the unit test at src/trios/i18n.rs:2234-2235; nothing under src/ui,
+; with the unpublished code over English text needs src/trios/i18n.rs:1951 get_translations, the
+; only writer of Translations.lang (src/trios/i18n.rs:2174-2176, from Lang::as_str). Its only
+; caller in the tree is the unit test at src/trios/i18n.rs:2239-2240; nothing under src/ui,
 ; src/api or src/bot calls it, no other site stamps a resolved code into output, and
 ; index.html:2 hard-codes the document language. The shape exists and is not reached.
-pub const WEB_LABEL_SITE : str = "src/trios/i18n.rs:1946 get_translations, stamping Translations.lang at src/trios/i18n.rs:2169-2171";
+pub const WEB_LABEL_SITE : str = "src/trios/i18n.rs:1951 get_translations, stamping Translations.lang at src/trios/i18n.rs:2174-2176";
 pub const MISLABELLED_PAYLOAD_IS_NOT_SHIPPED : bool = true;
-pub const MISLABELLED_PAYLOAD_NOTE : str = "get_translations has no production caller: the only one in the tree is the test at src/trios/i18n.rs:2234-2235. The mislabelled payload is a latent shape in the code, never a measured customer fact. It would become one the day a production caller appears, and this contract would have to be re-measured then.";
+pub const MISLABELLED_PAYLOAD_NOTE : str = "get_translations has no production caller: the only one in the tree is the test at src/trios/i18n.rs:2239-2240. The mislabelled payload is a latent shape in the code, never a measured customer fact. It would become one the day a production caller appears, and this contract would have to be re-measured then.";
 ; src/trios/core.rs:212, the last line of pick_lang, defaults to Lang::Russian, which agrees
 ; with D13. migrations/001_initial.sql:4 defaults the stored column to en, which does not. Both
 ; are measured; neither is corrected here, because a default belongs to the surface that holds
@@ -212,42 +214,97 @@ pub const MIGRATION_FILES_SEARCHED_BEFORE_088 : u8 = 88;
 
 ; --- The enumerated variant set, and the gap -------------------------------------------------
 ; src/trios/core.rs:8-17 enum Lang: Russian, English, Thai, Chinese, Hebrew, German, French,
-; Spanish. src/trios/i18n.rs:718-729 t() dispatches on all eight: 720 and 721 reach their own
-; table, 722 through 727 reach the English one.
+; Spanish. src/trios/i18n.rs:721-732 t() dispatches on all eight: 723 and 724 reach their own
+; table, 725 through 730 reach the English one.
 pub const ENUMERATED_VARIANT_COUNT : u8 = 8;
-pub const ENUMERATED_VARIANT_SOURCE : str = "src/trios/core.rs:8-17 enum Lang; src/trios/i18n.rs:718-729 t()";
+pub const ENUMERATED_VARIANT_SOURCE : str = "src/trios/core.rs:8-17 enum Lang; src/trios/i18n.rs:721-732 t()";
 pub const VARIANTS_WITH_OWN_TABLE : u8 = 2;
 pub const VARIANTS_FALLING_THROUGH_TO_ENGLISH : u8 = 6;
 
 ; --- The key tables ---------------------------------------------------------------------------
 ; The COUNT, never the keys. 565 declarations in src/trios/i18n.rs, every literal distinct. Two
-; hand-maintained match blocks translate them: get_ru_translation at src/trios/i18n.rs:732 and
-; get_en_translation at src/trios/i18n.rs:1331.
-pub const TRANSLATION_KEY_COUNT : u16 = 565;
+; hand-maintained match blocks translate them: get_ru_translation at src/trios/i18n.rs:735 and
+; get_en_translation at src/trios/i18n.rs:1335.
+; Re-measured 2026-09-25, when T_ORDER_DETAIL_CANCEL_REFUSED was declared for the client-errors
+; contract's refused-cancellation sentence: one declaration and one arm per table, so both counts
+; rose by one (565 to 566, 570 to 571), and every src/trios/i18n.rs line this file cites was
+; re-read at its new address and carries the same claim.
+; CORRECTED 2026-09-25: 552, not 565. The owner's ruling of that day (#12, nothing cannabis-related
+; anywhere) deleted fourteen keys outright and added none; turbobaby/legacy-retirement records what
+; they were (CANNABIS_RULING_I18N_KEYS_DELETED). Each deleted line was replaced one-for-one by a
+; comment line, so that deletion moved no src/trios/i18n.rs line cited in this file, and the naive
+; grep below falls by the same fourteen, 571 to 557, over the same five non-declaration lines. The
+; two changes landed together on 2026-09-25 (565 + 1 - 14 = 552; 570 + 1 - 14 = 557, both
+; re-measured on the merged file, and the file header now says so). The 565 and 570 of the
+; 2026-09-20 reading are kept below under _BEFORE_2026_09_25 names.
+; CORRECTED 2026-09-25, later the same day: 551, not 552. The owner's second numbered list of that
+; day answered its item 5 "probably" to removing the bike detail screen's all-taken line, and that
+; line's key, bike.units.empty, was deleted outright the way the fourteen were: its declaration and
+; both of its arms each became a comment line, so no src/trios/i18n.rs line cited in this file
+; moved, and the naive grep falls by the same one, 557 to 556, over the same five non-declaration
+; lines. turbobaby/availability records what the key said and why it went (UNITS_EMPTY_KEY); the
+; count is this file's, and the arithmetic in the key-count test below now subtracts both deletions.
+; CORRECTED AGAIN 2026-09-25: 547, not 552. The owner removed the checkout's 20+ box for now the
+; same day (answer 1 of a second numbered list), and the five keys the box used -- its label, its
+; notice, the trust block's age line, the button's age blocker and the sentence for a body code
+; the server never sent -- were deleted the way #12 deleted its fourteen: each line one-for-one
+; by a comment line, so no src/trios/i18n.rs line cited in this file moved, and none added.
+; turbobaby/checkout-contact records what they were (AGE_GATE_I18N_KEYS_DELETED_NAMES). The naive
+; grep falls by the same five, 557 to 552, over the same five non-declaration lines
+; (565 + 1 - 14 - 5 = 547; 570 + 1 - 14 - 5 = 552, both re-measured on the changed file).
+; MERGED 2026-09-26: 546. The two corrections above were each measured on a branch that did not
+; hold the other; on the integration branch both deletions are in the file, and the two
+; paragraphs' 551 and 547 each still count one of them in. Re-measured on the merged file:
+; 565 + 1 - 14 - 1 - 5 = 546 declarations; 570 + 1 - 14 - 1 - 5 = 551 for the naive grep, over
+; the same five non-declaration lines, which did not move.
+; CORRECTED 2026-09-25 again: 553, not 552. The owner's answer 3 of that day (the previous shop's
+; stored content out of customers' sight) declared one key, T_ORDER_LINE_PREVIOUS_CATALOGUE, the
+; neutral name a line of the old catalogue is shown under, with one arm per table; the naive grep
+; rose with it, 557 to 558, over the same five non-declaration lines. The three lines were written
+; over a blank line and two section comments, so no src/trios/i18n.rs line cited in this file
+; moved. turbobaby/order-presentation owns the name (RETIRED_LINE_NAME_KEY) and records it.
+; MERGED AGAIN 2026-09-26: 547. Answer 3's paragraph, too, was measured without the other two
+; answers' deletions. Re-measured on the merged file: 565 + 2 - 14 - 1 - 5 = 547 declarations;
+; 570 + 2 - 14 - 1 - 5 = 552 for the naive grep, over the same five non-declaration lines.
+pub const TRANSLATION_KEY_COUNT : u16 = 547;
+pub const TRANSLATION_KEY_COUNT_BEFORE_2026_09_25 : u16 = 565;
+pub const KEYS_DELETED_2026_09_25 : u16 = 14;
+pub const KEYS_DELETED_2026_09_25_RECORDED_BY_ID : str = "turbobaby/legacy-retirement";
+pub const KEYS_DELETED_BY_SECOND_LIST_ANSWER_5 : u16 = 1;
+pub const KEYS_DELETED_BY_SECOND_LIST_ANSWER_5_RECORDED_BY_ID : str = "turbobaby/availability";
+pub const KEYS_DELETED_2026_09_25_AGE_GATE : u16 = 5;
+pub const KEYS_DELETED_2026_09_25_AGE_GATE_RECORDED_BY_ID : str = "turbobaby/checkout-contact";
+; Two keys were declared the same day. T_ORDER_DETAIL_CANCEL_REFUSED is recorded by
+; turbobaby/client-errors, which owns the sentence (KEYS_ADDED_2026_09_25_RECORDED_BY_ID, as it
+; read when it was the only one); T_ORDER_LINE_PREVIOUS_CATALOGUE by turbobaby/order-presentation.
+pub const KEYS_ADDED_2026_09_25 : u16 = 2;
+pub const KEYS_ADDED_2026_09_25_RECORDED_BY_ID : str = "turbobaby/client-errors";
+pub const KEYS_ADDED_2026_09_25_SECOND_RECORDED_BY_ID : str = "turbobaby/order-presentation";
 pub const TRANSLATION_TABLE_COUNT : u8 = 2;
 ; What a naive substring grep reports, and the five lines that make it wrong. Recorded so the
 ; next reader re-measures with the declaration shape instead of the substring.
-pub const NAIVE_GREP_COUNT : u16 = 570;
+pub const NAIVE_GREP_COUNT : u16 = 552;
+pub const NAIVE_GREP_COUNT_BEFORE_2026_09_25 : u16 = 570;
 pub const NAIVE_GREP_OVERCOUNT : u16 = 5;
-pub const NAIVE_GREP_OVERCOUNT_LINES : str = "src/trios/i18n.rs:2251, 2358 and 2374 are prose; 2260 and 2378 are the two key parsers matching their own source text";
-; Both tables end in a bare-key arm: src/trios/i18n.rs:1326 closes the Russian match and
-; src/trios/i18n.rs:1925 closes the English one. That is why a key with no arm is not a build
+pub const NAIVE_GREP_OVERCOUNT_LINES : str = "src/trios/i18n.rs:2256, 2363 and 2379 are prose; 2265 and 2383 are the two key parsers matching their own source text";
+; Both tables end in a bare-key arm: src/trios/i18n.rs:1330 closes the Russian match and
+; src/trios/i18n.rs:1930 closes the English one. That is why a key with no arm is not a build
 ; failure -- t() returns the key, and the customer reads the raw dotted identifier where a
 ; sentence was meant to be.
-pub const BARE_KEY_FALLBACK_SITES : [2]str = ["src/trios/i18n.rs:1326", "src/trios/i18n.rs:1925"];
+pub const BARE_KEY_FALLBACK_SITES : [2]str = ["src/trios/i18n.rs:1330", "src/trios/i18n.rs:1930"];
 pub const TABLES_END_WITH_BARE_KEY_FALLBACK : bool = true;
 pub const MISSING_ARM_FAILS_THE_BUILD : bool = false;
 
 ; --- The parity gate, as measured rather than as reported -------------------------------------
 pub const KEY_PARITY_IS_GATED : bool = true;
 pub const PARITY_GATE_COUNT : u8 = 2;
-pub const PARITY_GATE_PRIMARY : str = "src/trios/i18n.rs:2327 every_declared_key_has_a_russian_and_an_english_translation";
-pub const PARITY_GATE_SECOND : str = "src/trios/i18n.rs:2369 every_translation_key_is_translated_in_ru_and_en";
+pub const PARITY_GATE_PRIMARY : str = "src/trios/i18n.rs:2332 every_declared_key_has_a_russian_and_an_english_translation";
+pub const PARITY_GATE_SECOND : str = "src/trios/i18n.rs:2374 every_translation_key_is_translated_in_ru_and_en";
 ; A cargo test, not a compiler check: the arms are a match, and a match with a catch-all is
 ; exhaustive whether or not any given key reaches an arm of its own. Nothing about a missing arm
 ; is visible to rustc.
 pub const PARITY_GATE_IS_A_TEST_NOT_A_COMPILER_CHECK : bool = true;
-pub const PARITY_GATE_LIMITATION : str = "Stated by the gate itself at src/trios/i18n.rs:2321-2325: has_translation compares the lookup result to the key, so a translation whose text equalled its own key would read as missing. The failure direction is a false alarm, never a silent pass.";
+pub const PARITY_GATE_LIMITATION : str = "Stated by the gate itself at src/trios/i18n.rs:2326-2330: has_translation compares the lookup result to the key, so a translation whose text equalled its own key would read as missing. The failure direction is a false alarm, never a silent pass.";
 ; Both gates read the declarations rather than a second hand-written list, and both carry a
 ; floor whose only job is to fail loudly if the parser stops matching. A floor is a tripwire,
 ; not a census: the real count sits far above it on purpose.
@@ -256,7 +313,7 @@ pub const PARITY_PARSER_FLOOR_SECOND : u16 = 90;
 ; The gates real blind spot, which is not the limitation they state: they walk DECLARED keys, so
 ; an undeclared literal passed straight to t() is outside their reach.
 pub const PARITY_GATE_WALKS_DECLARED_KEYS_ONLY : bool = true;
-pub const UNDECLARED_LITERAL_WITNESS : str = "src/trios/i18n.rs:2217-2221 test_translation_fallback asserts an unknown key comes back as itself";
+pub const UNDECLARED_LITERAL_WITNESS : str = "src/trios/i18n.rs:2222-2226 test_translation_fallback asserts an unknown key comes back as itself";
 
 ; --- The second translated surface, gated differently ------------------------------------------
 ; src/locales.rs:4-103 declares Locale with 82 String fields, and src/locales.rs:142 ru() and
@@ -265,6 +322,22 @@ pub const UNDECLARED_LITERAL_WITNESS : str = "src/trios/i18n.rs:2217-2221 test_t
 ; drift silently, the key surface can, and only the key surface needed a test written for it.
 pub const STRUCT_SURFACE : str = "src/locales.rs:4-103 Locale";
 pub const STRUCT_SURFACE_FIELD_COUNT : u16 = 82;
+; RE-MEASURED 2026-09-25: 78. Four fields left the struct that day -- the retired carousel's
+; heading and its two arrows, and the old shop's unit of sale -- on the owner's ruling that nothing
+; cannabis-related may appear anywhere (turbobaby/legacy-retirement, OWNER_RULING_2026_09_25_AT).
+; The 82 above is kept as the reading it was. Each removed field was replaced in the struct and in
+; both constructors by a comment of the same number of lines, so every src/locales.rs line this
+; corpus cites still points where it did; the compiler still refuses a constructor with a field
+; missing, which is what made the removal safe.
+pub const STRUCT_SURFACE_FIELD_COUNT_2026_09_25 : u16 = 78;
+pub const STRUCT_SURFACE_FIELDS_REMOVED_2026_09_25 : u16 = 4;
+; RE-MEASURED 2026-09-26: 77. One more field left on the same ruling: the retired garden's message
+; for queued friend_watered rows, when turbobaby/notification-queue started holding rows of that
+; kind unsent (HELD_KINDS_DECIDED_AT there). It was replaced in the struct and in both
+; constructors the same way, by comment lines of the same count, so no citation into
+; src/locales.rs moved.
+pub const STRUCT_SURFACE_FIELD_COUNT_2026_09_26 : u16 = 77;
+pub const STRUCT_SURFACE_FIELDS_REMOVED_2026_09_26 : u16 = 1;
 pub const STRUCT_SURFACE_CONSTRUCTOR_COUNT : u8 = 2;
 pub const STRUCT_SURFACE_PARITY_IS_COMPILER_ENFORCED : bool = true;
 
@@ -510,7 +583,7 @@ test the_web_layer_keeps_the_variant_and_the_bot_layer_does_not {
 // for a customer-facing fact. The two live on different lines on purpose.
 test the_mislabelled_payload_is_a_shape_in_the_code_and_not_a_shipped_fact {
   assert MISLABELLED_PAYLOAD_IS_NOT_SHIPPED == true;
-  assert WEB_LABEL_SITE == "src/trios/i18n.rs:1946 get_translations, stamping Translations.lang at src/trios/i18n.rs:2169-2171";
+  assert WEB_LABEL_SITE == "src/trios/i18n.rs:1951 get_translations, stamping Translations.lang at src/trios/i18n.rs:2174-2176";
   assert WEB_LABEL_SITE != WEB_RESOLVER_LIVE_CALL_SITES;
   assert WEB_UNPUBLISHED_RENDERS_ENGLISH_AT != WEB_LABEL_SITE;
   assert label_and_text_agree(false, true) == false;
@@ -529,8 +602,8 @@ test the_two_defaults_do_not_agree {
 test a_missing_arm_renders_the_identifier_and_only_a_test_catches_it {
   assert TABLES_END_WITH_BARE_KEY_FALLBACK == true;
   assert BARE_KEY_FALLBACK_SITES.len == TRANSLATION_TABLE_COUNT;
-  assert BARE_KEY_FALLBACK_SITES[0] == "src/trios/i18n.rs:1326";
-  assert BARE_KEY_FALLBACK_SITES[1] == "src/trios/i18n.rs:1925";
+  assert BARE_KEY_FALLBACK_SITES[0] == "src/trios/i18n.rs:1330";
+  assert BARE_KEY_FALLBACK_SITES[1] == "src/trios/i18n.rs:1930";
   assert MISSING_ARM_FAILS_THE_BUILD == false;
   assert renders_raw_identifier(false) == true;
   assert renders_raw_identifier(true) == false;
@@ -543,8 +616,8 @@ test a_missing_arm_renders_the_identifier_and_only_a_test_catches_it {
 test key_parity_is_gated_and_this_file_names_the_gates {
   assert KEY_PARITY_IS_GATED == true;
   assert PARITY_GATE_COUNT == 2;
-  assert PARITY_GATE_PRIMARY == "src/trios/i18n.rs:2327 every_declared_key_has_a_russian_and_an_english_translation";
-  assert PARITY_GATE_SECOND == "src/trios/i18n.rs:2369 every_translation_key_is_translated_in_ru_and_en";
+  assert PARITY_GATE_PRIMARY == "src/trios/i18n.rs:2332 every_declared_key_has_a_russian_and_an_english_translation";
+  assert PARITY_GATE_SECOND == "src/trios/i18n.rs:2374 every_translation_key_is_translated_in_ru_and_en";
   assert PARITY_GATE_PRIMARY != PARITY_GATE_SECOND;
   assert PARITY_GATE_IS_A_TEST_NOT_A_COMPILER_CHECK == true;
   assert TRANSLATION_KEY_COUNT > PARITY_PARSER_FLOOR_PRIMARY;
@@ -558,12 +631,32 @@ test the_gates_blind_spot_is_the_undeclared_literal_not_the_limit_they_state {
   assert parity_gate_covers(false) == false;
   assert silent_raw_render_is_possible(false, false) == true;
   assert silent_raw_render_is_possible(true, false) == false;
-  assert UNDECLARED_LITERAL_WITNESS == "src/trios/i18n.rs:2217-2221 test_translation_fallback asserts an unknown key comes back as itself";
+  assert UNDECLARED_LITERAL_WITNESS == "src/trios/i18n.rs:2222-2226 test_translation_fallback asserts an unknown key comes back as itself";
 }
 
 test the_key_count_is_the_declaration_count_and_not_the_grep_count {
-  assert TRANSLATION_KEY_COUNT == 565;
-  assert NAIVE_GREP_COUNT == 570;
+  // 565 and 570 until 2026-09-25, when the cancel key added one, the owner's ruling #12
+  // deleted fourteen, answer 5 of the owner's second list that day deleted one more, the
+  // removal of the 20+ box (answer 1 of that list) deleted five more, and his answer 3 added one.
+  assert TRANSLATION_KEY_COUNT == 547;
+  assert NAIVE_GREP_COUNT == 552;
+  assert TRANSLATION_KEY_COUNT_BEFORE_2026_09_25 == 565;
+  assert NAIVE_GREP_COUNT_BEFORE_2026_09_25 == 570;
+  assert TRANSLATION_KEY_COUNT_BEFORE_2026_09_25 + KEYS_ADDED_2026_09_25 - KEYS_DELETED_2026_09_25 - KEYS_DELETED_BY_SECOND_LIST_ANSWER_5 - KEYS_DELETED_2026_09_25_AGE_GATE == TRANSLATION_KEY_COUNT;
+  assert NAIVE_GREP_COUNT_BEFORE_2026_09_25 + KEYS_ADDED_2026_09_25 - KEYS_DELETED_2026_09_25 - KEYS_DELETED_BY_SECOND_LIST_ANSWER_5 - KEYS_DELETED_2026_09_25_AGE_GATE == NAIVE_GREP_COUNT;
+  assert KEYS_DELETED_2026_09_25_RECORDED_BY_ID == "turbobaby/legacy-retirement";
+  assert KEYS_DELETED_2026_09_25_RECORDED_BY_ID != ID;
+  assert KEYS_DELETED_BY_SECOND_LIST_ANSWER_5 == 1;
+  assert KEYS_DELETED_BY_SECOND_LIST_ANSWER_5_RECORDED_BY_ID == "turbobaby/availability";
+  assert KEYS_DELETED_BY_SECOND_LIST_ANSWER_5_RECORDED_BY_ID != ID;
+  assert KEYS_DELETED_2026_09_25_AGE_GATE == 5;
+  assert KEYS_DELETED_2026_09_25_AGE_GATE_RECORDED_BY_ID == "turbobaby/checkout-contact";
+  assert KEYS_DELETED_2026_09_25_AGE_GATE_RECORDED_BY_ID != ID;
+  assert KEYS_ADDED_2026_09_25 == 2;
+  assert KEYS_ADDED_2026_09_25_RECORDED_BY_ID == "turbobaby/client-errors";
+  assert KEYS_ADDED_2026_09_25_RECORDED_BY_ID != ID;
+  assert KEYS_ADDED_2026_09_25_SECOND_RECORDED_BY_ID == "turbobaby/order-presentation";
+  assert KEYS_ADDED_2026_09_25_SECOND_RECORDED_BY_ID != ID;
   assert NAIVE_GREP_OVERCOUNT == 5;
   assert NAIVE_GREP_COUNT - TRANSLATION_KEY_COUNT == NAIVE_GREP_OVERCOUNT;
   assert NAIVE_GREP_COUNT > TRANSLATION_KEY_COUNT;
@@ -576,6 +669,18 @@ test the_struct_surface_is_gated_by_the_compiler_and_the_key_surface_is_not {
   assert STRUCT_SURFACE_PARITY_IS_COMPILER_ENFORCED == true;
   assert PARITY_GATE_IS_A_TEST_NOT_A_COMPILER_CHECK == true;
   assert STRUCT_SURFACE_FIELD_COUNT < TRANSLATION_KEY_COUNT;
+}
+
+test the_struct_surface_lost_four_fields_on_2026_09_25 {
+  assert STRUCT_SURFACE_FIELD_COUNT_2026_09_25 == 78;
+  assert STRUCT_SURFACE_FIELD_COUNT_2026_09_25 + STRUCT_SURFACE_FIELDS_REMOVED_2026_09_25 == STRUCT_SURFACE_FIELD_COUNT;
+  assert STRUCT_SURFACE_PARITY_IS_COMPILER_ENFORCED == true;
+}
+
+test the_struct_surface_lost_one_more_field_on_2026_09_26 {
+  assert STRUCT_SURFACE_FIELD_COUNT_2026_09_26 == 77;
+  assert STRUCT_SURFACE_FIELD_COUNT_2026_09_26 + STRUCT_SURFACE_FIELDS_REMOVED_2026_09_26 == STRUCT_SURFACE_FIELD_COUNT_2026_09_25;
+  assert STRUCT_SURFACE_FIELD_COUNT_2026_09_26 < STRUCT_SURFACE_FIELD_COUNT_2026_09_25;
 }
 
 test the_refusals_are_structural_and_not_prose {
@@ -631,7 +736,7 @@ invariant this_file_carries_no_translated_string_no_key_literal_and_no_number_fo
   assert TRANSLATED_STRINGS_PUBLISHED.len == 0 and KEY_LITERALS_PUBLISHED.len == 0 and NUMBER_FORMAT_FIELDS_PUBLISHED.len == 0
 
 invariant the_key_count_never_becomes_the_key_list
-  assert TRANSLATION_KEY_COUNT == 565 and KEY_LITERALS_PUBLISHED.len == 0 and TRANSLATION_KEY_COUNT > PARITY_PARSER_FLOOR_PRIMARY
+  assert TRANSLATION_KEY_COUNT == 547 and KEY_LITERALS_PUBLISHED.len == 0 and TRANSLATION_KEY_COUNT > PARITY_PARSER_FLOOR_PRIMARY
 
 invariant the_two_defaults_disagree_until_one_of_them_is_changed
   assert defaults_agree(WEB_DEFAULT_LOCALE, STORAGE_DEFAULT_LOCALE) == false and DEFAULTS_AGREE == false

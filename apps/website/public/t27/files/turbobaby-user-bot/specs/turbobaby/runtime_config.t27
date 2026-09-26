@@ -372,7 +372,7 @@ pub const ABSENCE_HANDLING_SITES : [5]str = [
   "src/config.rs:193-195",
   "src/config.rs:187-189",
   "src/api/auth.rs:485-486",
-  "src/promo.rs:722",
+  "src/promo.rs:730",
   "src/promptpay.rs:39-47"
 ];
 
@@ -572,7 +572,7 @@ pub fn longest_loop_interval() u32 {
 ; drain rewrite, which added one import line and no spawn). The
 ; other ten are fire-and-forget, spawned per request or per event -- src/main.rs:185 and
 ; src/api/client_errors.rs:462, src/api/orders.rs:1596, :2269, :2468, src/api/quest.rs:163, :391,
-; :637, src/bot/commands.rs:285, src/promo.rs:754 -- and not one of the ten opens an interval or
+; :637, src/bot/commands.rs:285, src/promo.rs:762 -- and not one of the ten opens an interval or
 ; a loop, which is what holds the recurring count at eight. Counting spawn expressions and
 ; calling the answer the number of loops would have returned nineteen; counting only the ones in
 ; src/main.rs would have returned seven and missed three real loops. Expressions are not tasks

@@ -120,7 +120,7 @@ pub const REUSES_COMMERCE_ID : str = "turbobaby/commerce";
 ; whose set is that contract's.
 pub const REUSES_ORDER_STATUS_ID : str = "turbobaby/order-status";
 ; turbobaby/request-identity owns who a request is. Every endpoint in the write path runs its owner
-; gate (src/api/cart.rs:447, :460, :517, :558, :582, :614) and none of those decisions is re-made
+; gate (src/api/cart.rs:447, :460, :518, :560, :584, :616) and none of those decisions is re-made
 ; here; the sweep instead reads the stored telegram_id, and its only identity test is the non-zero
 ; check at src/cart_abandonment.rs:98 and :116-118, which this file carries as one boolean.
 pub const REUSES_REQUEST_IDENTITY_ID : str = "turbobaby/request-identity";
@@ -268,7 +268,7 @@ pub const LOCKED_ROW_PRESENCE_SUFFICES : bool = false;
 
 ; CONVERTED. No column. It is ENACTED: after a successful order the CLIENT calls the clear endpoint
 ; (src/ui/screens/checkout_screen.rs:1086-1089) and the server deletes the lines
-; (src/api/cart.rs:594-603). The cart row itself survives the call.
+; (src/api/cart.rs:596-605). The cart row itself survives the call.
 ; Address re-taken 2026-09-21: the block moved from :1050-1056 and lost a line when the identity
 ; it is guarded by stopped being flattened to a fabricated 0 and became the Option it always was.
 ; The guard is now `if let Some(tid)` instead of `!= 0`; what this section claims -- client-side
@@ -560,7 +560,7 @@ pub const NOTIFICATION_QUEUE_BYPASS_NOTE : str = "The reminder does not enter th
 
 pub const PROMISED_PERK_REFUSAL_NOTE : str = "The second rung promises bonus points in shipped copy (src/locales.rs:220 and :309, the same claim in the source comments at src/cart_abandonment.rs:7 and :214) and credits none. A search of src/cart_abandonment.rs for bonus, loyalty or points returns those two comments and no code; the only writes the rung performs are the message send and the counter increment at :259, and the only other effect is the metric at :264. The amount, the rules and the ledger row belong to turbobaby/loyalty-ledger, so no number is declared here. What is missing is the credit itself, plus a decision on whether a perk promised in copy and never granted should be granted or the copy corrected.";
 
-pub const ACTIVITY_TIMESTAMP_REFUSAL_NOTE : str = "No column in this schema records when a cart was last touched. carts.updated_at is written once by the INSERT at src/api/cart.rs:302-303 and by nothing after it; cart_items.updated_at IS advanced by the upsert at src/api/cart.rs:85 and by the patch at src/api/cart.rs:522, but the abandonment query never reads it -- src/cart_abandonment.rs:97 filters on the cart row. So the repository holds the fact and does not consult it. This file pins the measurement and proposes neither a column nor a change of predicate, because which of the two timestamps ought to govern a reminder is a product decision about how long a shopper is left alone, not a schema tidy-up.";
+pub const ACTIVITY_TIMESTAMP_REFUSAL_NOTE : str = "No column in this schema records when a cart was last touched. carts.updated_at is written once by the INSERT at src/api/cart.rs:302-303 and by nothing after it; cart_items.updated_at IS advanced by the upsert at src/api/cart.rs:85 and by the patch at src/api/cart.rs:523, but the abandonment query never reads it -- src/cart_abandonment.rs:97 filters on the cart row. So the repository holds the fact and does not consult it. This file pins the measurement and proposes neither a column nor a change of predicate, because which of the two timestamps ought to govern a reminder is a product decision about how long a shopper is left alone, not a schema tidy-up.";
 
 ; --- Tests ------------------------------------------------------------------------------------------
 
@@ -869,3 +869,296 @@ invariant a_refused_write_always_carries_one_of_the_three_write_numerals
 
 invariant this_contract_proposes_no_column_and_no_migration
   assert NO_COLUMN_IS_PROPOSED == true and NO_MIGRATION_NUMBER_IS_RESERVED == true and PROPOSED_COLUMNS_COUNT == 0 and PROPOSED_MIGRATIONS_COUNT == 0
+
+; --- A kept cart of the previous shop: stored, never served (2026-09-26) ---------------------------
+; Appended at the end of the file so that no line citation into it moves.
+; THE RULINGS this section rests on, by date. The owner's words are quoted verbatim in DECISIONS.md
+; (the D19 addenda of 2026-09-24 and 2026-09-25, and the cart addendum of 2026-09-26) and in
+; turbobaby/legacy-retirement (OWNER_RULING_AT, OWNER_RULING_2026_09_25_AT); this file quotes none of
+; them, because it publishes no Cyrillic string (CYRILLIC_STRINGS_PUBLISHED_COUNT above).
+;   2026-09-24             rental only, Phuket only; nothing is deleted.
+;   2026-09-25, answer 12  nothing cannabis-related may appear anywhere.
+;   2026-09-25, second     analyse all of the cannabis-related content -- read by the operator as:
+;   list, answer 3         analyse all of it and take it out of customers' sight without deleting
+;                          stored data.
+; WHAT A KEPT CART SHOWED UNTIL THIS DATE. A customer who kept a cart from the previous shop had its
+; lines in three places, and each handed them back with names and pictures: (1) the server's
+; cart_items rows, which every JSON answer of the cart API listed and summed; (2) the abandoned-cart
+; reminder, which summed them, named them in a Telegram message and spent a rung of the ladder on
+; them; (3) the Mini App's own saved cart on the device, localStorage wwb_cart and Telegram
+; CloudStorage wwb_cart_cloud, read at start-up and restored as it was. The kinds are the four the
+; table still admits beside the rental kind (DB_KINDS above; migration 081's CHECK keeps them on
+; purpose), and no row of them could be written since 083 and 085 (KINDS_THAT_CAN_WRITE_A_ROW_TODAY)
+; -- but a row written before those migrations stays, since nothing deletes a cart row.
+; THE RULE. A cart serves a line only of a kind in SERVED_CART_KINDS. It is NOT a new list: its one
+; name is the tag of the only deal the checkout admits since 2026-09-24 -- turbobaby/commerce
+; DEAL_NAMES[0], with SALE_LINE_ADMITTED_AT_CHECKOUT false -- which is also BIKE_KIND above, the kind
+; 081 added. The code holds it once, as trios::pricing::SERVED_CART_KINDS and the predicate
+; trios::pricing::cart_kind_is_served (src/trios/pricing.rs), compiled for the server and for the
+; Mini App; src/db/orders.rs test the_cart_serves_the_tag_of_the_only_deal_the_checkout_admits
+; holds the list to the serde tag of BikeDeal::BikeRental, and gate 3 holds this file's copy to the
+; code's. Every other kind -- the four retired ones, bike_sale and any kind nobody classified -- is
+; stored and never served.
+; WHAT EACH READER DOES NOW, by name:
+;   1. The cart API (src/api/cart.rs). cart_model_to_resp, the one builder of every JSON cart the
+;      API answers with (get_cart, add_cart_item, merge_cart), iterates served_rows, so a hidden row
+;      is neither listed nor summed. PATCH and DELETE of one line by id filter the loaded row
+;      through served_row before the owner check and before any write, so a hidden row answers
+;      404 as an id that does not exist does. clear_cart deletes through served_lines_of, the
+;      cart's served lines only: a hidden row outlives a clear. The write gate, parse_kind, is not
+;      changed (API_KINDS stays the four it was); it could not write a row of those kinds today,
+;      and closing it is a separate change.
+;   2. The reminder (src/cart_abandonment.rs). The due-cart query's INNER join to cart_items carries
+;      ci.kind = ANY($3) in its ON, and the line query carries kind = ANY($2); both are bound to
+;      the shared list (reminder_kinds, due_cart_binds). So a hidden row is not summed and not
+;      named, and a cart that holds nothing else has no joined row: it is never due, no message is
+;      sent and its counter is not spent. cart_has_a_line in first_rung_due and second_rung_due
+;      above now reads "has a SERVED line".
+;   3. The Mini App (src/ui). Both reads of a saved cart in src/ui/app.rs pass the parsed cart
+;      through Cart::without_retired_lines, which keeps CartItem::is_served lines and recomputes the
+;      total; CartItem::from_server, the one reader of a server cart line (start-up recovery, the
+;      cart screen and the merge answer), asks served_kind before it classifies a kind. None of the
+;      four CartItemType variants is a rental line, so today every line of a saved cart is
+;      dropped. The client DOES rewrite its own storage: the existing persist effect in App saves
+;      the cart it shows, filtered, to wwb_cart and wwb_cart_cloud -- the customer's device state,
+;      not stored shop data -- and no new write site was added.
+; WHAT A CUSTOMER SEES: a kept cart of the old shop reads as the empty cart the screens already
+; render (CLIENT_SIDE_WITNESS above). No sentence was written.
+; WHAT IS NOT CHANGED. No row is deleted or rewritten, no table is dropped and no migration is added:
+; the hidden rows stay in cart_items exactly as stored, and the CHECK still admits five kinds. The
+; sweep's variant assignment (the UPDATE of carts.reminder_variant at the start of
+; load_abandoned_carts) still stamps every cart that lacks a variant, as before; it writes the cart
+; row, never a line. Stored ORDER lines and the reorder button that merges them back are
+; turbobaby/legacy-retirement's subject and another change's.
+; RE-PINNED THE SAME DAY: the two filter lines in update_cart_item and delete_cart_item moved the
+; owner-gate citations at the top of this file (:517 :558 :582 :614 to :518 :560 :584 :616), the
+; clear citation (:594-603 to :596-605) and the patch citation in ACTIVITY_TIMESTAMP_REFUSAL_NOTE
+; (:522 to :523); src/ui/api/http.rs cites the merge loop at :628-636 (was :626-634).
+pub const RETIRED_KINDS_HIDDEN_AT : str = "2026-09-26";
+pub const RENTAL_ONLY_RULING_AT : str = "2026-09-24";
+pub const NOTHING_CANNABIS_RULING_AT : str = "2026-09-25";
+pub const NOTHING_CANNABIS_RULING_ANSWER : u8 = 12;
+pub const ANALYSE_CANNABIS_RULING_AT : str = "2026-09-25";
+pub const ANALYSE_CANNABIS_RULING_ANSWER_IN_THE_SECOND_LIST : u8 = 3;
+pub const RULINGS_ARE_QUOTED_IN : str = "DECISIONS.md";
+pub const RULINGS_QUOTED_HERE : u8 = 0;
+
+pub const SERVED_CART_KINDS : [1]str = ["bike_rental"];
+pub const SERVED_CART_KIND_COUNT : u8 = 1;
+pub const SERVED_KIND_SOURCE : str = "src/trios/pricing.rs";
+pub const SERVED_KIND_PREDICATE : str = "trios::pricing::cart_kind_is_served";
+pub const SERVED_KIND_IS_THE_TAG_OF_THE_ADMITTED_DEAL : bool = true;
+pub const SERVED_KIND_TAG_TEST : str = "src/db/orders.rs the_cart_serves_the_tag_of_the_only_deal_the_checkout_admits";
+pub const RETIRED_STORABLE_KINDS : [4]str = ["strain", "set", "accessory", "tea"];
+pub const RETIRED_STORABLE_KIND_COUNT : u8 = 4;
+
+pub const KEPT_CART_READERS : u8 = 3;
+pub const KEPT_CART_READERS_SERVING_A_RETIRED_KIND : u8 = 0;
+pub const KEPT_CART_READERS_SERVING_A_RETIRED_KIND_BEFORE_2026_09_26 : u8 = 3;
+
+pub const API_RESPONSE_BUILDER : str = "src/api/cart.rs cart_model_to_resp";
+pub const API_ANSWERS_THROUGH_THE_BUILDER : u8 = 3;
+pub const API_TOTAL_COUNTS_A_HIDDEN_ROW : bool = false;
+pub const CART_BY_ID_NOT_FOUND : u16 = 404;
+pub const CLEAR_DELETES_A_HIDDEN_ROW : bool = false;
+pub const API_WRITE_GATE_CHANGED_ON_2026_09_26 : bool = false;
+
+pub const REMINDER_KIND_FILTERED_QUERIES : u8 = 2;
+pub const REMINDER_READS_A_HIDDEN_ROW : bool = false;
+pub const CART_HAS_A_LINE_MEANS_A_SERVED_LINE : bool = true;
+
+pub const CLIENT_SAVED_CART_READS : u8 = 2;
+pub const CLIENT_SAVED_CART_READS_FILTERED : u8 = 2;
+pub const CLIENT_STORAGE_KEYS : [2]str = ["wwb_cart", "wwb_cart_cloud"];
+pub const CLIENT_REWRITES_ITS_OWN_STORAGE : bool = true;
+pub const CLIENT_STORAGE_WRITE_SITES_ADDED : u8 = 0;
+pub const CLIENT_CART_VARIANTS_THAT_ARE_A_RENTAL_LINE : u8 = 0;
+
+pub const ROWS_DELETED_ON_2026_09_26 : u8 = 0;
+pub const ROWS_REWRITTEN_ON_2026_09_26 : u8 = 0;
+pub const MIGRATIONS_ADDED_ON_2026_09_26 : u8 = 0;
+pub const CUSTOMER_SENTENCES_WRITTEN_ON_2026_09_26 : u8 = 0;
+
+; The rule, as the three readers apply it. A kind the list does not name is not served, whatever
+; the table admits.
+pub fn kind_is_served(kind: str) bool {
+  return kind == BIKE_KIND;
+}
+
+; What a line of one cart reaches, per reader. The row stays stored either way.
+pub fn row_reaches_the_cart_answer(kind: str) bool {
+  return kind_is_served(kind);
+}
+
+pub fn saved_line_survives_a_load(kind: str) bool {
+  return kind_is_served(kind);
+}
+
+pub fn clear_deletes_the_row(kind: str) bool {
+  return kind_is_served(kind);
+}
+
+; PATCH or DELETE of one line by id: a hidden row answers as a missing one. Every other answer of
+; those two routes (the owner and block checks, the write) is not this file's and reads as
+; HTTP_STATUS_NOT_OWNED_HERE.
+pub fn line_by_id_status(row_exists: bool, kind: str) u16 {
+  if (!row_exists or !kind_is_served(kind)) {
+    return CART_BY_ID_NOT_FOUND;
+  }
+  return HTTP_STATUS_NOT_OWNED_HERE;
+}
+
+; The reminder is due only for a cart with at least one served line: the rungs above, fed the served
+; count instead of the stored one.
+pub fn reminder_due_for(reminder_count: u8, minutes_since_updated_at: u32, hours_since_first_reminder: u32, served_lines: u8, telegram_id_known: bool) bool {
+  return abandonment_inferred(reminder_count, minutes_since_updated_at, hours_since_first_reminder, served_lines >= 1, telegram_id_known);
+}
+
+test the_cart_serves_the_admitted_deal_tag_and_nothing_else {
+  assert RETIRED_KINDS_HIDDEN_AT == "2026-09-26";
+  assert RENTAL_ONLY_RULING_AT == "2026-09-24";
+  assert NOTHING_CANNABIS_RULING_AT == "2026-09-25";
+  assert NOTHING_CANNABIS_RULING_ANSWER == 12;
+  assert ANALYSE_CANNABIS_RULING_AT == "2026-09-25";
+  assert ANALYSE_CANNABIS_RULING_ANSWER_IN_THE_SECOND_LIST == 3;
+  assert RULINGS_QUOTED_HERE == 0;
+  assert CYRILLIC_STRINGS_PUBLISHED_COUNT == 0;
+  assert SERVED_CART_KIND_COUNT == 1;
+  assert SERVED_CART_KINDS[0] == BIKE_KIND;
+  assert SERVED_CART_KINDS[0] == "bike_rental";
+  assert REUSES_COMMERCE_ID == "turbobaby/commerce";
+  assert SERVED_KIND_IS_THE_TAG_OF_THE_ADMITTED_DEAL == true;
+  assert kind_is_served("bike_rental") == true;
+  assert kind_is_served("bike_sale") == false;
+  assert kind_is_served("") == false;
+  assert kind_is_served("rental") == false;
+}
+
+test every_storable_kind_but_the_rental_one_is_retired {
+  assert RETIRED_STORABLE_KIND_COUNT == 4;
+  assert RETIRED_STORABLE_KIND_COUNT + SERVED_CART_KIND_COUNT == DB_KIND_COUNT;
+  assert RETIRED_STORABLE_KINDS[0] == DB_KINDS[0];
+  assert RETIRED_STORABLE_KINDS[1] == DB_KINDS[1];
+  assert RETIRED_STORABLE_KINDS[2] == DB_KINDS[2];
+  assert RETIRED_STORABLE_KINDS[3] == DB_KINDS[3];
+  assert DB_KINDS[4] == BIKE_KIND;
+  assert kind_is_served(RETIRED_STORABLE_KINDS[0]) == false;
+  assert kind_is_served(RETIRED_STORABLE_KINDS[1]) == false;
+  assert kind_is_served(RETIRED_STORABLE_KINDS[2]) == false;
+  assert kind_is_served(RETIRED_STORABLE_KINDS[3]) == false;
+  assert kind_is_storable(RETIRED_STORABLE_KINDS[0]) == true;
+  assert kind_is_storable(RETIRED_STORABLE_KINDS[3]) == true;
+}
+
+test a_hidden_row_reaches_no_answer_and_no_clear {
+  assert row_reaches_the_cart_answer("tea") == false;
+  assert row_reaches_the_cart_answer("set") == false;
+  assert row_reaches_the_cart_answer(BIKE_KIND) == true;
+  assert API_ANSWERS_THROUGH_THE_BUILDER == 3;
+  assert API_TOTAL_COUNTS_A_HIDDEN_ROW == false;
+  assert clear_deletes_the_row("accessory") == false;
+  assert clear_deletes_the_row(BIKE_KIND) == true;
+  assert CLEAR_DELETES_A_HIDDEN_ROW == false;
+  assert CLEAR_DELETES_ITEMS == true;
+  assert CLEAR_DELETES_THE_ROW == false;
+  assert line_by_id_status(true, "tea") == CART_BY_ID_NOT_FOUND;
+  assert line_by_id_status(false, BIKE_KIND) == CART_BY_ID_NOT_FOUND;
+  assert line_by_id_status(true, BIKE_KIND) == HTTP_STATUS_NOT_OWNED_HERE;
+  assert CART_BY_ID_NOT_FOUND == 404;
+  assert API_WRITE_GATE_CHANGED_ON_2026_09_26 == false;
+  assert API_KIND_COUNT == 4;
+  assert KINDS_THAT_CAN_WRITE_A_ROW_TODAY == 0;
+}
+
+test a_kept_cart_of_hidden_rows_is_never_reminded {
+  assert CART_HAS_A_LINE_MEANS_A_SERVED_LINE == true;
+  assert REMINDER_KIND_FILTERED_QUERIES == 2;
+  assert REMINDER_READS_A_HIDDEN_ROW == false;
+  // Two stored lines, both hidden: no rung is due, however old the cart.
+  assert reminder_due_for(0, 9999, 0, 0, true) == false;
+  assert reminder_due_for(1, 0, 9999, 0, true) == false;
+  // One served line makes it an ordinary cart again.
+  assert reminder_due_for(0, 11, 0, 1, true) == true;
+  assert reminder_due_for(1, 0, 25, 1, true) == true;
+  assert reminder_due_for(0, 10, 0, 1, true) == false;
+}
+
+test the_mini_app_drops_retired_lines_from_its_own_saved_cart {
+  assert CLIENT_SAVED_CART_READS == 2;
+  assert CLIENT_SAVED_CART_READS_FILTERED == CLIENT_SAVED_CART_READS;
+  assert CLIENT_STORAGE_KEYS[0] == "wwb_cart";
+  assert CLIENT_STORAGE_KEYS[1] == "wwb_cart_cloud";
+  assert CLIENT_REWRITES_ITS_OWN_STORAGE == true;
+  assert CLIENT_STORAGE_WRITE_SITES_ADDED == 0;
+  assert CLIENT_CART_VARIANTS_THAT_ARE_A_RENTAL_LINE == 0;
+  assert saved_line_survives_a_load("tea") == false;
+  assert saved_line_survives_a_load(BIKE_KIND) == true;
+}
+
+test hiding_a_kept_cart_deletes_and_writes_nothing {
+  assert KEPT_CART_READERS == 3;
+  assert KEPT_CART_READERS_SERVING_A_RETIRED_KIND == 0;
+  assert KEPT_CART_READERS_SERVING_A_RETIRED_KIND_BEFORE_2026_09_26 == KEPT_CART_READERS;
+  assert ROWS_DELETED_ON_2026_09_26 == 0;
+  assert ROWS_REWRITTEN_ON_2026_09_26 == 0;
+  assert MIGRATIONS_ADDED_ON_2026_09_26 == 0;
+  assert CUSTOMER_SENTENCES_WRITTEN_ON_2026_09_26 == 0;
+  assert PROPOSED_MIGRATIONS_COUNT == 0;
+}
+
+invariant no_reader_of_a_kept_cart_serves_a_retired_kind
+  assert KEPT_CART_READERS_SERVING_A_RETIRED_KIND == 0 and kind_is_served(RETIRED_STORABLE_KINDS[0]) == false and kind_is_served(RETIRED_STORABLE_KINDS[1]) == false and kind_is_served(RETIRED_STORABLE_KINDS[2]) == false and kind_is_served(RETIRED_STORABLE_KINDS[3]) == false
+
+invariant a_cart_of_hidden_rows_is_never_due
+  assert reminder_due_for(0, 9999, 9999, 0, true) == false and reminder_due_for(1, 9999, 9999, 0, true) == false
+
+invariant hiding_is_not_deleting
+  assert ROWS_DELETED_ON_2026_09_26 == 0 and ROWS_REWRITTEN_ON_2026_09_26 == 0 and MIGRATIONS_ADDED_ON_2026_09_26 == 0 and CLEAR_DELETES_A_HIDDEN_ROW == false
+
+; --- Reconciled with the owner's answer 3, 2026-09-26 -----------------------------------------------
+; Appended at the end of the file so that no line citation into it moves.
+; The owner's answer 3 of the second list of 2026-09-25 (turbobaby/legacy-retirement,
+; OWNER_ANSWER_3_*) reached the same cart by another rule on its own branch: a line of a retired
+; kind was served UNDER A NEUTRAL NAME and with no picture, by the cart API, and a cart kept on the
+; device printed the same neutral name on the cart and the checkout. When the two branches were
+; merged on 2026-09-26 the two rules could not both stand, and the one kept is this file's: a line
+; of a retired kind is not served at all. The neutral-name path was removed from the cart API
+; (cart_model_to_resp serves each served row's own name and picture: a served row is a rental row),
+; from src/trios/legacy_view.rs (it declares no cart function) and from the three client readers
+; (the cart screen, the checkout and the unmounted CartItemComponent print a line as it is).
+; WHY NO SCREEN CAN NEED IT. Every way a line enters the Mini App's cart asks the one predicate:
+; a saved cart through Cart::without_retired_lines, a server cart through CartItem::from_server,
+; and, since this reconciliation, a single line through Cart::add_item, which drops a line
+; CartItem::is_served refuses before it touches the list. add_item was the one way in that did not
+; ask: the reorder buttons and the screens nothing mounts add lines through it. It holds the only
+; push onto a cart's lines in src/ui (tests/legacy_view_wiring.rs counts them). Since no
+; CartItemType variant is a rental line, today no line enters at all, which is what the screens
+; already render as an empty cart. No sentence was written and no row was touched.
+pub const RECONCILED_WITH_ANSWER_3_AT : str = "2026-09-26";
+pub const ANSWER_3_CART_RULE_KEPT : bool = false;
+pub const CART_LINES_SERVED_UNDER_A_NEUTRAL_NAME : u8 = 0;
+pub const CLIENT_CART_WAYS_IN : u8 = 3;
+pub const CLIENT_CART_WAYS_IN_ASKING_THE_PREDICATE : u8 = 3;
+pub const CLIENT_CART_WAYS_IN_ASKING_THE_PREDICATE_BEFORE_THE_RECONCILIATION : u8 = 2;
+pub const CLIENT_CART_ADD_ASKS_THE_PREDICATE : bool = true;
+pub const RECONCILIATION_WITNESS : str = "tests/legacy_view_wiring.rs";
+
+test one_rule_for_a_kept_cart_after_the_merge_with_answer_3 {
+  assert RECONCILED_WITH_ANSWER_3_AT == RETIRED_KINDS_HIDDEN_AT;
+  assert ANSWER_3_CART_RULE_KEPT == false;
+  assert CART_LINES_SERVED_UNDER_A_NEUTRAL_NAME == 0;
+  assert row_reaches_the_cart_answer("set") == false;
+  assert row_reaches_the_cart_answer(BIKE_KIND) == true;
+  assert CLIENT_CART_WAYS_IN == 3;
+  assert CLIENT_CART_WAYS_IN_ASKING_THE_PREDICATE == CLIENT_CART_WAYS_IN;
+  assert CLIENT_CART_WAYS_IN_ASKING_THE_PREDICATE_BEFORE_THE_RECONCILIATION + 1 == CLIENT_CART_WAYS_IN;
+  assert CLIENT_CART_ADD_ASKS_THE_PREDICATE == true;
+  assert CLIENT_SAVED_CART_READS_FILTERED == CLIENT_SAVED_CART_READS;
+  assert CLIENT_CART_VARIANTS_THAT_ARE_A_RENTAL_LINE == 0;
+  assert saved_line_survives_a_load("tea") == false;
+  assert CUSTOMER_SENTENCES_WRITTEN_ON_2026_09_26 == 0;
+  assert ROWS_DELETED_ON_2026_09_26 == 0;
+}
+
+invariant every_way_into_the_mini_app_cart_asks_the_served_kind
+  assert CLIENT_CART_WAYS_IN_ASKING_THE_PREDICATE == CLIENT_CART_WAYS_IN and CART_LINES_SERVED_UNDER_A_NEUTRAL_NAME == 0 and ANSWER_3_CART_RULE_KEPT == false

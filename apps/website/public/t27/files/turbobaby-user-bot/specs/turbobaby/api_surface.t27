@@ -116,9 +116,9 @@ pub const DOCUMENT_SOURCE : str = "src/api/openapi.rs";
 pub const DOCUMENT_ENDPOINT_SOURCE : str = "src/main.rs";
 pub const MISS_WITNESS : str = "tests/api_miss_is_not_html.rs";
 pub const WIRING_GATE_SITE : str = "src/api/mod.rs:304-494";
-; wc -l over the tracked sources, 2026-09-21.
+; wc -l over the tracked sources, 2026-09-21; DOCUMENT_SOURCE_LINES re-measured 2026-09-25 (239 before).
 pub const ROUTER_SOURCE_LINES : u16 = 494;
-pub const DOCUMENT_SOURCE_LINES : u16 = 239;
+pub const DOCUMENT_SOURCE_LINES : u16 = 260;
 
 ; --- Ownership edges ------------------------------------------------------------------------
 ; The pinned compiler lowers an import to nothing the gate will accept, so a cross-contract edge
@@ -266,7 +266,7 @@ pub const PAIRING_GATE_SITE : str = "tests/api_document_pairing.rs";
 pub const PAIRING_GATE_CHECKS : u8 = 7;
 pub const PAIRING_GATE_RATCHET_ROWS : u8 = 17;
 pub const PREFIX_DOUBLING_IS_GATED : bool = true;
-; src/api/openapi.rs:195-239 does gate the document, on vocabulary: it asserts the served text
+; src/api/openapi.rs published_document_tests gates the document on vocabulary: the served text
 ; carries no retired word and does name the product. That is a rebrand gate, and it would pass
 ; unchanged on a document describing nine paths that do not exist.
 pub const DOCUMENT_HAS_A_VOCABULARY_GATE : bool = true;
