@@ -2,7 +2,7 @@
 // once, untagged visits never, and a failure never reaches the page.
 // Run: node --experimental-strip-types qa/traffic-arrival-contract.mjs
 import assert from 'node:assert/strict'
-import { arrivalFromSearch, reportArrival, ARRIVAL_URL } from '../src/lib/trafficArrival.ts'
+import { arrivalFromSearch, reportArrival, ARRIVAL_URL, carrySource, SOURCE_KEY } from '../src/lib/trafficArrival.ts'
 
 // The form the agents publish: the query BEFORE the hash route.
 const blog = new URL('https://t27.ai/?utm_source=x&utm_medium=social&utm_campaign=blog&utm_content=gf-t#/blog/gf-t')
@@ -26,4 +26,16 @@ assert.deepEqual(calls, [[ARRIVAL_URL, { source: 'reddit' }]])
 const failing = async () => { throw new Error('offline') }
 assert.equal(await reportArrival('?utm_source=threads', failing, { getItem: () => null, setItem: () => {} }), false)
 
-console.log('traffic-arrival contract: 9 checks passed')
+// The channel rides on into the bot: remembered at the arrival...
+assert.equal(store.get(SOURCE_KEY), 'reddit', 'the visit remembers its channel')
+// ...and put at the end of OUR bot's /start payload, the way the bot reads it.
+assert.equal(carrySource('https://t.me/t27ai_bot?start=website', 'x'), 'https://t.me/t27ai_bot?start=website__x')
+assert.equal(carrySource('https://t.me/t27ai_bot?start=foundry', 'Reddit'), 'https://t.me/t27ai_bot?start=foundry__reddit')
+assert.equal(carrySource('https://t.me/other_bot?start=website', 'x'), 'https://t.me/other_bot?start=website', 'never somebody else\'s bot')
+assert.equal(carrySource('https://t.me/t27_lang', 'x'), 'https://t.me/t27_lang', 'a channel link is not a bot start')
+assert.equal(carrySource('https://t.me/t27ai_bot?start=website__x', 'reddit'), 'https://t.me/t27ai_bot?start=website__x', 'a channel already there stays')
+assert.equal(carrySource('https://t.me/t27ai_bot?start=website', null), 'https://t.me/t27ai_bot?start=website', 'no channel, no tag')
+const long = 'a'.repeat(62) // + '__x' = 65 > 64
+assert.equal(carrySource(`https://t.me/t27ai_bot?start=${long}`, 'x'), `https://t.me/t27ai_bot?start=${long}`, 'never past 64 characters')
+
+console.log('traffic-arrival contract: 16 checks passed')
