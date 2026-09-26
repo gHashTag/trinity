@@ -9,7 +9,7 @@
   min-height: 0;
   height: 100%;
   border: 1px solid var(--hud-line, rgba(0, 255, 136, 0.22));
-  background: var(--hud-panel, rgba(2, 8, 6, 0.86));
+  background: var(--hud-panel, rgba(2, 8, 6, 0.88));
   clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
 
