@@ -14,7 +14,9 @@ import { body as body_one_saturation_rule_five_artefacts, ruBody as ruBody_one_s
 import { body as body_ninety_tests_were_unreachable, ruBody as ruBody_ninety_tests_were_unreachable } from './bodies/ninety-tests-were-unreachable'
 import { body as body_four_languages_one_tri_extension, ruBody as ruBody_four_languages_one_tri_extension } from './bodies/four-languages-one-tri-extension'
 import { body as body_the_fpga_row_was_corrected, ruBody as ruBody_the_fpga_row_was_corrected } from './bodies/the-fpga-row-was-corrected'
+import { body as body_a_small_agent_needs_an_exact_judge, ruBody as ruBody_a_small_agent_needs_an_exact_judge } from './bodies/a-small-agent-needs-an-exact-judge'
 import type { Post, PostBody } from './types'
+import { body as body_tri_mined_not_sold, ruBody as ruBody_tri_mined_not_sold } from './bodies/tri-mined-not-sold'
 import { body as body_the_only_stable_speed_belonged_to_the_tool, ruBody as ruBody_the_only_stable_speed_belonged_to_the_tool } from './bodies/the-only-stable-speed-belonged-to-the-tool'
 import { body as body_queen_review_lifecycle_queues, ruBody as ruBody_queen_review_lifecycle_queues } from './bodies/queen-review-lifecycle-queues'
 import { body as body_physical_width_changed_the_question, ruBody as ruBody_physical_width_changed_the_question } from './bodies/physical-width-changed-the-question'
@@ -75,6 +77,7 @@ import { body as body_real_value_in_integer_container, ruBody as ruBody_real_val
 import { body as body_one_commit_nine_workflow_outcomes, ruBody as ruBody_one_commit_nine_workflow_outcomes } from './bodies/one-commit-nine-workflow-outcomes'
 
 const bodies: Record<string, PostBody> = {
+  'tri-mined-not-sold': { body: body_tri_mined_not_sold, ruBody: ruBody_tri_mined_not_sold },
   'how-to-join-the-swarm': { body: body_how_to_join_the_swarm, ruBody: ruBody_how_to_join_the_swarm },
   'queen-browser-actions-you-can-follow': { body: body_queen_browser_actions_you_can_follow, ruBody: ruBody_queen_browser_actions_you_can_follow },
   'a-partial-module-needs-its-own-verdict': { body: body_a_partial_module_needs_its_own_verdict, ruBody: ruBody_a_partial_module_needs_its_own_verdict },
@@ -144,6 +147,7 @@ const bodies: Record<string, PostBody> = {
   'two-bitstreams-one-bit-apart': { body: body_two_bitstreams_one_bit_apart, ruBody: ruBody_two_bitstreams_one_bit_apart },
   'a-multiplicity-correction-changed-the-deployment-reading': { body: body_a_multiplicity_correction_changed_the_deployment_reading, ruBody: ruBody_a_multiplicity_correction_changed_the_deployment_reading },
   'the-only-stable-speed-belonged-to-the-tool': { body: body_the_only_stable_speed_belonged_to_the_tool, ruBody: ruBody_the_only_stable_speed_belonged_to_the_tool },
+  'a-small-agent-needs-an-exact-judge': { body: body_a_small_agent_needs_an_exact_judge, ruBody: ruBody_a_small_agent_needs_an_exact_judge },
 }
 
 export type { Block, Post } from './types'
