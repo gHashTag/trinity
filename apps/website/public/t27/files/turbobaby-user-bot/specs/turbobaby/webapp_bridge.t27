@@ -17,8 +17,9 @@
 ; -- tests/money_is_never_invented.rs:10-16 says exactly that in its own words, and adds that the
 ; only other compiler, the wasm clippy gate, "has no opinion about unwrap_or(0.0)". The size of
 ; the blind spot is countable: src/ui holds FIVE `#[cfg(test)]` modules (src/ui/api/local_client.rs:181,
-; src/ui/lang.rs:135, src/ui/screens/bike_detail.rs:570 (:600 until the 2026-09-24 rental-only
-; edit removed the buy-out block above it), src/ui/screens/catalog_screen.rs:954
+; src/ui/lang.rs:135, src/ui/screens/bike_detail.rs:572 (:570 until the 2026-09-25 edit that
+; removed the all-taken line above it, and :600 until the 2026-09-24 rental-only edit removed the
+; buy-out block above it), src/ui/screens/catalog_screen.rs:954
 ; (:599 and :966 until the 2026-09-24 availability edit, re-verified that day),
 ; src/ui/share.rs:409) containing THIRTY-TWO `#[test]` functions, and not one of the thirty-two is
 ; ever compiled, let alone run. The instrument that does exist is a text scan for four literal

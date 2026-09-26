@@ -17,7 +17,7 @@
 ;    src/db/orders.rs:382 behind :377, src/db/referrals.rs:429 behind :419, :489 behind :481, and
 ;    :855 behind :847) and FOUR do not (src/api/orders.rs:1418 debits at checkout,
 ;    src/api/orders.rs:2139 refunds on reject, src/api/orders.rs:2373 refunds on cancel, and
-;    src/bot/callbacks.rs:760 refunds on reject from the bot, all four with zero occurrences of
+;    src/bot/callbacks.rs:733 refunds on reject from the bot, all four with zero occurrences of
 ;    BonusTx or bonus_transaction as a WRITE in their modules -- src/api/orders.rs holds exactly
 ;    one mention, the read-only import at :16 used at :1962-1964, and src/bot/callbacks.rs holds
 ;    none). The audit trail is therefore missing the single largest category of movement, the
@@ -492,7 +492,7 @@ pub const LEDGER_BYPASS_SITES : [4]str = [
   "src/api/orders.rs:1418",
   "src/api/orders.rs:2139",
   "src/api/orders.rs:2373",
-  "src/bot/callbacks.rs:760",
+  "src/bot/callbacks.rs:733",
 ];
 pub const THE_LEDGER_SUMS_TO_THE_BALANCE_TODAY : bool = false;
 

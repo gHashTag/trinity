@@ -144,6 +144,15 @@ pub const ENDPOINT_CALLERS_IN_REPOSITORY : u8 = 1;
 pub const GAME_ASSETS_POSTING_TO_THE_ENDPOINT : u8 = 0;
 pub const SKATE_ERA_ASSET_EXISTS : bool = false;
 pub const CATCH_ERA_ASSET_IS_MOUNTED : bool = false;
+; CORRECTED 2026-09-25: the catch-era asset no longer exists either. The owner's ruling of that day
+; (#12, nothing cannabis-related anywhere) removed assets/game/catch.js, whose falling pieces
+; included a leaf and a bud, with the rest of the old shop's served media; the removal is recorded
+; by turbobaby/legacy-retirement as ORPHANED_ASSET_REMOVED. No code mounted it before and none mounts
+; it now, so CATCH_ERA_ASSET_IS_MOUNTED is unchanged. The refutation paragraph in the header is the
+; 2026-09-21 reading: its "neither game asset" now has one member, ride.js, which still does not
+; post to this endpoint. The rows the catch era wrote are untouched; nothing here moves a score.
+pub const CATCH_ERA_ASSET_EXISTS : bool = false;
+pub const CATCH_ERA_ASSET_REMOVED_AT : str = "2026-09-25";
 ; src/ui/screens/ride_screen.rs:66 sends the run's DISTANCE in the score field. The catch-era
 ; game the table was built for counted points. Two different quantities have therefore been
 ; written into one INTEGER column across the eras, which is a second reason the surviving number
@@ -417,6 +426,9 @@ test the_quantity_in_the_column_is_not_the_same_thing_across_eras {
   assert GAME_ASSETS_POSTING_TO_THE_ENDPOINT == 0;
   assert SKATE_ERA_ASSET_EXISTS == false;
   assert CATCH_ERA_ASSET_IS_MOUNTED == false;
+  // Removed 2026-09-25 (owner's ruling #12); unmounted before and after.
+  assert CATCH_ERA_ASSET_EXISTS == false;
+  assert CATCH_ERA_ASSET_REMOVED_AT == "2026-09-25";
 }
 
 test score_admission_is_a_closed_interval_that_admits_zero {

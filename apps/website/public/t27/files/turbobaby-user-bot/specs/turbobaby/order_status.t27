@@ -28,7 +28,7 @@
 ; readers disagree once more on terminality alone: src/bot/callbacks.rs:120-122 treats exactly two
 ; names as terminal where the API reject path at src/api/orders.rs:2094-2097 treats four, and the
 ; repository's own test for it is called
-; should_refund_bonus_is_dangerously_true_for_unknown_status (src/bot/callbacks.rs:1175-1181). The
+; should_refund_bonus_is_dangerously_true_for_unknown_status (src/bot/callbacks.rs:1116-1122). The
 ; column constrains none of this: migrations/001_initial.sql:67 is status VARCHAR(30) NOT NULL
 ; DEFAULT 'pending' with no CHECK clause, so the names live in Rust only, and nothing at the
 ; database stops one more writer from storing a tenth. That is the number that forced this file:
@@ -475,8 +475,8 @@ pub fn order_status_display_pipeline_agrees(variant_count: u8, missing_count: u8
 ; The fourth reader, and the only one that disagrees about terminality rather than about the
 ; vocabulary. src/bot/callbacks.rs:120-122 is status != "rejected" && status != "completed", so
 ; delivered and cancelled read as non-terminal there while src/api/orders.rs:2094-2097 reads all
-; four. src/bot/callbacks.rs:721 is the raw-SQL read that feeds it, and the repository's own test
-; at src/bot/callbacks.rs:1175-1181 already names the unknown-status case dangerous.
+; four. src/bot/callbacks.rs:694 is the raw-SQL read that feeds it, and the repository's own test
+; at src/bot/callbacks.rs:1116-1122 already names the unknown-status case dangerous.
 pub const REFUND_GUARD_SOURCE : str = "src/bot/callbacks.rs:120-122";
 pub const REFUND_GUARD_TERMINAL_COUNT : u8 = 2;
 pub const REFUND_GUARD_MISSING_COUNT : u8 = 2;

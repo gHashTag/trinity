@@ -504,6 +504,13 @@ pub fn alert_is_raised(source_is_normalized: bool, message_is_fatal_shaped: bool
 ; at all (TRIO_MODULES_CALLING_THE_API_MAPPER counts the modules that do, tests included).
 ; FAILURE_KEY_COUNT below stays the union of the keys the TWO status mappers select; the cancel
 ; surface's own keys are counted apart, and five of its six are outside that union.
+; CORRECTED 2026-09-25, owner question D answered by delegation: "an existing key of its own
+; everywhere else" no longer holds for one answer. The refusal the route makes itself -- 409, the
+; order has left pending -- is told a key written for it, T_ORDER_DETAIL_CANCEL_REFUSED, and not
+; this surface's fallback. The surface now selects seven keys of its own and six of them are
+; outside that union; "five of its six" above is the count before that day
+; (ORDER_CANCEL_OWN_KEY_COUNT_BEFORE_DELEGATION). What was decided, by whom and what it leaves
+; open is CONFLICTED_CANCELLATION_DECISION below.
 pub const SURFACE_UNSET : u8 = 0;
 pub const SURFACE_API : u8 = 1;
 pub const SURFACE_CHECKOUT : u8 = 2;
@@ -525,16 +532,22 @@ pub const ORDER_CANCEL_SERVER_SENTENCE_WAITS_FOR_THE_CHECK : bool = true;
 ; writes for question D has to arrive here as well. Only T_API_ERR_UNKNOWN is inside the union
 ; FAILURE_KEY_COUNT counts; the success key is not a failure key at all, and it had been written
 ; with the cancel feature and read by no screen until this surface existed.
-pub const ORDER_CANCEL_OWN_KEY_COUNT : u8 = 6;
-pub const ORDER_CANCEL_OWN_KEY_NAMES : [6]str = [
+; The key for question D arrived on 2026-09-25 as the seventh name, appended rather than inserted
+; so that no index below moves. The fallback stays in the set: 400 -- the route's own answer to a
+; malformed id or telegram_id -- and every other refusal that is not 401, 403, 404, 409 or 429
+; still reaches it. The new key is selected by no status mapper, so it is outside the union too.
+pub const ORDER_CANCEL_OWN_KEY_COUNT : u8 = 7;
+pub const ORDER_CANCEL_OWN_KEY_COUNT_BEFORE_DELEGATION : u8 = 6;
+pub const ORDER_CANCEL_OWN_KEY_NAMES : [7]str = [
   "T_ORDER_DETAIL_CANCELLED_BY_USER",
   "T_ORDER_DETAIL_NOT_FOUND",
   "T_API_ERR_UNKNOWN",
   "T_SUCCESS_STATUS_LOADING",
   "T_SUCCESS_STATUS_ERROR",
   "T_CHECKOUT_ERR_NETWORK",
+  "T_ORDER_DETAIL_CANCEL_REFUSED",
 ];
-pub const ORDER_CANCEL_KEYS_OUTSIDE_THE_FAILURE_UNION : u8 = 5;
+pub const ORDER_CANCEL_KEYS_OUTSIDE_THE_FAILURE_UNION : u8 = 6;
 pub const ORDER_CANCEL_SUCCESS_KEY_WAS_READ_BY_NOTHING_BEFORE_THE_SURFACE : bool = true;
 ; Never nothing, and the one answer told by something other than a line. An answer always gets a
 ; sentence, with one exception that is not an empty render: an attempt whose outcome is unknown --
@@ -560,14 +573,60 @@ pub const ORDER_CANCEL_SETTLED_UNKNOWN_IS_TOLD_BY_THE_STATUS_LABEL : bool = true
 ; mapper's tests pin does not hold on this surface. Brain lines are the owner's knowledge
 ; base, a read-only dump read on 2026-09-22, translated and never transcribed, and no gate here
 ; checks them.
-pub const CONFLICTED_CANCELLATION_HAS_A_PUBLISHED_SENTENCE : bool = false;
+; CORRECTED 2026-09-25: the refusal is worded, and not by the owner. On that day the owner was put
+; a numbered list of open questions and answered item 11 -- this question D -- by delegating it
+; (translated: "I do not understand what this is; think it over"). A delegation approves no text;
+; it hands the choice over. Under it the ru and en sentence was chosen the same day and ships as
+; CONFLICTED_CANCELLATION_KEY_NAME, which order_cancel_line selects for 409 alone and tells with the
+; not-done tone. It is pinned here by the arm that selects it (ORDER_CANCEL_OWN_KEY_NAMES, which
+; gate 3 binds) and never by its wording (L3); what it must do is CONFLICTED_CANCELLATION_DECISION.
+; The paragraph above stays as the record of 2026-09-22 to 2026-09-25, and so does the interim's
+; name: T_API_ERR_UNKNOWN still answers the refusals that are not 409, and its fault is now theirs
+; alone. Two limits of the chosen sentence are named rather than hidden. It describes the ORDER,
+; where the note of 2026-09-22 asked for the ATTEMPT: it says the shop has the order in hand, which
+; is true when the shop took it and false in the two other ways an order leaves pending before a
+; customer's tap lands -- the shop rejected it, or an earlier attempt of the customer's own whose
+; outcome was unknown did cancel it. In both, once the re-read that follows every answer lands, the
+; card's status label beside the line reads cancelled, and the rest of the sentence stays true. And
+; the next step it names is a person with no channel on the order card: nothing there links to the
+; manager, and this change adds no link. Question D is closed by it. The unknown outcome's own
+; sentence was never part of D and stays unwritten.
+; REWORDED 2026-09-25, later the same day and under the same delegation, by the operator: the FIRST
+; of the two limits above is CLOSED on that date. Dates here are UTC; the commit carries the
+; working machine's +07:00 clock, which had already turned to the 26th. The paragraph above stays
+; as the record of the first wording. The sentence no longer describes the order at all: it says
+; that the app can no longer cancel this order, and it names the manager. Each clause of that is
+; true whatever took the order out of pending -- the shop taking it, the shop rejecting it, or an
+; earlier attempt of the customer's own whose outcome was unknown -- because cancel_order answers
+; 409 (src/api/orders.rs, the status check before the update) for every stored
+; status that is not pending, and the sentence says only what that answer means for the customer.
+; So it is now true of every conflict (CONFLICTED_CANCELLATION_SENTENCE_IS_TRUE_OF_EVERY_CONFLICT),
+; which the first wording was not. Nothing else moved: the key keeps its name, the arm that selects
+; it and every index above are unchanged, and the two rows in src/trios/i18n.rs were rewritten on
+; their own lines, so no line citation into that file moved. The host tests in
+; src/trios/api_errors.rs now also refuse any claim about what the shop is doing with the order. The
+; SECOND limit stands: nothing on the order card links to the manager, and this change adds no link.
+pub const CONFLICTED_CANCELLATION_HAS_A_PUBLISHED_SENTENCE : bool = true;
+pub const CONFLICTED_CANCELLATION_HAD_A_PUBLISHED_SENTENCE_BEFORE_DELEGATION : bool = false;
+pub const CONFLICTED_CANCELLATION_KEY_NAME : str = "T_ORDER_DETAIL_CANCEL_REFUSED";
+pub const CONFLICTED_CANCELLATION_WORDED_AT : str = "2026-09-25";
+pub const CONFLICTED_CANCELLATION_WORDING_IS_THE_OWNERS_OWN : bool = false;
+pub const CONFLICTED_CANCELLATION_SENTENCE_IS_TRUE_OF_EVERY_CONFLICT : bool = true;
+pub const CONFLICTED_CANCELLATION_FIRST_WORDING_WAS_TRUE_OF_EVERY_CONFLICT : bool = false;
+pub const CONFLICTED_CANCELLATION_REWORDED_AT : str = "2026-09-25";
+pub const CONFLICTED_CANCELLATION_NAMED_LIMITS_OPEN : u8 = 1;
+pub const CONFLICTED_CANCELLATION_NAMED_LIMITS_OPEN_BEFORE_REWORDING : u8 = 2;
+pub const CONFLICTED_CANCELLATION_NEXT_STEP_HAS_A_CHANNEL_ON_THE_CARD : bool = false;
 pub const CONFLICTED_CANCELLATION_INTERIM_KEY_NAME : str = "T_API_ERR_UNKNOWN";
 pub const CONFLICTED_CANCELLATION_INTERIM_INVITES_A_REPEAT_THAT_CANNOT_SUCCEED : bool = true;
 pub const UNKNOWN_CANCELLATION_HAS_A_PUBLISHED_SENTENCE : bool = false;
 pub const ORDER_CANCEL_EVERY_REFUSAL_CARRIES_A_TRUE_NEXT_STEP : bool = false;
-pub const OWNER_QUESTION_CONFLICTED_CANCELLATION_SENTENCE_IS_OPEN : bool = true;
-pub const CONFLICTED_CANCELLATION_NOTE : str = "Owner question D. What is missing is an owner-approved ru and en sentence for a cancellation the server refused because the order had already left pending. No source publishes one: the owner's knowledge base has no node for the Mini App, DECISIONS.md fixes only the two locales (D13), and the bot's copy has a sentence for a cancelled order and none for a refused cancellation. What the knowledge base does publish is a principle for the bot, not copy: three outcomes and a check before a repeat, a refusal that names its object and explains (brain:knowledge_base:944-946 and brain:knowledge_base:953), and, narrower than a principle, one precedent from the bot's mileage-lowering flow: a specific wording struck because it tells the person nothing (brain:business_rules:1243-1245). The interim T_API_ERR_UNKNOWN has the fault that precedent names. The sentence must describe the ATTEMPT and not the order, because the same refusal answers a second attempt made after a first one whose outcome was unknown and that did cancel. Whether the sentence offers a next step, and which, is the owner's to choose with the words: one existing candidate is T_BIKE_ASK_MANAGER, which the bike card shows only when the Mini App can read the bot's username and which links to the bot's chat, and no channel is chosen here.";
-pub const UNKNOWN_CANCELLATION_NOTE : str = "An attempt whose outcome is unknown -- no answer, or a failure of the server's own -- is told T_SUCCESS_STATUS_LOADING while the status is read again and T_SUCCESS_STATUS_ERROR when that read fails. Once a fresh reading shows the order still pending, trying again is a checked repeat, and the attempt is told T_CHECKOUT_ERR_NETWORK after no answer and the general mapper's server sentence after a failure of the server's own. All of these are true of what the screen does. None says in the owner's words that the outcome is unknown, because no such sentence is published for the Mini App; the bot's service receipt has one (brain:knowledge_base:843-845). A dedicated key would come with question D.";
+pub const OWNER_QUESTION_CONFLICTED_CANCELLATION_SENTENCE_IS_OPEN : bool = false;
+pub const CONFLICTED_CANCELLATION_DECISION : str = "Owner question D, item 11 of the numbered list the owner answered on 2026-09-25. The answer, translated: I do not understand what this is; think it over. It delegates the wording and approves no text. Under it one ru and one en sentence were chosen the same day for the refusal cancel_order returns as 409 when the stored status is not pending, and they ship as T_ORDER_DETAIL_CANCEL_REFUSED in the two published locales (D13); the other six Lang variants read the English row, which is the locale-policy contract's fact. What the sentence must do, and the host tests in src/trios/api_errors.rs check: tell the customer the app will not cancel this order, not invite a repeat that meets the same refusal, name a next step -- the manager -- in both locales, and claim nothing about what the shop is doing with the order, since the same 409 answers an order the shop took, one it rejected and one already cancelled; the line is coloured not done and no other status is told it. The first wording, chosen earlier that day, said the order was already being handled, which is false for two of those three; the operator reworded it the same day, under the same delegation, to say only that the app can no longer cancel the order, which is true of every 409 (CONFLICTED_CANCELLATION_REWORDED_AT). The owner may reword it at any time: that is a change of the two rows in src/trios/i18n.rs and of nothing in this file.";
+pub const CONFLICTED_CANCELLATION_NOTE : str = "Question D was answered on 2026-09-25 by delegation (CONFLICTED_CANCELLATION_DECISION), and a 409 is told T_ORDER_DETAIL_CANCEL_REFUSED since. Of the two limits named that day, the first -- a sentence about the order whose first clause was false when the shop had rejected the order or an earlier attempt of the customer's own had cancelled it -- was closed the same day by rewording: the sentence now speaks only of what the app can no longer do, which holds for every 409. One thing remains, named: the manager the sentence points to has no channel on the order card. That is the owner's to change with the words, and it is not decided here.";
+pub const CONFLICTED_CANCELLATION_NOTE_BEFORE_REWORDING : str = "Question D was answered on 2026-09-25 by delegation (CONFLICTED_CANCELLATION_DECISION), and a 409 is told T_ORDER_DETAIL_CANCEL_REFUSED since. Two things remain, both named: the sentence describes the order and not the attempt, so its first clause is false when the order left pending by the shop rejecting it or by an earlier attempt of the customer's own, whose outcome was unknown, landing -- the re-read status label beside it then reads cancelled; and the manager it names has no channel on the order card. Either is the owner's to change with the words, and neither is decided here.";
+pub const CONFLICTED_CANCELLATION_NOTE_BEFORE_DELEGATION : str = "Owner question D. What is missing is an owner-approved ru and en sentence for a cancellation the server refused because the order had already left pending. No source publishes one: the owner's knowledge base has no node for the Mini App, DECISIONS.md fixes only the two locales (D13), and the bot's copy has a sentence for a cancelled order and none for a refused cancellation. What the knowledge base does publish is a principle for the bot, not copy: three outcomes and a check before a repeat, a refusal that names its object and explains (brain:knowledge_base:944-946 and brain:knowledge_base:953), and, narrower than a principle, one precedent from the bot's mileage-lowering flow: a specific wording struck because it tells the person nothing (brain:business_rules:1243-1245). The interim T_API_ERR_UNKNOWN has the fault that precedent names. The sentence must describe the ATTEMPT and not the order, because the same refusal answers a second attempt made after a first one whose outcome was unknown and that did cancel. Whether the sentence offers a next step, and which, is the owner's to choose with the words: one existing candidate is T_BIKE_ASK_MANAGER, which the bike card shows only when the Mini App can read the bot's username and which links to the bot's chat, and no channel is chosen here.";
+pub const UNKNOWN_CANCELLATION_NOTE : str = "An attempt whose outcome is unknown -- no answer, or a failure of the server's own -- is told T_SUCCESS_STATUS_LOADING while the status is read again and T_SUCCESS_STATUS_ERROR when that read fails. Once a fresh reading shows the order still pending, trying again is a checked repeat, and the attempt is told T_CHECKOUT_ERR_NETWORK after no answer and the general mapper's server sentence after a failure of the server's own. All of these are true of what the screen does. None says in the owner's words that the outcome is unknown, because no such sentence is published for the Mini App; the bot's service receipt has one (brain:knowledge_base:843-845). A dedicated key needs a sentence of its own: question D, answered on 2026-09-25, wrote one for the refusal only.";
 pub const API_MAPPED_ARM_COUNT : u8 = 8;
 pub const CHECKOUT_MAPPED_ARM_COUNT : u8 = 7;
 pub const EXTRA_ARM_IS_THE_EXPIRED_SESSION : bool = true;
@@ -615,12 +674,17 @@ pub fn renders_a_bare_code(surface: u8, status_is_mapped: bool) bool {
 ; Where the checkout sentence comes from. src/ui/screens/checkout_screen.rs:1111-1112 tries the
 ; body code first and falls back to the status, so an unrecognized code (checkout_errors.rs:46
 ; returns nothing for one) never reaches the customer as a code -- it becomes the status sentence
-; instead. Two codes are mapped, at :44 and :45.
+; instead. Two codes were mapped, at :44 and :45; one is now, at :45.
+; CHANGED 2026-09-25: the code at :44, "age_not_confirmed", lost its sentence when the owner
+; removed the checkout's 20+ box for now (turbobaby/checkout-contact, AGE_BLOCKER_REMOVED_AT), and
+; :44 is a comment line. The sentence was never reachable: the server's age refusal was a bare 422
+; with no body. An unmapped code takes the status sentence, which is the path pinned below.
 pub const MESSAGE_FROM_UNSET : u8 = 0;
 pub const MESSAGE_FROM_BODY_CODE : u8 = 1;
 pub const MESSAGE_FROM_STATUS : u8 = 2;
 pub const MESSAGE_FROM_BARE_CODE : u8 = 3;
-pub const MAPPED_BODY_CODE_COUNT : u8 = 2;
+pub const MAPPED_BODY_CODE_COUNT : u8 = 1;
+pub const MAPPED_BODY_CODE_COUNT_BEFORE_2026_09_25 : u8 = 2;
 pub const UNKNOWN_BODY_CODE_IS_EVER_RENDERED : bool = false;
 
 pub fn checkout_message_source(body_code_mapped: bool, status_is_mapped: bool) u8 {
@@ -866,7 +930,8 @@ test a_body_code_outranks_the_status_and_an_unknown_one_costs_nothing {
   assert checkout_message_source(true, false) == MESSAGE_FROM_BODY_CODE;
   assert checkout_message_source(false, true) == MESSAGE_FROM_STATUS;
   assert checkout_message_source(false, false) == MESSAGE_FROM_BARE_CODE;
-  assert MAPPED_BODY_CODE_COUNT == 2;
+  assert MAPPED_BODY_CODE_COUNT == 1;
+  assert MAPPED_BODY_CODE_COUNT_BEFORE_2026_09_25 == MAPPED_BODY_CODE_COUNT + 1;
   assert UNKNOWN_BODY_CODE_IS_EVER_RENDERED == false;
 }
 
@@ -927,23 +992,45 @@ test the_cancel_surface_delegates_where_the_general_sentence_is_true_and_is_coun
   assert API_MAPPER_CALL_SITE_SCREENS == 6;
   assert API_MAPPER_REACHES_A_SCREEN_THROUGH_A_TRIO == true;
   assert ORDER_CANCEL_OWN_KEY_NAMES.len == ORDER_CANCEL_OWN_KEY_COUNT;
-  assert ORDER_CANCEL_OWN_KEY_COUNT == 6;
+  assert ORDER_CANCEL_OWN_KEY_COUNT == 7;
+  assert ORDER_CANCEL_OWN_KEY_COUNT_BEFORE_DELEGATION + 1 == ORDER_CANCEL_OWN_KEY_COUNT;
   assert ORDER_CANCEL_OWN_KEY_NAMES[0] == "T_ORDER_DETAIL_CANCELLED_BY_USER";
   assert ORDER_CANCEL_OWN_KEY_NAMES[2] == "T_API_ERR_UNKNOWN";
+  assert ORDER_CANCEL_OWN_KEY_NAMES[6] == "T_ORDER_DETAIL_CANCEL_REFUSED";
   assert ORDER_CANCEL_KEYS_OUTSIDE_THE_FAILURE_UNION + 1 == ORDER_CANCEL_OWN_KEY_COUNT;
   assert FAILURE_KEY_COUNT == 11;
   assert ORDER_CANCEL_SUCCESS_KEY_WAS_READ_BY_NOTHING_BEFORE_THE_SURFACE == true;
 }
 
-test the_refused_cancellation_sentence_is_a_named_refusal_awaiting_the_owner {
-  assert CONFLICTED_CANCELLATION_HAS_A_PUBLISHED_SENTENCE == false;
+test the_refused_cancellation_is_worded_by_delegation_and_its_limits_are_named {
+  assert CONFLICTED_CANCELLATION_HAS_A_PUBLISHED_SENTENCE == true;
+  assert CONFLICTED_CANCELLATION_HAD_A_PUBLISHED_SENTENCE_BEFORE_DELEGATION == false;
+  assert CONFLICTED_CANCELLATION_KEY_NAME == "T_ORDER_DETAIL_CANCEL_REFUSED";
+  assert CONFLICTED_CANCELLATION_KEY_NAME == ORDER_CANCEL_OWN_KEY_NAMES[6];
+  assert CONFLICTED_CANCELLATION_KEY_NAME != CONFLICTED_CANCELLATION_INTERIM_KEY_NAME;
+  assert CONFLICTED_CANCELLATION_WORDED_AT == "2026-09-25";
+  assert CONFLICTED_CANCELLATION_WORDING_IS_THE_OWNERS_OWN == false;
+  assert CONFLICTED_CANCELLATION_SENTENCE_IS_TRUE_OF_EVERY_CONFLICT == true;
+  assert CONFLICTED_CANCELLATION_FIRST_WORDING_WAS_TRUE_OF_EVERY_CONFLICT == false;
+  assert CONFLICTED_CANCELLATION_SENTENCE_IS_TRUE_OF_EVERY_CONFLICT != CONFLICTED_CANCELLATION_FIRST_WORDING_WAS_TRUE_OF_EVERY_CONFLICT;
+  assert CONFLICTED_CANCELLATION_REWORDED_AT == "2026-09-25";
+  assert CONFLICTED_CANCELLATION_REWORDED_AT == CONFLICTED_CANCELLATION_WORDED_AT;
+  assert CONFLICTED_CANCELLATION_NAMED_LIMITS_OPEN == 1;
+  assert CONFLICTED_CANCELLATION_NAMED_LIMITS_OPEN_BEFORE_REWORDING == CONFLICTED_CANCELLATION_NAMED_LIMITS_OPEN + 1;
+  assert CONFLICTED_CANCELLATION_NEXT_STEP_HAS_A_CHANNEL_ON_THE_CARD == false;
   assert CONFLICTED_CANCELLATION_INTERIM_KEY_NAME == "T_API_ERR_UNKNOWN";
   assert CONFLICTED_CANCELLATION_INTERIM_KEY_NAME == ORDER_CANCEL_OWN_KEY_NAMES[2];
   assert CONFLICTED_CANCELLATION_INTERIM_INVITES_A_REPEAT_THAT_CANNOT_SUCCEED == true;
   assert UNKNOWN_CANCELLATION_HAS_A_PUBLISHED_SENTENCE == false;
   assert ORDER_CANCEL_EVERY_REFUSAL_CARRIES_A_TRUE_NEXT_STEP == false;
-  assert OWNER_QUESTION_CONFLICTED_CANCELLATION_SENTENCE_IS_OPEN == true;
+  assert OWNER_QUESTION_CONFLICTED_CANCELLATION_SENTENCE_IS_OPEN == false;
+  assert CONFLICTED_CANCELLATION_DECISION != "";
   assert CONFLICTED_CANCELLATION_NOTE != "";
+  assert CONFLICTED_CANCELLATION_NOTE_BEFORE_DELEGATION != "";
+  assert CONFLICTED_CANCELLATION_NOTE != CONFLICTED_CANCELLATION_NOTE_BEFORE_DELEGATION;
+  assert CONFLICTED_CANCELLATION_NOTE_BEFORE_REWORDING != "";
+  assert CONFLICTED_CANCELLATION_NOTE != CONFLICTED_CANCELLATION_NOTE_BEFORE_REWORDING;
+  assert CONFLICTED_CANCELLATION_NOTE_BEFORE_REWORDING != CONFLICTED_CANCELLATION_NOTE_BEFORE_DELEGATION;
   assert UNKNOWN_CANCELLATION_NOTE != "";
   assert CONFLICTED_CANCELLATION_NOTE != UNKNOWN_CANCELLATION_NOTE;
 }
@@ -953,8 +1040,8 @@ test the_refused_cancellation_sentence_is_a_named_refusal_awaiting_the_owner {
 invariant the_cancel_surface_never_renders_a_bare_code
   assert surface_is_known(SURFACE_ORDER_CANCEL) == true and renders_a_bare_code(SURFACE_ORDER_CANCEL, false) == false and render_kind_is_known(render_kind(SURFACE_ORDER_CANCEL, false, true)) == true
 
-invariant a_refusal_nobody_has_worded_stays_a_named_refusal
-  assert CONFLICTED_CANCELLATION_HAS_A_PUBLISHED_SENTENCE == false and OWNER_QUESTION_CONFLICTED_CANCELLATION_SENTENCE_IS_OPEN == true and CONFLICTED_CANCELLATION_NOTE != ""
+invariant a_worded_refusal_is_told_its_own_key_and_the_decision_is_recorded
+  assert CONFLICTED_CANCELLATION_HAS_A_PUBLISHED_SENTENCE == true and OWNER_QUESTION_CONFLICTED_CANCELLATION_SENTENCE_IS_OPEN == false and CONFLICTED_CANCELLATION_KEY_NAME == ORDER_CANCEL_OWN_KEY_NAMES[6] and CONFLICTED_CANCELLATION_DECISION != "" and CONFLICTED_CANCELLATION_SENTENCE_IS_TRUE_OF_EVERY_CONFLICT == true
 
 invariant an_unauthenticated_write_never_reaches_the_admin_read
   assert INTAKE_GATE_COUNT == 0 and route_is_gated(false) == false and route_is_gated(true) == true

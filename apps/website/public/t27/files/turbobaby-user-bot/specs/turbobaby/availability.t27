@@ -197,10 +197,10 @@ pub const CLICK_125_EXISTING_RENTAL_CONTINUES : bool = true;
 pub const CLICK_125_STALE_GRID_RATE_THB : u16 = 187;
 pub const CLICK_125_STALE_GRID_IS_QUOTABLE : bool = false;
 
-; The owner's suggested alternatives. Only nmax-155 is in the physical fleet today; the two
-; tariff-only rows have zero units and therefore fail the same bookability predicate.
-pub const CLICK_125_REDIRECTS : [3]str = ["pcx-150", "adv-150", "nmax-155"];
-pub const CLICK_125_REDIRECT_UNITS_AVAILABLE : [3]u8 = [0, 0, 5];
+; What is offered instead: the owner's decision of 2026-09-25, provisional ("for now"), NMAX 155
+; alone. The three-name list it replaced is kept under a _BEFORE_2026_09_25 name further down.
+pub const CLICK_125_REDIRECTS : [1]str = ["nmax-155"];
+pub const CLICK_125_REDIRECT_UNITS_AVAILABLE : [1]u8 = [5];
 
 ; A file snapshot may rule a family out, but only a live shop check may confirm availability.
 pub const FILE_MAY_RULE_OUT : bool = true;
@@ -399,6 +399,46 @@ pub const CLICK_125_REDIRECTS_SHOWN : [1]str = ["nmax-155"];
 pub const CLICK_125_REDIRECT_LABELS_SHOWN : [1]str = ["NMAX 155"];
 pub const CLICK_125_REDIRECT_LABELS_SHOWN_BEFORE_2026_09_24 : [3]str = ["PCX 150", "ADV 150", "NMAX 155"];
 
+; DECIDED 2026-09-25. The owner answered the redirect question directly, in answer 10 of a
+; numbered list: for now, NMAX 155 is what is offered instead of CLICK 125, and not PCX 150 or
+; ADV 150. The answer says "for now" twice, so the decision is recorded as provisional; the Russian
+; original is in DECISIONS.md, the D12 amendment of that date. CLICK_125_REDIRECTS above held the
+; three names of KB_faq's redirect until this date -- the paragraph before this one describes it in
+; that state -- and holds the decision now. The three names are kept below with their units, so
+; the correction of 2026-09-24 still executes against them. Nothing a customer sees changes: the
+; screen already showed NMAX 155 alone, and the decided list and the shown list are now one list,
+; which the_owners_click_redirect_is_shown_whole holds. Gate 3 binds CLICK_125_REDIRECTS and
+; CLICK_125_REDIRECTS_ARE_PROVISIONAL to data/fleet_seed.json (pricing_policy.not_offered.click-125,
+; offer_instead and offer_instead_provisional), whose dated source for the list is the seed's
+; sources.owner_decision_2026_09_25. The brain's text is the operator's to change, not this file's.
+pub const CLICK_125_REDIRECTS_DECIDED_ON : str = "2026-09-25";
+pub const CLICK_125_REDIRECTS_ARE_PROVISIONAL : bool = true;
+pub const CLICK_125_REDIRECTS_BEFORE_2026_09_25 : [3]str = ["pcx-150", "adv-150", "nmax-155"];
+pub const CLICK_125_REDIRECT_UNITS_AVAILABLE_BEFORE_2026_09_25 : [3]u8 = [0, 0, 5];
+
+; CORRECTED 2026-09-25, the bot's /start reply. No contract owns the welcome the bot sends on
+; /start (src/locales.rs, the welcome_feature1 field of both published locales), and its first line
+; named the catalog as running from CLICK 125 to X-ADV 750. CLICK 125 is closed to new rentals and
+; offered to nobody (D12, CLICK_125_CLOSED_ON above), so the line named a machine the shop does not
+; rent. It is recorded here because this file owns the fact the line rests on: which families are
+; offered. The lower bound is now the smallest family the seed OFFERS, measured from
+; data/fleet_seed.json: the families[] rows with offered = true -- thirteen, the price_list_only
+; block excluded -- ordered by displacement_cc. The smallest displacement, 155 cc, is shared by
+; nmax-155 (base_rate_thb_day 449) and xsr-155 (590); nmax-155 is the lower of the two by rate and
+; the lowest-rate offered family outright, so the bound is its seed model name. The upper bound is
+; unchanged: xadv-750, 750 cc, is the largest offered family, alone at that size. Nothing else in the
+; reply changed, and no other word of it is recorded here. tests/catalog_honesty_wiring.rs derives
+; both bounds from the seed by the same rule and compares them with the two locale rows and with
+; START_CATALOG_RANGE_LABELS; no gate here reads the Russian row (L3).
+pub const START_CATALOG_RANGE_KEYS : [2]str = ["nmax-155", "xadv-750"];
+pub const START_CATALOG_RANGE_LABELS : [2]str = ["NMAX 155", "X-ADV 750"];
+pub const START_CATALOG_RANGE_KEYS_BEFORE_2026_09_25 : [2]str = ["click-125", "xadv-750"];
+pub const START_CATALOG_RANGE_LOWER_BOUND_CC : u16 = 155;
+pub const START_CATALOG_RANGE_LOWER_BOUND_CC_TIES : [2]str = ["nmax-155", "xsr-155"];
+pub const START_CATALOG_RANGE_NAMES_ONLY_OFFERED_FAMILIES : bool = true;
+pub const START_CATALOG_RANGE_NAMED_A_CLOSED_FAMILY_BEFORE_2026_09_25 : bool = true;
+pub const START_CATALOG_RANGE_CORRECTED_ON : str = "2026-09-25";
+
 ; CORRECTED 2026-09-24. FILE_MAY_RULE_OUT and FILE_MAY_CONFIRM above were declared while both
 ; customer screens confirmed from the file anyway. availability_line in
 ; src/ui/screens/catalog_screen.rs printed
@@ -421,6 +461,41 @@ pub const CUSTOMER_AVAILABILITY_KEY : str = "T_BIKE_AVAILABILITY_UNKNOWN";
 pub const CONFIRMING_KEYS : [4]str = ["T_BIKE_AVAILABILITY", "T_BIKE_AVAILABILITY_FREE", "T_BIKE_COLORS_AVAILABLE", "T_BIKE_FILTER_FREE_NOW"];
 pub const CONFIRMING_KEY_LINES_IN_UI : u8 = 0;
 pub const CONFIRMING_KEY_LINES_IN_UI_BEFORE_2026_09_24 : u8 = 7;
+
+; DECIDED 2026-09-25, answer 5 of the owner's second numbered list of that day. The paragraph
+; above describes the detail screen as it stood before this date: under a zero count it printed
+; T_BIKE_UNITS_EMPTY ("Every bike of this model is out right now.") below the manager line. That
+; zero is the same bike_units count, seeded on 2026-09-12 and changed only by an admin, so the
+; sentence read a file snapshot as occupancy "right now", which no live check had confirmed. On the
+; seed's counts it was reachable for the two families in OFFERED_OUT_ON_CONTRACT_KEYS; click-125
+; renders no availability block, because it is not offered. Asked whether to remove the line, the
+; owner answered "probably"; the Russian original is in DECISIONS.md, in the entry of that date on
+; this line. The answer hedges, so the removal is recorded as hedged, the way
+; CLICK_125_REDIRECTS_ARE_PROVISIONAL records a "for now": a later answer may restore the line, and
+; restoring it means declaring the key again with its two sentences, which git history keeps.
+; What changed: the availability block of src/ui/screens/bike_detail.rs renders nothing under a
+; zero count, and src/trios/i18n.rs deleted the key bike.units.empty outright, its declaration and
+; both arms each becoming a comment line, so no line of that file moved. turbobaby/locale-policy
+; owns the key count, and it moved there. The manager line, CUSTOMER_AVAILABILITY_KEY, stays and
+; now stands alone. No sentence was written in the removed one's place.
+; WHAT THE ANSWER DID NOT NAME, AND STAYS. Under the same zero the Book control is disabled with
+; T_BIKE_BOOK_BLOCKED_NO_UNITS ("Every bike of this model is taken") as its reason, read from the
+; same seeded count and saying nearly the same thing. The question named the availability line and
+; not this reason, and issue #9 forbids a disabled control without a named reason, so replacing it
+; needs an owner-approved sentence. It is kept, and it is open. FILE_MAY_RULE_OUT stays true: the
+; file still rules a family out of booking, through that control. tests/catalog_honesty_wiring.rs
+; holds both facts to the source, and holds UNITS_EMPTY_LINE_IS_SHOWN, UNITS_EMPTY_KEY_IS_DECLARED
+; and NO_UNITS_BOOK_REASON_IS_SHOWN below to what it finds there.
+pub const UNITS_EMPTY_LINE_DECIDED_ON : str = "2026-09-25";
+pub const UNITS_EMPTY_LINE_REMOVAL_IS_HEDGED : bool = true;
+pub const UNITS_EMPTY_KEY : str = "T_BIKE_UNITS_EMPTY";
+pub const UNITS_EMPTY_LINE_IS_SHOWN : bool = false;
+pub const UNITS_EMPTY_LINE_WAS_SHOWN_BEFORE_2026_09_25 : bool = true;
+pub const UNITS_EMPTY_KEY_IS_DECLARED : bool = false;
+pub const UNITS_EMPTY_REPLACEMENT_SENTENCES : u8 = 0;
+pub const NO_UNITS_BOOK_REASON_KEY : str = "T_BIKE_BOOK_BLOCKED_NO_UNITS";
+pub const NO_UNITS_BOOK_REASON_IS_SHOWN : bool = true;
+pub const NO_UNITS_BOOK_REASON_WAS_ANSWERED : bool = false;
 
 ; --- Fixtures -------------------------------------------------------------------------------
 ; Not pub: the surface of this spec is the status set, the table and the functions. The slot
@@ -592,23 +667,71 @@ test bookability_reasons_and_redirects_share_one_owner {
     assert may_confirm(true, 1, true) == true;
 }
 
-; The two corrections of 2026-09-24, as literals.
+; The two corrections of 2026-09-24, as literals. The suggestion they filtered is the three-name
+; list, read under its _BEFORE_2026_09_25 name since the owner's decision of that date.
 test the_shown_click_redirect_is_the_bookable_subset_of_the_suggestion {
     // what is shown is exactly what the bookability predicate lets through
     assert CLICK_125_REDIRECTS_SHOWN.len == usable_click_redirect_count();
-    assert CLICK_125_REDIRECTS_SHOWN[0] == CLICK_125_REDIRECTS[2];
-    assert CLICK_125_REDIRECT_UNITS_AVAILABLE[2] == 5;
-    assert is_bookable(true, CLICK_125_REDIRECT_UNITS_AVAILABLE[2]) == true;
+    assert CLICK_125_REDIRECTS_SHOWN[0] == CLICK_125_REDIRECTS_BEFORE_2026_09_25[2];
+    assert CLICK_125_REDIRECT_UNITS_AVAILABLE_BEFORE_2026_09_25[2] == 5;
+    assert is_bookable(true, CLICK_125_REDIRECT_UNITS_AVAILABLE_BEFORE_2026_09_25[2]) == true;
     // and it is a family of the measured fleet, the one at index 1
     assert FAMILY_KEYS[1] == CLICK_125_REDIRECTS_SHOWN[0];
     assert FAMILY_UNITS[1] == 10;
     // the two suggested rows the owner's later rule forbids, failed by the same predicate
-    assert is_bookable(true, CLICK_125_REDIRECT_UNITS_AVAILABLE[0]) == false;
-    assert is_bookable(true, CLICK_125_REDIRECT_UNITS_AVAILABLE[1]) == false;
+    assert is_bookable(true, CLICK_125_REDIRECT_UNITS_AVAILABLE_BEFORE_2026_09_25[0]) == false;
+    assert is_bookable(true, CLICK_125_REDIRECT_UNITS_AVAILABLE_BEFORE_2026_09_25[1]) == false;
     // one label per shown key; the old label list had one per suggested key
     assert CLICK_125_REDIRECT_LABELS_SHOWN.len == CLICK_125_REDIRECTS_SHOWN.len;
-    assert CLICK_125_REDIRECT_LABELS_SHOWN_BEFORE_2026_09_24.len == CLICK_125_REDIRECTS.len;
+    assert CLICK_125_REDIRECT_LABELS_SHOWN_BEFORE_2026_09_24.len == CLICK_125_REDIRECTS_BEFORE_2026_09_25.len;
     assert CLICK_125_REDIRECT_LABELS_SHOWN[0] == CLICK_125_REDIRECT_LABELS_SHOWN_BEFORE_2026_09_24[2];
+}
+
+; The owner's decision of 2026-09-25, as literals: it is the one name of the old list that could be
+; handed over, it is provisional, and nothing it names is filtered out before the screen.
+test the_owner_decided_the_click_redirect_and_the_screen_already_shows_it {
+    assert CLICK_125_REDIRECTS_DECIDED_ON == "2026-09-25";
+    assert CLICK_125_REDIRECTS_ARE_PROVISIONAL == true;
+    assert CLICK_125_REDIRECTS.len == 1;
+    assert CLICK_125_REDIRECTS[0] == "nmax-155";
+    // the decided family is row 1 of the measured fleet, and the copied unit count is that row's
+    assert CLICK_125_REDIRECTS[0] == FAMILY_KEYS[1];
+    assert CLICK_125_REDIRECT_UNITS_AVAILABLE[0] == FAMILY_AVAILABLE[1];
+    // it is the third name of the list it replaced, the one that list could hand over
+    assert CLICK_125_REDIRECTS_BEFORE_2026_09_25.len == 3;
+    assert CLICK_125_REDIRECTS[0] == CLICK_125_REDIRECTS_BEFORE_2026_09_25[2];
+    assert CLICK_125_REDIRECT_UNITS_AVAILABLE[0] == CLICK_125_REDIRECT_UNITS_AVAILABLE_BEFORE_2026_09_25[2];
+    // decided and shown are one list: the predicate keeps every decided name
+    assert usable_click_redirect_count() == CLICK_125_REDIRECTS.len;
+    assert CLICK_125_REDIRECTS_SHOWN.len == CLICK_125_REDIRECTS.len;
+    assert CLICK_125_REDIRECTS_SHOWN[0] == CLICK_125_REDIRECTS[0];
+    assert CLICK_125_REDIRECT_LABELS_SHOWN[0] == "NMAX 155";
+}
+
+test the_bot_start_reply_names_offered_families_only {
+    // the old lower bound is the closed family at row 0: one unit, rented, none available
+    assert START_CATALOG_RANGE_KEYS_BEFORE_2026_09_25[0] == FAMILY_KEYS[0];
+    assert START_CATALOG_RANGE_KEYS_BEFORE_2026_09_25[0] == "click-125";
+    assert FAMILY_AVAILABLE[0] == 0;
+    assert START_CATALOG_RANGE_NAMED_A_CLOSED_FAMILY_BEFORE_2026_09_25 == true;
+    // the new bounds are rows of the table: nmax-155 at row 1 and xadv-750 at row 13
+    assert START_CATALOG_RANGE_KEYS.len == 2;
+    assert START_CATALOG_RANGE_KEYS[0] == FAMILY_KEYS[1];
+    assert START_CATALOG_RANGE_KEYS[1] == FAMILY_KEYS[13];
+    assert FAMILY_AVAILABLE[1] > 0;
+    // only the lower bound moved
+    assert START_CATALOG_RANGE_KEYS[0] != START_CATALOG_RANGE_KEYS_BEFORE_2026_09_25[0];
+    assert START_CATALOG_RANGE_KEYS[1] == START_CATALOG_RANGE_KEYS_BEFORE_2026_09_25[1];
+    // 155 cc is shared by two offered families; the bound is the one of them with the lower rate
+    assert START_CATALOG_RANGE_LOWER_BOUND_CC == 155;
+    assert START_CATALOG_RANGE_LOWER_BOUND_CC_TIES[0] == START_CATALOG_RANGE_KEYS[0];
+    assert START_CATALOG_RANGE_LOWER_BOUND_CC_TIES[1] == FAMILY_KEYS[2];
+    // one label per bound, and the rule holds for every word the line names
+    assert START_CATALOG_RANGE_LABELS.len == START_CATALOG_RANGE_KEYS.len;
+    assert START_CATALOG_RANGE_LABELS[0] == "NMAX 155";
+    assert START_CATALOG_RANGE_LABELS[1] == "X-ADV 750";
+    assert START_CATALOG_RANGE_NAMES_ONLY_OFFERED_FAMILIES == true;
+    assert START_CATALOG_RANGE_CORRECTED_ON == "2026-09-25";
 }
 
 test the_customer_screens_no_longer_confirm_from_the_file {
@@ -621,6 +744,31 @@ test the_customer_screens_no_longer_confirm_from_the_file {
     assert CONFIRMING_KEY_LINES_IN_UI_BEFORE_2026_09_24 == 7;
     // ruling a family out from the file stays legal
     assert FILE_MAY_RULE_OUT == true;
+}
+
+test a_seeded_zero_is_no_longer_printed_as_occupancy_and_still_rules_booking_out {
+    // the owner's second list of 2026-09-25, answer 5, hedged ("probably")
+    assert UNITS_EMPTY_LINE_DECIDED_ON == "2026-09-25";
+    assert UNITS_EMPTY_LINE_REMOVAL_IS_HEDGED == true;
+    assert UNITS_EMPTY_KEY == "T_BIKE_UNITS_EMPTY";
+    assert UNITS_EMPTY_LINE_WAS_SHOWN_BEFORE_2026_09_25 == true;
+    assert UNITS_EMPTY_LINE_IS_SHOWN == false;
+    assert UNITS_EMPTY_KEY_IS_DECLARED == false;
+    assert UNITS_EMPTY_REPLACEMENT_SENTENCES == 0;
+    // the manager line stays, and it is a different key from the one removed
+    assert CUSTOMER_AVAILABILITY_KEY == "T_BIKE_AVAILABILITY_UNKNOWN";
+    assert UNITS_EMPTY_KEY != CUSTOMER_AVAILABILITY_KEY;
+    // the line was reachable for the two offered families with no unit free on the seed
+    assert OFFERED_WITH_ZERO_AVAILABLE_FAMILIES == 2;
+    assert OFFERED_OUT_ON_CONTRACT_KEYS.len == OFFERED_WITH_ZERO_AVAILABLE_FAMILIES;
+    // what the answer did not name: the Book control's reason, from the same zero
+    assert NO_UNITS_BOOK_REASON_KEY == "T_BIKE_BOOK_BLOCKED_NO_UNITS";
+    assert NO_UNITS_BOOK_REASON_KEY != UNITS_EMPTY_KEY;
+    assert NO_UNITS_BOOK_REASON_WAS_ANSWERED == false;
+    assert NO_UNITS_BOOK_REASON_IS_SHOWN == true;
+    assert FILE_MAY_RULE_OUT == true;
+    assert FILE_MAY_CONFIRM == false;
+    assert unbookable_reason(true, 0) == REASON_NO_UNITS;
 }
 
 test the_capacity_is_scanned_from_the_table_and_not_quoted {
@@ -676,9 +824,19 @@ invariant confirmation_requires_a_live_check
 invariant customer_screens_follow_file_may_confirm
     assert CUSTOMER_SCREENS_CONFIRM_FROM_THE_FILE == FILE_MAY_CONFIRM and CONFIRMING_KEY_LINES_IN_UI == 0
 
+; Since 2026-09-25 (the owner's second list, answer 5) a seeded zero prints no occupancy line and
+; still rules booking out: the removal took the sentence, not the direction FILE_MAY_RULE_OUT allows.
+invariant a_seeded_zero_prints_no_occupancy_line_and_still_rules_booking_out
+    assert UNITS_EMPTY_LINE_IS_SHOWN == false and UNITS_EMPTY_KEY_IS_DECLARED == false and NO_UNITS_BOOK_REASON_IS_SHOWN == FILE_MAY_RULE_OUT
+
 ; What the closed family points to is only what the bookability predicate lets through.
 invariant the_shown_click_redirect_is_bookable
     assert CLICK_125_REDIRECTS_SHOWN.len == usable_click_redirect_count()
+
+; Since 2026-09-25 the owner's list and the shown list are one list: a name the owner decided that
+; the bookability predicate then dropped would be a redirect lost without anyone deciding it.
+invariant the_owners_click_redirect_is_shown_whole
+    assert usable_click_redirect_count() == CLICK_125_REDIRECTS.len and CLICK_125_REDIRECTS_SHOWN.len == CLICK_125_REDIRECTS.len
 
 invariant click_is_rented_unavailable_and_not_quotable
     assert FAMILY_RENTED[0] == 1 and FAMILY_AVAILABLE[0] == 0 and CLICK_125_STALE_GRID_IS_QUOTABLE == false

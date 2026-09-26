@@ -25,8 +25,8 @@ module turbobaby-promo-broadcast;
 ; WHY (measured 2026-09-21, the two send paths). There are two ways a message reaches every
 ; customer and they do not have the same guards. The Publish button (src/promo.rs:667)
 ; subtracts the opt-out, the fraud block and the owners from its recipient query
-; (:751-757), paces itself at 500 ms per send (:789) and records an outcome row per person
-; (:869). The admin HTTP route (src/api/admin.rs:718) has a cooldown of 1 attempt per 600
+; (:833-839), paces itself at 500 ms per send (:871) and records an outcome row per person
+; (:951). The admin HTTP route (src/api/admin.rs:718) has a cooldown of 1 attempt per 600
 ; seconds (:36-37) and reads its recipients as user_languages UNION loyalty_profiles
 ; (:795-798) with no opt-out term, no block term, no owner term and no pacing: promo_muted
 ; occurs 0 times in src/api/admin.rs and the send loop at :815-861 contains 0 sleeps. So the
@@ -245,19 +245,122 @@ pub fn draft_reaches_owner(row_claimed: bool, owner_opted_out: bool) bool {
 
 ; Three gates, all of them checked before any customer is addressed: an admin pressed it
 ; (src/promo.rs:674-677), a human pressed it rather than a timer, and the post is not already
-; published (:665-669).
+; published (:694-698). Since 2026-09-25 the button asks a fourth, the draft's kind; that gate
+; and the decision behind it are publish_is_authorized in the next section, and this function is
+; kept as the three it always was.
 pub fn send_is_authorized(human_pressed: bool, presser_is_admin: bool, already_published: bool) bool {
   return human_pressed and presser_is_admin and !already_published;
 }
 
-; src/promo.rs:703-714 stamps published_at BEFORE the fan-out starts, because a broadcast
+; src/promo.rs:711-722 stamps published_at BEFORE the fan-out starts, because a broadcast
 ; takes minutes and must not be launchable twice off one button. The fan-out itself is handed
-; to a background task at :725-727 and the button returns immediately, which is why the stamp
+; to a background task at :762-764 and the button returns immediately, which is why the stamp
 ; has to be the thing that bounds a second press: at the moment the second press arrives the
 ; first send may not have written a single row. The summary reports what actually went out, so
 ; a total failure never reads as success.
 pub const PUBLISHED_STAMP_PRECEDES_FANOUT : bool = true;
 pub const FANOUT_RUNS_DETACHED : bool = true;
+
+; --- A draft about something retired is not published ----------------------------------------
+; DECIDED 2026-09-25, operator decision under the owner's delegation. That day the owner answered
+; a numbered list of open questions, and the answer given to item 13 and everything after it
+; handed those items to the operator to think through. This is one of the operator's decisions
+; under that answer:
+; the Publish button refuses a draft about an event and a draft about the retired shop's goods,
+; and tells the admin why in the same alert its other refusals use. Nothing is deleted -- the row
+; stays, published_at stays NULL, the owners' draft message keeps its button.
+;
+; WHY (measured 2026-09-25). promo_posts keeps every draft the sweeper ever wrote, and publish
+; (src/promo.rs, by name) asked who pressed, whether the row exists and whether it was already
+; published -- never what the draft is about. Events left every customer surface with the owner's
+; rental-only ruling of 2026-09-24, which turbobaby/legacy-retirement records: the admin API can
+; no longer make an event public (EVENTS_PUBLISHABLE, turbobaby/events-booking) and migration 088
+; hides any event row still public. Neither reaches a draft already written: the sweeper drafted
+; posts about the other shop's events (D19), an unpublished draft keeps its button in the owners'
+; chat, and one press sent it to every customer the button reaches. The same held for that shop's
+; goods. Whether production holds such a row today was not read -- this change reads no production
+; -- and the refusal does not depend on the answer. The history of Subject::kind
+; (src/trios/promo.rs) has written seven words into the kind column: the six of SUBJECT_KINDS and
+; strain, whose variant left with migration 083 while drafts written under it did not. All seven
+; belong to the retired catalog or its events, and RENTAL_SUBJECT_KIND_COUNT above is zero, so no
+; draft in that table can be about a rental.
+;
+; THE RULE. A draft is sent only when its kind is declared publishable, and none is
+; (PUBLISHABLE_DRAFT_KIND_COUNT = 0): the button refuses every draft today, including a kind it
+; does not recognise, because this database forked from another shop's bot (DECISIONS.md D19) and
+; a kind that bot wrote is a kind nobody here has classified. The decision is publish_refusal and
+; its lists are PUBLISHABLE_KINDS and RETIRED_EVENT_KINDS, all in src/promo.rs. Two answers, cited
+; by name and not quoted: PUBLISH_REFUSED_EVENT for the two event kinds, PUBLISH_REFUSED_NOT_RENTAL
+; for every other kind. The refusal is taken after the already-published answer and BEFORE the
+; published_at stamp, so a refused row is never marked published and nothing is written. The first
+; promotion about a bike declares its kind in PUBLISHABLE_KINDS and raises the count here.
+;
+; WHAT IT DOES NOT CHANGE. The sweeper's admission still asks no shop question
+; (SHIPPED_CHECKS_SHOP_OWNERSHIP) and a flag flipped back still DRAFTS; the draft now stops at the
+; owner. The admin HTTP broadcast, the other send path, sends admin-typed text rather than a draft
+; and still accepts a retired call-to-action kind (ADMIN_CTA_ACCEPTS_RETIRED_STRAIN_KIND); this
+; decision is about drafts and leaves it as it was.
+;
+; WHERE THIS IS TIED TO THE CODE. Unit tests beside publish_refusal execute the decision for the
+; six kinds written today, for unrecognised kinds, and for one of each Subject variant through a
+; match with no wildcard, so a new variant cannot compile unclassified. The seventh kind, the one
+; that left with 083, is not run there: nothing outside a comment under src/ may name it
+; (tests/legacy_vocabulary_wiring.rs; the owner's ruling of 2026-09-25, item 12), and no list
+; classifies it, so it takes the same last branch as an unrecognised kind.
+; tests/promo_publish_wiring.rs reads publish as text and holds that it selects the row's kind,
+; asks the decision and returns its answer before the stamp and before any send; that the
+; decision, the stamp and the caller of publish each exist once under src/; that the lists below
+; equal the code's; and that no retired shop kind sits in a list that answers otherwise.
+;
+; LINE CITATIONS RE-MEASURED 2026-09-25. The refusal adds 8 lines inside publish and the decision
+; 45 more after it, so every src/promo.rs line this file cites from the published_at stamp down
+; moved: by 8 inside publish, by 53 below it. Each was re-read against the file and rewritten in
+; place. Nine of them -- the send-path WHY at the head of this file (:833-839, :871, :951), the
+; fan-out (:762-764), the already-published answer (:694-698), the customer's mute button
+; (:858-861), the unwrap_or (:1032), the NOT EXISTS term (:834-835) and the failed recipient read
+; (:741-747) -- were ALREADY 29 lines short on the base commit, where every other citation from
+; publish down was current; each landed on its code at +29 there, and was corrected in the same
+; pass. Lines above publish's stamp did not move; of those, only publish's own head (:667,
+; :674-677) and the already-published answer were re-read. New text in this file cites
+; src/promo.rs by name.
+pub const PUBLISH_REFUSAL_DECIDED_AT : str = "2026-09-25";
+pub const PUBLISH_REFUSAL_DECIDED_BY : str = "operator decision under the owner's delegation";
+pub const PUBLISH_REFUSAL_SITE : str = "src/promo.rs publish";
+pub const PUBLISH_REFUSAL_DECISION : str = "src/promo.rs publish_refusal";
+pub const PUBLISH_REFUSAL_WIRING_TEST : str = "tests/promo_publish_wiring.rs";
+pub const PUBLISHABLE_DRAFT_KIND_COUNT : u8 = 0;
+pub const RETIRED_EVENT_DRAFT_KINDS : [2]str = ["event", "event_soon"];
+pub const RETIRED_SHOP_DRAFT_KINDS : [5]str = ["strain", "accessory", "tea", "set", "bestseller"];
+pub const DRAFT_KINDS_EVER_WRITTEN : u8 = 7;
+pub const UNRECOGNISED_DRAFT_KIND_IS_REFUSED : bool = true;
+pub const PUBLISH_REFUSAL_ANSWER_COUNT : u8 = 2;
+pub const REFUSAL_PRECEDES_THE_PUBLISHED_STAMP : bool = true;
+pub const A_REFUSED_DRAFT_IS_STAMPED_PUBLISHED : bool = false;
+pub const A_REFUSED_DRAFT_IS_DELETED : bool = false;
+
+pub fn draft_kind_may_be_sent(kind_is_declared_publishable: bool) bool {
+  return kind_is_declared_publishable;
+}
+
+; The four gates the button asks now. The first three are send_is_authorized's, unchanged.
+pub fn publish_is_authorized(human_pressed: bool, presser_is_admin: bool, already_published: bool, kind_is_declared_publishable: bool) bool {
+  return send_is_authorized(human_pressed, presser_is_admin, already_published) and draft_kind_may_be_sent(kind_is_declared_publishable);
+}
+
+; Which of the two answers the admin reads: 0 when the draft may be sent, else the answer's number.
+pub const REFUSAL_ANSWER_NONE : u8 = 0;
+pub const REFUSAL_ANSWER_EVENT : u8 = 1;
+pub const REFUSAL_ANSWER_NOT_RENTAL : u8 = 2;
+
+pub fn refusal_answer(kind_is_declared_publishable: bool, kind_is_an_event: bool) u8 {
+  if (kind_is_declared_publishable) {
+    return REFUSAL_ANSWER_NONE;
+  }
+  if (kind_is_an_event) {
+    return REFUSAL_ANSWER_EVENT;
+  }
+  return REFUSAL_ANSWER_NOT_RENTAL;
+}
 
 ; --- The two send paths ---------------------------------------------------------------------
 pub const PATH_BUTTON : u8 = 1;
@@ -268,29 +371,29 @@ pub fn send_path_is_known(path: u8) bool {
   return path == PATH_BUTTON or path == PATH_ADMIN_API;
 }
 
-; src/promo.rs:781-782 subtracts promo_muted; src/api/admin.rs mentions promo_muted 0 times.
+; src/promo.rs:834-835 subtracts promo_muted; src/api/admin.rs mentions promo_muted 0 times.
 pub fn path_honours_optout(path: u8) bool {
   return path == PATH_BUTTON;
 }
 
-; src/promo.rs:783-784 subtracts a blocked loyalty profile; the UNION at
+; src/promo.rs:836-837 subtracts a blocked loyalty profile; the UNION at
 ; src/api/admin.rs:795-798 has no such term.
 pub fn path_excludes_blocked(path: u8) bool {
   return path == PATH_BUTTON;
 }
 
-; src/promo.rs:785 excludes the owners, who already hold the draft; the admin route does not.
+; src/promo.rs:838 excludes the owners, who already hold the draft; the admin route does not.
 pub fn path_excludes_owners(path: u8) bool {
   return path == PATH_BUTTON;
 }
 
-; src/promo.rs:818 waits 500 ms between customers; the loop at src/api/admin.rs:815-861
+; src/promo.rs:871 waits 500 ms between customers; the loop at src/api/admin.rs:815-861
 ; contains 0 sleeps.
 pub fn path_paces_sends(path: u8) bool {
   return path == PATH_BUTTON;
 }
 
-; src/promo.rs:898 writes one promo_deliveries row per customer; the admin route writes none.
+; src/promo.rs:951 writes one promo_deliveries row per customer; the admin route writes none.
 pub fn path_records_delivery(path: u8) bool {
   return path == PATH_BUTTON;
 }
@@ -313,7 +416,7 @@ pub fn path_is_fully_guarded(path: u8) bool {
 }
 
 ; --- Reach --------------------------------------------------------------------------------
-; src/promo.rs:780-786, read as a rule rather than as SQL.
+; src/promo.rs:833-839, read as a rule rather than as SQL.
 pub fn button_path_may_reach(seen_by_bot: bool, opted_out: bool, blocked_for_fraud: bool, is_owner: bool) bool {
   return seen_by_bot and !opted_out and !blocked_for_fraud and !is_owner;
 }
@@ -365,17 +468,17 @@ pub fn opt_out_changes_the_answer_on_the_button_path() bool {
 ; The unsubscribe itself. migrations/075_promo_muted.sql:9-12 stores a row per silenced
 ; person rather than a flag on the agent, so one owner muting it does not silence the others.
 ; The button rides in both messages a promotion travels in -- the owner's draft
-; (src/promo.rs:623-626) and the customer's broadcast (:776-779) -- because an opt-out a reader
+; (src/promo.rs:623-626) and the customer's broadcast (:858-861) -- because an opt-out a reader
 ; has to go looking for is not an opt-out. The reverse command is deliberately not admin-gated
 ; (src/bot/commands.rs:665-677).
 ;
 ; CORRECTED BY REVIEW 2026-09-21. The two reads of that one table fail in OPPOSITE directions,
 ; and a single "fails open" constant hid it behind the more alarming of the two. The owner's
-; draft read is a function that swallows its error (src/promo.rs:970-980, the unwrap_or at
-; :950): a database hiccup SENDS the draft, deliberately, because silence caused by an error is
+; draft read is a function that swallows its error (src/promo.rs:1023-1033, the unwrap_or at
+; :1032): a database hiccup SENDS the draft, deliberately, because silence caused by an error is
 ; indistinguishable from a dead agent and an owner who muted it can mute it again. The
-; customer's read is a NOT EXISTS term inside the recipient query (:752-753), and a failure of
-; that query returns before the fan-out ever starts (:704-710): nothing is sent to anybody. So
+; customer's read is a NOT EXISTS term inside the recipient query (:834-835), and a failure of
+; that query returns before the fan-out ever starts (:741-747): nothing is sent to anybody. So
 ; no hiccup has ever put a message in front of a customer who muted it. What reaches that
 ; customer anyway is the other send path, and that is a routing fact, not a failure mode.
 pub const OPTOUT_IS_PER_PERSON : bool = true;
@@ -390,7 +493,7 @@ pub fn per_customer_sends_are_bounded(cap_shipped: bool) bool {
   return cap_shipped;
 }
 
-pub const PER_CUSTOMER_REACH_CAP_NOTE : str = "Nothing bounds how often one customer is written to. promo_deliveries (migrations/076_promo_broadcast.sql:25-36) records one row per customer per published post, and src/promo.rs:898 is its only occurrence anywhere in src/ -- an INSERT, never a SELECT -- so the ledger reports and does not gate. The only per-customer gate that exists is the opt-out row of migrations/075_promo_muted.sql:9-12, which is all-or-nothing and honoured on one send path of the two. Greps over src/ and migrations/ on 2026-09-21 return 0 for last_sent, per_user_cap, max_per_day and promo_frequency. The count for cooldown or frequency depends on the flag, so the flag is named: case-INSENSITIVELY the pair returns 9 hits over src/ and 0 over migrations/, and not one of the 9 bounds a customer -- six are the per-user AI-request limiter (src/bot/mod.rs:13, :17, :24, :28, :33, :65), two are an operator alert throttle (src/api/client_errors.rs:47, :439) and one is a prose line about the sweep interval (src/main.rs:491). Case-SENSITIVELY the same pair returns 3, and they are src/bot/mod.rs:28, :65 and src/main.rs:491 -- the uppercase constants drop out, which is exactly how a reader talks himself into a smaller number than the one he measured. src/api/admin.rs contains neither word: the 600-second bound this file pins on that route is spelled as a rate-limit, so a grep for cooldown misses the one real interval in a send path. Closing this needs the owner's decision about how often one customer may be written to, and a read of promo_deliveries at the recipient query. No interval is invented here in its place, and the 600-second bound of the admin route is not one: it limits an admin's attempts, not a customer's exposure.";
+pub const PER_CUSTOMER_REACH_CAP_NOTE : str = "Nothing bounds how often one customer is written to. promo_deliveries (migrations/076_promo_broadcast.sql:25-36) records one row per customer per published post, and src/promo.rs:951 is its only occurrence anywhere in src/ -- an INSERT, never a SELECT -- so the ledger reports and does not gate. The only per-customer gate that exists is the opt-out row of migrations/075_promo_muted.sql:9-12, which is all-or-nothing and honoured on one send path of the two. Greps over src/ and migrations/ on 2026-09-21 return 0 for last_sent, per_user_cap, max_per_day and promo_frequency. The count for cooldown or frequency depends on the flag, so the flag is named: case-INSENSITIVELY the pair returns 9 hits over src/ and 0 over migrations/, and not one of the 9 bounds a customer -- six are the per-user AI-request limiter (src/bot/mod.rs:13, :17, :24, :28, :33, :65), two are an operator alert throttle (src/api/client_errors.rs:47, :439) and one is a prose line about the sweep interval (src/main.rs:491). Case-SENSITIVELY the same pair returns 3, and they are src/bot/mod.rs:28, :65 and src/main.rs:491 -- the uppercase constants drop out, which is exactly how a reader talks himself into a smaller number than the one he measured. src/api/admin.rs contains neither word: the 600-second bound this file pins on that route is spelled as a rate-limit, so a grep for cooldown misses the one real interval in a send path. Closing this needs the owner's decision about how often one customer may be written to, and a read of promo_deliveries at the recipient query. No interval is invented here in its place, and the 600-second bound of the admin route is not one: it limits an admin's attempts, not a customer's exposure.";
 
 ; --- What a promotion may say -----------------------------------------------------------------
 ; src/promo.rs:504-505 reads the facts from the database rather than leaving them to a model
@@ -497,7 +600,7 @@ pub fn source_is_the_model(answered: bool, answer_is_the_sentinel: bool, copy_is
 
 ; A broadcast is localized. This one is not.
 ; src/promo.rs:454 passes the literal "ru" into the prompt, and src/api/admin.rs:46-51 takes
-; one text field for every recipient. The recipient query at src/promo.rs:780 selects
+; one text field for every recipient. The recipient query at src/promo.rs:833 selects
 ; telegram_id FROM user_languages -- the very table whose language column is declared at
 ; migrations/001_initial.sql:4 -- and does not select that column. The published locale set
 ; and its fallback belong to turbobaby/locale-policy and are not restated here; what is
@@ -510,7 +613,7 @@ pub fn broadcast_respects_recipient_locale(locale_taken_from_recipient: bool) bo
   return locale_taken_from_recipient;
 }
 
-pub const LOCALE_NOTE : str = "The broadcast is single-locale by construction on both paths, and the missing input is already in hand on one of them. src/promo.rs:780 reads the recipient list out of user_languages and asks it for telegram_id only, while the language column it declines to read sits on the same row (migrations/001_initial.sql:4, NOT NULL with a default). src/promo.rs:454 supplies the copy locale as a literal, so a recipient's own language cannot reach the prompt even if it were selected. Closing this needs the language in the recipient query and a copy variant per published locale, with the locale set and the fallback taken from turbobaby/locale-policy rather than restated. No locale list and no per-locale text is written here.";
+pub const LOCALE_NOTE : str = "The broadcast is single-locale by construction on both paths, and the missing input is already in hand on one of them. src/promo.rs:833 reads the recipient list out of user_languages and asks it for telegram_id only, while the language column it declines to read sits on the same row (migrations/001_initial.sql:4, NOT NULL with a default). src/promo.rs:454 supplies the copy locale as a literal, so a recipient's own language cannot reach the prompt even if it were selected. Closing this needs the language in the recipient query and a copy variant per published locale, with the locale set and the fallback taken from turbobaby/locale-policy rather than restated. No locale list and no per-locale text is written here.";
 
 ; --- The retirement: data hidden, logic intact ----------------------------------------------
 ; MARKED COPY, added by review 2026-09-21. The shape of migration 085 is
@@ -546,6 +649,13 @@ pub fn retirement_stops_the_sweep(rows_hidden: bool, scan_sites_removed: bool) b
 ; flipped back meets a scan site that is still open and a shop test that was never written.
 pub fn a_reflipped_flag_republishes(flag_back_to_live: bool, scan_site_present: bool, shop_check_present: bool) bool {
   return flag_back_to_live and scan_site_present and !shop_check_present;
+}
+
+; ADDED 2026-09-25 with the publish refusal above. The hazard still DRAFTS: nothing in the sweep
+; changed. Whether the draft then reaches a customer is the button's question now, and for a kind
+; not declared publishable -- every kind the sweeper writes today -- the answer is no.
+pub fn a_reflipped_flag_reaches_a_customer(flag_back_to_live: bool, scan_site_present: bool, shop_check_present: bool, kind_is_declared_publishable: bool) bool {
+  return a_reflipped_flag_republishes(flag_back_to_live, scan_site_present, shop_check_present) and draft_kind_may_be_sent(kind_is_declared_publishable);
 }
 
 pub const RETIREMENT_SCOPE_NOTE : str = "Migration 085 is a visibility change and says so: rows are KEPT and only the flags flip (migrations/085_unpublish_woody_catalog.sql:12-18), no table is dropped and no row is deleted (:23), and DECISIONS.md:365-370 records that the separation is reversible by flipping the flags back so old orders and bookings still resolve their item names. That is the right decision for the data and it is not a decision about this mechanism. The scans of the 4 tables it hid that the sweeper actually reads, the 6 subject kinds, the prefix set they map into and the admin route's acceptance of a retired kind all survive it untouched: not one line of src/promo.rs or src/trios/promo.rs changed with it. turbobaby/legacy-retirement owns what is retired and whether it stays retired; this file owns only the fact that the promoter never asks.";
@@ -641,6 +751,62 @@ test a_draft_reaches_an_owner_and_only_a_human_turns_it_into_a_send {
   assert DRAFT_IS_NOT_A_SEND == true;
   assert SEND_REQUIRES_A_HUMAN_DECISION == true;
   assert PUBLISHED_STAMP_PRECEDES_FANOUT == true;
+}
+
+test the_publish_refusal_is_recorded_as_the_operators_dated_decision {
+  assert PUBLISH_REFUSAL_DECIDED_AT == "2026-09-25";
+  assert PUBLISH_REFUSAL_DECIDED_BY == "operator decision under the owner's delegation";
+  assert PUBLISH_REFUSAL_SITE == "src/promo.rs publish";
+  assert PUBLISH_REFUSAL_DECISION == "src/promo.rs publish_refusal";
+  assert PUBLISH_REFUSAL_WIRING_TEST == "tests/promo_publish_wiring.rs";
+}
+
+test every_draft_kind_ever_written_is_retired_and_none_is_publishable {
+  assert PUBLISHABLE_DRAFT_KIND_COUNT == 0;
+  assert PUBLISHABLE_DRAFT_KIND_COUNT == RENTAL_SUBJECT_KIND_COUNT;
+  assert RETIRED_EVENT_DRAFT_KINDS.len == 2;
+  assert RETIRED_SHOP_DRAFT_KINDS.len == 5;
+  assert RETIRED_EVENT_DRAFT_KINDS.len + RETIRED_SHOP_DRAFT_KINDS.len == DRAFT_KINDS_EVER_WRITTEN;
+  assert DRAFT_KINDS_EVER_WRITTEN == SUBJECT_KIND_COUNT + 1;
+  assert RETIRED_EVENT_DRAFT_KINDS[0] == SUBJECT_KINDS[3];
+  assert RETIRED_EVENT_DRAFT_KINDS[1] == SUBJECT_KINDS[4];
+  assert RETIRED_SHOP_DRAFT_KINDS[0] == "strain";
+  assert RETIRED_SHOP_DRAFT_KINDS[1] == SUBJECT_KINDS[0];
+  assert RETIRED_SHOP_DRAFT_KINDS[2] == SUBJECT_KINDS[1];
+  assert RETIRED_SHOP_DRAFT_KINDS[3] == SUBJECT_KINDS[2];
+  assert RETIRED_SHOP_DRAFT_KINDS[4] == SUBJECT_KINDS[5];
+  assert UNRECOGNISED_DRAFT_KIND_IS_REFUSED == true;
+}
+
+test the_button_asks_four_gates_and_the_kind_can_stop_an_otherwise_authorized_send {
+  assert publish_is_authorized(true, true, false, true) == true;
+  assert publish_is_authorized(true, true, false, false) == false;
+  assert publish_is_authorized(false, true, false, true) == false;
+  assert publish_is_authorized(true, false, false, true) == false;
+  assert publish_is_authorized(true, true, true, true) == false;
+  assert send_is_authorized(true, true, false) == true;
+  assert draft_kind_may_be_sent(false) == false;
+  assert draft_kind_may_be_sent(true) == true;
+}
+
+test a_refusal_names_one_of_two_answers_and_writes_nothing {
+  assert PUBLISH_REFUSAL_ANSWER_COUNT == 2;
+  assert refusal_answer(true, false) == REFUSAL_ANSWER_NONE;
+  assert refusal_answer(true, true) == REFUSAL_ANSWER_NONE;
+  assert refusal_answer(false, true) == REFUSAL_ANSWER_EVENT;
+  assert refusal_answer(false, false) == REFUSAL_ANSWER_NOT_RENTAL;
+  assert REFUSAL_ANSWER_NOT_RENTAL == PUBLISH_REFUSAL_ANSWER_COUNT;
+  assert REFUSAL_PRECEDES_THE_PUBLISHED_STAMP == true;
+  assert A_REFUSED_DRAFT_IS_STAMPED_PUBLISHED == false;
+  assert A_REFUSED_DRAFT_IS_DELETED == false;
+}
+
+test a_reflipped_flag_still_drafts_and_its_draft_stops_at_the_owner {
+  assert a_reflipped_flag_republishes(true, true, false) == true;
+  assert a_reflipped_flag_reaches_a_customer(true, true, false, false) == false;
+  assert a_reflipped_flag_reaches_a_customer(true, true, false, true) == true;
+  assert a_reflipped_flag_reaches_a_customer(true, true, true, true) == false;
+  assert a_reflipped_flag_reaches_a_customer(false, true, false, true) == false;
 }
 
 test the_two_send_paths_are_a_closed_set {
@@ -850,6 +1016,15 @@ invariant no_timer_and_no_non_admin_can_turn_a_draft_into_a_send
 
 invariant one_published_post_cannot_be_broadcast_twice
   assert send_is_authorized(true, true, true) == false and PUBLISHED_STAMP_PRECEDES_FANOUT == true
+
+invariant no_draft_of_a_retired_kind_reaches_a_customer_however_it_is_pressed
+  assert publish_is_authorized(true, true, false, false) == false and PUBLISHABLE_DRAFT_KIND_COUNT == 0 and UNRECOGNISED_DRAFT_KIND_IS_REFUSED == true
+
+invariant a_refused_draft_stays_a_draft
+  assert REFUSAL_PRECEDES_THE_PUBLISHED_STAMP == true and A_REFUSED_DRAFT_IS_STAMPED_PUBLISHED == false and A_REFUSED_DRAFT_IS_DELETED == false
+
+invariant a_flag_flipped_back_drafts_but_no_longer_mails
+  assert a_reflipped_flag_republishes(true, true, false) == true and a_reflipped_flag_reaches_a_customer(true, true, false, false) == false
 
 invariant an_owner_who_opted_out_is_sent_no_draft
   assert draft_reaches_owner(true, true) == false
