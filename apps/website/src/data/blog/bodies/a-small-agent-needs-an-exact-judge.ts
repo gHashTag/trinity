@@ -112,7 +112,7 @@ export const body: Block[] = [
   {
     kind: 'ul',
     items: [
-      "No IGLA model has run on a board. Every throughput figure here is a ceiling derived from memory bandwidth and LUT counts.",
+      "Update 2026-09-27: the trained tern_tc model's 320-input weight matrices ran bit-exact on an AX7203 (see the follow-up post). No forward pass has run on a board, and every throughput figure here is still a ceiling derived from memory bandwidth and LUT counts.",
       "The code ability of a 13M model on .t27 is unknown. The HumanEval figures above are for Python and for another model family.",
       "The open DDR3 path on Artix-7 has passed memtest on hardware only since nextpnr-xilinx 0.9.5 (13 September 2026). The independent UberDDR3 test reached a 333 MHz DDR clock, not the 400 MHz the AX7203 is rated for.",
       "Integer inference must be shown to cost little quality against the float model before receipts can rest on it.",
@@ -234,7 +234,7 @@ export const ruBody: Block[] = [
   {
     kind: 'ul',
     items: [
-      "Ни одна модель IGLA ещё не запускалась на плате. Каждая цифра скорости здесь — потолок, выведенный из пропускной способности памяти и числа LUT.",
+      "Обновление 2026-09-27: матрицы весов с входом 320 обученной модели tern_tc посчитались на AX7203 бит-точно (см. следующий пост). Прямой проход на плате не запускался, и каждая цифра скорости здесь по-прежнему потолок, выведенный из пропускной способности памяти и числа LUT.",
       "Способность модели на 13M писать .t27 неизвестна. Цифры HumanEval выше относятся к Python и к другому семейству моделей.",
       "Открытый путь к DDR3 на Artix-7 проходит memtest на железе только с nextpnr-xilinx 0.9.5 (13 сентября 2026). Независимый тест UberDDR3 достиг частоты DDR 333 МГц, а не 400 МГц, на которые рассчитана AX7203.",
       "Нужно показать, что целочисленный вывод почти не теряет в качестве по сравнению с плавающей точкой. Только после этого на него могут опираться квитанции.",
