@@ -54,15 +54,21 @@ test('the WARS source compiles, evaluates its tests and renders all projections'
   assert.ok(out.tests.asserts >= 15)
   assert.equal(out.specSha, sha256(Buffer.from(source, 'utf8')))
   assert.equal(out.arena.source.sha256, out.specSha)
-  assert.equal(out.arena.configurations.length, 4)
-  assert.equal(out.arena.configurations[1].evidence, 'SOURCE-CLAIM')
-  assert.equal(out.arena.configurations[1].stateEvidence, 'OBSERVED')
-  assert.match(out.arena.configurations[1].source, /^https:\/\/docs\.typesafe\.ai\//)
+  assert.equal(out.arena.configurations.length, 5)
+  const jev = out.arena.configurations.find((config) => config.id === 'bee-jev')
+  assert.equal(jev.evidence, 'SOURCE-CLAIM')
+  assert.equal(jev.stateEvidence, 'OBSERVED')
+  assert.match(jev.source, /^https:\/\/docs\.typesafe\.ai\//)
+  assert.equal(out.arena.configurations[1].id, 'bee-tri')
   assert.equal(out.arena.experiments[0].issue.number, 4328)
   assert.equal(out.arena.experiments[0].modelEvidence, 'UNKNOWN')
   assert.equal(out.arena.protocol.triRoleEvidence, 'OBSERVED')
-  assert.equal(out.arena.runs.length, 1)
-  assert.equal(out.arena.measurements.length, 5)
+  // The 2026-09-26 campaign: three judged experiments, each with a sealed
+  // baseline and TRI run, and no experiment claims a winner.
+  assert.deepEqual(out.arena.experiments.slice(1).map((e) => e.state), ['judged', 'judged', 'judged'])
+  assert.equal(out.arena.experiments.some((e) => e.state === 'complete'), false)
+  assert.equal(out.arena.runs.length, 7)
+  assert.equal(out.arena.measurements.length, 53)
 })
 
 test('committed projections are deterministic and current', async () => {
@@ -212,13 +218,13 @@ test('zero and probability boundaries are valid measured values', async () => {
   assert.deepEqual(semanticProblems(fields, 'numeric-boundaries.t27'), [])
 })
 
-test('a complete experiment requires sealed baseline and JEV runs with both decision measurements', async () => {
+test('a complete experiment requires sealed baseline and TRI runs with both decision measurements', async () => {
   const fields = await parsedFields()
   fields.EXPERIMENT_STATES_BY_ID[0] = 'complete'
   appendRun(fields, {
-    id: 't27-4328-bee-jev-pending',
+    id: 't27-4328-bee-tri-pending',
     experimentId: fields.EXPERIMENT_IDS[0],
-    configId: 'bee-jev',
+    configId: 'bee-tri',
     startedAt: '',
     finishedAt: '',
     state: 'pending',
@@ -232,7 +238,7 @@ test('a complete experiment requires sealed baseline and JEV runs with both deci
 
   const problems = semanticProblems(fields, 'complete.t27')
   assert.ok(problems.some((problem) => /complete experiment .* sealed bee-baseline run/.test(problem)), problems.join('\n'))
-  assert.ok(problems.some((problem) => /complete experiment .* sealed bee-jev run/.test(problem)), problems.join('\n'))
+  assert.ok(problems.some((problem) => /complete experiment .* sealed bee-tri run/.test(problem)), problems.join('\n'))
 })
 
 test('blocked and inconclusive runs remain valid evidence while an experiment is not complete', async () => {
@@ -245,11 +251,11 @@ test('blocked and inconclusive runs remain valid evidence while an experiment is
 test('blocked and inconclusive terminal runs cannot claim a complete comparison', async () => {
   const fields = await parsedFields()
   fields.EXPERIMENT_STATES_BY_ID[0] = 'complete'
-  const runId = 't27-4328-bee-jev-blocked'
+  const runId = 't27-4328-bee-tri-blocked'
   appendRun(fields, {
     id: runId,
     experimentId: fields.EXPERIMENT_IDS[0],
-    configId: 'bee-jev',
+    configId: 'bee-tri',
     startedAt: '2026-09-23T05:00:00Z',
     finishedAt: '2026-09-23T05:01:00Z',
     state: 'blocked',
@@ -279,7 +285,7 @@ test('blocked and inconclusive terminal runs cannot claim a complete comparison'
 
   const problems = semanticProblems(fields, 'blocked-complete.t27')
   assert.ok(problems.some((problem) => /complete experiment .* sealed bee-baseline run/.test(problem)), problems.join('\n'))
-  assert.ok(problems.some((problem) => /complete experiment .* sealed bee-jev run/.test(problem)), problems.join('\n'))
+  assert.ok(problems.some((problem) => /complete experiment .* sealed bee-tri run/.test(problem)), problems.join('\n'))
 })
 
 test('a comparison cannot complete with unknown model identity or unsealed arms', async () => {
@@ -290,11 +296,11 @@ test('a comparison cannot complete with unknown model identity or unsealed arms'
   fields.MEASUREMENT_VALUES[0] = 'PASSED'
   fields.MEASUREMENT_VALUES[1] = 'accepted'
 
-  const runId = 't27-4328-bee-jev-failed'
+  const runId = 't27-4328-bee-tri-failed'
   appendRun(fields, {
     id: runId,
     experimentId: fields.EXPERIMENT_IDS[0],
-    configId: 'bee-jev',
+    configId: 'bee-tri',
     startedAt: '2026-09-23T05:00:00Z',
     finishedAt: '2026-09-23T05:01:00Z',
     state: 'failed',
@@ -325,7 +331,7 @@ test('a comparison cannot complete with unknown model identity or unsealed arms'
   const problems = semanticProblems(fields, 'unsealed-complete.t27')
   assert.ok(problems.some((problem) => /explicit observed executor model/.test(problem)), problems.join('\n'))
   assert.ok(problems.some((problem) => /sealed bee-baseline run/.test(problem)), problems.join('\n'))
-  assert.ok(problems.some((problem) => /sealed bee-jev run/.test(problem)), problems.join('\n'))
+  assert.ok(problems.some((problem) => /sealed bee-tri run/.test(problem)), problems.join('\n'))
 })
 
 test('explicit model identity and sealed observed arms can complete a comparison', async () => {
@@ -343,11 +349,11 @@ test('explicit model identity and sealed observed arms can complete a comparison
   fields.MEASUREMENT_EVIDENCE[0] = 'OBSERVED'
   fields.MEASUREMENT_EVIDENCE[1] = 'OBSERVED'
 
-  const runId = 't27-4328-bee-jev-failed-sealed'
+  const runId = 't27-4328-bee-tri-failed-sealed'
   appendRun(fields, {
     id: runId,
     experimentId: fields.EXPERIMENT_IDS[0],
-    configId: 'bee-jev',
+    configId: 'bee-tri',
     startedAt: '2026-09-23T05:00:00Z',
     finishedAt: '2026-09-23T05:01:00Z',
     state: 'failed',
@@ -383,4 +389,21 @@ test('non-ASCII source is refused by the L3 gate', async () => {
   const out = await buildWars({ specText: changed, analyze })
   assert.equal(out.ts, null)
   assert.ok(out.problems.some((problem) => /non-ASCII/.test(problem)), out.problems.join('\n'))
+})
+
+test('a judged experiment needs a sealed TRI run, and cannot be promoted to complete without a model id', async () => {
+  const fields = await parsedFields()
+  const experimentId = 't27-4613-validate-trits'
+  const triAt = fields.RUN_IDS.findIndex((id, at) => fields.RUN_EXPERIMENT_IDS[at] === experimentId && fields.RUN_CONFIG_IDS[at] === 'bee-tri')
+  assert.ok(triAt > 0)
+
+  const unsealed = structuredClone(fields)
+  unsealed.RUN_ARTIFACT_URLS[triAt] = ''
+  let problems = semanticProblems(unsealed, 'judged.t27')
+  assert.ok(problems.some((problem) => /judged experiment t27-4613-validate-trits has no sealed bee-tri run/.test(problem)), problems.join('\n'))
+
+  const promoted = structuredClone(fields)
+  promoted.EXPERIMENT_STATES_BY_ID[fields.EXPERIMENT_IDS.indexOf(experimentId)] = 'complete'
+  problems = semanticProblems(promoted, 'promoted.t27')
+  assert.ok(problems.some((problem) => /complete experiment t27-4613-validate-trits requires an explicit observed executor model/.test(problem)), problems.join('\n'))
 })
