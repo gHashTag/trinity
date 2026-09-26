@@ -25,16 +25,16 @@ pub const EMPTY_METRIC_MEANS_UNKNOWN : bool = true;
 
 // Fairness contract. A result that breaks one controlled factor is not an A/B result.
 pub const REAL_GITHUB_TASKS_ONLY : bool = true;
-pub const VARIABLE_FACTOR : str = "jev-decision-layer";
+pub const VARIABLE_FACTOR : str = "tri-decision-layer";
 pub const CONTROLLED_FACTORS : [7]str = ["issue-url", "base-sha", "executor-model", "prompt", "tool-policy", "budget", "acceptance"];
 pub const ISOLATION : str = "one clean git worktree per arm, both pinned to the same base commit";
 pub const ACCEPTANCE_POLICY : str = "the issue acceptance commands plus repository gates decide pass or fail";
 pub const REVIEW_POLICY : str = "Queen reviews the diff and exact evidence after automated gates";
 pub const WINNER_POLICY : str = "merge at most one accepted patch; preserve every arm in the append-only ledger";
 pub const COMPARISON_VALIDITY_POLICY : str = "run both arms in one campaign with the same explicit executor model and reasoning configuration; an unpaired run or unknown model identity cannot determine a winner";
-pub const JEV_ROLE : str = "structured decision layer that ranks typed choices; never a chat model and never a code generator";
-pub const JEV_ROLE_EVIDENCE : str = "SOURCE-CLAIM";
-pub const JEV_ROLE_SOURCE : str = "https://docs.typesafe.ai/introduction/coding-agents";
+pub const TRI_ROLE : str = "the t27c compiler as judge: an arm is accepted only when the compiler and the acceptance gates accept its patch; it ranks typed choices and never generates the patch";
+pub const TRI_ROLE_EVIDENCE : str = "OBSERVED";
+pub const TRI_ROLE_SOURCE : str = "https://t27.ai/t27/files/trinity/apps/website/public/queen/wars.t27";
 
 // Measurement vocabulary. Values are strings so an exact native unit is preserved;
 // absent rows mean unknown. A numeric zero is a measured zero only when a source exists.
@@ -102,11 +102,11 @@ pub const MEASUREMENT_SOURCES : [5]str = ["session-observed isolated worktree co
 
 test protocol_has_one_variable {
     assert REAL_GITHUB_TASKS_ONLY == true;
-    assert VARIABLE_FACTOR == "jev-decision-layer";
+    assert VARIABLE_FACTOR == "tri-decision-layer";
     assert CONTROLLED_FACTORS[0] == "issue-url";
     assert CONTROLLED_FACTORS[6] == "acceptance";
     assert EMPTY_METRIC_MEANS_UNKNOWN == true;
-    assert JEV_ROLE_EVIDENCE == "SOURCE-CLAIM";
+    assert TRI_ROLE_EVIDENCE == "OBSERVED";
 }
 
 test arena_names_all_four_lanes {

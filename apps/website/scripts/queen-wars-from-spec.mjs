@@ -28,7 +28,7 @@ const REQUIRED = {
   EVIDENCE_LEVELS: 'arr', CONFIG_STATES: 'arr', EXPERIMENT_STATES: 'arr', RUN_STATES: 'arr', VERDICTS: 'arr',
   EMPTY_METRIC_MEANS_UNKNOWN: 'bool', REAL_GITHUB_TASKS_ONLY: 'bool', VARIABLE_FACTOR: 'str', CONTROLLED_FACTORS: 'arr',
   ISOLATION: 'str', ACCEPTANCE_POLICY: 'str', REVIEW_POLICY: 'str', WINNER_POLICY: 'str', COMPARISON_VALIDITY_POLICY: 'str',
-  JEV_ROLE: 'str', JEV_ROLE_EVIDENCE: 'str', JEV_ROLE_SOURCE: 'str',
+  TRI_ROLE: 'str', TRI_ROLE_EVIDENCE: 'str', TRI_ROLE_SOURCE: 'str',
   METRIC_COUNT: 'u8', METRIC_KEYS: 'arr', METRIC_UNITS: 'arr',
   CONFIG_COUNT: 'u8', CONFIG_IDS: 'arr', CONFIG_NAMES: 'arr', CONFIG_KINDS: 'arr', CONFIG_STATES_BY_ID: 'arr',
   CONFIG_EVIDENCE: 'arr', CONFIG_SOURCES: 'arr', CONFIG_NOTES: 'arr', CONFIG_STATE_EVIDENCE: 'arr',
@@ -99,9 +99,9 @@ export function semanticProblems(f, file = WARS_SPEC) {
   }
   if (f.REAL_GITHUB_TASKS_ONLY !== true) p.push(`${file}: REAL_GITHUB_TASKS_ONLY must be true`)
   if (f.EMPTY_METRIC_MEANS_UNKNOWN !== true) p.push(`${file}: EMPTY_METRIC_MEANS_UNKNOWN must be true`)
-  if (f.VARIABLE_FACTOR !== 'jev-decision-layer') p.push(`${file}: VARIABLE_FACTOR must be jev-decision-layer`)
-  if (!oneOf(f.JEV_ROLE_EVIDENCE, f.EVIDENCE_LEVELS)) p.push(`${file}: JEV_ROLE_EVIDENCE is unknown`)
-  if (!f.JEV_ROLE_SOURCE.trim()) p.push(`${file}: JEV_ROLE_SOURCE is empty`)
+  if (f.VARIABLE_FACTOR !== 'tri-decision-layer') p.push(`${file}: VARIABLE_FACTOR must be tri-decision-layer`)
+  if (!oneOf(f.TRI_ROLE_EVIDENCE, f.EVIDENCE_LEVELS)) p.push(`${file}: TRI_ROLE_EVIDENCE is unknown`)
+  if (!f.TRI_ROLE_SOURCE.trim()) p.push(`${file}: TRI_ROLE_SOURCE is empty`)
   for (const [countName, arrays] of Object.entries(PARALLEL)) {
     for (const name of arrays) if (f[name].length !== f[countName]) p.push(`${file}: ${name}.length ${f[name].length} != ${countName} ${f[countName]}`)
   }
@@ -252,7 +252,7 @@ export function arenaOf(f, specSha) {
       realGitHubTasksOnly: f.REAL_GITHUB_TASKS_ONLY, variableFactor: f.VARIABLE_FACTOR, controlledFactors: f.CONTROLLED_FACTORS,
       isolation: f.ISOLATION, acceptancePolicy: f.ACCEPTANCE_POLICY, reviewPolicy: f.REVIEW_POLICY, winnerPolicy: f.WINNER_POLICY,
       comparisonValidityPolicy: f.COMPARISON_VALIDITY_POLICY,
-      jevRole: f.JEV_ROLE, jevRoleEvidence: f.JEV_ROLE_EVIDENCE, jevRoleSource: f.JEV_ROLE_SOURCE,
+      triRole: f.TRI_ROLE, triRoleEvidence: f.TRI_ROLE_EVIDENCE, triRoleSource: f.TRI_ROLE_SOURCE,
       emptyMetricMeansUnknown: f.EMPTY_METRIC_MEANS_UNKNOWN,
     },
     metricCatalog: rows(f.METRIC_COUNT, (i) => ({ key: f.METRIC_KEYS[i], unit: f.METRIC_UNITS[i] })),

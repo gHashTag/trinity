@@ -36,7 +36,7 @@ const COPY = {
     factor: 'variable',
     fixed: 'held constant',
     comparisonRule: 'comparison validity',
-    jevRole: 'JEV role',
+    triRole: 'TRI role (the judge)',
     task: 'REAL TASK',
     experimentPicker: 'EXPERIMENT',
     base: 'base',
@@ -74,7 +74,7 @@ const COPY = {
     factor: 'переменная',
     fixed: 'зафиксировано',
     comparisonRule: 'валидность сравнения',
-    jevRole: 'роль JEV',
+    triRole: 'Роль TRI (судья)',
     task: 'РЕАЛЬНАЯ ЗАДАЧА',
     experimentPicker: 'ЭКСПЕРИМЕНТ',
     base: 'база',
@@ -188,11 +188,11 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
             <dd>{QUEEN_WARS.protocol.comparisonValidityPolicy}</dd>
           </div>
           <div>
-            <dt>{c.jevRole}</dt>
+            <dt>{c.triRole}</dt>
             <dd className="queen-wars-claim">
-              <span>{QUEEN_WARS.protocol.jevRole}</span>
-              <Evidence value={QUEEN_WARS.protocol.jevRoleEvidence} />
-              <a href={QUEEN_WARS.protocol.jevRoleSource}>{c.evidenceSource}</a>
+              <span>{QUEEN_WARS.protocol.triRole}</span>
+              <Evidence value={QUEEN_WARS.protocol.triRoleEvidence} />
+              <a href={QUEEN_WARS.protocol.triRoleSource}>{c.evidenceSource}</a>
             </dd>
           </div>
         </dl>

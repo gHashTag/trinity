@@ -320,13 +320,13 @@ export const MODULES = [
     en: {
       name: 'WARS',
       hint: 'Real-task agent benchmarks generated from one .t27 ledger (key x)',
-      body: 'The controlled arena for Bees, JEV-assisted decisions, IGLA CODER and IGLA RACE. Every experiment pins a real GitHub issue, base commit, prompt, tools, budget and acceptance gates in specs/queen/wars.t27; missing runs remain unknown rather than becoming zero, and the interface is only a generated projection of that ledger.',
+      body: 'The controlled arena for Bees, TRI-assisted decisions (the compiler judge; JEV remains only as a comparison arm), IGLA CODER and IGLA RACE. Every experiment pins a real GitHub issue, base commit, prompt, tools, budget and acceptance gates in specs/queen/wars.t27; missing runs remain unknown rather than becoming zero, and the interface is only a generated projection of that ledger.',
       play: 'Where an agent configuration earns its place. Compare witnessed work under equal conditions, keep one accepted patch, and carry every losing or blocked arm forward as evidence rather than erasing it.',
     },
     ru: {
       name: 'ВОЙНЫ',
       hint: 'Бенчмарки агентов на реальных задачах из единого журнала .t27 (клавиша x)',
-      body: 'Контролируемая арена для Bees, решений с JEV, IGLA CODER и IGLA RACE. Каждый эксперимент закрепляет реальную GitHub issue, базовый commit, prompt, инструменты, бюджет и ворота приёмки в specs/queen/wars.t27; отсутствующие запуски остаются неизвестными, а не превращаются в нули, а интерфейс служит только порождённой проекцией этого журнала.',
+      body: 'Контролируемая арена для Bees, решений с TRI (судья-компилятор; JEV остался только сравнительным плечом), IGLA CODER и IGLA RACE. Каждый эксперимент закрепляет реальную GitHub issue, базовый commit, prompt, инструменты, бюджет и ворота приёмки в specs/queen/wars.t27; отсутствующие запуски остаются неизвестными, а не превращаются в нули, а интерфейс служит только порождённой проекцией этого журнала.',
       play: 'Место, где конфигурация агента заслуживает своё место. Сравнивайте подтверждённую работу в равных условиях, принимайте только один patch и сохраняйте проигравшие или заблокированные руки как свидетельство.',
     },
   },
