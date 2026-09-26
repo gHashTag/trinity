@@ -203,8 +203,6 @@ interface QueenStatus {
   } | null;
   /** The swarm's own word for its state on the wire (working, idle, …). */
   swarmState?: string | null;
-  /** Paid worker slots: configured capacity and the started, unfinished bees. */
-  workers?: { capacity: number; active: number; idle: number } | null;
   scheduler: {
     enabled: boolean;
     intervalSeconds: number;
@@ -4023,12 +4021,6 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 projectRu: c.projectRu,
                 projectSources: c.projectSources,
               }}
-            />
-          ) : boardView === "lanes" ? (
-            <QueenLanes
-              status={state.data}
-              error={state.error}
-              c={{ directive: c.lanesDirective, directiveBody: c.lanesDirectiveBody }}
             />
           ) : boardView === "tri" ? (
             <QueenTri
