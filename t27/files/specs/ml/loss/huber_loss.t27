@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Threshold where loss changes from quadratic to linear | φ² + 1/φ² = 3 | TRINITY
+
+module HuberLoss;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const HuberLossConfig = struct {
+        delta : f32,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(predictions: []const f32) → void
+    fn forward(predictions: []const f32) -> void {
+        // Huber loss computation
+        // For each prediction p:
+        //   If |p| ≤ δ: L(p) = 0.5 * p²
+        //   If |p| > δ: L(p) = δ * (|p| - 0.5 * δ)
+        
+        // Use default delta value if not configured
+        const delta : f32 = 1.0;
+        
+        // Compute Huber loss for each prediction
+        var i : usize = 0;
+        while (i < predictions.len) {
+            const p : f32 = predictions[i];
+            const abs_p : f32 = if (p < 0.0) -p else p;
+            
+            if (abs_p <= delta) {
+                // Quadratic region: L(p) = 0.5 * p²
+                const loss : f32 = 0.5 * p * p;
+                // Store result (placeholder for actual storage mechanism)
+                _ = loss;
+            } else {
+                // Linear region: L(p) = δ * (|p| - 0.5 * δ)
+                const loss : f32 = delta * (abs_p - 0.5 * delta);
+                // Store result (placeholder for actual storage mechanism)
+                _ = loss;
+            }
+            
+            i += 1;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+        when result = forward(input)
+        then result != undefined
+

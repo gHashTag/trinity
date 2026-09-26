@@ -1,0 +1,93 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Prevent co-adaptation of neurons | φ² + 1/φ² = 3 | TRINITY
+
+module Dropout;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. Constants
+    // ═══════════════════════════════════════════════════════════
+
+    const DEFAULT_DROP_RATE : f32 = 0.5;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const DropoutConfig = struct {
+        p : f32,
+        inplace : bool,
+        scale_during_training : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // forward(input: []const f32, output: []f32, mask: []bool, training: bool, config: DropoutConfig) → void
+    fn forward(input: []const f32, output: []f32, mask: []bool, training: bool, config: DropoutConfig) -> void {
+        const n = input.len;
+        var i : usize = 0;
+        while (i < n) {
+            if (training) {
+                if (mask[i]) {
+                    // Neuron is kept, scale during training if configured
+                    if (config.scale_during_training) {
+                        output[i] = input[i] * (1.0 / (1.0 - config.p));
+                    } else {
+                        output[i] = input[i];
+                    }
+                } else {
+                    // Neuron is dropped
+                    output[i] = 0.0;
+                }
+            } else {
+                // During inference, always scale output
+                output[i] = input[i] * (1.0 - config.p);
+            }
+            i = i + 1;
+        }
+    }
+
+    // backward(grad_output: []const f32, mask: []const bool, grad_input: []f32, config: DropoutConfig) → void
+    fn backward(grad_output: []const f32, mask: []const bool, grad_input: []f32, config: DropoutConfig) -> void {
+        const n = grad_output.len;
+        var i : usize = 0;
+        while (i < n) {
+            if (mask[i]) {
+                // Gradient flows through kept neurons
+                if (config.scale_during_training) {
+                    grad_input[i] = grad_output[i] * (1.0 / (1.0 - config.p));
+                } else {
+                    grad_input[i] = grad_output[i];
+                }
+            } else {
+                // Gradient is zero for dropped neurons
+                grad_input[i] = 0.0;
+            }
+            i = i + 1;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test forward_basic_case
+        given input = default_input()
+              output = allocf32(input.len)
+              mask = allocbool(input.len)
+              config = DropoutConfig { p = 0.5, inplace = false, scale_during_training = true }
+        when result = forward(input, output, mask, true, config)
+        then result != undefined
+
+    test backward_basic_case
+        given grad_output = default_input()
+              mask = allocbool(grad_output.len)
+              grad_input = allocf32(grad_output.len)
+              config = DropoutConfig { p = 0.5, inplace = false, scale_during_training = true }
+        when result = backward(grad_output, mask, grad_input, config)
+        then result != undefined
+

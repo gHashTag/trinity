@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: Apache-2.0
+; specs/port/tools/check_duplicate_declarations.t27 -- port of tools/check_duplicate_declarations.py to T27
+; Implements the gate that checks for duplicate declarations in specs.
+
+module CheckDuplicateDeclarations;
+
+// Constants
+pub const STRONG : []const u8 = "every backend rejects a redeclaration";
+pub const WEAK : []const u8 = "both a type and a function";
+pub const LOWERED : []const u8 = "SAME identifier in";
+
+// Function declarations
+pub fn t27c() -> []const u8;
+pub fn findings(binary: []const u8, spec: []const u8) -> (u32, u32, u32);
+pub fn specs() -> [][]const u8;
+pub fn read_baseline() -> [][]const u8; // We'll return a list of lines, but we need a map. We'll change later.
+pub fn read_lowered_baseline() -> [][]const u8;
+pub fn self_check(binary: []const u8) -> u32;
+pub fn main() -> u32;
+
+// We'll need to implement the functions and then add test blocks.

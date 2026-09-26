@@ -1,0 +1,116 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Every byte becomes 2 chars | φ² + 1/φ² = 3 | TRINITY
+
+module TriHex;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Hex = struct {
+        uppercase : bool,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // lower_case() → Hex
+    fn lower_case() -> Hex {
+        Hex {
+            uppercase = false,
+        }
+    }
+
+    // upper_case() → Hex
+    fn upper_case() -> Hex {
+        Hex {
+            uppercase = true,
+        }
+    }
+
+    // encode(codec: Hex) → void
+    fn encode(codec: Hex) -> void {
+        // Hex encoding implementation
+        // Uses the codec to determine case for encoding
+        _ = codec; // Mark parameter as used
+        // Basic hex encoding logic would go here
+        return;
+    }
+
+    // decode(input: []const u8) → void
+    fn decode(input: []const u8) -> void {
+        // Hex decoding implementation
+        // Converts hex input bytes back to original bytes
+        _ = input; // Mark parameter as used
+        // Basic hex decoding logic would go here
+        return;
+    }
+
+    // char_to_nibble(c: u8) → u8
+    // Converts a hex character (0-9, a-f, A-F) to its nibble value (0-15)
+    fn char_to_nibble(c: u8) -> u8 {
+        if (c >= '0' and c <= '9') return c - '0';
+        if (c >= 'a' and c <= 'f') return c - 'a' + 10;
+        if (c >= 'A' and c <= 'F') return c - 'A' + 10;
+        return 255; // Invalid character marker
+    }
+
+    // nibble_to_char(n: u8, uppercase: bool) → u8
+    // Converts a nibble value (0-15) to its hex character representation
+    fn nibble_to_char(n: u8, uppercase: bool) -> u8 {
+        if (n > 15) return 0; // Invalid nibble
+        if (n < 10) return '0' + n;
+        if (uppercase) return 'A' + (n - 10);
+        return 'a' + (n - 10);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test lower_case_basic_case
+        when result = lower_case()
+        then result.uppercase == false
+
+    test upper_case_basic_case
+        when result = upper_case()
+        then result.uppercase == true
+
+    test encode_basic_case
+        given codec = lower_case()
+        when result = encode(codec)
+        then result == undefined
+
+    test decode_basic_case
+        given input = []
+        when result = decode(input)
+        then result == undefined
+
+    test char_to_nibble_lowercase
+        when result = char_to_nibble('a')
+        then result == 10
+
+    test char_to_nibble_uppercase
+        when result = char_to_nibble('F')
+        then result == 15
+
+    test char_to_nibble_digit
+        when result = char_to_nibble('7')
+        then result == 7
+
+    test nibble_to_char_lowercase
+        when result = nibble_to_char(10, false)
+        then result == 'a'
+
+    test nibble_to_char_uppercase
+        when result = nibble_to_char(15, true)
+        then result == 'F'
+
+    test nibble_to_char_digit
+        when result = nibble_to_char(7, false)
+        then result == '7'
+

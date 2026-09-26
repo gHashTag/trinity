@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// {{variable}} syntax | φ² + 1/φ² = 3 | TRINITY
+
+module TriTemplate;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Template = struct {
+        parts : []TemplatePart,
+    };
+
+    pub const TemplatePart = struct {
+        is_literal : "bool",
+        text : []const u8,
+        variable : []const u8,
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // compile(source: []const u8) → void
+    fn compile(source: []const u8) -> void {
+        // Parse template source and create template structure
+        // For now, create an empty template
+        let template = Template{ .parts = [] };
+        // Store compiled template for later use
+        _ = template;
+    }
+
+    // render(template: Template) → void
+    fn render(template: Template) -> void {
+        // Render template by processing each part
+        for (template.parts) |part| {
+            if (part.is_literal) {
+                // Output literal text
+                _ = part.text;
+            } else {
+                // Output variable value
+                _ = part.variable;
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test "compile_basic_case"
+        given input = default_input()
+        when result = compile(input)
+        then result != undefined
+
+    test "render_basic_case"
+        given input = default_input()
+        when result = render(input)
+        then result != undefined
+

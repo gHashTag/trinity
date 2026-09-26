@@ -1,0 +1,6 @@
+# nn/attention — phi-attention mechanism for HSLM
+# Status: stub (pending full spec)
+# Low-resource attention using ternary weights + GoldenFloat scoring
+module attention {
+    export phi_attention(q: TritVec, k: []TritVec, v: []TritVec) -> TritVec
+}

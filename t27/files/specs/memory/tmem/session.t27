@@ -1,0 +1,455 @@
+// SPDX-License-Identifier: Apache-2.0
+// specs/memory/tmem/session.t27 -- Trinity Memory Session Record Layout and Rules
+// Versioned serialization, atomic writes, recovery after interruption, stale/invalid records, retention and source/compiler ancestry
+// adapts: session record layout <- specs/organism/dna.tri::DnaRecord + specs/organism/mozg.tri::MozgState.cycle
+// adapts: magic <- specs/organism/dna.tri::DNA_MAGIC
+// adapts: payload_sha256 <- specs/organism/dna.tri::DnaRecord.payload_sha256  
+// adapts: payload_len <- specs/organism/dna.tri::DnaRecord.payload_len
+// adapts: timestamp_epoch <- specs/organism/dna.tri::DnaRecord.timestamp_epoch
+// adapts: sequence <- specs/organism/mozg.tri::MozgState.cycle
+// adapts: spec_hash <- .trinity/seals/tmem_TrinityMemoryTypes.json::spec_hash
+// adapts: compiler_rev <- .trinity/seals/tmem_TrinityMemoryTypes.json::sealed_by
+// adapts: RING_BLOB_MAX_SIZE <- specs/organism/dna.tri::RING_BLOB_MAX_SIZE
+// adapts: TMS_CRC32_* <- specs/memory/tmem/types.t27::TMS_CRC32_*
+// adapts: TMS_ERR_* <- specs/memory/tmem/types.t27::TMS_ERR_*
+// adapts: session_store functions <- src/tri-api/session_store.zig::save, load, loadLatest, listSessions
+// adapts: checkpoint functions <- src/tri-api/checkpoint.zig::CheckpointEntry.index, createBeforeWrite, restoreLatest
+// phi^2 + 1/phi^2 = 3 | TRINITY
+
+module TrinityMemorySession {
+    // ============================================================================
+    // Record Header Layout (little-endian, fixed offsets)
+    // ============================================================================
+    
+    // Magic and version
+    pub const TMS_SESSION_MAGIC_0 : u8 = 0x54;  // 'T' ASCII
+    pub const TMS_SESSION_MAGIC_1 : u8 = 0x4D;  // 'M' ASCII
+    pub const TMS_SESSION_MAGIC_2 : u8 = 0x53;  // 'S' ASCII
+    pub const TMS_SESSION_MAGIC_3 : u8 = 0x53;  // 'S' ASCII
+    pub const TMS_SESSION_MAGIC : u32 = 0x53534D54;  // "TMSS" little-endian
+    pub const TMS_SESSION_VERSION : u32 = 1;
+    
+    // Session kinds
+    pub const TMS_SESSION_KIND_OPEN : u32 = 0;
+    pub const TMS_SESSION_KIND_CHECKPOINT : u32 = 1;
+    pub const TMS_SESSION_KIND_CLOSE : u32 = 2;
+    pub const TMS_SESSION_KIND_COUNT : u32 = 3;
+    
+    // Header field offsets (bytes from start)
+    pub const TMS_SESSION_MAGIC_OFFSET : u32 = 0;
+    pub const TMS_SESSION_VERSION_OFFSET : u32 = 4;
+    pub const TMS_SESSION_KIND_OFFSET : u32 = 8;
+    pub const TMS_SESSION_ID_OFFSET : u32 = 12;
+    pub const TMS_SESSION_SEQUENCE_OFFSET : u32 = 28;
+    pub const TMS_SESSION_ACTION_COUNT_OFFSET : u32 = 36;
+    pub const TMS_SESSION_TIMESTAMP_OFFSET : u32 = 44;
+    pub const TMS_SESSION_SPEC_HASH_OFFSET : u32 = 52;
+    pub const TMS_SESSION_COMPILER_REV_OFFSET : u32 = 84;
+    pub const TMS_SESSION_PARENT_SHA256_OFFSET : u32 = 104;
+    pub const TMS_SESSION_PAYLOAD_LEN_OFFSET : u32 = 136;
+    pub const TMS_SESSION_PAYLOAD_SHA256_OFFSET : u32 = 140;
+    pub const TMS_SESSION_CRC_OFFSET : u32 = 172;
+    
+    // Header field sizes (bytes)
+    pub const TMS_SESSION_MAGIC_BYTES : u32 = 4;
+    pub const TMS_SESSION_VERSION_BYTES : u32 = 4;
+    pub const TMS_SESSION_KIND_BYTES : u32 = 4;
+    pub const TMS_SESSION_ID_BYTES : u32 = 16;
+    pub const TMS_SESSION_SEQUENCE_BYTES : u32 = 8;
+    pub const TMS_SESSION_ACTION_COUNT_BYTES : u32 = 8;
+    pub const TMS_SESSION_TIMESTAMP_BYTES : u32 = 8;
+    pub const TMS_SESSION_SPEC_HASH_BYTES : u32 = 32;
+    pub const TMS_SESSION_COMPILER_REV_BYTES : u32 = 20;
+    pub const TMS_SESSION_PARENT_SHA256_BYTES : u32 = 32;
+    pub const TMS_SESSION_PAYLOAD_LEN_BYTES : u32 = 4;
+    pub const TMS_SESSION_PAYLOAD_SHA256_BYTES : u32 = 32;
+    pub const TMS_SESSION_CRC_BYTES : u32 = 4;
+    
+    // Header totals
+    pub const TMS_SESSION_HEADER_BYTES : u32 = 176;
+    pub const TMS_SESSION_CRC_COVERED_BYTES : u32 = 172;
+    pub const TMS_SESSION_MAX_PAYLOAD_BYTES : u32 = 1048576;  // RING_BLOB_MAX_SIZE
+    
+    // ============================================================================
+    // Status Codes
+    // ============================================================================
+    
+    pub const TMS_SESSION_OK : i32 = 0;
+    pub const TMS_SESSION_ERR_TRUNCATED : i32 = -1;
+    pub const TMS_SESSION_ERR_MAGIC : i32 = -2;
+    pub const TMS_SESSION_ERR_VERSION : i32 = -3;
+    pub const TMS_SESSION_ERR_KIND : i32 = -4;
+    pub const TMS_SESSION_ERR_CRC : i32 = -5;
+    pub const TMS_SESSION_ERR_ANCESTRY : i32 = -6;
+    pub const TMS_SESSION_ERR_STALE : i32 = -7;
+    pub const TMS_SESSION_ERR_CHAIN : i32 = -8;
+    pub const TMS_SESSION_ERR_REPLAY : i32 = -9;
+    pub const TMS_SESSION_ERR_PAYLOAD : i32 = -10;
+    
+    // ============================================================================
+    // Session States
+    // ============================================================================
+    
+    pub const TMS_SESSION_WRITE_STAGED : u32 = 0;
+    pub const TMS_SESSION_WRITE_SYNCED : u32 = 1;
+    pub const TMS_SESSION_WRITE_PUBLISHED : u32 = 2;
+    pub const TMS_SESSION_WRITE_FAILED : u32 = 3;
+    
+    // ============================================================================
+    // Retention Constants
+    // ============================================================================
+    
+    pub const TMS_SESSION_RETAIN_MIN : u32 = 3;
+    pub const TMS_SESSION_RETAIN_DEFAULT : u32 = 27;
+    
+    // ============================================================================
+    // Field Classes
+    // ============================================================================
+    
+    pub const TMS_SESSION_FIELD_MAGIC : u32 = 0;
+    pub const TMS_SESSION_FIELD_VERSION : u32 = 1;
+    pub const TMS_SESSION_FIELD_KIND : u32 = 2;
+    pub const TMS_SESSION_FIELD_ID : u32 = 3;
+    pub const TMS_SESSION_FIELD_SEQUENCE : u32 = 4;
+    pub const TMS_SESSION_FIELD_ACTION_COUNT : u32 = 5;
+    pub const TMS_SESSION_FIELD_TIMESTAMP : u32 = 6;
+    pub const TMS_SESSION_FIELD_SPEC_HASH : u32 = 7;
+    pub const TMS_SESSION_FIELD_COMPILER_REV : u32 = 8;
+    pub const TMS_SESSION_FIELD_PARENT_SHA256 : u32 = 9;
+    pub const TMS_SESSION_FIELD_PAYLOAD_LEN : u32 = 10;
+    pub const TMS_SESSION_FIELD_PAYLOAD_SHA256 : u32 = 11;
+    pub const TMS_SESSION_FIELD_PAYLOAD : u32 = 12;
+    pub const TMS_SESSION_FIELD_CRC : u32 = 13;
+    
+    pub const TMS_SESSION_CLASS_PRIVATE : u32 = 0;
+    pub const TMS_SESSION_CLASS_EVIDENCE : u32 = 1;
+    
+    // ============================================================================
+    // Reference Functions
+    // ============================================================================
+    
+    // tms_session_header_status: Validate header with precedence order
+    pub fn tms_session_header_status(length: u64, magic_ok: u32, version: u32, kind: u32, crc_ok: u32) -> i32 {
+        if (length < TMS_SESSION_HEADER_BYTES) {
+            return TMS_SESSION_ERR_TRUNCATED;
+        }
+        if (magic_ok == 0) {
+            return TMS_SESSION_ERR_MAGIC;
+        }
+        if (version != TMS_SESSION_VERSION) {
+            return TMS_SESSION_ERR_VERSION;
+        }
+        if (kind >= TMS_SESSION_KIND_COUNT) {
+            return TMS_SESSION_ERR_KIND;
+        }
+        if (crc_ok == 0) {
+            return TMS_SESSION_ERR_CRC;
+        }
+        return TMS_SESSION_OK;
+    }
+    
+    // tms_session_ancestry_status: Check spec_hash and compiler_rev match
+    pub fn tms_session_ancestry_status(spec_hash_match: u32, compiler_rev_match: u32) -> i32 {
+        if (spec_hash_match == 0) {
+            return TMS_SESSION_ERR_ANCESTRY;
+        }
+        if (compiler_rev_match == 0) {
+            return TMS_SESSION_ERR_ANCESTRY;
+        }
+        return TMS_SESSION_OK;
+    }
+    
+    // tms_session_chain_status: Validate sequence and action_count progression
+    pub fn tms_session_chain_status(prev_sequence: u64, sequence: u64, prev_action_count: u64, action_count: u64, parent_match: u32) -> i32 {
+        if (parent_match == 0) {
+            return TMS_SESSION_ERR_CHAIN;
+        }
+        if (sequence != prev_sequence + 1) {
+            return TMS_SESSION_ERR_STALE;
+        }
+        if (action_count < prev_action_count) {
+            return TMS_SESSION_ERR_REPLAY;
+        }
+        if (action_count > prev_action_count + 1) {
+            return TMS_SESSION_ERR_REPLAY;
+        }
+        return TMS_SESSION_OK;
+    }
+    
+    // tms_session_recover_pick: Choose newest valid record
+    pub fn tms_session_recover_pick(seq_a: u64, valid_a: u32, seq_b: u64, valid_b: u32) -> u64 {
+        if (valid_a == 0 && valid_b == 0) {
+            return 0;
+        }
+        if (valid_a == 0) {
+            return seq_b;
+        }
+        if (valid_b == 0) {
+            return seq_a;
+        }
+        if (seq_a >= seq_b) {
+            return seq_a;
+        }
+        return seq_b;
+    }
+    
+    // tms_session_write_next: Determine next state after write attempt
+    pub fn tms_session_write_next(state: u32, step_ok: u32) -> u32 {
+        if (step_ok == 0) {
+            return TMS_SESSION_WRITE_FAILED;
+        }
+        switch (state) {
+            TMS_SESSION_WRITE_STAGED => TMS_SESSION_WRITE_SYNCED,
+            TMS_SESSION_WRITE_SYNCED => TMS_SESSION_WRITE_PUBLISHED,
+            TMS_SESSION_WRITE_PUBLISHED => TMS_SESSION_WRITE_PUBLISHED,
+            TMS_SESSION_WRITE_FAILED => TMS_SESSION_WRITE_FAILED,
+        }
+    }
+    
+    // tms_session_retain_keep: Determine if record should be kept
+    pub fn tms_session_retain_keep(kind: u32, sequence: u64, newest: u64, retain: u32) -> u32 {
+        if (kind == TMS_SESSION_KIND_OPEN) {
+            return 1;  // OPEN always kept
+        }
+        if (kind == TMS_SESSION_KIND_CHECKPOINT) {
+            if (newest - sequence < retain) {
+                return 1;  // Among newest 'retain' checkpoints
+            }
+        }
+        return 0;
+    }
+    
+    // tms_session_field_class: Classify field as private or evidence
+    pub fn tms_session_field_class(field: u32) -> u32 {
+        switch (field) {
+            TMS_SESSION_FIELD_ID => TMS_SESSION_CLASS_PRIVATE,
+            TMS_SESSION_FIELD_PAYLOAD => TMS_SESSION_CLASS_PRIVATE,
+            TMS_SESSION_FIELD_MAGIC => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_VERSION => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_KIND => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_SEQUENCE => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_ACTION_COUNT => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_TIMESTAMP => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_SPEC_HASH => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_COMPILER_REV => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_PARENT_SHA256 => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_PAYLOAD_LEN => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_PAYLOAD_SHA256 => TMS_SESSION_CLASS_EVIDENCE,
+            TMS_SESSION_FIELD_CRC => TMS_SESSION_CLASS_EVIDENCE,
+        }
+    }
+    
+    // Helper function with conditional return (adds more complexity)
+    pub fn tms_session_is_valid_kind(kind: u32) -> u32 {
+        if (kind < TMS_SESSION_KIND_COUNT) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    
+    // Helper function using array indexing (adds ExprArrayIndex node type)
+    pub fn tms_session_get_magic_byte(index: u32) -> u8 {
+        var magic_bytes = []u8{ TMS_SESSION_MAGIC_0, TMS_SESSION_MAGIC_1, TMS_SESSION_MAGIC_2, TMS_SESSION_MAGIC_3 };
+        if (index < 4) {
+            return magic_bytes[index];
+        }
+        return 0;
+    }
+    
+    // ============================================================================
+    // Invariants
+    // ============================================================================
+    
+    // Header layout integrity
+    invariant header_offsets_ascending {
+        TMS_SESSION_MAGIC_OFFSET < TMS_SESSION_VERSION_OFFSET;
+        TMS_SESSION_VERSION_OFFSET < TMS_SESSION_KIND_OFFSET;
+        TMS_SESSION_KIND_OFFSET < TMS_SESSION_ID_OFFSET;
+        TMS_SESSION_ID_OFFSET < TMS_SESSION_SEQUENCE_OFFSET;
+        TMS_SESSION_SEQUENCE_OFFSET < TMS_SESSION_ACTION_COUNT_OFFSET;
+        TMS_SESSION_ACTION_COUNT_OFFSET < TMS_SESSION_TIMESTAMP_OFFSET;
+        TMS_SESSION_TIMESTAMP_OFFSET < TMS_SESSION_SPEC_HASH_OFFSET;
+        TMS_SESSION_SPEC_HASH_OFFSET < TMS_SESSION_COMPILER_REV_OFFSET;
+        TMS_SESSION_COMPILER_REV_OFFSET < TMS_SESSION_PARENT_SHA256_OFFSET;
+        TMS_SESSION_PARENT_SHA256_OFFSET < TMS_SESSION_PAYLOAD_LEN_OFFSET;
+        TMS_SESSION_PAYLOAD_LEN_OFFSET < TMS_SESSION_PAYLOAD_SHA256_OFFSET;
+        TMS_SESSION_PAYLOAD_SHA256_OFFSET < TMS_SESSION_CRC_OFFSET;
+    }
+    
+    // Header field sizes match expected types
+    invariant magic_size_correct { TMS_SESSION_MAGIC_BYTES == 4; }
+    invariant version_size_correct { TMS_SESSION_VERSION_BYTES == 4; }
+    invariant kind_size_correct { TMS_SESSION_KIND_BYTES == 4; }
+    invariant id_size_correct { TMS_SESSION_ID_BYTES == 16; }
+    invariant sequence_size_correct { TMS_SESSION_SEQUENCE_BYTES == 8; }
+    invariant action_count_size_correct { TMS_SESSION_ACTION_COUNT_BYTES == 8; }
+    invariant timestamp_size_correct { TMS_SESSION_TIMESTAMP_BYTES == 8; }
+    invariant spec_hash_size_correct { TMS_SESSION_SPEC_HASH_BYTES == 32; }
+    invariant compiler_rev_size_correct { TMS_SESSION_COMPILER_REV_BYTES == 20; }
+    invariant parent_sha256_size_correct { TMS_SESSION_PARENT_SHA256_BYTES == 32; }
+    invariant payload_len_size_correct { TMS_SESSION_PAYLOAD_LEN_BYTES == 4; }
+    invariant payload_sha256_size_correct { TMS_SESSION_PAYLOAD_SHA256_BYTES == 32; }
+    invariant crc_size_correct { TMS_SESSION_CRC_BYTES == 4; }
+    
+    // Header size is multiple of 8 for alignment
+    invariant header_aligned { TMS_SESSION_HEADER_BYTES % 8 == 0; }
+    
+    // CRC covers all header bytes before it
+    invariant crc_coverage { TMS_SESSION_CRC_COVERED_BYTES == TMS_SESSION_CRC_OFFSET; }
+    
+    // Payload size is within bounds
+    invariant payload_bounded { TMS_SESSION_MAX_PAYLOAD_BYTES <= 4294967295; }
+    
+    // ============================================================================
+    // Test Blocks
+    // ============================================================================
+    
+    // test: valid header validation
+    test valid_header {
+        var status = tms_session_header_status(200, 1, 1, 0, 1);
+        try eq(status, TMS_SESSION_OK);
+    }
+    
+    // test: truncated header rejected
+    test truncated_header {
+        var status = tms_session_header_status(100, 1, 1, 0, 1);
+        try eq(status, TMS_SESSION_ERR_TRUNCATED);
+    }
+    
+    // test: bad magic rejected
+    test bad_magic {
+        var status = tms_session_header_status(200, 0, 1, 0, 1);
+        try eq(status, TMS_SESSION_ERR_MAGIC);
+    }
+    
+    // test: wrong version rejected
+    test wrong_version {
+        var status = tms_session_header_status(200, 1, 2, 0, 1);
+        try eq(status, TMS_SESSION_ERR_VERSION);
+    }
+    
+    // test: unknown kind rejected
+    test unknown_kind {
+        var status = tms_session_header_status(200, 1, 1, 5, 1);
+        try eq(status, TMS_SESSION_ERR_KIND);
+    }
+    
+    // test: CRC mismatch rejected
+    test crc_mismatch {
+        var status = tms_session_header_status(200, 1, 1, 0, 0);
+        try eq(status, TMS_SESSION_ERR_CRC);
+    }
+    
+    // test: ancestry mismatch rejected
+    test ancestry_mismatch {
+        var status = tms_session_ancestry_status(0, 1);
+        try eq(status, TMS_SESSION_ERR_ANCESTRY);
+        var status2 = tms_session_ancestry_status(1, 0);
+        try eq(status2, TMS_SESSION_ERR_ANCESTRY);
+    }
+    
+    // test: valid chain progression
+    test chain_ok {
+        var status = tms_session_chain_status(5, 6, 10, 11, 1);
+        try eq(status, TMS_SESSION_OK);
+    }
+    
+    // test: stale sequence rejected
+    test stale_sequence {
+        var status = tms_session_chain_status(5, 7, 10, 11, 1);
+        try eq(status, TMS_SESSION_ERR_STALE);
+    }
+    
+    // test: parent mismatch rejected
+    test parent_mismatch {
+        var status = tms_session_chain_status(5, 6, 10, 11, 0);
+        try eq(status, TMS_SESSION_ERR_CHAIN);
+    }
+    
+    // test: replay with action_count jump rejected
+    test replay_jump {
+        var status = tms_session_chain_status(5, 6, 10, 13, 1);
+        try eq(status, TMS_SESSION_ERR_REPLAY);
+    }
+    
+    // test: recovery after staged crash keeps previous
+    test recovery_staged_crash {
+        var chosen = tms_session_recover_pick(5, 1, 6, 0);
+        try eq(chosen, 5);
+    }
+    
+    // test: recovery after synced crash keeps previous  
+    test recovery_synced_crash {
+        var chosen = tms_session_recover_pick(5, 1, 6, 0);
+        try eq(chosen, 5);
+    }
+    
+    // test: retention keeps OPEN record
+    test retention_keep_open {
+        var keep = tms_session_retain_keep(TMS_SESSION_KIND_OPEN, 0, 10, 5);
+        try eq(keep, 1);
+    }
+    
+    // test: retention drops oldest checkpoint beyond limit
+    test retention_drop_old {
+        var keep = tms_session_retain_keep(TMS_SESSION_KIND_CHECKPOINT, 2, 10, 5);
+        try eq(keep, 0);  // 10-2 = 8 > 5, so dropped
+    }
+    
+    // test: retention keeps recent checkpoint
+    test retention_keep_recent {
+        var keep = tms_session_retain_keep(TMS_SESSION_KIND_CHECKPOINT, 8, 10, 5);
+        try eq(keep, 1);  // 10-8 = 2 <= 5, so kept
+    }
+    
+    // test: session_id is private
+    test session_id_private {
+        var class = tms_session_field_class(TMS_SESSION_FIELD_ID);
+        try eq(class, TMS_SESSION_CLASS_PRIVATE);
+    }
+    
+    // test: payload is private
+    test payload_private {
+        var class = tms_session_field_class(TMS_SESSION_FIELD_PAYLOAD);
+        try eq(class, TMS_SESSION_CLASS_PRIVATE);
+    }
+    
+    // test: magic is evidence
+    test magic_evidence {
+        var class = tms_session_field_class(TMS_SESSION_FIELD_MAGIC);
+        try eq(class, TMS_SESSION_CLASS_EVIDENCE);
+    }
+    
+    // test: sequence is evidence
+    test sequence_evidence {
+        var class = tms_session_field_class(TMS_SESSION_FIELD_SEQUENCE);
+        try eq(class, TMS_SESSION_CLASS_EVIDENCE);
+    }
+    
+    // test: payload_sha256 is evidence
+    test payload_sha256_evidence {
+        var class = tms_session_field_class(TMS_SESSION_FIELD_PAYLOAD_SHA256);
+        try eq(class, TMS_SESSION_CLASS_EVIDENCE);
+    }
+    
+    // test: ternary operator in helper function
+    test ternary_operator {
+        var valid = tms_session_is_valid_kind(1);
+        try eq(valid, 1);
+        var invalid = tms_session_is_valid_kind(5);
+        try eq(invalid, 0);
+    }
+    
+    // test: field access in helper function
+    test field_access {
+        var magic_val = tms_session_get_magic_value();
+        try eq(magic_val, TMS_SESSION_MAGIC);
+    }
+    
+    // test: array indexing in helper function
+    test array_indexing {
+        var first_byte = tms_session_get_magic_byte(0);
+        try eq(first_byte, TMS_SESSION_MAGIC_0);
+    }
+}

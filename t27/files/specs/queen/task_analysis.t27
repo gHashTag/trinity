@@ -1,0 +1,177 @@
+// SPDX-License-Identifier: Apache-2.0
+// queen/task_analysis.t27 — Task Priority Analysis for Queen
+// Trinity S³AI — Cognitive Task Orchestration
+// φ² + 1/φ² = 3 | TRINITY
+
+module queen-task-analysis;
+
+use base::types::Trit;
+use math::sacred_physics::{PHI, PHI_INV, TRINITY};
+use brain::unified_state::{BrainState, ArousalLevel};
+
+// ============================================================================
+// SACRED CONSTANTS
+// ============================================================================
+
+pub const PHI : f64 = 1.618033988749895;
+pub const PHI_INV : f64 = 0.618033988749895;
+pub const TRINITY : f64 = 3.0;
+
+/// Worker count (27 Coptic registers)
+pub const WORKER_COUNT : u8 = 27;
+
+/// Task priority levels
+pub const PRIORITY_CRITICAL : u8 = 0;
+pub const PRIORITY_HIGH : u8 = 1;
+pub const PRIORITY_NORMAL : u8 = 2;
+pub const PRIORITY_LOW : u8 = 3;
+
+// ============================================================================
+// TASK TYPES
+// ============================================================================
+
+/// Task categories
+pub enum TaskType {
+    /// Anomaly detection
+    anomaly = 0,
+    /// Recovery action
+    recovery = 1,
+    /// Learning update
+    learning = 2,
+    /// Maintenance
+    maintenance = 3,
+    /// API request
+    api = 4,
+}
+
+/// Task with priority and metadata
+pub struct Task {
+    pub task_id: u64,
+    pub task_type: TaskType,
+    pub priority: u8,
+    pub urgency: f64,  // 0.0 - 1.0
+    pub phi_weight: f64,  // PHI-structured weight
+    pub created_ms: u64,
+}
+
+/// Task analysis result
+pub struct TaskAnalysis {
+    pub total_tasks: u32,
+    pub critical_count: u32,
+    pub high_count: u32,
+    pub average_urgency: f64,
+    pub phi_coherence: f64,
+}
+
+// ============================================================================
+// FUNCTIONS: Task Analysis
+// ============================================================================
+
+/// Calculate task priority score
+pub fn calculate_priority_score(task: Task) -> f64 {
+    // φ-structured scoring: PHI * urgency + PHI_INV * priority_weight
+    const urgency_weight = PHI;
+    const priority_weight = PHI_INV;
+    
+    const normalized_priority = 1.0 - (task.priority as f64) / 4.0;
+    
+    return urgency_weight * task.urgency + priority_weight * normalized_priority;
+}
+
+/// Sort tasks by priority (highest first)
+pub fn sort_tasks_by_priority(tasks: []Task) []Task {
+    // Implementation would sort tasks by calculate_priority_score
+    return tasks;
+}
+
+/// Analyze task queue
+pub fn analyze_task_queue(tasks: []Task, brain: BrainState) -> TaskAnalysis {
+    var analysis: TaskAnalysis = undefined;
+    analysis.total_tasks = tasks.len;
+    
+    var critical_count: u32 = 0;
+    var high_count: u32 = 0;
+    var urgency_sum: f64 = 0.0;
+    
+    var i: usize = 0;
+    while (i < tasks.len) {
+        const task = tasks[i];
+        
+        if (task.priority == PRIORITY_CRITICAL) {
+            critical_count = critical_count + 1;
+        } else if (task.priority == PRIORITY_HIGH) {
+            high_count = high_count + 1;
+        }
+        
+        urgency_sum = urgency_sum + task.urgency;
+        i = i + 1;
+    }
+    
+    analysis.critical_count = critical_count;
+    analysis.high_count = high_count;
+    analysis.average_urgency = if (tasks.len > 0) { urgency_sum / tasks.len as f64 } else { 0.0 };
+    analysis.phi_coherence = brain.phi_coherence;
+    
+    return analysis;
+}
+
+/// Get next task for worker
+pub fn get_next_task(analysis: TaskAnalysis, worker_id: u8) -> Task {
+    // φ-structured task assignment
+    var task: Task = undefined;
+    task.task_id = 0;
+    task.priority = PRIORITY_NORMAL;
+    task.urgency = 0.5;
+    task.phi_weight = PHI_INV;
+    task.created_ms = 0;
+    
+    return task;
+}
+
+// ============================================================================
+// TDD: TESTS
+// ============================================================================
+
+test "priority_levels_constant" {
+    assert PRIORITY_CRITICAL == 0;
+    assert PRIORITY_HIGH == 1;
+    assert PRIORITY_NORMAL == 2;
+    assert PRIORITY_LOW == 3;
+}
+
+test "worker_count_is_sacred" {
+    assert WORKER_COUNT == 27;
+}
+
+test "calculate_priority_score_bounds" {
+    var task: Task = undefined;
+    task.priority = PRIORITY_NORMAL;
+    task.urgency = 0.5;
+    
+    const score = calculate_priority_score(task);
+    assert score >= 0.0 and score <= 2.0;
+}
+
+test "analyze_task_queue_empty" {
+    var tasks: []Task = [];
+    var brain: BrainState = undefined;
+    brain.phi_coherence = PHI_INV;
+    
+    const analysis = analyze_task_queue(tasks, brain);
+    assert analysis.total_tasks == 0;
+    assert analysis.critical_count == 0;
+}
+
+// ============================================================================
+// TDD: INVARIANTS
+// ============================================================================
+
+invariant "worker_count_matches_coptic" {
+    assert WORKER_COUNT == 27;
+}
+
+invariant "priority_levels_sequential" {
+    assert PRIORITY_CRITICAL < PRIORITY_HIGH;
+    assert PRIORITY_HIGH < PRIORITY_NORMAL;
+    assert PRIORITY_NORMAL < PRIORITY_LOW;
+}

@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: Apache-2.0
+// t27/specs/
+// Reader enables implicit environment passing | φ² + 1/φ² = 3 | TRINITY
+
+module TriReader;
+    use base::types;
+    use math::constants;
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. Types
+    // ═══════════════════════════════════════════════════════════
+
+    pub const Reader(R, T) = struct {
+        run : "fn(R) -> T",
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. Core Functions
+    // ═══════════════════════════════════════════════════════════
+
+    // pure(value: T) → Reader(R, T)
+    fn pure(value: T) -> Reader(R, T) {
+        Reader(R, T) {
+            run = "fn(R) -> T" { fn(env: R) -> T { value } }
+        }
+    }
+
+    // ask() → Reader(R, R)
+    fn ask() -> Reader(R, R) {
+        Reader(R, R) {
+            run = "fn(R) -> R" { fn(env: R) -> R { env } }
+        }
+    }
+
+    // asks(fn: Fn(R) -> T) → Reader(R, T)
+    fn asks(fn: Fn(R) -> T) -> Reader(R, T) {
+        Reader(R, T) {
+            run = "fn(R) -> T" { fn(env: R) -> T { fn(env) } }
+        }
+    }
+
+    // local(fn: Fn(R) -> R, reader: Reader(R, T)) → Reader(R, T)
+    fn local(fn: Fn(R) -> R, reader: Reader(R, T)) -> Reader(R, T) {
+        Reader(R, T) {
+            run = "fn(R) -> T" { 
+                fn(env: R) -> T { 
+                    let modified_env = fn(env);
+                    reader.run(modified_env)
+                }
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TDD: Tests (from .tri behaviors)
+    // ═══════════════════════════════════════════════════════════
+
+    test "pure ignores environment"
+        given env = { value: 42 }
+        when reader = pure(100)
+        when result = reader.run(env)
+        then result == 100
+
+    test "ask returns environment"
+        given env = { name: "test" }
+        when reader = ask()
+        when result = reader.run(env)
+        then result == env
+
+    test "asks applies function to environment"
+        given env = { x: 5 }
+        when fn_value = asks(fn(env: R) -> T { env.x * 2 })
+        when result = fn_value.run(env)
+        then result == 10
+
+    test "local modifies environment for reader"
+        given env = { count: 1 }
+        when modified_env = local(fn(env: R) -> R { { count: env.count + 1 } }, pure(5))
+        when result = modified_env.run(env)
+        then result == 5
