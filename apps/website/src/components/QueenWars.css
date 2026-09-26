@@ -450,7 +450,12 @@
   margin: 0;
   background: var(--wars-line);
 }
-.queen-wars-glance dl > div { padding: 12px 14px; background: rgba(1, 16, 13, 0.92); }
+.queen-wars-glance dl > div {
+  padding: 12px 14px;
+  background: rgba(1, 16, 13, 0.92);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
 .queen-wars-glance dd {
   margin: 0;
   color: var(--wars-green);
