@@ -73,6 +73,8 @@ export const postsIndex: PostMeta[] = [
         'Оракул проверен в софте; это не результат на железе, кремнии или в живой сети.',
       ],
     },
+  },
+  {
     "slug": "queen-browser-actions-you-can-follow",
     "title": "The browser agent should show its work",
     "summary": "Queen’s merged browser changes expose actions as they arrive, keep a compact journal, and let human input request server-side control—with the remaining handover limits made explicit.",
