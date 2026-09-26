@@ -60,7 +60,7 @@ test('the WARS source compiles, evaluates its tests and renders all projections'
   assert.match(out.arena.configurations[1].source, /^https:\/\/docs\.typesafe\.ai\//)
   assert.equal(out.arena.experiments[0].issue.number, 4328)
   assert.equal(out.arena.experiments[0].modelEvidence, 'UNKNOWN')
-  assert.equal(out.arena.protocol.jevRoleEvidence, 'SOURCE-CLAIM')
+  assert.equal(out.arena.protocol.triRoleEvidence, 'OBSERVED')
   assert.equal(out.arena.runs.length, 1)
   assert.equal(out.arena.measurements.length, 5)
 })
