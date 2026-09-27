@@ -266,7 +266,8 @@ export default function QueenRoadmapGame({
   goals: GameGoal[]
   issueRepo: string
   goalStates: Record<number, 'open' | 'closed'> | null
-  /** Bytes of source still to rewrite per stage, from the count; absent or 0 means not measured. */
+  /** Bytes of source still to rewrite per stage, from the count or the stage's own
+      measurement (goals.json `measured`); absent or 0 means not measured. */
   measuredBytes: Record<number, number>
 }) {
   const c = lang === 'ru' ? COPY.ru : COPY.en

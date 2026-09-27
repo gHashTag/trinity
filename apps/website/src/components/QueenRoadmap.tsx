@@ -42,6 +42,9 @@ interface Goal {
   progress?: string
   /** Why nothing can be filed against this stage yet, when something stops it. */
   locked?: { en: string; ru: string }
+  /** Source the count above does not read (the endgame's upstream), measured by
+      the same rules; `source` names the commits and where they were read. */
+  measured?: { bytes: number; at: string; source: string }
 }
 interface Goals {
   issueRepo: string
@@ -273,6 +276,9 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
     }
     return n
   }
+  // A stage measured outside the count uses that measurement alone: adding
+  // goalLines too would count stage 2's trios/agent-server a second time.
+  const stageBytes = (goal: Goal): number => goal.measured?.bytes ?? goalLines(goal)
 
   if (stack === null) return <section className="rm"><p className="rm-note">{c.loading}</p></section>
   if (stack === 'failed' || !summary) return <section className="rm"><p className="rm-note">{c.failed}</p></section>
@@ -289,7 +295,7 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
           goals={goals.goals}
           issueRepo={goals.issueRepo}
           goalStates={states}
-          measuredBytes={Object.fromEntries(goals.goals.map((g) => [g.stage, goalLines(g)]))}
+          measuredBytes={Object.fromEntries(goals.goals.map((g) => [g.stage, stageBytes(g)]))}
         />
       )}
 
@@ -468,9 +474,11 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
                           <span key={l} className="rm-lang"><i style={{ background: colorOf(l) }} />{l}</span>
                         ))}
                         <span>→ {c.target}: {g.target}</span>
-                        {/* 0 bytes is "not in the count", not a size: the endgame's
-                            repositories are not measured yet. */}
-                        <span>{goalLines(g) > 0 ? size(goalLines(g)) : c.notMeasured}</span>
+                        {/* 0 bytes is "not in the count", not a size. A stage
+                            measured outside the count names its source. */}
+                        <span title={g.measured ? `${g.measured.at}: ${g.measured.source}` : undefined}>
+                          {stageBytes(g) > 0 ? size(stageBytes(g)) : c.notMeasured}
+                        </span>
                       </div>
                     </div>
                   </li>
