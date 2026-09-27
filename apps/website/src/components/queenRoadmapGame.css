@@ -1,0 +1,419 @@
+/* LEVEL II: the comb, apex down like the t27 mark, and the ships building it. */
+.rg {
+  --rg-mark: #08fab5;
+  --rg-gold: #ffd35a;
+  --rg-panel: rgba(2, 10, 8, 0.92);
+  --rg-line: rgba(8, 250, 181, 0.24);
+  --rg-text: #e8f5ee;
+  --rg-muted: rgba(232, 245, 238, 0.8);
+  margin: 0 0 28px;
+  padding: 18px;
+  border: 1px solid var(--rg-line);
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(8, 250, 181, 0.1), transparent 60%),
+    var(--rg-panel);
+  color: var(--rg-text);
+}
+.rg-head h2 {
+  margin: 4px 0 6px;
+  color: var(--rg-mark);
+}
+.rg-head p {
+  max-width: 820px;
+}
+.rg-level {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--rg-mark);
+  border-radius: 999px;
+  color: var(--rg-mark);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+.rg-hud {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0 12px;
+}
+.rg-hud > div {
+  padding: 10px 12px;
+  border: 1px solid var(--rg-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+}
+.rg-hud strong {
+  display: block;
+  font-size: 22px;
+  line-height: 1.15;
+  color: var(--rg-gold);
+  font-variant-numeric: tabular-nums;
+}
+.rg-hud span {
+  font-size: 12px;
+  color: var(--rg-muted);
+}
+
+.rg-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
+}
+/* Sized by the element, not by the svg's own attributes: the board styles every
+   svg inside its viewport. */
+.rg-comb {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 620px;
+}
+.rg-frame {
+  fill: rgba(8, 250, 181, 0.03);
+  stroke: rgba(8, 250, 181, 0.35);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+.rg-fig {
+  margin: 0;
+  min-width: 0;
+}
+.rg-cap {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--rg-muted);
+}
+.rg-cap-top {
+  color: var(--rg-gold);
+  margin-bottom: 4px;
+}
+.rg-cap-bottom {
+  margin-top: 2px;
+}
+
+.rg-cell polygon {
+  stroke-width: 1.3;
+  transition: filter 0.2s ease;
+}
+.rg-cell text {
+  font-size: 9px;
+  font-weight: 700;
+  pointer-events: none;
+}
+a.rg-cell:hover polygon,
+a.rg-cell:focus-visible polygon {
+  filter: brightness(1.35) drop-shadow(0 0 4px var(--rg-mark));
+}
+.rg-future {
+  fill: none;
+  stroke: rgba(8, 250, 181, 0.13);
+  stroke-width: 1;
+}
+.rg-seed polygon {
+  fill: var(--rg-mark);
+  stroke: #eafff7;
+  filter: drop-shadow(0 0 6px var(--rg-mark));
+}
+.rg-seed text {
+  fill: #02140d;
+  font-size: 7.5px;
+}
+.rg-target polygon {
+  fill: color-mix(in srgb, var(--rg-lang, #7a7f86) 16%, transparent);
+  stroke: var(--rg-lang, #7a7f86);
+}
+.rg-held polygon {
+  fill: rgba(255, 107, 107, 0.1);
+  stroke: #ff8080;
+  stroke-dasharray: 3 2;
+}
+.rg-review polygon {
+  fill: rgba(255, 211, 90, 0.22);
+  stroke: var(--rg-gold);
+  stroke-dasharray: 4 2;
+}
+.rg-review text {
+  fill: var(--rg-gold);
+}
+.rg-building polygon {
+  fill: rgba(8, 250, 181, 0.22);
+  stroke: var(--rg-mark);
+  stroke-dasharray: 5 3;
+  animation: rg-scaffold 1.2s linear infinite;
+}
+.rg-building text {
+  fill: var(--rg-mark);
+}
+.rg-built polygon {
+  fill: url(#rg-honey);
+  stroke: var(--rg-mark);
+}
+.rg-built text {
+  fill: #2a1a00;
+}
+
+.rg-ship-group {
+  animation: rg-bob 2.6s ease-in-out infinite;
+  transform-box: fill-box;
+}
+.rg-ship {
+  fill: #dffcf3;
+  stroke: var(--rg-mark);
+  stroke-width: 0.8;
+}
+.rg-cockpit {
+  fill: var(--rg-mark);
+}
+.rg-flame {
+  fill: #ffae3a;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: rg-flame 0.25s ease-in-out infinite alternate;
+}
+.rg-beam {
+  animation: rg-beam 1.4s ease-in-out infinite;
+}
+
+@keyframes rg-scaffold {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+@keyframes rg-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes rg-flame {
+  from {
+    transform: scaleY(0.7);
+    opacity: 0.75;
+  }
+  to {
+    transform: scaleY(1.15);
+    opacity: 1;
+  }
+}
+@keyframes rg-beam {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rg-building polygon,
+  .rg-ship-group,
+  .rg-flame,
+  .rg-beam {
+    animation: none;
+  }
+}
+
+.rg-side h3,
+.rg-h {
+  margin: 14px 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rg-gold);
+}
+.rg-side h3:first-child {
+  margin-top: 0;
+}
+.rg-legend,
+.rg-ships {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--rg-muted);
+}
+.rg-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rg-ships li {
+  overflow-wrap: anywhere;
+}
+.rg-ships a,
+.rg-targets a {
+  color: var(--rg-mark);
+}
+.rg-k {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+.rg-k-built {
+  background: linear-gradient(#ffe28a, #e0a100);
+}
+.rg-k-review {
+  background: rgba(255, 211, 90, 0.55);
+}
+.rg-k-building {
+  background: var(--rg-mark);
+}
+.rg-k-target {
+  background: #3178c6;
+}
+.rg-k-held {
+  background: #ff8080;
+}
+.rg-k-future {
+  background: rgba(8, 250, 181, 0.2);
+}
+.rg-note {
+  font-size: 13px;
+  color: var(--rg-muted);
+}
+
+.rg-targets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.rg-targets li {
+  display: grid;
+  grid-template-columns: 26px auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--rg-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 13px;
+}
+.rg-rank {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--rg-mark);
+  color: #02140d;
+  font-weight: 700;
+  font-size: 12px;
+}
+.rg-chip {
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--rg-lang, #7a7f86);
+  color: var(--rg-text);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.rg-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+.rg-units {
+  color: var(--rg-gold);
+  white-space: nowrap;
+}
+.rg-targets a {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.rg-sectors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px;
+}
+.rg-sector {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 2px 10px;
+  padding: 10px;
+  border: 1px solid var(--rg-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 13px;
+}
+.rg-sector b {
+  color: var(--rg-text);
+}
+.rg-sector-num {
+  grid-row: span 3;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: rgba(8, 250, 181, 0.25);
+  color: var(--rg-text);
+  font-weight: 700;
+}
+.rg-sector-status {
+  font-size: 12px;
+  color: var(--rg-muted);
+}
+.rg-sector-count {
+  font-size: 12px;
+  color: var(--rg-muted);
+}
+.rg-tone-cap .rg-sector-num {
+  background: var(--rg-gold);
+  color: #2a1a00;
+}
+.rg-tone-hot {
+  border-color: var(--rg-mark);
+}
+.rg-tone-hot .rg-sector-num {
+  background: var(--rg-mark);
+  color: #02140d;
+}
+.rg-tone-hot .rg-sector-status {
+  color: var(--rg-mark);
+}
+.rg-tone-open .rg-sector-status {
+  color: #9fd0ff;
+}
+.rg-tone-lock {
+  opacity: 0.85;
+}
+.rg-tone-lock .rg-sector-num {
+  background: rgba(255, 128, 128, 0.3);
+}
+
+@media (max-width: 760px) {
+  .rg {
+    padding: 12px;
+  }
+  .rg-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rg-hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rg-targets li {
+    grid-template-columns: 22px minmax(0, 1fr) auto;
+  }
+  .rg-targets li .rg-chip,
+  .rg-targets li .rg-units {
+    display: none;
+  }
+}

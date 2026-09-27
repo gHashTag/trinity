@@ -65,7 +65,11 @@
     "Rust"
    ],
    "target": "t27c gen-rust (servers); UI stays for stage 8",
-   "issue": 4545
+   "issue": 4545,
+   "locked": {
+    "en": "its repository is private, and the roadmap feeder cannot read it until the ROADMAP_READ_TOKEN secret is set",
+    "ru": "репозиторий закрытый, и фидер роадмапа не может его читать, пока не задан секрет ROADMAP_READ_TOKEN"
+   }
   },
   {
    "id": "vibee",
@@ -88,7 +92,11 @@
     "Erlang"
    ],
    "target": "t27c gen-rust",
-   "issue": 4546
+   "issue": 4546,
+   "locked": {
+    "en": "its repository is private, and the roadmap feeder cannot read it until the ROADMAP_READ_TOKEN secret is set",
+    "ru": "репозиторий закрытый, и фидер роадмапа не может его читать, пока не задан секрет ROADMAP_READ_TOKEN"
+   }
   },
   {
    "id": "core",
@@ -178,7 +186,35 @@
     "Swift"
    ],
    "target": "undecided: t27c has no interface target",
-   "issue": 4550
+   "issue": 4550,
+   "locked": {
+    "en": "it needs a decision first: t27c has no interface target",
+    "ru": "сначала нужно решение: у t27c нет интерфейсной цели"
+   }
+  },
+  {
+   "id": "endgame",
+   "stage": 9,
+   "title": {
+    "en": "Endgame: the browser and every dependency",
+    "ru": "Эндшпиль: браузер и каждая зависимость"
+   },
+   "why": {
+    "en": "After stage 8 the comb keeps widening to its top row: all of BrowserOS - the browser itself, not only trios/agent-server - and every third-party library the stack runs in another language, rewritten in .t27. Not measured yet: the count above covers only the repositories it lists.",
+    "ru": "После этапа 8 соты расширяются до верхнего ряда: весь BrowserOS - сам браузер, а не только trios/agent-server - и каждая сторонняя библиотека на другом языке, на которой работает стек, переписанные на .t27. Ещё не измерено: подсчёт выше охватывает только перечисленные репозитории."
+   },
+   "repos": [
+    "gHashTag/BrowserOS"
+   ],
+   "languages": [
+    "C++"
+   ],
+   "target": "t27c gen-rust, gen-c",
+   "issue": null,
+   "locked": {
+    "en": "after stage 8; not measured yet",
+    "ru": "после этапа 8; ещё не измерено"
+   }
   }
  ]
 }
