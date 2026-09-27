@@ -32,7 +32,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: "What stands: every row value in the table matched the CPU oracle, and the random-matrix run did compare its tags. What is withdrawn until the full board rerun passes: '284,160 receipts authenticated under node0's key'.",
+    text: "What stands: every row value in the table matched the CPU oracle, and the random-matrix run did compare its tags. What is withdrawn: '284,160 receipts authenticated under node0's key', because those receipts were never checked. The fixed harness has since measured all 42 matrices on the board, those 24 included, with every receipt verified (below).",
   },
   {
     kind: 'h',
@@ -93,11 +93,16 @@ export const body: Block[] = [
       ['All 42 matrices, ternary x', '64', '18,984 of 403,200, then the link lost 16 bytes', '1,898 / 33,792', 'FAIL, stopped'],
       ['Layer 5 w_down, int8 x', '64', '9,886 of 51,840, then the link lost 4 bytes', '61 / 320', 'FAIL, stopped'],
       ['Layer 5 w_down, int8 x', '8', '51,840 / 51,840', '320 / 320', 'PASS, 11.9 s'],
+      ['All 42 matrices, ternary x', '24', '403,200 / 403,200', '33,792 / 33,792', 'PASS, 85.5 s'],
     ],
   },
   {
     kind: 'p',
-    text: "The last row is the first board run of trained weights with int8 activations and every receipt checked. The host recomputed all 51,840 SipHash tags under the key, and all 320 rows equal the int8-weight oracle. It covers one matrix of 42, with one random activation vector.",
+    text: "The last row is the result this post was waiting for. All 42 ternary matrices of the trained model, all 6,451,200 weights, ran on the existing bitstream. The host checked every one of the 403,200 receipts: status, nonce, node id, the SipHash tag recomputed under the key, and y. All 33,792 rows equal the int8-weight oracle. The run took 85.5 s, 4,716 answers per second.",
+  },
+  {
+    kind: 'p',
+    text: "The w_down run at 8 in flight is the first board run of trained weights with int8 activations and every receipt checked: 51,840 tags and 320 rows. It covers one matrix of 42, with one random activation vector.",
   },
   {
     kind: 'p',
@@ -105,11 +110,11 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: "The likely cause is the queue. With 64 jobs in flight, up to 1,216 bytes of answers can be waiting between the board and the host. If the host looks away for a few milliseconds, bytes are dropped. At 8 in flight, on the same port and hub, the same matrix came back whole over 51,840 jobs, 5.2 times the length at which it broke at 64. That fits, but it is one run, and the hub or the cable is not ruled out.",
+    text: "The likely cause is the queue. With 64 jobs in flight, up to 1,216 bytes of answers can be waiting between the board and the host. The fixed harness now measures how long the host looks away between reads, and in the passing run the longest pause was 22.4 ms. At 1,144,744 baud the line delivers 1,216 bytes in about 10.6 ms, so a pause that long fills a 64-deep queue completely. At 24 in flight the queue holds at most 456 bytes. None were lost in 403,200 jobs, 21 times the length at which the first run broke.",
   },
   {
     kind: 'p',
-    text: "The harness now defaults to 24 in flight and prints the bytes of any failed read, and its self-test replays the 16-byte hole. The receipt count for the full layer set stays withdrawn. The next board run is all 42 matrices at 24 in flight, with a control run at 64.",
+    text: "One control is still missing: the same full run at 64 in flight on the new harness. The new harness also added timing and hex output around the same reads, and only that control separates the two changes. Window 24 cost no measurable throughput: 4,716 answers/s, against about 4,660 to 4,750 at 64 before the slips.",
   },
   {
     kind: 'h',
@@ -131,7 +136,7 @@ export const body: Block[] = [
     kind: 'ul',
     items: [
       'Not a forward pass. Embeddings, norms, attention, the softmax and the head run nowhere on the board.',
-      'Not fast. At the measured 4,560 jobs/s, one token takes about 44 s with ternary activations (201,600 jobs) and about 265 s with int8 (1,209,600 jobs). Both times are derived, not measured. The UART makes this a verification instrument, not an inference engine.',
+      'Not fast. At the 4,716 jobs/s measured in the full run, one token would take about 43 s with ternary activations (201,600 jobs) and about 256 s with int8 (1,209,600 jobs). Both times are derived, not measured. The UART makes this a verification instrument, not an inference engine.',
       "Not a public proof. SipHash is a shared-key MAC: it tells the key holder which node answered. A third party cannot check a receipt with it, and it does not stop an operator forging their own.",
     ],
   },
@@ -142,7 +147,7 @@ export const body: Block[] = [
   {
     kind: 'ol',
     items: [
-      'Finish the board rerun: all 42 matrices, 403,200 jobs, at 24 in flight, with a control run at 64. If 24 fails too, run it again without the USB hub.',
+      'Run the control: the same full run at 64 in flight on the new harness, to separate the queue from the harness change.',
       'Real activations: dump the int8 inputs tc_infer computes for a real prompt, and run a whole layer with them.',
       'Leave the UART: move to Ethernet or a USB FIFO, and measure it on the board.',
       'Make receipts checkable by anyone: publish a Merkle root of each run, and add random re-execution or Freivalds checks. Both are cheap for ternary matvecs.',
@@ -183,7 +188,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Что остаётся в силе: каждое значение строк в таблице совпало с CPU-оракулом, а прогон случайной матрицы свои теги сверял. Что отозвано, пока на плате не пройдёт полный повторный прогон: «284 160 квитанций аутентифицировано под ключом node0».',
+    text: 'Что остаётся в силе: каждое значение строк в таблице совпало с CPU-оракулом, а прогон случайной матрицы свои теги сверял. Что отозвано: «284 160 квитанций аутентифицировано под ключом node0», потому что эти квитанции никто не проверял. С тех пор исправленный харнесс измерил на плате все 42 матрицы, включая эти 24, с проверкой каждой квитанции (ниже).',
   },
   {
     kind: 'h',
@@ -244,11 +249,16 @@ export const ruBody: Block[] = [
       ['Все 42 матрицы, тернарный x', '64', '18 984 из 403 200, потом канал потерял 16 байт', '1 898 / 33 792', 'FAIL, остановлен'],
       ['Слой 5, w_down, int8 x', '64', '9 886 из 51 840, потом канал потерял 4 байта', '61 / 320', 'FAIL, остановлен'],
       ['Слой 5, w_down, int8 x', '8', '51 840 / 51 840', '320 / 320', 'PASS, 11,9 с'],
+      ['Все 42 матрицы, тернарный x', '24', '403 200 / 403 200', '33 792 / 33 792', 'PASS, 85,5 с'],
     ],
   },
   {
     kind: 'p',
-    text: 'Последняя строка — первый прогон обученных весов с int8-активациями на плате, в котором проверена каждая квитанция. Хост пересчитал под ключом все 51 840 тегов SipHash, и все 320 строк совпали с оракулом по int8-весам. Это одна матрица из 42 и один случайный вектор активаций.',
+    text: 'Последняя строка — результат, которого ждал этот пост. Все 42 тернарные матрицы обученной модели, все 6 451 200 весов, отработали на текущем битстриме. Хост проверил каждую из 403 200 квитанций: статус, nonce, id узла, тег SipHash, пересчитанный под ключом, и y. Все 33 792 строки совпали с оракулом по int8-весам. Прогон занял 85,5 с, 4 716 ответов в секунду.',
+  },
+  {
+    kind: 'p',
+    text: 'Прогон w_down при 8 задачах в полёте — первый прогон обученных весов с int8-активациями на плате, в котором проверена каждая квитанция: 51 840 тегов и 320 строк. Это одна матрица из 42 и один случайный вектор активаций.',
   },
   {
     kind: 'p',
@@ -256,11 +266,11 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Вероятная причина — очередь. При 64 задачах в полёте между платой и хостом может ждать до 1 216 байт ответов. Если хост отвлечётся на несколько миллисекунд, байты теряются. При 8 задачах в полёте, на том же порту и хабе, та же матрица вернулась целой на всех 51 840 задачах. Это в 5,2 раза больше длины, на которой она ломалась при 64. Это согласуется с гипотезой, но прогон один, и хаб или кабель не исключены.',
+    text: 'Вероятная причина — очередь. При 64 задачах в полёте между платой и хостом может ждать до 1 216 байт ответов. Исправленный харнесс теперь измеряет, как долго хост не читает порт, и в успешном прогоне самая долгая пауза была 22,4 мс. На 1 144 744 бод линия доставляет 1 216 байт примерно за 10,6 мс, так что такой паузы хватает, чтобы очередь на 64 задачи заполнилась целиком. При 24 задачах в полёте в очереди не больше 456 байт. За 403 200 задач не потерялось ни одного байта, а это в 21 раз больше длины, на которой сломался первый прогон.',
   },
   {
     kind: 'p',
-    text: 'Теперь харнесс по умолчанию держит в полёте 24 задачи и печатает байты любого сбойного чтения, а его самопроверка воспроизводит дыру в 16 байт. Число квитанций по всему набору слоёв остаётся отозванным. Следующий прогон на плате — все 42 матрицы при 24 задачах в полёте и контрольный прогон при 64.',
+    text: 'Одного контроля пока нет: того же полного прогона при 64 задачах в полёте на новом харнессе. Новый харнесс ещё и добавил замер времени и вывод hex вокруг тех же чтений, и разделить эти два изменения может только такой контроль. Окно 24 не стоило заметной скорости: 4 716 ответов в секунду против примерно 4 660–4 750 при 64 до сбоев.',
   },
   {
     kind: 'h',
@@ -282,7 +292,7 @@ export const ruBody: Block[] = [
     kind: 'ul',
     items: [
       'Это не прямой проход. Эмбеддинги, нормы, внимание, softmax и голова на плате не выполняются.',
-      'Это не быстро. При измеренных 4 560 задачах/с один токен занимает около 44 с с тернарными активациями (201 600 задач) и около 265 с с int8 (1 209 600 задач). Оба времени выведены, а не измерены. Из-за UART это инструмент проверки, а не движок вывода.',
+      'Это не быстро. При 4 716 задачах/с, измеренных в полном прогоне, один токен занял бы около 43 с с тернарными активациями (201 600 задач) и около 256 с с int8 (1 209 600 задач). Оба времени выведены, а не измерены. Из-за UART это инструмент проверки, а не движок вывода.',
       'Это не публичное доказательство. SipHash — MAC с общим ключом: он сообщает владельцу ключа, какой узел ответил. Третья сторона не может им проверить квитанцию, и он не мешает оператору подделать свои собственные.',
     ],
   },
@@ -293,7 +303,7 @@ export const ruBody: Block[] = [
   {
     kind: 'ol',
     items: [
-      'Довести повторный прогон на плате: все 42 матрицы, 403 200 задач, при 24 задачах в полёте, и контрольный прогон при 64. Если 24 тоже упадёт — повторить без USB-хаба.',
+      'Провести контроль: тот же полный прогон при 64 задачах в полёте на новом харнессе, чтобы отделить очередь от изменения харнесса.',
       'Реальные активации: выгрузить int8-входы, которые tc_infer считает для настоящего промпта, и прогнать с ними целый слой.',
       'Уйти с UART: перейти на Ethernet или USB FIFO и измерить это на плате.',
       'Сделать квитанции проверяемыми для всех: публиковать корень Меркла каждого прогона и добавить случайное перевычисление или проверки Фрейвалдса. Для тернарных matvec и то и другое стоит дёшево.',
