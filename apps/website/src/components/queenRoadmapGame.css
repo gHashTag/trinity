@@ -34,7 +34,7 @@
 
 .rg-hud {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 10px;
   margin: 16px 0 12px;
 }
@@ -399,15 +399,204 @@ a.rg-cell:focus-visible polygon {
   background: rgba(255, 128, 128, 0.3);
 }
 
+/* Honey, the board's own score. */
+.rg-hud .rg-honey-num {
+  color: #ffc93c;
+}
+.rg-hud > div[title] {
+  cursor: help;
+}
+
+/* The raid of the day. */
+.rg-raid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 128, 64, 0.6);
+  border-radius: 10px;
+  background: rgba(40, 12, 2, 0.85);
+  color: var(--rg-text);
+  font-size: 13px;
+}
+.rg-raid b {
+  color: #ffae3a;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.rg-raid.is-none {
+  border-color: var(--rg-line);
+  background: rgba(0, 0, 0, 0.35);
+}
+.rg-in-raid.rg-target polygon {
+  stroke: #ffae3a;
+  stroke-width: 1.8;
+  animation: rg-raid-glow 1.6s ease-in-out infinite;
+}
+@keyframes rg-raid-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: drop-shadow(0 0 4px #ffae3a);
+  }
+}
+.rg-targets li.is-raid {
+  border-color: rgba(255, 128, 64, 0.7);
+}
+.rg-sector.is-raid {
+  border-color: #ffae3a;
+}
+.rg-raid-tag {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ffae3a;
+  color: #2a1200;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* The Queen's round, climbing the comb. */
+.rg-pulse {
+  pointer-events: none;
+}
+.rg-round {
+  margin-top: 4px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--rg-muted);
+}
+
+/* A cracked cell: built, with an open defect against it. */
+.rg-cracked polygon {
+  fill: url(#rg-honey);
+  stroke: #ff6b6b;
+  stroke-width: 1.8;
+  filter: saturate(0.55) brightness(0.8);
+}
+.rg-crack {
+  fill: none;
+  stroke: #2a0a0a;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.rg-k-cracked {
+  background: linear-gradient(135deg, #c99a2e 45%, #2a0a0a 47%, #2a0a0a 53%, #c99a2e 55%);
+  outline: 1px solid #ff6b6b;
+}
+.rg-k-raid {
+  background: #ffae3a;
+}
+
+/* Builders, from the Queen's leaderboard. */
+.rg-builders {
+  list-style: decimal inside;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--rg-muted);
+}
+.rg-builders li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+}
+.rg-builder-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--rg-text);
+}
+.rg-builder-cells {
+  color: var(--rg-gold);
+}
+.rg-builder-xp {
+  color: var(--rg-mark);
+}
+
+/* Bosses. */
+.rg-bosses {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.rg-boss {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 107, 107, 0.45);
+  border-radius: 12px;
+  background: rgba(24, 4, 6, 0.85);
+  font-size: 13px;
+}
+.rg-boss.is-open {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 12px rgba(255, 107, 107, 0.35);
+}
+.rg-boss-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.rg-boss-head b {
+  color: var(--rg-text);
+}
+.rg-boss-num {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: #ff6b6b;
+  color: #2a0a0a;
+  font-weight: 800;
+}
+.rg-boss-hp span {
+  display: block;
+  font-size: 12px;
+  color: var(--rg-muted);
+  margin-bottom: 4px;
+}
+.rg-boss-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.rg-boss-bar div {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ffae3a);
+}
+.rg-boss-bar div.is-unknown {
+  background: repeating-linear-gradient(45deg, rgba(255, 107, 107, 0.35) 0 6px, transparent 6px 12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rg-in-raid.rg-target polygon {
+    animation: none;
+  }
+}
+
 @media (max-width: 760px) {
   .rg {
     padding: 12px;
   }
   .rg-stage {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .rg-hud {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .rg-targets li {
     grid-template-columns: 22px minmax(0, 1fr) auto;

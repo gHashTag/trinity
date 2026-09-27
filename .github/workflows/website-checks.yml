@@ -271,6 +271,12 @@ jobs:
       - name: Queen WARS experiment ledger
         run: npm run check:wars && npm run test:wars-spec
 
+      # LEVEL II on the ROADMAP tab: the raid, honey, bosses, cracks and the
+      # round's pulse. The raid list is pinned here and in gHashTag/t27's
+      # feed_roadmap.py, so the page and the feeder raid the same sector.
+      - name: Roadmap game rules
+        run: npm run check:roadmap-game
+
       - name: Build
         run: npx vite build
 

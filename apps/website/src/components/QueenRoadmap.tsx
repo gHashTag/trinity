@@ -284,7 +284,13 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
       {/* The game first, the measurement after: the comb is what the swarm is
           doing to the numbers below. */}
       {goals && (
-        <QueenRoadmapGame lang={lang} goals={goals.goals} issueRepo={goals.issueRepo} goalStates={states} />
+        <QueenRoadmapGame
+          lang={lang}
+          goals={goals.goals}
+          issueRepo={goals.issueRepo}
+          goalStates={states}
+          measuredBytes={Object.fromEntries(goals.goals.map((g) => [g.stage, goalLines(g)]))}
+        />
       )}
 
       <header className="rm-hero">

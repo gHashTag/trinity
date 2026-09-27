@@ -1687,6 +1687,10 @@ const SEALED = {
   '.rg-hud div': '.rm',
   '.rg-targets li': '.rm',
   '.rg-sector': '.rm',
+  // The raid banner and the boss cards: the same view root, the same wash.
+  '.rg-raid': '.rm',
+  '.rg-raid.is-none': '.rm',
+  '.rg-boss': '.rm',
 }
 
 /** Surfaces that buy legibility with a HALO instead of with a ground.
