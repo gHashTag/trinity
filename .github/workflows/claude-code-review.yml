@@ -34,11 +34,44 @@ jobs:
         with:
           fetch-depth: 1
 
+      # The review runs on z.ai (the owner, 2026-09-27: "замени ANTHROPIC_API_KEY
+      # на z.ai"). Every run before this failed two seconds in: the OAuth token
+      # was refused and ANTHROPIC_API_KEY was empty. z.ai serves the Anthropic
+      # Messages API at /api/anthropic, and Claude Code reaches it through
+      # ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN (docs.z.ai, the Claude Code
+      # guide). The key is the ZAI_API_KEY secret; a PR without it (a fork, or
+      # before the secret is set) is told so and not reviewed.
+      - name: Check for the z.ai key
+        id: zai
+        env:
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+        run: |
+          if [ -n "$ZAI_API_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Review skipped::The ZAI_API_KEY secret is not set, so this PR is not reviewed. Add it under Settings > Secrets and variables > Actions."
+          fi
+
       - name: Run Claude Code Review
         id: claude-review
+        if: steps.zai.outputs.ready == 'true'
         uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_BASE_URL: https://api.z.ai/api/anthropic
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.ZAI_API_KEY }}
+          # z.ai's guide raises Claude Code's request timeout for GLM.
+          API_TIMEOUT_MS: "3000000"
+          # Background and subagent calls ask for a Haiku, Sonnet or Opus by
+          # name; these send them to GLM instead. ZAI_MODEL (a repository
+          # variable) picks the model; glm-4.6 is the default because it is the
+          # z.ai id the Queen's own model catalogue lists.
+          ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ vars.ZAI_MODEL || 'glm-4.6' }}
+          ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ vars.ZAI_MODEL || 'glm-4.6' }}
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: glm-4.5-air
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # The action requires a key input; it is the same z.ai key.
+          anthropic_api_key: ${{ secrets.ZAI_API_KEY }}
           # Note: the log suggests `show_full_output: true`, but that is not an
           # input this action version accepts -- its inputs are trigger_phrase,
           # prompt, settings, claude_args and the auth/provider set. Extra
@@ -60,5 +93,5 @@ jobs:
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
-          claude_args: '--verbose --allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+          claude_args: '--model ${{ vars.ZAI_MODEL || ''glm-4.6'' }} --verbose --allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
 

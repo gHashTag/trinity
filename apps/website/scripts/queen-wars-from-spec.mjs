@@ -50,10 +50,10 @@ const EXPECTED = {
   GENERATED: [TS_OUT, JSON_OUT, PUBLIC_SPEC_OUT],
   EVIDENCE_LEVELS: ['OBSERVED', 'SESSION-OBSERVED', 'SOURCE-CLAIM', 'TARGET', 'UNKNOWN'],
   CONFIG_STATES: ['ready', 'credential-blocked', 'checkpoint-unverified', 'pipeline-only'],
-  EXPERIMENT_STATES: ['planned', 'running', 'credential-blocked', 'complete', 'invalid'],
+  EXPERIMENT_STATES: ['planned', 'running', 'credential-blocked', 'judged', 'complete', 'invalid'],
   RUN_STATES: ['pending', 'running', 'passed', 'failed', 'blocked'],
   VERDICTS: ['accepted', 'rejected', 'inconclusive', 'not-reviewed'],
-  CONFIG_IDS: ['bee-baseline', 'bee-jev', 'igla-coder', 'igla-race'],
+  CONFIG_IDS: ['bee-baseline', 'bee-tri', 'bee-jev', 'igla-coder', 'igla-race'],
 }
 
 const PARALLEL = {
@@ -77,6 +77,9 @@ const ACCEPTANCE_BY_RUN_STATE = new Map([
   ['blocked', 'BLOCKED'],
 ])
 const COMPARABLE_RUN_STATES = new Set(['passed', 'failed'])
+// The variable factor is the TRI decision layer, so a judged or complete
+// experiment needs a sealed run of both sides of it. JEV is a comparison arm only.
+const PAIRED_ARMS = ['bee-baseline', 'bee-tri']
 const REVIEWED_VERDICTS = new Set(['accepted', 'rejected'])
 const NONNEGATIVE_NUMBER_UNITS = new Set(['ms', 'usd'])
 const NONNEGATIVE_INTEGER_UNITS = new Set(['tokens', 'count', 'lines'])
@@ -193,12 +196,13 @@ export function semanticProblems(f, file = WARS_SPEC) {
   }
 
   for (let i = 0; i < f.EXPERIMENT_COUNT; i++) {
-    if (f.EXPERIMENT_STATES_BY_ID[i] !== 'complete') continue
+    const experimentState = f.EXPERIMENT_STATES_BY_ID[i]
+    if (experimentState !== 'complete' && experimentState !== 'judged') continue
     const experimentId = f.EXPERIMENT_IDS[i]
-    if (f.EXPERIMENT_MODEL_EVIDENCE[i] !== 'OBSERVED' || /\bUNKNOWN\b/i.test(f.EXPERIMENT_EXECUTOR_MODELS[i])) {
+    if (experimentState === 'complete' && (f.EXPERIMENT_MODEL_EVIDENCE[i] !== 'OBSERVED' || /\bUNKNOWN\b/i.test(f.EXPERIMENT_EXECUTOR_MODELS[i]))) {
       p.push(`${file}: complete experiment ${experimentId} requires an explicit observed executor model and reasoning configuration`)
     }
-    for (const required of ['bee-baseline', 'bee-jev']) {
+    for (const required of PAIRED_ARMS) {
       const sealedRun = f.RUN_EXPERIMENT_IDS.some((id, at) => {
         if (id !== experimentId || f.RUN_CONFIG_IDS[at] !== required) return false
         const runId = f.RUN_IDS[at]
@@ -218,7 +222,7 @@ export function semanticProblems(f, file = WARS_SPEC) {
           && f.MEASUREMENT_EVIDENCE[verdictAt] === 'OBSERVED'
       })
       if (!sealedRun) {
-        p.push(`${file}: complete experiment ${experimentId} has no sealed ${required} run (passed or failed state, accepted or rejected Queen verdict, observed evidence, timestamps, log SHA, patch SHA, https artifact, acceptance and queen-verdict measurements required)`)
+        p.push(`${file}: ${experimentState} experiment ${experimentId} has no sealed ${required} run (passed or failed state, accepted or rejected Queen verdict, observed evidence, timestamps, log SHA, patch SHA, https artifact, acceptance and queen-verdict measurements required)`)
       }
     }
   }

@@ -13,6 +13,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import './queenRoadmap.css'
+import QueenRoadmapGame from './QueenRoadmapGame'
 
 type LangCount = { files: number; bytes: number }
 interface StackRepo {
@@ -39,6 +40,11 @@ interface Goal {
   issue: number | null
   /** A GitHub issue search whose closed share is this stage's progress. */
   progress?: string
+  /** Why nothing can be filed against this stage yet, when something stops it. */
+  locked?: { en: string; ru: string }
+  /** Source the count above does not read (the endgame's upstream), measured by
+      the same rules; `source` names the commits and where they were read. */
+  measured?: { bytes: number; at: string; source: string }
 }
 interface Goals {
   issueRepo: string
@@ -81,7 +87,7 @@ const COPY = {
     title: 'ROADMAP',
     goal: 'The game: rewrite the whole stack in .t27',
     goalBody:
-      'Everything below the interface is written once, in .t27, and generated to its target - Rust for servers, Zig, C and Verilog for the core and silicon. The one exception is the seed: t27c itself stays hand-written Rust. This tab counts how far the code that runs app.t27.ai is from that, and the plan to close it.',
+      'Everything below the interface is written once, in .t27, and generated to its target - Rust for servers, Zig, C and Verilog for the core and silicon. The one exception is the seed: t27c itself stays hand-written Rust. In the end the rewrite reaches past our own code: the whole BrowserOS browser and every third-party dependency we run in another language. This tab counts how far the code that runs app.t27.ai is from that, and the plan to close it.',
     share: 'of the stack is .t27 today',
     toPort: 'still to rewrite',
     inT27: 'already in .t27',
@@ -97,6 +103,7 @@ const COPY = {
     stateNone: 'no issue yet',
     stateUnknown: 'state unknown',
     target: 'target',
+    notMeasured: 'not measured yet',
     loading: 'Reading the count…',
     failed: 'The count could not be read.',
     joinTitle: 'The rewrite is one file at a time. Take one.',
@@ -115,7 +122,7 @@ const COPY = {
     title: 'ДОРОЖНАЯ КАРТА',
     goal: 'Игра: переписать весь стек на .t27',
     goalBody:
-      'Всё ниже интерфейса пишется один раз, на .t27, и генерируется в свою цель — Rust для серверов, Zig, C и Verilog для ядра и кремния. Единственное исключение — зерно: сам t27c остаётся рукописным Rust. Эта вкладка считает, насколько код, на котором работает app.t27.ai, далёк от этого, и показывает план, как дойти.',
+      'Всё ниже интерфейса пишется один раз, на .t27, и генерируется в свою цель — Rust для серверов, Zig, C и Verilog для ядра и кремния. Единственное исключение — зерно: сам t27c остаётся рукописным Rust. В итоге переписывание выходит за пределы нашего кода: весь браузер BrowserOS и каждая сторонняя зависимость на другом языке. Эта вкладка считает, насколько код, на котором работает app.t27.ai, далёк от этого, и показывает план, как дойти.',
     share: 'стека уже на .t27',
     toPort: 'ещё переписать',
     inT27: 'уже на .t27',
@@ -131,6 +138,7 @@ const COPY = {
     stateNone: 'задачи ещё нет',
     stateUnknown: 'состояние неизвестно',
     target: 'цель',
+    notMeasured: 'ещё не измерено',
     loading: 'Читаю подсчёт…',
     failed: 'Подсчёт прочитать не удалось.',
     joinTitle: 'Переписывание идёт по одному файлу. Возьмите один.',
@@ -268,6 +276,9 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
     }
     return n
   }
+  // A stage measured outside the count uses that measurement alone: adding
+  // goalLines too would count stage 2's trios/agent-server a second time.
+  const stageBytes = (goal: Goal): number => goal.measured?.bytes ?? goalLines(goal)
 
   if (stack === null) return <section className="rm"><p className="rm-note">{c.loading}</p></section>
   if (stack === 'failed' || !summary) return <section className="rm"><p className="rm-note">{c.failed}</p></section>
@@ -276,6 +287,18 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
 
   return (
     <section className="rm" aria-label={c.title}>
+      {/* The game first, the measurement after: the comb is what the swarm is
+          doing to the numbers below. */}
+      {goals && (
+        <QueenRoadmapGame
+          lang={lang}
+          goals={goals.goals}
+          issueRepo={goals.issueRepo}
+          goalStates={states}
+          measuredBytes={Object.fromEntries(goals.goals.map((g) => [g.stage, stageBytes(g)]))}
+        />
+      )}
+
       <header className="rm-hero">
         <div className="rm-hero-text">
           <h2>{c.goal}</h2>
@@ -451,7 +474,11 @@ export default function QueenRoadmap({ lang }: { lang: 'en' | 'ru' }) {
                           <span key={l} className="rm-lang"><i style={{ background: colorOf(l) }} />{l}</span>
                         ))}
                         <span>→ {c.target}: {g.target}</span>
-                        <span>{size(goalLines(g))}</span>
+                        {/* 0 bytes is "not in the count", not a size. A stage
+                            measured outside the count names its source. */}
+                        <span title={g.measured ? `${g.measured.at}: ${g.measured.source}` : undefined}>
+                          {stageBytes(g) > 0 ? size(stageBytes(g)) : c.notMeasured}
+                        </span>
                       </div>
                     </div>
                   </li>

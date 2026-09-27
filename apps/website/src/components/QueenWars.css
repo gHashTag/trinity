@@ -33,7 +33,9 @@
 }
 
 .queen-wars-head,
+.queen-wars-glance,
 .queen-wars-protocol,
+.queen-wars-matrix,
 .queen-wars-mission,
 .queen-wars-arena,
 .queen-wars-score,
@@ -110,6 +112,8 @@
 .queen-wars-source code { margin-top: 5px; color: #fff5bd; }
 
 .queen-wars-protocol,
+.queen-wars-glance,
+.queen-wars-matrix,
 .queen-wars-mission,
 .queen-wars-arena,
 .queen-wars-score,
@@ -277,7 +281,7 @@
 
 .queen-wars-lanes {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 .queen-wars-lane {
   position: relative;
@@ -437,6 +441,79 @@
   white-space: normal;
 }
 
+/* Campaign at a glance: four counts read before any detail. */
+.queen-wars-glance { padding: 14px clamp(16px, 2vw, 24px); }
+.queen-wars-glance dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--wars-line);
+}
+.queen-wars-glance dl > div {
+  padding: 12px 14px;
+  background: rgba(1, 16, 13, 0.92);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.queen-wars-glance dd {
+  margin: 0;
+  color: var(--wars-green);
+  /* 1.3, not 1.1: the self-hosted JetBrains Mono box is ~1.17em at weight 800,
+     and a shorter line counts as an undeclared scroller (queen-viewport-contract). */
+  font: 800 clamp(24px, 3.2vw, 38px)/1.3 "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.queen-wars-glance dt { margin-top: 6px; color: var(--wars-text-muted); font-size: 11px; }
+.queen-wars-glance > p { margin: 10px 0 0; color: var(--wars-session); font-size: 12px; line-height: 1.5; }
+
+/* Head to head: every experiment in one grid; a row header opens it below. */
+.queen-wars-matrix { padding: 0; }
+.queen-wars-matrix > .queen-wars-section-title { padding: 16px 20px 0; }
+.queen-wars .queen-wars-matrix > p.queen-wars-matrix-hint { max-width: none; margin: 8px 20px 14px; color: var(--wars-text-muted); font-size: 12px; }
+.queen-wars-matrix table { min-width: 640px; }
+.queen-wars-matrix tbody th { padding: 0; }
+.queen-wars-matrix tbody th button {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  color: #e8fff7;
+  cursor: pointer;
+  text-align: left;
+}
+.queen-wars-matrix tbody th button:hover { background: rgba(0, 245, 160, 0.06); }
+.queen-wars-matrix tbody th button:focus-visible { outline: 2px solid var(--wars-green); outline-offset: -2px; }
+.queen-wars-matrix tbody th small { margin-top: 0; }
+.queen-wars-matrix tr[aria-current="true"] th button { box-shadow: inset 3px 0 0 var(--wars-gold); background: rgba(255, 213, 74, 0.06); }
+.queen-wars-matrix-empty { color: var(--wars-text-subtle); font-size: 11px; }
+
+/* A value's share of the largest value in its scoreboard row. */
+.queen-wars-bar {
+  display: block;
+  width: calc(var(--bar, 0) * 100%);
+  min-width: 2px;
+  height: 4px;
+  margin-top: 6px;
+  background: var(--wars-cyan);
+  opacity: 0.8;
+}
+.queen-wars-unmeasured {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 20px;
+  border-top: 1px solid var(--wars-line);
+  color: var(--wars-text-subtle);
+  font: 500 11px/1.5 "JetBrains Mono", ui-monospace, monospace;
+}
+.queen-wars-unmeasured .queen-wars-evidence { margin: 0; }
+
 .queen-wars-empty { margin: 18px 0 0; color: var(--wars-text-muted); }
 .queen-wars-ledger ol { display: grid; gap: 8px; list-style: none; padding: 0; margin: 18px 0 0; overflow-x: auto; }
 .queen-wars-ledger li { display: grid; grid-template-columns: 160px 1fr auto auto; align-items: center; gap: 8px 16px; padding: 12px; border: 1px solid rgba(0, 245, 160, 0.15); }
@@ -497,6 +574,7 @@
   .queen-wars { padding: 10px; }
   .queen-wars-head { grid-template-columns: 1fr; align-items: stretch; }
   .queen-wars-source { width: 100%; }
+  .queen-wars-glance dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .queen-wars-protocol dl { grid-template-columns: 1fr; }
   .queen-wars-protocol dl > div { display: grid; gap: 4px; }
   .queen-wars-experiment-picker { grid-template-columns: 1fr; }

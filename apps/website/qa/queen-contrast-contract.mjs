@@ -221,6 +221,10 @@ const REACHED = {
     /* PEOPLE, the contributors half of that tab: the fourth sheet the list has
        caught on its first run, which is four for four. */
     'src/components/QueenPeople.css',
+    /* LEVEL II, the comb on the ROADMAP view: five for five. It renders inside
+       .rm, whose opaque gradient already grounds it, and its own panel is
+       opaque on top of that. */
+    'src/components/queenRoadmapGame.css',
   ],
   'src/App.tsx': [
     'src/components/AgiGameBlock.css',
@@ -833,6 +837,8 @@ const TOKEN_SCOPES = new Map([
   ['.queen27-page.is-shell:has(.queen-chat-tab)', 'board'],
   // Views and components mounted inside it.
   ['.rm', 'board'],
+  // LEVEL II, the comb: mounted inside `.rm`.
+  ['.rg', 'board'],
   ['.queen-catalog-layer', 'board'],
   ['.queen-catalog-layer:has(.queen-catalog-toolbar.is-search-open)', 'board'],
   ['.queen-hive-display', 'board'],
@@ -1673,6 +1679,18 @@ const SEALED = {
   '.rm-hero': '.rm',
   '.rm-kpis div': '.rm',
   '.rm-stages li': '.rm',
+
+  // LEVEL II, the comb, renders as the first child of `.rm`
+  // (QueenRoadmap.tsx), so its tiles sit on the same opaque wash as the three
+  // above; the hive stops at `.rm`'s boundary.
+  '.rg': '.rm',
+  '.rg-hud div': '.rm',
+  '.rg-targets li': '.rm',
+  '.rg-sector': '.rm',
+  // The raid banner and the boss cards: the same view root, the same wash.
+  '.rg-raid': '.rm',
+  '.rg-raid.is-none': '.rm',
+  '.rg-boss': '.rm',
 }
 
 /** Surfaces that buy legibility with a HALO instead of with a ground.

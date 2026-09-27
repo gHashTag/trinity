@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { QUEEN_WARS } from '../lib/queenWars.generated'
 import './QueenWars.css'
 
@@ -58,12 +58,25 @@ const COPY = {
     ledger: 'RUN LEDGER',
     noLedger: 'No completed arm has been sealed into the .t27 ledger yet.',
     pipeline: 'TRAINING PIPELINE',
-    pipelineCopy: 'IGLA enters this arena only after an executable checkpoint exists. Until then its pipeline is visible, but it has no benchmark score.',
+    pipelineCopy: 'IGLA enters this arena when one of its checkpoints runs an arena issue under the same gates. The pilot reports trained checkpoints; none has run an arena issue yet, so IGLA has no arena score.',
     control: 'CONTROL',
-    decision: 'DECISION LAYER',
+    triLayer: 'TRI DECISION LAYER',
+    decision: 'COMPARISON ARM',
     ownModel: 'OWN MODEL TARGET',
     training: 'TRAINING RACE',
     specHash: 'spec sha256',
+    glance: 'CAMPAIGN AT A GLANCE',
+    statIssues: 'real issues',
+    statRuns: 'sealed runs',
+    statAccepted: 'accepted by the gates',
+    statMeasured: 'measurements',
+    statNoWinner: 'No winner is declared: the executor model id is not recorded in the ledger.',
+    matrix: 'HEAD TO HEAD',
+    matrixHint: 'One cell is one arm on one real issue. Choose a row to open it below.',
+    open: 'open',
+    noArmRun: 'no run',
+    notMeasured: 'not measured in this experiment',
+    mutantsKilled: 'mutants killed',
   },
   ru: {
     kicker: 'АРЕНА АГЕНТОВ НА РЕАЛЬНЫХ ЗАДАЧАХ',
@@ -96,12 +109,25 @@ const COPY = {
     ledger: 'ЖУРНАЛ ЗАПУСКОВ',
     noLedger: 'Ни одна завершённая рука ещё не запечатана в журнале .t27.',
     pipeline: 'КОНВЕЙЕР ОБУЧЕНИЯ',
-    pipelineCopy: 'IGLA входит на эту арену только после появления исполняемого checkpoint. До этого конвейер виден, но benchmark-оценки у него нет.',
+    pipelineCopy: 'IGLA входит на эту арену, когда один из её checkpoint решает issue арены под теми же воротами. Пилот сообщает об обученных checkpoint, но ни один ещё не решал issue арены, поэтому оценки на арене у IGLA нет.',
     control: 'КОНТРОЛЬ',
-    decision: 'СЛОЙ РЕШЕНИЙ',
+    triLayer: 'СЛОЙ РЕШЕНИЙ TRI',
+    decision: 'СРАВНИТЕЛЬНОЕ ПЛЕЧО',
     ownModel: 'ЦЕЛЬ: СВОЯ МОДЕЛЬ',
     training: 'ГОНКА ОБУЧЕНИЯ',
     specHash: 'sha256 спеки',
+    glance: 'КАМПАНИЯ ОДНИМ ВЗГЛЯДОМ',
+    statIssues: 'реальных issue',
+    statRuns: 'запечатанных запусков',
+    statAccepted: 'приняты воротами',
+    statMeasured: 'измерений',
+    statNoWinner: 'Победитель не объявлен: в журнале не записан id модели исполнителя.',
+    matrix: 'ЛИЦОМ К ЛИЦУ',
+    matrixHint: 'Одна клетка — одна рука на одной реальной issue. Выберите строку, чтобы открыть её ниже.',
+    open: 'открыть',
+    noArmRun: 'нет запуска',
+    notMeasured: 'не измерено в этом эксперименте',
+    mutantsKilled: 'поймано мутантов',
   },
 } as const
 
@@ -112,6 +138,7 @@ const STATE_RU: Record<string, string> = {
   'pipeline-only': 'только конвейер',
   planned: 'запланирован',
   running: 'выполняется',
+  judged: 'оценён, без победителя',
   complete: 'завершён',
   invalid: 'недействителен',
   passed: 'пройден',
@@ -121,6 +148,7 @@ const STATE_RU: Record<string, string> = {
 
 const kindLabel = (id: string, c: typeof COPY.en | typeof COPY.ru) => {
   if (id === 'bee-baseline') return c.control
+  if (id === 'bee-tri') return c.triLayer
   if (id === 'bee-jev') return c.decision
   if (id === 'igla-coder') return c.ownModel
   return c.training
@@ -140,6 +168,12 @@ function Evidence({ value }: { value: string }) {
   return <span className="queen-wars-evidence" data-evidence={value}>{value}</span>
 }
 
+// Units whose values compare on one axis within a row; a bar shows each arm's
+// value relative to the largest in that row. Verdicts and probabilities do not.
+const BAR_UNITS = new Set(['ms', 'tokens', 'count', 'lines', 'usd'])
+// The arms a head-to-head row shows: the paired arms, then the comparison arm.
+const MATRIX_ARMS = ['bee-baseline', 'bee-tri', 'bee-jev'] as const
+
 export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
   const c = COPY[lang]
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>(QUEEN_WARS.experiments[0].id)
@@ -153,6 +187,27 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
     const run = runFor(configId)
     return run ? measurements.find((item) => item.runId === run.id && item.key === key) : undefined
   }
+  const latestRun = (experimentId: string, configId: string) =>
+    [...runs].reverse().find((run) => run.experimentId === experimentId && run.configId === configId)
+
+  // Scoreboard: only the arms that ran this experiment, and only the metrics
+  // at least one of them measured. The rest are listed, never shown as zero.
+  const armsWithRuns = QUEEN_WARS.configurations.filter((config) => runFor(config.id))
+  const scoreArms = armsWithRuns.length ? armsWithRuns : QUEEN_WARS.configurations
+  const measuredMetrics = QUEEN_WARS.metricCatalog.filter((metric) => scoreArms.some((config) => measureFor(config.id, metric.key)))
+  const unmeasuredMetrics = QUEEN_WARS.metricCatalog.filter((metric) => !measuredMetrics.includes(metric))
+  const rowMax = (key: string) => Math.max(0, ...scoreArms.map((config) => Number(measureFor(config.id, key)?.value)).filter(Number.isFinite))
+
+  const sealedRuns = runs.filter((run) => run.evidence === 'OBSERVED' && run.artifactUrl && run.logSha256 && run.patchSha256)
+  const glance = [
+    { value: QUEEN_WARS.experiments.length, label: c.statIssues },
+    { value: sealedRuns.length, label: c.statRuns },
+    { value: `${runs.filter((run) => run.verdict === 'accepted').length}/${runs.length}`, label: c.statAccepted },
+    { value: measurements.length, label: c.statMeasured },
+  ]
+  const unranked = QUEEN_WARS.experiments.some((item) => item.state === 'judged')
+  // A column no experiment has a run for would be a column of "no run".
+  const matrixArms = MATRIX_ARMS.filter((id) => runs.some((run) => run.configId === id))
 
   return (
     <section className="queen-wars" aria-labelledby="queen-wars-title">
@@ -167,6 +222,18 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
           <code>{short(QUEEN_WARS.source.sha256, 16)}</code>
         </a>
       </header>
+
+      <section className="queen-wars-glance" aria-label={c.glance}>
+        <dl>
+          {glance.map((item) => (
+            <div key={item.label}>
+              <dd>{item.value}</dd>
+              <dt>{item.label}</dt>
+            </div>
+          ))}
+        </dl>
+        {unranked && <p>{c.statNoWinner}</p>}
+      </section>
 
       <section className="queen-wars-protocol" aria-labelledby="queen-wars-protocol-title">
         <header>
@@ -198,9 +265,55 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
         </dl>
       </section>
 
+      <section className="queen-wars-matrix" aria-labelledby="queen-wars-matrix-title">
+        <header className="queen-wars-section-title">
+          <span>02</span>
+          <h3 id="queen-wars-matrix-title">{c.matrix}</h3>
+        </header>
+        <p className="queen-wars-matrix-hint">{c.matrixHint}</p>
+        <div className="queen-wars-table-scroll" tabIndex={0} role="region" aria-label={c.matrix}>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{c.task}</th>
+                {matrixArms.map((id) => (
+                  <th scope="col" key={id}>{QUEEN_WARS.configurations.find((config) => config.id === id)?.name ?? id}</th>
+                ))}
+                <th scope="col">{c.state}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {QUEEN_WARS.experiments.map((item) => (
+                <tr key={item.id} aria-current={item.id === experiment.id ? 'true' : undefined}>
+                  <th scope="row">
+                    <button type="button" onClick={() => setSelectedExperimentId(item.id)}>
+                      <span>#{item.issue.number}</span>
+                      <small>{item.name}</small>
+                    </button>
+                  </th>
+                  {matrixArms.map((id) => {
+                    const run = latestRun(item.id, id)
+                    const killed = run ? measurements.find((m) => m.runId === run.id && m.key === 'mutants-killed') : undefined
+                    return (
+                      <td key={id} data-outcome={outcome(run?.verdict)} data-evidence={run?.evidence ?? 'UNKNOWN'}>
+                        {run ? <>
+                          <strong>{run.verdict}</strong>
+                          <small>{state(run.state)}{killed ? ` · ${c.mutantsKilled}: ${killed.value}` : ''}</small>
+                        </> : <span className="queen-wars-matrix-empty">{c.noArmRun}</span>}
+                      </td>
+                    )
+                  })}
+                  <td data-outcome={outcome(item.state)}><small>{state(item.state)}</small></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section className="queen-wars-mission" aria-labelledby="queen-wars-task-title">
         <header>
-          <span>02</span>
+          <span>03</span>
           <h3 id="queen-wars-task-title">{c.task}</h3>
           <Evidence value={experiment.evidence} />
         </header>
@@ -240,7 +353,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
 
       <section className="queen-wars-arena" aria-labelledby="queen-wars-config-title">
         <header className="queen-wars-section-title">
-          <span>03</span>
+          <span>04</span>
           <h3 id="queen-wars-config-title">{c.configurations}</h3>
         </header>
         <div className="queen-wars-lanes">
@@ -286,7 +399,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
 
       <section className="queen-wars-score" aria-labelledby="queen-wars-score-title">
         <header className="queen-wars-section-title">
-          <span>04</span>
+          <span>05</span>
           <h3 id="queen-wars-score-title">{c.metrics}</h3>
         </header>
         <div className="queen-wars-table-scroll" tabIndex={0} role="region" aria-label={c.metrics}>
@@ -294,15 +407,17 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
             <thead>
               <tr>
                 <th scope="col">{c.metric}</th>
-                {QUEEN_WARS.configurations.map((config) => <th scope="col" key={config.id}>{config.name}</th>)}
+                {scoreArms.map((config) => <th scope="col" key={config.id}>{config.name}</th>)}
               </tr>
             </thead>
             <tbody>
-              {QUEEN_WARS.metricCatalog.map((metric) => (
+              {measuredMetrics.map((metric) => (
                 <tr key={metric.key}>
                   <th scope="row"><span>{metric.key}</span><small>{metric.unit}</small></th>
-                  {QUEEN_WARS.configurations.map((config) => {
+                  {scoreArms.map((config) => {
                     const value = measureFor(config.id, metric.key)
+                    const max = rowMax(metric.key)
+                    const bar = value && BAR_UNITS.has(value.unit) && max > 0 ? Number(value.value) / max : null
                     return (
                       <td
                         key={config.id}
@@ -312,6 +427,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
                         {value ? <>
                           <strong>{value.value}</strong>
                           <small>{value.unit}</small>
+                          {bar !== null && <span className="queen-wars-bar" style={{ '--bar': bar.toFixed(3) } as CSSProperties} aria-hidden="true" />}
                           <Evidence value={value.evidence} />
                           <details className="queen-wars-measurement-source">
                             <summary>{c.metricSource}</summary>
@@ -326,11 +442,17 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
             </tbody>
           </table>
         </div>
+        {unmeasuredMetrics.length > 0 && (
+          <p className="queen-wars-unmeasured">
+            <Evidence value="UNKNOWN" />
+            <span>{c.notMeasured}:</span> {unmeasuredMetrics.map((metric) => metric.key).join(' · ')}
+          </p>
+        )}
       </section>
 
       <section className="queen-wars-ledger" aria-labelledby="queen-wars-ledger-title">
         <header className="queen-wars-section-title">
-          <span>05</span>
+          <span>06</span>
           <h3 id="queen-wars-ledger-title">{c.ledger}</h3>
         </header>
         {experimentRuns.length === 0 ? <p className="queen-wars-empty">{c.noLedger}</p> : (
@@ -350,7 +472,7 @@ export function QueenWars({ lang }: { lang: 'en' | 'ru' }) {
 
       <section className="queen-wars-training" aria-labelledby="queen-wars-training-title">
         <header className="queen-wars-section-title">
-          <span>06</span>
+          <span>07</span>
           <h3 id="queen-wars-training-title">{c.pipeline}</h3>
         </header>
         <p>{c.pipelineCopy}</p>
