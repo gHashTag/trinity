@@ -591,6 +591,90 @@ a.rg-cell:focus-visible polygon {
   }
 }
 
+/* The comb as a 3D wall (queenRoadmapScene.ts), drawn like the field: a hive
+   hanging in the dark with a few stars behind it. The canvas is transparent;
+   this box is the sky. */
+.rg-scene {
+  position: relative;
+  width: 100%;
+  max-height: 620px;
+  border-radius: 10px;
+  overflow: hidden;
+  background:
+    radial-gradient(1.2px 1.2px at 12% 22%, rgba(234, 255, 247, 0.7) 50%, transparent 55%),
+    radial-gradient(1px 1px at 27% 64%, rgba(234, 255, 247, 0.5) 50%, transparent 55%),
+    radial-gradient(1.4px 1.4px at 71% 14%, rgba(255, 211, 90, 0.6) 50%, transparent 55%),
+    radial-gradient(1px 1px at 86% 48%, rgba(234, 255, 247, 0.55) 50%, transparent 55%),
+    radial-gradient(1px 1px at 58% 83%, rgba(234, 255, 247, 0.45) 50%, transparent 55%),
+    radial-gradient(1.2px 1.2px at 40% 9%, rgba(100, 220, 255, 0.55) 50%, transparent 55%),
+    radial-gradient(120% 80% at 50% 105%, rgba(8, 250, 181, 0.12), transparent 60%),
+    #010706;
+}
+.rg-scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  touch-action: pan-y;
+}
+.rg-hover {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  max-width: 250px;
+  padding: 8px 10px;
+  border: 1px solid var(--rg-line);
+  border-radius: 8px;
+  background: var(--rg-panel);
+  /* Read while the wall moves under it: the comb's edges are blurred out. */
+  backdrop-filter: blur(8px);
+  color: var(--rg-text);
+  font-size: 12px;
+  line-height: 1.35;
+  transform: translate(12px, 12px);
+  pointer-events: none;
+  overflow-wrap: anywhere;
+}
+.rg-hover b {
+  color: var(--rg-mark);
+}
+.rg-hover.is-pinned {
+  pointer-events: auto;
+}
+.rg-hover a {
+  color: var(--rg-mark);
+}
+.rg-view {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin: 0 0 6px;
+}
+.rg-view button {
+  font: inherit;
+  font-size: 11px;
+  padding: 2px 12px;
+  border: 1px solid var(--rg-line);
+  border-radius: 999px;
+  background: var(--rg-panel);
+  backdrop-filter: blur(6px);
+  color: var(--rg-text);
+  cursor: pointer;
+}
+.rg-view button[aria-pressed='true'] {
+  background: var(--rg-mark);
+  border-color: var(--rg-mark);
+  color: #02140d;
+}
+.rg-scene-hint,
+.rg-scene-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  text-align: center;
+  color: var(--rg-muted);
+}
+
 @media (max-width: 760px) {
   .rg {
     padding: 12px;

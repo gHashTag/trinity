@@ -27,13 +27,17 @@
 //     below is built, and each says what really stands in the way.
 //   * BUILDERS are the lenders whose lanes built .t27 cells, read from the
 //     Queen's public leaderboard; XP is hers, never recomputed here.
+//   * THE COMB IS DRAWN IN 3D by default, in Babylon.js like the Queen's field
+//     (queenRoadmapScene.ts): the same cells as hex prisms on a wall, ships
+//     and the round included. Without WebGL, or by choice (Flat, or the
+//     field's own ?engine=canvas), it is the flat SVG below.
 //
 // Sources, all live and all public: GitHub issue search (port tasks open and
 // closed as completed, and open defects naming a port file), the Queen's
 // /queen/public-board and /queen/public-leaderboard. A source that does not
 // answer is named on the page, and what it would have fed reads as unknown.
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { QUEEN_API } from '../lib/queenApi'
 import {
   BOSS_OPENS_AT,
@@ -48,6 +52,7 @@ import {
   targetOf,
   utcDay,
 } from '../lib/roadmapGame'
+import type { RoadmapSceneCell, RoadmapSceneHandle, RoadmapSceneInput } from './queenRoadmapScene'
 import './queenRoadmapGame.css'
 
 export interface GameGoal {
@@ -161,6 +166,13 @@ const COPY = {
     ships: 'Ships over the comb right now',
     shipsNone: 'No bee is building a port cell right now.',
     legend: 'Legend',
+    viewLabel: 'How the comb is drawn',
+    view3d: '3D',
+    view2d: 'Flat',
+    sceneHint: 'Drag to tilt the wall · point at a cell to lift it · click to open its issue',
+    sceneHintTouch: 'Tap a cell to see it, then open its issue',
+    sceneLost: (why: string) => `The 3D wall stopped (${why}), so the comb is drawn flat.`,
+    openIssue: 'open the issue',
   },
   ru: {
     level: 'УРОВЕНЬ II · ПЕРЕПИСЫВАНИЕ',
@@ -226,6 +238,13 @@ const COPY = {
     ships: 'Корабли над сотами прямо сейчас',
     shipsNone: 'Сейчас ни одна пчела не строит соту переноса.',
     legend: 'Обозначения',
+    viewLabel: 'Как нарисованы соты',
+    view3d: '3D',
+    view2d: 'Плоско',
+    sceneHint: 'Потяните, чтобы наклонить стену · наведите на соту, чтобы поднять её · нажмите, чтобы открыть задачу',
+    sceneHintTouch: 'Коснитесь соты, чтобы увидеть её, а затем откройте задачу',
+    sceneLost: (why: string) => `3D-стена остановилась (${why}), поэтому соты нарисованы плоско.`,
+    openIssue: 'открыть задачу',
   },
 } as const
 
@@ -280,6 +299,28 @@ export default function QueenRoadmapGame({
   const [boardDown, setBoardDown] = useState(false)
   const [builders, setBuilders] = useState<Builder[] | null | 'down'>(null)
   const [now, setNow] = useState(() => Date.now())
+  // 3D is the default, as on the field; `?engine=canvas` (the field's own
+  // switch) or a stored choice draws the comb flat.
+  const [view, setView] = useState<'3d' | '2d'>(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('engine') === 'canvas') return '2d'
+      return window.localStorage.getItem('rg-view') === '2d' ? '2d' : '3d'
+    } catch {
+      return '3d'
+    }
+  })
+  // Why the 3D wall could not be drawn, in the browser's words; the flat comb
+  // is shown instead.
+  const [sceneLost, setSceneLost] = useState<string | null>(null)
+  const [hover, setHover] = useState<{ index: number; x: number; y: number; pinned: boolean } | null>(null)
+  const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [finePointer] = useState(() => window.matchMedia('(pointer: fine)').matches)
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const onChange = () => setReduced(query.matches)
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
+  }, [])
 
   useEffect(() => {
     let live = true
@@ -393,7 +434,9 @@ export default function QueenRoadmapGame({
 
   const rows = rowsFor(tasks.length + 1)
   const capacity = (rows * (rows + 1)) / 2
-  const shown = tasks.slice(0, capacity - 1)
+  // Memoised, so the 3D wall is rebuilt only when the cells change, not on the
+  // clock's tick.
+  const shown = useMemo(() => tasks.slice(0, capacity - 1), [tasks, capacity])
 
   // Geometry: pointy-top hexes, apex row at the bottom.
   const s = 15
@@ -416,17 +459,99 @@ export default function QueenRoadmapGame({
   const framePoints = `${(cx - halfTop).toFixed(1)},${frameTop.toFixed(1)} ${(cx + halfTop).toFixed(1)},${frameTop.toFixed(1)} ${cx.toFixed(1)},${apexY.toFixed(1)}`
 
   type Placed = { x: number; y: number; row: number; task: PortTask | null; seed: boolean }
-  const placed: Placed[] = []
-  let k = 0
-  for (let r = 0; r < rows; r += 1) {
-    for (let i = 0; i <= r; i += 1) {
-      const x = cx + (i - r / 2) * w
-      const y = baseY - r * 1.5 * s
-      if (k === 0) placed.push({ x, y, row: r, task: null, seed: true })
-      else placed.push({ x, y, row: r, task: shown[k - 1] ?? null, seed: false })
-      k += 1
+  const placed = useMemo(() => {
+    const out: Placed[] = []
+    let k = 0
+    for (let r = 0; r < rows; r += 1) {
+      for (let i = 0; i <= r; i += 1) {
+        const x = cx + (i - r / 2) * w
+        const y = baseY - r * 1.5 * s
+        if (k === 0) out.push({ x, y, row: r, task: null, seed: true })
+        else out.push({ x, y, row: r, task: shown[k - 1] ?? null, seed: false })
+        k += 1
+      }
+    }
+    return out
+  }, [shown, rows, cx, baseY, w])
+
+  // The same cells for the 3D wall (queenRoadmapScene.ts), in the same order.
+  const sceneCells = useMemo<RoadmapSceneCell[]>(
+    () =>
+      placed.map((p) => ({
+        x: p.x,
+        y: p.y,
+        kind: p.seed ? 'seed' : p.task ? p.task.state : 'future',
+        number: p.task?.number ?? null,
+        langHex: p.task ? LANG_COLOR[p.task.lang] ?? '#7a7f86' : MARK,
+        raid: raid !== null && p.task !== null && p.task.stage === raid,
+      })),
+    [placed, raid],
+  )
+  const sceneInput = useMemo<RoadmapSceneInput>(
+    () => ({
+      cells: sceneCells,
+      s,
+      frame: { cx, top: frameTop, apex: apexY, halfTop },
+      pulse,
+      motion: reduced ? 'static' : 'interactive',
+    }),
+    [sceneCells, cx, frameTop, apexY, halfTop, pulse, reduced],
+  )
+  const want3d = view === '3d' && sceneLost === null
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const sceneRef = useRef<RoadmapSceneHandle | null>(null)
+  const inputRef = useRef(sceneInput)
+  const cellsRef = useRef(sceneCells)
+  useEffect(() => {
+    inputRef.current = sceneInput
+    cellsRef.current = sceneCells
+    sceneRef.current?.update(sceneInput)
+  }, [sceneInput, sceneCells])
+  // The wall is mounted once per switch to 3D and fed through update() after.
+  // Babylon is loaded only here, in its own chunk, the one the field uses.
+  useEffect(() => {
+    if (!want3d) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    let cancelled = false
+    import('./queenRoadmapScene')
+      .then(({ mountRoadmapScene }) => {
+        if (cancelled) return
+        try {
+          sceneRef.current = mountRoadmapScene(canvas, inputRef.current, {
+            onHover: (index, x, y) =>
+              setHover((h) => (index === null ? (h?.pinned ? h : null) : { index, x, y, pinned: false })),
+            onPick: (index, pointerType, x, y) => {
+              const n = cellsRef.current[index]?.number
+              if (pointerType === 'mouse' && n) window.open(`https://github.com/${issueRepo}/issues/${n}`, '_blank', 'noopener,noreferrer')
+              else setHover({ index, x, y, pinned: true })
+            },
+            onLost: (why) => setSceneLost(why),
+          })
+        } catch (e) {
+          setSceneLost(e instanceof Error ? e.message : String(e))
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) setSceneLost(e instanceof Error ? e.message : String(e))
+      })
+    return () => {
+      cancelled = true
+      sceneRef.current?.dispose()
+      sceneRef.current = null
+      setHover(null)
+    }
+  }, [want3d, issueRepo])
+  const chooseView = (v: '3d' | '2d') => {
+    setView(v)
+    if (v === '3d') setSceneLost(null)
+    try {
+      window.localStorage.setItem('rg-view', v)
+    } catch {
+      // Storage refused (a private window): the choice lasts this visit.
     }
   }
+  const hovered = hover ? placed[hover.index] ?? null : null
 
   const count = (state: CellState) => tasks.filter((t) => t.state === state).length
   const builtCount = count('built') + count('cracked')
@@ -509,6 +634,55 @@ export default function QueenRoadmapGame({
       <div className="rg-stage">
         <figure className="rg-fig">
           <figcaption className="rg-cap rg-cap-top">▽ {c.summit}</figcaption>
+          <div className="rg-view" role="group" aria-label={c.viewLabel}>
+            <button type="button" aria-pressed={view === '3d'} onClick={() => chooseView('3d')}>
+              {c.view3d}
+            </button>
+            <button type="button" aria-pressed={view === '2d'} onClick={() => chooseView('2d')}>
+              {c.view2d}
+            </button>
+          </div>
+          {want3d ? (
+            <div
+              className="rg-scene"
+              role="img"
+              aria-label={`${c.title}: ${builtCount} ${c.hudBuilt}, ${count('building')} ${c.hudBuilding}`}
+              style={{ aspectRatio: `${width.toFixed(0)} / ${height.toFixed(0)}` }}
+            >
+              <canvas ref={canvasRef} className="rg-scene-canvas" />
+              {hover && hovered && (
+                <div
+                  className={`rg-hover${hover.pinned ? ' is-pinned' : ''}`}
+                  style={{ left: `min(${Math.round(hover.x)}px, calc(100% - 262px))`, top: `min(${Math.round(hover.y)}px, calc(100% - 120px))` }}
+                >
+                  {hovered.seed || !hovered.task ? (
+                    <>
+                      <b>t27c</b>
+                      <span>{c.seed}</span>
+                    </>
+                  ) : (
+                    <>
+                      <b>
+                        #{hovered.task.number} · {hovered.task.path}
+                      </b>
+                      <span>
+                        {stageTitle(hovered.task.stage)}
+                        {raid !== null && hovered.task.stage === raid ? ` · ${c.raidCell}` : ''}
+                      </span>
+                      <span>
+                        {cellLabel(hovered.task)} · {hovered.task.units} {c.fn}
+                      </span>
+                      {hover.pinned && (
+                        <a href={`https://github.com/${issueRepo}/issues/${hovered.task.number}`} target="_blank" rel="noreferrer noopener">
+                          {c.openIssue} →
+                        </a>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
           <svg
             className="rg-comb"
             viewBox={`0 0 ${width.toFixed(0)} ${height.toFixed(0)}`}
@@ -606,6 +780,13 @@ export default function QueenRoadmapGame({
               )
             })}
           </svg>
+          )}
+          {want3d && <p className="rg-scene-hint">{finePointer ? c.sceneHint : c.sceneHintTouch}</p>}
+          {sceneLost && (
+            <p className="rg-scene-note" role="status">
+              {c.sceneLost(sceneLost)}
+            </p>
+          )}
           <figcaption className="rg-cap rg-cap-bottom">{c.seed} · {c.quick}</figcaption>
           <p className="rg-round">
             {pulse && phase !== null
