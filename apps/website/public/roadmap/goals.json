@@ -200,8 +200,8 @@
     "ru": "Эндшпиль: браузер и каждая зависимость"
    },
    "why": {
-    "en": "After stage 8 the comb keeps widening to its top row: all of BrowserOS - the browser itself, not only trios/agent-server - and every third-party library the stack runs in another language, rewritten in .t27. Not measured yet: the count above covers only the repositories it lists.",
-    "ru": "После этапа 8 соты расширяются до верхнего ряда: весь BrowserOS - сам браузер, а не только trios/agent-server - и каждая сторонняя библиотека на другом языке, на которой работает стек, переписанные на .t27. Ещё не измерено: подсчёт выше охватывает только перечисленные репозитории."
+    "en": "After stage 8 the comb keeps widening to its top row: all of BrowserOS - the browser itself, not only trios/agent-server - and every third-party library the stack runs in another language, rewritten in .t27. Measured 2026-09-27: BrowserOS dev is 5.48 MB of source, and the running services lock 2,187 npm packages, 650 crates and 35 Go modules. The engine, Chromium 146, is fetched at build time and is not in the count above.",
+    "ru": "После этапа 8 соты расширяются до верхнего ряда: весь BrowserOS - сам браузер, а не только trios/agent-server - и каждая сторонняя библиотека на другом языке, на которой работает стек, переписанные на .t27. Измерено 2026-09-27: BrowserOS dev - 5,48 МБ исходников, а работающие сервисы фиксируют в lock-файлах 2187 npm-пакетов, 650 crates и 35 модулей Go. Движок, Chromium 146, скачивается при сборке и в подсчёт выше не входит."
    },
    "repos": [
     "gHashTag/BrowserOS"
@@ -210,10 +210,10 @@
     "C++"
    ],
    "target": "t27c gen-rust, gen-c",
-   "issue": null,
+   "issue": 4858,
    "locked": {
-    "en": "after stage 8; not measured yet",
-    "ru": "после этапа 8; ещё не измерено"
+    "en": "after stage 8; Chromium is not measured yet",
+    "ru": "после этапа 8; Chromium ещё не измерен"
    }
   }
  ]
