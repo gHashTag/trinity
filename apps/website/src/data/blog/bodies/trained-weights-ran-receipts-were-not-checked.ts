@@ -95,6 +95,8 @@ export const body: Block[] = [
       ['Layer 5 w_down, int8 x', '8', '51,840 / 51,840', '320 / 320', 'PASS, 11.9 s'],
       ['All 42 matrices, ternary x', '24', '403,200 / 403,200', '33,792 / 33,792', 'PASS, 85.5 s'],
       ['All 42 matrices, ternary x (control)', '64', '6,679 of 403,200, then the link lost 59 bytes', '667 / 33,792', 'FAIL, stopped'],
+      ['All 42 matrices, ternary x (registered)', '26', '403,200 / 403,200', '33,792 / 33,792', 'PASS, 85.3 s'],
+      ['All 42 matrices, ternary x (registered)', '30', '149,986 of 403,200, then the link lost 7 bytes', '12,822 / 33,792', 'FAIL, stopped'],
     ],
   },
   {
@@ -107,15 +109,23 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: "The three failures are not wrong answers. All 35,549 answers that arrived whole before a hole had the right y and a verifying tag. The one answer each hole tore through failed a check and was refused. The link is what failed. The answer stream lost 16, 4 and 59 bytes, with intact bytes on both sides. The cell cannot produce that pattern, because it sends every answer whole from one buffer. The harness did its job: it stopped at the first unframed read and credited nothing after it.",
+    text: "The four failures are not wrong answers. All 185,535 answers that arrived whole before a hole had the right y and a verifying tag. The one answer each hole tore through failed a check and was refused. The link is what failed. The answer stream lost 16, 4, 59 and 7 bytes, with intact bytes on both sides. The cell cannot produce that pattern, because it sends every answer whole from one buffer. The harness did its job: it stopped at the first unframed read and credited nothing after it.",
   },
   {
     kind: 'p',
-    text: "The window matters; the control shows it. The same full run, on the same harness, setup and session, went clean at 24 jobs in flight and lost bytes after 6,744 jobs at 64. So the pass comes from the window, not from the new harness's timing and hex output. At 64, three long runs slipped three times. At 24 and at 8, 455,040 jobs came through whole.",
+    text: "The window matters; the control shows it. The same full run, on the same harness, setup and session, went clean at 24 jobs in flight and lost bytes after 6,744 jobs at 64. So the pass comes from the window, not from the new harness's timing and hex output. At 64, three long runs slipped three times.",
   },
   {
     kind: 'p',
-    text: "The first explanation does not survive the control. The idea was that answers pile up while the host looks away. The fixed harness measures those pauses. In the passing run at 24 the longest was 22.4 ms. In the failing control at 64 it was 4.2 ms, about 1,700 answers before the hole: too short to fill even half of the 1,216 bytes a 64-deep window can hold. The bytes are lost in the link itself, which is the USB adapter, its driver, the hub or the cable. Which of them, and why a deeper window provokes it, is not measured. Window 24 cost no measurable throughput: 4,716 answers/s, against about 4,660 to 4,750 at 64 before the slips.",
+    text: "The first explanation does not survive the control. The idea was that answers pile up while the harness process looks away. The fixed harness measures those pauses. In the failing control at 64 the longest was 4.2 ms, about 1,700 answers before the hole. Passing runs survived pauses of 22.4 ms at 24 in flight and 25.8 ms at 26.",
+  },
+  {
+    kind: 'p',
+    text: "What does fit is the USB bridge. The board's UART goes to the host through a CP2102N, whose datasheet gives a 512-byte receive buffer and asks for handshaking above 1 Mbaud to avoid receiver overrun. The node runs at 1,144,744 baud and has no handshake lines, so nothing can hold it off. With W jobs in flight, at most 19 x W answer bytes are on their way. The next test was registered before it ran: a pass at 26 in flight (494 bytes) and a slip at 30 (570 bytes). Both happened. Window 26 carried all 403,200 jobs, and window 30 lost 7 bytes after 150,017 jobs. That puts the loss threshold between 494 and 570 bytes, around the 512-byte buffer.",
+  },
+  {
+    kind: 'p',
+    text: "One side prediction missed. The slip at 30 came after 150,017 jobs, not within the first 20,000 as at 64, so the stalls that fill the buffer are rarer than a single fixed gap would explain. What stalls the bridge's USB transfers is not measured, and the hub is not excluded. The rule the harness follows now is to keep 19 x W under 512 bytes, which is why the default is 24 (456 bytes). It costs no measurable throughput: 4,716 answers/s, against about 4,660 to 4,750 at 64 before the slips.",
   },
   {
     kind: 'h',
@@ -148,7 +158,7 @@ export const body: Block[] = [
   {
     kind: 'ol',
     items: [
-      'Find the link fault: run 64 in flight without the USB hub, and measure the adapter and driver buffers. Until then, 24 in flight is the operating point.',
+      'Lift the link limit: add RTS/CTS flow control to the node, as the CP2102N datasheet asks above 1 Mbaud. Until then, keep answers in flight under 512 bytes, as the harness now does.',
       'Real activations: dump the int8 inputs tc_infer computes for a real prompt, and run a whole layer with them.',
       'Leave the UART: move to Ethernet or a USB FIFO, and measure it on the board.',
       'Make receipts checkable by anyone: publish a Merkle root of each run, and add random re-execution or Freivalds checks. Both are cheap for ternary matvecs.',
@@ -252,6 +262,8 @@ export const ruBody: Block[] = [
       ['Слой 5, w_down, int8 x', '8', '51 840 / 51 840', '320 / 320', 'PASS, 11,9 с'],
       ['Все 42 матрицы, тернарный x', '24', '403 200 / 403 200', '33 792 / 33 792', 'PASS, 85,5 с'],
       ['Все 42 матрицы, тернарный x (контроль)', '64', '6 679 из 403 200, потом канал потерял 59 байт', '667 / 33 792', 'FAIL, остановлен'],
+      ['Все 42 матрицы, тернарный x (зарегистрирован)', '26', '403 200 / 403 200', '33 792 / 33 792', 'PASS, 85,3 с'],
+      ['Все 42 матрицы, тернарный x (зарегистрирован)', '30', '149 986 из 403 200, потом канал потерял 7 байт', '12 822 / 33 792', 'FAIL, остановлен'],
     ],
   },
   {
@@ -264,15 +276,23 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Все три провала — не неверные ответы. У всех 35 549 ответов, пришедших целыми до дыры, был верный y и сходящийся тег. Ответ, который рвала каждая дыра, не прошёл проверку и был отвергнут. Сломался канал. Из потока ответов пропадало 16, 4 и 59 байт, и по обе стороны дыры байты целые. Ячейка такую картину дать не может: каждый ответ она отправляет целиком из одного буфера. Харнесс сделал то, что должен: остановился на первом нераспознанном кадре и после него ничего не засчитал.',
+    text: 'Все четыре провала — не неверные ответы. У всех 185 535 ответов, пришедших целыми до дыры, был верный y и сходящийся тег. Ответ, который рвала каждая дыра, не прошёл проверку и был отвергнут. Сломался канал. Из потока ответов пропадало 16, 4, 59 и 7 байт, и по обе стороны дыры байты целые. Ячейка такую картину дать не может: каждый ответ она отправляет целиком из одного буфера. Харнесс сделал то, что должен: остановился на первом нераспознанном кадре и после него ничего не засчитал.',
   },
   {
     kind: 'p',
-    text: 'Окно имеет значение, и это показал контроль. Тот же полный прогон на том же харнессе, установке и сессии прошёл чисто при 24 задачах в полёте и потерял байты после 6 744 задач при 64. Значит, успех дало окно, а не замер времени и вывод hex, добавленные в новый харнесс. При 64 три длинных прогона сорвались три раза. При 24 и при 8 целыми вернулись 455 040 задач.',
+    text: 'Окно имеет значение, и это показал контроль. Тот же полный прогон на том же харнессе, установке и сессии прошёл чисто при 24 задачах в полёте и потерял байты после 6 744 задач при 64. Значит, успех дало окно, а не замер времени и вывод hex, добавленные в новый харнесс. При 64 три длинных прогона сорвались три раза.',
   },
   {
     kind: 'p',
-    text: 'Первое объяснение контроль не выдержало. Предполагалось, что ответы копятся, пока хост отвлёкся. Исправленный харнесс эти паузы измеряет. В успешном прогоне при 24 самая долгая была 22,4 мс. В провальном контроле при 64 — 4,2 мс, примерно за 1 700 ответов до дыры: этого не хватит, чтобы заполнить и половину из 1 216 байт, которые вмещает окно на 64 задачи. Байты теряются в самом канале: в USB-адаптере, его драйвере, хабе или кабеле. Где именно и почему окно поглубже это провоцирует, не измерено. Окно 24 не стоило заметной скорости: 4 716 ответов в секунду против примерно 4 660–4 750 при 64 до сбоев.',
+    text: 'Первое объяснение контроль не выдержало. Предполагалось, что ответы копятся, пока процесс харнесса отвлёкся. Исправленный харнесс эти паузы измеряет. В провальном контроле при 64 самая долгая была 4,2 мс, примерно за 1 700 ответов до дыры. Успешные прогоны пережили паузы 22,4 мс при 24 задачах в полёте и 25,8 мс при 26.',
+  },
+  {
+    kind: 'p',
+    text: 'Зато подходит USB-мост. UART платы идёт к хосту через CP2102N; по его даташиту у него приёмный буфер на 512 байт, а выше 1 Мбод нужно аппаратное управление потоком, иначе приёмник переполняется. Узел работает на 1 144 744 бод, и линий управления потоком у него нет, так что придержать его нечем. При W задачах в полёте к хосту идёт не больше 19 x W байт ответов. Следующую проверку зарегистрировали до запуска: при 26 задачах в полёте (494 байта) — успех, при 30 (570 байт) — срыв. Так и вышло. Окно 26 провело все 403 200 задач, окно 30 потеряло 7 байт после 150 017 задач. Порог потерь лежит между 494 и 570 байтами, около буфера на 512.',
+  },
+  {
+    kind: 'p',
+    text: 'Одно побочное предсказание не сбылось. Срыв при 30 пришёл после 150 017 задач, а не в первые 20 000, как при 64, так что задержки, заполняющие буфер, реже, чем объяснил бы один фиксированный простой. Что задерживает USB-передачи моста, не измерено, и хаб не исключён. Правило харнесса теперь — держать 19 x W меньше 512 байт, поэтому по умолчанию окно 24 (456 байт). Скорости это заметно не стоит: 4 716 ответов в секунду против примерно 4 660–4 750 при 64 до сбоев.',
   },
   {
     kind: 'h',
@@ -305,7 +325,7 @@ export const ruBody: Block[] = [
   {
     kind: 'ol',
     items: [
-      'Найти неисправность канала: прогнать 64 задачи в полёте без USB-хаба и измерить буферы адаптера и драйвера. До тех пор рабочая точка — 24 задачи в полёте.',
+      'Снять ограничение канала: добавить узлу управление потоком RTS/CTS, как требует даташит CP2102N выше 1 Мбод. До тех пор держать ответы в полёте меньше 512 байт, как теперь делает харнесс.',
       'Реальные активации: выгрузить int8-входы, которые tc_infer считает для настоящего промпта, и прогнать с ними целый слой.',
       'Уйти с UART: перейти на Ethernet или USB FIFO и измерить это на плате.',
       'Сделать квитанции проверяемыми для всех: публиковать корень Меркла каждого прогона и добавить случайное перевычисление или проверки Фрейвалдса. Для тернарных matvec и то и другое стоит дёшево.',
