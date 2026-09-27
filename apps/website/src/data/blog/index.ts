@@ -3,6 +3,42 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "golden-ratio-weights-ran-on-the-board",
+    title: "Golden-ratio weights ran on the board. The phi cost one add per output.",
+    summary: "[measured on FPGA: layer 0, 403,200 of 403,200 receipts verified, registered before the run; the phi step and digit recombination are host arithmetic; one synthetic activation vector] The TNF paper's GFTernary weights, t*phi, applied to activations in Z[phi], ran on the unchanged AX7203 node with no multiplier. Each output is W.b + (W.a + W.b)*phi, so the node computes only ternary dots and the host adds once per output. All 5,632 Z[phi] rows of layer 0 matched a plain Z[phi] multiplication oracle bit for bit.",
+    date: "2026-09-27",
+    readingMinutes: 6,
+    tags: ["FPGA", "Ternary", "Number formats", "Verification", "TRI-NET"],
+    receipts: [
+      { label: "The pre-registration and the result, side by side", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/GFT_ZPHI_ON_THE_NODE.md" },
+      { label: "The board log: 403,200 / 403,200 receipts, 5,632 / 5,632 Z[phi] rows", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/board_runs/gft_zphi_l0.log" },
+      { label: "The harness, with its Z[phi] oracle and negative controls", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/gft_zphi_ax7203.py" },
+      { label: "Ten weak points of the tern_tc record, ranked", href: "https://github.com/gHashTag/trinity-fpga/blob/8a203217084eb3499d6dee5815be6a462575878f/conformance/TERN_TC_WEAK_POINTS.md" },
+      { label: "The pull request that carries it: gHashTag/trinity-fpga 800", href: "https://github.com/gHashTag/trinity-fpga/pull/800" },
+      { label: "Earlier: the golden ratio in this format is a scale factor, not information", href: "https://t27.ai/blog/phi-is-a-scale-not-information/" },
+      { label: "Earlier: the board's receipts were never checked; now all 403,200 are", href: "https://t27.ai/blog/trained-weights-ran-receipts-were-not-checked/" },
+    ],
+    openQuestions: [
+      "Only layer 0 ran, with one synthetic Z[phi] activation vector, not the activations of a real forward pass.",
+      "The TNF accumulator and its rounding have no RTL, so the part of the claim beyond the dot products is untested on hardware.",
+      "The node computes ternary dots; the digit recombination and the phi step run on the host. The result says the linear path needs no multiplier, not that the FPGA did all of it.",
+      "Speed is not claimed: about 151,000 ternary multiply-accumulates per second over UART (derived).",
+      "A SipHash receipt is not publicly verifiable, and it does not stop an operator forging their own.",
+    ],
+    published: true,
+    ru: {
+      title: "Веса с золотым сечением отработали на плате. phi стоил одно сложение на выход.",
+      summary: "[измерено на FPGA: слой 0, проверено 403 200 из 403 200 квитанций, зарегистрировано до запуска; шаг phi и сборка разрядов — арифметика хоста; один синтетический вектор активаций] Веса GFTernary из статьи о TNF, t*phi, применённые к активациям из Z[phi], отработали на неизменённом узле AX7203 без умножителя. Каждый выход равен W.b + (W.a + W.b)*phi, так что узел считает только тернарные скалярные произведения, а хост делает одно сложение на выход. Все 5 632 строки Z[phi] слоя 0 совпали бит в бит с оракулом обычного умножения в Z[phi].",
+      openQuestions: [
+        "Прогнан только слой 0 с одним синтетическим вектором активаций из Z[phi], а не с активациями настоящего прямого прохода.",
+        "У аккумулятора TNF и его округления нет RTL, так что часть утверждения сверх скалярных произведений на железе не проверена.",
+        "Узел считает тернарные скалярные произведения; сборка разрядов и шаг phi выполняются на хосте. Результат говорит, что линейному пути не нужен умножитель, а не что всё сделала FPGA.",
+        "Скорость не заявляется: около 151 000 тернарных умножений с накоплением в секунду через UART (выведено).",
+        "Квитанция SipHash не проверяется публично и не мешает оператору подделать свои собственные.",
+      ],
+    },
+  },
+  {
     slug: "trained-weights-ran-receipts-were-not-checked",
     title: "The board's receipts were never checked. Now all 403,200 are.",
     summary: "[measured on FPGA: all 42 trained matrices, every receipt verified; the activations were test vectors, not a forward pass] An AX7203 computed 28,416 of 28,416 rows of the trained tern_tc model's weight matrices bit-exact, while its harness reported 284,160 authenticated receipts without comparing a single tag. The fixed harness fails on seven kinds of misbehaving cell. On the board it then verified all 403,200 receipts across all 42 ternary matrices, with 33,792 of 33,792 rows bit-exact, plus 51,840 for w_down with int8 activations. Its first long runs stopped when a UART link dropped bytes with 64 jobs in flight; at 24, none were lost.",
