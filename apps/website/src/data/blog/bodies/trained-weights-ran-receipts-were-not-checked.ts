@@ -32,7 +32,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: "What stands: every row value in the table matched the CPU oracle, and the random-matrix run did compare its tags. What is withdrawn until the board reruns: '284,160 receipts authenticated under node0's key'.",
+    text: "What stands: every row value in the table matched the CPU oracle, and the random-matrix run did compare its tags. What is withdrawn until the full board rerun passes: '284,160 receipts authenticated under node0's key'.",
   },
   {
     kind: 'h',
@@ -56,6 +56,10 @@ export const body: Block[] = [
     ],
   },
   {
+    kind: 'p',
+    text: "After the board run below, an eighth control was added, for the link rather than the cell. It is a stream that loses 16 bytes in the middle, as the board's link did. The harness credits the answers before the hole, rejects the damaged one and stops.",
+  },
+  {
     kind: 'h',
     text: 'The same bytes through the RTL',
   },
@@ -72,6 +76,40 @@ export const body: Block[] = [
       ['Layer 0 wk, node never keyed', '640', '0 / 64', '0 / 640 (status 0x04)'],
       ['Layer 0 wk, checked under a different key', '1,280', '0 / 128', '0 / 1,280'],
     ],
+  },
+  {
+    kind: 'h',
+    text: 'The fixed harness on the board',
+  },
+  {
+    kind: 'p',
+    text: "On 2026-09-27 the fixed harness ran on the AX7203 with the trained model file. The host was an M1 Pro, talking to the board's CP2102N UART through a USB hub. The x-vectors are random test vectors from a fixed seed, not the model's real activations.",
+  },
+  {
+    kind: 'table',
+    head: ['Board run (1,144,744 baud)', 'Jobs in flight', 'Receipts verified', 'Rows bit-exact', 'Result'],
+    rows: [
+      ['Random 320x320 ternary matvec', '64', '3,200 / 3,200', '320 / 320', 'PASS, 0.79 s'],
+      ['All 42 matrices, ternary x', '64', '18,984 of 403,200, then the link lost 16 bytes', '1,898 / 33,792', 'FAIL, stopped'],
+      ['Layer 5 w_down, int8 x', '64', '9,886 of 51,840, then the link lost 4 bytes', '61 / 320', 'FAIL, stopped'],
+      ['Layer 5 w_down, int8 x', '8', '51,840 / 51,840', '320 / 320', 'PASS, 11.9 s'],
+    ],
+  },
+  {
+    kind: 'p',
+    text: "The last row is the first board run of trained weights with int8 activations and every receipt checked. The host recomputed all 51,840 SipHash tags under the key, and all 320 rows equal the int8-weight oracle. It covers one matrix of 42, with one random activation vector.",
+  },
+  {
+    kind: 'p',
+    text: "The two failures are not wrong answers. Each of the 28,870 answers that arrived before a hole had the right y and a verifying tag. The link is what failed. The answer stream lost 16 bytes in one run and 4 in the other, with intact bytes on both sides. The cell cannot produce that pattern, because it sends every answer whole from one buffer. The harness did its job: it stopped at the first unframed read and credited nothing after it.",
+  },
+  {
+    kind: 'p',
+    text: "The likely cause is the queue. With 64 jobs in flight, up to 1,216 bytes of answers can be waiting between the board and the host. If the host looks away for a few milliseconds, bytes are dropped. At 8 in flight, on the same port and hub, the same matrix came back whole over 51,840 jobs, 5.2 times the length at which it broke at 64. That fits, but it is one run, and the hub or the cable is not ruled out.",
+  },
+  {
+    kind: 'p',
+    text: "The harness now defaults to 24 in flight and prints the bytes of any failed read, and its self-test replays the 16-byte hole. The receipt count for the full layer set stays withdrawn. The next board run is all 42 matrices at 24 in flight, with a control run at 64.",
   },
   {
     kind: 'h',
@@ -104,7 +142,7 @@ export const body: Block[] = [
   {
     kind: 'ol',
     items: [
-      'Rerun the fixed harness on the board: one command, all 42 matrices, about 403,200 jobs, about 90 s at the measured rate.',
+      'Finish the board rerun: all 42 matrices, 403,200 jobs, at 24 in flight, with a control run at 64. If 24 fails too, run it again without the USB hub.',
       'Real activations: dump the int8 inputs tc_infer computes for a real prompt, and run a whole layer with them.',
       'Leave the UART: move to Ethernet or a USB FIFO, and measure it on the board.',
       'Make receipts checkable by anyone: publish a Merkle root of each run, and add random re-execution or Freivalds checks. Both are cheap for ternary matvecs.',
@@ -145,7 +183,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Что остаётся в силе: каждое значение строк в таблице совпало с CPU-оракулом, а прогон случайной матрицы свои теги сверял. Что отозвано до повторного прогона на плате: «284 160 квитанций аутентифицировано под ключом node0».',
+    text: 'Что остаётся в силе: каждое значение строк в таблице совпало с CPU-оракулом, а прогон случайной матрицы свои теги сверял. Что отозвано, пока на плате не пройдёт полный повторный прогон: «284 160 квитанций аутентифицировано под ключом node0».',
   },
   {
     kind: 'h',
@@ -169,6 +207,10 @@ export const ruBody: Block[] = [
     ],
   },
   {
+    kind: 'p',
+    text: 'После прогона на плате, описанного ниже, добавлена восьмая проверка, уже для канала, а не для ячейки. Это поток, из середины которого пропадают 16 байт, как было в канале платы. Харнесс засчитывает ответы до дыры, отвергает повреждённый ответ и останавливается.',
+  },
+  {
     kind: 'h',
     text: 'Те же байты через RTL',
   },
@@ -185,6 +227,40 @@ export const ruBody: Block[] = [
       ['Слой 0, wk, ключ не установлен', '640', '0 / 64', '0 / 640 (статус 0x04)'],
       ['Слой 0, wk, проверка под другим ключом', '1 280', '0 / 128', '0 / 1 280'],
     ],
+  },
+  {
+    kind: 'h',
+    text: 'Исправленный харнесс на плате',
+  },
+  {
+    kind: 'p',
+    text: '27 сентября 2026 года исправленный харнесс прогнали на AX7203 с файлом обученной модели. Хостом был M1 Pro, связанный с UART платы (CP2102N) через USB-хаб. Векторы x — случайные тестовые векторы из фиксированного seed, а не настоящие активации модели.',
+  },
+  {
+    kind: 'table',
+    head: ['Прогон на плате (1 144 744 бод)', 'Задач в полёте', 'Квитанций проверено', 'Строк бит-точно', 'Итог'],
+    rows: [
+      ['Случайный тернарный matvec 320x320', '64', '3 200 / 3 200', '320 / 320', 'PASS, 0,79 с'],
+      ['Все 42 матрицы, тернарный x', '64', '18 984 из 403 200, потом канал потерял 16 байт', '1 898 / 33 792', 'FAIL, остановлен'],
+      ['Слой 5, w_down, int8 x', '64', '9 886 из 51 840, потом канал потерял 4 байта', '61 / 320', 'FAIL, остановлен'],
+      ['Слой 5, w_down, int8 x', '8', '51 840 / 51 840', '320 / 320', 'PASS, 11,9 с'],
+    ],
+  },
+  {
+    kind: 'p',
+    text: 'Последняя строка — первый прогон обученных весов с int8-активациями на плате, в котором проверена каждая квитанция. Хост пересчитал под ключом все 51 840 тегов SipHash, и все 320 строк совпали с оракулом по int8-весам. Это одна матрица из 42 и один случайный вектор активаций.',
+  },
+  {
+    kind: 'p',
+    text: 'Оба провала — не неверные ответы. У каждого из 28 870 ответов, пришедших до дыры, был верный y и сходящийся тег. Сломался канал. Из потока ответов в одном прогоне пропало 16 байт, в другом 4, и по обе стороны дыры байты целые. Ячейка такую картину дать не может: каждый ответ она отправляет целиком из одного буфера. Харнесс сделал то, что должен: остановился на первом нераспознанном кадре и после него ничего не засчитал.',
+  },
+  {
+    kind: 'p',
+    text: 'Вероятная причина — очередь. При 64 задачах в полёте между платой и хостом может ждать до 1 216 байт ответов. Если хост отвлечётся на несколько миллисекунд, байты теряются. При 8 задачах в полёте, на том же порту и хабе, та же матрица вернулась целой на всех 51 840 задачах. Это в 5,2 раза больше длины, на которой она ломалась при 64. Это согласуется с гипотезой, но прогон один, и хаб или кабель не исключены.',
+  },
+  {
+    kind: 'p',
+    text: 'Теперь харнесс по умолчанию держит в полёте 24 задачи и печатает байты любого сбойного чтения, а его самопроверка воспроизводит дыру в 16 байт. Число квитанций по всему набору слоёв остаётся отозванным. Следующий прогон на плате — все 42 матрицы при 24 задачах в полёте и контрольный прогон при 64.',
   },
   {
     kind: 'h',
@@ -217,7 +293,7 @@ export const ruBody: Block[] = [
   {
     kind: 'ol',
     items: [
-      'Перезапустить исправленный харнесс на плате: одна команда, все 42 матрицы, около 403 200 задач, около 90 с при измеренной скорости.',
+      'Довести повторный прогон на плате: все 42 матрицы, 403 200 задач, при 24 задачах в полёте, и контрольный прогон при 64. Если 24 тоже упадёт — повторить без USB-хаба.',
       'Реальные активации: выгрузить int8-входы, которые tc_infer считает для настоящего промпта, и прогнать с ними целый слой.',
       'Уйти с UART: перейти на Ethernet или USB FIFO и измерить это на плате.',
       'Сделать квитанции проверяемыми для всех: публиковать корень Меркла каждого прогона и добавить случайное перевычисление или проверки Фрейвалдса. Для тернарных matvec и то и другое стоит дёшево.',
