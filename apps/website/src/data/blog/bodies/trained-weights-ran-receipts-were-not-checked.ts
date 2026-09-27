@@ -94,11 +94,12 @@ export const body: Block[] = [
       ['Layer 5 w_down, int8 x', '64', '9,886 of 51,840, then the link lost 4 bytes', '61 / 320', 'FAIL, stopped'],
       ['Layer 5 w_down, int8 x', '8', '51,840 / 51,840', '320 / 320', 'PASS, 11.9 s'],
       ['All 42 matrices, ternary x', '24', '403,200 / 403,200', '33,792 / 33,792', 'PASS, 85.5 s'],
+      ['All 42 matrices, ternary x (control)', '64', '6,679 of 403,200, then the link lost 59 bytes', '667 / 33,792', 'FAIL, stopped'],
     ],
   },
   {
     kind: 'p',
-    text: "The last row is the result this post was waiting for. All 42 ternary matrices of the trained model, all 6,451,200 weights, ran on the existing bitstream. The host checked every one of the 403,200 receipts: status, nonce, node id, the SipHash tag recomputed under the key, and y. All 33,792 rows equal the int8-weight oracle. The run took 85.5 s, 4,716 answers per second.",
+    text: "The window-24 row is the result this post was waiting for. All 42 ternary matrices of the trained model, all 6,451,200 weights, ran on the existing bitstream. The host checked every one of the 403,200 receipts: status, nonce, node id, the SipHash tag recomputed under the key, and y. All 33,792 rows equal the int8-weight oracle. The run took 85.5 s, 4,716 answers per second.",
   },
   {
     kind: 'p',
@@ -106,15 +107,15 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: "The two failures are not wrong answers. Each of the 28,870 answers that arrived before a hole had the right y and a verifying tag. The link is what failed. The answer stream lost 16 bytes in one run and 4 in the other, with intact bytes on both sides. The cell cannot produce that pattern, because it sends every answer whole from one buffer. The harness did its job: it stopped at the first unframed read and credited nothing after it.",
+    text: "The three failures are not wrong answers. All 35,549 answers that arrived whole before a hole had the right y and a verifying tag. The one answer each hole tore through failed a check and was refused. The link is what failed. The answer stream lost 16, 4 and 59 bytes, with intact bytes on both sides. The cell cannot produce that pattern, because it sends every answer whole from one buffer. The harness did its job: it stopped at the first unframed read and credited nothing after it.",
   },
   {
     kind: 'p',
-    text: "The likely cause is the queue. With 64 jobs in flight, up to 1,216 bytes of answers can be waiting between the board and the host. The fixed harness now measures how long the host looks away between reads, and in the passing run the longest pause was 22.4 ms. At 1,144,744 baud the line delivers 1,216 bytes in about 10.6 ms, so a pause that long fills a 64-deep queue completely. At 24 in flight the queue holds at most 456 bytes. None were lost in 403,200 jobs, 21 times the length at which the first run broke.",
+    text: "The window matters; the control shows it. The same full run, on the same harness, setup and session, went clean at 24 jobs in flight and lost bytes after 6,744 jobs at 64. So the pass comes from the window, not from the new harness's timing and hex output. At 64, three long runs slipped three times. At 24 and at 8, 455,040 jobs came through whole.",
   },
   {
     kind: 'p',
-    text: "One control is still missing: the same full run at 64 in flight on the new harness. The new harness also added timing and hex output around the same reads, and only that control separates the two changes. Window 24 cost no measurable throughput: 4,716 answers/s, against about 4,660 to 4,750 at 64 before the slips.",
+    text: "The first explanation does not survive the control. The idea was that answers pile up while the host looks away. The fixed harness measures those pauses. In the passing run at 24 the longest was 22.4 ms. In the failing control at 64 it was 4.2 ms, about 1,700 answers before the hole: too short to fill even half of the 1,216 bytes a 64-deep window can hold. The bytes are lost in the link itself, which is the USB adapter, its driver, the hub or the cable. Which of them, and why a deeper window provokes it, is not measured. Window 24 cost no measurable throughput: 4,716 answers/s, against about 4,660 to 4,750 at 64 before the slips.",
   },
   {
     kind: 'h',
@@ -147,7 +148,7 @@ export const body: Block[] = [
   {
     kind: 'ol',
     items: [
-      'Run the control: the same full run at 64 in flight on the new harness, to separate the queue from the harness change.',
+      'Find the link fault: run 64 in flight without the USB hub, and measure the adapter and driver buffers. Until then, 24 in flight is the operating point.',
       'Real activations: dump the int8 inputs tc_infer computes for a real prompt, and run a whole layer with them.',
       'Leave the UART: move to Ethernet or a USB FIFO, and measure it on the board.',
       'Make receipts checkable by anyone: publish a Merkle root of each run, and add random re-execution or Freivalds checks. Both are cheap for ternary matvecs.',
@@ -250,11 +251,12 @@ export const ruBody: Block[] = [
       ['Слой 5, w_down, int8 x', '64', '9 886 из 51 840, потом канал потерял 4 байта', '61 / 320', 'FAIL, остановлен'],
       ['Слой 5, w_down, int8 x', '8', '51 840 / 51 840', '320 / 320', 'PASS, 11,9 с'],
       ['Все 42 матрицы, тернарный x', '24', '403 200 / 403 200', '33 792 / 33 792', 'PASS, 85,5 с'],
+      ['Все 42 матрицы, тернарный x (контроль)', '64', '6 679 из 403 200, потом канал потерял 59 байт', '667 / 33 792', 'FAIL, остановлен'],
     ],
   },
   {
     kind: 'p',
-    text: 'Последняя строка — результат, которого ждал этот пост. Все 42 тернарные матрицы обученной модели, все 6 451 200 весов, отработали на текущем битстриме. Хост проверил каждую из 403 200 квитанций: статус, nonce, id узла, тег SipHash, пересчитанный под ключом, и y. Все 33 792 строки совпали с оракулом по int8-весам. Прогон занял 85,5 с, 4 716 ответов в секунду.',
+    text: 'Строка с окном 24 — результат, которого ждал этот пост. Все 42 тернарные матрицы обученной модели, все 6 451 200 весов, отработали на текущем битстриме. Хост проверил каждую из 403 200 квитанций: статус, nonce, id узла, тег SipHash, пересчитанный под ключом, и y. Все 33 792 строки совпали с оракулом по int8-весам. Прогон занял 85,5 с, 4 716 ответов в секунду.',
   },
   {
     kind: 'p',
@@ -262,15 +264,15 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: 'Оба провала — не неверные ответы. У каждого из 28 870 ответов, пришедших до дыры, был верный y и сходящийся тег. Сломался канал. Из потока ответов в одном прогоне пропало 16 байт, в другом 4, и по обе стороны дыры байты целые. Ячейка такую картину дать не может: каждый ответ она отправляет целиком из одного буфера. Харнесс сделал то, что должен: остановился на первом нераспознанном кадре и после него ничего не засчитал.',
+    text: 'Все три провала — не неверные ответы. У всех 35 549 ответов, пришедших целыми до дыры, был верный y и сходящийся тег. Ответ, который рвала каждая дыра, не прошёл проверку и был отвергнут. Сломался канал. Из потока ответов пропадало 16, 4 и 59 байт, и по обе стороны дыры байты целые. Ячейка такую картину дать не может: каждый ответ она отправляет целиком из одного буфера. Харнесс сделал то, что должен: остановился на первом нераспознанном кадре и после него ничего не засчитал.',
   },
   {
     kind: 'p',
-    text: 'Вероятная причина — очередь. При 64 задачах в полёте между платой и хостом может ждать до 1 216 байт ответов. Исправленный харнесс теперь измеряет, как долго хост не читает порт, и в успешном прогоне самая долгая пауза была 22,4 мс. На 1 144 744 бод линия доставляет 1 216 байт примерно за 10,6 мс, так что такой паузы хватает, чтобы очередь на 64 задачи заполнилась целиком. При 24 задачах в полёте в очереди не больше 456 байт. За 403 200 задач не потерялось ни одного байта, а это в 21 раз больше длины, на которой сломался первый прогон.',
+    text: 'Окно имеет значение, и это показал контроль. Тот же полный прогон на том же харнессе, установке и сессии прошёл чисто при 24 задачах в полёте и потерял байты после 6 744 задач при 64. Значит, успех дало окно, а не замер времени и вывод hex, добавленные в новый харнесс. При 64 три длинных прогона сорвались три раза. При 24 и при 8 целыми вернулись 455 040 задач.',
   },
   {
     kind: 'p',
-    text: 'Одного контроля пока нет: того же полного прогона при 64 задачах в полёте на новом харнессе. Новый харнесс ещё и добавил замер времени и вывод hex вокруг тех же чтений, и разделить эти два изменения может только такой контроль. Окно 24 не стоило заметной скорости: 4 716 ответов в секунду против примерно 4 660–4 750 при 64 до сбоев.',
+    text: 'Первое объяснение контроль не выдержало. Предполагалось, что ответы копятся, пока хост отвлёкся. Исправленный харнесс эти паузы измеряет. В успешном прогоне при 24 самая долгая была 22,4 мс. В провальном контроле при 64 — 4,2 мс, примерно за 1 700 ответов до дыры: этого не хватит, чтобы заполнить и половину из 1 216 байт, которые вмещает окно на 64 задачи. Байты теряются в самом канале: в USB-адаптере, его драйвере, хабе или кабеле. Где именно и почему окно поглубже это провоцирует, не измерено. Окно 24 не стоило заметной скорости: 4 716 ответов в секунду против примерно 4 660–4 750 при 64 до сбоев.',
   },
   {
     kind: 'h',
@@ -303,7 +305,7 @@ export const ruBody: Block[] = [
   {
     kind: 'ol',
     items: [
-      'Провести контроль: тот же полный прогон при 64 задачах в полёте на новом харнессе, чтобы отделить очередь от изменения харнесса.',
+      'Найти неисправность канала: прогнать 64 задачи в полёте без USB-хаба и измерить буферы адаптера и драйвера. До тех пор рабочая точка — 24 задачи в полёте.',
       'Реальные активации: выгрузить int8-входы, которые tc_infer считает для настоящего промпта, и прогнать с ними целый слой.',
       'Уйти с UART: перейти на Ethernet или USB FIFO и измерить это на плате.',
       'Сделать квитанции проверяемыми для всех: публиковать корень Меркла каждого прогона и добавить случайное перевычисление или проверки Фрейвалдса. Для тернарных matvec и то и другое стоит дёшево.',
