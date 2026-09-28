@@ -65,6 +65,14 @@ function prerenderHero(): Plugin {
  * pattern-matching the file, so the feed cannot disagree with what the site
  * shows — if the schema changes, this breaks loudly instead of quietly
  * emitting nonsense.
+ *
+ * The links are the static /blog/<slug>/ pages, not the #/ hash routes. A
+ * fragment is never sent to the server, so every hash link in a feed resolves
+ * to the root document: readers and preview bots fetched t27.ai and got the
+ * landing page — one title, one card, the same for all sixty items — while the
+ * per-post pages and their cards sat there unread. Those pages are built from
+ * this same posts.ts by the publisher's build-blog.py, so the slug sets cannot
+ * drift apart.
  */
 function rssFeed(): Plugin {
   return {
@@ -100,7 +108,7 @@ function rssFeed(): Plugin {
 
       const items = sorted
         .map((p) => {
-          const link = `${site}/#/blog/${p.slug}`
+          const link = `${site}/blog/${p.slug}/`
           return `    <item>
       <title>${escapeHtml(p.title)}</title>
       <link>${escapeHtml(link)}</link>
@@ -116,7 +124,7 @@ ${(p.tags ?? []).map((t) => `      <category>${escapeHtml(t)}</category>`).join(
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Trinity — measured results</title>
-    <link>${site}/#/blog</link>
+    <link>${site}/blog/</link>
     <atom:link href="${site}/rss.xml" rel="self" type="application/rss+xml" />
     <description>Measured results and the methods behind them. Every post names what is not proven.</description>
     <language>en</language>

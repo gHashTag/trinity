@@ -397,6 +397,23 @@ function AstRow({ node, depth, path, open, toggle, onHover, filter }: AstRowProp
 
 // ------------------------------------------------------------------- page
 
+/**
+ * One query predicate for both the result list and the facet counts.
+ *
+ * They were two copies of the same boolean expression; a field added to one and
+ * not the other would have made a tag read a count its own filter could not
+ * produce. `q` is already lowercased and trimmed by the caller.
+ */
+function matchesQuery(s: SpecEntry, q: string): boolean {
+  return (
+    s.path.toLowerCase().includes(q) ||
+    s.name.toLowerCase().includes(q) ||
+    (s.module?.toLowerCase().includes(q) ?? false) ||
+    (s.title?.toLowerCase().includes(q) ?? false) ||
+    (s.description?.toLowerCase().includes(q) ?? false)
+  )
+}
+
 export default function SpecExplorer() {
   const { lang } = useI18n()
   const ui: Ui = lang === 'ru' ? UI.ru : UI.en
@@ -539,12 +556,7 @@ export default function SpecExplorer() {
       if (tagSel.length && !tagSel.every((t) => s.tags.includes(t))) return false
       if (category && s.category !== category) return false
       if (!q) return true
-      return (
-        s.path.toLowerCase().includes(q) ||
-        s.name.toLowerCase().includes(q) ||
-        (s.module ? s.module.toLowerCase().includes(q) : false) ||
-        (s.description ? s.description.toLowerCase().includes(q) : false)
-      )
+      return matchesQuery(s, q)
     })
   }, [manifest, query, category, healthFilter, tagSel])
 
@@ -562,9 +574,7 @@ export default function SpecExplorer() {
       if (healthFilter === 'course') { if (!s.tutorial) return false }
       else if (healthFilter !== 'all' && s.health !== healthFilter) return false
       if (category && s.category !== category) return false
-      if (q && !(s.path.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) ||
-        (s.module ? s.module.toLowerCase().includes(q) : false) ||
-        (s.description ? s.description.toLowerCase().includes(q) : false))) return false
+      if (q && !matchesQuery(s, q)) return false
       return true
     })
     const out: Record<string, number> = {}
@@ -1196,6 +1206,28 @@ export default function SpecExplorer() {
                       <span style={{ opacity: 0.55 }}>{dir}</span>
                       {s.path.slice(dir.length)} · {s.lines}
                     </span>
+                    {/* Title and body on separate lines, as the file writes them.
+                        Joined into one string they read as a run-on, and the two-line
+                        clamp below then spent its first line on the title -- which for
+                        520 of the specs was their own filename, printed again directly
+                        above. The title is the one line worth not clamping. */}
+                    {s.title && (
+                      <span
+                        style={{
+                          display: 'block',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          fontFamily: "'Outfit', system-ui, sans-serif",
+                          fontSize: 12,
+                          lineHeight: 1.35,
+                          color: '#c8cdd2',
+                          marginTop: 2,
+                        }}
+                      >
+                        {s.title}
+                      </span>
+                    )}
                     {s.description && (
                       <span
                         style={{
@@ -1351,7 +1383,7 @@ export default function SpecExplorer() {
                   332px, so there it collapses behind a summary and the code
                   gets the height. On its own page it stays open, and the
                   summary is hidden, so nothing about /specs changes. */}
-              {(selected.description || result) && (
+              {(selected.title || selected.description || result) && (
                 <details className={`spec-x-brief${embedded ? ' is-collapsible' : ''}`} open={!embedded}>
                   <summary>{ui.about}</summary>
                 <div
@@ -1365,6 +1397,13 @@ export default function SpecExplorer() {
                   }}
                 >
                   <div style={{ flex: '1 1 320px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {/* The header's own first line, set as the heading it is in
+                        the file rather than glued to the sentence beneath it. */}
+                    {selected.title && (
+                      <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.4, color: '#dfe4e8', fontWeight: 600, maxWidth: 'none' }}>
+                        {selected.title}
+                      </p>
+                    )}
                     {selected.description && (
                       <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.55, color: '#b9bfc6', maxWidth: 'none' }}>
                         {selected.description}
@@ -1449,11 +1488,22 @@ export default function SpecExplorer() {
 
               {/* layer tabs */}
               <div
+                className="spec-x-tabs"
                 // Every backend's name legible at once. The strip scrolled
                 // sideways, so past Zig the tabs existed only for whoever
                 // thought to drag a row that gives no sign it can be dragged —
                 // Verilog, and the HIR beside it, were off the end of an 804px
                 // pane. Wrapping costs one line and hides nothing.
+                //
+                // That reasoning was measured on an 804px pane and it holds all
+                // the way down: at 390px the eleven tabs want 908px, so a
+                // scrolling row would hide five backends instead of two. What
+                // does not survive the narrow screen is the underline -- the
+                // borderBottom each tab draws, which reads as one rule under a
+                // single row and as stray rules through the middle of three.
+                // explorer-viewport.css turns a tab into a bordered pill on a
+                // phone and a tablet, so the strip wraps with nothing to
+                // misalign. The wrapping itself is this style, unchanged.
                 style={{
                   flexShrink: 0,
                   display: 'flex',
@@ -1516,8 +1566,17 @@ export default function SpecExplorer() {
                   column and simply asks for a readable height, letting <main>
                   scroll. 70vh is about 30 lines of the mono face at this size:
                   enough to read a function without the pane becoming a second
-                  scroll region fighting the page. */}
-              <div style={{
+                  scroll region fighting the page.
+
+                  A tablet needed the same and did not have it: flex:1 with
+                  minHeight:0 means this box absorbs every pixel the column is
+                  short, and measured at 700x1000 it had absorbed all of them --
+                  the brief 660, the wrapped tab strip 146, and 29px left for the
+                  code. explorer-viewport.css gives the tier the phone's shape
+                  through .spec-x-body rather than another ternary here, because
+                  unlike the phone the tablet keeps the library beside it and
+                  nothing else about its layout changes. */}
+              <div className="spec-x-body" style={{
                 flex: phone ? 'none' : 1,
                 minHeight: phone ? '70vh' : 0,
                 padding: '0 14px 14px',

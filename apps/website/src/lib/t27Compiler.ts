@@ -66,7 +66,9 @@ export interface SpecEntry {
   module: string | null
   lines: number
   bytes: number
-  /** Leading comment block of the spec, boilerplate stripped. */
+  /** First line of the leading comment block, when it reads as a label rather than prose. */
+  title: string | null
+  /** The rest of that comment block, boilerplate stripped. */
   description: string | null
   /** Precomputed at sync time by running this same compiler over the corpus. */
   health: Health

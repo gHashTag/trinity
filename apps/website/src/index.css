@@ -1372,8 +1372,19 @@ input:focus-visible {
 
 /* The spec brief: open and headless on its own page, a collapsed disclosure in
    the landing's embed, where it was taking 284px of an 826px column and
-   leaving the code 332. Scoped under .spec-x like the rest of the Explorer. */
-.spec-x-brief { min-height: 0; }
+   leaving the code 332. Scoped under .spec-x like the rest of the Explorer.
+
+   flex-shrink: 0, and it replaces a min-height: 0 that was defensive boilerplate
+   rather than a measurement. <main> is a flex column of a definite height, and
+   every other child of it -- back button, stats, loss banner, tab strip, and the
+   brief's own inner div -- sets flexShrink: 0 inline. The details wrapper was the
+   one item the algorithm was free to crush, and min-height: 0 let it go all the
+   way: measured at 390x844 the element was 0px tall around 660px of content, which
+   kept painting straight down through the tab strip and the code. That is the
+   "ОБ ЭТОЙ СПЕКЕ under the tabs" overlap. Unshrunk the column simply grows and
+   <main> scrolls, which on a phone it already does. Desktop is untouched: at 1280
+   the brief measures 283px either way, because nothing was shrinking it there. */
+.spec-x-brief { flex-shrink: 0; }
 .spec-x-brief:not(.is-collapsible) > summary { display: none; }
 .spec-x-brief.is-collapsible > summary {
   display: flex;

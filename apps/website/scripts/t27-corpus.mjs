@@ -9,13 +9,13 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 
 /**
- * A spec's own header comments, as its description.
+ * A spec's own header comment lines, in file order.
  *
  * Specs open with either `//` or `;` comment lines. SPDX, decorative rules and
  * the φ banner are dropped -- they are boilerplate on nearly every file and say
  * nothing about the individual spec.
  */
-export function describe(text) {
+export function headerLines(text) {
   const out = []
   for (const raw of text.split('\n')) {
     const line = raw.trim()
@@ -31,7 +31,65 @@ export function describe(text) {
     out.push(body)
     if (out.length >= 6) break
   }
-  return out.join(' ').replace(/\s+/g, ' ').trim() || null
+  return out
+}
+
+/**
+ * Drop a leading self-reference from a header line, or return null if there is none.
+ *
+ * Filename first, then the bare stem, so `gf64.t27 — GoldenFloat64` loses the
+ * whole filename rather than stopping at `gf64`. A directory prefix is allowed
+ * in front of either: headers routinely write the path as the author's own
+ * checkout saw it (`t27/specs/numeric/gf128.t27`), which is not the path this
+ * corpus vendors the file at, so matching `rel` literally misses them.
+ */
+function stripSelfReference(head, rel) {
+  const base = rel.split('/').pop() ?? ''
+  for (const name of [base, base.replace(/\.t27$/, '')]) {
+    if (!name) continue
+    const re = new RegExp(`^(?:[\\w.@-]+/)*${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+    const m = head.match(re)
+    if (m) return head.slice(m[0].length).replace(/^\s*[-–—:|,.]+\s*/, '').trim()
+  }
+  return null
+}
+
+/**
+ * A spec's header comment, kept in the shape its author wrote it in: the
+ * opening line as a title, the rest as the description under it.
+ *
+ * These were previously joined into one string with spaces. That read as a
+ * run-on -- "hello_world.t27 -- start here The smallest spec that still shows
+ * every part of the language: constants," -- and the card clamps to two lines,
+ * so the title ate the room the actual sentence needed. Measured over the
+ * vendored corpus: 710 of 1044 specs write a title line and then a body, so the
+ * structure being discarded here is the common case, not an edge one.
+ *
+ * A title that only restates the filename is dropped. 520 of those first lines
+ * open with the spec's own name, which the card already prints directly above
+ * as its path -- `gf64.t27 — GoldenFloat64 Encode/Decode` is worth one line of a
+ * card only as `GoldenFloat64 Encode/Decode`. If nothing survives the strip the
+ * line was pure filename, and the line below it becomes the title instead.
+ *
+ * A first line long enough to be prose rather than a label is left in the body:
+ * promoting a sentence to a title would misreport what the file says.
+ */
+const TITLE_MAX = 80
+
+export function describe(text, rel = '') {
+  const lines = headerLines(text)
+  if (!lines.length) return { title: null, description: null }
+
+  let title = null
+  if (lines.length > 1) {
+    let head = stripSelfReference(lines[0], rel) ?? lines[0]
+    // Pure filename: it carried nothing the path does not already say.
+    if (!head) { lines.shift(); head = lines.length > 1 ? lines[0] : '' }
+    if (head && head.length <= TITLE_MAX) { title = head; lines.shift() }
+  }
+
+  const description = lines.join(' ').replace(/\s+/g, ' ').trim() || null
+  return { title, description }
 }
 
 /**
@@ -209,7 +267,7 @@ export function corpusEntry(rel, repo, text, analyze) {
     module: moduleMatch ? moduleMatch[1] : null,
     lines: text.split('\n').length,
     bytes: Buffer.byteLength(text, 'utf8'),
-    description: describe(text),
+    ...describe(text, rel),
     health,
     tokens: a?.tokenCount ?? 0,
     nodes: a?.nodeCount ?? 0,
@@ -281,7 +339,9 @@ export function registerDescriptionExceptions(entries, excPath) {
   if (!existsSync(excPath)) return null
   const exc = JSON.parse(readFileSync(excPath, 'utf8'))
   exc.ru = exc.ru || {}
-  const descs = [...new Set(entries.map((e) => e.description).filter(Boolean))]
+  // Titles as well as bodies: both are the author's own words lifted out of the
+  // file, so both reach the page in whatever language they were written in.
+  const descs = [...new Set(entries.flatMap((e) => [e.title, e.description]).filter(Boolean))]
   // Only the ones the audit would actually flag; anything shorter passes on
   // its own and does not belong in an exception list.
   exc.ru.specs = descs.filter((d) => d.length > 45).sort()
