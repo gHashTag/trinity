@@ -21,7 +21,7 @@ export const postsIndex: PostMeta[] = [
       "Mask rules and the repeat ban were tuned on the same bench they are reported on; no held-out spec set exists for them.",
       "The 72% compile union is per-item over unlimited retries (~21 samples median); compile@1 on fresh items is far lower.",
       "The bench's judge is the spec's own tests, and some of those tests are weak -- that is what the strict subset is for, but weak-test leakage outside it is unquantified.",
-      "Every number here comes from the t27-finetuned bench checkpoint; the HF package ships the base checkpoint whose card claims no quality. Whether to publish the finetune (e.g. as tern-tc-9m-t27) is an open decision.",
+      "Every number here comes from the t27-finetuned bench checkpoint; the HF package ships the base checkpoint whose card claims no quality. The finetune is now published as playra/tern-tc-9m-t27; its finetune corpus and the bench corpus are both t27 specs at pinned commits, so no held-out set separates them.",
     ],
     published: true,
     ru: {
@@ -33,7 +33,7 @@ export const postsIndex: PostMeta[] = [
         "Правила маски и запрет повторов настраивались на том же бенчмарке, на котором отчётываются; held-out сета спек для них нет.",
         "Union compile 72% — на айтем при неограниченных повторах (медиана ~21 сэмпл); compile@1 на свежих айтемах сильно ниже.",
         "Судья бенчмарка — собственные тесты спеки, и часть тестов слабая — для этого и есть строгое подмножество, но утечка слабых тестов вне его не квантифицирована.",
-        "Все числа — с файнтюннутого t27-чекпоинта; HF-пакет шипит базовый, чья карточка не делает заявлений о качестве. Публиковать ли сам файнтюн (например, как tern-tc-9m-t27) — открытый вопрос.",
+        "Все числа — с файнтюннутого t27-чекпоинта; HF-пакет шипит базовый, чья карточка не делает заявлений о качестве. Файнтюн опубликован как playra/tern-tc-9m-t27; его файнтюн-корпус и корпус бенчмарка — оба спеки t27 на запиненных коммитах, held-out сета между ними нет.",
       ],
     },
   },
