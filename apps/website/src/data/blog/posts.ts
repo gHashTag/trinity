@@ -16,6 +16,7 @@ import { body as body_four_languages_one_tri_extension, ruBody as ruBody_four_la
 import { body as body_the_fpga_row_was_corrected, ruBody as ruBody_the_fpga_row_was_corrected } from './bodies/the-fpga-row-was-corrected'
 import { body as body_a_small_agent_needs_an_exact_judge, ruBody as ruBody_a_small_agent_needs_an_exact_judge } from './bodies/a-small-agent-needs-an-exact-judge'
 import type { Post, PostBody } from './types'
+import { body as body_mask_over_scale_ternary_drafts_that_compile, ruBody as ruBody_mask_over_scale_ternary_drafts_that_compile } from './bodies/mask-over-scale-ternary-drafts-that-compile'
 import { body as body_tri_mined_not_sold, ruBody as ruBody_tri_mined_not_sold } from './bodies/tri-mined-not-sold'
 import { body as body_trained_weights_ran_receipts_were_not_checked, ruBody as ruBody_trained_weights_ran_receipts_were_not_checked } from './bodies/trained-weights-ran-receipts-were-not-checked'
 import { body as body_golden_ratio_weights_ran_on_the_board, ruBody as ruBody_golden_ratio_weights_ran_on_the_board } from './bodies/golden-ratio-weights-ran-on-the-board'
@@ -152,6 +153,7 @@ const bodies: Record<string, PostBody> = {
   'a-small-agent-needs-an-exact-judge': { body: body_a_small_agent_needs_an_exact_judge, ruBody: ruBody_a_small_agent_needs_an_exact_judge },
   'trained-weights-ran-receipts-were-not-checked': { body: body_trained_weights_ran_receipts_were_not_checked, ruBody: ruBody_trained_weights_ran_receipts_were_not_checked },
   'golden-ratio-weights-ran-on-the-board': { body: body_golden_ratio_weights_ran_on_the_board, ruBody: ruBody_golden_ratio_weights_ran_on_the_board },
+  'mask-over-scale-ternary-drafts-that-compile': { body: body_mask_over_scale_ternary_drafts_that_compile, ruBody: ruBody_mask_over_scale_ternary_drafts_that_compile },
 }
 
 export type { Block, Post } from './types'

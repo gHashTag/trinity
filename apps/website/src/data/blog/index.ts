@@ -3,6 +3,39 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "mask-over-scale-ternary-drafts-that-compile",
+    title: "Mask over scale: a 9M ternary model whose drafts compile",
+    summary: "[measured on the 391-item strict t27 bench: 0/150 flat vs 3/150 masked on the same 30 hardest items; 65% of flat first compile errors are undeclared identifiers; strict loop closed at 30 rounds / 8083 samples = 4/391 pass, 283/391 compile; three decode constraints, zero parameters] tern_tc, a 9M ternary model sized to XC7A200T block RAM, cannot learn the names of a scope -- so instead of scaling it we constrained its decoder: a scope mask at every decode step, diversity by mask rule rather than temperature (15/30 vs 3/30 union compile), and a repeat-n-gram ban after 1517/2177 blocked candidates turned out to be repetition cascades. The result is not a solver: 1.0% of the strict set passes. It is a draft model for a verifier -- 72% of the strict set gets a compiling body, tri tc-draft returns the first test-verified one or an honest refusal.",
+    date: "2026-09-29",
+    readingMinutes: 7,
+    tags: ["tern_tc", "Ternary", "t27", "Code generation", "Verification"],
+    receipts: [
+      { label: "The package: model, tokenizer, verify.sh, sha256 receipts", href: "https://huggingface.co/playra/tern-tc-9m" },
+      { label: "The public verify workflow -- green against today's hub bytes", href: "https://github.com/gHashTag/tern-tc-9m-verify/actions" },
+      { label: "Earlier: a small agent needs an exact judge", href: "https://t27.ai/blog/a-small-agent-needs-an-exact-judge/" },
+      { label: "Earlier: ternary won the wire, not the gate", href: "https://t27.ai/blog/ternary-won-the-wire-not-the-gate/" },
+    ],
+    openQuestions: [
+      "The selfcheck loop is not a clean A/B on --no-repeat: the flag went in at round 25 of a live run, so the two late passes are consistent with the ban but not isolated by it.",
+      "The strict loop ran one seed of the model; ternary training spread at 52m was measured at ~1.7%, so 4-vs-3 passes is within noise and the honest number is 'a handful, not a rate'.",
+      "Mask rules and the repeat ban were tuned on the same bench they are reported on; no held-out spec set exists for them.",
+      "The 72% compile union is per-item over unlimited retries (~21 samples median); compile@1 on fresh items is far lower.",
+      "The bench's judge is the spec's own tests, and some of those tests are weak -- that is what the strict subset is for, but weak-test leakage outside it is unquantified.",
+    ],
+    published: true,
+    ru: {
+      title: "Маска вместо масштаба: тернарная модель на 9M, чьи черновики компилируются",
+      summary: "[измерено на строгом сете t27 из 391 айтемов: 0/150 плоской генерации против 3/150 маскированной на тех же 30 труднейших; 65% первых ошибок компиляции — необъявленные идентификаторы; строгая петля закрыта на 30 раундах / 8083 сэмплах = 4/391 pass, 283/391 compile; три ограничения декодера, ноль параметров] tern_tc, тернарная модель на 9M под блочную память XC7A200T, не может выучить имена областей видимости — и вместо масштабирования мы ограничили её декодер: маска области видимости на каждом шаге, разнообразие правилами маски, а не температурой (15/30 против 3/30 union compile), и запрет n-граммов повторов после того, как 1517/2177 нескомпилированных кандидатов оказались каскадами повторов. Результат — не решатель: 1.0% строгого сета проходит тесты. Это модель-черновик для верификатора: 72% сета получает компилируемое тело, tri tc-draft возвращает первое проверенное тестами или честный отказ.",
+      openQuestions: [
+        "Петля самопроверки — не чистый A/B по --no-repeat: флаг вошёл в живой прогон на 25-м раунде, поэтому два поздних прохождения согласуются с запретом, но не изолированы им.",
+        "Строгая петля гонялась на одном сиде модели; разброс тернарного обучения на 52m измерен как ~1.7%, поэтому 4 против 3 прохождений — внутри шума, честная формулировка — «горстка, а не rate».",
+        "Правила маски и запрет повторов настраивались на том же бенчмарке, на котором отчётываются; held-out сета спек для них нет.",
+        "Union compile 72% — на айтем при неограниченных повторах (медиана ~21 сэмпл); compile@1 на свежих айтемах сильно ниже.",
+        "Судья бенчмарка — собственные тесты спеки, и часть тестов слабая — для этого и есть строгое подмножество, но утечка слабых тестов вне его не квантифицирована.",
+      ],
+    },
+  },
+  {
     slug: "golden-ratio-weights-ran-on-the-board",
     title: "Golden-ratio weights ran on the board. The phi cost one add per output.",
     summary: "[measured on FPGA: layer 0, 403,200 of 403,200 receipts verified, registered before the run; the phi step and digit recombination are host arithmetic; one synthetic activation vector] The TNF paper's GFTernary weights, t*phi, applied to activations in Z[phi], ran on the unchanged AX7203 node with no multiplier. Each output is W.b + (W.a + W.b)*phi, so the node computes only ternary dots and the host adds once per output. All 5,632 Z[phi] rows of layer 0 matched a plain Z[phi] multiplication oracle bit for bit.",
