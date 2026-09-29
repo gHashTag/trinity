@@ -1,8 +1,7 @@
 // BROWSER: the person's own remote browser as a view of the Queen. Decisions
 // live in lib/queenBrowser.ts; this file only draws them.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { appSessionFromWindow } from '../lib/appSessionIdentity'
-import { insidePlayer } from '../lib/triScreens'
 import {
   APP_BROWSER_URL,
   STARTING_POLL_MS,
@@ -25,9 +24,10 @@ import './QueenBrowser.css'
 
 export interface BrowserCopy {
   preview: string
-  nested: string
   signin: string
   openInApp: string
+  fullscreen: string
+  exitFullscreen: string
   none: string
   open: string
   starting: string
@@ -52,17 +52,7 @@ const brokerEnv = {
 }
 
 export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; embedded: boolean; lang?: 'ru' | 'en' }) {
-  const nested = useMemo(
-    () =>
-      insidePlayer({
-        isTop: window.self === window.top,
-        ancestorOrigins: window.location.ancestorOrigins ? [...window.location.ancestorOrigins] : undefined,
-        referrer: document.referrer,
-        ownOrigin: window.location.origin,
-      }),
-    [],
-  )
-  const mode = panelMode({ embedded, nested, session: appSessionFromWindow() })
+  const mode = panelMode({ embedded, session: appSessionFromWindow() })
 
   const [view, setView] = useState<BrowserView | null>(null)
   const [busy, setBusy] = useState(false)
@@ -165,21 +155,25 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
     return () => window.clearTimeout(timer)
   }, [view, act])
 
+  // The full screen is a BUTTON, not a takeover (owner, 2026-09-29: the
+  // browser opens in this window, and leaving it is the person's press).
+  // The frame is the element that goes full: it carries allow="fullscreen",
+  // so the pod viewer fills the screen without the board leaving the tab.
+  const [isFull, setIsFull] = useState(false)
+  useEffect(() => {
+    const onChange = () => setIsFull(Boolean(document.fullscreenElement))
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen()
+    else frame.current?.requestFullscreen().catch(() => {})
+  }
+
   if (mode === 'preview') {
     return (
       <div className="queen27-browser is-note">
         <p>{c.preview}</p>
-      </div>
-    )
-  }
-
-  if (mode === 'nested') {
-    return (
-      <div className="queen27-browser is-note">
-        <p>{c.nested}</p>
-        <a className="queen27-browser-btn" href={APP_BROWSER_URL} target="_top" rel="noopener">
-          {c.openInApp}
-        </a>
       </div>
     )
   }
@@ -227,6 +221,9 @@ export function QueenBrowser({ c, embedded, lang = 'en' }: { c: BrowserCopy; emb
               {c.handBack}
             </button>
           ) : null}
+          <button type="button" className="queen27-browser-btn is-quiet" onClick={toggleFullscreen}>
+            {isFull ? c.exitFullscreen : c.fullscreen}
+          </button>
           <button type="button" className="queen27-browser-btn is-quiet" disabled={busy} onClick={() => void act('close')}>
             {c.close}
           </button>
