@@ -3,7 +3,7 @@ import type { Block } from '../types'
 export const body: Block[] = [
   {
     kind: 'p',
-    text: "tern_tc is a 9M-parameter ternary model (weights in {-1, 0, +1}), six layers, width 320, 8K vocabulary, sized to the block RAM of an XC7A200T. Its job is to fill in function bodies in t27 specs, where the spec's own tests judge the answer. On the strict half of that bench -- 391 functions whose tests catch both constant mutants -- flat sampling scored 0 passes in 150 samples on the hardest 30 items, and 65% of the first compile errors were 'use of undeclared identifier'. The model does not know the names, and at 9M parameters it cannot. This post is about what we did instead of scaling it: we constrained the decoder.",
+    text: "tern_tc is a 9M-parameter ternary model (weights in {-1, 0, +1}), six layers, width 320, 8K vocabulary, sized to the block RAM of an XC7A200T. Its job is to fill in function bodies in t27 specs, where the spec's own tests judge the answer. On the strict half of that bench -- 391 functions whose tests catch both constant mutants -- flat sampling scored 0 passes in 150 samples on the hardest 30 items, and 65% of the first compile errors were 'use of undeclared identifier'. The model does not know the names, and at 9M parameters it cannot. This post is about what we did instead of scaling it: we constrained the decoder. Provenance, so nothing hides: every number below comes from one checkpoint -- this architecture after a t27-domain finetune, the base model continued for about three epochs (22M tokens) over the t27 spec corpus itself. The published package ships the base checkpoint and its card claims no quality; the finetuned bench checkpoint is a working artifact, not (yet) a published one.",
   },
   {
     kind: 'h',
@@ -43,7 +43,7 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: "For scale, the 100M fp model on the same bench scores 7.4% pass@10 while its ternary twin scores 2.3%, and the gap grew from 1.5x to 3.2x as data quadrupled. Ternarity is expensive for code; that result is published too, and this post is not an argument against it -- it is the honest account of what a board-sized ternary model is actually for.",
+    text: "For scale, the 100M fp model on the same bench scores 7.4% pass@10 while its ternary twin scores 2.3% -- both after the same t27 finetune, so the comparison is apples to apples -- and the gap grew from 1.5x to 3.2x as data quadrupled. Ternarity is expensive for code; that result is published too, and this post is not an argument against it -- it is the honest account of what a board-sized ternary model is actually for.",
   },
   {
     kind: 'h',
@@ -51,14 +51,14 @@ export const body: Block[] = [
   },
   {
     kind: 'p',
-    text: "The weights ship as an open package with receipts: the model card, the bench numbers and the CI contract are generated from t27 specs that carry their own tests, and a public verify workflow re-hashes the package, rebuilds the C engine, reproduces the board generation receipt (1 3 204 276 405 659 85 1516) and checks bit parity with PyTorch -- green against the bytes on the hub today.",
+    text: "The weights that ship are the base checkpoint: the package, its model card, the bench charts and the CI contract are generated from t27 specs that carry their own tests, and a public verify workflow re-hashes the package, rebuilds the C engine, reproduces the board generation receipt (1 3 204 276 405 659 85 1516) and checks bit parity with PyTorch -- green against the bytes on the hub today. The bench numbers in this post are from the finetuned checkpoint described above, not from the shipped base; publish that finetune or not is a decision still open.",
   },
 ]
 
 export const ruBody: Block[] = [
   {
     kind: 'p',
-    text: "tern_tc — тернарная модель на 9M параметров (веса из {-1, 0, +1}), шесть слоёв, ширина 320, словарь 8K, рассчитанная под блочную память XC7A200T. Её задача — заполнять тела функций в спеках t27, где ответ судят собственные тесты спеки. На строгой половине бенчмарка — 391 функция, тесты которой ловят обоих константных мутантов, — плоский сэмплинг дал 0 прохождений из 150 на 30 самых трудных айтемах, а 65% первых ошибок компиляции были «use of undeclared identifier». Модель не знает имён — и на 9M параметров не может. Этот пост о том, что мы сделали вместо масштабирования: ограничили декодер.",
+    text: "tern_tc — тернарная модель на 9M параметров (веса из {-1, 0, +1}), шесть слоёв, ширина 320, словарь 8K, рассчитанная под блочную память XC7A200T. Её задача — заполнять тела функций в спеках t27, где ответ судят собственные тесты спеки. На строгой половине бенчмарка — 391 функция, тесты которой ловят обоих константных мутантов, — плоский сэмплинг дал 0 прохождений из 150 на 30 самых трудных айтемах, а 65% первых ошибок компиляции были «use of undeclared identifier». Модель не знает имён — и на 9M параметров не может. Этот пост о том, что мы сделали вместо масштабирования: ограничили декодер. Провенанс, чтобы ничего не пряталось: все числа ниже — один чекпоинт, эта же архитектура после доменного файнтюна: базовая модель, продолженная ~3 эпохами (22M токенов) по самому корпусу t27-спек. Публичный пакет шипит базовый чекпоинт, и его карточка не делает заявлений о качестве; файнтюннутый чекпоинт бенчмарка — рабочий артефакт, пока не публичный.",
   },
   {
     kind: 'h',
@@ -98,7 +98,7 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: "Для масштаба: модель на 100M с плавающими весами на том же бенчмарке даёт 7.4% pass@10, её тернарная пара — 2.3%, и разрыв вырос с 1.5x до 3.2x при учетверении данных. Тернарность дорога для кода; этот результат тоже опубликован, и этот пост — не спор с ним, а честный отчёт о том, для чего на самом деле нужна тернарная модель-board-размера.",
+    text: "Для масштаба: модель на 100M с плавающими весами на том же бенчмарке даёт 7.4% pass@10, её тернарная пара — 2.3% (обе — после такого же t27-файнтюна, то есть сравнение честное), и разрыв вырос с 1.5x до 3.2x при учетверении данных. Тернарность дорога для кода; этот результат тоже опубликован, и этот пост — не спор с ним, а честный отчёт о том, для чего на самом деле нужна тернарная модель-board-размера.",
   },
   {
     kind: 'h',
@@ -106,6 +106,6 @@ export const ruBody: Block[] = [
   },
   {
     kind: 'p',
-    text: "Веса опубликованы открытым пакетом с квитанциями: карточка модели, числа бенчмарка и контракт CI генерируются из t27-спек, несущих собственные тесты, а публичный verify-workflow перепроверяет хеши пакета, пересобирает C-движок, воспроизводит бордовую квитанцию генерации (1 3 204 276 405 659 85 1516) и держит битовый паритет с PyTorch — зелёный против байтов на хабе сегодня.",
+    text: "Публикуются веса базового чекпоинта: пакет, карточка модели, графики бенчмарка и контракт CI генерируются из t27-спек, несущих собственные тесты, а публичный verify-workflow перепроверяет хеши пакета, пересобирает C-движок, воспроизводит бордовую квитанцию генерации (1 3 204 276 405 659 85 1516) и держит битовый паритет с PyTorch — зелёный против байтов на хабе сегодня. Числа бенчмарка в этом посте — с файнтюннутого чекпоинта, описанного выше, а не с базового из пакета; публиковать сам файнтюн или нет — вопрос ещё открытый.",
   },
 ]
