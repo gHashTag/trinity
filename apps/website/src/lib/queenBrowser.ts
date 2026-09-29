@@ -421,6 +421,15 @@ const VERB: Record<string, { ru: string; en: string }> = {
   browser_status: { ru: 'проверил вкладки', en: 'checked tabs' },
   browser_close_tab: { ru: 'закрыл вкладку', en: 'closed a tab' },
   browser_ask_permission: { ru: 'спросил разрешения', en: 'asked permission' },
+  /*
+   * The two asks. browser_ask_input is the agent stopping at a sign-in
+   * field and pointing at it: the words it asked with are the step's text
+   * (d.what below), so the throne reads the question right in the journal
+   * strip -- and answers by typing into the picture, the wheel theirs on
+   * touch. browser_logins says which networks hold a cookie, never which.
+   */
+  browser_ask_input: { ru: 'попросил ввести', en: 'asked for input' },
+  browser_logins: { ru: 'проверил входы', en: 'checked logins' },
 }
 
 /**
