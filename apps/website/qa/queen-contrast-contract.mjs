@@ -193,6 +193,7 @@ const REACHED = {
     'src/components/QueenChat.css',
     'src/components/QueenCombEmbedded.css',
     'src/components/QueenContext.css',
+    'src/components/QueenEvidence.css',
     'src/components/QueenIntel.css',
     'src/components/QueenLoading.css',
     'src/components/QueenMcp.css',
@@ -239,6 +240,7 @@ const REACHED = {
     'src/components/QueenChat.css',
     'src/components/QueenCombEmbedded.css',
     'src/components/QueenHeroBlock.css',
+    'src/components/QueenEvidence.css',
     'src/components/SpecHeroBlock.css',
     /* Not imported by any component on the landing page. They arrive through
        the two `@import` lines at the top of QueenCatalogHive.css, which is what
@@ -700,6 +702,13 @@ const INKS = [
 ]
 
 const table = []
+// Evidence text is small in both the disclosure and its opaque report body.
+for (const ink of ['#d8ebe3', '#aebfb8', '#64dcff', '#ffd45a']) {
+  for (const ground of [parseColor('#060c0d'), composite(PANEL, LIT)]) {
+    assert.ok(contrast(parseColor(ink), ground) >= 4.5,
+      `Queen evidence ink ${ink} must meet body-text AA on both surfaces`)
+  }
+}
 for (const ground of GROUNDS) {
   for (const ink of INKS) {
     for (const [field, fieldName] of [[LIT, 'lit'], [DARK, 'dark']]) {

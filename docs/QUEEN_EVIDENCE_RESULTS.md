@@ -40,9 +40,11 @@ checker and findings ledger. English and Russian copy keep the same limits.
 - npm run check:api: PASS; existing 110 unmapped fields unchanged.
 - node qa/queen-catalog-hive.mjs: PASS, 1577 specs / 12 repositories.
 - npm run check:subpath-urls: PASS.
+- npm run check:queen-contrast: PASS; new stylesheet registered under both
+  route roots, with eight body-text AA checks for evidence inks/surfaces.
 - ARIA references: initial invocation failed because the existing script uses
   URL.pathname without decoding the workspace's space. Re-run through a
-  space-free /tmp symlink with Node preserve-symlinks flags.
+  space-free /tmp symlink with Node preserve-symlinks flags: PASS, 39 references.
 - BrowserOS neo: desktop EN 1254x860 and phone RU 390x844 rendered and
   screenshots inspected. Disclosure expands and scrolls; document horizontal
   overflow=false. Phone search control stays on its own toolbar row.
@@ -53,3 +55,13 @@ The app.t27.ai Queen page embeds t27.ai. Source changes alone do not update
 that apex. The deploy-site workflow copies the build into
 gHashTag/ghashtag.github.io; dmitrii-f-t27 has no push permission there.
 Merge and deployment remain with the repository owner per project policy.
+
+## CI follow-up
+
+The initial website gate caught the unregistered evidence stylesheet; it is
+now registered and passes locally. The work-report validator caught a short
+blog outline entry; the PR report is corrected before validation/re-submission.
+Separate initial failures were missing src/hslm/tjepa.zig in Documentation
+Consistency, an unimplemented tri stress --health score, and HTTP 401 in the
+project automation. These are outside the changed website files and are not
+reported as passing. Review the PR checks for the latest head before merging.
