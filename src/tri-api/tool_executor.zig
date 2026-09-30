@@ -210,7 +210,12 @@ pub const ToolExecutor = struct {
         const path = json.extractField(input_json, "path") orelse
             return .{ .output = "error: missing 'path' field", .is_error = true };
 
-        // Create checkpoint before writing
+        if (!isPathSafe(path))
+            return .{ .output = "error: path traversal blocked", .is_error = true };
+        if (json.extractField(input_json, "content") == null)
+            return .{ .output = "error: missing 'content' field", .is_error = true };
+
+        // Reject invalid requests before checkpointing can mutate the working tree.
         self.checkpoint.createBeforeWrite(path);
 
         return self.writeFile(input_json);
@@ -218,8 +223,11 @@ pub const ToolExecutor = struct {
 
     /// Reject paths containing traversal sequences
     fn isPathSafe(path: []const u8) bool {
-        // Block .. traversal
-        if (std.mem.indexOf(u8, path, "..") != null) return false;
+        if (path.len == 0 or std.fs.path.isAbsolute(path)) return false;
+        var components = std.mem.splitScalar(u8, path, '/');
+        while (components.next()) |component| {
+            if (std.mem.eql(u8, component, "..")) return false;
+        }
         // Block null bytes
         if (std.mem.indexOfScalar(u8, path, 0) != null) return false;
         return true;
@@ -272,14 +280,14 @@ pub const ToolExecutor = struct {
 
     /// Allowed command prefixes for bash tool
     const allowed_bash_cmds = [_][]const u8{
-        "git ",  "git\x00", "zig ", "zig\x00", "cat ",    "ls ",    "grep ", "find ",
-        "echo ", "mkdir ",  "rm ",  "tri ",    "docker ", "gh ",    "head ", "tail ",
-        "wc ",   "pwd",     "date", "env",     "which ",  "file ",  "diff ", "sort ",
-        "test ", "cd ",     "cp ",  "mv ",     "chmod ",  "touch ", "sed ",  "awk ",
+        "git ",  "git\x00", "zig ",   "zig\x00", "cat ",    "ls ",   "grep ", "find ",
+        "echo ", "mkdir ",  "rm ",    "tri ",    "docker ", "gh ",   "head ", "tail ",
+        "wc ",   "which ",  "file ",  "diff ",   "sort ",   "test ", "cd ",   "cp ",
+        "mv ",   "chmod ",  "touch ", "sed ",    "awk ",
     };
 
     /// Shell metacharacters that enable command chaining/injection
-    const shell_meta = [_]u8{ '|', ';', '`', '$', '(', ')', '{', '}' };
+    const shell_meta = [_]u8{ '|', ';', '`', '$', '(', ')', '{', '}', '&', '<', '>', '\n', '\r', 0 };
 
     fn isBashAllowed(command: []const u8) bool {
         const trimmed = std.mem.trimLeft(u8, command, &std.ascii.whitespace);
@@ -295,7 +303,7 @@ pub const ToolExecutor = struct {
             if (std.mem.startsWith(u8, trimmed, prefix)) return true;
         }
         // Also allow bare commands without args
-        const bare_ok = [_][]const u8{ "pwd", "date", "env", "ls" };
+        const bare_ok = [_][]const u8{ "pwd", "date", "ls" };
         for (bare_ok) |cmd| {
             if (std.mem.eql(u8, trimmed, cmd)) return true;
         }
@@ -387,6 +395,9 @@ test "isPathSafe blocks traversal" {
     try std.testing.expect(!ToolExecutor.isPathSafe("../../../etc/passwd"));
     try std.testing.expect(!ToolExecutor.isPathSafe("foo/../../../bar"));
     try std.testing.expect(!ToolExecutor.isPathSafe("foo\x00bar"));
+    try std.testing.expect(!ToolExecutor.isPathSafe("/etc/passwd"));
+    try std.testing.expect(!ToolExecutor.isPathSafe(""));
+    try std.testing.expect(ToolExecutor.isPathSafe("a..b.txt"));
     try std.testing.expect(ToolExecutor.isPathSafe("src/tri/main.zig"));
     try std.testing.expect(ToolExecutor.isPathSafe("specs/tri/mu_agent.tri"));
 }
@@ -401,6 +412,12 @@ test "isBashAllowed blocks injection" {
     try std.testing.expect(!ToolExecutor.isBashAllowed("echo $(whoami)"));
     try std.testing.expect(!ToolExecutor.isBashAllowed("ls | xargs rm"));
     try std.testing.expect(!ToolExecutor.isBashAllowed("echo `id`"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("echo x & ls"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("echo x > file"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("cat < file"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("ls\nwhoami"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("pwdxxx"));
+    try std.testing.expect(!ToolExecutor.isBashAllowed("env sh -c whoami"));
 }
 
 test "redactSecrets blocks API keys" {
@@ -423,4 +440,14 @@ test "redactSecrets passes clean strings" {
     const clean = "git status --short";
     const r1 = ToolExecutor.redactSecrets(&buf, clean);
     try std.testing.expectEqualSlices(u8, clean, r1);
+}
+
+test "invalid writes are rejected before checkpoint side effects" {
+    var executor = ToolExecutor{ .allocator = std.testing.allocator };
+    const bad_path = executor.writeFileWithCheckpoint("{\"path\":\"../outside\",\"content\":\"x\"}");
+    try std.testing.expect(bad_path.is_error);
+    try std.testing.expectEqualStrings("error: path traversal blocked", bad_path.output);
+    const no_content = executor.writeFileWithCheckpoint("{\"path\":\"valid.txt\"}");
+    try std.testing.expect(no_content.is_error);
+    try std.testing.expectEqualStrings("error: missing 'content' field", no_content.output);
 }
