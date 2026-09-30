@@ -73,7 +73,7 @@ jobs:
       - name: the ratchet can fail
         run: npm run typecheck:ratchet -- --selftest
       - name: typecheck ratchet
-        run: npm run typecheck:ratchet
+        run: npm run typecheck:ratchet && npm run check:queen-evidence
 
       # Compares names only -- it cannot see units, which is why A34's five
       # mappable fields stay unwired rather than relabelled as microseconds.

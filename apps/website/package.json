@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "check:queen-evidence": "node scripts/queen-evidence-from-spec.mjs --check",
+    "predev": "node scripts/queen-evidence-from-spec.mjs --check",
+    "prebuild:ci": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs && node scripts/viewport-from-spec.mjs && node scripts/onboarding-from-spec.mjs && node scripts/queen-wars-from-spec.mjs && node scripts/queen-evidence-from-spec.mjs --check",
     "atlas": "node --experimental-strip-types scripts/universe-atlas.mjs",
   "discover": "node scripts/discover-t27-worlds.mjs",
   "check:discovery": "node --experimental-strip-types qa/t27-world-discovery.mjs",
@@ -18,7 +21,6 @@
     "core": "node scripts/spec-core.mjs",
     "check:shared-core": "node --experimental-strip-types qa/shared-spec-core.mjs",
     "prebuild": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs && node scripts/viewport-from-spec.mjs && node scripts/onboarding-from-spec.mjs && node scripts/queen-wars-from-spec.mjs",
-    "prebuild:ci": "npm run core -- index && node scripts/skills-core.mjs index && node scripts/agents-from-specs.mjs && node scripts/docs-from-specs.mjs && node scripts/viewport-from-spec.mjs && node scripts/onboarding-from-spec.mjs && node scripts/queen-wars-from-spec.mjs",
     "dev": "vite",
     "build": "vite build",
     "build:ci": "vite build",
