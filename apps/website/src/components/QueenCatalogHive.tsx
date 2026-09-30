@@ -3,6 +3,7 @@ import {useSearchParams} from 'react-router-dom';
 import {QueenCombBabylon} from './QueenCombBabylon';
 import {catalogUniverse,catalogFocus,catalogFocusHash,catalogLabelField,catalogPortalSize,catalogSpecSelection,type CatalogController} from './queenCatalogData';
 import {QueenCatalogSpec} from './QueenCatalogSpec';
+import {QueenEvidence} from './QueenEvidence';
 import QueenCellStage,{type CellSpecLink} from './QueenCellStage';
 import {atlasAgentPacket,type UniverseAtlas,type AtlasIssue} from '../lib/queenUniverseAtlas';
 import type {CombHandle} from './queenHud';
@@ -109,6 +110,7 @@ export function QueenCatalogHive({atlas,lang,handleRef,foundationVisible=true,fi
       <span>{repo??'TRI-27 · S³AI DNA'}</span><span>{repo?issueRows.length:world.displays.filter(Boolean).length} issues</span><span>{atlas.specs.length} .t27</span><span>{map.regions?.length} {ru?'репозиториев':'repositories'}</span>
       <small>{ru?'Публичный снимок, не live · золото = спека, не закрытая issue':'Public snapshot, not live · gold = spec, not a resolved issue'}</small>
     </div>
+    <QueenEvidence lang={lang}/>
     <button className="queen-catalog-search-toggle" aria-controls="queen-catalog-search-controls" aria-expanded={toolsOpen} onClick={()=>setToolsOpen(v=>!v)}>{toolsOpen?(ru?'Скрыть поиск':'Hide search'):(ru?'Поиск сот':'Find cells')}</button>
     <div className="queen-hive-inspect-tools queen-catalog-tools" id="queen-catalog-search-controls">
       <input aria-label={ru?'Найти спеку, репозиторий или задачу':'Find spec, repository or issue'} placeholder=".t27 / repo / #issue" value={query} onChange={e=>setQuery(e.target.value)}/>

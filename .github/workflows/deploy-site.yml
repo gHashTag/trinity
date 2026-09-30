@@ -38,6 +38,7 @@ jobs:
         working-directory: apps/website
         run: |
           npm ci
+          npm run check:queen-evidence
           npx vite build
 
       # The same three checks the PR runs, against the tree being published.
