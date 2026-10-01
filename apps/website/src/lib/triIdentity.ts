@@ -90,8 +90,15 @@ export const PLAYER_CALL_TIMEOUT_MS = 8000
  *
  * whoami is deliberately absent: it is this module's own call, made once per
  * person from loadProfile, not something a component asks for.
+ *
+ * Being on this list is necessary, not sufficient. The render keeps its own
+ * list of what a bare game token may call (GAME_TOKEN_TOOLS in render
+ * src/agent/routes.ts) and the two private boards are not on it, so on t27.ai
+ * they answer "refused" and the lane draws nothing private. They answer on
+ * app.t27.ai, where the token is the app session's. That is fail-closed and
+ * meant: widening the game token is the render's decision, not this page's.
  */
-export const PLAYER_TOOLS = ['hive_board'] as const
+export const PLAYER_TOOLS = ['hive_board', 'ball_board'] as const
 export type PlayerTool = (typeof PLAYER_TOOLS)[number]
 
 /**

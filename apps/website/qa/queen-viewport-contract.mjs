@@ -240,7 +240,8 @@ const DECLARED = [
   // carries: this list is the declaration, and a scroll owner that is declared
   // only as a side effect of sharing a class is one nobody has declared.
   // It does not appear in this gate's own runs, which are signed out.
-  '.queen27-cards', '.queen27-kanban', '.queen27-clients-lane', '.queen27-mission-map',
+  // The ALL lane (lib/ballBoard.ts) is the third, declared the same way.
+  '.queen27-cards', '.queen27-kanban', '.queen27-clients-lane', '.queen27-ball-lane', '.queen27-mission-map',
   '.queen27-factory', '.queen27-factory-bays ol',
   '.queen27-tech', '.queen27-tech-console', '.queen27-tech-map', '.queen27-tech-details',
   '.queen27-city-build-queue ol', '.queen27-hardware-foundry ol', '.queen27-city-console ol',
