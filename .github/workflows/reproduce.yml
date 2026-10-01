@@ -6,7 +6,7 @@ name: Reproduce the headless profile
 # empty directory and setup-zig keeps no cache, so nothing built before is reused.
 # The record of the run -- each command with its exit code, the compile failures by
 # root, the run steps, every compiled test root and every install with its sha256 --
-# is uploaded as the artifact reproduce-headless.
+# is uploaded as the artifact reproduce-headless-<arch>.
 
 on:
   pull_request:
@@ -28,8 +28,19 @@ on:
 
 jobs:
   headless:
-    name: Headless profile from a clean clone
-    runs-on: ubuntu-latest
+    # Both architectures the spec has floors for. The ARM64 JIT kernels run only on an ARM64
+    # machine: with x86_64 alone, two encoding errors in src/jit_arm64.zig (a CMLT for a CMGT,
+    # a 32-bit LDRSB under 64-bit arithmetic) had no runner that could execute them.
+    name: Headless profile from a clean clone (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +65,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reproduce-headless
+          # One artifact per architecture: upload-artifact@v4 refuses a second one by the same name.
+          name: reproduce-headless-${{ matrix.arch }}
           # The record and, beside it, the whole output of each command.
           path: |
             reproduce-headless.json

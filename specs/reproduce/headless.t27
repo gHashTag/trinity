@@ -56,14 +56,17 @@ pub const INSTALLS : [46]str = [
 ];
 ; The test graph: the floors it may not drop below. A graph that shrank is a partial graph, and a run step
 ; that ran no test is not a passing one: one does today, the step of external/zig-hslm/src/root.zig, the only
-; compiled test root without a test declaration. A skipped test is not a passing one either: the eight that
-; skip are the four x86-64 JIT tests of src/jit.zig, compiled into src/trinity.zig and src/e2e_test.zig, and
-; only off x86_64. The floor of passed tests is the aarch64 count, the lower of the two. Not every pass tested
-; something: 23 of the 24 tests of src/jit_arm64.zig, and 4 of the 5 of src/jit_x86_64.zig, return early off
-; their architecture and are counted as passed there.
+; compiled test root without a test declaration. A skipped test is not a passing one either, and what skips
+; depends on the machine: the four x86-64 JIT tests of src/jit.zig and the differential tests of the x86-64
+; kernels skip off x86_64, the differential test of the ARM64 kernels off aarch64 -- each counted once per
+; root that compiles it. So the floors are per architecture, ARCHES[i] with TESTS_PASSED_MIN[i] and
+; TESTS_SKIPPED_MAX[i], and a record from another architecture is not judged against either. Not every pass
+; tested something: 23 of the 24 older tests of src/jit_arm64.zig, and 4 of the 5 of src/jit_x86_64.zig,
+; return early off their architecture and are counted as passed there.
 pub const TEST_STEPS_MIN : u32 = 135;
-pub const TESTS_PASSED_MIN : u32 = 2760;
-pub const TESTS_SKIPPED_MAX : u32 = 8;
+pub const ARCHES : [2]str = ["x86_64", "aarch64"];
+pub const TESTS_PASSED_MIN : [2]u32 = [2773, 2763];
+pub const TESTS_SKIPPED_MAX : [2]u32 = [3, 13];
 pub const RUN_STEPS_WITH_TESTS_MIN : u32 = 66;
 pub const EMPTY_RUN_STEPS_MAX : u32 = 1;
 ; Every root the test step compiles, read from `--verbose` with empty caches; a root that leaves this list is
@@ -121,13 +124,15 @@ test the_profile_is_headless_and_pinned {
 }
 
 test the_floors_hold_together {
-    assert TESTS_PASSED_MIN == 2760;
-    assert TESTS_SKIPPED_MAX == 8;
+    assert TESTS_PASSED_MIN[0] == 2773;
+    assert TESTS_PASSED_MIN[1] == 2763;
+    assert TESTS_SKIPPED_MAX[0] + TESTS_PASSED_MIN[0] == TESTS_SKIPPED_MAX[1] + TESTS_PASSED_MIN[1];
     assert RUN_STEPS_WITH_TESTS_MIN + EMPTY_RUN_STEPS_MAX == 67;
     assert TEST_STEPS_MIN > RUN_STEPS_WITH_TESTS_MIN;
 }
 
 invariant every_root_runs {
     assert EMPTY_RUN_STEPS_MAX <= 1;
-    assert TESTS_SKIPPED_MAX <= 8;
+    assert TESTS_SKIPPED_MAX[0] <= 3;
+    assert TESTS_SKIPPED_MAX[1] <= 13;
 }
