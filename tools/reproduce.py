@@ -123,12 +123,27 @@ def parse_summary(text: str) -> dict:
             "tests_leaked": num(r"(\d+) leaked")}
 
 
+def summary_tree(text: str) -> str:
+    """The step tree zig prints after its Build Summary line. The same step lines also head each
+    error report above it, so reading the whole output counts every failed step twice."""
+    lines = text.split("\n")
+    at = next((i for i, x in enumerate(lines) if x.startswith("Build Summary:")), None)
+    return "\n".join(lines[at + 1:]) if at is not None else ""
+
+
 def parse_run_steps(text: str) -> dict:
-    """The run steps of the summary tree: how many, how many ran a test, how many ran none."""
-    counted = [int(m.group(1)) for m in re.finditer(r"run test (\d+) passed", text)]
-    empty = len(re.findall(r"run test success\b", text))
-    failed = len(re.findall(r"run test (?:\d+/\d+ passed, )?\d+ failed", text))
-    return {"with_tests": len(counted), "empty": empty, "with_failures": failed, "tests_in_run_steps": sum(counted)}
+    """The run steps of the summary tree: how many ran a test (a step whose tests failed ran them
+    too), how many had a failure, how many ran none. 'run test 78 passed 4 skipped',
+    'run test 1/3 passed, 1 failed, 1 skipped', 'run test success'."""
+    steps = re.findall(r"run test (\d+)(?:/\d+)? passed(, \d+ failed)?", summary_tree(text))
+    empty = len(re.findall(r"run test success\b", summary_tree(text)))
+    return {"with_tests": len(steps), "empty": empty, "with_failures": sum(1 for _, f in steps if f),
+            "tests_in_run_steps": sum(int(p) for p, _ in steps)}
+
+
+def parse_failed_tests(text: str) -> list:
+    """"error: 'a.test.a fails' failed: expected 1, found -1" -- the test, and the first line of why."""
+    return [{"test": m.group(1), "why": m.group(2).strip()[:200]} for m in re.finditer(r"^error: '([^']+)' failed:(.*)$", text, re.M)]
 
 
 def rel(path: str, workspace: str) -> str:
@@ -164,7 +179,7 @@ def read_pins(zon: str) -> dict:
 
 
 def first_errors(text: str, n=3) -> list:
-    return [x.strip()[:200] for x in text.split("\n") if ": error:" in x][:n]
+    return [x.strip()[:200] for x in text.split("\n") if ": error:" in x or x.startswith("error:")][:n]
 
 
 # ===========================================================================================
@@ -223,9 +238,11 @@ def measure(sp: dict, zig: str, reuse_cache: bool, build: bool) -> dict:
     t = run(test_cmd, env, 7200)
     doc["test"] = {"command": t["command"], "rc": t["rc"], "seconds": t["seconds"], "summary": parse_summary(t["output"]),
                    "run_steps": parse_run_steps(t["output"]), "compile_failures": parse_compile_failures(t["output"], str(ROOT)),
+                   "failed_tests": parse_failed_tests(t["output"]),
                    "compiled_roots": parse_compiled_roots(t["output"], str(ROOT)) if not reuse_cache else None,
                    "leak_lines": [x.strip()[:200] for x in t["output"].split("\n") if re.search(r"\bleak", x, re.I)][:5],
                    "errors": first_errors(t["output"])}
+    doc["outputs"] = {"test": t["output"]} | ({"build": b["output"]} if build else {})
     if scratch:
         shutil.rmtree(scratch, ignore_errors=True)
     return doc
@@ -278,7 +295,8 @@ def judge(sp: dict, doc: dict) -> list:
         bad("UNNAMED_FAILURE", "a compile failure whose root the output does not name")
     if s.get("found"):
         if s["tests_failed"] or rs["with_failures"]:
-            bad("TEST_FAILED", f"{s['line']}")
+            names = [f"{x['test']} ({x['why']})" for x in t.get("failed_tests", [])]
+            bad("TEST_FAILED", f"{s['line']}; {names[:8]}")
         if s["tests_leaked"] or t["leak_lines"]:
             bad("LEAK", f"{s['tests_leaked']} leaked; {t['leak_lines'][:2]}")
         if s["steps_failed"] != len(t["compile_failures"]) + rs["with_failures"]:
@@ -350,6 +368,29 @@ def self_check() -> int:
         got = {x.split(":")[0] for x in judge(spec, rec)}
         seen.update(got)
         return got
+    # What zig 0.15 prints, verbatim (a three-root project with a failed, a skipped and a passed test):
+    # every failed step appears twice, above its error report and in the tree after the summary.
+    real = (
+        "test\n+- run test 1/2 passed, 1 failed\n"
+        "error: 'b.test.b fails too' failed: /zig/lib/std/testing.zig:607:14: 0x104992b in expect (test)\n"
+        "    if (!ok) return error.TestUnexpectedResult;\n"
+        "error: while executing test 'b.test.b fails too', the following test command failed:\n"
+        "./.zig-cache/o/6e4f9704b668314d6fccf4525ed6b11b/test --cache-dir=./.zig-cache --seed=0x931f3af4 --listen=-\n"
+        "test\n+- run test 1/3 passed, 1 failed, 1 skipped\n"
+        "error: 'a.test.a fails' failed: expected 1, found -1\n"
+        "/zig/lib/std/testing.zig:110:17: 0x1049d57 in expectEqualInner__anon_470 (test)\n"
+        "error: while executing test 'a.test.a skips', the following test command failed:\n"
+        "./.zig-cache/o/803ae009b6bc47690f50ac5cf0b206e3/test --cache-dir=./.zig-cache --seed=0x931f3af4 --listen=-\n\n"
+        "Build Summary: 4/7 steps succeeded; 2 failed; 3/6 tests passed; 1 skipped; 2 failed\n"
+        "test transitive failure\n"
+        "+- run test 1/3 passed, 1 failed, 1 skipped\n|  +- compile test Debug native success 1s MaxRSS:228M\n"
+        "+- run test 1/2 passed, 1 failed\n|  +- compile test Debug native success 1s MaxRSS:236M\n"
+        "+- run test 1 passed 947us MaxRSS:1M\n   +- compile test Debug native success 1s MaxRSS:227M\n")
+    rs, sm = parse_run_steps(real), parse_summary(real)
+    expect(rs == {"with_tests": 3, "empty": 0, "with_failures": 2, "tests_in_run_steps": 3}
+           and (sm["steps_failed"], sm["tests_passed"], sm["tests_skipped"], sm["tests_failed"]) == (2, 3, 1, 2),
+           f"real zig output: each step counted once, a step whose test failed counted as one that ran tests ({rs})")
+    expect([x["test"] for x in parse_failed_tests(real)] == ["b.test.b fails too", "a.test.a fails"], "real zig output: the failed tests are named")
     expect(not judge(sp, record()), f"a record that is what the spec says is silent ({judge(sp, record())[:2]})")
     broken = fails(blocked + ["src/new_broken.zig"]) + summary(len(blocked) + 1) + tree
     expect("EXIT_SWALLOWED" in codes(record(test_out=broken, test_rc=0)), "planted: the test step's failures with exit 0 (the tee of #616)")
@@ -421,6 +462,16 @@ def main() -> int:
     doc["violations"] = judge(sp, doc)
     out = pathlib.Path(a.out) if a.out else ROOT / "zig-out" / "reproduce" / f"{a.command}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
+    # The whole output of each command goes beside the record, and a command that failed has it
+    # printed here too: a wrapper that keeps a tool's output must show it when the tool fails.
+    outputs = doc.pop("outputs")
+    doc["logs"] = {}
+    for name, text in outputs.items():
+        log = out.with_name(f"{out.stem}.{name}.log")
+        log.write_text(text, encoding="utf-8")
+        doc["logs"][name] = log.name
+        if doc[name]["rc"] != 0:
+            print(f"---- the output of `{doc[name]['command']}` (exit {doc[name]['rc']}) ----\n{text.rstrip()}\n---- end of the output ----")
     out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     t = doc["test"]
     print(f"reproduce {a.command}: zig {doc['zig']}, {'fresh' if doc['fresh_caches'] else 'reused'} caches, head {doc['head'][:12]}")
@@ -429,6 +480,8 @@ def main() -> int:
               f"{sum(1 for h in doc['installs'].values() if h)}/{len(doc['installs'])} installs")
     print(f"  test:  exit {t['rc']}, {t['summary'].get('line', 'no summary')}")
     print(f"         compile failures {[f['root'] for f in t['compile_failures']]}, run steps {t['run_steps']}")
+    for x in t["failed_tests"]:
+        print(f"         failed: {x['test']}: {x['why']}")
     for x in doc["violations"]:
         print("VIOLATION:", x)
     print(f"  evidence: {out}")

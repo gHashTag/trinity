@@ -25,6 +25,13 @@ pub const JitVsaFn = *const fn (*HybridBigInt, *HybridBigInt) void;
 /// Takes two vector pointers and returns f64 similarity
 pub const JitSimilarityFn = *const fn (*HybridBigInt, *HybridBigInt) f64;
 
+/// What `finalize` returns: the generated code reads its two pointers from rdi and rsi, so it must
+/// be called with the C calling convention. Without `callconv(.c)` the pointer used Zig's own
+/// convention, which nothing promises to pass them there -- and the x86-64 backend that builds Debug
+/// does not: the bind and bundle tests read the wrong memory on x86_64 (dot product, which casts
+/// to `callconv(.c)` itself, passed). src/jit_arm64.zig already declares it.
+pub const JitBinaryFn = *const fn (*anyopaque, *anyopaque) callconv(.c) void;
+
 /// JIT Compiler for VSA operations
 pub const JitCompiler = struct {
     /// Code buffer for generated machine code
@@ -257,7 +264,7 @@ pub const JitCompiler = struct {
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// Make code executable and return function pointer
-    pub fn finalize(self: *Self) !*const fn (*anyopaque, *anyopaque) void {
+    pub fn finalize(self: *Self) !JitBinaryFn {
         const code_size = self.code.items.len;
         if (code_size == 0) return error.EmptyCode;
 
@@ -471,7 +478,7 @@ pub const JitCompiler = struct {
 /// Cache for JIT-compiled functions
 pub const JitCache = struct {
     /// Cached bind functions by dimension
-    bind_cache: std.AutoHashMap(usize, *const fn (*anyopaque, *anyopaque) void),
+    bind_cache: std.AutoHashMap(usize, JitBinaryFn),
     /// Compiler instance
     compiler: JitCompiler,
     /// Allocator
@@ -481,7 +488,7 @@ pub const JitCache = struct {
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
-            .bind_cache = std.AutoHashMap(usize, *const fn (*anyopaque, *anyopaque) void).init(allocator),
+            .bind_cache = std.AutoHashMap(usize, JitBinaryFn).init(allocator),
             .compiler = JitCompiler.init(allocator),
             .allocator = allocator,
         };
@@ -493,7 +500,7 @@ pub const JitCache = struct {
     }
 
     /// Get or compile bind function for dimension
-    pub fn getBind(self: *Self, dimension: usize) !*const fn (*anyopaque, *anyopaque) void {
+    pub fn getBind(self: *Self, dimension: usize) !JitBinaryFn {
         if (self.bind_cache.get(dimension)) |func| {
             return func;
         }
