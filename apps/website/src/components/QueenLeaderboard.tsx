@@ -14,6 +14,7 @@
 import { useEffect, useState } from 'react'
 import { QUEEN_API } from '../lib/queenApi'
 import QueenPeople from './QueenPeople'
+import QueenSpecEarnings from './QueenSpecEarnings'
 import './QueenLeaderboard.css'
 
 interface Contributor {
@@ -239,6 +240,11 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
           })}
         </ol>
       )}
+
+      {/* What the lanes' accepted .t27 work has EARNED, as a record rather
+          than XP: XP is a reading derived on every request, an earning is a
+          row that stays, beside its revocation when one comes. */}
+      <QueenSpecEarnings lang={lang === 'ru' ? 'ru' : 'en'} />
     </div>
   )
 }
