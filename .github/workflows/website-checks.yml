@@ -235,6 +235,14 @@ jobs:
       # the control is the only column with no absent field. Pure, no browser.
       - name: Passport figures
         run: npm run check:passport
+      # Every Queen tab shows one spec corpus: the manifest, the universe atlas,
+      # the shared core and the five spec-* ladders describe one scan; only
+      # src/lib/queenCorpus.ts reads the corpus files; the store fetches a part
+      # once for the whole window tree; a tab switch keeps spec= and world=.
+      # Each of those is also fed a broken fixture that must fail. Pure here;
+      # the same contract reads the built page below with --browser.
+      - name: Queen spec corpus is one corpus
+        run: npm run check:queen-spec-sync
       - name: Catalog generators
         run: npm run test:sync-skills && npm run test:sync-crons
       # The tiers, the touch minimum and the QA matrix come from
@@ -296,6 +304,15 @@ jobs:
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: npm run check:queen-viewport -- --no-build
+
+      # The same contract on the built page: every Queen tab's root, the SPECS
+      # rung and the Explorer frame report one data-corpus-version, the manifest
+      # is fetched once between shell and frame, and world= in the shell's
+      # address narrows the frame to that world's count on the comb.
+      - name: Queen spec corpus, every tab
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run check:queen-spec-sync -- --browser --no-build
 
       # Проверяет все маршруты в обеих локалях. Скрипты имеют собственные
       # самотесты и используют Chrome через CDP без новой зависимости npm.
