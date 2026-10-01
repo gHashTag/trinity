@@ -68,9 +68,21 @@ jobs:
       - name: Copy the build and drop unreachable bundles
         run: |
           cp -R apps/website/dist/assets/. ghio/assets/
-          cp apps/website/dist/index.html ghio/index.html
-          cp apps/website/dist/manifest.json ghio/manifest.json
-          cp apps/website/dist/cv.pdf ghio/cv.pdf
+          # Every top-level file the build produced, not a named list -- the same
+          # reasoning as the directories below, learned a second time. The list
+          # was index.html manifest.json cv.pdf, so llms.txt and agents.t27 (the
+          # files agents are told to read) never left trinity through this job:
+          # on 2026-10-01 t27.ai served llms.txt saying 1577 specs, measured
+          # 2026-09-24, beside a /t27/manifest.json saying 1737, after this job
+          # had deployed the commit that corrected it. One exception: the apex's
+          # build-og.py redraws og-image.png after the publisher's rsync, so the
+          # file in dist/ is the older card and must not overwrite it.
+          for path in apps/website/dist/*; do
+            [ -f "$path" ] || continue
+            name=$(basename "$path")
+            [ "$name" = og-image.png ] && continue   # owned by the apex's build-og.py
+            cp "$path" "ghio/$name"
+          done
           # The data the app fetches at runtime, not just the bundles that fetch
           # it. On 2026-09-09 the apex served this build with no
           # /t27/universe-atlas.json — the file had been added to the app after
