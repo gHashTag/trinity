@@ -40,15 +40,20 @@ TRI_REC_COLS=120 TRI_REC_ROWS=40 TRI_REC_IDLE_MAX=3 ./tri-record.sh benchmark
 
 ## Recording Mode 2: VHS Tapes (Declarative)
 
-VHS tapes ensure reproducibility:
+VHS tapes ensure reproducibility. Render them from the repository root: each
+tape puts `zig-out/bin` first on `PATH` in a hidden line and writes
+`recordings/<name>.gif`. VHS needs `ttyd` (1.7.2 or newer) and `ffmpeg`.
 
 ```bash
 # Render all tapes
-cd tapes
-for tape in *.tape; do
-    vhs < "$tape"
+zig build -Dci=true
+for tape in tapes/*.tape; do
+    vhs "$tape"
 done
 ```
+
+CI renders the same tapes in `.github/workflows/record-demos.yml` and uploads
+the GIFs as the run's `terminal-demo-gifs` artifact; it commits nothing.
 
 ## Demo 1: VSA Math Operations
 
@@ -160,7 +165,7 @@ trinity/
 │   ├── tri-test.tape
 │   ├── tri-status.tape
 │   └── tri-fpga-synth.tape
-├── recordings/               # Generated GIFs
+├── recordings/               # Generated GIFs (local renders, not committed)
 │   ├── tri-math-demo.gif
 │   ├── tri-benchmark.gif
 │   ├── tri-test.gif
@@ -169,7 +174,7 @@ trinity/
 ├── scripts/
 │   └── tri-record           # Zig binary (live recording wrapper)
 └── .github/workflows/
-    └── record-demos.yml      # Auto-render on tape changes
+    └── record-demos.yml      # Renders the tapes; GIFs are a run artifact
 ```
 
 ---
