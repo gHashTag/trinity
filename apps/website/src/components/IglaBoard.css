@@ -97,6 +97,7 @@
   gap: 6px;
   padding: 12px 14px;
   background: rgba(0, 0, 0, 0.94);
+  backdrop-filter: blur(6px);
   box-shadow: 0 0 0 1px var(--wars-line);
 }
 .igla-board-glance dd {
