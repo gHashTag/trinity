@@ -7,9 +7,11 @@
 // that says "Direct" in the hero and "Govern" in the body has no motto at all.
 //
 // `earn` is the word the page owes an answer for, and AgiGameBlock gives it:
-// an accepted turn is a non-transferable integer against a name, there is no
-// token, and that block says why there will not be one. The motto states the
-// move; the block states its terms. Neither is allowed to state them alone.
+// an accepted turn is a non-transferable integer against a name, an accepted
+// .t27 spec is recorded as an earning, there is no token today, and whether a
+// spec earning may ever become one is an open decision rather than a promise.
+// The motto states the move; the block states its terms. Neither is allowed to
+// state them alone.
 export const MOTTO = {
   en: {
     verbs: ['Play', 'Direct', 'Earn'] as const,
