@@ -178,6 +178,11 @@ jobs:
       # only our own /live/ is framed. Pure, no browser.
       - name: The BROWSER view
         run: npm run check:queen-browser
+      # The runner cabinet: the session token rides only in a header with
+      # credentials omitted, a runner token is shown once and kept nowhere, and
+      # the page has no field for a provider key. Pure, no browser.
+      - name: The runner cabinet
+        run: npm run check:queen-runners
       # What that identity is FOR. The owner's rule, 2026-09-20: only registered
       # people write to the Queen. The gate that holds it is the proxy's, not
       # this bundle's -- a rule shipped in a public bundle is a suggestion -- and
