@@ -117,7 +117,7 @@ pub fn build(b: *std.Build) void {
 
     // Install C header
     const install_header = b.addInstallHeaderFile(
-        b.path("libs/c/libtrinityvsa/include/trinity_vsa.h"),
+        b.path("src/libs/c/libtrinityvsa/include/trinity_vsa.h"),
         "trinity_vsa.h",
     );
 
@@ -160,7 +160,7 @@ pub fn build(b: *std.Build) void {
     const install_queen_static = b.addInstallArtifact(libqueen_static, .{});
 
     const install_queen_header = b.addInstallHeaderFile(
-        b.path("libs/c/libtrinityvsa/include/trinity_queen.h"),
+        b.path("src/libs/c/libtrinityvsa/include/trinity_queen.h"),
         "trinity_queen.h",
     );
 
@@ -219,7 +219,12 @@ pub fn build(b: *std.Build) void {
             // ahead of it had been failing, so CI Runner reported the build and
             // never reached the tests to report this.
             .link_libc = true,
+            // src/trinity.zig asks for `hdc_vsa`; src/hybrid.zig and src/vsa.zig,
+            // which it re-exports, ask for `zig-hdc-vsa`. Both names, one module,
+            // as `trinity_mod` above already does -- with only one of them this
+            // root did not compile (specs/reproduce/headless.t27 recorded it).
             .imports = &.{
+                .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod },
                 .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
                 .{ .name = "golden_float", .module = gf_mod },
             },
@@ -260,6 +265,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/queen_api.zig"),
             .target = target,
             .optimize = optimize,
+            // queen_api reaches std.c and the C allocator; without libc the test
+            // root never compiled (specs/reproduce/headless.t27 recorded it blocked).
+            .link_libc = true,
             .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });
@@ -297,7 +305,13 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/e2e_test.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
+            // e2e_test.zig reaches src/trinity.zig, which imports `hdc_vsa` and
+            // `golden_float`; the module offered neither.
+            .imports = &.{
+                .{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod },
+                .{ .name = "hdc_vsa", .module = hdc_vsa_mod },
+                .{ .name = "golden_float", .module = gf_mod },
+            },
         }),
     });
     const run_e2e_tests = b.addRunArtifact(e2e_tests);
@@ -311,6 +325,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/c_api.zig"),
             .target = target,
             .optimize = optimize,
+            // The C API allocates with std.heap.c_allocator; both libraries it
+            // builds call linkLibC(), and its tests need libc for the same reason.
+            .link_libc = true,
             .imports = &.{.{ .name = "zig-hdc-vsa", .module = hdc_vsa_mod }},
         }),
     });

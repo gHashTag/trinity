@@ -114,7 +114,7 @@ pub const JitVSAEngine = struct {
 
     /// Fallback to non-JIT dot product (for comparison)
     pub fn dotProductFallback(a: *HybridBigInt, b: *HybridBigInt) i64 {
-        return @intCast(a.dotProduct(b, std.heap.page_allocator));
+        return @intCast(a.dotProduct(b));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
