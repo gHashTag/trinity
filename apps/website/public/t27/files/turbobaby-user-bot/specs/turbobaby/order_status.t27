@@ -28,7 +28,7 @@
 ; readers disagree once more on terminality alone: src/bot/callbacks.rs:120-122 treats exactly two
 ; names as terminal where the API reject path at src/api/orders.rs:2094-2097 treats four, and the
 ; repository's own test for it is called
-; should_refund_bonus_is_dangerously_true_for_unknown_status (src/bot/callbacks.rs:1175-1181). The
+; should_refund_bonus_is_dangerously_true_for_unknown_status (src/bot/callbacks.rs:1090-1096). The
 ; column constrains none of this: migrations/001_initial.sql:67 is status VARCHAR(30) NOT NULL
 ; DEFAULT 'pending' with no CHECK clause, so the names live in Rust only, and nothing at the
 ; database stops one more writer from storing a tenth. That is the number that forced this file:
@@ -44,7 +44,7 @@
 ; src/api/orders.rs:1998 carries the in-source comment calling completed a legacy alias for
 ; delivered, which reads as completed being the alias. The write path runs the other way. Both
 ; names enter the same branch (src/api/orders.rs:2054) and that branch writes the literal
-; completed into the column at src/db/orders.rs:229 and :273. So delivered is accepted at the
+; completed into the column at src/db/orders.rs:222 and :266. So delivered is accepted at the
 ; door, routed, and never persisted by this path: the alias resolves delivered -> completed, and
 ; a reader who trusts the comment will look for stored rows that cannot exist.
 ; --
@@ -272,14 +272,14 @@ pub fn order_status_write_admitted(current: u8, requested: u8) bool {
 }
 
 ; --- The alias, which runs the other way ----------------------------------------------------------
-; src/api/orders.rs:2054 sends completed and delivered into one branch; src/db/orders.rs:229 and
-; :273 write the literal completed. Nothing in the shipped write path ever stores delivered.
+; src/api/orders.rs:2054 sends completed and delivered into one branch; src/db/orders.rs:222 and
+; :266 write the literal completed. Nothing in the shipped write path ever stores delivered.
 pub const ALIAS_ACCEPTED_NAME : str = "delivered";
 pub const ALIAS_PERSISTED_NAME : str = "completed";
 pub const IN_SOURCE_COMMENT_CALLS_COMPLETED_THE_ALIAS : bool = true;
 pub const IN_SOURCE_COMMENT_ALIAS_DIRECTION_IS_REVERSED : bool = true;
 pub const DELIVERED_IS_NEVER_PERSISTED_BY_THE_WRITE_PATH : bool = true;
-pub const ALIAS_NOTE : str = "src/api/orders.rs:1998 comments completed as a legacy alias for delivered, and src/ui/screens/admin_screen.rs:2908-2909 repeats the same sentence (re-pointed 2026-09-22: one line of drift since 2c21df1); the branch at :2040 and the writes at src/db/orders.rs:229 and :273 persist completed for both names, and no line under src/ writes the literal delivered, so the resolution is delivered -> completed and both comments name the wrong side.";
+pub const ALIAS_NOTE : str = "src/api/orders.rs:1998 comments completed as a legacy alias for delivered, and src/ui/screens/admin_screen.rs:2908-2909 repeats the same sentence (re-pointed 2026-09-22: one line of drift since 2c21df1); the branch at :2040 and the writes at src/db/orders.rs:222 and :266 persist completed for both names, and no line under src/ writes the literal delivered, so the resolution is delivered -> completed and both comments name the wrong side.";
 
 ; Every other accepted name is written verbatim by the generic branch at
 ; src/api/orders.rs:2240-2246, so preparing, ready and out_for_delivery are storable values and
@@ -475,8 +475,8 @@ pub fn order_status_display_pipeline_agrees(variant_count: u8, missing_count: u8
 ; The fourth reader, and the only one that disagrees about terminality rather than about the
 ; vocabulary. src/bot/callbacks.rs:120-122 is status != "rejected" && status != "completed", so
 ; delivered and cancelled read as non-terminal there while src/api/orders.rs:2094-2097 reads all
-; four. src/bot/callbacks.rs:721 is the raw-SQL read that feeds it, and the repository's own test
-; at src/bot/callbacks.rs:1175-1181 already names the unknown-status case dangerous.
+; four. src/bot/callbacks.rs:648 is the raw-SQL read that feeds it, and the repository's own test
+; at src/bot/callbacks.rs:1090-1096 already names the unknown-status case dangerous.
 pub const REFUND_GUARD_SOURCE : str = "src/bot/callbacks.rs:120-122";
 pub const REFUND_GUARD_TERMINAL_COUNT : u8 = 2;
 pub const REFUND_GUARD_MISSING_COUNT : u8 = 2;
@@ -484,6 +484,18 @@ pub const REFUND_GUARD_MISSING_NAMES : [2]str = ["delivered", "cancelled"];
 pub const API_REJECT_GUARD_TERMINAL_COUNT : u8 = 4;
 pub const API_REJECT_GUARD_MISSING_COUNT : u8 = 0;
 pub const TERMINAL_GUARDS_AGREE : bool = false;
+; DATED NOTE, 2026-09-26 (R3, turbobaby/referral-credit). The bot's reject, CallbackAction::RejectOrder,
+; is the one path that can move a completed order to rejected, because the guard above does not read
+; completed as terminal. Since that day it also reverses the order's referral-credit record, whole,
+; inside the same transaction and before the flip, and a failed reversal rolls the whole reject back
+; (fail closed). It moves no status and changes no guard: TERMINAL_GUARDS_AGREE stays false, and the
+; reject is still the only un-completion. update_order_status and cancel_order cannot reach a
+; completed order, so neither needs the hook.
+pub const REFERRAL_CREDIT_ID : str = "turbobaby/referral-credit";
+pub const BOT_REJECT_REVERSES_A_REFERRAL_CREDIT_RECORD : bool = true;
+pub const BOT_REJECT_REVERSAL_IS_IN_THE_REJECT_TRANSACTION : bool = true;
+pub const BOT_REJECT_REVERSAL_FAILS_CLOSED : bool = true;
+pub const REFERRAL_CREDIT_REVERSAL_NOTED_AT : str = "2026-09-26";
 
 pub fn order_status_terminal_guard_agrees(guard_terminal_count: u8, guard_missing_count: u8) bool {
   return guard_terminal_count == TERMINAL_COUNT and guard_missing_count == 0;
@@ -912,3 +924,12 @@ invariant order_status_the_display_pipelines_stay_marked_as_disagreeing
 
 invariant order_status_no_edge_table_is_enforced_but_one_is_declared
   assert NO_SERVER_SIDE_TRANSITION_EDGE_TABLE_IS_SHIPPED == true and CLIENT_SIDE_TRANSITION_ORDER_IS_SHIPPED == true and CLIENT_PIPELINE_IS_ENFORCED_ANYWHERE == false and BACKWARD_TRANSITION_IS_ADMITTED == true and order_status_write_admitted(STATUS_READY, STATUS_PENDING) == true
+
+test the_bot_reject_reverses_a_referral_credit_record_and_changes_no_guard {
+  assert REFERRAL_CREDIT_ID == "turbobaby/referral-credit";
+  assert BOT_REJECT_REVERSES_A_REFERRAL_CREDIT_RECORD == true;
+  assert BOT_REJECT_REVERSAL_IS_IN_THE_REJECT_TRANSACTION == true;
+  assert BOT_REJECT_REVERSAL_FAILS_CLOSED == true;
+  assert REFERRAL_CREDIT_REVERSAL_NOTED_AT == "2026-09-26";
+  assert TERMINAL_GUARDS_AGREE == false;
+}

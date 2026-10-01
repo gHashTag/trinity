@@ -9,8 +9,8 @@
 // Consumer: the bot src/index.ts and src/inngest_app/functions/crm/crmProactiveSweep.ts
 //       (the proactive sweep runs once per seller, in turn).
 // Measured 2026-09-13 on the render's Postgres (Railway Postgres-NFrq, tg_sessions): two rows,
-// telegram_id 144022504 (@t27_dev, the owner) and 435572800 (@playom), session strings of
-// 369 characters each, connected 2026-09-07 and 2026-09-09. The data tables were ALREADY
+// the owner's and a second seller's, session strings of 369 characters each, connected
+// 2026-09-07 and 2026-09-09. The data tables were ALREADY
 // scoped by the caller's id (crm_people.owner_id, crm_messages, crm_touches): only the gate,
 // the playbook and the sweep still named one person.
 // Why the gate is "has a session" and not "is in a list": a seller is whoever connected their
@@ -18,6 +18,10 @@
 // can only ever read and act on their own account. No second list can drift from that.
 // Claim status: the two sessions EXIST and have the documented length; whether each still
 // passes Telegram's checkAuthorization is what the probe of crm_sellers measures, not this spec.
+// v2 (2026-09-27): bound to the host (src/spec/crm-sellers.test.ts runs every test below against
+// isSeller, requireSeller, crm_sellers and the bot's sweep). v1's tests were braceless -- the
+// parser of the day kept them inert -- and compared literals with themselves; the rules are
+// now fns (admits, may_list) the host mirrors, and the test ids are not real people's.
 // phi^2 + 1/phi^2 = 3 | TRINITY
 
 module automation::crm_sellers {
@@ -25,7 +29,7 @@ module automation::crm_sellers {
     pub const KIND : str = "automation";
     pub const ID : str = "crm-sellers";
     pub const REPO : str = "999-multibots-telegraf";
-    pub const VERSION : u8 = 1;
+    pub const VERSION : u8 = 2;
 
     // ---- Who is a seller ------------------------------------------------------------
     pub const SELLER_IS : str = "connected-account";  // a row in tg_sessions for the caller's id
@@ -78,36 +82,56 @@ module automation::crm_sellers {
         concurrency: u8,
     }
 
-    fn admits(s: Seller) -> bool {
-        return s.has_session || s.is_owner;
+    // Who the gate admits: a connected account, or the platform owner (their row or the env string).
+    fn admits(has_session: bool, is_owner: bool) -> bool {
+        return has_session || is_owner;
     }
 
-    test "a person with a connected account is a seller, owner or not"
-        const playom = Seller { telegram_id: "435572800", has_session: true, is_owner: false };
-        const owner = Seller { telegram_id: "144022504", has_session: true, is_owner: true };
-        assert(admits(playom));
-        assert(admits(owner));
+    // Who may list the sellers: the platform owner only.
+    fn may_list(is_owner: bool) -> bool {
+        return is_owner;
+    }
 
-    test "a person without a session is refused unless they are the owner with the env fallback"
-        const stranger = Seller { telegram_id: "1", has_session: false, is_owner: false };
-        const owner_env = Seller { telegram_id: "144022504", has_session: false, is_owner: true };
-        assert(!admits(stranger));
-        assert(admits(owner_env));
+    test "a person with a connected account is a seller, owner or not" {
+        assert(admits(true, false));
+        assert(admits(true, true));
+        assert(SELLER_IS == "connected-account");
+        assert(SESSION_TABLE == "tg_sessions");
+    }
 
-    test "the gate reads the session table, and the refusal names the fix"
-        const g = Gate { reads_session: true, allows: false };
-        assert(g.reads_session == GATE_READS_SESSION);
+    test "a person without a session is refused unless they are the owner with the env fallback" {
+        assert(!admits(false, false));
+        assert(admits(false, true));
+        assert(OWNER_ALWAYS_ADMITTED);
+        assert(OWNER_FALLBACK == "TELEGRAM_SESSION_STRING");
+    }
+
+    test "the gate reads the session table, and the refusal names the fix" {
+        assert(GATE_READS_SESSION);
         assert(REFUSAL_NAMES_FIX);
         assert(DATA_SCOPED_BY_CALLER);
+        assert(GATE == "requireSeller");
+        assert(PLAYBOOK_FOR == "every-seller");
+        assert(SELF_OFFER_CHECK == "caller");
+    }
 
-    test "the sweep runs for each seller, one at a time"
-        const s = Sweep { sellers: 2, concurrency: 1 };
-        assert(s.sellers == SELLERS_MEASURED);
-        assert(s.concurrency == SWEEP_CONCURRENCY);
+    test "the sweep runs for each seller, one at a time" {
         assert(SWEEP_PER_SELLER);
+        assert(SWEEP_CONCURRENCY == 1);
+        assert(PLAN_PER_SELLER);
+        assert(SWEEP_SOURCE_TOOL == "crm_sellers");
+        assert(LIST_TOOL == "crm_sellers");
+        assert(SELLERS_MEASURED >= 1);
+    }
 
-    test "the list tool never returns a session string and only the owner may call it"
+    test "the list tool never returns a session string and only the owner may call it" {
         assert(!LIST_TOOL_RETURNS_SESSION);
         assert(LIST_TOOL_CALLER == "owner");
+        assert(may_list(true));
+        assert(!may_list(false));
+        assert(LIST_TOOL_PROBE);
         assert(!SESSIONS_PROBED);
+    }
 }
+
+// phi^2 + 1/phi^2 = 3 | TRINITY

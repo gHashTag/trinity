@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // specs/formats/llama_cpp.t27 -- llama.cpp ternary block formats and GGUF tensor rules
-// Restates upstream ggml-org/llama.cpp@e6ab7c1a41054a888ada952eab4c886444c2f5ad:
+// Restates upstream ggml-org/llama.cpp@4364bf7232e65c34eca8d9500c5464389662de6b:
 // ggml/include/ggml.h:424-433 (type ids TQ1_0 34, TQ2_0 35, Q1_0 41, Q2_0 42,
 // GGML_TYPE_COUNT 43); ggml/src/ggml-common.h:180-185 (block_q1_0),
 // :187-192 (block_q2_0), :275-281 (block_tq1_0), :283-288 (block_tq2_0);

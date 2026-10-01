@@ -38,7 +38,7 @@ pub const EVIDENCE : str = "measured";
 pub const EVIDENCE_SOURCE : str = "https://github.com/gHashTag/trinity/actions/runs/34678824282 -- Build & Test on ubuntu-latest with zig 0.15.2 at 79ffb034 (the pinned 976df517 differs from it only in apps/website/src/data/signalHealth.json): zig build -Dci=true succeeded. zig build test is piped through tee there, so its exit code is not measured (gHashTag/trinity#616).";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S09";
-pub const NOTE : str = "";
+pub const NOTE : str = "S09 (gHashTag/t27#4828) names the PHI LOOP as an adapter of the Queen's task lifecycle (specs/queen/dispatch.t27, ADAPTERS): a development workflow, not a task state; this runner was not measured there.";
 pub const ENABLED : bool = true;
 
 test card_is_bound_to_its_package {

@@ -1419,3 +1419,78 @@ board_facts AL321_STALL_NEEDED_A_REPLUG_AND_THE_TIMEOUT_RECIPE_DOES_NOT_RUN {
     shutdown, no pld load.
   """
 }
+
+claim NODE0_CELL_BROUGHT_UP_ON_A_SECOND_HOST_2026_09_24 {
+  statement """
+    The single attached AX7203 was brought from an SPI-flash default
+    configuration to a keyed TRI-NET node0 cell from a different host than
+    every earlier entry: a MacBook Air (MacBookAir10,1, Gaia-MacBook-Air),
+    not the MacBook Pro. Same bitstream artifact as FLEET_FULLY_REKEYED
+    (build/fleet/trinet-fleet-node0-UNKEYED/trinet_node0.bit), same key file
+    (trinet-keys.txt, mode 600), same CLI built from src/trinet/main.zig with
+    `zig build-exe -lc` under zig 0.16.0.
+  """
+  measured {
+    host                   "MacBookAir10,1"
+    hub                    "USB2.0 HUB 0x1A40:0x0101, bus 0 port 1"
+    jtag_location          "0-1.4"   // Digilent FTDI 0x0403:0x6014 s/n 210512180081
+    port                   "/dev/cu.usbserial-130"
+    idcode                 0x13636093   // read 3 times, <1 s each
+    stat_before_flash      0x401079fc   // DONE=1 EOS=1 MMCM_LOCK=1 mode=Master SPI
+    nodes_before_flash     0            // trinet_discover.py: no candidate rate answered
+    flash_seconds          778.76
+    negotiated_baud        1144744
+    discover_clean         64   attempted 64   // status NO_KEY, real dot products
+    setkey_verified        32   attempted 32
+    fleet_accepted         96   dispatched 96   rejected 0   unverifiable 0
+    elapsed_ms             28.1
+    jobs_per_second        3416
+    dna_raw_drscan64       0x2a19bf1841ab0a4f  // XSC_DNA 0x32; 57-bit alignment NOT verified
+  }
+  what_the_stat_read_meant """
+    Before the flash the part reported DONE and EOS with mode pins at Master
+    SPI, and no TRI-NET node answered on the UART. Both are consistent with
+    the SPI-flash default running after a power cycle: `pld load` writes SRAM
+    only, so the configuration this file's earlier entries measured was gone.
+    Any host that finds "no node" on an enumerated board should read STAT
+    before concluding the board is dead.
+  """
+  scope """
+    ONE board, node identity ASSIGNED by the bitstream flashed, not discovered:
+    which of the three physical boards this is remains unknown, and no
+    per-board DNA table exists to decide it. `trinet probe` without a key
+    file reports 0/64 authenticated with "nothing can be concluded"; that is
+    the keyless-verifier path (Verdict.unverifiable), not a hardware result,
+    and `trinet fleet` -- which loads trinet-keys.txt -- is the authenticated
+    measurement above. Receipt tags still establish consistency with the job
+    bytes, not that the arithmetic ran on this silicon (see §3 of the
+    handoff). Nothing here says anything about node1 or node2.
+  """
+  trust_tier MEASURED_ON_FPGA
+}
+
+board_facts A_HUB_PLUGGED_INTO_THE_OTHER_MACHINE_LOOKS_LIKE_A_DEAD_LINK {
+  what_happened """
+    A session on the MacBook Pro watched three USB-C port counters for twenty
+    minutes for a hub that never arrived, then concluded the hub was in
+    another computer. It was: the same hub enumerated fully on the Air, and
+    a session there read the IDCODE in under a second. Both readings were
+    correct; only the machine differed.
+  """
+  rule "the first line of any hardware report names the machine (`sysctl -n hw.model`, `hostname`); when a pasted report names a different model, say so before touching anything"
+  ftdi_serial_node_does_not_return """
+    After openocd released the adapter, /dev/cu.usbserial-210512180081 (the
+    FT2232H's serial-port face) did not reappear; only the CP2102N port did.
+    Harmless -- JTAG goes through libusb and nothing reads that node -- but
+    a script that counts /dev/cu.usbserial-* to decide whether "the board is
+    attached" will count one fewer after every JTAG session.
+  """
+  no_timeout_on_this_host_either """
+    Neither `timeout` nor `gtimeout` exists on the Air. `sudo -n perl -e
+    'alarm N; exec @ARGV' -- /opt/homebrew/bin/openocd ...` bounds a
+    privileged probe from inside the privileged process (the alarm survives
+    exec), which is the property the recorded `timeout -s KILL` recipe was
+    for. sudoers here grants NOPASSWD for everything, so `sudo pkill -9
+    openocd` is available should an adapter wedge.
+  """
+}

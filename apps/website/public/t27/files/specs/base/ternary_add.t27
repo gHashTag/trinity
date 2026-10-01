@@ -364,9 +364,9 @@ invariant ternary_add_full_adder_carry_in_range
 invariant ternary_add_carry_sign_matches_range
     // carry_sign(s) returns +1 if s > 1, -1 if s < -1, else 0
     // Rationale: Carry detection from raw sum
-    assert carry_sign(s) == .pos implies s > 1
-    assert carry_sign(s) == .neg implies s < -1
-    assert carry_sign(s) == .zero implies -1 <= s <= 1
+    assert carry_sign(s) == .pos implies s > 1 for all i8 s
+    assert carry_sign(s) == .neg implies s < -1 for all i8 s
+    assert carry_sign(s) == .zero implies -1 <= s <= 1 for all i8 s
 
 invariant ternary_add_normalize_trit_idempotent
     // normalize_trit(normalize_trit(x)) == normalize_trit(x)

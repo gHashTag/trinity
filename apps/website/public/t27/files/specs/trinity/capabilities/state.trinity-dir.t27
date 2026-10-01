@@ -38,7 +38,7 @@ pub const EVIDENCE : str = "declared";
 pub const EVIDENCE_SOURCE : str = "Present in the pinned tree; .trinity/registry.json and .trinity/mcp_schemas.json are drift-checked in CI (registry.commands, mcp.trinity-mcp), the rest is recorded state without a contract.";
 ; The work package of gHashTag/trinity#988 that owns this capability's contract.
 pub const WORK_PACKAGE : str = "S08";
-pub const NOTE : str = "S08 maps mozg/dna and unified_state to the actual session, checkpoint and provenance fields; tmem (specs/memory/tmem/) is an optional adapter decided there.";
+pub const NOTE : str = "S08 (gHashTag/t27#4827): what tri-api keeps between runs lives under $HOME, not in this directory, and is stated by specs/api/tri_api_session.t27 with twenty findings; its MAPPING shows that mozg/dna (declaration-only, NOPARSE) and unified_state (persisted by nothing) have almost no counterpart in it; tmem (specs/memory/tmem/session.t27, now compiling) is an optional adapter, decided not enabled. The committed .trinity/ tree itself (776 files at afc9d384) still has no contract.";
 pub const ENABLED : bool = true;
 
 test card_is_bound_to_its_package {

@@ -2,6 +2,15 @@
 // t27/specs/queen/lotus.t27
 // Queen Lotus 6-Phase Orchestration Specification
 // Self-improving agent orchestration with episode-based learning
+//
+// STATUS (S09 of gHashTag/trinity#988, gHashTag/t27#4828, measured 2026-10-01):
+// this is the design of the LOTUS-POLICY adapter, not the Queen's task lifecycle. Its six phases
+// tune a resource policy from episodes; they do not choose, lease, review or finish a task. The
+// canonical task machine is specs/queen/dispatch.t27, taken from the trios supervisor that runs.
+// What the code does instead of these six: gHashTag/trinity src/tri/queen/lotus_cycle.zig at
+// afc9d384 runs Observe, a Record Episode stage that is only a comment, Evaluate, Plan, Act (its
+// episode-aware variant: Observe, load episodes, evaluate the window, plan, act); its 29 tests pass
+// under Zig 0.15.2, and no build step builds it. This file does not compile in C at master.
 // φ² + 1/φ² = 3 | TRINITY
 
 module QueenLotus {

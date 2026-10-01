@@ -325,19 +325,23 @@ pub const DIVERGENCE_FILE_SIDE_SOURCE : u8 = SOURCE_FILE_REFERENCE;
 ; THE REFUSAL (measured 2026-09-20, re-measured 2026-09-21 and unchanged). Persistence is not
 ; specified here, and not because it was deferred: there is nothing in this repository to
 ; specify it against. grep -rniE "diverg" over
-; migrations/ returns 0 rows. The 89 below is the number of .sql migration files that recursive
-; grep actually read: 88 at the top level plus 077_quest_progress.sql in migrations/wip/. It is
-; NOT "ls migrations/ | wc -l", which also prints 89 but counts the wip/ DIRECTORY as one of its
-; entries and only 88 files -- the right number by the wrong arithmetic, and the two agree here
-; by coincidence. (87, 86 and 87 before 087, and 88, 87 and 88 before 088, both 2026-09-24: see
-; the corrections below the count.) So: no table, no column, no id, no retention
+; migrations/ returns 0 rows. The 90 below is the number of .sql migration files that recursive
+; grep actually read: 89 at the top level plus 077_quest_progress.sql in migrations/wip/. It is
+; NOT "ls migrations/ | wc -l", which also prints 90 but counts the wip/ DIRECTORY as one of its
+; entries and only 89 files -- the right number by the wrong arithmetic, and the two agree here
+; by coincidence. (87, 86 and 87 before 087, and 88, 87 and 88 before 088, both 2026-09-24; 89,
+; 88 and 89 before 089, 2026-09-26: see the corrections below the count.) So: no table, no column, no id, no retention
 ; window. Both emission sites are tracing::info!, which is a process log line: it has no schema
 ; this file could pin, no reader this file could name and no lifetime this file could bound.
 ; Naming a table, a column set or a retention period would be exactly the invention D11 forbids,
 ; one level up from the price. When a sink exists, this constant is what has to be deleted.
 pub const DIVERGENCE_PERSISTENCE_IS_NOT_SPECIFIED : bool = true;
 pub const DIVERGENCE_TABLES : u8 = 0;
-pub const MIGRATION_FILES_SEARCHED : u8 = 89;
+; Re-measured 2026-09-26: 90 recursive, 89 at the top level. migrations/089_referral_credit.sql
+; arrived (turbobaby/referral-credit, the owner's R3 answer) and creates three tables of its own
+; with no divergence sink among them, so the search still finds none. The figures before it are
+; kept under _BEFORE_089 names.
+pub const MIGRATION_FILES_SEARCHED : u8 = 90;
 ; THIS CONTRACT OWNS THIS COUNT. turbobaby/locale-policy declares the same figure in a
 ; declaration of the same name, for a DIFFERENT search over the same directory: it looks for a
 ; CHECK constraint on a language column where this one looks for a divergence sink. One
@@ -364,7 +368,7 @@ pub const MIGRATION_FILES_SEARCHED : u8 = 89;
 ; census owner, and lists this file as a sibling copy -- while this file never named it. A review of
 ; 2026-09-23 recorded two self-declared owners of one measurement. Resolved by subject: the census
 ; is schema-provenance's. What stays here is the USE of the number -- the divergence search read
-; all 88 files and found no sink -- carried as a declared copy with the owner named by ID and by
+; all 89 files (90 since 089) and found no sink -- carried as a declared copy with the owner named by ID and by
 ; declaration, and gate 3 now binds the owner's three figures to the tree beside this file's.
 ; The claim as written is kept under a _BEFORE_ name, and so is the copy holder it named, because
 ; turbobaby/locale-policy now names the census owner instead of this file.
@@ -374,7 +378,9 @@ pub const REUSES_SCHEMA_PROVENANCE_ID : str = "turbobaby/schema-provenance";
 pub const MIGRATION_COUNT_OWNER_DECLARATIONS : [3]str = ["SQL_FILES_RECURSIVE", "SQL_FILES_TOP_LEVEL", "WIP_SQL_FILES"];
 pub const MIGRATION_COUNT_IS_A_COPY : bool = true;
 pub const MIGRATION_COUNT_COPY_HOLDER_ID_BEFORE_2026_09_24 : str = "turbobaby/locale-policy";
-pub const MIGRATION_COUNT_TOP_LEVEL : u8 = 88;
+pub const MIGRATION_COUNT_TOP_LEVEL : u8 = 89;
+pub const MIGRATION_FILES_SEARCHED_BEFORE_089 : u8 = 89;
+pub const MIGRATION_COUNT_TOP_LEVEL_BEFORE_089 : u8 = 88;
 pub const MIGRATION_COUNT_IN_WIP : u8 = 1;
 pub const MIGRATION_COUNT_REMEASURED_AT : str = "2026-09-24";
 pub const MIGRATION_COUNT_OWNERSHIP_RESOLVED_AT : str = "2026-09-24";
@@ -388,7 +394,7 @@ pub const DIVERGENCE_SINKS : [2]str = [
   "src/api/bikes.rs:655-660",
   "src/api/orders.rs:848-853",
 ];
-pub const DIVERGENCE_PERSISTENCE_NOTE : str = "No sink exists: none of the 89 .sql migration files under migrations/ (88 at the top level plus one in migrations/wip/) mentions divergence, so there is no table, column or retention rule to pin. The only trace either priced answer leaves is a tracing::info! line at src/api/bikes.rs:655-660 and src/api/orders.rs:848-853. The decision is owned here; the record is owned by nobody.";
+pub const DIVERGENCE_PERSISTENCE_NOTE : str = "No sink exists: none of the 90 .sql migration files under migrations/ (89 at the top level plus one in migrations/wip/) mentions divergence, so there is no table, column or retention rule to pin. The only trace either priced answer leaves is a tracing::info! line at src/api/bikes.rs:655-660 and src/api/orders.rs:848-853. The decision is owned here; the record is owned by nobody.";
 
 ; The file side of a comparison, as a predicate. is_client_price already names the door side;
 ; this is its counterpart, and it exists so that divergence_report_required can refuse a
@@ -618,7 +624,7 @@ test an_absent_door_amount_is_the_absence_path_and_never_a_divergence {
 test persistence_of_a_divergence_is_refused_for_lack_of_a_sink {
     assert DIVERGENCE_PERSISTENCE_IS_NOT_SPECIFIED == true;
     assert DIVERGENCE_TABLES == 0;
-    assert MIGRATION_FILES_SEARCHED == 89;
+    assert MIGRATION_FILES_SEARCHED == 90;
     assert DIVERGENCE_SINK_KIND == "process log line";
     assert DIVERGENCE_SINKS.len == 2;
     assert DIVERGENCE_SINKS[0] == "src/api/bikes.rs:655-660";
@@ -632,7 +638,7 @@ test persistence_of_a_divergence_is_refused_for_lack_of_a_sink {
 ; now says so. It still fails the day the two halves of the directory stop adding up to the whole,
 ; which is the arithmetic that made the wrong version of this measurement look right.
 test the_migration_file_count_is_a_named_copy_of_the_schema_census {
-  assert MIGRATION_FILES_SEARCHED == 89;
+  assert MIGRATION_FILES_SEARCHED == 90;
   assert MIGRATION_COUNT_IS_OWNED_HERE == false;
   assert MIGRATION_COUNT_IS_OWNED_HERE_BEFORE_2026_09_24 == true;
   assert MIGRATION_COUNT_IS_A_COPY == true;
@@ -643,7 +649,9 @@ test the_migration_file_count_is_a_named_copy_of_the_schema_census {
   assert MIGRATION_COUNT_OWNER_DECLARATIONS[1] == "SQL_FILES_TOP_LEVEL";
   assert MIGRATION_COUNT_OWNER_DECLARATIONS[2] == "WIP_SQL_FILES";
   assert MIGRATION_COUNT_OWNERSHIP_RESOLVED_AT == "2026-09-24";
-  assert MIGRATION_COUNT_TOP_LEVEL == 88;
+  assert MIGRATION_COUNT_TOP_LEVEL == 89;
+  assert MIGRATION_FILES_SEARCHED == MIGRATION_FILES_SEARCHED_BEFORE_089 + 1;
+  assert MIGRATION_COUNT_TOP_LEVEL_BEFORE_089 + MIGRATION_COUNT_IN_WIP == MIGRATION_FILES_SEARCHED_BEFORE_089;
   assert MIGRATION_COUNT_IN_WIP == 1;
   assert MIGRATION_COUNT_TOP_LEVEL + MIGRATION_COUNT_IN_WIP == MIGRATION_FILES_SEARCHED;
   assert MIGRATION_COUNT_COPY_HOLDER_ID_BEFORE_2026_09_24 == "turbobaby/locale-policy";
@@ -651,7 +659,7 @@ test the_migration_file_count_is_a_named_copy_of_the_schema_census {
   assert MIGRATION_COUNT_REMEASURED_AT == "2026-09-24";
   assert MIGRATION_FILES_SEARCHED_BEFORE_087 == 87;
   assert MIGRATION_COUNT_TOP_LEVEL_BEFORE_087 + MIGRATION_COUNT_IN_WIP == MIGRATION_FILES_SEARCHED_BEFORE_087;
-  assert MIGRATION_FILES_SEARCHED == MIGRATION_FILES_SEARCHED_BEFORE_088 + 1;
+  assert MIGRATION_FILES_SEARCHED_BEFORE_089 == MIGRATION_FILES_SEARCHED_BEFORE_088 + 1;
   assert MIGRATION_FILES_SEARCHED_BEFORE_088 == MIGRATION_FILES_SEARCHED_BEFORE_087 + 1;
   assert MIGRATION_COUNT_TOP_LEVEL_BEFORE_088 + MIGRATION_COUNT_IN_WIP == MIGRATION_FILES_SEARCHED_BEFORE_088;
   assert MIGRATION_COUNT_REMEASURED_AT_BEFORE_087 == "2026-09-21";
