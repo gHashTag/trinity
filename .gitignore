@@ -273,6 +273,9 @@ bench_core
 *.wav
 *.trit
 
+# GIFs rendered from tapes/ (record-demos.yml uploads them as an artifact)
+/recordings/
+
 # Invalid filenames (shell artifact)
 --
 -language
