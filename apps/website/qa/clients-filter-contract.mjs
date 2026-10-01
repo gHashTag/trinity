@@ -366,6 +366,36 @@ for (const className of ['queen27-clients-lane', 'queen27-lane-head is-private']
   )
 }
 
+// The ALL lane is the same kind of private and obeys the same rule: drawn only
+// when chosen. It lives in its own component, so the guard is asked of every
+// place that draws that component.
+function guardedByChosenBall(node) {
+  const test = (at) => {
+    if (!ts.isJsxExpression(at) || !at.expression) return false
+    const expression = at.expression
+    const left =
+      ts.isBinaryExpression(expression) && expression.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+        ? expression.left
+        : null
+    return !!left && /\bboard\s*===\s*['"]ball['"]/.test(left.getText(source))
+  }
+  for (let at = node.parent; at; at = at.parent) if (test(at)) return true
+  let name = null
+  for (let at = node.parent; at && !name; at = at.parent)
+    if (ts.isFunctionDeclaration(at) && at.name && /^[A-Z]/.test(at.name.text)) name = at.name.text
+  if (!name) return false
+  const uses = []
+  const visit = (n) => {
+    if (ts.isJsxOpeningLikeElement(n) && n.tagName.getText(source) === name) uses.push(n)
+    ts.forEachChild(n, visit)
+  }
+  visit(source)
+  return uses.length > 0 && uses.every((use) => guardedByChosenBall(use))
+}
+const ballLanes = elementsWithClass('queen27-ball-lane')
+EQ(ballLanes.length, 1, 'the ALL lane is built in exactly one place')
+A(guardedByChosenBall(ballLanes[0]), 'and only when the reader has chosen it: a mailbox, a pipeline and a browser session are not drawn unbidden')
+
 let initialBoard = null
 const findBoardState = (node) => {
   if (

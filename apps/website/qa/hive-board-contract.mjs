@@ -177,7 +177,10 @@ try {
   const before6 = world.log.fetches.length
   EQ(await world.client.callAsPlayer('crm_history'), { ok: false, reason: 'refused' }, 'a tool the token may not ask for is refused')
   EQ(world.log.fetches.length, before6, 'and refused BEFORE a request is made')
-  EQ([...PLAYER_TOOLS], ['hive_board'], 'the game token asks for exactly one tool')
+  // Two boards, each the caller's own: hive_board (their clients) and
+  // ball_board (everything they are part of, qa/ball-board-contract.mjs).
+  // Nothing that can write, and nothing that names somebody else.
+  EQ([...PLAYER_TOOLS], ['hive_board', 'ball_board'], 'the player asks for exactly the two read-only boards')
 } finally {
   undoTraps()
 }
@@ -246,8 +249,33 @@ function guardedByClients(node) {
           ? expression.condition
           : null
     if (test && /\bclients\b/.test(test.getText(source))) return true
+    // Reaching a component's own function without a guard is not the end of
+    // the question: the component is guarded if EVERY place that draws it is.
+    // One unguarded `<BallLaneView />` and none of its markup is.
   }
-  return false
+  const owner = enclosingComponent(node)
+  if (!owner) return false
+  const uses = jsxUsesOf(owner)
+  return uses.length > 0 && uses.every((use) => guardedByClients(use))
+}
+
+/** The PascalCase function declaration this node sits in, if any. */
+function enclosingComponent(node) {
+  for (let at = node.parent; at; at = at.parent) {
+    if (ts.isFunctionDeclaration(at) && at.name && /^[A-Z]/.test(at.name.text)) return at.name.text
+  }
+  return null
+}
+
+/** Every `<Name …>` in the page. */
+function jsxUsesOf(name) {
+  const found = []
+  const visit = (node) => {
+    if (ts.isJsxOpeningLikeElement(node) && node.tagName.getText(source) === name) found.push(node)
+    ts.forEachChild(node, visit)
+  }
+  visit(source)
+  return found
 }
 
 const lane = elementsWithClass('queen27-clients-lane')
@@ -262,9 +290,14 @@ for (const head of heads) A(guardedByClients(head), 'a lane heading is itself cl
 // PUBLIC board must NOT be behind that gate. A refactor that tidied both lanes
 // into one conditional would pass every assertion above and would blank the
 // task board for every visitor who is not signed in.
-const publicBoard = elementsWithClass('queen27-kanban').filter((node) => !elementsWithClass('queen27-clients-lane').includes(node))
+const privateBoards = [...elementsWithClass('queen27-clients-lane'), ...elementsWithClass('queen27-ball-lane')]
+const publicBoard = elementsWithClass('queen27-kanban').filter((node) => !privateBoards.includes(node))
 EQ(publicBoard.length, 1, 'there is one public task board')
 A(!guardedByClients(publicBoard[0]), 'and it is drawn for everybody, signed in or not, exactly as it was')
+
+const ballBoard = elementsWithClass('queen27-ball-lane')
+EQ(ballBoard.length, 1, 'the ALL lane is drawn in exactly one place')
+A(guardedByClients(ballBoard[0]), 'and only for somebody the hive has identified')
 
 A(!page.includes(AGENT_HEADER), 'the page names no credential at all')
 

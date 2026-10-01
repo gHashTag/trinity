@@ -104,7 +104,8 @@ import { QueenIdentity } from "../components/QueenIdentity";
 import { TRI_BUTTONS, hashParamsOf, tabAddress, triAddress, triGroupOf, triScreenOf } from "../lib/triScreens";
 import { OPEN_TARGETS, screenExcerpt } from "../lib/queenDirectives";
 import { sendToAgentAsMe } from "../services/queenModel";
-import { triIdentity } from "../lib/triIdentity";
+import { triIdentity, type TriIdentity } from "../lib/triIdentity";
+import { ballLane, loadBallBoard, type BallBoard, type BallBoardReason, type BallLane, type BallLaneCard } from "../lib/ballBoard";
 import { clientsLane, loadHiveBoard, type ClientsLane, type HiveBoard, type HiveBoardReason } from "../lib/hiveBoard";
 import {
   REVIEW_STATES,
@@ -589,6 +590,21 @@ const COPY = {
     clientsWaiting: "waiting for a reply",
     clientsQuiet: "days quiet",
     clientsTouched: "last touch",
+    // The ALL board (lib/ballBoard.ts): CRM, mail, code work and the person's
+    // own AI-browser session on one board, by whose move it is.
+    laneBall: "ALL",
+    ballLaneAria: "Everything, by whose move it is",
+    ballPrivateHint: "your clients, mail and browser — only you were shown this",
+    ballOurs: "OUR MOVE",
+    ballDue: "DUE",
+    ballTheirs: "THEIR MOVE",
+    ballNone: "NOBODY'S",
+    ballDays: "days",
+    ballEmpty: "Nothing open on your board.",
+    ballSearch: "find on the board",
+    ballUnspecced: "no spec",
+    ballNoSpec: "no .t27 spec",
+    ballOpenBrowser: "open the AI browser",
     command: "LIVE COMMAND ROOM",
     commandTitle: "Queen reviews the swarm herself.",
     commandCopy:
@@ -998,6 +1014,19 @@ const COPY = {
     clientsWaiting: "ждёт ответа",
     clientsQuiet: "дней тишины",
     clientsTouched: "последний контакт",
+    laneBall: "ВСЁ",
+    ballLaneAria: "Всё, по тому, чей ход",
+    ballPrivateHint: "ваши клиенты, почта и браузер — это показали только вам",
+    ballOurs: "НАШ ХОД",
+    ballDue: "СРОК",
+    ballTheirs: "ИХ ХОД",
+    ballNone: "НИЧЕЙ",
+    ballDays: "дн.",
+    ballEmpty: "На вашей доске нет открытого.",
+    ballSearch: "найти на доске",
+    ballUnspecced: "без спеки",
+    ballNoSpec: "нет спеки .t27",
+    ballOpenBrowser: "открыть ИИ-браузер",
     command: "ЖИВОЙ КОМАНДНЫЙ ЦЕНТР",
     commandTitle: "Королева сама ревьюит работу роя.",
     commandCopy:
@@ -1370,7 +1399,24 @@ function useQueenBoard(): {
  *     may see what — the question simply did not come back — and blanking a
  *     correct panel because one poll missed is its own kind of lie.
  */
-function useHiveBoard(enabled: boolean): {
+function useHiveBoard(enabled: boolean) {
+  return usePlayerBoard<HiveBoard, HiveBoardReason>(enabled, loadHiveBoard);
+}
+
+/**
+ * The ALL lane's data: ball_board, asked the same way and under the same two
+ * rules as hive_board above -- one poll, one gate, two boards. Written once
+ * rather than copied: a second copy of "refused drops the board" is a second
+ * place for it to stop being true.
+ */
+function useBallBoard(enabled: boolean) {
+  return usePlayerBoard<BallBoard, BallBoardReason>(enabled, loadBallBoard);
+}
+
+function usePlayerBoard<B, R extends string>(
+  enabled: boolean,
+  load: (caller: TriIdentity) => Promise<{ ok: true; board: B } | { ok: false; reason: R }>,
+): {
   /**
    * Whether anything client-scoped may be drawn at all: a person the hive has
    * identified, on a board that is on screen. The view's single gate hangs off
@@ -1378,14 +1424,14 @@ function useHiveBoard(enabled: boolean): {
    * separately.
    */
   showing: boolean;
-  board: HiveBoard | null;
-  reason: HiveBoardReason | null;
+  board: B | null;
+  reason: R | null;
 } {
   const identity = triIdentity();
   const me = useSyncExternalStore(identity.subscribe, identity.getSnapshot);
   const signedIn = me.state === "signed-in";
-  const [board, setBoard] = useState<HiveBoard | null>(null);
-  const [reason, setReason] = useState<HiveBoardReason | null>(null);
+  const [board, setBoard] = useState<B | null>(null);
+  const [reason, setReason] = useState<R | null>(null);
 
   useEffect(() => {
     if (!enabled || !signedIn) {
@@ -1395,7 +1441,7 @@ function useHiveBoard(enabled: boolean): {
     }
     let active = true;
     const read = async () => {
-      const answer = await loadHiveBoard(identity);
+      const answer = await load(identity);
       if (!active) return;
       if (answer.ok) {
         setBoard(answer.board);
@@ -1411,7 +1457,7 @@ function useHiveBoard(enabled: boolean): {
       active = false;
       window.clearInterval(timer);
     };
-  }, [enabled, identity, signedIn]);
+  }, [enabled, identity, signedIn, load]);
 
   return { showing: enabled && signedIn, board, reason };
 }
@@ -2210,6 +2256,27 @@ interface ClientsPanel {
 }
 
 /**
+ * The ALL lane, under the same rule: null is signed out and draws nothing.
+ * `board` rides along for the head line (sources, unspecced), which describes
+ * this person's own answer and nobody else's.
+ */
+interface BallPanel {
+  lane: BallLane | null;
+  board: BallBoard | null;
+  reason: BallBoardReason | null;
+}
+
+/** "crm ok · mail stale 30h · …": each source's state, as the host said it. */
+function ballSourcesLine(board: BallBoard | null): string | null {
+  if (!board) return null;
+  const parts = Object.entries(board.sources).map(
+    ([source, state]) =>
+      `${source} ${state.status}${state.ageH !== null ? ` ${state.ageH}h` : ""}`,
+  );
+  return parts.length ? parts.join(" · ") : null;
+}
+
+/**
  * The reason the clients lane has nothing new, in the reader's language — or
  * null when there is nothing to say.
  *
@@ -2266,6 +2333,11 @@ function KanbanView({
   onNarrow,
   search,
   onSearch,
+  ball,
+  ballSearch,
+  onBallSearch,
+  onOpenSpec,
+  onOpenBrowser,
 }: {
   columns: QueenColumn[];
   cards: QueenCard[];
@@ -2285,6 +2357,14 @@ function KanbanView({
   /** What has been typed into the find box. Also never leaves this page. */
   search: string;
   onSearch: (text: string) => void;
+  /** The ALL lane. Null is signed out, exactly like `clients`. */
+  ball: BallPanel | null;
+  ballSearch: string;
+  onBallSearch: (text: string) => void;
+  /** Open a card's .t27 spec in the specs view. */
+  onOpenSpec: (path: string) => void;
+  /** Open the app's own AI-browser view, to watch or help the agent. */
+  onOpenBrowser: () => void;
 }) {
   // Which directions the reader is looking at, empty for all of them. It lives
   // here and nowhere else: it is a property of this screen, not of the visitor,
@@ -2327,13 +2407,13 @@ function KanbanView({
   //
   // So: one lane at a time, and 'tasks' first. The private board is one press
   // away and is never the thing that happens to be on screen.
-  const [board, setBoard] = useState<"tasks" | "clients">("tasks");
+  const [board, setBoard] = useState<"tasks" | "clients" | "ball">("tasks");
   // Signing out takes the lane with it, and a view pointing at a board that no
   // longer exists would render as an empty screen with no way back. The switch
   // itself disappears at the same moment, so nothing else could return it.
   useEffect(() => {
-    if (!clients) setBoard("tasks");
-  }, [clients]);
+    if (!clients || (board === "ball" && !ball)) setBoard("tasks");
+  }, [clients, ball, board]);
   const showTasks = board === "tasks" || !clients;
   // How deep into each column the reader has asked to go. Per column, because
   // BACKLOG holding 569 and REVIEW holding 9 are not one question: opening the
@@ -2405,6 +2485,17 @@ function KanbanView({
                 it is drawn, and that decision is worth one word of warning. */}
             <em>{c.lanePrivate}</em>
           </button>
+          {ball && (
+            <button
+              type="button"
+              className="queen27-chip queen27-lane-private-chip"
+              aria-pressed={board === "ball"}
+              onClick={() => setBoard("ball")}
+            >
+              {c.laneBall} <small>{ball.lane ? ball.lane.shown : "—"}</small>
+              <em>{c.lanePrivate}</em>
+            </button>
+          )}
         </div>
       )}
       {showTasks && (
@@ -2767,6 +2858,159 @@ function KanbanView({
           </motion.div>
         </>
       )}
+      {clients && ball && board === "ball" && (
+        <BallLaneView
+          ball={ball}
+          c={c}
+          search={ballSearch}
+          onSearch={onBallSearch}
+          onOpenSpec={onOpenSpec}
+          onOpenBrowser={onOpenBrowser}
+        />
+      )}
+    </>
+  );
+}
+
+/**
+ * The ALL lane: one board for everything this person is part of, by whose
+ * move it is. Every card names its source and, when it has one, the .t27 spec
+ * it stands on -- a press opens the spec. A browser card is the person's own
+ * AI-browser session, and its press opens the app's browser view so they can
+ * watch, take the wheel or answer what the agent asked. No card carries a key:
+ * the link a card holds was checked in lib/ballBoard.ts, and the browser card's
+ * is the app's own route.
+ */
+function BallLaneView({
+  ball,
+  c,
+  search,
+  onSearch,
+  onOpenSpec,
+  onOpenBrowser,
+}: {
+  ball: BallPanel;
+  c: Copy;
+  search: string;
+  onSearch: (text: string) => void;
+  onOpenSpec: (path: string) => void;
+  onOpenBrowser: () => void;
+}) {
+  const lane = ball.lane;
+  const sentence = clientsReasonSentence(ball.reason, c);
+  const note = !lane ? (sentence ?? c.clientsPending) : lane.shown === 0 && !search ? c.ballEmpty : null;
+  const sources = ballSourcesLine(ball.board);
+  const unspecced = ball.board?.unspecced ?? null;
+  const columnTitle: Record<string, string> = {
+    ours: c.ballOurs,
+    due: c.ballDue,
+    theirs: c.ballTheirs,
+    none: c.ballNone,
+  };
+  const cardBody = (card: BallLaneCard) => (
+    <>
+      <div className="queen27-card-topline">
+        <b>{card.client}</b>
+        <span className="queen27-card-source">{card.source}</span>
+      </div>
+      {/* Other people's text from a remote service: text nodes only. */}
+      <strong>{card.title || card.ref}</strong>
+      {card.because && <span>{card.because}</span>}
+      {card.days !== null && (
+        <span>
+          {card.days} {c.ballDays}
+        </span>
+      )}
+    </>
+  );
+  return (
+    <>
+      <div className="queen27-lane-head is-ball" title={sentence ?? undefined}>
+        <h3>{c.laneBall}</h3>
+        <b className="queen27-lane-private">
+          {c.lanePrivate}
+          <em>{c.ballPrivateHint}</em>
+        </b>
+        <span>{lane ? lane.shown : "—"}</span>
+        {sources && <small>{sources}</small>}
+        {unspecced !== null && unspecced > 0 && (
+          <small>
+            {c.ballUnspecced}: {unspecced}
+          </small>
+        )}
+        {lane?.browser && (
+          <button type="button" className="queen27-chip" onClick={onOpenBrowser}>
+            {c.ballOpenBrowser}
+          </button>
+        )}
+        <input
+          className="queen27-lane-search"
+          type="search"
+          value={search}
+          placeholder={c.clientsNarrowSearch}
+          aria-label={c.ballSearch}
+          onChange={(event) => onSearch(event.target.value)}
+        />
+      </div>
+      <motion.div
+        className="queen27-kanban queen27-ball-lane"
+        role="region"
+        aria-label={c.ballLaneAria}
+        tabIndex={0}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        {lane && lane.shown > 0
+          ? lane.groups.map((group) => (
+              <motion.article
+                className={`queen27-column is-ball-${group.ball}`}
+                key={group.ball}
+                layout
+              >
+                <header>
+                  <h3>{columnTitle[group.ball]}</h3>
+                  <span>{group.cards.length}</span>
+                </header>
+                <div className="queen27-cards">
+                  {group.cards.slice(0, CARD_PAGE).map((card) => (
+                    <div className="queen27-card" key={`${card.source}:${card.ref}`}>
+                      {card.source === "browser" ? (
+                        <button type="button" className="queen27-card-open" onClick={onOpenBrowser}>
+                          {cardBody(card)}
+                        </button>
+                      ) : card.link ? (
+                        <a className="queen27-card-open" href={card.link} target="_blank" rel="noreferrer">
+                          {cardBody(card)}
+                        </a>
+                      ) : (
+                        cardBody(card)
+                      )}
+                      {card.spec ? (
+                        <button
+                          type="button"
+                          className="queen27-card-spec"
+                          title={card.spec}
+                          onClick={() => onOpenSpec(card.spec as string)}
+                        >
+                          {card.spec.split("/").pop()}
+                        </button>
+                      ) : (
+                        <em className="queen27-card-spec is-none">{c.ballNoSpec}</em>
+                      )}
+                    </div>
+                  ))}
+                  {group.cards.length > CARD_PAGE && (
+                    <em>
+                      +{group.cards.length - CARD_PAGE}
+                    </em>
+                  )}
+                  {group.cards.length === 0 && <em>{c.empty}</em>}
+                </div>
+              </motion.article>
+            ))
+          : null}
+        {note && <em className="queen27-lane-note">{note}</em>}
+      </motion.div>
     </>
   );
 }
@@ -3095,6 +3339,19 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
           }
         : null,
     [hive.showing, hive.board, hive.reason, clientsNarrow, clientsSearch, lang],
+  );
+  // The ALL lane: every open thing this person is part of -- CRM, mail, code
+  // work and their own AI-browser session -- by client, with whose move it is
+  // (lib/ballBoard.ts). Asked under the same gate as the clients lane, so a
+  // signed-out reader is sent nothing and drawn nothing.
+  const ball = useBallBoard(boardView === "kanban");
+  const [ballSearch, setBallSearch] = useState("");
+  const ballPanel = useMemo<BallPanel | null>(
+    () =>
+      ball.showing
+        ? { lane: ballLane(ball.board, ballSearch), board: ball.board, reason: ball.reason }
+        : null,
+    [ball.showing, ball.board, ball.reason, ballSearch],
   );
   const runningCards = useMemo(
     () => cards.filter((card) => card.column === "running"),
@@ -3966,6 +4223,11 @@ export default function Queen({sharedCatalog}:{sharedCatalog?:UniverseAtlas}={})
                 onNarrow={setClientsNarrow}
                 search={clientsSearch}
                 onSearch={setClientsSearch}
+                ball={ballPanel}
+                ballSearch={ballSearch}
+                onBallSearch={setBallSearch}
+                onOpenSpec={(path) => setView("specs", path)}
+                onOpenBrowser={() => setView("browser")}
               />
             </div>
           ) : boardView === "map" ? (

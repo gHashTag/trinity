@@ -144,6 +144,15 @@ jobs:
       # request count does not move however many times the board is filtered.
       - name: The clients filter can only ever hide
         run: npm run check:clients-filter
+      # The ALL board is the person's own CRM, mail, code work and AI-browser
+      # session, by whose move it is. Its cards arrive from a service and part
+      # of each is other people's text, so this gate feeds the reader a hostile
+      # answer: a link survives only as https to github.com or t27.ai, or as
+      # exactly the app's own browser view; a browser card carries no stream URL
+      # and no token whatever the host sends; a spec path cannot climb out of
+      # specs/; the request has no arguments; nothing is stored or logged.
+      - name: The ALL board shows only what it can vouch for
+        run: npm run check:ball-board
       # The task lane grew the same kind of control, over what a card is ABOUT
       # rather than whose it is, and it is held to the same property: the cards
       # drawn are a SUBSET of the cards that arrived, for every selection
