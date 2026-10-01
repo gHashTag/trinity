@@ -18,7 +18,6 @@ const vsa = @import("vsa.zig");
 const vm = @import("vm.zig");
 const sdk = @import("sdk.zig");
 const hybrid = @import("hybrid.zig");
-const packed_trit = @import("packed_trit.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // E2E TEST 1: VSA → VM → SDK Full Pipeline
