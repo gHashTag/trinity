@@ -14,6 +14,7 @@
 import { useEffect, useState } from 'react'
 import { QUEEN_API } from '../lib/queenApi'
 import QueenPeople from './QueenPeople'
+import QueenRunners from './QueenRunners'
 import './QueenLeaderboard.css'
 
 interface Contributor {
@@ -21,6 +22,8 @@ interface Contributor {
   claimed: boolean
   /** Their GitHub login, when the operator signed the lane as `@login`. */
   github?: string
+  /** The lanes ran on the lender's own machine: a runner, named by Telegram. */
+  runner?: boolean
   keys: number[]
   accepted: number
   /** Accepted issues whose boundary named a .t27 file: the game's own goal. */
@@ -163,6 +166,10 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
           open repositories. */}
       <QueenPeople lang={lang === 'ru' ? 'ru' : 'en'} />
 
+      {/* The door this tab used to only point at: lend a lane by running it
+          yourself, with your key on your own machine. */}
+      <QueenRunners lang={lang === 'ru' ? 'ru' : 'en'} />
+
       <h3 className="ql-lanes-title">{c.lanesTitle}</h3>
       <p className="ql-lanes-lead">{c.lanesLead}</p>
 
@@ -173,7 +180,7 @@ export default function QueenLeaderboard({ lang }: { lang: 'en' | 'ru' }) {
           {board.contributors.map((row, i) => {
             const login = loginOf(row)
             return (
-              <li key={row.name} className={`ql-row${row.claimed ? '' : ' is-unclaimed'}`}>
+              <li key={`${row.runner ? 'r' : 'k'}${row.keys[0]}`} className={`ql-row${row.claimed ? '' : ' is-unclaimed'}`}>
                 <span className="ql-rank">{i + 1}</span>
                 {/* The avatar comes from github.com/<login>.png, a public
                     redirect: no API call, no token, and a leaderboard that does

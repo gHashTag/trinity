@@ -225,6 +225,9 @@ const REACHED = {
     /* PEOPLE, the contributors half of that tab: the fourth sheet the list has
        caught on its first run, which is four for four. */
     'src/components/QueenPeople.css',
+    /* MY RUNNERS, the cabinet inside that tab: a veil over the hive, blurred,
+       like the leaderboard rows it sits beside. */
+    'src/components/QueenRunners.css',
     /* LEVEL II, the comb on the ROADMAP view: five for five. It renders inside
        .rm, whose opaque gradient already grounds it, and its own panel is
        opaque on top of that. */
