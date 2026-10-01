@@ -4,15 +4,19 @@
 ; a clean checkout builds and tests the declared profile, and a failure anywhere fails the gate. This module is
 ; that profile, measured; tools/reproduce.py runs it and judges every run against it (the command is
 ; `python3 tools/reproduce.py headless`, the CI job is .github/workflows/reproduce.yml).
-; MEASURED at gHashTag/trinity main afc9d38435ad01c48af6c33c311da422c38f046e (2026-09-30) with Zig 0.15.2, twice:
-; Linux aarch64 in a container with empty caches, and the Build & Test job of CI run 36875247882 (Linux x86_64).
-; Both print the same test summary, "124/135 steps succeeded; 5 failed; 2510/2510 tests passed", and until
-; this module CI reported that summary as a success: its test step was `zig build test -Dci=true 2>&1 | tee`
-; under bash without pipefail, so the step's exit code was tee's (gHashTag/trinity#616, the tee fix alone is
-; gHashTag/trinity#987). Five test roots do not compile, the library's own src/trinity.zig among them, and
-; their tests have not run since; they are BLOCKED below, each with the error and the capability card it
-; holds back, and the gate fails the day one of them compiles until it is taken off the list.
-; Not a claim about any profile but headless; not a claim that the 2510 tests that ran test enough.
+; MEASURED twice with Zig 0.15.2 and empty caches: Linux aarch64 in a container, and the jobs of the change that
+; brought this version. At afc9d38435ad01c48af6c33c311da422c38f046e (2026-09-30) the test step printed
+; "124/135 steps succeeded; 5 failed; 2510/2510 tests passed", and CI reported that summary as a success: its
+; test step was `zig build test -Dci=true 2>&1 | tee` under bash without pipefail, so the step's exit code was
+; tee's (gHashTag/trinity#616; the tee fix alone is gHashTag/trinity#987). gHashTag/trinity#1207 put this
+; module and its judge in front of CI with the five roots that did not compile named as BLOCKED. The next
+; change fixed all five on main 3c33adbdb7b0b70a8485fc2efc0429ec1c239c5e -- two module names and libc in
+; build.zig, a duplicated `if` in src/c_api.zig, an import of a deleted file in src/e2e_test.zig, and the
+; HybridBigInt API of zig-golden-float (the unpacked cache is an array, not an optional; dotProduct, bundle2
+; and bundle3 take no allocator) in src/science.zig, src/vm.zig, src/vsa_jit.zig and src/c_api.zig -- and the
+; graph now runs whole: "135/135 steps succeeded; 2760/2768 tests passed; 8 skipped" on aarch64, where the
+; eight tests of src/jit.zig that execute x86-64 machine code skip themselves; on x86_64 they run.
+; Not a claim about any profile but headless; not a claim that the tests that ran test enough.
 ; ASCII only (L3). phi^2 + 1/phi^2 = 3 | TRINITY
 
 module reproduce_headless;
@@ -20,7 +24,7 @@ module reproduce_headless;
 pub const KIND : str = "reproduce-profile";
 pub const ID : str = "reproduce/headless";
 pub const PROFILE : str = "headless";
-pub const MEASURED_AT : str = "afc9d38435ad01c48af6c33c311da422c38f046e";
+pub const MEASURED_AT : str = "3c33adbdb7b0b70a8485fc2efc0429ec1c239c5e";
 pub const ZIG : str = "0.15.2";
 ; The documented clean-clone commands. tools/reproduce.py replaces the leading zig with the binary it is given
 ; and, unless asked to reuse caches, points ZIG_GLOBAL_CACHE_DIR and ZIG_LOCAL_CACHE_DIR at a new empty
@@ -52,13 +56,18 @@ pub const INSTALLS : [46]str = [
 ];
 ; The test graph: the floors it may not drop below. A graph that shrank is a partial graph, and a run step
 ; that ran no test is not a passing one: one does today, the step of external/zig-hslm/src/root.zig, the only
-; compiled test root without a test declaration.
+; compiled test root without a test declaration. A skipped test is not a passing one either: the eight that
+; skip are the four x86-64 JIT tests of src/jit.zig, compiled into src/trinity.zig and src/e2e_test.zig, and
+; only off x86_64. The floor of passed tests is the aarch64 count, the lower of the two. Not every pass tested
+; something: 23 of the 24 tests of src/jit_arm64.zig, and 4 of the 5 of src/jit_x86_64.zig, return early off
+; their architecture and are counted as passed there.
 pub const TEST_STEPS_MIN : u32 = 135;
-pub const TESTS_PASSED_MIN : u32 = 2510;
-pub const RUN_STEPS_WITH_TESTS_MIN : u32 = 61;
+pub const TESTS_PASSED_MIN : u32 = 2760;
+pub const TESTS_SKIPPED_MAX : u32 = 8;
+pub const RUN_STEPS_WITH_TESTS_MIN : u32 = 66;
 pub const EMPTY_RUN_STEPS_MAX : u32 = 1;
-; Every root the test step compiles, read from `--verbose` with empty caches. The five BLOCKED ones are here too:
-; the step still tries them, and a root that leaves this list is a test that left the graph.
+; Every root the test step compiles, read from `--verbose` with empty caches; a root that leaves this list is
+; a test that left the graph.
 pub const TEST_ROOTS : [67]str = [
     "external/zig-hslm/src/root.zig", "src/agent_mu/production_hardening_test.zig",
     "src/agent_mu/production_test.zig", "src/agent_mu/swarm_collaboration.zig",
@@ -95,17 +104,13 @@ pub const TEST_ROOTS : [67]str = [
     "src/vibeec/sym_005_demo.zig", "src/vibeec/triples_parser.zig",
     "src/vm.zig"
 ];
-; The roots that do not compile at MEASURED_AT, what the compiler says, and the capability card of the S01
-; manifest each one holds back. Exactly these may fail; one more fails the gate, and one fewer fails it too.
-pub const BLOCKED_ROOTS : [5]str = ["src/c_api.zig", "src/e2e_test.zig", "src/queen_api.zig", "src/trinity.zig", "src/vm.zig"];
-pub const BLOCKED_REASONS : [5]str = [
-    "src/c_api.zig:270:1: expected statement, found 'a document comment' -- the file does not parse; S05 of the epic recorded the same at the S01 pin",
-    "src/packed_trit.zig:1:1: unable to load 'packed_trit.zig': FileNotFound -- src/e2e_test.zig:21 imports a file removed in 42490a222 (#517)",
-    "lib/std/c.zig and lib/std/heap.zig:128: the C allocator without libc (4 errors) -- the queen_api test module does not set link_libc, as the main test module does",
-    "src/hybrid.zig:4 and src/vsa.zig:7: no module named 'zig-hdc-vsa' (the test module provides it as hdc_vsa); src/science.zig:53, 143, 161, 179, 204: expected optional type, found '[59049]i8' (7 errors)",
-    "src/vm.zig:1150:15: expected optional type, found '[59049]i8'; src/vsa_jit.zig:117:26: member function expected 1 argument(s), found 2"
-];
-pub const BLOCKED_CAPABILITIES : [5]str = ["trinity/abi.c-api", "trinity/examples.zig", "trinity/queen.lib", "trinity/lib.trinity", "trinity/lib.trinity"];
+; The roots that may fail to compile, each with what the compiler says and the capability card of the S01
+; manifest it holds back. None today. A root that stops compiling and cannot be fixed in the change that
+; breaks it is named here, and only then may it fail; a named root that compiles again fails the gate until
+; its line is removed, so the list cannot outlive the defect. At afc9d384 it held five (see the header).
+pub const BLOCKED_ROOTS : [0]str = [];
+pub const BLOCKED_REASONS : [0]str = [];
+pub const BLOCKED_CAPABILITIES : [0]str = [];
 pub const EVIDENCE : str = "tools/reproduce.py writes zig-out/reproduce/<command>.json: toolchain, head, cache freshness, each command with its exit code and summary, the compile failures by root, the run steps, the compiled roots, every install with its sha256, and the violations";
 pub const ENABLED : bool = true;
 
@@ -116,11 +121,13 @@ test the_profile_is_headless_and_pinned {
 }
 
 test the_floors_hold_together {
-    assert TESTS_PASSED_MIN == 2510;
-    assert RUN_STEPS_WITH_TESTS_MIN + EMPTY_RUN_STEPS_MAX + 5 == 67;
+    assert TESTS_PASSED_MIN == 2760;
+    assert TESTS_SKIPPED_MAX == 8;
+    assert RUN_STEPS_WITH_TESTS_MIN + EMPTY_RUN_STEPS_MAX == 67;
     assert TEST_STEPS_MIN > RUN_STEPS_WITH_TESTS_MIN;
 }
 
-invariant blocked_roots_are_few {
+invariant every_root_runs {
     assert EMPTY_RUN_STEPS_MAX <= 1;
+    assert TESTS_SKIPPED_MAX <= 8;
 }
