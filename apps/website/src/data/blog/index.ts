@@ -3,6 +3,38 @@ import type { PostMeta } from './types'
 /** Индекс блога: список и метаданные без тяжёлых тел публикаций. */
 export const postsIndex: PostMeta[] = [
   {
+    slug: "the-seed-moved-it-the-pins-moved-it-more",
+    title: "The seed moved Fmax 1.22x. The pins moved it 2.6x.",
+    summary: "[nextpnr-xilinx post-route estimates on xc7a200tfbg484-2, not sign-off timing; a stand-alone unit on synthetic pins, not a full design; JTAG result from our own bench] Two bench questions became two commands. tri fpga-seeds treats Fmax as a range over placement seeds: a 321-LUT ternary dot-product unit ran 164.15 to 200.40 MHz over 20 seeds, and 62.68 to 76.75 MHz with its pins spread across the package, with the same netlist on every run. tri fpga-jtag reads which chip is on the chain, never programs, and tells a silent TDO from a broken cable. On our bench it caught an XC7A200T where an XC7A100T was expected.",
+    date: "2026-10-01",
+    readingMinutes: 5,
+    tags: ["FPGA", "Open toolchain", "Verification", "Tooling"],
+    receipts: [
+      { label: "nextpnr-xilinx, the place-and-route tool whose seeds were swept", href: "https://github.com/openXC7/nextpnr-xilinx" },
+      { label: "openFPGALoader, used for the FTDI path of fpga-jtag", href: "https://github.com/trabucayre/openFPGALoader" },
+      { label: "xc3sprog, used for the Platform Cable USB II path", href: "https://sourceforge.net/projects/xc3sprog/" },
+    ],
+    openQuestions: [
+      "The unit is measured stand-alone on synthetic pins. Its Fmax inside a real SoC is set by a different critical path and is not claimed here.",
+      "The spread-pinout sweep has 10 seeds, not 20: one seed did not finish under machine load and the rest were not run.",
+      "Seed spread was measured for one small unit on one part. Larger designs may spread more or less.",
+      "The second bench, an XC7A100T on a DLC10 clone, still returns no chain; the cause is not yet found.",
+      "The two commands live in a private repository for now, so a reader cannot yet run them.",
+    ],
+    published: true,
+    ru: {
+      title: "Seed сдвинул Fmax в 1,22 раза. Выводы — в 2,6 раза.",
+      summary: "[оценки nextpnr-xilinx после разводки на xc7a200tfbg484-2, не подписанный тайминг; отдельный блок на синтетических выводах, а не целый дизайн; результат JTAG — с нашего стенда] Два вопроса стенда стали двумя командами. tri fpga-seeds считает Fmax диапазоном по seed размещения: тернарный блок скалярного произведения на 321 LUT дал от 164,15 до 200,40 МГц на 20 seed и от 62,68 до 76,75 МГц с выводами, разнесёнными по корпусу, при одном и том же нетлисте во всех прогонах. tri fpga-jtag читает, какой чип стоит в цепочке, никогда не прошивает и отличает молчащий TDO от сломанного кабеля. На нашем стенде она поймала XC7A200T там, где ожидался XC7A100T.",
+      openQuestions: [
+        "Блок измерен отдельно, на синтетических выводах. Его Fmax внутри настоящей SoC задаётся другим критическим путём и здесь не заявляется.",
+        "В переборе с разнесёнными выводами 10 seed, а не 20: один seed не завершился под нагрузкой машины, остальные не запускались.",
+        "Разброс по seed измерен для одного маленького блока на одной микросхеме. У больших дизайнов он может быть больше или меньше.",
+        "Второй стенд, XC7A100T на клоне DLC10, по-прежнему не показывает цепочку; причина пока не найдена.",
+        "Обе команды пока лежат в закрытом репозитории, так что читатель ещё не может их запустить.",
+      ],
+    },
+  },
+  {
     slug: "mask-over-scale-ternary-drafts-that-compile",
     title: "Mask over scale: a 9M ternary model whose drafts compile",
     summary: "[measured on the 391-item strict t27 bench: 0/150 flat vs 3/150 masked on the same 30 hardest items; 65% of flat first compile errors are undeclared identifiers; strict loop closed at 30 rounds / 8083 samples = 4/391 pass, 283/391 compile; three decode constraints, zero parameters; benched checkpoint = t27-domain finetune of tern_tc, the package ships the base] tern_tc, a 9M ternary model sized to XC7A200T block RAM, cannot learn the names of a scope -- so instead of scaling it we constrained its decoder: a scope mask at every decode step, diversity by mask rule rather than temperature (15/30 vs 3/30 union compile), and a repeat-n-gram ban after 1517/2177 blocked candidates turned out to be repetition cascades. The result is not a solver: 1.0% of the strict set passes. It is a draft model for a verifier -- 72% of the strict set gets a compiling body, tri tc-draft returns the first test-verified one or an honest refusal.",
