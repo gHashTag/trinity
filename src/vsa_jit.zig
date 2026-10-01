@@ -213,8 +213,10 @@ pub const JitVSAEngine = struct {
             const b_ptr: *anyopaque = @ptrCast(&b.unpacked_cache);
 
             // Function returns f64 bit pattern as i64
-            const result_bits = func(a_ptr, b_ptr);
-            return @bitCast(result_bits);
+            const result: f64 = @bitCast(func(a_ptr, b_ptr));
+            // The kernel divides by sqrt(dot(a,a) * dot(b,b)), which for a zero vector is 0/0 --
+            // the only way it can be NaN. The fallback below and vsa.cosineSimilarity answer 0.
+            return if (std.math.isNan(result)) 0.0 else result;
         }
 
         // Fallback: use 3 separate JIT dot products

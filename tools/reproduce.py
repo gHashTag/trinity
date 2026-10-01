@@ -253,6 +253,12 @@ def measure(sp: dict, zig: str, reuse_cache: bool, build: bool) -> dict:
 # ===========================================================================================
 # Judging it: the whole contract, in one place
 # ===========================================================================================
+def arch_of(host: str) -> str:
+    """'Linux x86_64' -> x86_64; the names Python reports for the same machines elsewhere, mapped."""
+    machine = host.split()[-1].lower() if host.split() else ""
+    return {"amd64": "x86_64", "arm64": "aarch64"}.get(machine, machine)
+
+
 def judge(sp: dict, doc: dict) -> list:
     v = []
 
@@ -281,6 +287,10 @@ def judge(sp: dict, doc: dict) -> list:
         missing = sorted(k for k, h in doc["installs"].items() if h is None)
         if missing:
             bad("MISSING_OUTPUT", f"{len(missing)} declared install(s) absent from zig-out: {missing[:5]}")
+    # What skips, and so what passes, depends on the machine: the floors are per architecture.
+    arch = arch_of(doc.get("host", ""))
+    if arch not in sp["ARCHES"]:
+        bad("ARCH", f"the floors are measured on {sp['ARCHES']}; this record is from {doc.get('host')!r}, and is not judged against them")
     t = doc["test"]
     s, rs = t["summary"], t["run_steps"]
     failed_roots = sorted({f["root"] for f in t["compile_failures"] if f["root"]})
@@ -302,10 +312,12 @@ def judge(sp: dict, doc: dict) -> list:
             bad("LEAK", f"{s['tests_leaked']} leaked; {t['leak_lines'][:2]}")
         if s["steps_failed"] != len(t["compile_failures"]) + rs["with_failures"]:
             bad("UNEXPLAINED_STEP_FAILURE", f"{s['steps_failed']} failed step(s), {len(t['compile_failures'])} compile failure(s) and {rs['with_failures']} failed run step(s) named")
-        if s["tests_skipped"] > sp["TESTS_SKIPPED_MAX"]:
-            bad("SKIPPED", f"{s['tests_skipped']} tests skipped, at most {sp['TESTS_SKIPPED_MAX']} are known")
-        if s["tests_passed"] < sp["TESTS_PASSED_MIN"]:
-            bad("PARTIAL_GRAPH", f"{s['tests_passed']} tests passed, the floor is {sp['TESTS_PASSED_MIN']}")
+        if arch in sp["ARCHES"]:
+            i = sp["ARCHES"].index(arch)
+            if s["tests_skipped"] > sp["TESTS_SKIPPED_MAX"][i]:
+                bad("SKIPPED", f"{s['tests_skipped']} tests skipped on {arch}, at most {sp['TESTS_SKIPPED_MAX'][i]} are known")
+            if s["tests_passed"] < sp["TESTS_PASSED_MIN"][i]:
+                bad("PARTIAL_GRAPH", f"{s['tests_passed']} tests passed on {arch}, the floor is {sp['TESTS_PASSED_MIN'][i]}")
         if s["steps_total"] < sp["TEST_STEPS_MIN"]:
             bad("PARTIAL_GRAPH", f"{s['steps_total']} steps in the test graph, the floor is {sp['TEST_STEPS_MIN']}")
     if rs["with_tests"] < sp["RUN_STEPS_WITH_TESTS_MIN"]:
@@ -339,7 +351,8 @@ def self_check() -> int:
         ok = ok and bool(cond)
     sp = load_spec(SPEC)
     blocked = sp["BLOCKED_ROOTS"]
-    steps_total, passed, skipped = sp["TEST_STEPS_MIN"], sp["TESTS_PASSED_MIN"], sp["TESTS_SKIPPED_MAX"]
+    # The synthetic records are from the first architecture of the spec, with its floors.
+    steps_total, passed, skipped = sp["TEST_STEPS_MIN"], sp["TESTS_PASSED_MIN"][0], sp["TESTS_SKIPPED_MAX"][0]
 
     def fails(roots):
         return "".join(f"error: the following command failed with 1 compilation errors:\n/zig/zig test -ODebug -Mroot=/work/{r} --name test\n" for r in roots)
@@ -357,7 +370,7 @@ def self_check() -> int:
     good_deps = {n: [u, h] for n, u, h in zip(sp["DEPENDENCIES"], sp["DEPENDENCY_URLS"], sp["DEPENDENCY_HASHES"])}
 
     def record(test_out=good_out, test_rc=good_rc, build_out=good_build, build_rc=0, installs=None, zig=sp["ZIG"], deps=None):
-        return {"zig": zig, "head": "0" * 40, "tracked_changes": [], "dependencies": deps if deps is not None else good_deps,
+        return {"zig": zig, "head": "0" * 40, "host": f"Linux {sp['ARCHES'][0]}", "tracked_changes": [], "dependencies": deps if deps is not None else good_deps,
                 "build": {"command": sp["BUILD"], "rc": build_rc, "summary": parse_summary(build_out),
                           "compile_failures": parse_compile_failures(build_out, "/work"), "errors": []},
                 "installs": installs if installs is not None else {k: "0" * 64 for k in sp["INSTALLS"]},
@@ -421,6 +434,14 @@ def self_check() -> int:
     expect({"BUILD_FAILED", "BUILD_STEP_FAILED"} <= codes(record(build_rc=1, build_out="Build Summary: 1/2 steps succeeded; 1 failed\n")), "planted: a build that fails")
     expect("EXIT_SWALLOWED" in codes(record(build_rc=0, build_out="Build Summary: 1/2 steps succeeded; 1 failed\n")), "planted: a failed build step with exit 0")
     expect("TOOLCHAIN" in codes(record(zig="0.16.0")), "planted: another zig")
+    rec = record()
+    rec["host"] = "Linux riscv64"
+    expect("ARCH" in codes(rec), "planted: a record from a machine the floors were not measured on")
+    rec = record(test_out=fails(blocked) + summary(ok_tests=sp["TESTS_PASSED_MIN"][1], skipped_tests=sp["TESTS_SKIPPED_MAX"][1]) + tree)
+    rec["host"] = f"Linux {sp['ARCHES'][1]}"
+    expect(not codes(rec), f"a record from the second architecture is judged by its own floors ({codes(rec)})")
+    expect("PARTIAL_GRAPH" in codes(record(test_out=fails(blocked) + summary(ok_tests=sp["TESTS_PASSED_MIN"][1], skipped_tests=sp["TESTS_SKIPPED_MAX"][1]) + tree)),
+           "planted: the second architecture's counts on the first (skips that would hide tests there)")
     rec = record()
     rec["head"] = "unknown"
     expect("NO_REVISION" in codes(rec), "planted: a checkout git cannot read (the dirty-tree check would be skipped)")
