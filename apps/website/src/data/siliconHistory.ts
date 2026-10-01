@@ -233,6 +233,9 @@ export const EXCLUDED: Record<string, string> = {
   'tt-trinity-gamma/specs/fpga/gf16_to_fp16.t27': 'a converter between two formats',
   'tt-trinity-gamma/specs/fpga/gf16_to_posit16.t27': 'a converter between two formats',
   'tt-trinity-gamma/specs/fpga/gf32_to_fp32.t27': 'a converter between two formats',
+  // Vivado ports brought in by the 1737-spec catalog refresh (#1176).
+  'specs/port/fpga/vivado/gf16_dot4.t27': 'a dot-product unit that consumes GF16, not a declaration of the format',
+  'specs/port/fpga/vivado/gf16_matmul_top.t27': 'a board top (LED counter around gf16_dot4), not a declaration of the format',
 }
 
 /**

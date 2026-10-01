@@ -279,6 +279,13 @@ jobs:
       - name: Queen WARS experiment ledger
         run: npm run check:wars && npm run test:wars-spec
 
+      # The IGLA board on WARS: specs/queen/igla_board.t27 is generated in
+      # gHashTag/igla-coder-gpu from committed artifacts. The gate recompiles it,
+      # re-derives every McNemar p from its discordants, and proves the public
+      # .t27, JSON and TypeScript projections are current.
+      - name: IGLA board on WARS
+        run: npm run check:igla-board
+
       # LEVEL II on the ROADMAP tab: the raid, honey, bosses, cracks and the
       # round's pulse. The raid list is pinned here and in gHashTag/t27's
       # feed_roadmap.py, so the page and the feeder raid the same sector.
