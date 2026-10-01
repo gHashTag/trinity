@@ -35,7 +35,7 @@ const COPY = {
       },
       {
         q: 'What does it cost, and what do I get?',
-        a: 'Nothing. The repository is MIT and public. What a turn buys is a matter of record rather than a promise: your spec in the corpus, compiled by the same compiler that compiles the rest of it, your name in the history that produced it, and an accepted turn counted against that name. There is no token today. An accepted .t27 spec is recorded as an earning, and the block above says why a unit of proof will never be a token and why a spec earning becoming one is an open decision rather than a promise.',
+        a: 'Nothing. The repository is MIT and public. What a turn buys is a matter of record rather than a promise: your spec in the corpus, compiled by the same compiler that compiles the rest of it, your name in the history that produced it, and an accepted turn counted against that name. An accepted .t27 spec is also recorded as an earning. TRI, the token those earnings are designed to mint, is not deployed yet, so nothing is withdrawable today.',
       },
       {
         q: 'What happens after I send something?',
@@ -73,7 +73,7 @@ const COPY = {
       },
       {
         q: 'Сколько это стоит и что я получаю?',
-        a: 'Нисколько. Репозиторий под MIT и открыт. То, что даёт ход, — это запись, а не обещание: ваша спека в корпусе, скомпилированная тем же компилятором, что и весь остальной корпус; ваше имя в истории, которая её породила; и принятый ход, засчитанный этому имени. Токена сегодня нет. Принятая спека .t27 записывается как заработок, а почему единица доказательства никогда не станет токеном и почему превращение заработка за спеку в токен — открытое решение, а не обещание, сказано в блоке выше.',
+        a: 'Нисколько. Репозиторий под MIT и открыт. То, что даёт ход, — это запись, а не обещание: ваша спека в корпусе, скомпилированная тем же компилятором, что и весь остальной корпус; ваше имя в истории, которая её породила; и принятый ход, засчитанный этому имени. Принятая спека .t27 ещё и записывается как заработок. TRI — токен, который по замыслу чеканится из этих заработков, — ещё не развёрнут, поэтому сегодня вывести нечего.',
       },
       {
         q: 'Что происходит после того, как я отправил?',
