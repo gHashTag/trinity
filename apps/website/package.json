@@ -101,6 +101,7 @@
     "test:wars-spec": "node --test scripts/queen-wars-from-spec.test.mjs",
     "check:roadmap-game": "node --experimental-strip-types qa/roadmap-game-contract.mjs",
     "test:viewport-spec": "node --test scripts/viewport-from-spec.test.mjs",
+    "test:card-chat": "node --experimental-strip-types --test scripts/queen-card-chat.test.mjs",
     "check:explorer-viewport": "node qa/explorer-viewport-contract.mjs",
     "check:passport": "node --experimental-strip-types qa/passport-figures.mjs"
   },
